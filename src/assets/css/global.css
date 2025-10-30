@@ -1,0 +1,12 @@
+:root {
+  --font-default: 'Poppins', system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, 'Helvetica Neue', Arial, 'Noto Sans', 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+html, body, #app {
+  font-family: var(--font-default);
+}
+
+/* Para o logotipo "Zenix" mantenha a fonte específica local do componente */
+
+
+
