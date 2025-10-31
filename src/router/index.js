@@ -1,6 +1,8 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import AuthView from '../views/AuthView.vue'
 import HomeView from '../views/HomeView.vue'
+import AcademyView from '../views/AcademyView.vue'
+import CourseDetailView from '../views/CourseDetailView.vue'
 import ProfileView from '../views/ProfileView.vue'
 
 const routes = [
@@ -27,6 +29,18 @@ const routes = [
     path: '/dashboard',
     name: 'Dashboard',
     component: HomeView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/academy',
+    name: 'Academy',
+    component: AcademyView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/academy/course/:id',
+    name: 'CourseDetail',
+    component: CourseDetailView,
     meta: { requiresAuth: true }
   },
   {

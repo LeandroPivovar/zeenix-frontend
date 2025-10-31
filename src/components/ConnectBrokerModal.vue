@@ -66,6 +66,15 @@ export default {
         this.account = account
         localStorage.setItem('deriv_token', this.token)
         localStorage.setItem('deriv_app_id', String(this.appId))
+        // Salvar informação de conexão no localStorage para manter durante a sessão
+        if (account?.loginid) {
+          localStorage.setItem('deriv_connection', JSON.stringify({
+            loginid: account.loginid,
+            currency: account.currency,
+            balance: account.balance,
+            timestamp: Date.now()
+          }))
+        }
         this.$emit('connected', account)
       } catch (e) {
         this.error = e?.message || 'Falha ao conectar à Deriv'

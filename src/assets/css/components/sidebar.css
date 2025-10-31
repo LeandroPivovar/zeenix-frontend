@@ -38,7 +38,8 @@
 }
 .menu-item:hover { background: rgba(255,255,255,0.05); }
 .menu-item.active { background: #0b1f16; color: #a7f3d0; }
-.menu-item .dot { margin-right: 8px; color: #22c55e; }
+.menu-item.active .dot { color: #22c55e; }
+.menu-item .dot { margin-right: 8px; color: #6b7280; }
 
 .status { margin-top: auto; }
 .user { display: flex; align-items: center; gap: 10px; }

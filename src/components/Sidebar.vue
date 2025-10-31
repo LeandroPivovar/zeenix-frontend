@@ -8,11 +8,23 @@
       </div>
     </div>
     <nav class="menu">
-      <button class="menu-item active"><span class="dot">●</span> Dashboard</button>
+      <button 
+        class="menu-item" 
+        :class="{ active: isDashboardActive }"
+        @click="$router.push('/dashboard')"
+      >
+        Dashboard
+      </button>
       <button class="menu-item">IAs de Investimento</button>
       <button class="menu-item">Copy Trading</button>
       <button class="menu-item">Operação Manual</button>
-      <button class="menu-item">Zenix Academy</button>
+      <button 
+        class="menu-item" 
+        :class="{ active: isAcademyActive }"
+        @click="$router.push('/academy')"
+      >
+        Zenix Academy
+      </button>
       <button class="menu-item">Relatórios</button>
       <button class="menu-item">Suporte</button>
       <button class="menu-item">Configurações</button>
@@ -45,10 +57,19 @@ export default {
   data() {
     return { showUserMenu: false }
   },
+  computed: {
+    isDashboardActive() {
+      return this.$route?.path === '/dashboard';
+    },
+    isAcademyActive() {
+      return this.$route?.path?.startsWith('/academy') || false;
+    }
+  },
   methods: {
     toggleUserMenu() { this.showUserMenu = !this.showUserMenu },
     logout() {
       localStorage.removeItem('token');
+      localStorage.removeItem('deriv_connection');
       this.$router.push('/login');
     },
     goProfile() { this.$router.push('/profile'); }

@@ -78,14 +78,26 @@ export default {
           const dToken = localStorage.getItem('deriv_token');
           const dAppId = Number(localStorage.getItem('deriv_app_id') || '1089');
           if (dToken) {
-            await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/broker/deriv/connect', {
+            const connectRes = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/broker/deriv/connect', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
                 'Authorization': `Bearer ${data.token}`,
               },
               body: JSON.stringify({ token: dToken, appId: dAppId })
-            }).catch(() => {});
+            });
+            if (connectRes.ok) {
+              const account = await connectRes.json();
+              // Salvar informação de conexão no localStorage
+              if (account?.loginid) {
+                localStorage.setItem('deriv_connection', JSON.stringify({
+                  loginid: account.loginid,
+                  currency: account.currency,
+                  balance: account.balance,
+                  timestamp: Date.now()
+                }));
+              }
+            }
           }
         } catch (e) {
           console.warn('Auto-conexão Deriv falhou:', e);
