@@ -26,8 +26,27 @@
         Zenix Academy
       </button>
       <button class="menu-item">Relatórios</button>
-      <button class="menu-item">Suporte</button>
-      <button class="menu-item">Configurações</button>
+      <button 
+        class="menu-item" 
+        :class="{ active: isSupportActive }"
+        @click="$router.push('/support')"
+      >
+        Suporte
+      </button>
+      <button 
+        class="menu-item" 
+        :class="{ active: isSettingsActive }"
+        @click="$router.push('/settings')"
+      >
+        Configurações
+      </button>
+      <button 
+        class="menu-item" 
+        :class="{ active: isPlansActive }"
+        @click="$router.push('/plans')"
+      >
+        Planos
+      </button>
     </nav>
     <div class="status">
       <div class="user" @click="toggleUserMenu">
@@ -63,6 +82,15 @@ export default {
     },
     isAcademyActive() {
       return this.$route?.path?.startsWith('/academy') || false;
+    },
+    isSupportActive() {
+      return this.$route?.path === '/support';
+    },
+    isSettingsActive() {
+      return this.$route?.path === '/settings';
+    },
+    isPlansActive() {
+      return this.$route?.path === '/plans';
     }
   },
   methods: {

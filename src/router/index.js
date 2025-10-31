@@ -4,6 +4,9 @@ import HomeView from '../views/HomeView.vue'
 import AcademyView from '../views/AcademyView.vue'
 import CourseDetailView from '../views/CourseDetailView.vue'
 import ProfileView from '../views/ProfileView.vue'
+import SupportView from '../views/SupportView.vue'
+import SettingsView from '../views/SettingsView.vue'
+import PlansView from '../views/PlansView.vue'
 
 const routes = [
   {
@@ -47,6 +50,24 @@ const routes = [
     path: '/profile',
     name: 'Profile',
     component: ProfileView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/support',
+    name: 'Support',
+    component: SupportView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/settings',
+    name: 'Settings',
+    component: SettingsView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/plans',
+    name: 'Plans',
+    component: PlansView,
     meta: { requiresAuth: true }
   }
 ]
