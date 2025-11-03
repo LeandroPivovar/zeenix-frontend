@@ -1,5 +1,6 @@
 .layout {
     display: flex;
+    flex-direction: column;
     min-height: 100vh;
     background: #0d0d0c;
     color: #e5e7eb;
@@ -18,17 +19,35 @@
     transition: margin-left 0.3s ease;
 }
 
-/* --- Botão de Hambúrguer (Escondido no Desktop) --- */
+header{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 1rem 0; 
+    width: 100%;
+}
+
+.notify-btn{
+    background: transparent;
+    border: none;
+    color: #34d399;
+    cursor: pointer;
+    font-size: 13px;
+    text-decoration: underline;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width:  30px;
+}
+
 .hamburger-menu {
     display: none; 
 }
 
-/* --- Overlay de Fundo Mobile (Escondido no Desktop) --- */
 .mobile-overlay {
     display: none;
 }
 
-/* --- Central Container --- */
 .container {
     width: 100%;
     max-width: 720px;
@@ -38,7 +57,7 @@
 /* --- Title e Subtitle --- */
 .title {
     font-weight: 700;
-    font-size: 2.5rem;
+    font-size: 1.5rem;
     margin-bottom: 8px;
     color: #FFFFFF;
     line-height: 1.2;
@@ -139,7 +158,7 @@
 
 .link-button {
     background: transparent;
-    border: none;
+    border:none;
     color: #34d399;
     cursor: pointer;
     font-size: 13px;
@@ -161,18 +180,28 @@
     line-height: 1.4;
 }
 
+@media (min-width: 768px) {
+    .text-mobile{
+        display: none;
+    }
+}
+
 @media (max-width: 768px) {
-    
+    strong{
+        color: #00E676;
+    }
+
+    .container{
+        width: 95%;
+    }
     .content {
         margin-left: 0; 
         width: 100%;
         min-height: 100vh;
-        padding-top: 60px; 
     }
 
     .hamburger-menu {
         display: flex; 
-        position: fixed;
         top: 20px;
         left: 20px;
         width: 30px;
@@ -203,5 +232,41 @@
         bottom: 0;
         background-color: rgba(0, 0, 0, 0.5); 
         z-index: 998;
+    }
+
+    .link-button {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        background: transparent;
+        color: rgb(0,254,134);
+        border: 2px solid rgb(0,254,134);
+        border-radius: 0.375rem;
+        padding: 10px 28px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: background-color .2s ease;
+        text-decoration: none;
+    }
+
+    button{
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width:  90%;
+    }
+
+    .box{
+        background-color: #0e0f0f;
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 10px;
+        border-radius: 20px;
+        margin-bottom: 30px;
+    }
+
+    .text-mobile{
+        font-size: 1.2rem;
     }
 }

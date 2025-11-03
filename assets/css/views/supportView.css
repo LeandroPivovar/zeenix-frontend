@@ -74,6 +74,7 @@
 	font-size: 32px; 
 	margin: 0; 
 }
+
 .subtitle { 
 	font-size: 16px; 
 	color: #9ca3af; 
@@ -314,17 +315,12 @@ button img{
   width: 18px;
 }
 
-.hamburger-menu, .mobile-overlay {
-	display: none;
-}
-
 @media (max-width: 768px) {
   .layout { 
     margin-left: 0; 
     max-width: 100%; 
     width: 100%;
     margin: 0 auto;
-    padding-top: 60px;
   }
 
 	.top-header-fixed {
@@ -341,43 +337,17 @@ button img{
 		max-width: 100%; 
 		width: 100%;
 		margin: 0 auto;
-		padding-top: 74px;
+	}
+
+	.title-main {
+		display: none;
+	}
+
+	.subtitle {
+		font-size: 16px;
+		display: none;
 	}
 	
-	.hamburger-menu {
-		display: flex; 
-		position: fixed;
-		top: 10px; 
-		left: 20px;
-		width: 30px;
-		height: 30px;
-		z-index: 1000; 
-		padding: 0;
-		flex-direction: column;
-		justify-content: space-around;
-		background: none;
-		border: none;
-		cursor: pointer;
-	}
-	.hamburger-menu .line {
-		display: block;
-		width: 100%;
-		height: 3px;
-		background-color: #e5e7eb;
-		border-radius: 5px;
-	}
-
-	.mobile-overlay {
-		display: block;
-		position: fixed;
-		top: 0;
-		left: 0;
-		right: 0;
-		bottom: 0;
-		background-color: rgba(0, 0, 0, 0.5); 
-		z-index: 998; 
-	}
-
 	.support-cards { grid-template-columns: 1fr; }
 	.search-section { flex-direction: column; max-width: 100%; }
 	.search-input { border-right: 1px solid rgba(255,255,255,0.1); border-radius: 8px; }

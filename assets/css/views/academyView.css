@@ -68,3 +68,27 @@
 }
 
 @media (max-width: 900px) { .courses-grid { grid-template-columns: 1fr; } }
+
+@media (max-width: 768px) {
+  .layout { 
+    margin-left: 0; 
+    max-width: 100%; 
+    width: 100%;
+    margin: 0 auto;
+  }
+  .courses-grid { grid-template-columns: 1fr; }
+  .course-card { padding: 16px; }
+  .course-image { font-size: 12px; }
+  .course-title { font-size: 14px; }
+  .course-desc { font-size: 12px; }
+  .course-meta { font-size: 10px; }
+  .progress-section { margin-bottom: 8px; }
+  .progress-bar { height: 4px; }
+  .progress-text { font-size: 10px; }
+  .course-status { margin-bottom: 8px; }
+  .status-dot { width: 6px; height: 6px; }
+  .status-text { font-size: 10px; }
+  button{
+    width: 100%;
+  }
+}

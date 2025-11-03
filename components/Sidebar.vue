@@ -16,7 +16,9 @@
       <img src="../assets/icons/apps.svg" alt="" class="icon-sidebar">
         Dashboard
       </button>
-      <button class="menu-item" @click="close">IAs de Investimento</button>
+      <button class="menu-item" @click="close">
+        <img src="../assets/icons/core.svg" alt="" class="icon-sidebar">
+        IAs de Investimento</button>
       <button class="menu-item" @click="close">
         <img src="../assets/icons/copy.svg" alt="" class="icon-sidebar">
         Copy Trading
@@ -30,6 +32,7 @@
         :class="{ active: isAcademyActive }"
         @click="navigateAndClose('/academy')"
       >
+        <img src="../assets/icons/academy.svg" alt="" class="icon-sidebar">
         Zenix Academy
       </button>
       <button class="menu-item" @click="close">

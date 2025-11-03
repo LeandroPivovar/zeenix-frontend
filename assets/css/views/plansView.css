@@ -1,5 +1,5 @@
 .layout {
-    display: flex; 
+  display: flex; 
   flex-direction: column;
   min-height: 100vh; 
   background: #0d0d0c; 
@@ -86,6 +86,12 @@
 }
 
 @media (max-width: 768px) {
+  .layout { 
+    margin-left: 0; 
+    max-width: 100%; 
+    width: 100%;
+    margin: 0 auto;
+  }
   .plans-grid { grid-template-columns: 1fr; }
   .section-title { font-size: 24px; }
   .table-container { overflow-x: scroll; }
