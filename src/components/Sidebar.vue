@@ -1,5 +1,5 @@
 <template>
-  <aside class="sidebar">
+  <aside class="sidebar" :class="{ 'is-open': isOpen }">
     <div class="brand">
       <div class="avatar">Z</div>
       <div class="brand-text">
@@ -8,42 +8,57 @@
       </div>
     </div>
     <nav class="menu">
-      <button 
-        class="menu-item" 
+      <button
+        class="menu-item"
         :class="{ active: isDashboardActive }"
-        @click="$router.push('/dashboard')"
+        @click="navigateAndClose('/dashboard')"
       >
+      <img src="../assets/icons/apps.svg" alt="" class="icon-sidebar">
         Dashboard
       </button>
-      <button class="menu-item">IAs de Investimento</button>
-      <button class="menu-item">Copy Trading</button>
-      <button class="menu-item">Operação Manual</button>
-      <button 
-        class="menu-item" 
+      <button class="menu-item" @click="close">
+        <img src="../assets/icons/core.svg" alt="" class="icon-sidebar">
+        IAs de Investimento</button>
+      <button class="menu-item" @click="close">
+        <img src="../assets/icons/copy.svg" alt="" class="icon-sidebar">
+        Copy Trading
+      </button>
+      <button class="menu-item" @click="close">
+        <img src="../assets/icons/click.svg" alt="" class="icon-sidebar">
+        Operação Manual
+      </button>
+      <button
+        class="menu-item"
         :class="{ active: isAcademyActive }"
-        @click="$router.push('/academy')"
+        @click="navigateAndClose('/academy')"
       >
+        <img src="../assets/icons/academy.svg" alt="" class="icon-sidebar">
         Zenix Academy
       </button>
-      <button class="menu-item">Relatórios</button>
-      <button 
-        class="menu-item" 
+      <button class="menu-item" @click="close">
+        <img src="../assets/icons/analytics.svg" alt="" class="icon-sidebar">
+        Relatórios
+      </button>
+      <button
+        class="menu-item"
         :class="{ active: isSupportActive }"
-        @click="$router.push('/support')"
+        @click="navigateAndClose('/support')"
       >
+      <img src="../assets/icons/help.svg" alt="" class="icon-sidebar">
         Suporte
       </button>
-      <button 
-        class="menu-item" 
+      <button
+        class="menu-item"
         :class="{ active: isSettingsActive }"
-        @click="$router.push('/settings')"
+        @click="navigateAndClose('/settings')"
       >
+      <img src="../assets/icons/settings.svg" alt="" class="icon-sidebar">
         Configurações
       </button>
-      <button 
-        class="menu-item" 
+      <button
+        class="menu-item"
         :class="{ active: isPlansActive }"
-        @click="$router.push('/plans')"
+        @click="navigateAndClose('/plans')"
       >
         Planos
       </button>
@@ -52,7 +67,7 @@
       <div class="user" @click="toggleUserMenu">
         <div class="user-avatar">U</div>
         <div class="user-info">
-          <div class="user-name">Usuário</div>
+          <div class="user-name">Usuario</div>
           <div class="user-badge">Conta Ativa</div>
         </div>
       </div>
@@ -67,12 +82,17 @@
       </div>
     </div>
   </aside>
-  
 </template>
 
 <script>
 export default {
   name: 'AppSidebar',
+  props: {
+    isOpen: {
+      type: Boolean,
+      default: false
+    }
+  },
   data() {
     return { showUserMenu: false }
   },
@@ -94,6 +114,15 @@ export default {
     }
   },
   methods: {
+    close() {
+      if (this.isOpen) {
+        this.$emit('close-sidebar')
+      }
+    },
+    navigateAndClose(route) {
+      this.$router.push(route)
+      this.close()
+    },
     toggleUserMenu() { this.showUserMenu = !this.showUserMenu },
     logout() {
       localStorage.removeItem('token');
@@ -106,5 +135,3 @@ export default {
 </script>
 
 <style scoped src="../assets/css/components/sidebar.css"></style>
-
-

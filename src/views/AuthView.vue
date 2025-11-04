@@ -61,20 +61,26 @@ export default {
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background-color: rgb(5, 10, 4);
+        background-color: #0d0d0c;
     }
 
-    h1 {
-        font-family: "Roboto", sans-serif;
+    .login-container h1 {
+        font-family: "Roboto", sans-serif; 
+        font-weight: 700; 
+        color: white; 
         text-align: center;
-        font-size: 1.875rem;
-        font-weight: bold;
-        color: white;
-        margin-top: -1rem;
+        margin-top: 0; 
+        margin-bottom: 2rem;
+        letter-spacing: 0.1em; 
     }
 
-    h1 strong {
-        color: #4ade80;
+    .login-container h1 strong {
+        color: #00FF87; 
+        
+        text-shadow: 
+          0 0 5px #00FF87,
+          0 0 1px #00FF87, 
+          0 0 200px rgba(0, 255, 135, 0.6); 
     }
     
     h2 {

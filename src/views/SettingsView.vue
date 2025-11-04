@@ -1,22 +1,37 @@
 <template>
   <div class="layout">
-    <AppSidebar />
+    <div
+      v-if="sidebarIsOpen && isMobile"
+      class="sidebar-overlay"
+      :class="{ 'is-visible': sidebarIsOpen }"
+      @click="closeSidebar"
+    ></div>
+
+    <AppSidebar :is-open="sidebarIsOpen" @close-sidebar="closeSidebar" />
+
     <main class="settings-content">
       <div class="header">
-        <h1 class="title">Configurações de Perfil</h1>
+        <div
+          class="hamburger-menu"
+          @click="toggleSidebar"
+        >
+          <div class="hamburger-icon">
+            <span class="line"></span>
+            <span class="line"></span>
+            <span class="line"></span>
+          </div>
+        </div>
+        <h1 class="title"><img src="../assets/icons/settings.svg" alt="" width="30px" style="margin-right:0px;"> Configurações de Perfil</h1>
         <button class="save-btn" @click="saveAll" :disabled="saving">
-          <span v-if="saving">⏳</span>
-          <span v-else>Salvar Alterações</span>
+          <span v-if="saving"><img src="../assets/icons/loading.svg" alt="" height="20px"></span>
+          <span v-else>{{ saveButtonText }}</span>
         </button>
       </div>
-
       <div v-if="loading" class="loading">Carregando configurações...</div>
       <div v-else-if="error" class="error">{{ error }}</div>
 
       <div v-else class="settings-grid">
-        <!-- Coluna Esquerda -->
         <div class="column">
-          <!-- Card de Informações do Usuário -->
           <div class="settings-card">
             <div class="profile-section">
               <div class="profile-picture" v-if="settings.profilePictureUrl">
@@ -31,18 +46,17 @@
             </div>
             <div class="profile-actions">
               <button class="action-btn" @click="openEditNameModal">
-                <span>✏️</span> Editar Nome
+                <span><img src="../assets/icons/edit.svg" alt="" class="icon-settings"></span> Editar Nome
               </button>
               <button class="action-btn" @click="openEditEmailModal">
-                <span>✉️</span> Alterar E-mail
+                <span><img src="../assets/icons/mail.svg" alt="" class="icon-settings"></span> Alterar E-mail
               </button>
               <button class="action-btn" @click="openChangePhotoModal">
-                <span>📷</span> Trocar Foto
+                <span><img src="../assets/icons/image.svg" alt="" class="icon-settings"></span> Trocar Foto
               </button>
             </div>
           </div>
 
-          <!-- Card de Idioma e Notificações -->
           <div class="settings-card">
             <h3 class="card-title">Idioma e Notificações</h3>
             <div class="form-group">
@@ -65,9 +79,9 @@
             <div class="form-group">
               <label>Notificações por e-mail</label>
               <div class="toggle-wrapper">
-                <input 
-                  type="checkbox" 
-                  v-model="settings.emailNotifications" 
+                <input
+                  type="checkbox"
+                  v-model="settings.emailNotifications"
                   class="toggle"
                   id="email-notifications"
                 />
@@ -77,9 +91,7 @@
           </div>
         </div>
 
-        <!-- Coluna Central -->
         <div class="column">
-          <!-- Card de Segurança -->
           <div class="settings-card">
             <h3 class="card-title">Segurança da Conta</h3>
             <div class="security-item">
@@ -88,7 +100,7 @@
                 <span class="security-value">••••••••</span>
               </div>
               <button class="security-btn" @click="openChangePasswordModal">
-                <span>🔒</span> Alterar senha
+                <img src="../assets/icons/key.svg" alt="" class="icon-settings">Alterar senha
               </button>
             </div>
             <div class="security-item">
@@ -100,12 +112,11 @@
                 </span>
               </div>
               <button class="security-btn" @click="open2FAModal">
-                <span>⚙️</span> Gerenciar
+                <img src="../assets/icons/settings.svg" alt="" class="icon-settings"> Gerenciar
               </button>
             </div>
           </div>
 
-          <!-- Card de Atividade Recente -->
           <div class="settings-card">
             <h3 class="card-title">Atividade Recente</h3>
             <div class="activity-item" v-if="lastLogin">
@@ -121,34 +132,31 @@
               <span class="activity-value">{{ activeSessions }}</span>
             </div>
             <button class="end-sessions-btn" @click="endAllSessions">
-              <span>🔒</span> Encerrar todas as sessões
+              <img src="../assets/icons/block.svg" alt="" class="icon-settings"> Encerrar todas as sessões
             </button>
           </div>
 
-          <!-- Card de Conta e Privacidade -->
           <div class="settings-card">
             <h3 class="card-title">Conta e Privacidade</h3>
             <a href="#" class="privacy-link" @click.prevent="downloadPersonalData">
               Baixar meus dados pessoais
             </a>
             <a href="#" class="privacy-link">
-              <span>📄</span> Termos de uso e política de privacidade
+              <img src="../assets/icons/file.svg" alt="" class=" icon-settings"> Termos de uso e política de privacidade
             </a>
             <button class="danger-btn" @click="openDeleteAccountModal">
-              <span>⚠️</span> Excluir conta permanentemente
+              <img src="../assets/icons/danger.svg" alt="" class=" icon-settings"> Excluir conta permanentemente
             </button>
           </div>
         </div>
 
-        <!-- Coluna Direita -->
         <div class="column">
-          <!-- Card de Histórico de Alterações -->
           <div class="settings-card">
             <h3 class="card-title">Histórico de Alterações</h3>
             <div class="history-list">
-              <div 
-                v-for="log in activityLogs" 
-                :key="log.id" 
+              <div
+                v-for="log in activityLogs"
+                :key="log.id"
                 class="history-item"
               >
                 <span class="history-date">{{ formatLogDate(log.createdAt) }}</span>
@@ -162,30 +170,36 @@
         </div>
       </div>
 
-      <!-- Modais -->
-      <EditNameModal 
-        :visible="showEditNameModal" 
+      <EditNameModal
+        :visible="showEditNameModal"
         :currentName="settings.name"
         @close="closeEditNameModal"
         @save="handleSaveName"
       />
-      <EditEmailModal 
-        :visible="showEditEmailModal" 
+      <EditEmailModal
+        :visible="showEditEmailModal"
         :currentEmail="settings.email"
         @close="closeEditEmailModal"
         @save="handleSaveEmail"
       />
-      <ChangePasswordModal 
+      <ChangePasswordModal
         :visible="showChangePasswordModal"
         @close="closeChangePasswordModal"
         @save="handleSavePassword"
       />
-      <ChangePhotoModal 
+      <ChangePhotoModal
         :visible="showChangePhotoModal"
         @close="closeChangePhotoModal"
         @save="handleSavePhoto"
       />
+
+
     </main>
+
+    <footer>
+      <h2><img src="../assets/icons/logo-footer.svg" alt="logo-footer" class="logo-footer">ZENIX</h2>
+      <p class="footer-text">Plataforma de investimentos automatizados • Desde 2024 oferecendo soluções confiáveis</p>
+    </footer>
   </div>
 </template>
 
@@ -198,7 +212,7 @@ import ChangePhotoModal from '../components/modals/ChangePhotoModal.vue'
 
 export default {
   name: 'SettingsView',
-  components: { 
+  components: {
     AppSidebar,
     EditNameModal,
     EditEmailModal,
@@ -226,7 +240,9 @@ export default {
       showEditNameModal: false,
       showEditEmailModal: false,
       showChangePasswordModal: false,
-      showChangePhotoModal: false
+      showChangePhotoModal: false,
+      sidebarIsOpen: false,
+      isMobile: false // Novo estado para detectar mobile
     }
   },
   computed: {
@@ -237,19 +253,31 @@ export default {
         return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
       }
       return this.settings.name.substring(0, 2).toUpperCase()
+    },
+    saveButtonText() {
+      // Retorna "Salvar" no mobile e "Salvar Alterações" no desktop
+      return this.isMobile ? 'Salvar' : 'Salvar Alterações';
     }
   },
   mounted() {
-    this.fetchSettings()
+    this.fetchSettings();
+    window.addEventListener('resize', this.checkMobile);
+    this.checkMobile(); // Verifica o tamanho da tela na montagem
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.checkMobile);
   },
   methods: {
+    checkMobile() {
+      this.isMobile = window.innerWidth <= 768;
+    },
     async fetchSettings() {
       this.loading = true
       this.error = null
       try {
         const token = localStorage.getItem('token')
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-        
+
         const res = await fetch(`${apiBaseUrl}/settings`, {
           method: 'GET',
           headers: {
@@ -288,7 +316,7 @@ export default {
       try {
         const token = localStorage.getItem('token')
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-        
+
         const res = await fetch(`${apiBaseUrl}/settings`, {
           method: 'PUT',
           headers: {
@@ -319,7 +347,7 @@ export default {
       try {
         const token = localStorage.getItem('token')
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-        
+
         const res = await fetch(`${apiBaseUrl}/settings/name`, {
           method: 'PUT',
           headers: {
@@ -346,7 +374,7 @@ export default {
       try {
         const token = localStorage.getItem('token')
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-        
+
         const res = await fetch(`${apiBaseUrl}/settings/email`, {
           method: 'PUT',
           headers: {
@@ -373,7 +401,7 @@ export default {
       try {
         const token = localStorage.getItem('token')
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-        
+
         const res = await fetch(`${apiBaseUrl}/settings/password`, {
           method: 'PUT',
           headers: {
@@ -403,7 +431,7 @@ export default {
       try {
         const token = localStorage.getItem('token')
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-        
+
         const res = await fetch(`${apiBaseUrl}/settings`, {
           method: 'PUT',
           headers: {
@@ -426,11 +454,11 @@ export default {
     },
     async endAllSessions() {
       if (!confirm('Tem certeza que deseja encerrar todas as sessões?')) return
-      
+
       try {
         const token = localStorage.getItem('token')
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-        
+
         const res = await fetch(`${apiBaseUrl}/settings/sessions/end-all`, {
           method: 'PUT',
           headers: {
@@ -496,10 +524,15 @@ export default {
       const hours = String(d.getHours()).padStart(2, '0')
       const minutes = String(d.getMinutes()).padStart(2, '0')
       return `${day}/${month}/${year} ${hours}:${minutes}`
+    },
+    toggleSidebar() {
+      this.sidebarIsOpen = !this.sidebarIsOpen;
+    },
+    closeSidebar() {
+      this.sidebarIsOpen = false;
     }
   }
 }
 </script>
 
 <style scoped src="../assets/css/views/settingsView.css"></style>
-

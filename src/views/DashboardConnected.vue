@@ -76,7 +76,7 @@ export default {
 </script>
 
 <style scoped>
-.dash-content { flex: 1; padding: 20px; background: #070B07; color: #e5e7eb; min-height: 100vh; }
+.dash-content { flex: 1; padding: 20px; background: #000000; color: #e5e7eb; min-height: 100vh; }
 .cards { max-width: 1100px; margin: 0 auto; display: grid; gap: 16px; }
 .balance-card { background: #0f1411; border: 1px solid rgba(255,255,255,0.06); border-radius: 12px; padding: 16px; }
 .row { display: grid; grid-template-columns: 20px auto 1fr auto auto; gap: 12px; align-items: center; }

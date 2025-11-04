@@ -15,8 +15,8 @@
           </div>
         </div>
         <div class="video-info">
-          <h2 class="video-title">Marcos Explica os Planos Zenix</h2>
-          <span class="video-badge">2 min</span>
+          <h2 class="video-title">Marcos Explica os Planos Zenix <span class="video-badge">2 min</span></h2>
+
           <p class="video-description">
             Assista em 2 min e entenda qual plano se encaixa melhor no seu perfil de operação e resultado.
           </p>
@@ -89,19 +89,19 @@
           <table class="comparison-table">
             <thead>
               <tr>
-                <th>Funcionalidade</th>
+                <th class="plan-name">Funcionalidade</th>
                 <th v-for="plan in plans" :key="plan.id">{{ plan.name }}</th>
               </tr>
             </thead>
             <tbody>
               <tr>
-                <td>IA Orion</td>
+                <td class="plan-name">IA Orion</td>
                 <td v-for="plan in plans" :key="plan.id">
                   {{ formatFeatureValue(plan.features?.orion_ai) }}
                 </td>
               </tr>
               <tr>
-                <td>Copy Trading</td>
+                <td class="plan-name">Copy Trading</td>
                 <td v-for="plan in plans" :key="plan.id">
                   <span v-if="plan.features?.copy_trading === false" class="icon-cross">✗</span>
                   <span v-else-if="plan.features?.copy_trading === true" class="icon-check">✓</span>
@@ -110,19 +110,19 @@
                 </td>
               </tr>
               <tr>
-                <td>Academy</td>
+                <td class="plan-name">Academy</td>
                 <td v-for="plan in plans" :key="plan.id">
                   {{ formatFeatureValue(plan.features?.academy) }}
                 </td>
               </tr>
               <tr>
-                <td>Suporte</td>
+                <td class="plan-name">Suporte</td>
                 <td v-for="plan in plans" :key="plan.id">
                   {{ formatFeatureValue(plan.features?.support) }}
                 </td>
               </tr>
               <tr>
-                <td>Sinais Diários</td>
+                <td class="plan-name">Sinais Diários</td>
                 <td v-for="plan in plans" :key="plan.id">
                   {{ plan.features?.signals_per_day || '-' }}
                 </td>

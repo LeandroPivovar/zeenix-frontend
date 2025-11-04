@@ -1,7 +1,16 @@
 <template>
   <div class="layout">
-    <AppSidebar />
-    <main class="content" v-if="!connectedInfo">
+    <AppSidebar :is-open="isSidebarOpen" @close-sidebar="closeSidebar" />
+
+    <button class="hamburger-menu" @click="toggleSidebar">
+      <span class="line"></span>
+      <span class="line"></span>
+      <span class="line"></span>
+    </button>
+    
+    <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
+
+    <main class="content" v-if="!connectedInfo && !loading">
       <div class="container">
         <h1 class="title">Bem-vindo ao Zenix Black</h1>
         <p class="subtitle">Antes de começar a operar, você precisa conectar sua conta Deriv ou criar uma nova.</p>
@@ -11,19 +20,31 @@
             <div class="play">▶</div>
             <div class="video-text">Zenix Black Tutorial Video</div>
           </div>
+          
         </div>
+        <p class="text-video">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
 
         <div class="actions">
           <button class="primary" @click="openConnectModal">
+            <img src="../assets/icons/Link.svg" alt="Conectar à Corretora" > 
             Conectar à Corretora
           </button>
-          <button class="link-button">Criar Conta na Deriv</button>
+          <button class="link-button">
+            <img src="../assets/icons/add.svg" alt="Criar Conta na Deriv" >
+            Criar Conta na Deriv
+          </button>
         </div>
 
         <div class="note">Essa tela aparece apenas no primeiro acesso ou se sua conta Deriv estiver desconectada.</div>
       </div>
       <ConnectBrokerModal :visible="showConnectModal" @close="closeConnectModal" @connected="onConnected" />
     </main>
+
+    <main class="content loading-content" v-else-if="loading">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Verificando status da conexão...</p>
+    </main>
+
     <DashboardConnected v-else :info="connectedInfo" />
   </div>
 </template>
@@ -40,10 +61,21 @@ export default {
     return { 
       showConnectModal: false, 
       connectedInfo: null,
-      loading: true
+      loading: true,
+      // NOVO: Estado para controlar o sidebar no mobile
+      isSidebarOpen: false
     }
   },
   methods: {
+    // NOVOS MÉTODOS DE CONTROLE DO SIDEBAR
+    toggleSidebar() {
+      this.isSidebarOpen = !this.isSidebarOpen
+    },
+    closeSidebar() {
+      this.isSidebarOpen = false
+    },
+    // FIM DOS NOVOS MÉTODOS
+
     openConnectModal() { this.showConnectModal = true },
     closeConnectModal() { this.showConnectModal = false },
     onConnected(info) {
@@ -133,5 +165,3 @@ export default {
 </script>
 
 <style scoped src="../assets/css/views/homeView.css"></style>
-
-
