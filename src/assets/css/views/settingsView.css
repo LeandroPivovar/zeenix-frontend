@@ -8,7 +8,7 @@
     min-height: 100vh; 
     background: #0d0d0c; 
     color: #e5e7eb; 
-    max-width: calc( 100% - 15rem ); /* 240px = 15rem */
+    max-width: calc( 100% - 15rem ); 
     margin-left: 15rem;
     font-family: Inter, system-ui, sans-serif;
 }
@@ -422,25 +422,28 @@ main{ min-height: 10vh; }
 
 /* Footer */
 footer{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
     padding: 1.25rem; 
     background: #0e0f0f;
     text-align: center;
     font-size: 0.6875rem; 
-    color: #9ca3af;
     border-top: 0.0625rem solid rgba(255,255,255,0.06); 
-    margin-top: 2rem;
+    width: calc(100%-240px);
+    margin-left: 240px;
 }
 
-h2 {
+.footer-title{
     font-weight: 700;
     font-size: 1.6rem; 
     display: flex;
-}
-
-.footer-text{
-    display: flex;
-    gap: 0.5rem;
+    align-items: center;
+    text-align: center;
     justify-content: center;
+    margin-bottom: 0.5rem;
+    color: white;
+    gap: 0.5rem;
 }
 
 .logo-footer { width: 1.875rem; }
@@ -550,4 +553,9 @@ h2 {
     }
 
     .history-list { max-height: 25rem; }
+
+    footer{
+        width: 100%;
+        margin-left: 0;
+    }
 }

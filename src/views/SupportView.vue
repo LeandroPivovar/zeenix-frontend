@@ -2,17 +2,12 @@
 	<div class="layout">
 		<AppSidebar :is-open="isSidebarOpen" @close-sidebar="closeSidebar" />
 
-		<button class="hamburger-menu" @click="toggleSidebar">
-			<span class="line"></span>
-			<span class="line"></span>
-			<span class="line"></span>
-		</button>
 		
 		<div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
 		
 		<header class="top-header-fixed">
 			<button class="back-btn" @click="$router.push('/dashboard')">
-				<span>←</span> Voltar
+				<img src="../assets/icons/back.svg" alt="" width="20px">
 			</button>
 			<h1 class="header-title-fixed">Suporte</h1>
 			<div class="header-placeholder"></div>

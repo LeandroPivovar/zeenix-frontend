@@ -1,28 +1,33 @@
 <template>
   <div class="layout">
     <AppSidebar :is-open="isSidebarOpen" @close-sidebar="closeSidebar" />
-
-    <button class="hamburger-menu" @click="toggleSidebar">
-      <span class="line"></span>
-      <span class="line"></span>
-      <span class="line"></span>
-    </button>
-    
-    <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
+    <header>
+      <button class="hamburger-menu" @click="toggleSidebar">
+        <span class="line"></span>
+        <span class="line"></span>
+        <span class="line"></span>
+      </button>
+      <h1 class="title">Zenix</h1>
+      <button class="notify-btn">
+        <img src="../assets/icons/notify.svg" alt="" width="20px">
+      </button>
+      <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
+    </header>
 
     <main class="content" v-if="!connectedInfo && !loading">
       <div class="container">
-        <h1 class="title">Bem-vindo ao Zenix Black</h1>
+        <h1 class="title">Bem-vindo ao <strong>Zenix Black</strong></h1>
         <p class="subtitle">Antes de começar a operar, você precisa conectar sua conta Deriv ou criar uma nova.</p>
-
-        <div class="video-card">
-          <div class="video-placeholder">
-            <div class="play">▶</div>
-            <div class="video-text">Zenix Black Tutorial Video</div>
+        <div class="box">
+          <div class="video-card">
+            <div class="video-placeholder">
+              <div class="play">▶</div>
+              <div class="video-text">Zenix Black Tutorial Video</div>
+            </div>
           </div>
-          
+          <h1 class="text-mobile">Zenix Black Tutorial Video</h1>
+          <p class="text-video">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
         </div>
-        <p class="text-video">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
 
         <div class="actions">
           <button class="primary" @click="openConnectModal">

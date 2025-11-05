@@ -1,12 +1,14 @@
 <template>
   <div class="layout">
-    <AppSidebar />
+		<header class="top-header-fixed">
+			<button class="back-btn" @click="$router.push('/academy')">
+				<img src="../assets/icons/back.svg" alt="" width="20px"> Voltar aos cursos
+			</button>
+			<div class="header-placeholder"></div>
+		</header>
     <main class="course-detail">
       <div class="content-wrapper">
         <aside class="course-nav">
-          <button class="back-link" @click="$router.push('/academy')">
-            ← Voltar aos cursos
-          </button>
           <h2 class="course-title-nav">{{ course?.title || 'Carregando...' }}</h2>
           <div v-if="course" class="progress-info">
             <span class="progress-text">{{ completedLessons }} de {{ totalLessons }} aulas concluídas</span>
@@ -48,7 +50,12 @@
 
         <div class="video-section">
           <div v-if="selectedLesson" class="lesson-header">
-            <h3 class="lesson-title-main">{{ selectedLesson.title }}</h3>
+            <div class="lesson-title">
+              <h3 class="lesson-title-heaade">
+                {{ selectedLesson.title }} - 
+                {{ selectedLesson.description }}
+              </h3>
+            </div>
             <div class="lesson-meta">
               <span class="duration">Duração: {{ selectedLesson.duration }}</span>
               <span class="status">
@@ -56,9 +63,7 @@
                 {{ selectedLesson.completed ? 'Concluída' : 'Em andamento' }}
               </span>
             </div>
-            <div v-if="selectedLesson.description" class="lesson-description">
-              <p>{{ selectedLesson.description }}</p>
-            </div>
+
           </div>
           <div v-else class="lesson-header">
             <h3 class="lesson-title-main">Selecione uma aula</h3>
@@ -73,7 +78,7 @@
           <div class="action-buttons">
             <button class="btn-download">
               <span>⬇</span>
-              Baixar material da aula
+              Baixar material
             </button>
             <button 
               class="btn-complete" 
@@ -105,11 +110,8 @@
 </template>
 
 <script>
-import AppSidebar from '../components/Sidebar.vue'
-
 export default {
   name: 'CourseDetailView',
-  components: { AppSidebar },
   data() {
     return {
       course: null,

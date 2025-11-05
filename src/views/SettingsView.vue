@@ -11,17 +11,10 @@
 
     <main class="settings-content">
       <div class="header">
-        <div
-          class="hamburger-menu"
-          @click="toggleSidebar"
-        >
-          <div class="hamburger-icon">
-            <span class="line"></span>
-            <span class="line"></span>
-            <span class="line"></span>
-          </div>
-        </div>
-        <h1 class="title"><img src="../assets/icons/settings.svg" alt="" width="30px" style="margin-right:0px;"> Configurações de Perfil</h1>
+          <button class="back-btn" @click="$router.push('/dashboard')">
+            <img src="../assets/icons/back.svg" alt="" width="20px">
+          </button>
+          <h1 class="title"><img src="../assets/icons/settings.svg" alt="" width="30px" style="margin-right:0px;"> Configurações <span>de Perfil</span></h1>
         <button class="save-btn" @click="saveAll" :disabled="saving">
           <span v-if="saving"><img src="../assets/icons/loading.svg" alt="" height="20px"></span>
           <span v-else>{{ saveButtonText }}</span>
@@ -40,9 +33,11 @@
               <div class="profile-picture" v-else>
                 {{ initials }}
               </div>
-              <h2 class="profile-name">{{ settings.name || 'Usuário' }}</h2>
-              <p class="profile-email">{{ settings.email }}</p>
-              <p class="profile-date">Conta criada em: {{ formatDate(settings.createdAt) }}</p>
+              <div class="profile-infos">
+                <h2 class="profile-name">{{ settings.name || 'Usuário' }}</h2>
+                <p class="profile-email">{{ settings.email }}</p>
+                <p class="profile-date">Conta criada em: {{ formatDate(settings.createdAt) }}</p>
+              </div>
             </div>
             <div class="profile-actions">
               <button class="action-btn" @click="openEditNameModal">
@@ -195,12 +190,11 @@
 
 
     </main>
-
+  </div>
     <footer>
-      <h2><img src="../assets/icons/logo-footer.svg" alt="logo-footer" class="logo-footer">ZENIX</h2>
+      <h3 class="footer-title"><img src="../assets/icons/logo-footer.svg" alt="logo-footer" class="logo-footer">ZENIX</h3>
       <p class="footer-text">Plataforma de investimentos automatizados • Desde 2024 oferecendo soluções confiáveis</p>
     </footer>
-  </div>
 </template>
 
 <script>
