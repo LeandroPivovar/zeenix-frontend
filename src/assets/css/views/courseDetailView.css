@@ -2,19 +2,28 @@
   box-sizing: border-box;
 }
 
+html, body {
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+}
+
 .layout { 
   display: flex; 
-  min-height: 100vh;
+  height: 100vh;
   background: #070B07; 
   color: #e5e7eb;
-  width: 100vw;
+  width: 100%;
+  overflow: hidden;
 }
 
 header{
   position: absolute;
   margin-bottom: 1rem;
-  
   background: transparent;
+  z-index: 100;
 }
 
 .back-btn{
@@ -36,31 +45,33 @@ header{
   color: #9ca3af;
 }
 
-
 .course-detail { 
   flex: 1; 
   padding: 0;
   width: 100%;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .content-wrapper {
   display: grid;
-  grid-template-columns:500px 1fr;
+  grid-template-columns: 500px 1fr;
   height: 100vh;
   gap: 0;
   margin: 0;
   padding: 0;
   width: 100%;
-  margin-top: 3rem;
+  overflow: hidden;
+  padding-top: 3rem;
 }
 
 .course-nav { 
   background: #0d0f0d; 
   border-right: 1px solid rgba(255,255,255,0.04); 
   padding: 28px 24px;
-  height: 100vh;
+  height: calc(100vh - 3rem);
   overflow-y: auto;
-  top: 0;
+  overflow-x: hidden;
 }
 
 .back-link { 
@@ -234,8 +245,9 @@ header{
 .video-section { 
   background: #070B07; 
   padding: 32px 40px;
-  height: 100vh;
+  height: calc(100vh - 3rem);
   overflow-y: auto;
+  overflow-x: hidden;
 }
 
 .lesson-header { 
@@ -258,6 +270,7 @@ header{
   font-size: 20px; 
   margin: 0;
 }
+
 .lesson-meta { 
   display: flex; 
   gap: 20px; 
@@ -439,31 +452,40 @@ header{
     padding: 24px 32px;
   }
 }
+
 @media (max-width: 900px) {
+  .layout {
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .course-detail {
+    height: auto;
+  }
+  
   .content-wrapper {
     grid-template-columns: 1fr;
     height: auto;
     display: flex;
     flex-direction: column-reverse;
-    width: 90%;
+    padding-top: 3rem;
   }
   
   .course-nav { 
     position: relative; 
-    top: 0;
     height: auto;
+    overflow-y: visible;
   }
   
   .video-section {
     height: auto;
-    padding: 20px 16px; /* Reduz o padding lateral no mobile */
-    overflow-x: hidden; /* Previne overflow horizontal */
+    padding: 20px 16px;
+    overflow-y: visible;
   }
   
   .video-player {
-    border-radius: 8px; /* Borda menor no mobile */
+    border-radius: 8px;
     margin-bottom: 20px;
-  
   }
 
   .lesson-title {
@@ -471,7 +493,7 @@ header{
   }
   
   .lesson-title p {
-    font-size: 18px; /* Título menor no mobile */
+    font-size: 18px;
   }
   
   .action-buttons {
@@ -481,17 +503,17 @@ header{
   .btn-download, 
   .btn-replay,
   .btn-complete {
-    max-width:95px;
+    max-width: 95px;
     justify-content: center;
     flex-direction: column;
-    padding: 0;
+    padding: 8px 12px;
+    font-size: 12px;
   }
 }
 
-/* Adiciona um breakpoint extra para telas muito pequenas */
 @media (max-width: 480px) {
   .video-section {
-    padding: 16px 12px; /* Ainda menos padding em telas muito pequenas */
+    padding: 16px 12px;
   }
   
   .course-nav {
