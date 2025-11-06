@@ -1,12 +1,12 @@
 .layout {
-  display: flex; 
-  flex-direction: column;
-  min-height: 100vh; 
-  background: #0d0d0c; 
-  color: #e5e7eb; 
-  max-width: calc( 100% - 240px );
-  margin-left: 240px;
-  font-family:  Inter, system-ui, sans-serif;
+	display: flex; 
+	flex-direction: column;
+	min-height: 100vh; 
+	background: #0d0d0c; 
+	color: #e5e7eb; 
+	max-width: calc( 100% - 240px );
+	margin-left: 240px;
+	font-family: Inter, system-ui, sans-serif;
 }
 
 .plans-content { flex: 1; padding: 24px; margin: 0 auto; width: 100%; }
@@ -33,10 +33,10 @@
 .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 48px; }
 
 /* Plan Cards */
-.plan-card { box-shadow: 0px 0px 20px #070704; background: #0f1411; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 24px; position: relative; transition: transform 0.2s, border-color 0.2s; width: 100%; max-width: 350px;}
+.plan-card { box-shadow: 0px 0px 20px #070704; background: #0f1411; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 24px; position: relative; transition: transform 0.2s, border-color 0.2s; width: 100%; max-width: 350px; margin: auto;}
 .plan-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); }
 .plan-card.popular { border-color: #10B981; }
-.plan-card.recommended { border-color: #3b82f6; }
+.plan-card.recommended { border-color: #3b82f6; box-shadow: #082047 0px 0px 20px; }
 .plan-badge { position: absolute; top: 16px; right: 16px; padding: 6px 12px; border-radius: 9999px; font-size: 11px; font-weight: 700; }
 .popular-badge { background: #10B981; color: #04130b; }
 .recommended-badge { background: #3b82f6; color: #fff; display: flex; align-items: center; gap: 4px; }
@@ -49,7 +49,7 @@
 
 /* Features List */
 .plan-features { list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 12px; }
-.feature-item { display: flex; align-items: center; gap: 12px; font-size: 14px; }
+.feature-item { display: flex; align-items: center; gap: 12px; font-size: 14px; text-align: left;}
 .feature-icon { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
 .feature-icon.check { background: #10B981; color: #04130b; }
 .feature-icon.cross { background: #ef4444; color: #fff; }
@@ -70,30 +70,56 @@
 .comparison-table { width: 100%; border-collapse: collapse; background: #0f1411; border-radius: 12px; overflow: hidden; }
 .comparison-table thead { background: #1a1f1d; }
 .comparison-table th { padding: 16px; font-weight: 700; font-size: 14px; color: #e5e7eb; border-bottom: 1px solid rgba(255,255,255,0.1); }
-.comparison-table td { padding: 16px; font-size: 14px; color: #9ca3af; border-bottom: 1px solid rgba(255,255,255,0.05); }
+.comparison-table td { 
+	padding: 16px; 
+	font-size: 14px; 
+	color: #9ca3af; 
+	border-bottom: 1px solid rgba(255,255,255,0.05); 
+	text-align: center; /* Centralizado para melhor visualização no scroll mobile */
+}
 .comparison-table tbody tr:last-child td { border-bottom: none; }
 .comparison-table tbody tr:hover { background: rgba(255,255,255,0.02); }
-.icon-check { color: #10B981; font-weight: 700; }
-.icon-cross { color: #ef4444; font-weight: 700; }
-.icon-star { color: #fbbf24; }
-.table-footer { text-align: center; color: #9ca3af; font-size: 13px; margin-top: 24px; }
+
+/* Cor Verde Zenix para o cabeçalho e rodapé */
+.stats-icon { color: #10B981; width: 20px; height: 20px; margin-right: 8px; }
 .footer-bullet { color: #10B981; margin-right: 8px; }
-.plan-name{
-  text-align: left;
+
+.table-footer { text-align: center; color: #9ca3af; font-size: 13px; margin-top: 24px; }
+.plan-name-table{ text-align: left; }
+
+.comparison-table th.th-green {
+	color: #10B981 !important;
 }
+
+.comparison-table td.text-green { 
+	color: #10B981 !important; 
+	font-weight: 700;
+}
+
+.comparison-table td.text-white { 
+	color: #E5E7EB !important; 
+}
+
+/* 4. Ícones Copy Trading */
+.icon-check { color: #10B981; font-weight: 700; }
+.icon-cross-circle { color: #EF4444; font-size: 16px; font-weight: 700; }
+.icon-star-vazada { color: #FBBF24; }
+
+
 @media (max-width: 1200px) {
-  .plans-grid { grid-template-columns: repeat(2, 1fr); }
+	.plans-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
-  .layout { 
-    margin-left: 0; 
-    max-width: 100%; 
-    width: 100%;
-    margin: 0 auto;
-  }
-  .plans-grid { grid-template-columns: 1fr; }
-  .section-title { font-size: 24px; }
-  .table-container { overflow-x: scroll; }
+	.layout { 
+		margin-left: 0; 
+		max-width: 100%; 
+		width: 100%;
+		margin: 0;
+	}
+	.plans-grid { grid-template-columns: 1fr; }
+	.section-title { font-size: 24px; }
+	.table-container { 
+		overflow-x: auto; 
+	}
 }
-
