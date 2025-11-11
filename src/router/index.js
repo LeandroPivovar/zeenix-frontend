@@ -8,6 +8,7 @@ import SupportView from '../views/SupportView.vue'
 import SettingsView from '../views/SettingsView.vue'
 import PlansView from '../views/PlansView.vue'
 import OperationView from '../views/OperationView.vue'
+import DerivOAuthCallback from '../views/DerivOAuthCallback.vue'
 
 const routes = [
   {
@@ -71,12 +72,17 @@ const routes = [
     component: PlansView,
     meta: { requiresAuth: true }
   },
-
   {
-     path: '/operation',
-     name: 'Operation',
+    path: '/operation',
+    name: 'Operation',
     component: OperationView,
-     meta: { requiresAuth: true }
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/oauth/callback',
+    name: 'DerivOAuthCallback',
+    component: DerivOAuthCallback,
+    meta: { requiresAuth: true }
   }
 ]
 

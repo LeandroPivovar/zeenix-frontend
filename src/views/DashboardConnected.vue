@@ -11,7 +11,7 @@
           </div>
           <div class="metric right">
             <div class="label">Potencial mensal estimado</div>
-            <div class="value green">+${{ potential }}/mês <span class="desktop-value-span">(com IA ativa)</span> <span class="mobile-value-span">IA ativa</span></div>
+            <div class="value green">+{{ preferredCurrencyPrefix }}{{ potentialValue }}/mês <span class="desktop-value-span">(com IA ativa)</span> <span class="mobile-value-span">IA ativa</span></div>
           </div>
           <div class="spacer"></div>
           <button class="cta">
@@ -69,7 +69,7 @@
           <span>📈</span>
           Potencial de Ganhos (Projeção Futura)
         </div>
-        <div class="p-sub">Com seu saldo atual de {{ formattedBalance }}, sua IA Orion pode gerar até <span class="green">+${{ potential }}/mês</span></div>
+        <div class="p-sub">Com seu saldo atual de {{ formattedBalance }}, sua IA Orion pode gerar até <span class="green">+{{ preferredCurrencyPrefix }}{{ potentialValue }}/mês</span></div>
         <div class="p-subtext">Com +$500 de depósito, o potencial sobe para <span class="yellow">+$2.780/mês</span></div>
         <div class="p-saldo">
           <div class="p-saldo-atual">Atual: $2.180</div>
@@ -276,18 +276,30 @@ export default {
   },
   computed: {
     formattedBalance() {
-      const cur = this.info?.currency || 'USD'
-      const raw = (this.info && this.info.balance != null) ? this.info.balance : null
-      if (typeof raw === 'string') {
-        return `${raw} ${cur}`
-      }
-      const val = this.info?.balance?.value ?? this.info?.balance?.balance ?? 0
-      return `${Number(val).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })} ${cur}`
+      const value = this.balanceNumeric
+      return `${this.currencyPrefix}${value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 8 })}`
     },
-    potential() {
-      const base = (typeof this.info?.balance === 'string') ? Number(this.info.balance) : Number(this.info?.balance?.value || this.info?.balance?.balance || 0)
-      const val = isNaN(base) ? 0 : base
-      return (val * 0.12).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    potentialValue() {
+      const base = this.balanceNumeric
+      const projected = base * 0.12
+      return projected.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })
+    },
+    currencyPrefix() {
+      return this.info?.currencyPrefix || this.getCurrencyPrefix(this.info?.currency)
+    },
+    preferredCurrencyPrefix() {
+      return this.info?.preferredCurrencyPrefix || this.currencyPrefix
+    },
+    balanceNumeric() {
+      const raw = this.info?.balance
+      if (typeof raw === 'number') return raw
+      if (typeof raw === 'string') {
+        const parsed = Number(raw)
+        return isNaN(parsed) ? 0 : parsed
+      }
+      const val = raw?.value ?? raw?.balance ?? 0
+      const num = Number(val)
+      return isNaN(num) ? 0 : num
     },
     completedChallengesCount() {
       let count = 1; 
@@ -306,7 +318,21 @@ export default {
   methods: {
     completeChallenge(challengeName) {
       this.challenges[challengeName] = true;
-    }
+    },
+    getCurrencyPrefix(currency) {
+      switch ((currency || '').toUpperCase()) {
+        case 'USD':
+          return '$'
+        case 'EUR':
+          return '€'
+        case 'BTC':
+          return '₿'
+        case 'DEMO':
+          return 'D$'
+        default:
+          return currency ? `${currency} ` : ''
+      }
+    },
   }
 }
 </script>

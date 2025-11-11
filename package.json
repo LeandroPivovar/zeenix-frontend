@@ -8,12 +8,17 @@
     "lint": "vue-cli-service lint"
   },
   "dependencies": {
+    "@deriv/deriv-api": "^1.0.15",
+    "@fortawesome/fontawesome-free": "^6.5.1",
+    "axios": "^1.6.8",
     "chart.js": "^4.5.1",
-    "core-js": "^3.8.3",
-    "vue": "^3.2.13",
-    "vue-chartjs": "^5.3.3",
-    "vue-router": "^4.0.3",
-    "vuex": "^4.0.0"
+    "core-js": "^3.34.0",
+    "lightweight-charts": "^4.2.1",
+    "normalize.css": "^8.0.1",
+    "uuid": "^9.0.1",
+    "vue": "^3.4.21",
+    "vue-router": "^4.6.3",
+    "vuex": "^4.1.0"
   },
   "devDependencies": {
     "@babel/core": "^7.12.16",

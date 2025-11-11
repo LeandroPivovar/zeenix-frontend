@@ -73,6 +73,14 @@
               </select>
             </div>
             <div class="form-group">
+              <label>Moeda padrão das operações</label>
+              <select v-model="settings.tradeCurrency" class="form-input">
+                <option value="USD">USD (Real)</option>
+                <option value="BTC">BTC</option>
+                <option value="DEMO">DEMO (Conta virtual)</option>
+              </select>
+            </div>
+            <div class="form-group">
               <label>Notificações por e-mail</label>
               <div class="toggle-wrapper">
                 <input
@@ -224,7 +232,8 @@ export default {
         language: 'pt-BR',
         timezone: 'America/Sao_Paulo',
         emailNotifications: true,
-        twoFactorEnabled: false
+        twoFactorEnabled: false,
+        tradeCurrency: 'USD'
       },
       lastLogin: null,
       activeSessions: 0,
@@ -294,7 +303,8 @@ export default {
           language: data.language || 'pt-BR',
           timezone: data.timezone || 'America/Sao_Paulo',
           emailNotifications: data.emailNotifications !== false,
-          twoFactorEnabled: data.twoFactorEnabled || false
+          twoFactorEnabled: data.twoFactorEnabled || false,
+          tradeCurrency: data.tradeCurrency || 'USD'
         }
         this.lastLogin = data.lastLogin
         this.activeSessions = data.activeSessions || 0
@@ -321,7 +331,8 @@ export default {
           body: JSON.stringify({
             language: this.settings.language,
             timezone: this.settings.timezone,
-            emailNotifications: this.settings.emailNotifications
+            emailNotifications: this.settings.emailNotifications,
+            tradeCurrency: this.settings.tradeCurrency
           })
         })
 

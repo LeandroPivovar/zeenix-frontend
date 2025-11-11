@@ -2,28 +2,18 @@
   <div v-if="visible" class="overlay" @click.self="onClose">
     <div class="modal">
       <h3 class="title">Conectar à Corretora (Deriv)</h3>
-      <p class="hint">Informe seu Token de Autenticação Deriv para conectar.</p>
+      <p class="hint">Você será redirecionado para o site da Deriv para autorizar o acesso.</p>
 
       <div class="form">
-        <label for="token">Token de API</label>
-        <input id="token" type="password" v-model="token" :disabled="loading" placeholder="Cole seu token aqui" />
-
-        <label for="appId">App ID (opcional)</label>
-        <input id="appId" type="number" v-model.number="appId" :disabled="loading" placeholder="1089" />
-
-        <button class="primary" @click="connect" :disabled="loading || !token">
+        <button class="primary" @click="startOAuth" :disabled="loading">
           <span v-if="loading" class="spinner"></span>
-          <span>{{ loading ? 'Conectando...' : 'Conectar' }}</span>
+          <span v-else>Continuar com Deriv OAuth</span>
         </button>
       </div>
 
       <div v-if="error" class="error">{{ error }}</div>
 
-      <div v-if="account" class="success">
-        Conectado! ID: <strong>{{ account.loginid }}</strong> — Saldo: <strong>{{ account.balance?.value }} {{ account.currency }}</strong>
-      </div>
-
-      <button class="close" @click="onClose">Fechar</button>
+      <button class="close" @click="onClose" :disabled="loading">Fechar</button>
     </div>
   </div>
 </template>
@@ -32,60 +22,57 @@
 export default {
   name: 'ConnectBrokerModal',
   props: { visible: { type: Boolean, default: false } },
-  emits: ['close', 'connected'],
+  emits: ['close'],
   data() {
     return {
-      token: localStorage.getItem('deriv_token') || '',
-      appId: Number(localStorage.getItem('deriv_app_id')) || 1089,
       loading: false,
       error: '',
-      account: null
-    }
+    };
   },
   methods: {
-    onClose() { this.$emit('close') },
-    async connect() {
-      if (this.loading) return
-      this.loading = true
-      this.error = ''
-      this.account = null
-      try {
-        const res = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/broker/deriv/connect', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
-          },
-          body: JSON.stringify({ token: this.token, appId: this.appId })
-        })
-        if (!res.ok) {
-          const err = await res.json().catch(() => ({}))
-          throw new Error(err?.message || 'Falha ao conectar ao backend')
-        }
-        const account = await res.json()
-        this.account = account
-        localStorage.setItem('deriv_token', this.token)
-        localStorage.setItem('deriv_app_id', String(this.appId))
-        // Salvar informação de conexão no localStorage para manter durante a sessão
-        if (account?.loginid) {
-          localStorage.setItem('deriv_connection', JSON.stringify({
-            loginid: account.loginid,
-            currency: account.currency,
-            balance: account.balance,
-            timestamp: Date.now()
-          }))
-        }
-        this.$emit('connected', account)
-      } catch (e) {
-        this.error = e?.message || 'Falha ao conectar à Deriv'
-      } finally {
-        this.loading = false
+    onClose() {
+      if (this.loading) return;
+      this.$emit('close');
+    },
+    generateState() {
+      if (window.crypto?.getRandomValues) {
+        const array = new Uint32Array(4);
+        window.crypto.getRandomValues(array);
+        return Array.from(array, value => value.toString(16)).join('');
       }
-    }
-  }
-}
+      return Math.random().toString(16).slice(2);
+    },
+    async startOAuth() {
+      if (this.loading) return;
+      this.loading = true;
+      this.error = '';
+      try {
+        const state = this.generateState();
+        localStorage.setItem('deriv_oauth_state', state);
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBase}/broker/deriv/oauth/url?state=${state}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+          },
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err?.message || 'Não foi possível iniciar o OAuth');
+        }
+        const data = await res.json();
+        if (!data?.url) {
+          throw new Error('URL de OAuth não recebida');
+        }
+        window.location.href = data.url;
+      } catch (error) {
+        this.error = error?.message || 'Falha ao iniciar OAuth. Tente novamente.';
+        this.loading = false;
+        localStorage.removeItem('deriv_oauth_state');
+      }
+    },
+  },
+};
 </script>
 
 <style scoped src="../assets/css/components/connectBrokerModal.css"></style>
-
-

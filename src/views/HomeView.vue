@@ -42,7 +42,7 @@
 
         <div class="note">Essa tela aparece apenas no primeiro acesso ou se sua conta Deriv estiver desconectada.</div>
       </div>
-      <ConnectBrokerModal :visible="showConnectModal" @close="closeConnectModal" @connected="onConnected" />
+      <ConnectBrokerModal :visible="showConnectModal" @close="closeConnectModal" />
     </main>
 
     <main class="content loading-content" v-else-if="loading">
@@ -80,25 +80,17 @@ export default {
 
     openConnectModal() { this.showConnectModal = true },
     closeConnectModal() { this.showConnectModal = false },
-    onConnected(info) {
-      this.connectedInfo = info
-      if (info && info.loginid) {
-        localStorage.setItem('deriv_connection', JSON.stringify({
-          loginid: info.loginid,
-          currency: info.currency,
-          balance: info.balance,
-          timestamp: Date.now()
-        }))
-      }
-    },
-    async checkConnection() {
+    async checkConnection(forceRefresh = false) {
       const saved = localStorage.getItem('deriv_connection')
-      if (saved) {
+      if (saved && !forceRefresh) {
         try {
           const parsed = JSON.parse(saved)
           const maxAge = 60 * 60 * 1000 
           if (Date.now() - parsed.timestamp < maxAge) {
             this.connectedInfo = parsed
+            if (parsed?.appId) {
+              localStorage.setItem('deriv_app_id', String(parsed.appId))
+            }
             this.loading = false
             return
           }
@@ -108,18 +100,28 @@ export default {
       }
       
       try {
+        const storedAppId = localStorage.getItem('deriv_app_id')
+        const payload = {
+          token: localStorage.getItem('deriv_token') || undefined,
+          appId: storedAppId ? Number(storedAppId) : undefined
+        }
         const res = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/broker/deriv/status', {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${localStorage.getItem('token') || ''}` }
+          headers: { 
+            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(payload)
         })
         if (res.ok) {
           const data = await res.json()
           if (data?.loginid) {
             this.connectedInfo = data
+            if (data?.appId) {
+              localStorage.setItem('deriv_app_id', String(data.appId))
+            }
             localStorage.setItem('deriv_connection', JSON.stringify({
-              loginid: data.loginid,
-              currency: data.currency,
-              balance: data.balance,
+              ...data,
               timestamp: Date.now()
             }))
           } else {
@@ -134,6 +136,9 @@ export default {
         if (saved) {
           try {
             this.connectedInfo = JSON.parse(saved)
+            if (this.connectedInfo?.appId) {
+              localStorage.setItem('deriv_app_id', String(this.connectedInfo.appId))
+            }
           } catch (e2) {
             this.connectedInfo = null
           }
@@ -146,12 +151,12 @@ export default {
     }
   },
   async mounted() {
-    await this.checkConnection()
+    await this.checkConnection(true)
   },
   watch: {
     '$route'(to) {
       if (to.path === '/dashboard') {
-        this.checkConnection()
+        this.checkConnection(true)
       }
     }
   }
