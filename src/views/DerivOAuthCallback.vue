@@ -73,9 +73,21 @@ export default {
 
       const data = await res.json();
       const chosenAccount = accounts.find(account => account.loginid === data.loginid) || accounts[0];
+      
+      // Armazenar token da conta escolhida como padrão
       if (chosenAccount?.token) {
         localStorage.setItem('deriv_token', chosenAccount.token);
       }
+      
+      // Armazenar todos os tokens mapeados por loginid para uso futuro
+      const tokensByLoginId = {};
+      accounts.forEach(account => {
+        if (account.loginid && account.token) {
+          tokensByLoginId[account.loginid] = account.token;
+        }
+      });
+      localStorage.setItem('deriv_tokens_by_loginid', JSON.stringify(tokensByLoginId));
+      
       if (data?.appId) {
         localStorage.setItem('deriv_app_id', String(data.appId));
       } else if (!localStorage.getItem('deriv_app_id')) {

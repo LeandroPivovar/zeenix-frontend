@@ -1,22 +1,10 @@
 <template>
     <div class="operation-chart-wrapper">
-    <div v-if="connectionError" class="connection-error-card animated-card" data-anim-index="0">
-      <p>{{ connectionError }}</p>
-      <div class="error-actions">
-        <button class="btn-action btn-buy" @click="initConnection" :disabled="isConnecting || oauthLoading">
-          {{ isConnecting ? 'Reconectando...' : 'Tentar novamente' }}
-        </button>
-        <button
-          v-if="showOAuthConnect"
-          class="btn-action btn-oauth"
-          @click="startOAuthFlow"
-          :disabled="oauthLoading || isConnecting"
-        >
-          {{ oauthLoading ? 'Abrindo Deriv...' : 'Conectar com Deriv' }}
-        </button>
-        <button class="btn-secondary" @click="goToDashboard" :disabled="oauthLoading || isConnecting">
-          Ir para o Dashboard
-        </button>
+    <div v-if="connectionError || isConnecting" class="connection-loading-card animated-card" data-anim-index="0">
+      <div class="loading-indicator-wrapper">
+        <div class="spinner-large"></div>
+        <p class="loading-message">{{ loadingMessage }}</p>
+        <p v-if="retryCount > 0" class="retry-info">Tentativa {{ retryCount }}...</p>
       </div>
     </div>
 
@@ -179,6 +167,8 @@ export default {
     props: {
         accountBalance: { type: String, required: true },
     accountCurrency: { type: String, default: 'USD' },
+        preferredCurrency: { type: String, default: 'USD' },
+        accountLoginid: { type: String, default: null },
         orderConfig: { type: Object, required: true },
         lastOrders: { 
             type: Array, 
@@ -208,6 +198,8 @@ export default {
       ],
       ticks: [],
       chartInitialized: false,
+      previousDataCount: 0,
+      isDestroying: false,
       latestTick: null,
       lastUpdate: null,
       chart: null,
@@ -229,16 +221,53 @@ export default {
       showAiCard: true,
       aiCardCycleInterval: null,
       audioContext: null,
+      retryCount: 0,
+      retryTimeout: null,
+      maxRetries: Infinity, // Tentar infinitamente
+      retryDelay: 3000, // 3 segundos inicial
     };
   },
   computed: {
+    loadingMessage() {
+      if (this.connectionError) {
+        return 'Reconectando automaticamente...';
+      }
+      if (this.isConnecting) {
+        return 'Conectando à Deriv...';
+      }
+      return 'Carregando...';
+    },
     pricePrecision() {
       if (this.symbol.startsWith('frx')) return 5;
       if ((this.accountCurrency || '').toUpperCase() === 'BTC') return 8;
       return 2;
     },
     displayCurrency() {
-      return (this.accountCurrency || this.connectionCurrency || 'USD').toUpperCase();
+      // Usar a moeda preferida do usuário (tradeCurrency) para as operações
+      // Esta é a mesma moeda exibida no dashboard
+      // Se for DEMO, usar USD (o backend prioriza USD demo quando é DEMO)
+      console.log('[OperationChart] displayCurrency - Calculando moeda a ser usada');
+      console.log('[OperationChart] Valores disponíveis:', {
+        preferredCurrency: this.preferredCurrency,
+        accountCurrency: this.accountCurrency,
+        connectionCurrency: this.connectionCurrency
+      });
+      
+      let currency = this.preferredCurrency || this.accountCurrency || this.connectionCurrency || 'USD';
+      const originalCurrency = currency;
+      
+      if (currency.toUpperCase() === 'DEMO') {
+        console.log('[OperationChart] Moeda preferida é DEMO, convertendo para USD');
+        currency = 'USD'; // DEMO não é uma moeda real, usar USD para requisições
+      }
+      
+      const finalCurrency = currency.toUpperCase();
+      console.log('[OperationChart] Moeda calculada:', {
+        original: originalCurrency,
+        final: finalCurrency
+      });
+      
+      return finalCurrency;
     },
     chartResolutionLabel() {
       if (!this.ticks.length) return '--';
@@ -257,98 +286,297 @@ export default {
     },
     methods: {
     initChart() {
-      if (this.chart || !this.$refs.chartContainer) return;
-
-      this.chart = createChart(this.$refs.chartContainer, {
-        localization: { locale: 'pt-BR' },
-        layout: {
-          background: { type: ColorType.Solid, color: '#0f172a' },
-          textColor: '#f8fafc',
-        },
-        rightPriceScale: {
-          borderVisible: false,
-        },
-        timeScale: {
-          borderVisible: false,
-          timeVisible: true,
-          secondsVisible: true,
-        },
-        grid: {
-          vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
-          horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
-        },
-        crosshair: {
-          mode: 1,
-        },
+      console.log('[OperationChart] initChart - Iniciando inicialização do gráfico');
+      console.log('[OperationChart] Estado antes de inicializar:', {
+        hasChart: !!this.chart,
+        hasChartContainer: !!this.$refs.chartContainer,
+        chartContainerElement: this.$refs.chartContainer
       });
+      
+      if (this.chart) {
+        console.warn('[OperationChart] Gráfico já existe, não inicializando novamente');
+        return;
+      }
+      
+      if (!this.$refs.chartContainer) {
+        console.error('[OperationChart] ERRO: chartContainer não está disponível no DOM');
+        return;
+      }
 
-      this.lineSeries = this.chart.addAreaSeries({
-        lineColor: '#4ade80',
-        topColor: 'rgba(74, 222, 128, 0.2)',
-        bottomColor: 'rgba(74, 222, 128, 0.02)',
-        lineWidth: 2,
-        priceFormat: {
-          type: 'price',
-          precision: this.pricePrecision,
-          minMove: Math.pow(10, -this.pricePrecision),
-        },
+      // Aguardar o próximo tick para garantir que o DOM está totalmente renderizado
+      this.$nextTick(() => {
+        const container = this.$refs.chartContainer;
+        if (!container) {
+          console.error('[OperationChart] ERRO: chartContainer não está disponível após nextTick');
+          return;
+        }
+
+        // Forçar recálculo das dimensões
+        const containerRect = container.getBoundingClientRect();
+        const containerHeight = containerRect.height || container.clientHeight || 400;
+        const containerWidth = containerRect.width || container.clientWidth || 800;
+        
+        console.log('[OperationChart] Criando gráfico no container...');
+        console.log('[OperationChart] Dimensões do container:', {
+          width: containerWidth,
+          height: containerHeight,
+          clientWidth: container.clientWidth,
+          clientHeight: container.clientHeight,
+          boundingRect: {
+            width: containerRect.width,
+            height: containerRect.height
+          }
+        });
+        
+        // Garantir que o container tem dimensões válidas
+        if (containerWidth <= 0 || containerHeight <= 0) {
+          console.warn('[OperationChart] Container tem dimensões inválidas, aguardando...');
+          setTimeout(() => this.initChart(), 100);
+          return;
+        }
+        
+        try {
+          this.chart = createChart(container, {
+            width: containerWidth,
+            height: containerHeight,
+            localization: { locale: 'pt-BR' },
+            layout: {
+              background: { type: ColorType.Solid, color: '#0f172a' },
+              textColor: '#f8fafc',
+            },
+            rightPriceScale: {
+              borderVisible: false,
+            },
+            timeScale: {
+              borderVisible: false,
+              timeVisible: true,
+              secondsVisible: true,
+            },
+            grid: {
+              vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
+              horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
+            },
+            crosshair: {
+              mode: 1,
+            },
+          });
+
+          this.lineSeries = this.chart.addAreaSeries({
+            lineColor: '#4ade80',
+            topColor: 'rgba(74, 222, 128, 0.2)',
+            bottomColor: 'rgba(74, 222, 128, 0.02)',
+            lineWidth: 2,
+            priceFormat: {
+              type: 'price',
+              precision: this.pricePrecision,
+              minMove: Math.pow(10, -this.pricePrecision),
+            },
+          });
+
+          console.log('[OperationChart] ✓ Gráfico e lineSeries criados com sucesso');
+          console.log('[OperationChart] Estado após inicialização:', {
+            hasChart: !!this.chart,
+            hasLineSeries: !!this.lineSeries,
+            ticksCount: this.ticks.length,
+            containerVisible: container.offsetParent !== null,
+            containerDimensions: {
+              width: containerWidth,
+              height: containerHeight,
+              offsetWidth: container.offsetWidth,
+              offsetHeight: container.offsetHeight
+            }
+          });
+          
+          // Se já temos ticks, atualizar o gráfico imediatamente
+          if (this.ticks.length > 0) {
+            console.log('[OperationChart] Já temos ticks, atualizando gráfico imediatamente...');
+            // Aguardar um pouco mais para garantir que o gráfico está totalmente inicializado
+            setTimeout(() => {
+              this.updateChartFromTicks();
+            }, 100);
+          }
+
+          this.chartInitialized = true;
+          window.addEventListener('resize', this.handleResize);
+          
+          // Aguardar um pouco antes de redimensionar para garantir que está renderizado
+          setTimeout(() => {
+            this.handleResize();
+            // Forçar uma atualização visual do gráfico
+            if (this.chart && this.lineSeries && this.ticks.length > 0) {
+              this.$nextTick(() => {
+                this.updateChartFromTicks();
+              });
+            }
+          }, 100);
+        } catch (error) {
+          console.error('[OperationChart] ERRO ao criar gráfico:', error);
+          console.error('[OperationChart] Stack trace:', error.stack);
+        }
       });
-
-      this.chartInitialized = true;
-      window.addEventListener('resize', this.handleResize);
-      this.handleResize();
     },
     handleResize() {
       if (!this.chart || !this.$refs.chartContainer) return;
-      const { clientWidth } = this.$refs.chartContainer;
-      this.chart.applyOptions({ width: clientWidth });
+      const container = this.$refs.chartContainer;
+      const containerRect = container.getBoundingClientRect();
+      const containerWidth = containerRect.width || container.clientWidth;
+      const containerHeight = containerRect.height || container.clientHeight;
+      
+      if (containerWidth > 0 && containerHeight > 0) {
+        this.chart.applyOptions({ 
+          width: containerWidth,
+          height: containerHeight
+        });
+        console.log('[OperationChart] Gráfico redimensionado:', {
+          width: containerWidth,
+          height: containerHeight
+        });
+      }
     },
     initConnection() {
+      console.log('[OperationChart] initConnection - Iniciando conexão WebSocket');
+      console.log('[OperationChart] Props recebidas:', {
+        accountLoginid: this.accountLoginid,
+        preferredCurrency: this.preferredCurrency,
+        accountCurrency: this.accountCurrency
+      });
+      
+      // Limpar retry anterior se existir
+      if (this.retryTimeout) {
+        clearTimeout(this.retryTimeout);
+        this.retryTimeout = null;
+      }
+      
       if (this.ws) {
+        console.log('[OperationChart] Fechando conexão WebSocket existente');
         this.teardownConnection();
+      }
+
+      // Limpar dados do gráfico para reinicializar
+      this.ticks = [];
+      this.latestTick = null;
+      this.isLoadingSymbol = true;
+      this.previousDataCount = 0; // Resetar contador ao reiniciar conexão
+      
+      // Garantir que o gráfico existe antes de limpar
+      if (this.chart && this.$refs.chartContainer) {
+        console.log('[OperationChart] Limpando dados do gráfico para reinicialização');
+        // Não destruir o gráfico, apenas limpar os dados
+        // O gráfico será atualizado quando novos dados chegarem
+      } else if (!this.chart && this.$refs.chartContainer) {
+        console.log('[OperationChart] Gráfico não existe, inicializando...');
+        this.initChart();
       }
 
       this.connectionError = '';
       this.isConnecting = true;
-      this.token = localStorage.getItem('deriv_token');
+      
+      // Determinar qual token usar baseado na moeda preferida e loginid
+      this.token = this.getTokenForAccount();
       this.appId = localStorage.getItem('deriv_app_id') || APP_ID;
 
+      console.log('[OperationChart] Token selecionado:', {
+        hasToken: !!this.token,
+        tokenLength: this.token ? this.token.length : 0,
+        tokenPreview: this.token ? `${this.token.substring(0, 10)}...` : 'null',
+        appId: this.appId
+      });
+
       if (!this.token) {
-        this.connectionError = 'Nenhum token Deriv encontrado. Conecte sua conta antes de operar.';
+        console.error('[OperationChart] ERRO: Nenhum token Deriv encontrado');
+        this.connectionError = 'Nenhum token Deriv encontrado. Aguardando reconexão...';
         this.isConnecting = false;
+        // Não fazer retry se não houver token - aguardar que o usuário reconecte via OAuth
+        // Mas ainda assim tentar novamente após um delay maior
+        this.scheduleRetry();
         return;
       }
 
       const endpoint = `wss://ws.derivws.com/websockets/v3?app_id=${this.appId}`;
+      console.log('[OperationChart] Conectando ao endpoint:', endpoint);
       this.ws = new WebSocket(endpoint);
 
       this.ws.onopen = () => {
-        this.send({ authorize: this.token });
+        console.log('[OperationChart] WebSocket aberto, enviando autorização');
+        console.log('[OperationChart] Autorizando com token para loginid:', this.accountLoginid);
+        // Pequeno delay para garantir que o WebSocket está totalmente pronto
+        setTimeout(() => {
+          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+            this.send({ authorize: this.token });
+          } else {
+            console.warn('[OperationChart] WebSocket não está mais aberto ao tentar autorizar');
+            this.connectionError = 'Erro ao autorizar conexão. Reconectando automaticamente...';
+            this.scheduleRetry();
+          }
+        }, 50);
       };
 
       this.ws.onmessage = (event) => {
         try {
           const msg = JSON.parse(event.data);
+          console.log('[OperationChart] 📥 Mensagem recebida da Deriv:', {
+            msg_type: msg.msg_type,
+            hasError: !!msg.error,
+            fullMessage: JSON.stringify(msg, null, 2)
+          });
           this.handleMessage(msg);
         } catch (error) {
-          console.error('Erro ao interpretar mensagem da Deriv', error);
+          console.error('[OperationChart] ERRO ao interpretar mensagem da Deriv:', error);
+          console.error('[OperationChart] Dados recebidos (raw):', event.data);
         }
       };
 
-      this.ws.onerror = () => {
-        this.connectionError = 'Erro na conexão com a Deriv. Verifique sua rede e tente novamente.';
+      this.ws.onerror = (error) => {
+        console.error('[OperationChart] ========== ERRO NO WEBSOCKET ==========');
+        console.error('[OperationChart] Erro:', error);
+        console.error('[OperationChart] Contexto:', {
+          accountLoginid: this.accountLoginid,
+          preferredCurrency: this.preferredCurrency,
+          tokenPreview: this.token ? `${this.token.substring(0, 10)}...` : 'null'
+        });
+        this.connectionError = 'Erro na conexão com a Deriv. Reconectando automaticamente...';
         this.isConnecting = false;
         this.isAuthorized = false;
+        this.scheduleRetry();
       };
 
-      this.ws.onclose = () => {
+      this.ws.onclose = (event) => {
+        console.log('[OperationChart] ========== WEBSOCKET FECHADO ==========');
+        console.log('[OperationChart] Detalhes do fechamento:', {
+          code: event.code,
+          reason: event.reason,
+          wasClean: event.wasClean,
+          isConnecting: this.isConnecting
+        });
         if (!this.isConnecting) {
-          this.connectionError = 'Conexão com a Deriv encerrada.';
+          console.warn('[OperationChart] Conexão encerrada inesperadamente');
+          this.connectionError = 'Conexão com a Deriv encerrada. Reconectando automaticamente...';
+          this.scheduleRetry();
         }
         this.isConnecting = false;
         this.isAuthorized = false;
         this.ws = null;
       };
+    },
+    scheduleRetry() {
+      // Limpar retry anterior se existir
+      if (this.retryTimeout) {
+        clearTimeout(this.retryTimeout);
+      }
+      
+      // Incrementar contador de tentativas
+      this.retryCount++;
+      
+      // Calcular delay com backoff exponencial (máximo 30 segundos)
+      const delay = Math.min(this.retryDelay * Math.pow(1.5, this.retryCount - 1), 30000);
+      
+      console.log(`[OperationChart] Agendando retry ${this.retryCount} em ${delay}ms`);
+      
+      this.retryTimeout = setTimeout(() => {
+        console.log(`[OperationChart] Executando retry ${this.retryCount}`);
+        this.retryTimeout = null;
+        this.initConnection();
+      }, delay);
     },
     teardownConnection() {
       if (this.ws) {
@@ -369,9 +597,21 @@ export default {
 
       switch (msg.msg_type) {
         case 'authorize':
+          console.log('[OperationChart] ✓ Autorização recebida da Deriv');
+          console.log('[OperationChart] Dados de autorização:', {
+            loginid: msg.authorize?.loginid,
+            currency: msg.authorize?.currency,
+            email: msg.authorize?.email,
+            fullname: msg.authorize?.fullname
+          });
           this.isAuthorized = true;
           this.isConnecting = false;
+          this.connectionError = ''; // Limpar erro ao conectar com sucesso
+          this.retryCount = 0; // Resetar contador de tentativas
           this.connectionCurrency = msg.authorize?.currency?.toUpperCase() || this.accountCurrency;
+          console.log('[OperationChart] Moeda da conexão:', this.connectionCurrency);
+          console.log('[OperationChart] Moeda preferida configurada:', this.preferredCurrency);
+          console.log('[OperationChart] Moeda da conta:', this.accountCurrency);
           this.subscribeToSymbol();
           break;
         case 'history':
@@ -394,17 +634,40 @@ export default {
       }
     },
     handleDerivError(error) {
+      console.error('[OperationChart] ========== ERRO DA DERIV ==========');
+      console.error('[OperationChart] Erro completo:', JSON.stringify(error, null, 2));
+      console.error('[OperationChart] Contexto:', {
+        isTrading: this.isTrading,
+        isAuthorized: this.isAuthorized,
+        accountLoginid: this.accountLoginid,
+        preferredCurrency: this.preferredCurrency,
+        tokenPreview: this.token ? `${this.token.substring(0, 10)}...` : 'null'
+      });
+      
       const message = error?.message || 'Erro desconhecido na Deriv';
       if (this.isTrading) {
+        console.error('[OperationChart] Erro durante operação de compra/venda');
         this.tradeError = message;
         this.tradeMessage = '';
         this.isTrading = false;
       } else {
-        this.connectionError = message;
+        console.error('[OperationChart] Erro de conexão');
+        this.connectionError = `${message}. Reconectando automaticamente...`;
+        this.isAuthorized = false;
+        this.scheduleRetry();
       }
     },
     subscribeToSymbol() {
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+      console.log('[OperationChart] subscribeToSymbol - Inscrevendo-se no símbolo');
+      console.log('[OperationChart] Estado do WebSocket:', {
+        exists: !!this.ws,
+        readyState: this.ws ? this.ws.readyState : 'null'
+      });
+      
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        console.warn('[OperationChart] WebSocket não está pronto, não é possível inscrever');
+        return;
+      }
 
       this.isLoadingSymbol = true;
       this.ticks = [];
@@ -413,6 +676,7 @@ export default {
       this.tradeMessage = '';
 
       if (this.tickSubscriptionId) {
+        console.log('[OperationChart] Cancelando inscrição anterior:', this.tickSubscriptionId);
         this.send({ forget: this.tickSubscriptionId });
         this.tickSubscriptionId = null;
       }
@@ -425,17 +689,34 @@ export default {
         subscribe: 1,
         style: 'ticks',
       };
+      
+      console.log('[OperationChart] Inscrevendo-se no símbolo:', this.symbol);
+      console.log('[OperationChart] Payload de inscrição:', JSON.stringify(payload, null, 2));
       this.send(payload);
     },
     processHistory(msg) {
+      console.log('[OperationChart] processHistory - Processando histórico de ticks');
       const history = msg.history;
-      if (!history || !history.prices) return;
+      if (!history || !history.prices) {
+        console.warn('[OperationChart] Histórico inválido ou sem preços:', msg);
+        return;
+      }
+      
       const prices = history.prices.map(price => Number(price));
       const times = history.times?.map(time => Number(time)) || [];
       this.ticks = prices.map((value, index) => ({ value, epoch: times[index] || index }));
+      
+      console.log('[OperationChart] Histórico processado:', {
+        ticksCount: this.ticks.length,
+        firstTick: this.ticks[0],
+        lastTick: this.ticks[this.ticks.length - 1]
+      });
+      
       if (msg.subscription?.id) {
         this.tickSubscriptionId = msg.subscription.id;
+        console.log('[OperationChart] Subscription ID do histórico:', this.tickSubscriptionId);
       }
+      
       this.isLoadingSymbol = false;
       this.updateChartFromTicks();
     },
@@ -452,32 +733,180 @@ export default {
     },
     processTick(msg) {
       const tick = msg.tick;
-      if (!tick) return;
+      if (!tick) {
+        console.warn('[OperationChart] processTick - Tick inválido:', msg);
+        return;
+      }
+      
+      console.log('[OperationChart] processTick - Processando novo tick:', {
+        quote: tick.quote,
+        epoch: tick.epoch,
+        symbol: tick.symbol,
+        ticksCount: this.ticks.length
+      });
+      
       if (tick.id && !this.tickSubscriptionId) {
         this.tickSubscriptionId = tick.id;
+        console.log('[OperationChart] Subscription ID definido:', this.tickSubscriptionId);
       }
+      
       const value = Number(tick.quote);
+      if (isNaN(value)) {
+        console.error('[OperationChart] ERRO: Valor do tick não é um número:', tick.quote);
+        return;
+      }
+      
       this.latestTick = { value, epoch: tick.epoch };
       this.lastUpdate = Date.now();
       this.ticks.push({ value, epoch: tick.epoch });
+      
       if (this.ticks.length > 1000) {
         this.ticks.shift();
       }
+      
+      console.log('[OperationChart] Tick adicionado. Total de ticks:', this.ticks.length);
       this.updateChartFromTicks();
     },
     updateChartFromTicks() {
+      // Não atualizar se o componente está sendo destruído
+      if (this.isDestroying) {
+        console.warn('[OperationChart] Componente está sendo destruído, ignorando atualização');
+        return;
+      }
+      
+      console.log('[OperationChart] updateChartFromTicks - Iniciando atualização do gráfico');
+      console.log('[OperationChart] Estado atual:', {
+        ticksCount: this.ticks.length,
+        hasChart: !!this.chart,
+        hasLineSeries: !!this.lineSeries,
+        hasChartContainer: !!this.$refs.chartContainer,
+        chartInitialized: this.chartInitialized,
+        isAuthorized: this.isAuthorized,
+        connectionError: this.connectionError,
+        isConnecting: this.isConnecting,
+        isDestroying: this.isDestroying
+      });
+      
       if (!this.ticks.length) {
+        console.warn('[OperationChart] Nenhum tick disponível para plotar');
         this.chartInitialized = false;
         return;
       }
+      
+      // Garantir que o chartContainer está disponível
+      if (!this.$refs.chartContainer) {
+        console.warn('[OperationChart] chartContainer não está disponível no DOM');
+        // Tentar novamente no próximo tick
+        return;
+      }
+      
       if (!this.chart) {
+        console.log('[OperationChart] Gráfico não existe, inicializando...');
         this.initChart();
+        // Aguardar um pouco para garantir que o gráfico foi criado
+        this.$nextTick(() => {
+          if (!this.lineSeries) {
+            console.error('[OperationChart] ERRO: lineSeries não está definido após initChart');
+            return;
+          }
+          // Continuar com a atualização após o gráfico ser criado
+          this.updateChartFromTicks();
+        });
+        return;
+      }
+      
+      if (!this.lineSeries) {
+        console.error('[OperationChart] ERRO: lineSeries não está definido após initChart');
+        return;
       }
 
-      const data = this.ticks.map(tick => ({ time: tick.epoch, value: tick.value }));
-      this.lineSeries.setData(data);
-      this.chart.timeScale().fitContent();
-      this.chartInitialized = true;
+      // Lightweight Charts espera time como Unix timestamp (segundos desde 1970)
+      // A Deriv retorna epoch em segundos, então podemos usar diretamente
+      // Mas precisamos garantir que seja um número inteiro (não float)
+      const data = this.ticks.map(tick => {
+        // Garantir que epoch seja um número válido
+        const epoch = Math.floor(Number(tick.epoch));
+        const value = Number(tick.value);
+        
+        if (isNaN(epoch) || isNaN(value) || epoch <= 0) {
+          console.warn('[OperationChart] Tick inválido ignorado:', tick);
+          return null;
+        }
+        
+        return { time: epoch, value: value };
+      }).filter(item => item !== null);
+      
+      // Ordenar por tempo para garantir ordem correta
+      data.sort((a, b) => a.time - b.time);
+      
+      console.log('[OperationChart] Atualizando gráfico com', data.length, 'pontos de dados');
+      console.log('[OperationChart] Primeiros 3 pontos (detalhado):', JSON.stringify(data.slice(0, 3), null, 2));
+      console.log('[OperationChart] Últimos 3 pontos (detalhado):', JSON.stringify(data.slice(-3), null, 2));
+      
+      if (data.length === 0) {
+        console.warn('[OperationChart] Nenhum dado válido para plotar');
+        return;
+      }
+      
+      try {
+        // Verificar se é um novo tick incremental (apenas 1 ponto a mais que o anterior)
+        const previousDataCount = this.previousDataCount || 0;
+        const isIncrementalUpdate = data.length === previousDataCount + 1 && previousDataCount > 0;
+        
+        if (isIncrementalUpdate) {
+          // Apenas adicionar o novo ponto usando update
+          const lastPoint = data[data.length - 1];
+          console.log('[OperationChart] Atualizando gráfico com novo ponto incremental:', lastPoint);
+          this.lineSeries.update(lastPoint);
+          // Scroll para o tempo real
+          this.chart.timeScale().scrollToRealTime();
+        } else {
+          // Primeira vez ou muitos dados novos, usar setData completo
+          console.log('[OperationChart] Chamando lineSeries.setData com', data.length, 'pontos...');
+          this.lineSeries.setData(data);
+          console.log('[OperationChart] setData chamado com sucesso');
+          
+          // Aguardar um pouco antes de ajustar a escala para garantir que os dados foram renderizados
+          setTimeout(() => {
+            console.log('[OperationChart] Ajustando escala de tempo...');
+            try {
+              if (this.chart && this.chart.timeScale) {
+                this.chart.timeScale().fitContent();
+                console.log('[OperationChart] Escala ajustada');
+                
+                // Forçar uma atualização visual do gráfico
+                setTimeout(() => {
+                  try {
+                    this.chart.timeScale().scrollToPosition(-1, false);
+                    // Forçar redraw do gráfico
+                    this.handleResize();
+                  } catch (scrollError) {
+                    console.warn('[OperationChart] Erro ao fazer scroll:', scrollError);
+                  }
+                }, 50);
+              }
+            } catch (scaleError) {
+              console.warn('[OperationChart] Erro ao ajustar escala:', scaleError);
+            }
+          }, 100);
+        }
+        
+        // Armazenar contagem de dados para próxima verificação
+        this.previousDataCount = data.length;
+        
+        this.chartInitialized = true;
+        console.log('[OperationChart] ✓ Gráfico atualizado com sucesso');
+      } catch (error) {
+        console.error('[OperationChart] ERRO ao atualizar gráfico:', error);
+        console.error('[OperationChart] Stack trace:', error.stack);
+        console.error('[OperationChart] Dados que causaram o erro:', {
+          dataLength: data.length,
+          firstItem: data[0],
+          lastItem: data[data.length - 1],
+          chartInitialized: this.chartInitialized,
+          ticksLength: this.ticks.length
+        });
+      }
     },
     handleSymbolChange() {
       this.subscribeToSymbol();
@@ -493,12 +922,68 @@ export default {
       if (this.isTrading) return;
       this.localOrderConfig.type = type;
     },
+    getTokenForAccount() {
+      console.log('[OperationChart] getTokenForAccount - Buscando token para conta');
+      console.log('[OperationChart] Parâmetros:', {
+        accountLoginid: this.accountLoginid,
+        preferredCurrency: this.preferredCurrency,
+        accountCurrency: this.accountCurrency
+      });
+      
+      // Se temos um loginid específico, tentar buscar o token correspondente
+      if (this.accountLoginid) {
+        try {
+          const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+          console.log('[OperationChart] Tokens armazenados (raw):', tokensByLoginIdStr);
+          const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+          console.log('[OperationChart] Tokens parseados:', tokensByLoginId);
+          console.log('[OperationChart] Loginids disponíveis:', Object.keys(tokensByLoginId));
+          
+          const specificToken = tokensByLoginId[this.accountLoginid];
+          if (specificToken) {
+            console.log('[OperationChart] ✓ Token específico encontrado para loginid:', this.accountLoginid);
+            console.log('[OperationChart] Token (preview):', `${specificToken.substring(0, 10)}...`);
+            return specificToken;
+          } else {
+            console.warn('[OperationChart] ⚠ Token específico NÃO encontrado para loginid:', this.accountLoginid);
+            console.warn('[OperationChart] Loginids disponíveis:', Object.keys(tokensByLoginId));
+          }
+        } catch (error) {
+          console.error('[OperationChart] ERRO ao buscar token específico:', error);
+        }
+      } else {
+        console.log('[OperationChart] Nenhum accountLoginid fornecido, usando token padrão');
+      }
+      
+      // Fallback: usar o token padrão
+      const defaultToken = localStorage.getItem('deriv_token');
+      console.log('[OperationChart] Usando token padrão:', {
+        hasToken: !!defaultToken,
+        tokenPreview: defaultToken ? `${defaultToken.substring(0, 10)}...` : 'null'
+      });
+      return defaultToken;
+    },
     executeTrade(action) {
+      console.log('[OperationChart] ========== EXECUTAR OPERAÇÃO ==========');
+      console.log('[OperationChart] Action:', action);
+      console.log('[OperationChart] Estado atual:', {
+        isAuthorized: this.isAuthorized,
+        isTrading: this.isTrading,
+        accountLoginid: this.accountLoginid,
+        preferredCurrency: this.preferredCurrency,
+        accountCurrency: this.accountCurrency,
+        connectionCurrency: this.connectionCurrency
+      });
+      
       if (!this.isAuthorized) {
+        console.error('[OperationChart] ERRO: Não autorizado');
         this.tradeError = 'Conecte-se à Deriv antes de operar.';
         return;
       }
-      if (this.isTrading) return;
+      if (this.isTrading) {
+        console.warn('[OperationChart] Operação já em andamento, ignorando');
+        return;
+      }
 
       const tradeType = action === 'EXECUTE' ? (this.localOrderConfig.type === 'CALL' ? 'BUY' : 'SELL') : action;
       this.pendingTradeType = tradeType === 'BUY' ? 'CALL' : 'PUT';
@@ -508,43 +993,115 @@ export default {
 
       const contractType = tradeType === 'BUY' ? 'CALL' : 'PUT';
       const duration = Math.max(1, Number(this.localOrderConfig.duration));
+      const displayCurrency = this.displayCurrency;
+      
+      console.log('[OperationChart] Configuração da ordem:', {
+        contractType,
+        tradeType,
+        duration,
+        durationUnit: this.localOrderConfig.durationUnit,
+        amount: Number(this.localOrderConfig.value),
+        symbol: this.symbol,
+        currency: displayCurrency
+      });
+      
+      console.log('[OperationChart] 🔑 INFORMAÇÕES DE CONTA:');
+      console.log('[OperationChart] - Moeda preferida do usuário:', this.preferredCurrency);
+      console.log('[OperationChart] - Moeda da conta:', this.accountCurrency);
+      console.log('[OperationChart] - Moeda da conexão:', this.connectionCurrency);
+      console.log('[OperationChart] - Moeda que será usada (displayCurrency):', displayCurrency);
+      console.log('[OperationChart] - LoginID da conta:', this.accountLoginid);
+      console.log('[OperationChart] - Token usado (preview):', this.token ? `${this.token.substring(0, 10)}...` : 'null');
+      
       const payload = {
         proposal: 1,
         amount: Number(this.localOrderConfig.value),
         basis: 'stake',
         contract_type: contractType,
-        currency: this.displayCurrency,
+        currency: displayCurrency,
         duration,
         duration_unit: this.localOrderConfig.durationUnit,
         symbol: this.symbol,
       };
+      
+      console.log('[OperationChart] Payload da requisição proposal:', JSON.stringify(payload, null, 2));
+      
       this.currentProposal = {
         payload,
       };
+      console.log('[OperationChart] Enviando requisição proposal...');
       this.send(payload);
     },
     processProposal(msg) {
+      console.log('[OperationChart] ========== PROPOSTA RECEBIDA ==========');
+      console.log('[OperationChart] Mensagem completa:', JSON.stringify(msg, null, 2));
+      
       const proposal = msg.proposal;
       if (!proposal) {
+        console.error('[OperationChart] ERRO: Proposta inválida');
         this.tradeError = 'Proposta inválida retornada pela Deriv.';
         this.isTrading = false;
         return;
       }
+      
+      console.log('[OperationChart] Dados da proposta:', {
+        id: proposal.id,
+        askPrice: proposal.ask_price,
+        payout: proposal.payout,
+        spot: proposal.spot,
+        dateStart: proposal.date_start
+      });
+      
       this.currentProposal.id = proposal.id;
       this.currentProposal.askPrice = Number(proposal.ask_price);
-      this.send({
+      
+      const buyPayload = {
         buy: proposal.id,
         price: Number(proposal.ask_price),
-      });
+      };
+      
+      console.log('[OperationChart] 🔑 INFORMAÇÕES ANTES DE COMPRAR:');
+      console.log('[OperationChart] - Moeda preferida do usuário:', this.preferredCurrency);
+      console.log('[OperationChart] - Moeda da conta:', this.accountCurrency);
+      console.log('[OperationChart] - Moeda da conexão:', this.connectionCurrency);
+      console.log('[OperationChart] - LoginID da conta:', this.accountLoginid);
+      console.log('[OperationChart] - Token usado (preview):', this.token ? `${this.token.substring(0, 10)}...` : 'null');
+      console.log('[OperationChart] Payload da requisição buy:', JSON.stringify(buyPayload, null, 2));
+      console.log('[OperationChart] Enviando requisição buy...');
+      
+      this.send(buyPayload);
     },
     processBuy(msg) {
+      console.log('[OperationChart] ========== COMPRA CONFIRMADA ==========');
+      console.log('[OperationChart] Mensagem completa:', JSON.stringify(msg, null, 2));
+      
       const buy = msg.buy;
       if (!buy) {
+        console.error('[OperationChart] ERRO: Compra não confirmada');
         this.tradeError = 'A Deriv não confirmou a compra.';
         this.isTrading = false;
         return;
       }
 
+      console.log('[OperationChart] ✓ Compra executada com sucesso!');
+      console.log('[OperationChart] Dados da compra:', {
+        contractId: buy.contract_id,
+        buyPrice: buy.buy_price,
+        balanceAfter: buy.balance_after,
+        purchaseTime: buy.purchase_time,
+        longcode: buy.longcode
+      });
+      
+      console.log('[OperationChart] 🔑 INFORMAÇÕES DA CONTA USADA:');
+      console.log('[OperationChart] - Moeda preferida do usuário:', this.preferredCurrency);
+      console.log('[OperationChart] - Moeda da conta:', this.accountCurrency);
+      console.log('[OperationChart] - Moeda da conexão:', this.connectionCurrency);
+      console.log('[OperationChart] - Moeda usada na operação:', this.displayCurrency);
+      console.log('[OperationChart] - LoginID da conta:', this.accountLoginid);
+      console.log('[OperationChart] - Token usado (preview):', this.token ? `${this.token.substring(0, 10)}...` : 'null');
+      console.log('[OperationChart] - Saldo após compra:', buy.balance_after);
+      console.log('[OperationChart] - Preço da compra:', buy.buy_price);
+      
       this.tradeMessage = 'Operação executada com sucesso.';
       this.tradeError = '';
       this.isTrading = false;
@@ -558,16 +1115,31 @@ export default {
         direction: this.pendingTradeType,
         status: 'EXECUTED',
       };
+      
+      console.log('[OperationChart] Emitindo evento trade-result:', resultPayload);
       this.$emit('trade-result', resultPayload);
       this.pendingTradeType = null;
+      console.log('[OperationChart] ========== OPERAÇÃO FINALIZADA ==========');
     },
     send(payload) {
+      console.log('[OperationChart] 📤 Enviando mensagem para Deriv:', JSON.stringify(payload, null, 2));
+      console.log('[OperationChart] Estado do WebSocket:', {
+        exists: !!this.ws,
+        readyState: this.ws ? this.ws.readyState : 'null',
+        readyStateText: this.ws ? (this.ws.readyState === WebSocket.OPEN ? 'OPEN' : this.ws.readyState === WebSocket.CONNECTING ? 'CONNECTING' : this.ws.readyState === WebSocket.CLOSING ? 'CLOSING' : 'CLOSED') : 'null'
+      });
+      
       if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        console.error('[OperationChart] ERRO: WebSocket não está pronto');
         this.connectionError = 'Conexão com a Deriv não está pronta.';
         this.isTrading = false;
         return;
       }
-      this.ws.send(JSON.stringify(payload));
+      
+      const payloadStr = JSON.stringify(payload);
+      console.log('[OperationChart] Enviando payload (string):', payloadStr);
+      this.ws.send(payloadStr);
+      console.log('[OperationChart] ✓ Mensagem enviada com sucesso');
     },
     generateState() {
       if (window.crypto?.getRandomValues) {
@@ -696,22 +1268,119 @@ export default {
             });
         }
     },
+    // Reiniciar conexão quando o loginid ou moeda preferida mudarem
+    // para garantir que estamos usando o token correto
+    accountLoginid(newVal, oldVal) {
+      console.log('[OperationChart] ⚠ accountLoginid mudou:', {
+        antigo: oldVal,
+        novo: newVal
+      });
+      // Aguardar um pouco para evitar race condition com abertura do WebSocket
+      this.$nextTick(() => {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          console.log('[OperationChart] Reiniciando conexão devido à mudança de loginid');
+          this.teardownConnection();
+          // Pequeno delay para garantir que a conexão foi fechada
+          setTimeout(() => {
+            this.initConnection();
+          }, 100);
+        } else if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+          console.log('[OperationChart] WebSocket ainda está conectando, aguardando...');
+          // Aguardar que a conexão abra antes de reiniciar
+          const checkConnection = () => {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+              console.log('[OperationChart] WebSocket aberto, reiniciando conexão devido à mudança de loginid');
+              this.teardownConnection();
+              setTimeout(() => {
+                this.initConnection();
+              }, 100);
+            } else if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+              setTimeout(checkConnection, 100);
+            }
+          };
+          setTimeout(checkConnection, 100);
+        }
+      });
+    },
+    preferredCurrency(newVal, oldVal) {
+      console.log('[OperationChart] ⚠ preferredCurrency mudou:', {
+        antigo: oldVal,
+        novo: newVal
+      });
+      // Aguardar um pouco para evitar race condition com abertura do WebSocket
+      this.$nextTick(() => {
+        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          console.log('[OperationChart] Reiniciando conexão devido à mudança de moeda preferida');
+          this.teardownConnection();
+          // Pequeno delay para garantir que a conexão foi fechada
+          setTimeout(() => {
+            this.initConnection();
+          }, 100);
+        } else if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+          console.log('[OperationChart] WebSocket ainda está conectando, aguardando...');
+          // Aguardar que a conexão abra antes de reiniciar
+          const checkConnection = () => {
+            if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+              console.log('[OperationChart] WebSocket aberto, reiniciando conexão devido à mudança de moeda preferida');
+              this.teardownConnection();
+              setTimeout(() => {
+                this.initConnection();
+              }, 100);
+            } else if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+              setTimeout(checkConnection, 100);
+            }
+          };
+          setTimeout(checkConnection, 100);
+        }
+      });
+    },
     },
     mounted() {
-        if (this.orderConfig && this.orderConfig.value !== undefined) {
-      this.localOrderConfig.value = Number(this.orderConfig.value);
-    }
-    this.initChart();
-    this.initConnection();
-    this.startExpirationTimer();
-    this.startAiCardCycle();
-  },
+      console.log('[OperationChart] ========== COMPONENTE MONTADO ==========');
+      console.log('[OperationChart] Props recebidas no mount:', {
+        accountBalance: this.accountBalance,
+        accountCurrency: this.accountCurrency,
+        preferredCurrency: this.preferredCurrency,
+        accountLoginid: this.accountLoginid,
+        orderConfig: this.orderConfig
+      });
+      
+      if (this.orderConfig && this.orderConfig.value !== undefined) {
+        this.localOrderConfig.value = Number(this.orderConfig.value);
+        console.log('[OperationChart] Valor da ordem configurado:', this.localOrderConfig.value);
+      }
+      
+      console.log('[OperationChart] Inicializando gráfico...');
+      this.initChart();
+      
+      console.log('[OperationChart] Inicializando conexão WebSocket...');
+      this.initConnection();
+      
+      this.startExpirationTimer();
+      this.startAiCardCycle();
+      console.log('[OperationChart] Componente totalmente inicializado');
+    },
   beforeUnmount() {
+    console.log('[OperationChart] ========== COMPONENTE SENDO DESMONTADO ==========');
+    this.isDestroying = true;
+    
+    // Limpar retry se existir
+    if (this.retryTimeout) {
+      clearTimeout(this.retryTimeout);
+      this.retryTimeout = null;
+    }
+    
     this.teardownConnection();
     if (this.chart) {
       window.removeEventListener('resize', this.handleResize);
-      this.chart.remove();
+      try {
+        this.chart.remove();
+        console.log('[OperationChart] Gráfico removido com sucesso');
+      } catch (error) {
+        console.warn('[OperationChart] Erro ao remover gráfico:', error);
+      }
       this.chart = null;
+      this.lineSeries = null;
     }
     if (this.expirationInterval) {
       clearInterval(this.expirationInterval);
@@ -731,56 +1400,110 @@ export default {
   width: 100%;
 }
 
-.connection-error-card {
+.connection-loading-card {
   width: 100%;
-  padding: 32px;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 64px 32px;
   background: rgba(15, 23, 42, 0.8);
   border-radius: 16px;
   text-align: center;
   color: #fff;
 }
 
-.error-actions {
-  margin-top: 16px;
+.loading-indicator-wrapper {
   display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  gap: 24px;
+}
+
+.spinner-large {
+  width: 64px;
+  height: 64px;
+  border: 6px solid rgba(255, 255, 255, 0.1);
+  border-top-color: #06d6a0;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+.loading-message {
+  font-size: 18px;
+  font-weight: 500;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.retry-info {
+  font-size: 14px;
+  color: #94a3b8;
+  margin: 0;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 768px) {
-  .connection-error-card {
-    padding: 24px 16px;
+  .connection-loading-card {
+    padding: 48px 24px;
+    min-height: 300px;
   }
 
-  .error-actions {
-    flex-direction: column;
-    gap: 10px;
+  .spinner-large {
+    width: 48px;
+    height: 48px;
+    border-width: 5px;
   }
 
-  .error-actions .btn-action,
-  .error-actions .btn-secondary {
-    width: 100%;
+  .loading-message {
+    font-size: 16px;
   }
 }
 
 @media (max-width: 480px) {
-  .connection-error-card {
-    padding: 20px 12px;
-    font-size: 0.9rem;
+  .connection-loading-card {
+    padding: 32px 16px;
+    min-height: 250px;
   }
 
-  .error-actions .btn-action,
-  .error-actions .btn-secondary {
-    padding: 12px;
-    font-size: 0.9rem;
+  .spinner-large {
+    width: 40px;
+    height: 40px;
+    border-width: 4px;
+  }
+
+  .loading-message {
+    font-size: 14px;
+  }
+
+  .retry-info {
+    font-size: 12px;
   }
 }
 
 @media (max-width: 360px) {
-  .connection-error-card {
-    padding: 16px 10px;
-    font-size: 0.85rem;
+  .connection-loading-card {
+    padding: 24px 12px;
+    min-height: 200px;
+  }
+
+  .spinner-large {
+    width: 36px;
+    height: 36px;
+    border-width: 3px;
+  }
+
+  .loading-message {
+    font-size: 13px;
+  }
+
+  .retry-info {
+    font-size: 11px;
   }
 }
 
@@ -833,21 +1556,28 @@ export default {
 }
 
 .chart-box {
-  position: relative;
-  width: 100%;
-  height: 420px;
-  background: rgba(15, 23, 42, 0.65);
+  position: relative !important;
+  width: 100% !important;
+  height: 420px !important;
+  min-height: 420px !important;
+  background: rgba(15, 23, 42, 0.65) !important;
   border-radius: 16px;
   padding: 12px;
   box-sizing: border-box;
+  overflow: hidden;
+  display: block !important;
 }
 
 .line-chart-container {
-  width: 100%;
-  height: 100%;
-  min-height: 0;
-  position: relative;
+  width: 100% !important;
+  height: 100% !important;
+  min-height: 396px !important;
+  position: relative !important;
   box-sizing: border-box;
+  z-index: 1;
+  background: transparent !important;
+  display: block !important;
+  flex: none !important;
 }
 
 .chart-placeholder {
@@ -859,6 +1589,8 @@ export default {
   color: rgba(255, 255, 255, 0.7);
   background: rgba(15, 23, 42, 0.6);
   border-radius: 16px;
+  z-index: 0;
+  pointer-events: none;
 }
 
 .chart-footer {
