@@ -484,11 +484,14 @@ export default {
 
       if (!this.token) {
         console.error('[OperationChart] ERRO: Nenhum token Deriv encontrado');
-        this.connectionError = 'Nenhum token Deriv encontrado. Aguardando reconexão...';
+        console.log('[OperationChart] Limpando cache de conexão e redirecionando para a tela de conexão...');
         this.isConnecting = false;
-        // Não fazer retry se não houver token - aguardar que o usuário reconecte via OAuth
-        // Mas ainda assim tentar novamente após um delay maior
-        this.scheduleRetry();
+        // Limpar cache de conexão para forçar a tela de conexão
+        localStorage.removeItem('deriv_connection');
+        localStorage.removeItem('deriv_token');
+        localStorage.removeItem('deriv_tokens_by_loginid');
+        // Redirecionar para o dashboard (home) que mostrará a tela de conexão
+        this.$router.push('/dashboard');
         return;
       }
 

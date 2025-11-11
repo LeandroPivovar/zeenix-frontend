@@ -94,8 +94,22 @@ export default {
     openConnectModal() { this.showConnectModal = true },
     closeConnectModal() { this.showConnectModal = false },
     async checkConnection(forceRefresh = false) {
+      // Verificar se há token válido antes de usar cache
+      let hasToken = !!localStorage.getItem('deriv_token')
+      if (!hasToken) {
+        try {
+          const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid')
+          if (tokensByLoginId) {
+            const parsed = JSON.parse(tokensByLoginId)
+            hasToken = Object.keys(parsed).length > 0
+          }
+        } catch (e) {
+          // Ignorar erro de parsing
+        }
+      }
+      
       const saved = localStorage.getItem('deriv_connection')
-      if (saved && !forceRefresh) {
+      if (saved && !forceRefresh && hasToken) {
         try {
           const parsed = JSON.parse(saved)
           const maxAge = 60 * 60 * 1000 
@@ -110,6 +124,14 @@ export default {
         } catch (e) {
           // Se houver erro ao parsear, continua para buscar do backend
         }
+      }
+      
+      // Se não há token, limpar cache e mostrar tela de conexão
+      if (!hasToken) {
+        localStorage.removeItem('deriv_connection')
+        this.connectedInfo = null
+        this.loading = false
+        return
       }
       
       try {
