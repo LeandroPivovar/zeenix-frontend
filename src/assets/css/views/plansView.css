@@ -1,12 +1,12 @@
 .layout {
-	display: flex; 
-	flex-direction: column;
-	min-height: 100vh; 
-	background: #0d0d0c; 
-	color: #e5e7eb; 
-	max-width: calc( 100% - 240px );
-	margin-left: 240px;
-	font-family: Inter, system-ui, sans-serif;
+    display: flex; 
+    flex-direction: column;
+    min-height: 100vh; 
+    background: #0d0d0c; 
+    color: #e5e7eb; 
+    max-width: calc( 100% - 240px );
+    margin-left: 240px;
+    font-family: Inter, system-ui, sans-serif;
 }
 
 .plans-content { flex: 1; padding: 24px; margin: 0 auto; width: 100%; }
@@ -71,11 +71,11 @@
 .comparison-table thead { background: #1a1f1d; }
 .comparison-table th { padding: 16px; font-weight: 700; font-size: 14px; color: #e5e7eb; border-bottom: 1px solid rgba(255,255,255,0.1); }
 .comparison-table td { 
-	padding: 16px; 
-	font-size: 14px; 
-	color: #9ca3af; 
-	border-bottom: 1px solid rgba(255,255,255,0.05); 
-	text-align: center; /* Centralizado para melhor visualização no scroll mobile */
+    padding: 16px; 
+    font-size: 14px; 
+    color: #9ca3af; 
+    border-bottom: 1px solid rgba(255,255,255,0.05); 
+    text-align: center; 
 }
 .comparison-table tbody tr:last-child td { border-bottom: none; }
 .comparison-table tbody tr:hover { background: rgba(255,255,255,0.02); }
@@ -88,16 +88,16 @@
 .plan-name-table{ text-align: left; }
 
 .comparison-table th.th-green {
-	color: #10B981 !important;
+    color: #10B981 !important;
 }
 
 .comparison-table td.text-green { 
-	color: #10B981 !important; 
-	font-weight: 700;
+    color: #10B981 !important; 
+    font-weight: 700;
 }
 
 .comparison-table td.text-white { 
-	color: #E5E7EB !important; 
+    color: #E5E7EB !important; 
 }
 
 /* 4. Ícones Copy Trading */
@@ -107,19 +107,51 @@
 
 
 @media (max-width: 1200px) {
-	.plans-grid { grid-template-columns: repeat(2, 1fr); }
+    .plans-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
 @media (max-width: 768px) {
-	.layout { 
-		margin-left: 0; 
-		max-width: 100%; 
-		width: 100%;
+    .layout { 
+        margin-left: 0; 
+        max-width: 100%; 
+        width: 100%;
+        margin: 0;
+		padding: 0;
+    }
+
+	.plans-content{
+		padding: 10px;
+	}
+
+	.plans-section{
+		padding: 0;
 		margin: 0;
 	}
-	.plans-grid { grid-template-columns: 1fr; }
-	.section-title { font-size: 24px; }
-	.table-container { 
-		overflow-x: auto; 
+    .plans-grid { grid-template-columns: 1fr; }
+    .section-title { font-size: 24px; }
+    
+    .comparison-table th, 
+    .comparison-table td {
+        padding: 8px; 
+        font-size: 10px; 
+        white-space: nowrap; 
+    }
+    
+    .comparison-table th.plan-name-table,
+    .comparison-table td:first-child {
+        padding-left: 12px;
+        text-align: left;
+				overflow: hidden;
+
+    }
+
+	.comparison-section{
+		padding: 0px;
+		overflow: hidden;
 	}
+    
+    .table-container { 
+		overflow: hidden;
+
+    }
 }

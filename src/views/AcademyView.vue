@@ -1,13 +1,14 @@
 <template>
   <div class="layout">
     <AppSidebar />
+      <div class="header-academy">
+        <button class="back-btn" @click="$router.push('/dashboard')">
+          <img src="../assets/icons/back.svg" alt="" width="20px">
+        </button>
+      <h1 class="title">Zenix Academy</h1>
+    </div>
     <main class="academy-content">
-      <div class="header">
-          <button class="back-btn" @click="$router.push('/dashboard')">
-            <img src="../assets/icons/back.svg" alt="" width="20px">
-          </button>
-        <h1 class="title">Zenix Academy</h1>
-      </div>
+ 
 
       <div v-if="loading" class="loading-container">
         <p>Carregando cursos...</p>

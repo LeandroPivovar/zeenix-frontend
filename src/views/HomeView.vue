@@ -67,25 +67,21 @@ export default {
       showConnectModal: false, 
       connectedInfo: null,
       loading: true,
-      // NOVO: Estado para controlar o sidebar no mobile
       isSidebarOpen: false
     }
   },
   methods: {
-    // NOVOS MÉTODOS DE CONTROLE DO SIDEBAR
     toggleSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen
     },
     closeSidebar() {
       this.isSidebarOpen = false
     },
-    // FIM DOS NOVOS MÉTODOS
 
     openConnectModal() { this.showConnectModal = true },
     closeConnectModal() { this.showConnectModal = false },
     onConnected(info) {
       this.connectedInfo = info
-      // Salvar no localStorage para manter durante a sessão
       if (info && info.loginid) {
         localStorage.setItem('deriv_connection', JSON.stringify({
           loginid: info.loginid,
@@ -96,13 +92,11 @@ export default {
       }
     },
     async checkConnection() {
-      // Primeiro verificar localStorage
       const saved = localStorage.getItem('deriv_connection')
       if (saved) {
         try {
           const parsed = JSON.parse(saved)
-          // Verificar se não é muito antigo (opcional, manter por até 1 hora)
-          const maxAge = 60 * 60 * 1000 // 1 hora
+          const maxAge = 60 * 60 * 1000 
           if (Date.now() - parsed.timestamp < maxAge) {
             this.connectedInfo = parsed
             this.loading = false
@@ -113,7 +107,6 @@ export default {
         }
       }
       
-      // Se não há no localStorage ou está expirado, buscar do backend
       try {
         const res = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/broker/deriv/status', {
           method: 'POST',
@@ -123,7 +116,6 @@ export default {
           const data = await res.json()
           if (data?.loginid) {
             this.connectedInfo = data
-            // Salvar no localStorage
             localStorage.setItem('deriv_connection', JSON.stringify({
               loginid: data.loginid,
               currency: data.currency,
@@ -131,7 +123,6 @@ export default {
               timestamp: Date.now()
             }))
           } else {
-            // Se não há conexão no backend, limpar localStorage
             localStorage.removeItem('deriv_connection')
             this.connectedInfo = null
           }
@@ -140,7 +131,6 @@ export default {
           localStorage.removeItem('deriv_connection')
         }
       } catch (e) {
-        // Se falhar, tentar usar dados salvos mesmo que antigos
         if (saved) {
           try {
             this.connectedInfo = JSON.parse(saved)
@@ -159,7 +149,6 @@ export default {
     await this.checkConnection()
   },
   watch: {
-    // Re-verificar quando voltar para esta rota
     '$route'(to) {
       if (to.path === '/dashboard') {
         this.checkConnection()

@@ -9,8 +9,7 @@
 
     <AppSidebar :is-open="sidebarIsOpen" @close-sidebar="closeSidebar" />
 
-    <main class="settings-content">
-      <div class="header">
+      <div class="header-settings">
           <button class="back-btn" @click="$router.push('/dashboard')">
             <img src="../assets/icons/back.svg" alt="" width="20px">
           </button>
@@ -20,6 +19,8 @@
           <span v-else>{{ saveButtonText }}</span>
         </button>
       </div>
+    <main class="settings-content">
+
       <div v-if="loading" class="loading">Carregando configurações...</div>
       <div v-else-if="error" class="error">{{ error }}</div>
 

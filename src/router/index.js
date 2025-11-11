@@ -7,6 +7,7 @@ import ProfileView from '../views/ProfileView.vue'
 import SupportView from '../views/SupportView.vue'
 import SettingsView from '../views/SettingsView.vue'
 import PlansView from '../views/PlansView.vue'
+import OperationView from '../views/OperationView.vue'
 
 const routes = [
   {
@@ -69,6 +70,13 @@ const routes = [
     name: 'Plans',
     component: PlansView,
     meta: { requiresAuth: true }
+  },
+
+  {
+     path: '/operation',
+     name: 'Operation',
+    component: OperationView,
+     meta: { requiresAuth: true }
   }
 ]
 

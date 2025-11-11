@@ -1,0 +1,596 @@
+/* Variáveis e Configurações Gerais */
+.main-container {
+    flex-grow: 1;
+    padding: 25px 35px;
+    color: #e5e7eb;
+    display: flex;
+    flex-direction: column;
+    background: #0a0a0a;
+    min-height: 100vh;
+}
+
+.flex-row-gap {
+    display: flex;
+    gap: 25px;
+    align-items: flex-start;
+}
+
+h3{
+    color: white;
+}
+
+/* Colunas */
+.col-left {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.col-middle {
+    flex: 2.3;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.col-right {
+    flex: 1.2;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.full-height {
+    flex: 1;
+}
+
+/* Cartões */
+.card {
+    background: #0f0f0f;
+    padding: 18px 20px;
+    border-radius: 10px;
+    border: 1px solid #1a1a1a;
+}
+
+.card-header {
+    margin-bottom: 15px;
+    font-size: 15px;
+    color: white;
+    display: flex;
+    font-weight: 700;
+    letter-spacing: 0.3px;
+}
+
+.space-between {
+    justify-content: space-between;
+}
+
+/* Status e Cores */
+.status-green {
+    color: #10B981;
+}
+
+.status-yellow {
+    color: #FBBF24;
+}
+
+.status-red {
+    color: #EF4444;
+}
+
+.text-bold-white {
+    color: #ffffff;
+    font-weight: 600;
+}
+
+.text-bold-green {
+    color: #10B981;
+    font-weight: 600;
+}
+
+.text-bold-purple {
+    color: #6366F1;
+    font-weight: 600;
+}
+
+.text-bold-yellow {
+    color: #FBBF24;
+    font-weight: 700;
+}
+
+.text-bold-red {
+    color: #EF4444;
+    font-weight: 600;
+}
+
+/* Saldo da Conta */
+.status-time {
+    font-size: 10px;
+    font-weight: 500;
+    padding: 2px 0;
+    color: white;
+}
+
+.account-balance {
+    font-size: 34px;
+    font-weight: 700;
+    color: #10B981;
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    line-height: 1;
+}
+
+.balance-change {
+    font-size: 12px;
+    align-self: flex-end;
+    font-weight: 600;
+    padding-bottom: 2px;
+}
+
+.text-small-opacity {
+    font-size: 11px;
+    opacity: 0.5;
+    text-align: left;
+    margin-top: 12px;
+    color: #d0d1d3;
+}
+
+/* Configuração Atual */
+.list-config {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+}
+
+.list-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    color: #9CA3AF;
+}
+
+.list-item:last-child {
+    margin-bottom: 0;
+}
+
+.item-separator {
+    padding-top: 10px;
+    margin-top: 6px;
+    border-top: 1px solid #262626;
+}
+
+/* Parâmetros de Risco */
+.risk-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    margin-bottom: 20px;
+    font-weight: 500;
+}
+
+.risk-bar-container {
+    height: 8px;
+    background: #262626;
+    border-radius: 4px;
+    position: relative;
+    margin-bottom: 12px;
+}
+
+.risk-pointer {
+    width: 4px;
+    height: 16px;
+    background: #ffffff;
+    border-radius: 2px;
+    position: absolute;
+    left: 50%;
+    top: -4px;
+    transform: translateX(-50%);
+    box-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
+.risk-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    text-align: left;
+    margin-bottom: 8px;
+    color: #9CA3AF;
+}
+
+.text-small-center {
+    font-size: 11px;
+    opacity: 0.5;
+    text-align: center;
+    margin-top: 12px;
+    color: #9CA3AF;
+}
+
+.order-status-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 11px;
+    color: #6B7280;
+    font-weight: 500;
+}
+
+.progress-bar-container:not(.risk-bar-container) {
+    height: 6px;
+    border-radius: 3px;
+    position: relative;
+    margin-bottom: 15px;
+    display: block; 
+    overflow: hidden;
+}
+
+.progress-bar-fill-yellow {
+    height: 6px;
+    background: #FBBF24;
+    width: 45%;
+    border-radius: 3px 0 0 3px;
+}
+
+.order-analysis {
+    font-size: 13px;
+    margin-bottom: 12px;
+    color: #FBBF24;
+    font-weight: 500;
+}
+
+.order-detail {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    color: #9CA3AF;
+}
+
+.order-type-buy {
+    background: #10B981;
+    color: #000000;
+    padding: 4px 12px;
+    border-radius: 5px;
+    font-weight: 700;
+    font-size: 12px;
+}
+
+.margin-top-5 {
+    margin-top: 8px;
+}
+
+.text-micro-opacity {
+    font-size: 10px;
+    opacity: 0.8;
+    margin-top: 1.5rem;
+    color: #ffffff;
+    text-align: center;
+}
+
+.digit-list {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 8px;
+    font-size: 18px;
+    width: 100%;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+
+.digit-item {
+    background: #262626;
+    padding: 8px;
+    border-radius: 6px;
+    text-align: center;
+    color: #9CA3AF;
+}
+
+.digit-item-active {
+    background: #10B981;
+    color: #000000;
+    padding: 8px;
+    border-radius: 6px;
+    font-weight: 700;
+    text-align: center;
+}
+
+.digit-repetition {
+    font-weight: 600;
+    font-size: 11px;
+    color: #000000;
+    text-align: center;
+    background: #F59E0B;
+    padding: 6px 12px;
+    width: fit-content;
+    border-radius: 8px;
+}
+
+.volatility-analysis-placeholder {
+    height: 300px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top: 20px;
+    border-radius: 8px;
+}
+
+.text-placeholder {
+    color: #374151;
+    font-size: 12px;
+    opacity: 0.6;
+}
+
+/* Paridade */
+.parity-section {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 2px;
+}
+
+.parity-info {
+    flex: 1;
+    text-align: left;
+}
+
+.parity-label {
+    font-size: 15px;
+    font-weight: 600;
+    color: #ffffff;
+    margin-bottom: 8px;
+}
+
+.parity-bar-bg {
+    height: 15px;
+    background: #262626;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.parity-bar-purple-52 {
+    height: 15px;
+    background: #6366F1;
+    width: 52%;
+    border-radius: 10px;
+}
+
+.parity-bar-red-48 {
+    height: 15px;
+    background: #EF4444;
+    width: 48%;
+    border-radius: 10px;
+}
+
+.parity-percentage {
+    font-size: 20px;
+    font-weight: 700;
+    min-width: 50px;
+    text-align: right;
+}
+
+.margin-top-10 {
+    margin-top: 15px;
+}
+
+.parity-trend-green {
+    font-size: 11px;
+    margin-top: 18px;
+    text-align: center;
+    margin-bottom: 8px;
+    background: #06B6D4;
+    color: #000000;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+    width: fit-content;
+}
+
+.frequency-list {
+    font-size: 13px;
+}
+
+.frequency-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 5px 0;
+    gap: 12px;
+}
+
+.digit-label {
+    width: 12px;
+    font-weight: 600;
+    color: #ffffff;
+    text-align: left;
+}
+
+.frequency-bar-bg {
+    flex-grow: 1;
+    height: 6px;
+    background: #262626;
+    border-radius: 3px;
+    position: relative;
+}
+
+.frequency-bar-bg::after {
+    content: '';
+    position: absolute;
+    left: 10%;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: #3f3f3f;
+}
+
+.frequency-bar {
+    height: 6px;
+    border-radius: 3px;
+}
+
+/* Cores das Barras de Frequência */
+.frequency-bar-color-7 {
+    background: #10B981;
+}
+
+.frequency-bar-color-1 {
+    background: #FBBF24;
+}
+
+.frequency-bar-color-0, .frequency-bar-color-2, .frequency-bar-color-3, .frequency-bar-color-4, .frequency-bar-color-5, .frequency-bar-color-6, .frequency-bar-color-8, .frequency-bar-color-9 {
+    background: #6366F1;
+}
+
+.frequency-percentage {
+    font-weight: 600;
+    color: #9CA3AF;
+    min-width: 35px;
+    text-align: right;
+    font-size: 12px;
+}
+
+.text-micro-opacity-border-top {
+    font-size: 9px;
+    opacity: 0.5;
+    margin-top: 12px;
+    border-top: 1px solid #262626;
+    padding-top: 10px;
+    color: #6B7280;
+}
+
+/* Sequência & Retenção */
+.sequence-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    background: transparent;
+}
+
+.sequence-stats span:first-child {
+    color: #e5e7eb;
+}
+
+.margin-bottom-10 {
+    margin-bottom: 18px;
+}
+
+.margin-bottom-15 {
+    margin-bottom: 18px;
+}
+
+.col-right .card:nth-child(2) .progress-bar-container {
+    height: 15px;
+    border-radius: 4px;
+    position: relative;
+    display: flex;
+    gap: 8px; 
+    overflow: visible; 
+    margin-bottom: 15px;
+    padding: 0; 
+}
+
+.progress-bar-hold {
+    height: 15px;
+    background: #0D7A5D; 
+    border-radius: 100px; 
+    width: calc(65% - 4px); 
+}
+
+.progress-bar-hold-yellow {
+    height: 15px;
+    background: #f7d3078e;
+    border-radius: 10px; 
+    width: calc(35% - 4px);
+}
+
+.progress-bar-red-35 {
+    height: 8px;
+    background: #EF4444;
+    border-radius: 4px; 
+}
+
+.sequence-dots {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 15px;
+}
+
+.sequence-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.dot-green {
+    background: #10B981;
+}
+
+.dot {
+    background: #3d3a3a;
+}
+
+.sequence-trend{
+    font-size: 12px;
+    font-weight: 600;
+    color: #10B981;
+    text-align: left;
+}
+
+@media (min-width: 1200px) {
+    .main-container {
+        max-width: none;
+    }
+}
+
+
+@media (min-width: 769px) and (max-width: 1199px) {
+    .main-container {
+        padding: 20px 25px; 
+    }
+
+    .flex-row-gap {
+        gap: 15px; 
+    }
+    
+}
+
+
+@media (max-width: 768px) {
+    .main-container {
+        padding: 15px 18px; 
+        min-height: auto; 
+    }
+
+    .flex-row-gap {
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .col-left,
+    .col-middle,
+    .col-right {
+        flex: none;
+        width: 100%;
+        gap: 15px;
+    }
+    
+    .card {
+        padding: 15px 18px;
+    }
+
+    .account-balance {
+        font-size: 28px;
+    }
+    
+    .digit-list {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 6px;
+        font-size: 16px;
+    }
+
+    .volatility-analysis-placeholder {
+        height: 200px;
+    }
+}
