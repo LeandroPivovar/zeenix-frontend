@@ -76,7 +76,6 @@ export default {
         localStorage.removeItem('deriv_token');
         localStorage.removeItem('deriv_connection');
         localStorage.removeItem('deriv_app_id');
-        alert('Login realizado com sucesso');
         this.$router.push('/dashboard');
       } catch (e) {
         alert(e.message || 'Erro inesperado');

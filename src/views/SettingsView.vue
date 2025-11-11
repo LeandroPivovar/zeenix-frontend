@@ -73,7 +73,7 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Moeda padrão das operações</label>
+              <label>Moeda padrão</label>
               <select v-model="settings.tradeCurrency" class="form-input">
                 <option value="USD">USD (Real)</option>
                 <option value="BTC">BTC</option>

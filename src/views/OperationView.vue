@@ -1,16 +1,11 @@
 <template>
   <div class="layout">
-    <AppSidebar :is-open="isSidebarOpen" @close-sidebar="closeSidebar" />
+    <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
 
-    <div class="operation-main">
+    <div class="operation-main" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <header class="header-operation">
-        <button class="hamburger-btn" @click="isSidebarOpen = true">&#9776;</button>
-        <button @click="$router.push('/dashboard')" class="back-btn">
-          <span class="back-icon-desk">
-            <img src="../assets/icons/back.svg" alt="" width="20px" />
-          </span>
-          <span class="back-text">Voltar</span>
-        </button>
+        <button class="hamburger-btn" @click="handleHamburgerClick">&#9776;</button>
+       
         <div class="header-title">
           <span class="title-text">Operação Manual</span>
         </div>
@@ -76,6 +71,7 @@ export default {
       },
       lastOrders: [],
       isSidebarOpen: false,
+      isSidebarCollapsed: false,
       loadingConnection: false,
     };
   },
@@ -113,6 +109,18 @@ export default {
     },
     closeSidebar() {
       this.isSidebarOpen = false;
+    },
+    toggleSidebarCollapse() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    },
+    handleHamburgerClick() {
+      if (this.isSidebarCollapsed) {
+        // Se estiver colapsada, expandir
+        this.isSidebarCollapsed = false;
+      } else {
+        // Se não estiver colapsada, abrir no modo mobile
+        this.isSidebarOpen = true;
+      }
     },
     changeView(componentName) {
       this.currentView = componentName;

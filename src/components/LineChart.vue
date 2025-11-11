@@ -22,7 +22,13 @@ export default {
     }
   },
   mounted() {
-    this.renderChart();
+    this.$nextTick(() => {
+      // Delay para garantir que o canvas esteja totalmente renderizado e visível
+      // Especialmente importante quando há animações CSS que começam com opacity: 0
+      setTimeout(() => {
+        this.renderChart();
+      }, 200);
+    });
   },
   beforeUnmount() {
     if (this.chart) {
@@ -41,12 +47,38 @@ export default {
   methods: {
     renderChart() {
       const ctx = document.getElementById(this.chartId);
-      if (!ctx || !ctx.getContext('2d')) {
-        console.warn(`Canvas context for chart ${this.chartId} not ready.`);
+      if (!ctx) {
+        console.warn(`Canvas element for chart ${this.chartId} not found.`);
         return;
       }
       
-      this.chart = new Chart(ctx, {
+      const context2d = ctx.getContext('2d');
+      if (!context2d) {
+        console.warn(`Canvas 2D context for chart ${this.chartId} not available.`);
+        return;
+      }
+      
+      // Verificar se o canvas tem dimensões válidas
+      if (ctx.offsetWidth === 0 || ctx.offsetHeight === 0) {
+        console.warn(`Canvas ${this.chartId} has zero dimensions. Retrying...`);
+        setTimeout(() => {
+          this.renderChart();
+        }, 100);
+        return;
+      }
+      
+      // Destruir gráfico anterior se existir
+      if (this.chart) {
+        try {
+          this.chart.destroy();
+        } catch (error) {
+          console.warn('Error destroying previous chart:', error);
+        }
+        this.chart = null;
+      }
+      
+      try {
+        this.chart = new Chart(ctx, {
         type: 'line',
         data: {
           labels: this.data.map((_, i) => i),
@@ -67,27 +99,49 @@ export default {
           scales: { x: { display: false }, y: { display: false } },
           interaction: { intersect: false, mode: 'index' }
         }
-      });
+        });
+      } catch (error) {
+        console.error(`Error creating chart ${this.chartId}:`, error);
+        this.chart = null;
+      }
     },
     
     createGradient(ctx, color) {
+      if (!ctx) return 'rgba(0,0,0,0)';
+      
       const context2d = ctx.getContext('2d');
       if (!context2d) return 'rgba(0,0,0,0)'; 
 
-      const gradient = context2d.createLinearGradient(0, 0, 0, this.height);
-      gradient.addColorStop(0, color + '40'); 
-      gradient.addColorStop(1, color + '00'); 
-      return gradient;
+      try {
+        const gradient = context2d.createLinearGradient(0, 0, 0, this.height);
+        gradient.addColorStop(0, color + '40'); 
+        gradient.addColorStop(1, color + '00'); 
+        return gradient;
+      } catch (error) {
+        console.warn('Error creating gradient:', error);
+        return 'rgba(0,0,0,0)';
+      }
     },
     
     updateChart() {
       if (!this.chart) {
-        this.renderChart();
+        this.$nextTick(() => {
+          this.renderChart();
+        });
         return;
       }
-      this.chart.data.labels = this.data.map((_, i) => i);
-      this.chart.data.datasets[0].data = this.data;
-      this.chart.update('none'); 
+      
+      try {
+        this.chart.data.labels = this.data.map((_, i) => i);
+        this.chart.data.datasets[0].data = this.data;
+        this.chart.update('none');
+      } catch (error) {
+        console.warn('Error updating chart:', error);
+        // Tentar recriar o gráfico se houver erro
+        this.$nextTick(() => {
+          this.renderChart();
+        });
+      }
     }
   }
 }

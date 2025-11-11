@@ -45,12 +45,28 @@ h3{
     flex: 1;
 }
 
+@keyframes digits-card-enter {
+    0% {
+        opacity: 0;
+        transform: translateY(30px) scale(0.96);
+    }
+    100% {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
 /* Cartões */
 .card {
     background: #0f0f0f;
     padding: 18px 20px;
     border-radius: 10px;
     border: 1px solid #1a1a1a;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: digits-card-enter 0.7s cubic-bezier(0.19, 1, 0.22, 1) forwards;
+    animation-delay: var(--card-delay, 0.12s);
+    will-change: transform, opacity;
 }
 
 .card-header {
@@ -538,6 +554,17 @@ h3{
     text-align: left;
 }
 
+.col-left .card:nth-child(1) { --card-delay: 0.12s; }
+.col-left .card:nth-child(2) { --card-delay: 0.22s; }
+.col-left .card:nth-child(3) { --card-delay: 0.32s; }
+.col-left .card:nth-child(4) { --card-delay: 0.42s; }
+
+.col-middle .card:nth-child(1) { --card-delay: 0.28s; }
+.col-middle .card:nth-child(2) { --card-delay: 0.38s; }
+
+.col-right .card:nth-child(1) { --card-delay: 0.34s; }
+.col-right .card:nth-child(2) { --card-delay: 0.44s; }
+
 @media (min-width: 1200px) {
     .main-container {
         max-width: none;
@@ -557,9 +584,31 @@ h3{
 }
 
 
+@media (max-width: 1024px) {
+    .main-container {
+        padding: 20px;
+    }
+
+    .flex-row-gap {
+        gap: 18px;
+    }
+
+    .col-left {
+        flex: 1;
+    }
+
+    .col-middle {
+        flex: 1.8;
+    }
+
+    .col-right {
+        flex: 1;
+    }
+}
+
 @media (max-width: 768px) {
     .main-container {
-        padding: 15px 18px; 
+        padding: 15px 12px; 
         min-height: auto; 
     }
 
@@ -577,11 +626,20 @@ h3{
     }
     
     .card {
-        padding: 15px 18px;
+        padding: 15px;
+    }
+
+    .card-header {
+        font-size: 14px;
+        margin-bottom: 12px;
     }
 
     .account-balance {
-        font-size: 28px;
+        font-size: 26px;
+    }
+
+    .balance-change {
+        font-size: 11px;
     }
     
     .digit-list {
@@ -592,5 +650,130 @@ h3{
 
     .volatility-analysis-placeholder {
         height: 200px;
+    }
+
+    .list-item {
+        font-size: 12px;
+        margin-bottom: 8px;
+    }
+
+    .parity-section {
+        gap: 12px;
+    }
+
+    .parity-percentage {
+        font-size: 18px;
+    }
+
+    .frequency-item {
+        padding: 4px 0;
+    }
+}
+
+@media (max-width: 640px) {
+    .main-container {
+        padding: 14px 10px;
+    }
+
+    .card {
+        padding: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-container {
+        padding: 12px 8px;
+    }
+
+    .card {
+        padding: 12px;
+    }
+
+    .card-header {
+        font-size: 13px;
+    }
+
+    .account-balance {
+        font-size: 22px;
+    }
+
+    .digit-list {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 4px;
+        font-size: 14px;
+    }
+
+    .digit-item,
+    .digit-item-active {
+        padding: 6px;
+    }
+
+    .list-item {
+        font-size: 11px;
+    }
+
+    .parity-label {
+        font-size: 13px;
+    }
+
+    .parity-percentage {
+        font-size: 16px;
+        min-width: 40px;
+    }
+
+    .frequency-item {
+        font-size: 12px;
+    }
+
+    .digit-label {
+        width: 10px;
+    }
+
+    .frequency-percentage {
+        font-size: 11px;
+        min-width: 30px;
+    }
+}
+
+@media (max-width: 360px) {
+    .main-container {
+        padding: 10px 6px;
+    }
+
+    .card {
+        padding: 10px;
+    }
+
+    .card-header {
+        font-size: 12px;
+        margin-bottom: 10px;
+    }
+
+    .account-balance {
+        font-size: 20px;
+    }
+
+    .digit-list {
+        gap: 3px;
+        font-size: 13px;
+    }
+
+    .digit-item,
+    .digit-item-active {
+        padding: 5px;
+    }
+
+    .list-item {
+        font-size: 10px;
+        margin-bottom: 6px;
+    }
+
+    .parity-label {
+        font-size: 12px;
+    }
+
+    .parity-percentage {
+        font-size: 14px;
+        min-width: 35px;
     }
 }

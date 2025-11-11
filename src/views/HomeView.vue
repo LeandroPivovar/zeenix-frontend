@@ -1,8 +1,8 @@
 <template>
-  <div class="layout">
-    <AppSidebar :is-open="isSidebarOpen" @close-sidebar="closeSidebar" />
+  <div class="layout" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
     <header>
-      <button class="hamburger-menu" @click="toggleSidebar">
+      <button class="hamburger-menu" @click="handleHamburgerClick">
         <span class="line"></span>
         <span class="line"></span>
         <span class="line"></span>
@@ -67,7 +67,8 @@ export default {
       showConnectModal: false, 
       connectedInfo: null,
       loading: true,
-      isSidebarOpen: false
+      isSidebarOpen: false,
+      isSidebarCollapsed: false
     }
   },
   methods: {
@@ -76,6 +77,18 @@ export default {
     },
     closeSidebar() {
       this.isSidebarOpen = false
+    },
+    toggleSidebarCollapse() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed
+    },
+    handleHamburgerClick() {
+      if (this.isSidebarCollapsed) {
+        // Se estiver colapsada, expandir
+        this.isSidebarCollapsed = false
+      } else {
+        // Se não estiver colapsada, abrir no modo mobile
+        this.toggleSidebar()
+      }
     },
 
     openConnectModal() { this.showConnectModal = true },
