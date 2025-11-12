@@ -40,6 +40,19 @@
 	margin: 0;
 }
 
+@media (min-width: 768px) {
+	/* Mostrar hamburger quando sidebar estiver colapsada */
+	.layout.sidebar-collapsed .hamburger-btn {
+		display: inline-flex;
+	}
+}
+
+@media (max-width: 1200px) {
+	.hamburger-btn {
+		display: inline-flex;
+	}
+}
+
 @media (max-width: 768px) {
 	.layout {
 		margin-left: 0;
@@ -52,7 +65,7 @@
 	}
 	
 	.hamburger-btn {
-		display: block;
+		display: inline-flex;
 	}
 }
 

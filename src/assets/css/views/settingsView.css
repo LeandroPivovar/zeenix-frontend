@@ -49,6 +49,19 @@ main{ min-height: 10vh; }
 	padding: 8px;
 }
 
+@media (min-width: 768px) {
+	/* Mostrar hamburger quando sidebar estiver colapsada */
+	.layout.sidebar-collapsed .hamburger-btn {
+		display: inline-flex;
+	}
+}
+
+@media (max-width: 1200px) {
+	.hamburger-btn {
+		display: inline-flex;
+	}
+}
+
 @media (max-width: 768px) {
 	.layout {
 		margin-left: 0;
@@ -61,7 +74,7 @@ main{ min-height: 10vh; }
 	}
 	
 	.hamburger-btn {
-		display: block;
+		display: inline-flex;
 	}
 }
 
