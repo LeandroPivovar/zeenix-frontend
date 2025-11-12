@@ -669,7 +669,7 @@ export default {
       }
 
       switch (msg.msg_type) {
-        case 'authorize':
+        case 'authorize': {
           console.log('[OperationChart] ✓ Autorização recebida da Deriv');
           const authorizeData = msg.authorize || {};
           const isVirtual = authorizeData.is_virtual === 1 || authorizeData.is_virtual === true;
@@ -740,6 +740,7 @@ export default {
             this.subscribeToProposal();
           }, 500);
           break;
+        }
         case 'history':
           this.processHistory(msg);
           break;
@@ -1645,9 +1646,10 @@ export default {
             try {
               // Ajustar o zoom para mostrar o momento da entrada
               const visibleRange = this.chart.timeScale().getVisibleRange();
-              if (visibleRange) {
+              if (visibleRange && this.ticks.length > 0) {
+                const lastTickTime = Math.floor(Number(this.ticks[this.ticks.length - 1].epoch));
                 const rangeStart = Math.min(visibleRange.from, markerTime - 300);
-                const rangeEnd = Math.max(visibleRange.to, currentTime);
+                const rangeEnd = Math.max(visibleRange.to, lastTickTime);
                 this.chart.timeScale().setVisibleRange({
                   from: rangeStart,
                   to: rangeEnd,
