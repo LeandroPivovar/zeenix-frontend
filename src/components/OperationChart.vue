@@ -27,10 +27,16 @@
             <span v-if="isLoadingSymbol" class="loading-indicator">Atualizando...</span>
           </div>
 
-          <div class="price-indicator" v-if="latestTick">
-            <span class="indicator-label">Último preço</span>
-            <strong>{{ latestTick.value.toFixed(pricePrecision) }}</strong>
-                    </div>
+          <div class="price-indicators" v-if="latestTick">
+            <div class="price-indicator">
+              <span class="indicator-label">Último preço</span>
+              <strong>{{ latestTick.value.toFixed(pricePrecision) }}</strong>
+            </div>
+            <div v-if="activeContract && activeContract.entry_spot" class="price-indicator entry-price">
+              <span class="indicator-label">Preço de compra</span>
+              <strong>{{ activeContract.entry_spot.toFixed(pricePrecision) }}</strong>
+            </div>
+          </div>
                 </div>
 
         <div class="chart-box animated-card" data-anim-index="1">
@@ -1238,10 +1244,10 @@ export default {
           this.lineSeries.setMarkers([
             {
               time: markerTimeToUse,
-              position: 'inBar',
+              position: 'aboveBar',
               color: markerColor,
               shape: 'circle',
-              size: 3,
+              size: 4,
               text: profitText,
             }
           ]);
@@ -1303,16 +1309,37 @@ export default {
         contractId: sell.contract_id,
         sellPrice: sell.sell_price,
         profit: sell.profit,
-        balanceAfter: sell.balance_after
+        balanceAfter: sell.balance_after,
+        buyPrice: this.activeContract?.buy_price,
+        realTimeProfit: this.realTimeProfit
       });
       
-      this.tradeMessage = `Venda executada. Lucro: ${this.displayCurrency} ${Number(sell.profit || 0).toFixed(2)}`;
+      // Calcular lucro - usar profit da resposta, senão calcular pela diferença
+      let profitValue = 0;
+      if (sell.profit !== undefined && sell.profit !== null) {
+        profitValue = Number(sell.profit);
+      } else if (this.realTimeProfit !== null && this.realTimeProfit !== undefined) {
+        profitValue = Number(this.realTimeProfit);
+      } else if (sell.sell_price && this.activeContract?.buy_price) {
+        profitValue = Number(sell.sell_price) - Number(this.activeContract.buy_price);
+      }
+      
+      console.log('[OperationChart] Lucro calculado na venda:', {
+        sellProfit: sell.profit,
+        realTimeProfit: this.realTimeProfit,
+        calculatedProfit: profitValue,
+        sellPrice: sell.sell_price,
+        buyPrice: this.activeContract?.buy_price
+      });
+      
+      this.tradeMessage = `Venda executada. Lucro: ${this.displayCurrency} ${profitValue.toFixed(2)}`;
       this.isTrading = false;
       
       // Finalizar contrato
       if (this.activeContract) {
         this.finalizeContract({
           ...sell,
+          profit: profitValue, // Garantir que o profit está correto
           is_sold: 1,
         });
       }
@@ -1529,17 +1556,24 @@ export default {
             const markerColor = this.localOrderConfig.type === 'CALL' ? '#3b82f6' : '#ef4444';
             
             // Adicionar marcador no momento exato da compra (usar o tempo do tick mais próximo para garantir visibilidade)
+            // Usar 'aboveBar' ou 'belowBar' para melhor visibilidade
             const entryMarker = {
               time: markerTimeForSeries,
-              position: 'inBar',
+              position: 'aboveBar',
               color: markerColor,
               shape: 'circle',
-              size: 3, // Tamanho maior para melhor visibilidade
-              text: `Entrada ${this.localOrderConfig.type}`,
+              size: 4, // Tamanho maior para melhor visibilidade
+              text: `ENTRADA ${this.localOrderConfig.type}`,
             };
             
             // Adicionar o marcador (setMarkers substitui todos os marcadores existentes)
             this.lineSeries.setMarkers([entryMarker]);
+            
+            // Forçar atualização imediata
+            this.$nextTick(() => {
+              // Re-adicionar o marcador para garantir que seja exibido
+              this.lineSeries.setMarkers([entryMarker]);
+            });
             this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueForSeries, originalTime: markerTime };
             
             console.log('[OperationChart] Marcador adicionado na série principal:', {
@@ -1632,7 +1666,7 @@ export default {
                   ? (this.realTimeProfit >= 0 
                       ? `+${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`
                       : `${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`)
-                  : `Entrada ${this.localOrderConfig.type}`;
+                  : `ENTRADA ${this.localOrderConfig.type}`;
                 
                 const markerColor = this.realTimeProfit !== null
                   ? (this.realTimeProfit >= 0 ? '#10b981' : '#ef4444')
@@ -1644,10 +1678,10 @@ export default {
                 this.lineSeries.setMarkers([
                   {
                     time: markerTimeToUse,
-                    position: 'inBar',
+                    position: 'aboveBar',
                     color: markerColor,
                     shape: 'circle',
-                    size: 3, // Tamanho maior
+                    size: 4, // Tamanho maior
                     text: profitText,
                   }
                 ]);
@@ -2308,11 +2342,26 @@ export default {
   color: #facc15;
 }
 
+.price-indicators {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
 .price-indicator {
   display: flex;
   align-items: center;
   gap: 8px;
   font-weight: 600;
+}
+
+.price-indicator.entry-price {
+  color: #6366f1;
+}
+
+.price-indicator.entry-price strong {
+  color: #818cf8;
 }
 
 .chart-box {
