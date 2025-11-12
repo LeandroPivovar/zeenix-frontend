@@ -1,32 +1,10 @@
 <template>
     <div class="layout">
+        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
+        
+        <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
 
-        <header>
-            <button class="back-button" @click="$router.push('/dashboard')">
-                <img src="../assets/icons/back.svg" alt="">Voltar
-            </button>
-
-            <div class="header-right">
-                <template v-if="showPerformanceHeader">
-                    <div class="status-indicator">
-                        <span class="dot green"></span>
-                        Conectado
-                    </div>
-                    <div class="account">
-                        <img src="../assets/icons/people.svg" alt="">
-                        Conta Real
-                    </div>
-                </template>
-                <template v-else-if="showHistoryHeader">
-                    <div class="user-saldo">
-                        <span>{{ historyData.traderName }}</span>
-                        <span class="saldo-valor"> ${{ accountPerformance.balance || 10249.55 }}</span>
-                    </div>
-                </template>
-            </div>
-        </header>
-
-        <main class="copy-trading-content">
+        <main class="copy-trading-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <CopyTradingComponent
                 v-if="showPerformance"
                 :performance-data="performanceData"
@@ -48,14 +26,17 @@
 </template>
 
 <script>
+import AppSidebar from '../components/Sidebar.vue'
 import CopyTradingComponent from '../components/copy/CopyTradingComponent.vue'
 import CopyHistory from '../components/copy/CopyHistory.vue'
 
 export default {
     name: 'CopyTrading',
-    components: { CopyTradingComponent, CopyHistory },
+    components: { AppSidebar, CopyTradingComponent, CopyHistory },
     data() {
         return {
+            isSidebarOpen: false,
+            isSidebarCollapsed: false,
             showPerformance: true,
             showHistory: false,   
             performanceData: {
@@ -118,18 +99,23 @@ export default {
             }
         }
     },
-    computed: {
-        showPerformanceHeader() {
-            return this.showPerformance;
-        },
-        showHistoryHeader() {
-            return this.showHistory;
-        }
-    },
     mounted() {
         this.updateHeaders();
     },
     methods: {
+        closeSidebar() {
+            this.isSidebarOpen = false;
+        },
+        toggleSidebarCollapse() {
+            this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        },
+        handleHamburgerClick() {
+            if (this.isSidebarCollapsed) {
+                this.isSidebarCollapsed = false;
+            } else {
+                this.isSidebarOpen = true;
+            }
+        },
         updateHeaders() {
         }
     }
@@ -140,94 +126,38 @@ export default {
 .layout {
     background-color: #121212;
     min-height: 100vh;
-}
-
-header {
-    height: 60px;
-    background-color: #1e1e1e;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 20px;
-    z-index: 10;
-    border-bottom: 1px solid #333;
 }
 
-header img {
-    width: 20px;
-}
-
-.back-button {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    color: #ffffff;
-    background: none;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-}
-
-.copy-active-header {
-    text-align: center;
-}
-
-.copy-active-header span {
-    font-size: 1.1rem;
-    color: #00ff80;
-    font-weight: bold;
-    display: block;
-}
-
-.copy-active-header p {
-    font-size: 0.8rem;
-    color: #a0a0a0;
-    margin: 5px 0 0 0;
-}
-
-.header-right {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-}
-
-.status-indicator {
-    display: flex;
-    align-items: center;
-    color: #00ff80;
-    gap: 5px;
-    font-weight: 500;
-}
-
-.dot {
-    width: 8px;
-    height: 8px;
-    background-color: #00ff80;
-    border-radius: 50%;
-}
-
-.account {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 500;
-    color: #ffffff;
-}
-
-.user-saldo {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    color: #a0a0a0;
-}
-
-.saldo-valor {
-    color: #00ff80;
-    font-weight: bold;
+.mobile-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 998;
 }
 
 .copy-trading-content {
+    flex: 1;
     padding: 20px;
+    margin-left: 0;
+    transition: margin-left 0.3s ease;
+}
+
+.copy-trading-content.sidebar-collapsed {
+    margin-left: 0;
+}
+
+@media (min-width: 769px) {
+    .copy-trading-content {
+        margin-left: 280px;
+    }
+    
+    .copy-trading-content.sidebar-collapsed {
+        margin-left: 80px;
+    }
 }
 
 </style>
