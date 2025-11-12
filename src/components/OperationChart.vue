@@ -60,10 +60,6 @@
                 <span class="ai-info-label">Confiança:</span>
                 <span class="ai-info-value green">{{ aiRecommendation?.confidence || 0 }}%</span>
               </div>
-              <div class="ai-info-item" v-if="aiRecommendation?.reasoning">
-                <span class="ai-info-label">Análise:</span>
-                <span class="ai-info-value" style="font-size: 0.75rem;">{{ aiRecommendation.reasoning }}</span>
-              </div>
                     </div>
                     </div>
           <div ref="chartContainer" class="line-chart-container"></div>
