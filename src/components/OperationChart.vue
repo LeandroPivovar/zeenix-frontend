@@ -32,9 +32,9 @@
               <span class="indicator-label">Último preço</span>
               <strong>{{ latestTick.value.toFixed(pricePrecision) }}</strong>
             </div>
-            <div v-if="activeContract && activeContract.entry_spot" class="price-indicator entry-price">
+            <div v-if="purchasePrice !== null" class="price-indicator entry-price">
               <span class="indicator-label">Preço de compra</span>
-              <strong>{{ activeContract.entry_spot.toFixed(pricePrecision) }}</strong>
+              <strong>{{ purchasePrice.toFixed(pricePrecision) }}</strong>
             </div>
           </div>
                 </div>
@@ -275,6 +275,7 @@ export default {
       updateEntrySpotLine: null,
       entryMarker: null,
       entryTime: null,
+      purchasePrice: null,
       isSellEnabled: false,
       isDemoAccount: false,
       showTradeResultModal: false,
@@ -1394,6 +1395,7 @@ export default {
       // Limpar estado do contrato ativo
       this.activeContract = null;
       this.realTimeProfit = null;
+      this.purchasePrice = null;
       this.isSellEnabled = false;
       // Manter isDemoAccount pois é baseado na autorização, não no contrato
       
@@ -1427,6 +1429,14 @@ export default {
         return;
       }
       
+      // Capturar o preço de compra no momento do envio da requisição
+      if (this.latestTick && this.latestTick.value) {
+        this.purchasePrice = this.latestTick.value;
+      } else if (this.currentProposalPrice) {
+        // Fallback: usar o preço da proposta se não houver tick disponível
+        this.purchasePrice = this.currentProposalPrice;
+      }
+      
       this.tradeError = '';
       this.tradeMessage = '';
       this.isTrading = true;
@@ -1439,6 +1449,7 @@ export default {
       
       console.log('[OperationChart] ========== EXECUTANDO COMPRA ==========');
       console.log('[OperationChart] Payload:', JSON.stringify(buyPayload, null, 2));
+      console.log('[OperationChart] Preço de compra capturado:', this.purchasePrice);
       this.send(buyPayload);
     },
     executeSell() {
@@ -1525,26 +1536,33 @@ export default {
         // Criar linha horizontal no gráfico
         const lineSeries = this.chart.addLineSeries({
           color: entryColor,
-          lineWidth: 2,
-          lineStyle: 2, // Linha tracejada
+          lineWidth: 2, // Espessura adequada para linha pontilhada
+          lineStyle: 2, // Linha pontilhada (dashed)
           axisLabelVisible: true,
-          title: `Entrada (${this.localOrderConfig.type})`,
+          title: `Preço de Compra: ${entrySpot.toFixed(this.pricePrecision)}`,
+          priceLineVisible: true,
+          lastValueVisible: true,
         });
         
-        // Obter o último tick para o tempo atual e criar uma linha que se estende
+        // Obter o primeiro e último tick para criar uma linha que ocupe 100% da largura
+        const firstTick = this.ticks[0];
         const lastTick = this.ticks[this.ticks.length - 1];
+        
+        // Usar o primeiro tick disponível como ponto inicial (ou tempo de entrada se não houver ticks)
+        const lineStartTime = firstTick ? Math.floor(Number(firstTick.epoch)) : entryTimeUnix;
+        
+        // Usar o último tick disponível como ponto final (ou tempo atual se não houver ticks)
+        const lineEndTime = lastTick ? Math.floor(Number(lastTick.epoch)) : entryTimeUnix;
+        
+        // Criar dois pontos: um no início do gráfico e outro no final
+        // Isso cria uma linha horizontal pontilhada que ocupa 100% da largura
+        lineSeries.setData([
+          { time: lineStartTime, value: entrySpot },
+          { time: lineEndTime, value: entrySpot }
+        ]);
+        this.entrySpotLine = lineSeries;
+        
         if (lastTick) {
-          const currentTime = Math.floor(Number(lastTick.epoch));
-          // Criar dois pontos: um no início do gráfico e outro no tempo atual
-          // Isso cria uma linha horizontal que se estende
-          const firstTick = this.ticks[0];
-          const startTime = firstTick ? Math.floor(Number(firstTick.epoch)) : currentTime - 3600; // 1 hora atrás se não houver primeiro tick
-          
-          lineSeries.setData([
-            { time: startTime, value: entrySpot },
-            { time: currentTime, value: entrySpot }
-          ]);
-          this.entrySpotLine = lineSeries;
           
           // Adicionar marcador visual no ponto de entrada na série principal
           // O marcador precisa estar em um ponto onde há dados na série
@@ -1649,15 +1667,19 @@ export default {
           
           // Atualizar a linha quando novos ticks chegarem
           this.updateEntrySpotLine = () => {
-            if (this.entrySpotLine && this.ticks.length > 0) {
-              const latestTick = this.ticks[this.ticks.length - 1];
-              const latestTime = Math.floor(Number(latestTick.epoch));
+            if (this.entrySpotLine && this.ticks.length > 0 && this.entryTime) {
+              // Obter o primeiro e último tick para manter a linha ocupando 100% da largura
               const firstTick = this.ticks[0];
-              const startTime = firstTick ? Math.floor(Number(firstTick.epoch)) : latestTime - 3600;
+              const latestTick = this.ticks[this.ticks.length - 1];
               
+              const lineStartTime = firstTick ? Math.floor(Number(firstTick.epoch)) : Math.floor(Number(this.entryTime));
+              const lineEndTime = latestTick ? Math.floor(Number(latestTick.epoch)) : Math.floor(Number(this.entryTime));
+              
+              // Atualizar a linha para se estender desde o primeiro tick até o último tick
+              // Isso mantém a linha ocupando 100% da largura do gráfico
               this.entrySpotLine.setData([
-                { time: startTime, value: entrySpot },
-                { time: latestTime, value: entrySpot }
+                { time: lineStartTime, value: entrySpot },
+                { time: lineEndTime, value: entrySpot }
               ]);
               
               // Atualizar marcador com P&L se disponível
@@ -1688,8 +1710,44 @@ export default {
               }
             }
           };
+          
+          // Mesmo sem ticks, garantir que a função de atualização esteja definida
+          // para quando os ticks chegarem
+          if (!this.updateEntrySpotLine) {
+            this.updateEntrySpotLine = () => {
+              if (this.entrySpotLine && this.ticks.length > 0 && this.entryTime) {
+                // Obter o primeiro e último tick para manter a linha ocupando 100% da largura
+                const firstTick = this.ticks[0];
+                const latestTick = this.ticks[this.ticks.length - 1];
+                
+                const lineStartTime = firstTick ? Math.floor(Number(firstTick.epoch)) : Math.floor(Number(this.entryTime));
+                const lineEndTime = latestTick ? Math.floor(Number(latestTick.epoch)) : Math.floor(Number(this.entryTime));
+                
+                this.entrySpotLine.setData([
+                  { time: lineStartTime, value: entrySpot },
+                  { time: lineEndTime, value: entrySpot }
+                ]);
+              }
+            };
+          }
         } else {
-          console.warn('[OperationChart] Nenhum tick disponível para adicionar linha de entrada');
+          console.warn('[OperationChart] Nenhum tick disponível no momento, mas linha de entrada criada');
+          // Mesmo sem ticks, definir a função de atualização para quando os ticks chegarem
+          this.updateEntrySpotLine = () => {
+            if (this.entrySpotLine && this.ticks.length > 0 && this.entryTime) {
+              // Obter o primeiro e último tick para manter a linha ocupando 100% da largura
+              const firstTick = this.ticks[0];
+              const latestTick = this.ticks[this.ticks.length - 1];
+              
+              const lineStartTime = firstTick ? Math.floor(Number(firstTick.epoch)) : Math.floor(Number(this.entryTime));
+              const lineEndTime = latestTick ? Math.floor(Number(latestTick.epoch)) : Math.floor(Number(this.entryTime));
+              
+              this.entrySpotLine.setData([
+                { time: lineStartTime, value: entrySpot },
+                { time: lineEndTime, value: entrySpot }
+              ]);
+            }
+          };
         }
       } catch (error) {
         console.error('[OperationChart] Erro ao adicionar linha de entrada:', error);
@@ -1843,6 +1901,9 @@ export default {
       
       // Obter entry_spot da resposta buy ou usar o spot atual
       const entrySpot = Number(buy.entry_spot || buy.spot || this.latestTick?.value || 0);
+      
+      // Atualizar o preço de compra com o entry_spot confirmado pela Deriv
+      this.purchasePrice = entrySpot;
       
       // Criar objeto de contrato ativo
       this.activeContract = {
