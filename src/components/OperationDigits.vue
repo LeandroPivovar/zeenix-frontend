@@ -431,7 +431,7 @@ export default {
                 this.scheduleRetry();
             };
 
-            this.ws.onclose = (event) => {
+            this.ws.onclose = () => {
                 if (!this.isConnecting) {
                     this.connectionError = 'Conexão com a Deriv encerrada. Reconectando automaticamente...';
                     this.scheduleRetry();
