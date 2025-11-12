@@ -92,11 +92,59 @@
                 </div>
                 
                 <div class="input-group">
+                    <label class="input-label">Modo de operação</label>
+                    <div class="toggle-buttons">
+                        <button @click="setTradeMode('callput')" :class="{ 'toggle-active': tradeMode === 'callput' }" :disabled="isTrading">Call/Put</button>
+                        <button @click="setTradeMode('digits')" :class="{ 'toggle-active': tradeMode === 'digits' }" :disabled="isTrading">Dígitos</button>
+                    </div>
+                </div>
+
+                <!-- Configuração para Call/Put -->
+                <div v-if="tradeMode === 'callput'" class="input-group">
                     <label class="input-label">Tipo de contrato</label>
                     <select v-model="localOrderConfig.type" class="select-field" :disabled="isTrading">
               <option value="CALL">Alta (CALL)</option>
               <option value="PUT">Baixa (PUT)</option>
                     </select>
+                </div>
+
+                <!-- Configuração para Dígitos -->
+                <div v-if="tradeMode === 'digits'">
+                    <div class="input-group">
+                        <label class="input-label">Tipo de contrato de dígito</label>
+                        <select v-model="digitType" class="select-field" :disabled="isTrading" @change="onDigitTypeChange">
+                            <option value="DIGITMATCH">Match (Igual)</option>
+                            <option value="DIGITDIFF">Differs (Diferente)</option>
+                            <option value="DIGITOVER">Over (Maior que)</option>
+                            <option value="DIGITUNDER">Under (Menor que)</option>
+                            <option value="DIGITEVEN">Even (Par)</option>
+                            <option value="DIGITODD">Odd (Ímpar)</option>
+                        </select>
+                    </div>
+                    <div v-if="needsDigitBarrier" class="input-group">
+                        <label class="input-label">Dígito de referência (0-9)</label>
+                        <select v-model="digitBarrier" class="select-field" :disabled="isTrading" @change="subscribeToProposal">
+                            <option v-for="d in [0,1,2,3,4,5,6,7,8,9]" :key="d" :value="String(d)">{{ d }}</option>
+                        </select>
+                    </div>
+                    <!-- Análise de Frequência de Dígitos -->
+                    <div v-if="digitFrequency.digits.length > 0" class="digit-analysis">
+                        <div class="digit-analysis-header">
+                            <span class="analysis-label">Últimos 20 dígitos:</span>
+                            <span class="digit-sequence">{{ digitFrequency.digits.slice(-20).join(' ') }}</span>
+                        </div>
+                        <div class="digit-frequency-grid">
+                            <div v-for="d in [0,1,2,3,4,5,6,7,8,9]" :key="d" class="frequency-item">
+                                <span class="digit-number">{{ d }}</span>
+                                <span class="frequency-percent">{{ getDigitFrequencyPercent(d) }}%</span>
+                            </div>
+                        </div>
+                        <div class="digit-parity">
+                            <span class="parity-label">Paridade:</span>
+                            <span class="parity-value even">Pares: {{ digitFrequency.parity.even }}%</span>
+                            <span class="parity-value odd">Ímpares: {{ digitFrequency.parity.odd }}%</span>
+                        </div>
+                    </div>
                 </div>
                 
                 <div class="input-row-flex">
@@ -118,7 +166,8 @@
             <input type="number" min="0.35" step="0.01" v-model.number="localOrderConfig.value" class="input-field-value" :disabled="isTrading" />
                 </div>
 
-                <div class="action-buttons-group">
+                <!-- Botões BUY/SELL apenas para Call/Put -->
+                <div v-if="tradeMode === 'callput'" class="action-buttons-group">
                     <button 
                       @click="selectTradeType('CALL')" 
                       class="btn-selector btn-buy-selector" 
@@ -262,6 +311,14 @@ export default {
         durationUnit: 'm',
         value: 10,
       },
+      tradeMode: 'callput', // 'callput' ou 'digits'
+      digitType: 'DIGITMATCH', // Tipo de contrato de dígito
+      digitBarrier: '5', // Dígito de referência (0-9)
+      digitFrequency: {
+        digits: [], // Últimos 20 dígitos
+        frequency: {}, // Frequência por dígito (0-9)
+        parity: { even: 0, odd: 0 }, // Paridade
+      },
       isTrading: false,
       pendingTradeType: null,
       currentProposal: null,
@@ -352,6 +409,10 @@ export default {
         this.connectionError &&
         this.connectionError.toLowerCase().includes('nenhum token deriv')
       );
+    },
+    needsDigitBarrier() {
+      // DIGITEVEN e DIGITODD não precisam de barrier
+      return this.digitType !== 'DIGITEVEN' && this.digitType !== 'DIGITODD';
     },
     },
     methods: {
@@ -857,6 +918,11 @@ export default {
       
       this.isLoadingSymbol = false;
       this.updateChartFromTicks();
+      
+      // Calcular frequência de dígitos se estiver em modo dígitos
+      if (this.tradeMode === 'digits') {
+        this.calculateDigitFrequency();
+      }
     },
     processCandles(msg) {
       const candles = msg.candles || [];
@@ -904,6 +970,11 @@ export default {
       
       console.log('[OperationChart] Tick adicionado. Total de ticks:', this.ticks.length);
       this.updateChartFromTicks();
+      
+      // Calcular frequência de dígitos se estiver em modo dígitos
+      if (this.tradeMode === 'digits') {
+        this.calculateDigitFrequency();
+      }
       
       // Atualizar linha de entrada se existir
       if (this.updateEntrySpotLine) {
@@ -1047,6 +1118,68 @@ export default {
       // Atualizar proposal quando tipo mudar
       this.subscribeToProposal();
     },
+    setTradeMode(mode) {
+      if (this.isTrading || this.activeContract) return;
+      this.tradeMode = mode;
+      // Quando mudar para dígitos, forçar duração em ticks
+      if (mode === 'digits') {
+        this.localOrderConfig.durationUnit = 't';
+        // Limitar duração para dígitos (geralmente 5 ticks)
+        if (this.localOrderConfig.duration > 10) {
+          this.localOrderConfig.duration = 5;
+        }
+      }
+      // Atualizar proposal quando modo mudar
+      this.subscribeToProposal();
+    },
+    onDigitTypeChange() {
+      // Atualizar proposal quando tipo de dígito mudar
+      this.subscribeToProposal();
+    },
+    getDigitFrequencyPercent(digit) {
+      const total = this.digitFrequency.digits.length;
+      if (total === 0) return 0;
+      const count = this.digitFrequency.frequency[digit] || 0;
+      return Math.round((count / total) * 100);
+    },
+    calculateDigitFrequency() {
+      // Calcular frequência dos últimos 20 dígitos
+      const last20Ticks = this.ticks.slice(-20);
+      const digits = [];
+      const frequency = {};
+      
+      // Inicializar frequência para todos os dígitos
+      for (let i = 0; i <= 9; i++) {
+        frequency[i] = 0;
+      }
+      
+      // Extrair último dígito de cada tick
+      // Para dígitos, usamos o último dígito do número inteiro (dígito das unidades)
+      last20Ticks.forEach(tick => {
+        const value = Math.floor(tick.value); // Parte inteira
+        const lastDigit = value % 10; // Último dígito (0-9)
+        digits.push(lastDigit);
+        frequency[lastDigit] = (frequency[lastDigit] || 0) + 1;
+      });
+      
+      // Calcular paridade
+      let evenCount = 0;
+      let oddCount = 0;
+      digits.forEach(d => {
+        if (d % 2 === 0) evenCount++;
+        else oddCount++;
+      });
+      
+      const total = digits.length;
+      this.digitFrequency = {
+        digits,
+        frequency,
+        parity: {
+          even: total > 0 ? Math.round((evenCount / total) * 100) : 0,
+          odd: total > 0 ? Math.round((oddCount / total) * 100) : 0,
+        },
+      };
+    },
     getTokenForAccount() {
       console.log('[OperationChart] getTokenForAccount - Buscando token para conta');
       console.log('[OperationChart] Parâmetros:', {
@@ -1150,17 +1283,40 @@ export default {
       const duration = Math.max(1, Number(this.localOrderConfig.duration));
       const displayCurrency = this.displayCurrency;
       
-      const payload = {
-        proposal: 1,
-        amount: Number(this.localOrderConfig.value),
-        basis: 'stake',
-        contract_type: this.localOrderConfig.type,
-        currency: displayCurrency,
-        duration,
-        duration_unit: this.localOrderConfig.durationUnit,
-        symbol: this.symbol,
-        subscribe: 1, // Subscription contínua
-      };
+      let payload;
+      
+      if (this.tradeMode === 'digits') {
+        // Payload para contratos de dígitos
+        payload = {
+          proposal: 1,
+          amount: Number(this.localOrderConfig.value),
+          basis: 'stake',
+          contract_type: this.digitType,
+          currency: displayCurrency,
+          duration,
+          duration_unit: this.localOrderConfig.durationUnit, // Geralmente 't' para dígitos
+          symbol: this.symbol,
+          subscribe: 1,
+        };
+        
+        // Adicionar barrier se necessário (não para DIGITEVEN e DIGITODD)
+        if (this.needsDigitBarrier) {
+          payload.barrier = this.digitBarrier;
+        }
+      } else {
+        // Payload para Call/Put
+        payload = {
+          proposal: 1,
+          amount: Number(this.localOrderConfig.value),
+          basis: 'stake',
+          contract_type: this.localOrderConfig.type,
+          currency: displayCurrency,
+          duration,
+          duration_unit: this.localOrderConfig.durationUnit,
+          symbol: this.symbol,
+          subscribe: 1, // Subscription contínua
+        };
+      }
       
       console.log('[OperationChart] Subscribing to proposal:', JSON.stringify(payload, null, 2));
       this.send(payload);
@@ -1223,6 +1379,17 @@ export default {
             : `${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`;
           const markerColor = this.realTimeProfit >= 0 ? '#10b981' : '#ef4444';
           const markerTimeToUse = this.entryMarker.originalTime || this.entryMarker.time;
+          
+          // Garantir que o ponto na série principal esteja acima da linha de entrada
+          // Calcular um valor que fique acima da linha de entrada (0.5% acima)
+          const offsetPercent = 0.005; // 0.5%
+          const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
+          
+          // Atualizar o ponto na série principal para manter o marcador acima da linha
+          this.lineSeries.update({
+            time: markerTimeToUse,
+            value: markerValueAboveLine
+          });
           
           this.lineSeries.setMarkers([
             {
@@ -1555,8 +1722,20 @@ export default {
           if (this.lineSeries) {
             const markerColor = this.localOrderConfig.type === 'CALL' ? '#3b82f6' : '#ef4444';
             
-            // Adicionar marcador no momento exato da compra (usar o tempo do tick mais próximo para garantir visibilidade)
-            // Usar 'aboveBar' ou 'belowBar' para melhor visibilidade
+            // Calcular um valor para o marcador que fique acima da linha de entrada
+            // Adicionar um offset de 0.5% do valor de entrada para garantir que o marcador apareça acima
+            const offsetPercent = 0.005; // 0.5%
+            const markerValueAboveLine = entrySpot * (1 + offsetPercent);
+            
+            // Adicionar um ponto temporário na série principal no momento da entrada
+            // com um valor ligeiramente maior que entrySpot para que o marcador apareça acima da linha
+            this.lineSeries.update({
+              time: markerTimeForSeries,
+              value: markerValueAboveLine
+            });
+            
+            // Adicionar marcador no momento exato da compra
+            // Usar 'aboveBar' para posicionar acima do ponto
             const entryMarker = {
               time: markerTimeForSeries,
               position: 'aboveBar',
@@ -1574,7 +1753,7 @@ export default {
               // Re-adicionar o marcador para garantir que seja exibido
               this.lineSeries.setMarkers([entryMarker]);
             });
-            this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueForSeries, originalTime: markerTime };
+            this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueAboveLine, originalTime: markerTime };
             
             console.log('[OperationChart] Marcador adicionado na série principal:', {
               markerTime: markerTimeForSeries,
@@ -1650,6 +1829,17 @@ export default {
                 
                 // Usar o tempo original do marcador (não o tempo do tick mais próximo)
                 const markerTimeToUse = this.entryMarker.originalTime || this.entryMarker.time;
+                
+                // Garantir que o ponto na série principal esteja acima da linha de entrada
+                // Calcular um valor que fique acima da linha de entrada (0.5% acima)
+                const offsetPercent = 0.005; // 0.5%
+                const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
+                
+                // Atualizar o ponto na série principal para manter o marcador acima da linha
+                this.lineSeries.update({
+                  time: markerTimeToUse,
+                  value: markerValueAboveLine
+                });
                 
                 this.lineSeries.setMarkers([
                   {
@@ -1863,11 +2053,13 @@ export default {
       this.activeContract = {
         contract_id: buy.contract_id,
         symbol: this.symbol,
-        type: this.localOrderConfig.type,
+        type: this.tradeMode === 'digits' ? this.digitType : this.localOrderConfig.type,
         entry_spot: entrySpot,
         purchase_time: buy.purchase_time,
         buy_price: Number(buy.buy_price),
         currency: this.displayCurrency,
+        tradeMode: this.tradeMode,
+        ...(this.tradeMode === 'digits' && { digitBarrier: this.digitBarrier }),
       };
       
       // Armazenar tempo de entrada (usar purchase_time ou tempo atual)
@@ -2696,5 +2888,96 @@ export default {
 
 .ai-info-value.orange {
   color: #F97316;
+}
+
+/* Estilos para Análise de Frequência de Dígitos */
+.digit-analysis {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.digit-analysis-header {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.analysis-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+.digit-sequence {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #4ade80;
+  font-family: 'Courier New', monospace;
+  letter-spacing: 2px;
+}
+
+.digit-frequency-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.frequency-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px;
+  background: rgba(30, 41, 59, 0.6);
+  border-radius: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.digit-number {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #f8fafc;
+  margin-bottom: 4px;
+}
+
+.frequency-percent {
+  font-size: 0.75rem;
+  color: #94a3b8;
+  font-weight: 500;
+}
+
+.digit-parity {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.parity-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-weight: 500;
+}
+
+.parity-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+}
+
+.parity-value.even {
+  color: #10b981;
+  background: rgba(16, 185, 129, 0.1);
+}
+
+.parity-value.odd {
+  color: #6366f1;
+  background: rgba(99, 102, 241, 0.1);
 }
 </style>
