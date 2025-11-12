@@ -91,9 +91,14 @@ export default {
           order.price != null
             ? this.formatCurrency(order.price, order.currency || this.accountCurrency)
             : '--';
+        const displayProfit =
+          order.profit != null
+            ? this.formatCurrency(order.profit, order.currency || this.accountCurrency)
+            : '--';
         return {
           ...order,
           displayValue,
+          displayProfit,
           value: displayValue,
           result: order.status || order.result || 'EXECUTED',
         };
@@ -316,13 +321,29 @@ export default {
             second: '2-digit',
           });
 
+      // Se o status for CLOSED e tiver contractId, tentar atualizar ordem existente
+      if (result.status === 'CLOSED' && result.contractId) {
+        const existingOrderIndex = this.lastOrders.findIndex(
+          order => order.contractId === result.contractId
+        );
+        
+        if (existingOrderIndex !== -1) {
+          // Atualizar ordem existente com o profit
+          this.lastOrders[existingOrderIndex].profit = result.profit != null ? Number(result.profit) : null;
+          console.log('[OperationView] Ordem existente atualizada com lucro:', this.lastOrders[existingOrderIndex]);
+          return;
+        }
+      }
+
       const orderEntry = {
         time: timestamp,
         type: result.direction || 'CALL',
         price: result.buyPrice != null ? Number(result.buyPrice) : null,
+        profit: result.profit != null ? Number(result.profit) : null,
         currency: result.currency || this.accountCurrency,
         status: result.status || 'EXECUTED',
         longcode: result.longcode || '',
+        contractId: result.contractId || null,
       };
 
       console.log('[OperationView] Adicionando ordem ao histórico:', orderEntry);

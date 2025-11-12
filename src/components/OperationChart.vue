@@ -185,7 +185,8 @@
                 <div class="orders-table-header">
                     <span>Hora</span>
                     <span>Tipo</span>
-            <span>Valor</span>
+                    <span>Valor</span>
+                    <span>Lucro</span>
                 </div>
 
                 <div class="orders-list-scroll">
@@ -196,6 +197,12 @@
               <span class="order-col">{{ order.time }}</span>
                         <span class="order-col order-type-text">{{ order.type }}</span>
               <span class="order-col order-result-text">{{ order.displayValue }}</span>
+              <span class="order-col order-profit-text" :class="{ 
+                'profit-positive': order.profit != null && order.profit > 0,
+                'profit-negative': order.profit != null && order.profit < 0
+              }">
+                {{ order.displayProfit || '--' }}
+              </span>
             </div>
                     </div>
                 </div>

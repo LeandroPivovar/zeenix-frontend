@@ -25,7 +25,12 @@
 			<button class="menu-item" @click="close" data-text="IAs de Investimento">
 				<img src="../assets/icons/core.svg" alt="" class="icon-sidebar">
 				IAs de Investimento</button>
-			<button class="menu-item" @click="close" data-text="Copy Trading">
+			<button 
+				class="menu-item" 
+				:class="{ active: isCopyTradingActive }"
+				@click="navigateAndClose('/copy-trading')"
+				data-text="Copy Trading"
+			>
 				<img src="../assets/icons/copy.svg" alt="" class="icon-sidebar">
 				Copy Trading
 			</button>
@@ -139,6 +144,9 @@ export default {
 			return this.$route?.path === '/operation';
 			// Se /operation tiver sub-rotas (ex: /operation/details), use:
 			// return this.$route?.path?.startsWith('/operation'); 
+		},
+		isCopyTradingActive() {
+			return this.$route?.path === '/copy-trading';
 		}
 	},
 	methods: {

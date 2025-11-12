@@ -448,10 +448,37 @@
 }
 
 .orders-table-header span, .order-row .order-col {
-    width: 33.33%;
+    flex: 1;
     text-align: left;
 }
-.orders-table-header span:last-child {
+.orders-table-header span:nth-child(1) {
+    flex: 0 0 25%;
+}
+.orders-table-header span:nth-child(2) {
+    flex: 0 0 20%;
+    text-align: center;
+}
+.orders-table-header span:nth-child(3) {
+    flex: 0 0 25%;
+    text-align: right;
+}
+.orders-table-header span:nth-child(4) {
+    flex: 0 0 30%;
+    text-align: right;
+}
+.order-row .order-col:nth-child(1) {
+    flex: 0 0 25%;
+}
+.order-row .order-col:nth-child(2) {
+    flex: 0 0 20%;
+    text-align: center;
+}
+.order-row .order-col:nth-child(3) {
+    flex: 0 0 25%;
+    text-align: right;
+}
+.order-row .order-col:nth-child(4) {
+    flex: 0 0 30%;
     text-align: right;
 }
 
@@ -497,6 +524,19 @@
 
 .order-result-text.loss {
     color: var(--color-red);
+}
+
+.order-profit-text {
+    text-align: right !important;
+    font-weight: bold;
+}
+
+.order-profit-text.profit-positive {
+    color: #10b981;
+}
+
+.order-profit-text.profit-negative {
+    color: #ef4444;
 }
 
 

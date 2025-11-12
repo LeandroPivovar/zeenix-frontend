@@ -8,6 +8,7 @@ import SupportView from '../views/SupportView.vue'
 import SettingsView from '../views/SettingsView.vue'
 import PlansView from '../views/PlansView.vue'
 import OperationView from '../views/OperationView.vue'
+import CopyTradingView from '../views/CopyTrading.vue'
 import DerivOAuthCallback from '../views/DerivOAuthCallback.vue'
 
 const routes = [
@@ -76,6 +77,12 @@ const routes = [
     path: '/operation',
     name: 'Operation',
     component: OperationView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/copy-trading',
+    name: 'CopyTrading',
+    component: CopyTradingView,
     meta: { requiresAuth: true }
   },
   {
