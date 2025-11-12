@@ -4,7 +4,12 @@
         
         <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
 
-        <main class="copy-trading-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <main class="copy-trading-content loading-content" v-if="loading" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+            <div class="loading-spinner"></div>
+            <p class="loading-text">Carregando dados do Copy Trading...</p>
+        </main>
+
+        <main class="copy-trading-content" v-else :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <CopyTradingComponent
                 v-if="showPerformance"
                 :performance-data="performanceData"
@@ -35,6 +40,7 @@ export default {
     components: { AppSidebar, CopyTradingComponent, CopyHistory },
     data() {
         return {
+            loading: true,
             isSidebarOpen: false,
             isSidebarCollapsed: false,
             showPerformance: true,
@@ -101,6 +107,10 @@ export default {
     },
     mounted() {
         this.updateHeaders();
+        // Simular carregamento de dados
+        setTimeout(() => {
+            this.loading = false;
+        }, 1500);
     },
     methods: {
         closeSidebar() {
@@ -148,6 +158,34 @@ export default {
 
 .copy-trading-content.sidebar-collapsed {
     margin-left: 0;
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    min-height: 60vh;
+}
+
+.loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(255, 255, 255, 0.1);
+    border-top-color: #06d6a0;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 24px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.loading-text {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    font-weight: 400;
 }
 
 @media (min-width: 769px) {

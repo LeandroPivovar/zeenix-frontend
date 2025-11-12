@@ -582,6 +582,10 @@ export default {
                 this.ticks.shift();
             }
             
+            // Coletar os últimos 10 ticks e printar no console
+            const last10Ticks = this.ticks.slice(-10);
+            console.log('[OperationDigits] Últimos 10 ticks:', last10Ticks);
+            
             this.calculateDigitFrequency();
         },
         calculateDigitFrequency() {

@@ -858,6 +858,10 @@
         font-size: 22px;
     }
 
+    .ai-arrow-up.arrow-down {
+        transform: rotate(180deg);
+    }
+
     .ai-recommendation-section {
         padding: 10px;
     }
@@ -897,5 +901,9 @@
 
     .ai-arrow-up {
         font-size: 20px;
+    }
+
+    .ai-arrow-up.arrow-down {
+        transform: rotate(180deg);
     }
 }

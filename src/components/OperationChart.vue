@@ -50,17 +50,19 @@
             </div>
             <div class="ai-recommendation-section">
               <div class="ai-recommendation-label">RECOMENDAÇÃO</div>
-              <div class="ai-arrow-up">⬆️</div>
-              <div class="ai-action-text">COMPRAR</div>
+              <div class="ai-arrow-up" :class="{ 'arrow-down': aiRecommendation?.action === 'PUT' }">
+                {{ aiRecommendation?.action === 'PUT' ? '⬇️' : '⬆️' }}
+              </div>
+              <div class="ai-action-text">{{ aiRecommendation?.action === 'PUT' ? 'VENDER' : 'COMPRAR' }}</div>
             </div>
             <div class="ai-info-section">
               <div class="ai-info-item">
-                <span class="ai-info-label">Força da Tendência:</span>
-                <span class="ai-info-value green">82%</span>
+                <span class="ai-info-label">Confiança:</span>
+                <span class="ai-info-value green">{{ aiRecommendation?.confidence || 0 }}%</span>
               </div>
-              <div class="ai-info-item">
-                <span class="ai-info-label">Expira em:</span>
-                <span class="ai-info-value orange">{{ expirationTime }}</span>
+              <div class="ai-info-item" v-if="aiRecommendation?.reasoning">
+                <span class="ai-info-label">Análise:</span>
+                <span class="ai-info-value" style="font-size: 0.75rem;">{{ aiRecommendation.reasoning }}</span>
               </div>
                     </div>
                     </div>
@@ -295,8 +297,11 @@ export default {
       oauthLoading: false,
       expirationTime: '0m39s',
       expirationInterval: null,
-      showAiCard: true,
+      showAiCard: false,
       aiCardCycleInterval: null,
+      aiRecommendationInterval: null,
+      aiRecommendation: null,
+      aiCardTimeout: null,
       audioContext: null,
       retryCount: 0,
       retryTimeout: null,
@@ -908,6 +913,10 @@ export default {
       if (this.ticks.length > 1000) {
         this.ticks.shift();
       }
+      
+      // Coletar os últimos 10 ticks e printar no console
+      const last10Ticks = this.ticks.slice(-10);
+      console.log('[OperationChart] Últimos 10 ticks:', last10Ticks);
       
       console.log('[OperationChart] Tick adicionado. Total de ticks:', this.ticks.length);
       this.updateChartFromTicks();
@@ -2052,41 +2061,76 @@ export default {
         seconds--;
       }, 1000);
     },
-    startAiCardCycle() {
-      if (this.aiCardCycleInterval) {
-        clearInterval(this.aiCardCycleInterval);
+    async fetchAiRecommendation() {
+      if (!this.isAuthorized || this.ticks.length < 10) {
+        return;
       }
-      
-      // Mostra o card inicialmente
-      this.showAiCard = true;
-      // Toca som na primeira exibição
-      this.$nextTick(() => {
-        this.playAiCardSound();
-      });
-      
-      // Ciclo: 30s visível, 20s escondido
-      let isVisible = true;
-      let timeRemaining = 30; // Começa visível por 30s
-      
-      this.aiCardCycleInterval = setInterval(() => {
-        timeRemaining--;
+
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const last10Ticks = this.ticks.slice(-10);
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
         
-        if (timeRemaining <= 0) {
-          if (isVisible) {
-            // Esconde o card por 20s
-            this.showAiCard = false;
-            isVisible = false;
-            timeRemaining = 20;
-          } else {
-            // Mostra o card por 30s
-            this.showAiCard = true;
-            isVisible = true;
-            timeRemaining = 30;
-            // Reinicia o timer de expiração quando o card volta
-            this.startExpirationTimer();
-          }
+        const response = await fetch(`${apiBaseUrl}/gemini/recommendation`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            ticks: last10Ticks
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error('Erro ao buscar recomendação');
         }
-      }, 1000);
+
+        const recommendation = await response.json();
+        this.aiRecommendation = recommendation;
+
+        // Mostrar o card por 10 segundos
+        this.showAiCard = true;
+        this.playAiCardSound();
+
+        // Limpar timeout anterior se existir
+        if (this.aiCardTimeout) {
+          clearTimeout(this.aiCardTimeout);
+        }
+
+        // Esconder o card após 10 segundos
+        this.aiCardTimeout = setTimeout(() => {
+          this.showAiCard = false;
+        }, 10000);
+
+        console.log('[OperationChart] Recomendação da IA recebida:', recommendation);
+      } catch (error) {
+        console.error('[OperationChart] Erro ao buscar recomendação da IA:', error);
+      }
+    },
+    startAiRecommendationCycle() {
+      // Limpar intervalo anterior se existir
+      if (this.aiRecommendationInterval) {
+        clearInterval(this.aiRecommendationInterval);
+      }
+
+      // Buscar recomendação imediatamente se tiver pelo menos 10 ticks
+      if (this.ticks.length >= 10) {
+        this.fetchAiRecommendation();
+      }
+
+      // Buscar recomendação a cada 2 minutos (120000ms)
+      this.aiRecommendationInterval = setInterval(() => {
+        if (this.ticks.length >= 10) {
+          this.fetchAiRecommendation();
+        }
+      }, 120000); // 2 minutos
+    },
+    startAiCardCycle() {
+      // Este método não é mais usado, mas mantido para compatibilidade
+      // A lógica agora está no startAiRecommendationCycle
     },
     playAiCardSound() {
       try {
@@ -2124,6 +2168,21 @@ export default {
           this.playAiCardSound();
             });
         }
+    },
+    isAuthorized(newVal) {
+      if (newVal && this.ticks.length >= 10) {
+        // Iniciar ciclo de recomendações quando autorizado e tiver ticks suficientes
+        this.startAiRecommendationCycle();
+      }
+    },
+    ticks: {
+      handler(newTicks) {
+        if (newTicks.length >= 10 && this.isAuthorized && !this.aiRecommendationInterval) {
+          // Iniciar ciclo quando tiver 10 ticks pela primeira vez
+          this.startAiRecommendationCycle();
+        }
+      },
+      deep: true
     },
     // Reiniciar conexão quando o loginid ou moeda preferida mudarem
     // para garantir que estamos usando o token correto
@@ -2224,10 +2283,16 @@ export default {
       this.initConnection();
       
       this.startExpirationTimer();
-      this.startAiCardCycle();
+      this.startAiRecommendationCycle();
       console.log('[OperationChart] Componente totalmente inicializado');
     },
   beforeUnmount() {
+    if (this.aiRecommendationInterval) {
+      clearInterval(this.aiRecommendationInterval);
+    }
+    if (this.aiCardTimeout) {
+      clearTimeout(this.aiCardTimeout);
+    }
     console.log('[OperationChart] ========== COMPONENTE SENDO DESMONTADO ==========');
     this.isDestroying = true;
     
