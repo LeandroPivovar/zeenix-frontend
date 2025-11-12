@@ -124,9 +124,33 @@
                       SELL
                 </button>
                 </div>
-          <button @click="executeTrade('EXECUTE')" class="btn-execute-operation" :disabled="isTrading || !isAuthorized">
-            {{ isTrading ? 'Aguardando confimação...' : 'Executar Operação' }}
-                </button>
+          <div v-if="currentProposalPrice" class="proposal-info">
+            <div class="proposal-price-label">Preço de Compra:</div>
+            <div class="proposal-price-value">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
+          </div>
+
+          <div v-if="realTimeProfit !== null && activeContract" class="profit-info" :class="{ 'profit-positive': realTimeProfit > 0, 'profit-negative': realTimeProfit < 0 }">
+            <div class="profit-label">P&L em Tempo Real:</div>
+            <div class="profit-value">{{ displayCurrency }} {{ realTimeProfit > 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}</div>
+          </div>
+
+          <button 
+            v-if="!activeContract"
+            @click="executeBuy" 
+            class="btn-execute-operation btn-buy" 
+            :disabled="isTrading || !isAuthorized || !currentProposalId"
+          >
+            {{ isTrading ? 'Aguardando confirmação...' : 'COMPRAR' }}
+          </button>
+
+          <button 
+            v-if="activeContract && isSellEnabled"
+            @click="executeSell" 
+            class="btn-execute-operation btn-sell" 
+            :disabled="isTrading"
+          >
+            {{ isTrading ? 'Vendendo...' : 'VENDER' }}
+          </button>
 
           <p v-if="tradeMessage" class="trade-message success">{{ tradeMessage }}</p>
           <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
@@ -214,6 +238,15 @@ export default {
       isTrading: false,
       pendingTradeType: null,
       currentProposal: null,
+      proposalSubscriptionId: null,
+      contractSubscriptionId: null,
+      activeContract: null,
+      currentProposalId: null,
+      currentProposalPrice: null,
+      realTimeProfit: null,
+      entrySpotLine: null,
+      updateEntrySpotLine: null,
+      isSellEnabled: false,
       connectionCurrency: null,
       oauthLoading: false,
       expirationTime: '0m39s',
@@ -616,6 +649,10 @@ export default {
           console.log('[OperationChart] Moeda preferida configurada:', this.preferredCurrency);
           console.log('[OperationChart] Moeda da conta:', this.accountCurrency);
           this.subscribeToSymbol();
+          // Iniciar subscription de proposal após autorização
+          setTimeout(() => {
+            this.subscribeToProposal();
+          }, 500);
           break;
         case 'history':
           this.processHistory(msg);
@@ -631,6 +668,12 @@ export default {
           break;
         case 'buy':
           this.processBuy(msg);
+          break;
+        case 'proposal_open_contract':
+          this.processProposalOpenContract(msg);
+          break;
+        case 'sell':
+          this.processSell(msg);
           break;
         default:
           break;
@@ -769,6 +812,11 @@ export default {
       
       console.log('[OperationChart] Tick adicionado. Total de ticks:', this.ticks.length);
       this.updateChartFromTicks();
+      
+      // Atualizar linha de entrada se existir
+      if (this.updateEntrySpotLine) {
+        this.updateEntrySpotLine();
+      }
     },
     updateChartFromTicks() {
       // Não atualizar se o componente está sendo destruído
@@ -913,17 +961,23 @@ export default {
     },
     handleSymbolChange() {
       this.subscribeToSymbol();
+      // Reiniciar subscription de proposal quando símbolo mudar
+      this.subscribeToProposal();
     },
     setDurationUnit(unit) {
-      if (this.isTrading) return;
+      if (this.isTrading || this.activeContract) return;
       this.localOrderConfig.durationUnit = unit;
       if (unit === 't') {
         this.localOrderConfig.duration = Math.max(1, Math.min(this.localOrderConfig.duration, 10));
       }
+      // Atualizar proposal quando unidade de duração mudar
+      this.subscribeToProposal();
     },
     selectTradeType(type) {
-      if (this.isTrading) return;
+      if (this.isTrading || this.activeContract) return;
       this.localOrderConfig.type = type;
+      // Atualizar proposal quando tipo mudar
+      this.subscribeToProposal();
     },
     getTokenForAccount() {
       console.log('[OperationChart] getTokenForAccount - Buscando token para conta');
@@ -965,6 +1019,290 @@ export default {
         tokenPreview: defaultToken ? `${defaultToken.substring(0, 10)}...` : 'null'
       });
       return defaultToken;
+    },
+    subscribeToProposal() {
+      // Cancelar subscription anterior se existir
+      this.unsubscribeFromProposal();
+      
+      if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        console.warn('[OperationChart] Não é possível subscrever proposal: não autorizado ou WebSocket não está aberto');
+        return;
+      }
+      
+      if (this.activeContract) {
+        // Não subscrever proposal se já houver contrato ativo
+        return;
+      }
+      
+      const duration = Math.max(1, Number(this.localOrderConfig.duration));
+      const displayCurrency = this.displayCurrency;
+      
+      const payload = {
+        proposal: 1,
+        amount: Number(this.localOrderConfig.value),
+        basis: 'stake',
+        contract_type: this.localOrderConfig.type,
+        currency: displayCurrency,
+        duration,
+        duration_unit: this.localOrderConfig.durationUnit,
+        symbol: this.symbol,
+        subscribe: 1, // Subscription contínua
+      };
+      
+      console.log('[OperationChart] Subscribing to proposal:', JSON.stringify(payload, null, 2));
+      this.send(payload);
+    },
+    unsubscribeFromProposal() {
+      if (this.proposalSubscriptionId && this.ws && this.ws.readyState === WebSocket.OPEN) {
+        console.log('[OperationChart] Unsubscribing from proposal:', this.proposalSubscriptionId);
+        this.send({ forget: this.proposalSubscriptionId });
+        this.proposalSubscriptionId = null;
+      }
+      this.currentProposalId = null;
+      this.currentProposalPrice = null;
+    },
+    subscribeToContract(contractId) {
+      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        console.error('[OperationChart] WebSocket não está pronto para subscrever contrato');
+        return;
+      }
+      
+      const payload = {
+        proposal_open_contract: 1,
+        contract_id: contractId,
+        subscribe: 1,
+      };
+      
+      console.log('[OperationChart] Subscribing to contract:', JSON.stringify(payload, null, 2));
+      this.send(payload);
+    },
+    unsubscribeFromContract() {
+      if (this.contractSubscriptionId && this.ws && this.ws.readyState === WebSocket.OPEN) {
+        console.log('[OperationChart] Unsubscribing from contract:', this.contractSubscriptionId);
+        this.send({ forget: this.contractSubscriptionId });
+        this.contractSubscriptionId = null;
+      }
+    },
+    processProposalOpenContract(msg) {
+      console.log('[OperationChart] ========== CONTRATO ATUALIZADO ==========');
+      console.log('[OperationChart] Mensagem completa:', JSON.stringify(msg, null, 2));
+      
+      const contract = msg.proposal_open_contract;
+      if (!contract) {
+        console.warn('[OperationChart] Contrato não encontrado na mensagem');
+        return;
+      }
+      
+      // Armazenar subscription ID se fornecido
+      if (msg.subscription?.id) {
+        this.contractSubscriptionId = msg.subscription.id;
+      }
+      
+      // Atualizar P&L em tempo real
+      if (contract.profit !== undefined && contract.profit !== null) {
+        this.realTimeProfit = Number(contract.profit);
+        console.log('[OperationChart] P&L atualizado:', this.realTimeProfit);
+      }
+      
+      // Atualizar status de venda antecipada
+      this.isSellEnabled = contract.is_valid_to_sell === 1;
+      
+      // Atualizar dados do contrato ativo
+      if (this.activeContract) {
+        this.activeContract.current_profit = this.realTimeProfit;
+        this.activeContract.is_valid_to_sell = this.isSellEnabled;
+        this.activeContract.sell_price = contract.sell_price ? Number(contract.sell_price) : null;
+        this.activeContract.current_spot = contract.current_spot ? Number(contract.current_spot) : null;
+      }
+      
+      // Verificar se o contrato foi vendido ou expirou
+      if (contract.is_sold === 1) {
+        console.log('[OperationChart] Contrato finalizado (vendido ou expirado)');
+        this.finalizeContract(contract);
+      }
+    },
+    processSell(msg) {
+      console.log('[OperationChart] ========== VENDA CONFIRMADA ==========');
+      console.log('[OperationChart] Mensagem completa:', JSON.stringify(msg, null, 2));
+      
+      const sell = msg.sell;
+      if (!sell) {
+        console.error('[OperationChart] ERRO: Venda não confirmada');
+        this.tradeError = 'A Deriv não confirmou a venda.';
+        this.isTrading = false;
+        return;
+      }
+      
+      console.log('[OperationChart] ✓ Venda executada com sucesso!');
+      console.log('[OperationChart] Dados da venda:', {
+        contractId: sell.contract_id,
+        sellPrice: sell.sell_price,
+        profit: sell.profit,
+        balanceAfter: sell.balance_after
+      });
+      
+      this.tradeMessage = `Venda executada. Lucro: ${this.displayCurrency} ${Number(sell.profit || 0).toFixed(2)}`;
+      this.isTrading = false;
+      
+      // Finalizar contrato
+      if (this.activeContract) {
+        this.finalizeContract({
+          ...sell,
+          is_sold: 1,
+        });
+      }
+    },
+    finalizeContract(contract) {
+      console.log('[OperationChart] ========== FINALIZANDO CONTRATO ==========');
+      
+      // Cancelar subscription do contrato
+      this.unsubscribeFromContract();
+      
+      // Remover linha de entrada do gráfico
+      this.removeEntrySpotLine();
+      
+      // Calcular resultado final
+      const finalProfit = contract.profit !== undefined ? Number(contract.profit) : this.realTimeProfit || 0;
+      
+      // Emitir evento para atualizar histórico
+      this.$emit('trade-result', {
+        contractId: this.activeContract?.contract_id,
+        buyPrice: this.activeContract?.buy_price,
+        sellPrice: contract.sell_price ? Number(contract.sell_price) : null,
+        profit: finalProfit,
+        balanceAfter: contract.balance_after ? Number(contract.balance_after) : null,
+        currency: this.activeContract?.currency || this.displayCurrency,
+        direction: this.activeContract?.type,
+        status: 'CLOSED',
+      });
+      
+      // Limpar estado do contrato ativo
+      this.activeContract = null;
+      this.realTimeProfit = null;
+      this.isSellEnabled = false;
+      
+      // Reiniciar subscription de proposal
+      setTimeout(() => {
+        this.subscribeToProposal();
+      }, 1000);
+      
+      console.log('[OperationChart] ========== CONTRATO FINALIZADO ==========');
+    },
+    executeBuy() {
+      if (!this.isAuthorized) {
+        this.tradeError = 'Conecte-se à Deriv antes de operar.';
+        return;
+      }
+      
+      if (!this.currentProposalId || !this.currentProposalPrice) {
+        this.tradeError = 'Aguarde a proposta ser carregada.';
+        return;
+      }
+      
+      if (this.isTrading) {
+        return;
+      }
+      
+      this.tradeError = '';
+      this.tradeMessage = '';
+      this.isTrading = true;
+      this.pendingTradeType = this.localOrderConfig.type;
+      
+      const buyPayload = {
+        buy: this.currentProposalId,
+        price: this.currentProposalPrice,
+      };
+      
+      console.log('[OperationChart] ========== EXECUTANDO COMPRA ==========');
+      console.log('[OperationChart] Payload:', JSON.stringify(buyPayload, null, 2));
+      this.send(buyPayload);
+    },
+    executeSell() {
+      if (!this.activeContract || !this.isSellEnabled) {
+        this.tradeError = 'Venda não disponível no momento.';
+        return;
+      }
+      
+      if (this.isTrading) {
+        return;
+      }
+      
+      this.tradeError = '';
+      this.tradeMessage = '';
+      this.isTrading = true;
+      
+      const sellPrice = this.activeContract.sell_price || this.currentProposalPrice || 0;
+      const sellPayload = {
+        sell: this.activeContract.contract_id,
+        price: sellPrice,
+      };
+      
+      console.log('[OperationChart] ========== EXECUTANDO VENDA ==========');
+      console.log('[OperationChart] Payload:', JSON.stringify(sellPayload, null, 2));
+      this.send(sellPayload);
+    },
+    addEntrySpotLine(entrySpot) {
+      if (!this.chart || !entrySpot) return;
+      
+      try {
+        // Remover linha anterior se existir
+        this.removeEntrySpotLine();
+        
+        // Criar linha horizontal no gráfico
+        const lineSeries = this.chart.addLineSeries({
+          color: this.localOrderConfig.type === 'CALL' ? '#4ade80' : '#f87171',
+          lineWidth: 2,
+          lineStyle: 2, // Linha tracejada
+          axisLabelVisible: true,
+          title: `Entrada (${this.localOrderConfig.type})`,
+        });
+        
+        // Obter o último tick para o tempo atual e criar uma linha que se estende
+        const lastTick = this.ticks[this.ticks.length - 1];
+        if (lastTick) {
+          const currentTime = Math.floor(Number(lastTick.epoch));
+          // Criar dois pontos: um no início do gráfico e outro no tempo atual
+          // Isso cria uma linha horizontal que se estende
+          const firstTick = this.ticks[0];
+          const startTime = firstTick ? Math.floor(Number(firstTick.epoch)) : currentTime - 3600; // 1 hora atrás se não houver primeiro tick
+          
+          lineSeries.setData([
+            { time: startTime, value: entrySpot },
+            { time: currentTime, value: entrySpot }
+          ]);
+          this.entrySpotLine = lineSeries;
+          console.log('[OperationChart] Linha de entrada adicionada:', entrySpot);
+          
+          // Atualizar a linha quando novos ticks chegarem
+          this.updateEntrySpotLine = () => {
+            if (this.entrySpotLine && this.ticks.length > 0) {
+              const latestTick = this.ticks[this.ticks.length - 1];
+              const latestTime = Math.floor(Number(latestTick.epoch));
+              const firstTick = this.ticks[0];
+              const startTime = firstTick ? Math.floor(Number(firstTick.epoch)) : latestTime - 3600;
+              
+              this.entrySpotLine.setData([
+                { time: startTime, value: entrySpot },
+                { time: latestTime, value: entrySpot }
+              ]);
+            }
+          };
+        }
+      } catch (error) {
+        console.error('[OperationChart] Erro ao adicionar linha de entrada:', error);
+      }
+    },
+    removeEntrySpotLine() {
+      if (this.entrySpotLine && this.chart) {
+        try {
+          this.chart.removeSeries(this.entrySpotLine);
+          this.entrySpotLine = null;
+          this.updateEntrySpotLine = null;
+          console.log('[OperationChart] Linha de entrada removida');
+        } catch (error) {
+          console.warn('[OperationChart] Erro ao remover linha de entrada:', error);
+        }
+      }
     },
     executeTrade(action) {
       console.log('[OperationChart] ========== EXECUTAR OPERAÇÃO ==========');
@@ -1043,7 +1381,8 @@ export default {
       if (!proposal) {
         console.error('[OperationChart] ERRO: Proposta inválida');
         this.tradeError = 'Proposta inválida retornada pela Deriv.';
-        this.isTrading = false;
+        this.currentProposalId = null;
+        this.currentProposalPrice = null;
         return;
       }
       
@@ -1055,24 +1394,15 @@ export default {
         dateStart: proposal.date_start
       });
       
-      this.currentProposal.id = proposal.id;
-      this.currentProposal.askPrice = Number(proposal.ask_price);
+      // Armazenar ID e preço da proposta para exibição e compra
+      this.currentProposalId = proposal.id;
+      this.currentProposalPrice = Number(proposal.ask_price);
       
-      const buyPayload = {
-        buy: proposal.id,
-        price: Number(proposal.ask_price),
-      };
-      
-      console.log('[OperationChart] 🔑 INFORMAÇÕES ANTES DE COMPRAR:');
-      console.log('[OperationChart] - Moeda preferida do usuário:', this.preferredCurrency);
-      console.log('[OperationChart] - Moeda da conta:', this.accountCurrency);
-      console.log('[OperationChart] - Moeda da conexão:', this.connectionCurrency);
-      console.log('[OperationChart] - LoginID da conta:', this.accountLoginid);
-      console.log('[OperationChart] - Token usado (preview):', this.token ? `${this.token.substring(0, 10)}...` : 'null');
-      console.log('[OperationChart] Payload da requisição buy:', JSON.stringify(buyPayload, null, 2));
-      console.log('[OperationChart] Enviando requisição buy...');
-      
-      this.send(buyPayload);
+      // Armazenar subscription ID se fornecido
+      if (msg.subscription?.id) {
+        this.proposalSubscriptionId = msg.subscription.id;
+        console.log('[OperationChart] Proposal subscription ID:', this.proposalSubscriptionId);
+      }
     },
     processBuy(msg) {
       console.log('[OperationChart] ========== COMPRA CONFIRMADA ==========');
@@ -1092,22 +1422,35 @@ export default {
         buyPrice: buy.buy_price,
         balanceAfter: buy.balance_after,
         purchaseTime: buy.purchase_time,
+        entrySpot: buy.entry_spot,
         longcode: buy.longcode
       });
       
-      console.log('[OperationChart] 🔑 INFORMAÇÕES DA CONTA USADA:');
-      console.log('[OperationChart] - Moeda preferida do usuário:', this.preferredCurrency);
-      console.log('[OperationChart] - Moeda da conta:', this.accountCurrency);
-      console.log('[OperationChart] - Moeda da conexão:', this.connectionCurrency);
-      console.log('[OperationChart] - Moeda usada na operação:', this.displayCurrency);
-      console.log('[OperationChart] - LoginID da conta:', this.accountLoginid);
-      console.log('[OperationChart] - Token usado (preview):', this.token ? `${this.token.substring(0, 10)}...` : 'null');
-      console.log('[OperationChart] - Saldo após compra:', buy.balance_after);
-      console.log('[OperationChart] - Preço da compra:', buy.buy_price);
+      // Cancelar subscription de proposal
+      this.unsubscribeFromProposal();
       
-      this.tradeMessage = 'Operação executada com sucesso.';
+      // Criar objeto de contrato ativo
+      this.activeContract = {
+        contract_id: buy.contract_id,
+        symbol: this.symbol,
+        type: this.localOrderConfig.type,
+        entry_spot: Number(buy.entry_spot || buy.spot || 0),
+        purchase_time: buy.purchase_time,
+        buy_price: Number(buy.buy_price),
+        currency: this.displayCurrency,
+      };
+      
+      // Adicionar linha de entrada no gráfico
+      this.addEntrySpotLine(this.activeContract.entry_spot);
+      
+      // Iniciar monitoramento do contrato
+      this.subscribeToContract(buy.contract_id);
+      
+      this.tradeMessage = 'Compra executada com sucesso. Monitorando contrato...';
       this.tradeError = '';
       this.isTrading = false;
+      
+      // Emitir evento para atualizar saldo
       const resultPayload = {
         contractId: buy.contract_id,
         longcode: buy.longcode,
@@ -1115,14 +1458,13 @@ export default {
         balanceAfter: buy.balance_after != null ? Number(buy.balance_after) : null,
         purchaseTime: buy.purchase_time,
         currency: this.displayCurrency,
-        direction: this.pendingTradeType,
+        direction: this.localOrderConfig.type,
         status: 'EXECUTED',
       };
       
       console.log('[OperationChart] Emitindo evento trade-result:', resultPayload);
       this.$emit('trade-result', resultPayload);
-      this.pendingTradeType = null;
-      console.log('[OperationChart] ========== OPERAÇÃO FINALIZADA ==========');
+      console.log('[OperationChart] ========== COMPRA FINALIZADA, INICIANDO MONITORAMENTO ==========');
     },
     send(payload) {
       console.log('[OperationChart] 📤 Enviando mensagem para Deriv:', JSON.stringify(payload, null, 2));
@@ -1337,6 +1679,16 @@ export default {
         }
       });
     },
+    'localOrderConfig.duration'(newVal, oldVal) {
+      if (newVal !== oldVal && !this.activeContract && this.isAuthorized) {
+        this.subscribeToProposal();
+      }
+    },
+    'localOrderConfig.value'(newVal, oldVal) {
+      if (newVal !== oldVal && !this.activeContract && this.isAuthorized) {
+        this.subscribeToProposal();
+      }
+    },
     },
     mounted() {
       console.log('[OperationChart] ========== COMPONENTE MONTADO ==========');
@@ -1372,6 +1724,13 @@ export default {
       clearTimeout(this.retryTimeout);
       this.retryTimeout = null;
     }
+    
+    // Cancelar subscriptions
+    this.unsubscribeFromProposal();
+    this.unsubscribeFromContract();
+    
+    // Remover linha de entrada
+    this.removeEntrySpotLine();
     
     this.teardownConnection();
     if (this.chart) {
@@ -1630,6 +1989,86 @@ export default {
 
 .trade-message.error {
   color: #f87171;
+}
+
+.proposal-info {
+  margin: 16px 0;
+  padding: 12px;
+  background: rgba(99, 102, 241, 0.1);
+  border-radius: 8px;
+  border: 1px solid rgba(99, 102, 241, 0.3);
+}
+
+.proposal-price-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.proposal-price-value {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #6366f1;
+}
+
+.profit-info {
+  margin: 16px 0;
+  padding: 12px;
+  border-radius: 8px;
+  border: 1px solid;
+}
+
+.profit-info.profit-positive {
+  background: rgba(16, 185, 129, 0.1);
+  border-color: rgba(16, 185, 129, 0.3);
+}
+
+.profit-info.profit-negative {
+  background: rgba(239, 68, 68, 0.1);
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.profit-label {
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.6);
+  margin-bottom: 4px;
+}
+
+.profit-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.profit-info.profit-positive .profit-value {
+  color: #10b981;
+}
+
+.profit-info.profit-negative .profit-value {
+  color: #ef4444;
+}
+
+.btn-execute-operation.btn-buy {
+  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+  color: white;
+  border: none;
+}
+
+.btn-execute-operation.btn-buy:hover:not(:disabled) {
+  background: linear-gradient(135deg, #059669 0%, #047857 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-execute-operation.btn-sell {
+  background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+  color: white;
+  border: none;
+}
+
+.btn-execute-operation.btn-sell:hover:not(:disabled) {
+  background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
 }
 
 /* Card de Recomendação da IA Orion */
