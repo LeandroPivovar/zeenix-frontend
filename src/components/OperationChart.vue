@@ -1487,7 +1487,7 @@ export default {
         // Remover linha anterior se existir
         this.removeEntrySpotLine();
         
-        const entryColor = this.localOrderConfig.type === 'CALL' ? '#4ade80' : '#f87171';
+        const entryColor = '#94a3b8'; // Cinza para linha de referência
         const entryTimeUnix = Math.floor(Number(entryTime));
         
         console.log('[OperationChart] Adicionando linha de entrada:', {
