@@ -1,6 +1,14 @@
 <template>
-	<div class="layout">
-		<AppSidebar />
+	<div class="layout" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+		<AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
+		
+		<div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
+		
+		<header class="plans-header">
+			<button class="hamburger-btn" @click="handleHamburgerClick">&#9776;</button>
+			<h1 class="header-title">Planos</h1>
+		</header>
+		
 		<main class="plans-content">
 			<div class="video-section">
 				<div class="video-container">
@@ -184,7 +192,9 @@ export default {
 			loading: true,
 			error: null,
 			activating: false,
-			isPlaying: false
+			isPlaying: false,
+			isSidebarOpen: false,
+			isSidebarCollapsed: false
 		}
 	},
 	mounted() {
@@ -192,6 +202,24 @@ export default {
 		this.fetchCurrentPlan()
 	},
 	methods: {
+		toggleSidebar() {
+			this.isSidebarOpen = !this.isSidebarOpen
+		},
+		closeSidebar() {
+			this.isSidebarOpen = false
+		},
+		toggleSidebarCollapse() {
+			this.isSidebarCollapsed = !this.isSidebarCollapsed
+		},
+		handleHamburgerClick() {
+			if (this.isSidebarCollapsed) {
+				// Se estiver colapsada, expandir
+				this.isSidebarCollapsed = false
+			} else {
+				// Se não estiver colapsada, abrir no modo mobile
+				this.toggleSidebar()
+			}
+		},
 		async fetchPlans() {
 			this.loading = true
 			this.error = null

@@ -7,6 +7,64 @@
   	margin-left: 240px;
 }
 
+.layout.sidebar-collapsed {
+	margin-left: 60px;
+}
+
+.support-header {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px 24px;
+	background: #141515;
+	border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.hamburger-btn {
+	display: none;
+	background: transparent;
+	border: none;
+	color: #f8fafc;
+	font-size: 1.5rem;
+	cursor: pointer;
+	padding: 8px;
+}
+
+.support-header .header-title {
+	font-size: 20px;
+	font-weight: 600;
+	color: #e5e7eb;
+	margin: 0;
+}
+
+@media (max-width: 768px) {
+	.layout {
+		margin-left: 0;
+	}
+	
+	.layout.sidebar-collapsed {
+		margin-left: 0;
+	}
+	
+	.hamburger-btn {
+		display: block;
+	}
+}
+
+.mobile-overlay {
+	display: none;
+	position: fixed;
+	inset: 0;
+	background: rgba(0, 0, 0, 0.5);
+	z-index: 998;
+}
+
+@media (max-width: 768px) {
+	.mobile-overlay {
+		display: block;
+	}
+}
+
 .top-header-fixed {
 	position: fixed;
 	top: 0;

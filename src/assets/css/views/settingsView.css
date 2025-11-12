@@ -10,6 +10,11 @@
     font-family: Inter, system-ui, sans-serif;
 }
 
+.layout.sidebar-collapsed {
+	margin-left: 3.75rem;
+	max-width: calc( 100% - 3.75rem );
+}
+
 main{ min-height: 10vh; }
 
 .settings-content { 
@@ -31,6 +36,33 @@ main{ min-height: 10vh; }
     margin: 0 0 1.875rem; 
     border-bottom: 0.0625rem solid rgba(255,255,255,0.05); 
     padding: 0.5rem 1rem; 
+    gap: 16px;
+}
+
+.hamburger-btn {
+	display: none;
+	background: transparent;
+	border: none;
+	color: #f8fafc;
+	font-size: 1.5rem;
+	cursor: pointer;
+	padding: 8px;
+}
+
+@media (max-width: 768px) {
+	.layout {
+		margin-left: 0;
+		max-width: 100%;
+	}
+	
+	.layout.sidebar-collapsed {
+		margin-left: 0;
+		max-width: 100%;
+	}
+	
+	.hamburger-btn {
+		display: block;
+	}
 }
 
 .back-btn { 
