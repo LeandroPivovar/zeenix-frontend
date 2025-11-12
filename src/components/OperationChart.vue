@@ -162,6 +162,17 @@
           <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
             </div>
 
+        <TradeResultModal
+          :visible="showTradeResultModal"
+          :profit="finalTradeProfit"
+          :currency="displayCurrency"
+          :type="finalTradeType"
+          :buy-price="finalTradeBuyPrice"
+          :sell-price="finalTradeSellPrice"
+          :balance-after="finalTradeBalanceAfter"
+          @close="closeTradeResultModal"
+        />
+
         <div class="card-last-orders animated-card" data-anim-index="1">
                 <h4 class="card-title">Últimas Ordens</h4>
                 
@@ -189,11 +200,15 @@
 
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
+import TradeResultModal from './TradeResultModal.vue';
 
 const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
 
 export default {
     name: 'OperationChart',
+    components: {
+      TradeResultModal,
+    },
     props: {
         accountBalance: { type: String, required: true },
     accountCurrency: { type: String, default: 'USD' },
@@ -256,6 +271,12 @@ export default {
       entryTime: null,
       isSellEnabled: false,
       isDemoAccount: false,
+      showTradeResultModal: false,
+      finalTradeProfit: 0,
+      finalTradeType: 'CALL',
+      finalTradeBuyPrice: 0,
+      finalTradeSellPrice: null,
+      finalTradeBalanceAfter: null,
       connectionCurrency: null,
       oauthLoading: false,
       expirationTime: '0m39s',
@@ -1206,7 +1227,28 @@ export default {
         this.realTimeProfit = Number(contract.profit);
         console.log('[OperationChart] P&L atualizado:', this.realTimeProfit);
         
-        // Atualizar marcador no gráfico com P&L
+        // Atualizar marcador no gráfico com P&L imediatamente
+        if (this.lineSeries && this.entryMarker) {
+          const profitText = this.realTimeProfit >= 0 
+            ? `+${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`
+            : `${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`;
+          const markerColor = this.realTimeProfit >= 0 ? '#10b981' : '#ef4444';
+          const markerTimeToUse = this.entryMarker.originalTime || this.entryMarker.time;
+          
+          this.lineSeries.setMarkers([
+            {
+              time: markerTimeToUse,
+              position: 'inBar',
+              color: markerColor,
+              shape: 'circle',
+              size: 3,
+              text: profitText,
+            }
+          ]);
+          console.log('[OperationChart] Marcador atualizado com P&L:', profitText);
+        }
+        
+        // Atualizar linha de entrada também
         if (this.updateEntrySpotLine) {
           this.updateEntrySpotLine();
         }
@@ -1238,7 +1280,10 @@ export default {
       // Verificar se o contrato foi vendido ou expirou
       if (contract.is_sold === 1) {
         console.log('[OperationChart] Contrato finalizado (vendido ou expirado)');
-        this.finalizeContract(contract);
+        // Aguardar um pouco para garantir que o P&L final está atualizado
+        setTimeout(() => {
+          this.finalizeContract(contract);
+        }, 100);
       }
     },
     processSell(msg) {
@@ -1281,8 +1326,31 @@ export default {
       // Remover linha de entrada do gráfico
       this.removeEntrySpotLine();
       
-      // Calcular resultado final
-      const finalProfit = contract.profit !== undefined ? Number(contract.profit) : this.realTimeProfit || 0;
+      // Calcular resultado final - usar o profit do contrato se disponível, senão usar o realTimeProfit
+      let finalProfit = 0;
+      if (contract.profit !== undefined && contract.profit !== null) {
+        finalProfit = Number(contract.profit);
+      } else if (this.realTimeProfit !== null && this.realTimeProfit !== undefined) {
+        finalProfit = Number(this.realTimeProfit);
+      } else if (contract.sell_price !== undefined && contract.sell_price !== null && this.activeContract?.buy_price) {
+        // Calcular lucro baseado na diferença entre preço de venda e compra
+        finalProfit = Number(contract.sell_price) - Number(this.activeContract.buy_price);
+      }
+      
+      console.log('[OperationChart] Lucro final calculado:', {
+        contractProfit: contract.profit,
+        realTimeProfit: this.realTimeProfit,
+        calculatedProfit: finalProfit,
+        sellPrice: contract.sell_price,
+        buyPrice: this.activeContract?.buy_price
+      });
+      
+      // Armazenar dados para o modal
+      this.finalTradeProfit = finalProfit;
+      this.finalTradeType = this.activeContract?.type || 'CALL';
+      this.finalTradeBuyPrice = this.activeContract?.buy_price || 0;
+      this.finalTradeSellPrice = contract.sell_price ? Number(contract.sell_price) : null;
+      this.finalTradeBalanceAfter = contract.balance_after ? Number(contract.balance_after) : null;
       
       // Emitir evento para atualizar histórico
       this.$emit('trade-result', {
@@ -1302,12 +1370,20 @@ export default {
       this.isSellEnabled = false;
       // Manter isDemoAccount pois é baseado na autorização, não no contrato
       
-      // Reiniciar subscription de proposal
-      setTimeout(() => {
-        this.subscribeToProposal();
-      }, 1000);
+      // Mostrar modal de resultado
+      this.showTradeResultModal = true;
+      
+      // Reiniciar subscription de proposal após fechar o modal
+      // (será feito no método closeTradeResultModal)
       
       console.log('[OperationChart] ========== CONTRATO FINALIZADO ==========');
+    },
+    closeTradeResultModal() {
+      this.showTradeResultModal = false;
+      // Reiniciar subscription de proposal após fechar o modal
+      setTimeout(() => {
+        this.subscribeToProposal();
+      }, 500);
     },
     executeBuy() {
       if (!this.isAuthorized) {
@@ -1363,7 +1439,10 @@ export default {
       this.send(sellPayload);
     },
     addEntrySpotLine(entrySpot, entryTime) {
-      if (!this.chart || !entrySpot) return;
+      if (!this.chart || !entrySpot) {
+        console.warn('[OperationChart] Não é possível adicionar linha de entrada: chart ou entrySpot não disponível');
+        return;
+      }
       
       try {
         // Remover linha anterior se existir
@@ -1371,6 +1450,50 @@ export default {
         
         const entryColor = this.localOrderConfig.type === 'CALL' ? '#4ade80' : '#f87171';
         const entryTimeUnix = Math.floor(Number(entryTime));
+        
+        console.log('[OperationChart] Adicionando linha de entrada:', {
+          entrySpot,
+          entryTime: entryTimeUnix,
+          entryTimeDate: new Date(entryTimeUnix * 1000).toISOString(),
+          ticksCount: this.ticks.length
+        });
+        
+        // Encontrar o tick mais próximo ao momento da compra
+        let closestTick = null;
+        let closestTickTime = null;
+        if (this.ticks.length > 0) {
+          let minDiff = Infinity;
+          for (const tick of this.ticks) {
+            const tickTime = Math.floor(Number(tick.epoch));
+            const diff = Math.abs(tickTime - entryTimeUnix);
+            if (diff < minDiff) {
+              minDiff = diff;
+              closestTick = tick;
+              closestTickTime = tickTime;
+            }
+          }
+          console.log('[OperationChart] Tick mais próximo encontrado:', {
+            tickTime: closestTickTime,
+            tickValue: closestTick?.value,
+            diff: Math.abs(closestTickTime - entryTimeUnix),
+            entryTime: entryTimeUnix
+          });
+        }
+        
+        // Usar o tempo do tick mais próximo (se estiver dentro de 60 segundos) ou o tempo de entrada
+        // Se a diferença for muito grande, usar o tempo de entrada diretamente
+        const timeDiff = closestTickTime ? Math.abs(closestTickTime - entryTimeUnix) : Infinity;
+        const markerTime = (closestTickTime && timeDiff < 60) ? closestTickTime : entryTimeUnix;
+        const markerValue = (closestTick && timeDiff < 60) ? closestTick.value : entrySpot;
+        
+        console.log('[OperationChart] Tempo do marcador determinado:', {
+          markerTime,
+          markerValue,
+          entryTimeUnix,
+          closestTickTime,
+          timeDiff,
+          usingClosestTick: timeDiff < 60
+        });
         
         // Criar linha horizontal no gráfico
         const lineSeries = this.chart.addLineSeries({
@@ -1396,29 +1519,99 @@ export default {
           ]);
           this.entrySpotLine = lineSeries;
           
-          // Adicionar marcador visual no ponto de entrada
+          // Adicionar marcador visual no ponto de entrada na série principal
+          // O marcador precisa estar em um ponto onde há dados na série
+          // Vamos usar o tick mais próximo ou o último tick disponível
+          const markerTimeForSeries = closestTickTime || (this.ticks.length > 0 ? Math.floor(Number(this.ticks[this.ticks.length - 1].epoch)) : markerTime);
+          const markerValueForSeries = closestTick?.value || (this.ticks.length > 0 ? this.ticks[this.ticks.length - 1].value : markerValue);
+          
           if (this.lineSeries) {
             const markerColor = this.localOrderConfig.type === 'CALL' ? '#3b82f6' : '#ef4444';
-            this.lineSeries.setMarkers([
-              {
-                time: entryTimeUnix,
-                position: 'inBar',
-                color: markerColor,
-                shape: 'circle',
-                size: 2, // Tamanho maior para melhor visibilidade
-                text: `Entrada`,
+            
+            // Adicionar marcador no momento exato da compra (usar o tempo do tick mais próximo para garantir visibilidade)
+            const entryMarker = {
+              time: markerTimeForSeries,
+              position: 'inBar',
+              color: markerColor,
+              shape: 'circle',
+              size: 3, // Tamanho maior para melhor visibilidade
+              text: `Entrada ${this.localOrderConfig.type}`,
+            };
+            
+            // Adicionar o marcador (setMarkers substitui todos os marcadores existentes)
+            this.lineSeries.setMarkers([entryMarker]);
+            this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueForSeries, originalTime: markerTime };
+            
+            console.log('[OperationChart] Marcador adicionado na série principal:', {
+              markerTime: markerTimeForSeries,
+              originalTime: markerTime,
+              value: markerValueForSeries,
+              spot: entrySpot,
+              color: markerColor,
+              usingClosestTick: !!closestTickTime
+            });
+            
+            // Forçar atualização do gráfico
+            this.$nextTick(() => {
+              try {
+                if (this.chart) {
+                  // Forçar redraw do gráfico
+                  this.chart.timeScale().scrollToPosition(-1, false);
+                  // Ajustar visibilidade para mostrar o marcador
+                  this.chart.timeScale().fitContent();
+                }
+              } catch (error) {
+                console.warn('[OperationChart] Erro ao forçar atualização do gráfico:', error);
               }
-            ]);
-            this.entryMarker = { time: entryTimeUnix, spot: entrySpot };
+            });
+          } else {
+            console.warn('[OperationChart] lineSeries não está disponível para adicionar marcador');
+            // Armazenar informações do marcador para adicionar depois
+            this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueForSeries, originalTime: markerTime };
+            
+            // Tentar novamente após um delay
+            setTimeout(() => {
+              if (this.lineSeries && this.entryMarker) {
+                const markerColor = this.localOrderConfig.type === 'CALL' ? '#3b82f6' : '#ef4444';
+                this.lineSeries.setMarkers([
+                  {
+                    time: this.entryMarker.time,
+                    position: 'inBar',
+                    color: markerColor,
+                    shape: 'circle',
+                    size: 3,
+                    text: `Entrada ${this.localOrderConfig.type}`,
+                  }
+                ]);
+                console.log('[OperationChart] Marcador adicionado após retry');
+              }
+            }, 500);
           }
           
-          // Adicionar linha vertical no tempo de entrada usando timeScale markers
-          this.chart.timeScale().setVisibleRange({
-            from: Math.min(startTime, entryTimeUnix - 300), // Mostrar um pouco antes da entrada
-            to: currentTime,
+          // Garantir que o gráfico mostre o momento da entrada
+          this.$nextTick(() => {
+            try {
+              // Ajustar o zoom para mostrar o momento da entrada
+              const visibleRange = this.chart.timeScale().getVisibleRange();
+              if (visibleRange) {
+                const rangeStart = Math.min(visibleRange.from, markerTime - 300);
+                const rangeEnd = Math.max(visibleRange.to, currentTime);
+                this.chart.timeScale().setVisibleRange({
+                  from: rangeStart,
+                  to: rangeEnd,
+                });
+              }
+            } catch (error) {
+              console.warn('[OperationChart] Erro ao ajustar visibilidade:', error);
+            }
           });
           
-          console.log('[OperationChart] Linha de entrada e marcador adicionados:', { entrySpot, entryTime: entryTimeUnix });
+          console.log('[OperationChart] Linha de entrada e marcador adicionados:', { 
+            entrySpot, 
+            entryTime: entryTimeUnix,
+            markerTime: markerTime,
+            markerValue: markerValue
+          });
           
           // Atualizar a linha quando novos ticks chegarem
           this.updateEntrySpotLine = () => {
@@ -1434,28 +1627,39 @@ export default {
               ]);
               
               // Atualizar marcador com P&L se disponível
-              if (this.lineSeries && this.entryMarker && this.realTimeProfit !== null) {
-                const profitText = this.realTimeProfit >= 0 
-                  ? `+${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`
-                  : `${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`;
-                const markerColor = this.realTimeProfit >= 0 ? '#10b981' : '#ef4444';
+              if (this.lineSeries && this.entryMarker) {
+                const profitText = this.realTimeProfit !== null
+                  ? (this.realTimeProfit >= 0 
+                      ? `+${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`
+                      : `${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`)
+                  : `Entrada ${this.localOrderConfig.type}`;
+                
+                const markerColor = this.realTimeProfit !== null
+                  ? (this.realTimeProfit >= 0 ? '#10b981' : '#ef4444')
+                  : (this.localOrderConfig.type === 'CALL' ? '#3b82f6' : '#ef4444');
+                
+                // Usar o tempo original do marcador (não o tempo do tick mais próximo)
+                const markerTimeToUse = this.entryMarker.originalTime || this.entryMarker.time;
                 
                 this.lineSeries.setMarkers([
                   {
-                    time: this.entryMarker.time,
+                    time: markerTimeToUse,
                     position: 'inBar',
                     color: markerColor,
                     shape: 'circle',
-                    size: 2, // Tamanho maior
+                    size: 3, // Tamanho maior
                     text: profitText,
                   }
                 ]);
               }
             }
           };
+        } else {
+          console.warn('[OperationChart] Nenhum tick disponível para adicionar linha de entrada');
         }
       } catch (error) {
         console.error('[OperationChart] Erro ao adicionar linha de entrada:', error);
+        console.error('[OperationChart] Stack trace:', error.stack);
       }
     },
     removeEntrySpotLine() {
@@ -1620,8 +1824,22 @@ export default {
       // Armazenar tempo de entrada (usar purchase_time ou tempo atual)
       this.entryTime = buy.purchase_time || Math.floor(Date.now() / 1000);
       
-      // Adicionar linha de entrada e marcador no gráfico
-      this.addEntrySpotLine(this.activeContract.entry_spot, this.entryTime);
+      console.log('[OperationChart] Preparando para adicionar marcador visual:', {
+        entrySpot: this.activeContract.entry_spot,
+        entryTime: this.entryTime,
+        purchaseTime: buy.purchase_time,
+        latestTick: this.latestTick,
+        ticksCount: this.ticks.length,
+        chartInitialized: this.chartInitialized
+      });
+      
+      // Aguardar um pouco para garantir que o gráfico está atualizado
+      this.$nextTick(() => {
+        // Adicionar linha de entrada e marcador no gráfico
+        setTimeout(() => {
+          this.addEntrySpotLine(this.activeContract.entry_spot, this.entryTime);
+        }, 100);
+      });
       
       // Iniciar monitoramento do contrato
       this.subscribeToContract(buy.contract_id);
