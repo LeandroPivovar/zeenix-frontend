@@ -1224,16 +1224,28 @@ export default {
           const markerColor = this.realTimeProfit >= 0 ? '#10b981' : '#ef4444';
           const markerTimeToUse = this.entryMarker.originalTime || this.entryMarker.time;
           
-          // Garantir que o ponto na série principal esteja acima da linha de entrada
-          // Calcular um valor que fique acima da linha de entrada (0.5% acima)
-          const offsetPercent = 0.005; // 0.5%
-          const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
+          // Verificar se o tempo do marcador é válido (não mais antigo que o último tick)
+          // Se for muito antigo, não tentar atualizar o ponto na série principal
+          const lastTickTime = this.ticks.length > 0 ? Math.floor(Number(this.ticks[this.ticks.length - 1].epoch)) : null;
+          const canUpdatePoint = lastTickTime && markerTimeToUse >= lastTickTime;
           
-          // Atualizar o ponto na série principal para manter o marcador acima da linha
-          this.lineSeries.update({
-            time: markerTimeToUse,
-            value: markerValueAboveLine
-          });
+          if (canUpdatePoint) {
+            // Garantir que o ponto na série principal esteja acima da linha de entrada
+            // Calcular um valor que fique acima da linha de entrada (0.5% acima)
+            const offsetPercent = 0.005; // 0.5%
+            const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
+            
+            // Atualizar o ponto na série principal para manter o marcador acima da linha
+            try {
+              this.lineSeries.update({
+                time: markerTimeToUse,
+                value: markerValueAboveLine
+              });
+            } catch (error) {
+              // Se falhar ao atualizar, apenas atualizar o marcador
+              console.warn('[OperationChart] Não foi possível atualizar ponto na série:', error);
+            }
+          }
           
           this.lineSeries.setMarkers([
             {
@@ -1674,16 +1686,28 @@ export default {
                 // Usar o tempo original do marcador (não o tempo do tick mais próximo)
                 const markerTimeToUse = this.entryMarker.originalTime || this.entryMarker.time;
                 
-                // Garantir que o ponto na série principal esteja acima da linha de entrada
-                // Calcular um valor que fique acima da linha de entrada (0.5% acima)
-                const offsetPercent = 0.005; // 0.5%
-                const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
+                // Verificar se o tempo do marcador é válido (não mais antigo que o último tick)
+                // Se for muito antigo, não tentar atualizar o ponto na série principal
+                const lastTickTime = this.ticks.length > 0 ? Math.floor(Number(this.ticks[this.ticks.length - 1].epoch)) : null;
+                const canUpdatePoint = lastTickTime && markerTimeToUse >= lastTickTime;
                 
-                // Atualizar o ponto na série principal para manter o marcador acima da linha
-                this.lineSeries.update({
-                  time: markerTimeToUse,
-                  value: markerValueAboveLine
-                });
+                if (canUpdatePoint) {
+                  // Garantir que o ponto na série principal esteja acima da linha de entrada
+                  // Calcular um valor que fique acima da linha de entrada (0.5% acima)
+                  const offsetPercent = 0.005; // 0.5%
+                  const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
+                  
+                  // Atualizar o ponto na série principal para manter o marcador acima da linha
+                  try {
+                    this.lineSeries.update({
+                      time: markerTimeToUse,
+                      value: markerValueAboveLine
+                    });
+                  } catch (error) {
+                    // Se falhar ao atualizar, apenas atualizar o marcador
+                    console.warn('[OperationChart] Não foi possível atualizar ponto na série:', error);
+                  }
+                }
                 
                 this.lineSeries.setMarkers([
                   {
