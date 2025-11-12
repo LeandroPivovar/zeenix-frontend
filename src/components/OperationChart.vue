@@ -2121,12 +2121,12 @@ export default {
         this.fetchAiRecommendation();
       }
 
-      // Buscar recomendação a cada 2 minutos (120000ms)
+      // Buscar recomendação a cada 40 segundos (40000ms)
       this.aiRecommendationInterval = setInterval(() => {
         if (this.ticks.length >= 10) {
           this.fetchAiRecommendation();
         }
-      }, 120000); // 2 minutos
+      }, 40000); // 40 segundos
     },
     startAiCardCycle() {
       // Este método não é mais usado, mas mantido para compatibilidade
