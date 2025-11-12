@@ -7,7 +7,7 @@
         <span class="line"></span>
         <span class="line"></span>
       </button>
-      <h1 class="header-title">Dashboard</h1>
+      <h1 class="title">Zenix</h1>
       <button class="notify-btn">
         <img src="../assets/icons/notify.svg" alt="" width="20px">
       </button>

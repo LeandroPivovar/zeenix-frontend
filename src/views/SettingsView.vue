@@ -1,5 +1,5 @@
 <template>
-  <div class="layout" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+  <div class="layout">
     <div
       v-if="sidebarIsOpen && isMobile"
       class="sidebar-overlay"
@@ -7,10 +7,9 @@
       @click="closeSidebar"
     ></div>
 
-    <AppSidebar :is-open="sidebarIsOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
+    <AppSidebar :is-open="sidebarIsOpen" @close-sidebar="closeSidebar" />
 
       <div class="header-settings">
-        <button class="hamburger-btn" @click="handleHamburgerClick">&#9776;</button>
           <button class="back-btn" @click="$router.push('/dashboard')">
             <img src="../assets/icons/back.svg" alt="" width="20px">
           </button>
@@ -247,7 +246,6 @@ export default {
       showChangePasswordModal: false,
       showChangePhotoModal: false,
       sidebarIsOpen: false,
-      isSidebarCollapsed: false,
       isMobile: false // Novo estado para detectar mobile
     }
   },
@@ -538,18 +536,6 @@ export default {
     },
     closeSidebar() {
       this.sidebarIsOpen = false;
-    },
-    toggleSidebarCollapse() {
-      this.isSidebarCollapsed = !this.isSidebarCollapsed;
-    },
-    handleHamburgerClick() {
-      if (this.isSidebarCollapsed) {
-        // Se estiver colapsada, expandir
-        this.isSidebarCollapsed = false;
-      } else {
-        // Se não estiver colapsada, abrir no modo mobile
-        this.toggleSidebar();
-      }
     }
   }
 }

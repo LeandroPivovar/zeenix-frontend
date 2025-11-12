@@ -1,14 +1,9 @@
 <template>
-	<div class="layout" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-		<AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
+	<div class="layout">
+		<AppSidebar :is-open="isSidebarOpen" @close-sidebar="closeSidebar" />
 
 		
 		<div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
-		
-		<header class="support-header">
-			<button class="hamburger-btn" @click="handleHamburgerClick">&#9776;</button>
-			<h1 class="header-title">Suporte</h1>
-		</header>
 		
 		<main class="support-content">
 			
@@ -97,7 +92,7 @@ import AppSidebar from '../components/Sidebar.vue'
 export default {
 	name: 'SupportView',
 	components: { AppSidebar },
-		data() {
+	data() {
 		return {
 			faqs: [],
 			expandedFaqs: {},
@@ -106,8 +101,7 @@ export default {
 			error: null,
 			systemStatus: null,
 			searchTimeout: null,
-			isSidebarOpen: false,
-			isSidebarCollapsed: false
+			isSidebarOpen: false 
 		}
 	},
 	mounted() {
@@ -117,18 +111,6 @@ export default {
 	methods: {
 		toggleSidebar() { this.isSidebarOpen = !this.isSidebarOpen },
 		closeSidebar() { this.isSidebarOpen = false },
-		toggleSidebarCollapse() {
-			this.isSidebarCollapsed = !this.isSidebarCollapsed
-		},
-		handleHamburgerClick() {
-			if (this.isSidebarCollapsed) {
-				// Se estiver colapsada, expandir
-				this.isSidebarCollapsed = false
-			} else {
-				// Se não estiver colapsada, abrir no modo mobile
-				this.toggleSidebar()
-			}
-		},
 		async fetchFaqs() {
 			this.loading = true
 			this.error = null

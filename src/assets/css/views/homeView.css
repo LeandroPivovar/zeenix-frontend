@@ -19,40 +19,16 @@
 }
 
 .layout.sidebar-collapsed .content {
-    margin-left: 60px;
-    width: calc(100% - 60px);
+    margin-left: 0;
+    width: 100%;
 }
 
 header{
-    display: none;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 24px; 
-    background: #141515;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
-    position: fixed;
-    top: 0;
-    left: 250px;
-    right: 0;
-    z-index: 100;
-    transition: left 0.3s ease;
-    height: 60px;
-    box-sizing: border-box;
-    width: auto;
-}
-
-.layout.sidebar-collapsed header {
-    left: 60px;
-    right: 0;
     display: flex;
-}
-
-.header-title {
-    font-size: 20px;
-    font-weight: 600;
-    color: #e5e7eb;
-    margin: 0;
-    flex: 1;
+    justify-content: space-around;
+    align-items: center;
+    padding: 1rem 0; 
+    width: 100%;
 }
 
 .notify-btn{
@@ -69,16 +45,7 @@ header{
 }
 
 .hamburger-menu {
-    display: none;
-    background: transparent;
-    border: none;
-    color: #f8fafc;
-    cursor: pointer;
-    padding: 8px;
-    flex-direction: column;
-    justify-content: space-around;
-    width: 30px;
-    height: 30px;
+    display: none; 
 }
 
 .mobile-overlay {
@@ -225,27 +192,11 @@ header{
         display: none;
     }
 
-    /* Mostrar header e hamburger quando sidebar estiver colapsada */
+    /* Mostrar hamburger quando sidebar estiver colapsada */
     .layout.sidebar-collapsed header {
         display: flex;
     }
 
-    .layout.sidebar-collapsed .hamburger-menu {
-        display: flex;
-    }
-    
-    /* Ajustar padding do conteúdo quando header está visível */
-    .layout.sidebar-collapsed .content {
-        padding-top: 80px;
-    }
-    
-    .layout.sidebar-collapsed .dash-content {
-        padding-top: 80px;
-    }
-}
-
-@media (min-width: 1200px) {
-    /* Em telas maiores, mostrar hamburger quando colapsada */
     .layout.sidebar-collapsed .hamburger-menu {
         display: flex;
     }
@@ -260,19 +211,9 @@ header{
         width: 95%;
     }
     .content {
-        margin-left: 0 !important; 
-        width: 100% !important;
+        margin-left: 0; 
+        width: 100%;
         min-height: 100vh;
-        padding-top: 80px;
-    }
-    
-    header {
-        left: 0 !important;
-        display: flex !important;
-    }
-    
-    .layout.sidebar-collapsed header {
-        left: 0 !important;
     }
 
     .hamburger-menu {
