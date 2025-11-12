@@ -4,7 +4,7 @@
             <div class="loading-spinner"></div>
             <p>{{ loadingMessage }}</p>
         </div>
-
+            
         <div v-else class="flex-row-gap">
             <div class="col-left">
                 <div class="card">
@@ -43,7 +43,7 @@
                             <option value="DIGITEVEN">Even (Par)</option>
                             <option value="DIGITODD">Odd (Ímpar)</option>
                         </select>
-                    </div>
+                </div>
 
                     <div v-if="needsDigitBarrier" class="input-group">
                         <label class="input-label">Dígito de referência (0-9)</label>
