@@ -77,7 +77,13 @@
 
         <div class="col-sidebar">
         <div class="card-order-config animated-card" data-anim-index="0">
-                <h4 class="card-title">Configuração da Ordem</h4>
+                <div class="card-title-header">
+                  <h4 class="card-title">Configuração da Ordem</h4>
+                  <div v-if="isDemoAccount && isAuthorized" class="demo-badge">
+                    <span class="demo-icon">🎮</span>
+                    <span>Conta Demo</span>
+                  </div>
+                </div>
                 
                 <div class="input-group">
                     <label class="input-label">Tipo de contrato</label>
@@ -246,7 +252,10 @@ export default {
       realTimeProfit: null,
       entrySpotLine: null,
       updateEntrySpotLine: null,
+      entryMarker: null,
+      entryTime: null,
       isSellEnabled: false,
+      isDemoAccount: false,
       connectionCurrency: null,
       oauthLoading: false,
       expirationTime: '0m39s',
@@ -634,20 +643,69 @@ export default {
       switch (msg.msg_type) {
         case 'authorize':
           console.log('[OperationChart] ✓ Autorização recebida da Deriv');
+          const authorizeData = msg.authorize || {};
+          const isVirtual = authorizeData.is_virtual === 1 || authorizeData.is_virtual === true;
+          const loginid = authorizeData.loginid || '';
+          const isDemoAccount = isVirtual || loginid.startsWith('VRTC') || loginid.startsWith('VRT');
+          
+          // Armazenar se é conta demo para exibição na interface
+          this.isDemoAccount = isDemoAccount;
+          
           console.log('[OperationChart] Dados de autorização:', {
-            loginid: msg.authorize?.loginid,
-            currency: msg.authorize?.currency,
-            email: msg.authorize?.email,
-            fullname: msg.authorize?.fullname
+            loginid: loginid,
+            currency: authorizeData.currency,
+            email: authorizeData.email,
+            fullname: authorizeData.fullname,
+            is_virtual: authorizeData.is_virtual,
+            isDemoAccount: isDemoAccount,
+            accountType: isDemoAccount ? 'DEMO (Virtual)' : 'REAL'
           });
+          
           this.isAuthorized = true;
           this.isConnecting = false;
           this.connectionError = ''; // Limpar erro ao conectar com sucesso
           this.retryCount = 0; // Resetar contador de tentativas
-          this.connectionCurrency = msg.authorize?.currency?.toUpperCase() || this.accountCurrency;
-          console.log('[OperationChart] Moeda da conexão:', this.connectionCurrency);
-          console.log('[OperationChart] Moeda preferida configurada:', this.preferredCurrency);
-          console.log('[OperationChart] Moeda da conta:', this.accountCurrency);
+          
+          // Para contas demo, a moeda geralmente é USD (mas pode ser outra)
+          // O importante é usar a moeda retornada pela API
+          this.connectionCurrency = authorizeData.currency?.toUpperCase() || this.accountCurrency;
+          
+          console.log('[OperationChart] Informações da conta:');
+          console.log('[OperationChart] - Tipo:', isDemoAccount ? 'DEMO (Virtual)' : 'REAL');
+          console.log('[OperationChart] - LoginID:', loginid);
+          console.log('[OperationChart] - Moeda da conexão:', this.connectionCurrency);
+          console.log('[OperationChart] - Moeda preferida configurada:', this.preferredCurrency);
+          console.log('[OperationChart] - Moeda da conta:', this.accountCurrency);
+          
+          // Verificar se o token usado corresponde à conta autorizada
+          if (this.accountLoginid && loginid && this.accountLoginid !== loginid) {
+            console.warn('[OperationChart] ⚠ AVISO: LoginID do token não corresponde ao autorizado');
+            console.warn('[OperationChart] - LoginID esperado:', this.accountLoginid);
+            console.warn('[OperationChart] - LoginID autorizado:', loginid);
+            console.warn('[OperationChart] - Tentando buscar token correto...');
+            
+            // Tentar buscar token correto para o loginid autorizado
+            try {
+              const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+              const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+              const correctToken = tokensByLoginId[loginid];
+              
+              if (correctToken) {
+                console.log('[OperationChart] ✓ Token correto encontrado, atualizando...');
+                this.token = correctToken;
+                // Reiniciar conexão com token correto
+                setTimeout(() => {
+                  this.initConnection();
+                }, 1000);
+                return;
+              } else {
+                console.warn('[OperationChart] ⚠ Token correto não encontrado no localStorage');
+              }
+            } catch (error) {
+              console.error('[OperationChart] Erro ao buscar token correto:', error);
+            }
+          }
+          
           this.subscribeToSymbol();
           // Iniciar subscription de proposal após autorização
           setTimeout(() => {
@@ -987,6 +1045,27 @@ export default {
         accountCurrency: this.accountCurrency
       });
       
+      // Se a moeda preferida for DEMO, priorizar contas demo
+      const isDemoPreferred = this.preferredCurrency?.toUpperCase() === 'DEMO';
+      if (isDemoPreferred) {
+        console.log('[OperationChart] Moeda preferida é DEMO, buscando token de conta demo...');
+        try {
+          const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+          const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+          
+          // Buscar qualquer conta demo disponível
+          for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+            if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
+              console.log('[OperationChart] ✓ Token demo encontrado para moeda preferida DEMO:', loginid);
+              return token;
+            }
+          }
+          console.warn('[OperationChart] ⚠ Nenhuma conta demo encontrada, mas moeda preferida é DEMO');
+        } catch (error) {
+          console.error('[OperationChart] Erro ao buscar token demo:', error);
+        }
+      }
+      
       // Se temos um loginid específico, tentar buscar o token correspondente
       if (this.accountLoginid) {
         try {
@@ -996,14 +1075,32 @@ export default {
           console.log('[OperationChart] Tokens parseados:', tokensByLoginId);
           console.log('[OperationChart] Loginids disponíveis:', Object.keys(tokensByLoginId));
           
+          // Verificar se o loginid é de uma conta demo (começa com VRTC ou VRT)
+          const isDemoLoginId = this.accountLoginid.startsWith('VRTC') || this.accountLoginid.startsWith('VRT');
+          if (isDemoLoginId) {
+            console.log('[OperationChart] ✓ LoginID identificado como conta DEMO:', this.accountLoginid);
+          }
+          
           const specificToken = tokensByLoginId[this.accountLoginid];
           if (specificToken) {
             console.log('[OperationChart] ✓ Token específico encontrado para loginid:', this.accountLoginid);
-            console.log('[OperationChart] Token (preview):', `${specificToken.substring(0, 10)}...`);
+            console.log('[OperationChart] - Tipo de conta:', isDemoLoginId ? 'DEMO' : 'REAL');
+            console.log('[OperationChart] - Token (preview):', `${specificToken.substring(0, 10)}...`);
             return specificToken;
           } else {
             console.warn('[OperationChart] ⚠ Token específico NÃO encontrado para loginid:', this.accountLoginid);
             console.warn('[OperationChart] Loginids disponíveis:', Object.keys(tokensByLoginId));
+            
+            // Se for conta demo e não encontrou token específico, tentar encontrar qualquer token demo
+            if (isDemoLoginId) {
+              console.log('[OperationChart] Tentando encontrar token demo alternativo...');
+              for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+                if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
+                  console.log('[OperationChart] ✓ Token demo alternativo encontrado:', loginid);
+                  return token;
+                }
+              }
+            }
           }
         } catch (error) {
           console.error('[OperationChart] ERRO ao buscar token específico:', error);
@@ -1018,6 +1115,12 @@ export default {
         hasToken: !!defaultToken,
         tokenPreview: defaultToken ? `${defaultToken.substring(0, 10)}...` : 'null'
       });
+      
+      if (!defaultToken) {
+        console.error('[OperationChart] ERRO: Nenhum token encontrado!');
+        console.error('[OperationChart] O usuário precisa conectar uma conta Deriv via OAuth.');
+      }
+      
       return defaultToken;
     },
     subscribeToProposal() {
@@ -1102,6 +1205,11 @@ export default {
       if (contract.profit !== undefined && contract.profit !== null) {
         this.realTimeProfit = Number(contract.profit);
         console.log('[OperationChart] P&L atualizado:', this.realTimeProfit);
+        
+        // Atualizar marcador no gráfico com P&L
+        if (this.updateEntrySpotLine) {
+          this.updateEntrySpotLine();
+        }
       }
       
       // Atualizar status de venda antecipada
@@ -1109,6 +1217,18 @@ export default {
       
       // Atualizar dados do contrato ativo
       if (this.activeContract) {
+        // Atualizar entry_spot se fornecido no proposal_open_contract
+        if (contract.entry_spot !== undefined && contract.entry_spot !== null) {
+          const newEntrySpot = Number(contract.entry_spot);
+          if (newEntrySpot !== this.activeContract.entry_spot) {
+            this.activeContract.entry_spot = newEntrySpot;
+            // Atualizar linha de entrada se necessário
+            if (this.entryTime) {
+              this.addEntrySpotLine(newEntrySpot, this.entryTime);
+            }
+          }
+        }
+        
         this.activeContract.current_profit = this.realTimeProfit;
         this.activeContract.is_valid_to_sell = this.isSellEnabled;
         this.activeContract.sell_price = contract.sell_price ? Number(contract.sell_price) : null;
@@ -1180,6 +1300,7 @@ export default {
       this.activeContract = null;
       this.realTimeProfit = null;
       this.isSellEnabled = false;
+      // Manter isDemoAccount pois é baseado na autorização, não no contrato
       
       // Reiniciar subscription de proposal
       setTimeout(() => {
@@ -1241,16 +1362,19 @@ export default {
       console.log('[OperationChart] Payload:', JSON.stringify(sellPayload, null, 2));
       this.send(sellPayload);
     },
-    addEntrySpotLine(entrySpot) {
+    addEntrySpotLine(entrySpot, entryTime) {
       if (!this.chart || !entrySpot) return;
       
       try {
         // Remover linha anterior se existir
         this.removeEntrySpotLine();
         
+        const entryColor = this.localOrderConfig.type === 'CALL' ? '#4ade80' : '#f87171';
+        const entryTimeUnix = Math.floor(Number(entryTime));
+        
         // Criar linha horizontal no gráfico
         const lineSeries = this.chart.addLineSeries({
-          color: this.localOrderConfig.type === 'CALL' ? '#4ade80' : '#f87171',
+          color: entryColor,
           lineWidth: 2,
           lineStyle: 2, // Linha tracejada
           axisLabelVisible: true,
@@ -1271,7 +1395,30 @@ export default {
             { time: currentTime, value: entrySpot }
           ]);
           this.entrySpotLine = lineSeries;
-          console.log('[OperationChart] Linha de entrada adicionada:', entrySpot);
+          
+          // Adicionar marcador visual no ponto de entrada
+          if (this.lineSeries) {
+            const markerColor = this.localOrderConfig.type === 'CALL' ? '#3b82f6' : '#ef4444';
+            this.lineSeries.setMarkers([
+              {
+                time: entryTimeUnix,
+                position: 'inBar',
+                color: markerColor,
+                shape: 'circle',
+                size: 2, // Tamanho maior para melhor visibilidade
+                text: `Entrada`,
+              }
+            ]);
+            this.entryMarker = { time: entryTimeUnix, spot: entrySpot };
+          }
+          
+          // Adicionar linha vertical no tempo de entrada usando timeScale markers
+          this.chart.timeScale().setVisibleRange({
+            from: Math.min(startTime, entryTimeUnix - 300), // Mostrar um pouco antes da entrada
+            to: currentTime,
+          });
+          
+          console.log('[OperationChart] Linha de entrada e marcador adicionados:', { entrySpot, entryTime: entryTimeUnix });
           
           // Atualizar a linha quando novos ticks chegarem
           this.updateEntrySpotLine = () => {
@@ -1285,6 +1432,25 @@ export default {
                 { time: startTime, value: entrySpot },
                 { time: latestTime, value: entrySpot }
               ]);
+              
+              // Atualizar marcador com P&L se disponível
+              if (this.lineSeries && this.entryMarker && this.realTimeProfit !== null) {
+                const profitText = this.realTimeProfit >= 0 
+                  ? `+${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`
+                  : `${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`;
+                const markerColor = this.realTimeProfit >= 0 ? '#10b981' : '#ef4444';
+                
+                this.lineSeries.setMarkers([
+                  {
+                    time: this.entryMarker.time,
+                    position: 'inBar',
+                    color: markerColor,
+                    shape: 'circle',
+                    size: 2, // Tamanho maior
+                    text: profitText,
+                  }
+                ]);
+              }
             }
           };
         }
@@ -1298,7 +1464,15 @@ export default {
           this.chart.removeSeries(this.entrySpotLine);
           this.entrySpotLine = null;
           this.updateEntrySpotLine = null;
-          console.log('[OperationChart] Linha de entrada removida');
+          this.entryMarker = null;
+          this.entryTime = null;
+          
+          // Remover marcadores da série principal
+          if (this.lineSeries) {
+            this.lineSeries.setMarkers([]);
+          }
+          
+          console.log('[OperationChart] Linha de entrada e marcador removidos');
         } catch (error) {
           console.warn('[OperationChart] Erro ao remover linha de entrada:', error);
         }
@@ -1429,19 +1603,25 @@ export default {
       // Cancelar subscription de proposal
       this.unsubscribeFromProposal();
       
+      // Obter entry_spot da resposta buy ou usar o spot atual
+      const entrySpot = Number(buy.entry_spot || buy.spot || this.latestTick?.value || 0);
+      
       // Criar objeto de contrato ativo
       this.activeContract = {
         contract_id: buy.contract_id,
         symbol: this.symbol,
         type: this.localOrderConfig.type,
-        entry_spot: Number(buy.entry_spot || buy.spot || 0),
+        entry_spot: entrySpot,
         purchase_time: buy.purchase_time,
         buy_price: Number(buy.buy_price),
         currency: this.displayCurrency,
       };
       
-      // Adicionar linha de entrada no gráfico
-      this.addEntrySpotLine(this.activeContract.entry_spot);
+      // Armazenar tempo de entrada (usar purchase_time ou tempo atual)
+      this.entryTime = buy.purchase_time || Math.floor(Date.now() / 1000);
+      
+      // Adicionar linha de entrada e marcador no gráfico
+      this.addEntrySpotLine(this.activeContract.entry_spot, this.entryTime);
       
       // Iniciar monitoramento do contrato
       this.subscribeToContract(buy.contract_id);
@@ -2069,6 +2249,30 @@ export default {
   background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.card-title-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.demo-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  background: rgba(99, 102, 241, 0.15);
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #818cf8;
+}
+
+.demo-icon {
+  font-size: 0.9rem;
 }
 
 /* Card de Recomendação da IA Orion */
