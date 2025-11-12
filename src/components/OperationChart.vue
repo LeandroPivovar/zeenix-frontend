@@ -1001,37 +1001,13 @@ export default {
           const lastPoint = data[data.length - 1];
           console.log('[OperationChart] Atualizando gráfico com novo ponto incremental:', lastPoint);
           this.lineSeries.update(lastPoint);
-          // Scroll para o tempo real
-          this.chart.timeScale().scrollToRealTime();
+          // Não fazer scroll automático - deixar o usuário controlar o zoom
         } else {
           // Primeira vez ou muitos dados novos, usar setData completo
           console.log('[OperationChart] Chamando lineSeries.setData com', data.length, 'pontos...');
           this.lineSeries.setData(data);
           console.log('[OperationChart] setData chamado com sucesso');
-          
-          // Aguardar um pouco antes de ajustar a escala para garantir que os dados foram renderizados
-          setTimeout(() => {
-            console.log('[OperationChart] Ajustando escala de tempo...');
-            try {
-              if (this.chart && this.chart.timeScale) {
-                this.chart.timeScale().fitContent();
-                console.log('[OperationChart] Escala ajustada');
-                
-                // Forçar uma atualização visual do gráfico
-                setTimeout(() => {
-                  try {
-                    this.chart.timeScale().scrollToPosition(-1, false);
-                    // Forçar redraw do gráfico
-                    this.handleResize();
-                  } catch (scrollError) {
-                    console.warn('[OperationChart] Erro ao fazer scroll:', scrollError);
-                  }
-                }, 50);
-              }
-            } catch (scaleError) {
-              console.warn('[OperationChart] Erro ao ajustar escala:', scaleError);
-            }
-          }, 100);
+          // Não ajustar zoom automaticamente - deixar o usuário controlar
         }
         
         // Armazenar contagem de dados para próxima verificação
@@ -1609,19 +1585,7 @@ export default {
               usingClosestTick: !!closestTickTime
             });
             
-            // Forçar atualização do gráfico
-            this.$nextTick(() => {
-              try {
-                if (this.chart) {
-                  // Forçar redraw do gráfico
-                  this.chart.timeScale().scrollToPosition(-1, false);
-                  // Ajustar visibilidade para mostrar o marcador
-                  this.chart.timeScale().fitContent();
-                }
-              } catch (error) {
-                console.warn('[OperationChart] Erro ao forçar atualização do gráfico:', error);
-              }
-            });
+            // Não ajustar zoom automaticamente - deixar o usuário controlar
           } else {
             console.warn('[OperationChart] lineSeries não está disponível para adicionar marcador');
             // Armazenar informações do marcador para adicionar depois
@@ -1646,24 +1610,7 @@ export default {
             }, 500);
           }
           
-          // Garantir que o gráfico mostre o momento da entrada
-          this.$nextTick(() => {
-            try {
-              // Ajustar o zoom para mostrar o momento da entrada
-              const visibleRange = this.chart.timeScale().getVisibleRange();
-              if (visibleRange && this.ticks.length > 0) {
-                const lastTickTime = Math.floor(Number(this.ticks[this.ticks.length - 1].epoch));
-                const rangeStart = Math.min(visibleRange.from, markerTime - 300);
-                const rangeEnd = Math.max(visibleRange.to, lastTickTime);
-                this.chart.timeScale().setVisibleRange({
-                  from: rangeStart,
-                  to: rangeEnd,
-                });
-              }
-            } catch (error) {
-              console.warn('[OperationChart] Erro ao ajustar visibilidade:', error);
-            }
-          });
+          // Não ajustar zoom automaticamente - deixar o usuário controlar
           
           console.log('[OperationChart] Linha de entrada e marcador adicionados:', { 
             entrySpot, 
