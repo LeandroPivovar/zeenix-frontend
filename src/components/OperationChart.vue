@@ -421,6 +421,7 @@ export default {
               borderVisible: false,
               timeVisible: true,
               secondsVisible: true,
+              rightOffset: Math.floor(containerWidth * 0.15), // 15% de espaço à direita
             },
             grid: {
               vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
@@ -495,11 +496,15 @@ export default {
       if (containerWidth > 0 && containerHeight > 0) {
         this.chart.applyOptions({ 
           width: containerWidth,
-          height: containerHeight
+          height: containerHeight,
+          timeScale: {
+            rightOffset: Math.floor(containerWidth * 0.15), // 15% de espaço à direita
+          }
         });
         console.log('[OperationChart] Gráfico redimensionado:', {
           width: containerWidth,
-          height: containerHeight
+          height: containerHeight,
+          rightOffset: Math.floor(containerWidth * 0.15)
         });
       }
     },
