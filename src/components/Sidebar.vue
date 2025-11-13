@@ -82,6 +82,33 @@
 			>
 				Planos
 			</button>
+
+			<button
+				class="menu-item"
+				:class="{ active: isAdminActive }"
+				@click="navigateAndClose('/markup')"
+				data-text="Markup"
+			>
+				Markup
+			</button>
+
+			<button
+				class="menu-item"
+				:class="{ active: isAdminActive }"
+				@click="navigateAndClose('/StatsIAs')"
+				data-text="StatsIAs"
+			>
+				Estatisticas das IAs
+			</button>
+
+			<button
+				class="menu-item"
+				:class="{ active: isAdminActive }"
+				@click="navigateAndClose('/Experts')"
+				data-text="Experts"
+			>
+				Markup
+			</button>
 		</nav>
 		<div class="status">
 			<div class="user" @click="toggleUserMenu">
