@@ -59,27 +59,80 @@ export default {
   position: relative;
   width: 100%;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 15% 18%, rgba(32, 198, 134, 0.20) 0%, rgba(8, 12, 10, 0) 35%),
-    radial-gradient(circle at 85% 82%, rgba(32, 198, 134, 0.18) 0%, rgba(6, 10, 8, 0) 30%),
-    radial-gradient(circle at 50% 50%, rgba(5, 7, 6, 0.98) 0%, rgba(3, 5, 4, 1) 70%),
-    linear-gradient(135deg, #030403, #060907);
   overflow: hidden;
+  background: radial-gradient(ellipse at center, #0a0d0b 0%, #070907 25%, #060806 50%, #040504 100%);
 }
 
-.auth-wrapper::before {
+.auth-wrapper::before,
+.auth-wrapper::after {
   content: '';
   position: absolute;
-  inset: 0;
-  background:
-    radial-gradient(circle at 18% 20%, rgba(58, 255, 179, 0.08) 0%, transparent 35%),
-    radial-gradient(circle at 82% 85%, rgba(58, 255, 179, 0.06) 0%, transparent 35%);
   pointer-events: none;
-  mix-blend-mode: screen;
-  filter: blur(1.5px);
+  border-radius: 50%;
+  filter: blur(120px);
+  will-change: transform, opacity;
 }
 
+/* Círculo verde no canto superior esquerdo */
+.auth-wrapper::before {
+  top: -200px;
+  left: -200px;
+  width: 900px;
+  height: 900px;
+  background: radial-gradient(circle, rgba(0, 255, 135, 0.2) 0%, rgba(58, 255, 179, 0.2) 10%, transparent 60%);
+  animation: floatTopLeft 12s ease-in-out infinite;
+}
 
+/* Círculo verde no canto inferior direito */
+.auth-wrapper::after {
+  bottom: -200px;
+  right: -200px;
+  width: 650px;
+  height: 650px;
+  background: radial-gradient(circle, rgba(0, 255, 135, 0.25) 0%, rgba(51, 255, 156, 0.18) 10%, transparent 80%);
+  animation: floatBottomRight 15s ease-in-out infinite;
+  animation-delay: -5s;
+}
+
+/* Animação do círculo superior esquerdo */
+@keyframes floatTopLeft {
+  0%, 100% {
+    transform: translate(0, 0) scale(1.7);
+    opacity: 1;
+  }
+  25% {
+    transform: translate(30px, 20px) scale(1.4);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(15px, 40px) scale(1.8);
+    opacity: 0.9;
+  }
+  75% {
+    transform: translate(40px, 10px) scale(1.6);
+    opacity: 0.85;
+  }
+}
+
+/* Animação do círculo inferior direito */
+@keyframes floatBottomRight {
+  0%, 100% {
+    transform: translate(0, 0) scale(1.7);
+    opacity: 1;
+  }
+  25% {
+    transform: translate(30px, 20px) scale(1.4);
+    opacity: 0.8;
+  }
+  50% {
+    transform: translate(15px, 40px) scale(1.8);
+    opacity: 0.9;
+  }
+  75% {
+    transform: translate(40px, 10px) scale(1.6);
+    opacity: 0.85;
+  }
+}
 
 main {
   position: relative;
