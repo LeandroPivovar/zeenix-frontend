@@ -6,7 +6,6 @@
     background: #0d0d0c; 
     color: #e5e7eb; 
     max-width: calc( 100% - 240px );
-    margin-left: 240px; 
     font-family: Inter, system-ui, sans-serif;
     padding: 32px; 
     justify-content: flex-start;
