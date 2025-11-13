@@ -198,9 +198,9 @@
             v-if="!activeContract"
             @click="executeBuy" 
             class="btn-execute-operation btn-buy" 
-            :disabled="isTrading || !isAuthorized || !currentProposalId || !canUseCallPut"
+            :disabled="isTrading || !isAuthorized || !canUseCallPut"
           >
-            {{ isTrading ? 'Aguardando confirmação...' : 'COMPRAR' }}
+            {{ isTrading ? 'Aguardando confirmação...' : (currentProposalId ? 'COMPRAR' : 'Aguardando proposta...') }}
           </button>
 
           <button 
@@ -1999,32 +1999,21 @@ export default {
         return;
       }
       
-      // Se ainda não temos dados de contratos, aguardar um pouco e tentar buscar
+      // Se ainda não temos dados de contratos, tentar buscar mas não bloquear
       if (!this.contractsData[this.symbol] && !this.isLoadingContracts) {
-        console.log('[OperationChart] Dados de contratos não disponíveis, buscando...');
+        console.log('[OperationChart] Dados de contratos não disponíveis, buscando em background...');
         this.fetchContractsForSymbol(this.symbol);
-        // Aguardar um pouco antes de tentar novamente
-        setTimeout(() => {
-          if (this.contractsData[this.symbol]) {
-            this.subscribeToProposal();
-          } else {
-            console.warn('[OperationChart] Dados de contratos ainda não disponíveis, usando valores padrão');
-            // Continuar com valores padrão se não conseguir buscar
-            this.proceedWithProposal();
-          }
-        }, 1000);
-        return;
+        // Não bloquear - continuar com valores padrão enquanto busca
+        console.log('[OperationChart] Continuando com valores padrão enquanto busca dados de contratos...');
       }
       
-      // Se está carregando contratos, aguardar
+      // Se está carregando contratos, não bloquear - continuar com valores padrão
       if (this.isLoadingContracts) {
-        console.log('[OperationChart] Aguardando dados de contratos...');
-        setTimeout(() => {
-          this.subscribeToProposal();
-        }, 500);
-        return;
+        console.log('[OperationChart] Dados de contratos ainda carregando, usando valores padrão...');
       }
       
+      // Sempre prosseguir com a proposta, mesmo sem dados de contratos
+      // Os dados serão usados quando chegarem, mas não devem bloquear a operação
       this.proceedWithProposal();
     },
     proceedWithProposal() {
