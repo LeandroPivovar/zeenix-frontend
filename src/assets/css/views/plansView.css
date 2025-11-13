@@ -12,7 +12,19 @@
 .plans-content { flex: 1; padding: 24px; margin: 0 auto; width: 100%; }
 
 /* Video Section */
-.video-section { margin-bottom: 48px; max-width: 1200px; background: #0e0f0f; width: 100%; padding: 30px; border-radius: 12px; box-shadow: 0px 0px 10px #15794c33;}
+.video-section { 
+    margin-bottom: 48px; 
+    max-width: 1200px; 
+    background: #0e0f0f; 
+    width: 100%; 
+    padding: 30px; 
+    border-radius: 12px; 
+    box-shadow: 0px 0px 10px #15794c33;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-out forwards;
+    animation-delay: 0.1s;
+}
 .video-container { margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 24px;}
 .video-placeholder { width: 100%; aspect-ratio: 16/9; background: #1a1f1d; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: grid; place-items: center; cursor: pointer; position: relative; overflow: hidden; max-width: 800px;}
 .video-placeholder:hover { border-color: #10B981; }
@@ -25,15 +37,54 @@
 .video-description { color: #9ca3af; font-size: 14px; max-width: 600px; margin: 12px auto 0; line-height: 1.5; }
 
 /* Plans Section */
-.plans-section { margin-bottom: 64px; width: 100%;max-width: 1200px ;}
-.section-title { font-weight: 700; font-size: 25px; text-align: center; margin: 0 0 12px; }
-.section-subtitle { text-align: center; color: #9ca3af; font-size: 16px; margin: 0 0 32px; }
+.plans-section { 
+    margin-bottom: 64px; 
+    width: 100%;
+    max-width: 1200px;
+}
+.section-title { 
+    font-weight: 700; 
+    font-size: 25px; 
+    text-align: center; 
+    margin: 0 0 12px;
+    opacity: 0;
+    animation: fadeIn 0.6s ease-out forwards;
+    animation-delay: 0.3s;
+}
+.section-subtitle { 
+    text-align: center; 
+    color: #9ca3af; 
+    font-size: 16px; 
+    margin: 0 0 32px;
+    opacity: 0;
+    animation: fadeIn 0.6s ease-out forwards;
+    animation-delay: 0.4s;
+}
 .loading, .error { text-align: center; padding: 48px; color: #9ca3af; }
 .error { color: #ef4444; }
 .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 48px; }
 
 /* Plan Cards */
-.plan-card { box-shadow: 0px 0px 20px #070704; background: #0f1411; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; padding: 24px; position: relative; transition: transform 0.2s, border-color 0.2s; width: 100%; max-width: 350px; margin: auto;}
+.plan-card { 
+    box-shadow: 0px 0px 20px #070704; 
+    background: #0f1411; 
+    border: 1px solid rgba(255,255,255,0.1); 
+    border-radius: 12px; 
+    padding: 24px; 
+    position: relative; 
+    transition: transform 0.2s, border-color 0.2s; 
+    width: 100%; 
+    max-width: 350px; 
+    margin: auto;
+    opacity: 0;
+    transform: translateY(30px);
+    animation: fadeInUp 0.6s ease-out forwards;
+}
+
+/* Delays escalonados para cada card de plano */
+.plan-card:nth-child(1) { animation-delay: 0.5s; }
+.plan-card:nth-child(2) { animation-delay: 0.6s; }
+.plan-card:nth-child(3) { animation-delay: 0.7s; }
 .plan-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); }
 .plan-card.popular { border-color: #10B981; }
 .plan-card.recommended { border-color: #3b82f6; box-shadow: #082047 0px 0px 20px; }
@@ -65,7 +116,18 @@
 .plan-button:disabled { opacity: 0.5; cursor: not-allowed; }
 
 /* Comparison Table */
-.comparison-section { max-width: 1200px; width: 100%; background: #0e0f0f; padding: 30px; border-radius: 12px; box-shadow: 0px 0px 20px #070704;}
+.comparison-section { 
+    max-width: 1200px; 
+    width: 100%; 
+    background: #0e0f0f; 
+    padding: 30px; 
+    border-radius: 12px; 
+    box-shadow: 0px 0px 20px #070704;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-out forwards;
+    animation-delay: 0.8s;
+}
 .table-container { overflow-x: auto; margin-bottom: 16px; }
 .comparison-table { width: 100%; border-collapse: collapse; background: #0f1411; border-radius: 12px; overflow: hidden; }
 .comparison-table thead { background: #1a1f1d; }
@@ -104,6 +166,27 @@
 .icon-check { color: #10B981; font-weight: 700; }
 .icon-cross-circle { color: #EF4444; font-size: 16px; font-weight: 700; }
 .icon-star-vazada { color: #FBBF24; }
+
+/* Animações */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(30px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
 
 
 @media (max-width: 1200px) {
