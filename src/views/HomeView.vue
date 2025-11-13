@@ -30,19 +30,23 @@
         </div>
 
         <div class="actions">
-          <button class="primary" @click="openConnectModal">
+          <button class="primary" @click="startBrokerConnection">
             <img src="../assets/icons/Link.svg" alt="Conectar à Corretora" > 
             Conectar à Corretora
           </button>
-          <button class="link-button">
+          <a
+            class="link-button"
+            href="https://home.deriv.com/dashboard/signup"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             <img src="../assets/icons/add.svg" alt="Criar Conta na Deriv" >
             Criar Conta na Deriv
-          </button>
+          </a>
         </div>
 
         <div class="note">Essa tela aparece apenas no primeiro acesso ou se sua conta Deriv estiver desconectada.</div>
       </div>
-      <ConnectBrokerModal :visible="showConnectModal" @close="closeConnectModal" />
     </main>
 
     <main class="content loading-content" v-else-if="loading">
@@ -56,15 +60,13 @@
 
 <script>
 import AppSidebar from '../components/Sidebar.vue'
-import ConnectBrokerModal from '../components/ConnectBrokerModal.vue'
 import DashboardConnected from './DashboardConnected.vue'
 
 export default {
   name: 'HomeView',
-  components: { AppSidebar, ConnectBrokerModal, DashboardConnected },
+  components: { AppSidebar, DashboardConnected },
   data() {
     return { 
-      showConnectModal: false, 
       connectedInfo: null,
       loading: true,
       isSidebarOpen: false,
@@ -91,8 +93,40 @@ export default {
       }
     },
 
-    openConnectModal() { this.showConnectModal = true },
-    closeConnectModal() { this.showConnectModal = false },
+    async startBrokerConnection() {
+      try {
+        const state = this.generateState()
+        localStorage.setItem('deriv_oauth_state', state)
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+        const res = await fetch(`${apiBase}/broker/deriv/oauth/url?state=${state}`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+          },
+        })
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}))
+          throw new Error(err?.message || 'Não foi possível iniciar o OAuth')
+        }
+        const data = await res.json()
+        if (!data?.url) {
+          throw new Error('URL de OAuth não recebida')
+        }
+        window.location.href = data.url
+      } catch (error) {
+        console.error('[HomeView] Erro ao iniciar conexão:', error)
+        alert(error?.message || 'Falha ao iniciar OAuth. Tente novamente.')
+        localStorage.removeItem('deriv_oauth_state')
+      }
+    },
+    generateState() {
+      if (window.crypto?.getRandomValues) {
+        const array = new Uint32Array(4)
+        window.crypto.getRandomValues(array)
+        return Array.from(array, value => value.toString(16)).join('')
+      }
+      return Math.random().toString(16).slice(2)
+    },
     async checkConnection(forceRefresh = false) {
       // Verificar se há token válido antes de usar cache
       let hasToken = !!localStorage.getItem('deriv_token')
