@@ -2257,10 +2257,7 @@ export default {
       // Cancelar proposta atual ao mudar de símbolo (isso também limpa timeouts)
       this.unsubscribeFromProposal();
       
-      // Desinscrever do símbolo anterior
-      this.unsubscribeFromSymbol();
-      
-      // Limpar dados do gráfico
+      // Limpar dados do gráfico (a desinscrição do símbolo anterior é feita automaticamente por subscribeToSymbol)
       if (this.lineSeries) {
         try {
           this.lineSeries.setData([]);
