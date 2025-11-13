@@ -368,6 +368,7 @@ export default {
       activeContract: null,
       currentProposalId: null,
       currentProposalPrice: null,
+      proposalTimeout: null,
       realTimeProfit: null,
       entrySpotLine: null,
       updateEntrySpotLine: null,
@@ -1044,6 +1045,23 @@ export default {
         if (errorCode === 'OfferingsValidationError') {
           console.warn('[OperationChart] Erro de validação:', message);
           this.tradeError = message;
+          // Se for erro de validação na proposta, tentar reenviar após ajuste
+          if (errorField === 'duration' || errorField === 'amount' || errorField === 'symbol') {
+            // O erro já foi tratado acima, não fazer nada aqui
+            return;
+          }
+          return;
+        }
+        
+        // Se for erro relacionado à proposta e não for erro de validação, tentar reenviar
+        // Verificar se não temos proposta atual e estamos autorizados
+        if (!this.currentProposalId && this.isAuthorized && !this.activeContract) {
+          console.warn('[OperationChart] Erro pode estar relacionado à proposta, tentando reenviar após 2 segundos...');
+          setTimeout(() => {
+            if (this.isAuthorized && this.ws && this.ws.readyState === WebSocket.OPEN && !this.activeContract) {
+              this.subscribeToProposal();
+            }
+          }, 2000);
           return;
         }
         
@@ -2116,7 +2134,27 @@ export default {
       };
       
       console.log('[OperationChart] Subscribing to proposal:', JSON.stringify(payload, null, 2));
+      
+      // Limpar timeout anterior se existir
+      if (this.proposalTimeout) {
+        clearTimeout(this.proposalTimeout);
+        this.proposalTimeout = null;
+      }
+      
+      // Resetar proposta atual antes de enviar
+      this.currentProposalId = null;
+      this.currentProposalPrice = null;
+      
       this.send(payload);
+      
+      // Se após 3 segundos não recebermos a proposta, tentar novamente
+      this.proposalTimeout = setTimeout(() => {
+        if (!this.currentProposalId && this.isAuthorized && this.ws && this.ws.readyState === WebSocket.OPEN) {
+          console.warn('[OperationChart] Proposta não recebida após 3 segundos, tentando novamente...');
+          this.proceedWithProposal();
+        }
+        this.proposalTimeout = null;
+      }, 3000);
     },
     unsubscribeFromProposal() {
       if (this.proposalSubscriptionId && this.ws && this.ws.readyState === WebSocket.OPEN) {
@@ -2833,11 +2871,26 @@ export default {
       this.currentProposalId = proposal.id;
       this.currentProposalPrice = Number(proposal.ask_price);
       
+      // Limpar timeout de retry já que recebemos a proposta
+      if (this.proposalTimeout) {
+        clearTimeout(this.proposalTimeout);
+        this.proposalTimeout = null;
+      }
+      
+      // Limpar qualquer erro anterior
+      this.tradeError = '';
+      
       // Armazenar subscription ID se fornecido
       if (msg.subscription?.id) {
         this.proposalSubscriptionId = msg.subscription.id;
         console.log('[OperationChart] Proposal subscription ID:', this.proposalSubscriptionId);
       }
+      
+      console.log('[OperationChart] ✓ Proposta processada com sucesso:', {
+        proposalId: this.currentProposalId,
+        proposalPrice: this.currentProposalPrice,
+        subscriptionId: this.proposalSubscriptionId
+      });
     },
     processBuy(msg) {
       console.log('[OperationChart] ========== COMPRA CONFIRMADA ==========');
@@ -3297,6 +3350,12 @@ export default {
     if (this.retryTimeout) {
       clearTimeout(this.retryTimeout);
       this.retryTimeout = null;
+    }
+    
+    // Limpar timeout de proposta se existir
+    if (this.proposalTimeout) {
+      clearTimeout(this.proposalTimeout);
+      this.proposalTimeout = null;
     }
     
     // Cancelar subscriptions
