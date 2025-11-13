@@ -118,18 +118,21 @@
                 
                 <div class="input-group">
                     <label class="input-label">Tipo de contrato</label>
-                    <select v-model="localOrderConfig.type" class="select-field" :disabled="isTrading">
+                    <select v-model="localOrderConfig.type" class="select-field" :disabled="isTrading || !canUseCallPut">
               <option value="CALL">Alta (CALL)</option>
               <option value="PUT">Baixa (PUT)</option>
                     </select>
+                    <div v-if="!canUseCallPut" class="warning-message" style="margin-top: 8px; padding: 8px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 4px; color: #fca5a5; font-size: 12px;">
+                      ⚠️ Este ativo não suporta contratos CALL/PUT. Use a operação com dígitos para negociar este ativo.
+                    </div>
                 </div>
                 
                 <div class="input-row-flex">
                     <div class="input-group-half">
               <label class="input-label">Tipo de duração</label>
                         <div class="toggle-buttons">
-                <button @click="setDurationUnit('m')" :class="{ 'toggle-active': localOrderConfig.durationUnit === 'm' }" :disabled="isTrading">Minutos</button>
-                <button @click="setDurationUnit('t')" :class="{ 'toggle-active': localOrderConfig.durationUnit === 't' }" :disabled="isTrading">Ticks</button>
+                <button @click="setDurationUnit('m')" :class="{ 'toggle-active': localOrderConfig.durationUnit === 'm' }" :disabled="isTrading || !canUseCallPut">Minutos</button>
+                <button @click="setDurationUnit('t')" :class="{ 'toggle-active': localOrderConfig.durationUnit === 't' }" :disabled="isTrading || !canUseCallPut">Ticks</button>
                         </div>
                     </div>
                     <div class="input-group-half">
@@ -156,7 +159,7 @@
                       @click="selectTradeType('CALL')" 
                       class="btn-selector btn-buy-selector" 
                       :class="{ 'selected': localOrderConfig.type === 'CALL' }"
-                      :disabled="isTrading"
+                      :disabled="isTrading || !canUseCallPut"
                     >
                       BUY
                     </button>
@@ -164,7 +167,7 @@
                       @click="selectTradeType('PUT')" 
                       class="btn-selector btn-sell-selector" 
                       :class="{ 'selected': localOrderConfig.type === 'PUT' }"
-                      :disabled="isTrading"
+                      :disabled="isTrading || !canUseCallPut"
                     >
                       SELL
                 </button>
@@ -183,7 +186,7 @@
             v-if="!activeContract"
             @click="executeBuy" 
             class="btn-execute-operation btn-buy" 
-            :disabled="isTrading || !isAuthorized || !currentProposalId"
+            :disabled="isTrading || !isAuthorized || !currentProposalId || !canUseCallPut"
           >
             {{ isTrading ? 'Aguardando confirmação...' : 'COMPRAR' }}
           </button>
@@ -387,6 +390,9 @@ export default {
         grouped[category].push(market);
       });
       return grouped;
+    },
+    canUseCallPut() {
+      return this.supportsCallPut(this.symbol);
     },
     loadingMessage() {
       if (this.connectionError) {
@@ -900,6 +906,15 @@ export default {
         return;
       }
       
+      // Tratar erros de contract_category (ativo não suporta CALL/PUT)
+      if (errorCode === 'OfferingsValidationError' && errorField === 'contract_category') {
+        console.warn('[OperationChart] Este ativo não suporta contratos CALL/PUT:', this.symbol);
+        // Não tentar reconectar, apenas cancelar a subscription de proposal
+        this.unsubscribeFromProposal();
+        this.tradeError = 'Este ativo não suporta contratos CALL/PUT. Use a operação com dígitos para negociar este ativo.';
+        return;
+      }
+      
       if (this.isTrading) {
         console.error('[OperationChart] Erro durante operação de compra/venda');
         this.tradeError = message;
@@ -1233,6 +1248,15 @@ export default {
         }, 100);
       }
     },
+    supportsCallPut(symbol) {
+      // Verifica se o símbolo suporta contratos CALL/PUT (Rise/Fall)
+      // Criptomoedas geralmente não suportam CALL/PUT, apenas contratos de dígitos
+      if (symbol.startsWith('cry')) {
+        return false; // Criptomoedas não suportam CALL/PUT
+      }
+      // Índices e Forex/Metais suportam CALL/PUT
+      return true;
+    },
     getValidDurationForSymbol(symbol) {
       // Retorna configuração de duração válida para cada tipo de símbolo
       if (symbol.startsWith('R_') || symbol.startsWith('1HZ')) {
@@ -1444,6 +1468,13 @@ export default {
       
       if (this.activeContract) {
         // Não subscrever proposal se já houver contrato ativo
+        return;
+      }
+      
+      // Verificar se o ativo suporta CALL/PUT antes de tentar subscrever
+      if (!this.supportsCallPut(this.symbol)) {
+        console.warn('[OperationChart] Ativo não suporta contratos CALL/PUT, não subscrevendo proposal:', this.symbol);
+        this.tradeError = 'Este ativo não suporta contratos CALL/PUT. Use a operação com dígitos para negociar este ativo.';
         return;
       }
       
