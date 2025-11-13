@@ -301,6 +301,11 @@ export default {
       // Cache de dados de contratos por símbolo
       contractsData: {}, // { symbol: { contractTypes, minDuration, maxDuration, minStake, maxStake, allowedUnits } }
       isLoadingContracts: false,
+      // Cache global de trading durations (carregado uma vez ao conectar)
+      tradingDurationsCache: null,
+      isLoadingTradingDurations: false,
+      // Cache de active symbols
+      activeSymbolsCache: null,
       markets: [
         // Índices Contínuos
         { value: 'R_10', label: 'Volatility 10 Index', category: 'Índices Contínuos' },
@@ -959,12 +964,26 @@ export default {
           }
           
           this.subscribeToSymbol();
-          // Buscar dados de contratos para o símbolo atual após autorização
+          
+          // Buscar trading durations globais (uma única vez)
+          if (!this.tradingDurationsCache && !this.isLoadingTradingDurations) {
+            console.log('[OperationChart] Buscando trading durations globais...');
+            this.fetchTradingDurations();
+          }
+          
+          // Buscar active symbols (informações dos mercados)
+          if (!this.activeSymbolsCache) {
+            console.log('[OperationChart] Buscando active symbols...');
+            this.fetchActiveSymbols();
+          }
+          
+          // Buscar dados de contratos para o símbolo atual após autorização (fallback)
           setTimeout(() => {
             if (!this.contractsData[this.symbol]) {
               this.fetchContractsForSymbol(this.symbol);
             }
           }, 300);
+          
           // Iniciar subscription de proposal após autorização
           setTimeout(() => {
             this.subscribeToProposal();
@@ -994,6 +1013,12 @@ export default {
           break;
         case 'contracts_for':
           this.processContractsFor(msg);
+          break;
+        case 'trading_durations':
+          this.processTradingDurations(msg);
+          break;
+        case 'active_symbols':
+          this.processActiveSymbols(msg);
           break;
         default:
           break;
@@ -1124,11 +1149,10 @@ export default {
           if (this.contractsData[this.symbol]) {
             this.handleDurationError();
           } else {
-            console.warn('[OperationChart] Dados de contratos não recebidos, usando valores padrão...');
-            // Continuar com valores padrão se não conseguir buscar
-            const config = this.getValidDurationForSymbol(this.symbol);
-            this.localOrderConfig.duration = config.defaultDuration;
-            this.localOrderConfig.durationUnit = config.defaultUnit;
+            console.warn('[OperationChart] Dados de contratos não recebidos, usando valores padrão seguros...');
+            // Para Forex/Metais sem dados, usar valores seguros conhecidos
+            this.localOrderConfig.duration = 15; // 15 minutos é geralmente o mínimo para Forex
+            this.localOrderConfig.durationUnit = 'm';
             setTimeout(() => {
               this.subscribeToProposal();
             }, 500);
@@ -1148,15 +1172,30 @@ export default {
         let minDuration = contractData.defaultDuration;
         if (contractData.durationsByUnit && contractData.durationsByUnit[defaultUnit]) {
           const unitLimits = contractData.durationsByUnit[defaultUnit];
-          if (unitLimits.min !== Infinity) {
+          if (unitLimits.min !== Infinity && unitLimits.min > 0) {
             minDuration = unitLimits.min;
           }
-        } else {
+        } else if (contractData.minDuration > 0) {
           minDuration = contractData.minDuration;
+        }
+        
+        // VALIDAÇÃO CRÍTICA: Nunca usar duração 0 ou menor que 1
+        if (minDuration <= 0 || !minDuration || isNaN(minDuration)) {
+          console.warn('[OperationChart] Duração inválida detectada (0 ou menor), usando fallback seguro');
+          // Para Forex/Metais, usar 15 minutos como mínimo seguro
+          if (isForexOrMetal) {
+            minDuration = 15;
+            this.localOrderConfig.durationUnit = 'm';
+          } else {
+            // Para outros ativos, usar 1 minuto
+            minDuration = 1;
+            this.localOrderConfig.durationUnit = 'm';
+          }
         }
         
         this.localOrderConfig.duration = minDuration;
         this.localOrderConfig.durationUnit = defaultUnit;
+        
         console.log('[OperationChart] Duração ajustada usando dados reais:', {
           duration: this.localOrderConfig.duration,
           unit: this.localOrderConfig.durationUnit,
@@ -1164,16 +1203,36 @@ export default {
           minDuration: contractData.minDuration,
           maxDuration: contractData.maxDuration,
           allowedUnits: contractData.allowedUnits,
-          durationsByUnit: contractData.durationsByUnit
+          durationsByUnit: contractData.durationsByUnit,
+          wasInvalid: minDuration <= 0
         });
       } else {
         // Usar valores padrão do fallback
-        this.localOrderConfig.duration = config.defaultDuration;
-        this.localOrderConfig.durationUnit = config.defaultUnit;
+        let defaultDuration = config.defaultDuration;
+        let defaultUnit = config.defaultUnit;
+        
+        // VALIDAÇÃO: Para Forex/Metais, garantir mínimo de 15 minutos
+        if (isForexOrMetal && (defaultDuration < 15 || defaultUnit === 't')) {
+          defaultDuration = 15;
+          defaultUnit = 'm';
+          console.log('[OperationChart] Ajustado para 15 minutos para Forex/Metal');
+        }
+        
+        // VALIDAÇÃO: Nunca usar duração 0
+        if (defaultDuration <= 0 || !defaultDuration || isNaN(defaultDuration)) {
+          defaultDuration = isForexOrMetal ? 15 : 1;
+          defaultUnit = 'm';
+          console.warn('[OperationChart] Duração padrão inválida, usando fallback:', defaultDuration);
+        }
+        
+        this.localOrderConfig.duration = defaultDuration;
+        this.localOrderConfig.durationUnit = defaultUnit;
+        
         console.log('[OperationChart] Duração ajustada usando valores padrão:', {
           duration: this.localOrderConfig.duration,
           unit: this.localOrderConfig.durationUnit,
-          symbol: this.symbol
+          symbol: this.symbol,
+          isForexOrMetal
         });
       }
       
@@ -1458,6 +1517,145 @@ export default {
       }
       
       this.isLoadingContracts = false;
+    },
+    fetchTradingDurations() {
+      if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        console.warn('[OperationChart] Não é possível buscar trading durations');
+        return;
+      }
+      
+      if (this.isLoadingTradingDurations) return;
+      
+      console.log('[OperationChart] 🔍 Buscando trading durations globais...');
+      this.isLoadingTradingDurations = true;
+      
+      this.send({ trading_durations: 1, landing_company_short: 'svg' });
+    },
+    processTradingDurations(msg) {
+      console.log('[OperationChart] ✅ Trading durations recebidos');
+      
+      if (msg.error) {
+        console.error('[OperationChart] Erro:', msg.error);
+        this.isLoadingTradingDurations = false;
+        return;
+      }
+      
+      const data = msg.trading_durations;
+      if (!data || !Array.isArray(data)) {
+        this.isLoadingTradingDurations = false;
+        return;
+      }
+      
+      this.tradingDurationsCache = {};
+      
+      data.forEach(item => {
+        const symbol = item.market?.symbol;
+        if (!symbol || !item.data) return;
+        
+        const contractData = {};
+        item.data.forEach(ct => {
+          const type = ct.trade_type;
+          if (!type || !ct.durations) return;
+          
+          contractData[type] = {
+            minDuration: Infinity,
+            maxDuration: 0,
+            units: new Set(),
+            byUnit: {}
+          };
+          
+          ct.durations.forEach(dur => {
+            const unit = dur.unit;
+            const min = parseInt(dur.min) || 0;
+            const max = parseInt(dur.max) || 0;
+            
+            if (unit) {
+              contractData[type].units.add(unit);
+              contractData[type].byUnit[unit] = { min, max };
+              
+              if (min > 0 && min < contractData[type].minDuration) {
+                contractData[type].minDuration = min;
+              }
+              if (max > contractData[type].maxDuration) {
+                contractData[type].maxDuration = max;
+              }
+            }
+          });
+        });
+        
+        this.tradingDurationsCache[symbol] = contractData;
+      });
+      
+      console.log('[OperationChart] Cache criado para', Object.keys(this.tradingDurationsCache).length, 'símbolos');
+      this.updateContractsFromTradingDurations();
+      this.isLoadingTradingDurations = false;
+    },
+    updateContractsFromTradingDurations() {
+      if (!this.tradingDurationsCache) return;
+      
+      Object.entries(this.tradingDurationsCache).forEach(([symbol, data]) => {
+        // Só criar/atualizar se não temos dados de contracts_for (que são mais completos)
+        if (this.contractsData[symbol] && this.contractsData[symbol].source !== 'trading_durations') {
+          console.log('[OperationChart] Mantendo dados de contracts_for para', symbol);
+          return;
+        }
+        
+        const isForex = symbol.startsWith('frx');
+        const callData = data['CALL'] || data['call'];
+        if (!callData) return;
+        
+        let minDur = callData.minDuration !== Infinity ? callData.minDuration : (isForex ? 15 : 1);
+        if (minDur <= 0) minDur = isForex ? 15 : 1;
+        if (isForex && minDur < 15) minDur = 15;
+        
+        const units = Array.from(callData.units);
+        const defaultUnit = units.includes('m') ? 'm' : (units.includes('t') ? 't' : (units[0] || 'm'));
+        
+        this.contractsData[symbol] = {
+          contractTypes: ['CALL', 'PUT'],
+          allowedUnits: units,
+          minDuration: minDur,
+          maxDuration: callData.maxDuration || 365,
+          minStake: 0.35,
+          maxStake: 10000,
+          defaultUnit,
+          defaultDuration: minDur,
+          durationsByUnit: callData.byUnit,
+          source: 'trading_durations'
+        };
+        
+        console.log('[OperationChart] Dados criados para', symbol, 'via trading_durations:', {
+          minDur,
+          defaultUnit,
+          units: units.join(', ')
+        });
+      });
+      
+      if (this.symbol && this.contractsData[this.symbol]) {
+        console.log('[OperationChart] Atualizando configuração após trading_durations');
+        this.validateAndAdjustDuration();
+      }
+    },
+    fetchActiveSymbols() {
+      if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
+      console.log('[OperationChart] 🔍 Buscando active symbols...');
+      this.send({ active_symbols: 'brief' });
+    },
+    processActiveSymbols(msg) {
+      if (msg.error || !msg.active_symbols) return;
+      
+      this.activeSymbolsCache = {};
+      msg.active_symbols.forEach(s => {
+        if (s.symbol) {
+          this.activeSymbolsCache[s.symbol] = {
+            displayName: s.display_name,
+            market: s.market,
+            isOpen: s.exchange_is_open === 1
+          };
+        }
+      });
+      
+      console.log('[OperationChart] ✅ Active symbols:', Object.keys(this.activeSymbolsCache).length);
     },
     processHistory(msg) {
       console.log('[OperationChart] processHistory - Processando histórico de ticks');
@@ -1801,17 +1999,47 @@ export default {
       return true;
     },
     getValidDurationForSymbol(symbol) {
+      const isForexOrMetal = symbol.startsWith('frx');
+      
       // Primeiro verifica se temos dados reais da API
       if (this.contractsData[symbol]) {
         const data = this.contractsData[symbol];
+        
+        // VALIDAÇÃO CRÍTICA: Garantir que nunca retornamos valores inválidos (0 ou negativos)
+        let minDuration = data.minDuration;
+        let defaultDuration = data.defaultDuration;
+        
+        // Se minDuration é 0 ou inválido, usar valores seguros
+        if (!minDuration || minDuration <= 0 || isNaN(minDuration)) {
+          minDuration = isForexOrMetal ? 15 : 1;
+          console.warn('[OperationChart] minDuration inválido nos dados de contratos, usando:', minDuration);
+        }
+        
+        // Se defaultDuration é 0 ou inválido, usar valores seguros
+        if (!defaultDuration || defaultDuration <= 0 || isNaN(defaultDuration)) {
+          defaultDuration = isForexOrMetal ? 15 : 1;
+          console.warn('[OperationChart] defaultDuration inválido nos dados de contratos, usando:', defaultDuration);
+        }
+        
+        // Para Forex/Metais, garantir mínimo de 15 minutos
+        if (isForexOrMetal) {
+          if (minDuration < 15) {
+            console.warn('[OperationChart] Forex/Metal com minDuration < 15, ajustando para 15');
+            minDuration = 15;
+          }
+          if (defaultDuration < 15) {
+            defaultDuration = 15;
+          }
+        }
+        
         return {
-          min: data.minDuration,
-          max: data.maxDuration,
-          defaultUnit: data.defaultUnit,
-          allowedUnits: data.allowedUnits,
-          defaultDuration: data.defaultDuration,
-          minStake: data.minStake,
-          maxStake: data.maxStake
+          min: minDuration,
+          max: data.maxDuration || 365,
+          defaultUnit: data.defaultUnit || 'm',
+          allowedUnits: data.allowedUnits || ['m', 'h', 'd'],
+          defaultDuration: defaultDuration,
+          minStake: data.minStake || 0.35,
+          maxStake: data.maxStake || 10000
         };
       }
       
@@ -1839,15 +2067,14 @@ export default {
           maxStake: 10000
         };
       } else if (symbol.startsWith('frx')) {
-        // Forex e Metais: podem ter durações mínimas maiores
-        // Usar minutos como padrão mas com duração mínima maior (5 minutos)
-        // Os dados reais da API vão sobrescrever isso
+        // Forex e Metais: SEMPRE usar mínimo de 15 minutos
+        // API Deriv geralmente não aceita menos que isso para Forex
         return {
-          min: 5, // Duração mínima maior para Forex
+          min: 15, // Duração mínima SEGURA para Forex/Metais
           max: 365,
           defaultUnit: 'm', // Manter minutos pois temos botão para isso
           allowedUnits: ['m', 'h', 'd'],
-          defaultDuration: 5, // 5 minutos como padrão mais seguro
+          defaultDuration: 15, // 15 minutos como padrão seguro
           minStake: 0.35,
           maxStake: 10000
         };
