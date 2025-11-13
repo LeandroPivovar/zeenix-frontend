@@ -131,8 +131,8 @@
                     <div class="input-group-half">
               <label class="input-label">Tipo de duração</label>
                         <div class="toggle-buttons">
-                <button @click="setDurationUnit('m')" :class="{ 'toggle-active': localOrderConfig.durationUnit === 'm' }" :disabled="isTrading || !canUseCallPut">Minutos</button>
-                <button @click="setDurationUnit('t')" :class="{ 'toggle-active': localOrderConfig.durationUnit === 't' }" :disabled="isTrading || !canUseCallPut">Ticks</button>
+                <button @click="setDurationUnit('m')" :class="{ 'toggle-active': localOrderConfig.durationUnit === 'm' }" :disabled="isTrading || !canUseMinutes">Minutos</button>
+                <button @click="setDurationUnit('t')" :class="{ 'toggle-active': localOrderConfig.durationUnit === 't' }" :disabled="isTrading || !canUseTicks">Ticks</button>
                         </div>
                     </div>
                     <div class="input-group-half">
@@ -393,6 +393,26 @@ export default {
     },
     canUseCallPut() {
       return this.supportsCallPut(this.symbol);
+    },
+    canUseMinutes() {
+      if (!this.canUseCallPut) return false;
+      const config = this.getValidDurationForSymbol(this.symbol);
+      return config.allowedUnits.includes('m');
+    },
+    canUseTicks() {
+      if (!this.canUseCallPut) return false;
+      const config = this.getValidDurationForSymbol(this.symbol);
+      return config.allowedUnits.includes('t');
+    },
+    canUseHours() {
+      if (!this.canUseCallPut) return false;
+      const config = this.getValidDurationForSymbol(this.symbol);
+      return config.allowedUnits.includes('h');
+    },
+    canUseDays() {
+      if (!this.canUseCallPut) return false;
+      const config = this.getValidDurationForSymbol(this.symbol);
+      return config.allowedUnits.includes('d');
     },
     loadingMessage() {
       if (this.connectionError) {
@@ -1270,19 +1290,21 @@ export default {
         };
       } else if (symbol.startsWith('cry')) {
         // Criptomoedas: permitem durações médias (1-365 dias, 1-24 horas, 1-60 minutos)
+        // Nota: Criptomoedas não suportam CALL/PUT, mas se suportassem, usaríamos 'm' como padrão
         return {
           min: 1,
           max: 365,
-          defaultUnit: 'h',
+          defaultUnit: 'm', // Mudado de 'h' para 'm' pois temos botão para minutos
           allowedUnits: ['m', 'h', 'd'],
           defaultDuration: 1
         };
       } else if (symbol.startsWith('frx')) {
         // Forex e Metais: permitem durações longas (1-365 dias, 1-24 horas, 1-60 minutos)
+        // Usar 'm' como padrão pois temos botão para minutos (não temos para horas/dias)
         return {
           min: 1,
           max: 365,
-          defaultUnit: 'h',
+          defaultUnit: 'm', // Mudado de 'h' para 'm' pois temos botão para minutos
           allowedUnits: ['m', 'h', 'd'],
           defaultDuration: 1
         };
@@ -1308,9 +1330,31 @@ export default {
         duration = config.max;
       }
       
-      // Se a unidade não é permitida, mudar para a padrão
+      // Se a unidade não é permitida, tentar usar uma unidade que tenha botão disponível
       if (!config.allowedUnits.includes(unit)) {
-        unit = config.defaultUnit;
+        // Prioridade: minutos > ticks > horas > dias
+        if (config.allowedUnits.includes('m')) {
+          unit = 'm';
+        } else if (config.allowedUnits.includes('t')) {
+          unit = 't';
+        } else if (config.allowedUnits.includes('h')) {
+          unit = 'h';
+        } else if (config.allowedUnits.includes('d')) {
+          unit = 'd';
+        } else {
+          unit = config.defaultUnit;
+        }
+        duration = config.defaultDuration;
+      }
+      
+      // Se a unidade atual não tem botão disponível (h ou d), usar minutos como fallback
+      const availableButtons = [];
+      if (config.allowedUnits.includes('m')) availableButtons.push('m');
+      if (config.allowedUnits.includes('t')) availableButtons.push('t');
+      
+      if (availableButtons.length > 0 && !availableButtons.includes(unit)) {
+        // Usar a primeira unidade disponível que tem botão
+        unit = availableButtons[0];
         duration = config.defaultDuration;
       }
       
