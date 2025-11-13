@@ -90,27 +90,6 @@ const routes = [
     name: 'DerivOAuthCallback',
     component: DerivOAuthCallback,
     meta: { requiresAuth: true }
-  },
-
-    {
-    path: '/markup',
-    name: 'Markup',
-    component: MarkupView,
-    meta: { requiresAuth: true }
-  },
-
-  {
-    path: '/StatsIAs',
-    name: 'StatsIAs',
-    component: StatsIAsView,
-    meta: { requiresAuth: true }  
-  },
-
-  {
-    path: '/Experts',
-    name: 'Experts',
-    component: ExpertsView,
-    meta: { requiresAuth: true }
   }
 ]
 
