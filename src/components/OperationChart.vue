@@ -866,6 +866,15 @@ export default {
       // Não resetar isReconnecting aqui, será resetado quando nova conexão for estabelecida
     },
     handleMessage(msg) {
+      // Log para debug - verificar se contracts_for está chegando
+      if (msg.msg_type === 'contracts_for') {
+        console.log('[OperationChart] 🔍 Mensagem contracts_for recebida:', {
+          hasError: !!msg.error,
+          hasContractsFor: !!msg.contracts_for,
+          msgType: msg.msg_type
+        });
+      }
+      
       if (msg.error) {
         this.handleDerivError(msg.error);
         return;
@@ -1217,6 +1226,14 @@ export default {
       
       console.log('[OperationChart] Buscando dados de contratos para:', symbol);
       this.isLoadingContracts = true;
+      
+      // Timeout para resetar flag se os dados não chegarem
+      setTimeout(() => {
+        if (this.isLoadingContracts && !this.contractsData[symbol]) {
+          console.warn('[OperationChart] Timeout ao buscar dados de contratos para', symbol, '- resetando flag');
+          this.isLoadingContracts = false;
+        }
+      }, 5000); // 5 segundos de timeout
       
       const payload = {
         contracts_for: symbol,
@@ -2098,45 +2115,47 @@ export default {
         return;
       }
       
-      // Para Forex e Metais, aguardar dados de contratos antes de enviar proposta
-      // pois eles geralmente não suportam minutos e precisam de valores específicos
+      // Para Forex e Metais, tentar buscar dados de contratos mas não bloquear indefinidamente
       const isForexOrMetal = this.symbol.startsWith('frx');
       
       if (isForexOrMetal && !this.contractsData[this.symbol]) {
+        // Tentar buscar dados de contratos se ainda não estiver carregando
         if (!this.isLoadingContracts) {
-          console.log('[OperationChart] Forex/Metal detectado, buscando dados de contratos antes de enviar proposta...');
+          console.log('[OperationChart] Forex/Metal detectado, buscando dados de contratos...');
           this.fetchContractsForSymbol(this.symbol);
         }
         
-        // Aguardar dados de contratos para Forex/Metais
-        if (this.isLoadingContracts) {
-          console.log('[OperationChart] Aguardando dados de contratos para Forex/Metal...');
-          setTimeout(() => {
-            if (this.contractsData[this.symbol]) {
-              this.subscribeToProposal();
-            } else if (!this.isLoadingContracts) {
-              // Se não conseguiu buscar, tentar com valores padrão após timeout
-              console.warn('[OperationChart] Dados de contratos não recebidos, tentando com valores padrão...');
-              this.proceedWithProposal();
-            } else {
-              // Ainda está carregando, aguardar mais um pouco
-              setTimeout(() => this.subscribeToProposal(), 2000);
+        // Aguardar no máximo 3 segundos pelos dados de contratos
+        // Se não chegarem, usar valores padrão seguros para Forex (horas)
+        const maxWaitTime = 3000;
+        const startTime = Date.now();
+        
+        const checkAndProceed = () => {
+          const elapsed = Date.now() - startTime;
+          
+          if (this.contractsData[this.symbol]) {
+            // Dados recebidos, prosseguir
+            console.log('[OperationChart] Dados de contratos recebidos para Forex, prosseguindo...');
+            this.proceedWithProposal();
+          } else if (elapsed >= maxWaitTime || !this.isLoadingContracts) {
+            // Timeout ou flag resetada, usar valores padrão seguros
+            console.warn('[OperationChart] Dados de contratos não recebidos para Forex após', elapsed, 'ms, usando valores padrão seguros...');
+            // Ajustar para usar um valor maior em minutos (Forex geralmente não suporta 1 minuto)
+            // Tentar 15 minutos como valor mais seguro para Forex
+            if (this.localOrderConfig.durationUnit === 'm' && this.localOrderConfig.duration < 15) {
+              this.localOrderConfig.duration = 15; // 15 minutos como padrão mais seguro para Forex
+              console.log('[OperationChart] Ajustado para 15 minutos como padrão seguro para Forex');
             }
-          }, 2000);
-          return;
-        } else {
-          // Tentar buscar e aguardar
-          this.fetchContractsForSymbol(this.symbol);
-          setTimeout(() => {
-            if (this.contractsData[this.symbol]) {
-              this.subscribeToProposal();
-            } else {
-              console.warn('[OperationChart] Dados de contratos não recebidos para Forex, usando valores padrão...');
-              this.proceedWithProposal();
-            }
-          }, 2000);
-          return;
-        }
+            this.proceedWithProposal();
+          } else {
+            // Ainda aguardando, verificar novamente
+            setTimeout(checkAndProceed, 500);
+          }
+        };
+        
+        // Iniciar verificação
+        setTimeout(checkAndProceed, 500);
+        return;
       }
       
       // Para outros ativos (índices), pode continuar com valores padrão
