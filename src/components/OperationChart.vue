@@ -369,6 +369,8 @@ export default {
       currentProposalId: null,
       currentProposalPrice: null,
       proposalTimeout: null,
+      durationErrorCount: 0,
+      maxDurationErrors: 3,
       realTimeProfit: null,
       entrySpotLine: null,
       updateEntrySpotLine: null,
@@ -1001,7 +1003,20 @@ export default {
       
       // Tratar erros específicos de duração
       if (errorCode === 'OfferingsValidationError' && errorField === 'duration') {
-        console.warn('[OperationChart] Duração inválida para este ativo. Ajustando automaticamente...');
+        this.durationErrorCount++;
+        console.warn('[OperationChart] Duração inválida para este ativo. Tentativa', this.durationErrorCount, 'de', this.maxDurationErrors);
+        
+        // Se excedeu o número máximo de tentativas, parar e mostrar erro
+        if (this.durationErrorCount >= this.maxDurationErrors) {
+          console.error('[OperationChart] Muitas tentativas de ajuste de duração falharam. Parando para evitar loop infinito.');
+          this.tradeError = 'Não foi possível determinar uma duração válida para este ativo. Aguardando dados de contratos...';
+          this.durationErrorCount = 0; // Resetar contador
+          // Tentar buscar dados de contratos uma última vez
+          if (!this.contractsData[this.symbol] && !this.isLoadingContracts) {
+            this.fetchContractsForSymbol(this.symbol);
+          }
+          return;
+        }
         
         // Se não temos dados reais, tentar buscar primeiro
         if (!this.contractsData[this.symbol] && !this.isLoadingContracts) {
@@ -1010,7 +1025,7 @@ export default {
           // Aguardar um pouco e tentar novamente
           setTimeout(() => {
             this.handleDurationError();
-          }, 1500);
+          }, 2000);
           return;
         }
         
@@ -1018,12 +1033,17 @@ export default {
         if (this.isLoadingContracts) {
           setTimeout(() => {
             this.handleDurationError();
-          }, 1000);
+          }, 2000);
           return;
         }
         
         this.handleDurationError();
         return;
+      }
+      
+      // Resetar contador de erros de duração se não for erro de duração
+      if (errorField !== 'duration') {
+        this.durationErrorCount = 0;
       }
       
       // Tratar erros de contract_category (ativo não suporta CALL/PUT)
@@ -1073,6 +1093,30 @@ export default {
     },
     handleDurationError() {
       console.warn('[OperationChart] Ajustando duração após erro de validação...');
+      
+      // Para Forex/Metais, aguardar dados de contratos antes de tentar novamente
+      const isForexOrMetal = this.symbol.startsWith('frx');
+      if (isForexOrMetal && !this.contractsData[this.symbol] && !this.isLoadingContracts) {
+        console.log('[OperationChart] Forex/Metal sem dados de contratos, buscando antes de ajustar...');
+        this.fetchContractsForSymbol(this.symbol);
+        // Aguardar dados antes de tentar novamente
+        setTimeout(() => {
+          if (this.contractsData[this.symbol]) {
+            this.handleDurationError();
+          } else {
+            console.warn('[OperationChart] Dados de contratos não recebidos, usando valores padrão...');
+            // Continuar com valores padrão se não conseguir buscar
+            const config = this.getValidDurationForSymbol(this.symbol);
+            this.localOrderConfig.duration = config.defaultDuration;
+            this.localOrderConfig.durationUnit = config.defaultUnit;
+            setTimeout(() => {
+              this.subscribeToProposal();
+            }, 500);
+          }
+        }, 2000);
+        return;
+      }
+      
       const config = this.getValidDurationForSymbol(this.symbol);
       
       // Se temos dados reais, usar a duração mínima real da unidade padrão
@@ -1877,6 +1921,9 @@ export default {
       return { duration, unit };
     },
     handleSymbolChange() {
+      // Resetar contador de erros de duração ao mudar símbolo
+      this.durationErrorCount = 0;
+      
       this.subscribeToSymbol();
       // Buscar dados de contratos para o novo símbolo se ainda não tiver
       if (!this.contractsData[this.symbol]) {
@@ -2051,21 +2098,56 @@ export default {
         return;
       }
       
-      // Se ainda não temos dados de contratos, tentar buscar mas não bloquear
+      // Para Forex e Metais, aguardar dados de contratos antes de enviar proposta
+      // pois eles geralmente não suportam minutos e precisam de valores específicos
+      const isForexOrMetal = this.symbol.startsWith('frx');
+      
+      if (isForexOrMetal && !this.contractsData[this.symbol]) {
+        if (!this.isLoadingContracts) {
+          console.log('[OperationChart] Forex/Metal detectado, buscando dados de contratos antes de enviar proposta...');
+          this.fetchContractsForSymbol(this.symbol);
+        }
+        
+        // Aguardar dados de contratos para Forex/Metais
+        if (this.isLoadingContracts) {
+          console.log('[OperationChart] Aguardando dados de contratos para Forex/Metal...');
+          setTimeout(() => {
+            if (this.contractsData[this.symbol]) {
+              this.subscribeToProposal();
+            } else if (!this.isLoadingContracts) {
+              // Se não conseguiu buscar, tentar com valores padrão após timeout
+              console.warn('[OperationChart] Dados de contratos não recebidos, tentando com valores padrão...');
+              this.proceedWithProposal();
+            } else {
+              // Ainda está carregando, aguardar mais um pouco
+              setTimeout(() => this.subscribeToProposal(), 2000);
+            }
+          }, 2000);
+          return;
+        } else {
+          // Tentar buscar e aguardar
+          this.fetchContractsForSymbol(this.symbol);
+          setTimeout(() => {
+            if (this.contractsData[this.symbol]) {
+              this.subscribeToProposal();
+            } else {
+              console.warn('[OperationChart] Dados de contratos não recebidos para Forex, usando valores padrão...');
+              this.proceedWithProposal();
+            }
+          }, 2000);
+          return;
+        }
+      }
+      
+      // Para outros ativos (índices), pode continuar com valores padrão
       if (!this.contractsData[this.symbol] && !this.isLoadingContracts) {
         console.log('[OperationChart] Dados de contratos não disponíveis, buscando em background...');
         this.fetchContractsForSymbol(this.symbol);
-        // Não bloquear - continuar com valores padrão enquanto busca
+        // Continuar com valores padrão para índices
         console.log('[OperationChart] Continuando com valores padrão enquanto busca dados de contratos...');
       }
       
-      // Se está carregando contratos, não bloquear - continuar com valores padrão
-      if (this.isLoadingContracts) {
-        console.log('[OperationChart] Dados de contratos ainda carregando, usando valores padrão...');
-      }
-      
-      // Sempre prosseguir com a proposta, mesmo sem dados de contratos
-      // Os dados serão usados quando chegarem, mas não devem bloquear a operação
+      // Sempre prosseguir com a proposta para índices, mesmo sem dados de contratos
       this.proceedWithProposal();
     },
     proceedWithProposal() {
@@ -2879,6 +2961,9 @@ export default {
       
       // Limpar qualquer erro anterior
       this.tradeError = '';
+      
+      // Resetar contador de erros de duração já que a proposta foi recebida com sucesso
+      this.durationErrorCount = 0;
       
       // Armazenar subscription ID se fornecido
       if (msg.subscription?.id) {
