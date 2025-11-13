@@ -27,23 +27,20 @@
 </template>
 
 <script>
-import '../assets/css/auth/loginComponent.css'
+import '../assets/css/auth/forgotPasswordComponent.css'
 
 export default {
-  name: "LoginComponent",
+  name: "ForgotPasswordComponent",
   data() {
     return {
+      email: ''
     }
   },
-
+  methods: {
+    async handleLogin() {
+      // Implementar lógica de recuperação de senha
+      console.log('Recuperar senha para:', this.email);
+    }
+  }
 }
 </script>
-
-<style>
-    p{
-        margin-top: 1rem;
-        margin-bottom: 0.5rem;
-        font-size: 1rem;
-        font-weight: 700;
-    }
-</style>

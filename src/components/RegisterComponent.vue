@@ -2,7 +2,7 @@
     <div class="register-container container">
         <h1>ZENI<strong>X</strong></h1>
         <h2>Crie sua conta</h2>
-        <div>
+        <div class="form-register">
             <div class="form-group">                
                 <label for="name">
                     Nome Completo
@@ -151,9 +151,13 @@
                 <span v-if="isLoading" class="spinner" aria-hidden="true"></span>
                 <span>{{ isLoading ? 'Criando...' : 'Registrar' }}</span>
             </button>
-            <router-link to="/login"><button class="btn-back">Voltar ao Login</button></router-link>
 
-            <p>Ao cadastrar voce concorda com os nossos <a href="#">Termos de uso</a> e <a href="#">Termos de Privacidade</a></p>
+            <p class="login-text">
+              Já possui uma conta? 
+              <router-link to="/login">voltar ao login</router-link>
+            </p>
+
+            <p class="terms-text">Ao cadastrar você concorda com os nossos <a href="#">Termos de Uso</a> e <a href="#">Política de Privacidade</a>.</p>
         </div>
     </div>
 </template>

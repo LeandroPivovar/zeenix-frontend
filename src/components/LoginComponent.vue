@@ -1,11 +1,10 @@
 <template>
     <div class="login-container container">
         <h1>ZENI<strong>X</strong></h1>
-        <h2>Entre em sua conta</h2>
         <div class="form-login">
             <div class="form-group">
                 <label for="email">
-                  E-mail
+                    <span>E-mail</span>
                 </label>
                 <input 
                     type="email" 
@@ -15,10 +14,10 @@
                 />
             </div>
             
-            <div class="form-group">
+            <div class="form-group password-group">
                 <label for="password">
-                    Senha 
-                   
+                    <span>Senha</span>
+                    <router-link to="/forgot-password" class="forgot-password">Esqueceu sua senha?</router-link>
                 </label>
                 <input 
                     type="password" 
@@ -38,9 +37,6 @@
                 <router-link to="/register">criar conta</router-link>
             </p>
 
-            <span class="forgot-password">
-              <router-link to="/forgot-password">Esqueceu sua senha?</router-link>
-            </span>
         </div>
     </div>
 </template>
