@@ -212,6 +212,11 @@
             {{ isTrading ? 'Vendendo...' : 'VENDER' }}
           </button>
 
+          <div v-if="formattedCountdown && activeContract" class="countdown-display">
+            <span class="countdown-label">Tempo restante:</span>
+            <span class="countdown-value">{{ formattedCountdown }}</span>
+          </div>
+
           <p v-if="tradeMessage" class="trade-message success">{{ tradeMessage }}</p>
           <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
             </div>
@@ -378,6 +383,10 @@ export default {
       maxProposalRetries: 3, // Máximo de tentativas de re-subscription
       lastProposalAttemptTime: 0, // Timestamp da última tentativa
       proposalThrottleMs: 2000, // Mínimo de tempo entre tentativas (2 segundos)
+      // Countdown do contrato
+      contractExpiryTime: null, // Timestamp de expiração do contrato
+      countdownInterval: null, // Interval para atualizar countdown
+      remainingTime: null, // Tempo restante em segundos
       durationErrorCount: 0,
       maxDurationErrors: 3,
       realTimeProfit: null,
@@ -496,6 +505,19 @@ export default {
     chartResolutionLabel() {
       if (!this.ticks.length) return '--';
       return `${this.ticks.length} pts (${this.symbol})`;
+    },
+    formattedCountdown() {
+      if (!this.remainingTime || this.remainingTime < 0) {
+        return null;
+      }
+      
+      const minutes = Math.floor(this.remainingTime / 60);
+      const seconds = this.remainingTime % 60;
+      
+      if (minutes > 0) {
+        return `${minutes}m ${seconds}s`;
+      }
+      return `${seconds}s`;
     },
     lastUpdateLabel() {
       if (!this.lastUpdate) return '--';
@@ -873,6 +895,43 @@ export default {
       this.tickSubscriptionId = null;
       this.isAuthorized = false;
       // Não resetar isReconnecting aqui, será resetado quando nova conexão for estabelecida
+    },
+    startCountdown() {
+      // Limpar interval anterior se existir
+      this.stopCountdown();
+      
+      console.log('[OperationChart] Iniciando countdown. Expiry:', this.contractExpiryTime);
+      
+      // Atualizar countdown imediatamente
+      this.updateCountdown();
+      
+      // Atualizar a cada segundo
+      this.countdownInterval = setInterval(() => {
+        this.updateCountdown();
+      }, 1000);
+    },
+    updateCountdown() {
+      if (!this.contractExpiryTime) {
+        this.remainingTime = null;
+        return;
+      }
+      
+      const now = Math.floor(Date.now() / 1000);
+      const remaining = this.contractExpiryTime - now;
+      
+      if (remaining <= 0) {
+        this.remainingTime = 0;
+        this.stopCountdown();
+      } else {
+        this.remainingTime = remaining;
+      }
+    },
+    stopCountdown() {
+      if (this.countdownInterval) {
+        clearInterval(this.countdownInterval);
+        this.countdownInterval = null;
+      }
+      this.remainingTime = null;
     },
     handleMessage(msg) {
       // Log para debug - verificar se contracts_for está chegando
@@ -2884,6 +2943,9 @@ export default {
       this.realTimeProfit = null;
       this.purchasePrice = null;
       this.isSellEnabled = false;
+      // Parar countdown
+      this.stopCountdown();
+      this.contractExpiryTime = null;
       // Manter isDemoAccount pois é baseado na autorização, não no contrato
       
       // Mostrar modal de resultado
@@ -3431,19 +3493,54 @@ export default {
       // Atualizar o preço de compra com o entry_spot confirmado pela Deriv
       this.purchasePrice = entrySpot;
       
+      // Calcular tempo de expiração baseado na duração do contrato
+      const purchaseTime = buy.purchase_time || Math.floor(Date.now() / 1000);
+      let expiryTime = purchaseTime;
+      
+      // Calcular expiry baseado na duração configurada
+      const duration = this.localOrderConfig.duration;
+      const durationUnit = this.localOrderConfig.durationUnit;
+      
+      switch (durationUnit) {
+        case 't': // ticks - aproximadamente 2 segundos por tick
+          expiryTime = purchaseTime + (duration * 2);
+          break;
+        case 's': // segundos
+          expiryTime = purchaseTime + duration;
+          break;
+        case 'm': // minutos
+          expiryTime = purchaseTime + (duration * 60);
+          break;
+        case 'h': // horas
+          expiryTime = purchaseTime + (duration * 3600);
+          break;
+        case 'd': // dias
+          expiryTime = purchaseTime + (duration * 86400);
+          break;
+        default:
+          expiryTime = purchaseTime + 60; // fallback: 1 minuto
+      }
+      
       // Criar objeto de contrato ativo
       this.activeContract = {
         contract_id: buy.contract_id,
         symbol: this.symbol,
         type: this.localOrderConfig.type,
         entry_spot: entrySpot,
-        purchase_time: buy.purchase_time,
+        purchase_time: purchaseTime,
         buy_price: Number(buy.buy_price),
         currency: this.displayCurrency,
+        expiry_time: expiryTime,
+        duration: duration,
+        duration_unit: durationUnit
       };
       
-      // Armazenar tempo de entrada (usar purchase_time ou tempo atual)
-      this.entryTime = buy.purchase_time || Math.floor(Date.now() / 1000);
+      // Armazenar tempo de entrada
+      this.entryTime = purchaseTime;
+      
+      // Iniciar countdown
+      this.contractExpiryTime = expiryTime;
+      this.startCountdown();
       
       console.log('[OperationChart] Preparando para adicionar marcador visual:', {
         entrySpot: this.activeContract.entry_spot,
@@ -3851,6 +3948,9 @@ export default {
     if (this.aiCardTimeout) {
       clearTimeout(this.aiCardTimeout);
     }
+    // Limpar countdown
+    this.stopCountdown();
+    
     console.log('[OperationChart] ========== COMPONENTE SENDO DESMONTADO ==========');
     this.isDestroying = true;
     
@@ -4390,6 +4490,45 @@ export default {
 
 .ai-info-value.orange {
   color: #F97316;
+}
+
+/* Countdown Display */
+.countdown-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin: 12px 0;
+  padding: 12px;
+  background: linear-gradient(135deg, rgba(99, 102, 241, 0.1), rgba(139, 92, 246, 0.1));
+  border: 1px solid rgba(99, 102, 241, 0.3);
+  border-radius: 8px;
+  animation: pulse-countdown 2s ease-in-out infinite;
+}
+
+.countdown-label {
+  font-size: 11px;
+  color: rgba(148, 163, 184, 0.8);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.countdown-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #6366F1;
+  font-family: 'Courier New', monospace;
+  text-shadow: 0 0 10px rgba(99, 102, 241, 0.3);
+}
+
+@keyframes pulse-countdown {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+  }
 }
 
 </style>
