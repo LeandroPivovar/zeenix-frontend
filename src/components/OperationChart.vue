@@ -134,7 +134,15 @@
                     </div>
                     <div class="input-group-half">
                         <label class="input-label">Duração</label>
-              <input type="number" min="1" v-model.number="localOrderConfig.duration" class="input-field-value" :disabled="isTrading" />
+              <input 
+                type="number" 
+                :min="getValidDurationForSymbol(symbol).min" 
+                :max="getValidDurationForSymbol(symbol).max"
+                v-model.number="localOrderConfig.duration" 
+                @input="onDurationChange"
+                class="input-field-value" 
+                :disabled="isTrading" 
+              />
                     </div>
                 </div>
                 
@@ -864,13 +872,47 @@ export default {
         tokenPreview: this.token ? `${this.token.substring(0, 10)}...` : 'null'
       });
       
+      const errorCode = error?.code || '';
+      const errorField = error?.details?.field || '';
       const message = error?.message || 'Erro desconhecido na Deriv';
+      
+      // Tratar erros específicos de duração
+      if (errorCode === 'OfferingsValidationError' && errorField === 'duration') {
+        console.warn('[OperationChart] Duração inválida para este ativo. Ajustando automaticamente...');
+        const config = this.getValidDurationForSymbol(this.symbol);
+        
+        // Ajustar para valores padrão válidos
+        this.localOrderConfig.duration = config.defaultDuration;
+        this.localOrderConfig.durationUnit = config.defaultUnit;
+        
+        console.log('[OperationChart] Duração ajustada para:', {
+          duration: this.localOrderConfig.duration,
+          unit: this.localOrderConfig.durationUnit,
+          symbol: this.symbol
+        });
+        
+        // Tentar novamente após ajuste
+        setTimeout(() => {
+          this.subscribeToProposal();
+        }, 500);
+        
+        // Não mostrar erro ao usuário, apenas ajustar silenciosamente
+        return;
+      }
+      
       if (this.isTrading) {
         console.error('[OperationChart] Erro durante operação de compra/venda');
         this.tradeError = message;
         this.tradeMessage = '';
         this.isTrading = false;
       } else {
+        // Para outros erros, não reconectar automaticamente se for erro de validação
+        if (errorCode === 'OfferingsValidationError') {
+          console.warn('[OperationChart] Erro de validação:', message);
+          this.tradeError = message;
+          return;
+        }
+        
         console.error('[OperationChart] Erro de conexão');
         this.connectionError = `${message}. Reconectando automaticamente...`;
         this.isAuthorized = false;
@@ -1191,17 +1233,111 @@ export default {
         }, 100);
       }
     },
+    getValidDurationForSymbol(symbol) {
+      // Retorna configuração de duração válida para cada tipo de símbolo
+      if (symbol.startsWith('R_') || symbol.startsWith('1HZ')) {
+        // Índices de Volatilidade: permitem durações curtas (1-5 minutos ou 1-10 ticks)
+        return {
+          min: 1,
+          max: symbol.startsWith('1HZ') ? 10 : 5, // Índices 1s permitem até 10, outros até 5
+          defaultUnit: 'm',
+          allowedUnits: ['m', 't'],
+          defaultDuration: 1
+        };
+      } else if (symbol.startsWith('cry')) {
+        // Criptomoedas: permitem durações médias (1-365 dias, 1-24 horas, 1-60 minutos)
+        return {
+          min: 1,
+          max: 365,
+          defaultUnit: 'h',
+          allowedUnits: ['m', 'h', 'd'],
+          defaultDuration: 1
+        };
+      } else if (symbol.startsWith('frx')) {
+        // Forex e Metais: permitem durações longas (1-365 dias, 1-24 horas, 1-60 minutos)
+        return {
+          min: 1,
+          max: 365,
+          defaultUnit: 'h',
+          allowedUnits: ['m', 'h', 'd'],
+          defaultDuration: 1
+        };
+      }
+      // Padrão: minutos
+      return {
+        min: 1,
+        max: 5,
+        defaultUnit: 'm',
+        allowedUnits: ['m', 't'],
+        defaultDuration: 1
+      };
+    },
+    validateAndAdjustDuration() {
+      const config = this.getValidDurationForSymbol(this.symbol);
+      let duration = Number(this.localOrderConfig.duration) || 1;
+      let unit = this.localOrderConfig.durationUnit || config.defaultUnit;
+      
+      // Ajustar duração se estiver fora dos limites
+      if (duration < config.min) {
+        duration = config.min;
+      } else if (duration > config.max) {
+        duration = config.max;
+      }
+      
+      // Se a unidade não é permitida, mudar para a padrão
+      if (!config.allowedUnits.includes(unit)) {
+        unit = config.defaultUnit;
+        duration = config.defaultDuration;
+      }
+      
+      // Ajustar valores
+      if (this.localOrderConfig.duration !== duration) {
+        this.localOrderConfig.duration = duration;
+      }
+      if (this.localOrderConfig.durationUnit !== unit) {
+        this.localOrderConfig.durationUnit = unit;
+      }
+      
+      return { duration, unit };
+    },
     handleSymbolChange() {
       this.subscribeToSymbol();
+      // Validar e ajustar duração para o novo símbolo
+      this.validateAndAdjustDuration();
       // Reiniciar subscription de proposal quando símbolo mudar
+      this.subscribeToProposal();
+    },
+    onDurationChange() {
+      if (this.isTrading || this.activeContract) return;
+      
+      // Validar e ajustar duração
+      this.validateAndAdjustDuration();
+      
+      // Atualizar proposal quando duração mudar
       this.subscribeToProposal();
     },
     setDurationUnit(unit) {
       if (this.isTrading || this.activeContract) return;
-      this.localOrderConfig.durationUnit = unit;
-      if (unit === 't') {
-        this.localOrderConfig.duration = Math.max(1, Math.min(this.localOrderConfig.duration, 10));
+      
+      // Validar se a unidade é permitida para este símbolo
+      const config = this.getValidDurationForSymbol(this.symbol);
+      if (!config.allowedUnits.includes(unit)) {
+        console.warn('[OperationChart] Unidade de duração não permitida para este ativo. Usando unidade padrão.');
+        unit = config.defaultUnit;
       }
+      
+      this.localOrderConfig.durationUnit = unit;
+      
+      // Ajustar duração baseado na unidade e limites do símbolo
+      let duration = Number(this.localOrderConfig.duration) || 1;
+      if (unit === 't') {
+        duration = Math.max(config.min, Math.min(duration, Math.min(10, config.max)));
+      } else {
+        duration = Math.max(config.min, Math.min(duration, config.max));
+      }
+      
+      this.localOrderConfig.duration = duration;
+      
       // Atualizar proposal quando unidade de duração mudar
       this.subscribeToProposal();
     },
@@ -1311,7 +1447,8 @@ export default {
         return;
       }
       
-      const duration = Math.max(1, Number(this.localOrderConfig.duration));
+      // Validar e ajustar duração antes de enviar
+      const { duration, unit } = this.validateAndAdjustDuration();
       const displayCurrency = this.displayCurrency;
       
       const payload = {
@@ -1321,7 +1458,7 @@ export default {
         contract_type: this.localOrderConfig.type,
         currency: displayCurrency,
         duration,
-        duration_unit: this.localOrderConfig.durationUnit,
+        duration_unit: unit,
         symbol: this.symbol,
         subscribe: 1, // Subscription contínua
       };
