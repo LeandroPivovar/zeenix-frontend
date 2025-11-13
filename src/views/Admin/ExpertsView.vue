@@ -320,6 +320,8 @@ body {
 .add-expert-button-wrapper {
     margin-top: 20px;
     margin-bottom: 30px;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out forwards;
 }
 .add-expert-btn {
     background-color: #4CAF50;
@@ -346,7 +348,10 @@ body {
     margin-top: 20px;
     box-shadow: 0 4px 12px rgba(7, 51, 1, 0.4);
     max-height: 500px;
-    overflow-y: auto; 
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-out forwards; 
     padding-right: 15px;
 }
 
@@ -535,6 +540,9 @@ body {
     padding: 15px 20px;
     flex: 1;
     display: flex;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-out forwards;
     flex-direction: column;
     justify-content: space-between;
     position: relative;
@@ -555,6 +563,12 @@ body {
     margin: 0;
     line-height: 1;
 }
+
+/* Delays escalonados para cada card */
+.active-expert { animation-delay: 0.1s; }
+.balance { animation-delay: 0.2s; }
+.profit { animation-delay: 0.3s; }
+.last-up { animation-delay: 0.4s; }
 
 .active-expert .card-value {
     font-size: 2.2rem;
@@ -577,6 +591,10 @@ body {
     padding: 0 20px 20px 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     width: 100%;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-out forwards;
+    animation-delay: 0.5s;
     overflow-x: auto; 
 }
 
@@ -751,6 +769,27 @@ body {
 @media (max-width: 480px) {
     .card {
         flex: 1 1 100%; 
+    }
+}
+
+/* Animações */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
     }
 }
 </style>

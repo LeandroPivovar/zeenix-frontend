@@ -193,7 +193,9 @@ h1{
 	width: 100%;
 	align-items: center;
 	margin-bottom: 30px;
-	padding-top: 20px; 
+	padding-top: 20px;
+	opacity: 0;
+	animation: fadeIn 0.5s ease-out forwards;
 }
 
 .main-header-left {
@@ -240,6 +242,9 @@ h1{
 	gap: 10px; 
 	align-items: center; 
 	margin-bottom: 20px;
+	opacity: 0;
+	animation: fadeIn 0.6s ease-out forwards;
+	animation-delay: 0.1s;
 }
 
 .date-filter input {
@@ -261,6 +266,10 @@ h1{
 	overflow-x: auto;
 	overflow-y: auto;
 	background: #191a19;
+	opacity: 0;
+	transform: translateY(20px);
+	animation: fadeInUp 0.6s ease-out forwards;
+	animation-delay: 0.2s;
 }
 
 .table-container::-webkit-scrollbar {
@@ -358,8 +367,17 @@ tbody tr:hover {
 	border-radius: 8px;
 	display: flex;
 	height: 70px; 
-	align-items: center; 
+	align-items: center;
+	opacity: 0;
+	transform: translateY(20px);
+	animation: fadeInUp 0.6s ease-out forwards;
 }
+
+/* Delays escalonados para cada card */
+.bottom-card:nth-child(1) { animation-delay: 0.3s; }
+.bottom-card:nth-child(2) { animation-delay: 0.4s; }
+.bottom-card:nth-child(3) { animation-delay: 0.5s; }
+.bottom-card:nth-child(4) { animation-delay: 0.6s; }
 
 .bottom-card .card-content {
 	display: flex;
@@ -468,6 +486,27 @@ tbody tr:hover {
 
 	.table-container {
 		height: fit-content;
+	}
+}
+
+/* Animações */
+@keyframes fadeInUp {
+	from {
+		opacity: 0;
+		transform: translateY(20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@keyframes fadeIn {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
 	}
 }
 

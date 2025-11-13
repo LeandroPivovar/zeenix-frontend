@@ -101,14 +101,14 @@
 				Estatisticas das IAs
 			</button>
 
-			<button
-				class="menu-item"
-				:class="{ active: isAdminActive }"
-				@click="navigateAndClose('/Experts')"
-				data-text="Experts"
-			>
-				Markup
-			</button>
+		<button
+			class="menu-item"
+			:class="{ active: isAdminActive }"
+			@click="navigateAndClose('/Experts')"
+			data-text="Experts"
+		>
+			Experts
+		</button>
 		</nav>
 		<div class="status">
 			<div class="user" @click="toggleUserMenu">
@@ -165,17 +165,23 @@ export default {
 		isPlansActive() {
 			return this.$route?.path === '/plans';
 		},
-		// Corrigido para verificar a rota /operation
-		isOperationActive() {
-			// Se /operation não tiver sub-rotas, use ===
-			return this.$route?.path === '/operation';
-			// Se /operation tiver sub-rotas (ex: /operation/details), use:
-			// return this.$route?.path?.startsWith('/operation'); 
-		},
-		isCopyTradingActive() {
-			return this.$route?.path === '/copy-trading';
-		}
+	// Corrigido para verificar a rota /operation
+	isOperationActive() {
+		// Se /operation não tiver sub-rotas, use ===
+		return this.$route?.path === '/operation';
+		// Se /operation tiver sub-rotas (ex: /operation/details), use:
+		// return this.$route?.path?.startsWith('/operation'); 
 	},
+	isCopyTradingActive() {
+		return this.$route?.path === '/copy-trading';
+	},
+	isAdminActive() {
+		// Verifica se está em qualquer rota admin
+		return this.$route?.path === '/markup' || 
+			this.$route?.path === '/StatsIAs' || 
+			this.$route?.path === '/Experts';
+	}
+},
 	methods: {
 		close() {
 			if (this.isOpen) {

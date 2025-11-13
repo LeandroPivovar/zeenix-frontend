@@ -10,6 +10,9 @@ import PlansView from '../views/PlansView.vue'
 import OperationView from '../views/OperationView.vue'
 import CopyTradingView from '../views/CopyTrading.vue'
 import DerivOAuthCallback from '../views/DerivOAuthCallback.vue'
+import MarkupView from '../views/Admin/MarkupView.vue'
+import StatsIAsView from '../views/Admin/StatsIAsView.vue'
+import ExpertsView from '../views/Admin/ExpertsView.vue'
 
 const routes = [
   {
@@ -89,6 +92,24 @@ const routes = [
     path: '/oauth/callback',
     name: 'DerivOAuthCallback',
     component: DerivOAuthCallback,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/markup',
+    name: 'Markup',
+    component: MarkupView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/StatsIAs',
+    name: 'StatsIAs',
+    component: StatsIAsView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/Experts',
+    name: 'Experts',
+    component: ExpertsView,
     meta: { requiresAuth: true }
   }
 ]
