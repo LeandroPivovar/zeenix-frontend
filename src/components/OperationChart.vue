@@ -278,6 +278,9 @@ export default {
       appId: null,
       isConnecting: false,
       isAuthorized: false,
+      isReconnecting: false,
+      currentLoginid: null,
+      reconnectTimeout: null,
       isLoadingSymbol: false,
       connectionError: '',
       tradeMessage: '',
@@ -662,6 +665,17 @@ export default {
       this.connectionError = '';
       this.isConnecting = true;
       
+      // Timeout de segurança para resetar isReconnecting se a conexão não for estabelecida
+      if (this.reconnectTimeout) {
+        clearTimeout(this.reconnectTimeout);
+      }
+      this.reconnectTimeout = setTimeout(() => {
+        if (this.isReconnecting && !this.isAuthorized) {
+          console.warn('[OperationChart] Timeout de reconexão, resetando flag');
+          this.isReconnecting = false;
+        }
+      }, 30000); // 30 segundos
+      
       // Determinar qual token usar baseado na moeda preferida e loginid
       this.token = this.getTokenForAccount();
       this.appId = localStorage.getItem('deriv_app_id') || APP_ID;
@@ -782,6 +796,8 @@ export default {
       }
       this.ws = null;
       this.tickSubscriptionId = null;
+      this.isAuthorized = false;
+      // Não resetar isReconnecting aqui, será resetado quando nova conexão for estabelecida
     },
     handleMessage(msg) {
       if (msg.error) {
@@ -812,8 +828,16 @@ export default {
           
           this.isAuthorized = true;
           this.isConnecting = false;
+          this.isReconnecting = false; // Resetar flag de reconexão
+          this.currentLoginid = loginid; // Armazenar loginid atual
           this.connectionError = ''; // Limpar erro ao conectar com sucesso
           this.retryCount = 0; // Resetar contador de tentativas
+          
+          // Limpar timeout de reconexão
+          if (this.reconnectTimeout) {
+            clearTimeout(this.reconnectTimeout);
+            this.reconnectTimeout = null;
+          }
           
           // Para contas demo, a moeda geralmente é USD (mas pode ser outra)
           // O importante é usar a moeda retornada pela API
@@ -2547,66 +2571,126 @@ export default {
     // Reiniciar conexão quando o loginid ou moeda preferida mudarem
     // para garantir que estamos usando o token correto
     accountLoginid(newVal, oldVal) {
+      // Ignorar se for a primeira inicialização (oldVal é null/undefined)
+      if (!oldVal && !newVal) return;
+      if (oldVal === newVal) return;
+      
       console.log('[OperationChart] ⚠ accountLoginid mudou:', {
         antigo: oldVal,
         novo: newVal
       });
-      // Aguardar um pouco para evitar race condition com abertura do WebSocket
+      
+      // Verificar se já está conectado com o mesmo loginid
+      if (this.isAuthorized && this.currentLoginid === newVal) {
+        console.log('[OperationChart] Já está conectado com este loginid, ignorando mudança');
+        return;
+      }
+      
+      // Evitar múltiplas reconexões simultâneas
+      if (this.isReconnecting) {
+        console.log('[OperationChart] Já está reconectando, ignorando nova mudança');
+        return;
+      }
+      
+      this.isReconnecting = true;
+      this.currentLoginid = newVal;
+      
+      // Aguardar um pouco para evitar race condition
       this.$nextTick(() => {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
           console.log('[OperationChart] Reiniciando conexão devido à mudança de loginid');
           this.teardownConnection();
-          // Pequeno delay para garantir que a conexão foi fechada
           setTimeout(() => {
             this.initConnection();
-          }, 100);
-        } else if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+            this.isReconnecting = false;
+          }, 500);
+        } else if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
+          // Se não há conexão, apenas inicializar
+          console.log('[OperationChart] Inicializando nova conexão para loginid:', newVal);
+          this.initConnection();
+          this.isReconnecting = false;
+        } else {
+          // Se está conectando, aguardar
           console.log('[OperationChart] WebSocket ainda está conectando, aguardando...');
-          // Aguardar que a conexão abra antes de reiniciar
           const checkConnection = () => {
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
               console.log('[OperationChart] WebSocket aberto, reiniciando conexão devido à mudança de loginid');
               this.teardownConnection();
               setTimeout(() => {
                 this.initConnection();
-              }, 100);
+                this.isReconnecting = false;
+              }, 500);
             } else if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
-              setTimeout(checkConnection, 100);
+              setTimeout(checkConnection, 200);
+            } else {
+              this.isReconnecting = false;
             }
           };
-          setTimeout(checkConnection, 100);
+          setTimeout(checkConnection, 200);
         }
       });
     },
     preferredCurrency(newVal, oldVal) {
+      // Ignorar se for a primeira inicialização ou se não mudou realmente
+      if (!oldVal && !newVal) return;
+      if (oldVal === newVal) return;
+      
+      // Verificar se a moeda final (após conversão) realmente mudou
+      const oldFinalCurrency = oldVal?.toUpperCase() === 'DEMO' ? 'USD' : (oldVal?.toUpperCase() || 'USD');
+      const newFinalCurrency = newVal?.toUpperCase() === 'DEMO' ? 'USD' : (newVal?.toUpperCase() || 'USD');
+      
+      if (oldFinalCurrency === newFinalCurrency) {
+        console.log('[OperationChart] Moeda final não mudou (DEMO -> USD), ignorando mudança');
+        return;
+      }
+      
       console.log('[OperationChart] ⚠ preferredCurrency mudou:', {
         antigo: oldVal,
-        novo: newVal
+        novo: newVal,
+        oldFinal: oldFinalCurrency,
+        newFinal: newFinalCurrency
       });
-      // Aguardar um pouco para evitar race condition com abertura do WebSocket
+      
+      // Evitar múltiplas reconexões simultâneas
+      if (this.isReconnecting) {
+        console.log('[OperationChart] Já está reconectando, ignorando nova mudança de moeda');
+        return;
+      }
+      
+      this.isReconnecting = true;
+      
+      // Aguardar um pouco para evitar race condition
       this.$nextTick(() => {
         if (this.ws && this.ws.readyState === WebSocket.OPEN) {
           console.log('[OperationChart] Reiniciando conexão devido à mudança de moeda preferida');
           this.teardownConnection();
-          // Pequeno delay para garantir que a conexão foi fechada
           setTimeout(() => {
             this.initConnection();
-          }, 100);
-        } else if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
+            this.isReconnecting = false;
+          }, 500);
+        } else if (!this.ws || this.ws.readyState === WebSocket.CLOSED) {
+          // Se não há conexão, apenas inicializar
+          console.log('[OperationChart] Inicializando nova conexão para moeda:', newVal);
+          this.initConnection();
+          this.isReconnecting = false;
+        } else {
+          // Se está conectando, aguardar
           console.log('[OperationChart] WebSocket ainda está conectando, aguardando...');
-          // Aguardar que a conexão abra antes de reiniciar
           const checkConnection = () => {
             if (this.ws && this.ws.readyState === WebSocket.OPEN) {
               console.log('[OperationChart] WebSocket aberto, reiniciando conexão devido à mudança de moeda preferida');
               this.teardownConnection();
               setTimeout(() => {
                 this.initConnection();
-              }, 100);
+                this.isReconnecting = false;
+              }, 500);
             } else if (this.ws && this.ws.readyState === WebSocket.CONNECTING) {
-              setTimeout(checkConnection, 100);
+              setTimeout(checkConnection, 200);
+            } else {
+              this.isReconnecting = false;
             }
           };
-          setTimeout(checkConnection, 100);
+          setTimeout(checkConnection, 200);
         }
       });
     },
