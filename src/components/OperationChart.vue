@@ -987,24 +987,27 @@ export default {
       // Tratar erros específicos de duração
       if (errorCode === 'OfferingsValidationError' && errorField === 'duration') {
         console.warn('[OperationChart] Duração inválida para este ativo. Ajustando automaticamente...');
-        const config = this.getValidDurationForSymbol(this.symbol);
         
-        // Ajustar para valores padrão válidos
-        this.localOrderConfig.duration = config.defaultDuration;
-        this.localOrderConfig.durationUnit = config.defaultUnit;
+        // Se não temos dados reais, tentar buscar primeiro
+        if (!this.contractsData[this.symbol] && !this.isLoadingContracts) {
+          console.log('[OperationChart] Buscando dados de contratos para ajustar duração...');
+          this.fetchContractsForSymbol(this.symbol);
+          // Aguardar um pouco e tentar novamente
+          setTimeout(() => {
+            this.handleDurationError();
+          }, 1500);
+          return;
+        }
         
-        console.log('[OperationChart] Duração ajustada para:', {
-          duration: this.localOrderConfig.duration,
-          unit: this.localOrderConfig.durationUnit,
-          symbol: this.symbol
-        });
+        // Se está carregando, aguardar
+        if (this.isLoadingContracts) {
+          setTimeout(() => {
+            this.handleDurationError();
+          }, 1000);
+          return;
+        }
         
-        // Tentar novamente após ajuste
-        setTimeout(() => {
-          this.subscribeToProposal();
-        }, 500);
-        
-        // Não mostrar erro ao usuário, apenas ajustar silenciosamente
+        this.handleDurationError();
         return;
       }
       
@@ -1035,6 +1038,53 @@ export default {
         this.isAuthorized = false;
         this.scheduleRetry();
       }
+    },
+    handleDurationError() {
+      console.warn('[OperationChart] Ajustando duração após erro de validação...');
+      const config = this.getValidDurationForSymbol(this.symbol);
+      
+      // Se temos dados reais, usar a duração mínima real da unidade padrão
+      if (this.contractsData[this.symbol]) {
+        const contractData = this.contractsData[this.symbol];
+        const defaultUnit = contractData.defaultUnit || 'm';
+        
+        // Tentar usar a duração mínima da unidade padrão se disponível
+        let minDuration = contractData.defaultDuration;
+        if (contractData.durationsByUnit && contractData.durationsByUnit[defaultUnit]) {
+          const unitLimits = contractData.durationsByUnit[defaultUnit];
+          if (unitLimits.min !== Infinity) {
+            minDuration = unitLimits.min;
+          }
+        } else {
+          minDuration = contractData.minDuration;
+        }
+        
+        this.localOrderConfig.duration = minDuration;
+        this.localOrderConfig.durationUnit = defaultUnit;
+        console.log('[OperationChart] Duração ajustada usando dados reais:', {
+          duration: this.localOrderConfig.duration,
+          unit: this.localOrderConfig.durationUnit,
+          symbol: this.symbol,
+          minDuration: contractData.minDuration,
+          maxDuration: contractData.maxDuration,
+          allowedUnits: contractData.allowedUnits,
+          durationsByUnit: contractData.durationsByUnit
+        });
+      } else {
+        // Usar valores padrão do fallback
+        this.localOrderConfig.duration = config.defaultDuration;
+        this.localOrderConfig.durationUnit = config.defaultUnit;
+        console.log('[OperationChart] Duração ajustada usando valores padrão:', {
+          duration: this.localOrderConfig.duration,
+          unit: this.localOrderConfig.durationUnit,
+          symbol: this.symbol
+        });
+      }
+      
+      // Tentar novamente após ajuste
+      setTimeout(() => {
+        this.subscribeToProposal();
+      }, 500);
     },
     subscribeToSymbol() {
       console.log('[OperationChart] subscribeToSymbol - Inscrevendo-se no símbolo');
@@ -1117,15 +1167,45 @@ export default {
         return;
       }
       
-      const symbol = contractsFor.underlying || this.symbol;
-      // A resposta pode ter 'available' ou 'contracts' ou array direto
-      const available = contractsFor.available || contractsFor.contracts || contractsFor || [];
+      const symbol = contractsFor.underlying || contractsFor.symbol || this.symbol;
+      
+      // A resposta pode ter diferentes estruturas:
+      // 1. contractsFor.available (array de objetos)
+      // 2. contractsFor.contracts (array de objetos)
+      // 3. contractsFor (objeto com propriedades de contrato)
+      // 4. Array direto de contratos
+      let available = [];
+      
+      if (Array.isArray(contractsFor)) {
+        available = contractsFor;
+      } else if (Array.isArray(contractsFor.available)) {
+        available = contractsFor.available;
+      } else if (Array.isArray(contractsFor.contracts)) {
+        available = contractsFor.contracts;
+      } else if (typeof contractsFor === 'object') {
+        // Se for um objeto único, tentar extrair dados dele
+        // Pode ser que a API retorne um objeto com propriedades de contrato
+        if (contractsFor.contract_type || contractsFor.name) {
+          available = [contractsFor];
+        } else {
+          // Tentar encontrar arrays dentro do objeto
+          for (const key in contractsFor) {
+            if (Array.isArray(contractsFor[key])) {
+              available = contractsFor[key];
+              break;
+            }
+          }
+        }
+      }
       
       if (!Array.isArray(available) || available.length === 0) {
         console.warn('[OperationChart] Nenhum contrato disponível para este símbolo:', symbol);
+        console.warn('[OperationChart] Estrutura recebida:', contractsFor);
         this.isLoadingContracts = false;
         return;
       }
+      
+      console.log('[OperationChart] Processando', available.length, 'contratos para', symbol);
       
       // Processar dados de contratos
       const contractTypes = [];
@@ -1135,7 +1215,15 @@ export default {
       let minStake = Infinity;
       let maxStake = 0;
       
-      available.forEach(contract => {
+      // Estrutura para armazenar durações por unidade
+      const durationsByUnit = {};
+      
+      available.forEach((contract, index) => {
+        // Log do primeiro contrato para debug
+        if (index === 0) {
+          console.log('[OperationChart] Exemplo de contrato recebido:', JSON.stringify(contract, null, 2));
+        }
+        
         // Coletar tipos de contrato (pode ser contract_type ou name)
         const contractType = contract.contract_type || contract.name || contract.type;
         if (contractType && !contractTypes.includes(contractType)) {
@@ -1143,20 +1231,60 @@ export default {
         }
         
         // Coletar unidades de duração (pode ser duration_unit ou duration_units)
-        const durationUnit = contract.duration_unit || (contract.duration_units && contract.duration_units[0]);
+        let durationUnit = contract.duration_unit;
+        if (!durationUnit && contract.duration_units) {
+          if (Array.isArray(contract.duration_units)) {
+            durationUnit = contract.duration_units[0];
+          } else if (typeof contract.duration_units === 'string') {
+            durationUnit = contract.duration_units;
+          }
+        }
+        
         if (durationUnit) {
           durationUnits.add(durationUnit);
+          
+          // Inicializar estrutura para esta unidade se não existir
+          if (!durationsByUnit[durationUnit]) {
+            durationsByUnit[durationUnit] = { min: Infinity, max: 0 };
+          }
         }
         
         // Coletar durações mínimas/máximas (pode ter diferentes nomes)
-        const minDur = contract.min_contract_duration || contract.min_duration || contract.min_contract_period;
-        const maxDur = contract.max_contract_duration || contract.max_duration || contract.max_contract_period;
+        const minDur = contract.min_contract_duration || contract.min_duration || contract.min_contract_period || 
+                      contract.min_expiry_time || contract.min_expiry || contract.min_period;
+        const maxDur = contract.max_contract_duration || contract.max_duration || contract.max_contract_period || 
+                      contract.max_expiry_time || contract.max_expiry || contract.max_period;
         
-        if (minDur !== undefined && minDur !== null) {
-          minDuration = Math.min(minDuration, Number(minDur));
-        }
-        if (maxDur !== undefined && maxDur !== null) {
-          maxDuration = Math.max(maxDuration, Number(maxDur));
+        // Processar durações por unidade
+        if (durationUnit && (minDur !== undefined && minDur !== null || maxDur !== undefined && maxDur !== null)) {
+          if (minDur !== undefined && minDur !== null) {
+            const minVal = Number(minDur);
+            if (!isNaN(minVal)) {
+              durationsByUnit[durationUnit].min = Math.min(durationsByUnit[durationUnit].min, minVal);
+              minDuration = Math.min(minDuration, minVal);
+            }
+          }
+          if (maxDur !== undefined && maxDur !== null) {
+            const maxVal = Number(maxDur);
+            if (!isNaN(maxVal)) {
+              durationsByUnit[durationUnit].max = Math.max(durationsByUnit[durationUnit].max, maxVal);
+              maxDuration = Math.max(maxDuration, maxVal);
+            }
+          }
+        } else {
+          // Se não tem unidade específica, usar valores gerais
+          if (minDur !== undefined && minDur !== null) {
+            const minVal = Number(minDur);
+            if (!isNaN(minVal)) {
+              minDuration = Math.min(minDuration, minVal);
+            }
+          }
+          if (maxDur !== undefined && maxDur !== null) {
+            const maxVal = Number(maxDur);
+            if (!isNaN(maxVal)) {
+              maxDuration = Math.max(maxDuration, maxVal);
+            }
+          }
         }
         
         // Coletar apostas mínimas/máximas (pode ser min_stake/max_stake ou min_payout/max_payout)
@@ -1164,23 +1292,57 @@ export default {
         const maxSt = contract.max_stake || contract.max_payout || contract.max_purchase;
         
         if (minSt !== undefined && minSt !== null) {
-          minStake = Math.min(minStake, Number(minSt));
+          const minStVal = Number(minSt);
+          if (!isNaN(minStVal)) {
+            minStake = Math.min(minStake, minStVal);
+          }
         }
         if (maxSt !== undefined && maxSt !== null) {
-          maxStake = Math.max(maxStake, Number(maxSt));
+          const maxStVal = Number(maxSt);
+          if (!isNaN(maxStVal)) {
+            maxStake = Math.max(maxStake, maxStVal);
+          }
         }
       });
+      
+      // Determinar unidade padrão e duração padrão baseado nos dados coletados
+      let defaultUnit = 'm';
+      let defaultDuration = 1;
+      
+      // Priorizar minutos se disponível, senão usar a primeira unidade disponível
+      if (durationUnits.has('m')) {
+        defaultUnit = 'm';
+        if (durationsByUnit['m'] && durationsByUnit['m'].min !== Infinity) {
+          defaultDuration = durationsByUnit['m'].min;
+        }
+      } else if (durationUnits.has('h')) {
+        defaultUnit = 'h';
+        if (durationsByUnit['h'] && durationsByUnit['h'].min !== Infinity) {
+          defaultDuration = durationsByUnit['h'].min;
+        }
+      } else if (durationUnits.size > 0) {
+        defaultUnit = Array.from(durationUnits)[0];
+        if (durationsByUnit[defaultUnit] && durationsByUnit[defaultUnit].min !== Infinity) {
+          defaultDuration = durationsByUnit[defaultUnit].min;
+        }
+      }
+      
+      // Se minDuration ainda é Infinity, usar 1 como padrão
+      if (minDuration === Infinity) {
+        minDuration = defaultDuration;
+      }
       
       // Armazenar dados processados
       this.contractsData[symbol] = {
         contractTypes: contractTypes,
         allowedUnits: Array.from(durationUnits),
-        minDuration: minDuration === Infinity ? 1 : minDuration,
+        minDuration: minDuration === Infinity ? defaultDuration : minDuration,
         maxDuration: maxDuration === 0 ? 365 : maxDuration,
         minStake: minStake === Infinity ? 0.35 : minStake,
         maxStake: maxStake === 0 ? 10000 : maxStake,
-        defaultUnit: Array.from(durationUnits)[0] || 'm',
-        defaultDuration: minDuration === Infinity ? 1 : minDuration
+        defaultUnit: defaultUnit,
+        defaultDuration: defaultDuration,
+        durationsByUnit: durationsByUnit // Armazenar também por unidade para referência futura
       };
       
       console.log('[OperationChart] Dados de contratos processados para', symbol, ':', this.contractsData[symbol]);
@@ -1553,13 +1715,15 @@ export default {
           maxStake: 10000
         };
       } else if (symbol.startsWith('frx')) {
-        // Forex e Metais: permitem durações longas (1-365 dias, 1-24 horas, 1-60 minutos)
+        // Forex e Metais: podem ter durações mínimas maiores
+        // Usar minutos como padrão mas com duração mínima maior (5 minutos)
+        // Os dados reais da API vão sobrescrever isso
         return {
-          min: 1,
+          min: 5, // Duração mínima maior para Forex
           max: 365,
-          defaultUnit: 'm',
+          defaultUnit: 'm', // Manter minutos pois temos botão para isso
           allowedUnits: ['m', 'h', 'd'],
-          defaultDuration: 1,
+          defaultDuration: 5, // 5 minutos como padrão mais seguro
           minStake: 0.35,
           maxStake: 10000
         };
@@ -1580,11 +1744,27 @@ export default {
       let duration = Number(this.localOrderConfig.duration) || 1;
       let unit = this.localOrderConfig.durationUnit || config.defaultUnit;
       
-      // Ajustar duração se estiver fora dos limites
-      if (duration < config.min) {
-        duration = config.min;
-      } else if (duration > config.max) {
-        duration = config.max;
+      // Se temos dados reais com durações por unidade, usar limites específicos
+      if (this.contractsData[this.symbol] && this.contractsData[this.symbol].durationsByUnit) {
+        const durationsByUnit = this.contractsData[this.symbol].durationsByUnit;
+        
+        // Se a unidade atual tem limites específicos, usar esses limites
+        if (durationsByUnit[unit]) {
+          const unitLimits = durationsByUnit[unit];
+          if (unitLimits.min !== Infinity && duration < unitLimits.min) {
+            duration = unitLimits.min;
+          }
+          if (unitLimits.max !== 0 && duration > unitLimits.max) {
+            duration = unitLimits.max;
+          }
+        }
+      } else {
+        // Usar limites gerais se não tiver dados por unidade
+        if (duration < config.min) {
+          duration = config.min;
+        } else if (duration > config.max) {
+          duration = config.max;
+        }
       }
       
       // Se a unidade não é permitida, tentar usar uma unidade que tenha botão disponível
@@ -1602,6 +1782,14 @@ export default {
           unit = config.defaultUnit;
         }
         duration = config.defaultDuration;
+        
+        // Se temos dados reais, usar a duração mínima da unidade selecionada
+        if (this.contractsData[this.symbol] && this.contractsData[this.symbol].durationsByUnit) {
+          const durationsByUnit = this.contractsData[this.symbol].durationsByUnit;
+          if (durationsByUnit[unit] && durationsByUnit[unit].min !== Infinity) {
+            duration = durationsByUnit[unit].min;
+          }
+        }
       }
       
       // Se a unidade atual não tem botão disponível (h ou d), usar minutos como fallback
@@ -1612,7 +1800,18 @@ export default {
       if (availableButtons.length > 0 && !availableButtons.includes(unit)) {
         // Usar a primeira unidade disponível que tem botão
         unit = availableButtons[0];
-        duration = config.defaultDuration;
+        
+        // Usar duração mínima da unidade selecionada se disponível
+        if (this.contractsData[this.symbol] && this.contractsData[this.symbol].durationsByUnit) {
+          const durationsByUnit = this.contractsData[this.symbol].durationsByUnit;
+          if (durationsByUnit[unit] && durationsByUnit[unit].min !== Infinity) {
+            duration = durationsByUnit[unit].min;
+          } else {
+            duration = config.defaultDuration;
+          }
+        } else {
+          duration = config.defaultDuration;
+        }
       }
       
       // Ajustar valores
@@ -1800,9 +1999,86 @@ export default {
         return;
       }
       
+      // Se ainda não temos dados de contratos, aguardar um pouco e tentar buscar
+      if (!this.contractsData[this.symbol] && !this.isLoadingContracts) {
+        console.log('[OperationChart] Dados de contratos não disponíveis, buscando...');
+        this.fetchContractsForSymbol(this.symbol);
+        // Aguardar um pouco antes de tentar novamente
+        setTimeout(() => {
+          if (this.contractsData[this.symbol]) {
+            this.subscribeToProposal();
+          } else {
+            console.warn('[OperationChart] Dados de contratos ainda não disponíveis, usando valores padrão');
+            // Continuar com valores padrão se não conseguir buscar
+            this.proceedWithProposal();
+          }
+        }, 1000);
+        return;
+      }
+      
+      // Se está carregando contratos, aguardar
+      if (this.isLoadingContracts) {
+        console.log('[OperationChart] Aguardando dados de contratos...');
+        setTimeout(() => {
+          this.subscribeToProposal();
+        }, 500);
+        return;
+      }
+      
+      this.proceedWithProposal();
+    },
+    proceedWithProposal() {
       // Validar e ajustar duração antes de enviar
       const { duration, unit } = this.validateAndAdjustDuration();
       const displayCurrency = this.displayCurrency;
+      
+      // Verificar se temos dados reais e usar duração mínima real se disponível
+      let finalDuration = duration;
+      let finalUnit = unit;
+      
+      if (this.contractsData[this.symbol]) {
+        const contractData = this.contractsData[this.symbol];
+        
+        // Se temos durações por unidade, usar limites específicos da unidade
+        if (contractData.durationsByUnit && contractData.durationsByUnit[finalUnit]) {
+          const unitLimits = contractData.durationsByUnit[finalUnit];
+          if (unitLimits.min !== Infinity && finalDuration < unitLimits.min) {
+            finalDuration = unitLimits.min;
+            console.log('[OperationChart] Ajustando duração para mínimo real da unidade', finalUnit + ':', finalDuration);
+          }
+          if (unitLimits.max !== 0 && finalDuration > unitLimits.max) {
+            finalDuration = unitLimits.max;
+            console.log('[OperationChart] Ajustando duração para máximo real da unidade', finalUnit + ':', finalDuration);
+          }
+        } else {
+          // Usar limites gerais se não tiver dados por unidade
+          if (finalDuration < contractData.minDuration) {
+            finalDuration = contractData.minDuration;
+            console.log('[OperationChart] Ajustando duração para mínimo real:', finalDuration);
+          }
+          if (finalDuration > contractData.maxDuration) {
+            finalDuration = contractData.maxDuration;
+            console.log('[OperationChart] Ajustando duração para máximo real:', finalDuration);
+          }
+        }
+        
+        // Garantir que a unidade é permitida
+        if (!contractData.allowedUnits.includes(finalUnit)) {
+          finalUnit = contractData.defaultUnit || 'm';
+          // Ajustar duração para a mínima da nova unidade
+          if (contractData.durationsByUnit && contractData.durationsByUnit[finalUnit]) {
+            const unitLimits = contractData.durationsByUnit[finalUnit];
+            if (unitLimits.min !== Infinity) {
+              finalDuration = unitLimits.min;
+            } else {
+              finalDuration = contractData.defaultDuration;
+            }
+          } else {
+            finalDuration = contractData.defaultDuration;
+          }
+          console.log('[OperationChart] Ajustando unidade para padrão real:', finalUnit, 'com duração:', finalDuration);
+        }
+      }
       
       const payload = {
         proposal: 1,
@@ -1810,8 +2086,8 @@ export default {
         basis: 'stake',
         contract_type: this.localOrderConfig.type,
         currency: displayCurrency,
-        duration,
-        duration_unit: unit,
+        duration: finalDuration,
+        duration_unit: finalUnit,
         symbol: this.symbol,
         subscribe: 1, // Subscription contínua
       };
