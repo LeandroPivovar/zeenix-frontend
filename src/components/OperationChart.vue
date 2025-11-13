@@ -577,16 +577,24 @@ export default {
             }
           });
           
+          this.chartInitialized = true;
+          
           // Se já temos ticks, atualizar o gráfico imediatamente
           if (this.ticks.length > 0) {
             console.log('[OperationChart] Já temos ticks, atualizando gráfico imediatamente...');
+            console.log('[OperationChart] Total de ticks disponíveis:', this.ticks.length);
             // Aguardar um pouco mais para garantir que o gráfico está totalmente inicializado
             setTimeout(() => {
-              this.updateChartFromTicks();
-            }, 100);
+              if (this.chart && this.lineSeries) {
+                console.log('[OperationChart] Atualizando gráfico com dados existentes...');
+                this.updateChartFromTicks();
+              } else {
+                console.error('[OperationChart] Gráfico ou lineSeries não disponível após timeout');
+              }
+            }, 150);
+          } else {
+            console.log('[OperationChart] Nenhum tick disponível ainda, aguardando...');
           }
-
-          this.chartInitialized = true;
           window.addEventListener('resize', this.handleResize);
           
           // Aguardar um pouco antes de redimensionar para garantir que está renderizado
@@ -754,15 +762,34 @@ export default {
           code: event.code,
           reason: event.reason,
           wasClean: event.wasClean,
-          isConnecting: this.isConnecting
+          isConnecting: this.isConnecting,
+          isReconnecting: this.isReconnecting
         });
-        if (!this.isConnecting) {
+        
+        // Ignorar fechamentos esperados (durante reconexão ou teardown)
+        if (this.isReconnecting || this.isConnecting) {
+          console.log('[OperationChart] Fechamento esperado durante reconexão/inicialização');
+          this.ws = null;
+          return;
+        }
+        
+        // Código 1005 = No Status Received (fechamento normal do navegador)
+        // Código 1000 = Normal Closure
+        if (event.code === 1005 || event.code === 1000) {
+          console.log('[OperationChart] Fechamento normal do WebSocket');
+          this.ws = null;
+          return;
+        }
+        
+        // Fechamento inesperado - tentar reconectar
+        if (!this.isConnecting && !this.isReconnecting) {
           console.warn('[OperationChart] Conexão encerrada inesperadamente');
           this.connectionError = 'Conexão com a Deriv encerrada. Reconectando automaticamente...';
+          this.isAuthorized = false;
           this.scheduleRetry();
         }
+        
         this.isConnecting = false;
-        this.isAuthorized = false;
         this.ws = null;
       };
     },
@@ -1039,7 +1066,30 @@ export default {
       }
       
       this.isLoadingSymbol = false;
-      this.updateChartFromTicks();
+      
+      // Garantir que o gráfico existe antes de atualizar
+      if (!this.chart) {
+        console.log('[OperationChart] Gráfico não existe ainda, criando...');
+        this.initChart();
+        // Aguardar um pouco para garantir que o gráfico foi criado
+        setTimeout(() => {
+          if (this.chart && this.lineSeries && this.ticks.length > 0) {
+            console.log('[OperationChart] Gráfico criado, atualizando com histórico...');
+            this.updateChartFromTicks();
+          } else {
+            console.warn('[OperationChart] Gráfico não disponível após criação, tentando novamente...');
+            // Tentar novamente após mais um delay
+            setTimeout(() => {
+              if (this.ticks.length > 0) {
+                this.updateChartFromTicks();
+              }
+            }, 300);
+          }
+        }, 250);
+      } else {
+        // Gráfico já existe, atualizar diretamente
+        this.updateChartFromTicks();
+      }
     },
     processCandles(msg) {
       const candles = msg.candles || [];
@@ -1159,15 +1209,21 @@ export default {
       if (!this.chart) {
         console.log('[OperationChart] Gráfico não existe, inicializando...');
         this.initChart();
-        // Aguardar um pouco para garantir que o gráfico foi criado
-        this.$nextTick(() => {
-          if (!this.lineSeries) {
-            console.error('[OperationChart] ERRO: lineSeries não está definido após initChart');
+        // Aguardar um pouco mais para garantir que o gráfico foi totalmente criado e renderizado
+        setTimeout(() => {
+          if (!this.chart || !this.lineSeries) {
+            console.error('[OperationChart] ERRO: Gráfico ou lineSeries não está definido após initChart');
+            // Tentar novamente se ainda houver ticks
+            if (this.ticks.length > 0) {
+              console.log('[OperationChart] Tentando novamente após erro...');
+              setTimeout(() => this.updateChartFromTicks(), 200);
+            }
             return;
           }
           // Continuar com a atualização após o gráfico ser criado
+          console.log('[OperationChart] Gráfico criado, atualizando com dados...');
           this.updateChartFromTicks();
-        });
+        }, 200);
         return;
       }
       
