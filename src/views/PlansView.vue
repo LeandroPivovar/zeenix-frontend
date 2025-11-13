@@ -2,6 +2,8 @@
 	<div class="layout">
 		<AppSidebar />
 		<main class="plans-content">
+			<div class="background-glow"></div>
+			<div class="background-grid"></div>
 			<div class="video-section">
 				<div class="video-container">
 					<div class="video-placeholder" @click="playVideo">
@@ -386,3 +388,36 @@ export default {
 </script>
 
 <style scoped src="../assets/css/views/plansView.css"></style>
+<style scoped>
+.background-glow {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.22), transparent 45%),
+    radial-gradient(circle at 80% 15%, rgba(56, 189, 248, 0.18), transparent 50%),
+    radial-gradient(circle at 50% 75%, rgba(16, 185, 129, 0.18), transparent 55%),
+    rgba(9, 10, 12, 0.95);
+  z-index: -2;
+  pointer-events: none;
+}
+
+.background-grid {
+  position: fixed;
+  inset: 0;
+  background-image: linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+  background-size: 48px 48px;
+  z-index: -1;
+  opacity: 0.6;
+  pointer-events: none;
+  animation: moveGrid 18s linear infinite;
+}
+
+@keyframes moveGrid {
+  0% {
+    background-position: 0 0, 0 0;
+  }
+  100% {
+    background-position: -48px -48px, -48px -48px;
+  }
+}
+</style>

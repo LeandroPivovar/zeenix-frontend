@@ -21,6 +21,8 @@ main{ min-height: 10vh; }
     justify-content: flex-start; 
     padding: 0 1.25rem; 
     width: 100%;
+    position: relative;
+    overflow: hidden;
 }
 
 .header-settings { 
@@ -33,6 +35,8 @@ main{ min-height: 10vh; }
     padding: 0.5rem 1rem;
     opacity: 0;
     animation: fadeIn 0.5s ease-out forwards;
+    z-index: 99999;
+   
 }
 
 @keyframes fadeIn {
@@ -106,7 +110,9 @@ main{ min-height: 10vh; }
     display: grid; 
     grid-template-columns: 1fr 2fr 1fr; 
     gap: 1.25rem; 
-    width: 100%; 
+    width: 100%;
+    position: relative;
+    z-index: 1;
 }
 .column { 
     display: flex; 

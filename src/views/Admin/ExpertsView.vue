@@ -3,6 +3,8 @@
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
         
         <main class="layout-content">
+            <div class="background-glow"></div>
+            <div class="background-grid"></div>
             <button class="hamburger-btn" @click="toggleSidebar" aria-label="Abrir menu">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -790,6 +792,38 @@ body {
     }
     to {
         opacity: 1;
+    }
+}
+
+.background-glow {
+    position: fixed;
+    inset: 0;
+    background: radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.22), transparent 45%),
+        radial-gradient(circle at 80% 15%, rgba(56, 189, 248, 0.18), transparent 50%),
+        radial-gradient(circle at 50% 75%, rgba(16, 185, 129, 0.18), transparent 55%),
+        rgba(9, 10, 12, 0.95);
+    z-index: -2;
+    pointer-events: none;
+}
+
+.background-grid {
+    position: fixed;
+    inset: 0;
+    background-image: linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
+    background-size: 48px 48px;
+    z-index: -1;
+    opacity: 0.6;
+    pointer-events: none;
+    animation: moveGrid 18s linear infinite;
+}
+
+@keyframes moveGrid {
+    0% {
+        background-position: 0 0, 0 0;
+    }
+    100% {
+        background-position: -48px -48px, -48px -48px;
     }
 }
 </style>

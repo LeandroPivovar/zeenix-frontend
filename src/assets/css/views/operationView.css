@@ -59,12 +59,13 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-    margin-left: 250px;
     transition: margin-left 0.3s ease;
     background: #0d0d0c;
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
+    position: relative;
+    overflow: hidden;
 }
 
 .operation-main.sidebar-collapsed {
@@ -77,6 +78,8 @@
     gap: 16px;
     padding: 1rem 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+    position: relative;
+    z-index: 1;
 }
 
 .hamburger-btn {
@@ -161,6 +164,8 @@
     background: #0d0d0c;
     overflow: auto;
     min-height: 0;
+    position: relative;
+    z-index: 1;
     -webkit-overflow-scrolling: touch;
 }
 

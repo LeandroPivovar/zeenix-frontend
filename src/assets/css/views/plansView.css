@@ -9,7 +9,14 @@
     font-family: Inter, system-ui, sans-serif;
 }
 
-.plans-content { flex: 1; padding: 24px; margin: 0 auto; width: 100%; }
+.plans-content { 
+    flex: 1; 
+    padding: 24px; 
+    margin: 0 auto; 
+    width: 100%;
+    position: relative;
+    overflow: hidden;
+}
 
 /* Video Section */
 .video-section { 
@@ -20,6 +27,8 @@
     padding: 30px; 
     border-radius: 12px; 
     box-shadow: 0px 0px 10px #15794c33;
+    position: relative;
+    z-index: 1;
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease-out forwards;
@@ -41,6 +50,8 @@
     margin-bottom: 64px; 
     width: 100%;
     max-width: 1200px;
+    position: relative;
+    z-index: 1;
 }
 .section-title { 
     font-weight: 700; 
@@ -121,7 +132,9 @@
     width: 100%; 
     background: #0e0f0f; 
     padding: 30px; 
-    border-radius: 12px; 
+    border-radius: 12px;
+    position: relative;
+    z-index: 1; 
     box-shadow: 0px 0px 20px #070704;
     opacity: 0;
     transform: translateY(20px);
