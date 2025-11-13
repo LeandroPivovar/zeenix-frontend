@@ -151,7 +151,19 @@
                 
                 <div class="input-group">
             <label class="input-label">Valor da entrada ({{ displayCurrency }})</label>
-            <input type="number" min="0.35" step="0.01" v-model.number="localOrderConfig.value" class="input-field-value" :disabled="isTrading" />
+            <input 
+              type="number" 
+              :min="stakeLimits.min" 
+              :max="stakeLimits.max" 
+              step="0.01" 
+              v-model.number="localOrderConfig.value" 
+              @input="validateAndAdjustStake"
+              class="input-field-value" 
+              :disabled="isTrading" 
+            />
+            <div v-if="stakeLimits.min || stakeLimits.max" class="stake-limits-hint" style="font-size: 11px; color: rgba(148, 163, 184, 0.7); margin-top: 4px;">
+              Min: {{ displayCurrency }} {{ stakeLimits.min.toFixed(2) }} | Max: {{ displayCurrency }} {{ stakeLimits.max.toFixed(2) }}
+            </div>
                 </div>
 
                 <div class="action-buttons-group">
@@ -286,6 +298,9 @@ export default {
       tradeMessage: '',
       tradeError: '',
       symbol: 'R_100',
+      // Cache de dados de contratos por símbolo
+      contractsData: {}, // { symbol: { contractTypes, minDuration, maxDuration, minStake, maxStake, allowedUnits } }
+      isLoadingContracts: false,
       markets: [
         // Índices Contínuos
         { value: 'R_10', label: 'Volatility 10 Index', category: 'Índices Contínuos' },
@@ -416,6 +431,13 @@ export default {
       if (!this.canUseCallPut) return false;
       const config = this.getValidDurationForSymbol(this.symbol);
       return config.allowedUnits.includes('d');
+    },
+    stakeLimits() {
+      const config = this.getValidDurationForSymbol(this.symbol);
+      return {
+        min: config.minStake || 0.35,
+        max: config.maxStake || 10000
+      };
     },
     loadingMessage() {
       if (this.connectionError) {
@@ -907,6 +929,12 @@ export default {
           }
           
           this.subscribeToSymbol();
+          // Buscar dados de contratos para o símbolo atual após autorização
+          setTimeout(() => {
+            if (!this.contractsData[this.symbol]) {
+              this.fetchContractsForSymbol(this.symbol);
+            }
+          }, 300);
           // Iniciar subscription de proposal após autorização
           setTimeout(() => {
             this.subscribeToProposal();
@@ -933,6 +961,9 @@ export default {
           break;
         case 'sell':
           this.processSell(msg);
+          break;
+        case 'contracts_for':
+          this.processContractsFor(msg);
           break;
         default:
           break;
@@ -1041,6 +1072,126 @@ export default {
       console.log('[OperationChart] Inscrevendo-se no símbolo:', this.symbol);
       console.log('[OperationChart] Payload de inscrição:', JSON.stringify(payload, null, 2));
       this.send(payload);
+      
+      // Buscar dados de contratos para este símbolo se ainda não tiver
+      if (!this.contractsData[this.symbol]) {
+        this.fetchContractsForSymbol(this.symbol);
+      }
+    },
+    async fetchContractsForSymbol(symbol) {
+      if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+        console.warn('[OperationChart] Não é possível buscar contratos: não autorizado ou WebSocket não está aberto');
+        return;
+      }
+      
+      if (this.isLoadingContracts) {
+        console.log('[OperationChart] Já está carregando contratos, aguardando...');
+        return;
+      }
+      
+      console.log('[OperationChart] Buscando dados de contratos para:', symbol);
+      this.isLoadingContracts = true;
+      
+      const payload = {
+        contracts_for: symbol,
+        currency: this.displayCurrency,
+        landing_company: 'svg' // ou 'malta', 'maltainvest', etc - pode ser ajustado
+      };
+      
+      this.send(payload);
+    },
+    processContractsFor(msg) {
+      console.log('[OperationChart] processContractsFor - Dados de contratos recebidos');
+      console.log('[OperationChart] Resposta completa:', JSON.stringify(msg, null, 2));
+      
+      if (msg.error) {
+        console.error('[OperationChart] Erro ao buscar contratos:', msg.error);
+        this.isLoadingContracts = false;
+        return;
+      }
+      
+      const contractsFor = msg.contracts_for;
+      if (!contractsFor) {
+        console.warn('[OperationChart] Resposta contracts_for inválida:', msg);
+        this.isLoadingContracts = false;
+        return;
+      }
+      
+      const symbol = contractsFor.underlying || this.symbol;
+      // A resposta pode ter 'available' ou 'contracts' ou array direto
+      const available = contractsFor.available || contractsFor.contracts || contractsFor || [];
+      
+      if (!Array.isArray(available) || available.length === 0) {
+        console.warn('[OperationChart] Nenhum contrato disponível para este símbolo:', symbol);
+        this.isLoadingContracts = false;
+        return;
+      }
+      
+      // Processar dados de contratos
+      const contractTypes = [];
+      const durationUnits = new Set();
+      let minDuration = Infinity;
+      let maxDuration = 0;
+      let minStake = Infinity;
+      let maxStake = 0;
+      
+      available.forEach(contract => {
+        // Coletar tipos de contrato (pode ser contract_type ou name)
+        const contractType = contract.contract_type || contract.name || contract.type;
+        if (contractType && !contractTypes.includes(contractType)) {
+          contractTypes.push(contractType);
+        }
+        
+        // Coletar unidades de duração (pode ser duration_unit ou duration_units)
+        const durationUnit = contract.duration_unit || (contract.duration_units && contract.duration_units[0]);
+        if (durationUnit) {
+          durationUnits.add(durationUnit);
+        }
+        
+        // Coletar durações mínimas/máximas (pode ter diferentes nomes)
+        const minDur = contract.min_contract_duration || contract.min_duration || contract.min_contract_period;
+        const maxDur = contract.max_contract_duration || contract.max_duration || contract.max_contract_period;
+        
+        if (minDur !== undefined && minDur !== null) {
+          minDuration = Math.min(minDuration, Number(minDur));
+        }
+        if (maxDur !== undefined && maxDur !== null) {
+          maxDuration = Math.max(maxDuration, Number(maxDur));
+        }
+        
+        // Coletar apostas mínimas/máximas (pode ser min_stake/max_stake ou min_payout/max_payout)
+        const minSt = contract.min_stake || contract.min_payout || contract.min_purchase;
+        const maxSt = contract.max_stake || contract.max_payout || contract.max_purchase;
+        
+        if (minSt !== undefined && minSt !== null) {
+          minStake = Math.min(minStake, Number(minSt));
+        }
+        if (maxSt !== undefined && maxSt !== null) {
+          maxStake = Math.max(maxStake, Number(maxSt));
+        }
+      });
+      
+      // Armazenar dados processados
+      this.contractsData[symbol] = {
+        contractTypes: contractTypes,
+        allowedUnits: Array.from(durationUnits),
+        minDuration: minDuration === Infinity ? 1 : minDuration,
+        maxDuration: maxDuration === 0 ? 365 : maxDuration,
+        minStake: minStake === Infinity ? 0.35 : minStake,
+        maxStake: maxStake === 0 ? 10000 : maxStake,
+        defaultUnit: Array.from(durationUnits)[0] || 'm',
+        defaultDuration: minDuration === Infinity ? 1 : minDuration
+      };
+      
+      console.log('[OperationChart] Dados de contratos processados para', symbol, ':', this.contractsData[symbol]);
+      
+      // Atualizar configuração local se necessário
+      if (symbol === this.symbol) {
+        this.validateAndAdjustDuration();
+        this.subscribeToProposal();
+      }
+      
+      this.isLoadingContracts = false;
     },
     processHistory(msg) {
       console.log('[OperationChart] processHistory - Processando histórico de ticks');
@@ -1350,15 +1501,35 @@ export default {
     },
     supportsCallPut(symbol) {
       // Verifica se o símbolo suporta contratos CALL/PUT (Rise/Fall)
-      // Criptomoedas geralmente não suportam CALL/PUT, apenas contratos de dígitos
-      if (symbol.startsWith('cry')) {
-        return false; // Criptomoedas não suportam CALL/PUT
+      // Primeiro verifica se temos dados reais da API
+      if (this.contractsData[symbol]) {
+        const contractTypes = this.contractsData[symbol].contractTypes || [];
+        return contractTypes.includes('CALL') || contractTypes.includes('PUT');
       }
-      // Índices e Forex/Metais suportam CALL/PUT
+      
+      // Fallback para lógica hardcoded se não tiver dados reais
+      if (symbol.startsWith('cry')) {
+        return false; // Criptomoedas geralmente não suportam CALL/PUT
+      }
+      // Índices e Forex/Metais geralmente suportam CALL/PUT
       return true;
     },
     getValidDurationForSymbol(symbol) {
-      // Retorna configuração de duração válida para cada tipo de símbolo
+      // Primeiro verifica se temos dados reais da API
+      if (this.contractsData[symbol]) {
+        const data = this.contractsData[symbol];
+        return {
+          min: data.minDuration,
+          max: data.maxDuration,
+          defaultUnit: data.defaultUnit,
+          allowedUnits: data.allowedUnits,
+          defaultDuration: data.defaultDuration,
+          minStake: data.minStake,
+          maxStake: data.maxStake
+        };
+      }
+      
+      // Fallback para lógica hardcoded se não tiver dados reais
       if (symbol.startsWith('R_') || symbol.startsWith('1HZ')) {
         // Índices de Volatilidade: permitem durações curtas (1-5 minutos ou 1-10 ticks)
         return {
@@ -1366,27 +1537,31 @@ export default {
           max: symbol.startsWith('1HZ') ? 10 : 5, // Índices 1s permitem até 10, outros até 5
           defaultUnit: 'm',
           allowedUnits: ['m', 't'],
-          defaultDuration: 1
+          defaultDuration: 1,
+          minStake: 0.35,
+          maxStake: 10000
         };
       } else if (symbol.startsWith('cry')) {
         // Criptomoedas: permitem durações médias (1-365 dias, 1-24 horas, 1-60 minutos)
-        // Nota: Criptomoedas não suportam CALL/PUT, mas se suportassem, usaríamos 'm' como padrão
         return {
           min: 1,
           max: 365,
-          defaultUnit: 'm', // Mudado de 'h' para 'm' pois temos botão para minutos
+          defaultUnit: 'm',
           allowedUnits: ['m', 'h', 'd'],
-          defaultDuration: 1
+          defaultDuration: 1,
+          minStake: 0.35,
+          maxStake: 10000
         };
       } else if (symbol.startsWith('frx')) {
         // Forex e Metais: permitem durações longas (1-365 dias, 1-24 horas, 1-60 minutos)
-        // Usar 'm' como padrão pois temos botão para minutos (não temos para horas/dias)
         return {
           min: 1,
           max: 365,
-          defaultUnit: 'm', // Mudado de 'h' para 'm' pois temos botão para minutos
+          defaultUnit: 'm',
           allowedUnits: ['m', 'h', 'd'],
-          defaultDuration: 1
+          defaultDuration: 1,
+          minStake: 0.35,
+          maxStake: 10000
         };
       }
       // Padrão: minutos
@@ -1395,7 +1570,9 @@ export default {
         max: 5,
         defaultUnit: 'm',
         allowedUnits: ['m', 't'],
-        defaultDuration: 1
+        defaultDuration: 1,
+        minStake: 0.35,
+        maxStake: 10000
       };
     },
     validateAndAdjustDuration() {
@@ -1450,10 +1627,31 @@ export default {
     },
     handleSymbolChange() {
       this.subscribeToSymbol();
+      // Buscar dados de contratos para o novo símbolo se ainda não tiver
+      if (!this.contractsData[this.symbol]) {
+        this.fetchContractsForSymbol(this.symbol);
+      }
       // Validar e ajustar duração para o novo símbolo
       this.validateAndAdjustDuration();
+      // Ajustar valor da entrada se necessário
+      this.validateAndAdjustStake();
       // Reiniciar subscription de proposal quando símbolo mudar
       this.subscribeToProposal();
+    },
+    validateAndAdjustStake() {
+      const config = this.getValidDurationForSymbol(this.symbol);
+      let stake = Number(this.localOrderConfig.value) || config.minStake || 0.35;
+      
+      if (config.minStake && stake < config.minStake) {
+        stake = config.minStake;
+      }
+      if (config.maxStake && stake > config.maxStake) {
+        stake = config.maxStake;
+      }
+      
+      if (this.localOrderConfig.value !== stake) {
+        this.localOrderConfig.value = stake;
+      }
     },
     onDurationChange() {
       if (this.isTrading || this.activeContract) return;
