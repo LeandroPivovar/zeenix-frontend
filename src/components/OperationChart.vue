@@ -878,48 +878,74 @@ export default {
       this.updateChartFromTicks();
     },
     processTick(msg) {
-      const tick = msg.tick;
-      if (!tick) {
-        console.warn('[OperationChart] processTick - Tick inválido:', msg);
-        return;
-      }
-      
-      console.log('[OperationChart] processTick - Processando novo tick:', {
-        quote: tick.quote,
-        epoch: tick.epoch,
-        symbol: tick.symbol,
-        ticksCount: this.ticks.length
-      });
-      
-      if (tick.id && !this.tickSubscriptionId) {
-        this.tickSubscriptionId = tick.id;
-        console.log('[OperationChart] Subscription ID definido:', this.tickSubscriptionId);
-      }
-      
-      const value = Number(tick.quote);
-      if (isNaN(value)) {
-        console.error('[OperationChart] ERRO: Valor do tick não é um número:', tick.quote);
-        return;
-      }
-      
-      this.latestTick = { value, epoch: tick.epoch };
-      this.lastUpdate = Date.now();
-      this.ticks.push({ value, epoch: tick.epoch });
-      
-      if (this.ticks.length > 1000) {
-        this.ticks.shift();
-      }
-      
-      // Coletar os últimos 10 ticks e printar no console
-      const last10Ticks = this.ticks.slice(-10);
-      console.log('[OperationChart] Últimos 10 ticks:', last10Ticks);
-      
-      console.log('[OperationChart] Tick adicionado. Total de ticks:', this.ticks.length);
-      this.updateChartFromTicks();
-      
-      // Atualizar linha de entrada se existir
-      if (this.updateEntrySpotLine) {
-        this.updateEntrySpotLine();
+      try {
+        const tick = msg.tick;
+        if (!tick) {
+          console.warn('[OperationChart] processTick - Tick inválido:', msg);
+          return;
+        }
+        
+        // Validação rigorosa dos dados do tick
+        if (tick.quote == null || tick.epoch == null) {
+          console.warn('[OperationChart] processTick - Tick com dados nulos:', tick);
+          return;
+        }
+        
+        console.log('[OperationChart] processTick - Processando novo tick:', {
+          quote: tick.quote,
+          epoch: tick.epoch,
+          symbol: tick.symbol,
+          ticksCount: this.ticks.length
+        });
+        
+        if (tick.id && !this.tickSubscriptionId) {
+          this.tickSubscriptionId = tick.id;
+          console.log('[OperationChart] Subscription ID definido:', this.tickSubscriptionId);
+        }
+        
+        const value = Number(tick.quote);
+        const epoch = Number(tick.epoch);
+        
+        // Validação rigorosa dos valores
+        if (isNaN(value) || !isFinite(value)) {
+          console.error('[OperationChart] ERRO: Valor do tick inválido:', tick.quote);
+          return;
+        }
+        
+        if (isNaN(epoch) || !isFinite(epoch) || epoch <= 0) {
+          console.error('[OperationChart] ERRO: Epoch do tick inválido:', tick.epoch);
+          return;
+        }
+        
+        this.latestTick = { value, epoch };
+        this.lastUpdate = Date.now();
+        this.ticks.push({ value, epoch });
+        
+        if (this.ticks.length > 1000) {
+          this.ticks.shift();
+        }
+        
+        // Coletar os últimos 10 ticks e printar no console
+        const last10Ticks = this.ticks.slice(-10);
+        console.log('[OperationChart] Últimos 10 ticks:', last10Ticks);
+        
+        console.log('[OperationChart] Tick adicionado. Total de ticks:', this.ticks.length);
+        this.updateChartFromTicks();
+        
+        // Atualizar linha de entrada se existir
+        if (this.updateEntrySpotLine) {
+          try {
+            this.updateEntrySpotLine();
+          } catch (lineError) {
+            console.error('[OperationChart] Erro ao atualizar linha de entrada:', lineError);
+            // Não interromper o fluxo por erro na linha
+          }
+        }
+      } catch (error) {
+        console.error('[OperationChart] ERRO CRÍTICO em processTick:', error);
+        console.error('[OperationChart] Stack trace:', error.stack);
+        console.error('[OperationChart] Mensagem que causou o erro:', msg);
+        // Não interromper o fluxo - continuar processando próximos ticks
       }
     },
     updateChartFromTicks() {
@@ -1004,26 +1030,48 @@ export default {
       }
       
       try {
+        // Validar dados antes de atualizar
+        const validData = data.filter(point => {
+          return point && 
+                 point.time != null && 
+                 point.value != null && 
+                 !isNaN(point.value) &&
+                 isFinite(point.value);
+        });
+
+        if (validData.length === 0) {
+          console.warn('[OperationChart] Nenhum dado válido após filtragem');
+          return;
+        }
+
+        if (validData.length !== data.length) {
+          console.warn('[OperationChart] Alguns pontos inválidos foram filtrados:', {
+            original: data.length,
+            valid: validData.length,
+            removed: data.length - validData.length
+          });
+        }
+        
         // Verificar se é um novo tick incremental (apenas 1 ponto a mais que o anterior)
         const previousDataCount = this.previousDataCount || 0;
-        const isIncrementalUpdate = data.length === previousDataCount + 1 && previousDataCount > 0;
+        const isIncrementalUpdate = validData.length === previousDataCount + 1 && previousDataCount > 0;
         
         if (isIncrementalUpdate) {
           // Apenas adicionar o novo ponto usando update
-          const lastPoint = data[data.length - 1];
+          const lastPoint = validData[validData.length - 1];
           console.log('[OperationChart] Atualizando gráfico com novo ponto incremental:', lastPoint);
           this.lineSeries.update(lastPoint);
           // Não fazer scroll automático - deixar o usuário controlar o zoom
         } else {
           // Primeira vez ou muitos dados novos, usar setData completo
-          console.log('[OperationChart] Chamando lineSeries.setData com', data.length, 'pontos...');
-          this.lineSeries.setData(data);
+          console.log('[OperationChart] Chamando lineSeries.setData com', validData.length, 'pontos...');
+          this.lineSeries.setData(validData);
           console.log('[OperationChart] setData chamado com sucesso');
           // Não ajustar zoom automaticamente - deixar o usuário controlar
         }
         
         // Armazenar contagem de dados para próxima verificação
-        this.previousDataCount = data.length;
+        this.previousDataCount = validData.length;
         
         this.chartInitialized = true;
         console.log('[OperationChart] ✓ Gráfico atualizado com sucesso');
@@ -1037,6 +1085,36 @@ export default {
           chartInitialized: this.chartInitialized,
           ticksLength: this.ticks.length
         });
+        
+        // Tentar recuperar o gráfico reinicializando
+        console.warn('[OperationChart] Tentando recuperar gráfico após erro...');
+        this.chartInitialized = false;
+        this.previousDataCount = 0;
+        
+        // Aguardar um pouco e tentar reinicializar
+        setTimeout(() => {
+          if (this.chart && this.lineSeries) {
+            console.log('[OperationChart] Tentando atualizar gráfico novamente após erro...');
+            try {
+              // Tentar com setData completo para forçar reinicialização
+              const validData = data.filter(point => {
+                return point && point.time != null && point.value != null && 
+                       !isNaN(point.value) && isFinite(point.value);
+              });
+              if (validData.length > 0) {
+                this.lineSeries.setData(validData);
+                this.previousDataCount = validData.length;
+                this.chartInitialized = true;
+                console.log('[OperationChart] ✓ Gráfico recuperado com sucesso!');
+              }
+            } catch (retryError) {
+              console.error('[OperationChart] Falha na recuperação automática:', retryError);
+              // Se falhar novamente, reinicializar completamente o gráfico
+              console.warn('[OperationChart] Reinicializando gráfico completamente...');
+              this.initChart();
+            }
+          }
+        }, 100);
       }
     },
     handleSymbolChange() {
