@@ -1393,79 +1393,95 @@ export default {
           contractTypes.push(contractType);
         }
         
-        // Coletar unidades de duração (pode ser duration_unit ou duration_units)
-        let durationUnit = contract.duration_unit;
-        if (!durationUnit && contract.duration_units) {
-          if (Array.isArray(contract.duration_units)) {
-            durationUnit = contract.duration_units[0];
-          } else if (typeof contract.duration_units === 'string') {
-            durationUnit = contract.duration_units;
+        // Função auxiliar para parsear durações como "5t", "1d", "365d"
+        const parseDuration = (durationStr) => {
+          if (!durationStr) return null;
+          const match = String(durationStr).match(/^(\d+)([a-z]+)$/i);
+          if (match) {
+            return {
+              value: parseInt(match[1]),
+              unit: match[2].toLowerCase()
+            };
           }
-        }
+          return null;
+        };
         
-        if (durationUnit) {
-          durationUnits.add(durationUnit);
+        // Coletar durações mínimas/máximas (vêm como "5t", "1d", "365d")
+        const minDurStr = contract.min_contract_duration || contract.min_duration;
+        const maxDurStr = contract.max_contract_duration || contract.max_duration;
+        
+        const minDurParsed = parseDuration(minDurStr);
+        const maxDurParsed = parseDuration(maxDurStr);
+        
+        // Processar durações
+        if (minDurParsed) {
+          const unit = minDurParsed.unit;
+          const value = minDurParsed.value;
           
-          // Inicializar estrutura para esta unidade se não existir
-          if (!durationsByUnit[durationUnit]) {
-            durationsByUnit[durationUnit] = { min: Infinity, max: 0 };
+          durationUnits.add(unit);
+          
+          if (!durationsByUnit[unit]) {
+            durationsByUnit[unit] = { min: Infinity, max: 0 };
+          }
+          
+          durationsByUnit[unit].min = Math.min(durationsByUnit[unit].min, value);
+          minDuration = Math.min(minDuration, value);
+        }
+        
+        if (maxDurParsed) {
+          const unit = maxDurParsed.unit;
+          const value = maxDurParsed.value;
+          
+          durationUnits.add(unit);
+          
+          if (!durationsByUnit[unit]) {
+            durationsByUnit[unit] = { min: Infinity, max: 0 };
+          }
+          
+          durationsByUnit[unit].max = Math.max(durationsByUnit[unit].max, value);
+          maxDuration = Math.max(maxDuration, value);
+        }
+        
+        // Coletar apostas mínimas/máximas (pode vir de validation_params ou direto)
+        let minStVal = null;
+        let maxStVal = null;
+        
+        // Tentar extrair de validation_params (mais preciso)
+        if (contract.validation_params) {
+          if (contract.validation_params.stake) {
+            minStVal = contract.validation_params.stake.min;
+            maxStVal = contract.validation_params.stake.max;
           }
         }
         
-        // Coletar durações mínimas/máximas (pode ter diferentes nomes)
-        const minDur = contract.min_contract_duration || contract.min_duration || contract.min_contract_period || 
-                      contract.min_expiry_time || contract.min_expiry || contract.min_period;
-        const maxDur = contract.max_contract_duration || contract.max_duration || contract.max_contract_period || 
-                      contract.max_expiry_time || contract.max_expiry || contract.max_period;
-        
-        // Processar durações por unidade
-        if (durationUnit && (minDur !== undefined && minDur !== null || maxDur !== undefined && maxDur !== null)) {
-          if (minDur !== undefined && minDur !== null) {
-            const minVal = Number(minDur);
-            if (!isNaN(minVal)) {
-              durationsByUnit[durationUnit].min = Math.min(durationsByUnit[durationUnit].min, minVal);
-              minDuration = Math.min(minDuration, minVal);
-            }
-          }
-          if (maxDur !== undefined && maxDur !== null) {
-            const maxVal = Number(maxDur);
-            if (!isNaN(maxVal)) {
-              durationsByUnit[durationUnit].max = Math.max(durationsByUnit[durationUnit].max, maxVal);
-              maxDuration = Math.max(maxDuration, maxVal);
-            }
-          }
-        } else {
-          // Se não tem unidade específica, usar valores gerais
-          if (minDur !== undefined && minDur !== null) {
-            const minVal = Number(minDur);
-            if (!isNaN(minVal)) {
-              minDuration = Math.min(minDuration, minVal);
-            }
-          }
-          if (maxDur !== undefined && maxDur !== null) {
-            const maxVal = Number(maxDur);
-            if (!isNaN(maxVal)) {
-              maxDuration = Math.max(maxDuration, maxVal);
-            }
-          }
+        // Fallback para propriedades diretas
+        if (!minStVal) {
+          minStVal = contract.min_stake || contract.min_payout || contract.min_purchase;
+        }
+        if (!maxStVal) {
+          maxStVal = contract.max_stake || contract.max_payout || contract.max_purchase;
         }
         
-        // Coletar apostas mínimas/máximas (pode ser min_stake/max_stake ou min_payout/max_payout)
-        const minSt = contract.min_stake || contract.min_payout || contract.min_purchase;
-        const maxSt = contract.max_stake || contract.max_payout || contract.max_purchase;
-        
-        if (minSt !== undefined && minSt !== null) {
-          const minStVal = Number(minSt);
-          if (!isNaN(minStVal)) {
-            minStake = Math.min(minStake, minStVal);
+        if (minStVal !== undefined && minStVal !== null) {
+          const minStNum = parseFloat(minStVal);
+          if (!isNaN(minStNum) && minStNum > 0) {
+            minStake = Math.min(minStake, minStNum);
           }
         }
-        if (maxSt !== undefined && maxSt !== null) {
-          const maxStVal = Number(maxSt);
-          if (!isNaN(maxStVal)) {
-            maxStake = Math.max(maxStake, maxStVal);
+        if (maxStVal !== undefined && maxStVal !== null) {
+          const maxStNum = parseFloat(maxStVal);
+          if (!isNaN(maxStNum) && maxStNum > 0) {
+            maxStake = Math.max(maxStake, maxStNum);
           }
         }
+      });
+      
+      // Log de debug das durações extraídas
+      console.log('[OperationChart] Durações extraídas:', {
+        minDuration,
+        maxDuration,
+        units: Array.from(durationUnits),
+        byUnit: durationsByUnit
       });
       
       // Determinar unidade padrão e duração padrão baseado nos dados coletados
@@ -1475,40 +1491,77 @@ export default {
       // Priorizar minutos se disponível, senão usar a primeira unidade disponível
       if (durationUnits.has('m')) {
         defaultUnit = 'm';
-        if (durationsByUnit['m'] && durationsByUnit['m'].min !== Infinity) {
+        if (durationsByUnit['m'] && durationsByUnit['m'].min !== Infinity && durationsByUnit['m'].min > 0) {
           defaultDuration = durationsByUnit['m'].min;
+        }
+      } else if (durationUnits.has('t')) {
+        defaultUnit = 't';
+        if (durationsByUnit['t'] && durationsByUnit['t'].min !== Infinity && durationsByUnit['t'].min > 0) {
+          defaultDuration = durationsByUnit['t'].min;
         }
       } else if (durationUnits.has('h')) {
         defaultUnit = 'h';
-        if (durationsByUnit['h'] && durationsByUnit['h'].min !== Infinity) {
+        if (durationsByUnit['h'] && durationsByUnit['h'].min !== Infinity && durationsByUnit['h'].min > 0) {
           defaultDuration = durationsByUnit['h'].min;
+        }
+      } else if (durationUnits.has('d')) {
+        defaultUnit = 'd';
+        if (durationsByUnit['d'] && durationsByUnit['d'].min !== Infinity && durationsByUnit['d'].min > 0) {
+          defaultDuration = durationsByUnit['d'].min;
         }
       } else if (durationUnits.size > 0) {
         defaultUnit = Array.from(durationUnits)[0];
-        if (durationsByUnit[defaultUnit] && durationsByUnit[defaultUnit].min !== Infinity) {
+        if (durationsByUnit[defaultUnit] && durationsByUnit[defaultUnit].min !== Infinity && durationsByUnit[defaultUnit].min > 0) {
           defaultDuration = durationsByUnit[defaultUnit].min;
         }
       }
       
-      // Se minDuration ainda é Infinity, usar 1 como padrão
-      if (minDuration === Infinity) {
-        minDuration = defaultDuration;
+      // VALIDAÇÃO CRÍTICA: Garantir que minDuration NUNCA seja 0 ou Infinity
+      let finalMinDuration = minDuration;
+      if (minDuration === Infinity || minDuration <= 0 || isNaN(minDuration)) {
+        finalMinDuration = defaultDuration > 0 ? defaultDuration : 1;
+        console.warn('[OperationChart] ⚠ minDuration inválido, usando defaultDuration:', finalMinDuration);
       }
+      
+      // Se ainda é inválido, usar fallback baseado no símbolo
+      if (finalMinDuration <= 0 || isNaN(finalMinDuration)) {
+        const isForex = symbol.startsWith('frx');
+        finalMinDuration = isForex ? 15 : 1;
+        console.warn('[OperationChart] ⚠ Usando fallback para', symbol, ':', finalMinDuration);
+      }
+      
+      // Garantir maxDuration válido
+      let finalMaxDuration = maxDuration;
+      if (maxDuration === 0 || maxDuration === Infinity || isNaN(maxDuration)) {
+        finalMaxDuration = 365; // 365 dias como padrão
+      }
+      
+      // Garantir stakes válidos
+      const finalMinStake = (minStake === Infinity || minStake <= 0 || isNaN(minStake)) ? 0.35 : minStake;
+      const finalMaxStake = (maxStake === 0 || maxStake === Infinity || isNaN(maxStake)) ? 50000 : maxStake;
       
       // Armazenar dados processados
       this.contractsData[symbol] = {
         contractTypes: contractTypes,
         allowedUnits: Array.from(durationUnits),
-        minDuration: minDuration === Infinity ? defaultDuration : minDuration,
-        maxDuration: maxDuration === 0 ? 365 : maxDuration,
-        minStake: minStake === Infinity ? 0.35 : minStake,
-        maxStake: maxStake === 0 ? 10000 : maxStake,
+        minDuration: finalMinDuration,
+        maxDuration: finalMaxDuration,
+        minStake: finalMinStake,
+        maxStake: finalMaxStake,
         defaultUnit: defaultUnit,
-        defaultDuration: defaultDuration,
-        durationsByUnit: durationsByUnit // Armazenar também por unidade para referência futura
+        defaultDuration: finalMinDuration, // Usar o valor validado
+        durationsByUnit: durationsByUnit,
+        source: 'contracts_for' // Marcar origem dos dados
       };
       
-      console.log('[OperationChart] Dados de contratos processados para', symbol, ':', this.contractsData[symbol]);
+      console.log('[OperationChart] ✅ Dados processados para', symbol, ':', {
+        minDuration: finalMinDuration,
+        maxDuration: finalMaxDuration,
+        defaultUnit,
+        units: Array.from(durationUnits).join(', '),
+        minStake: finalMinStake,
+        maxStake: finalMaxStake
+      });
       
       // Atualizar configuração local se necessário
       if (symbol === this.symbol) {
@@ -1542,51 +1595,67 @@ export default {
       
       const data = msg.trading_durations;
       if (!data || !Array.isArray(data)) {
+        console.warn('[OperationChart] Dados inválidos em trading_durations:', data);
         this.isLoadingTradingDurations = false;
         return;
       }
       
+      // Log da estrutura para debug
+      console.log('[OperationChart] Exemplo de trading_duration (primeiro item):', JSON.stringify(data[0], null, 2));
+      
       this.tradingDurationsCache = {};
       
-      data.forEach(item => {
-        const symbol = item.market?.symbol;
-        if (!symbol || !item.data) return;
+      // A API Deriv retorna: { markets: [{name, subname, symbols: [{display_name, symbol, trading_durations: [...]}]}] }
+      data.forEach(marketGroup => {
+        if (!marketGroup.markets || !Array.isArray(marketGroup.markets)) return;
         
-        const contractData = {};
-        item.data.forEach(ct => {
-          const type = ct.trade_type;
-          if (!type || !ct.durations) return;
+        marketGroup.markets.forEach(market => {
+          if (!market.symbols || !Array.isArray(market.symbols)) return;
           
-          contractData[type] = {
-            minDuration: Infinity,
-            maxDuration: 0,
-            units: new Set(),
-            byUnit: {}
-          };
-          
-          ct.durations.forEach(dur => {
-            const unit = dur.unit;
-            const min = parseInt(dur.min) || 0;
-            const max = parseInt(dur.max) || 0;
+          market.symbols.forEach(symbolData => {
+            const symbol = symbolData.symbol;
+            if (!symbol || !symbolData.trading_durations) return;
             
-            if (unit) {
-              contractData[type].units.add(unit);
-              contractData[type].byUnit[unit] = { min, max };
+            const contractData = {};
+            
+            symbolData.trading_durations.forEach(ct => {
+              const type = ct.trade_type;
+              if (!type || !ct.durations) return;
               
-              if (min > 0 && min < contractData[type].minDuration) {
-                contractData[type].minDuration = min;
-              }
-              if (max > contractData[type].maxDuration) {
-                contractData[type].maxDuration = max;
-              }
+              contractData[type] = {
+                minDuration: Infinity,
+                maxDuration: 0,
+                units: new Set(),
+                byUnit: {}
+              };
+              
+              ct.durations.forEach(dur => {
+                const unit = dur.unit;
+                const min = parseInt(dur.min) || 0;
+                const max = parseInt(dur.max) || 0;
+                
+                if (unit) {
+                  contractData[type].units.add(unit);
+                  contractData[type].byUnit[unit] = { min, max };
+                  
+                  if (min > 0 && min < contractData[type].minDuration) {
+                    contractData[type].minDuration = min;
+                  }
+                  if (max > contractData[type].maxDuration) {
+                    contractData[type].maxDuration = max;
+                  }
+                }
+              });
+            });
+            
+            if (Object.keys(contractData).length > 0) {
+              this.tradingDurationsCache[symbol] = contractData;
             }
           });
         });
-        
-        this.tradingDurationsCache[symbol] = contractData;
       });
       
-      console.log('[OperationChart] Cache criado para', Object.keys(this.tradingDurationsCache).length, 'símbolos');
+      console.log('[OperationChart] ✅ Cache criado para', Object.keys(this.tradingDurationsCache).length, 'símbolos');
       this.updateContractsFromTradingDurations();
       this.isLoadingTradingDurations = false;
     },
@@ -2005,26 +2074,27 @@ export default {
       if (this.contractsData[symbol]) {
         const data = this.contractsData[symbol];
         
-        // VALIDAÇÃO CRÍTICA: Garantir que nunca retornamos valores inválidos (0 ou negativos)
+        // Os dados já vêm validados do processContractsFor, apenas fazer validação final
         let minDuration = data.minDuration;
-        let defaultDuration = data.defaultDuration;
+        let defaultDuration = data.defaultDuration || data.minDuration;
+        let maxDuration = data.maxDuration;
         
-        // Se minDuration é 0 ou inválido, usar valores seguros
+        // Validação final silenciosa (sem warnings repetitivos)
         if (!minDuration || minDuration <= 0 || isNaN(minDuration)) {
           minDuration = isForexOrMetal ? 15 : 1;
-          console.warn('[OperationChart] minDuration inválido nos dados de contratos, usando:', minDuration);
         }
         
-        // Se defaultDuration é 0 ou inválido, usar valores seguros
         if (!defaultDuration || defaultDuration <= 0 || isNaN(defaultDuration)) {
-          defaultDuration = isForexOrMetal ? 15 : 1;
-          console.warn('[OperationChart] defaultDuration inválido nos dados de contratos, usando:', defaultDuration);
+          defaultDuration = minDuration;
         }
         
-        // Para Forex/Metais, garantir mínimo de 15 minutos
+        if (!maxDuration || maxDuration <= 0 || isNaN(maxDuration)) {
+          maxDuration = 365;
+        }
+        
+        // Para Forex/Metais, garantir mínimo de 15 minutos (silenciosamente)
         if (isForexOrMetal) {
           if (minDuration < 15) {
-            console.warn('[OperationChart] Forex/Metal com minDuration < 15, ajustando para 15');
             minDuration = 15;
           }
           if (defaultDuration < 15) {
@@ -2034,9 +2104,9 @@ export default {
         
         return {
           min: minDuration,
-          max: data.maxDuration || 365,
+          max: maxDuration,
           defaultUnit: data.defaultUnit || 'm',
-          allowedUnits: data.allowedUnits || ['m', 'h', 'd'],
+          allowedUnits: data.allowedUnits && data.allowedUnits.length > 0 ? data.allowedUnits : ['m', 'h', 'd'],
           defaultDuration: defaultDuration,
           minStake: data.minStake || 0.35,
           maxStake: data.maxStake || 10000
