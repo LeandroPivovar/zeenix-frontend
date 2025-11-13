@@ -247,6 +247,26 @@
     -moz-appearance: none;
 }
 
+.select-field optgroup {
+    background: #2a2a2a;
+    color: #10b981;
+    font-weight: 600;
+    font-size: 13px;
+    padding: 8px 0;
+    margin-top: 4px;
+}
+
+.select-field option {
+    background: #1e1e1e;
+    color: #e5e7eb;
+    padding: 8px 12px;
+    font-size: 14px;
+}
+
+.select-field option:hover {
+    background: #374151;
+}
+
 .input-field-value {
     font-weight: bold;
 }

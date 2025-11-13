@@ -20,9 +20,36 @@
               :disabled="!isAuthorized || isLoadingSymbol"
               class="select-field"
             >
-              <option v-for="market in markets" :key="market.value" :value="market.value">
-                {{ market.label }}
-              </option>
+              <optgroup label="Índices Contínuos">
+                <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value">
+                  {{ market.label }}
+                </option>
+              </optgroup>
+              <optgroup label="Criptomoedas">
+                <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value">
+                  {{ market.label }}
+                </option>
+              </optgroup>
+              <optgroup label="Forex Majors">
+                <option v-for="market in marketsByCategory['Forex Majors']" :key="market.value" :value="market.value">
+                  {{ market.label }}
+                </option>
+              </optgroup>
+              <optgroup label="Forex Minors">
+                <option v-for="market in marketsByCategory['Forex Minors']" :key="market.value" :value="market.value">
+                  {{ market.label }}
+                </option>
+              </optgroup>
+              <optgroup label="Forex Exotics">
+                <option v-for="market in marketsByCategory['Forex Exotics']" :key="market.value" :value="market.value">
+                  {{ market.label }}
+                </option>
+              </optgroup>
+              <optgroup label="Metais">
+                <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value">
+                  {{ market.label }}
+                </option>
+              </optgroup>
             </select>
             <span v-if="isLoadingSymbol" class="loading-indicator">Atualizando...</span>
           </div>
@@ -246,11 +273,47 @@ export default {
       tradeError: '',
       symbol: 'R_100',
       markets: [
-        { value: 'R_100', label: 'Volatility 100 Index' },
-        { value: 'R_75', label: 'Volatility 75 Index' },
-        { value: 'R_50', label: 'Volatility 50 Index' },
-        { value: 'frxUSDJPY', label: 'USD/JPY (Forex)' },
-        { value: '1HZ10V', label: 'Crash 1000' },
+        // Índices Contínuos
+        { value: 'R_10', label: 'Volatility 10 Index', category: 'Índices Contínuos' },
+        { value: 'R_25', label: 'Volatility 25 Index', category: 'Índices Contínuos' },
+        { value: 'R_50', label: 'Volatility 50 Index', category: 'Índices Contínuos' },
+        { value: 'R_75', label: 'Volatility 75 Index', category: 'Índices Contínuos' },
+        { value: 'R_100', label: 'Volatility 100 Index', category: 'Índices Contínuos' },
+        { value: '1HZ10V', label: 'Volatility 10 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ25V', label: 'Volatility 25 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ50V', label: 'Volatility 50 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ75V', label: 'Volatility 75 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ100V', label: 'Volatility 100 (1s) Index', category: 'Índices Contínuos' },
+        
+        // Criptomoedas
+        { value: 'cryBTCUSD', label: 'BTC/USD (Bitcoin)', category: 'Criptomoedas' },
+        { value: 'cryETHUSD', label: 'ETH/USD (Ethereum)', category: 'Criptomoedas' },
+        
+        // Forex (Majors)
+        { value: 'frxEURUSD', label: 'EUR/USD (Euro / Dólar)', category: 'Forex Majors' },
+        { value: 'frxUSDJPY', label: 'USD/JPY (Dólar / Iene)', category: 'Forex Majors' },
+        { value: 'frxGBPUSD', label: 'GBP/USD (Libra / Dólar)', category: 'Forex Majors' },
+        { value: 'frxUSDCHF', label: 'USD/CHF (Dólar / Franco)', category: 'Forex Majors' },
+        { value: 'frxAUDUSD', label: 'AUD/USD (Dólar Australiano)', category: 'Forex Majors' },
+        { value: 'frxUSDCAD', label: 'USD/CAD (Dólar / Dólar Canadense)', category: 'Forex Majors' },
+        { value: 'frxNZDUSD', label: 'NZD/USD (Dólar Neozelandês)', category: 'Forex Majors' },
+        
+        // Forex (Minors/Exotics)
+        { value: 'frxEURGBP', label: 'EUR/GBP (Euro / Libra)', category: 'Forex Minors' },
+        { value: 'frxEURJPY', label: 'EUR/JPY (Euro / Iene)', category: 'Forex Minors' },
+        { value: 'frxGBPJPY', label: 'GBP/JPY (Libra / Iene)', category: 'Forex Minors' },
+        { value: 'frxAUDCAD', label: 'AUD/CAD (Dólar Australiano / Canadense)', category: 'Forex Minors' },
+        { value: 'frxAUDJPY', label: 'AUD/JPY (Dólar Australiano / Iene)', category: 'Forex Minors' },
+        { value: 'frxCHFJPY', label: 'CHF/JPY (Franco / Iene)', category: 'Forex Minors' },
+        { value: 'frxEURAUD', label: 'EUR/AUD (Euro / Dólar Australiano)', category: 'Forex Minors' },
+        { value: 'frxGBPAUD', label: 'GBP/AUD (Libra / Dólar Australiano)', category: 'Forex Minors' },
+        { value: 'frxUSDMXN', label: 'USD/MXN (Dólar / Peso Mexicano)', category: 'Forex Exotics' },
+        
+        // Metais
+        { value: 'frxXAUUSD', label: 'XAU/USD (Ouro / Dólar)', category: 'Metais' },
+        { value: 'frxXAGUSD', label: 'XAG/USD (Prata / Dólar)', category: 'Metais' },
+        { value: 'frxXPTUSD', label: 'XPT/USD (Platina / Dólar)', category: 'Metais' },
+        { value: 'frxXPDUSD', label: 'XPD/USD (Paládio / Dólar)', category: 'Metais' },
       ],
       ticks: [],
       chartInitialized: false,
@@ -306,6 +369,17 @@ export default {
     };
   },
   computed: {
+    marketsByCategory() {
+      const grouped = {};
+      this.markets.forEach(market => {
+        const category = market.category || 'Outros';
+        if (!grouped[category]) {
+          grouped[category] = [];
+        }
+        grouped[category].push(market);
+      });
+      return grouped;
+    },
     loadingMessage() {
       if (this.connectionError) {
         return 'Reconectando automaticamente...';
