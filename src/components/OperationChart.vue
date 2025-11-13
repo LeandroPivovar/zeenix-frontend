@@ -348,6 +348,7 @@ export default {
       chartInitialized: false,
       previousDataCount: 0,
       isDestroying: false,
+      isInitializingChart: false,
       latestTick: null,
       lastUpdate: null,
       chart: null,
@@ -509,8 +510,17 @@ export default {
         return;
       }
       
+      // Verificar se já está inicializando para evitar múltiplas chamadas
+      if (this.isInitializingChart) {
+        console.log('[OperationChart] Gráfico já está sendo inicializado, aguardando...');
+        return;
+      }
+      
+      this.isInitializingChart = true;
+      
       if (!this.$refs.chartContainer) {
         console.error('[OperationChart] ERRO: chartContainer não está disponível no DOM');
+        this.isInitializingChart = false;
         return;
       }
 
@@ -519,6 +529,7 @@ export default {
         const container = this.$refs.chartContainer;
         if (!container) {
           console.error('[OperationChart] ERRO: chartContainer não está disponível após nextTick');
+          this.isInitializingChart = false;
           return;
         }
 
@@ -542,6 +553,7 @@ export default {
         // Garantir que o container tem dimensões válidas
         if (containerWidth <= 0 || containerHeight <= 0) {
           console.warn('[OperationChart] Container tem dimensões inválidas, aguardando...');
+          this.isInitializingChart = false;
           setTimeout(() => this.initChart(), 100);
           return;
         }
@@ -600,6 +612,7 @@ export default {
           });
           
           this.chartInitialized = true;
+          this.isInitializingChart = false; // Resetar flag após criação bem-sucedida
           
           // Se já temos ticks, atualizar o gráfico imediatamente
           if (this.ticks.length > 0) {
@@ -632,6 +645,7 @@ export default {
         } catch (error) {
           console.error('[OperationChart] ERRO ao criar gráfico:', error);
           console.error('[OperationChart] Stack trace:', error.stack);
+          this.isInitializingChart = false; // Resetar flag em caso de erro
         }
       });
     },
@@ -1521,6 +1535,16 @@ export default {
       
       if (!this.chart) {
         console.log('[OperationChart] Gráfico não existe, inicializando...');
+        // Se já está inicializando, aguardar
+        if (this.isInitializingChart) {
+          console.log('[OperationChart] Gráfico já está sendo inicializado, aguardando...');
+          setTimeout(() => {
+            if (this.chart && this.lineSeries) {
+              this.updateChartFromTicks();
+            }
+          }, 300);
+          return;
+        }
         this.initChart();
         // Aguardar um pouco mais para garantir que o gráfico foi totalmente criado e renderizado
         setTimeout(() => {
@@ -1536,7 +1560,7 @@ export default {
           // Continuar com a atualização após o gráfico ser criado
           console.log('[OperationChart] Gráfico criado, atualizando com dados...');
           this.updateChartFromTicks();
-        }, 200);
+        }, 250);
         return;
       }
       
@@ -1611,7 +1635,17 @@ export default {
           console.log('[OperationChart] Chamando lineSeries.setData com', validData.length, 'pontos...');
           this.lineSeries.setData(validData);
           console.log('[OperationChart] setData chamado com sucesso');
-          // Não ajustar zoom automaticamente - deixar o usuário controlar
+          
+          // Forçar atualização visual do gráfico
+          if (this.chart) {
+            this.chart.timeScale().fitContent();
+            // Forçar repaint
+            this.$nextTick(() => {
+              if (this.chart) {
+                this.chart.timeScale().scrollToPosition(0, false);
+              }
+            });
+          }
         }
         
         // Armazenar contagem de dados para próxima verificação
