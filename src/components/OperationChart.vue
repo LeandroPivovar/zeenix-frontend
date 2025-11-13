@@ -369,6 +369,10 @@ export default {
       currentProposalId: null,
       currentProposalPrice: null,
       proposalTimeout: null,
+      proposalRetryCount: 0, // Contador para evitar loops infinitos
+      maxProposalRetries: 3, // Máximo de tentativas de re-subscription
+      lastProposalAttemptTime: 0, // Timestamp da última tentativa
+      proposalThrottleMs: 2000, // Mínimo de tempo entre tentativas (2 segundos)
       durationErrorCount: 0,
       maxDurationErrors: 3,
       realTimeProfit: null,
@@ -1015,37 +1019,44 @@ export default {
         this.durationErrorCount++;
         console.warn('[OperationChart] Duração inválida para este ativo. Tentativa', this.durationErrorCount, 'de', this.maxDurationErrors);
         
-        // Se excedeu o número máximo de tentativas, parar e mostrar erro
+        // Circuit Breaker: Se excedeu o número máximo de tentativas, parar e mostrar erro
         if (this.durationErrorCount >= this.maxDurationErrors) {
-          console.error('[OperationChart] Muitas tentativas de ajuste de duração falharam. Parando para evitar loop infinito.');
-          this.tradeError = 'Não foi possível determinar uma duração válida para este ativo. Aguardando dados de contratos...';
-          this.durationErrorCount = 0; // Resetar contador
-          // Tentar buscar dados de contratos uma última vez
-          if (!this.contractsData[this.symbol] && !this.isLoadingContracts) {
-            this.fetchContractsForSymbol(this.symbol);
-          }
+          console.error('[OperationChart] Máximo de tentativas de ajuste de duração atingido. Parando para evitar loop infinito.');
+          this.tradeError = 'Não foi possível determinar uma duração válida para este ativo. Tente outro ativo ou ajuste manualmente a duração.';
+          // Cancelar qualquer proposta pendente para parar o loop
+          this.unsubscribeFromProposal();
+          // Resetar contador após 15 segundos para permitir novas tentativas
+          setTimeout(() => {
+            this.durationErrorCount = 0;
+            console.log('[OperationChart] Contador de erros de duração resetado');
+          }, 15000);
           return;
         }
         
-        // Se não temos dados reais, tentar buscar primeiro
-        if (!this.contractsData[this.symbol] && !this.isLoadingContracts) {
+        // Se não temos dados reais, tentar buscar primeiro (apenas uma vez)
+        if (!this.contractsData[this.symbol] && !this.isLoadingContracts && this.durationErrorCount === 1) {
           console.log('[OperationChart] Buscando dados de contratos para ajustar duração...');
           this.fetchContractsForSymbol(this.symbol);
           // Aguardar um pouco e tentar novamente
           setTimeout(() => {
-            this.handleDurationError();
+            if (this.durationErrorCount < this.maxDurationErrors) {
+              this.handleDurationError();
+            }
           }, 2000);
           return;
         }
         
-        // Se está carregando, aguardar
-        if (this.isLoadingContracts) {
+        // Se está carregando, aguardar (mas só uma vez)
+        if (this.isLoadingContracts && this.durationErrorCount <= 2) {
           setTimeout(() => {
-            this.handleDurationError();
+            if (this.durationErrorCount < this.maxDurationErrors) {
+              this.handleDurationError();
+            }
           }, 2000);
           return;
         }
         
+        // Tentar ajustar duração se já temos dados ou se esgotamos as tentativas de buscar
         this.handleDurationError();
         return;
       }
@@ -1082,12 +1093,12 @@ export default {
           return;
         }
         
-        // Se for erro relacionado à proposta e não for erro de validação, tentar reenviar
+        // Se for erro relacionado à proposta e não for erro de validação, tentar reenviar (com limite)
         // Verificar se não temos proposta atual e estamos autorizados
-        if (!this.currentProposalId && this.isAuthorized && !this.activeContract) {
+        if (!this.currentProposalId && this.isAuthorized && !this.activeContract && this.proposalRetryCount < this.maxProposalRetries) {
           console.warn('[OperationChart] Erro pode estar relacionado à proposta, tentando reenviar após 2 segundos...');
           setTimeout(() => {
-            if (this.isAuthorized && this.ws && this.ws.readyState === WebSocket.OPEN && !this.activeContract) {
+            if (this.isAuthorized && this.ws && this.ws.readyState === WebSocket.OPEN && !this.activeContract && this.proposalRetryCount < this.maxProposalRetries) {
               this.subscribeToProposal();
             }
           }, 2000);
@@ -1938,18 +1949,45 @@ export default {
       return { duration, unit };
     },
     handleSymbolChange() {
-      // Resetar contador de erros de duração ao mudar símbolo
-      this.durationErrorCount = 0;
+      if (this.isTrading || this.activeContract) return;
+      console.log('[OperationChart] Mudando símbolo para:', this.symbol);
       
+      // Resetar todos os contadores de erro/retry ao mudar de símbolo
+      this.durationErrorCount = 0;
+      this.proposalRetryCount = 0;
+      this.tradeError = '';
+      
+      // Cancelar proposta atual ao mudar de símbolo (isso também limpa timeouts)
+      this.unsubscribeFromProposal();
+      
+      // Desinscrever do símbolo anterior
+      this.unsubscribeFromSymbol();
+      
+      // Limpar dados do gráfico
+      if (this.lineSeries) {
+        try {
+          this.lineSeries.setData([]);
+        } catch (error) {
+          console.warn('[OperationChart] Erro ao limpar série de linha:', error);
+        }
+      }
+      this.ticks = [];
+      this.previousDataCount = 0;
+      
+      // Inscrever no novo símbolo
       this.subscribeToSymbol();
+      
       // Buscar dados de contratos para o novo símbolo se ainda não tiver
       if (!this.contractsData[this.symbol]) {
         this.fetchContractsForSymbol(this.symbol);
       }
+      
       // Validar e ajustar duração para o novo símbolo
       this.validateAndAdjustDuration();
+      
       // Ajustar valor da entrada se necessário
       this.validateAndAdjustStake();
+      
       // Reiniciar subscription de proposal quando símbolo mudar
       this.subscribeToProposal();
     },
@@ -1973,6 +2011,10 @@ export default {
       
       // Validar e ajustar duração
       this.validateAndAdjustDuration();
+      
+      // Resetar contadores ao mudar duração
+      this.proposalRetryCount = 0;
+      this.tradeError = '';
       
       // Atualizar proposal quando duração mudar
       this.subscribeToProposal();
@@ -1999,12 +2041,21 @@ export default {
       
       this.localOrderConfig.duration = duration;
       
+      // Resetar contadores ao mudar unidade
+      this.proposalRetryCount = 0;
+      this.tradeError = '';
+      
       // Atualizar proposal quando unidade de duração mudar
       this.subscribeToProposal();
     },
     selectTradeType(type) {
       if (this.isTrading || this.activeContract) return;
       this.localOrderConfig.type = type;
+      
+      // Resetar contadores ao mudar tipo
+      this.proposalRetryCount = 0;
+      this.tradeError = '';
+      
       // Atualizar proposal quando tipo mudar
       this.subscribeToProposal();
     },
@@ -2095,6 +2146,14 @@ export default {
       return defaultToken;
     },
     subscribeToProposal() {
+      // Throttle: Evitar chamadas muito rápidas
+      const now = Date.now();
+      if (now - this.lastProposalAttemptTime < this.proposalThrottleMs) {
+        console.log('[OperationChart] Throttling subscribeToProposal - aguardando intervalo mínimo');
+        return;
+      }
+      this.lastProposalAttemptTime = now;
+      
       // Cancelar subscription anterior se existir
       this.unsubscribeFromProposal();
       
@@ -2105,6 +2164,7 @@ export default {
       
       if (this.activeContract) {
         // Não subscrever proposal se já houver contrato ativo
+        console.log('[OperationChart] Contrato ativo detectado, não subscrevendo proposal');
         return;
       }
       
@@ -2115,38 +2175,45 @@ export default {
         return;
       }
       
-      // Para Forex e Metais, tentar buscar dados de contratos mas não bloquear indefinidamente
+      // Para Forex e Metais, buscar dados de contratos primeiro
       const isForexOrMetal = this.symbol.startsWith('frx');
       
-      if (isForexOrMetal && !this.contractsData[this.symbol]) {
-        // Tentar buscar dados de contratos se ainda não estiver carregando
-        if (!this.isLoadingContracts) {
-          console.log('[OperationChart] Forex/Metal detectado, buscando dados de contratos...');
-          this.fetchContractsForSymbol(this.symbol);
-        }
+      if (isForexOrMetal && !this.contractsData[this.symbol] && !this.isLoadingContracts) {
+        console.log('[OperationChart] Forex/Metal detectado, buscando dados de contratos...');
+        this.fetchContractsForSymbol(this.symbol);
         
-        // Aguardar no máximo 3 segundos pelos dados de contratos
-        // Se não chegarem, usar valores padrão seguros para Forex (horas)
-        const maxWaitTime = 3000;
+        // Aguardar até 5 segundos pelos dados de contratos
+        const maxWaitTime = 5000;
         const startTime = Date.now();
+        let waitAttempt = 0;
+        const maxWaitAttempts = 10; // 10 tentativas de 500ms = 5 segundos
         
         const checkAndProceed = () => {
+          waitAttempt++;
           const elapsed = Date.now() - startTime;
           
           if (this.contractsData[this.symbol]) {
             // Dados recebidos, prosseguir
             console.log('[OperationChart] Dados de contratos recebidos para Forex, prosseguindo...');
             this.proceedWithProposal();
-          } else if (elapsed >= maxWaitTime || !this.isLoadingContracts) {
-            // Timeout ou flag resetada, usar valores padrão seguros
-            console.warn('[OperationChart] Dados de contratos não recebidos para Forex após', elapsed, 'ms, usando valores padrão seguros...');
-            // Ajustar para usar um valor maior em minutos (Forex geralmente não suporta 1 minuto)
-            // Tentar 15 minutos como valor mais seguro para Forex
+          } else if (waitAttempt >= maxWaitAttempts || elapsed >= maxWaitTime) {
+            // Timeout - usar valores padrão seguros para Forex
+            console.warn('[OperationChart] Timeout aguardando dados de contratos para Forex. Usando valores padrão.');
+            // Ajustar duração para um valor mais seguro
             if (this.localOrderConfig.durationUnit === 'm' && this.localOrderConfig.duration < 15) {
               this.localOrderConfig.duration = 15; // 15 minutos como padrão mais seguro para Forex
               console.log('[OperationChart] Ajustado para 15 minutos como padrão seguro para Forex');
+            } else if (this.localOrderConfig.durationUnit === 't') {
+              // Forex geralmente não suporta ticks, mudar para minutos
+              this.localOrderConfig.durationUnit = 'm';
+              this.localOrderConfig.duration = 15;
+              console.log('[OperationChart] Forex não suporta ticks, mudado para 15 minutos');
             }
             this.proceedWithProposal();
+          } else if (this.activeContract) {
+            // Se um contrato foi criado enquanto esperávamos, cancelar
+            console.log('[OperationChart] Contrato criado durante espera, cancelando subscription');
+            return;
           } else {
             // Ainda aguardando, verificar novamente
             setTimeout(checkAndProceed, 500);
@@ -2158,15 +2225,13 @@ export default {
         return;
       }
       
-      // Para outros ativos (índices), pode continuar com valores padrão
+      // Para outros ativos (índices), buscar dados em background se não disponíveis
       if (!this.contractsData[this.symbol] && !this.isLoadingContracts) {
         console.log('[OperationChart] Dados de contratos não disponíveis, buscando em background...');
         this.fetchContractsForSymbol(this.symbol);
-        // Continuar com valores padrão para índices
-        console.log('[OperationChart] Continuando com valores padrão enquanto busca dados de contratos...');
       }
       
-      // Sempre prosseguir com a proposta para índices, mesmo sem dados de contratos
+      // Prosseguir com a proposta
       this.proceedWithProposal();
     },
     proceedWithProposal() {
@@ -2248,21 +2313,52 @@ export default {
       
       this.send(payload);
       
-      // Se após 3 segundos não recebermos a proposta, tentar novamente
+      // Circuit Breaker: Limitar tentativas de re-subscription para evitar loops infinitos
       this.proposalTimeout = setTimeout(() => {
-        if (!this.currentProposalId && this.isAuthorized && this.ws && this.ws.readyState === WebSocket.OPEN) {
-          console.warn('[OperationChart] Proposta não recebida após 3 segundos, tentando novamente...');
-          this.proceedWithProposal();
-        }
+        // Limpar o timeout primeiro
         this.proposalTimeout = null;
+        
+        // Verificar se ainda precisamos de uma proposta
+        if (!this.currentProposalId && this.isAuthorized && this.ws && this.ws.readyState === WebSocket.OPEN && !this.activeContract) {
+          this.proposalRetryCount++;
+          
+          if (this.proposalRetryCount <= this.maxProposalRetries) {
+            console.warn(`[OperationChart] Proposta não recebida após 3 segundos, tentando novamente (tentativa ${this.proposalRetryCount}/${this.maxProposalRetries})...`);
+            this.proceedWithProposal();
+          } else {
+            console.error('[OperationChart] Máximo de tentativas de proposta atingido. Parando para evitar loop infinito.');
+            this.tradeError = 'Não foi possível obter proposta da Deriv após várias tentativas. Verifique sua conexão ou tente outro ativo.';
+            // Resetar contador após 10 segundos para permitir novas tentativas
+            setTimeout(() => {
+              this.proposalRetryCount = 0;
+              console.log('[OperationChart] Contador de tentativas resetado, pode tentar novamente');
+            }, 10000);
+          }
+        } else {
+          // Resetar contador se conseguimos obter proposta ou não precisamos mais
+          this.proposalRetryCount = 0;
+        }
       }, 3000);
     },
     unsubscribeFromProposal() {
+      // Limpar timeout pendente
+      if (this.proposalTimeout) {
+        clearTimeout(this.proposalTimeout);
+        this.proposalTimeout = null;
+      }
+      
+      // Enviar forget se tiver subscription ativa
       if (this.proposalSubscriptionId && this.ws && this.ws.readyState === WebSocket.OPEN) {
         console.log('[OperationChart] Unsubscribing from proposal:', this.proposalSubscriptionId);
-        this.send({ forget: this.proposalSubscriptionId });
+        try {
+          this.send({ forget: this.proposalSubscriptionId });
+        } catch (error) {
+          console.warn('[OperationChart] Erro ao enviar forget para proposal:', error);
+        }
         this.proposalSubscriptionId = null;
       }
+      
+      // Limpar dados da proposta
       this.currentProposalId = null;
       this.currentProposalPrice = null;
     },
@@ -2507,8 +2603,11 @@ export default {
     closeTradeResultModal() {
       this.showTradeResultModal = false;
       // Reiniciar subscription de proposal após fechar o modal
+      // Mas apenas se não houver contrato ativo e não estiver trading
       setTimeout(() => {
-        this.subscribeToProposal();
+        if (!this.activeContract && !this.isTrading && this.isAuthorized) {
+          this.subscribeToProposal();
+        }
       }, 500);
     },
     executeBuy() {
@@ -2960,6 +3059,16 @@ export default {
         return;
       }
       
+      // Verificar se há erro na proposta
+      if (proposal.error || msg.error) {
+        const error = proposal.error || msg.error;
+        console.error('[OperationChart] ERRO na proposta:', error);
+        this.tradeError = error.message || 'Erro ao obter proposta';
+        this.currentProposalId = null;
+        this.currentProposalPrice = null;
+        return;
+      }
+      
       console.log('[OperationChart] Dados da proposta:', {
         id: proposal.id,
         askPrice: proposal.ask_price,
@@ -2978,11 +3087,12 @@ export default {
         this.proposalTimeout = null;
       }
       
+      // Resetar contadores de erro já que a proposta foi recebida com sucesso
+      this.durationErrorCount = 0;
+      this.proposalRetryCount = 0;
+      
       // Limpar qualquer erro anterior
       this.tradeError = '';
-      
-      // Resetar contador de erros de duração já que a proposta foi recebida com sucesso
-      this.durationErrorCount = 0;
       
       // Armazenar subscription ID se fornecido
       if (msg.subscription?.id) {
