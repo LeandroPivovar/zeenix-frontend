@@ -1151,6 +1151,9 @@ export default {
 					console.log('[StatsIAsView] - Vitórias:', config.totalWins);
 					console.log('[StatsIAsView] - Derrotas:', config.totalLosses);
 					
+					// ATIVAR O MONITORAMENTO AUTOMATICAMENTE
+					await this.startAIMonitoring();
+					
 					// Carregar estatísticas e histórico
 					await this.loadSessionStats();
 					await this.loadTradeHistory();
