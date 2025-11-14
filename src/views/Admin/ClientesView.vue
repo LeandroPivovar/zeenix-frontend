@@ -267,7 +267,6 @@ export default {
 
 /* Container principal com o cabeçalho */
 .container {
-	max-width: 1400px;
 	width: 100%; /* Garante que o container utilize o espaço disponível */
 	margin: 0 auto;
 }
@@ -518,4 +517,5 @@ p {
 		width: 100%;
 	}
 }
+
 </style>
