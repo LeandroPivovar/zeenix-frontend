@@ -178,7 +178,7 @@
 </template>
 
 <script>
-import AppSidebar from '../../components/Sidebar.vue';
+import AppSidebar from '../../../Sidebar.vue';
 
 export default {
 	name: 'StatsIAs',

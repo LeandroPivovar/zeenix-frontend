@@ -22,9 +22,15 @@
                 <img src="../assets/icons/apps.svg" alt="" class="icon-sidebar">
                 Dashboard
             </button>
-            <button class="menu-item" @click="close" data-text="IAs de Investimento">
+            <button 
+                class="menu-item" 
+                :class="{ active: isStatsIAsActive }"
+                @click="navigateAndClose('/StatsIAs')" 
+                data-text="IAs de Investimento"
+            >
                 <img src="../assets/icons/core.svg" alt="" class="icon-sidebar">
-                IAs de Investimento</button>
+                IAs de Investimento
+            </button>
             <button 
                 class="menu-item" 
                 :class="{ active: isCopyTradingActive }"
