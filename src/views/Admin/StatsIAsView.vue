@@ -706,37 +706,16 @@ export default {
 		getEstimatedProfitClass() {
 			if (!this.activeTrade) return '';
 			
-			const { signal, entryPrice, currentPrice } = this.activeTrade;
-			
-			if (!entryPrice || !currentPrice) return '';
-
-			const isWinning = (signal === 'CALL' && currentPrice > entryPrice) ||
-				(signal === 'PUT' && currentPrice < entryPrice);
-
-			return isWinning ? 'positive' : 'negative';
+			// Usar o profitLoss da API para determinar a classe
+			const profit = this.activeTrade.profitLoss || 0;
+			return profit >= 0 ? 'positive' : 'negative';
 		},
 
 		getEstimatedProfit() {
 			if (!this.activeTrade) return '$0.00';
 			
-			const { signal, entryPrice, currentPrice, stakeAmount } = this.activeTrade;
-			
-			if (!entryPrice || !currentPrice || !stakeAmount) return '$0.00';
-
-			const isWinning = (signal === 'CALL' && currentPrice > entryPrice) ||
-				(signal === 'PUT' && currentPrice < entryPrice);
-
-			// Cálculo mais realista baseado na diferença de preço
-			// Payout: 85% do stake se ganhar, -100% se perder
-			let profit;
-			if (isWinning) {
-				// Se está ganhando, mostra o lucro potencial
-				const payoutRate = 0.85; // 85% de retorno
-				profit = stakeAmount * payoutRate;
-			} else {
-				// Se está perdendo, mostra a perda potencial
-				profit = -stakeAmount;
-			}
+			// Usar o profitLoss retornado pela API (cálculo em tempo real do backend)
+			const profit = this.activeTrade.profitLoss || 0;
 			
 			const sign = profit >= 0 ? '+' : '';
 			return `${sign}$${profit.toFixed(2)}`;
