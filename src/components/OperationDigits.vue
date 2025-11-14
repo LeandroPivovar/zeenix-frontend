@@ -123,7 +123,7 @@
                         <div class="result-body">
                             <div class="result-icon">{{ resultNotificationIcon }}</div>
                             <div class="result-profit">
-                                {{ lastTradeResult.profit >= 0 ? '+' : '' }}{{ displayCurrency }} {{ lastTradeResult.profit?.toFixed(2) }}
+                                {{ lastTradeResult.profit >= 0 ? '+' : '' }}{{ displayCurrency }} {{ (lastTradeResult.profit || 0).toFixed(2) }}
                             </div>
                             <div class="result-details">
                                 <div class="result-detail-item">
@@ -132,11 +132,11 @@
                                 </div>
                                 <div class="result-detail-item">
                                     <span>Investimento:</span>
-                                    <span>{{ displayCurrency }} {{ lastTradeResult.buyPrice?.toFixed(2) }}</span>
+                                    <span>{{ displayCurrency }} {{ (lastTradeResult.buyPrice || 0).toFixed(2) }}</span>
                                 </div>
                                 <div class="result-detail-item">
                                     <span>Retorno:</span>
-                                    <span>{{ displayCurrency }} {{ lastTradeResult.sellPrice?.toFixed(2) || '0.00' }}</span>
+                                    <span>{{ displayCurrency }} {{ (lastTradeResult.sellPrice || 0).toFixed(2) }}</span>
                                 </div>
                             </div>
                         </div>
@@ -908,8 +908,15 @@ export default {
         processProposalOpenContract(msg) {
             const contract = msg.proposal_open_contract;
             if (!contract) {
+                console.log('[OperationDigits] ⚠ Contrato vazio em proposal_open_contract');
                 return;
             }
+            
+            console.log('[OperationDigits] 📊 Atualização de contrato recebida:', {
+                is_sold: contract.is_sold,
+                profit: contract.profit,
+                status: contract.status
+            });
             
             if (msg.subscription?.id) {
                 this.contractSubscriptionId = msg.subscription.id;
@@ -917,15 +924,22 @@ export default {
             
             if (contract.profit !== undefined && contract.profit !== null) {
                 this.realTimeProfit = Number(contract.profit);
+                console.log('[OperationDigits] P&L atualizado:', this.realTimeProfit);
             }
             
             if (contract.is_sold === 1) {
+                console.log('[OperationDigits] ✅ Contrato vendido, finalizando...');
                 setTimeout(() => {
                     this.finalizeContract(contract);
                 }, 100);
+            } else {
+                console.log('[OperationDigits] ⏳ Contrato ainda ativo (is_sold =', contract.is_sold, ')');
             }
         },
         finalizeContract(contract) {
+            console.log('[OperationDigits] ========== FINALIZANDO CONTRATO ==========');
+            console.log('[OperationDigits] Dados do contrato:', contract);
+            
             this.unsubscribeFromContract();
             
             let finalProfit = 0;
@@ -944,8 +958,12 @@ export default {
                 barrier: this.activeContract?.digitBarrier || null,
             };
             
+            console.log('[OperationDigits] Resultado armazenado:', this.lastTradeResult);
+            
             // Exibir notificação de resultado
             this.showResultNotification = true;
+            
+            console.log('[OperationDigits] showResultNotification definido como:', this.showResultNotification);
             
             this.$emit('trade-result', {
                 contractId: this.activeContract?.contract_id,
