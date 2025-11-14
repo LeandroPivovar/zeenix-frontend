@@ -178,7 +178,7 @@
 </template>
 
 <script>
-import AppSidebar from '../../../Sidebar.vue';
+import AppSidebar from '../../components/Sidebar.vue';
 
 export default {
 	name: 'StatsIAs',
@@ -828,7 +828,7 @@ tbody tr:hover {
 	to {
 		opacity: 1;
 		transform: translateY(0);
-	}
+    }
 }
 
 @media (max-width: 992px) {
