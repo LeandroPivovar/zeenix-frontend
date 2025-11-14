@@ -160,16 +160,17 @@
 							</div>
 						</div>
 
-						<!-- Próxima Operação -->
-						<div v-else class="next-trade-card">
-							<div class="next-trade-info">
-								<div class="timer-icon">⏱️</div>
-								<div>
-									<h3>Aguardando próxima análise...</h3>
-									<p>Próxima operação em: {{ formatTimeRemaining(nextTradeCountdown) }}</p>
-								</div>
+					<!-- Aguardando Próxima Operação -->
+					<div v-else class="next-trade-card">
+						<div class="next-trade-info">
+							<div class="timer-icon">⏱️</div>
+							<div>
+								<h3>🔄 Aguardando próxima operação...</h3>
+								<p class="countdown-text">Intervalo de segurança: {{ formatTimeRemaining(nextTradeCountdown) }}</p>
+								<p class="info-text">A IA analisará o mercado novamente em breve</p>
 							</div>
 						</div>
+					</div>
 
 						<!-- Estatísticas do Trading -->
 						<div class="trading-stats-card">
@@ -813,13 +814,6 @@ export default {
 
 				this.monitorActiveTrade();
 
-				setTimeout(() => {
-					if (this.tradingConfig.isActive) {
-						this.nextTradeCountdown = 300;
-						this.executeNextTrade();
-					}
-				}, signal.duration * 1000 + 300000);
-
 			} catch (error) {
 				console.error('[StatsIAsView] Erro ao executar trade:', error);
 			}
@@ -847,16 +841,31 @@ export default {
 					this.activeTrade.timeRemaining = trade.timeRemaining;
 					this.activeTrade.profitLoss = trade.profitLoss;
 
-					if (trade.status === 'WON' || trade.status === 'LOST') {
-						console.log('[StatsIAsView] Trade finalizado:', trade.status);
-						
-						this.activeTrade = null;
-						clearInterval(monitorInterval);
+				if (trade.status === 'WON' || trade.status === 'LOST') {
+					console.log('[StatsIAsView] Trade finalizado:', trade.status);
+					
+					// Limpar operação ativa
+					this.activeTrade = null;
+					clearInterval(monitorInterval);
 
-						// Recarregar estatísticas e histórico do banco
-						await this.loadSessionStats();
-						await this.loadTradeHistory();
+					// Recarregar estatísticas e histórico do banco
+					await this.loadSessionStats();
+					await this.loadTradeHistory();
+					
+					// Iniciar countdown de 5 minutos (300 segundos) para a próxima operação
+					if (this.tradingConfig.isActive) {
+						console.log('[StatsIAsView] Aguardando 5 minutos para próxima operação...');
+						this.nextTradeCountdown = 300;
+						this.startCountdown();
+						
+						// Executar próxima operação após 5 minutos
+						setTimeout(() => {
+							if (this.tradingConfig.isActive) {
+								this.executeNextTrade();
+							}
+						}, 300000); // 300000ms = 5 minutos
 					}
+				}
 
 				} catch (error) {
 					console.error('[StatsIAsView] Erro ao monitorar trade:', error);
@@ -1740,14 +1749,23 @@ tbody tr:hover {
 .next-trade-info h3 {
 	font-size: 18px;
 	color: #f8fafc;
-	margin: 0 0 8px 0;
+	margin: 0 0 12px 0;
+	font-weight: 600;
 }
 
-.next-trade-info p {
-	color: #94a3b8;
-	font-size: 16px;
-	margin: 0;
+.next-trade-info .countdown-text {
+	color: #06d6a0;
+	font-size: 20px;
+	margin: 0 0 8px 0;
 	font-family: 'Courier New', monospace;
+	font-weight: 700;
+}
+
+.next-trade-info .info-text {
+	color: #94a3b8;
+	font-size: 14px;
+	margin: 0;
+	font-style: italic;
 }
 
 .trading-stats-card {
