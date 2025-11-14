@@ -723,13 +723,11 @@ export default {
 			
 			if (!entryPrice || !currentPrice || !stakeAmount) return '$0.00';
 
-			const priceDiff = Math.abs(currentPrice - entryPrice);
 			const isWinning = (signal === 'CALL' && currentPrice > entryPrice) ||
 				(signal === 'PUT' && currentPrice < entryPrice);
 
 			// Cálculo mais realista baseado na diferença de preço
 			// Payout: 85% do stake se ganhar, -100% se perder
-			// Quanto maior a diferença de preço, maior a confiança
 			let profit;
 			if (isWinning) {
 				// Se está ganhando, mostra o lucro potencial
@@ -779,7 +777,7 @@ export default {
 				return '50%';
 			}
 			
-			const { signal, entryPrice, currentPrice } = this.activeTrade;
+			const { entryPrice, currentPrice } = this.activeTrade;
 			const diff = Math.abs(currentPrice - entryPrice);
 			const percentDiff = (diff / entryPrice) * 100;
 			
