@@ -113,6 +113,36 @@
                     <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
                 </div>
 
+                <!-- Resultado da Operação -->
+                <div v-if="showResultNotification" class="result-notification-overlay" @click="closeResultNotification">
+                    <div class="result-notification" :class="resultNotificationClass" @click.stop>
+                        <div class="result-header">
+                            <h3>{{ resultNotificationTitle }}</h3>
+                            <button @click="closeResultNotification" class="close-btn">✕</button>
+                        </div>
+                        <div class="result-body">
+                            <div class="result-icon">{{ resultNotificationIcon }}</div>
+                            <div class="result-profit">
+                                {{ lastTradeResult.profit >= 0 ? '+' : '' }}{{ displayCurrency }} {{ lastTradeResult.profit?.toFixed(2) }}
+                            </div>
+                            <div class="result-details">
+                                <div class="result-detail-item">
+                                    <span>Tipo:</span>
+                                    <span>{{ getDigitTypeLabel(lastTradeResult.direction) }} {{ lastTradeResult.barrier ? `(${lastTradeResult.barrier})` : '' }}</span>
+                                </div>
+                                <div class="result-detail-item">
+                                    <span>Investimento:</span>
+                                    <span>{{ displayCurrency }} {{ lastTradeResult.buyPrice?.toFixed(2) }}</span>
+                                </div>
+                                <div class="result-detail-item">
+                                    <span>Retorno:</span>
+                                    <span>{{ displayCurrency }} {{ lastTradeResult.sellPrice?.toFixed(2) || '0.00' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="card">
                     <h3 class="card-header space-between">
                         Status da Ordem
@@ -303,6 +333,14 @@ export default {
                 frequency: {},
                 parity: { even: 0, odd: 0 },
             },
+            showResultNotification: false,
+            lastTradeResult: {
+                profit: 0,
+                buyPrice: 0,
+                sellPrice: 0,
+                direction: '',
+                barrier: null,
+            },
         }
     },
     computed: {
@@ -427,6 +465,24 @@ export default {
             // Calcular mudança de saldo baseado em operações recentes
             return null; // Implementar se necessário
         },
+        resultNotificationTitle() {
+            if (!this.lastTradeResult || this.lastTradeResult.profit === undefined) {
+                return 'Resultado da Operação';
+            }
+            return this.lastTradeResult.profit >= 0 ? '🎉 LUCRO!' : '📉 PERDA';
+        },
+        resultNotificationIcon() {
+            if (!this.lastTradeResult || this.lastTradeResult.profit === undefined) {
+                return '📊';
+            }
+            return this.lastTradeResult.profit >= 0 ? '✅' : '❌';
+        },
+        resultNotificationClass() {
+            if (!this.lastTradeResult || this.lastTradeResult.profit === undefined) {
+                return '';
+            }
+            return this.lastTradeResult.profit >= 0 ? 'result-profit' : 'result-loss';
+        },
     },
     methods: {
         getDigitTypeLabel(type) {
@@ -444,6 +500,9 @@ export default {
             if (percentage > 15) return 'status-green';
             if (percentage > 10) return 'status-yellow';
             return '';
+        },
+        closeResultNotification() {
+            this.showResultNotification = false;
         },
         initConnection() {
             console.log('[OperationDigits] initConnection - Iniciando conexão WebSocket');
@@ -876,6 +935,18 @@ export default {
                 finalProfit = Number(this.realTimeProfit);
             }
             
+            // Armazenar resultado para exibição
+            this.lastTradeResult = {
+                profit: finalProfit,
+                buyPrice: this.activeContract?.buy_price || 0,
+                sellPrice: contract.sell_price ? Number(contract.sell_price) : 0,
+                direction: this.activeContract?.type || '',
+                barrier: this.activeContract?.digitBarrier || null,
+            };
+            
+            // Exibir notificação de resultado
+            this.showResultNotification = true;
+            
             this.$emit('trade-result', {
                 contractId: this.activeContract?.contract_id,
                 buyPrice: this.activeContract?.buy_price,
@@ -1121,5 +1192,163 @@ export default {
 
 .parity-trend-red {
     color: #ef4444;
+}
+
+/* Notificação de Resultado */
+.result-notification-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.3s ease;
+}
+
+.result-notification {
+    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+    border-radius: 16px;
+    padding: 0;
+    width: 90%;
+    max-width: 500px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+    animation: slideUp 0.4s ease;
+    border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.result-notification.result-profit {
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.result-notification.result-loss {
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+.result-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.result-header h3 {
+    margin: 0;
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #f8fafc;
+}
+
+.close-btn {
+    background: rgba(148, 163, 184, 0.1);
+    border: none;
+    color: #94a3b8;
+    font-size: 1.5rem;
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.close-btn:hover {
+    background: rgba(148, 163, 184, 0.2);
+    color: #f8fafc;
+}
+
+.result-body {
+    padding: 32px 24px;
+    text-align: center;
+}
+
+.result-icon {
+    font-size: 4rem;
+    margin-bottom: 16px;
+    animation: bounce 0.6s ease;
+}
+
+.result-profit {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 24px;
+}
+
+.result-notification.result-profit .result-profit {
+    color: #10b981;
+    text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+}
+
+.result-notification.result-loss .result-profit {
+    color: #ef4444;
+    text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+}
+
+.result-details {
+    background: rgba(15, 23, 42, 0.6);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 20px;
+}
+
+.result-detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.result-detail-item:last-child {
+    border-bottom: none;
+}
+
+.result-detail-item span:first-child {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+.result-detail-item span:last-child {
+    color: #f8fafc;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        transform: translateY(30px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes bounce {
+    0%, 20%, 50%, 80%, 100% {
+        transform: translateY(0);
+    }
+    40% {
+        transform: translateY(-20px);
+    }
+    60% {
+        transform: translateY(-10px);
+    }
 }
 </style>
