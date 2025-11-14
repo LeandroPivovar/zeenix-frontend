@@ -464,6 +464,54 @@ export default {
 			return null;
 		},
 		
+		/**
+		 * Obter moeda preferida do usuário
+		 * Igual ao OperationChart.vue - pega a moeda da conta ativa
+		 */
+		getPreferredCurrency() {
+			console.log('[StatsIAsView] Buscando moeda preferida...');
+			
+			// 1. Tentar buscar do objeto de conexão (moeda da conta ativa)
+			try {
+				const connectionStr = localStorage.getItem('deriv_connection');
+				if (connectionStr) {
+					const connection = JSON.parse(connectionStr);
+					if (connection.tradeCurrency) {
+						const currency = connection.tradeCurrency.toUpperCase();
+						console.log('[StatsIAsView] Moeda encontrada em deriv_connection:', currency);
+						
+						// Se for DEMO, retornar USD (DEMO não é moeda real)
+						if (currency === 'DEMO') {
+							console.log('[StatsIAsView] Moeda é DEMO, usando USD');
+							return 'USD';
+						}
+						
+						return currency;
+					}
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao parsear deriv_connection:', error);
+			}
+			
+			// 2. Fallback: tentar buscar currency do userSettings
+			try {
+				const userSettingsStr = localStorage.getItem('user_settings');
+				if (userSettingsStr) {
+					const userSettings = JSON.parse(userSettingsStr);
+					if (userSettings.currency) {
+						console.log('[StatsIAsView] Moeda encontrada em user_settings:', userSettings.currency);
+						return userSettings.currency.toUpperCase();
+					}
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao parsear user_settings:', error);
+			}
+			
+			// 3. Fallback final: USD
+			console.log('[StatsIAsView] Usando USD como fallback');
+			return 'USD';
+		},
+		
 		fetchData() {
 			console.log(`Buscando dados de ${this.filterStartDate} a ${this.filterEndDate}`);
 			this.displayedStats = this.allStats; 
@@ -655,6 +703,10 @@ export default {
 				return;
 			}
 			
+			// Obter moeda preferida (USD, BTC, DEMO, etc)
+			const preferredCurrency = this.getPreferredCurrency();
+			console.log('[StatsIAsView] Usando moeda:', preferredCurrency);
+			
 			const tradeResponse = await fetch('https://taxafacil.site/api/ai/execute-trade', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
@@ -663,6 +715,7 @@ export default {
 					signal,
 					stakeAmount: this.tradingConfig.stakeAmount,
 					derivToken: derivToken,
+					currency: preferredCurrency,
 				}),
 			});
 
