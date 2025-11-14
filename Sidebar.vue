@@ -19,7 +19,7 @@
                 @click="navigateAndClose('/dashboard')"
                 data-text="Dashboard"
             >
-                <img src="../assets/icons/apps.svg" alt="" class="icon-sidebar">
+                <img src="./src/assets/icons/apps.svg" alt="" class="icon-sidebar">
                 Dashboard
             </button>
             <button 
@@ -28,7 +28,7 @@
                 @click="navigateAndClose('/StatsIAs')" 
                 data-text="IAs de Investimento"
             >
-                <img src="../assets/icons/core.svg" alt="" class="icon-sidebar">
+                <img src="./src/assets/icons/core.svg" alt="" class="icon-sidebar">
                 IAs de Investimento
             </button>
             <button 
@@ -37,7 +37,7 @@
                 @click="navigateAndClose('/copy-trading')"
                 data-text="Copy Trading"
             >
-                <img src="../assets/icons/copy.svg" alt="" class="icon-sidebar">
+                <img src="./src/assets/icons/copy.svg" alt="" class="icon-sidebar">
                 Copy Trading
             </button>
             <button 
@@ -46,7 +46,7 @@
                 @click="navigateAndClose('/operation')"
                 data-text="Operação Manual"
             >
-                <img src="../assets/icons/click.svg" alt="" class="icon-sidebar">
+                <img src="./src/assets/icons/click.svg" alt="" class="icon-sidebar">
                 Operação Manual
             </button>
             <button
@@ -55,11 +55,11 @@
                 @click="navigateAndClose('/academy')"
                 data-text="Zenix Academy"
             >
-                <img src="../assets/icons/academy.svg" alt="" class="icon-sidebar">
+                <img src="./src/assets/icons/academy.svg" alt="" class="icon-sidebar">
                 Zenix Academy
             </button>
             <button class="menu-item" @click="close" data-text="Relatórios">
-                <img src="../assets/icons/analytics.svg" alt="" class="icon-sidebar">
+                <img src="./src/assets/icons/analytics.svg" alt="" class="icon-sidebar">
                 Relatórios
             </button>
             <button
@@ -68,7 +68,7 @@
                 @click="navigateAndClose('/support')"
                 data-text="Suporte"
             >
-                <img src="../assets/icons/help.svg" alt="" class="icon-sidebar">
+                <img src="./src/assets/icons/help.svg" alt="" class="icon-sidebar">
                 Suporte
             </button>
             <button
@@ -77,7 +77,7 @@
                 @click="navigateAndClose('/settings')"
                 data-text="Configurações"
             >
-                <img src="../assets/icons/settings.svg" alt="" class="icon-sidebar">
+                <img src="./src/assets/icons/settings.svg" alt="" class="icon-sidebar">
                 Configurações
             </button>
             
@@ -227,4 +227,4 @@ export default {
 </script>
 
 
-<style scoped src="../assets/css/components/sidebar.css"></style>
+<style scoped src="./src/assets/css/components/sidebar.css"></style>
