@@ -128,14 +128,30 @@
 									</span>
 								</div>
 								<div class="detail-row">
+									<span class="detail-label">Variação:</span>
+									<span :class="['detail-value', getPriceChangeClass(activeTrade.entryPrice, activeTrade.currentPrice)]">
+										{{ getPriceDifference() }} ({{ getPriceChangePercent() }})
+									</span>
+								</div>
+								<div class="detail-row">
 									<span class="detail-label">Tempo Restante:</span>
 									<span class="detail-value countdown">{{ formatTimeRemaining(activeTrade.timeRemaining) }}</span>
 								</div>
 								<div class="detail-row">
+									<span class="detail-label">Investimento:</span>
+									<span class="detail-value">${{ activeTrade.stakeAmount?.toFixed(2) }}</span>
+								</div>
+								<div class="detail-row profit-row">
 									<span class="detail-label">Lucro Estimado:</span>
-									<span :class="['detail-value', getEstimatedProfitClass()]">
+									<span :class="['detail-value profit-value', getEstimatedProfitClass()]">
 										{{ getEstimatedProfit() }}
 									</span>
+								</div>
+								
+								<!-- Barra de progresso visual -->
+								<div class="profit-progress-bar">
+									<div :class="['progress-fill', getEstimatedProfitClass()]" :style="{ width: getProgressBarWidth() }"></div>
+									<span class="progress-label">{{ isCurrentlyWinning() ? '✓ Ganhando' : '✗ Perdendo' }}</span>
 								</div>
 							</div>
 
@@ -705,15 +721,74 @@ export default {
 			
 			const { signal, entryPrice, currentPrice, stakeAmount } = this.activeTrade;
 			
-			if (!entryPrice || !currentPrice) return '$0.00';
+			if (!entryPrice || !currentPrice || !stakeAmount) return '$0.00';
 
+			const priceDiff = Math.abs(currentPrice - entryPrice);
 			const isWinning = (signal === 'CALL' && currentPrice > entryPrice) ||
 				(signal === 'PUT' && currentPrice < entryPrice);
 
-			const profit = isWinning ? stakeAmount * 0.85 : -stakeAmount;
-			const sign = profit >= 0 ? '+' : '';
+			// Cálculo mais realista baseado na diferença de preço
+			// Payout: 85% do stake se ganhar, -100% se perder
+			// Quanto maior a diferença de preço, maior a confiança
+			let profit;
+			if (isWinning) {
+				// Se está ganhando, mostra o lucro potencial
+				const payoutRate = 0.85; // 85% de retorno
+				profit = stakeAmount * payoutRate;
+			} else {
+				// Se está perdendo, mostra a perda potencial
+				profit = -stakeAmount;
+			}
 			
+			const sign = profit >= 0 ? '+' : '';
 			return `${sign}$${profit.toFixed(2)}`;
+		},
+
+		getPriceDifference() {
+			if (!this.activeTrade || !this.activeTrade.entryPrice || !this.activeTrade.currentPrice) {
+				return '--';
+			}
+			
+			const diff = this.activeTrade.currentPrice - this.activeTrade.entryPrice;
+			const sign = diff >= 0 ? '+' : '';
+			return `${sign}$${diff.toFixed(2)}`;
+		},
+
+		getPriceChangePercent() {
+			if (!this.activeTrade || !this.activeTrade.entryPrice || !this.activeTrade.currentPrice) {
+				return '0.00%';
+			}
+			
+			const percentChange = ((this.activeTrade.currentPrice - this.activeTrade.entryPrice) / this.activeTrade.entryPrice) * 100;
+			const sign = percentChange >= 0 ? '+' : '';
+			return `${sign}${percentChange.toFixed(2)}%`;
+		},
+
+		isCurrentlyWinning() {
+			if (!this.activeTrade || !this.activeTrade.entryPrice || !this.activeTrade.currentPrice) {
+				return false;
+			}
+			
+			const { signal, entryPrice, currentPrice } = this.activeTrade;
+			return (signal === 'CALL' && currentPrice > entryPrice) ||
+				(signal === 'PUT' && currentPrice < entryPrice);
+		},
+
+		getProgressBarWidth() {
+			if (!this.activeTrade || !this.activeTrade.entryPrice || !this.activeTrade.currentPrice) {
+				return '50%';
+			}
+			
+			const { signal, entryPrice, currentPrice } = this.activeTrade;
+			const diff = Math.abs(currentPrice - entryPrice);
+			const percentDiff = (diff / entryPrice) * 100;
+			
+			// Normalizar para barra de 0-100%
+			// Se a diferença for muito pequena, mostrar pelo menos 20%
+			// Se for grande (>1%), mostrar 100%
+			const normalizedWidth = Math.min(Math.max(percentDiff * 50, 20), 100);
+			
+			return `${normalizedWidth}%`;
 		},
 
 		async loadSessionStats() {
@@ -1418,6 +1493,61 @@ tbody tr:hover {
 .detail-value.countdown {
 	color: #60a5fa;
 	font-size: 20px;
+}
+
+.detail-row.profit-row {
+	grid-column: span 2;
+	background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(99, 102, 241, 0.1));
+	border: 1px solid rgba(99, 102, 241, 0.3);
+	padding: 18px;
+}
+
+.detail-value.profit-value {
+	font-size: 24px;
+	font-weight: 800;
+	text-shadow: 0 0 10px currentColor;
+}
+
+.profit-progress-bar {
+	grid-column: span 2;
+	position: relative;
+	height: 50px;
+	background: rgba(30, 41, 59, 0.5);
+	border-radius: 12px;
+	overflow: hidden;
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	margin-top: 8px;
+}
+
+.progress-fill {
+	position: absolute;
+	left: 0;
+	top: 0;
+	height: 100%;
+	transition: width 0.5s ease, background 0.3s ease;
+	border-radius: 12px;
+}
+
+.progress-fill.positive {
+	background: linear-gradient(90deg, rgba(16, 185, 129, 0.3), rgba(16, 185, 129, 0.6));
+	box-shadow: 0 0 20px rgba(16, 185, 129, 0.5);
+}
+
+.progress-fill.negative {
+	background: linear-gradient(90deg, rgba(239, 68, 68, 0.3), rgba(239, 68, 68, 0.6));
+	box-shadow: 0 0 20px rgba(239, 68, 68, 0.5);
+}
+
+.progress-label {
+	position: absolute;
+	left: 50%;
+	top: 50%;
+	transform: translate(-50%, -50%);
+	color: #f8fafc;
+	font-size: 16px;
+	font-weight: 700;
+	z-index: 10;
+	text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
 
 .trade-reasoning {
