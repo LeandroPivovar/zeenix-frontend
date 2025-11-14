@@ -841,10 +841,11 @@ export default {
 					this.activeTrade.timeRemaining = trade.timeRemaining;
 					this.activeTrade.profitLoss = trade.profitLoss;
 
-				if (trade.status === 'WON' || trade.status === 'LOST') {
-					console.log('[StatsIAsView] Trade finalizado:', trade.status);
+				// Verificar se o tempo acabou OU se o status é final
+				if (trade.timeRemaining <= 0 || trade.status === 'WON' || trade.status === 'LOST') {
+					console.log('[StatsIAsView] Trade finalizado:', trade.status || 'Tempo esgotado');
 					
-					// Limpar operação ativa
+					// Limpar operação ativa imediatamente
 					this.activeTrade = null;
 					clearInterval(monitorInterval);
 
