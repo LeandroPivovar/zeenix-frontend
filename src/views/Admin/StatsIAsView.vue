@@ -110,6 +110,20 @@
 									:disabled="tradingConfig.isActive"
 								/>
 							</div>
+							
+							<div class="input-group">
+								<label>Modo de Operação:</label>
+								<select 
+									v-model="tradingConfig.mode" 
+									:disabled="tradingConfig.isActive"
+									class="mode-select"
+								>
+									<option value="fast">⚡ Veloz (1 min entre operações)</option>
+									<option value="moderate">⚖️ Moderado (5 min entre operações)</option>
+									<option value="slow">🐢 Lenta (10 min entre operações)</option>
+								</select>
+							</div>
+							
 							<button 
 								:class="['btn-trading-toggle', tradingConfig.isActive ? 'active' : '']" 
 								@click="toggleAutomatedTrading"
@@ -407,6 +421,7 @@ export default {
 			tradingConfig: {
 				isActive: false,
 				stakeAmount: 10,
+				mode: 'moderate', // fast, moderate, slow
 			},
 			activeTrade: null,
 			nextTradeCountdown: 300, // 5 minutos em segundos
@@ -732,6 +747,7 @@ export default {
 					stakeAmount: this.tradingConfig.stakeAmount,
 					derivToken: derivToken,
 					currency: preferredCurrency,
+					mode: this.tradingConfig.mode,
 				}),
 			});
 			
@@ -1143,6 +1159,7 @@ export default {
 				const config = result.data;
 				this.tradingConfig.isActive = config.isActive;
 				this.tradingConfig.stakeAmount = config.stakeAmount || 10;
+				this.tradingConfig.mode = config.mode || 'moderate';
 				
 				// Se a IA está ativa, carregar tudo automaticamente
 				if (config.isActive) {
@@ -1775,6 +1792,34 @@ tbody tr:hover {
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
+}
+
+.mode-select {
+	padding: 10px 14px;
+	background: rgba(30, 41, 59, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 8px;
+	color: #f8fafc;
+	font-size: 14px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	font-family: inherit;
+}
+
+.mode-select:hover:not(:disabled) {
+	border-color: rgba(16, 185, 129, 0.4);
+	background: rgba(30, 41, 59, 0.8);
+}
+
+.mode-select:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.mode-select option {
+	background: #1e293b;
+	color: #f8fafc;
+	padding: 10px;
 }
 
 .input-group label {
