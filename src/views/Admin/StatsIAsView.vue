@@ -80,6 +80,107 @@
 						</div>
 					</div>
 				</div>
+
+				<!-- Seção de Trading Automático -->
+				<div v-if="aiMonitoring.isActive" class="ai-trading-section">
+					<div class="ai-trading-header">
+						<h2>🤖 Trading Automático com IA</h2>
+						<div class="trading-controls">
+							<div class="input-group">
+								<label>Valor por Operação:</label>
+								<input 
+									type="number" 
+									v-model.number="tradingConfig.stakeAmount" 
+									min="1"
+									step="0.5"
+									:disabled="tradingConfig.isActive"
+								/>
+							</div>
+							<button 
+								:class="['btn-trading-toggle', tradingConfig.isActive ? 'active' : '']" 
+								@click="toggleAutomatedTrading"
+							>
+								<span v-if="!tradingConfig.isActive">🚀 Iniciar Trading</span>
+								<span v-else>⏸ Parar Trading</span>
+							</button>
+						</div>
+					</div>
+
+					<div v-if="tradingConfig.isActive" class="trading-active-content">
+						<!-- Operação Ativa -->
+						<div v-if="activeTrade" class="active-trade-card">
+							<div class="trade-header">
+								<h3>📊 Operação em Andamento</h3>
+								<span :class="['trade-signal', activeTrade.signal]">
+									{{ activeTrade.signal === 'CALL' ? '📈 CALL' : '📉 PUT' }}
+								</span>
+							</div>
+
+							<div class="trade-details">
+								<div class="detail-row">
+									<span class="detail-label">Preço de Entrada:</span>
+									<span class="detail-value">${{ activeTrade.entryPrice?.toFixed(2) }}</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">Preço Atual:</span>
+									<span :class="['detail-value', getPriceChangeClass(activeTrade.entryPrice, activeTrade.currentPrice)]">
+										${{ activeTrade.currentPrice?.toFixed(2) || '--' }}
+									</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">Tempo Restante:</span>
+									<span class="detail-value countdown">{{ formatTimeRemaining(activeTrade.timeRemaining) }}</span>
+								</div>
+								<div class="detail-row">
+									<span class="detail-label">Lucro Estimado:</span>
+									<span :class="['detail-value', getEstimatedProfitClass()]">
+										{{ getEstimatedProfit() }}
+									</span>
+								</div>
+							</div>
+
+							<div class="trade-reasoning">
+								<p><strong>Análise da IA:</strong> {{ activeTrade.reasoning }}</p>
+							</div>
+						</div>
+
+						<!-- Próxima Operação -->
+						<div v-else class="next-trade-card">
+							<div class="next-trade-info">
+								<div class="timer-icon">⏱️</div>
+								<div>
+									<h3>Aguardando próxima análise...</h3>
+									<p>Próxima operação em: {{ formatTimeRemaining(nextTradeCountdown) }}</p>
+								</div>
+							</div>
+						</div>
+
+						<!-- Estatísticas do Trading -->
+						<div class="trading-stats-card">
+							<h3>Estatísticas da Sessão</h3>
+							<div class="stats-row">
+								<div class="stat-box">
+									<span class="stat-number">{{ tradingStats.totalTrades }}</span>
+									<span class="stat-label">Total de Operações</span>
+								</div>
+								<div class="stat-box win">
+									<span class="stat-number">{{ tradingStats.wins }}</span>
+									<span class="stat-label">Vitórias</span>
+								</div>
+								<div class="stat-box loss">
+									<span class="stat-number">{{ tradingStats.losses }}</span>
+									<span class="stat-label">Perdas</span>
+								</div>
+								<div class="stat-box">
+									<span :class="['stat-number', tradingStats.profitLoss >= 0 ? 'positive' : 'negative']">
+										{{ tradingStats.profitLoss >= 0 ? '+' : '' }}${{ tradingStats.profitLoss.toFixed(2) }}
+									</span>
+									<span class="stat-label">Lucro/Perda</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 
 			<div class="main-content">
@@ -220,6 +321,22 @@ export default {
 				lastUpdate: '--',
 			},
 			aiPollingInterval: null,
+
+			// Trading Automático
+			tradingConfig: {
+				isActive: false,
+				stakeAmount: 10,
+			},
+			activeTrade: null,
+			nextTradeCountdown: 300, // 5 minutos em segundos
+			tradingInterval: null,
+			countdownInterval: null,
+			tradingStats: {
+				totalTrades: 0,
+				wins: 0,
+				losses: 0,
+				profitLoss: 0,
+			},
 			
 			closeSidebar: () => { }, 
 			toggleSidebarCollapse: () => {},
@@ -347,10 +464,211 @@ export default {
 			if (diff > 0) return `+${diff.toFixed(2)}`;
 			return diff.toFixed(2);
 		},
+
+		// Métodos de Trading Automático
+		async toggleAutomatedTrading() {
+			if (this.tradingConfig.isActive) {
+				this.stopAutomatedTrading();
+			} else {
+				await this.startAutomatedTrading();
+			}
+		},
+
+		async startAutomatedTrading() {
+			if (this.tradingConfig.stakeAmount < 1) {
+				alert('Valor de entrada deve ser no mínimo $1');
+				return;
+			}
+
+			console.log('[StatsIAsView] Iniciando trading automático...');
+			this.tradingConfig.isActive = true;
+			this.nextTradeCountdown = 0;
+			await this.executeNextTrade();
+			this.startCountdown();
+		},
+
+		stopAutomatedTrading() {
+			console.log('[StatsIAsView] Parando trading automático...');
+			this.tradingConfig.isActive = false;
+			
+			if (this.tradingInterval) {
+				clearInterval(this.tradingInterval);
+				this.tradingInterval = null;
+			}
+
+			if (this.countdownInterval) {
+				clearInterval(this.countdownInterval);
+				this.countdownInterval = null;
+			}
+
+			this.nextTradeCountdown = 300;
+		},
+
+		async executeNextTrade() {
+			if (!this.tradingConfig.isActive) return;
+
+			try {
+				console.log('[StatsIAsView] Analisando mercado com Gemini...');
+
+				const analyzeResponse = await fetch('https://taxafacil.site/api/ai/analyze', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({ userId: 1 }),
+				});
+
+				const analyzeResult = await analyzeResponse.json();
+
+				if (!analyzeResult.success) {
+					console.error('[StatsIAsView] Erro na análise:', analyzeResult.message);
+					return;
+				}
+
+				const signal = analyzeResult.data;
+				console.log('[StatsIAsView] Sinal recebido:', signal);
+
+				const tradeResponse = await fetch('https://taxafacil.site/api/ai/execute-trade', {
+					method: 'POST',
+					headers: { 'Content-Type': 'application/json' },
+					body: JSON.stringify({
+						userId: 1,
+						signal,
+						stakeAmount: this.tradingConfig.stakeAmount,
+						derivToken: 'token_placeholder',
+					}),
+				});
+
+				const tradeResult = await tradeResponse.json();
+
+				if (!tradeResult.success) {
+					console.error('[StatsIAsView] Erro ao executar trade:', tradeResult.message);
+					return;
+				}
+
+				console.log('[StatsIAsView] Trade iniciado:', tradeResult.data.tradeId);
+
+				this.activeTrade = {
+					id: tradeResult.data.tradeId,
+					signal: signal.signal,
+					entryPrice: this.aiMonitoring.currentPrice,
+					currentPrice: this.aiMonitoring.currentPrice,
+					timeRemaining: signal.duration,
+					reasoning: signal.reasoning,
+					stakeAmount: this.tradingConfig.stakeAmount,
+				};
+
+				this.monitorActiveTrade();
+
+				setTimeout(() => {
+					if (this.tradingConfig.isActive) {
+						this.nextTradeCountdown = 300;
+						this.executeNextTrade();
+					}
+				}, signal.duration * 1000 + 300000);
+
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao executar trade:', error);
+			}
+		},
+
+		monitorActiveTrade() {
+			const monitorInterval = setInterval(async () => {
+				if (!this.activeTrade) {
+					clearInterval(monitorInterval);
+					return;
+				}
+
+				try {
+					const response = await fetch('https://taxafacil.site/api/ai/active-trade');
+					const result = await response.json();
+
+					if (!result.success || !result.data) {
+						clearInterval(monitorInterval);
+						return;
+					}
+
+					const trade = result.data;
+
+					this.activeTrade.currentPrice = trade.currentPrice || this.aiMonitoring.currentPrice;
+					this.activeTrade.timeRemaining = trade.timeRemaining;
+					this.activeTrade.profitLoss = trade.profitLoss;
+
+					if (trade.status === 'WON' || trade.status === 'LOST') {
+						console.log('[StatsIAsView] Trade finalizado:', trade.status);
+						
+						this.tradingStats.totalTrades++;
+						if (trade.status === 'WON') {
+							this.tradingStats.wins++;
+							this.tradingStats.profitLoss += trade.profitLoss;
+						} else {
+							this.tradingStats.losses++;
+							this.tradingStats.profitLoss += trade.profitLoss;
+						}
+
+						this.activeTrade = null;
+						clearInterval(monitorInterval);
+					}
+
+				} catch (error) {
+					console.error('[StatsIAsView] Erro ao monitorar trade:', error);
+				}
+			}, 1000);
+		},
+
+		startCountdown() {
+			this.countdownInterval = setInterval(() => {
+				if (this.nextTradeCountdown > 0) {
+					this.nextTradeCountdown--;
+				}
+			}, 1000);
+		},
+
+		formatTimeRemaining(seconds) {
+			if (!seconds || seconds < 0) return '00:00';
+			const minutes = Math.floor(seconds / 60);
+			const secs = seconds % 60;
+			return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+		},
+
+		getPriceChangeClass(entryPrice, currentPrice) {
+			if (!entryPrice || !currentPrice) return '';
+			if (currentPrice > entryPrice) return 'positive';
+			if (currentPrice < entryPrice) return 'negative';
+			return '';
+		},
+
+		getEstimatedProfitClass() {
+			if (!this.activeTrade) return '';
+			
+			const { signal, entryPrice, currentPrice } = this.activeTrade;
+			
+			if (!entryPrice || !currentPrice) return '';
+
+			const isWinning = (signal === 'CALL' && currentPrice > entryPrice) ||
+			                   (signal === 'PUT' && currentPrice < entryPrice);
+
+			return isWinning ? 'positive' : 'negative';
+		},
+
+		getEstimatedProfit() {
+			if (!this.activeTrade) return '$0.00';
+			
+			const { signal, entryPrice, currentPrice, stakeAmount } = this.activeTrade;
+			
+			if (!entryPrice || !currentPrice) return '$0.00';
+
+			const isWinning = (signal === 'CALL' && currentPrice > entryPrice) ||
+			                   (signal === 'PUT' && currentPrice < entryPrice);
+
+			const profit = isWinning ? stakeAmount * 0.85 : -stakeAmount;
+			const sign = profit >= 0 ? '+' : '';
+			
+			return `${sign}$${profit.toFixed(2)}`;
+		},
 	},
 
 	beforeUnmount() {
 		this.stopPolling();
+		this.stopAutomatedTrading();
 	},
 }
 </script>
@@ -829,6 +1147,301 @@ tbody tr:hover {
 		opacity: 1;
 		transform: translateY(0);
     }
+}
+
+/* Seção de Trading Automático */
+.ai-trading-section {
+	background: linear-gradient(135deg, rgba(16, 185, 129, 0.1) 0%, rgba(30, 41, 59, 0.4) 100%);
+	border: 1px solid rgba(16, 185, 129, 0.3);
+	border-radius: 12px;
+	padding: 24px;
+	margin-bottom: 30px;
+	animation: fadeIn 0.5s ease-out 0.2s forwards;
+	opacity: 0;
+}
+
+.ai-trading-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 24px;
+	flex-wrap: wrap;
+	gap: 16px;
+}
+
+.ai-trading-header h2 {
+	font-size: 24px;
+	font-weight: 700;
+	color: #f8fafc;
+	margin: 0;
+}
+
+.trading-controls {
+	display: flex;
+	gap: 16px;
+	align-items: center;
+}
+
+.input-group {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.input-group label {
+	font-size: 12px;
+	color: #94a3b8;
+	font-weight: 500;
+}
+
+.input-group input {
+	background: rgba(15, 23, 42, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 8px;
+	padding: 10px 14px;
+	color: #f8fafc;
+	font-size: 14px;
+	font-weight: 600;
+	width: 140px;
+	transition: all 0.2s ease;
+}
+
+.input-group input:focus {
+	outline: none;
+	border-color: #10b981;
+	box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+}
+
+.input-group input:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.btn-trading-toggle {
+	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+	border: none;
+	border-radius: 8px;
+	padding: 12px 24px;
+	color: white;
+	font-weight: 600;
+	font-size: 14px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.btn-trading-toggle:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-trading-toggle.active {
+	background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+	box-shadow: 0 4px 14px rgba(239, 68, 68, 0.3);
+}
+
+.btn-trading-toggle.active:hover {
+	box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4);
+}
+
+.trading-active-content {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 20px;
+	margin-top: 20px;
+}
+
+.active-trade-card,
+.next-trade-card {
+	background: rgba(15, 23, 42, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 12px;
+	padding: 20px;
+	grid-column: span 2;
+}
+
+.trade-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+	padding-bottom: 16px;
+	border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.trade-header h3 {
+	font-size: 18px;
+	font-weight: 600;
+	color: #f8fafc;
+	margin: 0;
+}
+
+.trade-signal {
+	padding: 8px 16px;
+	border-radius: 20px;
+	font-size: 14px;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.trade-signal.CALL {
+	background: rgba(16, 185, 129, 0.2);
+	color: #10b981;
+	border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.trade-signal.PUT {
+	background: rgba(239, 68, 68, 0.2);
+	color: #ef4444;
+	border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.trade-details {
+	display: grid;
+	grid-template-columns: 1fr 1fr;
+	gap: 16px;
+	margin-bottom: 20px;
+}
+
+.detail-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 14px;
+	background: rgba(30, 41, 59, 0.3);
+	border-radius: 8px;
+}
+
+.detail-label {
+	color: #94a3b8;
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.detail-value {
+	color: #f8fafc;
+	font-size: 16px;
+	font-weight: 700;
+	font-family: 'Courier New', monospace;
+}
+
+.detail-value.countdown {
+	color: #60a5fa;
+	font-size: 20px;
+}
+
+.trade-reasoning {
+	padding: 16px;
+	background: rgba(59, 130, 246, 0.1);
+	border-left: 3px solid #3b82f6;
+	border-radius: 8px;
+	margin-top: 16px;
+}
+
+.trade-reasoning p {
+	margin: 0;
+	color: #cbd5e1;
+	font-size: 14px;
+	line-height: 1.6;
+}
+
+.next-trade-info {
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	padding: 20px;
+}
+
+.timer-icon {
+	font-size: 48px;
+	animation: pulse 2s ease-in-out infinite;
+}
+
+.next-trade-info h3 {
+	font-size: 18px;
+	color: #f8fafc;
+	margin: 0 0 8px 0;
+}
+
+.next-trade-info p {
+	color: #94a3b8;
+	font-size: 16px;
+	margin: 0;
+	font-family: 'Courier New', monospace;
+}
+
+.trading-stats-card {
+	grid-column: span 2;
+	background: rgba(15, 23, 42, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 12px;
+	padding: 20px;
+}
+
+.trading-stats-card h3 {
+	font-size: 16px;
+	color: #f8fafc;
+	margin: 0 0 20px 0;
+	font-weight: 600;
+}
+
+.stats-row {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 16px;
+}
+
+.stat-box {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	padding: 20px;
+	background: rgba(30, 41, 59, 0.3);
+	border-radius: 8px;
+	border: 1px solid rgba(148, 163, 184, 0.1);
+	transition: all 0.3s ease;
+}
+
+.stat-box:hover {
+	transform: translateY(-4px);
+	border-color: rgba(148, 163, 184, 0.3);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.stat-box.win {
+	border-color: rgba(16, 185, 129, 0.3);
+}
+
+.stat-box.loss {
+	border-color: rgba(239, 68, 68, 0.3);
+}
+
+.stat-number {
+	font-size: 32px;
+	font-weight: 700;
+	color: #f8fafc;
+	font-family: 'Courier New', monospace;
+	margin-bottom: 8px;
+}
+
+.stat-label {
+	font-size: 12px;
+	color: #94a3b8;
+	text-align: center;
+	font-weight: 500;
+}
+
+@keyframes pulse {
+	0%, 100% {
+		transform: scale(1);
+		opacity: 1;
+	}
+	50% {
+		transform: scale(1.1);
+		opacity: 0.8;
+	}
 }
 
 @media (max-width: 992px) {
