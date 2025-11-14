@@ -416,6 +416,54 @@ export default {
 			return `${sign}${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(absoluteValue)}`;
 		},
 		
+		/**
+		 * Obter token da Deriv do localStorage
+		 * Mesmo método usado no OperationChart.vue
+		 */
+		getDerivToken() {
+			console.log('[StatsIAsView] Buscando token da Deriv...');
+			
+			// Tentar buscar token padrão
+			const defaultToken = localStorage.getItem('deriv_token');
+			
+			if (defaultToken) {
+				console.log('[StatsIAsView] Token padrão encontrado');
+				return defaultToken;
+			}
+			
+			// Tentar buscar do objeto de conexão
+			try {
+				const connectionStr = localStorage.getItem('deriv_connection');
+				if (connectionStr) {
+					const connection = JSON.parse(connectionStr);
+					if (connection.token) {
+						console.log('[StatsIAsView] Token encontrado em deriv_connection');
+						return connection.token;
+					}
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao parsear deriv_connection:', error);
+			}
+			
+			// Tentar buscar tokens por loginid
+			try {
+				const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+				if (tokensByLoginIdStr) {
+					const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+					const tokens = Object.values(tokensByLoginId);
+					if (tokens.length > 0) {
+						console.log('[StatsIAsView] Token encontrado em deriv_tokens_by_loginid');
+						return tokens[0]; // Usar o primeiro token disponível
+					}
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao parsear deriv_tokens_by_loginid:', error);
+			}
+			
+			console.error('[StatsIAsView] Nenhum token encontrado');
+			return null;
+		},
+		
 		fetchData() {
 			console.log(`Buscando dados de ${this.filterStartDate} a ${this.filterEndDate}`);
 			this.displayedStats = this.allStats; 
@@ -598,16 +646,25 @@ export default {
 				const signal = analyzeResult.data;
 				console.log('[StatsIAsView] Sinal recebido:', signal);
 
-				const tradeResponse = await fetch('https://taxafacil.site/api/ai/execute-trade', {
-					method: 'POST',
-					headers: { 'Content-Type': 'application/json' },
-					body: JSON.stringify({
-						userId: 1,
-						signal,
-						stakeAmount: this.tradingConfig.stakeAmount,
-						derivToken: 'token_placeholder',
-					}),
-				});
+			// Obter token real da Deriv (mesmo método do OperationChart.vue)
+			const derivToken = this.getDerivToken();
+			
+			if (!derivToken) {
+				console.error('[StatsIAsView] Token da Deriv não encontrado');
+				alert('Por favor, conecte sua conta Deriv primeiro');
+				return;
+			}
+			
+			const tradeResponse = await fetch('https://taxafacil.site/api/ai/execute-trade', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					userId: 1,
+					signal,
+					stakeAmount: this.tradingConfig.stakeAmount,
+					derivToken: derivToken,
+				}),
+			});
 
 				const tradeResult = await tradeResponse.json();
 
