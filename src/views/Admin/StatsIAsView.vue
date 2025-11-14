@@ -180,6 +180,56 @@
 							</div>
 						</div>
 					</div>
+
+					<!-- Histórico de Operações -->
+					<div v-if="tradingConfig.isActive" class="trade-history-card">
+						<div class="history-header">
+							<h3>📋 Histórico de Operações</h3>
+							<button class="btn-refresh" @click="loadTradeHistory">🔄 Atualizar</button>
+						</div>
+						
+						<div v-if="tradeHistory.length > 0" class="history-table">
+							<table>
+								<thead>
+									<tr>
+										<th>Horário</th>
+										<th>Sinal</th>
+										<th>Entrada</th>
+										<th>Saída</th>
+										<th>Duração</th>
+										<th>Status</th>
+										<th>Lucro/Perda</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr v-for="trade in tradeHistory" :key="trade.id" :class="['trade-row', trade.status.toLowerCase()]">
+										<td>{{ formatTradeTime(trade.closedAt) }}</td>
+										<td>
+											<span :class="['signal-badge', trade.signal.toLowerCase()]">
+												{{ trade.signal === 'CALL' ? '📈 CALL' : '📉 PUT' }}
+											</span>
+										</td>
+										<td>${{ trade.entryPrice.toFixed(2) }}</td>
+										<td>${{ trade.exitPrice.toFixed(2) }}</td>
+										<td>{{ trade.duration }}s</td>
+										<td>
+											<span :class="['status-badge', trade.status.toLowerCase()]">
+												{{ trade.status === 'WON' ? '✅ Ganhou' : '❌ Perdeu' }}
+											</span>
+										</td>
+										<td :class="['profit-cell', trade.profitLoss >= 0 ? 'positive' : 'negative']">
+											{{ trade.profitLoss >= 0 ? '+' : '' }}${{ trade.profitLoss.toFixed(2) }}
+										</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+
+						<div v-else class="no-history">
+							<p>📊 Nenhuma operação realizada ainda</p>
+							<p class="hint">As operações aparecerão aqui após serem finalizadas</p>
+						</div>
+					</div>
 				</div>
 			</div>
 
@@ -337,6 +387,7 @@ export default {
 				losses: 0,
 				profitLoss: 0,
 			},
+			tradeHistory: [],
 			
 			closeSidebar: () => { }, 
 			toggleSidebarCollapse: () => {},
@@ -482,6 +533,11 @@ export default {
 
 			console.log('[StatsIAsView] Iniciando trading automático...');
 			this.tradingConfig.isActive = true;
+			
+			// Carregar estatísticas e histórico do banco
+			await this.loadSessionStats();
+			await this.loadTradeHistory();
+			
 			this.nextTradeCountdown = 0;
 			await this.executeNextTrade();
 			this.startCountdown();
@@ -595,17 +651,12 @@ export default {
 					if (trade.status === 'WON' || trade.status === 'LOST') {
 						console.log('[StatsIAsView] Trade finalizado:', trade.status);
 						
-						this.tradingStats.totalTrades++;
-						if (trade.status === 'WON') {
-							this.tradingStats.wins++;
-							this.tradingStats.profitLoss += trade.profitLoss;
-						} else {
-							this.tradingStats.losses++;
-							this.tradingStats.profitLoss += trade.profitLoss;
-						}
-
 						this.activeTrade = null;
 						clearInterval(monitorInterval);
+
+						// Recarregar estatísticas e histórico do banco
+						await this.loadSessionStats();
+						await this.loadTradeHistory();
 					}
 
 				} catch (error) {
@@ -663,6 +714,43 @@ export default {
 			const sign = profit >= 0 ? '+' : '';
 			
 			return `${sign}$${profit.toFixed(2)}`;
+		},
+
+		async loadSessionStats() {
+			try {
+				const response = await fetch('https://taxafacil.site/api/ai/session-stats/1');
+				const result = await response.json();
+
+				if (result.success && result.data) {
+					this.tradingStats.totalTrades = result.data.totalTrades;
+					this.tradingStats.wins = result.data.wins;
+					this.tradingStats.losses = result.data.losses;
+					this.tradingStats.profitLoss = result.data.profitLoss;
+					console.log('[StatsIAsView] Estatísticas carregadas:', result.data);
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao carregar estatísticas:', error);
+			}
+		},
+
+		async loadTradeHistory() {
+			try {
+				const response = await fetch('https://taxafacil.site/api/ai/trade-history/1');
+				const result = await response.json();
+
+				if (result.success && result.data) {
+					this.tradeHistory = result.data;
+					console.log('[StatsIAsView] Histórico carregado:', result.data.length, 'operações');
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao carregar histórico:', error);
+			}
+		},
+
+		formatTradeTime(timestamp) {
+			if (!timestamp) return '--';
+			const date = new Date(timestamp);
+			return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 		},
 	},
 
@@ -1495,6 +1583,140 @@ tbody tr:hover {
 	.table-container {
 		height: fit-content;
 	}
+}
+
+/* Histórico de Operações */
+.trade-history-card {
+	background: linear-gradient(145deg, #1e1e1e, #252525);
+	border-radius: 15px;
+	padding: 20px;
+	margin-top: 20px;
+	box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.history-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.history-header h3 {
+	margin: 0;
+	font-size: 1.3rem;
+	color: #fff;
+}
+
+.btn-refresh {
+	background: linear-gradient(135deg, #4A90E2, #357ABD);
+	border: none;
+	padding: 8px 15px;
+	border-radius: 8px;
+	color: #fff;
+	cursor: pointer;
+	font-size: 0.9rem;
+	transition: all 0.3s ease;
+}
+
+.btn-refresh:hover {
+	transform: scale(1.05);
+	box-shadow: 0 4px 12px rgba(74, 144, 226, 0.4);
+}
+
+.history-table {
+	overflow-x: auto;
+}
+
+.history-table table {
+	width: 100%;
+	border-collapse: collapse;
+}
+
+.history-table thead th {
+	background: #2a2a2a;
+	padding: 12px;
+	text-align: left;
+	font-size: 0.9rem;
+	color: #999;
+	border-bottom: 2px solid #333;
+}
+
+.history-table tbody tr {
+	border-bottom: 1px solid #2a2a2a;
+	transition: background 0.2s;
+}
+
+.history-table tbody tr:hover {
+	background: #252525;
+}
+
+.history-table tbody td {
+	padding: 12px;
+	font-size: 0.95rem;
+}
+
+.signal-badge {
+	display: inline-block;
+	padding: 4px 10px;
+	border-radius: 6px;
+	font-size: 0.85rem;
+	font-weight: 600;
+}
+
+.signal-badge.call {
+	background: rgba(46, 204, 113, 0.2);
+	color: #2ecc71;
+}
+
+.signal-badge.put {
+	background: rgba(231, 76, 60, 0.2);
+	color: #e74c3c;
+}
+
+.status-badge {
+	display: inline-block;
+	padding: 4px 10px;
+	border-radius: 6px;
+	font-size: 0.85rem;
+	font-weight: 600;
+}
+
+.status-badge.won {
+	background: rgba(46, 204, 113, 0.2);
+	color: #2ecc71;
+}
+
+.status-badge.lost {
+	background: rgba(231, 76, 60, 0.2);
+	color: #e74c3c;
+}
+
+.profit-cell {
+	font-weight: 700;
+	font-size: 1rem;
+}
+
+.profit-cell.positive {
+	color: #2ecc71;
+}
+
+.profit-cell.negative {
+	color: #e74c3c;
+}
+
+.no-history {
+	text-align: center;
+	padding: 40px 20px;
+	color: #999;
+}
+
+.no-history p {
+	margin: 5px 0;
+}
+
+.no-history .hint {
+	font-size: 0.9rem;
+	color: #666;
 }
 
 /* Animações */
