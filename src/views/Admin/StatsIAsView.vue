@@ -187,6 +187,8 @@ h1{
 .layout-content {
 	margin: 0;
 	justify-content: flex-start;
+	padding: 40px;
+
 }
 
 .main-header {

@@ -264,6 +264,7 @@ export default {
 
 .layout-content {
     margin: 0 ;
+    padding: 40px;
 }
 
 

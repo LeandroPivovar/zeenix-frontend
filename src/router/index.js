@@ -13,6 +13,7 @@ import DerivOAuthCallback from '../views/DerivOAuthCallback.vue'
 import MarkupView from '../views/Admin/MarkupView.vue'
 import StatsIAsView from '../views/Admin/StatsIAsView.vue'
 import ExpertsView from '../views/Admin/ExpertsView.vue'
+import ClientesView from '../views/Admin/ClientesView.vue'
 
 const routes = [
   {
@@ -111,7 +112,13 @@ const routes = [
     name: 'Experts',
     component: ExpertsView,
     meta: { requiresAuth: true }
-  }
+  },
+  {
+    path: '/Clientes',
+    name: 'Clientes',
+    component: ClientesView,
+    meta: { requiresAuth: true }
+  },
 ]
 
 const router = createRouter({
