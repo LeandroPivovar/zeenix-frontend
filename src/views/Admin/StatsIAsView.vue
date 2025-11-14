@@ -644,7 +644,7 @@ export default {
 			if (!entryPrice || !currentPrice) return '';
 
 			const isWinning = (signal === 'CALL' && currentPrice > entryPrice) ||
-			                   (signal === 'PUT' && currentPrice < entryPrice);
+				(signal === 'PUT' && currentPrice < entryPrice);
 
 			return isWinning ? 'positive' : 'negative';
 		},
@@ -657,7 +657,7 @@ export default {
 			if (!entryPrice || !currentPrice) return '$0.00';
 
 			const isWinning = (signal === 'CALL' && currentPrice > entryPrice) ||
-			                   (signal === 'PUT' && currentPrice < entryPrice);
+				(signal === 'PUT' && currentPrice < entryPrice);
 
 			const profit = isWinning ? stakeAmount * 0.85 : -stakeAmount;
 			const sign = profit >= 0 ? '+' : '';
