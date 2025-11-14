@@ -691,40 +691,87 @@ export default {
 			}
 		},
 
-		async startAutomatedTrading() {
-			if (this.tradingConfig.stakeAmount < 1) {
-				alert('Valor de entrada deve ser no mínimo $1');
+	async startAutomatedTrading() {
+		if (this.tradingConfig.stakeAmount < 1) {
+			alert('Valor de entrada deve ser no mínimo $1');
+			return;
+		}
+
+		console.log('[StatsIAsView] Ativando IA em background...');
+		
+		try {
+			// Obter token e moeda
+			const derivToken = this.getDerivToken();
+			if (!derivToken) {
+				alert('Por favor, conecte sua conta Deriv primeiro');
 				return;
 			}
-
-			console.log('[StatsIAsView] Iniciando trading automático...');
-			this.tradingConfig.isActive = true;
 			
-			// Carregar estatísticas e histórico do banco
-			await this.loadSessionStats();
-			await this.loadTradeHistory();
+			const preferredCurrency = this.getPreferredCurrency();
 			
-			this.nextTradeCountdown = 0;
-			await this.executeNextTrade();
-			this.startCountdown();
-		},
-
-		stopAutomatedTrading() {
-			console.log('[StatsIAsView] Parando trading automático...');
-			this.tradingConfig.isActive = false;
+			// Ativar IA no backend (roda em background)
+			const response = await fetch('https://taxafacil.site/api/ai/activate', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					userId: 1, // TODO: pegar do localStorage ou auth
+					stakeAmount: this.tradingConfig.stakeAmount,
+					derivToken: derivToken,
+					currency: preferredCurrency,
+				}),
+			});
 			
-			if (this.tradingInterval) {
-				clearInterval(this.tradingInterval);
-				this.tradingInterval = null;
+			const result = await response.json();
+			
+			if (result.success) {
+				this.tradingConfig.isActive = true;
+				console.log('[StatsIAsView] ✅ IA ativada em background!');
+				alert('✅ IA ativada! Ela continuará operando mesmo se você fechar a plataforma.');
+				
+				// Carregar estatísticas e histórico do banco
+				await this.loadSessionStats();
+				await this.loadTradeHistory();
+				
+				// Iniciar polling para atualizar a tela
+				this.startBackgroundPolling();
+			} else {
+				alert('❌ Erro ao ativar IA: ' + result.message);
 			}
+		} catch (error) {
+			console.error('[StatsIAsView] Erro ao ativar IA:', error);
+			alert('❌ Erro ao ativar IA. Verifique sua conexão.');
+		}
+	},
 
-			if (this.countdownInterval) {
-				clearInterval(this.countdownInterval);
-				this.countdownInterval = null;
+	async stopAutomatedTrading() {
+		console.log('[StatsIAsView] Desativando IA em background...');
+		
+		try {
+			const response = await fetch('https://taxafacil.site/api/ai/deactivate', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify({
+					userId: 1, // TODO: pegar do localStorage ou auth
+				}),
+			});
+			
+			const result = await response.json();
+			
+			if (result.success) {
+				this.tradingConfig.isActive = false;
+				console.log('[StatsIAsView] ✅ IA desativada!');
+				alert('✅ IA desativada com sucesso.');
+				
+				// Parar polling
+				this.stopBackgroundPolling();
+			} else {
+				alert('❌ Erro ao desativar IA: ' + result.message);
 			}
-
-			this.nextTradeCountdown = 300;
-		},
+		} catch (error) {
+			console.error('[StatsIAsView] Erro ao desativar IA:', error);
+			alert('❌ Erro ao desativar IA.');
+		}
+	},
 
 		async executeNextTrade() {
 			if (!this.tradingConfig.isActive) return;
@@ -992,17 +1039,116 @@ export default {
 			}
 		},
 
-		formatTradeTime(timestamp) {
-			if (!timestamp) return '--';
-			const date = new Date(timestamp);
-			return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-		},
+	formatTradeTime(timestamp) {
+		if (!timestamp) return '--';
+		const date = new Date(timestamp);
+		return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 	},
 
-	beforeUnmount() {
-		this.stopPolling();
-		this.stopAutomatedTrading();
+	// Polling para atualizar status da IA em background
+	startBackgroundPolling() {
+		// Buscar status imediatamente
+		this.fetchBackgroundStatus();
+		
+		// Continuar buscando a cada 5 segundos
+		this.tradingInterval = setInterval(() => {
+			this.fetchBackgroundStatus();
+		}, 5000);
 	},
+
+	stopBackgroundPolling() {
+		if (this.tradingInterval) {
+			clearInterval(this.tradingInterval);
+			this.tradingInterval = null;
+		}
+	},
+
+	async fetchBackgroundStatus() {
+		try {
+			// Buscar configuração da IA
+			const configResponse = await fetch('https://taxafacil.site/api/ai/config/1');
+			const configResult = await configResponse.json();
+			
+			if (configResult.success && configResult.data) {
+				const config = configResult.data;
+				this.tradingConfig.isActive = config.isActive;
+				
+				// Calcular countdown baseado no nextTradeAt
+				if (config.nextTradeAt) {
+					const now = new Date().getTime();
+					const nextTrade = new Date(config.nextTradeAt).getTime();
+					const diff = Math.floor((nextTrade - now) / 1000);
+					this.nextTradeCountdown = diff > 0 ? diff : 0;
+				}
+			}
+			
+			// Buscar operação ativa
+			const tradeResponse = await fetch('https://taxafacil.site/api/ai/active-trade');
+			const tradeResult = await tradeResponse.json();
+			
+			if (tradeResult.success && tradeResult.data) {
+				const trade = tradeResult.data;
+				
+				// Atualizar ou criar activeTrade
+				if (trade.status === 'ACTIVE' || trade.status === 'PENDING') {
+					this.activeTrade = {
+						id: trade.tradeId,
+						signal: trade.signal,
+						entryPrice: trade.entryPrice,
+						currentPrice: trade.currentPrice,
+						timeRemaining: trade.timeRemaining,
+						reasoning: trade.reasoning,
+						stakeAmount: trade.stakeAmount,
+						profitLoss: trade.profitLoss,
+					};
+				} else {
+					// Operação finalizada, limpar
+					this.activeTrade = null;
+				}
+			} else {
+				this.activeTrade = null;
+			}
+			
+			// Atualizar estatísticas e histórico
+			await this.loadSessionStats();
+			await this.loadTradeHistory();
+			
+		} catch (error) {
+			console.error('[StatsIAsView] Erro ao buscar status background:', error);
+		}
+	},
+
+	async loadAIConfigOnMount() {
+		try {
+			const response = await fetch('https://taxafacil.site/api/ai/config/1');
+			const result = await response.json();
+			
+			if (result.success && result.data) {
+				const config = result.data;
+				this.tradingConfig.isActive = config.isActive;
+				this.tradingConfig.stakeAmount = config.stakeAmount || 10;
+				
+				// Se a IA está ativa, iniciar polling
+				if (config.isActive) {
+					console.log('[StatsIAsView] IA está ativa em background, iniciando polling...');
+					this.startBackgroundPolling();
+				}
+			}
+		} catch (error) {
+			console.error('[StatsIAsView] Erro ao carregar configuração:', error);
+		}
+	},
+},
+
+mounted() {
+	// Carregar configuração da IA ao montar o componente
+	this.loadAIConfigOnMount();
+},
+
+beforeUnmount() {
+	this.stopPolling();
+	this.stopBackgroundPolling();
+},
 }
 </script>
 
