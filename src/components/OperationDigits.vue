@@ -180,10 +180,7 @@
                     </div>
                     <p class="digit-repetition">{{ currentRepetition }}</p>
                     
-                    <div class="volatility-analysis-placeholder">
-                        <p class="text-placeholder">Análise de Volatilidade de Dígitos</p>
-                        <p class="text-small-opacity">Último preço: {{ latestTick ? latestTick.value.toFixed(pricePrecision) : '--' }}</p>
-                    </div>
+           
                 </div>
 
                 <div class="card">

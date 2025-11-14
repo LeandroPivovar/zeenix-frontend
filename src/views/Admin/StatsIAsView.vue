@@ -17,6 +17,71 @@
 				</div>
 			</div>
 
+			<!-- Seção de Monitoramento de IA -->
+			<div class="ai-monitoring-section">
+				<div class="ai-monitoring-header">
+					<h2>Monitor de Volatilidade 100</h2>
+					<button :class="['btn-ai-toggle', aiMonitoring.isActive ? 'active' : '']" @click="toggleAIMonitoring">
+						<span v-if="!aiMonitoring.isActive">▶ Ativar IA</span>
+						<span v-else>⏸ Desativar IA</span>
+					</button>
+				</div>
+
+				<div v-if="aiMonitoring.isActive" class="ai-monitoring-content">
+					<div class="price-display-section">
+						<div class="current-price-card">
+							<h3>Preço Atual</h3>
+							<div class="price-value">
+								<span v-if="aiMonitoring.currentPrice">{{ aiMonitoring.currentPrice.toFixed(2) }}</span>
+								<span v-else>--</span>
+							</div>
+							<p class="price-timestamp">{{ aiMonitoring.lastUpdate }}</p>
+						</div>
+
+						<div class="last-10-prices-card">
+							<h3>Últimos 10 Preços</h3>
+							<div class="price-list">
+								<div v-for="(tick, index) in aiMonitoring.ticks" :key="index" class="price-item">
+									<span class="price-number">{{ (index + 1).toString().padStart(2, '0') }}.</span>
+									<span class="price-value-item">{{ tick.value.toFixed(2) }}</span>
+									<span class="price-time">{{ tick.timestamp }}</span>
+									<span v-if="index > 0" :class="['price-variation', getVariationClass(tick.value, aiMonitoring.ticks[index - 1].value)]">
+										{{ getVariationText(tick.value, aiMonitoring.ticks[index - 1].value) }}
+									</span>
+								</div>
+								<div v-if="aiMonitoring.ticks.length === 0" class="no-data">
+									<p>Aguardando dados...</p>
+								</div>
+							</div>
+						</div>
+
+						<div v-if="aiMonitoring.statistics" class="statistics-card">
+							<h3>Estatísticas</h3>
+							<div class="stats-grid">
+								<div class="stat-item">
+									<span class="stat-label">Mínimo:</span>
+									<span class="stat-value">{{ aiMonitoring.statistics.min.toFixed(2) }}</span>
+								</div>
+								<div class="stat-item">
+									<span class="stat-label">Máximo:</span>
+									<span class="stat-value">{{ aiMonitoring.statistics.max.toFixed(2) }}</span>
+								</div>
+								<div class="stat-item">
+									<span class="stat-label">Média:</span>
+									<span class="stat-value">{{ aiMonitoring.statistics.avg.toFixed(2) }}</span>
+								</div>
+								<div class="stat-item">
+									<span class="stat-label">Variação:</span>
+									<span :class="['stat-value', aiMonitoring.statistics.change >= 0 ? 'positive' : 'negative']">
+										{{ aiMonitoring.statistics.change.toFixed(2) }}%
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
 			<div class="main-content">
 				<div class="filter-controls">
 					<div class="date-filter">
@@ -145,6 +210,16 @@ export default {
 			combinedProfit7Days: 5481.20,
 			globalAccuracy: 72.4,
 			topProfitIA: 'IA Zenix 2 (+3,848.93)',
+
+			// Monitoramento de IA
+			aiMonitoring: {
+				isActive: false,
+				currentPrice: null,
+				ticks: [],
+				statistics: null,
+				lastUpdate: '--',
+			},
+			aiPollingInterval: null,
 			
 			closeSidebar: () => { }, 
 			toggleSidebarCollapse: () => {},
@@ -164,8 +239,119 @@ export default {
 
 		exportReportToPDF() {
 			alert(`Download do PDF de Estatísticas iniciado! (Arquivo: Relatorio_IAs_${this.filterStartDate}_a_${this.filterEndDate}.pdf)`);
-		}
-	}
+		},
+
+		// Métodos de monitoramento de IA
+		async toggleAIMonitoring() {
+			if (this.aiMonitoring.isActive) {
+				this.stopAIMonitoring();
+			} else {
+				await this.startAIMonitoring();
+			}
+		},
+
+		async startAIMonitoring() {
+			try {
+				console.log('[StatsIAsView] Iniciando monitoramento de IA...');
+				
+				// Iniciar monitoramento no backend
+				const response = await fetch('https://taxafacil.site/api/ai/start', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
+
+				const result = await response.json();
+
+				if (result.success) {
+					this.aiMonitoring.isActive = true;
+					console.log('[StatsIAsView] Monitoramento iniciado com sucesso');
+					
+					// Iniciar polling para buscar dados a cada 2 segundos
+					this.startPolling();
+				} else {
+					console.error('[StatsIAsView] Erro ao iniciar monitoramento:', result.message);
+					alert('Erro ao iniciar monitoramento: ' + result.message);
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao iniciar monitoramento:', error);
+				alert('Erro ao conectar com o servidor');
+			}
+		},
+
+		stopAIMonitoring() {
+			console.log('[StatsIAsView] Parando monitoramento de IA...');
+			
+			this.aiMonitoring.isActive = false;
+			this.stopPolling();
+
+			// Parar monitoramento no backend
+			fetch('https://taxafacil.site/api/ai/stop', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			}).catch(error => {
+				console.error('[StatsIAsView] Erro ao parar monitoramento:', error);
+			});
+
+			// Limpar dados
+			this.aiMonitoring.currentPrice = null;
+			this.aiMonitoring.ticks = [];
+			this.aiMonitoring.statistics = null;
+			this.aiMonitoring.lastUpdate = '--';
+		},
+
+		startPolling() {
+			// Buscar dados imediatamente
+			this.fetchAIData();
+
+			// Continuar buscando a cada 2 segundos
+			this.aiPollingInterval = setInterval(() => {
+				this.fetchAIData();
+			}, 2000);
+		},
+
+		stopPolling() {
+			if (this.aiPollingInterval) {
+				clearInterval(this.aiPollingInterval);
+				this.aiPollingInterval = null;
+			}
+		},
+
+		async fetchAIData() {
+			try {
+				const response = await fetch('https://taxafacil.site/api/ai/ticks');
+				const result = await response.json();
+
+				if (result.success) {
+					this.aiMonitoring.ticks = result.data.ticks || [];
+					this.aiMonitoring.currentPrice = result.data.currentPrice;
+					this.aiMonitoring.statistics = result.data.statistics;
+					this.aiMonitoring.lastUpdate = new Date().toLocaleTimeString('pt-BR');
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao buscar dados:', error);
+			}
+		},
+
+		getVariationClass(current, previous) {
+			if (current > previous) return 'positive';
+			if (current < previous) return 'negative';
+			return 'neutral';
+		},
+
+		getVariationText(current, previous) {
+			const diff = current - previous;
+			if (diff > 0) return `+${diff.toFixed(2)}`;
+			return diff.toFixed(2);
+		},
+	},
+
+	beforeUnmount() {
+		this.stopPolling();
+	},
 }
 </script>
 
@@ -438,6 +624,211 @@ tbody tr:hover {
         overflow-y: auto;
         background: #191a19;
     }
+}
+
+/* Seção de Monitoramento de IA */
+.ai-monitoring-section {
+	background: rgba(30, 41, 59, 0.4);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 12px;
+	padding: 24px;
+	margin-bottom: 30px;
+	animation: fadeIn 0.5s ease-out 0.1s forwards;
+	opacity: 0;
+}
+
+.ai-monitoring-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 20px;
+}
+
+.ai-monitoring-header h2 {
+	font-size: 22px;
+	font-weight: 600;
+	color: #f8fafc;
+	margin: 0;
+}
+
+.btn-ai-toggle {
+	background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+	color: white;
+	border: none;
+	padding: 12px 24px;
+	border-radius: 8px;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.btn-ai-toggle:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 8px 20px rgba(99, 102, 241, 0.4);
+}
+
+.btn-ai-toggle.active {
+	background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+}
+
+.btn-ai-toggle.active:hover {
+	box-shadow: 0 8px 20px rgba(239, 68, 68, 0.4);
+}
+
+.ai-monitoring-content {
+	animation: slideDown 0.4s ease-out;
+}
+
+.price-display-section {
+	display: grid;
+	grid-template-columns: 1fr 2fr 1fr;
+	gap: 20px;
+	margin-top: 20px;
+}
+
+.current-price-card,
+.last-10-prices-card,
+.statistics-card {
+	background: rgba(15, 23, 42, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.1);
+	border-radius: 10px;
+	padding: 20px;
+}
+
+.current-price-card h3,
+.last-10-prices-card h3,
+.statistics-card h3 {
+	font-size: 14px;
+	font-weight: 600;
+	color: #94a3b8;
+	margin: 0 0 16px 0;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.price-value {
+	font-size: 48px;
+	font-weight: 800;
+	color: #06d6a0;
+	text-align: center;
+	margin: 20px 0;
+	text-shadow: 0 0 20px rgba(6, 214, 160, 0.3);
+}
+
+.price-timestamp {
+	text-align: center;
+	font-size: 12px;
+	color: #64748b;
+	margin: 0;
+}
+
+.price-list {
+	max-height: 300px;
+	overflow-y: auto;
+}
+
+.price-item {
+	display: grid;
+	grid-template-columns: 30px 80px 80px 1fr;
+	gap: 10px;
+	padding: 8px 12px;
+	border-bottom: 1px solid rgba(148, 163, 184, 0.05);
+	align-items: center;
+	font-size: 13px;
+}
+
+.price-item:last-child {
+	border-bottom: none;
+}
+
+.price-number {
+	color: #64748b;
+	font-weight: 600;
+}
+
+.price-value-item {
+	color: #f8fafc;
+	font-weight: 600;
+	font-family: 'Courier New', monospace;
+}
+
+.price-time {
+	color: #94a3b8;
+	font-size: 11px;
+}
+
+.price-variation {
+	text-align: right;
+	font-weight: 600;
+	font-size: 12px;
+}
+
+.price-variation.positive {
+	color: #10b981;
+}
+
+.price-variation.negative {
+	color: #ef4444;
+}
+
+.price-variation.neutral {
+	color: #64748b;
+}
+
+.no-data {
+	text-align: center;
+	padding: 40px 20px;
+	color: #64748b;
+}
+
+.stats-grid {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 16px;
+}
+
+.stat-item {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 12px 16px;
+	background: rgba(30, 41, 59, 0.3);
+	border-radius: 8px;
+}
+
+.stat-label {
+	color: #94a3b8;
+	font-size: 13px;
+	font-weight: 500;
+}
+
+.stat-value {
+	color: #f8fafc;
+	font-size: 16px;
+	font-weight: 700;
+	font-family: 'Courier New', monospace;
+}
+
+.stat-value.positive {
+	color: #10b981;
+}
+
+.stat-value.negative {
+	color: #ef4444;
+}
+
+@keyframes slideDown {
+	from {
+		opacity: 0;
+		transform: translateY(-20px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }
 
 @media (max-width: 992px) {
