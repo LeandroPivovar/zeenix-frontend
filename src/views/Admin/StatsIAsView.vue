@@ -417,27 +417,22 @@ export default {
 		},
 		
 		/**
-		 * Obter token da Deriv do localStorage
-		 * Mesmo método usado no OperationChart.vue
+		 * Obter token da Deriv do localStorage baseado na moeda preferida
+		 * Igual ao OperationChart.vue - pega o token da conta ativa
 		 */
 		getDerivToken() {
 			console.log('[StatsIAsView] Buscando token da Deriv...');
 			
-			// Tentar buscar token padrão
-			const defaultToken = localStorage.getItem('deriv_token');
-			
-			if (defaultToken) {
-				console.log('[StatsIAsView] Token padrão encontrado');
-				return defaultToken;
-			}
-			
-			// Tentar buscar do objeto de conexão
+			// 1. Priorizar token da conexão ativa (deriv_connection)
+			// Este é o token da conta atualmente selecionada no dashboard
 			try {
 				const connectionStr = localStorage.getItem('deriv_connection');
 				if (connectionStr) {
 					const connection = JSON.parse(connectionStr);
 					if (connection.token) {
 						console.log('[StatsIAsView] Token encontrado em deriv_connection');
+						console.log('[StatsIAsView] - LoginID:', connection.loginid);
+						console.log('[StatsIAsView] - Moeda:', connection.tradeCurrency);
 						return connection.token;
 					}
 				}
@@ -445,7 +440,14 @@ export default {
 				console.error('[StatsIAsView] Erro ao parsear deriv_connection:', error);
 			}
 			
-			// Tentar buscar tokens por loginid
+			// 2. Fallback: token padrão
+			const defaultToken = localStorage.getItem('deriv_token');
+			if (defaultToken) {
+				console.log('[StatsIAsView] Token padrão encontrado');
+				return defaultToken;
+			}
+			
+			// 3. Fallback: buscar tokens por loginid
 			try {
 				const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
 				if (tokensByLoginIdStr) {
@@ -705,7 +707,11 @@ export default {
 			
 			// Obter moeda preferida (USD, BTC, DEMO, etc)
 			const preferredCurrency = this.getPreferredCurrency();
-			console.log('[StatsIAsView] Usando moeda:', preferredCurrency);
+			console.log('[StatsIAsView] ====== INFORMAÇÕES DA CONTA ======');
+			console.log('[StatsIAsView] Moeda:', preferredCurrency);
+			console.log('[StatsIAsView] Token (preview):', derivToken.substring(0, 15) + '...');
+			console.log('[StatsIAsView] Stake Amount:', this.tradingConfig.stakeAmount);
+			console.log('[StatsIAsView] =====================================');
 			
 			const tradeResponse = await fetch('https://taxafacil.site/api/ai/execute-trade', {
 				method: 'POST',
@@ -719,12 +725,28 @@ export default {
 				}),
 			});
 
-				const tradeResult = await tradeResponse.json();
+			const tradeResult = await tradeResponse.json();
 
-				if (!tradeResult.success) {
-					console.error('[StatsIAsView] Erro ao executar trade:', tradeResult.message);
-					return;
+			if (!tradeResult.success) {
+				console.error('[StatsIAsView] Erro ao executar trade:', tradeResult.message);
+				
+				// Verificar se é erro de saldo insuficiente
+				if (tradeResult.error && tradeResult.error.includes('InsufficientBalance')) {
+					alert(
+						'❌ Saldo insuficiente!\n\n' +
+						'Seu saldo não é suficiente para esta operação.\n\n' +
+						'💡 Dica: Se você tem uma conta DEMO USD, troque de conta no Dashboard:\n' +
+						'1. Vá para o Dashboard\n' +
+						'2. Clique no seletor de contas (canto superior direito)\n' +
+						'3. Selecione sua conta DEMO USD\n' +
+						'4. Volte para IAs de Investimento e tente novamente'
+					);
+				} else {
+					alert(`❌ Erro ao executar operação: ${tradeResult.error || tradeResult.message}`);
 				}
+				
+				return;
+			}
 
 				console.log('[StatsIAsView] Trade iniciado:', tradeResult.data.tradeId);
 
@@ -1746,7 +1768,7 @@ tbody tr:hover {
 	50% {
 		transform: scale(1.1);
 		opacity: 0.8;
-	}
+    }
 }
 
 @media (max-width: 992px) {
