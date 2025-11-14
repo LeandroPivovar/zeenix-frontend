@@ -417,53 +417,104 @@ export default {
 		},
 		
 		/**
-		 * Obter token da Deriv do localStorage baseado na moeda preferida
-		 * Igual ao OperationChart.vue - pega o token da conta ativa
+		 * Obter token da Deriv baseado na conta ativa
+		 * EXATAMENTE como o OperationChart.vue faz
 		 */
 		getDerivToken() {
-			console.log('[StatsIAsView] Buscando token da Deriv...');
+			console.log('[StatsIAsView] getTokenForAccount - Buscando token para conta');
 			
-			// 1. Priorizar token da conexão ativa (deriv_connection)
-			// Este é o token da conta atualmente selecionada no dashboard
+			// 1. Obter informações da conta ativa do deriv_connection
+			let accountLoginid = null;
+			let preferredCurrency = null;
+			
 			try {
 				const connectionStr = localStorage.getItem('deriv_connection');
 				if (connectionStr) {
 					const connection = JSON.parse(connectionStr);
-					if (connection.token) {
-						console.log('[StatsIAsView] Token encontrado em deriv_connection');
-						console.log('[StatsIAsView] - LoginID:', connection.loginid);
-						console.log('[StatsIAsView] - Moeda:', connection.tradeCurrency);
-						return connection.token;
-					}
+					accountLoginid = connection.loginid;
+					preferredCurrency = connection.tradeCurrency;
+					
+					console.log('[StatsIAsView] Informações da conta ativa:', {
+						loginid: accountLoginid,
+						currency: preferredCurrency
+					});
 				}
 			} catch (error) {
 				console.error('[StatsIAsView] Erro ao parsear deriv_connection:', error);
 			}
 			
-			// 2. Fallback: token padrão
-			const defaultToken = localStorage.getItem('deriv_token');
-			if (defaultToken) {
-				console.log('[StatsIAsView] Token padrão encontrado');
-				return defaultToken;
-			}
-			
-			// 3. Fallback: buscar tokens por loginid
-			try {
-				const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
-				if (tokensByLoginIdStr) {
+			// 2. Se a moeda preferida for DEMO, buscar token de conta demo
+			const isDemoPreferred = preferredCurrency?.toUpperCase() === 'DEMO';
+			if (isDemoPreferred) {
+				console.log('[StatsIAsView] Moeda preferida é DEMO, buscando token de conta demo...');
+				try {
+					const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
 					const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-					const tokens = Object.values(tokensByLoginId);
-					if (tokens.length > 0) {
-						console.log('[StatsIAsView] Token encontrado em deriv_tokens_by_loginid');
-						return tokens[0]; // Usar o primeiro token disponível
+					
+					// Buscar qualquer conta demo disponível (VRTC ou VRT)
+					for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+						if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
+							console.log('[StatsIAsView] ✓ Token demo encontrado:', loginid);
+							return token;
+						}
 					}
+					console.warn('[StatsIAsView] ⚠ Nenhuma conta demo encontrada, mas moeda preferida é DEMO');
+				} catch (error) {
+					console.error('[StatsIAsView] Erro ao buscar token demo:', error);
 				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao parsear deriv_tokens_by_loginid:', error);
 			}
 			
-			console.error('[StatsIAsView] Nenhum token encontrado');
-			return null;
+			// 3. Se temos um loginid específico, buscar o token correspondente
+			if (accountLoginid) {
+				try {
+					const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+					const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+					
+					console.log('[StatsIAsView] Buscando token para loginid:', accountLoginid);
+					console.log('[StatsIAsView] Loginids disponíveis:', Object.keys(tokensByLoginId));
+					
+					// Verificar se é conta demo
+					const isDemoLoginId = accountLoginid.startsWith('VRTC') || accountLoginid.startsWith('VRT');
+					if (isDemoLoginId) {
+						console.log('[StatsIAsView] ✓ LoginID identificado como conta DEMO');
+					}
+					
+					const specificToken = tokensByLoginId[accountLoginid];
+					if (specificToken) {
+						console.log('[StatsIAsView] ✓ Token específico encontrado para loginid:', accountLoginid);
+						console.log('[StatsIAsView] - Tipo:', isDemoLoginId ? 'DEMO' : 'REAL');
+						return specificToken;
+					} else {
+						console.warn('[StatsIAsView] ⚠ Token específico NÃO encontrado para loginid:', accountLoginid);
+						
+						// Se for conta demo e não encontrou token, buscar qualquer token demo
+						if (isDemoLoginId) {
+							console.log('[StatsIAsView] Tentando encontrar token demo alternativo...');
+							for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+								if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
+									console.log('[StatsIAsView] ✓ Token demo alternativo encontrado:', loginid);
+									return token;
+								}
+							}
+						}
+					}
+				} catch (error) {
+					console.error('[StatsIAsView] Erro ao buscar token específico:', error);
+				}
+			}
+			
+			// 4. Fallback: token padrão
+			const defaultToken = localStorage.getItem('deriv_token');
+			console.log('[StatsIAsView] Usando token padrão:', {
+				hasToken: !!defaultToken,
+				tokenPreview: defaultToken ? `${defaultToken.substring(0, 10)}...` : 'null'
+			});
+			
+			if (!defaultToken) {
+				console.error('[StatsIAsView] ERRO: Nenhum token encontrado!');
+			}
+			
+			return defaultToken;
 		},
 		
 		/**
