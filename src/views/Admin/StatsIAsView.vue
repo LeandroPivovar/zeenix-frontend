@@ -85,6 +85,20 @@
 				<div v-if="aiMonitoring.isActive" class="ai-trading-section">
 					<div class="ai-trading-header">
 						<h2>🤖 Trading Automático com IA</h2>
+						
+						<!-- Banner de IA Ativa -->
+						<div v-if="tradingConfig.isActive" class="ai-active-banner">
+							<div class="banner-icon">🤖</div>
+							<div class="banner-content">
+								<strong>IA ATIVA</strong>
+								<span>Operando em background 24/7</span>
+							</div>
+							<div class="banner-status">
+								<span class="status-indicator"></span>
+								<span>Online</span>
+							</div>
+						</div>
+						
 						<div class="trading-controls">
 							<div class="input-group">
 								<label>Valor por Operação:</label>
@@ -1120,6 +1134,8 @@ export default {
 
 	async loadAIConfigOnMount() {
 		try {
+			console.log('[StatsIAsView] Verificando se IA já está ativa...');
+			
 			const response = await fetch('https://taxafacil.site/api/ai/config/1');
 			const result = await response.json();
 			
@@ -1128,10 +1144,23 @@ export default {
 				this.tradingConfig.isActive = config.isActive;
 				this.tradingConfig.stakeAmount = config.stakeAmount || 10;
 				
-				// Se a IA está ativa, iniciar polling
+				// Se a IA está ativa, carregar tudo automaticamente
 				if (config.isActive) {
-					console.log('[StatsIAsView] IA está ativa em background, iniciando polling...');
+					console.log('[StatsIAsView] ✅ IA JÁ ESTÁ ATIVA! Carregando dados...');
+					console.log('[StatsIAsView] - Total de trades:', config.totalTrades);
+					console.log('[StatsIAsView] - Vitórias:', config.totalWins);
+					console.log('[StatsIAsView] - Derrotas:', config.totalLosses);
+					
+					// Carregar estatísticas e histórico
+					await this.loadSessionStats();
+					await this.loadTradeHistory();
+					
+					// Iniciar polling para atualização em tempo real
 					this.startBackgroundPolling();
+					
+					console.log('[StatsIAsView] ✅ Sistema pronto! IA operando em background.');
+				} else {
+					console.log('[StatsIAsView] IA está inativa. Aguardando ativação do usuário.');
 				}
 			}
 		} catch (error) {
@@ -1637,6 +1666,84 @@ tbody tr:hover {
 	margin-bottom: 30px;
 	animation: fadeIn 0.5s ease-out 0.2s forwards;
 	opacity: 0;
+}
+
+/* Banner de IA Ativa */
+.ai-active-banner {
+	display: flex;
+	align-items: center;
+	gap: 16px;
+	padding: 16px 20px;
+	background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(6, 214, 160, 0.1));
+	border: 2px solid rgba(16, 185, 129, 0.5);
+	border-radius: 12px;
+	margin-bottom: 20px;
+	animation: pulseGlow 2s ease-in-out infinite;
+}
+
+.banner-icon {
+	font-size: 32px;
+	filter: drop-shadow(0 0 8px rgba(16, 185, 129, 0.6));
+}
+
+.banner-content {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.banner-content strong {
+	font-size: 18px;
+	font-weight: 700;
+	color: #10b981;
+	letter-spacing: 1px;
+}
+
+.banner-content span {
+	font-size: 13px;
+	color: #94a3b8;
+}
+
+.banner-status {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 16px;
+	background: rgba(16, 185, 129, 0.15);
+	border-radius: 8px;
+	font-size: 13px;
+	font-weight: 600;
+	color: #10b981;
+}
+
+.status-indicator {
+	width: 8px;
+	height: 8px;
+	background: #10b981;
+	border-radius: 50%;
+	animation: pulse 2s ease-in-out infinite;
+	box-shadow: 0 0 8px rgba(16, 185, 129, 0.8);
+}
+
+@keyframes pulseGlow {
+	0%, 100% {
+		box-shadow: 0 0 15px rgba(16, 185, 129, 0.3);
+	}
+	50% {
+		box-shadow: 0 0 25px rgba(16, 185, 129, 0.5);
+	}
+}
+
+@keyframes pulse {
+	0%, 100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+	50% {
+		opacity: 0.6;
+		transform: scale(1.2);
+	}
 }
 
 .ai-trading-header {
