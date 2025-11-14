@@ -244,17 +244,12 @@ export default {
 	background-color: #121212; /* Fundo escuro */
 	color: #e0e0e0; /* Texto claro */
 	font-family: 'Roboto', sans-serif;
+
 }
 
 .layout-content {
-	display: flex;
-	align-items: flex-start;
 	justify-content: flex-start;
-	flex-grow: 1;
-	padding: 20px;
-	position: relative;
-	z-index: 1;
-	
+	width: 100%;
 }
 
 .c-icon{

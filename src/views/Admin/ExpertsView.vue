@@ -271,7 +271,6 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
 body {
-    background-color: #121212;
     color: #fff;
     font-family: 'Roboto', sans-serif;
     margin: 0;
@@ -297,6 +296,8 @@ body {
 
 .layout-content {
     margin: 0;
+    padding: 40px;
+
 }
 
 .hamburger-btn {
