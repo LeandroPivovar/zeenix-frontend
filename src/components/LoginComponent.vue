@@ -1,7 +1,7 @@
 <template>
   <!-- Main Container -->
   <main id="login-main" class="min-h-screen flex items-center justify-center px-8">
-    <div class="w-full max-w-7xl flex items-center justify-between">
+    <div class="w-full max-w-7xl flex items-center justify-between login-container-wrapper">
       
       <!-- Left Column - Login Card -->
       <div id="login-section" class="w-[480px]">
@@ -86,12 +86,12 @@
       <div id="hero-section" class="w-[600px] pl-20">
         
         <!-- Main Title -->
-        <div class="mb-8">
-          <h2 class="text-6xl font-bold leading-tight mb-4">
+        <div class="mb-8 text-left">
+          <h2 class="text-6xl font-bold leading-tight mb-4 text-left">
             <span class="text-white">Você é</span><br>
             <span class="text-zenix-green">único.</span>
           </h2>
-          <p class="text-lg text-zenix-light-gray leading-relaxed max-w-md">Tecnologia inteligente, segurança e precisão — o padrão Zenix Pro para traders profissionais.</p>
+          <p class="text-lg text-zenix-light-gray leading-relaxed max-w-md text-left">Tecnologia inteligente, segurança e precisão — o padrão Zenix Pro para traders profissionais.</p>
         </div>
 
         <!-- Benefits List -->
@@ -193,15 +193,41 @@ export default {
 }
 
 /* Cores Tailwind customizadas - exatamente como no original */
+.text-white { color: white !important; }
 .text-zenix-text-dark { color: #0B0B0B; }
-.text-zenix-green { color: #22C55E; }
+.text-zenix-green { color: #22C55E !important; }
 .text-zenix-green-hover { color: #16A34A; }
 .text-zenix-gray { color: #6A6A6A; }
 .text-zenix-light-gray { color: #C6C6C6; }
 
+/* Garantir cores específicas para o título hero */
+#hero-section .text-white {
+  color: white !important;
+}
+
+#hero-section .text-zenix-green {
+  color: #22C55E !important;
+}
+
 .bg-zenix-green { background-color: #22C55E; }
-.bg-zenix-green-hover:hover { background-color: #16A34A; }
+.hover\:bg-zenix-green-hover:hover { background-color: #16A34A; }
 .bg-zenix-input-bg { background-color: #F5F5F5; }
+
+/* Garantir que o botão tenha as cores corretas */
+button.bg-zenix-green {
+  background-color: #22C55E !important;
+  color: white !important;
+  border: none !important;
+}
+
+button.bg-zenix-green:hover:not(:disabled) {
+  background-color: #16A34A !important;
+}
+
+button.bg-zenix-green:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
 
 .border-zenix-input-border { border-color: #E5E5E5; }
 .border-zenix-card-border { border-color: #EDEDED; }
@@ -308,29 +334,145 @@ export default {
 .hover\:text-zenix-green-hover:hover { color: #16A34A; }
 .hover\:underline:hover { text-decoration: underline; }
 .text-center { text-align: center; }
+.text-left { text-align: left; }
 .w-12 { width: 3rem; }
 .h-12 { height: 3rem; }
 .flex-shrink-0 { flex-shrink: 0; }
 .max-w-md { max-width: 28rem; }
 
-/* Responsividade para mobile */
+/* Container wrapper responsivo */
+.login-container-wrapper {
+  flex-wrap: wrap;
+  gap: 2rem;
+}
+
+/* Responsividade - Monitores médios (1280px - 1440px) */
+@media (max-width: 1440px) {
+  #login-main {
+    padding-left: 2rem;
+    padding-right: 2rem;
+  }
+  
+  #hero-section {
+    padding-left: 3rem;
+  }
+  
+  .text-6xl {
+    font-size: 3rem !important;
+  }
+  
+  .login-container-wrapper {
+    gap: 1.5rem;
+  }
+}
+
+/* Responsividade - Monitores pequenos (1024px - 1280px) */
+@media (max-width: 1280px) {
+  #login-main {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+  
+  .login-container-wrapper {
+    gap: 1rem;
+  }
+  
+  #hero-section {
+    padding-left: 2rem;
+    width: 500px !important;
+  }
+  
+  #login-section {
+    width: 420px !important;
+  }
+  
+  .text-6xl {
+    font-size: 2.5rem !important;
+  }
+  
+  .text-lg {
+    font-size: 1rem !important;
+  }
+  
+  .p-10 {
+    padding: 2.25rem !important;
+  }
+}
+
+/* Responsividade - Tablets (768px - 1024px) */
 @media (max-width: 1024px) {
+  .login-container-wrapper {
+    justify-content: center;
+  }
+  
   #hero-section {
     display: none;
   }
   
   #login-section {
     width: 100% !important;
-    max-width: 480px;
+    max-width: 420px;
   }
   
-  .px-8 {
+  #login-main {
     padding-left: 1rem;
     padding-right: 1rem;
   }
+  
+  .p-10 {
+    padding: 2rem !important;
+  }
+  
+  .text-2xl {
+    font-size: 1.375rem !important;
+  }
+  
+  .text-sm {
+    font-size: 0.8125rem !important;
+  }
 }
 
+/* Responsividade - Mobile grande (640px - 768px) */
+@media (max-width: 768px) {
+  #login-section {
+    max-width: 100%;
+  }
+  
+  .p-10 {
+    padding: 1.75rem !important;
+  }
+  
+  .text-3xl {
+    font-size: 1.75rem !important;
+  }
+  
+  .text-2xl {
+    font-size: 1.25rem !important;
+  }
+  
+  .mb-8 {
+    margin-bottom: 1.5rem !important;
+  }
+  
+  .space-y-6 > * + * {
+    margin-top: 1.25rem !important;
+  }
+  
+  .py-4 {
+    padding-top: 0.875rem !important;
+    padding-bottom: 0.875rem !important;
+  }
+}
+
+/* Responsividade - Mobile pequeno (< 640px) */
 @media (max-width: 640px) {
+  #login-main {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  
   .w-\[480px\] {
     width: 100% !important;
   }
@@ -341,6 +483,60 @@ export default {
   
   .text-3xl {
     font-size: 1.5rem !important;
+  }
+  
+  .text-2xl {
+    font-size: 1.125rem !important;
+  }
+  
+  .text-lg {
+    font-size: 0.9375rem !important;
+  }
+  
+  .text-sm {
+    font-size: 0.75rem !important;
+  }
+  
+  .mb-8 {
+    margin-bottom: 1.25rem !important;
+  }
+  
+  .mb-4 {
+    margin-bottom: 0.75rem !important;
+  }
+  
+  .mb-3 {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .mb-2 {
+    margin-bottom: 0.375rem !important;
+  }
+  
+  .space-y-6 > * + * {
+    margin-top: 1rem !important;
+  }
+  
+  .space-y-4 > * + * {
+    margin-top: 0.75rem !important;
+  }
+  
+  .px-4 {
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+  }
+  
+  .py-4 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+  
+  .rounded-xl {
+    border-radius: 0.625rem !important;
+  }
+  
+  .rounded-2xl {
+    border-radius: 0.875rem !important;
   }
 }
 </style>
