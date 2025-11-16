@@ -3,8 +3,6 @@
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
         
         <main class="layout-content">
-            <div class="background-glow"></div>
-            <div class="background-grid"></div>
             <button class="hamburger-btn" @click="toggleSidebar" aria-label="Abrir menu">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -277,10 +275,9 @@ body {
 }
 
 .layout {
-    background-color: #121212;
+    background-color: #0e0f0f;
     color: #fff;
     min-height: 100vh;
-    padding: 0 20px 20px 20px;
     box-sizing: border-box;
     transition: margin-left 0.3s ease, width 0.3s ease;
     
@@ -296,8 +293,6 @@ body {
 
 .layout-content {
     margin: 0;
-    padding: 40px;
-
 }
 
 .hamburger-btn {
@@ -533,7 +528,6 @@ body {
 .cards-group {
     display: flex;
     gap: 20px;
-    margin-bottom: 30px;
     width: 100%;
 }
 

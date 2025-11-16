@@ -1,10 +1,8 @@
 <template>
     <div class="layout">
         <main class="layout-content">
-            <div class="background-glow"></div>
-            <div class="background-grid"></div>
             <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
-            <div class="main-header">
+            <div class="main-header header-markup">
                 <div class="main-header-left">
                     <h1>Markup - Comissões</h1>
                     <p>Comissão de 3% sobre o payout de cada operação realizada na Deriv</p>
@@ -253,20 +251,17 @@ export default {
 <style scoped>
 /* Estilos não alterados */
 .layout {
-    background-color: #121212;
+    background-color: #0e0f0f;
     color: #fff;
     min-height: 100vh;
     width: calc(100% - 240px);
     margin-left: 240px;
-    padding: 0 20px;
     font-family: 'Roboto', sans-serif;
 }
 
-.layout-content {
-    margin: 0 ;
-    padding: 40px;
+.header-markup {
+    margin: 20px;
 }
-
 
 .main-header {
     display: flex;
