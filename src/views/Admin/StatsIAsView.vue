@@ -172,8 +172,6 @@ export default {
     background-color: #0e0f0f;
 	color: #fff;
 	min-height: 100vh;
-	width: calc(100% - 240px);
-	margin-left: 240px;
 	font-family: 'Roboto', sans-serif;
 }
 

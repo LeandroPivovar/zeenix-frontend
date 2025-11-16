@@ -216,7 +216,6 @@ export default {
     min-height: 100vh;
     box-sizing: border-box;
     transition: margin-left 0.3s ease, width 0.3s ease;
-    width: calc(100% - 240px);
 }
 
 .layout-content {
@@ -693,6 +692,12 @@ input:checked + .slider:before {
     .webhook-card{
         min-height: 300px;
     }
+
+    .layout{
+        max-width: calc(100% - 240px);
+        padding: 0 20px;
+        margin-left: 240px;
+    }
 }
 
 /* --- Responsividade (Opcional, mas recomendado) --- */
@@ -726,6 +731,11 @@ input:checked + .slider:before {
         width: 100%;
         order: -1; /* Mover para cima em telas pequenas */
         margin-bottom: 1rem;
+    }
+
+    .tabs-navigation{
+        overflow-x: auto;
+        overflow-y: hidden;
     }
 }
 </style>

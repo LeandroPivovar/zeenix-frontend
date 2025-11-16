@@ -280,10 +280,6 @@ body {
     min-height: 100vh;
     box-sizing: border-box;
     transition: margin-left 0.3s ease, width 0.3s ease;
-    
-    /* Padrão Desktop */
-    margin-left: 240px; 
-    width: calc(100% - 240px);
 }
 
 .layout-collapsed {
@@ -740,6 +736,10 @@ body {
     }
     .active-expert .card-value {
         font-size: 1.8rem;
+    }
+
+    .form-container{
+        flex-direction: column;
     }
 
     .form-expert {
