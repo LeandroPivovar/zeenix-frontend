@@ -49,25 +49,25 @@
 						<div class="c-card-value">{{ metrics.activeThisMonth }}</div>
 					</div>
 					
-					<div class="c-card">
-						<div class="c-card-title">SALDO 	$100</div>
-						<div class="c-card-value">{{ metrics.balanceLess100 }}</div>
-					</div>
+				<div class="c-card">
+					<div class="c-card-title">SALDO &lt; $100</div>
+					<div class="c-card-value">{{ metrics.balanceLess100 }}</div>
+				</div>
 
-					<div class="c-card">
-						<div class="c-card-title">SALDO > $500</div>
-						<div class="c-card-value">{{ metrics.balanceMore500 }}</div>
-					</div>
-					
-					<div class="c-card">
-						<div class="c-card-title">SALDO > $1000</div>
-						<div class="c-card-value">{{ metrics.balanceMore1000 }}</div>
-					</div>
-					
-					<div class="c-card">
-						<div class="c-card-title">SALDO > $5000</div>
-						<div class="c-card-value">{{ metrics.balanceMore5000 }}</div>
-					</div>
+				<div class="c-card">
+					<div class="c-card-title">SALDO &gt; $500</div>
+					<div class="c-card-value">{{ metrics.balanceMore500 }}</div>
+				</div>
+				
+				<div class="c-card">
+					<div class="c-card-title">SALDO &gt; $1000</div>
+					<div class="c-card-value">{{ metrics.balanceMore1000 }}</div>
+				</div>
+				
+				<div class="c-card">
+					<div class="c-card-title">SALDO &gt; $5000</div>
+					<div class="c-card-value">{{ metrics.balanceMore5000 }}</div>
+				</div>
 
 				</div>
 
@@ -80,10 +80,10 @@
 					<div class="controls-right">
 						<select class="dropdown" v-model="balanceFilter" @change="fetchClients">
 							<option value="">Todos</option>
-							<option value="less100">Saldo < $100</option>
-							<option value="more500">Saldo > $500</option>
-							<option value="more1000">Saldo > $1000</option>
-							<option value="more5000">Saldo > $5000</option>
+							<option value="less100">Saldo &lt; $100</option>
+							<option value="more500">Saldo &gt; $500</option>
+							<option value="more1000">Saldo &gt; $1000</option>
+							<option value="more5000">Saldo &gt; $5000</option>
 						</select>
 						<div class="search-group"> 
 							<input type="text" v-model="searchQuery" placeholder="Buscar por nome, email ou ID de login" @keyup.enter="performSearch">
@@ -102,10 +102,10 @@
 						<div class="controls-right">
 							<select class="dropdown" v-model="balanceFilter" @change="fetchClients">
 								<option value="">Todos</option>
-								<option value="less100">Saldo < $100</option>
-								<option value="more500">Saldo > $500</option>
-								<option value="more1000">Saldo > $1000</option>
-								<option value="more5000">Saldo > $5000</option>
+								<option value="less100">Saldo &lt; $100</option>
+								<option value="more500">Saldo &gt; $500</option>
+								<option value="more1000">Saldo &gt; $1000</option>
+								<option value="more5000">Saldo &gt; $5000</option>
 							</select>
 							<div class="search-group"> 
 								<input type="text" v-model="searchQuery" placeholder="Buscar por nome, email ou ID de login" @keyup.enter="performSearch">
