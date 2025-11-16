@@ -74,16 +74,20 @@
 				<div class="list-controls c-mobile">
 					<div class="controls-left">
 						<button class="filter-btn">Filtrar por saldo</button>
-						<button class="export-btn">Exportar Lista</button>
-						<button class="update-btn">Atualizar dados</button>
+						<button class="export-btn" @click="exportClients">Exportar Lista</button>
+						<button class="update-btn" @click="updateData">Atualizar dados</button>
 					</div>
 					<div class="controls-right">
-						<select class="dropdown">
-							<option>Todos</option>
+						<select class="dropdown" v-model="balanceFilter" @change="fetchClients">
+							<option value="">Todos</option>
+							<option value="less100">Saldo < $100</option>
+							<option value="more500">Saldo > $500</option>
+							<option value="more1000">Saldo > $1000</option>
+							<option value="more5000">Saldo > $5000</option>
 						</select>
 						<div class="search-group"> 
-							<input type="text" placeholder="Buscar por nome, email ou ID de login">
-							<button class="search-btn">Buscar</button>
+							<input type="text" v-model="searchQuery" placeholder="Buscar por nome, email ou ID de login" @keyup.enter="performSearch">
+							<button class="search-btn" @click="performSearch">Buscar</button>
 						</div>
 					</div>
 				</div>
@@ -92,20 +96,26 @@
 					<div class="list-controls c-desk">
 						<div class="controls-left">
 							<button class="filter-btn">Filtrar por saldo</button>
-							<button class="export-btn">Exportar Lista</button>
-							<button class="update-btn">Atualizar dados</button>
+							<button class="export-btn" @click="exportClients">Exportar Lista</button>
+							<button class="update-btn" @click="updateData">Atualizar dados</button>
 						</div>
 						<div class="controls-right">
-							<select class="dropdown">
-								<option>Todos</option>
+							<select class="dropdown" v-model="balanceFilter" @change="fetchClients">
+								<option value="">Todos</option>
+								<option value="less100">Saldo < $100</option>
+								<option value="more500">Saldo > $500</option>
+								<option value="more1000">Saldo > $1000</option>
+								<option value="more5000">Saldo > $5000</option>
 							</select>
 							<div class="search-group"> 
-								<input type="text" placeholder="Buscar por nome, email ou ID de login">
-								<button class="search-btn">Buscar</button>
+								<input type="text" v-model="searchQuery" placeholder="Buscar por nome, email ou ID de login" @keyup.enter="performSearch">
+								<button class="search-btn" @click="performSearch">Buscar</button>
 							</div>
 						</div>
 					</div>
-					<table>
+					<div v-if="loading" class="loading-message">Carregando clientes...</div>
+					<div v-else-if="error" class="error-message">{{ error }}</div>
+					<table v-else>
 						<thead>
 							<tr>
 								<th>Nome <span class="sort-icon"></span></th>
@@ -119,7 +129,7 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="client in clients" :key="client.loginId">
+							<tr v-for="client in clients" :key="client.userId">
 								<td>{{ client.name }}</td>
 								<td>{{ client.loginId }}</td>
 								<td>{{ client.email }}</td>
@@ -157,63 +167,29 @@ export default {
 			isSidebarOpen: true,
 			isSidebarCollapsed: false,
 			pageTitle: 'Métricas dos Clientes', 
-			// Dados simulados baseados na imagem
+			loading: true,
+			error: null,
 			metrics: {
-				total: 453,
-				realAccountUsed: 367,
-				newToday: 12,
-				newThisWeek: 45,
-				newThisMonth: 112,
-				activeThisWeek: 210,
-				activeThisMonth: 350,
-				balanceLess100: 89,
-				balanceMore500: 156,
-				balanceMore1000: 78,
-				balanceMore5000: 23,
+				total: 0,
+				realAccountUsed: 0,
+				newToday: 0,
+				newThisWeek: 0,
+				newThisMonth: 0,
+				activeThisWeek: 0,
+				activeThisMonth: 0,
+				balanceLess100: 0,
+				balanceMore500: 0,
+				balanceMore1000: 0,
+				balanceMore5000: 0,
 			},
-			clients: [
-				{
-					name: 'João Silva',
-					loginId: 'CR123456',
-					email: 'joao.silva@example.com',
-					balance: 1250.75,
-					timeSpent: '12h 45m',
-					createdAt: '2025-09-15',
-					lastActivity: '2025-10-18',
-					whatsapp: true
-				},
-				{
-					name: 'Maria Oliveira',
-					loginId: 'CR789012',
-					email: 'maria.o@example.com',
-					balance: 89.50,
-					timeSpent: '8h 10m',
-					createdAt: '2025-08-01',
-					lastActivity: '2025-10-17',
-					whatsapp: true
-				},
-				{
-					name: 'Carlos Pereira',
-					loginId: 'CR345678',
-					email: 'carlos.p@example.com',
-					balance: 0.00,
-					timeSpent: '5h 30m',
-					createdAt: '2025-07-20',
-					lastActivity: '2025-09-30',
-					whatsapp: true
-				},
-				{
-					name: 'Ana Souza',
-					loginId: 'CR987654',
-					balance: 5120.99,
-					email: 'ana.s@example.com',
-					timeSpent: '20h 05m',
-					createdAt: '2025-10-01',
-					lastActivity: '2025-11-10',
-					whatsapp: false // Não exibe o botão
-				},
-			]
+			clients: [],
+			searchQuery: '',
+			balanceFilter: '',
 		};
+	},
+	mounted() {
+		this.fetchMetrics();
+		this.fetchClients();
 	},
 	methods: {
 		toggleSidebar() {
@@ -228,6 +204,128 @@ export default {
 				currency: 'USD',
 				minimumFractionDigits: 2
 			}).format(value);
+		},
+		async fetchMetrics() {
+			try {
+				const token = localStorage.getItem('token');
+				const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+				
+				const res = await fetch(`${apiBaseUrl}/clients/metrics`, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						...(token && { 'Authorization': `Bearer ${token}` })
+					}
+				});
+				
+				if (!res.ok) {
+					throw new Error('Erro ao buscar métricas');
+				}
+				
+				const data = await res.json();
+				this.metrics = data;
+			} catch (err) {
+				console.error('Erro ao buscar métricas:', err);
+				this.error = 'Erro ao carregar métricas dos clientes';
+			}
+		},
+		async fetchClients() {
+			this.loading = true;
+			try {
+				const token = localStorage.getItem('token');
+				const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+				
+				const params = new URLSearchParams();
+				if (this.searchQuery) {
+					params.append('search', this.searchQuery);
+				}
+				if (this.balanceFilter) {
+					params.append('balanceFilter', this.balanceFilter);
+				}
+				
+				const url = `${apiBaseUrl}/clients/list${params.toString() ? '?' + params.toString() : ''}`;
+				
+				const res = await fetch(url, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						...(token && { 'Authorization': `Bearer ${token}` })
+					}
+				});
+				
+				if (!res.ok) {
+					throw new Error('Erro ao buscar clientes');
+				}
+				
+				const data = await res.json();
+				this.clients = data.clients;
+			} catch (err) {
+				console.error('Erro ao buscar clientes:', err);
+				this.error = 'Erro ao carregar lista de clientes';
+			} finally {
+				this.loading = false;
+			}
+		},
+		async updateData() {
+			await this.fetchMetrics();
+			await this.fetchClients();
+		},
+		async exportClients() {
+			try {
+				const token = localStorage.getItem('token');
+				const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+				
+				const res = await fetch(`${apiBaseUrl}/clients/export`, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						...(token && { 'Authorization': `Bearer ${token}` })
+					}
+				});
+				
+				if (!res.ok) {
+					throw new Error('Erro ao exportar clientes');
+				}
+				
+				const data = await res.json();
+				
+				// Converter para CSV
+				const csv = this.convertToCSV(data);
+				const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+				const link = document.createElement('a');
+				const url = URL.createObjectURL(blob);
+				link.setAttribute('href', url);
+				link.setAttribute('download', `clientes_${new Date().toISOString().split('T')[0]}.csv`);
+				link.style.visibility = 'hidden';
+				document.body.appendChild(link);
+				link.click();
+				document.body.removeChild(link);
+			} catch (err) {
+				console.error('Erro ao exportar clientes:', err);
+				alert('Erro ao exportar lista de clientes');
+			}
+		},
+		convertToCSV(data) {
+			const headers = ['Nome', 'Login ID', 'Email', 'Saldo (USD)', 'Tempo gasto', 'Criado em', 'Última atividade'];
+			const rows = data.map(client => [
+				client.name,
+				client.loginId,
+				client.email,
+				client.balance,
+				client.timeSpent,
+				client.createdAt,
+				client.lastActivity
+			]);
+			
+			const csvContent = [
+				headers.join(','),
+				...rows.map(row => row.join(','))
+			].join('\n');
+			
+			return csvContent;
+		},
+		performSearch() {
+			this.fetchClients();
 		}
 	}
 }
@@ -481,6 +579,17 @@ p {
 
 .whatsapp-btn svg {
 	margin-right: 5px;
+}
+
+.loading-message, .error-message {
+	padding: 20px;
+	text-align: center;
+	color: #a0a0a0;
+	font-size: 16px;
+}
+
+.error-message {
+	color: #ff5252;
 }
 
 @media (min-width: 768px) {
