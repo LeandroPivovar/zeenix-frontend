@@ -65,48 +65,12 @@
         <!-- Main Title -->
         <div class="mb-8 text-left">
           <h2 class="text-6xl font-bold leading-tight mb-4 text-left">
-            <span class="text-white">Recupere seu</span><br>
-            <span class="text-zenix-green">acesso.</span>
+            <span class="text-white">Você é</span><br>
+            <span class="text-zenix-green">único.</span>
           </h2>
-          <p class="text-lg text-zenix-light-gray leading-relaxed max-w-md text-left">Siga as instruções enviadas por e-mail para redefinir sua senha de forma segura.</p>
         </div>
 
-        <!-- Benefits List -->
-        <div id="benefits-list" class="space-y-8">
-          
-          <!-- Benefit 1 -->
-          <div class="flex items-start space-x-4">
-            <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
-              <i class="fa-solid fa-envelope text-zenix-green text-lg"></i>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-1">E-mail Seguro</h3>
-              <p class="text-sm text-zenix-light-gray">Instruções enviadas para seu e-mail cadastrado</p>
-            </div>
-          </div>
-
-          <!-- Benefit 2 -->
-          <div class="flex items-start space-x-4">
-            <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
-              <i class="fa-solid fa-clock text-zenix-green text-lg"></i>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-1">Processo Rápido</h3>
-              <p class="text-sm text-zenix-light-gray">Recuperação em poucos minutos</p>
-            </div>
-          </div>
-
-          <!-- Benefit 3 -->
-          <div class="flex items-start space-x-4">
-            <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
-              <i class="fa-solid fa-lock text-zenix-green text-lg"></i>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-1">Segurança Garantida</h3>
-              <p class="text-sm text-zenix-light-gray">Link de recuperação válido por tempo limitado</p>
-            </div>
-          </div>
-        </div>
+       
       </div>
     </div>
   </main>

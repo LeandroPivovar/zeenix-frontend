@@ -196,48 +196,11 @@
         <!-- Main Title -->
         <div class="mb-8 text-left">
           <h2 class="text-6xl font-bold leading-tight mb-4 text-left">
-            <span class="text-white">Comece sua</span><br>
-            <span class="text-zenix-green">jornada.</span>
+            <span class="text-white">Você é</span><br>
+            <span class="text-zenix-green">único.</span>
           </h2>
-          <p class="text-lg text-zenix-light-gray leading-relaxed max-w-md text-left">Junte-se a milhares de traders que já transformaram seus resultados com tecnologia de ponta.</p>
         </div>
 
-        <!-- Benefits List -->
-        <div id="benefits-list" class="space-y-8">
-          
-          <!-- Benefit 1 -->
-          <div class="flex items-start space-x-4">
-            <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
-              <i class="fa-solid fa-shield-halved text-zenix-green text-lg"></i>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-1">Segurança Total</h3>
-              <p class="text-sm text-zenix-light-gray">Seus dados protegidos com criptografia de ponta</p>
-            </div>
-          </div>
-
-          <!-- Benefit 2 -->
-          <div class="flex items-start space-x-4">
-            <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
-              <i class="fa-solid fa-rocket text-zenix-green text-lg"></i>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-1">Comece Agora</h3>
-              <p class="text-sm text-zenix-light-gray">Cadastro rápido e simples em poucos minutos</p>
-            </div>
-          </div>
-
-          <!-- Benefit 3 -->
-          <div class="flex items-start space-x-4">
-            <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
-              <i class="fa-solid fa-chart-line text-zenix-green text-lg"></i>
-            </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-1">Resultados Reais</h3>
-              <p class="text-sm text-zenix-light-gray">Acompanhe seu crescimento em tempo real</p>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   </main>
