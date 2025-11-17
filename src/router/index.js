@@ -14,7 +14,9 @@ import MarkupView from '../views/Admin/MarkupView.vue'
 import StatsIAsView from '../views/Admin/StatsIAsView.vue'
 import ExpertsView from '../views/Admin/ExpertsView.vue'
 import ClientesView from '../views/Admin/ClientesView.vue'
-
+import WebhookView from '../views/Admin/WebhookView.vue'
+import AcademyManagementView from '../views/Admin/AcademyManagementView.vue'
+import AdminView from '@/views/Admin/AdminView.vue'
 const routes = [
   {
     path: '/',
@@ -119,6 +121,25 @@ const routes = [
     component: ClientesView,
     meta: { requiresAuth: true }
   },
+  {
+    path: '/Webhooks',
+    name: 'Webhooks',
+    component: WebhookView, 
+    meta: { requiresAuth: true }
+  },
+
+  {
+    path: '/AcademyManagement',
+    name: 'AcademyManagement',
+    component: AcademyManagementView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/Admin',
+    name: 'Admin',
+    component: AdminView,
+    meta: { requiresAuth: true }
+  }
 ]
 
 const router = createRouter({
