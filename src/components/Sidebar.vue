@@ -116,6 +116,33 @@
             >
                 Clientes
             </button>
+
+            <button
+                class="menu-item"
+                :class="{ active: isWebhooksActive }"
+                @click="navigateAndClose('/Webhooks')"
+                data-text="Webhooks"
+            >
+                Webhooks
+            </button>
+
+            <button
+                class="menu-item"
+                :class="{ active: isAcademyManagementActive }"
+                @click="navigateAndClose('/AcademyManagement')"
+                data-text="Academy Management"
+            >
+                Academy Management
+            </button>
+
+            <button
+                class="menu-item"
+                :class="{ active: isAdminViewActive }"
+                @click="navigateAndClose('/Admin')"
+                data-text="Admin"
+            >
+                Admin
+            </button>
         </nav>
         <div class="status">
             <div class="user" @click="toggleUserMenu">
@@ -190,7 +217,16 @@ export default {
         },
         isClientesActive() {
             return this.$route?.path === '/Clientes';
-        }
+        },
+        isWebhooksActive() {
+            return this.$route?.path === '/Webhooks';
+        },
+        isAcademyManagementActive() {
+            return this.$route?.path === '/AcademyManagement';
+        },
+        isAdminViewActive() {
+            return this.$route?.path === '/Admin';
+        },
     },
     methods: {
         close() {
