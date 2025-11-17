@@ -1,4 +1,3 @@
-<!-- AcademyManagementView.vue -->
 <template>
     <div class="layout" ref="layoutContainer">
         <AppSidebar
@@ -7,6 +6,11 @@
             @toggle-collapse="toggleSidebarCollapse"
         />
         <main class="layout-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed, 'sidebar-closed': !isSidebarOpen }">
+            <button class="hamburger-btn" @click="toggleSidebar" aria-label="Abrir menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
             <div class="container">
                 <header class="page-header">
                     <div class="header-info">
@@ -115,7 +119,8 @@
                                                 {{ lesson.isActive ? 'Ativa' : 'Oculta' }}
                                             </span>
                                         </div>
-                                        <div class="lesson-actions lesson-btn-group">
+                                        
+                                        <div class="lesson-actions lesson-btn-group desktop-actions">
                                             <button class="btn btn-action-icon edit-btn" title="Editar Aula">
                                                 <img src="../../assets/icons/edit-academy.svg" alt="" filter="invert(1)" width="16" height="16">
                                             </button>
@@ -123,10 +128,26 @@
                                                 <img src="../../assets/icons/trash.svg" alt="" width="16" height="16">
                                             </button>
                                             <div class="materials-group">
-                                                <span class="material-count">{{ getMaterialCountForLesson(lesson.id) }}</span>
                                                 <button class="btn btn-materials" title="Gerenciar Materiais" @click="openMaterialsModal(lesson.id)">Materiais</button>
                                             </div>
                                         </div>
+
+                                        <div class="lesson-actions-mobile">
+                                            <button class="btn btn-action-icon more-options-btn" @click.stop="toggleLessonDropdown(lesson.id)">
+                                                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"></circle><circle cx="12" cy="5" r="1"></circle><circle cx="12" cy="19" r="1"></circle></svg>
+                                            </button>
+
+                                            <div v-if="openLessonDropdown === lesson.id" class="lesson-dropdown-menu">
+                                                <button class="dropdown-item edit-btn" title="Editar Aula">
+                                                    <img src="../../assets/icons/edit-academy.svg" alt="" filter="invert(1)" width="16" height="16"> Editar
+                                                </button>
+                                                <button class="dropdown-item delete-btn" title="Excluir Aula">
+                                                    <img src="../../assets/icons/trash.svg" alt="" width="16" height="16"> Excluir
+                                                </button>
+                                                <button class="dropdown-item btn-materials" title="Gerenciar Materiais" @click="openMaterialsModal(lesson.id); openLessonDropdown = null">Materiais</button>
+                                            </div>
+                                        </div>
+                                        
                                     </li>
                                 </ul>
                             </div>
@@ -201,7 +222,6 @@
                             </div>
                         </form>
                     </section>
-                    <!-- Nova Seção: SEO & Compartilhamento -->
                     <section class="card seo-sharing-section">
                         <h2 class="card-title">SEO & Compartilhamento</h2>
                         <div class="form-group">
@@ -245,7 +265,7 @@
                                     accept="image/*"
                                     style="display: none;"
                                 />
-                                <div class="cover-upload-area">
+                                <div class="cover-upload-area seo-cover-area">
                                     <div
                                         class="upload-placeholder social-image-upload-area upload-image"
                                         @click="$refs.socialImageFileInput.click()"
@@ -275,7 +295,6 @@
                 </div>
             </div>
 
-            <!-- Componente de Modais -->
             <AcademyModals
                 :is-new-module-modal-open="isNewModuleModalOpen"
                 :is-new-lesson-modal-open="isNewLessonModalOpen"
@@ -284,6 +303,7 @@
                 :selected-lesson-for-materials="selectedLessonForMaterials"
                 :courses="courses"
                 :modules="modules"
+                :lessons="lessons"
                 :materials-list="materialsList"
                 :new-module="newModule"
                 :new-lesson="newLesson"
@@ -300,7 +320,6 @@
                 @update:new-material="newMaterial = $event"
             />
 
-            <!-- Componente StudentPreview substitui a div antiga do preview -->
             <StudentPreview
                 v-if="isPreviewModalOpen"
                 :course-data="previewCourse"
@@ -322,33 +341,32 @@ export default {
     components: {
         AppSidebar,
         StudentPreview,
-        AcademyModals // Registre o novo componente
+        AcademyModals 
     },
     data() {
         return {
             // Layout
-            isSidebarOpen: true,
+            isSidebarOpen: true, // Será ajustado em mounted/checkScreenSize
             isSidebarCollapsed: false,
-            // Curso
+            openLessonDropdown: null,
+            // ... (Restante do seu estado 'course', 'isPreviewModalOpen', 'courses', etc.)
             course: {
                 name: 'Fundamentos do Copy Trading',
                 description: 'Aprenda do zero as estratégias mais avançadas para Day Trade.',
                 coverImage: null,
                 coverImagePreview: null,
-                selectedCourseId: 1, // Seleciona o primeiro curso por padrão
-                // Campos adicionados para "Acesso & Preço"
-                access: "1",           // Valor padrão para Modelo de Acesso
-                price: 0,              // Valor padrão para Preço
-                currency: "R$",        // Valor padrão para Moeda
-                subscription: "1",     // Valor padrão para Plano de Assinatura
-                discount: "0",         // Valor padrão para Desconto
-                // Campos adicionados para "SEO & Compartilhamento"
-                slug: 'mestre-do-day-trade', // Slug/URL
-                seoTitle: 'Curso Mestre do Day Trade | Zenix Academy', // Título SEO
-                seoDescription: 'Aprenda as melhores estratégias de day trade com a Zenix.', // Descrição SEO
-                keywords: ['trading'], // Palavras-chave
-                socialImage: null, // Imagem para compartilhamento social
-                socialImagePreview: null, // Prévia da imagem para compartilhamento
+                selectedCourseId: 1, 
+                access: "1", 
+                price: 0, 
+                currency: "R$", 
+                subscription: "1", 
+                discount: "0", 
+                slug: 'mestre-do-day-trade', 
+                seoTitle: 'Curso Mestre do Day Trade | Zenix Academy', 
+                seoDescription: 'Aprenda as melhores estratégias de day trade com a Zenix.', 
+                keywords: ['trading'], 
+                socialImage: null, 
+                socialImagePreview: null, 
             },
             // Preview
             isPreviewModalOpen: false,
@@ -359,8 +377,8 @@ export default {
                 { id: 2, name: 'Fundamentos de Marketing', description: 'Aprenda os conceitos básicos de marketing digital e SEO.' },
             ],
             // Novo estado para palavras-chave e imagem social
-            newKeyword: '', // Para o input de palavras-chave
-            isSocialPreviewModalOpen: false, // Para o modal de preview social (opcional)
+            newKeyword: '', 
+            isSocialPreviewModalOpen: false, 
             // Modal Módulo
             isNewModuleModalOpen: false,
             newModule: {
@@ -383,7 +401,7 @@ export default {
             isMaterialsModalOpen: false,
             selectedLessonIdForMaterials: null,
             selectedLessonForMaterials: {},
-            materialsList: [ // Simulação de dados de materiais
+            materialsList: [ 
                 { id: 1, lessonId: 1003, name: 'PDF: Estratégia de Copy Trading', type: 'PDF', link: '#' },
                 { id: 2, lessonId: 1004, name: 'Checklist de Setup', type: 'DOC', link: '#' },
                 { id: 3, lessonId: 1004, name: 'Planilha de Risco (Excel)', type: 'XLS', link: '#' },
@@ -392,7 +410,7 @@ export default {
                 { id: 6, lessonId: 1006, name: 'Teste de Conhecimento (Link)', type: 'LINK', link: '#' },
                 { id: 7, lessonId: 1002, name: 'Artigo: Análise de Candlesticks', type: 'LINK', link: '#' },
             ],
-            newMaterial: { // Estado para o formulário de novo material
+            newMaterial: { 
                 name: '',
                 type: 'PDF',
                 link: ''
@@ -417,6 +435,19 @@ export default {
     },
     mounted() {
         this.loadCourseDetails();
+        document.addEventListener('click', this.closeLessonDropdown);
+        
+        // ** INÍCIO: LÓGICA DO HAMBÚRGUER/RESPONSIVIDADE **
+        this.checkScreenSize();
+        window.addEventListener('resize', this.checkScreenSize);
+        // ** FIM: LÓGICA DO HAMBÚRGUER/RESPONSIVIDADE **
+    },
+    beforeUnmount() {
+        document.removeEventListener('click', this.closeLessonDropdown);
+        
+        // ** INÍCIO: LÓGICA DO HAMBÚRGUER/RESPONSIVIDADE **
+        window.removeEventListener('resize', this.checkScreenSize);
+        // ** FIM: LÓGICA DO HAMBÚRGUER/RESPONSIVIDADE **
     },
     computed: {
         filteredModules() {
@@ -436,6 +467,25 @@ export default {
         }
     },
     methods: {
+        // ** INÍCIO: MÉTODOS DO HAMBÚRGUER/RESPONSIVIDADE **
+        checkScreenSize() {
+            // Define a Sidebar como fechada (mobile/tablet) ou aberta (desktop)
+            if (window.innerWidth <= 1024) { 
+                this.isSidebarOpen = false; 
+            } else {
+                this.isSidebarOpen = true; 
+            }
+        },
+        toggleSidebar() {
+            // Alterna a abertura no clique do botão hambúrguer
+            this.isSidebarOpen = !this.isSidebarOpen;
+            // Opcional: Garante que o sidebar não fique colapsado quando aberto no mobile
+            if (this.isSidebarCollapsed && this.isSidebarOpen) {
+                this.isSidebarCollapsed = false;
+            }
+        },
+        // ** FIM: MÉTODOS DO HAMBÚRGUER/RESPONSIVIDADE **
+
         getMaterialCountForLesson(lessonId) {
             // Retorna a contagem de materiais para a aula específica
             return this.materialsList.filter(m => m.lessonId === lessonId).length;
@@ -451,45 +501,14 @@ export default {
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         },
-        // Curso
-        loadCourses() {
-            console.log('Lista de cursos atualizada. (Simulação)');
+        // ... (Restante dos seus métodos 'loadCourses', 'loadCourseDetails', 'handleCoverUpload', 'saveCourse', etc.)
+        toggleLessonDropdown(lessonId) {
+            this.openLessonDropdown = this.openLessonDropdown === lessonId ? null : lessonId;
         },
-        loadCourseDetails() {
-            const courseId = this.course.selectedCourseId;
-            if (!courseId) {
-                this.course.name = '';
-                this.course.description = '';
-                this.course.coverImage = null;
-                this.course.coverImagePreview = null;
-                // Reseta os campos de acesso & preço
-                this.course.access = "1";
-                this.course.price = 0;
-                this.course.currency = "R$";
-                this.course.subscription = "1";
-                this.course.discount = "0";
-                // Reseta os campos de SEO & Compartilhamento
-                this.course.slug = '';
-                this.course.seoTitle = '';
-                this.course.seoDescription = '';
-                this.course.keywords = [];
-                this.course.socialImage = null;
-                this.course.socialImagePreview = null;
-                return;
-            }
-            const selectedCourse = this.courses.find(c => c.id === courseId);
-            if (selectedCourse) {
-                this.course.name = selectedCourse.name;
-                this.course.description = selectedCourse.description;
-                this.course.coverImage = null;
-                this.course.coverImagePreview = null;
-                // Carrega os campos de SEO & Compartilhamento do curso selecionado
-                this.course.slug = selectedCourse.slug || '';
-                this.course.seoTitle = selectedCourse.seoTitle || '';
-                this.course.seoDescription = selectedCourse.seoDescription || '';
-                this.course.keywords = [...(selectedCourse.keywords || [])]; // Copia o array
-                this.course.socialImage = null;
-                this.course.socialImagePreview = null;
+        // Método para fechar o dropdown ao clicar fora (opcional, mas recomendado)
+        closeLessonDropdown(event) {
+            if (!event.target.closest('.lesson-item')) {
+                this.openLessonDropdown = null;
             }
         },
         handleCoverUpload(event) {
@@ -569,7 +588,6 @@ export default {
         },
         openSocialPreviewModal() {
             alert('Funcionalidade de Preview Social ainda não implementada.');
-            // Aqui você poderia abrir um modal ou redirecionar para uma página de visualização.
         },
         // Preview
         openPreviewModal() {
@@ -687,8 +705,48 @@ export default {
                     alert('Material excluído.');
                 }
             }
-        }
-    }
+        },
+        loadCourseDetails() {
+            const courseId = this.course.selectedCourseId;
+            if (!courseId) {
+                this.course.name = '';
+                this.course.description = '';
+                this.course.coverImage = null;
+                this.course.coverImagePreview = null;
+                // Reseta os campos de acesso & preço
+                this.course.access = "1";
+                this.course.price = 0;
+                this.course.currency = "R$";
+                this.course.subscription = "1";
+                this.course.discount = "0";
+                // Reseta os campos de SEO & Compartilhamento
+                this.course.slug = '';
+                this.course.seoTitle = '';
+                this.course.seoDescription = '';
+                this.course.keywords = [];
+                this.course.socialImage = null;
+                this.course.socialImagePreview = null;
+                return;
+            }
+            const selectedCourse = this.courses.find(c => c.id === courseId);
+            if (selectedCourse) {
+                this.course.name = selectedCourse.name;
+                this.course.description = selectedCourse.description;
+                this.course.coverImage = null;
+                this.course.coverImagePreview = null;
+                // Carrega os campos de SEO & Compartilhamento do curso selecionado
+                this.course.slug = selectedCourse.slug || '';
+                this.course.seoTitle = selectedCourse.seoTitle || '';
+                this.course.seoDescription = selectedCourse.seoDescription || '';
+                this.course.keywords = [...(selectedCourse.keywords || [])]; // Copia o array
+                this.course.socialImage = null;
+                this.course.socialImagePreview = null;
+            }
+        },
+        loadCourses() {
+            console.log('Lista de cursos atualizada. (Simulação)');
+        },
+    },
 }
 </script>
 <style src="../../assets/css/views/admin/AcademyManagementView.css"></style>
