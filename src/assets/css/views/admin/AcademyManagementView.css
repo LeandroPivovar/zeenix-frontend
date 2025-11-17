@@ -1,32 +1,32 @@
 :root {
-	--color-primary: #00ff7f; /* Verde */
-	--color-secondary: #007bff; /* Azul (usado em preview/botões) */
-	--color-text-light: #f0f2f5;
-	--color-text-subtle: #8c929a;
-	--color-dark-gray-1: #0e0f0f; /* Fundo da tela */
-	--color-dark-gray-2: #0f0e0f; /* Fundo do card (ajustado para o valor da imagem) */
-	--color-dark-gray-3: #1c2027; /* Fundo das aulas/linhas internas */
-	--color-dark-gray-4: #33363d; /* Fundo de botões secundários */
-	--color-border: #ffffff;
-	--color-border-subtle: #3a4049;
-	--color-green-soft: #c6f6d5; /* Verde para tags ativas */
-	--color-red-soft: #fbd38d; /* Amarelo/Laranja suave para contadores */
+    --color-primary: #00ff7f; /* Verde */
+    --color-secondary: #007bff; /* Azul (usado em preview/botões) */
+    --color-text-light: #f0f2f5;
+    --color-text-subtle: #8c929a;
+    --color-dark-gray-1: #0e0f0f; /* Fundo da tela */
+    --color-dark-gray-2: #0f0e0f; /* Fundo do card (ajustado para o valor da imagem) */
+    --color-dark-gray-3: #1c2027; /* Fundo das aulas/linhas internas */
+    --color-dark-gray-4: #33363d; /* Fundo de botões secundários */
+    --color-border: #ffffff;
+    --color-border-subtle: #3a4049;
+    --color-green-soft: #c6f6d5; /* Verde para tags ativas */
+    --color-red-soft: #fbd38d; /* Amarelo/Laranja suave para contadores */
 }
 
 /* --- Layout Principal --- */
 .layout {
-	display: flex;
-	min-height: 100vh;
-	width: 100%;
-	overflow-x: hidden;
-	padding: 0 20px;
+    display: flex;
+    min-height: 100vh;
+    width: 100%;
+    overflow-x: hidden;
+    padding: 0 20px;
 }
 .layout-content {
-	background-color: #0e0f0f;
-	min-height: 100vh;
-	overflow-x: hidden;
-	color: #f0f2f5;
-	transition: margin-left 0.3s ease;
+    background-color: #0e0f0f;
+    min-height: 100vh;
+    overflow-x: hidden;
+    color: #f0f2f5;
+    transition: margin-left 0.3s ease;
 }
 .container{ width:100%;margin:0 auto;padding:20px 0;z-index:10}
 .page-header{display:flex;flex-direction:row;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid #2c3038; justify-content:space-between; align-items:center}
@@ -40,31 +40,39 @@
 .btn-secondary{background:#33363d;color:#f0f2f5;border:1px solid #2c3038}
 .card,.modal-content{background:#131213;padding:30px;border-radius:10px;}
 .card{box-shadow:0 4px 12px rgba(0,0,0,.3);margin-bottom:30px}
-.card-title{font-size:1.4rem;font-weight:600;margin-bottom:20px;padding-bottom:15px;border-bottom:1px solid #2c3038}
+.card-title{font-size:1.4rem;font-weight:600;margin-bottom:20px;padding-bottom:15px;}
 .form-group input, .form-group textarea, .input-select{
-	background-color: #131213;
-	margin-bottom: 20px;
+    background-color: #131213;
+    margin-bottom: 20px;
+}
+
+.card-title{
+    margin-bottom: 0;
+}
+.card-subtitle{
+    text-align: left;
+    margin-bottom: 20px;
 }
 label,h2{text-align:left}
 label{display:block;font-size:.9rem;font-weight:500;color:#8c929a}
 .input-text, .input-textarea, .input-select {
-	width: 100%;
-	padding: 10px 15px;
-	/* Linhas de correção para a imagem */
-	border: 1px solid var(--color-border-subtle); /* Ajustado para cinza escuro */
-	background-color: var(--color-dark-gray-1); /* Ajustado para fundo mais escuro */
-	/* Fim das linhas de correção */
-	border-radius: 6px;
-	color: var(--color-text-light);
-	font-size: 1rem;
-	box-sizing: border-box;
-	transition: border-color 0.2s;
-	margin-bottom: 0; /* Ajustado para o layout de grade */
+    width: 100%;
+    padding: 10px 15px;
+    /* Linhas de correção para a imagem */
+    border: 1px solid var(--color-border-subtle); /* Ajustado para cinza escuro */
+    background-color: var(--color-dark-gray-1); /* Ajustado para fundo mais escuro */
+    /* Fim das linhas de correção */
+    border-radius: 6px;
+    color: var(--color-text-light);
+    font-size: 1rem;
+    box-sizing: border-box;
+    transition: border-color 0.2s;
+    margin-bottom: 0; /* Ajustado para o layout de grade */
 }
 .input-text:focus,.input-textarea:focus,.input-select:focus{border-color:#00ff7f;outline:none}
 .input-textarea{resize:vertical;min-height:100px}
 .cover-upload-group label { margin-bottom: 10px; }
-.cover-upload-area{display:flex;align-items:center;gap:30px; width: 100%; margin-bottom: 20px;}
+.cover-upload-area{display:flex;align-items:center;gap:30px; width: 100%; margin-bottom: px;}
 .upload-placeholder{display:flex;flex-direction:column;align-items:center;justify-content:center;max-width:300px;width: 100%;height:140px;border:2px dashed #2c3038;border-radius:8px;color:#8c929a;cursor:pointer;transition:all .2s}
 .upload-placeholder:hover{border-color:#00ff7f;color:#00ff7f}
 .hidden-on-preview{opacity:.5}
@@ -72,369 +80,364 @@ label{display:block;font-size:.9rem;font-weight:500;color:#8c929a}
 .cover-image-preview{width:100%;height:100%;object-fit:cover}
 .input-with-icon{display:flex;gap:10px;align-items:center; width: 100%;}
 .input-with-icon .input-select{flex-grow: 1;background-color: #131213;}
-.btn-icon{background:var(--color-dark-gray-4);border:none;color:var(--color-text-subtle);padding:0;font-weight:400;transition:color .2s; height: 39px; width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px;}
+.btn-icon{background:var(--color-dark-gray-4);border:none;color:var(--color-text-subtle);padding:0;font-weight:400;transition:color .2s; height: 39px; width: 30%; display: flex; align-items: center; justify-content: center; gap: 8px; border-radius: 6px;}
 .btn-icon:hover{color:#00ff7f}
-
+.delete-btn{
+    background-color: #ff5252;
+}
+.edit-btn{
+    background-color: #282928;
+}
 /* --- ESTILIZAÇÃO DA SEÇÃO ACESSO & PREÇO (Para replicar a imagem) --- */
 
 .card.class-acess form {
-	display: flex;
-	flex-wrap: wrap; 
-	gap: 20px; 
+    display: flex;
+    flex-wrap: wrap; 
+    gap: 20px; 
 }
 
 /* Largura para os 4 campos na primeira linha */
 .card.class-acess .form-group {
-	flex-basis: calc(25% - 15px);
-	max-width: calc(25% - 15px);
-	margin-bottom: 0;
+    flex-basis: calc(25% - 15px);
+    max-width: calc(25% - 15px);
+    margin-bottom: 0;
 }
 
 /* Ajuste de altura do input de preço para alinhar com os selects */
 .card.class-acess #price {
-	padding: 10px 15px;
-	height: 39px;
-	line-height: 1.5;
+    padding: 10px 15px;
+    height: 39px;
+    line-height: 1.5;
 }
 
 /* Destaque da borda verde no campo "Moeda" como na imagem */
 .card.class-acess select[v-model="course.currency"] {
-	border-color: var(--color-primary);
+    border-color: var(--color-primary);
 }
 
 /* Estilo para a segunda linha (Cupom de Desconto) */
 .card.class-acess .form-group:nth-child(5) {
-	flex-basis: calc(25% - 15px);
-	max-width: calc(25% - 15px);
-	margin-top: 10px;
+    flex-basis: calc(25% - 15px);
+    max-width: calc(25% - 15px);
+    margin-top: 10px;
 }
 
 /* --- SEÇÃO MÓDULOS E AULAS (Refatorada) --- */
 .modules-list-container{
-	padding: 20px 0;
+    padding: 20px 0;
 }
 .list-header{
-	display:flex;
-	justify-content:space-between;
-	align-items:center;
-	margin-bottom: 20px;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom: 20px;
 }
 .list-placeholder{color:var(--color-text-subtle);font-style:italic;padding:15px 20px;text-align:center;border:1px dashed var(--color-border);border-radius:6px;margin-top:10px}
 
 /* --- Bloco de Módulo --- */
 .module-block {
-	background-color: var(--color-dark-gray-2); /* Fundo do card */
-	border-radius: 8px;
-	margin-bottom: 15px;
-	overflow: hidden;
-	border: 1px solid rgb(37, 37, 37);
+    background-color: var(--color-dark-gray-2); /* Fundo do card */
+    border-radius: 8px;
+    margin-bottom: 15px;
+    border: 1px solid rgb(37, 37, 37);
 }
 
 .module-header {
-	display: flex;
-	align-items: center;
-	padding: 15px;
-	font-weight: 600;
-	font-size: 1.1em;
-	cursor: grab;
-	background-color: var(--color-dark-gray-2); /* Fundo do módulo igual ao card */
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    font-weight: 600;
+    font-size: 1.1em;
+    cursor: grab;
+    background-color: var(--color-dark-gray-2); /* Fundo do módulo igual ao card */
 }
 
 .drag-handle {
-	margin-right: 15px;
-	color: var(--color-text-subtle);
+    margin-right: 15px;
+    color: var(--color-text-subtle);
 }
 
 .module-title-list {
-	flex-grow: 1;
-	color: var(--color-text-light);
-	text-align: left;
+    flex-grow: 1;
+    color: var(--color-text-light);
+    text-align: left;
 }
 
 .module-btn-group button:not(.add-lesson-btn) {
-	margin-left: 10px;
-	color: var(--color-text-subtle);
-	background: none;
-	border: 1px solid var(--color-border-subtle);
-	padding: 6px 12px;
-	border-radius: 4px;
-	font-size: 0.85rem;
+    margin-left: 10px;
+    color: var(--color-text-subtle);
+    background: none;
+    border: 1px solid var(--color-border-subtle);
+    padding: 6px 12px;
+    border-radius: 4px;
+    font-size: 0.85rem;
 }
 
 .module-btn-group .add-lesson-btn {
-	background-color: #00ff7f; /* Usando primary para destacar */
-	color: #0f1013;
-	font-weight: 600;
-	margin-left: 15px;
-	padding: 8px 15px;
+    background-color: #00ff7f; /* Usando primary para destacar */
+    color: #0f1013;
+    font-weight: 600;
+    margin-left: 15px;
+    padding: 8px 15px;
 }
 
 /* --- Lista de Aulas Aninhadas --- */
 .lesson-list {
-	list-style: none;
-	padding: 0;
-	margin: 0;
+    list-style: none;
+    padding: 0;
+    margin: 0;
 }
 
 .lesson-item {
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	padding: 12px 15px;
-	margin-left: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin-left: 30px;
+    border-bottom: 1px solid var(--color-dark-gray-3); /* Adicionado separador sutil */
 }
 
-.lesson-item:first-child {
-	border-top: none;
+.lesson-item:last-child {
+    border-bottom: none;
 }
 
 .lesson-info {
-	display: flex;
-	align-items: center;
-	flex-grow: 1;
-	text-align: left;
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    text-align: left;
 }
 
 .lesson-icon {
-	margin-right: 10px;
-	color: var(--color-text-subtle);
-	min-width: 16px; 
+    margin-right: 10px;
+    color: var(--color-text-subtle);
+    min-width: 16px; 
 }
 
-/* NOVO: Wrapper para Nome e Duração (Implementação da correção) */
+/* Wrapper para Nome e Duração (Mantido) */
 .lesson-name-time {
-	display: flex; /* Permite alinhar nome e tempo na mesma linha */
-	align-items: center;
-	gap: 10px; /* Espaçamento entre o nome e a duração */
-	flex-grow: 1; /* Ocupa o restante do espaço, empurrando a tag de status para a direita */
-	text-align: left;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex-grow: 1; 
+    text-align: left;
 }
 
 .lesson-name {
-	/* Não precisa mais de flex-grow aqui, ajustado para ser vizinho da duração */
-	font-size: 0.95em;
-	color: var(--color-text-light);
-	font-weight: 500;
+    font-size: 0.95em;
+    color: var(--color-text-light);
+    font-weight: 500;
 }
 
 .lesson-duration {
-	font-size: 0.8em;
-	color: var(--color-text-subtle);
-	min-width: 45px; 
-	text-align: left;
-	white-space: nowrap; /* Garante que '15 min' fique junto */
+    font-size: 0.8em;
+    color: var(--color-text-subtle);
+    min-width: 45px; 
+    text-align: left;
+    white-space: nowrap;
+    margin-left: 10px;
+    background: #1b1b1b;
+    padding: 5px 10px;
+    border-radius: 8px;
 }
 
-/* --- Tags de Status (Corrigido o espaçamento) --- */
+/* --- Tags de Status --- */
 .status-tag {
-	padding: 3px 8px;
-	border-radius: 4px;
-	font-size: 0.7em;
-	font-weight: 700;
-	text-transform: uppercase;
-	margin-left: 10px; /* Adiciona o espaçamento do lado do .lesson-name-time */
-	margin-right: 0; /* Remove a margem original desnecessária */
-	min-width: 50px;
-	text-align: center;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.7em;
+    font-weight: 700;
+    text-transform: uppercase;
+    margin-left: 10px;
+    min-width: 50px;
+    text-align: center;
 }
 
 .active-tag {
-	background-color: #00ff7f; 
-	color: #0f1013;
+    background-color: #00ff7f; 
+    color: #0f1013;
 }
 
-/* Estilo ajustado para a tag inativa (Oculta) conforme o padrão visual de alerta */
 .inactive-tag {
-	background-color: #cc5656; /* Amarelado/Laranja suave para a tag "Oculta" */
-	color: #0f1013; /* Texto escuro */
+    background-color: #cc5656; 
+    color: #0f1013;
 }
 
-/* --- Botões de Ação da Aula --- */
-.lesson-btn-group {
-	display: flex;
-	align-items: center;
-	gap: 5px;
-	min-width: 200px;
-	justify-content: flex-end;
+/* --- Botões de Ação da Aula (Desktop) --- */
+.lesson-actions.desktop-actions {
+    display: flex; /* Garante que os botões desktop fiquem visíveis por padrão */
+    align-items: center;
+    gap: 5px;
+    min-width: 200px;
+    justify-content: flex-end;
 }
 
 .lesson-btn-group button {
-	border: 1px solid transparent;
-	padding: 5px 10px;
-	margin-left: 5px;
-	cursor: pointer;
-	font-size: 0.85em;
-	border-radius: 8px;
-	height: 30px;
-	font-weight: 600;
+    border: 1px solid transparent;
+    padding: 5px 10px;
+    margin-left: 5px;
+    cursor: pointer;
+    font-size: 0.85em;
+    border-radius: 8px;
+    height: 30px;
+    font-weight: 600;
 }
 
 .btn-materials{
-	background: #00ff7f;
-	color: #0f1013;
+    background: #00ff7f;
+    color: #0f1013;
 }
 
 .lesson-btn-group button:hover {
-	background: #01924a;
+    background: #01924a;
 }
 
-/* ---------------------------------------------------------------------- */
-/* --- ESTILIZAÇÃO DO BOTÃO MATERIAIS E CONTADOR (AJUSTADO) --- */
-/* ---------------------------------------------------------------------- */
-
+/* --- Contador de Materiais --- */
 .materials-group {
-	display: flex;
-	align-items: center;
-	margin-left: 10px;
-	position: relative; /* Mantido se quiser usar um posicionamento mais avançado */
+    display: flex;
+    align-items: center;
+    margin-left: 10px;
+    position: relative;
 }
 
 .material-count {
-	display: flex; /* Torna visível e permite centralizar o número */
-	background-color: var(--color-red-soft); /* Amarelo/Laranja suave */
-	color: #0f1013; /* Texto escuro */
-	font-size: 0.75em;
-	font-weight: 700;
-	padding: 2px 6px;
-	border-radius: 10px; /* Formato de pílula/círculo */
-	min-width: 18px; /* Garante tamanho mínimo */
-	height: 18px;
-	align-items: center;
-	justify-content: center;
-	margin-left: 5px; /* Espaço entre o botão e o contador */
-	line-height: 1;
-	box-sizing: border-box;
+    display: flex;
+    background-color: var(--color-red-soft);
+    color: #0f1013;
+    font-size: 0.75em;
+    font-weight: 700;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    height: 18px;
+    align-items: center;
+    justify-content: center;
+    margin-left: 5px;
+    line-height: 1;
+    box-sizing: border-box;
 }
 
-/* ---------------------------------------------------------------------- */
-/* --- ESTILIZAÇÃO DA SEÇÃO SEO & COMPARTILHAMENTO (Conforme a Imagem) --- */
-/* ---------------------------------------------------------------------- */
+/* --- ESTILIZAÇÃO DA SEÇÃO SEO & COMPARTILHAMENTO --- */
 
 .seo-sharing-section {
-	background-color: #0f0e0f; 
-	padding: 20px; 
+    background-color: #0f0e0f; 
+    padding: 20px; 
 }
-
 .seo-sharing-section .card-title {
-	color: #ffffff; 
-	font-size: 1.2rem; 
-	margin-bottom: 15px; 
-	padding-bottom: 10px;
-	border-bottom: 1px solid #2c3038; 
+    color: #ffffff; 
+    font-size: 1.2rem; 
+    margin-bottom: 15px; 
+    padding-bottom: 10px;
 }
-
 .seo-sharing-section .form-group input,
 .seo-sharing-section .form-group textarea {
-	background-color: #131213; 
-	border: 1px solid #2c3038; 
-	color: #f0f2f5; 
-	padding: 8px 12px; 
-	border-radius: 6px; 
-	font-size: 0.9rem; 
-	transition: border-color 0.2s;
-	width: 100%; 
-	box-sizing: border-box;
-	margin-bottom: 10px; 
+    background-color: #131213; 
+    border: 1px solid #2c3038; 
+    color: #f0f2f5; 
+    padding: 8px 12px; 
+    border-radius: 6px; 
+    font-size: 0.9rem; 
+    transition: border-color 0.2s;
+    width: 100%; 
+    box-sizing: border-box;
+    margin-bottom: 10px; 
 }
 
 .seo-sharing-section .form-group input:focus,
 .seo-sharing-section .form-group textarea:focus {
-	border-color: #00ff7f; 
-	outline: none;
+    border-color: #00ff7f; 
+    outline: none;
 }
-
 .seo-sharing-section .form-group textarea {
-	min-height: 60px; 
-	resize: vertical; 
+    min-height: 60px; 
+    resize: vertical; 
+}
+.keywords-input-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: #131213; 
+    padding: 10px 15px;
+    border: 1px solid #2c3038; 
+    border-radius: 6px;
+    margin-bottom: 10px;
+    width: 100%; 
+    box-sizing: border-box;
+    flex-wrap: wrap; /* Adicionado para quebrar tags em mobile */
 }
 
-/* Palavras-chave */
-.seo-sharing-section .keywords-input-container {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	background-color: #131213; 
-	padding: 8px 12px;
-	border: 1px solid #2c3038; 
-	border-radius: 6px;
-	margin-bottom: 10px;
-	width: 100%; 
-	box-sizing: border-box;
+.keyword-tags {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
 }
 
-.seo-sharing-section .keyword-tags {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 5px;
+.keyword-tag {
+    background-color: #00ff7f; 
+    color: #0f1013; 
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    border: none;
+}
+.btn-remove-keyword {
+    background: none;
+    border: none;
+    color: #0f1013;
+    cursor: pointer;
+    font-weight: bold;
+    font-size: 0.75rem;
+    padding: 0;
+    margin-left: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    transition: background-color 0.2s;
 }
 
-.seo-sharing-section .keyword-tag {
-	background-color: #00ff7f; 
-	color: #0f1013; 
-	padding: 4px 8px;
-	border-radius: 4px;
-	font-size: 0.85rem;
-	display: flex;
-	align-items: center;
-	gap: 4px;
-	border: none;
+.btn-remove-keyword:hover {
+    background-color: rgba(0, 0, 0, 0.2); 
 }
 
-.seo-sharing-section .keyword-tag .btn-remove-keyword {
-	background: none;
-	border: none;
-	color: #0f1013;
-	cursor: pointer;
-	font-weight: bold;
-	font-size: 0.75rem;
-	padding: 0;
-	margin-left: 4px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	width: 16px;
-	height: 16px;
-	border-radius: 50%;
-	transition: background-color 0.2s;
+.keywords-input-container input {
+    background: transparent;
+    border: none;
+    color: #f0f2f5;
+    flex-grow: 1;
+    font-size: 0.9rem;
 }
 
-.seo-sharing-section .keyword-tag .btn-remove-keyword:hover {
-	background-color: rgba(0, 0, 0, 0.2); 
+.keywords-input-container input:focus {
+    outline: none;
 }
 
-.seo-sharing-section .keywords-input-container input {
-	background: transparent;
-	border: none;
-	color: #f0f2f5;
-	padding: 0;
-	margin: 0;
-	flex-grow: 1;
-	font-size: 0.9rem;
-}
-
-.seo-sharing-section .keywords-input-container input:focus {
-	outline: none;
-}
-
-.seo-sharing-section .form-group label[for="keywords"] {
-	color: #8c929a; 
-	font-size: 0.9rem;
-	display: block;
+.form-group label[for="keywords"] {
+    color: #8c929a; 
+    font-size: 0.9rem;
+    display: block;
 }
 
 .social-image-upload-area {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
     width: 100%;
-    height: 140px;
+    height: auto;
     border-radius: 8px;
     color: #8c929a;
     cursor: pointer;
     transition: all .2s;
 }
 
+.seo-cover-area {
+    display: flex;
+    align-items: center;
+    gap: 30px;
+    width: 100%;
+}
 
 .social-image-preview img{
     width: 100%;
@@ -443,138 +446,310 @@ label{display:block;font-size:.9rem;font-weight:500;color:#8c929a}
 }
 
 .seo-sharing-section .form-group label[for="social-image"] {
-	color: #8c929a; 
-	font-size: 0.9rem;
-	margin-bottom: 10px;
-	display: block;
+    color: #8c929a; 
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    display: block;
+}
+
+.form-group label{
+    display: block;
+    font-size: .9rem;
+    font-weight: 500;
+    color: #8c929a;
+    margin-bottom: 5px;
+    margin-top: 10px;
 }
 
 .seo-sharing-section label{
     margin-top: 10px;
 }
+/* --- AÇÕES DE AULA (Responsividade - Mobile Dropdown) --- */
 
-/* --- Media Queries para Responsividade Geral --- */
-
-@media (min-width: 1200px) {
-	.btn-icon{
-		max-width:150px;
-		width: 100%
-	}
+/* Oculta o dropdown de mobile por padrão */
+.lesson-actions-mobile {
+    display: none;
+    position: relative; /* Para o dropdown ser posicionado em relação a ele */
 }
-@media (max-width: 1200px) {
-	.layout {
-		max-width: 100%;
+
+/* Oculta o botão de reticências no desktop */
+.more-options-btn {
+    background: none;
+    border: none;
+    color: var(--color-text-subtle);
+    padding: 0;
+    cursor: pointer;
+    margin-left: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Estilo do Menu Suspenso (Dropdown) */
+.lesson-dropdown-menu {
+    position: absolute;
+    top: 100%; 
+    right: 0;
+    background-color: var(--color-dark-gray-2); 
+    border: 1px solid var(--color-border-subtle);
+    border-radius: 6px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
+    min-width: 150px;
+    z-index: 1000; 
+    transform: translateY(5px); 
+
+}
+
+.lesson-dropdown-menu .dropdown-item {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 10px 15px;
+    background: none;
+    border: none;
+    color: var(--color-text-light);
+    font-size: 0.9em;
+    cursor: pointer;
+    text-align: left;
+    gap: 8px;
+}
+
+.lesson-dropdown-menu .dropdown-item:hover {
+    background-color: var(--color-dark-gray-4);
+}
+
+.lesson-dropdown-menu .dropdown-item img {
+    filter: invert(1);
+}
+
+.lesson-dropdown-menu .btn-materials {
+    background-color: var(--color-primary);
+    color: var(--color-dark-gray-1);
+    font-weight: 600;
+}
+
+.lesson-dropdown-menu .delete-btn {
+    color: #ff5252;
+}
+
+@media (min-width: 769px) {
+	.social-image-upload-area{
+		height: 140px;
+	}
+
+		/* --- Botão Hambúrguer (Oculto no Desktop por Padrão) --- */
+	.menu-toggler-btn {
+		display: none; /* Oculta por padrão */
+		background: none;
+		border: none;
+		color: var(--color-text-light);
+		cursor: pointer;
+		padding: 10px;
+		z-index: 20; 
+		transition: color 0.2s;
+	}
+
+	.menu-toggler-btn:hover {
+		color: var(--color-primary);
 	}
 }
 @media (max-width: 768px) {
-    .layout, .layout-content, .container {
+    .layout {
         width: 100vw;
-        margin-left: none;
-        
+		padding: 0px;
     }
-	/* Ajustes para a seção Acesso & Preço em mobile */
-	.card.class-acess form {
-		flex-direction: column;
-		gap: 0;
-	}
-	.card.class-acess .form-group,
-	.card.class-acess .form-group:nth-child(5) {
-		flex-basis: 100%;
-		max-width: 100%;
-		margin-bottom: 20px; 
-		margin-top: 0;
-	}
-	/* Fim dos ajustes para Acesso & Preço */
 
-	.page-header {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 15px;
-		margin-bottom: 20px;
-		padding-bottom: 15px;
-		text-align: left;
-	}
-	.page-title {
-		font-size: 1.3rem;
-	}
-	.cover-upload-area{
-		flex-direction: column;
-	}
-	.module-header {
-		flex-wrap: wrap;
-		gap: 10px;
-		padding-bottom: 10px;
-	}
-	.module-title-list {
-		flex-basis: 100%; 
-		order: 1; 
-	}
-	.module-btn-group {
-		order: 2; 
-		flex-basis: 100%;
-		justify-content: flex-start;
-		flex-wrap: wrap;
-	}
-	.module-btn-group button {
-		margin-left: 0;
-		margin-right: 10px;
-		margin-bottom: 5px;
-	}
-	.lesson-item {
-		flex-direction: column;
-		align-items: flex-start;
-		gap: 8px;
-	}
-	.lesson-info {
-		width: 100%;
-	}
-	.lesson-name-time {
-		flex-grow: 0; 
-	}
-	.lesson-btn-group {
-		width: 100%;
-		justify-content: flex-start;
-		padding-left: 26px; 
-	}
-	.lesson-duration, .status-tag {
-		margin-right: 5px;
-		margin-left: 0; 
-	}
-	
-	.input-with-icon {
-		flex-direction: column;
-		gap: 8px;
-	}
-	.btn-icon {
-		width: 100%;
-	}
-	.module-actions{ 
-		flex-direction: column;
-		width: 100%;
-	}
-	.btn-secondary{
-		width: 100%;
-		justify-content: center;
-		text-align: center;
-	}
-}
-@media (max-width: 480px) {
-	.action-buttons {
-		flex-direction: column;
-		align-items: stretch;
-	}
-	.btn-action-download, .btn-action-complete {
-		width: 100%;
-	}
-	.video-placeholder-text {
-		font-size: 1.5rem;
-	}
-	.modal-content { 
-		padding: 20px;
-		max-width: calc(100% - 20px);
-	}
-	.half-width-group {
-		flex-direction: column;
-		gap: 0;
-	}
+    .layout-content {
+        width: 100%;
+    }
+    .container {
+        width: 100%;
+		padding: 30px 0;
+    }
+    
+    /* Header */
+    .page-header {
+        /* NOVO: Permite que o botão e o header-info fiquem lado a lado */
+        display: grid;
+        grid-template-areas:
+            "menu info"
+            "actions actions";
+        grid-template-columns: auto 1fr;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #2c3038;
+        align-items: center;
+    }
+    
+    /* NOVO: Exibe o botão e o posiciona no grid */
+    .menu-toggler-btn {
+        display: block; 
+        grid-area: menu;
+        justify-self: start;
+        padding: 0;
+    }
+
+    /* NOVO: Posiciona as informações no grid */
+    .header-info {
+        grid-area: info;
+    }
+
+    .page-title {
+        font-size: 1.3rem;
+    }
+    
+    /* NOVO: Posiciona as ações no grid */
+    .header-actions {
+        grid-area: actions; 
+        width: 100%; 
+        justify-content: space-between;
+        gap: 10px;
+        margin-top: 10px; /* Adiciona um pequeno espaço acima das ações */
+    }
+    
+    .header-actions .btn {
+        flex-grow: 1; 
+        text-align: center;
+        justify-content: center; 
+    }
+    
+    /* Informações do Curso */
+    /* ... (restante das suas regras para .cover-upload-area, .card.class-acess, etc. permanecem as mesmas) ... */
+    
+    .cover-upload-area{
+        flex-direction: column;
+        gap: 15px; 
+    }
+    .upload-placeholder, .cover-preview-box {
+        max-width: 100%; 
+        height: auto;
+        min-height: 120px; 
+    }
+    
+    .card{
+        padding: 30px;
+    }
+    /* Acesso & Preço */
+    .card.class-acess form {
+        flex-direction: column;
+        gap: 0;
+    }
+    .card.class-acess .form-group,
+    .card.class-acess .form-group:nth-child(5) {
+        flex-basis: 100%;
+        max-width: 100%;
+        margin-bottom: 20px; 
+        margin-top: 0;
+    }
+
+    /* Módulos e Aulas - Bloco do Módulo */
+    .module-header {
+        flex-wrap: wrap;
+        gap: 10px;
+        padding-bottom: 10px;
+    }
+    .module-title-list {
+        flex-basis: 100%; 
+        order: 1; 
+    }
+    .module-btn-group {
+        order: 2; 
+        flex-basis: 100%;
+        justify-content: flex-start;
+        flex-wrap: wrap;
+        width: 100%;
+    }
+
+    
+    /* Módulos e Aulas - Itens de Aula */
+    .lesson-item {
+        flex-direction: row; 
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 15px; 
+        margin-left: 10px; 
+    }
+    .lesson-info {
+        width: calc(100% - 40px); 
+        flex-wrap: wrap; 
+    }
+    .lesson-name-time {
+        flex-grow: 1;
+        flex-basis: 100%; 
+    }
+    .lesson-duration, .status-tag {
+        margin-left: 0;
+        margin-right: 10px;
+        margin-top: 5px; 
+        margin-bottom: 5px;
+    }
+    .lesson-name {
+        flex-basis: auto;
+    }
+
+    /* Ações de Aula */
+    .lesson-actions.desktop-actions {
+        display: none; 
+    }
+    .lesson-actions-mobile {
+        display: block; 
+        min-width: 30px;
+    }
+    
+    /* SEO */
+    .input-with-icon {
+        flex-direction: column;
+        gap: 8px;
+    }
+    .btn-icon {
+        width: 100%;
+        max-width: none; 
+    }
+    .seo-sharing-section .keywords-input-container {
+        flex-wrap: wrap; 
+        align-items: flex-start;
+    }
+    .seo-sharing-section .keyword-tags {
+        width: 100%; 
+        margin-bottom: 10px;
+    }
+    .seo-sharing-section .keywords-input-container input {
+        width: 100%; 
+    }
+    .seo-cover-area {
+        flex-direction: column;
+        gap: 15px;
+    }
+    .social-image-preview-box, .upload-placeholder.seo-cover-area {
+        max-width: 100%;
+        width: 100%;
+    }
+
+    .module-btn-group{
+        display: flex;
+        gap: 10px;
+        margin-bottom: 20px;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .module-btn-group button {
+        margin-left: 0;
+        margin-bottom: 5px;
+    }
+
+    .edit-btn, .delete-btn{
+        width: 45%;
+        margin: 0;
+    }
+    .module-btn-group .add-lesson-btn {
+        width: 95%;
+        margin: 0;
+    }
+
+    .module-btn-group button:not(.add-lesson-btn){
+        margin: 0;
+    }
+
 }
