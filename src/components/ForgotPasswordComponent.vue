@@ -1,6 +1,6 @@
 <template>
   <!-- Main Container -->
-  <main id="forgot-main" class="min-h-screen flex items-center justify-center px-8">
+  <main id="forgot-main" class="min-h-screen flex items-center justify-center px-8 forgot-password-bg">
     <div class="w-full max-w-7xl flex items-center justify-between login-container-wrapper">
       
       <!-- Left Column - Forgot Password Card -->
@@ -91,7 +91,10 @@ export default {
       this.isLoading = true;
       try {
         // Implementar lógica de recuperação de senha
-        const res = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/api/auth/forgot-password', {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        // Se VUE_APP_API_BASE_URL já inclui /api, usar /auth/forgot-password, senão usar /api/auth/forgot-password
+        const endpoint = apiBase.includes('/api') ? '/auth/forgot-password' : '/api/auth/forgot-password';
+        const res = await fetch(`${apiBase}${endpoint}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email: this.email })
@@ -170,6 +173,11 @@ button.bg-zenix-green:disabled {
 .placeholder-zenix-gray::placeholder { color: #6A6A6A; }
 
 .focus\:border-zenix-green:focus { border-color: #22C55E; }
+
+/* Background gradient */
+.forgot-password-bg {
+  background: linear-gradient(135deg, #0B0B0B 0%, #0B0B0B 70%, rgba(34, 197, 94, 0.03) 100%);
+}
 
 /* Gradient de fundo - exatamente como no original */
 .gradient-glow {

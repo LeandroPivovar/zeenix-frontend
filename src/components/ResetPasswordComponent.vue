@@ -1,6 +1,6 @@
 <template>
   <!-- Main Container -->
-  <main id="reset-main" class="min-h-screen flex items-center justify-center px-8">
+  <main id="reset-main" class="min-h-screen flex items-center justify-center px-8 reset-password-bg">
     <div class="w-full max-w-7xl flex items-center justify-between login-container-wrapper">
       
       <!-- Left Column - Reset Password Card -->
@@ -160,7 +160,10 @@ export default {
       this.success = '';
 
       try {
-        const res = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/api/auth/reset-password', {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        // Se VUE_APP_API_BASE_URL já inclui /api, usar /auth/reset-password, senão usar /api/auth/reset-password
+        const endpoint = apiBase.includes('/api') ? '/auth/reset-password' : '/api/auth/reset-password';
+        const res = await fetch(`${apiBase}${endpoint}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -248,8 +251,8 @@ button.bg-zenix-green:disabled {
 
 .focus\:border-zenix-green:focus { border-color: #22C55E; }
 
-/* Gradient de fundo - exatamente como no original */
-.gradient-glow {
+/* Background gradient */
+.reset-password-bg {
   background: linear-gradient(135deg, #0B0B0B 0%, #0B0B0B 70%, rgba(34, 197, 94, 0.03) 100%);
 }
 
