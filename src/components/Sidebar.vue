@@ -143,6 +143,15 @@
             >
                 Admin
             </button>
+
+            <button
+                class="menu-item"
+                :class="{ active: isInvestmentIAActive }"
+                @click="navigateAndClose('/InvestmentIA')"
+                data-text="InvestmentIA"
+            >
+                InvestmentIA
+            </button>
         </nav>
         <div class="status">
             <div class="user" @click="toggleUserMenu">
