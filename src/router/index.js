@@ -11,7 +11,7 @@ import OperationView from '../views/OperationView.vue'
 import CopyTradingView from '../views/CopyTrading.vue'
 import DerivOAuthCallback from '../views/DerivOAuthCallback.vue'
 import MarkupView from '../views/Admin/MarkupView.vue'
-import StatsIAsView from '../views/Admin/StatsIAsView.vue'
+import InvestmentIAView from '../views/InvestmentIAView.vue'
 import ExpertsView from '../views/Admin/ExpertsView.vue'
 import ClientesView from '../views/Admin/ClientesView.vue'
 import WebhookView from '../views/Admin/WebhookView.vue'
@@ -107,7 +107,7 @@ const routes = [
   {
     path: '/StatsIAs',
     name: 'StatsIAs',
-    component: StatsIAsView,
+    component: InvestmentIAView,
     meta: { requiresAuth: true }
   },
   {
