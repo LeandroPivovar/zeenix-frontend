@@ -406,10 +406,10 @@ export default {
                 this.kpis = {
                     activeAdmins: data.activeAdmins || 0,
                     activeUsers: data.activeUsers || 0,
-                    iasInOperation: 48, // TODO: Implementar no backend
-                    registeredExperts: 12, // TODO: Implementar no backend
-                    managedVolume: data.managedVolume?.totalFormatted || '$0',
-                    totalCommission: data.managedVolume?.estimatedCommissionFormatted || '$0',
+                    iasInOperation: data.iasInOperation || 0,
+                    registeredExperts: data.registeredExperts || 0,
+                    managedVolume: data.managedVolumeFormatted || '$0',
+                    totalCommission: data.totalCommissionFormatted || '$0',
                 };
             } catch (error) {
                 console.error('Erro ao carregar estatísticas:', error);
