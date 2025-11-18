@@ -17,8 +17,246 @@
 				</div>
 			</div>
 
-			<!-- Seção de Monitoramento de IA -->
-			<div class="ai-monitoring-section">
+			<!-- Seção Principal - IA Desativada (Padrão) -->
+			<div v-if="!tradingConfig.isActive && !aiMonitoring.isActive" class="ia-inactive-section">
+				<!-- Card de Saldo e Status -->
+				<div class="balance-status-card">
+					<div class="balance-info">
+						<div class="balance-main">
+							<div class="balance-label">Saldo</div>
+							<div class="balance-value">{{ formatBalance(accountBalance) }}</div>
+							<div class="account-type">
+								<span :class="['account-badge', accountType === 'Real' ? 'real' : 'demo']">
+									{{ accountType }}
+								</span>
+							</div>
+						</div>
+						<div class="result-today">
+							<div class="result-label">Resultado Hoje</div>
+							<div :class="['result-value', todayResult >= 0 ? 'positive' : 'negative']">
+								{{ todayResult >= 0 ? '+' : '' }}{{ formatCurrency(todayResult) }}
+							</div>
+							<div :class="['result-percent', todayResultPercent >= 0 ? 'positive' : 'negative']">
+								({{ todayResultPercent >= 0 ? '+' : '' }}{{ todayResultPercent.toFixed(2) }}%)
+							</div>
+						</div>
+						<div class="trades-today">
+							<div class="trades-label">Trades Hoje</div>
+							<div class="trades-value">{{ todayTrades }}</div>
+						</div>
+					</div>
+					<div class="status-actions">
+						<div class="status-info">
+							<div class="status-label">Status</div>
+							<div class="status-value inactive">IA Inativa</div>
+						</div>
+						<button class="btn-activate-ia" @click="activateIAFromDefault">
+							▶ Ativar IA
+						</button>
+						<button class="btn-disconnect">Desconectar</button>
+					</div>
+				</div>
+
+				<!-- Visão da IA | Orion -->
+				<div class="ia-vision-card">
+					<div class="vision-header">
+						<h3>Visão da IA | Orion</h3>
+						<p>Análise em tempo real do mercado</p>
+					</div>
+					<div class="vision-status">
+						<div class="status-item">
+							<span class="status-dot active"></span>
+							<span class="status-text">Operando</span>
+						</div>
+						<div class="status-item">
+							<span class="status-label">IA Orion</span>
+							<span class="status-value">Ativo Atual</span>
+						</div>
+					</div>
+					<div class="market-info-grid">
+						<div class="info-item">
+							<div class="info-label">EUR/USD</div>
+							<div class="info-value">Forex</div>
+						</div>
+						<div class="info-item">
+							<div class="info-label">Timeframe</div>
+							<div class="info-value">M5</div>
+						</div>
+						<div class="info-item">
+							<div class="info-label">Probabilidade</div>
+							<div class="info-value high-confidence">82%</div>
+							<div class="info-hint">Alta confiança</div>
+						</div>
+						<div class="info-item">
+							<div class="info-label">Latência</div>
+							<div class="info-value excellent">12ms</div>
+							<div class="info-hint">Excelente</div>
+						</div>
+						<div class="info-item">
+							<div class="info-label">Última Leitura</div>
+							<div class="info-value">{{ lastReadingTime }}</div>
+							<div class="info-hint">Agora</div>
+						</div>
+						<div class="info-item">
+							<div class="info-label">Status</div>
+							<div class="info-value status-active">Ativo</div>
+							<div class="info-hint">Monitorando</div>
+						</div>
+					</div>
+					<div class="precision-info">
+						<div class="precision-item">
+							<div class="precision-label">Precisão</div>
+							<div class="precision-value">78%</div>
+						</div>
+						<div class="precision-item">
+							<div class="precision-label">WinRate</div>
+							<div class="precision-value">{{ winRate }}%</div>
+						</div>
+					</div>
+				</div>
+
+				<!-- Configurações -->
+				<div class="config-section-inactive">
+					<!-- Mercado & Estratégia -->
+					<div class="config-group">
+						<div class="config-group-header">
+							<h4>Mercado & Estratégia <span class="info-icon">ⓘ</span></h4>
+						</div>
+						<div class="config-group-content">
+							<div class="config-field">
+								<label>Selecionar o mercado</label>
+								<div class="select-field disabled">
+									<span>EUR/USD - Forex</span>
+								</div>
+							</div>
+							<div class="config-field">
+								<label>Estratégia</label>
+								<div class="select-field disabled">
+									<span>IA Orion - Alta Performance</span>
+									<small>Análise técnica avançada com machine learning</small>
+								</div>
+							</div>
+						</div>
+					</div>
+
+					<!-- Modo de Negociação -->
+					<div class="config-group">
+						<div class="config-group-header">
+							<h4>Modo de Negociação</h4>
+						</div>
+						<div class="config-group-content">
+							<div class="mode-options">
+								<button class="mode-option active" disabled>
+									⚡ Veloz
+									<span class="mode-hint">Executa sinais imediatamente</span>
+								</button>
+								<button class="mode-option" disabled>⚖️ Moderado</button>
+								<button class="mode-option" disabled>🐢 Devagar</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Parâmetros de Entrada -->
+					<div class="config-group">
+						<div class="config-group-header">
+							<h4>Parâmetros de Entrada</h4>
+						</div>
+						<div class="config-group-content">
+							<div class="input-group">
+								<label>Valor de Entrada (USD)</label>
+								<span class="input-hint">Valor por operação</span>
+								<input 
+									type="number" 
+									v-model.number="tradingConfig.stakeAmount" 
+									min="1"
+									step="0.5"
+									placeholder="50"
+								/>
+							</div>
+							<div class="input-group">
+								<label>Alvo de Lucro (USD)</label>
+								<span class="input-hint">Meta diária de lucro</span>
+								<input 
+									type="number" 
+									v-model.number="tradingConfig.profitTarget" 
+									min="0"
+									step="0.01"
+									placeholder="100"
+								/>
+							</div>
+							<div class="input-group">
+								<label>Limite de Perda (USD)</label>
+								<span class="input-hint">Stop loss diário</span>
+								<input 
+									type="number" 
+									v-model.number="tradingConfig.lossLimit" 
+									min="0"
+									step="0.01"
+									placeholder="25"
+								/>
+							</div>
+						</div>
+					</div>
+
+					<!-- Gerenciamento de Risco -->
+					<div class="config-group">
+						<div class="config-group-header">
+							<h4>Gerenciamento de Risco</h4>
+						</div>
+						<div class="config-group-content">
+							<div class="risk-options">
+								<button class="risk-option" disabled>Fixo</button>
+								<button class="risk-option active" disabled>
+									🛡️ Conservador
+									<span class="risk-hint">Nível de Risco: Baixo</span>
+									<span class="risk-description">Proteção máxima do capital com crescimento estável</span>
+								</button>
+								<button class="risk-option" disabled>⚖️ Moderado</button>
+								<button class="risk-option" disabled>⚡ Agressivo</button>
+							</div>
+						</div>
+					</div>
+
+					<!-- Controle da IA -->
+					<div class="config-group">
+						<div class="config-group-header">
+							<h4>Controle da IA</h4>
+						</div>
+						<div class="config-group-content">
+							<div class="control-info">
+								<div class="control-status">
+									<span class="status-label">Status da IA</span>
+									<span class="status-badge inactive">Inativa</span>
+								</div>
+								<p class="control-hint">Quando ativada, a IA executa operações automaticamente</p>
+							</div>
+						</div>
+					</div>
+
+					<!-- Logs Recentes -->
+					<div class="config-group">
+						<div class="config-group-header">
+							<h4>Logs Recentes</h4>
+						</div>
+						<div class="config-group-content">
+							<div class="logs-container">
+								<div v-if="recentLogs.length === 0" class="no-logs">
+									<p>Nenhum log disponível</p>
+								</div>
+								<div v-else class="logs-list">
+									<div v-for="(log, index) in recentLogs" :key="index" class="log-item">
+										<span class="log-time">{{ log.time }}</span>
+										<span class="log-message">{{ log.message }}</span>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<!-- Seção de Monitoramento de IA (aparece quando monitoramento está ativo) -->
+			<div v-if="aiMonitoring.isActive" class="ai-monitoring-section">
 				<div class="ai-monitoring-header">
 					<h2>Monitor de Volatilidade 100</h2>
 					<button :class="['btn-ai-toggle', aiMonitoring.isActive ? 'active' : '']" @click="toggleAIMonitoring">
@@ -27,7 +265,7 @@
 					</button>
 				</div>
 
-				<div v-if="aiMonitoring.isActive" class="ai-monitoring-content">
+				<div class="ai-monitoring-content">
 					<div class="price-display-section">
 						<div class="current-price-card">
 							<h3>Preço Atual</h3>
@@ -159,6 +397,7 @@
 							<button 
 								:class="['btn-trading-toggle', tradingConfig.isActive ? 'active' : '']" 
 								@click="toggleAutomatedTrading"
+								:disabled="!aiMonitoring.isActive"
 							>
 								<span v-if="!tradingConfig.isActive">▶ Ativar IA</span>
 								<span v-else>⏸ Desativar IA</span>
@@ -484,6 +723,16 @@ export default {
 			},
 			tradeHistory: [],
 			
+			// Dados para tela padrão (IA desativada)
+			accountBalance: 0,
+			accountType: 'Demo', // Real ou Demo
+			todayResult: 0,
+			todayResultPercent: 0,
+			todayTrades: 0,
+			lastReadingTime: '--:--:--',
+			winRate: 78,
+			recentLogs: [],
+			
 			closeSidebar: () => { }, 
 			toggleSidebarCollapse: () => {},
 		};
@@ -504,6 +753,68 @@ export default {
 			const sign = value >= 0 ? '+' : ''; 
 			const absoluteValue = Math.abs(value);
 			return `${sign}${new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'USD', minimumFractionDigits: 2 }).format(absoluteValue)}`;
+		},
+		
+		formatBalance(value) {
+			return new Intl.NumberFormat('pt-BR', { 
+				style: 'currency', 
+				currency: 'BRL', 
+				minimumFractionDigits: 2,
+				maximumFractionDigits: 2
+			}).format(value);
+		},
+		
+		async loadAccountInfo() {
+			try {
+				// Buscar informações da conta Deriv
+				const connectionStr = localStorage.getItem('deriv_connection');
+				if (connectionStr) {
+					const connection = JSON.parse(connectionStr);
+					
+					// Determinar tipo de conta
+					const currency = connection.tradeCurrency || connection.currency || 'USD';
+					this.accountType = currency.toUpperCase() === 'DEMO' ? 'Demo' : 'Real';
+					
+					// Buscar saldo
+					const balance = connection.balance || connection.balanceAfter || 0;
+					this.accountBalance = parseFloat(balance) || 0;
+					
+					// Converter para BRL se necessário (exemplo: 1 USD = 5 BRL)
+					if (currency.toUpperCase() !== 'BRL') {
+						this.accountBalance = this.accountBalance * 5; // Conversão aproximada
+					}
+				}
+				
+				// Buscar estatísticas de hoje
+				const userId = this.getUserId();
+				if (userId) {
+					const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+					const response = await fetch(`${apiBase}/ai/session-stats/${userId}`, {
+						headers: {
+							'Authorization': `Bearer ${localStorage.getItem('token')}`
+						}
+					});
+					const result = await response.json();
+					
+					if (result.success && result.data) {
+						this.todayTrades = result.data.totalTrades || 0;
+						this.todayResult = result.data.profitLoss || 0;
+						
+						// Calcular percentual (assumindo saldo inicial de 10000)
+						const initialBalance = 10000;
+						this.todayResultPercent = (this.todayResult / initialBalance) * 100;
+					}
+				}
+				
+				// Atualizar última leitura
+				this.lastReadingTime = new Date().toLocaleTimeString('pt-BR', { 
+					hour: '2-digit', 
+					minute: '2-digit', 
+					second: '2-digit' 
+				});
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao carregar informações da conta:', error);
+			}
 		},
 		
 		/**
@@ -702,7 +1013,16 @@ export default {
 				this.stopAIMonitoring();
 			} else {
 				await this.startAIMonitoring();
+				// Após iniciar monitoramento, mostrar seção de trading automático
+				// A seção padrão será ocultada automaticamente pelo v-if="!tradingConfig.isActive"
 			}
+		},
+		
+		// Ativar IA a partir da tela padrão
+		async activateIAFromDefault() {
+			// Primeiro iniciar o monitoramento
+			await this.startAIMonitoring();
+			// A seção de monitoramento aparecerá automaticamente
 		},
 
 		async startAIMonitoring() {
@@ -725,6 +1045,9 @@ export default {
 					
 					// Iniciar polling para buscar dados a cada 2 segundos
 					this.startPolling();
+					
+					// A seção de trading automático aparecerá automaticamente
+					// pois aiMonitoring.isActive agora é true
 				} else {
 					console.error('[StatsIAsView] Erro ao iniciar monitoramento:', result.message);
 					alert('Erro ao iniciar monitoramento: ' + result.message);
@@ -1344,6 +1667,18 @@ export default {
 },
 
 mounted() {
+	// Carregar informações da conta
+	this.loadAccountInfo();
+	
+	// Atualizar última leitura a cada segundo
+	setInterval(() => {
+		this.lastReadingTime = new Date().toLocaleTimeString('pt-BR', { 
+			hour: '2-digit', 
+			minute: '2-digit', 
+			second: '2-digit' 
+		});
+	}, 1000);
+	
 	// Carregar configuração da IA ao montar o componente
 	this.loadAIConfigOnMount();
 },
@@ -1624,6 +1959,522 @@ tbody tr:hover {
         overflow-y: auto;
         background: #191a19;
     }
+}
+
+/* Seção Principal - IA Desativada */
+.ia-inactive-section {
+	margin-bottom: 30px;
+	animation: fadeIn 0.5s ease-out 0.1s forwards;
+	opacity: 0;
+}
+
+/* Card de Saldo e Status */
+.balance-status-card {
+	background: rgba(30, 41, 59, 0.4);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 12px;
+	padding: 24px;
+	margin-bottom: 20px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 30px;
+}
+
+.balance-info {
+	display: flex;
+	gap: 40px;
+	align-items: center;
+	flex: 1;
+}
+
+.balance-main {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.balance-label {
+	font-size: 12px;
+	color: #94a3b8;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.balance-value {
+	font-size: 32px;
+	font-weight: 700;
+	color: #f8fafc;
+	font-family: 'Courier New', monospace;
+}
+
+.account-type {
+	margin-top: 4px;
+}
+
+.account-badge {
+	padding: 4px 12px;
+	border-radius: 12px;
+	font-size: 11px;
+	font-weight: 600;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.account-badge.real {
+	background: rgba(16, 185, 129, 0.2);
+	color: #10b981;
+	border: 1px solid rgba(16, 185, 129, 0.4);
+}
+
+.account-badge.demo {
+	background: rgba(59, 130, 246, 0.2);
+	color: #3b82f6;
+	border: 1px solid rgba(59, 130, 246, 0.4);
+}
+
+.result-today, .trades-today {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.result-label, .trades-label {
+	font-size: 12px;
+	color: #94a3b8;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.result-value {
+	font-size: 24px;
+	font-weight: 700;
+	font-family: 'Courier New', monospace;
+}
+
+.result-value.positive {
+	color: #10b981;
+}
+
+.result-value.negative {
+	color: #ef4444;
+}
+
+.result-percent {
+	font-size: 14px;
+	font-weight: 600;
+}
+
+.result-percent.positive {
+	color: #10b981;
+}
+
+.result-percent.negative {
+	color: #ef4444;
+}
+
+.trades-value {
+	font-size: 24px;
+	font-weight: 700;
+	color: #f8fafc;
+	font-family: 'Courier New', monospace;
+}
+
+.status-actions {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	align-items: flex-end;
+}
+
+.status-info {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	align-items: flex-end;
+}
+
+.status-label {
+	font-size: 12px;
+	color: #94a3b8;
+	text-transform: uppercase;
+}
+
+.status-value {
+	font-size: 16px;
+	font-weight: 600;
+	padding: 6px 16px;
+	border-radius: 8px;
+}
+
+.status-value.inactive {
+	background: rgba(239, 68, 68, 0.2);
+	color: #ef4444;
+	border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.btn-activate-ia {
+	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+	border: none;
+	border-radius: 8px;
+	padding: 12px 24px;
+	color: white;
+	font-weight: 600;
+	font-size: 14px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
+}
+
+.btn-activate-ia:hover {
+	transform: translateY(-2px);
+	box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+}
+
+.btn-disconnect {
+	background: rgba(30, 41, 59, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 8px;
+	padding: 8px 16px;
+	color: #94a3b8;
+	font-size: 12px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.btn-disconnect:hover {
+	background: rgba(30, 41, 59, 0.8);
+	color: #f8fafc;
+}
+
+/* Visão da IA | Orion */
+.ia-vision-card {
+	background: rgba(30, 41, 59, 0.4);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 12px;
+	padding: 24px;
+	margin-bottom: 20px;
+}
+
+.vision-header {
+	margin-bottom: 20px;
+}
+
+.vision-header h3 {
+	font-size: 20px;
+	font-weight: 700;
+	color: #f8fafc;
+	margin: 0 0 4px 0;
+}
+
+.vision-header p {
+	font-size: 13px;
+	color: #94a3b8;
+	margin: 0;
+}
+
+.vision-status {
+	display: flex;
+	gap: 20px;
+	margin-bottom: 20px;
+	padding-bottom: 20px;
+	border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.status-item {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.status-dot {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+}
+
+.status-dot.active {
+	background: #10b981;
+	box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
+	animation: pulse 2s ease-in-out infinite;
+}
+
+.status-text {
+	font-size: 14px;
+	color: #f8fafc;
+	font-weight: 600;
+}
+
+.market-info-grid {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 16px;
+	margin-bottom: 20px;
+}
+
+.info-item {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 12px;
+	background: rgba(15, 23, 42, 0.6);
+	border-radius: 8px;
+}
+
+.info-label {
+	font-size: 11px;
+	color: #94a3b8;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.info-value {
+	font-size: 16px;
+	font-weight: 700;
+	color: #f8fafc;
+	font-family: 'Courier New', monospace;
+}
+
+.info-value.high-confidence {
+	color: #10b981;
+}
+
+.info-value.excellent {
+	color: #3b82f6;
+}
+
+.info-value.status-active {
+	color: #10b981;
+}
+
+.info-hint {
+	font-size: 10px;
+	color: #64748b;
+	font-style: italic;
+}
+
+.precision-info {
+	display: flex;
+	gap: 30px;
+	padding-top: 20px;
+	border-top: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.precision-item {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.precision-label {
+	font-size: 11px;
+	color: #94a3b8;
+	text-transform: uppercase;
+}
+
+.precision-value {
+	font-size: 20px;
+	font-weight: 700;
+	color: #10b981;
+	font-family: 'Courier New', monospace;
+}
+
+/* Seção de Configurações */
+.config-section-inactive {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 20px;
+	margin-bottom: 20px;
+}
+
+.config-group {
+	background: rgba(30, 41, 59, 0.4);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 12px;
+	padding: 20px;
+}
+
+.config-group-header {
+	margin-bottom: 16px;
+	padding-bottom: 12px;
+	border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.config-group-header h4 {
+	font-size: 16px;
+	font-weight: 600;
+	color: #f8fafc;
+	margin: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.info-icon {
+	font-size: 14px;
+	color: #64748b;
+	cursor: help;
+}
+
+.config-group-content {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.config-field {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.config-field label {
+	font-size: 12px;
+	color: #94a3b8;
+	font-weight: 500;
+}
+
+.select-field {
+	padding: 12px;
+	background: rgba(15, 23, 42, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 8px;
+	color: #f8fafc;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.select-field.disabled {
+	opacity: 0.7;
+	cursor: not-allowed;
+}
+
+.select-field small {
+	font-size: 11px;
+	color: #64748b;
+	font-style: italic;
+}
+
+.mode-options, .risk-options {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.mode-option, .risk-option {
+	padding: 14px 16px;
+	background: rgba(15, 23, 42, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 8px;
+	color: #f8fafc;
+	font-size: 14px;
+	font-weight: 500;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	text-align: left;
+}
+
+.mode-option:disabled, .risk-option:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.mode-option.active, .risk-option.active {
+	background: rgba(16, 185, 129, 0.2);
+	border-color: rgba(16, 185, 129, 0.4);
+	color: #10b981;
+}
+
+.mode-hint, .risk-hint {
+	font-size: 11px;
+	color: #94a3b8;
+	font-style: italic;
+}
+
+.risk-description {
+	font-size: 11px;
+	color: #64748b;
+	margin-top: 4px;
+}
+
+.control-info {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.control-status {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+}
+
+.control-status .status-label {
+	font-size: 13px;
+	color: #94a3b8;
+}
+
+.status-badge {
+	padding: 6px 12px;
+	border-radius: 8px;
+	font-size: 12px;
+	font-weight: 600;
+}
+
+.status-badge.inactive {
+	background: rgba(239, 68, 68, 0.2);
+	color: #ef4444;
+	border: 1px solid rgba(239, 68, 68, 0.4);
+}
+
+.control-hint {
+	font-size: 12px;
+	color: #64748b;
+	margin: 0;
+	font-style: italic;
+}
+
+.logs-container {
+	max-height: 200px;
+	overflow-y: auto;
+	background: rgba(15, 23, 42, 0.6);
+	border-radius: 8px;
+	padding: 12px;
+}
+
+.no-logs {
+	text-align: center;
+	padding: 20px;
+	color: #64748b;
+	font-size: 13px;
+}
+
+.logs-list {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.log-item {
+	display: flex;
+	gap: 12px;
+	padding: 8px;
+	border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+	font-size: 12px;
+}
+
+.log-time {
+	color: #64748b;
+	font-family: 'Courier New', monospace;
+	min-width: 80px;
+}
+
+.log-message {
+	color: #f8fafc;
 }
 
 /* Seção de Monitoramento de IA */
