@@ -36,7 +36,12 @@ const routes = [
   {
     path: '/forgot-password',
     name: 'ForgotPassword',
-    component: AuthView
+    component: () => import('../components/ForgotPasswordComponent.vue')
+  },
+  {
+    path: '/reset-password',
+    name: 'ResetPassword',
+    component: () => import('../components/ResetPasswordComponent.vue')
   },
   {
     path: '/dashboard',
