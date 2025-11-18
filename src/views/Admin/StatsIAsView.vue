@@ -99,38 +99,83 @@
 							</div>
 						</div>
 						
+						<!-- Configurações Fixas (apenas visualização) -->
+						<div class="fixed-config-info">
+							<div class="config-info-item">
+								<label>Mercado:</label>
+								<span class="fixed-value">Volatilidade 100 (R_10)</span>
+							</div>
+							<div class="config-info-item">
+								<label>Estratégia:</label>
+								<span class="fixed-value">Veloz Automático</span>
+							</div>
+							<div class="config-info-item">
+								<label>Modo de Negociação:</label>
+								<span class="fixed-value">⚡ Veloz</span>
+							</div>
+						</div>
+						
+						<!-- Parâmetros de Entrada -->
 						<div class="trading-controls">
 							<div class="input-group">
-								<label>Valor por Operação:</label>
+								<label>Valor de Entrada (USD)</label>
+								<span class="input-hint">Valor por operação</span>
 								<input 
 									type="number" 
 									v-model.number="tradingConfig.stakeAmount" 
 									min="1"
 									step="0.5"
 									:disabled="tradingConfig.isActive"
+									placeholder="50"
 								/>
 							</div>
 							
 							<div class="input-group">
-								<label>Modo de Operação:</label>
-								<select 
-									v-model="tradingConfig.mode" 
+								<label>Alvo de Lucro (USD)</label>
+								<span class="input-hint">Meta diária de lucro</span>
+								<input 
+									type="number" 
+									v-model.number="tradingConfig.profitTarget" 
+									min="0"
+									step="0.01"
 									:disabled="tradingConfig.isActive"
-									class="mode-select"
-								>
-									<option value="fast">⚡ Veloz (1 min entre operações)</option>
-									<option value="moderate">⚖️ Moderado (5 min entre operações)</option>
-									<option value="slow">🐢 Lenta (10 min entre operações)</option>
-								</select>
+									placeholder="100"
+								/>
+							</div>
+							
+							<div class="input-group">
+								<label>Limite de Perda (USD)</label>
+								<span class="input-hint">Stop loss diário</span>
+								<input 
+									type="number" 
+									v-model.number="tradingConfig.lossLimit" 
+									min="0"
+									step="0.01"
+									:disabled="tradingConfig.isActive"
+									placeholder="25"
+								/>
 							</div>
 							
 							<button 
 								:class="['btn-trading-toggle', tradingConfig.isActive ? 'active' : '']" 
 								@click="toggleAutomatedTrading"
 							>
-								<span v-if="!tradingConfig.isActive">🚀 Iniciar Trading</span>
-								<span v-else>⏸ Parar Trading</span>
+								<span v-if="!tradingConfig.isActive">▶ Ativar IA</span>
+								<span v-else>⏸ Desativar IA</span>
 							</button>
+						</div>
+					</div>
+
+					<!-- Gráfico de Ticks -->
+					<div v-if="aiMonitoring.isActive && aiMonitoring.ticks.length > 0" class="ticks-chart-container">
+						<h3>Gráfico de Preços em Tempo Real</h3>
+						<div class="chart-wrapper-ticks">
+							<LineChart 
+								:chart-id="'ticks-chart'"
+								:data="chartData"
+								color="#10b981"
+								:height="200"
+							/>
 						</div>
 					</div>
 
@@ -375,11 +420,13 @@
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
+import LineChart from '../../components/LineChart.vue';
 
 export default {
 	name: 'StatsIAs',
 	components: {
 		AppSidebar,
+		LineChart,
 	},
 	data() {
 		const currentDate = '2025-11-18';
@@ -420,8 +467,10 @@ export default {
 			// Trading Automático
 			tradingConfig: {
 				isActive: false,
-				stakeAmount: 10,
-				mode: 'moderate', // fast, moderate, slow
+				stakeAmount: 50,
+				mode: 'veloz', // Apenas veloz disponível
+				profitTarget: 100,
+				lossLimit: 25,
 			},
 			activeTrade: null,
 			nextTradeCountdown: 300, // 5 minutos em segundos
@@ -438,6 +487,17 @@ export default {
 			closeSidebar: () => { }, 
 			toggleSidebarCollapse: () => {},
 		};
+	},
+	computed: {
+		chartData() {
+			// Converter ticks para dados do gráfico (apenas valores)
+			if (!this.aiMonitoring.ticks || this.aiMonitoring.ticks.length === 0) {
+				return [];
+			}
+			// Pegar apenas os últimos 50 ticks para não sobrecarregar o gráfico
+			const recentTicks = this.aiMonitoring.ticks.slice(-50);
+			return recentTicks.map(tick => tick.value || tick.price || 0);
+		},
 	},
 	methods: {
 		formatCurrency(value) {
@@ -545,6 +605,38 @@ export default {
 			}
 			
 			return defaultToken;
+		},
+		
+		/**
+		 * Obter userId do token JWT ou localStorage
+		 */
+		getUserId() {
+			try {
+				// Tentar obter do token JWT
+				const token = localStorage.getItem('token');
+				if (token) {
+					// Decodificar JWT (base64)
+					const payload = JSON.parse(atob(token.split('.')[1]));
+					if (payload.userId || payload.sub || payload.id) {
+						return payload.userId || payload.sub || payload.id;
+					}
+				}
+				
+				// Fallback: tentar obter de user_info
+				const userInfoStr = localStorage.getItem('user_info');
+				if (userInfoStr) {
+					const userInfo = JSON.parse(userInfoStr);
+					if (userInfo.id || userInfo.userId) {
+						return userInfo.id || userInfo.userId;
+					}
+				}
+				
+				console.warn('[StatsIAsView] Não foi possível obter userId');
+				return null;
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao obter userId:', error);
+				return null;
+			}
 		},
 		
 		/**
@@ -729,6 +821,13 @@ export default {
 		console.log('[StatsIAsView] Ativando IA em background...');
 		
 		try {
+			// Obter userId do localStorage (token JWT ou user info)
+			const userId = this.getUserId();
+			if (!userId) {
+				alert('Erro: usuário não identificado. Por favor, faça login novamente.');
+				return;
+			}
+			
 			// Obter token e moeda
 			const derivToken = this.getDerivToken();
 			if (!derivToken) {
@@ -739,15 +838,20 @@ export default {
 			const preferredCurrency = this.getPreferredCurrency();
 			
 			// Ativar IA no backend (roda em background)
-			const response = await fetch('https://taxafacil.site/api/ai/activate', {
+			const response = await fetch((process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api') + '/ai/activate', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: { 
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				},
 				body: JSON.stringify({
-					userId: 1, // TODO: pegar do localStorage ou auth
+					userId: userId,
 					stakeAmount: this.tradingConfig.stakeAmount,
 					derivToken: derivToken,
 					currency: preferredCurrency,
-					mode: this.tradingConfig.mode,
+					mode: 'veloz', // Sempre veloz
+					profitTarget: this.tradingConfig.profitTarget || null,
+					lossLimit: this.tradingConfig.lossLimit || null,
 				}),
 			});
 			
@@ -777,11 +881,20 @@ export default {
 		console.log('[StatsIAsView] Desativando IA em background...');
 		
 		try {
-			const response = await fetch('https://taxafacil.site/api/ai/deactivate', {
+			const userId = this.getUserId();
+			if (!userId) {
+				alert('Erro: usuário não identificado.');
+				return;
+			}
+			
+			const response = await fetch((process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api') + '/ai/deactivate', {
 				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
+				headers: { 
+					'Content-Type': 'application/json',
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				},
 				body: JSON.stringify({
-					userId: 1, // TODO: pegar do localStorage ou auth
+					userId: userId,
 				}),
 			});
 			
@@ -1040,14 +1153,22 @@ export default {
 
 		async loadSessionStats() {
 			try {
-				const response = await fetch('https://taxafacil.site/api/ai/session-stats/1');
+				const userId = this.getUserId();
+				if (!userId) return;
+				
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const response = await fetch(`${apiBase}/ai/session-stats/${userId}`, {
+					headers: {
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					}
+				});
 				const result = await response.json();
 
 				if (result.success && result.data) {
-					this.tradingStats.totalTrades = result.data.totalTrades;
-					this.tradingStats.wins = result.data.wins;
-					this.tradingStats.losses = result.data.losses;
-					this.tradingStats.profitLoss = result.data.profitLoss;
+					this.tradingStats.totalTrades = result.data.totalTrades || 0;
+					this.tradingStats.wins = result.data.wins || 0;
+					this.tradingStats.losses = result.data.losses || 0;
+					this.tradingStats.profitLoss = result.data.profitLoss || 0;
 					console.log('[StatsIAsView] Estatísticas carregadas:', result.data);
 				}
 			} catch (error) {
@@ -1057,7 +1178,15 @@ export default {
 
 		async loadTradeHistory() {
 			try {
-				const response = await fetch('https://taxafacil.site/api/ai/trade-history/1');
+				const userId = this.getUserId();
+				if (!userId) return;
+				
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const response = await fetch(`${apiBase}/ai/trade-history/${userId}`, {
+					headers: {
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					}
+				});
 				const result = await response.json();
 
 				if (result.success && result.data) {
@@ -1095,8 +1224,16 @@ export default {
 
 	async fetchBackgroundStatus() {
 		try {
+			const userId = this.getUserId();
+			if (!userId) return;
+			
+			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
 			// Buscar configuração da IA
-			const configResponse = await fetch('https://taxafacil.site/api/ai/config/1');
+			const configResponse = await fetch(`${apiBase}/ai/config/${userId}`, {
+				headers: {
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				}
+			});
 			const configResult = await configResponse.json();
 			
 			if (configResult.success && configResult.data) {
@@ -1113,7 +1250,11 @@ export default {
 			}
 			
 			// Buscar operação ativa
-			const tradeResponse = await fetch('https://taxafacil.site/api/ai/active-trade');
+			const tradeResponse = await fetch(`${apiBase}/ai/active-trade`, {
+				headers: {
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				}
+			});
 			const tradeResult = await tradeResponse.json();
 			
 			if (tradeResult.success && tradeResult.data) {
@@ -1152,14 +1293,27 @@ export default {
 		try {
 			console.log('[StatsIAsView] Verificando se IA já está ativa...');
 			
-			const response = await fetch('https://taxafacil.site/api/ai/config/1');
+			const userId = this.getUserId();
+			if (!userId) {
+				console.warn('[StatsIAsView] userId não encontrado, pulando carregamento de config');
+				return;
+			}
+			
+			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+			const response = await fetch(`${apiBase}/ai/config/${userId}`, {
+				headers: {
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				}
+			});
 			const result = await response.json();
 			
 			if (result.success && result.data) {
 				const config = result.data;
-				this.tradingConfig.isActive = config.isActive;
-				this.tradingConfig.stakeAmount = config.stakeAmount || 10;
-				this.tradingConfig.mode = config.mode || 'moderate';
+				this.tradingConfig.isActive = config.isActive || false;
+				this.tradingConfig.stakeAmount = config.stakeAmount || 50;
+				this.tradingConfig.mode = config.mode || 'veloz';
+				this.tradingConfig.profitTarget = config.profitTarget || 100;
+				this.tradingConfig.lossLimit = config.lossLimit || 25;
 				
 				// Se a IA está ativa, carregar tudo automaticamente
 				if (config.isActive) {
@@ -1782,10 +1936,41 @@ tbody tr:hover {
 	margin: 0;
 }
 
+/* Configurações Fixas */
+.fixed-config-info {
+	display: flex;
+	gap: 20px;
+	margin-bottom: 20px;
+	padding: 16px;
+	background: rgba(30, 41, 59, 0.3);
+	border-radius: 8px;
+	border: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.config-info-item {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.config-info-item label {
+	font-size: 11px;
+	color: #94a3b8;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.config-info-item .fixed-value {
+	font-size: 14px;
+	color: #f8fafc;
+	font-weight: 600;
+}
+
 .trading-controls {
 	display: flex;
 	gap: 16px;
-	align-items: center;
+	align-items: flex-end;
+	flex-wrap: wrap;
 }
 
 .input-group {
@@ -1826,6 +2011,13 @@ tbody tr:hover {
 	font-size: 12px;
 	color: #94a3b8;
 	font-weight: 500;
+}
+
+.input-hint {
+	font-size: 10px;
+	color: #64748b;
+	font-style: italic;
+	margin-top: 2px;
 }
 
 .input-group input {
@@ -2327,6 +2519,29 @@ tbody tr:hover {
 .no-history .hint {
 	font-size: 0.9rem;
 	color: #666;
+}
+
+/* Gráfico de Ticks */
+.ticks-chart-container {
+	background: rgba(15, 23, 42, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 12px;
+	padding: 20px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.ticks-chart-container h3 {
+	font-size: 16px;
+	color: #f8fafc;
+	margin: 0 0 16px 0;
+	font-weight: 600;
+}
+
+.chart-wrapper-ticks {
+	width: 100%;
+	height: 200px;
+	position: relative;
 }
 
 /* Animações */
