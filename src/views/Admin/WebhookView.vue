@@ -8,7 +8,7 @@
                     <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
             </button>                
-            <header class="page-header header-webhook">
+            <header class=" header-webhook">
                 <div class="header-info">
                     <h1>Webhooks de Vendas</h1>
                     <p class="header-subtitle">Integre Hotmart, KiwiFy, Hubla e outras plataformas de vendas para sincronizar assinaturas, compras e renovações.</p>
@@ -708,6 +708,16 @@ input:checked + .slider:before {
 }
 
 @media (max-width: 768px) {
+
+    .header-webhook {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 1px solid #2c3038;
+        align-items: center;
+        flex-direction: column-reverse;
+    }
     .webhook-cards-grid {
         grid-template-columns: 1fr;
     }
