@@ -24,7 +24,6 @@
                         <button class="btn btn-preview" @click="openPreviewModal" :disabled="!course.selectedCourseId || course.selectedCourseId === 'new'">
                             Preview do Aluno
                         </button>
-                        <button class="btn btn-publish">Publicar</button>
                     </div>
                 </header>
                 <div class="content-sections">

@@ -11,7 +11,7 @@
             <header class=" header-webhook">
                 <div class="header-info">
                     <h1>Webhooks de Vendas</h1>
-                    <p class="header-subtitle">Integre Hotmart, KiwiFy, Hubla e outras plataformas de vendas para sincronizar assinaturas, compras e renovações.</p>
+                    <p class="header-subtitle">Integre KiwiFy para sincronizar assinaturas, compras e renovações.</p>
                 </div>
                 <button class="btn btn-primary btn-new-connection">
                     + Nova Conexão
@@ -148,10 +148,7 @@ export default {
 
             // 1. Cards de Webhooks
             connections: [
-                { id: 1, name: 'Hotmart', endpoint: 'https://api.zenix.pro/webhooks/...', status: 'active', lastEvent: 'há 5 minutos' },
                 { id: 2, name: 'KiwiFy', endpoint: 'https://api.zenix.pro/webhooks/...', status: 'paused', lastEvent: 'há 2 horas' },
-                { id: 3, name: 'Hubla', endpoint: 'https://api.zenix.pro/webhooks/...', status: 'active', lastEvent: 'ontem' },
-                { id: 4, name: 'Genérico', endpoint: 'https://api.zenix.pro/webhooks/...', status: 'active', lastEvent: 'há 1 semana' },
             ],
 
             // 2. Guias (Tabs)
