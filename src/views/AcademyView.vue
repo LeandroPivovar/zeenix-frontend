@@ -1,8 +1,20 @@
 <template>
-  <div class="layout">
-    <AppSidebar />
+  <div class="layout" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
+    <header>
+      <button class="hamburger-menu" @click="handleHamburgerClick">
+        <span class="line"></span>
+        <span class="line"></span>
+        <span class="line"></span>
+      </button>
+      <h1 class="title">Zenix Academy</h1>
+      <button class="notify-btn">
+        <img src="../assets/icons/notify.svg" alt="" width="20px">
+      </button>
+      <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
+    </header>
       
-    <main class="academy-content" style="margin-top: 1rem;">
+    <main class="academy-content">
       <div class="background-glow"></div>
       <div class="background-grid"></div>
 
@@ -28,7 +40,7 @@
             <span>{{ course.totalLessons }} {{ course.totalLessons === 1 ? 'aula' : 'aulas' }}</span>
             <span>{{ course.totalDuration }}</span>
           </div>
-          <div v-if="courseProgress[course.id] > 0" class="progress-section">
+          <div v-if="courseProgress[course.id] > 0 && courseProgress[course.id] < 100" class="progress-section">
             <div class="progress-bar">
               <div class="progress-fill" :style="{ width: courseProgress[course.id] + '%' }"></div>
             </div>
@@ -52,6 +64,13 @@
           >
             Iniciar
           </button>
+          <button 
+            v-else-if="courseProgress[course.id] === 100"
+            class="btn-outline" 
+            @click="$router.push(`/academy/course/${course.id}`)"
+          >
+            Revisar
+          </button>
         </div>
       </div>
 
@@ -73,13 +92,33 @@ export default {
       courses: [],
       loading: true,
       error: null,
-      courseProgress: {} // Por enquanto mockado, depois virá do backend
+      courseProgress: {}, // Por enquanto mockado, depois virá do backend
+      isSidebarOpen: false,
+      isSidebarCollapsed: false
     }
   },
   mounted() {
     this.fetchCourses()
   },
   methods: {
+    toggleSidebar() {
+      this.isSidebarOpen = !this.isSidebarOpen
+    },
+    closeSidebar() {
+      this.isSidebarOpen = false
+    },
+    toggleSidebarCollapse() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed
+    },
+    handleHamburgerClick() {
+      if (this.isSidebarCollapsed) {
+        // Se estiver colapsada, expandir
+        this.isSidebarCollapsed = false
+      } else {
+        // Se não estiver colapsada, abrir no modo mobile
+        this.toggleSidebar()
+      }
+    },
     async fetchCourses() {
       this.loading = true
       this.error = null

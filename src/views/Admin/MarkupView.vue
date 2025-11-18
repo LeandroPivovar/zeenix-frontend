@@ -92,6 +92,8 @@ export default {
         const startOfYear = `${currentDate.substring(0, 4)}-01-01`; 
 
         return {
+            isSidebarOpen: true,
+            isSidebarCollapsed: false,
             currentDate: currentDate, 
             filterStartDate: startOfYear,
             filterEndDate: currentDate,
@@ -121,6 +123,12 @@ export default {
         this.fetchData(); 
     },
     methods: {
+        closeSidebar() {
+            this.isSidebarOpen = false;
+        },
+        toggleSidebarCollapse() {
+            this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        },
         formatCurrency(value) {
             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
         },

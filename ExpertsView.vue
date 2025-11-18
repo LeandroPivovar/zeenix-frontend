@@ -16,58 +16,75 @@
                         <a href="#" class="help-link">Ajuda</a>
                         <button class="close-btn" type="button" @click="closeForm">×</button>
                     </div>
-                    <p>Conecte o trader mestre á Deriv para uso em Copy Trading</p>
+                    <p>Adicione informações sobre o expert/especialista</p>
 
                     <div class="form-container">
                         <div class="form-group">
-                            <label for="email">Email</label>
-                            <input type="email" id="email" name="email" placeholder="ex: trader@dominio.com" v-model="expertForm.email" required>
-                            <span class="hint-text">Usado para avisos e auditoria.</span>
+                            <label for="name">Nome Completo</label>
+                            <input type="text" id="name" name="name" placeholder="ex: Carlos Silva" v-model="expertForm.name" required>
+                            <span class="hint-text">Nome do expert.</span>
                         </div>
                         <div class="form-group">
-                            <label for="saldo">Saldo Alvo Inicial (USD)</label>
-                            <input type="number" id="saldo" name="saldo" placeholder="0.00" v-model.number="expertForm.saldoAlvoPure" step="0.01">
-                            <span class="hint-text">Valor atual detectado na conta (opcional).</span>
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" placeholder="ex: trader@dominio.com" v-model="expertForm.email" required>
+                            <span class="hint-text">Email de contato do expert.</span>
                         </div>
 
                         <div class="form-group">
-                            <label for="id-original">LoginID Original</label>
-                            <input type="text" id="id-original" name="id-original" placeholder="ex: VRTC1632585" v-model="expertForm.loginOriginal" required>
-                            <span class="hint-text">ID de origem (conta de teste da Deriv).</span>
-                        </div>
-                        <div class="form-group">
-                            <label for="type-expert">Tipo de Expert</label>
+                            <label for="specialty">Especialidade</label>
                             <div class="select-wrapper">
-                                <select name="Expert" id="type-expert" v-model="expertForm.expertType">
-                                    <option value="" disabled>Selecione o tipo</option>
-                                    <option value="Trader Mestre">Trader Mestre</option>
-                                    <option value="Influenciador">Influenciador</option>
+                                <select name="specialty" id="specialty" v-model="expertForm.specialty" required>
+                                    <option value="" disabled>Selecione a especialidade</option>
+                                    <option value="Forex">Forex</option>
+                                    <option value="Crypto">Criptomoedas</option>
+                                    <option value="Stocks">Ações</option>
+                                    <option value="Options">Opções</option>
+                                    <option value="Commodities">Commodities</option>
+                                    <option value="Indices">Índices</option>
                                 </select>
                                 <span class="select-icon"></span>
                             </div>
-                            <span class="hint-text">Defina a função deste expert no ecossistema.</span>
+                            <span class="hint-text">Área de atuação principal.</span>
+                        </div>
+                        <div class="form-group">
+                            <label for="experienceYears">Anos de Experiência</label>
+                            <input type="number" id="experienceYears" name="experienceYears" placeholder="0" v-model.number="expertForm.experienceYears" min="0">
+                            <span class="hint-text">Anos de experiência no mercado.</span>
                         </div>
 
                         <div class="form-group">
-                            <label for="idAlvo">LoginID Alvo</label>
-                            <input type="text" id="idAlvo" name="idAlvo" placeholder="ex: CR9191919" v-model="expertForm.loginAlvo" required>
-                            <span class="hint-text">ID ativo (conta real conectada á Deriv).</span>
+                            <label for="loginOriginal">LoginID Original (Deriv)</label>
+                            <input type="text" id="loginOriginal" name="loginOriginal" placeholder="ex: VRTC1632585" v-model="expertForm.loginOriginal">
+                            <span class="hint-text">ID de origem (conta de teste da Deriv).</span>
                         </div>
+
                         <div class="form-group">
-                            <label for="observacoes">Observações (opcional)</label>
-                            <textarea id="observacoes" name="observacoes" placeholder="Notas internas sobre este expert..." v-model="expertForm.observacoes"></textarea>
-                            <span class="hint-text">Notas internas sobre este expert...</span>
+                            <label for="loginAlvo">LoginID Alvo (Deriv)</label>
+                            <input type="text" id="loginAlvo" name="loginAlvo" placeholder="ex: CR9191919" v-model="expertForm.loginAlvo">
+                            <span class="hint-text">ID ativo (conta real conectada à Deriv).</span>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="saldoAlvo">Saldo Alvo (USD)</label>
+                            <input type="number" id="saldoAlvo" name="saldoAlvo" placeholder="0.00" v-model.number="expertForm.saldoAlvo" min="0" step="0.01">
+                            <span class="hint-text">Saldo inicial da conta.</span>
+                        </div>
+
+                        <div class="form-group" style="flex: 1 1 100%;">
+                            <label for="bio">Biografia</label>
+                            <textarea id="bio" name="bio" placeholder="Descrição sobre o expert, experiência, conquistas..." v-model="expertForm.bio"></textarea>
+                            <span class="hint-text">Informações sobre o expert.</span>
                         </div>
 
                         <div class="divisor"></div>
 
                         <div class="footer-form">
                             <div class="right-footer">
-                                <h3>Validar IDs na Deriv</h3>
+                                <h3>&nbsp;</h3>
                             </div>
                             <div class="left-footer">
                                 <button class="cancel-btn" type="button" @click="closeForm">Cancelar</button>
-                                <button class="save-btn" type="submit">{{ isEditing ? 'Salvar Alterações' : 'Salvar e Conectar Expert' }}</button>
+                                <button class="save-btn" type="submit">{{ isEditing ? 'Salvar Alterações' : 'Adicionar Expert' }}</button>
                             </div>
                         </div>
                     </div>
@@ -91,26 +108,38 @@
                 <div class="table-content-wrapper">
                     <div class="table-header">
                         <div class="th email">Email</div>
-                        <div class="th original-login">Login Original</div>
-                        <div class="th alvo-login">Login Alvo</div>
-                        <div class="th target-balance">Saldo Alvo</div>
+                        <div class="th login-original">Login Original</div>
+                        <div class="th login-alvo">Login Alvo</div>
+                        <div class="th saldo-alvo">Saldo Alvo</div>
                         <div class="th status">Status</div>
                         <div class="th actions">Ações</div>
                     </div>
                     <div class="table-body">
-                        <div class="table-row" v-for="(expert, index) in experts" :key="index">
+                        <div v-if="isLoading" class="table-row">
+                            <div class="td" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #999;">
+                                Carregando experts...
+                            </div>
+                        </div>
+                        <div v-else-if="experts.length === 0" class="table-row">
+                            <div class="td" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #999;">
+                                Nenhum expert cadastrado
+                            </div>
+                        </div>
+                        <div v-else class="table-row" v-for="expert in experts" :key="expert.id">
                             <div class="td email">{{ expert.email }}</div>
-                            <div class="td original-login">{{ expert.loginOriginal }}</div>
-                            <div class="td alvo-login">{{ expert.loginAlvo }}</div>
-                            <div class="td target-balance">{{ formatCurrency(expert.saldoAlvoPure) }}</div>
-                            <div class="td status" :class="expert.statusClass">
-                                <span class="status-dot" :class="expert.statusClass"></span>
-                                {{ expert.statusLabel }}
+                            <div class="td login-original">{{ expert.loginOriginal || '-' }}</div>
+                            <div class="td login-alvo">{{ expert.loginAlvo || '-' }}</div>
+                            <div class="td saldo-alvo">{{ formatCurrency(expert.saldoAlvo || 0) }}</div>
+                            <div class="td status" :class="getConnectionStatusClass(expert.connectionStatus)">
+                                <span class="status-dot" :class="getConnectionStatusClass(expert.connectionStatus)"></span>
+                                {{ expert.connectionStatus || 'Desconectado' }}
                             </div>
                             <div class="td actions">
-                                <button v-if="expert.statusClass !== 'active'" class="action-btn" aria-label="Sincronizar"><i class="fas fa-redo"></i></button>
-                                <button class="action-btn trash" aria-label="Deletar" @click="deleteExpert(index)"><i class="fas fa-trash-alt"></i></button>
-                                <button class="action-btn edit" aria-label="Visualizar" @click="editExpert(expert)"><i class="fas fa-search"></i></button>
+                                <button v-if="expert.connectionStatus !== 'Ativo'" class="action-btn" aria-label="Sincronizar" @click="syncExpert(expert.id)" title="Sincronizar">
+                                    <i class="fas fa-sync-alt"></i>
+                                </button>
+                                <button class="action-btn edit" aria-label="Editar" @click="editExpert(expert)"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn trash" aria-label="Deletar" @click="deleteExpert(expert.id)"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </div>
                     </div>
@@ -138,53 +167,214 @@ export default {
             isMobile: false,
             
             // Gerenciamento do Formulário
-            isFormVisible: true, // Começa visível para refletir o design inicial
+            isFormVisible: false, // Começa escondido, mostra quando clica em adicionar
             isEditing: false,
             expertForm: this.getEmptyExpertForm(),
             
             // Dados Dinâmicos
             summaryCards: [
-                { class: 'active-expert', title: 'Experts Ativos', value: '5', isGreen: false },
-                { class: 'balance', title: 'Saldo Total Gerenciado', value: '$46.812,00', isGreen: true },
-                { class: 'profit', title: 'Lucro Médio Diário', value: '+$312,47', isGreen: true },
-                { class: 'last-up', title: 'Última Sincronização', value: '18/10/2025 10:22', isGreen: false }
+                { class: 'active-expert', title: 'Experts Ativos', value: '0', isGreen: false },
+                { class: 'balance', title: 'Total de Experts', value: '0', isGreen: false },
+                { class: 'profit', title: 'Experts Verificados', value: '0', isGreen: true },
+                { class: 'last-up', title: 'Avaliação Média', value: '0.0 ⭐', isGreen: false }
             ],
-            experts: [
-                {
-                    id: 1, email: 'expert.one@email.com', loginOriginal: 'VRTC12345678', loginAlvo: 'CR8765432', saldoAlvoPure: 15340.50, statusLabel: 'Ativo', statusClass: 'active', expertType: 'Trader Mestre'
-                },
-                {
-                    id: 2, email: 'trader.pro@email.com', loginOriginal: 'VRTC87654321', loginAlvo: 'CR2345678', saldoAlvoPure: 21110.00, statusLabel: 'Sincronizando', statusClass: 'syncing', expertType: 'Trader Mestre'
-                },
-                {
-                    id: 3, email: 'master.zenix@email.com', loginOriginal: 'VRTC55566677', loginAlvo: 'CR-Inválido', saldoAlvoPure: 8361.50, statusLabel: 'Desconectado', statusClass: 'disconnected', expertType: 'Influenciador'
-                }
-            ],
-            nextExpertId: 4
+            experts: [],
+            isLoading: true,
         };
     },
-    mounted() {
+    async mounted() {
         this.checkMobileStatus();
         window.addEventListener('resize', this.checkMobileStatus);
         document.addEventListener('click', this.handleClickOutside);
+        await this.loadExperts();
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobileStatus);
         document.removeEventListener('click', this.handleClickOutside);
     },
     methods: {
+        // --- Métodos de Integração com Backend ---
+        async loadExperts() {
+            this.isLoading = true;
+            try {
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const url = `${baseUrl}/experts`;
+                console.log('🔍 [ExpertsView] Carregando experts de:', url);
+                console.log('🔍 [ExpertsView] Base URL config:', baseUrl);
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                console.log('🔍 [ExpertsView] Response status:', response.status);
+                console.log('🔍 [ExpertsView] Response headers:', Object.fromEntries(response.headers.entries()));
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ [ExpertsView] Erro na resposta:', errorText);
+                    let errorMessage = `Falha ao carregar experts: ${response.status} ${response.statusText}`;
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch (e) {
+                        errorMessage = errorText || errorMessage;
+                    }
+                    
+                    // Mostrar erro específico para ajudar no debug
+                    if (response.status === 0 || response.status === 'undefined') {
+                        alert('❌ Erro de conexão! Verifique se o backend está rodando em ' + baseUrl);
+                    } else if (response.status === 404) {
+                        alert('❌ Endpoint não encontrado. Verifique a URL da API.');
+                    } else if (response.status === 401) {
+                        alert('❌ Não autorizado. Faça login novamente.');
+                    } else if (response.status >= 500) {
+                        alert('❌ Erro no servidor. Verifique os logs do backend.');
+                    } else {
+                        alert(`❌ Erro ${response.status}: ${errorMessage}`);
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                console.log('✅ [ExpertsView] Dados recebidos do backend:', data);
+                console.log('✅ [ExpertsView] Tipo dos dados:', typeof data, Array.isArray(data));
+
+                if (!Array.isArray(data)) {
+                    console.error('❌ [ExpertsView] Resposta não é um array:', data);
+                    throw new Error('Resposta da API não é um array');
+                }
+
+                this.experts = data.map(expert => this.mapExpertFromBackend(expert));
+                this.updateSummaryCards();
+                console.log('✅ [ExpertsView] Experts carregados com sucesso:', this.experts.length);
+            } catch (error) {
+                console.error('❌ [ExpertsView] Erro ao carregar experts:', error);
+                console.error('❌ [ExpertsView] Stack trace:', error.stack);
+                
+                // Se for um erro de rede, mostrar mensagem clara
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    alert('❌ Erro de conexão com o backend!\n\nVerifique:\n1. Se o backend está rodando (http://localhost:3000)\n2. Se há problemas de CORS\n3. Se a URL está correta');
+                }
+                
+                this.experts = []; // Garante que a lista está vazia em caso de erro
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        mapExpertFromBackend(expert) {
+            return {
+                id: expert.id,
+                name: expert.name || '',
+                email: expert.email || '',
+                specialty: expert.specialty || '',
+                bio: expert.bio || '',
+                avatarUrl: expert.avatarUrl || null,
+                experienceYears: expert.experienceYears || 0,
+                rating: expert.rating || 0,
+                totalReviews: expert.totalReviews || 0,
+                totalFollowers: expert.totalFollowers || 0,
+                totalSignals: expert.totalSignals || 0,
+                winRate: expert.winRate || 0,
+                isVerified: expert.isVerified || false,
+                isActive: expert.isActive !== undefined ? expert.isActive : true,
+                loginOriginal: expert.loginOriginal || null,
+                loginAlvo: expert.loginAlvo || null,
+                saldoAlvo: expert.saldoAlvo || 0,
+                connectionStatus: expert.connectionStatus || 'Desconectado',
+                statusLabel: (expert.connectionStatus === 'Ativo' || expert.isActive) ? 'Ativo' : 'Inativo',
+                statusClass: expert.isActive ? 'active' : 'disconnected',
+            };
+        },
+
+        updateSummaryCards() {
+            const activeConnections = this.experts.filter(e => e.connectionStatus === 'Ativo').length;
+            const totalBalance = this.experts.reduce((sum, e) => sum + (e.saldoAlvo || 0), 0);
+            const avgDailyProfit = (totalBalance * 0.015).toFixed(2); // Simulado: 1.5% do total
+            const lastSync = this.experts.length > 0 ? new Date().toLocaleString('pt-BR') : 'Nunca';
+
+            this.summaryCards[0].value = activeConnections.toString();
+            this.summaryCards[0].title = 'Experts Ativos';
+            this.summaryCards[1].value = this.formatCurrency(totalBalance);
+            this.summaryCards[1].title = 'Saldo Total Gerenciado';
+            this.summaryCards[1].isGreen = true;
+            this.summaryCards[2].value = `+${this.formatCurrency(avgDailyProfit)}`;
+            this.summaryCards[2].title = 'Lucro Médio Diário';
+            this.summaryCards[2].isGreen = true;
+            this.summaryCards[3].value = lastSync;
+            this.summaryCards[3].title = 'Última Sincronização';
+        },
+
+        getConnectionStatusClass(status) {
+            if (!status) return 'disconnected';
+            if (status === 'Ativo') return 'active';
+            if (status === 'Sincronizando') return 'syncing';
+            return 'disconnected';
+        },
+
+        async syncExpert(expertId) {
+            try {
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    alert('Você precisa estar autenticado para realizar esta ação');
+                    return;
+                }
+
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const url = `${baseUrl}/experts/${expertId}`;
+                
+                console.log('Sincronizando expert:', url);
+
+                // Atualizar connection_status para "Sincronizando"
+                const response = await fetch(url, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        connectionStatus: 'Sincronizando'
+                    }),
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMessage = 'Erro ao sincronizar expert';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch (e) {
+                        errorMessage = errorText || `Erro HTTP ${response.status}`;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                await this.loadExperts();
+                alert('Sincronização iniciada!');
+            } catch (error) {
+                console.error('Erro ao sincronizar:', error);
+                alert(error.message || 'Erro ao sincronizar expert');
+            }
+        },
+
         // --- Métodos de Utilitário ---
         getEmptyExpertForm() {
             return {
                 id: null,
+                name: '',
                 email: '',
+                specialty: '',
+                bio: '',
+                experienceYears: 0,
                 loginOriginal: '',
                 loginAlvo: '',
-                saldoAlvoPure: 0.00,
-                expertType: '',
-                observacoes: '',
-                statusLabel: 'Desconectado',
-                statusClass: 'disconnected'
+                saldoAlvo: 0,
             };
         },
         formatCurrency(value) {
@@ -200,33 +390,230 @@ export default {
         closeForm() {
             this.isFormVisible = false;
         },
-        saveExpert() {
-            const newExpertData = { ...this.expertForm, id: this.expertForm.id || this.nextExpertId };
-
-            if (this.isEditing) {
-                // Lógica de Edição
-                const index = this.experts.findIndex(e => e.id === newExpertData.id);
-                if (index !== -1) {
-                    this.experts.splice(index, 1, newExpertData);
-                }
-            } else {
-                // Lógica de Adição
-                this.experts.push(newExpertData);
-                this.nextExpertId++; 
+        async saveExpert() {
+            // Validações básicas
+            if (!this.expertForm.name || !this.expertForm.name.trim()) {
+                alert('Por favor, preencha o nome do expert');
+                return;
+            }
+            
+            if (!this.expertForm.email || !this.expertForm.email.trim()) {
+                alert('Por favor, preencha o email do expert');
+                return;
+            }
+            
+            if (!this.expertForm.specialty || !this.expertForm.specialty.trim()) {
+                alert('Por favor, selecione a especialidade');
+                return;
             }
 
-            this.closeForm();
-            // Atualiza os cards de resumo (exemplo simples: Experts Ativos)
-            this.summaryCards[0].value = this.experts.filter(e => e.statusClass === 'active').length.toString();
+            // Validação de email
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(this.expertForm.email)) {
+                alert('Por favor, insira um email válido');
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    alert('❌ Você precisa estar autenticado para realizar esta ação.\n\nPor favor, faça login novamente.');
+                    return;
+                }
+
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const url = this.isEditing
+                    ? `${baseUrl}/experts/${this.expertForm.id}`
+                    : `${baseUrl}/experts`;
+
+                const method = this.isEditing ? 'PUT' : 'POST';
+
+                const payload = {
+                    name: this.expertForm.name.trim(),
+                    email: this.expertForm.email.trim(),
+                    specialty: this.expertForm.specialty.trim(),
+                    bio: this.expertForm.bio ? this.expertForm.bio.trim() : '',
+                    experienceYears: parseInt(this.expertForm.experienceYears) || 0,
+                    loginOriginal: this.expertForm.loginOriginal ? this.expertForm.loginOriginal.trim() : null,
+                    loginAlvo: this.expertForm.loginAlvo ? this.expertForm.loginAlvo.trim() : null,
+                    saldoAlvo: parseFloat(this.expertForm.saldoAlvo) || 0,
+                };
+
+                console.log('🔍 [ExpertsView] Enviando dados:', payload);
+                console.log('🔍 [ExpertsView] URL:', url);
+                console.log('🔍 [ExpertsView] Method:', method);
+                console.log('🔍 [ExpertsView] Token presente:', !!token);
+
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                console.log('🔍 [ExpertsView] Response status:', response.status);
+                console.log('🔍 [ExpertsView] Response ok:', response.ok);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    console.error('❌ [ExpertsView] Erro na resposta:', errorText);
+                    let errorMessage = 'Erro ao salvar expert';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch (e) {
+                        if (errorText) {
+                            errorMessage = errorText;
+                        } else {
+                            errorMessage = `Erro HTTP ${response.status}: ${response.statusText}`;
+                        }
+                    }
+                    
+                    // Mensagens de erro mais específicas
+                    if (response.status === 401) {
+                        alert('❌ Não autorizado! Seu token pode ter expirado.\n\nPor favor, faça login novamente.');
+                    } else if (response.status === 409) {
+                        alert(`❌ ${errorMessage}\n\nO email informado já está em uso.`);
+                    } else if (response.status === 400) {
+                        alert(`❌ Erro de validação:\n${errorMessage}`);
+                    } else if (response.status >= 500) {
+                        alert(`❌ Erro no servidor:\n${errorMessage}\n\nVerifique os logs do backend.`);
+                    } else {
+                        alert(`❌ Erro ao salvar expert:\n${errorMessage}`);
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const result = await response.json();
+                console.log('✅ [ExpertsView] Expert salvo com sucesso:', result);
+
+                this.closeForm();
+                await this.loadExperts();
+                alert(this.isEditing ? '✅ Expert atualizado com sucesso!' : '✅ Expert adicionado com sucesso!');
+            } catch (error) {
+                console.error('❌ [ExpertsView] Erro ao salvar expert:', error);
+                console.error('❌ [ExpertsView] Stack trace:', error.stack);
+                
+                // Se for um erro de rede, mostrar mensagem clara
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    alert('❌ Erro de conexão com o backend!\n\nVerifique:\n1. Se o backend está rodando (http://localhost:3000)\n2. Se há problemas de CORS\n3. Se a URL está correta');
+                } else if (!error.message.includes('HTTP') && !error.message.includes('não autorizado')) {
+                    alert(error.message || 'Erro ao salvar expert. Verifique os dados e tente novamente.');
+                }
+            }
         },
         editExpert(expert) {
-            this.expertForm = { ...expert };
+            this.expertForm = { 
+                id: expert.id,
+                name: expert.name,
+                email: expert.email,
+                specialty: expert.specialty,
+                bio: expert.bio,
+                experienceYears: expert.experienceYears,
+                loginOriginal: expert.loginOriginal || '',
+                loginAlvo: expert.loginAlvo || '',
+                saldoAlvo: expert.saldoAlvo || 0,
+            };
             this.isEditing = true;
             this.isFormVisible = true;
         },
-        deleteExpert(index) {
-            if (confirm(`Tem certeza que deseja deletar o expert ${this.experts[index].email}?`)) {
-                this.experts.splice(index, 1);
+        async deleteExpert(expertId) {
+            const expert = this.experts.find(e => e.id === expertId);
+            if (!confirm(`Tem certeza que deseja deletar o expert ${expert?.email || expertId}?`)) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    alert('Você precisa estar autenticado para realizar esta ação');
+                    return;
+                }
+
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const url = `${baseUrl}/experts/${expertId}`;
+                
+                console.log('Deletando expert:', url);
+
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                console.log('Response status:', response.status);
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMessage = 'Erro ao deletar expert';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch (e) {
+                        errorMessage = errorText || `Erro HTTP ${response.status}`;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                await this.loadExperts();
+                alert('Expert deletado com sucesso!');
+            } catch (error) {
+                console.error('Erro ao deletar expert:', error);
+                alert(error.message || 'Erro ao deletar expert');
+            }
+        },
+
+        async toggleExpertStatus(expertId) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    `${process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'}/experts/${expertId}/toggle-status`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Erro ao alterar status');
+                }
+
+                await this.loadExperts();
+            } catch (error) {
+                console.error('Erro ao alterar status:', error);
+                alert('Erro ao alterar status do expert');
+            }
+        },
+
+        async toggleExpertVerified(expertId) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    `${process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'}/experts/${expertId}/toggle-verified`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Erro ao alterar verificação');
+                }
+
+                await this.loadExperts();
+            } catch (error) {
+                console.error('Erro ao alterar verificação:', error);
+                alert('Erro ao alterar verificação do expert');
             }
         },
 
@@ -598,7 +985,7 @@ body {
 .table-header,
 .table-row {
     display: grid;
-    grid-template-columns: 2fr 1.5fr 1.5fr 1.2fr 1fr 0.8fr; 
+    grid-template-columns: 2fr 1.5fr 1.5fr 1.3fr 1fr 1fr; 
     align-items: center;
     padding: 10px 0;
 }
@@ -650,7 +1037,11 @@ body {
 .status-dot.syncing { background-color: #ffc107; }
 .status-dot.disconnected { background-color: #f44336; }
 
-.td.target-balance {
+.td.status.active { color: #4CAF50; }
+.td.status.syncing { color: #ffc107; }
+.td.status.disconnected { color: #f44336; }
+
+.td.saldo-alvo {
     color: #4CAF50;
     font-weight: 500;
 }

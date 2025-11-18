@@ -3,26 +3,19 @@
     <!-- Modal de Novo Módulo -->
     <div v-if="isNewModuleModalOpen" class="modal-overlay" @click.self="closeNewModuleModal">
       <div class="modal-content new-module-card">
-        <h2 class="card-title">Criar Novo Módulo</h2>
-        <p class="card-subtitle-modal">Associe a um curso existente e defina o nome do módulo.</p>
-        <div class="form-group">
-          <label for="modal-select-course">Selecionar Curso</label>
-          <select id="modal-select-course" class="input-select" :value="newModule.courseId" @change="updateNewModule({ courseId: $event.target.value })">
-            <option :value="null">Escolha um curso...</option>
-            <option v-for="c in courses" :key="c.id" :value="c.id">{{ c.name }}</option>
-          </select>
-        </div>
-        <div class="create-module-form" :class="{ 'disabled-form': !newModule.courseId }">
+        <h2 class="card-title">Adicionar Módulo</h2>
+        <p class="card-subtitle-modal">Defina o nome e a descrição do novo módulo para este curso.</p>
+        <div class="create-module-form">
           <div class="form-group">
             <label for="module-name">Nome do Módulo</label>
-            <input type="text" id="module-name" class="input-text" :value="newModule.name" @input="updateNewModule({ name: $event.target.value })" placeholder="Ex: Introdução ao Mercado" :disabled="!newModule.courseId" />
+            <input type="text" id="module-name" class="input-text" :value="newModule.name" @input="updateNewModule({ name: $event.target.value })" placeholder="Ex: Introdução ao Mercado" />
           </div>
           <div class="form-group">
             <label for="module-description">Descrição Curta (Opcional)</label>
-            <textarea id="module-description" class="input-textarea" :value="newModule.shortDescription" @input="updateNewModule({ shortDescription: $event.target.value })" placeholder="Breve descrição do módulo..." :disabled="!newModule.courseId"></textarea>
+            <textarea id="module-description" class="input-textarea" :value="newModule.shortDescription" @input="updateNewModule({ shortDescription: $event.target.value })" placeholder="Breve descrição do módulo..."></textarea>
           </div>
           <div class="modal-actions">
-            <button class="btn btn-save-module" @click="saveNewModule" :disabled="!newModule.courseId || !newModule.name">Salvar Módulo</button>
+            <button class="btn btn-save-module" @click="saveNewModule" :disabled="!newModule.name">Adicionar Módulo</button>
             <button class="btn btn-cancel" @click="closeNewModuleModal">Cancelar</button>
           </div>
         </div>
@@ -57,7 +50,13 @@
           <div class="form-group half-width-group">
             <div class="half-group">
               <label for="content-type">Tipo de Conteúdo</label>
-              <select id="content-type" class="input-select" :value="newLesson.contentType" @change="updateNewLesson({ contentType: $event.target.value })" :disabled="!newLesson.moduleId">
+              <select
+                id="content-type"
+                class="input-select"
+                :value="newLesson.contentType"
+                @change="handleContentTypeChange($event.target.value)"
+                :disabled="!newLesson.moduleId"
+              >
                 <option value="Video">Vídeo</option>
                 <option value="Text">Texto</option>
                 <option value="PDF">PDF</option>
@@ -68,9 +67,35 @@
               <input type="number" id="duration" class="input-text" :value="newLesson.duration" @input="updateNewLesson({ duration: Number($event.target.value) || 0 })" placeholder="15" min="1" :disabled="!newLesson.moduleId" />
             </div>
           </div>
-          <div class="form-group">
+          <div class="form-group" v-if="newLesson.contentType === 'Video'">
+            <label for="lesson-video">Upload do Vídeo</label>
+            <input
+              type="file"
+              id="lesson-video"
+              class="input-file"
+              accept="video/*"
+              @change="handleVideoUpload"
+              :disabled="!newLesson.moduleId"
+            />
+            <p v-if="newLesson.videoFileName" class="video-file-info">
+              Vídeo selecionado: {{ newLesson.videoFileName }}
+              <button type="button" class="btn btn-link" @click="removeVideoFile">Remover</button>
+            </p>
+            <p v-else-if="newLesson.videoPath" class="video-file-info">
+              Vídeo enviado: {{ newLesson.videoPath.split('/').pop() }}
+            </p>
+          </div>
+          <div class="form-group" v-else>
             <label for="content-link">Link do Conteúdo</label>
-            <input type="url" id="content-link" class="input-text" :value="newLesson.contentLink" @input="updateNewLesson({ contentLink: $event.target.value })" placeholder="https://..." :disabled="!newLesson.moduleId" />
+            <input
+              type="url"
+              id="content-link"
+              class="input-text"
+              :value="newLesson.contentLink"
+              @input="updateNewLesson({ contentLink: $event.target.value })"
+              placeholder="https://..."
+              :disabled="!newLesson.moduleId"
+            />
           </div>
           <div class="form-group release-status-group">
             <div class="release-group">
@@ -133,10 +158,10 @@
             </button>
           </div>
         </div>
-        <div class="materials-list-section card-border-section" v-if="getMaterialCountForLesson(selectedLessonIdForMaterials) > 0">
-          <h3 class="form-section-title">Materiais Atuais ({{ getMaterialCountForLesson(selectedLessonIdForMaterials) }})</h3>
+        <div class="materials-list-section card-border-section" v-if="getMaterialCountForLesson(normalizedSelectedLessonId) > 0">
+          <h3 class="form-section-title">Materiais Atuais ({{ getMaterialCountForLesson(normalizedSelectedLessonId) }})</h3>
           <ul class="modal-materials-list">
-            <li v-for="material in materialsList.filter(m => m.lessonId === selectedLessonIdForMaterials)" :key="material.id" class="material-item">
+            <li v-for="material in materialsForSelectedLesson" :key="material.id" class="material-item">
               <div class="material-info">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="file-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                 <span class="material-name-display">{{ material.name }}</span>
@@ -168,7 +193,10 @@ export default {
     isNewModuleModalOpen: Boolean,
     isNewLessonModalOpen: Boolean,
     isMaterialsModalOpen: Boolean,
-    selectedLessonIdForMaterials: Number,
+    selectedLessonIdForMaterials: {
+      type: [String, Number],
+      default: null,
+    },
     selectedLessonForMaterials: Object,
     courses: Array,
     modules: Array,
@@ -186,19 +214,35 @@ export default {
     'saveNewMaterial',
     'deleteMaterial',
     // Novos eventos para atualizar os objetos no pai
-    'update-new-module',
-    'update-new-lesson',
-    'update-new-material',
+    'update:new-module',
+    'update:new-lesson',
+    'update:new-material',
   ],
   computed: {
     selectedModuleForLesson() {
       const moduleInModal = this.modules.find(module => module.id === this.newLesson.moduleId);
       return moduleInModal || {};
     },
+    normalizedSelectedLessonId() {
+      if (this.selectedLessonIdForMaterials === null || this.selectedLessonIdForMaterials === undefined) {
+        return null;
+      }
+      return this.selectedLessonIdForMaterials.toString();
+    },
+    materialsForSelectedLesson() {
+      if (!this.normalizedSelectedLessonId) {
+        return [];
+      }
+      return this.materialsList.filter(m => m.lessonId === this.normalizedSelectedLessonId);
+    },
   },
   methods: {
     getMaterialCountForLesson(lessonId) {
-      return this.materialsList.filter(m => m.lessonId === lessonId).length;
+      if (!lessonId && lessonId !== 0) {
+        return 0;
+      }
+      const normalizedId = lessonId.toString();
+      return this.materialsList.filter(m => m.lessonId === normalizedId).length;
     },
     closeNewModuleModal() {
       this.$emit('closeNewModuleModal');
@@ -224,15 +268,35 @@ export default {
     // Métodos para emitir atualizações dos objetos
     updateNewModule(updates) {
       // Combina o objeto atual com as atualizações
-      this.$emit('update-new-module', { ...this.newModule, ...updates });
+      this.$emit('update:new-module', { ...this.newModule, ...updates });
     },
     updateNewLesson(updates) {
       // Combina o objeto atual com as atualizações
-      this.$emit('update-new-lesson', { ...this.newLesson, ...updates });
+      this.$emit('update:new-lesson', { ...this.newLesson, ...updates });
     },
     updateNewMaterial(updates) {
       // Combina o objeto atual com as atualizações
-      this.$emit('update-new-material', { ...this.newMaterial, ...updates });
+      this.$emit('update:new-material', { ...this.newMaterial, ...updates });
+    },
+    handleContentTypeChange(value) {
+      const updates = { contentType: value };
+      if (value !== 'Video') {
+        updates.videoFile = null;
+        updates.videoFileName = '';
+        updates.videoPath = '';
+      }
+      this.updateNewLesson(updates);
+    },
+    handleVideoUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.updateNewLesson({ videoFile: file, videoFileName: file.name, videoPath: '' });
+      } else {
+        this.removeVideoFile();
+      }
+    },
+    removeVideoFile() {
+      this.updateNewLesson({ videoFile: null, videoFileName: '', videoPath: '' });
     },
   },
 };
@@ -311,6 +375,28 @@ export default {
   justify-content: flex-start;
   gap: 10px;
   margin-top: 30px;
+}
+
+.video-file-info {
+  margin-top: 8px;
+  font-size: 0.85rem;
+  color: #cbd5f5;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  color: #00ff7f;
+  cursor: pointer;
+  font-size: 0.85rem;
+  padding: 0;
+}
+
+.btn-link:hover {
+  text-decoration: underline;
 }
 
 .btn {

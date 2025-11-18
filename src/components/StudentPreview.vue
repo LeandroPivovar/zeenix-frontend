@@ -126,8 +126,10 @@ export default {
     },
     computed: {
         filteredModulesForPreview() {
-            // Filtra módulos pertencentes ao curso atual e publicados
-            return this.modules.filter(module => module.courseId === this.courseData.id && module.status === 'published');
+            // Filtra módulos do curso que não estejam arquivados
+            return this.modules.filter(
+                module => module.courseId === this.courseData.id && module.status !== 'archived'
+            );
         },
         totalLessonsCount() {
             // Conta todas as aulas ativas dentro dos módulos filtrados

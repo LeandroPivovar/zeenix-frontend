@@ -14,8 +14,14 @@
                         <p class="page-subtitle">Crie e organize cursos, módulos, aulas e materiais para o aluno.</p>
                     </div>
                     <div class="header-actions">
+                        <button class="btn btn-secondary" @click="goBack">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Voltar
+                        </button>
                         <button class="btn btn-save" @click="saveCourse">Salvar Curso</button>
-                        <button class="btn btn-preview" @click="openPreviewModal" :disabled="!course.selectedCourseId">
+                        <button class="btn btn-preview" @click="openPreviewModal" :disabled="!course.selectedCourseId || course.selectedCourseId === 'new'">
                             Preview do Aluno
                         </button>
                         <button class="btn btn-publish">Publicar</button>
@@ -64,17 +70,25 @@
                     <section class="card modules-section">
                         <h2 class="card-title">Módulos e Aulas</h2>
                         <p class="card-subtitle">Selecione o curso, adicione módulos e crie aulas dentro de cada módulo.</p>
-                        <div class="form-group course-selection-group">
+                        <div class="form-group course-selection-group" v-if="!course.selectedCourseId || course.selectedCourseId === 'new'">
                             <label for="select-course">Selecionar Curso</label>
                             <div class="input-with-icon">
-                                <select id="select-course" class="input-select" v-model="course.selectedCourseId" @change="loadCourseDetails">
+                                <select id="select-course" class="input-select" v-model="course.selectedCourseId" @change="handleCourseSelection">
                                     <option :value="null">Escolha um curso...</option>
+                                    <option value="new">+ Criar Novo Curso</option>
                                     <option v-for="c in courses" :key="c.id" :value="c.id">{{ c.name }}</option>
                                 </select>
                                 <button class="btn btn-icon" title="Atualizar Lista" @click="loadCourses">
                                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 4.2C17.3 1.5 13.8 0 10 0C4.5 0 0 4.5 0 10C0 15.5 4.5 20 10 20C13.5 20 16.6 18.2 18.5 15.4L16.7 13.6C15.2 16.1 12.8 17.6 10 17.6C5.9 17.6 2.4 14.1 2.4 10C2.4 5.9 5.9 2.4 10 2.4C12.8 2.4 15.2 3.9 16.7 6.4L13 10H20V4.2Z" fill="currentColor"/></svg>
                                     Atualizar Lista
                                 </button>
+                            </div>
+                        </div>
+                        <div v-else class="form-group course-selection-group">
+                            <label>Curso Selecionado</label>
+                            <div class="selected-course-info">
+                                <strong>{{ course.name || 'Novo Curso' }}</strong>
+                                <button class="btn btn-link" @click="goBack">Voltar para lista</button>
                             </div>
                         </div>
                         <div class="modules-list-container">
@@ -335,7 +349,9 @@ export default {
                 description: 'Aprenda do zero as estratégias mais avançadas para Day Trade.',
                 coverImage: null,
                 coverImagePreview: null,
-                selectedCourseId: 1, // Seleciona o primeiro curso por padrão
+                selectedCourseId: null,
+                status: 'draft',
+                visibility: 'public',
                 // Campos adicionados para "Acesso & Preço"
                 access: "1",           // Valor padrão para Modelo de Acesso
                 price: 0,              // Valor padrão para Preço
@@ -353,11 +369,8 @@ export default {
             // Preview
             isPreviewModalOpen: false,
             previewCourse: {},
-            // Cursos (Simulação)
-            courses: [
-                { id: 1, name: 'Fundamentos do Copy Trading', description: 'Aprenda do zero as estratégias mais avançadas para Day Trade.' },
-                { id: 2, name: 'Fundamentos de Marketing', description: 'Aprenda os conceitos básicos de marketing digital e SEO.' },
-            ],
+            // Cursos
+            courses: [],
             // Novo estado para palavras-chave e imagem social
             newKeyword: '', // Para o input de palavras-chave
             isSocialPreviewModalOpen: false, // Para o modal de preview social (opcional)
@@ -383,40 +396,36 @@ export default {
             isMaterialsModalOpen: false,
             selectedLessonIdForMaterials: null,
             selectedLessonForMaterials: {},
-            materialsList: [ // Simulação de dados de materiais
-                { id: 1, lessonId: 1003, name: 'PDF: Estratégia de Copy Trading', type: 'PDF', link: '#' },
-                { id: 2, lessonId: 1004, name: 'Checklist de Setup', type: 'DOC', link: '#' },
-                { id: 3, lessonId: 1004, name: 'Planilha de Risco (Excel)', type: 'XLS', link: '#' },
-                { id: 4, lessonId: 1006, name: 'Ebook: Gestão de Capital', type: 'PDF', link: '#' },
-                { id: 5, lessonId: 1006, name: 'Slides da Aula', type: 'PPT', link: '#' },
-                { id: 6, lessonId: 1006, name: 'Teste de Conhecimento (Link)', type: 'LINK', link: '#' },
-                { id: 7, lessonId: 1002, name: 'Artigo: Análise de Candlesticks', type: 'LINK', link: '#' },
-            ],
+            materialsList: [],
             newMaterial: { // Estado para o formulário de novo material
                 name: '',
                 type: 'PDF',
                 link: ''
             },
-            // Dados (Simulação do Backend)
-            modules: [
-                { id: 101, courseId: 1, title: 'Módulo 1 - Introdução ao Mercado', status: 'published' },
-                { id: 102, courseId: 1, title: 'Módulo 2 - Estratégias Avançadas', status: 'published' },
-                { id: 103, courseId: 1, title: 'Módulo 3 - Gestão de Risco', status: 'published' },
-                { id: 201, courseId: 2, title: 'Módulo A: Branding Básico', status: 'published' },
-            ],
-            lessons: [
-                { id: 1001, moduleId: 101, name: 'Conceitos Básicos do Trading', contentType: 'Video', duration: 15, isActive: true },
-                { id: 1002, moduleId: 101, name: 'Análise Técnica Básica', contentType: 'Text', duration: 22, isActive: false },
-                { id: 1003, moduleId: 101, name: 'Escolha de Ativos', contentType: 'Video', duration: 7, isActive: true },
-                { id: 1004, moduleId: 102, name: 'Estratégia Zenix Pro', contentType: 'Video', duration: 28, isActive: true },
-                { id: 1005, moduleId: 103, name: 'Controle de Stop Loss', contentType: 'Video', duration: 12, isActive: true },
-                { id: 1006, moduleId: 103, name: 'Simulação de Mercado', contentType: 'PDF', duration: 5, isActive: true },
-                { id: 2001, moduleId: 201, name: 'Aula A.1: Identidade Visual', contentType: 'Video', duration: 8, isActive: true },
-            ]
+            // Dados do Backend
+            modules: [],
+            lessons: []
         };
     },
-    mounted() {
-        this.loadCourseDetails();
+    async mounted() {
+        // Verifica se há um ID na rota
+        const courseId = this.$route.params.id;
+        if (courseId) {
+            if (courseId === 'new') {
+                // Modo de criação de novo curso
+                this.course.selectedCourseId = null;
+                this.course.name = '';
+                this.course.description = '';
+                // Reseta todos os campos
+                this.resetCourseFields();
+            } else {
+                this.course.selectedCourseId = courseId;
+            }
+        }
+        await this.loadCourses();
+        if (this.course.selectedCourseId && this.course.selectedCourseId !== 'new') {
+            await this.loadCourseDetails();
+        }
     },
     computed: {
         filteredModules() {
@@ -451,11 +460,68 @@ export default {
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         },
-        // Curso
-        loadCourses() {
-            console.log('Lista de cursos atualizada. (Simulação)');
+        goBack() {
+            this.$router.push({ name: 'AcademyCoursesList' });
         },
-        loadCourseDetails() {
+        resetCourseFields() {
+            this.course.access = "1";
+            this.course.price = 0;
+            this.course.currency = "R$";
+            this.course.subscription = "1";
+            this.course.discount = "0";
+            this.course.status = "draft";
+            this.course.visibility = "public";
+            this.course.slug = '';
+            this.course.seoTitle = '';
+            this.course.seoDescription = '';
+            this.course.keywords = [];
+            this.course.coverImage = null;
+            this.course.coverImagePreview = null;
+            this.course.socialImage = null;
+            this.course.socialImagePreview = null;
+            this.course.availableFrom = '';
+            this.course.availableUntil = '';
+            this.modules = [];
+            this.lessons = [];
+        },
+        // Curso
+        handleCourseSelection() {
+            if (this.course.selectedCourseId === 'new') {
+                this.resetCourseFields();
+                this.course.selectedCourseId = null;
+            } else if (this.course.selectedCourseId) {
+                this.loadCourseDetails();
+            }
+        },
+        async loadCourses() {
+            try {
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const response = await fetch(`${apiBaseUrl}/courses`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    this.courses = data.map(c => ({
+                        id: c.id,
+                        name: c.name || c.title,
+                        title: c.title,
+                        description: c.description,
+                        slug: c.slug,
+                        seoTitle: c.seoTitle,
+                        seoDescription: c.seoDescription,
+                        keywords: c.keywords || [],
+                    }));
+                } else {
+                    console.error('Erro ao carregar cursos:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar cursos:', error);
+            }
+        },
+        async loadCourseDetails() {
             const courseId = this.course.selectedCourseId;
             if (!courseId) {
                 this.course.name = '';
@@ -475,21 +541,65 @@ export default {
                 this.course.keywords = [];
                 this.course.socialImage = null;
                 this.course.socialImagePreview = null;
+                this.modules = [];
+                this.lessons = [];
                 return;
             }
-            const selectedCourse = this.courses.find(c => c.id === courseId);
-            if (selectedCourse) {
-                this.course.name = selectedCourse.name;
-                this.course.description = selectedCourse.description;
-                this.course.coverImage = null;
-                this.course.coverImagePreview = null;
-                // Carrega os campos de SEO & Compartilhamento do curso selecionado
-                this.course.slug = selectedCourse.slug || '';
-                this.course.seoTitle = selectedCourse.seoTitle || '';
-                this.course.seoDescription = selectedCourse.seoDescription || '';
-                this.course.keywords = [...(selectedCourse.keywords || [])]; // Copia o array
-                this.course.socialImage = null;
-                this.course.socialImagePreview = null;
+            try {
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const response = await fetch(`${apiBaseUrl}/courses/${courseId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (response.ok) {
+                    const courseData = await response.json();
+                    // Atualiza dados do curso
+                    this.course.name = courseData.name || courseData.title;
+                    this.course.description = courseData.description;
+                    this.course.coverImagePreview = courseData.coverImage || courseData.imagePlaceholder;
+                    this.course.slug = courseData.slug || '';
+                    this.course.seoTitle = courseData.seoTitle || '';
+                    this.course.seoDescription = courseData.seoDescription || '';
+                    this.course.keywords = courseData.keywords || [];
+                    this.course.socialImagePreview = courseData.socialImage;
+                    this.course.access = courseData.access || "1";
+                    this.course.price = courseData.price || 0;
+                    this.course.currency = courseData.currency || "R$";
+                    this.course.subscription = courseData.subscription || "1";
+                    this.course.discount = courseData.discount || "0";
+                    this.course.status = courseData.status || "draft";
+                    this.course.availableFrom = courseData.availableFrom ? courseData.availableFrom.split('T')[0] : '';
+                    this.course.availableUntil = courseData.availableUntil ? courseData.availableUntil.split('T')[0] : '';
+                    this.course.visibility = courseData.visibility || "public";
+                    // Atualiza módulos e aulas
+                    if (courseData.modules) {
+                        this.modules = courseData.modules.map(m => ({
+                            id: m.id,
+                            courseId: m.courseId,
+                            title: m.title,
+                            shortDescription: m.shortDescription,
+                            status: m.status,
+                            orderIndex: m.orderIndex,
+                        }));
+                        this.lessons = courseData.modules.flatMap(m => 
+                            (m.lessons || []).map(l => ({
+                                id: l.id,
+                                moduleId: l.moduleId,
+                                name: l.name || l.title,
+                                title: l.title,
+                                contentType: l.contentType || 'Video',
+                                duration: l.duration,
+                                isActive: l.isActive !== undefined ? l.isActive : true,
+                            }))
+                        );
+                    }
+                } else {
+                    console.error('Erro ao carregar detalhes do curso:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar detalhes do curso:', error);
             }
         },
         handleCoverUpload(event) {
@@ -506,42 +616,72 @@ export default {
                 this.course.coverImagePreview = null;
             }
         },
-        saveCourse() {
+        async saveCourse() {
             if (!this.course.name || this.course.name.trim() === '') {
                 alert('O nome do curso é obrigatório.');
                 return;
             }
-            // Cria um objeto com todos os dados do curso, incluindo SEO
-            const courseDataToSave = {
-                id: this.course.selectedCourseId,
-                name: this.course.name,
-                description: this.course.description,
-                slug: this.course.slug,
-                seoTitle: this.course.seoTitle,
-                seoDescription: this.course.seoDescription,
-                keywords: [...this.course.keywords], // Copia o array
-                // ... outros campos como access, price, etc., se necessário
-            };
-            if (this.course.selectedCourseId !== null && this.course.selectedCourseId !== '') {
-                const existingCourseIndex = this.courses.findIndex(c => c.id === this.course.selectedCourseId);
-                if (existingCourseIndex !== -1) {
-                    // Atualiza o curso existente
-                    this.courses[existingCourseIndex] = { ...this.courses[existingCourseIndex], ...courseDataToSave };
-                    console.log('Curso editado:', this.courses[existingCourseIndex]);
-                }
-            } else {
-                // Cria um novo curso
-                const newCourseId = Date.now();
-                const newCourseObject = {
-                    id: newCourseId,
-                    ...courseDataToSave,
+            try {
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const courseDataToSave = {
+                    title: this.course.name,
+                    description: this.course.description,
+                    slug: this.course.slug,
+                    seoTitle: this.course.seoTitle,
+                    seoDescription: this.course.seoDescription,
+                    keywords: this.course.keywords,
+                    coverImage: this.course.coverImagePreview,
+                    socialImage: this.course.socialImagePreview,
+                    access: this.course.access,
+                    price: this.course.price,
+                    currency: this.course.currency,
+                    subscription: this.course.subscription,
+                    discount: this.course.discount,
+                    status: this.course.status,
+                    availableFrom: this.course.availableFrom || null,
+                    availableUntil: this.course.availableUntil || null,
+                    visibility: this.course.visibility,
                 };
-                this.courses.push(newCourseObject);
-                this.course.selectedCourseId = newCourseId;
-                this.loadCourseDetails();
-                console.log('Novo Curso Criado e Selecionado:', newCourseObject);
+                let response;
+                if (this.course.selectedCourseId) {
+                    // Atualiza curso existente
+                    response = await fetch(`${apiBaseUrl}/courses/${this.course.selectedCourseId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(courseDataToSave),
+                    });
+                } else {
+                    // Cria novo curso
+                    response = await fetch(`${apiBaseUrl}/courses`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(courseDataToSave),
+                    });
+                }
+                if (response.ok) {
+                    const savedCourse = await response.json();
+                    if (!this.course.selectedCourseId || this.course.selectedCourseId === 'new') {
+                        this.course.selectedCourseId = savedCourse.id;
+                        // Atualiza a rota com o ID real
+                        this.$router.replace({ name: 'AcademyManagement', params: { id: savedCourse.id } });
+                    }
+                    await this.loadCourses();
+                    await this.loadCourseDetails();
+                    alert('Curso salvo com sucesso!');
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Erro ao salvar curso' }));
+                    alert(`Erro ao salvar curso: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('Erro ao salvar curso:', error);
+                alert('Erro ao salvar curso. Verifique sua conexão.');
             }
-            alert('Curso salvo com sucesso!');
         },
         // SEO & Compartilhamento
         addKeyword() {
@@ -603,20 +743,40 @@ export default {
         closeNewModuleModal() {
             this.isNewModuleModalOpen = false;
         },
-        saveNewModule() {
+        async saveNewModule() {
             if (!this.newModule.courseId || !this.newModule.name) {
                 alert('O curso e o nome do módulo são obrigatórios.');
                 return;
             }
-            const newModuleObject = {
-                id: Date.now() + Math.random(),
-                courseId: this.newModule.courseId,
-                title: `Módulo ${this.modules.filter(m => m.courseId === this.newModule.courseId).length + 1} - ${this.newModule.name}`,
-                status: 'draft'
-            };
-            this.modules.push(newModuleObject);
-            this.closeNewModuleModal();
-            alert(`Módulo "${newModuleObject.title}" adicionado com sucesso!`);
+            try {
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const moduleCount = this.modules.filter(m => m.courseId === this.newModule.courseId).length;
+                const response = await fetch(`${apiBaseUrl}/courses/modules`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        courseId: this.newModule.courseId,
+                        title: `Módulo ${moduleCount + 1} - ${this.newModule.name}`,
+                        shortDescription: this.newModule.shortDescription,
+                        status: 'draft',
+                        orderIndex: moduleCount,
+                    }),
+                });
+                if (response.ok) {
+                    await this.loadCourseDetails();
+                    this.closeNewModuleModal();
+                    alert(`Módulo adicionado com sucesso!`);
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Erro ao criar módulo' }));
+                    alert(`Erro ao criar módulo: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('Erro ao criar módulo:', error);
+                alert('Erro ao criar módulo. Verifique sua conexão.');
+            }
         },
         // Aula
         openNewLessonModal(moduleId = null) {
@@ -634,57 +794,145 @@ export default {
         closeNewLessonModal() {
             this.isNewLessonModalOpen = false;
         },
-        saveNewLesson() {
+        async saveNewLesson() {
             if (!this.newLesson.moduleId || !this.newLesson.name) {
                 alert('O módulo e o nome da aula são obrigatórios.');
                 return;
             }
-            const newLessonObject = {
-                id: Date.now() + Math.random(),
-                moduleId: this.newLesson.moduleId,
-                name: this.newLesson.name,
-                contentType: this.newLesson.contentType,
-                duration: this.newLesson.duration,
-                isActive: this.newLesson.isActive,
-            };
-            this.lessons.push(newLessonObject);
-            this.closeNewLessonModal();
-            alert(`Aula "${this.newLesson.name}" salva no módulo com sucesso!`);
+            try {
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const module = this.modules.find(m => m.id === this.newLesson.moduleId);
+                if (!module) {
+                    alert('Módulo não encontrado.');
+                    return;
+                }
+                const response = await fetch(`${apiBaseUrl}/courses/lessons`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        courseId: module.courseId,
+                        moduleId: this.newLesson.moduleId,
+                        title: this.newLesson.name,
+                        contentType: this.newLesson.contentType,
+                        contentLink: this.newLesson.contentLink,
+                        releaseType: this.newLesson.releaseType,
+                        isActive: this.newLesson.isActive,
+                        duration: `${this.newLesson.duration} min`,
+                    }),
+                });
+                if (response.ok) {
+                    await this.loadCourseDetails();
+                    this.closeNewLessonModal();
+                    alert(`Aula "${this.newLesson.name}" salva com sucesso!`);
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Erro ao criar aula' }));
+                    alert(`Erro ao criar aula: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('Erro ao criar aula:', error);
+                alert('Erro ao criar aula. Verifique sua conexão.');
+            }
         },
         // Materiais
-        openMaterialsModal(lessonId) {
+        async openMaterialsModal(lessonId) {
             this.selectedLessonIdForMaterials = lessonId;
             this.selectedLessonForMaterials = this.lessons.find(l => l.id === lessonId);
             this.isMaterialsModalOpen = true;
-            this.newMaterial = { name: '', type: 'PDF', link: '' }; // Limpa o formulário
+            this.newMaterial = { name: '', type: 'PDF', link: '' };
+            // Carrega materiais da aula
+            await this.loadMaterialsForLesson(lessonId);
         },
         closeMaterialsModal() {
             this.isMaterialsModalOpen = false;
             this.selectedLessonIdForMaterials = null;
             this.selectedLessonForMaterials = {};
         },
-        saveNewMaterial() {
+        async loadMaterialsForLesson(lessonId) {
+            try {
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const response = await fetch(`${apiBaseUrl}/courses/lessons/${lessonId}/materials`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (response.ok) {
+                    const materials = await response.json();
+                    this.materialsList = this.materialsList.filter(m => m.lessonId !== lessonId);
+                    materials.forEach(m => {
+                        this.materialsList.push({
+                            id: m.id,
+                            lessonId: m.lessonId,
+                            name: m.name,
+                            type: m.type,
+                            link: m.link,
+                        });
+                    });
+                }
+            } catch (error) {
+                console.error('Erro ao carregar materiais:', error);
+            }
+        },
+        async saveNewMaterial() {
             if (!this.newMaterial.name || !this.newMaterial.link) {
                 alert('O nome e o link do material são obrigatórios.');
                 return;
             }
-            const newMaterialObject = {
-                id: Date.now() + Math.random(),
-                lessonId: this.selectedLessonIdForMaterials,
-                name: this.newMaterial.name,
-                type: this.newMaterial.type,
-                link: this.newMaterial.link
-            };
-            this.materialsList.push(newMaterialObject);
-            this.newMaterial = { name: '', type: 'PDF', link: '' };
-            alert(`Material "${newMaterialObject.name}" adicionado com sucesso!`);
+            try {
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const response = await fetch(`${apiBaseUrl}/courses/materials`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        lessonId: this.selectedLessonIdForMaterials,
+                        name: this.newMaterial.name,
+                        type: this.newMaterial.type,
+                        link: this.newMaterial.link,
+                    }),
+                });
+                if (response.ok) {
+                    const materialName = this.newMaterial.name;
+                    this.newMaterial = { name: '', type: 'PDF', link: '' };
+                    await this.loadMaterialsForLesson(this.selectedLessonIdForMaterials);
+                    alert(`Material "${materialName}" adicionado com sucesso!`);
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Erro ao criar material' }));
+                    alert(`Erro ao criar material: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('Erro ao criar material:', error);
+                alert('Erro ao criar material. Verifique sua conexão.');
+            }
         },
-        deleteMaterial(materialId) {
+        async deleteMaterial(materialId) {
             if (confirm('Tem certeza que deseja excluir este material?')) {
-                const index = this.materialsList.findIndex(m => m.id === materialId);
-                if (index !== -1) {
-                    this.materialsList.splice(index, 1);
-                    alert('Material excluído.');
+                try {
+                    const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                    const response = await fetch(`${apiBaseUrl}/courses/materials/${materialId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    if (response.ok) {
+                        const index = this.materialsList.findIndex(m => m.id === materialId);
+                        if (index !== -1) {
+                            this.materialsList.splice(index, 1);
+                        }
+                        alert('Material excluído.');
+                    } else {
+                        alert('Erro ao excluir material.');
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir material:', error);
+                    alert('Erro ao excluir material.');
                 }
             }
         }

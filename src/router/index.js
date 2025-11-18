@@ -16,6 +16,7 @@ import ExpertsView from '../views/Admin/ExpertsView.vue'
 import ClientesView from '../views/Admin/ClientesView.vue'
 import WebhookView from '../views/Admin/WebhookView.vue'
 import AcademyManagementView from '../views/Admin/AcademyManagementView.vue'
+import AcademyCoursesListView from '../views/Admin/AcademyCoursesListView.vue'
 import AdminView from '@/views/Admin/AdminView.vue'
 const routes = [
   {
@@ -130,6 +131,12 @@ const routes = [
 
   {
     path: '/AcademyManagement',
+    name: 'AcademyCoursesList',
+    component: AcademyCoursesListView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/AcademyManagement/:id',
     name: 'AcademyManagement',
     component: AcademyManagementView,
     meta: { requiresAuth: true }

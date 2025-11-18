@@ -1,28 +1,28 @@
 <template>
   <!-- Main Container -->
-  <main id="register-main" class="min-h-screen flex items-center justify-center px-8">
+  <main id="register-main" class="min-h-screen flex items-center justify-center px-8 py-8">
     <div class="w-full max-w-7xl flex items-center justify-between login-container-wrapper">
       
       <!-- Left Column - Register Card -->
-      <div id="register-section" class="w-[480px]">
-        <div class="bg-white border border-zenix-card-border rounded-2xl p-10 login-card-shadow">
+      <div id="register-section" class="w-full max-w-[420px] flex-shrink-0">
+        <div class="bg-white border border-zenix-card-border rounded-2xl p-8 login-card-shadow w-full">
           
           <!-- Logo -->
-          <div class="mb-8">
+          <div class="mb-6">
             <div class="flex items-center space-x-2">
-              <div class="text-3xl font-bold text-zenix-text-dark">ZENI</div>
-              <div class="text-3xl font-bold text-zenix-green">X</div>
+              <div class="text-2xl font-bold text-zenix-text-dark">ZENI</div>
+              <div class="text-2xl font-bold text-zenix-green">X</div>
             </div>
           </div>
 
           <!-- Header -->
-          <div class="mb-8">
-            <h1 class="text-2xl font-semibold text-zenix-text-dark mb-3">Crie sua conta</h1>
+          <div class="mb-6">
+            <h1 class="text-xl font-semibold text-zenix-text-dark mb-2">Crie sua conta</h1>
             <p class="text-sm text-zenix-gray leading-relaxed">Preencha seus dados para criar uma conta na plataforma.</p>
           </div>
 
           <!-- Register Form -->
-          <form id="register-form" class="space-y-6" @submit.prevent="handleRegister">
+          <form id="register-form" class="space-y-4" @submit.prevent="handleRegister">
             <!-- Name Input -->
             <div>
               <label class="block text-sm font-medium text-zenix-text-dark mb-2">Nome Completo</label>
@@ -30,7 +30,7 @@
                 type="text" 
                 v-model="name"
                 placeholder="Digite seu nome completo" 
-                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
                 required
               >
             </div>
@@ -42,7 +42,7 @@
                 type="email" 
                 v-model="email"
                 placeholder="Digite seu e-mail" 
-                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
                 required
               >
             </div>
@@ -56,7 +56,7 @@
                 @input="formatCPF"
                 placeholder="000.000.000-00" 
                 maxlength="14"
-                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
               >
             </div>
 
@@ -69,7 +69,7 @@
                 @input="formatPhone"
                 placeholder="(41) 99999-9999" 
                 maxlength="15"
-                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
               >
             </div>
 
@@ -82,7 +82,7 @@
                   id="password-input" 
                   v-model="password"
                   placeholder="Digite sua senha" 
-                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-4 pr-12 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 pr-12 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
                   required
                 >
                 <button 
@@ -95,7 +95,7 @@
               </div>
               
               <!-- Password Strength Indicator -->
-              <div v-if="password" class="mt-3">
+              <div v-if="password" class="mt-2">
                 <div class="flex justify-between items-center mb-2">
                   <span class="text-xs text-zenix-gray">Força da senha</span>
                   <span class="text-xs font-medium" :style="{ color: strengthColor }">{{ strengthLabel }}</span>
@@ -111,7 +111,7 @@
                 </div>
                 
                 <!-- Password Requirements -->
-                <div class="mt-3 space-y-2">
+                <div class="mt-2 space-y-1">
                   <div class="flex items-center text-xs" :class="password.length >= 8 ? 'text-zenix-green' : 'text-zenix-gray'">
                     <i :class="password.length >= 8 ? 'fa-solid fa-check' : 'fa-regular fa-circle'" class="mr-2"></i>
                     Pelo menos 8 caracteres
@@ -141,7 +141,7 @@
                   id="confirm-password-input" 
                   v-model="confirmPassword"
                   placeholder="Confirme sua senha" 
-                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-4 pr-12 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 pr-12 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
                   required
                 >
                 <button 
@@ -169,7 +169,7 @@
             <!-- Register Button -->
             <button 
               type="submit" 
-              class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-4 rounded-full transition-colors flex items-center justify-center space-x-2"
+              class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3 rounded-full transition-colors flex items-center justify-center space-x-2"
               :disabled="isLoading || password !== confirmPassword"
             >
               <span v-if="isLoading" class="spinner"></span>
@@ -179,19 +179,19 @@
           </form>
 
           <!-- Links -->
-          <div class="mt-8 space-y-4 text-center">
+          <div class="mt-6 space-y-3 text-center">
             <router-link to="/login" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors">Já possui uma conta? Voltar ao login</router-link>
           </div>
 
           <!-- Footer -->
-          <div class="mt-10 pt-6 border-t border-zenix-input-border">
+          <div class="mt-6 pt-4 border-t border-zenix-input-border">
             <p class="text-xs text-zenix-gray text-center leading-relaxed">Ao cadastrar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
           </div>
         </div>
       </div>
 
       <!-- Right Column - Hero Content -->
-      <div id="hero-section" class="w-[600px] pl-20">
+      <div id="hero-section" class="w-full max-w-[600px] pl-20 flex-shrink-0">
         
         <!-- Main Title -->
         <div class="mb-8 text-left">
@@ -423,7 +423,12 @@ button.bg-zenix-green:disabled {
 .max-w-7xl { max-width: 80rem; }
 .w-\[480px\] { width: 480px; }
 .w-\[600px\] { width: 600px; }
+.max-w-\[420px\] { max-width: 420px; }
+.max-w-\[480px\] { max-width: 480px; }
+.max-w-\[600px\] { max-width: 600px; }
 .pl-20 { padding-left: 5rem; }
+.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+.p-8 { padding: 2rem; }
 .bg-white { background-color: white; }
 .border { border-width: 1px; }
 .rounded-2xl { border-radius: 1rem; }
@@ -435,21 +440,28 @@ button.bg-zenix-green:disabled {
 .mb-2 { margin-bottom: 0.5rem; }
 .mb-3 { margin-bottom: 0.75rem; }
 .mb-4 { margin-bottom: 1rem; }
+.mb-6 { margin-bottom: 1.5rem; }
 .mt-2 { margin-top: 0.5rem; }
 .mt-3 { margin-top: 0.75rem; }
+.mt-6 { margin-top: 1.5rem; }
 .mt-8 { margin-top: 2rem; }
 .mt-10 { margin-top: 2.5rem; }
+.pt-4 { padding-top: 1rem; }
 .pt-6 { padding-top: 1.5rem; }
+.py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
 .border-t { border-top-width: 1px; }
 .space-x-2 > * + * { margin-left: 0.5rem; }
 .space-x-4 > * + * { margin-left: 1rem; }
+.space-y-1 > * + * { margin-top: 0.25rem; }
 .space-y-2 > * + * { margin-top: 0.5rem; }
+.space-y-3 > * + * { margin-top: 0.75rem; }
 .space-y-4 > * + * { margin-top: 1rem; }
 .space-y-6 > * + * { margin-top: 1.5rem; }
 .space-y-8 > * + * { margin-top: 2rem; }
-.text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
-.text-6xl { font-size: 3.75rem; line-height: 1; }
 .text-2xl { font-size: 1.5rem; line-height: 2rem; }
+.text-3xl { font-size: 1.875rem; line-height: 2.25rem; }
+.text-xl { font-size: 1.25rem; line-height: 1.75rem; }
+.text-6xl { font-size: 3.75rem; line-height: 1; }
 .text-lg { font-size: 1.125rem; line-height: 1.75rem; }
 .text-sm { font-size: 0.875rem; line-height: 1.25rem; }
 .text-xs { font-size: 0.75rem; line-height: 1rem; }
@@ -497,7 +509,12 @@ button.bg-zenix-green:disabled {
   }
   
   #hero-section {
-    padding-left: 3rem;
+    padding-left: 3rem !important;
+    max-width: 550px !important;
+  }
+  
+  #register-section {
+    max-width: 400px !important;
   }
   
   .text-6xl {
@@ -506,6 +523,10 @@ button.bg-zenix-green:disabled {
   
   .login-container-wrapper {
     gap: 1.5rem;
+  }
+  
+  .p-8 {
+    padding: 1.75rem !important;
   }
 }
 
@@ -521,12 +542,12 @@ button.bg-zenix-green:disabled {
   }
   
   #hero-section {
-    padding-left: 2rem;
-    width: 500px !important;
+    padding-left: 2rem !important;
+    max-width: 500px !important;
   }
   
   #register-section {
-    width: 420px !important;
+    max-width: 380px !important;
   }
   
   .text-6xl {
@@ -537,8 +558,8 @@ button.bg-zenix-green:disabled {
     font-size: 1rem !important;
   }
   
-  .p-10 {
-    padding: 2.25rem !important;
+  .p-8 {
+    padding: 1.5rem !important;
   }
 }
 
@@ -546,6 +567,7 @@ button.bg-zenix-green:disabled {
 @media (max-width: 1024px) {
   .login-container-wrapper {
     justify-content: center;
+    flex-direction: column;
   }
   
   #hero-section {
@@ -554,16 +576,18 @@ button.bg-zenix-green:disabled {
   
   #register-section {
     width: 100% !important;
-    max-width: 420px;
+    max-width: 450px;
   }
   
   #register-main {
     padding-left: 1rem;
     padding-right: 1rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
   }
   
-  .p-10 {
-    padding: 2rem !important;
+  .p-8 {
+    padding: 1.5rem !important;
   }
   
   .text-2xl {
@@ -578,11 +602,17 @@ button.bg-zenix-green:disabled {
 /* Responsividade - Mobile grande (640px - 768px) */
 @media (max-width: 768px) {
   #register-section {
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
   }
   
-  .p-10 {
-    padding: 1.75rem !important;
+  #register-main {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+  
+  .p-8 {
+    padding: 1.5rem !important;
   }
   
   .text-3xl {
@@ -597,13 +627,13 @@ button.bg-zenix-green:disabled {
     margin-bottom: 1.5rem !important;
   }
   
-  .space-y-6 > * + * {
-    margin-top: 1.25rem !important;
+  .space-y-4 > * + * {
+    margin-top: 1rem !important;
   }
   
-  .py-4 {
-    padding-top: 0.875rem !important;
-    padding-bottom: 0.875rem !important;
+  .py-3 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
   }
 }
 
@@ -616,12 +646,18 @@ button.bg-zenix-green:disabled {
     padding-bottom: 1rem;
   }
   
-  .w-\[480px\] {
+  #register-section {
     width: 100% !important;
+    max-width: 100% !important;
   }
   
-  .p-10 {
-    padding: 1.5rem !important;
+  #register-main {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+  }
+  
+  .p-8 {
+    padding: 1.25rem !important;
   }
   
   .text-3xl {
@@ -656,12 +692,12 @@ button.bg-zenix-green:disabled {
     margin-bottom: 0.375rem !important;
   }
   
-  .space-y-6 > * + * {
-    margin-top: 1rem !important;
+  .space-y-4 > * + * {
+    margin-top: 0.875rem !important;
   }
   
-  .space-y-4 > * + * {
-    margin-top: 0.75rem !important;
+  .space-y-3 > * + * {
+    margin-top: 0.625rem !important;
   }
   
   .px-4 {
@@ -669,9 +705,9 @@ button.bg-zenix-green:disabled {
     padding-right: 0.875rem !important;
   }
   
-  .py-4 {
-    padding-top: 0.75rem !important;
-    padding-bottom: 0.75rem !important;
+  .py-3 {
+    padding-top: 0.625rem !important;
+    padding-bottom: 0.625rem !important;
   }
   
   .rounded-xl {

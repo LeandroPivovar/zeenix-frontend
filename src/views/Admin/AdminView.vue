@@ -21,29 +21,29 @@
                 </header>
 
                 <section class="kpi-grid">
-                    <div class="kpi-card">
+                    <div class="kpi-card" :class="{ 'loading': isLoadingStats }">
                         <span class="kpi-label">Admins ativos</span>
-                        <span class="kpi-value value-green">{{ kpis.activeAdmins }}</span>
+                        <span class="kpi-value value-green">{{ isLoadingStats ? '...' : kpis.activeAdmins }}</span>
                     </div>
-                    <div class="kpi-card">
+                    <div class="kpi-card" :class="{ 'loading': isLoadingStats }">
                         <span class="kpi-label">Usuários ativos</span>
-                        <span class="kpi-value value-green">{{ kpis.activeUsers.toLocaleString('pt-BR') }}</span>
+                        <span class="kpi-value value-green">{{ isLoadingStats ? '...' : kpis.activeUsers.toLocaleString('pt-BR') }}</span>
                     </div>
-                    <div class="kpi-card">
+                    <div class="kpi-card" :class="{ 'loading': isLoadingStats }">
                         <span class="kpi-label">IAs em operação</span>
-                        <span class="kpi-value value-green">{{ kpis.iasInOperation }}</span>
+                        <span class="kpi-value value-green">{{ isLoadingStats ? '...' : kpis.iasInOperation }}</span>
                     </div>
-                    <div class="kpi-card">
+                    <div class="kpi-card" :class="{ 'loading': isLoadingStats }">
                         <span class="kpi-label">Experts cadastrados</span>
-                        <span class="kpi-value value-green">{{ kpis.registeredExperts }}</span>
+                        <span class="kpi-value value-green">{{ isLoadingStats ? '...' : kpis.registeredExperts }}</span>
                     </div>
-                    <div class="kpi-card">
-                        <span class="kpi-label">Volume gerenciado (US$)</span>
-                        <span class="kpi-value value-green">{{ kpis.managedVolume }}</span>
+                    <div class="kpi-card" :class="{ 'loading': isLoadingStats }">
+                        <span class="kpi-label">Volume gerenciado</span>
+                        <span class="kpi-value value-green">{{ isLoadingStats ? '...' : '$' + kpis.managedVolume }}</span>
                     </div>
-                    <div class="kpi-card">
+                    <div class="kpi-card" :class="{ 'loading': isLoadingStats }">
                         <span class="kpi-label">Comissão total (Markup)</span>
-                        <span class="kpi-value value-green">{{ kpis.totalCommission }}</span>
+                        <span class="kpi-value value-green">{{ isLoadingStats ? '...' : '$' + kpis.totalCommission }}</span>
                     </div>
                 </section>
 
@@ -94,10 +94,13 @@
                         <h2>Logs & Auditoria</h2>
                         <div class="log-actions">
                             <button class="btn btn-secondary">Exportar Logs</button>
-                            <button class="btn btn-secondary filter-btn">Filtrar</button>
+                            <button class="btn btn-secondary filter-btn" @click="loadActivityLogs(logsPagination.currentPage, logsPagination.recordsPerPage)">
+                                <i class="fa-solid fa-rotate-right" style="margin-right: 5px;"></i>
+                                Atualizar
+                            </button>
                         </div>
                     </div>
-                    <div class="table-container">
+                    <div class="table-container" :class="{ 'loading': isLoadingLogs }">
                         <table class="modern-table">
                             <thead>
                                 <tr>
@@ -109,7 +112,17 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr v-for="(log, index) in logs" :key="index">
+                                <tr v-if="isLoadingLogs">
+                                    <td colspan="5" style="text-align: center; padding: 2rem; color: #999;">
+                                        Carregando logs...
+                                    </td>
+                                </tr>
+                                <tr v-else-if="logs.length === 0">
+                                    <td colspan="5" style="text-align: center; padding: 2rem; color: #999;">
+                                        Nenhum log de atividade encontrado
+                                    </td>
+                                </tr>
+                                <tr v-else v-for="(log, index) in logs" :key="log.id || index">
                                     <td>{{ log.dateTime }}</td>
                                     <td>{{ log.action }}</td>
                                     <td>{{ log.user }}</td>
@@ -122,6 +135,70 @@
                                 </tr>
                             </tbody>
                         </table>
+                    </div>
+
+                    <!-- Controles de Paginação -->
+                    <div class="pagination-controls" v-if="logsPagination.totalPages > 1">
+                        <div class="pagination-info">
+                            <span>Mostrando {{ (logsPagination.currentPage - 1) * logsPagination.recordsPerPage + 1 }} - {{ Math.min(logsPagination.currentPage * logsPagination.recordsPerPage, logsPagination.totalRecords) }} de {{ logsPagination.totalRecords }} registros</span>
+                            
+                            <div class="records-per-page">
+                                <label>Por página:</label>
+                                <select @change="changeLogsPerPage($event.target.value)" :value="logsPagination.recordsPerPage">
+                                    <option value="10">10</option>
+                                    <option value="25">25</option>
+                                    <option value="50">50</option>
+                                    <option value="100">100</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="pagination-buttons">
+                            <button 
+                                class="btn-pagination" 
+                                @click="goToLogsPage(1)" 
+                                :disabled="!logsPagination.hasPreviousPage || isLoadingLogs"
+                            >
+                                <i class="fa-solid fa-angles-left"></i>
+                            </button>
+                            
+                            <button 
+                                class="btn-pagination" 
+                                @click="goToLogsPage(logsPagination.currentPage - 1)" 
+                                :disabled="!logsPagination.hasPreviousPage || isLoadingLogs"
+                            >
+                                <i class="fa-solid fa-chevron-left"></i>
+                            </button>
+
+                            <div class="page-numbers">
+                                <button 
+                                    v-for="(page, idx) in getVisiblePages()" 
+                                    :key="`page-${idx}`"
+                                    class="btn-page-number" 
+                                    :class="{ 'active': page === logsPagination.currentPage, 'ellipsis': page === '...' }"
+                                    @click="page !== '...' ? goToLogsPage(page) : null"
+                                    :disabled="isLoadingLogs || page === '...'"
+                                >
+                                    {{ page }}
+                                </button>
+                            </div>
+
+                            <button 
+                                class="btn-pagination" 
+                                @click="goToLogsPage(logsPagination.currentPage + 1)" 
+                                :disabled="!logsPagination.hasNextPage || isLoadingLogs"
+                            >
+                                <i class="fa-solid fa-chevron-right"></i>
+                            </button>
+                            
+                            <button 
+                                class="btn-pagination" 
+                                @click="goToLogsPage(logsPagination.totalPages)" 
+                                :disabled="!logsPagination.hasNextPage || isLoadingLogs"
+                            >
+                                <i class="fa-solid fa-angles-right"></i>
+                            </button>
+                        </div>
                     </div>
                 </section>
 
@@ -251,8 +328,7 @@ export default {
     },
     data() {
         return {
-            // isSidebarOpen: true, <-- REMOVA OU COMENTE ESTA LINHA
-            isSidebarOpen: window.innerWidth > 1024, // NOVO: Sidebar fechada em telas pequenas
+            isSidebarOpen: window.innerWidth > 1024,
             isSidebarCollapsed: false,
             
             showAddAdminModal: false, 
@@ -265,61 +341,28 @@ export default {
                 status: 'Ativo',
             },
 
-            // ... resto dos seus dados (kpis, admins, logs, config) ...
             kpis: {
-                activeAdmins: 8,
-                activeUsers: 1254,
+                activeAdmins: 0,
+                activeUsers: 0,
                 iasInOperation: 48,
                 registeredExperts: 12,
-                managedVolume: '1.2M',
-                totalCommission: '$87k',
+                managedVolume: '$0',
+                totalCommission: '$0',
             },
-            admins: [
-                {
-                    name: 'Marcos Costa',
-                    email: 'marcos.costa@zenix.pro',
-                    permission: 'Super Admin',
-                    lastLogin: '2025-10-18 10:30:15',
-                    status: 'Ativo',
-                },
-                {
-                    name: 'Ana Silva',
-                    email: 'ana.silva@zenix.pro',
-                    permission: 'Editor',
-                    lastLogin: '2025-10-17 18:45:02',
-                    status: 'Ativo',
-                },
-                {
-                    name: 'Carlos Pereira',
-                    email: 'carlos.pereira@zenix.pro',
-                    permission: 'Suporte',
-                    lastLogin: '2025-10-16 09:12:33',
-                    status: 'Inativo',
-                },
-            ],
-            logs: [
-                {
-                    dateTime: '2025-10-18 10:31:00',
-                    action: 'Login no sistema',
-                    user: 'Marcos Costa',
-                    ip: '192.168.1.1',
-                    result: 'Sucesso',
-                },
-                {
-                    dateTime: '2025-10-18 10:25:45',
-                    action: "Desativou usuário 'C. Pereira'",
-                    user: 'Ana Silva',
-                    ip: '203.0.113.25',
-                    result: 'Sucesso',
-                },
-                {
-                    dateTime: '2025-10-18 09:55:12',
-                    action: 'Falha ao exportar logs',
-                    user: 'Marcos Costa',
-                    ip: '192.168.1.1',
-                    result: 'Falha',
-                },
-            ],
+            
+            isLoadingStats: true,
+            nonDemoUsers: [],
+            admins: [],
+            logs: [],
+            isLoadingLogs: false,
+            logsPagination: {
+                currentPage: 1,
+                totalPages: 1,
+                totalRecords: 0,
+                recordsPerPage: 10,
+                hasNextPage: false,
+                hasPreviousPage: false,
+            },
             config: {
                 modoManutencao: false,
                 alertasTempoReal: true,
@@ -329,58 +372,312 @@ export default {
             }
         };
     },
-    // Opcional, mas recomendado para lidar com a mudança de tamanho da janela
-    mounted() {
+    async mounted() {
         window.addEventListener('resize', this.handleResize);
+        await this.loadAdminStats();
+        await this.loadNonDemoUsers();
+        await this.loadAdministrators();
+        await this.loadActivityLogs();
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
     },
     methods: {
+        async loadAdminStats() {
+            this.isLoadingStats = true;
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/admin/stats',
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar estatísticas');
+                }
+
+                const data = await response.json();
+                
+                this.kpis = {
+                    activeAdmins: data.activeAdmins || 0,
+                    activeUsers: data.activeUsers || 0,
+                    iasInOperation: 48, // TODO: Implementar no backend
+                    registeredExperts: 12, // TODO: Implementar no backend
+                    managedVolume: data.managedVolume?.totalFormatted || '$0',
+                    totalCommission: data.managedVolume?.estimatedCommissionFormatted || '$0',
+                };
+            } catch (error) {
+                console.error('Erro ao carregar estatísticas:', error);
+                alert('Erro ao carregar estatísticas do painel');
+            } finally {
+                this.isLoadingStats = false;
+            }
+        },
+
+        async loadNonDemoUsers() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/admin/users/non-demo',
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar usuários');
+                }
+
+                this.nonDemoUsers = await response.json();
+                console.log('Usuários não-demo carregados:', this.nonDemoUsers.length);
+            } catch (error) {
+                console.error('Erro ao carregar usuários:', error);
+            }
+        },
+
+        async loadAdministrators() {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/admin/administrators',
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar administradores');
+                }
+
+                this.admins = await response.json();
+                console.log('Administradores carregados:', this.admins.length);
+            } catch (error) {
+                console.error('Erro ao carregar administradores:', error);
+                alert('Erro ao carregar lista de administradores');
+            }
+        },
+
+        async loadActivityLogs(page = 1, limit = 10) {
+            this.isLoadingLogs = true;
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + 
+                    `/admin/activity-logs?page=${page}&limit=${limit}`,
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar logs');
+                }
+
+                const result = await response.json();
+                this.logs = result.data;
+                this.logsPagination = result.pagination;
+                console.log('Logs de atividade carregados:', this.logs.length, 'de', result.pagination.totalRecords);
+            } catch (error) {
+                console.error('Erro ao carregar logs:', error);
+                // Não mostrar alert para logs, apenas log no console
+            } finally {
+                this.isLoadingLogs = false;
+            }
+        },
+
+        goToLogsPage(page) {
+            if (page >= 1 && page <= this.logsPagination.totalPages) {
+                this.loadActivityLogs(page, this.logsPagination.recordsPerPage);
+            }
+        },
+
+        changeLogsPerPage(limit) {
+            this.loadActivityLogs(1, parseInt(limit));
+        },
+
+        getVisiblePages() {
+            const current = this.logsPagination.currentPage;
+            const total = this.logsPagination.totalPages;
+            const visible = [];
+
+            if (total <= 7) {
+                // Mostrar todas as páginas
+                for (let i = 1; i <= total; i++) {
+                    visible.push(i);
+                }
+            } else {
+                // Mostrar páginas com reticências
+                if (current <= 4) {
+                    for (let i = 1; i <= 5; i++) visible.push(i);
+                    visible.push('...');
+                    visible.push(total);
+                } else if (current >= total - 3) {
+                    visible.push(1);
+                    visible.push('...');
+                    for (let i = total - 4; i <= total; i++) visible.push(i);
+                } else {
+                    visible.push(1);
+                    visible.push('...');
+                    for (let i = current - 1; i <= current + 1; i++) visible.push(i);
+                    visible.push('...');
+                    visible.push(total);
+                }
+            }
+
+            return visible;
+        },
+
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         },
+        
         handleResize() {
-            // Se a tela for maior que 1024px, a sidebar deve estar aberta (desktop).
-            // Se for menor ou igual, ela deve estar fechada (mobile).
             if (window.innerWidth > 1024) {
                 this.isSidebarOpen = true;
             } else {
                 this.isSidebarOpen = false;
             }
         },
-        // ... resto dos seus métodos ...
+        
         saveConfigurations() {
             console.log('Configurações salvas:', this.config);
+            alert('Configurações salvas com sucesso!');
         },
         editAdmin(admin) {
             alert(`Editando: ${admin.name}`);
         },
-        toggleStatus(admin) {
-            admin.status = admin.status === 'Ativo' ? 'Inativo' : 'Ativo';
+        
+        async toggleStatus(admin) {
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + `/admin/administrators/${admin.id}/toggle-status`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Falha ao alterar status');
+                }
+
+                const updated = await response.json();
+                admin.status = updated.status;
+                alert(`Status alterado para: ${updated.status}`);
+            } catch (error) {
+                console.error('Erro ao alterar status:', error);
+                alert('Erro ao alterar status do administrador');
+            }
         },
-        deleteAdmin(admin) {
-            if (confirm(`Tem certeza que deseja excluir ${admin.name}?`)) {
+        
+        async deleteAdmin(admin) {
+            if (!confirm(`Tem certeza que deseja excluir ${admin.name}?`)) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + `/admin/administrators/${admin.id}`,
+                    {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Falha ao excluir administrador');
+                }
+
                 const index = this.admins.indexOf(admin);
                 if (index > -1) {
                     this.admins.splice(index, 1);
                 }
+                alert(`Administrador ${admin.name} excluído com sucesso!`);
+            } catch (error) {
+                console.error('Erro ao excluir administrador:', error);
+                alert(error.message || 'Erro ao excluir administrador');
             }
         },
-        addNewAdmin() {
-            const newAdminEntry = { ...this.newAdmin };
-            this.admins.push(newAdminEntry);
+        
+        async addNewAdmin() {
+            if (this.isLoading) return;
             
-            this.newAdmin = {
-                name: '',
-                email: '',
-                permission: 'Editor',
-                lastLogin: 'Nunca',
-                status: 'Ativo',
-            };
-            
-            this.showAddAdminModal = false;
-            alert(`Administrador ${newAdminEntry.name} adicionado com sucesso!`);
+            this.isLoading = true;
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/admin/administrators',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            name: this.newAdmin.name,
+                            email: this.newAdmin.email,
+                            permission: this.newAdmin.permission
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Falha ao criar administrador');
+                }
+
+                const created = await response.json();
+                this.admins.push(created);
+                
+                // Mostrar senha temporária se foi gerada
+                if (created.tempPassword) {
+                    alert(
+                        `Administrador ${created.name} criado com sucesso!\n\n` +
+                        `Senha temporária: ${created.tempPassword}\n\n` +
+                        `IMPORTANTE: Anote esta senha, ela não será exibida novamente.`
+                    );
+                } else {
+                    alert(`Administrador ${created.name} adicionado com sucesso!`);
+                }
+                
+                this.newAdmin = {
+                    name: '',
+                    email: '',
+                    permission: 'Editor',
+                    lastLogin: 'Nunca',
+                    status: 'Ativo',
+                };
+                
+                this.showAddAdminModal = false;
+            } catch (error) {
+                console.error('Erro ao adicionar administrador:', error);
+                alert(error.message || 'Erro ao adicionar administrador');
+            } finally {
+                this.isLoading = false;
+            }
         }
     }
 }
@@ -456,6 +753,16 @@ export default {
     transform: translateY(-2px);
 }
 
+.kpi-card.loading {
+    opacity: 0.6;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 0.8; }
+}
+
 .kpi-label {
     font-size: 0.8em;
     text-transform: uppercase;
@@ -516,6 +823,178 @@ export default {
     border-radius: 8px;
     overflow-x: auto; 
     margin-bottom: 40px;
+}
+
+.table-container.loading {
+    opacity: 0.6;
+}
+
+/* --- Paginação --- */
+.pagination-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 20px;
+    padding: 15px 20px;
+    background-color: #131213;
+    border-radius: 8px;
+}
+
+.pagination-info {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    color: #ccc;
+    font-size: 0.9em;
+}
+
+.records-per-page {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.records-per-page label {
+    color: #999;
+    font-size: 0.85em;
+}
+
+.records-per-page select {
+    background-color: #1e1e1e;
+    color: white;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 5px 10px;
+    font-size: 0.9em;
+    cursor: pointer;
+}
+
+.records-per-page select:hover {
+    border-color: rgb(41, 216, 108);
+}
+
+.pagination-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.btn-pagination {
+    background-color: #1e1e1e;
+    color: white;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9em;
+}
+
+.btn-pagination:hover:not(:disabled) {
+    background-color: rgb(41, 216, 108);
+    border-color: rgb(41, 216, 108);
+    color: black;
+}
+
+.btn-pagination:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 4px;
+}
+
+.btn-page-number {
+    background-color: #1e1e1e;
+    color: white;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 0.9em;
+    min-width: 40px;
+}
+
+.btn-page-number:hover:not(:disabled):not(.active) {
+    background-color: #2a2a2a;
+    border-color: #444;
+}
+
+.btn-page-number.active {
+    background-color: rgb(41, 216, 108);
+    border-color: rgb(41, 216, 108);
+    color: black;
+    font-weight: bold;
+}
+
+.btn-page-number:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.btn-page-number.ellipsis {
+    opacity: 0.5;
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Responsividade da Paginação */
+@media (max-width: 768px) {
+    .pagination-controls {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .pagination-info {
+        flex-direction: column;
+        gap: 10px;
+        text-align: center;
+        width: 100%;
+    }
+    
+    .pagination-buttons {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .btn-pagination {
+        padding: 6px 10px;
+        font-size: 0.85em;
+    }
+    
+    .btn-page-number {
+        padding: 6px 8px;
+        font-size: 0.85em;
+        min-width: 35px;
+    }
+}
+
+@media (max-width: 480px) {
+    .pagination-info span {
+        font-size: 0.8em;
+    }
+    
+    .records-per-page {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .page-numbers {
+        gap: 2px;
+    }
+    
+    .btn-page-number {
+        padding: 5px 6px;
+        font-size: 0.75em;
+        min-width: 30px;
+    }
+    
+    .btn-pagination {
+        padding: 5px 8px;
+    }
 }
 
 .modern-table {

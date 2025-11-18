@@ -71,8 +71,19 @@
 
           <div v-if="!selectedLesson" class="loading-info">Selecione uma aula para começar ℹ</div>
           <div v-else class="video-player">
-            <div class="video-placeholder">{{ selectedLesson.title }}</div>
-            <div class="zenix-badge">ZENIX</div>
+            <template v-if="selectedLesson.videoUrl">
+              <video
+                class="lesson-video"
+                controls
+                :src="resolveMediaUrl(selectedLesson.videoUrl)"
+              >
+                Seu navegador não suporta reprodução de vídeo.
+              </video>
+            </template>
+            <template v-else>
+              <div class="video-placeholder">{{ selectedLesson.title }}</div>
+              <div class="zenix-badge">ZENIX</div>
+            </template>
           </div>
 
           <div class="action-buttons">
@@ -248,6 +259,14 @@ export default {
       } finally {
         this.markingComplete = false
       }
+    },
+    resolveMediaUrl(path) {
+      if (!path) return null
+      if (path.startsWith('http://') || path.startsWith('https://')) {
+        return path
+      }
+      const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+      return `${apiBaseUrl}${path}`
     }
   }
 }

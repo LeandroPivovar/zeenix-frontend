@@ -18,8 +18,14 @@
                         <p class="page-subtitle">Crie e organize cursos, módulos, aulas e materiais para o aluno.</p>
                     </div>
                     <div class="header-actions">
+                        <button class="btn btn-secondary" @click="goBack">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 12H5M12 19l-7-7 7-7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Voltar
+                        </button>
                         <button class="btn btn-save" @click="saveCourse">Salvar Curso</button>
-                        <button class="btn btn-preview" @click="openPreviewModal" :disabled="!course.selectedCourseId">
+                        <button class="btn btn-preview" @click="openPreviewModal" :disabled="!course.selectedCourseId || course.selectedCourseId === 'new'">
                             Preview do Aluno
                         </button>
                         <button class="btn btn-publish">Publicar</button>
@@ -67,28 +73,14 @@
                     </section>
                     <section class="card modules-section">
                         <h2 class="card-title">Módulos e Aulas</h2>
-                        <p class="card-subtitle">Selecione o curso, adicione módulos e crie aulas dentro de cada módulo.</p>
-                        <div class="form-group course-selection-group">
-                            <label for="select-course">Selecionar Curso</label>
-                            <div class="input-with-icon">
-                                <select id="select-course" class="input-select" v-model="course.selectedCourseId" @change="loadCourseDetails">
-                                    <option :value="null">Escolha um curso...</option>
-                                    <option v-for="c in courses" :key="c.id" :value="c.id">{{ c.name }}</option>
-                                </select>
-                                <button class="btn btn-icon" title="Atualizar Lista" @click="loadCourses">
-                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M20 4.2C17.3 1.5 13.8 0 10 0C4.5 0 0 4.5 0 10C0 15.5 4.5 20 10 20C13.5 20 16.6 18.2 18.5 15.4L16.7 13.6C15.2 16.1 12.8 17.6 10 17.6C5.9 17.6 2.4 14.1 2.4 10C2.4 5.9 5.9 2.4 10 2.4C12.8 2.4 15.2 3.9 16.7 6.4L13 10H20V4.2Z" fill="currentColor"/></svg>
-                                    Atualizar Lista
-                                </button>
-                            </div>
-                        </div>
+                        <p class="card-subtitle">Adicione módulos e crie aulas dentro de cada módulo para o curso <strong>{{ course.name || 'Novo Curso' }}</strong>.</p>
                         <div class="modules-list-container">
                             <div class="list-header">
                                 <h3 class="list-title">Módulos do Curso Selecionado</h3>
                                 <button
                                     class="btn btn-primary"
                                     title="Adicionar Novo Módulo"
-                                    @click="openNewModuleModal(course.selectedCourseId)"
-                                    :disabled="!course.selectedCourseId"
+                                    @click="openNewModuleModal(course.selectedCourseId || $route.params.id)"
                                 >
                                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M12 4V20M4 12H20" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
                                     Novo Módulo
@@ -151,8 +143,7 @@
                                     </li>
                                 </ul>
                             </div>
-                            <p v-if="!course.selectedCourseId" class="list-placeholder">Selecione um curso para visualizar ou adicionar módulos.</p>
-                            <p v-else-if="filteredModules.length === 0" class="list-placeholder">Nenhum módulo encontrado. Clique em "Novo Módulo" para começar.</p>
+                            <p v-if="filteredModules.length === 0" class="list-placeholder">Nenhum módulo encontrado. Clique em "Novo Módulo" para começar.</p>
                         </div>
                     </section>
                     <section class="card class-acess">
@@ -353,9 +344,11 @@ export default {
             course: {
                 name: 'Fundamentos do Copy Trading',
                 description: 'Aprenda do zero as estratégias mais avançadas para Day Trade.',
-                coverImage: null,
+                    coverImagePath: '',
                 coverImagePreview: null,
-                selectedCourseId: 1, 
+                selectedCourseId: null,
+                status: 'draft',
+                visibility: 'public', 
                 access: "1", 
                 price: 0, 
                 currency: "R$", 
@@ -365,17 +358,14 @@ export default {
                 seoTitle: 'Curso Mestre do Day Trade | Zenix Academy', 
                 seoDescription: 'Aprenda as melhores estratégias de day trade com a Zenix.', 
                 keywords: ['trading'], 
-                socialImage: null, 
+                    socialImagePath: '',
                 socialImagePreview: null, 
             },
             // Preview
             isPreviewModalOpen: false,
             previewCourse: {},
-            // Cursos (Simulação)
-            courses: [
-                { id: 1, name: 'Fundamentos do Copy Trading', description: 'Aprenda do zero as estratégias mais avançadas para Day Trade.' },
-                { id: 2, name: 'Fundamentos de Marketing', description: 'Aprenda os conceitos básicos de marketing digital e SEO.' },
-            ],
+            // Cursos
+            courses: [],
             // Novo estado para palavras-chave e imagem social
             newKeyword: '', 
             isSocialPreviewModalOpen: false, 
@@ -395,46 +385,48 @@ export default {
                 duration: 15,
                 contentLink: '',
                 releaseType: 'Imediata',
-                isActive: true
+                    isActive: true,
+                    videoFile: null,
+                    videoPath: '',
+                    videoFileName: ''
             },
             // Modal Materiais
             isMaterialsModalOpen: false,
             selectedLessonIdForMaterials: null,
             selectedLessonForMaterials: {},
-            materialsList: [ 
-                { id: 1, lessonId: 1003, name: 'PDF: Estratégia de Copy Trading', type: 'PDF', link: '#' },
-                { id: 2, lessonId: 1004, name: 'Checklist de Setup', type: 'DOC', link: '#' },
-                { id: 3, lessonId: 1004, name: 'Planilha de Risco (Excel)', type: 'XLS', link: '#' },
-                { id: 4, lessonId: 1006, name: 'Ebook: Gestão de Capital', type: 'PDF', link: '#' },
-                { id: 5, lessonId: 1006, name: 'Slides da Aula', type: 'PPT', link: '#' },
-                { id: 6, lessonId: 1006, name: 'Teste de Conhecimento (Link)', type: 'LINK', link: '#' },
-                { id: 7, lessonId: 1002, name: 'Artigo: Análise de Candlesticks', type: 'LINK', link: '#' },
-            ],
+            materialsList: [],
             newMaterial: { 
                 name: '',
                 type: 'PDF',
                 link: ''
             },
-            // Dados (Simulação do Backend)
-            modules: [
-                { id: 101, courseId: 1, title: 'Módulo 1 - Introdução ao Mercado', status: 'published' },
-                { id: 102, courseId: 1, title: 'Módulo 2 - Estratégias Avançadas', status: 'published' },
-                { id: 103, courseId: 1, title: 'Módulo 3 - Gestão de Risco', status: 'published' },
-                { id: 201, courseId: 2, title: 'Módulo A: Branding Básico', status: 'published' },
-            ],
-            lessons: [
-                { id: 1001, moduleId: 101, name: 'Conceitos Básicos do Trading', contentType: 'Video', duration: 15, isActive: true },
-                { id: 1002, moduleId: 101, name: 'Análise Técnica Básica', contentType: 'Text', duration: 22, isActive: false },
-                { id: 1003, moduleId: 101, name: 'Escolha de Ativos', contentType: 'Video', duration: 7, isActive: true },
-                { id: 1004, moduleId: 102, name: 'Estratégia Zenix Pro', contentType: 'Video', duration: 28, isActive: true },
-                { id: 1005, moduleId: 103, name: 'Controle de Stop Loss', contentType: 'Video', duration: 12, isActive: true },
-                { id: 1006, moduleId: 103, name: 'Simulação de Mercado', contentType: 'PDF', duration: 5, isActive: true },
-                { id: 2001, moduleId: 201, name: 'Aula A.1: Identidade Visual', contentType: 'Video', duration: 8, isActive: true },
-            ]
+            // Dados do Backend
+            modules: [],
+            lessons: []
         };
     },
-    mounted() {
-        this.loadCourseDetails();
+    async mounted() {
+        // Verifica se há um ID na rota
+        const courseId = this.$route.params.id;
+        if (courseId) {
+            if (courseId === 'new') {
+                // Modo de criação de novo curso
+                this.course.selectedCourseId = null;
+                this.course.name = '';
+                this.course.description = '';
+                // Reseta todos os campos
+                this.resetCourseFields();
+            } else {
+                // Curso já está selecionado via rota
+                this.course.selectedCourseId = courseId;
+                await this.loadCourseDetails();
+            }
+        } else {
+            // Se não há ID na rota, redireciona para lista
+            this.$router.push({ name: 'AcademyCoursesList' });
+            return;
+        }
+        await this.loadCourses();
         document.addEventListener('click', this.closeLessonDropdown);
         
         // ** INÍCIO: LÓGICA DO HAMBÚRGUER/RESPONSIVIDADE **
@@ -451,10 +443,19 @@ export default {
     },
     computed: {
         filteredModules() {
-            return this.modules.filter(module => module.courseId === this.course.selectedCourseId);
+            const courseId = this.course.selectedCourseId || this.$route.params.id;
+            const isNewCourse = courseId === 'new' || courseId === null || !courseId;
+            // Se for curso novo, mostra módulos locais. Se não, filtra por courseId
+            if (isNewCourse) {
+                return this.modules.filter(module => module.isLocal || module.courseId === 'temp');
+            }
+            return this.modules.filter(module => module.courseId === courseId);
         },
         filteredModulesForPreview() {
-            return this.modules.filter(module => module.courseId === this.previewCourse.id && module.status === 'published');
+            const courseId = this.previewCourse.id || this.course.selectedCourseId || this.$route.params.id;
+            return this.modules.filter(
+                module => module.courseId === courseId && module.status !== 'archived'
+            );
         },
         selectedModuleForLesson() {
             const moduleInModal = this.modules.find(module => module.id === this.newLesson.moduleId);
@@ -511,56 +512,209 @@ export default {
                 this.openLessonDropdown = null;
             }
         },
-        handleCoverUpload(event) {
+        async handleCoverUpload(event) {
             const file = event.target.files[0];
-            if (file) {
-                this.course.coverImage = file;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.course.coverImagePreview = e.target.result;
-                };
-                reader.readAsDataURL(file);
+            if (!file) {
+                this.course.coverImagePath = '';
+                this.course.coverImagePreview = null;
+                return;
+            }
+            this.course.coverImagePath = '';
+            this.generateLocalImagePreview(file, 'coverImagePreview');
+            const uploadedPath = await this.uploadCourseImage(file, 'cover');
+            if (uploadedPath) {
+                this.course.coverImagePath = uploadedPath;
             } else {
-                this.course.coverImage = null;
                 this.course.coverImagePreview = null;
             }
+            event.target.value = '';
         },
-        saveCourse() {
+        async saveCourse() {
             if (!this.course.name || this.course.name.trim() === '') {
                 alert('O nome do curso é obrigatório.');
                 return;
             }
-            // Cria um objeto com todos os dados do curso, incluindo SEO
-            const courseDataToSave = {
-                id: this.course.selectedCourseId,
-                name: this.course.name,
-                description: this.course.description,
-                slug: this.course.slug,
-                seoTitle: this.course.seoTitle,
-                seoDescription: this.course.seoDescription,
-                keywords: [...this.course.keywords], // Copia o array
-                // ... outros campos como access, price, etc., se necessário
-            };
-            if (this.course.selectedCourseId !== null && this.course.selectedCourseId !== '') {
-                const existingCourseIndex = this.courses.findIndex(c => c.id === this.course.selectedCourseId);
-                if (existingCourseIndex !== -1) {
-                    // Atualiza o curso existente
-                    this.courses[existingCourseIndex] = { ...this.courses[existingCourseIndex], ...courseDataToSave };
-                    console.log('Curso editado:', this.courses[existingCourseIndex]);
-                }
-            } else {
-                // Cria um novo curso
-                const newCourseId = Date.now();
-                const newCourseObject = {
-                    id: newCourseId,
-                    ...courseDataToSave,
+            
+            const isNewCourse = !this.course.selectedCourseId || this.course.selectedCourseId === 'new' || this.$route.params.id === 'new';
+            
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                // Não envia imagens base64 se forem muito grandes (apenas URLs ou null)
+                const courseDataToSave = {
+                    title: this.course.name,
+                    description: this.course.description,
+                    slug: this.course.slug,
+                    seoTitle: this.course.seoTitle,
+                    seoDescription: this.course.seoDescription,
+                    keywords: this.course.keywords,
+                    coverImage: this.course.coverImagePath ?? '',
+                    socialImage: this.course.socialImagePath ?? '',
+                    access: this.course.access,
+                    price: this.course.price,
+                    currency: this.course.currency,
+                    subscription: this.course.subscription,
+                    discount: this.course.discount,
+                    status: this.course.status,
+                    availableFrom: this.course.availableFrom || null,
+                    availableUntil: this.course.availableUntil || null,
+                    visibility: this.course.visibility,
                 };
-                this.courses.push(newCourseObject);
-                this.course.selectedCourseId = newCourseId;
-                this.loadCourseDetails();
-                console.log('Novo Curso Criado e Selecionado:', newCourseObject);
+                
+                let response;
+                let savedCourse;
+                
+                // Salva o curso
+                if (this.course.selectedCourseId && !isNewCourse) {
+                    response = await fetch(`${apiBaseUrl}/courses/${this.course.selectedCourseId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(courseDataToSave),
+                    });
+                } else {
+                    response = await fetch(`${apiBaseUrl}/courses`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(courseDataToSave),
+                    });
+                }
+                
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({ message: 'Erro ao salvar curso' }));
+                    alert(`Erro ao salvar curso: ${error.message}`);
+                    return;
+                }
+                
+                savedCourse = await response.json();
+                const courseId = savedCourse.id;
+                
+                // Se for curso novo, salva módulos, aulas e materiais locais
+                if (isNewCourse) {
+                    // Salva módulos locais
+                    const localModules = this.modules.filter(m => m.isLocal);
+                    for (let i = 0; i < localModules.length; i++) {
+                        const module = localModules[i];
+                        try {
+                            const moduleResponse = await fetch(`${apiBaseUrl}/courses/modules`, {
+                                method: 'POST',
+                                headers: {
+                                    'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                                    'Content-Type': 'application/json',
+                                },
+                                body: JSON.stringify({
+                                    courseId: courseId,
+                                    title: module.title,
+                                    shortDescription: module.shortDescription,
+                                    status: module.status || 'draft',
+                                    orderIndex: i,
+                                }),
+                            });
+                            
+                            if (moduleResponse.ok) {
+                                const savedModule = await moduleResponse.json();
+                                // Guarda o ID temporário antes de atualizar
+                                const tempModuleId = module.id;
+                                
+                                // Atualiza o ID do módulo local com o ID real
+                                module.id = savedModule.id;
+                                module.courseId = courseId;
+                                module.isLocal = false;
+                                
+                                // Salva aulas locais deste módulo (usa o ID temporário do módulo)
+                                const moduleLessons = this.lessons.filter(l => {
+                                    // Encontra aulas que pertencem a este módulo pelo ID temporário
+                                    return l.isLocal && l.moduleId === tempModuleId;
+                                });
+                                for (let j = 0; j < moduleLessons.length; j++) {
+                                    const lesson = moduleLessons[j];
+                                    // Guarda o ID temporário da aula antes de salvar
+                                    const tempLessonId = lesson.id;
+                                    try {
+                                        const lessonResponse = await fetch(`${apiBaseUrl}/courses/lessons`, {
+                                            method: 'POST',
+                                            headers: {
+                                                'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                                                'Content-Type': 'application/json',
+                                            },
+                                            body: JSON.stringify({
+                                                courseId: courseId,
+                                                moduleId: savedModule.id,
+                                                title: lesson.name || lesson.title,
+                                                contentType: lesson.contentType || 'Video',
+                                                contentLink: lesson.contentLink || '',
+                                                releaseType: lesson.releaseType || 'Imediata',
+                                                isActive: lesson.isActive !== undefined ? lesson.isActive : true,
+                                                duration: lesson.duration || '15 min',
+                                                videoUrl: lesson.videoUrl || '',
+                                            }),
+                                        });
+                                        
+                                        if (lessonResponse.ok) {
+                                            const savedLesson = await lessonResponse.json();
+                                            lesson.id = savedLesson.id;
+                                            lesson.moduleId = savedModule.id;
+                                            lesson.courseId = courseId;
+                                            lesson.isLocal = false;
+                                            
+                                            // Salva materiais locais desta aula
+                                            const lessonMaterials = this.materialsList.filter(m => m.lessonId === tempLessonId && m.isLocal);
+                                            for (let k = 0; k < lessonMaterials.length; k++) {
+                                                const material = lessonMaterials[k];
+                                                try {
+                                                    const materialResponse = await fetch(`${apiBaseUrl}/courses/materials`, {
+                                                        method: 'POST',
+                                                        headers: {
+                                                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                                                            'Content-Type': 'application/json',
+                                                        },
+                                                        body: JSON.stringify({
+                                                            lessonId: savedLesson.id,
+                                                            name: material.name,
+                                                            type: material.type,
+                                                            link: material.link,
+                                                        }),
+                                                    });
+                                                    
+                                                    if (materialResponse.ok) {
+                                                        const savedMaterial = await materialResponse.json();
+                                                        material.id = savedMaterial.id;
+                                                        material.lessonId = savedLesson.id;
+                                                        material.isLocal = false;
+                                                    }
+                                                } catch (error) {
+                                                    console.error(`Erro ao salvar material ${material.name}:`, error);
+                                                }
+                                            }
+                                        }
+                                    } catch (error) {
+                                        console.error(`Erro ao salvar aula ${lesson.name}:`, error);
+                                    }
+                                }
+                            }
+                        } catch (error) {
+                            console.error(`Erro ao salvar módulo ${module.title}:`, error);
+                        }
+                    }
+                }
+                
+                // Atualiza estado e rota
+                this.course.selectedCourseId = courseId;
+                if (isNewCourse) {
+                    this.$router.replace({ name: 'AcademyManagement', params: { id: courseId } });
+                }
+                
+                await this.loadCourses();
+                await this.loadCourseDetails();
+                alert('Curso e todos os módulos/aulas salvos com sucesso!');
+            } catch (error) {
+                console.error('Erro ao salvar curso:', error);
+                alert('Erro ao salvar curso. Verifique sua conexão.');
             }
-            alert('Curso salvo com sucesso!');
         },
         // SEO & Compartilhamento
         addKeyword() {
@@ -572,22 +726,102 @@ export default {
         removeKeyword(index) {
             this.course.keywords.splice(index, 1);
         },
-        handleSocialImageUpload(event) {
+        async handleSocialImageUpload(event) {
             const file = event.target.files[0];
-            if (file) {
-                this.course.socialImage = file;
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    this.course.socialImagePreview = e.target.result;
-                };
-                reader.readAsDataURL(file);
+            if (!file) {
+                this.course.socialImagePath = '';
+                this.course.socialImagePreview = null;
+                return;
+            }
+            this.course.socialImagePath = '';
+            this.generateLocalImagePreview(file, 'socialImagePreview');
+            const uploadedPath = await this.uploadCourseImage(file, 'social');
+            if (uploadedPath) {
+                this.course.socialImagePath = uploadedPath;
             } else {
-                this.course.socialImage = null;
                 this.course.socialImagePreview = null;
             }
+            event.target.value = '';
         },
         openSocialPreviewModal() {
             alert('Funcionalidade de Preview Social ainda não implementada.');
+        },
+        getApiBaseUrl() {
+            return process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        },
+        resolveImageUrl(path) {
+            if (!path) {
+                return null;
+            }
+            if (path.startsWith('http://') || path.startsWith('https://') || path.startsWith('data:')) {
+                return path;
+            }
+            if (path.startsWith('/')) {
+                return `${this.getApiBaseUrl()}${path}`;
+            }
+            return path;
+        },
+        generateLocalImagePreview(file, targetProperty) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.course[targetProperty] = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        },
+        async uploadCourseImage(file, type = 'cover') {
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const formData = new FormData();
+                formData.append('file', file);
+                const headers = {};
+                const token = localStorage.getItem('token');
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                const response = await fetch(`${apiBaseUrl}/courses/upload/${type}`, {
+                    method: 'POST',
+                    headers,
+                    body: formData,
+                });
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({ message: 'Erro no upload da imagem.' }));
+                    throw new Error(error.message || 'Erro no upload da imagem.');
+                }
+                const data = await response.json();
+                return data.path;
+            } catch (error) {
+                console.error('Erro ao enviar imagem:', error);
+                alert('Não foi possível enviar a imagem. Tente novamente.');
+                return null;
+            }
+        },
+        async uploadLessonVideo(file) {
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const formData = new FormData();
+                formData.append('file', file);
+                const headers = {};
+                const token = localStorage.getItem('token');
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                const response = await fetch(`${apiBaseUrl}/courses/lessons/upload/video`, {
+                    method: 'POST',
+                    headers,
+                    body: formData,
+                });
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({ message: 'Erro no upload de vídeo' }));
+                    alert(error.message || 'Erro no upload de vídeo.');
+                    return null;
+                }
+                const data = await response.json();
+                return data.path;
+            } catch (error) {
+                console.error('Erro ao enviar vídeo da aula:', error);
+                alert('Erro ao enviar vídeo da aula. Verifique sua conexão.');
+                return null;
+            }
         },
         // Preview
         openPreviewModal() {
@@ -611,30 +845,82 @@ export default {
         },
         // Módulo
         openNewModuleModal(courseId) {
+            console.log('🔍 [AcademyManagement] Abrindo modal de novo módulo', { courseId, selectedCourseId: this.course.selectedCourseId, routeId: this.$route.params.id });
             this.isNewModuleModalOpen = true;
+            // Pega o courseId da rota, do curso selecionado, ou do parâmetro passado
+            const currentCourseId = courseId || this.course.selectedCourseId || this.$route.params.id;
             this.newModule = {
-                courseId: courseId || this.course.selectedCourseId,
+                courseId: currentCourseId === 'new' ? null : currentCourseId,
                 name: '',
                 shortDescription: ''
             };
+            console.log('🔍 [AcademyManagement] Modal aberto, newModule:', this.newModule);
         },
         closeNewModuleModal() {
             this.isNewModuleModalOpen = false;
         },
-        saveNewModule() {
-            if (!this.newModule.courseId || !this.newModule.name) {
-                alert('O curso e o nome do módulo são obrigatórios.');
+        async saveNewModule() {
+            console.log('🔍 [AcademyManagement] Salvando novo módulo', this.newModule);
+            if (!this.newModule.name) {
+                alert('O nome do módulo é obrigatório.');
                 return;
             }
-            const newModuleObject = {
-                id: Date.now() + Math.random(),
-                courseId: this.newModule.courseId,
-                title: `Módulo ${this.modules.filter(m => m.courseId === this.newModule.courseId).length + 1} - ${this.newModule.name}`,
-                status: 'draft'
-            };
-            this.modules.push(newModuleObject);
-            this.closeNewModuleModal();
-            alert(`Módulo "${newModuleObject.title}" adicionado com sucesso!`);
+
+            const isNewCourse = !this.course.selectedCourseId || this.course.selectedCourseId === 'new' || this.$route.params.id === 'new';
+            console.log('🔍 [AcademyManagement] É curso novo?', isNewCourse, { selectedCourseId: this.course.selectedCourseId, routeId: this.$route.params.id });
+            
+            // Se for curso novo, adiciona localmente
+            if (isNewCourse) {
+                const moduleCount = this.modules.filter(m => m.isLocal || m.courseId === 'temp').length;
+                const tempModuleId = `temp-module-${Date.now()}-${Math.random()}`;
+                const newModuleObject = {
+                    id: tempModuleId,
+                    courseId: 'temp', // ID temporário até salvar o curso
+                    title: `Módulo ${moduleCount + 1} - ${this.newModule.name}`,
+                    shortDescription: this.newModule.shortDescription || '',
+                    status: 'draft',
+                    orderIndex: moduleCount,
+                    isLocal: true, // Flag para identificar módulos locais
+                };
+                console.log('🔍 [AcademyManagement] Adicionando módulo local:', newModuleObject);
+                this.modules.push(newModuleObject);
+                this.closeNewModuleModal();
+                console.log('✅ [AcademyManagement] Módulo adicionado localmente. Total de módulos:', this.modules.length);
+                alert(`Módulo "${this.newModule.name}" adicionado localmente. Salve o curso para persistir.`);
+                return;
+            }
+
+            // Se o curso já existe, salva no backend
+            const courseId = this.course.selectedCourseId || this.$route.params.id;
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const moduleCount = this.modules.filter(m => m.courseId === courseId && !m.isLocal).length;
+                const response = await fetch(`${apiBaseUrl}/courses/modules`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        courseId: courseId,
+                        title: `Módulo ${moduleCount + 1} - ${this.newModule.name}`,
+                        shortDescription: this.newModule.shortDescription,
+                        status: 'draft',
+                        orderIndex: moduleCount,
+                    }),
+                });
+                if (response.ok) {
+                    await this.loadCourseDetails();
+                    this.closeNewModuleModal();
+                    alert(`Módulo adicionado com sucesso!`);
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Erro ao criar módulo' }));
+                    alert(`Erro ao criar módulo: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('Erro ao criar módulo:', error);
+                alert('Erro ao criar módulo. Verifique sua conexão.');
+            }
         },
         // Aula
         openNewLessonModal(moduleId = null) {
@@ -646,105 +932,372 @@ export default {
                 duration: 15,
                 contentLink: '',
                 releaseType: 'Imediata',
-                isActive: true
+                isActive: true,
+                videoFile: null,
+                videoPath: '',
+                videoFileName: ''
             };
         },
         closeNewLessonModal() {
             this.isNewLessonModalOpen = false;
         },
-        saveNewLesson() {
+        async saveNewLesson() {
             if (!this.newLesson.moduleId || !this.newLesson.name) {
                 alert('O módulo e o nome da aula são obrigatórios.');
                 return;
             }
-            const newLessonObject = {
-                id: Date.now() + Math.random(),
-                moduleId: this.newLesson.moduleId,
-                name: this.newLesson.name,
-                contentType: this.newLesson.contentType,
-                duration: this.newLesson.duration,
-                isActive: this.newLesson.isActive,
-            };
-            this.lessons.push(newLessonObject);
-            this.closeNewLessonModal();
-            alert(`Aula "${this.newLesson.name}" salva no módulo com sucesso!`);
+            
+            const isNewCourse = !this.course.selectedCourseId || this.course.selectedCourseId === 'new' || this.$route.params.id === 'new';
+            const module = this.modules.find(m => m.id === this.newLesson.moduleId);
+            
+            if (!module) {
+                alert('Módulo não encontrado.');
+                return;
+            }
+
+            let videoPath = this.newLesson.videoPath || '';
+            if (this.newLesson.contentType === 'Video') {
+                if (this.newLesson.videoFile) {
+                    const uploadedVideoPath = await this.uploadLessonVideo(this.newLesson.videoFile);
+                    if (!uploadedVideoPath) {
+                        return;
+                    }
+                    videoPath = uploadedVideoPath;
+                    this.newLesson.videoPath = uploadedVideoPath;
+                } else if (!videoPath) {
+                    alert('Envie o vídeo da aula antes de salvar.');
+                    return;
+                }
+            }
+
+            // Se for curso novo, adiciona localmente
+            if (isNewCourse || module.isLocal) {
+                const tempLessonId = `temp-lesson-${Date.now()}-${Math.random()}`;
+                const newLessonObject = {
+                    id: tempLessonId,
+                    moduleId: this.newLesson.moduleId,
+                    courseId: 'temp',
+                    name: this.newLesson.name,
+                    title: this.newLesson.name,
+                    contentType: this.newLesson.contentType || 'Video',
+                    contentLink: this.newLesson.contentLink || '',
+                    releaseType: this.newLesson.releaseType || 'Imediata',
+                    isActive: this.newLesson.isActive !== undefined ? this.newLesson.isActive : true,
+                    duration: `${this.newLesson.duration || 15} min`,
+                    isLocal: true, // Flag para identificar aulas locais
+                    videoUrl: videoPath,
+                };
+                this.lessons.push(newLessonObject);
+                this.closeNewLessonModal();
+                alert(`Aula "${this.newLesson.name}" adicionada localmente. Salve o curso para persistir.`);
+                return;
+            }
+
+            // Se o curso já existe, salva no backend
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const response = await fetch(`${apiBaseUrl}/courses/lessons`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        courseId: module.courseId,
+                        moduleId: this.newLesson.moduleId,
+                        title: this.newLesson.name,
+                        contentType: this.newLesson.contentType,
+                        contentLink: this.newLesson.contentLink,
+                        releaseType: this.newLesson.releaseType,
+                        isActive: this.newLesson.isActive,
+                        duration: `${this.newLesson.duration} min`,
+                        videoUrl: videoPath,
+                    }),
+                });
+                if (response.ok) {
+                    await this.loadCourseDetails();
+                    this.closeNewLessonModal();
+                    alert(`Aula "${this.newLesson.name}" salva com sucesso!`);
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Erro ao criar aula' }));
+                    alert(`Erro ao criar aula: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('Erro ao criar aula:', error);
+                alert('Erro ao criar aula. Verifique sua conexão.');
+            }
         },
         // Materiais
-        openMaterialsModal(lessonId) {
-            this.selectedLessonIdForMaterials = lessonId;
-            this.selectedLessonForMaterials = this.lessons.find(l => l.id === lessonId);
+        async openMaterialsModal(lessonId) {
+            const normalizedLessonId = lessonId ? lessonId.toString() : null;
+            this.selectedLessonIdForMaterials = normalizedLessonId;
+            this.selectedLessonForMaterials = this.lessons.find(l => l.id === normalizedLessonId) || {};
             this.isMaterialsModalOpen = true;
-            this.newMaterial = { name: '', type: 'PDF', link: '' }; // Limpa o formulário
+            this.newMaterial = { name: '', type: 'PDF', link: '' };
+            await this.loadMaterialsForLesson(normalizedLessonId);
         },
         closeMaterialsModal() {
             this.isMaterialsModalOpen = false;
             this.selectedLessonIdForMaterials = null;
             this.selectedLessonForMaterials = {};
         },
-        saveNewMaterial() {
+        async loadMaterialsForLesson(lessonId) {
+            if (!lessonId) {
+                return;
+            }
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const response = await fetch(`${apiBaseUrl}/courses/lessons/${encodeURIComponent(lessonId)}/materials`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (response.ok) {
+                    const materials = await response.json();
+                    this.materialsList = this.materialsList.filter(m => m.lessonId !== lessonId);
+                    materials.forEach(m => {
+                        this.materialsList.push({
+                            id: m.id,
+                            lessonId: m.lessonId,
+                            name: m.name,
+                            type: m.type,
+                            link: m.link,
+                        });
+                    });
+                } else {
+                    const error = await response.json().catch(() => ({ message: response.statusText }));
+                    console.error('Erro ao carregar materiais:', error);
+                    alert(error.message || 'Erro ao carregar materiais.');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar materiais:', error);
+                alert('Erro ao carregar materiais. Verifique sua conexão.');
+            }
+        },
+        async saveNewMaterial() {
             if (!this.newMaterial.name || !this.newMaterial.link) {
                 alert('O nome e o link do material são obrigatórios.');
                 return;
             }
-            const newMaterialObject = {
-                id: Date.now() + Math.random(),
-                lessonId: this.selectedLessonIdForMaterials,
-                name: this.newMaterial.name,
-                type: this.newMaterial.type,
-                link: this.newMaterial.link
-            };
-            this.materialsList.push(newMaterialObject);
-            this.newMaterial = { name: '', type: 'PDF', link: '' };
-            alert(`Material "${newMaterialObject.name}" adicionado com sucesso!`);
+            
+            const isNewCourse = !this.course.selectedCourseId || this.course.selectedCourseId === 'new' || this.$route.params.id === 'new';
+            const lesson = this.lessons.find(l => l.id === this.selectedLessonIdForMaterials);
+            
+            // Se for curso novo ou aula local, adiciona localmente
+            if (isNewCourse || (lesson && lesson.isLocal)) {
+                const tempMaterialId = `temp-material-${Date.now()}-${Math.random()}`;
+                const newMaterialObject = {
+                    id: tempMaterialId,
+                    lessonId: this.selectedLessonIdForMaterials,
+                    name: this.newMaterial.name,
+                    type: this.newMaterial.type,
+                    link: this.newMaterial.link,
+                    isLocal: true,
+                };
+                this.materialsList.push(newMaterialObject);
+                const materialName = this.newMaterial.name;
+                this.newMaterial = { name: '', type: 'PDF', link: '' };
+                alert(`Material "${materialName}" adicionado localmente. Salve o curso para persistir.`);
+                return;
+            }
+            
+            // Se o curso já existe, salva no backend
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const response = await fetch(`${apiBaseUrl}/courses/materials`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        lessonId: this.selectedLessonIdForMaterials,
+                        name: this.newMaterial.name,
+                        type: this.newMaterial.type,
+                        link: this.newMaterial.link,
+                    }),
+                });
+                if (response.ok) {
+                    const materialName = this.newMaterial.name;
+                    this.newMaterial = { name: '', type: 'PDF', link: '' };
+                    await this.loadMaterialsForLesson(this.selectedLessonIdForMaterials);
+                    alert(`Material "${materialName}" adicionado com sucesso!`);
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Erro ao criar material' }));
+                    alert(`Erro ao criar material: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('Erro ao criar material:', error);
+                alert('Erro ao criar material. Verifique sua conexão.');
+            }
         },
-        deleteMaterial(materialId) {
+        async deleteMaterial(materialId) {
             if (confirm('Tem certeza que deseja excluir este material?')) {
-                const index = this.materialsList.findIndex(m => m.id === materialId);
-                if (index !== -1) {
-                    this.materialsList.splice(index, 1);
-                    alert('Material excluído.');
+                try {
+                    const apiBaseUrl = this.getApiBaseUrl();
+                    const response = await fetch(`${apiBaseUrl}/courses/materials/${materialId}`, {
+                        method: 'DELETE',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                    });
+                    if (response.ok) {
+                        const index = this.materialsList.findIndex(m => m.id === materialId);
+                        if (index !== -1) {
+                            this.materialsList.splice(index, 1);
+                        }
+                        alert('Material excluído.');
+                    } else {
+                        alert('Erro ao excluir material.');
+                    }
+                } catch (error) {
+                    console.error('Erro ao excluir material:', error);
+                    alert('Erro ao excluir material.');
                 }
             }
         },
-        loadCourseDetails() {
-            const courseId = this.course.selectedCourseId;
-            if (!courseId) {
-                this.course.name = '';
-                this.course.description = '';
-                this.course.coverImage = null;
-                this.course.coverImagePreview = null;
-                // Reseta os campos de acesso & preço
-                this.course.access = "1";
-                this.course.price = 0;
-                this.course.currency = "R$";
-                this.course.subscription = "1";
-                this.course.discount = "0";
-                // Reseta os campos de SEO & Compartilhamento
-                this.course.slug = '';
-                this.course.seoTitle = '';
-                this.course.seoDescription = '';
-                this.course.keywords = [];
-                this.course.socialImage = null;
-                this.course.socialImagePreview = null;
-                return;
-            }
-            const selectedCourse = this.courses.find(c => c.id === courseId);
-            if (selectedCourse) {
-                this.course.name = selectedCourse.name;
-                this.course.description = selectedCourse.description;
-                this.course.coverImage = null;
-                this.course.coverImagePreview = null;
-                // Carrega os campos de SEO & Compartilhamento do curso selecionado
-                this.course.slug = selectedCourse.slug || '';
-                this.course.seoTitle = selectedCourse.seoTitle || '';
-                this.course.seoDescription = selectedCourse.seoDescription || '';
-                this.course.keywords = [...(selectedCourse.keywords || [])]; // Copia o array
-                this.course.socialImage = null;
-                this.course.socialImagePreview = null;
+        goBack() {
+            this.$router.push({ name: 'AcademyCoursesList' });
+        },
+        resetCourseFields() {
+            this.course.access = "1";
+            this.course.price = 0;
+            this.course.currency = "R$";
+            this.course.subscription = "1";
+            this.course.discount = "0";
+            this.course.status = "draft";
+            this.course.visibility = "public";
+            this.course.slug = '';
+            this.course.seoTitle = '';
+            this.course.seoDescription = '';
+            this.course.keywords = [];
+            this.course.coverImagePath = '';
+            this.course.coverImagePreview = null;
+            this.course.socialImagePath = '';
+            this.course.socialImagePreview = null;
+            this.course.availableFrom = '';
+            this.course.availableUntil = '';
+            this.modules = [];
+            this.lessons = [];
+        },
+        handleCourseSelection() {
+            if (this.course.selectedCourseId === 'new') {
+                this.resetCourseFields();
+                this.course.selectedCourseId = null;
+            } else if (this.course.selectedCourseId) {
+                this.loadCourseDetails();
             }
         },
-        loadCourses() {
-            console.log('Lista de cursos atualizada. (Simulação)');
+        async loadCourses() {
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const response = await fetch(`${apiBaseUrl}/courses`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    this.courses = data.map(c => ({
+                        id: c.id,
+                        name: c.name || c.title,
+                        title: c.title,
+                        description: c.description,
+                        slug: c.slug,
+                        seoTitle: c.seoTitle,
+                        seoDescription: c.seoDescription,
+                        keywords: c.keywords || [],
+                    }));
+                } else {
+                    console.error('Erro ao carregar cursos:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar cursos:', error);
+            }
+        },
+        async loadCourseDetails() {
+            const courseId = this.course.selectedCourseId;
+            if (!courseId) {
+                this.resetCourseFields();
+                return;
+            }
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const response = await fetch(`${apiBaseUrl}/courses/${courseId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (response.ok) {
+                    const courseData = await response.json();
+                    this.fillCourseDataFromResponse(courseData);
+                } else {
+                    console.error('Erro ao carregar detalhes do curso:', response.statusText);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar detalhes do curso:', error);
+            }
+        },
+        fillCourseDataFromResponse(courseData) {
+            this.course.name = courseData.name || courseData.title;
+            this.course.description = courseData.description;
+            this.course.coverImagePath = courseData.coverImage || '';
+            this.course.coverImagePreview = this.resolveImageUrl(courseData.coverImage) || courseData.imagePlaceholder || null;
+            this.course.slug = courseData.slug || '';
+            this.course.seoTitle = courseData.seoTitle || '';
+            this.course.seoDescription = courseData.seoDescription || '';
+            this.course.keywords = courseData.keywords || [];
+            this.course.socialImagePath = courseData.socialImage || '';
+            this.course.socialImagePreview = this.resolveImageUrl(courseData.socialImage);
+            this.course.access = courseData.access || "1";
+            this.course.price = courseData.price || 0;
+            this.course.currency = courseData.currency || "R$";
+            this.course.subscription = courseData.subscription || "1";
+            this.course.discount = courseData.discount || "0";
+            this.course.status = courseData.status || "draft";
+            this.course.availableFrom = courseData.availableFrom ? courseData.availableFrom.split('T')[0] : '';
+            this.course.availableUntil = courseData.availableUntil ? courseData.availableUntil.split('T')[0] : '';
+            this.course.visibility = courseData.visibility || "public";
+
+            if (courseData.modules) {
+                this.modules = courseData.modules.map(m => ({
+                    id: m.id,
+                    courseId: m.courseId || this.course.selectedCourseId,
+                    title: m.title,
+                    shortDescription: m.shortDescription,
+                    status: m.status || 'draft',
+                    orderIndex: m.orderIndex,
+                }));
+                this.lessons = courseData.modules.flatMap(m =>
+                    (m.lessons || []).map(l => ({
+                        id: l.id,
+                        moduleId: l.moduleId,
+                        name: l.name || l.title,
+                        title: l.title,
+                        contentType: l.contentType || 'Video',
+                        duration: l.duration,
+                        isActive: l.isActive !== undefined ? l.isActive : true,
+                        videoUrl: l.videoUrl,
+                    }))
+                );
+            } else {
+                this.modules = [];
+                this.lessons = [];
+            }
+
+            if (courseData.modules && courseData.modules.length > 0) {
+                this.previewCourse = {
+                    ...courseData,
+                    id: courseData.id,
+                    name: courseData.name || courseData.title,
+                    description: courseData.description,
+                    coverImagePreview: this.resolveImageUrl(courseData.coverImage) || courseData.imagePlaceholder || null,
+                };
+            }
         },
     },
 }
