@@ -135,6 +135,14 @@ header .title {
   color: #6b7280; 
   font-size: 14px; 
   flex-shrink: 0;
+  overflow: hidden;
+}
+
+.course-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 8px;
 }
 .course-title { 
   font-weight: 700; 

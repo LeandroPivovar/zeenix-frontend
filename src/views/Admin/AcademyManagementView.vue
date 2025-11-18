@@ -298,6 +298,7 @@
                 :new-module="newModule"
                 :new-lesson="newLesson"
                 :new-material="newMaterial"
+                :is-saving-lesson="isSavingLesson"
                 @close-new-module-modal="closeNewModuleModal"
                 @close-new-lesson-modal="closeNewLessonModal"
                 @close-materials-modal="closeMaterialsModal"
@@ -377,6 +378,7 @@ export default {
             },
             // Modal Aula
             isNewLessonModalOpen: false,
+            isSavingLesson: false,
             newLesson: {
                 moduleId: null,
                 name: '',
@@ -946,54 +948,56 @@ export default {
                 return;
             }
             
-            const isNewCourse = !this.course.selectedCourseId || this.course.selectedCourseId === 'new' || this.$route.params.id === 'new';
-            const module = this.modules.find(m => m.id === this.newLesson.moduleId);
+            this.isSavingLesson = true;
             
-            if (!module) {
-                alert('Módulo não encontrado.');
-                return;
-            }
-
-            let videoPath = this.newLesson.videoPath || '';
-            if (this.newLesson.contentType === 'Video') {
-                if (this.newLesson.videoFile) {
-                    const uploadedVideoPath = await this.uploadLessonVideo(this.newLesson.videoFile);
-                    if (!uploadedVideoPath) {
-                        return;
-                    }
-                    videoPath = uploadedVideoPath;
-                    this.newLesson.videoPath = uploadedVideoPath;
-                } else if (!videoPath) {
-                    alert('Envie o vídeo da aula antes de salvar.');
+            try {
+                const isNewCourse = !this.course.selectedCourseId || this.course.selectedCourseId === 'new' || this.$route.params.id === 'new';
+                const module = this.modules.find(m => m.id === this.newLesson.moduleId);
+                
+                if (!module) {
+                    alert('Módulo não encontrado.');
                     return;
                 }
-            }
 
-            // Se for curso novo, adiciona localmente
-            if (isNewCourse || module.isLocal) {
-                const tempLessonId = `temp-lesson-${Date.now()}-${Math.random()}`;
-                const newLessonObject = {
-                    id: tempLessonId,
-                    moduleId: this.newLesson.moduleId,
-                    courseId: 'temp',
-                    name: this.newLesson.name,
-                    title: this.newLesson.name,
-                    contentType: this.newLesson.contentType || 'Video',
-                    contentLink: this.newLesson.contentLink || '',
-                    releaseType: this.newLesson.releaseType || 'Imediata',
-                    isActive: this.newLesson.isActive !== undefined ? this.newLesson.isActive : true,
-                    duration: `${this.newLesson.duration || 15} min`,
-                    isLocal: true, // Flag para identificar aulas locais
-                    videoUrl: videoPath,
-                };
-                this.lessons.push(newLessonObject);
-                this.closeNewLessonModal();
-                alert(`Aula "${this.newLesson.name}" adicionada localmente. Salve o curso para persistir.`);
-                return;
-            }
+                let videoPath = this.newLesson.videoPath || '';
+                if (this.newLesson.contentType === 'Video') {
+                    if (this.newLesson.videoFile) {
+                        const uploadedVideoPath = await this.uploadLessonVideo(this.newLesson.videoFile);
+                        if (!uploadedVideoPath) {
+                            return;
+                        }
+                        videoPath = uploadedVideoPath;
+                        this.newLesson.videoPath = uploadedVideoPath;
+                    } else if (!videoPath) {
+                        alert('Envie o vídeo da aula antes de salvar.');
+                        return;
+                    }
+                }
 
-            // Se o curso já existe, salva no backend
-            try {
+                // Se for curso novo, adiciona localmente
+                if (isNewCourse || module.isLocal) {
+                    const tempLessonId = `temp-lesson-${Date.now()}-${Math.random()}`;
+                    const newLessonObject = {
+                        id: tempLessonId,
+                        moduleId: this.newLesson.moduleId,
+                        courseId: 'temp',
+                        name: this.newLesson.name,
+                        title: this.newLesson.name,
+                        contentType: this.newLesson.contentType || 'Video',
+                        contentLink: this.newLesson.contentLink || '',
+                        releaseType: this.newLesson.releaseType || 'Imediata',
+                        isActive: this.newLesson.isActive !== undefined ? this.newLesson.isActive : true,
+                        duration: `${this.newLesson.duration || 15} min`,
+                        isLocal: true, // Flag para identificar aulas locais
+                        videoUrl: videoPath,
+                    };
+                    this.lessons.push(newLessonObject);
+                    this.closeNewLessonModal();
+                    alert(`Aula "${this.newLesson.name}" adicionada localmente. Salve o curso para persistir.`);
+                    return;
+                }
+
+                // Se o curso já existe, salva no backend
                 const apiBaseUrl = this.getApiBaseUrl();
                 const response = await fetch(`${apiBaseUrl}/courses/lessons`, {
                     method: 'POST',
@@ -1024,6 +1028,8 @@ export default {
             } catch (error) {
                 console.error('Erro ao criar aula:', error);
                 alert('Erro ao criar aula. Verifique sua conexão.');
+            } finally {
+                this.isSavingLesson = false;
             }
         },
         // Materiais

@@ -33,7 +33,10 @@
           :key="course.id" 
           class="course-card"
         >
-          <div class="course-image">{{ course.imagePlaceholder || 'Curso' }}</div>
+          <div v-if="course.coverImage" class="course-image">
+            <img :src="course.coverImage" :alt="course.title" />
+          </div>
+          <div v-else class="course-image">{{ course.imagePlaceholder || 'Curso' }}</div>
           <h3 class="course-title">{{ course.title }}</h3>
           <p class="course-desc">{{ course.description }}</p>
           <div class="course-meta">
@@ -140,7 +143,10 @@ export default {
         }
 
         const data = await res.json()
-        this.courses = data
+        this.courses = data.map(course => ({
+          ...course,
+          coverImage: this.resolveImageUrl(course.coverImage)
+        }))
         this.calculateProgress()
       } catch (err) {
         console.error('Erro ao buscar cursos:', err)
@@ -157,6 +163,21 @@ export default {
         const mockProgress = Math.random() > 0.5 ? Math.floor(Math.random() * 100) : 0
         this.courseProgress[course.id] = mockProgress
       })
+    },
+    resolveImageUrl(url) {
+      if (!url) return null
+      // Se já é uma URL completa (http/https), retorna como está
+      if (url.startsWith('http://') || url.startsWith('https://')) {
+        return url
+      }
+      // Se começa com /, adiciona a base URL da API
+      if (url.startsWith('/')) {
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+        return `${apiBaseUrl}${url}`
+      }
+      // Caso contrário, assume que é um caminho relativo
+      const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+      return `${apiBaseUrl}/${url}`
     }
   }
 }

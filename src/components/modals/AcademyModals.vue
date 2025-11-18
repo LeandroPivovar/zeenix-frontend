@@ -118,8 +118,11 @@
             </div>
           </div>
           <div class="modal-actions">
-            <button class="btn btn-save-lesson" @click="saveNewLesson" :disabled="!newLesson.moduleId || !newLesson.name">Salvar Aula</button>
-            <button class="btn btn-cancel" @click="closeNewLessonModal">Cancelar</button>
+            <button class="btn btn-save-lesson" @click="saveNewLesson" :disabled="!newLesson.moduleId || !newLesson.name || isSavingLesson">
+              <span v-if="isSavingLesson" class="loader"></span>
+              {{ isSavingLesson ? 'Salvando...' : 'Salvar Aula' }}
+            </button>
+            <button class="btn btn-cancel" @click="closeNewLessonModal" :disabled="isSavingLesson">Cancelar</button>
           </div>
         </div>
       </div>
@@ -204,6 +207,10 @@ export default {
     newModule: Object,
     newLesson: Object,
     newMaterial: Object,
+    isSavingLesson: {
+      type: Boolean,
+      default: false,
+    },
   },
   emits: [
     'closeNewModuleModal',
@@ -668,5 +675,23 @@ label {
   border: 1px dashed var(--color-border);
   border-radius: 6px;
   margin-top: 10px;
+}
+
+.loader {
+  display: inline-block;
+  width: 14px;
+  height: 14px;
+  border: 2px solid rgba(15, 16, 19, 0.3);
+  border-radius: 50%;
+  border-top-color: #0f1013;
+  animation: spin 0.6s linear infinite;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
 }
 </style>
