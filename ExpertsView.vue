@@ -492,7 +492,7 @@ export default {
 
                 this.closeForm();
                 await this.loadExperts();
-                alert(this.isEditing ? '✅ Expert atualizado com sucesso!' : '✅ Expert adicionado com sucesso!');
+                alert(this.isEditing ? 'Expert atualizado com sucesso!' : 'Expert adicionado com sucesso!');
             } catch (error) {
                 console.error('❌ [ExpertsView] Erro ao salvar expert:', error);
                 console.error('❌ [ExpertsView] Stack trace:', error.stack);

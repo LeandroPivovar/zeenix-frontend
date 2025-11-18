@@ -607,7 +607,7 @@ export default {
 
                 this.closeForm();
                 await this.loadExperts();
-                this.showToast(this.isEditing ? '✅ Expert atualizado com sucesso!' : '✅ Expert adicionado com sucesso!', 'success', 4000);
+                this.showToast(this.isEditing ? 'Expert atualizado com sucesso!' : 'Expert adicionado com sucesso!', 'success', 4000);
             } catch (error) {
                 console.error('❌ [ExpertsView] Erro ao salvar expert:', error);
                 console.error('❌ [ExpertsView] Stack trace:', error.stack);
