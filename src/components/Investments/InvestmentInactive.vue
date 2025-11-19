@@ -160,12 +160,12 @@
 				<div class="risk-slider-container">
 					<div class="risk-slider-labels">
 						<span>Nível de Risco:</span>
-						<span class="risk-level-text">Baixo</span>
+						<span class="risk-level-text">{{ riskLevelLabel }}</span>
 					</div>
 					<div class="risk-slider-bar">
-						<div class="risk-slider-fill" style="width: 30%;"></div>
+						<div class="risk-slider-fill" :style="{ width: riskBarWidth }"></div>
 					</div>
-					<p class="risk-description">Proteção máxima do capital com crescimento estável</p>
+					<p class="risk-description">{{ riskDescription }}</p>
 				</div>
 			</section>
 
@@ -348,6 +348,40 @@ export default {
 			// Mapear riskLevel para modoMartingale (lowercase)
 			const modoMartingale = newValue === 'Fixo' ? 'conservador' : newValue.toLowerCase();
 			this.$emit('update:modoMartingale', modoMartingale);
+		}
+	},
+	computed: {
+		// Calcula a largura da barra de progresso baseado no nível de risco
+		riskBarWidth() {
+			const widths = {
+				'Fixo': '10%',
+				'Conservador': '25%',
+				'Moderado': '50%',
+				'Agressivo': '75%'
+			};
+			return widths[this.riskLevel] || '25%';
+		},
+		
+		// Retorna o label do nível de risco
+		riskLevelLabel() {
+			const labels = {
+				'Fixo': 'Mínimo',
+				'Conservador': 'Baixo',
+				'Moderado': 'Médio',
+				'Agressivo': 'Alto'
+			};
+			return labels[this.riskLevel] || 'Baixo';
+		},
+		
+		// Retorna a descrição do nível de risco
+		riskDescription() {
+			const descriptions = {
+				'Fixo': 'Valor fixo por operação sem variação',
+				'Conservador': 'Proteção máxima do capital com crescimento estável',
+				'Moderado': 'Equilíbrio entre risco e retorno',
+				'Agressivo': 'Maior exposição para potencial de ganhos elevados'
+			};
+			return descriptions[this.riskLevel] || 'Proteção máxima do capital com crescimento estável';
 		}
 	},
 	methods: {
