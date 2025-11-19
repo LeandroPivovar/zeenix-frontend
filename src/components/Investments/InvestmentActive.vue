@@ -12,28 +12,32 @@
                     <div class="stat-card-primary">
                         <p class="stat-label-primary">Lucro do Dia</p>
                         <div class="stat-value-area">
-                            <p class="stat-value-large text-zenix-green">+$247,50</p>
-                            <p class="stat-subtitle-small text-zenix-green">+1,34%</p>
+                            <p class="stat-value-large" :class="profitLossClass" v-if="!isLoadingStats">{{ formattedProfitLoss }}</p>
+                            <p class="stat-value-large text-zenix-secondary" v-else>Carregando...</p>
+                            <p class="stat-subtitle-small" :class="profitLossClass" v-if="!isLoadingStats">{{ profitLossPercentage }}</p>
                         </div>
                     </div>
                     <div class="stat-card-primary">
                         <p class="stat-label-primary">Winrate</p>
                         <div class="stat-value-area">
-                            <p class="stat-value-large">78%</p>
-                            <p class="stat-subtitle-small text-zenix-green">Excelente</p>
+                            <p class="stat-value-large" v-if="!isLoadingStats">{{ formattedWinrate }}</p>
+                            <p class="stat-value-large text-zenix-secondary" v-else>--</p>
+                            <p class="stat-subtitle-small text-zenix-green" v-if="!isLoadingStats">{{ winrateLabel }}</p>
                         </div>
                     </div>
                     <div class="stat-card-primary">
                         <p class="stat-label-primary">Trades</p>
                         <div class="stat-value-area">
-                            <p class="stat-value-large">23</p>
+                            <p class="stat-value-large" v-if="!isLoadingStats">{{ dailyStats.totalTrades }}</p>
+                            <p class="stat-value-large text-zenix-secondary" v-else>--</p>
                             <p class="stat-subtitle-small">Operações</p>
                         </div>
                     </div>
                     <div class="stat-card-primary">
                         <p class="stat-label-primary">Volume</p>
                         <div class="stat-value-area">
-                            <p class="stat-value-large">$450</p>
+                            <p class="stat-value-large" v-if="!isLoadingStats">{{ formattedVolume }}</p>
+                            <p class="stat-value-large text-zenix-secondary" v-else>--</p>
                             <p class="stat-subtitle-small">Operado</p>
                         </div>
                     </div>
@@ -237,6 +241,18 @@ export default {
             lineSeries: null,
             chartInitialized: false,
             accountType: 'real',
+            
+            // Estatísticas do dia
+            dailyStats: {
+                profitLoss: 0,
+                winrate: 0,
+                totalTrades: 0,
+                totalVolume: 0,
+                wins: 0,
+                losses: 0
+            },
+            isLoadingStats: true,
+            statsUpdateInterval: null,
             balance: 18250,
             balanceVisible: true,
             aiActive: true,
@@ -269,6 +285,36 @@ export default {
         },
         mode() {
             return this.modeConfig;
+        },
+        
+        // Estatísticas formatadas
+        formattedProfitLoss() {
+            const value = this.dailyStats.profitLoss || 0;
+            const sign = value >= 0 ? '+' : '';
+            return `${sign}$${Math.abs(value).toFixed(2)}`;
+        },
+        profitLossPercentage() {
+            // Calcular percentual baseado no volume total
+            const volume = this.dailyStats.totalVolume || 1;
+            const percentage = (this.dailyStats.profitLoss / volume) * 100;
+            const sign = percentage >= 0 ? '+' : '';
+            return `${sign}${percentage.toFixed(2)}%`;
+        },
+        formattedWinrate() {
+            return `${this.dailyStats.winrate.toFixed(0)}%`;
+        },
+        winrateLabel() {
+            const wr = this.dailyStats.winrate;
+            if (wr >= 70) return 'Excelente';
+            if (wr >= 60) return 'Ótimo';
+            if (wr >= 50) return 'Bom';
+            return 'Regular';
+        },
+        formattedVolume() {
+            return `$${this.dailyStats.totalVolume.toFixed(2)}`;
+        },
+        profitLossClass() {
+            return this.dailyStats.profitLoss >= 0 ? 'text-zenix-green' : 'text-zenix-red';
         },
         
         displayBalance() {
@@ -311,6 +357,80 @@ export default {
     },
     
     methods: {
+        async fetchDailyStats() {
+            try {
+                console.log('[InvestmentActive] 📊 Buscando estatísticas do dia...');
+                
+                const userId = this.getUserId();
+                if (!userId) {
+                    console.warn('[InvestmentActive] ❌ UserId não disponível para buscar stats');
+                    this.isLoadingStats = false;
+                    return;
+                }
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const url = `${apiBase}/ai/session-stats/${userId}`;
+                
+                console.log('[InvestmentActive] 📡 Requisitando stats:', url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                console.log('[InvestmentActive] 📥 Status HTTP:', response.status);
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('[InvestmentActive] 📦 Stats recebidas:', result);
+                
+                if (result.success && result.data) {
+                    this.dailyStats = {
+                        profitLoss: parseFloat(result.data.profitLoss) || 0,
+                        winrate: parseFloat(result.data.winrate) || 0,
+                        totalTrades: parseInt(result.data.totalTrades) || 0,
+                        totalVolume: parseFloat(result.data.totalVolume) || 0,
+                        wins: parseInt(result.data.wins) || 0,
+                        losses: parseInt(result.data.losses) || 0
+                    };
+                    
+                    console.log('[InvestmentActive] ✅ Stats atualizadas:', this.dailyStats);
+                } else {
+                    console.error('[InvestmentActive] ❌ Formato de resposta inválido:', result);
+                }
+            } catch (error) {
+                console.error('[InvestmentActive] ❌ Erro ao buscar estatísticas:', error);
+            } finally {
+                this.isLoadingStats = false;
+            }
+        },
+        
+        startStatsUpdates() {
+            // Buscar estatísticas imediatamente
+            this.fetchDailyStats();
+            
+            // Atualizar a cada 10 segundos
+            this.statsUpdateInterval = setInterval(() => {
+                this.fetchDailyStats();
+            }, 10000);
+            
+            console.log('[InvestmentActive] ⏰ Atualizações de stats iniciadas');
+        },
+        
+        stopStatsUpdates() {
+            if (this.statsUpdateInterval) {
+                clearInterval(this.statsUpdateInterval);
+                this.statsUpdateInterval = null;
+                console.log('[InvestmentActive] ⏹️ Atualizações de stats paradas');
+            }
+        },
+        
         toggleAI() {
             this.aiActive = !this.aiActive;
         },
@@ -552,6 +672,9 @@ export default {
     mounted() {
         console.log('[InvestmentActive] Componente montado. Ticks:', this.ticks.length);
         
+        // 📊 Buscar estatísticas do dia
+        this.startStatsUpdates();
+        
         // 📊 Buscar histórico de operações
         this.fetchTradeHistory();
         
@@ -565,6 +688,9 @@ export default {
     },
 
     beforeUnmount() {
+        // Parar atualizações de stats
+        this.stopStatsUpdates();
+        
         if (this.chart) {
             this.chart.remove();
         }
