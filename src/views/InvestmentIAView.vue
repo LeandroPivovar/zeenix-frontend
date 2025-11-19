@@ -13,7 +13,7 @@
                 <div class="header-info-container">
                     
                     <div class="header-info-item balance-item">
-                        <span class="info-label">Saldo</span>
+                        <span class="info-label">saldo</span>
                         <div class="info-value-group">
                             <span class="info-value">{{ formattedBalance }}</span>
                             <span v-if="isDemo" class="badge demo-badge">Demo</span>
@@ -22,7 +22,7 @@
                     </div>
                     
                     <div class="header-info-item result-item">
-                        <span class="info-label">Resultado Hoje</span>
+                        <span class="info-label">resultado hoje</span>
                         <div class="info-value-group">
                             <span class="info-value result-value" :class="dailyProfitClass">{{ formattedDailyProfit }}</span>
                             <span class="result-percent" :class="dailyProfitClass">{{ formattedDailyProfitPercent }}</span>
@@ -30,12 +30,12 @@
                     </div>
 
                     <div class="header-info-item trades-item">
-                        <span class="info-label">Trades Hoje</span>
+                        <span class="info-label">trades hoje</span>
                         <span class="info-value">{{ dailyStats.totalTrades }}</span>
                     </div>
 
                     <div class="header-info-item status-item">
-                        <span class="info-label">Status</span>
+                        <span class="info-label">status</span>
                         <div class="info-value-group">
                             <span class="status-dot" :class="{ 'active': isInvestmentActive }"></span>
                             <span class="info-value status-text" :class="{ 'active': isInvestmentActive }">IA {{ isInvestmentActive ? 'Ativa' : 'Inativa' }}</span>

@@ -22,8 +22,8 @@
 			
 				<div class="metric-card">
 					<p class="metric-label">Ativo Atual</p>
-					<p class="metric-value large-text">EUR/USD</p>
-					<p class="metric-detail">Timeframe M5</p>
+					<p class="metric-value large-text"></p>
+					<p class="metric-detail"></p>
 				</div>
 				<div class="metric-card">
 					<p class="metric-label">Probabilidade</p>
