@@ -10,51 +10,27 @@
     
                 <div class="stat-bar-primary">
                     <div class="stat-card-primary">
-                        <p class="stat-label-primary">Lucro do Dia</p>
-                        <div class="stat-value-area">
-                            <p class="stat-value-large" :class="profitLossClass" v-if="!isLoadingStats">{{ formattedProfitLoss }}</p>
-                            <p class="stat-value-large text-zenix-secondary" v-else>Carregando...</p>
-                            <p class="stat-subtitle-small" :class="profitLossClass" v-if="!isLoadingStats">{{ profitLossPercentage }}</p>
-                        </div>
-                    </div>
-                    <div class="stat-card-primary">
                         <p class="stat-label-primary">Lucro da Sessão</p>
                         <div class="stat-value-area">
                             <p class="stat-value-large" :class="sessionProfitLossClass" v-if="!isLoadingStats">{{ formattedSessionProfitLoss }}</p>
-                            <p class="stat-value-large text-zenix-secondary" v-else>--</p>
+                            <p class="stat-value-large text-zenix-secondary" v-else>Carregando...</p>
                             <p class="stat-subtitle-small">Sessão Atual</p>
-                        </div>
-                    </div>
-                    <div class="stat-card-primary">
-                        <p class="stat-label-primary">Saldo da Sessão</p>
-                        <div class="stat-value-area">
-                            <p class="stat-value-large" :class="sessionBalanceClass" v-if="!isLoadingStats">{{ formattedSessionBalance }}</p>
-                            <p class="stat-value-large text-zenix-secondary" v-else>--</p>
-                            <p class="stat-subtitle-small">Balança Atual</p>
                         </div>
                     </div>
                     <div class="stat-card-primary">
                         <p class="stat-label-primary">Winrate</p>
                         <div class="stat-value-area">
-                            <p class="stat-value-large" v-if="!isLoadingStats">{{ formattedWinrate }}</p>
+                            <p class="stat-value-large" v-if="!isLoadingStats">{{ formattedSessionWinrate }}</p>
                             <p class="stat-value-large text-zenix-secondary" v-else>--</p>
-                            <p class="stat-subtitle-small text-zenix-green" v-if="!isLoadingStats">{{ winrateLabel }}</p>
+                            <p class="stat-subtitle-small text-zenix-green" v-if="!isLoadingStats">{{ sessionWinrateLabel }}</p>
                         </div>
                     </div>
                     <div class="stat-card-primary">
                         <p class="stat-label-primary">Trades</p>
                         <div class="stat-value-area">
-                            <p class="stat-value-large" v-if="!isLoadingStats">{{ dailyStats.totalTrades }}</p>
+                            <p class="stat-value-large" v-if="!isLoadingStats">{{ dailyStats.sessionTrades || 0 }}</p>
                             <p class="stat-value-large text-zenix-secondary" v-else>--</p>
                             <p class="stat-subtitle-small">Operações</p>
-                        </div>
-                    </div>
-                    <div class="stat-card-primary">
-                        <p class="stat-label-primary">Volume</p>
-                        <div class="stat-value-area">
-                            <p class="stat-value-large" v-if="!isLoadingStats">{{ formattedVolume }}</p>
-                            <p class="stat-value-large text-zenix-secondary" v-else>--</p>
-                            <p class="stat-subtitle-small">Operado</p>
                         </div>
                     </div>
                     <div class="stat-card-primary status-indicator-panel">
@@ -292,7 +268,11 @@ export default {
                 wins: 0,
                 losses: 0,
                 sessionBalance: 0,
-                sessionProfitLoss: 0
+                sessionProfitLoss: 0,
+                sessionTrades: 0,
+                sessionWins: 0,
+                sessionLosses: 0,
+                sessionWinrate: 0
             },
             isLoadingStats: true,
             statsUpdateInterval: null,
@@ -432,6 +412,16 @@ export default {
             if (wr >= 50) return 'Bom';
             return 'Regular';
         },
+        formattedSessionWinrate() {
+            return `${this.dailyStats.sessionWinrate.toFixed(0)}%`;
+        },
+        sessionWinrateLabel() {
+            const wr = this.dailyStats.sessionWinrate;
+            if (wr >= 70) return 'Excelente';
+            if (wr >= 60) return 'Ótimo';
+            if (wr >= 50) return 'Bom';
+            return 'Regular';
+        },
         formattedVolume() {
             return `$${this.dailyStats.totalVolume.toFixed(2)}`;
         },
@@ -554,7 +544,11 @@ export default {
                         wins: parseInt(result.data.wins) || 0,
                         losses: parseInt(result.data.losses) || 0,
                         sessionBalance: parseFloat(result.data.sessionBalance) || 0,
-                        sessionProfitLoss: parseFloat(result.data.sessionProfitLoss) || 0
+                        sessionProfitLoss: parseFloat(result.data.sessionProfitLoss) || 0,
+                        sessionTrades: parseInt(result.data.sessionTrades) || 0,
+                        sessionWins: parseInt(result.data.sessionWins) || 0,
+                        sessionLosses: parseInt(result.data.sessionLosses) || 0,
+                        sessionWinrate: parseFloat(result.data.sessionWinrate) || 0
                     };
                     
                     console.log('[InvestmentActive] ✅ Stats atualizadas:', this.dailyStats);
