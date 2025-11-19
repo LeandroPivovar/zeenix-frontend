@@ -389,7 +389,7 @@ export default {
             return defaultToken;
         },
 
-        // Obter moeda preferida
+        // Obter moeda preferida (IGUAL AO OperationChart)
         getPreferredCurrency() {
             try {
                 const connectionStr = localStorage.getItem('deriv_connection');
@@ -397,9 +397,9 @@ export default {
                     const connection = JSON.parse(connectionStr);
                     if (connection.tradeCurrency) {
                         const currency = connection.tradeCurrency.toUpperCase();
-                        if (currency === 'DEMO') {
-                            return 'USD';
-                        }
+                        // NÃO converter DEMO para USD aqui - deixar o backend/Deriv API lidar
+                        // A conta DEMO pode ter saldo em USD, mas precisamos do token da conta demo certa
+                        console.log('[InvestmentIAView] Moeda preferida:', currency);
                         return currency;
                     }
                 }
