@@ -347,14 +347,33 @@ export default {
                 const result = await response.json();
                 if (result.success && result.data) {
                     console.log('[InvestmentActive] ✅ Histórico recebido:', result.data.length, 'operações');
+                    console.log('[InvestmentActive] 📊 Dados recebidos:', result.data);
                     
                     // Transformar dados do backend para o formato do frontend
                     this.logOperations = result.data.map(trade => {
-                        const time = new Date(trade.created_at).toLocaleTimeString('pt-BR');
-                        const direction = trade.contract_type?.toUpperCase() || 'CALL';
-                        const result_trade = trade.status === 'won' ? 'WIN' : (trade.status === 'lost' ? 'LOSS' : 'PENDING');
-                        const profit = parseFloat(trade.profit || 0);
-                        const pnl = profit >= 0 ? `+$${profit.toFixed(2)}` : `-$${Math.abs(profit).toFixed(2)}`;
+                        // Usar closedAt ou createdAt para o horário (priorizar closedAt)
+                        const time = new Date(trade.closedAt || trade.createdAt).toLocaleTimeString('pt-BR', {
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                        });
+                        
+                        // signal pode ser 'CALL' ou 'PUT', contractType também
+                        const direction = (trade.signal || trade.contractType || 'CALL').toUpperCase();
+                        
+                        // status é 'WON', 'LOST', 'PENDING', 'ACTIVE', 'ERROR'
+                        let result_trade;
+                        if (trade.status === 'WON') {
+                            result_trade = 'WIN';
+                        } else if (trade.status === 'LOST') {
+                            result_trade = 'LOSS';
+                        } else {
+                            result_trade = trade.status; // PENDING, ACTIVE, ERROR
+                        }
+                        
+                        // profitLoss é o lucro/prejuízo (pode ser null se ainda não finalizou)
+                        const profit = parseFloat(trade.profitLoss || 0);
+                        const pnl = profit >= 0 ? `+$${profit.toFixed(2)}` : `$${profit.toFixed(2)}`;
                         
                         return {
                             time: time,
@@ -364,6 +383,8 @@ export default {
                             pnl: pnl
                         };
                     });
+                    
+                    console.log('[InvestmentActive] ✅ Log formatado:', this.logOperations);
                 } else {
                     console.error('[InvestmentActive] ❌ Erro ao buscar histórico:', result.message || 'Unknown error');
                     this.logOperations = [];
