@@ -1134,14 +1134,11 @@ input:checked + .slider:before {
 /* GRÁFICO (INFERIOR) */
 /* ---------------------------------------------------- */
 
-.market-chart-section {
-    margin-bottom: auto;
-}
 .separator-chart {
 	border: none;
 	height: 1px;
 	background-color: #333;
-	margin: 20px 0;
+	margin: 10px 0 20px 0;
 }
 
 .market-chart-section {
@@ -1149,6 +1146,7 @@ input:checked + .slider:before {
 	padding: 20px;
 	border-radius: 8px;
 	margin-bottom: 20px;
+	margin-top: 10px;
 }
 
 .chart-header {

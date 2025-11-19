@@ -133,7 +133,18 @@
             </div>
 
             <div class="card full-height-card">
-                <h3 class="card-title-small mb-4">Log de Operações</h3>
+                <div class="card-header-flex">
+                    <h3 class="card-title-small mb-0">Log de Operações</h3>
+                    <button 
+                        class="btn btn-secondary" 
+                        @click="fetchTradeHistory"
+                        :disabled="isLoadingLogs"
+                        style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.875rem;"
+                    >
+                        <i class="fa-solid fa-rotate-right" :class="{ 'fa-spin': isLoadingLogs }"></i>
+                        {{ isLoadingLogs ? 'Atualizando...' : 'Atualizar' }}
+                    </button>
+                </div>
             
                 <div class="log-table-container">
                     <div v-if="isLoadingLogs" class="loading-logs">
