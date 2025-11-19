@@ -51,7 +51,6 @@
                         </svg>
                         {{ isInvestmentActive ? 'Pausar IA' : 'Ativar IA' }}
                     </button>
-                    <button class="btn-action disconnect-btn">Desconectar</button>
                 </div>
             </header>
             
@@ -1060,15 +1059,6 @@ export default {
 .pause-btn.inactive:hover {
     background-color: #c0392b; /* Vermelho mais escuro no hover */
 }
-
-.disconnect-btn {
-    background-color: #333333;
-    color: white;
-}
-.disconnect-btn:hover {
-    background-color: #555555;
-}
-
 
 /* ------------------ Responsividade do Header ------------------ */
 

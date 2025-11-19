@@ -501,6 +501,7 @@ export default {
 		},
 		
 		// 💰 Formatação de moeda
+		// eslint-disable-next-line no-unused-vars
 		formatCurrency(value, currency = 'USD') {
 			const sign = value >= 0 ? '+' : '';
 			return `${sign}$${Math.abs(value).toFixed(2)}`;
