@@ -2114,7 +2114,12 @@ export default {
 },
 
 mounted() {
+	// TESTE CRÍTICO - Sempre deve aparecer no console
+	console.log('🚀 TESTE: StatsIAsView mounted() foi chamado!');
 	console.log('[StatsIAsView] ===== COMPONENTE MONTADO =====');
+	
+	// Alerta visual para confirmar execução
+	console.warn('⚠️ SE VOCÊ VÊ ESTA MENSAGEM, O COMPONENTE ESTÁ CARREGANDO!');
 	
 	// Carregar informações da conta
 	this.loadAccountInfo();

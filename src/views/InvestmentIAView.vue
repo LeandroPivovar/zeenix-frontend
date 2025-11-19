@@ -56,8 +56,8 @@
             </header>
             
             <div class="main-content-area">
-                <InvestmentActive v-if="isInvestmentActive" />
-                <InvestmentInactive v-else />
+                <InvestmentActive v-if="isInvestmentActive" :ticks="ticks" :current-price="currentPrice" />
+                <InvestmentInactive v-else :ticks="ticks" :current-price="currentPrice" />
             </div>
         </main>
 
@@ -135,6 +135,11 @@ export default {
             // ⭐️ Alterado para 'false' para iniciar no estado Inativo
             isInvestmentActive: false, 
 
+            // Dados de ticks para o gráfico
+            ticks: [],
+            currentPrice: null,
+            pollingInterval: null,
+
             footerSections: [
                 {
                     title: 'Produto',
@@ -161,7 +166,93 @@ export default {
         },
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        },
+
+        // ===== MÉTODOS PARA CARREGAR DADOS DA IA =====
+        
+        async startDataLoading() {
+            try {
+                console.log('[InvestmentIAView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
+                
+                // Iniciar monitoramento no backend
+                const response = await fetch('https://taxafacil.site/api/ai/start', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                console.log('[InvestmentIAView] Status da resposta:', response.status);
+                const result = await response.json();
+                console.log('[InvestmentIAView] Resultado:', result);
+
+                if (result.success) {
+                    console.log('[InvestmentIAView] ✅ Carregamento de dados iniciado');
+                    
+                    // Iniciar polling para buscar dados a cada 2 segundos
+                    this.startPolling();
+                } else {
+                    console.warn('[InvestmentIAView] ⚠ Não foi possível iniciar:', result.message);
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ ERRO ao iniciar carregamento:', error);
+                console.error('[InvestmentIAView] Detalhes:', error.message);
+            }
+        },
+
+        startPolling() {
+            // Buscar dados imediatamente
+            this.fetchTicks();
+
+            // Continuar buscando a cada 2 segundos
+            this.pollingInterval = setInterval(() => {
+                this.fetchTicks();
+            }, 2000);
+        },
+
+        stopPolling() {
+            if (this.pollingInterval) {
+                clearInterval(this.pollingInterval);
+                this.pollingInterval = null;
+            }
+        },
+
+        async fetchTicks() {
+            try {
+                console.log('[InvestmentIAView] Buscando ticks...');
+                const response = await fetch('https://taxafacil.site/api/ai/ticks');
+                const result = await response.json();
+
+                console.log('[InvestmentIAView] Ticks recebidos:', {
+                    success: result.success,
+                    ticksCount: result.data?.ticks?.length || 0,
+                    currentPrice: result.data?.currentPrice
+                });
+
+                if (result.success) {
+                    this.ticks = result.data.ticks || [];
+                    this.currentPrice = result.data.currentPrice;
+                    console.log('[InvestmentIAView] ✅ Ticks atualizados:', this.ticks.length);
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro ao buscar ticks:', error);
+            }
         }
+    },
+
+    mounted() {
+        // TESTE CRÍTICO - Sempre deve aparecer no console
+        console.log('🚀 TESTE: InvestmentIAView mounted() foi chamado!');
+        console.warn('⚠️ SE VOCÊ VÊ ESTA MENSAGEM, O COMPONENTE ESTÁ CARREGANDO!');
+        
+        // Iniciar carregamento de dados
+        console.log('[InvestmentIAView] Iniciando carregamento de dados...');
+        this.startDataLoading();
+    },
+
+    beforeUnmount() {
+        console.log('[InvestmentIAView] Limpando polling antes de desmontar...');
+        this.stopPolling();
     }
 }
 </script>
