@@ -887,6 +887,10 @@ export default {
     padding: 0;
 }
 
+.layout-ia-investment.sidebar-collapsed .layout-content-investment {
+    padding-left: 52px; /* Tamanho do botão (48px) + 4px */
+}
+
 /* Compensação de altura para o header fixo */
 .main-content-area {
     width: 100%;
@@ -944,6 +948,7 @@ export default {
     justify-content: center;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     margin: 0;
+    margin-right: 52px; /* Tamanho do botão (48px) + 4px */
 }
 
 .show-sidebar-btn:hover {
