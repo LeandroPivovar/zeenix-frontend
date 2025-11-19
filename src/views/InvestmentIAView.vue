@@ -41,7 +41,7 @@
 
                     <div class="header-info-item losses-item">
                         <span class="info-label">derrotas</span>
-                        <span class="info-value text-zenix-red">{{ dailyStats.losses || 0 }}</span>
+                        <span class="info-value text-zenix-red" style="color: #f44336 !important;">{{ dailyStats.losses || 0 }}</span>
                     </div>
 
                     <div class="header-info-item status-item">
@@ -947,6 +947,18 @@ export default {
 }
 
 .info-value.text-zenix-green {
+    color: var(--zenix-green) !important;
+}
+
+.losses-item .info-value,
+.header-info-item.losses-item .info-value,
+.header-info-item.losses-item span.info-value {
+    color: var(--zenix-red) !important;
+}
+
+.wins-item .info-value,
+.header-info-item.wins-item .info-value,
+.header-info-item.wins-item span.info-value {
     color: var(--zenix-green) !important;
 }
 
