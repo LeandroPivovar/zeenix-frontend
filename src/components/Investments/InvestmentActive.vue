@@ -336,7 +336,13 @@ export default {
                 }
 
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const response = await fetch(`${apiBase}/ai/trade-history/${userId}?limit=20`, {
+                const url = `${apiBase}/ai/trade-history/${userId}?limit=20`;
+                
+                console.log('[InvestmentActive] 📡 Fazendo requisição para:', url);
+                console.log('[InvestmentActive] 🔑 UserId:', userId);
+                console.log('[InvestmentActive] 🔐 Token presente?', !!localStorage.getItem('token'));
+                
+                const response = await fetch(url, {
                     method: 'GET',
                     headers: {
                         'Content-Type': 'application/json',
@@ -344,7 +350,11 @@ export default {
                     }
                 });
 
+                console.log('[InvestmentActive] 📥 Status HTTP:', response.status);
+                console.log('[InvestmentActive] 📥 Response OK?', response.ok);
+
                 const result = await response.json();
+                console.log('[InvestmentActive] 📦 Resultado completo:', result);
                 if (result.success && result.data) {
                     console.log('[InvestmentActive] ✅ Histórico recebido:', result.data.length, 'operações');
                     console.log('[InvestmentActive] 📊 Dados recebidos:', result.data);
