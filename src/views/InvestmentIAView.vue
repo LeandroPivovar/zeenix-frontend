@@ -35,8 +35,9 @@
                     <div class="header-info-item result-item">
                         <span class="info-label">resultado hoje</span>
                         <div class="info-value-group">
-                            <span class="info-value result-value" :class="dailyProfitClass">{{ formattedDailyProfit }}</span>
-                            <span class="result-percent" :class="dailyProfitClass">{{ formattedDailyProfitPercent }}</span>
+                            <span class="info-value result-value" :class="dailyProfitClass" v-if="balanceVisible">{{ formattedDailyProfit }}</span>
+                            <span class="info-value result-value" v-else>••••••</span>
+                            <span class="result-percent" :class="dailyProfitClass" v-if="balanceVisible">{{ formattedDailyProfitPercent }}</span>
                         </div>
                     </div>
 
