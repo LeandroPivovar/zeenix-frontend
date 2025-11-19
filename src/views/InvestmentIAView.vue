@@ -132,8 +132,8 @@ export default {
         return {
             isSidebarOpen: false,
             isSidebarCollapsed: false,
-            // Mantido como 'true' para refletir a imagem
-            isInvestmentActive: true, 
+            // ⭐️ Alterado para 'false' para iniciar no estado Inativo
+            isInvestmentActive: false, 
 
             footerSections: [
                 {
@@ -157,7 +157,7 @@ export default {
             this.isInvestmentActive = !this.isInvestmentActive;
         },
         toggleSidebar() {
-             this.isSidebarOpen = !this.isSidebarOpen;
+            this.isSidebarOpen = !this.isSidebarOpen;
         },
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
@@ -633,4 +633,5 @@ export default {
     color: rgba(141, 141, 141, 0.5);
     font-size: 0.75rem;
 }
+
 </style>
