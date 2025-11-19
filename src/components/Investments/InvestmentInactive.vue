@@ -35,7 +35,7 @@
 				</div>
 				<div class="metric-card">
 					<p class="metric-label">Última Leitura</p>
-					<p class="metric-value large-text">14:32:15</p>
+					<p class="metric-value large-text">{{ lastUpdateTime }}</p>
 					<p class="metric-detail status-active text-green-ia">Agora</p>
 				</div>
 				<div class="metric-card">
@@ -234,6 +234,10 @@ export default {
 		currentPrice: {
 			type: Number,
 			default: null
+		},
+		lastUpdateTime: {
+			type: String,
+			default: '--:--:--'
 		}
 	},
 	data() {

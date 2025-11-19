@@ -15,9 +15,9 @@
                     <div class="header-info-item balance-item">
                         <span class="info-label">Saldo</span>
                         <div class="info-value-group">
-                            <span class="info-value">R$18.250,00</span>
-                            <span class="badge real-badge">Real</span>
-                            <span class="badge demo-badge">Demo</span>
+                            <span class="info-value">{{ formattedBalance }}</span>
+                            <span v-if="isDemo" class="badge demo-badge">Demo</span>
+                            <span v-else class="badge real-badge">Real</span>
                         </div>
                     </div>
                     
@@ -61,6 +61,7 @@
                     v-else 
                     :ticks="ticks" 
                     :current-price="currentPrice"
+                    :last-update-time="formattedLastUpdate"
                     @update:entryValue="entryValue = $event"
                     @update:profitTarget="profitTarget = $event"
                     @update:lossLimit="lossLimit = $event"
@@ -154,6 +155,15 @@ export default {
             lossLimit: 25,
             mode: 'veloz',
 
+            // Dados da conta Deriv (para exibição no header)
+            accountBalance: null,
+            accountCurrency: 'USD',
+            accountLoginid: null,
+            isDemo: false,
+            lastBalanceUpdate: null,
+            balanceUpdateInterval: null,
+            clockInterval: null, // Intervalo para atualizar horário
+
             footerSections: [
                 {
                     title: 'Produto',
@@ -182,6 +192,24 @@ export default {
         },
         mode(newValue) {
             console.log('[InvestmentIAView] ⚡ Modo atualizado:', newValue);
+        }
+    },
+    computed: {
+        // 💰 Formatar saldo com moeda
+        formattedBalance() {
+            if (this.accountBalance === null || this.accountBalance === undefined) {
+                return '--';
+            }
+            return `${this.accountCurrency} ${this.accountBalance.toFixed(2)}`;
+        },
+        
+        // ⏰ Formatar horário atual (sempre atualizado)
+        formattedLastUpdate() {
+            const now = new Date();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            return `${hours}:${minutes}:${seconds}`;
         }
     },
     methods: {
@@ -470,6 +498,83 @@ export default {
             return 'USD';
         },
 
+        // 💰 Buscar saldo da conta Deriv
+        async fetchAccountBalance() {
+            try {
+                const derivToken = this.getDerivToken();
+                if (!derivToken) {
+                    console.warn('[InvestmentIAView] ❌ Token não disponível para buscar saldo');
+                    return;
+                }
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/deriv-balance`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ derivToken: derivToken }),
+                });
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    this.accountBalance = result.data.balance;
+                    this.accountCurrency = result.data.currency;
+                    this.accountLoginid = result.data.loginid;
+                    this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+                    this.lastBalanceUpdate = new Date();
+                    
+                    console.log('[InvestmentIAView] ✅ Saldo atualizado:', {
+                        balance: this.accountBalance,
+                        currency: this.accountCurrency,
+                        loginid: this.accountLoginid,
+                        isDemo: this.isDemo
+                    });
+                } else {
+                    console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro ao buscar saldo da conta:', error);
+            }
+        },
+
+        // ⏰ Iniciar atualização periódica do saldo
+        startBalanceUpdates() {
+            // Buscar saldo imediatamente
+            this.fetchAccountBalance();
+            
+            // Atualizar a cada 30 segundos
+            this.balanceUpdateInterval = setInterval(() => {
+                this.fetchAccountBalance();
+            }, 30000); // 30 segundos
+        },
+
+        // 🛑 Parar atualização periódica do saldo
+        stopBalanceUpdates() {
+            if (this.balanceUpdateInterval) {
+                clearInterval(this.balanceUpdateInterval);
+                this.balanceUpdateInterval = null;
+            }
+        },
+
+        // ⏰ Iniciar relógio em tempo real
+        startClock() {
+            // Atualizar a cada segundo
+            this.clockInterval = setInterval(() => {
+                // Forçar reatividade atualizando lastBalanceUpdate
+                this.lastBalanceUpdate = new Date();
+            }, 1000); // 1 segundo
+        },
+
+        // 🛑 Parar relógio
+        stopClock() {
+            if (this.clockInterval) {
+                clearInterval(this.clockInterval);
+                this.clockInterval = null;
+            }
+        },
+
         toggleSidebar() {
             this.isSidebarOpen = !this.isSidebarOpen;
         },
@@ -591,11 +696,27 @@ export default {
         // Iniciar carregamento de dados
         console.log('[InvestmentIAView] Iniciando carregamento de dados...');
         this.startDataLoading();
+        
+        // 💰 Iniciar atualização de saldo
+        console.log('[InvestmentIAView] Iniciando atualização de saldo...');
+        this.startBalanceUpdates();
+        
+        // ⏰ Iniciar relógio
+        console.log('[InvestmentIAView] Iniciando relógio em tempo real...');
+        this.startClock();
     },
 
     beforeUnmount() {
         console.log('[InvestmentIAView] Limpando polling antes de desmontar...');
         this.stopPolling();
+        
+        // 💰 Parar atualização de saldo
+        console.log('[InvestmentIAView] Parando atualização de saldo...');
+        this.stopBalanceUpdates();
+        
+        // ⏰ Parar relógio
+        console.log('[InvestmentIAView] Parando relógio...');
+        this.stopClock();
     }
 }
 </script>
