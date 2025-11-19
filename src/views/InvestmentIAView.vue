@@ -3,29 +3,29 @@
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
 
         <main class="layout-content-investment">
-            <button 
-                v-if="isSidebarCollapsed" 
-                class="show-sidebar-btn" 
-                @click="toggleSidebarCollapse" 
-                aria-label="Mostrar sidebar"
-                title="Mostrar sidebar"
-            >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M10 18L16 12L10 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-            <button 
-                v-else
-                class="hamburger-btn" 
-                @click="toggleSidebar" 
-                aria-label="Abrir menu"
-            >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button> 
-            
             <header class="header-investment">
+                <button 
+                    v-if="isSidebarCollapsed" 
+                    class="show-sidebar-btn" 
+                    @click="toggleSidebarCollapse" 
+                    aria-label="Mostrar sidebar"
+                    title="Mostrar sidebar"
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 18L16 12L10 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <button 
+                    v-else
+                    class="hamburger-btn" 
+                    @click="toggleSidebar" 
+                    aria-label="Abrir menu"
+                >
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                
                 <div class="header-info-container">
                     
                     <div class="header-info-item balance-item">
@@ -887,10 +887,6 @@ export default {
     padding: 0;
 }
 
-.layout-ia-investment.sidebar-collapsed .layout-content-investment {
-    padding-left: 52px; /* Tamanho do botão (48px) + 4px */
-}
-
 /* Compensação de altura para o header fixo */
 .main-content-area {
     width: 100%;
@@ -913,10 +909,7 @@ export default {
 /* Botão hamburger (oculto em desktop) */
 .hamburger-btn {
     display: none;
-    position: absolute;
-    top: 15px;
-    left: 15px;
-    z-index: 20;
+    position: relative;
     background: none;
     color: white;
     border: none;
@@ -924,6 +917,7 @@ export default {
     padding: 8px;
     border-radius: 6px;
     transition: background-color 0.2s;
+    margin-right: 12px;
 }
 
 .hamburger-btn:hover {
@@ -933,10 +927,7 @@ export default {
 /* Botão para mostrar sidebar quando colapsada */
 .show-sidebar-btn {
     display: flex;
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    z-index: 1000;
+    position: relative;
     background: rgba(20, 21, 21, 0.95);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -947,8 +938,7 @@ export default {
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    margin: 0;
-    margin-right: 52px; /* Tamanho do botão (48px) + 4px */
+    margin-right: 12px;
 }
 
 .show-sidebar-btn:hover {
@@ -976,11 +966,11 @@ export default {
     max-width: calc(100% - 240px);
     height: var(--zenix-header-height);
     transition: max-width 0.3s ease;
+    gap: 12px;
 }
 
 .layout-ia-investment.sidebar-collapsed .header-investment {
     max-width: 100%;
-    padding-left: 52px; /* Tamanho do botão (48px) + 4px */
 }
 
 .header-info-container {
@@ -1196,17 +1186,11 @@ export default {
 
 @media (max-width: 1024px) {
     .hamburger-btn {
-        display: block; /* Mostra o botão hamburger no mobile */
-    }
-
-    .header-investment {
-        max-width: 100%;
-        padding-left: 60px; /* Espaço para o botão hamburger */
+        display: flex; /* Mostra o botão hamburger no mobile */
     }
     
-    .show-sidebar-btn {
-        top: 20px;
-        left: 20px;
+    .header-investment {
+        max-width: 100%;
     }
 }
 
