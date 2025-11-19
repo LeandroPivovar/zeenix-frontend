@@ -251,7 +251,7 @@ export default {
 			mode: "Veloz",
 	
 			// Seção Parâmetros de Entrada
-			entryValue: 50,
+			entryValue: 0.35, // Valor mínimo da Deriv
 			profitTarget: 100,
 			lossLimit: 25,
 	
@@ -275,6 +275,19 @@ export default {
 			},
 			deep: true,
 			immediate: true
+		},
+		// Emitir mudanças dos parâmetros para o componente pai
+		entryValue(newValue) {
+			this.$emit('update:entryValue', newValue);
+		},
+		profitTarget(newValue) {
+			this.$emit('update:profitTarget', newValue);
+		},
+		lossLimit(newValue) {
+			this.$emit('update:lossLimit', newValue);
+		},
+		mode(newValue) {
+			this.$emit('update:mode', newValue);
 		}
 	},
 	methods: {

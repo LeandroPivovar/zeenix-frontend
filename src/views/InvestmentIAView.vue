@@ -57,7 +57,15 @@
             
             <div class="main-content-area">
                 <InvestmentActive v-if="isInvestmentActive" :ticks="ticks" :current-price="currentPrice" />
-                <InvestmentInactive v-else :ticks="ticks" :current-price="currentPrice" />
+                <InvestmentInactive 
+                    v-else 
+                    :ticks="ticks" 
+                    :current-price="currentPrice"
+                    @update:entryValue="entryValue = $event"
+                    @update:profitTarget="profitTarget = $event"
+                    @update:lossLimit="lossLimit = $event"
+                    @update:mode="mode = $event"
+                />
             </div>
         </main>
 
@@ -140,6 +148,12 @@ export default {
             currentPrice: null,
             pollingInterval: null,
 
+            // Parâmetros da IA (recebidos do componente filho)
+            entryValue: 0.35, // Valor de entrada padrão (mínimo da Deriv)
+            profitTarget: 100,
+            lossLimit: 25,
+            mode: 'veloz',
+
             footerSections: [
                 {
                     title: 'Produto',
@@ -156,6 +170,20 @@ export default {
             ]
         }
     },
+    watch: {
+        entryValue(newValue) {
+            console.log('[InvestmentIAView] 💰 Valor de entrada atualizado:', newValue);
+        },
+        profitTarget(newValue) {
+            console.log('[InvestmentIAView] 🎯 Meta de lucro atualizada:', newValue);
+        },
+        lossLimit(newValue) {
+            console.log('[InvestmentIAView] 🛑 Limite de perda atualizado:', newValue);
+        },
+        mode(newValue) {
+            console.log('[InvestmentIAView] ⚡ Modo atualizado:', newValue);
+        }
+    },
     methods: {
         // Método para alternar o estado da IA
         async toggleInvestmentState() {
@@ -170,6 +198,12 @@ export default {
         async activateIA() {
             try {
                 console.log('[InvestmentIAView] Ativando IA...');
+                console.log('[InvestmentIAView] Parâmetros configurados:', {
+                    entryValue: this.entryValue,
+                    profitTarget: this.profitTarget,
+                    lossLimit: this.lossLimit,
+                    mode: this.mode
+                });
 
                 // Obter userId
                 const userId = this.getUserId();
@@ -188,11 +222,7 @@ export default {
                 // Obter moeda preferida
                 const preferredCurrency = this.getPreferredCurrency();
 
-                // Valores padrão (você pode adicionar inputs no futuro)
-                const stakeAmount = 0.35; // Valor mínimo
-                const profitTarget = 100;
-                const lossLimit = 25;
-
+                // Usar os valores configurados pelo usuário
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
                 const response = await fetch(`${apiBase}/ai/activate`, {
                     method: 'POST',
@@ -202,12 +232,12 @@ export default {
                     },
                     body: JSON.stringify({
                         userId: userId,
-                        stakeAmount: stakeAmount,
+                        stakeAmount: this.entryValue, // Usar valor configurado
                         derivToken: derivToken,
                         currency: preferredCurrency,
-                        mode: 'veloz',
-                        profitTarget: profitTarget,
-                        lossLimit: lossLimit,
+                        mode: this.mode.toLowerCase(), // veloz, moderado ou devagar
+                        profitTarget: this.profitTarget,
+                        lossLimit: this.lossLimit,
                     }),
                 });
 
