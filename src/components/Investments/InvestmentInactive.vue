@@ -216,18 +216,33 @@
 					<span class="legend-item venda"> 🟥 Venda</span>
 				</div>
 			</div>
-			<div class="chart-placeholder"></div>
+			<div ref="chartContainer" class="chart-placeholder"></div>
 		</section>
 	</div>
 </template>
 	
 <script>
+import { createChart, ColorType } from 'lightweight-charts';
+
 export default {
 	name: "InvestmentDashboard",
+	props: {
+		ticks: {
+			type: Array,
+			default: () => []
+		},
+		currentPrice: {
+			type: Number,
+			default: null
+		}
+	},
 	data() {
 		return {
 			// Estado da IA (Ativado)
-			aiEnabled: true, 
+			aiEnabled: true,
+			chart: null,
+			lineSeries: null,
+			chartInitialized: false, 
 	
 			// Seção Mercado & Estratégia
 			market: "EURUSD_Forex",
@@ -244,6 +259,122 @@ export default {
 			riskLevel: "Conservador",
 		};
 	},
+	watch: {
+		ticks: {
+			handler(newTicks) {
+				console.log('[InvestmentInactive] Ticks atualizados:', newTicks.length);
+				if (newTicks && newTicks.length > 0) {
+					this.$nextTick(() => {
+						if (!this.chartInitialized) {
+							this.initChart();
+						} else {
+							this.updateChart();
+						}
+					});
+				}
+			},
+			deep: true,
+			immediate: true
+		}
+	},
+	methods: {
+		initChart() {
+			if (this.chartInitialized || !this.$refs.chartContainer) {
+				return;
+			}
+
+			try {
+				const container = this.$refs.chartContainer;
+				const containerWidth = container.offsetWidth || 800;
+				const containerHeight = 350;
+
+				console.log('[InvestmentInactive] Inicializando gráfico...', {
+					width: containerWidth,
+					height: containerHeight,
+					ticksCount: this.ticks.length
+				});
+
+				this.chart = createChart(container, {
+					width: containerWidth,
+					height: containerHeight,
+					localization: { locale: 'pt-BR' },
+					layout: {
+						background: { type: ColorType.Solid, color: '#242424' },
+						textColor: '#f0f0f0',
+					},
+					rightPriceScale: {
+						borderVisible: false,
+					},
+					timeScale: {
+						borderVisible: false,
+						timeVisible: true,
+						secondsVisible: true,
+					},
+					grid: {
+						vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
+						horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
+					},
+					crosshair: {
+						mode: 1,
+					},
+				});
+
+				this.lineSeries = this.chart.addAreaSeries({
+					lineColor: '#4caf50',
+					topColor: 'rgba(76, 175, 80, 0.2)',
+					bottomColor: 'rgba(76, 175, 80, 0.02)',
+					lineWidth: 2,
+					priceFormat: {
+						type: 'price',
+						precision: 2,
+						minMove: 0.01,
+					},
+				});
+
+				this.chartInitialized = true;
+				console.log('[InvestmentInactive] ✅ Gráfico inicializado');
+				this.updateChart();
+			} catch (error) {
+				console.error('[InvestmentInactive] ❌ Erro ao inicializar gráfico:', error);
+			}
+		},
+
+		updateChart() {
+			if (!this.chartInitialized || !this.lineSeries || this.ticks.length === 0) {
+				return;
+			}
+
+			try {
+				const data = this.ticks.map(tick => ({
+					time: Math.floor(tick.epoch || Date.now() / 1000),
+					value: tick.value || tick.price || 0,
+				}));
+
+				console.log('[InvestmentInactive] Atualizando gráfico com', data.length, 'pontos');
+				this.lineSeries.setData(data);
+				this.chart.timeScale().fitContent();
+			} catch (error) {
+				console.error('[InvestmentInactive] ❌ Erro ao atualizar gráfico:', error);
+			}
+		}
+	},
+	mounted() {
+		console.log('[InvestmentInactive] Componente montado. Ticks:', this.ticks.length);
+		
+		// Aguardar um pouco para garantir que o container está renderizado
+		this.$nextTick(() => {
+			setTimeout(() => {
+				if (this.ticks && this.ticks.length > 0) {
+					this.initChart();
+				}
+			}, 500);
+		});
+	},
+	beforeUnmount() {
+		if (this.chart) {
+			this.chart.remove();
+		}
+	}
 };
 </script>
 	
@@ -760,41 +891,12 @@ input:checked + .slider:before {
 	background-color: var(--color-accent-red);
 }
 
-/* AJUSTE CHAVE: Placeholder para simular o gráfico */
+/* Container para o gráfico TradingView */
 .chart-placeholder {
 	height: 350px;
-	background-color: #242424; /* Fundo do gráfico */
+	background-color: #242424;
 	border-radius: 4px;
 	position: relative;
 	overflow: hidden;
-}
-
-/* Simulação de fundo (grid) */
-.chart-placeholder::before {
-	content: "";
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	background-image: linear-gradient(to top, #333 1px, transparent 1px),
-		linear-gradient(to right, #333 1px, transparent 1px);
-	background-size: 50px 50px;
-	opacity: 0.5;
-}
-
-/* Simulação da linha de preço (usando SVG Data URL) */
-.chart-placeholder::after {
-	content: "";
-	position: absolute;
-	top: 10%;
-	left: 0;
-	width: 100%;
-	height: 80%;
-	/* Linha sinuosa: Apenas uma aproximação visual, não funcional */
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath fill='none' stroke='%234caf50' stroke-width='0.5' d='M0 50 C 25 20, 50 80, 75 30, 100 60'/%3E%3Ccircle cx='10' cy='45' r='1' fill='%234caf50'/%3E%3Ccircle cx='30' cy='25' r='1' fill='%234caf50'/%3E%3Ccircle cx='50' cy='65' r='1' fill='%234caf50'/%3E%3Ccircle cx='70' cy='40' r='1' fill='%23f44336'/%3E%3Ccircle cx='90' cy='55' r='1' fill='%234caf50'/%3E%3C/svg%3E");
-	background-repeat: no-repeat;
-	background-size: 95% 95%;
-	background-position: center;
 }
 </style>

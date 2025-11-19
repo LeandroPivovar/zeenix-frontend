@@ -201,11 +201,25 @@
 </template>
 
 <script>
+import { createChart, ColorType } from 'lightweight-charts';
+
 export default {
     name: 'ZenixTradingDashboard',
-    
+    props: {
+        ticks: {
+            type: Array,
+            default: () => []
+        },
+        currentPrice: {
+            type: Number,
+            default: null
+        }
+    },
     data() {
         return {
+            chart: null,
+            lineSeries: null,
+            chartInitialized: false,
             accountType: 'real',
             balance: 18250,
             balanceVisible: true,
@@ -285,6 +299,124 @@ export default {
             this.aiActive = false;
             this.showDisconnectModal = false;
         },
+
+        // Métodos para gráfico
+        initChart() {
+            if (this.chartInitialized || !this.$refs.chartContainer) {
+                return;
+            }
+
+            try {
+                const container = this.$refs.chartContainer;
+                const containerWidth = container.offsetWidth || 800;
+                const containerHeight = 350;
+
+                console.log('[InvestmentActive] Inicializando gráfico...', {
+                    width: containerWidth,
+                    height: containerHeight,
+                    ticksCount: this.ticks.length
+                });
+
+                this.chart = createChart(container, {
+                    width: containerWidth,
+                    height: containerHeight,
+                    localization: { locale: 'pt-BR' },
+                    layout: {
+                        background: { type: ColorType.Solid, color: '#1a1a1a' },
+                        textColor: '#f0f0f0',
+                    },
+                    rightPriceScale: {
+                        borderVisible: false,
+                    },
+                    timeScale: {
+                        borderVisible: false,
+                        timeVisible: true,
+                        secondsVisible: true,
+                    },
+                    grid: {
+                        vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
+                        horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
+                    },
+                    crosshair: {
+                        mode: 1,
+                    },
+                });
+
+                this.lineSeries = this.chart.addAreaSeries({
+                    lineColor: '#22C55E',
+                    topColor: 'rgba(34, 197, 94, 0.2)',
+                    bottomColor: 'rgba(34, 197, 94, 0.02)',
+                    lineWidth: 2,
+                    priceFormat: {
+                        type: 'price',
+                        precision: 2,
+                        minMove: 0.01,
+                    },
+                });
+
+                this.chartInitialized = true;
+                console.log('[InvestmentActive] ✅ Gráfico inicializado');
+                this.updateChart();
+            } catch (error) {
+                console.error('[InvestmentActive] ❌ Erro ao inicializar gráfico:', error);
+            }
+        },
+
+        updateChart() {
+            if (!this.chartInitialized || !this.lineSeries || this.ticks.length === 0) {
+                return;
+            }
+
+            try {
+                const data = this.ticks.map(tick => ({
+                    time: Math.floor(tick.epoch || Date.now() / 1000),
+                    value: tick.value || tick.price || 0,
+                }));
+
+                console.log('[InvestmentActive] Atualizando gráfico com', data.length, 'pontos');
+                this.lineSeries.setData(data);
+                this.chart.timeScale().fitContent();
+            } catch (error) {
+                console.error('[InvestmentActive] ❌ Erro ao atualizar gráfico:', error);
+            }
+        }
+    },
+
+    watch: {
+        ticks: {
+            handler(newTicks) {
+                console.log('[InvestmentActive] Ticks atualizados:', newTicks.length);
+                if (newTicks && newTicks.length > 0) {
+                    this.$nextTick(() => {
+                        if (!this.chartInitialized) {
+                            this.initChart();
+                        } else {
+                            this.updateChart();
+                        }
+                    });
+                }
+            },
+            deep: true,
+            immediate: true
+        }
+    },
+
+    mounted() {
+        console.log('[InvestmentActive] Componente montado. Ticks:', this.ticks.length);
+        
+        this.$nextTick(() => {
+            setTimeout(() => {
+                if (this.ticks && this.ticks.length > 0) {
+                    this.initChart();
+                }
+            }, 500);
+        });
+    },
+
+    beforeUnmount() {
+        if (this.chart) {
+            this.chart.remove();
+        }
     }
 };
 </script>
