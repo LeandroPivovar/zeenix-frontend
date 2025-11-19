@@ -942,6 +942,14 @@ export default {
     font-weight: 700;
 }
 
+.info-value.text-zenix-red {
+    color: var(--zenix-red) !important;
+}
+
+.info-value.text-zenix-green {
+    color: var(--zenix-green) !important;
+}
+
 /* Estilos Específicos */
 .result-value {
     color: var(--zenix-green); 
@@ -967,7 +975,7 @@ export default {
 }
 
 .text-zenix-red {
-    color: var(--zenix-red);
+    color: var(--zenix-red) !important;
 }
 
 .badge {
