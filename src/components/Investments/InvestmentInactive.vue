@@ -181,20 +181,60 @@
 				<p class="ai-toggle-tip">Quando ativada, a IA executa operações automaticamente</p>
 
 				<div class="log-section">
-					<h4 class="log-title">Logs Recentes</h4>
-					<ul class="log-list">
-						<li class="log-item live-op">
-							<span class="log-time">14:32:15</span>
-							<span class="log-message">Operação aberta: EUR/USD</span>
-							<span class="log-status live">Ao vivo</span>
-						</li>
-						<li class="log-item profit">
-							<span class="log-time">14:30:42</span>
-							<span class="log-message">Lucro: +$12.50</span>
-						</li>
-						<li class="log-item completed">
-							<span class="log-time">14:28:33</span>
-							<span class="log-message">Análise concluída</span>
+					<h4 class="log-title">Histórico de Sessões</h4>
+					<div v-if="isLoadingSessions" class="loading-sessions">
+						<span class="loading-spinner"></span>
+						<span>Carregando sessões...</span>
+					</div>
+					<div v-else-if="sessions.length === 0" class="no-sessions">
+						<p>Nenhuma sessão registrada ainda.</p>
+					</div>
+					<ul v-else class="sessions-list">
+						<li 
+							v-for="session in sessions" 
+							:key="session.sessionId"
+							:class="['session-item', {
+								'session-active': session.isActive,
+								'session-profit': !session.isActive && session.stats.profitLoss > 0,
+								'session-loss': !session.isActive && session.stats.profitLoss < 0
+							}]"
+						>
+							<div class="session-header">
+								<span class="session-date">{{ formatSessionDate(session.createdAt) }}</span>
+								<span 
+									:class="['session-status', { 'active': session.isActive }]"
+								>
+									{{ session.isActive ? '🟢 Ativa' : '⚫ Finalizada' }}
+								</span>
+							</div>
+							<div class="session-stats">
+								<div class="stat-item">
+									<span class="stat-label">Operações:</span>
+									<span class="stat-value">{{ session.stats.totalTrades }}</span>
+								</div>
+								<div class="stat-item">
+									<span class="stat-label">Lucro/Prejuízo:</span>
+									<span 
+										:class="['stat-value', {
+											'profit': session.stats.profitLoss > 0,
+											'loss': session.stats.profitLoss < 0
+										}]"
+									>
+										{{ formatCurrency(session.stats.profitLoss, session.currency) }}
+									</span>
+								</div>
+								<div class="stat-item">
+									<span class="stat-label">Winrate:</span>
+									<span class="stat-value">{{ session.stats.winrate }}%</span>
+								</div>
+								<div class="stat-item">
+									<span class="stat-label">Duração:</span>
+									<span class="stat-value">{{ formatDuration(session.durationMinutes) }}</span>
+								</div>
+							</div>
+							<div v-if="session.deactivationReason" class="session-reason">
+								<small>{{ session.deactivationReason }}</small>
+							</div>
 						</li>
 					</ul>
 				</div>
@@ -261,6 +301,10 @@ export default {
 	
 			// Seção Gerenciamento de Risco (Conservador)
 			riskLevel: "Conservador",
+			
+			// Histórico de sessões
+			sessions: [],
+			isLoadingSessions: false,
 		};
 	},
 	watch: {
@@ -377,11 +421,108 @@ export default {
 			} catch (error) {
 				console.error('[InvestmentInactive] ❌ Erro ao atualizar gráfico:', error);
 			}
+		},
+		
+		// 📊 Buscar histórico de sessões
+		async fetchSessions() {
+			try {
+				this.isLoadingSessions = true;
+				
+				const userId = this.getUserId();
+				if (!userId) {
+					console.warn('[InvestmentInactive] ❌ UserId não disponível para buscar sessões');
+					return;
+				}
+				
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const url = `${apiBase}/ai/sessions/${userId}`;
+				
+				console.log('[InvestmentInactive] 📊 Buscando histórico de sessões:', url);
+				
+				const response = await fetch(url, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					}
+				});
+				
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+				
+				const result = await response.json();
+				console.log('[InvestmentInactive] ✅ Sessões recebidas:', result);
+				
+				if (result.success && result.data) {
+					this.sessions = result.data;
+				}
+			} catch (error) {
+				console.error('[InvestmentInactive] ❌ Erro ao buscar sessões:', error);
+			} finally {
+				this.isLoadingSessions = false;
+			}
+		},
+		
+		// 🆔 Obter ID do usuário do token
+		getUserId() {
+			try {
+				const token = localStorage.getItem('token');
+				if (!token) return null;
+				
+				// Decodificar JWT token
+				const payload = JSON.parse(atob(token.split('.')[1]));
+				return payload.userId || payload.sub || payload.id;
+			} catch (error) {
+				console.error('[InvestmentInactive] Erro ao extrair userId do token:', error);
+				return null;
+			}
+		},
+		
+		// 📅 Formatação de data
+		formatSessionDate(dateString) {
+			const date = new Date(dateString);
+			const now = new Date();
+			const diffDays = Math.floor((now - date) / (1000 * 60 * 60 * 24));
+			
+			if (diffDays === 0) {
+				return `Hoje às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+			} else if (diffDays === 1) {
+				return `Ontem às ${date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}`;
+			} else {
+				return date.toLocaleString('pt-BR', { 
+					day: '2-digit', 
+					month: '2-digit', 
+					year: 'numeric', 
+					hour: '2-digit', 
+					minute: '2-digit' 
+				});
+			}
+		},
+		
+		// 💰 Formatação de moeda
+		formatCurrency(value, currency = 'USD') {
+			const sign = value >= 0 ? '+' : '';
+			return `${sign}$${Math.abs(value).toFixed(2)}`;
+		},
+		
+		// ⏱️ Formatação de duração
+		formatDuration(minutes) {
+			if (minutes < 60) {
+				return `${minutes}min`;
+			} else {
+				const hours = Math.floor(minutes / 60);
+				const mins = minutes % 60;
+				return `${hours}h ${mins}min`;
+			}
 		}
 	},
 	mounted() {
 		console.log('[InvestmentInactive] Componente montado. Ticks:', this.ticks.length);
 		console.log('[InvestmentInactive] 💰 Valor inicial de entryValue:', this.entryValue);
+		
+		// Buscar histórico de sessões
+		this.fetchSessions();
 		
 		// Aguardar um pouco para garantir que o container está renderizado
 		this.$nextTick(() => {
@@ -787,7 +928,7 @@ input:checked + .slider:before {
 	border-radius: 50%;
 }
 
-/* Logs Recentes */
+/* Logs/Sessões */
 .log-section {
 	margin-top: 15px;
 }
@@ -795,9 +936,137 @@ input:checked + .slider:before {
 .log-title {
 	font-size: 0.9rem;
 	color: var(--color-text-secondary);
-	margin-bottom: 5px;
+	margin-bottom: 10px;
+	font-weight: 600;
 }
 
+/* Estados de carregamento */
+.loading-sessions,
+.no-sessions {
+	text-align: center;
+	padding: 20px;
+	color: var(--color-text-secondary);
+	font-size: 0.85rem;
+}
+
+.loading-spinner {
+	display: inline-block;
+	width: 16px;
+	height: 16px;
+	border: 2px solid rgba(255, 255, 255, 0.3);
+	border-top-color: var(--color-accent-green);
+	border-radius: 50%;
+	animation: spin 1s linear infinite;
+	margin-right: 8px;
+}
+
+@keyframes spin {
+	to { transform: rotate(360deg); }
+}
+
+/* Lista de sessões */
+.sessions-list {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	max-height: 400px;
+	overflow-y: auto;
+}
+
+.session-item {
+	background: rgba(255, 255, 255, 0.03);
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	border-radius: 8px;
+	padding: 12px;
+	margin-bottom: 10px;
+	transition: all 0.3s ease;
+}
+
+.session-item:hover {
+	background: rgba(255, 255, 255, 0.05);
+	border-color: rgba(255, 255, 255, 0.2);
+	transform: translateX(2px);
+}
+
+.session-item.session-active {
+	border-color: var(--color-accent-green);
+	background: rgba(76, 175, 80, 0.05);
+}
+
+.session-item.session-profit {
+	border-left: 3px solid var(--color-accent-green);
+}
+
+.session-item.session-loss {
+	border-left: 3px solid #ef4444;
+}
+
+.session-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.session-date {
+	font-size: 0.85rem;
+	color: var(--color-text-primary);
+	font-weight: 500;
+}
+
+.session-status {
+	font-size: 0.75rem;
+	padding: 2px 8px;
+	border-radius: 4px;
+	background: rgba(255, 255, 255, 0.1);
+	color: var(--color-text-secondary);
+}
+
+.session-status.active {
+	background: rgba(76, 175, 80, 0.2);
+	color: var(--color-accent-green);
+}
+
+.session-stats {
+	display: grid;
+	grid-template-columns: repeat(2, 1fr);
+	gap: 8px;
+	margin-bottom: 8px;
+}
+
+.stat-item {
+	display: flex;
+	justify-content: space-between;
+	font-size: 0.8rem;
+}
+
+.stat-label {
+	color: var(--color-text-secondary);
+}
+
+.stat-value {
+	color: var(--color-text-primary);
+	font-weight: 500;
+}
+
+.stat-value.profit {
+	color: var(--color-accent-green);
+}
+
+.stat-value.loss {
+	color: #ef4444;
+}
+
+.session-reason {
+	margin-top: 8px;
+	padding-top: 8px;
+	border-top: 1px solid rgba(255, 255, 255, 0.1);
+	font-size: 0.75rem;
+	color: var(--color-text-secondary);
+	font-style: italic;
+}
+
+/* Compatibilidade com logs antigos (removido) */
 .log-list {
 	list-style: none;
 	padding: 0;
