@@ -199,7 +199,7 @@
             <span class="text-white">Você é</span><br>
             <span class="text-zenix-green">único.</span>
           </h2>
-          <p class="text-lg text-zenix-light-gray leading-relaxed max-w-md text-left">Tecnologia inteligente, segurança e precisão — o padrão Zenix Pro para traders profissionais.</p>
+          <p class="text-lg text-zenix-light-gray leading-relaxed max-w-md text-left">A única tecnologia criada para operar com a precisão que o mercado exige..</p>
         </div>
 
         <!-- Benefits List -->
@@ -212,7 +212,7 @@
             </div>
             <div class="text-left">
               <h3 class="text-lg font-semibold text-white mb-1">IA que analisa e decide com precisão</h3>
-              <p class="text-sm text-zenix-light-gray leading-relaxed">Nenhum chute. Apenas cálculo, lógica e estratégia.</p>
+              <p class="text-sm text-zenix-light-gray leading-relaxed">Nenhum chute. Só cálculo e lógica.</p>
             </div>
           </div>
 
@@ -234,7 +234,18 @@
             </div>
             <div class="text-left">
               <h3 class="text-lg font-semibold text-white mb-1">Agente Autônomo que faz tudo por você</h3>
-              <p class="text-sm text-zenix-light-gray leading-relaxed">Você ajusta uma vez — ele executa tudo, sem pausa e sem precisar de monitoramento.</p>
+              <p class="text-sm text-zenix-light-gray leading-relaxed">Você ajusta uma vez — ele executa tudo, sem pausa e sem precisar olhar.</p>
+            </div>
+          </div>
+
+          <!-- Benefit 4 -->
+          <div class="flex items-start space-x-4">
+            <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
+              <i class="fa-solid fa-chart-line text-zenix-green text-lg"></i>
+            </div>
+            <div class="text-left">
+              <h3 class="text-lg font-semibold text-white mb-1">Operação Manual Guiada por Sinais</h3>
+              <p class="text-sm text-zenix-light-gray leading-relaxed">A plataforma envia o sinal exato e você executa com um clique.</p>
             </div>
           </div>
         </div>
