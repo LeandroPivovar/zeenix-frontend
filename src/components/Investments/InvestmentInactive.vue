@@ -191,8 +191,8 @@
 					<div v-else-if="sessions.length === 0" class="no-sessions">
 						<p>Nenhuma sessão registrada ainda.</p>
 					</div>
-					<ul v-else class="sessions-list">
-						<li 
+					<div v-else class="sessions-list">
+						<div 
 							v-for="session in sessions" 
 							:key="session.sessionId"
 							:class="['session-item', {
@@ -237,8 +237,8 @@
 							<div v-if="session.deactivationReason" class="session-reason">
 								<small>{{ session.deactivationReason }}</small>
 							</div>
-						</li>
-					</ul>
+						</div>
+					</div>
 				</div>
 			</section>
 		</main>
@@ -443,9 +443,9 @@ export default {
 				}
 				
 				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-				const url = `${apiBase}/ai/sessions/${userId}`;
+				const url = `${apiBase}/ai/sessions/${userId}?limit=1`;
 				
-				console.log('[InvestmentInactive] 📊 Buscando histórico de sessões:', url);
+				console.log('[InvestmentInactive] 📊 Buscando última sessão:', url);
 				
 				const response = await fetch(url, {
 					method: 'GET',
@@ -460,10 +460,11 @@ export default {
 				}
 				
 				const result = await response.json();
-				console.log('[InvestmentInactive] ✅ Sessões recebidas:', result);
+				console.log('[InvestmentInactive] ✅ Última sessão recebida:', result);
 				
 				if (result.success && result.data) {
-					this.sessions = result.data;
+					// Exibir apenas a última sessão (primeira do array, já ordenada por data mais recente)
+					this.sessions = result.data.length > 0 ? [result.data[0]] : [];
 				}
 			} catch (error) {
 				console.error('[InvestmentInactive] ❌ Erro ao buscar sessões:', error);
