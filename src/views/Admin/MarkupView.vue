@@ -122,6 +122,13 @@ export default {
             allUsers: [],
             isLoading: false,
             error: null,
+            // Dados agregados por período
+            periodData: {
+                today: 0,
+                monthly: 0,
+                lastMonth: 0,
+                annual: 0,
+            },
         };
     },
     created() {
@@ -146,6 +153,7 @@ export default {
                 const token = localStorage.getItem('token');
                 const apiUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
                 
+                // Buscar dados do período filtrado
                 const params = new URLSearchParams({
                     startDate: this.filterStartDate,
                     endDate: this.filterEndDate,
@@ -166,6 +174,9 @@ export default {
                 this.allUsers = data.users || [];
                 this.applyFilters();
                 
+                // Buscar dados agregados por período
+                await this.fetchPeriodData(token, apiUrl);
+                
             } catch (error) {
                 console.error('Erro ao buscar dados:', error);
                 this.error = error.message;
@@ -173,6 +184,58 @@ export default {
                 this.displayedClients = [];
             } finally {
                 this.isLoading = false;
+            }
+        },
+        
+        async fetchPeriodData(token, apiUrl) {
+            try {
+                const today = new Date();
+                const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString().split('T')[0];
+                const endOfToday = today.toISOString().split('T')[0];
+                
+                // Primeiro dia do mês atual
+                const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];
+                
+                // Primeiro dia do mês passado
+                const startOfLastMonth = new Date(today.getFullYear(), today.getMonth() - 1, 1).toISOString().split('T')[0];
+                // Último dia do mês passado
+                const endOfLastMonth = new Date(today.getFullYear(), today.getMonth(), 0).toISOString().split('T')[0];
+                
+                // Primeiro dia do ano atual
+                const startOfYear = `${today.getFullYear()}-01-01`;
+                
+                // Fazer chamadas paralelas para todos os períodos
+                const [todayData, monthlyData, lastMonthData, annualData] = await Promise.all([
+                    fetch(`${apiUrl}/trades/markup?startDate=${startOfToday}&endDate=${endOfToday}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).then(r => r.json()),
+                    fetch(`${apiUrl}/trades/markup?startDate=${startOfMonth}&endDate=${endOfToday}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).then(r => r.json()),
+                    fetch(`${apiUrl}/trades/markup?startDate=${startOfLastMonth}&endDate=${endOfLastMonth}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).then(r => r.json()),
+                    fetch(`${apiUrl}/trades/markup?startDate=${startOfYear}&endDate=${endOfToday}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    }).then(r => r.json()),
+                ]);
+                
+                this.periodData = {
+                    today: todayData.summary?.totalCommission || 0,
+                    monthly: monthlyData.summary?.totalCommission || 0,
+                    lastMonth: lastMonthData.summary?.totalCommission || 0,
+                    annual: annualData.summary?.totalCommission || 0,
+                };
+                
+            } catch (error) {
+                console.error('Erro ao buscar dados por período:', error);
+                // Em caso de erro, manter valores em 0
+                this.periodData = {
+                    today: 0,
+                    monthly: 0,
+                    lastMonth: 0,
+                    annual: 0,
+                };
             }
         },
 
@@ -249,13 +312,11 @@ export default {
         },
 
         summaryCards() {
-            // Os cards de resumo precisariam de dados adicionais da API
-            // Por enquanto, mostramos apenas o total do período filtrado
             return [
-                { title: 'Hoje', value: 0 }, // TODO: implementar filtro por hoje
-                { title: 'Mensal', value: 0 }, // TODO: implementar filtro por mês
-                { title: 'Mês Passado', value: 0 }, // TODO: implementar filtro por mês passado
-                { title: 'Anual', value: 0 }, // TODO: implementar filtro por ano
+                { title: 'Hoje', value: this.periodData.today },
+                { title: 'Mensal', value: this.periodData.monthly },
+                { title: 'Mês Passado', value: this.periodData.lastMonth },
+                { title: 'Anual', value: this.periodData.annual },
                 { title: 'Total (Período)', value: this.totalCommissionDisplayed },
             ];
         },
