@@ -151,6 +151,13 @@ const routes = [
     name: 'Admin',
     component: AdminView,
     meta: { requiresAuth: true }
+  },
+  {
+    path: '/InvestmentIA',
+    name: 'InvestmentIAView',
+    component: InvestmentIAView,
+    meta: { requiresAuth: true }
+  
   }
 ]
 
