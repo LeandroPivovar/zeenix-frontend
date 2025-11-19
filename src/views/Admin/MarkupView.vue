@@ -57,14 +57,34 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="client in displayedClients" :key="client.loginID">
+                            <tr v-if="isLoading">
+                                <td colspan="6" style="text-align: center; padding: 40px;">
+                                    Carregando dados...
+                                </td>
+                            </tr>
+                            <tr v-else-if="error">
+                                <td colspan="6" style="text-align: center; padding: 40px; color: #ff4444;">
+                                    Erro ao carregar dados: {{ error }}
+                                </td>
+                            </tr>
+                            <tr v-else-if="displayedClients.length === 0">
+                                <td colspan="6" style="text-align: center; padding: 40px;">
+                                    Nenhum dado encontrado para o período selecionado
+                                </td>
+                            </tr>
+                            <tr v-else v-for="client in displayedClients" :key="client.userId">
                                 <td>{{ client.name }}</td>
                                 <td>{{ client.country }}</td>
-                                <td>{{ client.loginID }}</td>
+                                <td>{{ client.email }}</td>
                                 <td class="commission-value">{{ formatCurrency(client.commission) }}</td>
-                                <td>{{ client.transactions }}</td>
+                                <td>{{ client.transactionCount }}</td>
                                 <td>
-                                    <span class="whatsapp-icon"><img src="../../assets/icons/whattsapp.svg" alt="" width="20px"></span>
+                                    <a v-if="client.whatsapp" :href="`https://wa.me/${client.whatsapp.replace(/\D/g, '')}`" target="_blank" class="whatsapp-icon">
+                                        <img src="../../assets/icons/whattsapp.svg" alt="" width="20px">
+                                    </a>
+                                    <span v-else class="whatsapp-icon" style="opacity: 0.3;">
+                                        <img src="../../assets/icons/whattsapp.svg" alt="" width="20px">
+                                    </span>
                                 </td>
                             </tr>
                         </tbody>
@@ -88,7 +108,7 @@ export default {
         AppSidebar,
     },
     data() {
-        const currentDate = '2025-11-12';
+        const currentDate = new Date().toISOString().split('T')[0];
         const startOfYear = `${currentDate.substring(0, 4)}-01-01`; 
 
         return {
@@ -99,24 +119,9 @@ export default {
             filterEndDate: currentDate,
             filterSelectedCountry: '',
             displayedClients: [],
-            allTransactions: [
-                { date: '2025-01-15', name: 'Cliente de Jan', country: 'EUA', loginID: 'CR000101', commission: 10000.00, transactions: 5000 },
-                { date: '2025-02-20', name: 'Cliente de Fev', country: 'Canadá', loginID: 'CR000102', commission: 8500.00, transactions: 4000 },
-                { date: '2025-07-04', name: 'Cliente de Jul', country: 'México', loginID: 'CR000103', commission: 6000.00, transactions: 3000 },
-                { date: '2025-10-01', name: 'Ana Julia', country: 'Brasil', loginID: 'CR123456', commission: 50.10, transactions: 30 },
-                { date: '2025-10-01', name: 'Carlos Silva', country: 'Portugal', loginID: 'CR789012', commission: 40.00, transactions: 20 },
-                { date: '2025-10-05', name: 'Ana Julia', country: 'Brasil', loginID: 'CR123456', commission: 80.40, transactions: 50 },
-                { date: '2025-10-05', name: 'Mariana Costa', country: 'Brasil', loginID: 'CR345678', commission: 90.00, transactions: 60 },
-                { date: '2025-10-10', name: 'John Doe', country: 'EUA', loginID: 'CR901234', commission: 150.22, transactions: 100 },
-                { date: '2025-10-15', name: 'Sofia Pereira', country: 'Angola', loginID: 'CR567890', commission: 30.65, transactions: 20 },
-                { date: '2025-10-15', name: 'Pedro Almeida', country: 'Brasil', loginID: 'CR127233', commission: 40.40, transactions: 50 },
-                { date: '2025-10-16', name: 'Ana Julia', country: 'Brasil', loginID: 'CR123456', commission: 120.00, transactions: 70 },
-                { date: '2025-10-16', name: 'Carlos Silva', country: 'Portugal', loginID: 'CR789012', commission: 50.75, transactions: 40 },
-                { date: '2025-10-18', name: 'John Doe', country: 'EUA', loginID: 'CR901234', commission: 100.00, transactions: 80 },
-                { date: '2025-11-01', name: 'Cliente Mensal B', country: 'Brasil', loginID: 'CR000002', commission: 100.00, transactions: 50 },
-                { date: '2025-11-05', name: 'Cliente Mensal C', country: 'Portugal', loginID: 'CR000003', commission: 200.00, transactions: 100 },
-                { date: '2025-11-12', name: 'Cliente Diário A', country: 'Chile', loginID: 'CR000001', commission: 69.66, transactions: 15 },
-            ],
+            allUsers: [],
+            isLoading: false,
+            error: null,
         };
     },
     created() {
@@ -133,37 +138,56 @@ export default {
             return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(value);
         },
         
-        fetchData() {
-            this.displayedClients = this.applyFilters(this.filterStartDate, this.filterEndDate, this.filterSelectedCountry);
-        },
-
-        calculateTotalCommission(transactions) {
-            return transactions.reduce((sum, transaction) => sum + transaction.commission, 0);
-        },
-
-        applyFilters(startDate, endDate, selectedCountry) {
-            const start = new Date(startDate);
-            const end = new Date(endDate);
-            end.setDate(end.getDate() + 1);
-
-            let clientsToAggregate = this.allTransactions.filter(transaction => {
-                const transDate = new Date(transaction.date);
-                const dateMatch = transDate >= start && transDate < end;
-                const countryMatch = !selectedCountry || transaction.country === selectedCountry;
-                return dateMatch && countryMatch;
-            });
-
-            const aggregated = clientsToAggregate.reduce((acc, current) => {
-                if (acc[current.loginID]) {
-                    acc[current.loginID].commission += current.commission;
-                    acc[current.loginID].transactions += current.transactions;
-                } else {
-                    acc[current.loginID] = { ...current }; 
+        async fetchData() {
+            this.isLoading = true;
+            this.error = null;
+            
+            try {
+                const token = localStorage.getItem('token');
+                const apiUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                
+                const params = new URLSearchParams({
+                    startDate: this.filterStartDate,
+                    endDate: this.filterEndDate,
+                });
+                
+                const response = await fetch(`${apiUrl}/trades/markup?${params}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao buscar dados de markup');
                 }
-                return acc;
-            }, {});
+                
+                const data = await response.json();
+                this.allUsers = data.users || [];
+                this.applyFilters();
+                
+            } catch (error) {
+                console.error('Erro ao buscar dados:', error);
+                this.error = error.message;
+                this.allUsers = [];
+                this.displayedClients = [];
+            } finally {
+                this.isLoading = false;
+            }
+        },
 
-            return Object.values(aggregated);
+        calculateTotalCommission(users) {
+            return users.reduce((sum, user) => sum + user.commission, 0);
+        },
+
+        applyFilters() {
+            let filtered = [...this.allUsers];
+            
+            if (this.filterSelectedCountry) {
+                filtered = filtered.filter(user => user.country === this.filterSelectedCountry);
+            }
+            
+            this.displayedClients = filtered;
         },
         
         exportReportToPDF() {
@@ -216,40 +240,23 @@ export default {
         },
 
         totalTransactionsDisplayed() {
-            return this.displayedClients.reduce((sum, client) => sum + client.transactions, 0);
+            return this.displayedClients.reduce((sum, client) => sum + client.transactionCount, 0);
         },
 
         availableCountries() {
-            const countries = this.allTransactions.map(client => client.country);
+            const countries = this.allUsers.map(user => user.country);
             return [...new Set(countries)].sort();
         },
 
         summaryCards() {
-            const today = this.currentDate;
-            const currentYear = today.substring(0, 4); 
-            
-            const currentMonth = today.substring(0, 7); 
-            const monthlyTransactions = this.allTransactions.filter(t => t.date.startsWith(currentMonth));
-            const monthlyCommission = this.calculateTotalCommission(monthlyTransactions);
-            
-            const lastMonthDate = new Date(today);
-            lastMonthDate.setMonth(lastMonthDate.getMonth() - 1);
-            const lastMonth = lastMonthDate.toISOString().substring(0, 7);
-            const lastMonthTransactions = this.allTransactions.filter(t => t.date.startsWith(lastMonth));
-            const lastMonthCommission = this.calculateTotalCommission(lastMonthTransactions);
-
-            const todayTransactions = this.allTransactions.filter(t => t.date === today);
-            const todayCommission = this.calculateTotalCommission(todayTransactions);
-
-            const annualTransactions = this.allTransactions.filter(t => t.date.startsWith(currentYear));
-            const annualCommission = this.calculateTotalCommission(annualTransactions);
-
+            // Os cards de resumo precisariam de dados adicionais da API
+            // Por enquanto, mostramos apenas o total do período filtrado
             return [
-                { title: 'Hoje', value: todayCommission },
-                { title: 'Mensal', value: monthlyCommission },
-                { title: 'Mês Passado', value: lastMonthCommission }, 
-                { title: 'Anual', value: annualCommission },
-                { title: 'Total', value: this.totalCommissionDisplayed },
+                { title: 'Hoje', value: 0 }, // TODO: implementar filtro por hoje
+                { title: 'Mensal', value: 0 }, // TODO: implementar filtro por mês
+                { title: 'Mês Passado', value: 0 }, // TODO: implementar filtro por mês passado
+                { title: 'Anual', value: 0 }, // TODO: implementar filtro por ano
+                { title: 'Total (Período)', value: this.totalCommissionDisplayed },
             ];
         },
     },
