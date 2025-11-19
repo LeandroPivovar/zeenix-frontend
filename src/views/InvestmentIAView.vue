@@ -197,13 +197,20 @@ export default {
         // Ativar IA
         async activateIA() {
             try {
-                console.log('[InvestmentIAView] Ativando IA...');
+                console.log('[InvestmentIAView] ===== ATIVANDO IA =====');
+                console.log('[InvestmentIAView] 💰 VALOR DE ENTRADA:', this.entryValue);
                 console.log('[InvestmentIAView] Parâmetros configurados:', {
                     entryValue: this.entryValue,
                     profitTarget: this.profitTarget,
                     lossLimit: this.lossLimit,
                     mode: this.mode
                 });
+
+                // VALIDAÇÃO: Garantir que entryValue não seja menor que 0.35
+                if (!this.entryValue || this.entryValue < 0.35) {
+                    alert(`⚠️ Valor de entrada inválido: ${this.entryValue}. Configure um valor >= $0.35 primeiro!`);
+                    return;
+                }
 
                 // Obter userId
                 const userId = this.getUserId();

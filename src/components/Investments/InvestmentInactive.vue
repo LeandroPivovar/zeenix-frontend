@@ -278,15 +278,19 @@ export default {
 		},
 		// Emitir mudanças dos parâmetros para o componente pai
 		entryValue(newValue) {
+			console.log('[InvestmentInactive] 💰 Valor de entrada alterado:', newValue);
 			this.$emit('update:entryValue', newValue);
 		},
 		profitTarget(newValue) {
+			console.log('[InvestmentInactive] 🎯 Meta de lucro alterada:', newValue);
 			this.$emit('update:profitTarget', newValue);
 		},
 		lossLimit(newValue) {
+			console.log('[InvestmentInactive] 🛑 Limite de perda alterado:', newValue);
 			this.$emit('update:lossLimit', newValue);
 		},
 		mode(newValue) {
+			console.log('[InvestmentInactive] ⚡ Modo alterado:', newValue);
 			this.$emit('update:mode', newValue);
 		}
 	},
@@ -373,6 +377,7 @@ export default {
 	},
 	mounted() {
 		console.log('[InvestmentInactive] Componente montado. Ticks:', this.ticks.length);
+		console.log('[InvestmentInactive] 💰 Valor inicial de entryValue:', this.entryValue);
 		
 		// Aguardar um pouco para garantir que o container está renderizado
 		this.$nextTick(() => {
