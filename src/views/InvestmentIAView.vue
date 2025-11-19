@@ -228,6 +228,66 @@ export default {
 
                 // Obter moeda preferida
                 const preferredCurrency = this.getPreferredCurrency();
+                
+                // NOVO: Buscar saldo da conta ANTES de ativar a IA
+                console.log('[InvestmentIAView] 💰 Verificando saldo da conta...');
+                try {
+                    const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                    const balanceResponse = await fetch(`${apiBase}/ai/deriv-balance`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({ derivToken: derivToken }),
+                    });
+                    
+                    const balanceResult = await balanceResponse.json();
+                    if (balanceResult.success && balanceResult.data) {
+                        const balance = balanceResult.data.balance;
+                        const currency = balanceResult.data.currency;
+                        const loginid = balanceResult.data.loginid;
+                        
+                        console.log('[InvestmentIAView] 💰 Saldo:', balance, currency);
+                        console.log('[InvestmentIAView] 🔑 LoginID:', loginid);
+                        
+                        // VALIDAÇÃO: Verificar se tem saldo suficiente
+                        if (balance < this.entryValue) {
+                            const confirmAnyway = confirm(
+                                `⚠️ ATENÇÃO!\n\n` +
+                                `Conta: ${loginid}\n` +
+                                `Saldo atual: ${balance.toFixed(2)} ${currency}\n` +
+                                `Valor de entrada configurado: ${this.entryValue.toFixed(2)}\n\n` +
+                                `Seu saldo (${balance.toFixed(2)}) é INSUFICIENTE para esta operação!\n\n` +
+                                `Deseja continuar mesmo assim?\n` +
+                                `(A IA tentará operar mas falhará por saldo insuficiente)`
+                            );
+                            
+                            if (!confirmAnyway) {
+                                console.log('[InvestmentIAView] ❌ Ativação cancelada: saldo insuficiente');
+                                return;
+                            }
+                        } else {
+                            // Mostrar confirmação com saldo
+                            const confirmActivate = confirm(
+                                `✅ Ativar IA?\n\n` +
+                                `Conta: ${loginid}\n` +
+                                `Saldo: ${balance.toFixed(2)} ${currency}\n` +
+                                `Valor de entrada: ${this.entryValue.toFixed(2)}\n` +
+                                `Modo: ${this.mode}\n\n` +
+                                `A IA continuará operando mesmo se você fechar a plataforma.`
+                            );
+                            
+                            if (!confirmActivate) {
+                                console.log('[InvestmentIAView] ❌ Ativação cancelada pelo usuário');
+                                return;
+                            }
+                        }
+                    }
+                } catch (balanceError) {
+                    console.warn('[InvestmentIAView] ⚠️ Não foi possível verificar saldo:', balanceError);
+                    // Continuar mesmo sem verificar saldo
+                }
 
                 // Usar os valores configurados pelo usuário
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
