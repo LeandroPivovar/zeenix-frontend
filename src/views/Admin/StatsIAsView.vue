@@ -1273,35 +1273,44 @@ export default {
 			}
 		},
 		
-		/**
-		 * Inicia o carregamento de dados mesmo quando a IA está desativada
-		 * para mostrar o gráfico na tela padrão
-		 */
-		async startDataLoading() {
-			try {
-				// Iniciar monitoramento no backend (sem ativar a IA)
-				const response = await fetch('https://taxafacil.site/api/ai/start', {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-					},
-				});
+	/**
+	 * Inicia o carregamento de dados mesmo quando a IA está desativada
+	 * para mostrar o gráfico na tela padrão
+	 */
+	async startDataLoading() {
+		try {
+			console.log('[StatsIAsView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
+			console.log('[StatsIAsView] URL:', 'https://taxafacil.site/api/ai/start');
+			
+			// Iniciar monitoramento no backend (sem ativar a IA)
+			const response = await fetch('https://taxafacil.site/api/ai/start', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+				},
+			});
 
-				const result = await response.json();
+			console.log('[StatsIAsView] Status da resposta:', response.status);
+			console.log('[StatsIAsView] Response OK?', response.ok);
 
-				if (result.success) {
-					console.log('[StatsIAsView] Carregamento de dados iniciado (IA desativada)');
-					
-					// Iniciar polling para buscar dados a cada 2 segundos
-					// mas sem ativar o aiMonitoring.isActive
-					this.startPolling();
-				} else {
-					console.warn('[StatsIAsView] Não foi possível iniciar carregamento de dados:', result.message);
-				}
-			} catch (error) {
-				console.warn('[StatsIAsView] Erro ao iniciar carregamento de dados:', error);
+			const result = await response.json();
+			console.log('[StatsIAsView] Resultado:', result);
+
+			if (result.success) {
+				console.log('[StatsIAsView] ✅ Carregamento de dados iniciado (IA desativada)');
+				
+				// Iniciar polling para buscar dados a cada 2 segundos
+				// mas sem ativar o aiMonitoring.isActive
+				this.startPolling();
+			} else {
+				console.warn('[StatsIAsView] ⚠ Não foi possível iniciar carregamento de dados:', result.message);
 			}
-		},
+		} catch (error) {
+			console.error('[StatsIAsView] ❌ ERRO ao iniciar carregamento de dados:', error);
+			console.error('[StatsIAsView] Detalhes do erro:', error.message);
+			console.error('[StatsIAsView] Stack:', error.stack);
+		}
+	},
 
 		stopAIMonitoring() {
 			console.log('[StatsIAsView] Parando monitoramento de IA...');
@@ -1343,44 +1352,58 @@ export default {
 			}
 		},
 
-		async fetchAIData() {
-			try {
-				const response = await fetch('https://taxafacil.site/api/ai/ticks');
-				const result = await response.json();
+	async fetchAIData() {
+		try {
+			console.log('[StatsIAsView] Buscando ticks de https://taxafacil.site/api/ai/ticks...');
+			const response = await fetch('https://taxafacil.site/api/ai/ticks');
+			const result = await response.json();
 
-				if (result.success) {
-					// Adicionar epoch aos ticks se não existir
-					const ticks = (result.data.ticks || []).map((tick, index) => ({
-						...tick,
-						epoch: tick.epoch || (Date.now() / 1000) - (result.data.ticks.length - index),
-					}));
-					
-					this.aiMonitoring.ticks = ticks;
-					this.aiMonitoring.currentPrice = result.data.currentPrice;
-					this.aiMonitoring.statistics = result.data.statistics;
-					this.aiMonitoring.lastUpdate = new Date().toLocaleTimeString('pt-BR');
-					
-					// Atualizar gráficos
-					this.$nextTick(() => {
-						if (!this.aiMonitoring.isActive) {
-							if (!this.marketChartInitializedInactive) {
-								this.initMarketChartInactive();
-							} else {
-								this.updateMarketChartInactive();
-							}
+			console.log('[StatsIAsView] Resposta de ticks:', {
+				success: result.success,
+				ticksCount: result.data?.ticks?.length || 0,
+				currentPrice: result.data?.currentPrice
+			});
+
+			if (result.success) {
+				// Adicionar epoch aos ticks se não existir
+				const ticks = (result.data.ticks || []).map((tick, index) => ({
+					...tick,
+					epoch: tick.epoch || (Date.now() / 1000) - (result.data.ticks.length - index),
+				}));
+				
+				console.log('[StatsIAsView] Ticks processados:', ticks.length);
+				
+				this.aiMonitoring.ticks = ticks;
+				this.aiMonitoring.currentPrice = result.data.currentPrice;
+				this.aiMonitoring.statistics = result.data.statistics;
+				this.aiMonitoring.lastUpdate = new Date().toLocaleTimeString('pt-BR');
+				
+				// Atualizar gráficos
+				this.$nextTick(() => {
+					if (!this.aiMonitoring.isActive) {
+						if (!this.marketChartInitializedInactive) {
+							console.log('[StatsIAsView] Inicializando gráfico inativo...');
+							this.initMarketChartInactive();
 						} else {
-							if (!this.marketChartInitializedActive) {
-								this.initMarketChartActive();
-							} else {
-								this.updateMarketChartActive();
-							}
+							console.log('[StatsIAsView] Atualizando gráfico inativo...');
+							this.updateMarketChartInactive();
 						}
-					});
-				}
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao buscar dados:', error);
+					} else {
+						if (!this.marketChartInitializedActive) {
+							console.log('[StatsIAsView] Inicializando gráfico ativo...');
+							this.initMarketChartActive();
+						} else {
+							console.log('[StatsIAsView] Atualizando gráfico ativo...');
+							this.updateMarketChartActive();
+						}
+					}
+				});
 			}
-		},
+		} catch (error) {
+			console.error('[StatsIAsView] ❌ Erro ao buscar dados:', error);
+			console.error('[StatsIAsView] Detalhes:', error.message);
+		}
+	},
 
 		getVariationClass(current, previous) {
 			if (current > previous) return 'positive';
@@ -2091,11 +2114,14 @@ export default {
 },
 
 mounted() {
+	console.log('[StatsIAsView] ===== COMPONENTE MONTADO =====');
+	
 	// Carregar informações da conta
 	this.loadAccountInfo();
 	
 	// Iniciar carregamento de dados mesmo quando IA está desativada
 	// para mostrar o gráfico na tela padrão
+	console.log('[StatsIAsView] Chamando startDataLoading()...');
 	this.startDataLoading();
 	
 	// Atualizar última leitura a cada segundo
@@ -2114,6 +2140,7 @@ mounted() {
 	this.$nextTick(() => {
 		setTimeout(() => {
 			if (!this.aiMonitoring.isActive && this.$refs.marketChartContainerInactive) {
+				console.log('[StatsIAsView] Tentando inicializar gráfico de mercado inativo...');
 				this.initMarketChartInactive();
 			}
 		}, 500);
