@@ -342,6 +342,12 @@ export default {
 		mode(newValue) {
 			console.log('[InvestmentInactive] ⚡ Modo alterado:', newValue);
 			this.$emit('update:mode', newValue);
+		},
+		riskLevel(newValue) {
+			console.log('[InvestmentInactive] 🎲 Risco alterado:', newValue);
+			// Mapear riskLevel para modoMartingale (lowercase)
+			const modoMartingale = newValue === 'Fixo' ? 'conservador' : newValue.toLowerCase();
+			this.$emit('update:modoMartingale', modoMartingale);
 		}
 	},
 	methods: {

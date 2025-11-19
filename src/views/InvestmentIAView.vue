@@ -75,6 +75,7 @@
                     @update:profitTarget="profitTarget = $event"
                     @update:lossLimit="lossLimit = $event"
                     @update:mode="mode = $event"
+                    @update:modoMartingale="modoMartingale = $event"
                 />
             </div>
         </main>
@@ -163,6 +164,7 @@ export default {
             profitTarget: 100,
             lossLimit: 25,
             mode: 'veloz',
+            modoMartingale: 'conservador', // Modo de martingale: conservador, moderado, agressivo
 
             // Dados da conta Deriv (para exibição no header)
             accountBalance: null,
@@ -339,6 +341,7 @@ export default {
                         mode: this.mode.toLowerCase(),
                         profitTarget: this.profitTarget,
                         lossLimit: this.lossLimit,
+                        modoMartingale: this.modoMartingale || 'conservador',
                     }),
                 });
 
