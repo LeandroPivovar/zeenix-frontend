@@ -113,6 +113,25 @@
 							<div class="precision-value">{{ winRate }}%</div>
 						</div>
 					</div>
+					
+					<!-- Gráfico de Preços em Tempo Real (IA Desativada) -->
+					<div v-if="aiMonitoring.ticks.length > 0" class="ticks-chart-container">
+						<h3>Gráfico de Preços em Tempo Real</h3>
+						<div class="chart-wrapper-ticks">
+							<LineChart 
+								:chart-id="'ticks-chart-inactive'"
+								:data="chartData"
+								color="#10b981"
+								:height="200"
+							/>
+						</div>
+					</div>
+					<div v-else class="ticks-chart-container">
+						<h3>Gráfico de Preços em Tempo Real</h3>
+						<div class="chart-placeholder">
+							<p>Aguardando dados de preço...</p>
+						</div>
+					</div>
 				</div>
 
 				<!-- Configurações -->
@@ -164,14 +183,26 @@
 						<div class="config-group-content">
 							<div class="input-group">
 								<label>Valor de Entrada (USD)</label>
-								<span class="input-hint">Valor por operação</span>
+								<span class="input-hint">Valor por operação (mínimo: $0.35)</span>
 								<input 
 									type="number" 
 									v-model.number="tradingConfig.stakeAmount" 
-									min="1"
+									min="0.35"
 									step="0.5"
 									placeholder="50"
+									:disabled="tradingConfig.isActive"
 								/>
+								<button 
+									v-if="!tradingConfig.isActive"
+									class="btn-save-config" 
+									@click="updateStakeAmount"
+									:disabled="isUpdatingConfig"
+								>
+									{{ isUpdatingConfig ? 'Salvando...' : '💾 Salvar Alteração' }}
+								</button>
+								<span v-if="configUpdateMessage" :class="['config-message', configUpdateSuccess ? 'success' : 'error']">
+									{{ configUpdateMessage }}
+								</span>
 							</div>
 							<div class="input-group">
 								<label>Alvo de Lucro (USD)</label>
@@ -182,6 +213,7 @@
 									min="0"
 									step="0.01"
 									placeholder="100"
+									disabled
 								/>
 							</div>
 							<div class="input-group">
@@ -193,6 +225,7 @@
 									min="0"
 									step="0.01"
 									placeholder="25"
+									disabled
 								/>
 							</div>
 						</div>
@@ -357,15 +390,26 @@
 						<div class="trading-controls">
 							<div class="input-group">
 								<label>Valor de Entrada (USD)</label>
-								<span class="input-hint">Valor por operação</span>
+								<span class="input-hint">Valor por operação (mínimo: $0.35)</span>
 								<input 
 									type="number" 
 									v-model.number="tradingConfig.stakeAmount" 
-									min="1"
+									min="0.35"
 									step="0.5"
 									:disabled="tradingConfig.isActive"
 									placeholder="50"
 								/>
+								<button 
+									v-if="!tradingConfig.isActive"
+									class="btn-save-config" 
+									@click="updateStakeAmount"
+									:disabled="isUpdatingConfig"
+								>
+									{{ isUpdatingConfig ? 'Salvando...' : '💾 Salvar Alteração' }}
+								</button>
+								<span v-if="configUpdateMessage" :class="['config-message', configUpdateSuccess ? 'success' : 'error']">
+									{{ configUpdateMessage }}
+								</span>
 							</div>
 							
 							<div class="input-group">
@@ -733,6 +777,29 @@ export default {
 			winRate: 78,
 			recentLogs: [],
 			
+			// Estatísticas agregadas do StatsIAs
+			statsIAs: {
+				totalUsers: 0,
+				activeUsers: 0,
+				totalTrades: 0,
+				totalWins: 0,
+				totalLosses: 0,
+				winRate: 0,
+				totalProfit: 0,
+				averageProfit: 0,
+				source: 'local', // 'external' ou 'local'
+			},
+			tradingParams: {
+				dvxMax: 70,
+				window: 3,
+				betPercent: 0.005,
+			},
+			
+			// Estado para atualização de configuração
+			isUpdatingConfig: false,
+			configUpdateMessage: '',
+			configUpdateSuccess: false,
+			
 			closeSidebar: () => { }, 
 			toggleSidebarCollapse: () => {},
 		};
@@ -806,6 +873,12 @@ export default {
 					}
 				}
 				
+				// Carregar estatísticas agregadas do StatsIAs
+				await this.loadStatsIAs();
+				
+				// Carregar parâmetros de trading ajustados
+				await this.loadTradingParams();
+				
 				// Atualizar última leitura
 				this.lastReadingTime = new Date().toLocaleTimeString('pt-BR', { 
 					hour: '2-digit', 
@@ -814,6 +887,128 @@ export default {
 				});
 			} catch (error) {
 				console.error('[StatsIAsView] Erro ao carregar informações da conta:', error);
+			}
+		},
+		
+		/**
+		 * Carrega estatísticas agregadas do StatsIAs
+		 */
+		async loadStatsIAs() {
+			try {
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const response = await fetch(`${apiBase}/ai/stats-ias`, {
+					headers: {
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					}
+				});
+				const result = await response.json();
+				
+				if (result.success && result.data && result.data.data) {
+					const stats = result.data.data;
+					this.statsIAs = {
+						totalUsers: stats.totalUsers || 0,
+						activeUsers: stats.activeUsers || 0,
+						totalTrades: stats.totalTrades || 0,
+						totalWins: stats.totalWins || 0,
+						totalLosses: stats.totalLosses || 0,
+						winRate: stats.winRate || 0,
+						totalProfit: stats.totalProfit || 0,
+						averageProfit: stats.averageProfit || 0,
+						source: result.data.source || 'local',
+					};
+					console.log('[StatsIAsView] Estatísticas agregadas carregadas:', this.statsIAs);
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao carregar estatísticas do StatsIAs:', error);
+			}
+		},
+		
+		/**
+		 * Carrega parâmetros de trading ajustados baseados nas estatísticas
+		 */
+		async loadTradingParams() {
+			try {
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const response = await fetch(`${apiBase}/ai/trading-params`, {
+					headers: {
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					}
+				});
+				const result = await response.json();
+				
+				if (result.success && result.data) {
+					this.tradingParams = {
+						dvxMax: result.data.dvxMax || 70,
+						window: result.data.window || 3,
+						betPercent: result.data.betPercent || 0.005,
+					};
+					console.log('[StatsIAsView] Parâmetros de trading ajustados:', this.tradingParams);
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao carregar parâmetros de trading:', error);
+			}
+		},
+		
+		/**
+		 * Atualiza o valor de entrada (stake amount) da IA
+		 */
+		async updateStakeAmount() {
+			if (this.tradingConfig.stakeAmount < 0.35) {
+				this.configUpdateMessage = 'Valor mínimo é $0.35';
+				this.configUpdateSuccess = false;
+				setTimeout(() => {
+					this.configUpdateMessage = '';
+				}, 3000);
+				return;
+			}
+
+			this.isUpdatingConfig = true;
+			this.configUpdateMessage = '';
+
+			try {
+				const userId = this.getUserId();
+				if (!userId) {
+					throw new Error('Usuário não identificado');
+				}
+
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const response = await fetch(`${apiBase}/ai/update-config`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					},
+					body: JSON.stringify({
+						userId: userId,
+						stakeAmount: this.tradingConfig.stakeAmount,
+					}),
+				});
+
+				const result = await response.json();
+
+				if (result.success) {
+					this.configUpdateMessage = '✅ Valor de entrada atualizado com sucesso!';
+					this.configUpdateSuccess = true;
+					console.log('[StatsIAsView] Valor de entrada atualizado:', this.tradingConfig.stakeAmount);
+					
+					// Limpar mensagem após 3 segundos
+					setTimeout(() => {
+						this.configUpdateMessage = '';
+					}, 3000);
+				} else {
+					throw new Error(result.message || 'Erro ao atualizar configuração');
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao atualizar valor de entrada:', error);
+				this.configUpdateMessage = `❌ Erro: ${error.message || 'Não foi possível atualizar'}`;
+				this.configUpdateSuccess = false;
+				
+				// Limpar mensagem após 5 segundos
+				setTimeout(() => {
+					this.configUpdateMessage = '';
+				}, 5000);
+			} finally {
+				this.isUpdatingConfig = false;
 			}
 		},
 		
@@ -1055,6 +1250,36 @@ export default {
 			} catch (error) {
 				console.error('[StatsIAsView] Erro ao iniciar monitoramento:', error);
 				alert('Erro ao conectar com o servidor');
+			}
+		},
+		
+		/**
+		 * Inicia o carregamento de dados mesmo quando a IA está desativada
+		 * para mostrar o gráfico na tela padrão
+		 */
+		async startDataLoading() {
+			try {
+				// Iniciar monitoramento no backend (sem ativar a IA)
+				const response = await fetch('https://taxafacil.site/api/ai/start', {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+					},
+				});
+
+				const result = await response.json();
+
+				if (result.success) {
+					console.log('[StatsIAsView] Carregamento de dados iniciado (IA desativada)');
+					
+					// Iniciar polling para buscar dados a cada 2 segundos
+					// mas sem ativar o aiMonitoring.isActive
+					this.startPolling();
+				} else {
+					console.warn('[StatsIAsView] Não foi possível iniciar carregamento de dados:', result.message);
+				}
+			} catch (error) {
+				console.warn('[StatsIAsView] Erro ao iniciar carregamento de dados:', error);
 			}
 		},
 
@@ -1669,6 +1894,10 @@ export default {
 mounted() {
 	// Carregar informações da conta
 	this.loadAccountInfo();
+	
+	// Iniciar carregamento de dados mesmo quando IA está desativada
+	// para mostrar o gráfico na tela padrão
+	this.startDataLoading();
 	
 	// Atualizar última leitura a cada segundo
 	setInterval(() => {
@@ -2892,6 +3121,54 @@ tbody tr:hover {
 .input-group input:disabled {
 	opacity: 0.5;
 	cursor: not-allowed;
+}
+
+.btn-save-config {
+	background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+	border: none;
+	border-radius: 8px;
+	padding: 10px 20px;
+	color: white;
+	font-weight: 600;
+	font-size: 13px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+	margin-top: 8px;
+	width: 100%;
+}
+
+.btn-save-config:hover:not(:disabled) {
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+}
+
+.btn-save-config:disabled {
+	opacity: 0.6;
+	cursor: not-allowed;
+	transform: none;
+}
+
+.config-message {
+	display: block;
+	margin-top: 8px;
+	padding: 8px 12px;
+	border-radius: 6px;
+	font-size: 12px;
+	font-weight: 500;
+	text-align: center;
+}
+
+.config-message.success {
+	background: rgba(16, 185, 129, 0.15);
+	color: #10b981;
+	border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+.config-message.error {
+	background: rgba(239, 68, 68, 0.15);
+	color: #ef4444;
+	border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
 .btn-trading-toggle {
