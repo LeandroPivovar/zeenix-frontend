@@ -10,7 +10,12 @@
 				</div>
 				<div class="header-status">
 					<span class="status-dot operando"></span>
-					<span class="status-text">Operando</span>
+					<span class="status-text">
+						<svg class="status-svg" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
+							<circle class="svg-circle-animated" cx="10" cy="10" r="8" /> 
+						</svg>
+						Operando
+					</span>
 				</div>
 			</div>
 			<div class="main-metrics-grid">
@@ -53,7 +58,7 @@
 			</div>
 		</section>
 		
-		<main class="dashboard-body-grid-ia">
+		<div class="dashboard-body-grid-ia">
 			<!-- Bloco 1: Mercado & Estratégia -->
 			<section class="section market-strategy-section">
 				<h3 class="section-title">Mercado & Estratégia ⓘ</h3>
@@ -175,11 +180,14 @@
 
 				<div class="ai-status-toggle">
 					<span class="status-label">Status da IA</span>
+					<label class="switch">
+						<input type="checkbox" v-model="aiEnabled" />
+						<span class="slider round"></span>
+					</label>
 				</div>
 				<p class="ai-toggle-tip">Quando ativada, a IA executa operações automaticamente</p>
 
 				<div class="log-section">
-					<h4 class="log-title">Histórico de Sessões</h4>
 					<div v-if="isLoadingSessions" class="loading-sessions">
 						<span class="loading-spinner"></span>
 						<span>Carregando sessões...</span>
@@ -237,7 +245,7 @@
 					</div>
 				</div>
 			</section>
-		</main>
+		</div>
 		
 		<hr class="separator-chart" />
 		
@@ -280,6 +288,8 @@ export default {
 	},
 	data() {
 		return {
+			// Estado da IA (Ativado)
+			aiEnabled: true,
 			chart: null,
 			lineSeries: null,
 			chartInitialized: false, 
@@ -650,8 +660,24 @@ export default {
 }
 
 .status-text {
-	color: var(--color-accent-green);
-	font-size: 0.9rem;
+    /* Mude 'blink' para 'color-blink' */
+    animation: color-blink 2s infinite linear; 
+    font-size: 0.9rem;
+	padding: 10px;
+	border-radius: 8px;
+}
+
+/* 2. Estiliza o SVG */
+.status-svg {
+    width: 10px;  /* Tamanho do SVG (ajuste conforme o font-size do texto) */
+    height: 10px; /* Tamanho do SVG */
+}
+
+.svg-circle-animated {
+    /* Define a cor inicial */
+    fill: rgb(20, 44, 15); 
+    /* Aplica a animação */
+    animation: svg-fill-blink 2s infinite linear;
 }
 
 /* Container principal da seção de métricas */
@@ -684,14 +710,14 @@ export default {
 	border: 1px solid #191a19;
 }
 
-/* Posicionamento do Ícone da IA */
 .ai-brain-icon {
-	grid-area: 1 / 1 / 3 / 2; /* Ocupa as duas linhas da primeira coluna */
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	background: linear-gradient(to right, rgb(20, 44, 15), rgb(18, 49, 25));
-	border-radius: 8px;
+    grid-area: 1 / 1 / 3 / 2;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+
+    animation: background-blink 1.5s infinite linear; 
 }
 
 .brain-icon-svg {
@@ -740,6 +766,7 @@ export default {
 	grid-template-rows: 1fr 1fr; /* Duas linhas automáticas */
 	gap: 15px;
     margin-top: 20px;
+	max-height: 830px;
 }
 
 /* Cada bloco ocupa exatamente 1 célula do grid */
@@ -797,7 +824,6 @@ export default {
 .section-title {
 	font-size: 1.1rem;
 	font-weight: bold;
-	margin-bottom: 15px;
 }
 
 p{
@@ -808,9 +834,9 @@ p{
 .input-label {
 	font-size: 0.85rem;
 	color: var(--color-text-secondary);
-	margin-top: 20px; /* Reduzido */
 	display: block;
-    margin-bottom: none;
+	margin-bottom: -5px;
+	margin-top: 10px;
 }
 
 .input-select,
@@ -844,12 +870,19 @@ p{
 /* Botões de Modo/Risco - ESTILO ATIVO CORRETO */
 .button-group {
 	display: flex;
-	margin-top: 5px;
+	margin: 5px 0px 10px;
     background: transparent;
 	border-radius: 4px;
 	overflow: hidden;
     gap: 10px;
 }
+
+.input-tip, .mode-tip, .ai-toggle-tip, .risk-description, .strategy-description {
+	font-size: 0.75rem;
+	margin-top: 0;
+    color: #777;
+}
+
 
 .mode-button,
 .risk-button {
@@ -878,8 +911,11 @@ p{
 }
 
 /* Gerenciamento de Risco - Barra de progresso */
-.risk-slider-container {
-	margin-top: 15px;
+.risk-slider-container {	
+	background-color: #0a0b0a;
+    border: 1px solid #242323;
+	padding: 25px 15px;
+	border-radius: 8px;
 }
 
 .risk-slider-labels {
@@ -923,6 +959,61 @@ p{
 .status-label {
 	font-size: 0.9rem;
 	font-weight: bold;
+	text-align: left;
+	width: 100%;
+	padding: 0;
+}
+
+/* SWITCH CSS (Toggle) */
+.switch {
+	position: relative;
+	display: inline-block;
+	width: 45px;
+	height: 25px;
+}
+
+.switch input {
+	opacity: 0;
+	width: 0;
+	height: 0;
+}
+
+.slider {
+	position: absolute;
+	cursor: pointer;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: #444;
+	transition: 0.4s;
+}
+
+.slider:before {
+	position: absolute;
+	content: "";
+	height: 17px;
+	width: 17px;
+	left: 4px;
+	bottom: 4px;
+	background-color: white;
+	transition: 0.4s;
+}
+
+input:checked + .slider {
+	background-color: #22c55e;
+}
+
+input:checked + .slider:before {
+	transform: translateX(20px);
+}
+
+.slider.round {
+	border-radius: 25px;
+}
+
+.slider.round:before {
+	border-radius: 50%;
 }
 
 /* Logs/Sessões */
@@ -1184,5 +1275,33 @@ p{
 	border-radius: 4px;
 	position: relative;
 	overflow: hidden;
+}
+
+@keyframes color-blink {
+    0% {
+        color: #18b655; /* Cor 2 (Um pouco menos escura) */
+		border: 1px solid #18b655;
+    }
+    100% {
+        color: #178f45; /* Volta à Cor 1 */
+		border: 1px solid #178f45;
+    }
+}
+
+@keyframes svg-fill-blink {
+    0% { fill: #18b655; } /* Cor 1 (Mais escura) */
+    100% { fill: #178f45; } /* Volta à Cor 2 */
+}
+
+@keyframes background-blink {
+    0% {
+        background-color: rgb(20, 44, 15); /* Cor 1 (Mais escura) */
+    }
+    50% {
+        background-color: rgb(18, 49, 25); /* Cor 2 (Um pouco menos escura) */
+    }
+    100% {
+        background-color: rgb(20, 44, 15); /* Volta à Cor 1 */
+    }
 }
 </style>
