@@ -60,7 +60,7 @@ export default {
   width: 100%;
   min-height: 100vh;
   overflow: hidden;
-  background: linear-gradient(135deg, #0B0B0B 0%, #0B0B0B 70%, rgba(34, 197, 94, 0.03) 100%);
+  background: #0B0B0B;
 }
 
 /* Removido os círculos animados para ficar 100% fiel ao design original */

@@ -253,7 +253,7 @@ button.bg-zenix-green:disabled {
 
 /* Background gradient */
 .reset-password-bg {
-  background: linear-gradient(135deg, #0B0B0B 0%, #0B0B0B 70%, rgba(34, 197, 94, 0.03) 100%);
+  background: #0B0B0B;
 }
 
 /* Sombra do card - exatamente como no original */
