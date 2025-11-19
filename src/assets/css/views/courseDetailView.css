@@ -10,7 +10,7 @@ html, body {
   height: 100%;
 }
 
-.layout { 
+.layout-course { 
   display: flex; 
   height: 100vh;
   background: #070B07; 
@@ -72,6 +72,8 @@ header{
   height: calc(100vh - 3rem);
   overflow-y: auto;
   overflow-x: hidden;
+  margin-top: 0.5rem;
+  
 }
 
 .back-link { 
