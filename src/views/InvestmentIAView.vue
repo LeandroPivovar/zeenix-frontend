@@ -157,10 +157,222 @@ export default {
         }
     },
     methods: {
-        // Método para alternar o estado
-        toggleInvestmentState() {
-            this.isInvestmentActive = !this.isInvestmentActive;
+        // Método para alternar o estado da IA
+        async toggleInvestmentState() {
+            if (this.isInvestmentActive) {
+                await this.deactivateIA();
+            } else {
+                await this.activateIA();
+            }
         },
+
+        // Ativar IA
+        async activateIA() {
+            try {
+                console.log('[InvestmentIAView] Ativando IA...');
+
+                // Obter userId
+                const userId = this.getUserId();
+                if (!userId) {
+                    alert('Erro: usuário não identificado. Por favor, faça login novamente.');
+                    return;
+                }
+
+                // Obter token Deriv
+                const derivToken = this.getDerivToken();
+                if (!derivToken) {
+                    alert('Por favor, conecte sua conta Deriv primeiro');
+                    return;
+                }
+
+                // Obter moeda preferida
+                const preferredCurrency = this.getPreferredCurrency();
+
+                // Valores padrão (você pode adicionar inputs no futuro)
+                const stakeAmount = 0.35; // Valor mínimo
+                const profitTarget = 100;
+                const lossLimit = 25;
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/activate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        stakeAmount: stakeAmount,
+                        derivToken: derivToken,
+                        currency: preferredCurrency,
+                        mode: 'veloz',
+                        profitTarget: profitTarget,
+                        lossLimit: lossLimit,
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    this.isInvestmentActive = true;
+                    console.log('[InvestmentIAView] ✅ IA ativada com sucesso!');
+                    alert('✅ IA ativada! Ela continuará operando mesmo se você fechar a plataforma.');
+                } else {
+                    alert('❌ Erro ao ativar IA: ' + result.message);
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', error);
+                alert('❌ Erro ao ativar IA. Verifique sua conexão.');
+            }
+        },
+
+        // Desativar IA
+        async deactivateIA() {
+            try {
+                console.log('[InvestmentIAView] Desativando IA...');
+
+                const userId = this.getUserId();
+                if (!userId) {
+                    alert('Erro: usuário não identificado.');
+                    return;
+                }
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/deactivate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    this.isInvestmentActive = false;
+                    console.log('[InvestmentIAView] ✅ IA desativada!');
+                    alert('✅ IA desativada com sucesso.');
+                } else {
+                    alert('❌ Erro ao desativar IA: ' + result.message);
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro ao desativar IA:', error);
+                alert('❌ Erro ao desativar IA.');
+            }
+        },
+
+        // Obter userId do token JWT
+        getUserId() {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    if (payload.userId || payload.sub || payload.id) {
+                        return payload.userId || payload.sub || payload.id;
+                    }
+                }
+
+                const userInfoStr = localStorage.getItem('user_info');
+                if (userInfoStr) {
+                    const userInfo = JSON.parse(userInfoStr);
+                    if (userInfo.id || userInfo.userId) {
+                        return userInfo.id || userInfo.userId;
+                    }
+                }
+
+                console.warn('[InvestmentIAView] Não foi possível obter userId');
+                return null;
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao obter userId:', error);
+                return null;
+            }
+        },
+
+        // Obter token Deriv
+        getDerivToken() {
+            console.log('[InvestmentIAView] Buscando token Deriv...');
+
+            let accountLoginid = null;
+            let preferredCurrency = null;
+
+            try {
+                const connectionStr = localStorage.getItem('deriv_connection');
+                if (connectionStr) {
+                    const connection = JSON.parse(connectionStr);
+                    accountLoginid = connection.loginid;
+                    preferredCurrency = connection.tradeCurrency;
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao parsear deriv_connection:', error);
+            }
+
+            // Se a moeda preferida for DEMO, buscar token de conta demo
+            const isDemoPreferred = preferredCurrency?.toUpperCase() === 'DEMO';
+            if (isDemoPreferred) {
+                try {
+                    const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+                    const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+
+                    for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+                        if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
+                            console.log('[InvestmentIAView] ✓ Token demo encontrado');
+                            return token;
+                        }
+                    }
+                } catch (error) {
+                    console.error('[InvestmentIAView] Erro ao buscar token demo:', error);
+                }
+            }
+
+            // Se temos um loginid específico, buscar o token correspondente
+            if (accountLoginid) {
+                try {
+                    const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+                    const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+
+                    const specificToken = tokensByLoginId[accountLoginid];
+                    if (specificToken) {
+                        console.log('[InvestmentIAView] ✓ Token específico encontrado');
+                        return specificToken;
+                    }
+                } catch (error) {
+                    console.error('[InvestmentIAView] Erro ao buscar token específico:', error);
+                }
+            }
+
+            // Fallback: token padrão
+            const defaultToken = localStorage.getItem('deriv_token');
+            if (!defaultToken) {
+                console.error('[InvestmentIAView] ERRO: Nenhum token encontrado!');
+            }
+
+            return defaultToken;
+        },
+
+        // Obter moeda preferida
+        getPreferredCurrency() {
+            try {
+                const connectionStr = localStorage.getItem('deriv_connection');
+                if (connectionStr) {
+                    const connection = JSON.parse(connectionStr);
+                    if (connection.tradeCurrency) {
+                        const currency = connection.tradeCurrency.toUpperCase();
+                        if (currency === 'DEMO') {
+                            return 'USD';
+                        }
+                        return currency;
+                    }
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao parsear deriv_connection:', error);
+            }
+
+            return 'USD';
+        },
+
         toggleSidebar() {
             this.isSidebarOpen = !this.isSidebarOpen;
         },
@@ -240,14 +452,48 @@ export default {
         }
     },
 
-    mounted() {
+    async mounted() {
         // TESTE CRÍTICO - Sempre deve aparecer no console
         console.log('🚀 TESTE: InvestmentIAView mounted() foi chamado!');
         console.warn('⚠️ SE VOCÊ VÊ ESTA MENSAGEM, O COMPONENTE ESTÁ CARREGANDO!');
         
+        // Verificar se a IA já está ativa
+        await this.checkAIStatus();
+        
         // Iniciar carregamento de dados
         console.log('[InvestmentIAView] Iniciando carregamento de dados...');
         this.startDataLoading();
+    },
+
+    async checkAIStatus() {
+        try {
+            const userId = this.getUserId();
+            if (!userId) {
+                console.warn('[InvestmentIAView] userId não encontrado');
+                return;
+            }
+
+            const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+            const response = await fetch(`${apiBase}/ai/config/${userId}`, {
+                headers: {
+                    'Authorization': `Bearer ${localStorage.getItem('token')}`
+                }
+            });
+            const result = await response.json();
+
+            if (result.success && result.data) {
+                const config = result.data;
+                this.isInvestmentActive = config.isActive || false;
+                
+                if (config.isActive) {
+                    console.log('[InvestmentIAView] ✅ IA JÁ ESTÁ ATIVA!');
+                } else {
+                    console.log('[InvestmentIAView] IA está inativa');
+                }
+            }
+        } catch (error) {
+            console.error('[InvestmentIAView] Erro ao verificar status da IA:', error);
+        }
     },
 
     beforeUnmount() {

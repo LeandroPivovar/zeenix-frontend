@@ -57,13 +57,7 @@
                     
                         <p class="chart-subtitle">{{ selectedMarket }} • M5 • Última atualização: 14:32:15</p>
     
-                        <div class="chart-placeholder">
-                            <svg class="chart-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-                                <polyline fill="none" stroke="#22C55E" stroke-width="1" points="0,80 10,75 20,85 30,70 40,65 50,75 60,60 70,55 80,40 90,45 100,30" />
-                            </svg>
-                            <div class="chart-point"></div>
-                            <span class="chart-text-placeholder">Gráfico em tempo real (não implementado)</span>
-                        </div>
+                        <div ref="chartContainer" class="chart-placeholder"></div>
                     </div>
     
                 </div>
