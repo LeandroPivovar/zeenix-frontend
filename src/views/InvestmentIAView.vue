@@ -980,6 +980,7 @@ export default {
 
 .layout-ia-investment.sidebar-collapsed .header-investment {
     max-width: 100%;
+    padding-left: 52px; /* Tamanho do botão (48px) + 4px */
 }
 
 .header-info-container {
