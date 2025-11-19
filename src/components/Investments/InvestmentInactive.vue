@@ -11,9 +11,7 @@
 				<div class="header-status">
 					<span class="status-dot operando"></span>
 					<span class="status-text">
-						<svg class="status-svg" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-							<circle class="svg-circle-animated" cx="10" cy="10" r="8" /> 
-						</svg>
+						<span class="status-loading-spinner"></span>
 						Operando
 					</span>
 				</div>
@@ -667,17 +665,21 @@ export default {
 	border-radius: 8px;
 }
 
-/* 2. Estiliza o SVG */
-.status-svg {
-    width: 10px;  /* Tamanho do SVG (ajuste conforme o font-size do texto) */
-    height: 10px; /* Tamanho do SVG */
+/* 2. Loading Spinner */
+.status-loading-spinner {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border: 2px solid rgba(24, 182, 85, 0.3);
+    border-top-color: #18b655;
+    border-radius: 50%;
+    animation: spin-loading 0.8s linear infinite;
+    margin-right: 6px;
+    vertical-align: middle;
 }
 
-.svg-circle-animated {
-    /* Define a cor inicial */
-    fill: rgb(20, 44, 15); 
-    /* Aplica a animação */
-    animation: svg-fill-blink 2s infinite linear;
+@keyframes spin-loading {
+    to { transform: rotate(360deg); }
 }
 
 /* Container principal da seção de métricas */
@@ -1288,10 +1290,6 @@ input:checked + .slider:before {
     }
 }
 
-@keyframes svg-fill-blink {
-    0% { fill: #18b655; } /* Cor 1 (Mais escura) */
-    100% { fill: #178f45; } /* Volta à Cor 2 */
-}
 
 @keyframes background-blink {
     0% {
