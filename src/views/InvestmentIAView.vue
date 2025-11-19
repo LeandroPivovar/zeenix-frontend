@@ -271,28 +271,28 @@ export default {
 
                 // VALIDAÇÃO: Garantir que entryValue não seja menor que 0.35
                 if (!this.entryValue || this.entryValue < 0.35) {
-                    alert(`⚠️ Valor de entrada inválido: ${this.entryValue}. Configure um valor >= $0.35 primeiro!`);
+                    console.warn('[InvestmentIAView] ⚠️ Valor de entrada inválido:', this.entryValue);
                     return;
                 }
 
                 // Obter userId
                 const userId = this.getUserId();
                 if (!userId) {
-                    alert('Erro: usuário não identificado. Por favor, faça login novamente.');
+                    console.error('[InvestmentIAView] ❌ Usuário não identificado');
                     return;
                 }
 
                 // Obter token Deriv
                 const derivToken = this.getDerivToken();
                 if (!derivToken) {
-                    alert('Por favor, conecte sua conta Deriv primeiro');
+                    console.error('[InvestmentIAView] ❌ Token Deriv não encontrado');
                     return;
                 }
 
                 // Obter moeda preferida
                 const preferredCurrency = this.getPreferredCurrency();
                 
-                // NOVO: Buscar saldo da conta ANTES de ativar a IA
+                // Buscar saldo da conta ANTES de ativar a IA
                 console.log('[InvestmentIAView] 💰 Verificando saldo da conta...');
                 try {
                     const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
@@ -314,42 +314,13 @@ export default {
                         console.log('[InvestmentIAView] 💰 Saldo:', balance, currency);
                         console.log('[InvestmentIAView] 🔑 LoginID:', loginid);
                         
-                        // VALIDAÇÃO: Verificar se tem saldo suficiente
+                        // Log de aviso se saldo for insuficiente
                         if (balance < this.entryValue) {
-                            const confirmAnyway = confirm(
-                                `⚠️ ATENÇÃO!\n\n` +
-                                `Conta: ${loginid}\n` +
-                                `Saldo atual: ${balance.toFixed(2)} ${currency}\n` +
-                                `Valor de entrada configurado: ${this.entryValue.toFixed(2)}\n\n` +
-                                `Seu saldo (${balance.toFixed(2)}) é INSUFICIENTE para esta operação!\n\n` +
-                                `Deseja continuar mesmo assim?\n` +
-                                `(A IA tentará operar mas falhará por saldo insuficiente)`
-                            );
-                            
-                            if (!confirmAnyway) {
-                                console.log('[InvestmentIAView] ❌ Ativação cancelada: saldo insuficiente');
-                                return;
-                            }
-                        } else {
-                            // Mostrar confirmação com saldo
-                            const confirmActivate = confirm(
-                                `✅ Ativar IA?\n\n` +
-                                `Conta: ${loginid}\n` +
-                                `Saldo: ${balance.toFixed(2)} ${currency}\n` +
-                                `Valor de entrada: ${this.entryValue.toFixed(2)}\n` +
-                                `Modo: ${this.mode}\n\n` +
-                                `A IA continuará operando mesmo se você fechar a plataforma.`
-                            );
-                            
-                            if (!confirmActivate) {
-                                console.log('[InvestmentIAView] ❌ Ativação cancelada pelo usuário');
-                                return;
-                            }
+                            console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente:', balance, 'necessário:', this.entryValue);
                         }
                     }
                 } catch (balanceError) {
                     console.warn('[InvestmentIAView] ⚠️ Não foi possível verificar saldo:', balanceError);
-                    // Continuar mesmo sem verificar saldo
                 }
 
                 // Usar os valores configurados pelo usuário
@@ -362,10 +333,10 @@ export default {
                     },
                     body: JSON.stringify({
                         userId: userId,
-                        stakeAmount: this.entryValue, // Usar valor configurado
+                        stakeAmount: this.entryValue,
                         derivToken: derivToken,
                         currency: preferredCurrency,
-                        mode: this.mode.toLowerCase(), // veloz, moderado ou devagar
+                        mode: this.mode.toLowerCase(),
                         profitTarget: this.profitTarget,
                         lossLimit: this.lossLimit,
                     }),
@@ -376,13 +347,11 @@ export default {
                 if (result.success) {
                     this.isInvestmentActive = true;
                     console.log('[InvestmentIAView] ✅ IA ativada com sucesso!');
-                    alert('✅ IA ativada! Ela continuará operando mesmo se você fechar a plataforma.');
                 } else {
-                    alert('❌ Erro ao ativar IA: ' + result.message);
+                    console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', result.message);
                 }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', error);
-                alert('❌ Erro ao ativar IA. Verifique sua conexão.');
             }
         },
 
@@ -393,7 +362,7 @@ export default {
 
                 const userId = this.getUserId();
                 if (!userId) {
-                    alert('Erro: usuário não identificado.');
+                    console.error('[InvestmentIAView] ❌ Usuário não identificado');
                     return;
                 }
 
@@ -413,14 +382,12 @@ export default {
 
                 if (result.success) {
                     this.isInvestmentActive = false;
-                    console.log('[InvestmentIAView] ✅ IA desativada!');
-                    alert('✅ IA desativada com sucesso.');
+                    console.log('[InvestmentIAView] ✅ IA desativada com sucesso!');
                 } else {
-                    alert('❌ Erro ao desativar IA: ' + result.message);
+                    console.error('[InvestmentIAView] ❌ Erro ao desativar IA:', result.message);
                 }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao desativar IA:', error);
-                alert('❌ Erro ao desativar IA.');
             }
         },
 
