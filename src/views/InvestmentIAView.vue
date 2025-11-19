@@ -56,7 +56,15 @@
             </header>
             
             <div class="main-content-area">
-                <InvestmentActive v-if="isInvestmentActive" :ticks="ticks" :current-price="currentPrice" />
+                <InvestmentActive 
+                    v-if="isInvestmentActive" 
+                    :ticks="ticks" 
+                    :current-price="currentPrice"
+                    :entry-value-config="entryValue"
+                    :profit-target-config="profitTarget"
+                    :loss-limit-config="lossLimit"
+                    :mode-config="mode"
+                />
                 <InvestmentInactive 
                     v-else 
                     :ticks="ticks" 

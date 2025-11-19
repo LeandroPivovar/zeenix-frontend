@@ -54,8 +54,6 @@
                             <h3 class="card-title-small">Análise de Mercado</h3>
                             <div class="ai-status-pulse pulse-active pulse-small"></div>
                         </div>
-                    
-                        <p class="chart-subtitle">{{ selectedMarket }} • M5 • Última atualização: 14:32:15</p>
     
                         <div ref="chartContainer" class="chart-placeholder"></div>
                     </div>
@@ -134,7 +132,15 @@
                 <h3 class="card-title-small mb-4">Log de Operações</h3>
             
                 <div class="log-table-container">
-                    <table>
+                    <div v-if="isLoadingLogs" class="loading-logs">
+                        <p>Carregando histórico de operações...</p>
+                    </div>
+                    
+                    <div v-else-if="logOperations.length === 0" class="no-logs">
+                        <p>Nenhuma operação executada ainda.</p>
+                    </div>
+                    
+                    <table v-else>
                         <thead>
                             <tr>
                                 <th>Horário</th>
@@ -148,7 +154,7 @@
                             <tr v-for="(op, index) in logOperations" :key="index">
                                 <td>
                                     <p>{{ op.time }}</p>
-                                    <span class="input-help-text-dark">$50.00</span>
+                                    <span class="input-help-text-dark">${{ entryValue }}</span>
                                 </td>
                                 <td>{{ op.pair }}</td>
                                 
@@ -207,6 +213,22 @@ export default {
         currentPrice: {
             type: Number,
             default: null
+        },
+        entryValueConfig: {
+            type: Number,
+            default: 0.35
+        },
+        profitTargetConfig: {
+            type: Number,
+            default: 100
+        },
+        lossLimitConfig: {
+            type: Number,
+            default: 25
+        },
+        modeConfig: {
+            type: String,
+            default: 'veloz'
         }
     },
     data() {
@@ -225,25 +247,30 @@ export default {
             selectedMode: 'Veloz',
             selectedRisk: 'Conservador', 
             
-            entryValue: 50,
-            profitTarget: 100,
-            lossLimit: 25,
-            
             tradingModes: ['Veloz', 'Moderado', 'Devagar'],
             riskLevels: ['Fixo', 'Conservador', 'Moderado', 'Agressivo'],
             
-            // Log de operações com os valores P&L da imagem
-            logOperations: [
-                { time: '16:32:15', pair: 'EUR/USD', direction: 'CALL', result: 'WIN', pnl: '+$12.50' },
-                { time: '16:25:42', pair: 'GBP/USD', direction: 'PUT', result: 'LOSS', pnl: '-$8.30' },
-                { time: '16:18:23', pair: 'USD/JPY', direction: 'CALL', result: 'WIN', pnl: '+$15.75' }, 
-                { time: '16:12:18', pair: 'AUD/USD', direction: 'PUT', result: 'WIN', pnl: '+$11.30' }, 
-                { time: '16:05:55', pair: 'EUR/GBP', direction: 'CALL', result: 'WIN', pnl: '+$8.85' },
-            ],
+            // Log de operações (será carregado via API)
+            logOperations: [],
+            isLoadingLogs: true,
         };
     },
     
     computed: {
+        // Usar valores das props (configuração real do usuário)
+        entryValue() {
+            return this.entryValueConfig;
+        },
+        profitTarget() {
+            return this.profitTargetConfig;
+        },
+        lossLimit() {
+            return this.lossLimitConfig;
+        },
+        mode() {
+            return this.modeConfig;
+        },
+        
         displayBalance() {
             const formatter = new Intl.NumberFormat('pt-BR', {
                 minimumFractionDigits: 2,
@@ -294,6 +321,72 @@ export default {
             this.showDisconnectModal = false;
         },
 
+        // 📊 Buscar histórico de operações reais
+        async fetchTradeHistory() {
+            try {
+                this.isLoadingLogs = true;
+                console.log('[InvestmentActive] 📊 Buscando histórico de operações...');
+                
+                // Obter userId
+                const userId = this.getUserId();
+                if (!userId) {
+                    console.warn('[InvestmentActive] ❌ UserId não disponível');
+                    this.isLoadingLogs = false;
+                    return;
+                }
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/trade-history/${userId}?limit=20`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    console.log('[InvestmentActive] ✅ Histórico recebido:', result.data.length, 'operações');
+                    
+                    // Transformar dados do backend para o formato do frontend
+                    this.logOperations = result.data.map(trade => {
+                        const time = new Date(trade.created_at).toLocaleTimeString('pt-BR');
+                        const direction = trade.contract_type?.toUpperCase() || 'CALL';
+                        const result_trade = trade.status === 'won' ? 'WIN' : (trade.status === 'lost' ? 'LOSS' : 'PENDING');
+                        const profit = parseFloat(trade.profit || 0);
+                        const pnl = profit >= 0 ? `+$${profit.toFixed(2)}` : `-$${Math.abs(profit).toFixed(2)}`;
+                        
+                        return {
+                            time: time,
+                            pair: 'R_10', // Volatility 10 Index
+                            direction: direction,
+                            result: result_trade,
+                            pnl: pnl
+                        };
+                    });
+                } else {
+                    console.error('[InvestmentActive] ❌ Erro ao buscar histórico:', result.message || 'Unknown error');
+                    this.logOperations = [];
+                }
+            } catch (error) {
+                console.error('[InvestmentActive] ❌ Erro ao buscar histórico:', error);
+                this.logOperations = [];
+            } finally {
+                this.isLoadingLogs = false;
+            }
+        },
+
+        // 🔑 Obter userId do localStorage
+        getUserId() {
+            try {
+                const user = JSON.parse(localStorage.getItem('user') || '{}');
+                return user.id || null;
+            } catch (error) {
+                console.error('[InvestmentActive] Erro ao parsear user:', error);
+                return null;
+            }
+        },
+
         // Métodos para gráfico
         initChart() {
             if (this.chartInitialized || !this.$refs.chartContainer) {
@@ -303,7 +396,7 @@ export default {
             try {
                 const container = this.$refs.chartContainer;
                 const containerWidth = container.offsetWidth || 800;
-                const containerHeight = 350;
+                const containerHeight = 400; // Aumentado de 350 para 400 (gráfico maior)
 
                 console.log('[InvestmentActive] Inicializando gráfico...', {
                     width: containerWidth,
@@ -397,6 +490,9 @@ export default {
 
     mounted() {
         console.log('[InvestmentActive] Componente montado. Ticks:', this.ticks.length);
+        
+        // 📊 Buscar histórico de operações
+        this.fetchTradeHistory();
         
         this.$nextTick(() => {
             setTimeout(() => {
