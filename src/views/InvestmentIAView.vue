@@ -24,14 +24,14 @@
                     <div class="header-info-item result-item">
                         <span class="info-label">Resultado Hoje</span>
                         <div class="info-value-group">
-                            <span class="info-value result-value">+R$247,50</span>
-                            <span class="result-percent">(+1,34%)</span>
+                            <span class="info-value result-value" :class="dailyProfitClass">{{ formattedDailyProfit }}</span>
+                            <span class="result-percent" :class="dailyProfitClass">{{ formattedDailyProfitPercent }}</span>
                         </div>
                     </div>
 
                     <div class="header-info-item trades-item">
                         <span class="info-label">Trades Hoje</span>
-                        <span class="info-value">23</span>
+                        <span class="info-value">{{ dailyStats.totalTrades }}</span>
                     </div>
 
                     <div class="header-info-item status-item">
@@ -64,6 +64,8 @@
                     :profit-target-config="profitTarget"
                     :loss-limit-config="lossLimit"
                     :mode-config="mode"
+                    :account-balance-prop="accountBalance"
+                    :account-currency-prop="accountCurrency"
                 />
                 <InvestmentInactive 
                     v-else 
@@ -171,6 +173,15 @@ export default {
             lastBalanceUpdate: null,
             balanceUpdateInterval: null,
             clockInterval: null, // Intervalo para atualizar horário
+            
+            // Estatísticas do dia
+            dailyStats: {
+                profitLoss: 0,
+                profitLossPercent: 0,
+                totalTrades: 0,
+                winrate: 0
+            },
+            statsUpdateInterval: null,
 
             footerSections: [
                 {
@@ -218,6 +229,23 @@ export default {
             const minutes = String(now.getMinutes()).padStart(2, '0');
             const seconds = String(now.getSeconds()).padStart(2, '0');
             return `${hours}:${minutes}:${seconds}`;
+        },
+        
+        // 📊 Estatísticas formatadas
+        formattedDailyProfit() {
+            const value = this.dailyStats.profitLoss || 0;
+            const sign = value >= 0 ? '+' : '';
+            return `${sign}${this.accountCurrency} ${Math.abs(value).toFixed(2)}`;
+        },
+        
+        formattedDailyProfitPercent() {
+            const value = this.dailyStats.profitLossPercent || 0;
+            const sign = value >= 0 ? '+' : '';
+            return `(${sign}${value.toFixed(2)}%)`;
+        },
+        
+        dailyProfitClass() {
+            return this.dailyStats.profitLoss >= 0 ? 'profit-positive' : 'profit-negative';
         }
     },
     methods: {
@@ -582,6 +610,76 @@ export default {
                 this.clockInterval = null;
             }
         },
+        
+        // 📊 Buscar estatísticas do dia
+        async fetchDailyStats() {
+            try {
+                const userId = this.getUserId();
+                if (!userId) {
+                    console.warn('[InvestmentIAView] ❌ UserId não disponível para buscar stats');
+                    return;
+                }
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const url = `${apiBase}/ai/session-stats/${userId}`;
+                
+                console.log('[InvestmentIAView] 📊 Buscando estatísticas diárias:', url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('[InvestmentIAView] 📦 Stats recebidas:', result);
+                
+                if (result.success && result.data) {
+                    const profitLoss = parseFloat(result.data.profitLoss) || 0;
+                    const totalVolume = parseFloat(result.data.totalVolume) || 1;
+                    const profitLossPercent = (profitLoss / totalVolume) * 100;
+                    
+                    this.dailyStats = {
+                        profitLoss: profitLoss,
+                        profitLossPercent: profitLossPercent,
+                        totalTrades: parseInt(result.data.totalTrades) || 0,
+                        winrate: parseFloat(result.data.winrate) || 0
+                    };
+                    
+                    console.log('[InvestmentIAView] ✅ Stats atualizadas:', this.dailyStats);
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro ao buscar estatísticas:', error);
+            }
+        },
+        
+        // ⏰ Iniciar atualização periódica das estatísticas
+        startStatsUpdates() {
+            // Buscar estatísticas imediatamente
+            this.fetchDailyStats();
+            
+            // Atualizar a cada 10 segundos
+            this.statsUpdateInterval = setInterval(() => {
+                this.fetchDailyStats();
+            }, 10000);
+            
+            console.log('[InvestmentIAView] ⏰ Atualizações de stats iniciadas');
+        },
+        
+        // 🛑 Parar atualização periódica das estatísticas
+        stopStatsUpdates() {
+            if (this.statsUpdateInterval) {
+                clearInterval(this.statsUpdateInterval);
+                this.statsUpdateInterval = null;
+                console.log('[InvestmentIAView] ⏹️ Atualizações de stats paradas');
+            }
+        },
 
         toggleSidebar() {
             this.isSidebarOpen = !this.isSidebarOpen;
@@ -712,6 +810,10 @@ export default {
         // ⏰ Iniciar relógio
         console.log('[InvestmentIAView] Iniciando relógio em tempo real...');
         this.startClock();
+        
+        // 📊 Iniciar atualização de estatísticas
+        console.log('[InvestmentIAView] Iniciando atualização de estatísticas...');
+        this.startStatsUpdates();
     },
 
     beforeUnmount() {
@@ -725,6 +827,10 @@ export default {
         // ⏰ Parar relógio
         console.log('[InvestmentIAView] Parando relógio...');
         this.stopClock();
+        
+        // 📊 Parar atualização de estatísticas
+        console.log('[InvestmentIAView] Parando atualização de estatísticas...');
+        this.stopStatsUpdates();
     }
 }
 </script>
@@ -862,6 +968,15 @@ export default {
     font-size: 0.9rem;
     color: var(--zenix-green);
     font-weight: 500;
+}
+
+/* Cores dinâmicas de lucro/prejuízo */
+.profit-positive {
+    color: var(--zenix-green) !important;
+}
+
+.profit-negative {
+    color: #ef4444 !important; /* Vermelho para prejuízo */
 }
 
 .badge {

@@ -124,7 +124,7 @@
                                 <p class="risk-indicator-header-small">
                                     <i class="fas fa-chart-pie mr-2"></i> Risco Estimado
                                 </p>
-                                <p class="risk-indicator-value">2.5% do capital</p>
+                                <p class="risk-indicator-value">{{ estimatedRiskLabel }}</p>
                                 <p class="input-help-text-dark">Por operação</p>
                             </div>
                         </div>
@@ -233,6 +233,14 @@ export default {
         modeConfig: {
             type: String,
             default: 'veloz'
+        },
+        accountBalanceProp: {
+            type: Number,
+            default: null
+        },
+        accountCurrencyProp: {
+            type: String,
+            default: 'USD'
         }
     },
     data() {
@@ -315,6 +323,23 @@ export default {
         },
         profitLossClass() {
             return this.dailyStats.profitLoss >= 0 ? 'text-zenix-green' : 'text-zenix-red';
+        },
+        
+        // Risco estimado por operação
+        estimatedRiskPercentage() {
+            const balance = this.accountBalanceProp || 10000; // Fallback se não tiver saldo
+            const entryValue = this.entryValue || 0.35;
+            
+            if (!balance || balance <= 0) {
+                return 0;
+            }
+            
+            const riskPercent = (entryValue / balance) * 100;
+            return riskPercent.toFixed(2);
+        },
+        
+        estimatedRiskLabel() {
+            return `${this.estimatedRiskPercentage}% do capital`;
         },
         
         displayBalance() {
