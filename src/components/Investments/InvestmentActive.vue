@@ -407,13 +407,43 @@ export default {
             }
         },
 
-        // 🔑 Obter userId do localStorage
+        // 🔑 Obter userId do token JWT (mesmo método do InvestmentIAView.vue)
         getUserId() {
             try {
-                const user = JSON.parse(localStorage.getItem('user') || '{}');
-                return user.id || null;
+                console.log('[InvestmentActive] 🔍 Buscando userId no token JWT...');
+                
+                // 1. Tentar pegar do token JWT (método principal)
+                const token = localStorage.getItem('token');
+                console.log('[InvestmentActive] 🔐 Token presente?', !!token);
+                
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    console.log('[InvestmentActive] 📦 JWT Payload:', payload);
+                    
+                    if (payload.userId || payload.sub || payload.id) {
+                        const userId = payload.userId || payload.sub || payload.id;
+                        console.log('[InvestmentActive] ✅ UserId encontrado no JWT:', userId);
+                        return userId;
+                    }
+                }
+
+                // 2. Fallback: tentar pegar de user_info
+                const userInfoStr = localStorage.getItem('user_info');
+                if (userInfoStr) {
+                    const userInfo = JSON.parse(userInfoStr);
+                    console.log('[InvestmentActive] 📦 UserInfo:', userInfo);
+                    
+                    if (userInfo.id || userInfo.userId) {
+                        const userId = userInfo.id || userInfo.userId;
+                        console.log('[InvestmentActive] ✅ UserId encontrado em user_info:', userId);
+                        return userId;
+                    }
+                }
+
+                console.warn('[InvestmentActive] ❌ Não foi possível obter userId');
+                return null;
             } catch (error) {
-                console.error('[InvestmentActive] Erro ao parsear user:', error);
+                console.error('[InvestmentActive] ❌ Erro ao obter userId:', error);
                 return null;
             }
         },
