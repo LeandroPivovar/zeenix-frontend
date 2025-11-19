@@ -930,25 +930,27 @@ export default {
 .show-sidebar-btn {
     display: flex;
     position: fixed;
-    top: 15px;
-    left: 15px;
+    top: 20px;
+    left: 20px;
     z-index: 1000;
     background: rgba(20, 21, 21, 0.95);
     color: white;
     border: 1px solid rgba(255, 255, 255, 0.1);
     cursor: pointer;
-    padding: 10px;
+    padding: 12px;
     border-radius: 8px;
     transition: all 0.2s;
     align-items: center;
     justify-content: center;
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    margin: 0;
 }
 
 .show-sidebar-btn:hover {
     background: rgba(30, 30, 30, 0.95);
     border-color: rgba(255, 255, 255, 0.2);
     transform: translateX(2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
 }
 
 
@@ -1197,8 +1199,8 @@ export default {
     }
     
     .show-sidebar-btn {
-        top: 15px;
-        left: 15px;
+        top: 20px;
+        left: 20px;
     }
 }
 
