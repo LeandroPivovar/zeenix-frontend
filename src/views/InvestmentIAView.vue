@@ -34,6 +34,16 @@
                         <span class="info-value">{{ dailyStats.totalTrades }}</span>
                     </div>
 
+                    <div class="header-info-item wins-item">
+                        <span class="info-label">vitórias</span>
+                        <span class="info-value text-zenix-green">{{ dailyStats.wins || 0 }}</span>
+                    </div>
+
+                    <div class="header-info-item losses-item">
+                        <span class="info-label">derrotas</span>
+                        <span class="info-value text-zenix-red">{{ dailyStats.losses || 0 }}</span>
+                    </div>
+
                     <div class="header-info-item status-item">
                         <span class="info-label">status</span>
                         <div class="info-value-group">
@@ -180,7 +190,9 @@ export default {
                 profitLoss: 0,
                 profitLossPercent: 0,
                 totalTrades: 0,
-                winrate: 0
+                winrate: 0,
+                wins: 0,
+                losses: 0
             },
             statsUpdateInterval: null,
 
@@ -618,7 +630,9 @@ export default {
                         profitLoss: profitLoss,
                         profitLossPercent: profitLossPercent,
                         totalTrades: parseInt(result.data.totalTrades) || 0,
-                        winrate: parseFloat(result.data.winrate) || 0
+                        winrate: parseFloat(result.data.winrate) || 0,
+                        wins: parseInt(result.data.wins) || 0,
+                        losses: parseInt(result.data.losses) || 0
                     };
                     
                     console.log('[InvestmentIAView] ✅ Stats atualizadas:', this.dailyStats);
@@ -946,6 +960,14 @@ export default {
 
 .profit-negative {
     color: #ef4444 !important; /* Vermelho para prejuízo */
+}
+
+.text-zenix-green {
+    color: var(--zenix-green);
+}
+
+.text-zenix-red {
+    color: var(--zenix-red);
 }
 
 .badge {
