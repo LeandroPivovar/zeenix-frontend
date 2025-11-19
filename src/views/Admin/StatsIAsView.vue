@@ -114,22 +114,20 @@
 						</div>
 					</div>
 					
-					<!-- Gráfico de Preços em Tempo Real (IA Desativada) -->
-					<div v-if="aiMonitoring.ticks.length > 0" class="ticks-chart-container">
-						<h3>Gráfico de Preços em Tempo Real</h3>
-						<div class="chart-wrapper-ticks">
-							<LineChart 
-								:chart-id="'ticks-chart-inactive'"
-								:data="chartData"
-								color="#10b981"
-								:height="200"
-							/>
+					<!-- Análise de Mercado -->
+					<div class="market-analysis-section">
+						<div class="market-analysis-header">
+							<h3>Análise de Mercado</h3>
+							<div class="market-analysis-meta">
+								<span>Volatility 10 • M5 • Última atualização: {{ lastReadingTime }}</span>
+							</div>
 						</div>
-					</div>
-					<div v-else class="ticks-chart-container">
-						<h3>Gráfico de Preços em Tempo Real</h3>
-						<div class="chart-placeholder">
-							<p>Aguardando dados de preço...</p>
+						<div class="market-chart-container">
+							<div ref="marketChartContainerInactive" class="market-chart-wrapper"></div>
+							<div v-if="!marketChartInitializedInactive && aiMonitoring.ticks.length === 0" class="chart-placeholder">
+								<p>Gráfico em tempo real (não implementado)</p>
+								<p class="chart-placeholder-hint">Aguardando dados de preço...</p>
+							</div>
 						</div>
 					</div>
 				</div>
@@ -449,16 +447,20 @@
 						</div>
 					</div>
 
-					<!-- Gráfico de Ticks -->
-					<div v-if="aiMonitoring.isActive && aiMonitoring.ticks.length > 0" class="ticks-chart-container">
-						<h3>Gráfico de Preços em Tempo Real</h3>
-						<div class="chart-wrapper-ticks">
-							<LineChart 
-								:chart-id="'ticks-chart'"
-								:data="chartData"
-								color="#10b981"
-								:height="200"
-							/>
+					<!-- Análise de Mercado (IA Ativa) -->
+					<div class="market-analysis-section">
+						<div class="market-analysis-header">
+							<h3>Análise de Mercado</h3>
+							<div class="market-analysis-meta">
+								<span>Volatility 10 • M5 • Última atualização: {{ aiMonitoring.lastUpdate || lastReadingTime }}</span>
+							</div>
+						</div>
+						<div class="market-chart-container">
+							<div ref="marketChartContainerActive" class="market-chart-wrapper"></div>
+							<div v-if="!marketChartInitializedActive && aiMonitoring.ticks.length === 0" class="chart-placeholder">
+								<p>Gráfico em tempo real (não implementado)</p>
+								<p class="chart-placeholder-hint">Aguardando dados de preço...</p>
+							</div>
 						</div>
 					</div>
 
@@ -704,6 +706,7 @@
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import LineChart from '../../components/LineChart.vue';
+import { createChart, ColorType } from 'lightweight-charts';
 
 export default {
 	name: 'StatsIAs',
@@ -799,6 +802,14 @@ export default {
 			isUpdatingConfig: false,
 			configUpdateMessage: '',
 			configUpdateSuccess: false,
+			
+			// Gráfico de mercado
+			marketChartInactive: null,
+			marketLineSeriesInactive: null,
+			marketChartInitializedInactive: false,
+			marketChartActive: null,
+			marketLineSeriesActive: null,
+			marketChartInitializedActive: false,
 			
 			closeSidebar: () => { }, 
 			toggleSidebarCollapse: () => {},
@@ -1241,6 +1252,15 @@ export default {
 					// Iniciar polling para buscar dados a cada 2 segundos
 					this.startPolling();
 					
+					// Inicializar gráfico de mercado ativo
+					this.$nextTick(() => {
+						setTimeout(() => {
+							if (this.$refs.marketChartContainerActive) {
+								this.initMarketChartActive();
+							}
+						}, 500);
+					});
+					
 					// A seção de trading automático aparecerá automaticamente
 					// pois aiMonitoring.isActive agora é true
 				} else {
@@ -1329,10 +1349,33 @@ export default {
 				const result = await response.json();
 
 				if (result.success) {
-					this.aiMonitoring.ticks = result.data.ticks || [];
+					// Adicionar epoch aos ticks se não existir
+					const ticks = (result.data.ticks || []).map((tick, index) => ({
+						...tick,
+						epoch: tick.epoch || (Date.now() / 1000) - (result.data.ticks.length - index),
+					}));
+					
+					this.aiMonitoring.ticks = ticks;
 					this.aiMonitoring.currentPrice = result.data.currentPrice;
 					this.aiMonitoring.statistics = result.data.statistics;
 					this.aiMonitoring.lastUpdate = new Date().toLocaleTimeString('pt-BR');
+					
+					// Atualizar gráficos
+					this.$nextTick(() => {
+						if (!this.aiMonitoring.isActive) {
+							if (!this.marketChartInitializedInactive) {
+								this.initMarketChartInactive();
+							} else {
+								this.updateMarketChartInactive();
+							}
+						} else {
+							if (!this.marketChartInitializedActive) {
+								this.initMarketChartActive();
+							} else {
+								this.updateMarketChartActive();
+							}
+						}
+					});
 				}
 			} catch (error) {
 				console.error('[StatsIAsView] Erro ao buscar dados:', error);
@@ -1889,6 +1932,162 @@ export default {
 			console.error('[StatsIAsView] Erro ao carregar configuração:', error);
 		}
 	},
+	
+	/**
+	 * Inicializa o gráfico de mercado para IA desativada
+	 */
+	initMarketChartInactive() {
+		if (this.marketChartInitializedInactive || !this.$refs.marketChartContainerInactive) {
+			return;
+		}
+		
+		try {
+			const container = this.$refs.marketChartContainerInactive;
+			const containerWidth = container.offsetWidth || 800;
+			const containerHeight = 400;
+			
+			this.marketChartInactive = createChart(container, {
+				width: containerWidth,
+				height: containerHeight,
+				localization: { locale: 'pt-BR' },
+				layout: {
+					background: { type: ColorType.Solid, color: '#0f172a' },
+					textColor: '#f8fafc',
+				},
+				rightPriceScale: {
+					borderVisible: false,
+				},
+				timeScale: {
+					borderVisible: false,
+					timeVisible: true,
+					secondsVisible: true,
+				},
+				grid: {
+					vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
+					horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
+				},
+				crosshair: {
+					mode: 1,
+				},
+			});
+			
+			this.marketLineSeriesInactive = this.marketChartInactive.addAreaSeries({
+				lineColor: '#10b981',
+				topColor: 'rgba(16, 185, 129, 0.2)',
+				bottomColor: 'rgba(16, 185, 129, 0.02)',
+				lineWidth: 2,
+				priceFormat: {
+					type: 'price',
+					precision: 2,
+					minMove: 0.01,
+				},
+			});
+			
+			this.marketChartInitializedInactive = true;
+			this.updateMarketChartInactive();
+		} catch (error) {
+			console.error('[StatsIAsView] Erro ao inicializar gráfico de mercado (inativo):', error);
+		}
+	},
+	
+	/**
+	 * Atualiza o gráfico de mercado para IA desativada
+	 */
+	updateMarketChartInactive() {
+		if (!this.marketChartInitializedInactive || !this.marketLineSeriesInactive || this.aiMonitoring.ticks.length === 0) {
+			return;
+		}
+		
+		try {
+			const data = this.aiMonitoring.ticks.map(tick => ({
+				time: Math.floor(tick.epoch || Date.now() / 1000),
+				value: tick.value || tick.price || 0,
+			}));
+			
+			this.marketLineSeriesInactive.setData(data);
+			this.marketChartInactive.timeScale().fitContent();
+		} catch (error) {
+			console.error('[StatsIAsView] Erro ao atualizar gráfico de mercado (inativo):', error);
+		}
+	},
+	
+	/**
+	 * Inicializa o gráfico de mercado para IA ativa
+	 */
+	initMarketChartActive() {
+		if (this.marketChartInitializedActive || !this.$refs.marketChartContainerActive) {
+			return;
+		}
+		
+		try {
+			const container = this.$refs.marketChartContainerActive;
+			const containerWidth = container.offsetWidth || 800;
+			const containerHeight = 400;
+			
+			this.marketChartActive = createChart(container, {
+				width: containerWidth,
+				height: containerHeight,
+				localization: { locale: 'pt-BR' },
+				layout: {
+					background: { type: ColorType.Solid, color: '#0f172a' },
+					textColor: '#f8fafc',
+				},
+				rightPriceScale: {
+					borderVisible: false,
+				},
+				timeScale: {
+					borderVisible: false,
+					timeVisible: true,
+					secondsVisible: true,
+				},
+				grid: {
+					vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
+					horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
+				},
+				crosshair: {
+					mode: 1,
+				},
+			});
+			
+			this.marketLineSeriesActive = this.marketChartActive.addAreaSeries({
+				lineColor: '#10b981',
+				topColor: 'rgba(16, 185, 129, 0.2)',
+				bottomColor: 'rgba(16, 185, 129, 0.02)',
+				lineWidth: 2,
+				priceFormat: {
+					type: 'price',
+					precision: 2,
+					minMove: 0.01,
+				},
+			});
+			
+			this.marketChartInitializedActive = true;
+			this.updateMarketChartActive();
+		} catch (error) {
+			console.error('[StatsIAsView] Erro ao inicializar gráfico de mercado (ativo):', error);
+		}
+	},
+	
+	/**
+	 * Atualiza o gráfico de mercado para IA ativa
+	 */
+	updateMarketChartActive() {
+		if (!this.marketChartInitializedActive || !this.marketLineSeriesActive || this.aiMonitoring.ticks.length === 0) {
+			return;
+		}
+		
+		try {
+			const data = this.aiMonitoring.ticks.map(tick => ({
+				time: Math.floor(tick.epoch || (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : Date.now() / 1000)),
+				value: tick.value || tick.price || 0,
+			}));
+			
+			this.marketLineSeriesActive.setData(data);
+			this.marketChartActive.timeScale().fitContent();
+		} catch (error) {
+			console.error('[StatsIAsView] Erro ao atualizar gráfico de mercado (ativo):', error);
+		}
+	},
 },
 
 mounted() {
@@ -1910,6 +2109,15 @@ mounted() {
 	
 	// Carregar configuração da IA ao montar o componente
 	this.loadAIConfigOnMount();
+	
+	// Inicializar gráfico de mercado após o componente ser montado
+	this.$nextTick(() => {
+		setTimeout(() => {
+			if (!this.aiMonitoring.isActive && this.$refs.marketChartContainerInactive) {
+				this.initMarketChartInactive();
+			}
+		}, 500);
+	});
 },
 
 beforeUnmount() {
@@ -3649,7 +3857,72 @@ tbody tr:hover {
 	color: #666;
 }
 
-/* Gráfico de Ticks */
+/* Análise de Mercado */
+.market-analysis-section {
+	background: rgba(15, 23, 42, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 12px;
+	padding: 20px;
+	margin-top: 20px;
+	margin-bottom: 20px;
+}
+
+.market-analysis-header {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 16px;
+	flex-wrap: wrap;
+	gap: 12px;
+}
+
+.market-analysis-header h3 {
+	font-size: 18px;
+	color: #f8fafc;
+	margin: 0;
+	font-weight: 600;
+}
+
+.market-analysis-meta {
+	font-size: 12px;
+	color: #94a3b8;
+}
+
+.market-chart-container {
+	width: 100%;
+	height: 400px;
+	position: relative;
+	background: rgba(9, 10, 12, 0.5);
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.market-chart-wrapper {
+	width: 100%;
+	height: 100%;
+}
+
+.chart-placeholder {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	color: #64748b;
+	font-size: 14px;
+}
+
+.chart-placeholder p {
+	margin: 4px 0;
+}
+
+.chart-placeholder-hint {
+	font-size: 12px;
+	color: #475569;
+	font-style: italic;
+}
+
+/* Gráfico de Ticks (mantido para compatibilidade) */
 .ticks-chart-container {
 	background: rgba(15, 23, 42, 0.6);
 	border: 1px solid rgba(148, 163, 184, 0.2);
