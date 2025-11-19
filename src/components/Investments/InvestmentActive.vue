@@ -18,6 +18,22 @@
                         </div>
                     </div>
                     <div class="stat-card-primary">
+                        <p class="stat-label-primary">Lucro da Sessão</p>
+                        <div class="stat-value-area">
+                            <p class="stat-value-large" :class="sessionProfitLossClass" v-if="!isLoadingStats">{{ formattedSessionProfitLoss }}</p>
+                            <p class="stat-value-large text-zenix-secondary" v-else>--</p>
+                            <p class="stat-subtitle-small">Sessão Atual</p>
+                        </div>
+                    </div>
+                    <div class="stat-card-primary">
+                        <p class="stat-label-primary">Saldo da Sessão</p>
+                        <div class="stat-value-area">
+                            <p class="stat-value-large" :class="sessionBalanceClass" v-if="!isLoadingStats">{{ formattedSessionBalance }}</p>
+                            <p class="stat-value-large text-zenix-secondary" v-else>--</p>
+                            <p class="stat-subtitle-small">Balança Atual</p>
+                        </div>
+                    </div>
+                    <div class="stat-card-primary">
                         <p class="stat-label-primary">Winrate</p>
                         <div class="stat-value-area">
                             <p class="stat-value-large" v-if="!isLoadingStats">{{ formattedWinrate }}</p>
@@ -79,24 +95,28 @@
                             <div class="config-stat-row-half config-card">
                                 <div>
                                     <label class="input-label-compact">Estratégia</label>
-                                    <p class="config-value-main">IA Orion</p>
-                                    <p class="input-help-text">Alta Performance</p>
+                                    <p class="config-value-main">{{ strategyName }}</p>
+                                    <p class="input-help-text">{{ strategyDescription }}</p>
                                 </div>
-                                <span class="active-status-tag-mini">Ativa</span>
+                                <span v-if="sessionConfig.isActive" class="active-status-tag-mini">Ativa</span>
+                                <span v-else class="active-status-tag-mini" style="background: #ef4444;">Inativa</span>
                             </div>
     
                             <div class="config-grid-2x2">
                                 <div class="config-card">
                                     <label class="input-label-compact">Entrada</label>
-                                    <p class="config-value-main">{{ entryValue ? '$' + entryValue : 'Não definido' }}</p>
+                                    <p class="config-value-main" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : 'Não definido' }}</p>
+                                    <p class="config-value-main" v-else>Carregando...</p>
                                 </div>
                                 <div class="config-card">
                                     <label class="input-label-compact">Meta Diária</label>
-                                    <p class="config-value-main">{{ profitTarget ? '$' + profitTarget : 'Não definido' }}</p>
+                                    <p class="config-value-main" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : 'Não definido' }}</p>
+                                    <p class="config-value-main" v-else>Carregando...</p>
                                 </div>
                                 <div class="config-card">
                                     <label class="input-label-compact">Stop Diário</label>
-                                    <p class="config-value-main text-zenix-danger">{{ lossLimit ? '$' + lossLimit : 'Não definido' }}</p>
+                                    <p class="config-value-main text-zenix-danger" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : 'Não definido' }}</p>
+                                    <p class="config-value-main text-zenix-danger" v-else>Carregando...</p>
                                 </div>
                                 <div class="config-card">
                                     <label class="input-label-compact">Timeframe</label>
@@ -108,15 +128,16 @@
                                 <div class="risk-display-area">
                                     <div class="title-risk-display">
                                         <label class="input-label-compact">Gerenciamento</label>
-                                        <p :class="['config-value-main', selectedRisk === 'Agressivo' ? 'text-zenix-danger' : 'text-zenix-green']">{{ selectedRisk }}</p>
+                                        <p :class="['config-value-main', realRiskLevel === 'Agressivo' ? 'text-zenix-danger' : 'text-zenix-green']" v-if="!isLoadingConfig">{{ realRiskLevel }}</p>
+                                        <p class="config-value-main" v-else>Carregando...</p>
                                     </div>
                                     <div class="risk-progress-bar-container">
                                         <div 
                                             class="risk-progress-bar" 
-                                            :style="{ width: riskPercentage }"
+                                            :style="{ width: realRiskPercentage }"
                                         ></div>
                                     </div>
-                                    <p class="input-help-text">Risco: {{ riskLabel }}</p>
+                                    <p class="input-help-text">Risco: {{ realRiskLabel }}</p>
                                 </div>
                             </div>
                         
@@ -124,7 +145,8 @@
                                 <p class="risk-indicator-header-small">
                                     <i class="fas fa-chart-pie mr-2"></i> Risco Estimado
                                 </p>
-                                <p class="risk-indicator-value">{{ estimatedRiskLabel }}</p>
+                                <p class="risk-indicator-value" v-if="!isLoadingConfig">{{ realEstimatedRiskLabel }}</p>
+                                <p class="risk-indicator-value" v-else>Carregando...</p>
                                 <p class="input-help-text-dark">Por operação</p>
                             </div>
                         </div>
@@ -268,7 +290,9 @@ export default {
                 totalTrades: 0,
                 totalVolume: 0,
                 wins: 0,
-                losses: 0
+                losses: 0,
+                sessionBalance: 0,
+                sessionProfitLoss: 0
             },
             isLoadingStats: true,
             statsUpdateInterval: null,
@@ -285,6 +309,20 @@ export default {
             tradingModes: ['Veloz', 'Moderado', 'Devagar'],
             riskLevels: ['Fixo', 'Conservador', 'Moderado', 'Agressivo'],
             
+            // Configuração real da sessão
+            sessionConfig: {
+                isActive: false,
+                stakeAmount: 0,
+                mode: 'veloz',
+                modoMartingale: 'conservador',
+                profitTarget: null,
+                lossLimit: null,
+                currency: 'USD',
+                sessionBalance: 0,
+                sessionStatus: 'active'
+            },
+            isLoadingConfig: true,
+            
             // Log de operações (será carregado via API)
             logOperations: [],
             isLoadingLogs: true,
@@ -292,18 +330,83 @@ export default {
     },
     
     computed: {
-        // Usar valores das props (configuração real do usuário)
+        // Usar valores reais da sessão ou fallback para props
         entryValue() {
-            return this.entryValueConfig;
+            return this.sessionConfig.stakeAmount || this.entryValueConfig || 0.35;
         },
         profitTarget() {
-            return this.profitTargetConfig;
+            return this.sessionConfig.profitTarget || this.profitTargetConfig || null;
         },
         lossLimit() {
-            return this.lossLimitConfig;
+            return this.sessionConfig.lossLimit || this.lossLimitConfig || null;
         },
         mode() {
-            return this.modeConfig;
+            return this.sessionConfig.mode || this.modeConfig || 'veloz';
+        },
+        
+        // Nome da estratégia baseado no modo
+        strategyName() {
+            const modeMap = {
+                'veloz': 'IA Orion Veloz',
+                'moderado': 'IA Orion Moderado',
+                'preciso': 'IA Orion Preciso',
+                'fast': 'IA Orion Fast'
+            };
+            return modeMap[this.mode.toLowerCase()] || 'IA Orion';
+        },
+        
+        strategyDescription() {
+            const descMap = {
+                'veloz': 'Alta Performance',
+                'moderado': 'Performance Balanceada',
+                'preciso': 'Alta Precisão',
+                'fast': 'Operação Contínua'
+            };
+            return descMap[this.mode.toLowerCase()] || 'Alta Performance';
+        },
+        
+        // Mapear modo_martingale para gerenciamento
+        realRiskLevel() {
+            if (this.isLoadingConfig) return 'Carregando...';
+            const martingale = this.sessionConfig.modoMartingale || 'conservador';
+            const riskMap = {
+                'conservador': 'Conservador',
+                'moderado': 'Moderado',
+                'agressivo': 'Agressivo'
+            };
+            return riskMap[martingale.toLowerCase()] || 'Conservador';
+        },
+        
+        realRiskLabel() {
+            const risk = this.realRiskLevel;
+            const labels = {
+                'Conservador': 'Baixo',
+                'Moderado': 'Médio',
+                'Agressivo': 'Alto'
+            };
+            return labels[risk] || 'Baixo';
+        },
+        
+        realRiskPercentage() {
+            const risk = this.realRiskLevel;
+            const percentages = {
+                'Conservador': '25%',
+                'Moderado': '50%',
+                'Agressivo': '75%'
+            };
+            return percentages[risk] || '25%';
+        },
+        
+        realEstimatedRiskLabel() {
+            const balance = this.accountBalanceProp || 10000;
+            const entryValue = this.entryValue || 0.35;
+            
+            if (!balance || balance <= 0) {
+                return '0.00% do capital';
+            }
+            
+            const riskPercent = (entryValue / balance) * 100;
+            return `${riskPercent.toFixed(2)}% do capital`;
         },
         
         // Estatísticas formatadas
@@ -332,8 +435,24 @@ export default {
         formattedVolume() {
             return `$${this.dailyStats.totalVolume.toFixed(2)}`;
         },
+        formattedSessionProfitLoss() {
+            const value = this.dailyStats.sessionProfitLoss || 0;
+            const sign = value >= 0 ? '+' : '';
+            return `${sign}$${Math.abs(value).toFixed(2)}`;
+        },
+        formattedSessionBalance() {
+            const value = this.dailyStats.sessionBalance || 0;
+            const sign = value >= 0 ? '+' : '';
+            return `${sign}$${Math.abs(value).toFixed(2)}`;
+        },
         profitLossClass() {
             return this.dailyStats.profitLoss >= 0 ? 'text-zenix-green' : 'text-zenix-red';
+        },
+        sessionProfitLossClass() {
+            return this.dailyStats.sessionProfitLoss >= 0 ? 'text-zenix-green' : 'text-zenix-red';
+        },
+        sessionBalanceClass() {
+            return this.dailyStats.sessionBalance >= 0 ? 'text-zenix-green' : 'text-zenix-red';
         },
         
         // Risco estimado por operação
@@ -433,7 +552,9 @@ export default {
                         totalTrades: parseInt(result.data.totalTrades) || 0,
                         totalVolume: parseFloat(result.data.totalVolume) || 0,
                         wins: parseInt(result.data.wins) || 0,
-                        losses: parseInt(result.data.losses) || 0
+                        losses: parseInt(result.data.losses) || 0,
+                        sessionBalance: parseFloat(result.data.sessionBalance) || 0,
+                        sessionProfitLoss: parseFloat(result.data.sessionProfitLoss) || 0
                     };
                     
                     console.log('[InvestmentActive] ✅ Stats atualizadas:', this.dailyStats);
@@ -451,9 +572,14 @@ export default {
             // Buscar estatísticas imediatamente
             this.fetchDailyStats();
             
+            // Buscar configuração da sessão
+            this.fetchSessionConfig();
+            
             // Atualizar a cada 10 segundos
             this.statsUpdateInterval = setInterval(() => {
                 this.fetchDailyStats();
+                // Atualizar configuração também (pode ter mudado)
+                this.fetchSessionConfig();
             }, 10000);
             
             console.log('[InvestmentActive] ⏰ Atualizações de stats iniciadas');
@@ -477,6 +603,63 @@ export default {
             this.showDisconnectModal = false;
         },
 
+        // 📊 Buscar configuração da sessão ativa
+        async fetchSessionConfig() {
+            try {
+                this.isLoadingConfig = true;
+                console.log('[InvestmentActive] 📊 Buscando configuração da sessão...');
+                
+                const userId = this.getUserId();
+                if (!userId) {
+                    console.warn('[InvestmentActive] ❌ UserId não disponível');
+                    this.isLoadingConfig = false;
+                    return;
+                }
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const url = `${apiBase}/ai/config/${userId}`;
+                
+                console.log('[InvestmentActive] 📡 Requisitando config:', url);
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const result = await response.json();
+                console.log('[InvestmentActive] 📦 Config recebida:', result);
+                
+                if (result.success && result.data) {
+                    this.sessionConfig = {
+                        isActive: result.data.isActive || false,
+                        stakeAmount: parseFloat(result.data.stakeAmount) || 0,
+                        mode: result.data.mode || 'veloz',
+                        modoMartingale: result.data.modoMartingale || 'conservador',
+                        profitTarget: result.data.profitTarget ? parseFloat(result.data.profitTarget) : null,
+                        lossLimit: result.data.lossLimit ? parseFloat(result.data.lossLimit) : null,
+                        currency: result.data.currency || 'USD',
+                        sessionBalance: parseFloat(result.data.sessionBalance) || 0,
+                        sessionStatus: result.data.sessionStatus || 'active'
+                    };
+                    
+                    console.log('[InvestmentActive] ✅ Config atualizada:', this.sessionConfig);
+                } else {
+                    console.error('[InvestmentActive] ❌ Formato de resposta inválido:', result);
+                }
+            } catch (error) {
+                console.error('[InvestmentActive] ❌ Erro ao buscar configuração:', error);
+            } finally {
+                this.isLoadingConfig = false;
+            }
+        },
+        
         // 📊 Buscar histórico de operações reais
         async fetchTradeHistory() {
             try {
