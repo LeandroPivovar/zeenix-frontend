@@ -1,9 +1,25 @@
 <template>
-    <div class="layout-ia-investment">
+    <div class="layout-ia-investment" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
 
         <main class="layout-content-investment">
-            <button class="hamburger-btn" @click="toggleSidebar" aria-label="Abrir menu">
+            <button 
+                v-if="isSidebarCollapsed" 
+                class="show-sidebar-btn" 
+                @click="toggleSidebarCollapse" 
+                aria-label="Mostrar sidebar"
+                title="Mostrar sidebar"
+            >
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M10 18L16 12L10 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            <button 
+                v-else
+                class="hamburger-btn" 
+                @click="toggleSidebar" 
+                aria-label="Abrir menu"
+            >
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                     <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
@@ -858,6 +874,12 @@ export default {
     font-family: Arial, sans-serif;
     width: calc(100% - 240px);
     margin-left: 240px;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.layout-ia-investment.sidebar-collapsed {
+    width: 100%;
+    margin-left: 0;
 }
 
 .layout-content-investment {
@@ -893,6 +915,40 @@ export default {
     z-index: 20;
     background: none;
     color: white;
+    border: none;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    transition: background-color 0.2s;
+}
+
+.hamburger-btn:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+/* Botão para mostrar sidebar quando colapsada */
+.show-sidebar-btn {
+    display: flex;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1000;
+    background: rgba(20, 21, 21, 0.95);
+    color: white;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 8px;
+    transition: all 0.2s;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.show-sidebar-btn:hover {
+    background: rgba(30, 30, 30, 0.95);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateX(2px);
 }
 
 
@@ -912,6 +968,11 @@ export default {
     z-index: 10;
     max-width: calc(100% - 240px);
     height: var(--zenix-header-height);
+    transition: max-width 0.3s ease;
+}
+
+.layout-ia-investment.sidebar-collapsed .header-investment {
+    max-width: 100%;
 }
 
 .header-info-container {
@@ -1133,6 +1194,11 @@ export default {
     .header-investment {
         max-width: 100%;
         padding-left: 60px; /* Espaço para o botão hamburger */
+    }
+    
+    .show-sidebar-btn {
+        top: 15px;
+        left: 15px;
     }
 }
 
