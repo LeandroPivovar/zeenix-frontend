@@ -30,7 +30,7 @@
                     
                     <div class="header-info-item balance-item">
                         <div class="balance-label-row">
-                            <span class="info-label">saldo</span>
+                            <span class="info-label">Saldo</span>
                             <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
                                 <svg v-if="balanceVisible" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                     <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
@@ -49,7 +49,7 @@
                     </div>
                     
                     <div class="header-info-item result-item">
-                        <span class="info-label">resultado hoje</span>
+                        <span class="info-label">Resultado hoje</span>
                         <div class="info-value-group">
                             <span class="info-value result-value" :class="dailyProfitClass" v-if="balanceVisible">{{ formattedDailyProfit }}</span>
                             <span class="info-value result-value" v-else>••••••</span>
@@ -58,22 +58,22 @@
                     </div>
 
                     <div class="header-info-item trades-item">
-                        <span class="info-label">trades hoje</span>
+                        <span class="info-label">Trades hoje</span>
                         <span class="info-value">{{ dailyStats.totalTrades }}</span>
                     </div>
 
                     <div class="header-info-item wins-item">
-                        <span class="info-label">vitórias</span>
+                        <span class="info-label">Vitórias</span>
                         <span class="info-value text-zenix-green">{{ dailyStats.wins || 0 }}</span>
                     </div>
 
                     <div class="header-info-item losses-item">
-                        <span class="info-label">derrotas</span>
+                        <span class="info-label">Derrotas</span>
                         <span class="info-value text-zenix-red" style="color: #f44336 !important;">{{ dailyStats.losses || 0 }}</span>
                     </div>
 
                     <div class="header-info-item status-item">
-                        <span class="info-label">status</span>
+                        <span class="info-label">Status</span>
                         <div class="info-value-group">
                             <span class="status-dot" :class="{ 'active': isInvestmentActive }"></span>
                             <span class="info-value status-text" :class="{ 'active': isInvestmentActive }">IA {{ isInvestmentActive ? 'Ativa' : 'Inativa' }}</span>
@@ -1037,8 +1037,8 @@ export default {
     font-size: 0.8rem;
     color: var(--zenix-secondary);
     margin-bottom: 3px;
-    text-transform: uppercase;
     font-weight: 500;
+    letter-spacing: 0.5px;
 }
 
 .info-value-group {
