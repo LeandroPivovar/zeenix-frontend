@@ -449,6 +449,37 @@ export default {
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao buscar ticks:', error);
             }
+        },
+
+        async checkAIStatus() {
+            try {
+                const userId = this.getUserId();
+                if (!userId) {
+                    console.warn('[InvestmentIAView] userId não encontrado');
+                    return;
+                }
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/config/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const config = result.data;
+                    this.isInvestmentActive = config.isActive || false;
+                    
+                    if (config.isActive) {
+                        console.log('[InvestmentIAView] ✅ IA JÁ ESTÁ ATIVA!');
+                    } else {
+                        console.log('[InvestmentIAView] IA está inativa');
+                    }
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao verificar status da IA:', error);
+            }
         }
     },
 
@@ -463,37 +494,6 @@ export default {
         // Iniciar carregamento de dados
         console.log('[InvestmentIAView] Iniciando carregamento de dados...');
         this.startDataLoading();
-    },
-
-    async checkAIStatus() {
-        try {
-            const userId = this.getUserId();
-            if (!userId) {
-                console.warn('[InvestmentIAView] userId não encontrado');
-                return;
-            }
-
-            const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-            const response = await fetch(`${apiBase}/ai/config/${userId}`, {
-                headers: {
-                    'Authorization': `Bearer ${localStorage.getItem('token')}`
-                }
-            });
-            const result = await response.json();
-
-            if (result.success && result.data) {
-                const config = result.data;
-                this.isInvestmentActive = config.isActive || false;
-                
-                if (config.isActive) {
-                    console.log('[InvestmentIAView] ✅ IA JÁ ESTÁ ATIVA!');
-                } else {
-                    console.log('[InvestmentIAView] IA está inativa');
-                }
-            }
-        } catch (error) {
-            console.error('[InvestmentIAView] Erro ao verificar status da IA:', error);
-        }
     },
 
     beforeUnmount() {
