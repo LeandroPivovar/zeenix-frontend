@@ -102,9 +102,9 @@
             <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
               <i class="fa-solid fa-brain text-zenix-green text-lg"></i>
             </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-1">IA de Investimento</h3>
-              <p class="text-sm text-zenix-light-gray">Análise inteligente em tempo real</p>
+            <div class="text-left">
+              <h3 class="text-lg font-semibold text-white mb-1">IA que analisa e decide com precisão</h3>
+              <p class="text-sm text-zenix-light-gray leading-relaxed">Nenhum chute. Apenas cálculo, lógica e estratégia.</p>
             </div>
           </div>
 
@@ -113,9 +113,9 @@
             <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
               <i class="fa-solid fa-copy text-zenix-green text-lg"></i>
             </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-1">Copy Trading</h3>
-              <p class="text-sm text-zenix-light-gray">Copie estratégias de traders experientes</p>
+            <div class="text-left">
+              <h3 class="text-lg font-semibold text-white mb-1">Copy Trading testado e validado</h3>
+              <p class="text-sm text-zenix-light-gray leading-relaxed">Você copia estratégias que já funcionam de verdade.</p>
             </div>
           </div>
 
@@ -124,9 +124,9 @@
             <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
               <i class="fa-solid fa-robot text-zenix-green text-lg"></i>
             </div>
-            <div>
-              <h3 class="text-lg font-semibold text-white mb-1">Automação Completa</h3>
-              <p class="text-sm text-zenix-light-gray">Agentes autônomos 24/7</p>
+            <div class="text-left">
+              <h3 class="text-lg font-semibold text-white mb-1">Agente Autônomo que faz tudo por você</h3>
+              <p class="text-sm text-zenix-light-gray leading-relaxed">Você ajusta uma vez — ele executa tudo, sem pausa e sem precisar de monitoramento.</p>
             </div>
           </div>
         </div>
@@ -247,10 +247,10 @@ button.bg-zenix-green:disabled {
               0 8px 32px rgba(0, 0, 0, 0.05);
 }
 
-/* Ícone de benefício - exatamente como no original */
+/* Ícone de benefício - sem efeito neon */
 .benefit-icon {
-  background: radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, transparent 70%);
-  box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+  background: rgba(34, 197, 94, 0.1);
+  border: 1px solid rgba(22, 163, 74, 0.3);
 }
 
 /* Hover do toggle de senha - exatamente como no original */
