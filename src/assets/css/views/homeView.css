@@ -38,6 +38,7 @@
     width: 100% !important;
     max-width: 100vw !important;
     margin: 0 !important;
+    margin-left: 0 !important;
     padding: 20px !important;
     display: flex;
     justify-content: center;
@@ -47,6 +48,9 @@
 
 .layout.no-sidebar .welcome-screen {
     padding: 20px !important;
+    margin: 0 !important;
+    margin-left: 0 !important;
+    width: 100% !important;
 }
 
 .content {
@@ -56,16 +60,25 @@
 	padding: 20px;
 	position: relative;
 	z-index: 1;
+	margin-left: 240px; /* Compensa a largura da sidebar */
+	width: calc(100% - 240px);
+	transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
-/* Remover padding do content na tela de boas-vindas */
+/* Remover padding e margin do content na tela de boas-vindas */
+.layout.no-sidebar .content {
+    margin-left: 0 !important;
+    width: 100% !important;
+}
+
 .layout.no-sidebar .content.welcome-screen {
     padding: 0 !important;
+    margin: 0 !important;
 }
 
 .layout.sidebar-collapsed .content {
-    margin-left: 0;
-    width: 100%;
+    margin-left: 72px; /* Compensa a largura da sidebar colapsada */
+    width: calc(100% - 72px);
 }
 
 header{
@@ -73,7 +86,19 @@ header{
     justify-content: space-around;
     align-items: center;
     padding: 1rem 0; 
-    width: 100%;
+    width: calc(100% - 240px);
+    margin-left: 240px;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.layout.no-sidebar header {
+    margin-left: 0 !important;
+    width: 100% !important;
+}
+
+.layout.sidebar-collapsed header {
+    margin-left: 72px;
+    width: calc(100% - 72px);
 }
 
 .notify-btn{
@@ -287,6 +312,16 @@ header{
         display: none;
     }
 
+    /* Mostrar header quando há sidebar (conectado) */
+    .layout:not(.no-sidebar) header {
+        display: flex;
+    }
+
+    /* Esconder header quando não há sidebar (tela de conexão) */
+    .layout.no-sidebar header {
+        display: none !important;
+    }
+
     /* Mostrar hamburger quando sidebar estiver colapsada */
     .layout.sidebar-collapsed header {
         display: flex;
@@ -306,9 +341,14 @@ header{
         width: 95%;
     }
     .content {
-        margin-left: 0; 
-        width: 100%;
+        margin-left: 0 !important; 
+        width: 100% !important;
         min-height: 100vh;
+    }
+
+    header {
+        margin-left: 0 !important;
+        width: 100% !important;
     }
 
     .hamburger-menu {
