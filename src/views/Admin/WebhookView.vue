@@ -30,7 +30,7 @@
                         <div :class="['status-indicator', connection.status]">
                             <span class="status-dot"></span>
                             <span class="status-text">
-                                {{ connection.status === 'active' ? 'Ativo' : 'Pausado' }}
+                                {{ connection.status === 'active' ? 'Funcionando' : 'Inativo' }}
                             </span>
                         </div>
                         </div>
@@ -38,9 +38,6 @@
                     <div class="card-details">
                         <p class="detail-label">Endpoint</p>
                         <input type="text" :value="connection.endpoint" readonly disabled />
-                        
-                        <p class="detail-label">Segredo HMAC</p>
-                        <input type="password" value="••••••••••••••••" readonly disabled />
                         
                         <p class="detail-label last-event">
                             Último evento: 
@@ -68,38 +65,95 @@
                 </div>
             </section>
             
-            <section class="webhook-settings">
-                <div class="tabs-navigation">
-                    <button 
-                        v-for="tab in tabs" 
-                        :key="tab"
-                        :class="['tab-btn', { active: activeTab === tab.toLowerCase() }]"
-                        @click="activeTab = tab.toLowerCase()"
-                    >
-                        {{ tab }}
-                    </button>
+            <!-- Card de Eventos Disponíveis -->
+            <section class="events-available-card">
+                <div class="card-header-section">
+                    <h2>Eventos Disponíveis</h2>
+                    <p class="card-subtitle">Eventos que são processados automaticamente pelo webhook</p>
                 </div>
-
-                <div v-if="activeTab === 'eventos'" class="tab-content events-content">
-                    <div class="events-grid">
-                        
-                        <div v-for="(column, colIndex) in eventColumns" :key="colIndex" class="event-column">
-                            <label 
-                                v-for="event in column" 
-                                :key="event.key" 
-                                class="checkbox-container"
-                            >
-                                <input 
-                                    class="checkbox-custom" type="checkbox" 
-                                    v-model="selectedEvents" 
-                                    :value="event.key"
-                                >
-                                <span class="checkbox-custom-style"></span>
-                                {{ event.label }}
-                            </label>
+                <div class="events-list">
+                    <div v-for="event in availableEvents" :key="event.key" class="event-item">
+                        <div class="event-icon">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 12L11 14L15 10M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="event-info">
+                            <h3>{{ event.label }}</h3>
+                            <p>{{ event.description }}</p>
                         </div>
                     </div>
-                    <button class="btn btn-success btn-save-events">Salvar Eventos</button>
+                </div>
+            </section>
+
+            <!-- Tabela de Logs -->
+            <section class="webhook-logs">
+                <div class="logs-header">
+                    <h2>Logs do Webhook</h2>
+                    <div class="logs-actions">
+                        <button class="btn btn-secondary btn-refresh" @click="refreshLogs">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M4 4V9H4.58152M19.9381 11C19.446 7.05369 16.0796 4 12 4C8.64262 4 5.76829 6.06817 4.58152 9M4.58152 9H9M20 20V15H19.4185M19.4185 15C18.2317 17.9318 15.3574 20 12 20C7.92038 20 4.55399 16.9463 4.06189 13M19.4185 15H15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Atualizar
+                        </button>
+                        <button class="btn btn-secondary btn-clear" @click="clearLogs">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            Limpar
+                        </button>
+                    </div>
+                </div>
+                <div class="logs-table-container">
+                    <table class="logs-table">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Evento</th>
+                                <th>Status</th>
+                                <th>Email</th>
+                                <th>Detalhes</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="log in webhookLogs" :key="log.id" :class="log.status">
+                                <td>{{ log.timestamp }}</td>
+                                <td>
+                                    <span :class="['event-badge', log.eventType]">
+                                        {{ log.eventLabel }}
+                                    </span>
+                                </td>
+                                <td>
+                                    <span :class="['status-badge', log.status]">
+                                        {{ log.statusLabel }}
+                                    </span>
+                                </td>
+                                <td>{{ log.email }}</td>
+                                <td class="details-cell">{{ log.details }}</td>
+                                <td>
+                                    <button class="btn-icon" @click="viewLogDetails(log)" title="Ver detalhes">
+                                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M2.45825 12C3.73253 7.94288 7.52281 5 12.0004 5C16.4781 5 20.2684 7.94291 21.5426 12C20.2684 16.0571 16.4781 19 12.0005 19C7.52281 19 3.73251 16.0571 2.45825 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </button>
+                                </td>
+                            </tr>
+                            <tr v-if="webhookLogs.length === 0">
+                                <td colspan="6" class="empty-state">
+                                    <div class="empty-content">
+                                        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M9 12H15M12 9V15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <p>Nenhum log registrado ainda</p>
+                                        <span>Os logs aparecerão aqui quando o webhook receber eventos</span>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </section>
 
@@ -148,34 +202,51 @@ export default {
 
             // 1. Cards de Webhooks
             connections: [
-                { id: 2, name: 'KiwiFy', endpoint: 'https://api.zenix.pro/webhooks/...', status: 'paused', lastEvent: 'há 2 horas' },
+                { id: 2, name: 'KiwiFy', endpoint: 'https://taxafacil.site/api/webhook', status: 'active', lastEvent: 'há 2 minutos' },
             ],
 
-            // 2. Guias (Tabs)
-            tabs: ['Eventos', 'Mapeamento', 'Segurança', 'Testes', 'Logs'],
-            activeTab: 'eventos',
-
-            // 3. Eventos e Checkboxes
-            eventColumns: [
-                [
-                    { key: 'compra_aprovada', label: 'Compra aprovada' },
-                    { key: 'upgrade_downgrade', label: 'Upgrade/Downgrade' },
-                ],
-                [
-                    { key: 'boleto_pago', label: 'Boleto pago' },
-                    { key: 'reembolso', label: 'Reembolso' },
-                ],
-                [
-                    { key: 'assinatura_criada', label: 'Assinatura criada' },
-                    { key: 'chargeback', label: 'Chargeback' },
-                ],
-                [
-                    { key: 'renovacao', label: 'Renovação' },
-                    { key: 'cancelado_inadimplente', label: 'Cancelado/Inadimplente' },
-                ],
+            // 2. Eventos Disponíveis
+            availableEvents: [
+                { 
+                    key: 'order_approved', 
+                    label: 'Compra Aprovada', 
+                    description: 'Dispara quando uma compra é aprovada e paga. Cria automaticamente o usuário no sistema.' 
+                },
+                { 
+                    key: 'subscription_renewed', 
+                    label: 'Assinatura Renovada', 
+                    description: 'Dispara quando uma assinatura é renovada com sucesso.' 
+                },
+                { 
+                    key: 'subscription_cancelled', 
+                    label: 'Assinatura Cancelada', 
+                    description: 'Dispara quando uma assinatura é cancelada ou não renovada.' 
+                },
             ],
-            // Valores iniciais selecionados (simulando o estado da imagem)
-            selectedEvents: ['compra_aprovada', 'boleto_pago', 'assinatura_criada', 'renovacao'],
+
+            // 3. Logs do Webhook
+            webhookLogs: [
+                {
+                    id: 1,
+                    timestamp: '20/11/2025 13:19:35',
+                    eventType: 'order_approved',
+                    eventLabel: 'Compra Aprovada',
+                    status: 'success',
+                    statusLabel: 'Sucesso',
+                    email: 'denoc89670@okcdeals.com',
+                    details: 'Usuário criado e email enviado',
+                },
+                {
+                    id: 2,
+                    timestamp: '20/11/2025 13:05:48',
+                    eventType: 'order_approved',
+                    eventLabel: 'Compra Aprovada',
+                    status: 'success',
+                    statusLabel: 'Sucesso',
+                    email: 'johndoe@example.com',
+                    details: 'Usuário criado com sucesso',
+                },
+            ],
 
             // 4. Alertas e Uptime
             emailAlertsEnabled: true,
@@ -189,6 +260,19 @@ export default {
         },
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        },
+        refreshLogs() {
+            console.log('Atualizando logs...');
+            // TODO: Implementar chamada à API para buscar logs atualizados
+        },
+        clearLogs() {
+            if (confirm('Tem certeza que deseja limpar todos os logs?')) {
+                this.webhookLogs = [];
+            }
+        },
+        viewLogDetails(log) {
+            console.log('Visualizando detalhes do log:', log);
+            // TODO: Implementar modal ou página de detalhes do log
         }
     }
 }
@@ -420,8 +504,85 @@ export default {
     color: var(--color-primary);
 }
 
-/* --- Configurações de Eventos (Abas) --- */
-.webhook-settings {
+/* --- Card de Eventos Disponíveis --- */
+.events-available-card {
+    background-color: var(--color-bg-card);
+    border-radius: 0.5rem;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.card-header-section {
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+
+.card-header-section h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--color-text-light);
+    margin-bottom: 0.25rem;
+}
+
+.card-subtitle {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
+}
+
+.events-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 1rem;
+}
+
+.event-item {
+    display: flex;
+    gap: 1rem;
+    padding: 1rem;
+    background-color: rgba(16, 185, 129, 0.05);
+    border: 1px solid rgba(16, 185, 129, 0.2);
+    border-radius: 0.5rem;
+    transition: all 0.2s;
+}
+
+.event-item:hover {
+    background-color: rgba(16, 185, 129, 0.1);
+    border-color: rgba(16, 185, 129, 0.3);
+}
+
+.event-icon {
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: rgba(16, 185, 129, 0.1);
+    border-radius: 0.5rem;
+    color: var(--color-primary);
+}
+
+.event-info {
+    flex: 1;
+    text-align: left;
+}
+
+.event-info h3 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-text-light);
+    margin-bottom: 0.25rem;
+}
+
+.event-info p {
+    font-size: 0.8rem;
+    color: var(--color-text-muted);
+    line-height: 1.4;
+}
+
+/* --- Tabela de Logs --- */
+.webhook-logs {
     background-color: var(--color-bg-card);
     border-radius: 0.5rem;
     padding: 1.5rem;
@@ -429,120 +590,190 @@ export default {
     width: 100%;
 }
 
-.tabs-navigation {
+.logs-header {
     display: flex;
-    gap: 1.5rem;
-    border-bottom: 1px solid var(--color-border);
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 1.5rem;
+    flex-wrap: wrap;
+    gap: 1rem;
 }
 
-.tab-btn {
-    background: none;
-    border: none;
-    color: var(--color-text-muted);
-    font-weight: 500;
-    padding: 0.5rem 0;
-    cursor: pointer;
-    transition: color 0.2s, border-bottom 0.2s;
-    position: relative;
-    font-size: 1rem;
-}
-
-.tab-btn.active {
+.logs-header h2 {
+    font-size: 1.25rem;
+    font-weight: 600;
     color: var(--color-text-light);
 }
 
-.tab-btn.active::after {
-    content: '';
-    position: absolute;
-    bottom: -1px;
-    left: 0;
-    width: 100%;
-    height: 2px;
-    background-color: var(--color-primary); /* Alterado para a cor verde da imagem */
+.logs-actions {
+    display: flex;
+    gap: 0.75rem;
 }
 
-/* Conteúdo da Aba Eventos */
-.events-content {
-    padding: 1rem 0;
-    position: relative; /* Para o botão Salvar Eventos */
-    min-height: 150px;
-}
-
-.events-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr); /* 4 colunas como na imagem */
-    gap: 1.5rem;
-    margin-bottom: 1.5rem;
-}
-
-
-.btn-save-events {
-    color: var( --color-text-black);
-    position: absolute;
-    bottom: 0;
-    right: 0;
-}
-
-/* --- Estilo Personalizado dos Checkboxes (Radio Style) --- */
-
-.checkbox-container {
+.btn-secondary {
+    background-color: transparent;
+    color: var(--color-text-muted);
+    border: 1px solid var(--color-border);
+    padding: 0.5rem 1rem;
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
     display: flex;
     align-items: center;
-    position: relative; /* Para posicionar o estilo personalizado */
-    padding-left: 1.75rem; /* Espaço para o checkbox personalizado */
-    margin-bottom: 0.75rem;
+    gap: 0.5rem;
     cursor: pointer;
-    font-size: 0.9rem;
-    color: var(--color-text-light); /* Cor do texto do evento */
-    user-select: none;
-}
-
-.checkbox-custom {
-    position: absolute;
-    opacity: 0;
-    cursor: pointer;
-    height: 0;
-    width: 0;
-}
-
-.checkbox-custom-style {
-    position: absolute;
-    top: 0;
-    left: 0;
-    height: 1.25rem; /* 20px */
-    width: 1.25rem; /* 20px */
-    background-color: transparent;
-    border-radius: 50%; /* Torna-o circular */
-    border: 2px solid var(--color-primary); /* Borda verde */
     transition: all 0.2s;
 }
 
-/* Quando o input (invisível) é marcado */
-.checkbox-container input:checked ~ .checkbox-custom-style {
-    background-color: var(--color-primary); 
+.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.05);
     border-color: var(--color-primary);
+    color: var(--color-primary);
 }
 
-/* Cria o "ponto" branco no centro do checkbox marcado */
-.checkbox-custom-style:after {
-    content: "";
-    position: absolute;
-    display: none;
+.btn-secondary svg {
+    width: 16px;
+    height: 16px;
 }
 
-.checkbox-container input:checked ~ .checkbox-custom-style:after {
-    display: block;
+.logs-table-container {
+    overflow-x: auto;
+    border-radius: 0.5rem;
+    border: 1px solid var(--color-border);
 }
 
-.checkbox-container .checkbox-custom-style:after {
-    /* Estilo do círculo interno */
-    top: 4px; /* 20px de altura - 8px de ponto / 2 */
-    left: 4px; /* 20px de largura - 8px de ponto / 2 */
-    width: 8px; 
-    height: 8px;
-    border-radius: 50%;
-    background: var(--color-bg-card); /* Cor de fundo do card para o círculo interno */
+.logs-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.875rem;
+}
+
+.logs-table thead {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.logs-table th {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    font-weight: 600;
+    color: var(--color-text-muted);
+    border-bottom: 1px solid var(--color-border);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.logs-table td {
+    padding: 1rem;
+    border-bottom: 1px solid var(--color-border);
+    color: var(--color-text-light);
+}
+
+.logs-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.logs-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.event-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.event-badge.order_approved {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--color-primary);
+}
+
+.event-badge.subscription_renewed {
+    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--color-secondary);
+}
+
+.event-badge.subscription_cancelled {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--color-danger);
+}
+
+.status-badge {
+    display: inline-block;
+    padding: 0.25rem 0.75rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+.status-badge.success {
+    background-color: rgba(16, 185, 129, 0.1);
+    color: var(--color-primary);
+}
+
+.status-badge.error {
+    background-color: rgba(239, 68, 68, 0.1);
+    color: var(--color-danger);
+}
+
+.status-badge.pending {
+    background-color: rgba(251, 191, 36, 0.1);
+    color: #fbbf24;
+}
+
+.details-cell {
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.btn-icon {
+    background: none;
+    border: none;
+    color: var(--color-text-muted);
+    cursor: pointer;
+    padding: 0.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 0.25rem;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+    color: var(--color-primary);
+}
+
+.empty-state {
+    padding: 3rem 1rem !important;
+    text-align: center;
+}
+
+.empty-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.empty-content svg {
+    color: var(--color-text-muted);
+    opacity: 0.5;
+}
+
+.empty-content p {
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--color-text-light);
+    margin: 0;
+}
+
+.empty-content span {
+    font-size: 0.875rem;
+    color: var(--color-text-muted);
 }
 
 
@@ -699,8 +930,17 @@ input:checked + .slider:before {
 
 /* --- Responsividade (Opcional, mas recomendado) --- */
 @media (max-width: 1200px) {
-    .events-grid {
-        grid-template-columns: repeat(2, 1fr);
+    .events-list {
+        grid-template-columns: 1fr;
+    }
+    
+    .logs-table {
+        font-size: 0.75rem;
+    }
+    
+    .logs-table th,
+    .logs-table td {
+        padding: 0.5rem;
     }
 }
 
@@ -719,8 +959,31 @@ input:checked + .slider:before {
         grid-template-columns: 1fr;
     }
     
-    .events-grid {
+    .events-list {
         grid-template-columns: 1fr;
+    }
+    
+    .logs-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+    
+    .logs-actions {
+        width: 100%;
+        flex-direction: column;
+    }
+    
+    .logs-actions button {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .logs-table-container {
+        overflow-x: scroll;
+    }
+    
+    .logs-table {
+        min-width: 800px;
     }
 
     .alert-uptime-footer {
@@ -740,9 +1003,22 @@ input:checked + .slider:before {
         margin-bottom: 1rem;
     }
 
-    .tabs-navigation{
-        overflow-x: auto;
-        overflow-y: hidden;
+}
+
+/* Ajuste para hambúrguer */
+.hamburger-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--color-text-light);
+    cursor: pointer;
+    padding: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+@media (max-width: 768px) {
+    .hamburger-btn {
+        display: block;
     }
 }
 </style>
