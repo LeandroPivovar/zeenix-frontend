@@ -248,6 +248,39 @@
     color: var(--zenix-secondary);
 }
 
+.chart-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+.timeframe-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.timeframe-option {
+    border: 1px solid var(--zenix-dark-border);
+    background: transparent;
+    color: #cbd5f5;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.timeframe-option:hover {
+    border-color: var(--zenix-green);
+    color: var(--zenix-green);
+}
+.timeframe-option.active {
+    background: var(--zenix-green);
+    border-color: var(--zenix-green);
+    color: #0b0b0b;
+    font-weight: 600;
+}
+
 .status-loading-spinner {
     width: 28px;
     height: 28px;
