@@ -19,6 +19,7 @@ import AcademyManagementView from '../views/Admin/AcademyManagementView.vue'
 import AcademyCoursesListView from '../views/Admin/AcademyCoursesListView.vue'
 import AdminView from '@/views/Admin/AdminView.vue'
 import MasterTraderView from '@/views/MasterTraderView.vue'
+import AgenteAutonomoView from '@/views/AgenteAutonomoView.vue'
 const routes = [
   {
     path: '/',
@@ -165,7 +166,14 @@ const routes = [
     name: 'MasterTraderView',
     component: MasterTraderView,  
     meta: { requiresAuth: true }  
+  },
+  {
+    path: '/agente-autonomo',
+    name: 'AgenteAutonomoView',
+    component: AgenteAutonomoView,
+    meta: { requiresAuth: true }
   }
+
 ]
 
 const router = createRouter({
