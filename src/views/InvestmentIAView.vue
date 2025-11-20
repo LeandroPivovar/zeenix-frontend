@@ -92,7 +92,6 @@
                 </div>
             </header>
             
-            <div class="main-content-area">
                 <InvestmentActive 
                     v-if="isInvestmentActive" 
                     :ticks="ticks" 
@@ -115,7 +114,6 @@
                     @update:mode="mode = $event"
                     @update:modoMartingale="modoMartingale = $event"
                 />
-            </div>
         </main>
 
         <footer class="zenix-footer">
@@ -854,17 +852,6 @@ export default {
 </script>
 
 <style scoped>
-/* Variáveis de Cores (Sugestões para o estilo escuro) */
-:root {
-    --zenix-background: #1e1e1e; /* Fundo Escuro */
-    --zenix-text: #ffffff; /* Texto Claro */
-    --zenix-secondary: #aaaaaa; /* Texto Secundário (cinza claro) */
-    --zenix-dark-border: #333333; /* Borda/Separador escuro */
-    --zenix-green: #4CAF50; /* Verde principal para Ativo */
-    --zenix-red: #f44336; /* Vermelho para Pausar/Inativo */
-    --zenix-header-height: 80px; /* Altura aproximada do header */
-}
-
 /* ------------------ Layout Geral e Responsividade ------------------ */
 
 .layout-ia-investment {
@@ -887,9 +874,15 @@ export default {
     padding: 0;
 }
 
+.dashboard-container {
+    padding: 40px 20px;
+    width: 100%;
+}
+
 /* Compensação de altura para o header fixo */
 .main-content-area {
     width: 100%;
+    max-width: 100vw;
     padding: 20px;
     padding-top: var(--zenix-header-height); /* Adiciona espaço no topo */
 }
@@ -923,6 +916,11 @@ export default {
 .hamburger-btn:hover {
     background-color: rgba(255, 255, 255, 0.1);
 }
+
+.header-info-item[data-v-70480caa]:last-child {
+    margin-bottom: 0;
+}
+
 
 /* Botão para mostrar sidebar quando colapsada */
 .show-sidebar-btn {
@@ -960,10 +958,11 @@ export default {
     border-bottom: 1px solid var(--zenix-dark-border);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
     width: 100%;
+    
     position: fixed; /* FIXO */
     top: 0;
     z-index: 10;
-    max-width: calc(100% - 240px);
+    max-width: calc(100%);
     height: var(--zenix-header-height);
     transition: max-width 0.3s ease;
     gap: 12px;
@@ -1167,7 +1166,7 @@ export default {
 
 /* Estilo do botão de Pausa/Ativação */
 .pause-btn.active {
-    background-color: var(--zenix-green);
+    background-color:  #348f37;
     color: white;
 }
 .pause-btn.active:hover {
@@ -1175,11 +1174,11 @@ export default {
 }
 
 .pause-btn.inactive {
-    background-color: var(--zenix-red); /* Exemplo para quando estiver Inativo (botão Ativar IA) */
+    background-color:  #348f37; /* Exemplo para quando estiver Inativo (botão Ativar IA) */
     color: white;
 }
 .pause-btn.inactive:hover {
-    background-color: #c0392b; /* Vermelho mais escuro no hover */
+    background-color: #176417; /* Vermelho mais escuro no hover */
 }
 
 /* ------------------ Responsividade do Header ------------------ */
