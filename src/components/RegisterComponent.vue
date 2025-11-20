@@ -8,7 +8,7 @@
         <div class="bg-white border border-zenix-card-border rounded-2xl p-8 login-card-shadow w-full">
           
           <!-- Logo -->
-          <div class="mb-6">
+          <div class="mb-6 flex justify-center">
             <div class="flex items-center space-x-2">
               <div class="text-2xl font-bold text-zenix-text-dark">ZENI</div>
               <div class="text-2xl font-bold text-zenix-green">X</div>
@@ -194,10 +194,13 @@
       <div id="hero-section" class="w-full max-w-[600px] pl-20 flex-shrink-0">
         
         <!-- Main Title -->
-        <div class="mb-8 text-left">
-          <h2 class="text-6xl font-bold leading-tight mb-4 text-left">
-            <span class="text-white">A única tecnologia criada para operar com a precisão que o mercado exige..</span><br>
+        <div class="mb-8 text-center">
+          <h2 class="text-8xl font-bold leading-tight mb-6 text-center" style="font-size: 3.89rem;">
+            <span class="text-zenix-green">Zenix</span>
           </h2>
+          <p class="text-xl text-white leading-relaxed">
+            A única tecnologia criada para operar com a precisão que o mercado exige.
+          </p>
         </div>
 
         <!-- Benefits List -->

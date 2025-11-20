@@ -1,19 +1,23 @@
 <template>
-  <div class="layout" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-    <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
-    <header>
-      <button class="hamburger-menu" @click="handleHamburgerClick">
-        <span class="line"></span>
-        <span class="line"></span>
-        <span class="line"></span>
-      </button>
-      <h1 class="title">Zenix</h1>
-      <button class="notify-btn">
-        <img src="../assets/icons/notify.svg" alt="" width="20px">
-      </button>
-      <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
-    </header>
+  <div class="layout" :class="{ 'sidebar-collapsed': isSidebarCollapsed, 'no-sidebar': !connectedInfo }">
+    <!-- Sidebar e Header só aparecem quando conectado -->
+    <template v-if="connectedInfo">
+      <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
+      <header>
+        <button class="hamburger-menu" @click="handleHamburgerClick">
+          <span class="line"></span>
+          <span class="line"></span>
+          <span class="line"></span>
+        </button>
+        <h1 class="title">Zenix</h1>
+        <button class="notify-btn">
+          <img src="../assets/icons/notify.svg" alt="" width="20px">
+        </button>
+        <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
+      </header>
+    </template>
 
+    <!-- Tela de Conexão (sem sidebar e header) -->
     <main class="content" v-if="!connectedInfo && !loading">
       <div class="container">
         <h1 class="title">Seja Bem-vindo, Marcos</h1>
@@ -54,11 +58,13 @@
       </div>
     </main>
 
+    <!-- Loading -->
     <main class="content loading-content" v-else-if="loading">
         <div class="loading-spinner"></div>
         <p class="loading-text">Verificando status da conexão...</p>
     </main>
 
+    <!-- Dashboard Conectado (com sidebar e header) -->
     <DashboardConnected v-else :info="connectedInfo" />
   </div>
 </template>

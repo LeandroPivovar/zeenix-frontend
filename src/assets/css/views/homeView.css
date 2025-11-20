@@ -7,6 +7,19 @@
     font-family: 'Inter', system-ui, sans-serif;
 }
 
+/* Layout sem sidebar (tela de conexão) */
+.layout.no-sidebar {
+    margin-left: 0 !important;
+}
+
+.layout.no-sidebar .content {
+    margin-left: 0 !important;
+    width: 100% !important;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .content {
    display: flex;
     
