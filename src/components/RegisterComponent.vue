@@ -196,10 +196,8 @@
         <!-- Main Title -->
         <div class="mb-8 text-left">
           <h2 class="text-6xl font-bold leading-tight mb-4 text-left">
-            <span class="text-white">Você é</span><br>
-            <span class="text-zenix-green">único.</span>
+            <span class="text-white">A única tecnologia criada para operar com a precisão que o mercado exige..</span><br>
           </h2>
-          <p class="text-lg text-zenix-light-gray leading-relaxed max-w-md text-left">A única tecnologia criada para operar com a precisão que o mercado exige..</p>
         </div>
 
         <!-- Benefits List -->
