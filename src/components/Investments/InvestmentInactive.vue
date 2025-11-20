@@ -260,6 +260,33 @@
 					<span class="legend-item venda"> 🟥 Venda</span>
 				</div>
 			</div>
+			<div class="chart-controls">
+				<div class="chart-type-selector">
+					<button
+						v-for="option in chartTypeOptions"
+						:key="option.value"
+						type="button"
+						class="chart-type-option"
+						:class="{ active: option.value === chartType }"
+						@click="setChartType(option.value)"
+					>
+						{{ option.label }}
+					</button>
+				</div>
+				<div class="timeframe-selector">
+					<button
+						v-for="option in timeframeOptions"
+						:key="option.value"
+						type="button"
+						class="timeframe-option"
+						:class="{ active: option.value === selectedTimeframe, disabled: chartType !== 'candles' }"
+						:disabled="chartType !== 'candles'"
+						@click="setTimeframe(option.value)"
+					>
+						{{ option.label }}
+					</button>
+				</div>
+			</div>
 			<div ref="chartContainer" class="chart-placeholder"></div>
 		</section>
 	</div>
@@ -289,8 +316,20 @@ export default {
 			// Estado da IA (Ativado)
 			aiEnabled: true,
 			chart: null,
-			lineSeries: null,
+			currentSeries: null,
 			chartInitialized: false, 
+			chartType: 'candles',
+			chartTypeOptions: [
+				{ label: 'Velas', value: 'candles' },
+				{ label: 'Linhas', value: 'line' },
+			],
+			selectedTimeframe: 60,
+			timeframeOptions: [
+				{ label: '1m', value: 60 },
+				{ label: '2m', value: 120 },
+				{ label: '5m', value: 300 },
+				{ label: '15m', value: 900 },
+			],
 	
 			// Seção Mercado & Estratégia
 			market: "EURUSD_Forex",
@@ -327,6 +366,17 @@ export default {
 			},
 			deep: true,
 			immediate: true
+		},
+		chartType() {
+			if (this.chartInitialized) {
+				this.createSeries(this.chartType);
+				this.updateChart();
+			}
+		},
+		selectedTimeframe() {
+			if (this.chartInitialized && this.chartType === 'candles') {
+				this.updateChart();
+			}
 		},
 		// Emitir mudanças dos parâmetros para o componente pai
 		entryValue(newValue) {
@@ -387,6 +437,92 @@ export default {
 		}
 	},
 	methods: {
+		setChartType(type) {
+			if (this.chartType !== type) {
+				this.chartType = type;
+			}
+		},
+		setTimeframe(value) {
+			if (this.selectedTimeframe !== value) {
+				this.selectedTimeframe = value;
+			}
+		},
+		aggregateTicksToCandles(timeframeSeconds) {
+			if (!Array.isArray(this.ticks) || !this.ticks.length) return [];
+
+			const sorted = [...this.ticks].sort((a, b) => {
+				const timeA = Math.floor(a.epoch || a.time || 0);
+				const timeB = Math.floor(b.epoch || b.time || 0);
+				return timeA - timeB;
+			});
+
+			const candles = [];
+			let bucketStart = null;
+			let bucketTicks = [];
+
+			const finalize = () => {
+				if (!bucketTicks.length || bucketStart === null) return;
+				const prices = bucketTicks.map(t => t.price);
+				candles.push({
+					time: bucketStart,
+					open: bucketTicks[0].price,
+					high: Math.max(...prices),
+					low: Math.min(...prices),
+					close: bucketTicks[bucketTicks.length - 1].price,
+				});
+			};
+
+			for (const tick of sorted) {
+				const rawTime = Math.floor(tick.epoch || tick.time || Date.now() / 1000);
+				const price = Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0);
+				if (!price) continue;
+
+				const bucket = Math.floor(rawTime / timeframeSeconds) * timeframeSeconds;
+
+				if (bucketStart === null) bucketStart = bucket;
+
+				if (bucket !== bucketStart) {
+					finalize();
+					bucketStart = bucket;
+					bucketTicks = [];
+				}
+
+				bucketTicks.push({ time: rawTime, price });
+			}
+
+			finalize();
+			return candles;
+		},
+		createSeries(type) {
+			if (!this.chart) return;
+
+			if (this.currentSeries) {
+				try {
+					this.chart.removeSeries(this.currentSeries);
+				} catch (_) {}
+				this.currentSeries = null;
+			}
+
+			if (type === 'line') {
+				this.currentSeries = this.chart.addAreaSeries({
+					lineColor: '#4caf50',
+					topColor: 'rgba(76, 175, 80, 0.2)',
+					bottomColor: 'rgba(76, 175, 80, 0.02)',
+					lineWidth: 2,
+					priceFormat: { type: 'price', precision: 4, minMove: 0.0001 },
+				});
+			} else {
+				this.currentSeries = this.chart.addCandlestickSeries({
+					upColor: '#4caf50',
+					downColor: '#ef4444',
+					borderUpColor: '#4caf50',
+					borderDownColor: '#ef4444',
+					wickUpColor: '#4caf50',
+					wickDownColor: '#ef4444',
+					priceFormat: { type: 'price', precision: 4, minMove: 0.0001 },
+				});
+			}
+		},
 		initChart() {
 			if (this.chartInitialized || !this.$refs.chartContainer) {
 				return;
@@ -428,18 +564,7 @@ export default {
 					},
 				});
 
-				this.lineSeries = this.chart.addAreaSeries({
-					lineColor: '#4caf50',
-					topColor: 'rgba(76, 175, 80, 0.2)',
-					bottomColor: 'rgba(76, 175, 80, 0.02)',
-					lineWidth: 2,
-					priceFormat: {
-						type: 'price',
-						precision: 2,
-						minMove: 0.01,
-					},
-				});
-
+				this.createSeries(this.chartType);
 				this.chartInitialized = true;
 				console.log('[InvestmentInactive] ✅ Gráfico inicializado');
 				this.updateChart();
@@ -449,18 +574,24 @@ export default {
 		},
 
 		updateChart() {
-			if (!this.chartInitialized || !this.lineSeries || this.ticks.length === 0) {
+			if (!this.chartInitialized || !this.currentSeries || this.ticks.length === 0) {
 				return;
 			}
 
 			try {
-				const data = this.ticks.map(tick => ({
-					time: Math.floor(tick.epoch || Date.now() / 1000),
-					value: tick.value || tick.price || 0,
-				}));
+				let data = [];
+				if (this.chartType === 'candles') {
+					data = this.aggregateTicksToCandles(this.selectedTimeframe);
+				} else {
+					data = this.ticks.map(tick => ({
+						time: Math.floor(tick.epoch || tick.time || Date.now() / 1000),
+						value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
+					})).filter(point => point.value);
+				}
 
-				console.log('[InvestmentInactive] Atualizando gráfico com', data.length, 'pontos');
-				this.lineSeries.setData(data);
+				if (!data.length) return;
+
+				this.currentSeries.setData(data);
 				this.chart.timeScale().fitContent();
 			} catch (error) {
 				console.error('[InvestmentInactive] ❌ Erro ao atualizar gráfico:', error);
@@ -1277,6 +1408,50 @@ input:checked + .slider:before {
 	border-radius: 4px;
 	position: relative;
 	overflow: hidden;
+}
+
+.chart-controls {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin: 15px 0;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+.chart-type-selector,
+.timeframe-selector {
+	display: flex;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+.chart-type-option,
+.timeframe-option {
+	border: 1px solid #333;
+	background: transparent;
+	color: #e5e7eb;
+	padding: 6px 14px;
+	border-radius: 9999px;
+	font-size: 0.75rem;
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	cursor: pointer;
+	transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.chart-type-option:hover,
+.timeframe-option:hover:not(.disabled) {
+	border-color: #22c55e;
+	color: #22c55e;
+}
+.chart-type-option.active,
+.timeframe-option.active {
+	background: #22c55e;
+	border-color: #22c55e;
+	color: #0b0b0b;
+	font-weight: 600;
+}
+.timeframe-option.disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
 }
 
 @keyframes color-blink {

@@ -250,14 +250,19 @@
 
 .chart-controls {
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
     margin-bottom: 12px;
+    flex-wrap: wrap;
 }
+.chart-type-selector,
 .timeframe-selector {
     display: flex;
     gap: 8px;
     flex-wrap: wrap;
 }
+.chart-type-option,
 .timeframe-option {
     border: 1px solid var(--zenix-dark-border);
     background: transparent;
@@ -270,15 +275,21 @@
     cursor: pointer;
     transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
-.timeframe-option:hover {
+.chart-type-option:hover,
+.timeframe-option:hover:not(.disabled) {
     border-color: var(--zenix-green);
     color: var(--zenix-green);
 }
+.chart-type-option.active,
 .timeframe-option.active {
     background: var(--zenix-green);
     border-color: var(--zenix-green);
     color: #0b0b0b;
     font-weight: 600;
+}
+.timeframe-option.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .status-loading-spinner {
