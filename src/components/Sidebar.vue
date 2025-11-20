@@ -29,7 +29,7 @@
                 data-text="IAs de Investimento"
             >
                 <img src="../assets/icons/core.svg" alt="" class="icon-sidebar">
-                IAs de Investimento
+                IA's de Investimento
             </button>
             <button 
                 class="menu-item" 
@@ -49,6 +49,20 @@
                 <img src="../assets/icons/click.svg" alt="" class="icon-sidebar">
                 Operação Manual
             </button>
+
+            <button
+                class="menu-item"
+                :class="{ active: isAutonomousAgentActive }"
+                @click="navigateAndClose('/agente-autonomo')"
+                data-text="Agente Autônomo"
+            >
+            
+            Agente Autonomo
+            </button>
+            
+
+            <div class="separator"></div>
+            
             <button
                 class="menu-item"
                 :class="{ active: isAcademyActive }"
@@ -58,10 +72,7 @@
                 <img src="../assets/icons/academy.svg" alt="" class="icon-sidebar">
                 Zenix Academy
             </button>
-            <button class="menu-item" @click="close" data-text="Relatórios">
-                <img src="../assets/icons/analytics.svg" alt="" class="icon-sidebar">
-                Relatórios
-            </button>
+
             <button
                 class="menu-item"
                 :class="{ active: isSupportActive }"
@@ -152,6 +163,15 @@
             >
                 InvestmentIA
             </button>
+
+            <button
+                class="menu-item"
+                :class="{ active: isMasterTraderActive }"
+                @click="navigateAndClose('/MasterTrader')"
+                data-text="Master Trader"
+            >
+                Master Trader
+            </button>
         </nav>
         <div class="status">
             <div class="user" @click="toggleUserMenu">
@@ -235,6 +255,9 @@ export default {
         },
         isAdminViewActive() {
             return this.$route?.path === '/Admin';
+        },
+        isMasterTraderActive() {
+            return this.$route?.path === '/MasterTrader';
         },
     },
     methods: {
