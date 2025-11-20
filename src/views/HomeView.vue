@@ -105,19 +105,70 @@ export default {
     this.loadUserName()
   },
   methods: {
-    loadUserName() {
+    async loadUserName() {
+      // Tentar pegar do localStorage primeiro
       const userInfo = localStorage.getItem('user')
       if (userInfo) {
         try {
           const user = JSON.parse(userInfo)
           if (user.name) {
             this.firstName = user.name.split(' ')[0]
+            console.log('[HomeView] Nome carregado do localStorage:', this.firstName)
+            return
           }
         } catch (e) {
           console.error('Erro ao parsear informações do usuário:', e)
-          this.firstName = 'Usuário'
         }
       }
+
+      // Se não tiver no localStorage, tentar decodificar o JWT
+      const token = localStorage.getItem('token')
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]))
+          console.log('[HomeView] Payload do token:', payload)
+          
+          // Tentar buscar o nome do usuário pela API
+          if (payload.sub || payload.userId || payload.id) {
+            try {
+              const userId = payload.sub || payload.userId || payload.id
+              const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+              const response = await fetch(`${apiBase}/auth/me`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              })
+              
+              if (response.ok) {
+                const userData = await response.json()
+                console.log('[HomeView] Dados do usuário da API:', userData)
+                if (userData.name) {
+                  this.firstName = userData.name.split(' ')[0]
+                  localStorage.setItem('user', JSON.stringify({ name: userData.name, email: userData.email }))
+                  console.log('[HomeView] Nome definido:', this.firstName)
+                  return
+                }
+              }
+            } catch (apiError) {
+              console.error('[HomeView] Erro ao buscar dados do usuário:', apiError)
+            }
+          }
+          
+          // Fallback: tentar usar o campo name do payload se existir
+          if (payload.name) {
+            this.firstName = payload.name.split(' ')[0]
+            localStorage.setItem('user', JSON.stringify({ name: payload.name, email: payload.email }))
+            console.log('[HomeView] Nome do payload:', this.firstName)
+            return
+          }
+        } catch (e) {
+          console.error('[HomeView] Erro ao decodificar token:', e)
+        }
+      }
+
+      // Se não conseguiu de nenhuma forma, manter "Usuário"
+      console.log('[HomeView] Nome não encontrado, usando fallback')
+      this.firstName = 'Usuário'
     },
     toggleSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen
@@ -265,7 +316,7 @@ export default {
     }
   },
   async mounted() {
-    this.loadUserName()
+    await this.loadUserName()
     await this.checkConnection(true)
   },
   watch: {
