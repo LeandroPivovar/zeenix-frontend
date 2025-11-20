@@ -18,9 +18,9 @@
     </template>
 
     <!-- Tela de Conexão (sem sidebar e header) -->
-    <main class="content" v-if="!connectedInfo && !loading">
+    <main class="content welcome-screen" v-if="!connectedInfo && !loading">
       <div class="container">
-        <h1 class="title">Seja Bem-vindo, Marcos</h1>
+        <h1 class="title">Seja Bem-vindo, {{ firstName }}</h1>
         <p class="subtitle">Antes de começar a operar, você precisa conectar sua conta Deriv ou criar uma nova.</p>
         <div class="box">
           <div class="video-card">
@@ -81,10 +81,44 @@ export default {
       connectedInfo: null,
       loading: true,
       isSidebarOpen: false,
-      isSidebarCollapsed: false
+      isSidebarCollapsed: false,
+      firstName: 'Usuário'
     }
   },
+  computed: {
+    userFirstName() {
+      const userInfo = localStorage.getItem('user')
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo)
+          if (user.name) {
+            return user.name.split(' ')[0]
+          }
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e)
+        }
+      }
+      return 'Usuário'
+    }
+  },
+  created() {
+    this.loadUserName()
+  },
   methods: {
+    loadUserName() {
+      const userInfo = localStorage.getItem('user')
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo)
+          if (user.name) {
+            this.firstName = user.name.split(' ')[0]
+          }
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e)
+          this.firstName = 'Usuário'
+        }
+      }
+    },
     toggleSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen
     },
@@ -231,6 +265,7 @@ export default {
     }
   },
   async mounted() {
+    this.loadUserName()
     await this.checkConnection(true)
   },
   watch: {

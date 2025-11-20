@@ -20,6 +20,14 @@
     align-items: center;
 }
 
+/* Tela de boas-vindas ocupa 100% */
+.welcome-screen {
+    min-height: 100vh !important;
+    width: 100vw !important;
+    margin: 0 !important;
+    padding: 20px !important;
+}
+
 .content {
    display: flex;
     
