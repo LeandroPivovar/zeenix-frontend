@@ -248,6 +248,24 @@
     color: var(--zenix-secondary);
 }
 
+.status-loading-spinner {
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    border: 3px solid rgba(247, 160, 26, 0.25);
+    border-top-color: #f7a01a;
+    animation: status-indicator-spin 0.9s linear infinite;
+}
+
+@keyframes status-indicator-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 
 /* ------------------ Configuration & Log Grid ------------------ */
 

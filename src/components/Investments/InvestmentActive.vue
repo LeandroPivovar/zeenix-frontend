@@ -35,7 +35,7 @@
                     </div>
                     <div class="stat-card-primary status-indicator-panel">
                         <div class="status-indicator-content">
-                            <div class="ai-status-pulse pulse-active pulse-large"></div>
+                            <div class="status-loading-spinner"></div>
                             <p class="status-indicator-text">Analisando</p>
                             <p class="status-indicator-subtext">Aprimoramento possível</p>
                         </div>
