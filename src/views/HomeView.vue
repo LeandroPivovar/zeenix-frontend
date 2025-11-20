@@ -131,7 +131,6 @@ export default {
           // Tentar buscar o nome do usuário pela API
           if (payload.sub || payload.userId || payload.id) {
             try {
-              const userId = payload.sub || payload.userId || payload.id
               const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
               const response = await fetch(`${apiBase}/auth/me`, {
                 headers: {
