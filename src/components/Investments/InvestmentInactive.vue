@@ -499,7 +499,9 @@ export default {
 			if (this.currentSeries) {
 				try {
 					this.chart.removeSeries(this.currentSeries);
-				} catch (_) {}
+				} catch (error) {
+					console.warn('[InvestmentInactive] Não foi possível remover série anterior:', error);
+				}
 				this.currentSeries = null;
 			}
 
