@@ -73,6 +73,11 @@ header{
     line-height: 1.2;
 }
 
+/* Título na tela de conexão em verde */
+.welcome-screen .title {
+    color: #00E676;
+}
+
 .subtitle {
     color: #b3b3b4;
     font-size: 1rem;
