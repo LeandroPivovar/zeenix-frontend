@@ -41,8 +41,8 @@
             </header>
 
             <main class="main-content">
-                <!-- Visão da IA Panel -->
-                <section id="ai-vision-panel" class="fade-in">
+                <!-- Visão da IA Panel - Only show when IA is inactive -->
+                <section id="ai-vision-panel" class="fade-in" v-if="!isInvestmentActive">
                     <div class="ai-vision-card premium-card glow-green">
                         <div class="ai-vision-header">
                             <div>
@@ -148,8 +148,8 @@
                     </div>
                 </section>
 
-                <!-- Configuration Cards Grid -->
-                <div class="config-grid">
+                <!-- Configuration Cards Grid - Only show when IA is inactive -->
+                <div class="config-grid" v-if="!isInvestmentActive">
                     <!-- Mercado & Estratégia -->
                     <div id="market-strategy-card" class="config-card premium-card">
                         <h3 class="card-title">
@@ -1313,16 +1313,21 @@ export default {
 }
 
 /* AI Vision Panel */
+#ai-vision-panel {
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
+    width: calc(100% - 1.5rem);
+    box-sizing: border-box;
+}
+
 .ai-vision-card {
     background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1.5rem;
     margin-bottom: 1.25rem;
-    margin-left: 0.75rem;
-    margin-right: 0.75rem;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
-    width: calc(100% - 1.5rem);
+    width: 100%;
     box-sizing: border-box;
 }
 
