@@ -63,12 +63,14 @@
       <div id="hero-section" class="w-[600px] pl-20">
         
         <!-- Main Title -->
-        <div class="mb-8 text-center">
-          <h2 class="text-8xl font-bold leading-tight mb-6 text-center" style="font-size: 3.89rem;">
-            <span class="text-zenix-green">Zenix</span>
+        <div class="mb-8">
+          <h2 class="font-bold leading-tight mb-6 zenix-title">
+            <span class="text-white typewriter-text">
+              <span v-for="(char, index) in displayedText" :key="index" :class="char === 'X' ? 'zenix-x text-zenix-green' : ''">{{ char }}</span>
+            </span>
           </h2>
-          <p class="text-xl text-white leading-relaxed">
-            A única tecnologia criada para operar com a precisão que o mercado exige.
+          <p class="text-xl text-white leading-relaxed text-left">
+            A única tecnologia criada para operar com a precisão que o mercado exige. A única tecnologia criada para operar com a precisão que o mercado exige. A única tecnologia criada para operar com a precisão que o mercado exige.
           </p>
         </div>
 
@@ -81,8 +83,8 @@
               <i class="fa-solid fa-brain text-zenix-green text-lg"></i>
             </div>
             <div class="text-left">
-              <h3 class="text-lg font-semibold text-white mb-1">IA que analisa e decide com precisão</h3>
-              <p class="text-sm text-zenix-light-gray leading-relaxed">Nenhum chute. Só cálculo e lógica.</p>
+              <h3 class="text-lg font-semibold text-white mb-1">IA de Investimento</h3>
+              <p class="text-sm text-zenix-light-gray leading-relaxed">Nenhum chute. Só cálculo e lógica e estratégia.</p>
             </div>
           </div>
 
@@ -92,7 +94,7 @@
               <i class="fa-solid fa-copy text-zenix-green text-lg"></i>
             </div>
             <div class="text-left">
-              <h3 class="text-lg font-semibold text-white mb-1">Copy Trading testado e validado</h3>
+              <h3 class="text-lg font-semibold text-white mb-1">Copy Trading</h3>
               <p class="text-sm text-zenix-light-gray leading-relaxed">Você copia estratégias que já funcionam de verdade.</p>
             </div>
           </div>
@@ -103,7 +105,7 @@
               <i class="fa-solid fa-robot text-zenix-green text-lg"></i>
             </div>
             <div class="text-left">
-              <h3 class="text-lg font-semibold text-white mb-1">Agente Autônomo que faz tudo por você</h3>
+              <h3 class="text-lg font-semibold text-white mb-1">Agente Autônomo</h3>
               <p class="text-sm text-zenix-light-gray leading-relaxed">Você ajusta uma vez — ele executa tudo, sem pausa e sem precisar olhar.</p>
             </div>
           </div>
@@ -130,10 +132,27 @@ export default {
   data() {
     return {
       email: '',
-      isLoading: false
+      isLoading: false,
+      displayedText: '',
+      fullText: 'ZENIX',
+      typewriterSpeed: 150
     }
   },
+  mounted() {
+    this.startTypewriter();
+  },
   methods: {
+    startTypewriter() {
+      let index = 0;
+      const type = () => {
+        if (index < this.fullText.length) {
+          this.displayedText += this.fullText.charAt(index);
+          index++;
+          setTimeout(type, this.typewriterSpeed);
+        }
+      };
+      type();
+    },
     async handleForgotPassword() {
       if (this.isLoading) return;
       this.isLoading = true;
@@ -192,6 +211,24 @@ export default {
 }
 
 #hero-section .text-zenix-green {
+  color: #22C55E !important;
+}
+
+/* Efeito de typewriter e estilo ZENIX */
+.zenix-title {
+  font-size: 4.5rem !important;
+  line-height: 1.1;
+}
+
+.typewriter-text {
+  color: white !important;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  font-size: inherit;
+}
+
+.zenix-x {
+  display: inline-block;
   color: #22C55E !important;
 }
 
