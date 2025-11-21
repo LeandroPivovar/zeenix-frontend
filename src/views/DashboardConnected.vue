@@ -36,10 +36,10 @@
     </header>
     
     <!-- Main Content -->
-    <main class="flex-1 px-3 lg:px-4 xl:px-5 py-8 bg-zenix-bg noise-bg font-inter overflow-y-auto w-full">
+    <main class="flex-1 px-0 py-8 bg-zenix-bg noise-bg font-inter overflow-y-auto w-full">
     <!-- Ultra Pro Balance Card -->
-    <div class="grid grid-cols-1 gap-6 mb-8">
-      <div id="ultra-pro-balance-card" class="relative bg-zenix-card border border-zenix-border rounded-[20px] p-6 premium-card-enhanced overflow-hidden min-h-[126px]">
+    <div class="grid grid-cols-1 gap-0 mb-8 w-full">
+      <div id="ultra-pro-balance-card" class="relative bg-zenix-card border border-zenix-border rounded-none p-6 premium-card-enhanced overflow-hidden min-h-[126px] w-full">
         <!-- Ultra Pro Abstract Background -->
         <div class="absolute inset-0 pointer-events-none overflow-hidden">
           <!-- Base gradient -->
@@ -169,10 +169,10 @@
           <div class="w-full h-[1px] bg-[rgba(255,255,255,0.06)] mb-3"></div>
           
           <!-- MICROINSIGHTS ULTRA PRO -->
-          <div>
-            <div class="grid grid-cols-3 gap-3">
+          <div class="w-full">
+            <div class="grid grid-cols-3 gap-0 w-full">
               <!-- IA Recomendada -->
-              <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg p-2.5">
+              <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-none p-2.5 w-full border-r-0">
                 <div class="flex items-center space-x-1.5 mb-1">
                   <i class="fas fa-brain text-zenix-green text-[10px]"></i>
                   <p class="text-[9px] text-[#A0A0A0] font-medium">IA Recomendada</p>
@@ -182,7 +182,7 @@
               </div>
               
               <!-- Copy Mais Rentável -->
-              <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg p-2.5">
+              <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-none p-2.5 w-full border-r-0">
                 <div class="flex items-center space-x-1.5 mb-1">
                   <i class="fas fa-copy text-zenix-green text-[10px]"></i>
                   <p class="text-[9px] text-[#A0A0A0] font-medium">Copy Mais Rentável</p>
@@ -192,7 +192,7 @@
               </div>
               
               <!-- Agente Autônomo -->
-              <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg p-2.5">
+              <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-none p-2.5 w-full">
                 <div class="flex items-center space-x-1.5 mb-1">
                   <i class="fas fa-robot text-zenix-label text-[10px]"></i>
                   <p class="text-[9px] text-[#A0A0A0] font-medium">Agente Autônomo</p>
@@ -207,13 +207,14 @@
     </div>
     
     <!-- Quick Tools Section -->
-    <section id="quick-tools" class="mt-12 mb-16">
-      <h2 class="text-sm font-semibold text-zenix-text opacity-95 mb-4">Ferramentas Principais</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
+    <section id="quick-tools" class="mt-12 mb-16 w-full">
+      <h2 class="text-sm font-semibold text-zenix-text opacity-95 mb-4 px-3 lg:px-4 xl:px-5">Ferramentas Principais</h2>
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 w-full">
         <div 
           v-for="(tool, index) in quickTools" 
           :key="index"
-          class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card transition-all duration-300 cursor-pointer h-[200px] flex flex-col tool-card"
+          class="bg-zenix-card border border-zenix-border rounded-none p-6 premium-card transition-all duration-300 cursor-pointer h-[200px] flex flex-col tool-card w-full"
+          :class="{ 'border-r-0': index < quickTools.length - 1 }"
           @click="handleToolClick(tool)"
         >
           <div class="w-14 h-14 bg-zenix-bg rounded-xl flex items-center justify-center mb-4 border border-zenix-green icon-container">
@@ -229,16 +230,17 @@
     </section>
     
     <!-- Best IAs Section -->
-    <section id="best-ias" class="mb-6">
-      <div class="flex items-center justify-between mb-5">
+    <section id="best-ias" class="mb-6 w-full">
+      <div class="flex items-center justify-between mb-5 px-3 lg:px-4 xl:px-5">
         <h2 class="text-sm font-semibold text-zenix-text">Melhores IA's Agora</h2>
         <span class="text-xs text-zenix-label">Baseado no mercado em tempo real</span>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-0 w-full">
         <div 
           v-for="(ia, index) in bestIAs" 
           :key="index"
-          class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden premium-card hover:border-zenix-green transition-all h-[200px]"
+          class="bg-zenix-card border border-zenix-border rounded-none overflow-hidden premium-card hover:border-zenix-green transition-all h-[200px] w-full"
+          :class="{ 'border-r-0': index < bestIAs.length - 1 }"
         >
           <div class="flex h-full">
             <div class="w-[35%] relative overflow-hidden flex-shrink-0">
@@ -268,15 +270,16 @@
     </section>
     
     <!-- Overall Performance Section -->
-    <section id="overall-performance" class="mb-12">
-      <div class="bg-zenix-card border border-zenix-border rounded-xl p-10 premium-card">
+    <section id="overall-performance" class="mb-12 w-full">
+      <div class="bg-zenix-card border border-zenix-border rounded-none p-10 premium-card w-full">
         <h2 class="text-lg font-semibold text-zenix-text mb-2">Desempenho Geral</h2>
         <p class="text-sm text-[#AFAFAF] mb-10">Você está deixando dinheiro na mesa. Ative todos os recursos para maximizar seus resultados.</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-0 w-full">
           <div 
             v-for="(perf, index) in performanceData" 
             :key="index"
-            class="flex flex-col space-y-5 bg-zenix-bg border border-[#1C1C1C] rounded-xl p-7 performance-card hover:border-zenix-green transition-all"
+            class="flex flex-col space-y-5 bg-zenix-bg border border-[#1C1C1C] rounded-none p-7 performance-card hover:border-zenix-green transition-all w-full"
+            :class="{ 'border-r-0': index < performanceData.length - 1 }"
           >
             <div class="flex items-center justify-between">
               <div class="w-11 h-11 bg-zenix-card rounded-lg flex items-center justify-center border border-zenix-green/20 icon-perf-container">
