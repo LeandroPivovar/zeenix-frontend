@@ -1,7 +1,7 @@
 <template>
-  <main class="flex-1 px-8 py-8 bg-zenix-bg noise-bg font-inter">
+  <main class="flex-1 px-4 lg:px-6 xl:px-8 py-8 bg-zenix-bg noise-bg font-inter">
     <!-- Ultra Pro Balance Card -->
-    <div class="grid grid-cols-1 gap-8 mb-8">
+    <div class="grid grid-cols-1 gap-6 mb-8">
       <div id="ultra-pro-balance-card" class="relative bg-zenix-card border border-zenix-border rounded-[20px] p-6 premium-card-enhanced overflow-hidden min-h-[126px]">
         <!-- Ultra Pro Abstract Background -->
         <div class="absolute inset-0 pointer-events-none overflow-hidden">
@@ -172,7 +172,7 @@
     <!-- Quick Tools Section -->
     <section id="quick-tools" class="mt-12 mb-16">
       <h2 class="text-sm font-semibold text-zenix-text opacity-95 mb-4">Ferramentas Principais</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5">
         <div 
           v-for="(tool, index) in quickTools" 
           :key="index"
@@ -197,7 +197,7 @@
         <h2 class="text-sm font-semibold text-zenix-text">Melhores IA's Agora</h2>
         <span class="text-xs text-zenix-label">Baseado no mercado em tempo real</span>
       </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5">
         <div 
           v-for="(ia, index) in bestIAs" 
           :key="index"
@@ -235,7 +235,7 @@
       <div class="bg-zenix-card border border-zenix-border rounded-xl p-10 premium-card">
         <h2 class="text-lg font-semibold text-zenix-text mb-2">Desempenho Geral</h2>
         <p class="text-sm text-[#AFAFAF] mb-10">Você está deixando dinheiro na mesa. Ative todos os recursos para maximizar seus resultados.</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
           <div 
             v-for="(perf, index) in performanceData" 
             :key="index"
