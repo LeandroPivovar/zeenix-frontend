@@ -85,10 +85,10 @@
 <script>
 // Componentes necessários (crie estes arquivos .vue)
 import AppSidebar from '../components/Sidebar.vue'
-import CopiersDetails from './CopyTrading.vue'
+import CopiersDetails from '../components/CopiersDetails.vue'
 import AIInvestment from './InvestmentIAView.vue'
+import AgenteAutonomoView from './AgenteAutonomo.vue'
 import ManualOperation from './OperationView.vue'
-// import AutonomousAgent from './AutonomousAgent.vue' // Adicione se for usar
 
 export default {
     name: 'MasterTraderView',
@@ -97,7 +97,7 @@ export default {
         CopiersDetails,
         AIInvestment,
         ManualOperation,
-        // AutonomousAgent
+        AgenteAutonomoView
     },
     data() {
         return {
@@ -119,7 +119,7 @@ export default {
                     return 'ManualOperation'
                 case 'Agente Autônomo':
                 default:
-                    return 'AutonomousAgent' 
+                    return 'AgenteAutonomoView' 
             }
         }
     },
@@ -138,14 +138,7 @@ export default {
 }
 </script>
 
----
-
 <style>
-/* ----------------------------------------------------------------------
-    BLOCO 1: REGRAS DE SOBRESCRITA GLOBAL (SEM SCOPED)
-    Usado para forçar a largura 100% e desativar o 'position: fixed'
-    em elementos que estão em componentes pais/globais.
----------------------------------------------------------------------- */
 
 .content-wrapper,
 .layout-content-investment[data-v-74055f],
@@ -173,6 +166,8 @@ export default {
     /* REGRA CHAVE PARA A LARGURA 100% */
     width: 100% !important; 
 }
+
+
 </style>
 
 <style scoped>
@@ -190,6 +185,10 @@ export default {
     margin: 0;
 }
 
+.layout-agent-autonomo[data-v-03907d1e]{
+    width: 100%;
+    margin: 0;
+}
 
 .layout{
     margin: 0;
