@@ -19,7 +19,7 @@ import AcademyManagementView from '../views/Admin/AcademyManagementView.vue'
 import AcademyCoursesListView from '../views/Admin/AcademyCoursesListView.vue'
 import AdminView from '@/views/Admin/AdminView.vue'
 import MasterTraderView from '@/views/MasterTraderView.vue'
-import AgenteAutonomoView from '@/views/AgenteAutonomoView.vue'
+import AgenteAutonomoView from '@/views/AgenteAutonomo.vue'
 const routes = [
   {
     path: '/',
