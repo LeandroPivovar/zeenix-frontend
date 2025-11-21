@@ -1,128 +1,136 @@
 <template>
-  <div class="layout-course">
-		<header class="top-header-fixed">
-			<button class="back-btn" @click="$router.push('/academy')">
-				<img src="../assets/icons/back.svg" alt="" width="20px"> Voltar aos cursos
-			</button>
-			<div class="header-placeholder"></div>
-		</header>
-    <main class="course-detail">
-      <div class="content-wrapper">
-        <aside class="course-nav">
-          <h2 class="course-title-nav">{{ course?.title || 'Carregando...' }}</h2>
-          <div v-if="course" class="progress-info">
-            <span class="progress-text">{{ completedLessons }} de {{ totalLessons }} aulas concluídas</span>
-            <div class="progress-bar">
-              <div class="progress-fill" :style="{ width: progressPercentage + '%' }"></div>
+  <div class="course-layout noise-bg" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
+
+    <div class="course-main">
+      <header class="course-header">
+        <div class="header-left">
+          <button class="back-link" @click="$router.push('/academy')">
+            <i class="fas fa-arrow-left"></i>
+            Voltar aos cursos
+          </button>
+          <div class="header-content">
+            <h1>Zenix Academy</h1>
+            <p>Cursos exclusivos para traders profissionais</p>
+          </div>
+        </div>
+        <div class="user-info-block">
+          <div class="user-meta">
+            <div class="name">{{ currentUserName }}</div>
+            <div class="status">
+              <span class="pulse-dot"></span>
+              <span>Online</span>
             </div>
+          </div>
+          <div class="user-avatar">{{ userInitials }}</div>
+        </div>
+      </header>
+
+      <main class="course-body">
+        <section class="video-content">
+          <nav class="breadcrumb">
+            <span>Zenix Academy</span>
+            <i class="fas fa-chevron-right"></i>
+            <span>{{ course?.title || 'Curso' }}</span>
+            <i class="fas fa-chevron-right" v-if="selectedLesson"></i>
+            <span v-if="selectedLesson">{{ selectedLesson.title }}</span>
+          </nav>
+
+          <div class="video-card">
+            <div class="video-frame">
+              <template v-if="selectedLesson?.videoUrl">
+                <video class="lesson-video" controls :src="resolveMediaUrl(selectedLesson.videoUrl)">
+                  Seu navegador não suporta reprodução de vídeo.
+                </video>
+              </template>
+              <template v-else>
+                <div class="video-placeholder">
+                  <i class="fa-solid fa-play-circle" style="font-size: 4rem; color: rgba(34, 197, 94, 0.2);"></i>
+                  <p>{{ selectedLesson?.title || 'Selecione uma aula' }}</p>
+                </div>
+                <div class="zenix-watermark">ZENIX</div>
+              </template>
+            </div>
+          </div>
+
+          <div v-if="selectedLesson">
+            <h2>{{ selectedLesson.title }}</h2>
+            <p class="lesson-meta-line">{{ selectedLesson.description }}</p>
+            <button class="cta-button" v-if="course?.ctaLabel" @click="openCTA(course.ctaLink)">
+              {{ course.ctaLabel }}
+            </button>
+          </div>
+
+          <div class="materials-section">
+            <h3>Materiais complementares</h3>
+            <div class="materials-list" v-if="materialsList.length">
+              <div v-for="material in materialsList" :key="material.id || material.title" class="material-row" @click="downloadMaterial(material)">
+                <span>{{ material.title }}</span>
+                <i class="fa-solid fa-download" style="color:#22C55E;"></i>
+              </div>
+            </div>
+            <p v-else class="empty-materials">Nenhum material disponível para esta aula.</p>
+          </div>
+
+          <div class="action-buttons">
+            <button class="action-btn" @click="markAsCompleted" :disabled="!selectedLesson || selectedLesson.completed || markingComplete">
+              <i class="fa-solid fa-check-circle" style="color:#22C55E;"></i>
+              <span>{{ selectedLesson?.completed ? 'Aula concluída' : 'Marcar como concluída' }}</span>
+            </button>
+            <button class="action-btn" @click="replayLesson" :disabled="!selectedLesson">
+              <i class="fa-solid fa-rotate-right" style="color:#22C55E;"></i>
+              <span>Assistir novamente</span>
+            </button>
+          </div>
+        </section>
+
+        <aside class="course-playlist">
+          <div class="playlist-header">
+            <h3>Conteúdo do Curso</h3>
+            <p>{{ totalLessons }} aulas • {{ course?.totalDuration || '--' }}</p>
           </div>
 
           <div v-if="loading" class="loading-info">Carregando módulos...</div>
           <div v-else-if="error" class="error-info">{{ error }}</div>
-          <div v-else class="modules">
-            <div class="module" v-for="(module, idx) in modules" :key="module.id || idx">
-              <button class="module-header" @click="toggleModule(idx)">
-                <span class="module-number">Módulo {{ module.orderIndex || idx + 1 }} - {{ module.title }}</span>
-                <span class="caret" :class="{ expanded: module.expanded }">▼</span>
+
+          <div v-else>
+            <div class="playlist-module" v-for="(module, idx) in modules" :key="module.id || idx">
+              <button class="module-toggle" @click="toggleModule(idx)">
+                <div>
+                  <div>Módulo {{ module.orderIndex || idx + 1 }}: {{ module.title }}</div>
+                  <div class="module-progress">{{ module.lessons?.filter(l => l.completed).length || 0 }} / {{ module.lessons?.length || 0 }} concluído</div>
+                </div>
+                <i class="fa-solid" :class="module.expanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
               </button>
-              <div v-if="module.expanded" class="lessons">
+              <div class="lesson-list" :class="{ expanded: module.expanded }">
                 <div 
+                  class="lesson-row" 
                   v-for="(lesson, lidx) in module.lessons" 
                   :key="lesson.id || lidx"
-                  class="lesson-item"
-                  :class="{ completed: lesson.completed, active: lesson.active }"
+                  :class="{ active: selectedLesson?.id === lesson.id }"
                   @click="selectLesson(lesson)"
                 >
-                  <span v-if="lesson.completed" class="check">✓</span>
-                  <span v-else class="circle">○</span>
-                  <span class="lesson-number">{{ lesson.orderIndex || lidx + 1 }}.</span>
-                  <span class="lesson-title">{{ lesson.title }}</span>
-                  <span class="lesson-duration">{{ lesson.duration }}</span>
+                  <div class="lesson-thumb"></div>
+                  <div class="lesson-info">
+                    <div class="lesson-info-title">{{ lesson.title }}</div>
+                    <div class="lesson-info-duration">{{ lesson.duration }}</div>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-
-          <div class="certificate-hint">
-            Complete todas as aulas para desbloquear seu certificado Zenix.
-          </div>
         </aside>
-
-        <div class="video-section">
-          <div v-if="selectedLesson" class="lesson-header">
-            <div class="lesson-title">
-              <h3 class="lesson-title-heaade">
-                {{ selectedLesson.title }} - 
-                {{ selectedLesson.description }}
-              </h3>
-            </div>
-            <div class="lesson-meta">
-              <span class="duration">Duração: {{ selectedLesson.duration }}</span>
-              <span class="status">
-                <span class="status-dot"></span>
-                {{ selectedLesson.completed ? 'Concluída' : 'Em andamento' }}
-              </span>
-            </div>
-
-          </div>
-          <div v-else class="lesson-header">
-            <h3 class="lesson-title-main">Selecione uma aula</h3>
-          </div>
-
-          <div v-if="!selectedLesson" class="loading-info">Selecione uma aula para começar ℹ</div>
-          <div v-else class="video-player">
-            <template v-if="selectedLesson.videoUrl">
-              <video
-                class="lesson-video"
-                controls
-                :src="resolveMediaUrl(selectedLesson.videoUrl)"
-              >
-                Seu navegador não suporta reprodução de vídeo.
-              </video>
-            </template>
-            <template v-else>
-              <div class="video-placeholder">{{ selectedLesson.title }}</div>
-              <div class="zenix-badge">ZENIX</div>
-            </template>
-          </div>
-
-          <div class="action-buttons">
-            <button class="btn-download">
-              <span>⬇</span>
-              Baixar material
-            </button>
-            <button 
-              class="btn-complete" 
-              :class="{ completed: selectedLesson?.completed }"
-              @click="markAsCompleted"
-              :disabled="!selectedLesson || selectedLesson.completed || markingComplete"
-            >
-              <span v-if="markingComplete">⏳</span>
-              <span v-else>✓</span>
-              {{ selectedLesson?.completed ? 'Aula concluída' : 'Marcar como concluída' }}
-            </button>
-            <button class="btn-replay">
-              <span>↻</span>
-              Assistir novamente
-            </button>
-          </div>
-
-          <div class="materials">
-            <h4 class="materials-title">Materiais Complementares</h4>
-            <a href="#" class="material-link">
-              <span>📄</span>
-              PDF: Estratégia de Copy Trading
-            </a>
-          </div>
-        </div>
-      </div>
-    </main>
+      </main>
+    </div>
   </div>
 </template>
 
 <script>
+import AppSidebar from '../components/Sidebar.vue'
+
 export default {
   name: 'CourseDetailView',
+  components: { AppSidebar },
   data() {
     return {
       course: null,
@@ -130,7 +138,9 @@ export default {
       selectedLesson: null,
       loading: true,
       error: null,
-      markingComplete: false
+      markingComplete: false,
+      isSidebarOpen: false,
+      isSidebarCollapsed: false
     }
   },
   computed: {
@@ -146,9 +156,32 @@ export default {
     progressPercentage() {
       if (this.totalLessons === 0) return 0
       return Math.round((this.completedLessons / this.totalLessons) * 100)
+    },
+    materialsList() {
+      return this.selectedLesson?.materials || []
+    },
+    currentUserName() {
+      const stored = localStorage.getItem('user')
+      if (stored) {
+        try {
+          const parsed = JSON.parse(stored)
+          return parsed.name || 'Usuário'
+        } catch (e) {
+          return 'Usuário'
+        }
+      }
+      return 'Usuário'
+    },
+    userInitials() {
+      const parts = this.currentUserName.split(' ')
+      if (parts.length >= 2) {
+        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+      }
+      return this.currentUserName.substring(0, 2).toUpperCase()
     }
   },
   mounted() {
+    this.loadFontAwesome()
     this.fetchCourseDetails()
   },
   watch: {
@@ -157,6 +190,41 @@ export default {
     }
   },
   methods: {
+    loadFontAwesome() {
+      if (!document.getElementById('fa-script')) {
+        const script = document.createElement('script')
+        script.id = 'fa-script'
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js'
+        script.crossOrigin = 'anonymous'
+        script.referrerPolicy = 'no-referrer'
+        document.head.appendChild(script)
+      }
+    },
+    toggleSidebar() {
+      this.isSidebarOpen = !this.isSidebarOpen
+    },
+    closeSidebar() {
+      this.isSidebarOpen = false
+    },
+    toggleSidebarCollapse() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed
+    },
+    replayLesson() {
+      if (this.selectedLesson?.videoUrl) {
+        const video = document.querySelector('.lesson-video')
+        video?.load()
+      }
+    },
+    openCTA(link) {
+      if (link) {
+        window.open(link, '_blank')
+      }
+    },
+    downloadMaterial(material) {
+      if (material?.url) {
+        window.open(this.resolveMediaUrl(material.url), '_blank')
+      }
+    },
     async fetchCourseDetails() {
       this.loading = true
       this.error = null
