@@ -1,6 +1,18 @@
 <template>
     <div class="layout-agente-autnomo" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
         
+        <header class="agente-autonomo-header">
+            <div class="user-profile-widget">
+                <div class="user-avatar-placeholder"></div>
+                <div class="user-info">
+                    <span class="user-name">Marcos Costa</span>
+                    <span class="user-id">ID: C911234567</span>
+                </div>
+                <div class="dropdown-arrow">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>
+                </div>
+            </div>
+        </header>
         <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="isSidebarCollapsed" 
@@ -8,7 +20,7 @@
             @toggle-collapse="toggleSidebarCollapse" 
         />
         
-        <div class="container">
+        <div class="container-componentes">
             <component 
                 :is="componenteAtual" 
                 v-bind="agenteData" 
@@ -93,7 +105,7 @@ export default {
         },
         
         textoDoBotao() {
-            return this.agenteEstaAtivo ? 'Pausar Agente Autônomo' : 'Iniciar Agente Autônomo';
+            return this.agenteEstaAtivo ? 'Pausar Agente' : 'Iniciar Agente Autônomo';
         },
         
         // Objeto que combina todos os dados a serem passados via v-bind
@@ -248,18 +260,68 @@ export default {
 <style scoped>
 /* Estilos do Componente Pai (Layout principal) */
 .layout-agente-autnomo {
-    padding: 40px;
-    background-color: #0d0d0d;
+    background-color: #0a0b0a;
     min-height: 100vh;
     width: calc(100% - 240px);
     margin-left: 240px;
     transition: margin-left 0.3s;
+    padding-bottom: 40px;
 }
 
-.layout-agente-autnomo.sidebar-collapsed {
-    width: calc(100% - 60px); /* Largura ajustada quando a sidebar é recolhida */
-    margin-left: 60px;
+.container-componentes{
+    padding: 20px 60px;
 }
+
+/* NOVO: Estilos para o Header */
+.agente-autonomo-header {
+    display: flex;
+    justify-content: flex-end; 
+    
+    padding: 20px;
+    border-bottom: #333 solid 1px;
+}
+
+.user-profile-widget {
+    background-color: #1e1e1e; /* Fundo escuro */
+    color: white;
+    padding: 8px 15px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+}
+
+.user-avatar-placeholder {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    /* Simula o avatar colorido */
+    background-image: linear-gradient(45deg, #1e90ff, #3cb371); 
+    margin-right: 10px;
+}
+
+.user-info {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
+}
+
+.user-name {
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.user-id {
+    font-size: 10px;
+    color: #a0a0a0; /* Cor mais clara para o ID */
+}
+
+.dropdown-arrow {
+    margin-left: 10px;
+    color: #a0a0a0;
+}
+/* FIM DOS NOVOS ESTILOS DE HEADER */
 
 
 /* Estilos para o Footer e Botão (Fixos) */
@@ -286,11 +348,11 @@ export default {
     border-radius: 8px;
     transition: background-color 0.3s ease;
     font-weight: bold;
-    width: 100%;
+    width: 93%;
 }
 .pause-button{
     background: #333;
-    max-width: 300px;
+    max-width: 200px;
 }
 
 .iniciar-button:hover {
