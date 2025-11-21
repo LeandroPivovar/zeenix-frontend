@@ -12,8 +12,10 @@ module.exports = {
         'zenix-green': '#22C55E',
         'zenix-green-hover': '#16A34A',
         'zenix-text': '#DFDFDF',
-        'zenix-secondary': '#9B9B9B',
+        'zenix-secondary': '#A1A1A1',
+        'zenix-label': '#7A7A7A',
         'zenix-border': '#1C1C1C',
+        'zenix-divider': '#1A1A1A',
         'zenix-blue': '#0099FF',
         'zenix-yellow': '#FFD058',
         'zenix-red': '#FF4747'
