@@ -24,7 +24,7 @@
             <button class="text-zenix-secondary hover:text-white transition-all hidden lg:block" @click="$router.push('/dashboard')">
               <i class="fas fa-arrow-left text-lg"></i>
             </button>
-            <div>
+            <div class="text-left">
               <h1 class="text-lg lg:text-xl font-bold text-white">Configurações de Perfil</h1>
               <p class="text-xs text-zenix-secondary mt-0.5">Gerencie suas informações pessoais e preferências</p>
             </div>
@@ -41,7 +41,7 @@
         </div>
       </header>
 
-      <main class="flex-1 p-4 lg:p-8">
+      <main class="flex-1 p-4 lg:p-8 pt-8">
         <div v-if="loading" class="flex items-center justify-center h-64">
           <div class="text-zenix-secondary">Carregando configurações...</div>
         </div>
