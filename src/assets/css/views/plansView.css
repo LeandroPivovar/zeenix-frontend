@@ -1,17 +1,17 @@
 /* Reset e Layout Base */
 .layout {
-    display: flex;
+    display: flex; 
     flex-direction: column;
-    min-height: 100vh;
+    min-height: 100vh; 
     background-color: #0B0B0B; /* zenix-bg */
     color: #DFDFDF; /* zenix-text */
     font-family: 'Inter', sans-serif;
-    margin-left: 260px; /* Largura da sidebar */
-    width: calc(100% - 260px);
+    margin-left: 240px; /* corresponde à largura real da sidebar */
+    width: calc(100% - 240px);
 }
 
-.plans-content {
-    flex: 1;
+.plans-content { 
+    flex: 1; 
     padding: 3rem 2rem; /* py-12 px-8 */
     display: flex;
     flex-direction: column;
@@ -280,7 +280,7 @@
 
 /* Buttons */
 .plan-btn {
-    width: 100%;
+    width: 100%; 
     padding: 0.75rem 0; /* py-3 */
     border-radius: 0.75rem; /* rounded-xl */
     font-weight: 600; /* font-semibold */
@@ -372,8 +372,8 @@
     .plans-grid {
         grid-template-columns: 1fr;
     }
-    .layout {
-        margin-left: 0;
+    .layout { 
+        margin-left: 0; 
         width: 100%;
     }
     .plans-content {
