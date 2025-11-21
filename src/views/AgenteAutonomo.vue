@@ -261,22 +261,11 @@ export default {
     margin-left: 60px;
 }
 
-.container {
-    /* O componente filho ocupará esta área */
-    padding-bottom: 80px; /* Espaço para o footer fixo */
-}
 
 /* Estilos para o Footer e Botão (Fixos) */
 .agente-autonomo-footer {
-    position: fixed;
-    bottom: 0;
-    left: 240px; 
-    width: calc(100% - 240px);
-    background-color: #1a1a1a;
-    padding: 15px 40px;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
     display: flex;
-    justify-content: flex-end;
+    justify-content: center;
     z-index: 1000;
     transition: left 0.3s, width 0.3s;
 }
@@ -290,17 +279,18 @@ export default {
     background-color: #4CAF50; /* Verde para Iniciar */
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 15px 20px;
     text-align: center;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
     border-radius: 8px;
     transition: background-color 0.3s ease;
     font-weight: bold;
+    width: 100%;
 }
-
-.iniciar-button.pause-button {
-    background-color: #f44336; /* Vermelho para Pausar */
+.pause-button{
+    background: #333;
+    max-width: 300px;
 }
 
 .iniciar-button:hover {
