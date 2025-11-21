@@ -273,20 +273,6 @@
                 />
                 </section>
 
-                <!-- Chart Only Section - When IA is inactive, show only chart from InvestmentInactive -->
-                <section id="chart-section-inactive" class="chart-section" v-else>
-                <InvestmentInactive 
-                    :ticks="ticks" 
-                    :current-price="currentPrice"
-                    :last-update-time="formattedLastUpdate"
-                        :show-only-chart="true"
-                    @update:entryValue="entryValue = $event"
-                    @update:profitTarget="profitTarget = $event"
-                    @update:lossLimit="lossLimit = $event"
-                    @update:mode="mode = $event"
-                    @update:modoMartingale="modoMartingale = $event"
-                />
-                </section>
         </main>
 
             <!-- Footer -->
@@ -358,14 +344,12 @@
 
 <script>
 import AppSidebar from '../components/Sidebar.vue';
-import InvestmentInactive from '@/components/Investments/InvestmentInactive.vue'; 
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 
 export default {
     name: 'InvestmentIAView',
     components: {
         AppSidebar,
-        InvestmentInactive,
         InvestmentActive
     },
     data() {
@@ -1098,9 +1082,6 @@ export default {
     transition: left 0.3s ease;
     width: calc(100% - 240px);
     box-sizing: border-box;
-    min-height: 120px;
-    display: flex;
-    align-items: center;
 }
 
 .main-content-wrapper.sidebar-collapsed .top-header {
@@ -1109,9 +1090,9 @@ export default {
 }
 
 .header-content {
-    padding: 1.5rem 20px;
+    padding: 1rem 20px;
     display: flex;
-    align-items: flex-start;
+    align-items: center;
     justify-content: space-between;
     gap: 1.5rem;
     max-width: 100%;
@@ -1124,6 +1105,8 @@ export default {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+    justify-content: center;
+    align-items: flex-start;
 }
 
 .header-title {
@@ -1228,7 +1211,7 @@ export default {
 
 /* Main Content */
 .main-content {
-    margin-top: 150px;
+    margin-top: 100px;
     padding: 1.5rem 20px;
     max-width: 100%;
     width: 100%;
@@ -2326,7 +2309,7 @@ export default {
     }
     
     .main-content {
-        margin-top: 160px;
+        margin-top: 100px;
         padding: 1rem 15px;
     }
     
