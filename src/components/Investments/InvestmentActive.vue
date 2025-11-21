@@ -11,7 +11,7 @@
                             <button class="eye-btn" @click="balanceVisible = !balanceVisible">
                                 <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
                             </button>
-                        </div>
+                </div>
                         <div class="card-value-large">
                             <span v-if="!isLoadingStats && accountBalanceProp" class="balance-value" :class="{ 'hidden-value': !balanceVisible }">
                                 {{ formattedBalance }}
@@ -21,8 +21,8 @@
                         <div class="card-actions-row">
                             <button :class="['account-type-btn', accountType === 'real' ? 'active' : '']" @click="accountType = 'real'">Real</button>
                             <button :class="['account-type-btn', accountType === 'demo' ? 'active' : '']" @click="accountType = 'demo'">Demo</button>
-                        </div>
                     </div>
+                        </div>
 
                     <!-- Card 2 - Lucro do Dia -->
                     <div class="premium-card performance-card">
@@ -31,7 +31,7 @@
                             <button class="eye-btn" @click="profitVisible = !profitVisible">
                                 <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
                             </button>
-                        </div>
+                    </div>
                         <div class="card-value-large">
                             <span v-if="!isLoadingStats" :class="['profit-value', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
                                 {{ formattedSessionProfitLoss }}
@@ -54,9 +54,9 @@
                                 {{ formattedSessionWinrate }}
                             </span>
                             <span v-else class="text-zenix-secondary">--</span>
-                        </div>
-                        <span v-if="!isLoadingStats" class="text-xs text-zenix-green font-medium">{{ sessionWinrateLabel }}</span>
                     </div>
+                        <span v-if="!isLoadingStats" class="text-xs text-zenix-green font-medium">{{ sessionWinrateLabel }}</span>
+                </div>
 
                     <!-- Card 4 - Trades Hoje -->
                     <div class="premium-card performance-card">
@@ -64,21 +64,21 @@
                             <span class="card-label">Trades Hoje</span>
                             <button class="eye-btn" @click="tradesVisible = !tradesVisible">
                                 <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
-                            </button>
-                        </div>
+                                </button>
+                            </div>
                         <div class="card-value-large">
                             <span v-if="!isLoadingStats" class="trades-value" :class="{ 'hidden-value': !tradesVisible }">
                                 {{ dailyStats.sessionTrades || 0 }}
                             </span>
                             <span v-else class="text-zenix-secondary">--</span>
-                        </div>
+                            </div>
                         <div class="trades-stats-row">
                             <span class="text-xs text-zenix-green font-medium">{{ dailyStats.sessionWins || 0 }} Vitórias</span>
                             <span class="text-xs text-zenix-red/70 font-medium">{{ dailyStats.sessionLosses || 0 }} Perdas</span>
                         </div>
                     </div>
                 </div>
-
+    
                 <!-- Status da IA Card -->
                 <div class="premium-card status-card">
                     <div class="status-card-content">
@@ -93,10 +93,10 @@
                                                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="20 60" opacity="0.3"></circle>
                                                 <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="15 65" stroke-linecap="round"></circle>
                                             </svg>
-                                        </div>
-                                    </div>
+                        </div>
                                 </div>
                             </div>
+                                </div>
                             <div class="status-text-content">
                                 <h3 class="status-title">Status da Operação</h3>
                                 <div class="status-subtitle-row">
@@ -104,8 +104,8 @@
                                     <span class="status-indicator-dot">•</span>
                                     <span class="status-indicator-subtext">Aguardando padrão de entrada</span>
                                 </div>
-                            </div>
-                        </div>
+                                </div>
+                                </div>
                         <div class="status-card-right">
                             <div class="ai-online-indicator">
                                 <div class="ai-pulse-dot"></div>
@@ -120,11 +120,11 @@
                                 <i class="fas fa-power-off"></i>
                                 <span>{{ isDeactivating ? 'Desativando...' : 'Desativar IA' }}</span>
                             </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
+                                    </div>
+                                    </div>
+                                </div>
+                            </div>
+                        
             <!-- Main Content Grid -->
             <div class="main-content-grid">
                 <!-- Left Column - Chart -->
@@ -151,8 +151,8 @@
                                 >
                                     Logs
                                 </button>
-                            </div>
                         </div>
+                    </div>
                         
                         <!-- Chart Type Buttons -->
                         <div class="chart-type-buttons">
@@ -164,10 +164,10 @@
                             >
                                 {{ option.label }}
                             </button>
-                        </div>
-                        
+            </div>
+
                         <div class="timeframe-buttons">
-                            <button
+                    <button 
                                 v-for="option in timeframeOptionsFormatted"
                                 :key="option.value"
                                 :class="['timeframe-btn', { 'active': option.value === selectedTimeframe }]"
@@ -175,9 +175,9 @@
                                 @click="setTimeframe(option.value)"
                             >
                                 {{ option.label }}
-                            </button>
-                        </div>
-
+                    </button>
+                </div>
+            
                         <!-- Chart View -->
                         <div v-show="activeTab === 'chart'" id="chart-view" class="chart-view-container">
                             <div ref="chartContainer" class="chart-container"></div>
@@ -185,51 +185,51 @@
 
                         <!-- Logs View -->
                         <div v-show="activeTab === 'logs'" id="logs-view" class="logs-view-container">
-                            <div v-if="isLoadingLogs" class="loading-logs">
-                                <p>Carregando histórico de operações...</p>
-                            </div>
-                            
-                            <div v-else-if="logOperations.length === 0" class="no-logs">
-                                <p>Nenhuma operação executada ainda.</p>
-                            </div>
-                            
+                    <div v-if="isLoadingLogs" class="loading-logs">
+                        <p>Carregando histórico de operações...</p>
+                    </div>
+                    
+                    <div v-else-if="logOperations.length === 0" class="no-logs">
+                        <p>Nenhuma operação executada ainda.</p>
+                    </div>
+                    
                             <div v-else class="logs-table-wrapper">
                                 <table class="logs-table">
-                                    <thead>
-                                        <tr>
+                        <thead>
+                            <tr>
                                             <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Horário</th>
                                             <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Par</th>
                                             <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Direção</th>
                                             <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Resultado</th>
                                             <th class="text-right py-3 px-4 text-xs font-medium text-zenix-secondary">P&L</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
+                            </tr>
+                        </thead>
+                        <tbody>
                                         <tr v-for="(op, index) in logOperations" :key="index" class="log-row">
                                             <td class="py-3 px-4 text-xs text-zenix-text font-medium">{{ op.time }}</td>
                                             <td class="py-3 px-4 text-xs text-zenix-text">{{ op.pair }}</td>
                                             <td class="py-3 px-4">
                                                 <span :class="['direction-badge', op.direction === 'CALL' ? 'call-badge' : 'put-badge']">
                                                     <i :class="`fas fa-arrow-${op.direction === 'CALL' ? 'up' : 'down'} text-xs mr-1`"></i>
-                                                    {{ op.direction }}
+                                        {{ op.direction }}
                                                 </span>
-                                            </td>
+                                </td>
                                             <td class="py-3 px-4">
                                                 <span :class="['result-badge', op.result === 'WIN' ? 'win-badge' : 'loss-badge']">
                                                     <i :class="`fas fa-${op.result === 'WIN' ? 'check' : 'times'} text-xs mr-1`"></i>
-                                                    {{ op.result }}
+                                        {{ op.result }}
                                                 </span>
-                                            </td>
+                                </td>
                                             <td :class="['py-3 px-4 text-right text-sm font-bold', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
-                                                {{ op.pnl }}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
+                                    {{ op.pnl }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                             </div>
                         </div>
-                    </div>
                 </div>
+            </div>
 
                 <!-- Right Column - Config -->
                 <div class="config-column">
@@ -251,7 +251,7 @@
                                 <p class="config-label">Mercado</p>
                                 <p class="config-value-main">Volatility 10 Index</p>
                                 <p class="config-description">Ticks de alta frequência</p>
-                            </div>
+                        </div>
 
                             <!-- Parâmetros -->
                             <div class="config-section">
@@ -261,21 +261,21 @@
                                         <p class="param-label">Entrada</p>
                                         <p class="param-value" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : '$50' }}</p>
                                         <p class="param-value" v-else>Carregando...</p>
-                                    </div>
+                    </div>
                                     <div>
                                         <p class="param-label">Modo</p>
                                         <p class="param-value">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Devagar' }}</p>
-                                    </div>
+                </div>
                                     <div>
                                         <p class="param-label">Alvo de Lucro</p>
                                         <p class="param-value text-zenix-green" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
                                         <p class="param-value" v-else>Carregando...</p>
-                                    </div>
+                </div>
                                     <div>
                                         <p class="param-label">Limite de Perda</p>
                                         <p class="param-value text-zenix-red" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
                                         <p class="param-value" v-else>Carregando...</p>
-                                    </div>
+            </div>
                                 </div>
                             </div>
 
@@ -1080,9 +1080,9 @@ export default {
                     upColor: '#22C55E',
                     borderUpColor: '#22C55E',
                     wickUpColor: '#22C55E',
-                    downColor: '#ef4444',
-                    borderDownColor: '#ef4444',
-                    wickDownColor: '#ef4444',
+                    downColor: '#FF4747',
+                    borderDownColor: '#FF4747',
+                    wickDownColor: '#FF4747',
                     priceFormat: { type: 'price', precision: 4, minMove: 0.0001 },
                 });
             }
@@ -1570,19 +1570,34 @@ button i,
     grid-template-columns: 8fr 4fr;
     gap: 1.5rem;
     margin-bottom: 1.5rem;
+    align-items: stretch;
 }
 
 .chart-column {
     grid-column: 1;
+    display: flex;
+    flex-direction: column;
 }
 
 .config-column {
     grid-column: 2;
+    display: flex;
+    flex-direction: column;
 }
 
 /* Market Chart Card */
 .market-chart-card {
     padding: 1.5rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.market-chart-card .chart-view-container,
+.market-chart-card .logs-view-container {
+    flex: 1;
+    min-height: 400px;
 }
 
 .chart-header {
@@ -1783,6 +1798,16 @@ button i,
     padding: 1.5rem;
     position: sticky;
     top: 100px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.config-card-sticky .config-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
 }
 
 .config-card-title {

@@ -1,7 +1,8 @@
 <template>
-	<div class="dashboard-container" :class="{ 'chart-only': showOnlyChart }">
+	<div class="dashboard-container">
+
 		
-		<section v-if="!showOnlyChart" class="metric-section">
+		<section class="metric-section">
 			<div class="metric-header">
 				<div class="header-left">
 					<h1 class="header-title">Visão da IA | Orion</h1>
@@ -55,7 +56,7 @@
 			</div>
 		</section>
 		
-		<div v-if="!showOnlyChart" class="dashboard-body-grid-ia">
+		<div class="dashboard-body-grid-ia">
 			<!-- Bloco 1: Mercado & Estratégia -->
 			<section class="section market-strategy-section">
 				<h3 class="section-title">Mercado & Estratégia ⓘ</h3>
@@ -244,50 +245,53 @@
 			</section>
 		</div>
 		
-		<hr v-if="!showOnlyChart" class="separator-chart" />
-		
-		<section class="market-chart-section" :class="{ 'chart-only-mode': showOnlyChart }">
-			<div class="chart-header">
-                <div class="chart-header-info">
-                    <h3 class="chart-title">Análise de Mercado</h3>
-                    <p class="chart-info">
-                        Volatility 10 Index - M5 | Última atualização: {{ lastUpdateTime }}
-                    </p>
-                </div>
-				<div class="chart-legend">
-					<span class="legend-item compra"> 🟩 Compra</span>
-					<span class="legend-item venda"> 🟥 Venda</span>
+		<!-- Chart section only shown when not in chart-only mode -->
+		<template v-if="!showOnlyChart">
+			<hr class="separator-chart" />
+			
+			<section class="market-chart-section">
+				<div class="chart-header">
+					<div class="chart-header-info">
+						<h3 class="chart-title">Análise de Mercado</h3>
+						<p class="chart-info">
+							EUR/USD - M5 | Última atualização: {{ lastUpdateTime }}
+						</p>
+					</div>
+					<div class="chart-legend">
+						<span class="legend-item compra"> 🟩 Compra</span>
+						<span class="legend-item venda"> 🟥 Venda</span>
+					</div>
 				</div>
-			</div>
-			<div class="chart-controls">
-				<div class="chart-type-selector">
-					<button
-						v-for="option in chartTypeOptions"
-						:key="option.value"
-						type="button"
-						class="chart-type-option"
-						:class="{ active: option.value === chartType }"
-						@click="setChartType(option.value)"
-					>
-						{{ option.label }}
-					</button>
+				<div class="chart-controls">
+					<div class="chart-type-selector">
+						<button
+							v-for="option in chartTypeOptions"
+							:key="option.value"
+							type="button"
+							class="chart-type-option"
+							:class="{ active: option.value === chartType }"
+							@click="setChartType(option.value)"
+						>
+							{{ option.label }}
+						</button>
+					</div>
+					<div class="timeframe-selector">
+						<button
+							v-for="option in timeframeOptions"
+							:key="option.value"
+							type="button"
+							class="timeframe-option"
+							:class="{ active: option.value === selectedTimeframe, disabled: chartType !== 'candles' }"
+							:disabled="chartType !== 'candles'"
+							@click="setTimeframe(option.value)"
+						>
+							{{ option.label }}
+						</button>
+					</div>
 				</div>
-				<div class="timeframe-selector">
-					<button
-						v-for="option in timeframeOptions"
-						:key="option.value"
-						type="button"
-						class="timeframe-option"
-						:class="{ active: option.value === selectedTimeframe, disabled: chartType !== 'candles' }"
-						:disabled="chartType !== 'candles'"
-						@click="setTimeframe(option.value)"
-					>
-						{{ option.label }}
-					</button>
-				</div>
-			</div>
-			<div ref="chartContainer" class="chart-placeholder"></div>
-		</section>
+				<div ref="chartContainer" class="chart-placeholder"></div>
+			</section>
+		</template>
 	</div>
 </template>
 	
@@ -308,10 +312,6 @@ export default {
 		lastUpdateTime: {
 			type: String,
 			default: '--:--:--'
-		},
-		showOnlyChart: {
-			type: Boolean,
-			default: false
 		}
 	},
 	data() {
@@ -518,12 +518,12 @@ export default {
 				});
 			} else {
 				this.currentSeries = this.chart.addCandlestickSeries({
-					upColor: '#4caf50',
-					downColor: '#ef4444',
-					borderUpColor: '#4caf50',
-					borderDownColor: '#ef4444',
-					wickUpColor: '#4caf50',
-					wickDownColor: '#ef4444',
+					upColor: '#22C55E',
+					borderUpColor: '#22C55E',
+					wickUpColor: '#22C55E',
+					downColor: '#FF4747',
+					borderDownColor: '#FF4747',
+					wickDownColor: '#FF4747',
 					priceFormat: { type: 'price', precision: 4, minMove: 0.0001 },
 				});
 			}
@@ -742,35 +742,6 @@ export default {
 	color: var(--color-text-light);
 	padding: 100px 40px;
 	font-family: sans-serif; 
-}
-
-.dashboard-container.chart-only {
-	padding: 0;
-	background-color: transparent;
-	width: 100%;
-}
-
-.dashboard-container.chart-only .market-chart-section {
-	margin-top: 0;
-	padding: 1rem;
-	background-color: #0E0E0E;
-	border-radius: 0.75rem;
-	border: 1px solid #1C1C1C;
-	box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
-}
-
-.dashboard-container.chart-only .chart-header {
-	padding: 0;
-	margin-bottom: 1rem;
-}
-
-.market-chart-section.chart-only-mode {
-	margin-top: 0;
-	padding: 1rem;
-	background-color: #0E0E0E;
-	border-radius: 0.75rem;
-	border: 1px solid #1C1C1C;
-	box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
 }
 
 .metric-header {
