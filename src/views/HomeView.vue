@@ -65,7 +65,7 @@
     </main>
 
     <!-- Dashboard Conectado (com sidebar e header) -->
-    <DashboardConnected v-else :info="connectedInfo" />
+    <DashboardConnected v-else :info="connectedInfo" :is-sidebar-collapsed="isSidebarCollapsed" />
   </div>
 </template>
 

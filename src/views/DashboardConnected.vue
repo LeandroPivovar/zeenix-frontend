@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col h-full w-full">
+  <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
     <!-- Header -->
     <header class="bg-zenix-card border-b border-zenix-border px-3 lg:px-4 xl:px-5 py-4 flex items-center justify-between sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
       <div class="flex items-center gap-4">
@@ -320,7 +320,11 @@ export default {
     info: { 
       type: Object, 
       required: true 
-    } 
+    },
+    isSidebarCollapsed: {
+      type: Boolean,
+      default: false
+    }
   },
   data() {
     return {
@@ -607,6 +611,34 @@ export default {
 
 .font-inter {
   font-family: 'Inter', sans-serif;
+}
+
+/* Dashboard Content Wrapper - Respeita a Sidebar */
+.dashboard-content-wrapper {
+  margin-left: 240px;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+  width: calc(100% - 240px);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+}
+
+.dashboard-content-wrapper.sidebar-collapsed {
+  margin-left: 72px;
+  width: calc(100% - 72px);
+}
+
+@media (max-width: 1024px) {
+  .dashboard-content-wrapper {
+    margin-left: 0;
+    width: 100%;
+  }
+  
+  .dashboard-content-wrapper.sidebar-collapsed {
+    margin-left: 0;
+    width: 100%;
+  }
 }
 
 /* Noise Background */
