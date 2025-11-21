@@ -373,6 +373,7 @@
                         :mode-config="mode"
                         :account-balance-prop="accountBalance"
                         :account-currency-prop="accountCurrency"
+                        @deactivate="deactivateIA"
                     />
                 </section>
 
@@ -1316,6 +1317,7 @@ export default {
 #ai-vision-panel {
     margin-left: 0.75rem;
     margin-right: 0.75rem;
+    margin-top: 1.5rem;
     width: calc(100% - 1.5rem);
     box-sizing: border-box;
 }

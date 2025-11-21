@@ -35,9 +35,22 @@
                     </div>
                     <div class="stat-card-primary status-indicator-panel">
                         <div class="status-indicator-content">
-                            <div class="status-loading-spinner"></div>
-                            <p class="status-indicator-text">Analisando</p>
-                            <p class="status-indicator-subtext">Aprimoramento possível</p>
+                            <div class="status-indicator-left">
+                                <div class="status-loading-spinner"></div>
+                                <div class="status-text-wrapper">
+                                    <p class="status-indicator-text">Analisando</p>
+                                    <p class="status-indicator-subtext">Aprimoramento possível</p>
+                                </div>
+                            </div>
+                            <button 
+                                class="deactivate-ai-btn" 
+                                @click="handleDeactivate"
+                                :disabled="isDeactivating"
+                                title="Desativar IA"
+                            >
+                                <i class="fas fa-power-off"></i>
+                                <span>{{ isDeactivating ? 'Desativando...' : 'Desativar IA' }}</span>
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -346,6 +359,9 @@ export default {
             // Log de operações (será carregado via API)
             logOperations: [],
             isLoadingLogs: true,
+            
+            // Estado de desativação
+            isDeactivating: false,
         };
     },
     
@@ -635,6 +651,23 @@ export default {
             console.log('Desconectando da Deriv...');
             this.aiActive = false;
             this.showDisconnectModal = false;
+        },
+
+        async handleDeactivate() {
+            try {
+                this.isDeactivating = true;
+                console.log('[InvestmentActive] 🛑 Desativando IA...');
+                
+                // Emitir evento para o componente pai desativar a IA
+                this.$emit('deactivate');
+                
+                // Aguardar um pouco para dar feedback visual
+                await new Promise(resolve => setTimeout(resolve, 500));
+            } catch (error) {
+                console.error('[InvestmentActive] ❌ Erro ao desativar IA:', error);
+            } finally {
+                this.isDeactivating = false;
+            }
         },
 
         // 📊 Buscar configuração da sessão ativa
@@ -1051,3 +1084,75 @@ export default {
 </script>
 
 <style src="../../assets/css/components/ActiveView.css"></style>
+
+<style scoped>
+.status-indicator-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    width: 100%;
+}
+
+.status-indicator-left {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.75rem;
+    flex: 1;
+}
+
+.status-text-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 0.125rem;
+}
+
+.deactivate-ai-btn {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.5rem 1rem;
+    background-color: #FF4747;
+    color: white;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+}
+
+.deactivate-ai-btn:hover:not(:disabled) {
+    background-color: #E63946;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 71, 71, 0.3);
+}
+
+.deactivate-ai-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.deactivate-ai-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+.deactivate-ai-btn i {
+    font-size: 0.875rem;
+}
+
+@media (max-width: 768px) {
+    .status-indicator-content {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    
+    .deactivate-ai-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+</style>
