@@ -4,6 +4,16 @@
 		<main class="plans-content">
 			<div class="background-glow"></div>
 			<div class="background-grid"></div>
+			
+			<!-- Header Section -->
+			<div class="plans-header">
+				<h1 class="main-title">
+					<span class="crown-icon">👑</span>
+					Planos Zenix
+				</h1>
+				<p class="header-subtitle">Escolha seu plano e evolua dentro do ecossistema Zenix.</p>
+			</div>
+			
 			<div class="video-section">
 				<div class="video-container">
 					<div class="video-placeholder" @click="playVideo">
@@ -16,17 +26,17 @@
 					</div>
 				</div>
 				<div class="video-info">
-					<h2 class="video-title">Marcos Explica os Planos Zenix <span class="video-badge">2 min</span></h2>
-
-					<p class="video-description">
-						Assista em 2 min e entenda qual plano se encaixa melhor no seu perfil de operação e resultado.
-					</p>
+					<h2 class="video-title">Marcos Explica os Planos Zenix</h2>
+					<div class="video-description-container">
+						<p class="video-description">
+							Assista e entenda qual plano se encaixa melhor no seu perfil de operações.
+						</p>
+						<span class="video-badge">2 min</span>
+					</div>
 				</div>
 			</div>
 
 			<div class="plans-section">
-				<h2 class="section-title">Escolha seu plano e evolua dentro da Zenix</h2>
-				<p class="section-subtitle">Cada plano foi desenhado para um nível de operação. Compare e escolha o seu.</p>
 
 				<div v-if="loading" class="loading">Carregando planos...</div>
 				<div v-else-if="error" class="error">{{ error }}</div>
@@ -37,15 +47,20 @@
 						class="plan-card"
 						:class="{ popular: plan.isPopular, recommended: plan.isRecommended }"
 					>
-						<div v-if="plan.isPopular" class="plan-badge popular-badge">Mais Popular</div>
-						<div v-if="plan.isRecommended" class="plan-badge recommended-badge">
-							<span>👑</span> Recomendado
+						<div v-if="plan.isPopular" class="plan-badge popular-badge">MAIS POPULAR</div>
+						<div v-if="plan.isRecommended" class="plan-badge recommended-badge">RECOMENDADO</div>
+
+						<!-- Ícones dos planos -->
+						<div class="plan-icon">
+							<span v-if="plan.slug === 'starter'" class="icon-rocket">🚀</span>
+							<span v-else-if="plan.slug === 'pro'" class="icon-star">⭐</span>
+							<span v-else-if="plan.slug === 'black'" class="icon-crown">👑</span>
 						</div>
 
-						<h3 class="plan-name">{{ plan.name }}</h3>
+						<h3 class="plan-name">{{ getPlanDisplayName(plan) }}</h3>
 						<div class="plan-price">
 							<span v-if="plan.price === 0" class="price-free">Gratuito</span>
-							<span v-else>
+							<span v-else class="price-paid">
 								<span class="currency">R$</span>
 								<span class="amount">{{ plan.price }}</span>
 								<span class="period">/mês</span>
@@ -63,9 +78,7 @@
 									class="feature-icon cross"
 								>✗</span>
 								
-								<span class="feature-text">
-									{{ value === true ? key : formatFeature(key, value) }}
-								</span>
+								<span class="feature-text">{{ key }}</span>
 							</li>
 						</ul>
 
@@ -80,94 +93,10 @@
 						>
 							<span v-if="currentPlan?.id === plan.id">Plano atual</span>
 							<span v-else-if="plan.price === 0">Ativar plano básico</span>
-							<span v-else-if="currentPlan && plan.price > currentPlan.price">
-								Fazer Upgrade <span>↑</span>
-							</span>
 							<span v-else>Escolher plano</span>
 						</button>
 					</div>
 				</div>
-			</div>
-
-			<div class="comparison-section">
-				<h2 class="section-title">
-					<span class="stats-icon">📊</span> Compare os Planos 
-				</h2>
-				<div class="table-container">
-					<table class="comparison-table">
-						<thead>
-							<tr>
-								<th class="plan-name">Funcionalidade</th>
-								<th 
-									v-for="plan in plans" 
-									:key="plan.id"
-									:class="{ 'th-green': isThGreen(plan.name) }"
-								>
-									{{ plan.name }}
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td class="plan-name-table">IA Orion</td> 
-								<td 
-									v-for="plan in plans" 
-									:key="plan.id"
-									:class="getPlanTextColorClass(plan.name)"
-								>
-									{{ formatFeatureValue(plan.features?.orion_ai) }}
-								</td>
-							</tr>
-
-							<tr>
-								<td class="plan-name-table">Copy Trading</td> 
-								<td v-for="plan in plans" :key="plan.id">
-									<span v-if="plan.features?.copy_trading === false" class="icon-cross-circle">ⓧ</span>
-									<span v-else-if="plan.features?.copy_trading === true" class="icon-check">✓</span>
-									<span v-else-if="plan.features?.copy_trading === 'premium'" class="icon-star-vazada">☆</span> 
-									<span v-else>-</span>
-								</td>
-							</tr>
-							
-							<tr>
-								<td class="plan-name-table">Academy</td> 
-								<td 
-									v-for="plan in plans" 
-									:key="plan.id"
-									:class="getPlanTextColorClass(plan.name)"
-								>
-									{{ formatFeatureValue(plan.features?.academy) }}
-								</td>
-							</tr>
-
-							<tr>
-								<td class="plan-name-table">Suporte</td> 
-								<td 
-									v-for="plan in plans" 
-									:key="plan.id"
-									:class="getPlanTextColorClass(plan.name)"
-								>
-									{{ formatFeatureValue(plan.features?.support) }}
-								</td>
-							</tr>
-
-							<tr>
-								<td class="plan-name-table">Sinais Diários</td> 
-								<td 
-									v-for="plan in plans" 
-									:key="plan.id"
-									:class="getPlanTextColorClass(plan.name)"
-								>
-									{{ formatFeatureValue(plan.features?.signals_per_day) || '-' }}
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<p class="table-footer">
-					<span class="footer-bullet">•</span>
-					Todos os planos incluem segurança avançada Deriv API e suporte Zenix.
-				</p>
 			</div>
 		</main>
 	</div>
@@ -274,47 +203,49 @@ export default {
 			}
 		},
 		
-		isThGreen(planName) {
-			const normalizedName = planName.toLowerCase().trim();
-			// Retorna TRUE se for Pro ou Black para aplicar a classe de cor verde no TH
-			return normalizedName === 'pro' || normalizedName === 'plano pro' ||
-        normalizedName === 'black' || normalizedName === 'zenix black';
-		},
-		
-		getPlanTextColorClass(planName) {
-			const normalizedName = planName.toLowerCase().trim();
-			
-			// Retorna as classes CSS baseadas no nome do plano para o conteúdo (TD)
-			return {
-				// Plano Pro deve ser BRANCO
-				'text-white': normalizedName === 'pro' || normalizedName === 'plano pro',
-				// Plano Black deve ser VERDE
-				'text-green': normalizedName === 'black' || normalizedName === 'zenix black'
-				// Starter (ou Free) não recebe classe e mantém a cor cinza padrão do TD
-			};
+		getPlanDisplayName(plan) {
+			if (plan.slug === 'starter') return 'Starter'
+			if (plan.slug === 'pro') return 'Pro'
+			if (plan.slug === 'black') return 'Zenix Black'
+			return plan.name
 		},
 		
 		getPlanFeatures(plan) {
 			const features = {}
 			if (plan.features?.orion_ai) {
-				features['IA Orion'] = plan.features.orion_ai === 'limitada' ? 'limitada' : 
-										plan.features.orion_ai === 'completa' ? true : 
-										plan.features.orion_ai === 'black_module' ? 'Black Module' : true
+				if (plan.features.orion_ai === 'limitada') {
+					features['IA Orion limitada'] = true
+				} else if (plan.features.orion_ai === 'completa') {
+					features['IA Orion completa'] = true
+				} else if (plan.features.orion_ai === 'black_module') {
+					features['IA Orion Black Module'] = true
+				}
 			}
 			if (plan.features?.signals_per_day !== undefined) {
-				features['Sinais/dia'] = plan.features.signals_per_day
+				if (plan.features.signals_per_day === 10) {
+					features['10 sinais/dia'] = true
+				} else if (plan.features.signals_per_day === 'ilimitado') {
+					// Não mostrar para Pro e Black, pois já tem Copy Trading ilimitado
+				}
 			}
 			if (plan.features?.copy_trading !== undefined) {
-				features['Copy Trading'] = plan.features.copy_trading
+				if (plan.features.copy_trading === false) {
+					features['Sem Copy Trading'] = false
+				} else if (plan.features.copy_trading === true || plan.features.copy_trading === 'premium') {
+					features['Copy Trading ilimitado'] = true
+				}
 			}
 			if (plan.features?.academy) {
-				features['Academy'] = plan.features.academy
+				if (plan.features.academy === 'completa' || plan.features.academy === 'black_edition') {
+					features['Zenix Academy completa'] = true
+				}
 			}
 			if (plan.features?.support) {
-				features['Suporte'] = plan.features.support
-			}
-			if (plan.features?.dashboards) {
-				features['Dashboards Avançados'] = plan.features.dashboards
+				if (plan.features.support === 'email') {
+					features['Suporte por e-mail'] = true
+				} else if (plan.features.support === 'prioritario' || plan.features.support === '1on1') {
+					features['Suporte prioritário'] = true
+				}
 			}
 			return features
 		},
@@ -322,64 +253,7 @@ export default {
 		isFeatureEnabled(value) {
 			return value !== false && value !== undefined && value !== null
 		},
-		
-		formatFeature(key, value) {
-			if (value === true) return key
-			if (value === false) return `Sem ${key}`
-			if (typeof value === 'string') {
-				if (key === 'IA Orion') {
-					if (value === 'limitada') return 'IA Orion limitada'
-					if (value === 'completa') return 'IA Orion completa' 
-					if (value === 'black_module') return 'IA Orion Black Module'
-				}
-				if (key === 'Copy Trading' && value === 'premium') {
-					return 'Copy Trading Premium'
-				}
-				if (key === 'Copy Trading' && value === 'limitado') {
-					return 'Copy Trading limitado'
-				}
-				if (key === 'Academy') {
-					if (value === 'limitada') return 'Academy limitada'
-					if (value === 'completa') return 'Zenix Academy inclusa'
-					if (value === 'black_edition') return 'Academy Black Edition'
-				}
-				if (key === 'Suporte') {
-					if (value === 'email') return 'Suporte por e-mail'
-					if (value === 'prioritario') return 'Suporte prioritário'
-					if (value === '1on1') return 'Suporte 1:1 com Equipe'
-				}
-				if (key === 'Sinais/dia') {
-					return `${value} sinais/dia`
-				}
-				return value
-			}
-			if (typeof value === 'number') {
-				if (key === 'Sinais/dia') {
-					return `${value} sinais/dia` 
-				}
-			}
-			return String(value)
-		},
 
-		formatFeatureValue(value) {
-			if (value === false) return '-'
-			if (value === true) return '✓'
-			if (typeof value === 'string') {
-				if (value === 'parcial') return 'Parcial'
-				if (value === 'limitada') return 'Limitada'
-				if (value === 'completa') return 'Completa'
-				if (value === 'black_module') return 'Black Module' 
-				if (value === 'black_edition') return 'Black Edition'
-				if (value === 'email') return 'E-mail'
-				if (value === 'prioritario') return 'Prioritário'
-				if (value === '1on1') return '1:1' 
-				if (value === 'premium') return 'Premium'
-				if (value === 'limitado') return 'Limitado'
-				if (value === 'ilimitado') return 'Ilimitado' 
-				return value
-			}
-			return String(value)
-		},
 		playVideo() {
 			this.isPlaying = true
 		}
