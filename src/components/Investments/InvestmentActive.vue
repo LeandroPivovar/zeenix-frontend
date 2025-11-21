@@ -1,49 +1,118 @@
 <template>
-    <div class="main-content-area">
+    <div class="investment-active-wrapper">
+        <main class="investment-active-main">
+            <!-- Performance Summary Cards -->
+            <div id="performance-summary" class="performance-summary-section">
+                <div class="performance-cards-grid">
+                    <!-- Card 1 - Saldo Total -->
+                    <div class="premium-card performance-card">
+                        <div class="card-header-row">
+                            <span class="card-label">Saldo Total</span>
+                            <button class="eye-btn" @click="balanceVisible = !balanceVisible">
+                                <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="card-value-large">
+                            <span v-if="!isLoadingStats && accountBalanceProp" class="balance-value" :class="{ 'hidden-value': !balanceVisible }">
+                                {{ formattedBalance }}
+                            </span>
+                            <span v-else class="text-zenix-secondary">Carregando...</span>
+                        </div>
+                        <div class="card-actions-row">
+                            <button :class="['account-type-btn', accountType === 'real' ? 'active' : '']" @click="accountType = 'real'">Real</button>
+                            <button :class="['account-type-btn', accountType === 'demo' ? 'active' : '']" @click="accountType = 'demo'">Demo</button>
+                        </div>
+                    </div>
 
-        <main class="main-content">
-            <section class="section-vision">
-                <div class="ai-vision-title-area">
-                    <h1 class="ai-vision-title">IA Orion - Operação Automática Ativa</h1>
-                    <p class="ai-vision-subtitle">A IA está monitorando o mercado e executando operações conforme sua configuração.</p>
+                    <!-- Card 2 - Lucro do Dia -->
+                    <div class="premium-card performance-card">
+                        <div class="card-header-row">
+                            <span class="card-label">Lucro do Dia</span>
+                            <button class="eye-btn" @click="profitVisible = !profitVisible">
+                                <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="card-value-large">
+                            <span v-if="!isLoadingStats" :class="['profit-value', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
+                                {{ formattedSessionProfitLoss }}
+                            </span>
+                            <span v-else class="text-zenix-secondary">--</span>
+                        </div>
+                        <span v-if="!isLoadingStats && profitPercentage" class="profit-percentage text-zenix-green text-sm font-medium">{{ profitPercentage }}</span>
+                    </div>
+
+                    <!-- Card 3 - Winrate -->
+                    <div class="premium-card performance-card">
+                        <div class="card-header-row">
+                            <span class="card-label">Winrate</span>
+                            <button class="eye-btn" @click="winrateVisible = !winrateVisible">
+                                <i :class="winrateVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="card-value-large">
+                            <span v-if="!isLoadingStats" class="winrate-value" :class="{ 'hidden-value': !winrateVisible }">
+                                {{ formattedSessionWinrate }}
+                            </span>
+                            <span v-else class="text-zenix-secondary">--</span>
+                        </div>
+                        <span v-if="!isLoadingStats" class="text-xs text-zenix-green font-medium">{{ sessionWinrateLabel }}</span>
+                    </div>
+
+                    <!-- Card 4 - Trades Hoje -->
+                    <div class="premium-card performance-card">
+                        <div class="card-header-row">
+                            <span class="card-label">Trades Hoje</span>
+                            <button class="eye-btn" @click="tradesVisible = !tradesVisible">
+                                <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
+                            </button>
+                        </div>
+                        <div class="card-value-large">
+                            <span v-if="!isLoadingStats" class="trades-value" :class="{ 'hidden-value': !tradesVisible }">
+                                {{ dailyStats.sessionTrades || 0 }}
+                            </span>
+                            <span v-else class="text-zenix-secondary">--</span>
+                        </div>
+                        <div class="trades-stats-row">
+                            <span class="text-xs text-zenix-green font-medium">{{ dailyStats.sessionWins || 0 }} Vitórias</span>
+                            <span class="text-xs text-zenix-red/70 font-medium">{{ dailyStats.sessionLosses || 0 }} Perdas</span>
+                        </div>
+                    </div>
                 </div>
-    
-                <div class="stat-bar-primary">
-                    <div class="stat-card-primary">
-                        <p class="stat-label-primary">Lucro da Sessão</p>
-                        <div class="stat-value-area">
-                            <p class="stat-value-large" :class="sessionProfitLossClass" v-if="!isLoadingStats">{{ formattedSessionProfitLoss }}</p>
-                            <p class="stat-value-large text-zenix-secondary" v-else>Carregando...</p>
-                            <p class="stat-subtitle-small">Sessão Atual</p>
-                        </div>
-                    </div>
-                    <div class="stat-card-primary">
-                        <p class="stat-label-primary">Winrate</p>
-                        <div class="stat-value-area">
-                            <p class="stat-value-large" v-if="!isLoadingStats">{{ formattedSessionWinrate }}</p>
-                            <p class="stat-value-large text-zenix-secondary" v-else>--</p>
-                            <p class="stat-subtitle-small text-zenix-green" v-if="!isLoadingStats">{{ sessionWinrateLabel }}</p>
-                        </div>
-                    </div>
-                    <div class="stat-card-primary">
-                        <p class="stat-label-primary">Trades</p>
-                        <div class="stat-value-area">
-                            <p class="stat-value-large" v-if="!isLoadingStats">{{ dailyStats.sessionTrades || 0 }}</p>
-                            <p class="stat-value-large text-zenix-secondary" v-else>--</p>
-                            <p class="stat-subtitle-small">Operações</p>
-                        </div>
-                    </div>
-                    <div class="stat-card-primary status-indicator-panel">
-                        <div class="status-indicator-content">
-                            <div class="status-indicator-left">
-                                <div class="status-loading-spinner"></div>
-                                <div class="status-text-wrapper">
-                                    <p class="status-indicator-text">Analisando</p>
-                                    <p class="status-indicator-subtext">Aprimoramento possível</p>
+
+                <!-- Status da IA Card -->
+                <div class="premium-card status-card">
+                    <div class="status-card-content">
+                        <div class="status-card-left">
+                            <div id="ai-status-widget" class="ai-status-widget">
+                                <div class="ai-status-bg"></div>
+                                <div id="status-analyzing" class="ai-status-content">
+                                    <div class="ai-status-spinner-wrapper">
+                                        <div class="ai-status-pulse-bg"></div>
+                                        <div class="ai-status-spinner">
+                                            <svg fill="none" viewBox="0 0 24 24" class="spinner-svg">
+                                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="20 60" opacity="0.3"></circle>
+                                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="15 65" stroke-linecap="round"></circle>
+                                            </svg>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="status-text-content">
+                                <h3 class="status-title">Status da Operação</h3>
+                                <div class="status-subtitle-row">
+                                    <span class="status-indicator-text text-[#FFD058] font-medium">Analisando</span>
+                                    <span class="status-indicator-dot">•</span>
+                                    <span class="status-indicator-subtext">Aguardando padrão de entrada</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="status-card-right">
+                            <div class="ai-online-indicator">
+                                <div class="ai-pulse-dot"></div>
+                                <span class="text-xs font-medium text-zenix-green">IA Online</span>
+                            </div>
                             <button 
-                                class="deactivate-ai-btn" 
+                                class="deactivate-ai-btn-new" 
                                 @click="handleDeactivate"
                                 :disabled="isDeactivating"
                                 title="Desativar IA"
@@ -54,202 +123,208 @@
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Main Content Grid -->
+            <div class="main-content-grid">
+                <!-- Left Column - Chart -->
+                <div class="chart-column">
+                    <div class="premium-card market-chart-card">
+                        <div class="chart-header">
+                            <div>
+                                <h2 class="chart-title">Análise de Mercado</h2>
+                                <p class="chart-subtitle">EUR/USD • M5 • Última atualização: {{ formattedLastUpdate }}</p>
+                            </div>
+                            <div class="chart-tabs">
+                                <button 
+                                    id="tab-chart" 
+                                    :class="['chart-tab-btn', activeTab === 'chart' ? 'active' : '']"
+                                    @click="activeTab = 'chart'"
+                                >
+                                    Gráfico
+                                    <div v-if="activeTab === 'chart'" class="tab-indicator"></div>
+                                </button>
+                                <button 
+                                    id="tab-logs" 
+                                    :class="['chart-tab-btn', activeTab === 'logs' ? 'active' : '']"
+                                    @click="activeTab = 'logs'"
+                                >
+                                    Logs
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="timeframe-buttons">
+                            <button
+                                v-for="option in timeframeOptionsFormatted"
+                                :key="option.value"
+                                :class="['timeframe-btn', { 'active': option.value === selectedTimeframe }]"
+                                :disabled="chartType !== 'candles'"
+                                @click="setTimeframe(option.value)"
+                            >
+                                {{ option.label }}
+                            </button>
+                        </div>
+
+                        <!-- Chart View -->
+                        <div v-show="activeTab === 'chart'" id="chart-view" class="chart-view-container">
+                            <div ref="chartContainer" class="chart-container"></div>
+                        </div>
+
+                        <!-- Logs View -->
+                        <div v-show="activeTab === 'logs'" id="logs-view" class="logs-view-container">
+                            <div v-if="isLoadingLogs" class="loading-logs">
+                                <p>Carregando histórico de operações...</p>
+                            </div>
+                            
+                            <div v-else-if="logOperations.length === 0" class="no-logs">
+                                <p>Nenhuma operação executada ainda.</p>
+                            </div>
+                            
+                            <div v-else class="logs-table-wrapper">
+                                <table class="logs-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Horário</th>
+                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Par</th>
+                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Direção</th>
+                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Resultado</th>
+                                            <th class="text-right py-3 px-4 text-xs font-medium text-zenix-secondary">P&L</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(op, index) in logOperations" :key="index" class="log-row">
+                                            <td class="py-3 px-4 text-xs text-zenix-text font-medium">{{ op.time }}</td>
+                                            <td class="py-3 px-4 text-xs text-zenix-text">{{ op.pair }}</td>
+                                            <td class="py-3 px-4">
+                                                <span :class="['direction-badge', op.direction === 'CALL' ? 'call-badge' : 'put-badge']">
+                                                    <i :class="`fas fa-arrow-${op.direction === 'CALL' ? 'up' : 'down'} text-xs mr-1`"></i>
+                                                    {{ op.direction }}
+                                                </span>
+                                            </td>
+                                            <td class="py-3 px-4">
+                                                <span :class="['result-badge', op.result === 'WIN' ? 'win-badge' : 'loss-badge']">
+                                                    <i :class="`fas fa-${op.result === 'WIN' ? 'check' : 'times'} text-xs mr-1`"></i>
+                                                    {{ op.result }}
+                                                </span>
+                                            </td>
+                                            <td :class="['py-3 px-4 text-right text-sm font-bold', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
+                                                {{ op.pnl }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column - Config -->
+                <div class="config-column">
+                    <div class="premium-card config-card-sticky">
+                        <h3 class="config-card-title">
+                            <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
+                            Configuração Ativa
+                        </h3>
+                        <div class="config-content">
+                            <!-- Estratégia -->
+                            <div class="config-section">
+                                <p class="config-label">Estratégia</p>
+                                <p class="config-value-main">{{ strategyName }}</p>
+                                <p class="config-description">Alta performance • Sinais avançados</p>
+                            </div>
+
+                            <!-- Mercado -->
+                            <div class="config-section">
+                                <p class="config-label">Mercado</p>
+                                <p class="config-value-main">Volatility 10 Index</p>
+                                <p class="config-description">Ticks de alta frequência</p>
+                            </div>
+
+                            <!-- Parâmetros -->
+                            <div class="config-section">
+                                <p class="config-label">Parâmetros</p>
+                                <div class="config-params-grid">
+                                    <div>
+                                        <p class="param-label">Entrada</p>
+                                        <p class="param-value" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : '$50' }}</p>
+                                        <p class="param-value" v-else>Carregando...</p>
+                                    </div>
+                                    <div>
+                                        <p class="param-label">Modo</p>
+                                        <p class="param-value">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Devagar' }}</p>
+                                    </div>
+                                    <div>
+                                        <p class="param-label">Alvo de Lucro</p>
+                                        <p class="param-value text-zenix-green" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
+                                        <p class="param-value" v-else>Carregando...</p>
+                                    </div>
+                                    <div>
+                                        <p class="param-label">Limite de Perda</p>
+                                        <p class="param-value text-zenix-red" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
+                                        <p class="param-value" v-else>Carregando...</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Gerenciamento de Risco -->
+                            <div class="config-section">
+                                <p class="config-label">Gerenciamento de Risco</p>
+                                <div class="risk-management-row">
+                                    <div>
+                                        <p class="config-value-main">{{ realRiskLevel }}</p>
+                                        <p class="config-description">Proteção de capital ativa</p>
+                                    </div>
+                                    <div class="risk-level-badge">
+                                        <p class="text-xs font-bold text-zenix-green">{{ realRiskLabel }}</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Status da IA -->
+                            <div class="config-section-last">
+                                <p class="config-label">Status da IA</p>
+                                <div class="ai-status-row">
+                                    <div class="ai-status-info">
+                                        <div class="ai-pulse-dot"></div>
+                                        <p class="config-value-main text-zenix-green">Ativa</p>
+                                    </div>
+                                    <p class="config-description">Monitorando em tempo real</p>
+                                </div>
+                                <button 
+                                    class="pause-ai-btn"
+                                    @click="handleDeactivate"
+                                    :disabled="isDeactivating"
+                                >
+                                    <i class="fas fa-pause text-sm"></i>
+                                    <span>{{ isDeactivating ? 'Desativando...' : 'Pausar IA' }}</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Footer -->
+            <section class="status-footer-section">
+                <div class="premium-card status-footer-card">
+                    <div class="status-footer-content">
+                        <div class="status-footer-left">
+                            <div class="status-footer-icon">
+                                <i class="fas fa-brain text-zenix-green text-lg"></i>
+                            </div>
+                            <div>
+                                <h3 class="status-footer-title">IA Operando Normalmente</h3>
+                                <p class="status-footer-subtitle">Monitorando sinais de mercado e executando operações conforme estratégia</p>
+                            </div>
+                        </div>
+                        <div class="status-footer-right">
+                            <div class="ai-pulse-dot"></div>
+                            <span class="status-footer-status text-zenix-green">Online</span>
+                        </div>
+                    </div>
+                </div>
             </section>
-    
-            <div class="config-log-grid">
-                <div class="config-col-left">
-                    <div class="card market-analysis-card">
-                        <div class="card-header-flex">
-                            <h3 class="card-title-small">Análise de Mercado</h3>
-                            <div class="ai-status-pulse pulse-active pulse-small"></div>
-                        </div>
-                        
-                        <div class="chart-controls">
-                            <div class="chart-type-selector">
-                                <button
-                                    v-for="option in chartTypeOptions"
-                                    :key="option.value"
-                                    type="button"
-                                    class="chart-type-option"
-                                    :class="{ active: option.value === chartType }"
-                                    @click="setChartType(option.value)"
-                                >
-                                    {{ option.label }}
-                                </button>
-                            </div>
-                            <div class="timeframe-selector">
-                                <button
-                                    v-for="option in timeframeOptions"
-                                    :key="option.value"
-                                    type="button"
-                                    class="timeframe-option"
-                                    :class="{ active: option.value === selectedTimeframe, disabled: chartType !== 'candles' }"
-                                    :disabled="chartType !== 'candles'"
-                                    @click="setTimeframe(option.value)"
-                                >
-                                    {{ option.label }}
-                                </button>
-                            </div>
-                        </div>
-                        
-                        <div ref="chartContainer" class="chart-placeholder"></div>
-                    </div>
-    
-                </div>
-    
-                <div class="config-col-right">
-                    <div class="card sticky-config-card">
-                        <div class="card-header-flex">
-                            <h3 class="card-title-small">
-                                <span>
-                                    <img src="../../assets/icons/settings-ia.svg" alt="" width="20px">
-                                </span>
-                                Configuração Ativa
-                            </h3>
-                        </div>
-    
-                        <div class="card-content-spacing-compact">
-                            <div class="config-stat-row-half config-card">
-                                <div>
-                                    <label class="input-label-compact">Estratégia</label>
-                                    <p class="config-value-main">{{ strategyName }}</p>
-                                    <p class="input-help-text">{{ strategyDescription }}</p>
-                                </div>
-                                <span v-if="sessionConfig.isActive" class="active-status-tag-mini">Ativa</span>
-                                <span v-else class="active-status-tag-mini" style="background: #ef4444;">Inativa</span>
-                            </div>
-    
-                            <div class="config-grid-2x2">
-                                <div class="config-card">
-                                    <label class="input-label-compact">Entrada</label>
-                                    <p class="config-value-main" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : 'Não definido' }}</p>
-                                    <p class="config-value-main" v-else>Carregando...</p>
-                                </div>
-                                <div class="config-card">
-                                    <label class="input-label-compact">Meta Diária</label>
-                                    <p class="config-value-main" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : 'Não definido' }}</p>
-                                    <p class="config-value-main" v-else>Carregando...</p>
-                                </div>
-                                <div class="config-card">
-                                    <label class="input-label-compact">Stop Diário</label>
-                                    <p class="config-value-main text-zenix-danger" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : 'Não definido' }}</p>
-                                    <p class="config-value-main text-zenix-danger" v-else>Carregando...</p>
-                                </div>
-                                <div class="config-card">
-                                    <label class="input-label-compact">Timeframe</label>
-                                    <p class="config-value-main">M5</p>
-                                </div>
-                            </div>
-    
-                            <div class="risk-summary config-card">
-                                <div class="risk-display-area">
-                                    <div class="title-risk-display">
-                                        <label class="input-label-compact">Gerenciamento</label>
-                                        <p :class="['config-value-main', realRiskLevel === 'Agressivo' ? 'text-zenix-danger' : 'text-zenix-green']" v-if="!isLoadingConfig">{{ realRiskLevel }}</p>
-                                        <p class="config-value-main" v-else>Carregando...</p>
-                                    </div>
-                                    <div class="risk-progress-bar-container">
-                                        <div 
-                                            class="risk-progress-bar" 
-                                            :style="{ width: realRiskPercentage }"
-                                        ></div>
-                                    </div>
-                                    <p class="input-help-text">Risco: {{ realRiskLabel }}</p>
-                                </div>
-                            </div>
-                        
-                            <div class="risk-indicator-box-small">
-                                <p class="risk-indicator-header-small">
-                                    <i class="fas fa-chart-pie mr-2"></i> Risco Estimado
-                                </p>
-                                <p class="risk-indicator-value" v-if="!isLoadingConfig">{{ realEstimatedRiskLabel }}</p>
-                                <p class="risk-indicator-value" v-else>Carregando...</p>
-                                <p class="input-help-text-dark">Por operação</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card full-height-card">
-                <div class="card-header-flex">
-                    <h3 class="card-title-small mb-0">Log de Operações</h3>
-                    <button 
-                        class="btn btn-secondary" 
-                        @click="fetchTradeHistory"
-                        :disabled="isLoadingLogs"
-                        style="display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 1rem; font-size: 0.875rem;"
-                    >
-                        <i class="fa-solid fa-rotate-right" :class="{ 'fa-spin': isLoadingLogs }"></i>
-                        {{ isLoadingLogs ? 'Atualizando...' : 'Atualizar' }}
-                    </button>
-                </div>
-            
-                <div class="log-table-container">
-                    <div v-if="isLoadingLogs" class="loading-logs">
-                        <p>Carregando histórico de operações...</p>
-                    </div>
-                    
-                    <div v-else-if="logOperations.length === 0" class="no-logs">
-                        <p>Nenhuma operação executada ainda.</p>
-                    </div>
-                    
-                    <table v-else>
-                        <thead>
-                            <tr>
-                                <th>Horário</th>
-                                <th>Par</th>
-                                <th>Direção</th>
-                                <th>Resultado</th>
-                                <th>P&L</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr v-for="(op, index) in logOperations" :key="index">
-                                <td>
-                                    <p>{{ op.time }}</p>
-                                    <span class="input-help-text-dark">${{ entryValue }}</span>
-                                </td>
-                                <td>{{ op.pair }}</td>
-                                
-                                <td>
-                                    <div :class="['op-direction', op.direction === 'CALL' ? 'text-zenix-green' : 'text-zenix-danger']">
-                                        <i :class="`fas fa-arrow-${op.direction === 'CALL' ? 'up' : 'down'} mr-1`"></i>
-                                        {{ op.direction }}
-                                    </div>
-                                </td>
-                                
-                                <td>
-                                    <div :class="['op-result', op.result === 'WIN' ? 'text-zenix-green' : 'text-zenix-danger']">
-                                        <i :class="`fas fa-${op.result === 'WIN' ? 'check' : 'times'} mr-1`"></i>
-                                        {{ op.result }}
-                                    </div>
-                                </td>
-                                
-                                <td :class="['op-pnl', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-danger']">
-                                    {{ op.pnl }}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-
-            <div :class="['operation-status-footer', aiActive ? 'status-active-footer' : 'status-inactive-footer']">
-                <div class="status-content">
-                    <div class="status-main-box">
-                        <span><img src="../../assets/icons/brain.svg" alt="IA Ativa" width="20px"></span>
-
-                        <div class="">
-                            <p class="status-main-text">IA Operando Normalmente</p>
-                            <p class="status-sub-text">Monitorando sinais de mercado e executando operações conforme estratégia.</p>
-                        </div>
-                    </div>
-                </div>
-                <div :class="aiActive ? 'text-zenix-green-background' : 'text-zenix-red-background'">
-                    <span class="status-online-tag">{{ aiActive ? 'ONLINE' : 'OFFLINE' }}</span>
-                </div>
-            </div>
         </main>
     </div>
 </template>
@@ -304,12 +379,15 @@ export default {
                 { label: 'Velas', value: 'candles' },
                 { label: 'Linhas', value: 'line' },
             ],
-            selectedTimeframe: 60, // 1 minuto
+            selectedTimeframe: 300, // 5 minutos (M5)
             timeframeOptions: [
-                { label: '1m', value: 60 },
-                { label: '2m', value: 120 },
-                { label: '5m', value: 300 },
-                { label: '15m', value: 900 }
+                { label: 'M1', value: 60 },
+                { label: 'M5', value: 300 },
+                { label: 'M15', value: 900 },
+                { label: 'M30', value: 1800 },
+                { label: 'H1', value: 3600 },
+                { label: 'H4', value: 14400 },
+                { label: 'D1', value: 86400 }
             ],
             
             // Estatísticas do dia
@@ -331,8 +409,12 @@ export default {
             statsUpdateInterval: null,
             balance: 18250,
             balanceVisible: true,
+            profitVisible: true,
+            winrateVisible: true,
+            tradesVisible: true,
             aiActive: true,
             showDisconnectModal: false,
+            activeTab: 'chart', // 'chart' or 'logs'
             
             selectedMarket: 'EUR/USD',
             selectedStrategy: 'orion',
@@ -554,6 +636,38 @@ export default {
                 'Agressivo': 'Maior exposição para potencial de ganhos elevados'
             };
             return descriptions[this.selectedRisk] || 'Proteção máxima do capital com crescimento estável';
+        },
+
+        // Timeframe options formatted
+        timeframeOptionsFormatted() {
+            return this.timeframeOptions;
+        },
+
+        // Formatted balance
+        formattedBalance() {
+            if (!this.accountBalanceProp) return '$0,00';
+            const formatter = new Intl.NumberFormat('pt-BR', {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+            return `$${formatter.format(this.accountBalanceProp)}`;
+        },
+
+        // Profit percentage
+        profitPercentage() {
+            if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return null;
+            const profit = this.dailyStats.sessionProfitLoss || 0;
+            const percentage = (profit / this.accountBalanceProp) * 100;
+            const sign = percentage >= 0 ? '+' : '';
+            return `${sign}${percentage.toFixed(2)}%`;
+        },
+
+        // Last update time
+        formattedLastUpdate() {
+            if (!this.currentPrice || this.ticks.length === 0) {
+                return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+            }
+            return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
         }
     },
     
@@ -955,7 +1069,7 @@ export default {
             try {
                 const container = this.$refs.chartContainer;
                 const containerWidth = container.offsetWidth || 800;
-                const containerHeight = 400; // Aumentado de 350 para 400 (gráfico maior)
+                const containerHeight = 400; // Altura do gráfico no novo design
 
                 console.log('[InvestmentActive] Inicializando gráfico...', {
                     width: containerWidth,
@@ -1028,7 +1142,7 @@ export default {
         ticks: {
             handler(newTicks) {
                 console.log('[InvestmentActive] Ticks atualizados:', newTicks.length);
-                if (newTicks && newTicks.length > 0) {
+                if (newTicks && newTicks.length > 0 && this.activeTab === 'chart') {
                     this.$nextTick(() => {
                         if (!this.chartInitialized) {
                             this.initChart();
@@ -1040,6 +1154,17 @@ export default {
             },
             deep: true,
             immediate: true
+        },
+        activeTab(newTab) {
+            if (newTab === 'chart' && this.ticks && this.ticks.length > 0) {
+                this.$nextTick(() => {
+                    if (!this.chartInitialized) {
+                        this.initChart();
+                    } else {
+                        this.updateChart();
+                    }
+                });
+            }
         },
         chartType() {
             if (this.chartInitialized) {
@@ -1083,33 +1208,267 @@ export default {
 };
 </script>
 
-<style src="../../assets/css/components/ActiveView.css"></style>
-
 <style scoped>
-.status-indicator-content {
+/* ========================================================== */
+/* New Design Styles                                         */
+/* ========================================================== */
+
+* {
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+}
+
+.investment-active-wrapper {
+    width: 100%;
+    min-height: 100vh;
+    background-color: #0B0B0B;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+}
+
+.investment-active-main {
+    padding: 1.5rem 2rem;
+    max-width: 100%;
+}
+
+/* Premium Card */
+.premium-card {
+    box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
+    background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    border: 1px solid #1C1C1C;
+}
+
+.premium-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 16px rgba(34, 197, 94, 0.06);
+}
+
+/* Performance Summary Section */
+.performance-summary-section {
+    margin-bottom: 1.5rem;
+}
+
+.performance-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+.performance-card {
+    padding: 1.25rem;
+    background-color: #0E0E0E;
+}
+
+.card-header-row {
     display: flex;
-    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.75rem;
+}
+
+.card-label {
+    font-size: 0.75rem;
+    color: #7A7A7A;
+    font-weight: 500;
+}
+
+.eye-btn {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+    background: none;
+    border: none;
+    color: #A1A1A1;
+    padding: 0.25rem;
+}
+
+.eye-btn:hover {
+    opacity: 1;
+    color: #22C55E;
+}
+
+.card-value-large {
+    margin-bottom: 0.75rem;
+}
+
+.card-value-large span {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #DFDFDF;
+}
+
+.hidden-value {
+    letter-spacing: 2px;
+}
+
+.card-actions-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.account-type-btn {
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.account-type-btn:not(.active) {
+    background-color: #0B0B0B;
+    color: #A1A1A1;
+    border: 1px solid #1C1C1C;
+}
+
+.account-type-btn.active {
+    background-color: #22C55E;
+    color: #000;
+}
+
+.profit-percentage {
+    font-size: 0.875rem;
+    color: #22C55E;
+    font-weight: 500;
+}
+
+.trades-stats-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    font-size: 0.75rem;
+}
+
+/* Status Card */
+.status-card {
+    padding: 1.25rem;
+}
+
+.status-card-content {
+    display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 1rem;
-    width: 100%;
 }
 
-.status-indicator-left {
+.status-card-left {
     display: flex;
-    flex-direction: row;
     align-items: center;
-    gap: 0.75rem;
+    gap: 1rem;
     flex: 1;
 }
 
-.status-text-wrapper {
+.ai-status-widget {
+    position: relative;
+    width: 3rem;
+    height: 3rem;
     display: flex;
-    flex-direction: column;
-    gap: 0.125rem;
+    align-items: center;
+    justify-content: center;
 }
 
-.deactivate-ai-btn {
+.ai-status-bg {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(11, 11, 11, 0.5);
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+}
+
+.ai-status-content {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.375rem;
+}
+
+.ai-status-spinner-wrapper {
+    position: relative;
+}
+
+.ai-status-pulse-bg {
+    position: absolute;
+    inset: 0;
+    background-color: rgba(255, 208, 88, 0.2);
+    border-radius: 9999px;
+    filter: blur(12px);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.ai-status-spinner {
+    position: relative;
+    width: 2.5rem;
+    height: 2.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.spinner-svg {
+    width: 1.75rem;
+    height: 1.75rem;
+    color: #FFD058;
+    animation: spin 3s linear infinite;
+}
+
+.status-text-content {
+    flex: 1;
+}
+
+.status-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #DFDFDF;
+    margin-bottom: 0.25rem;
+}
+
+.status-subtitle-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.75rem;
+}
+
+.status-indicator-text {
+    font-weight: 500;
+}
+
+.status-indicator-dot {
+    color: #A1A1A1;
+}
+
+.status-indicator-subtext {
+    color: #A1A1A1;
+}
+
+.status-card-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ai-online-indicator {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.ai-pulse-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    background-color: #22C55E;
+    border-radius: 9999px;
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.deactivate-ai-btn-new {
     display: flex;
     align-items: center;
     gap: 0.5rem;
@@ -1125,34 +1484,447 @@ export default {
     white-space: nowrap;
 }
 
-.deactivate-ai-btn:hover:not(:disabled) {
+.deactivate-ai-btn-new:hover:not(:disabled) {
     background-color: #E63946;
     transform: translateY(-1px);
     box-shadow: 0 4px 12px rgba(255, 71, 71, 0.3);
 }
 
-.deactivate-ai-btn:active:not(:disabled) {
-    transform: translateY(0);
-}
-
-.deactivate-ai-btn:disabled {
+.deactivate-ai-btn-new:disabled {
     opacity: 0.6;
     cursor: not-allowed;
 }
 
-.deactivate-ai-btn i {
+/* Main Content Grid */
+.main-content-grid {
+    display: grid;
+    grid-template-columns: 8fr 4fr;
+    gap: 1.5rem;
+    margin-bottom: 1.5rem;
+}
+
+.chart-column {
+    grid-column: 1;
+}
+
+.config-column {
+    grid-column: 2;
+}
+
+/* Market Chart Card */
+.market-chart-card {
+    padding: 1.5rem;
+}
+
+.chart-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.chart-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #DFDFDF;
+    margin-bottom: 0.25rem;
+}
+
+.chart-subtitle {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    margin-top: 0.25rem;
+}
+
+.chart-tabs {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.chart-tab-btn {
+    position: relative;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #A1A1A1;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding-bottom: 0.25rem;
+    transition: all 0.3s ease;
+}
+
+.chart-tab-btn.active {
+    color: #22C55E;
+}
+
+.tab-indicator {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background-color: #22C55E;
+}
+
+.timeframe-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+    flex-wrap: wrap;
+}
+
+.timeframe-btn {
+    padding: 0.375rem 0.75rem;
+    background-color: #0B0B0B;
+    color: #A1A1A1;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.timeframe-btn:hover:not(:disabled) {
+    border-color: #22C55E;
+    color: #22C55E;
+}
+
+.timeframe-btn.active {
+    background-color: #22C55E;
+    color: #000;
+    border-color: #22C55E;
+    font-weight: 700;
+}
+
+.timeframe-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.chart-view-container {
+    height: 400px;
+}
+
+.chart-container {
+    width: 100%;
+    height: 100%;
+}
+
+.logs-view-container {
+    height: 400px;
+    overflow-y: auto;
+}
+
+.logs-table-wrapper {
+    overflow-x: auto;
+}
+
+.logs-table {
+    width: 100%;
+}
+
+.log-row {
+    border-bottom: 1px solid rgba(28, 28, 28, 0.4);
+    transition: background-color 0.2s ease;
+}
+
+.log-row:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.direction-badge,
+.result-badge {
+    display: inline-flex;
+    align-items: center;
+    padding: 0.25rem 0.625rem;
+    border-radius: 0.25rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.call-badge {
+    background-color: #22C55E;
+    color: #000;
+}
+
+.put-badge {
+    background-color: rgba(255, 71, 71, 0.8);
+    color: white;
+}
+
+.win-badge {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: #22C55E;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.loss-badge {
+    background-color: rgba(255, 71, 71, 0.1);
+    color: #FF4747;
+    border: 1px solid rgba(255, 71, 71, 0.2);
+}
+
+.loading-logs,
+.no-logs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    color: #A1A1A1;
     font-size: 0.875rem;
 }
 
-@media (max-width: 768px) {
-    .status-indicator-content {
-        flex-direction: column;
-        align-items: stretch;
+/* Config Card */
+.config-card-sticky {
+    padding: 1.5rem;
+    position: sticky;
+    top: 100px;
+}
+
+.config-card-title {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #DFDFDF;
+    margin-bottom: 1.5rem;
+    display: flex;
+    align-items: center;
+}
+
+.config-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.config-section {
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid rgba(28, 28, 28, 0.5);
+}
+
+.config-section-last {
+    padding-top: 1.25rem;
+}
+
+.config-label {
+    font-size: 0.625rem;
+    color: #7D7D7D;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.config-value-main {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #DFDFDF;
+    margin-bottom: 0.25rem;
+}
+
+.config-description {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+}
+
+.config-params-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 0.75rem;
+}
+
+.param-label {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    margin-bottom: 0.25rem;
+}
+
+.param-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #DFDFDF;
+}
+
+.risk-management-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 0.5rem;
+}
+
+.risk-level-badge {
+    padding: 0.375rem 0.75rem;
+    background-color: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 0.5rem;
+}
+
+.ai-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+}
+
+.ai-status-info {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.pause-ai-btn {
+    width: 100%;
+    padding: 0.75rem;
+    background-color: #FFD058;
+    color: #000;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.pause-ai-btn:hover:not(:disabled) {
+    background-color: #FFE07A;
+}
+
+.pause-ai-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Status Footer */
+.status-footer-section {
+    margin-bottom: 1.5rem;
+}
+
+.status-footer-card {
+    padding: 1.5rem;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.status-footer-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.status-footer-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.status-footer-icon {
+    width: 3rem;
+    height: 3rem;
+    background-color: rgba(34, 197, 94, 0.1);
+    border-radius: 9999px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.status-footer-title {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #DFDFDF;
+    margin-bottom: 0.25rem;
+}
+
+.status-footer-subtitle {
+    font-size: 0.875rem;
+    color: #A1A1A1;
+}
+
+.status-footer-right {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-footer-status {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Animations */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Colors */
+.text-zenix-green {
+    color: #22C55E;
+}
+
+.text-zenix-red {
+    color: #FF4747;
+}
+
+.text-zenix-secondary {
+    color: #A1A1A1;
+}
+
+.text-zenix-text {
+    color: #DFDFDF;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+    .main-content-grid {
+        grid-template-columns: 1fr;
     }
     
-    .deactivate-ai-btn {
+    .chart-column,
+    .config-column {
+        grid-column: 1;
+    }
+
+    .performance-cards-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .investment-active-main {
+        padding: 1rem;
+    }
+
+    .performance-cards-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .status-card-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .status-card-right {
         width: 100%;
-        justify-content: center;
+        justify-content: space-between;
     }
 }
 </style>
