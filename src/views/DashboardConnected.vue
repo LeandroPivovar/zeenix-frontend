@@ -1,7 +1,7 @@
 <template>
-  <div class="flex flex-col h-full">
+  <div class="flex flex-col h-full w-full">
     <!-- Header -->
-    <header class="bg-zenix-card border-b border-zenix-border px-4 lg:px-6 xl:px-8 py-4 flex items-center justify-between sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
+    <header class="bg-zenix-card border-b border-zenix-border px-3 lg:px-4 xl:px-5 py-4 flex items-center justify-between sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
       <div class="flex items-center gap-4">
         <button class="lg:hidden hamburger-menu" @click="$emit('toggle-sidebar')">
           <span class="line"></span>
@@ -36,7 +36,7 @@
     </header>
     
     <!-- Main Content -->
-    <main class="flex-1 px-4 lg:px-6 xl:px-8 py-8 bg-zenix-bg noise-bg font-inter overflow-y-auto">
+    <main class="flex-1 px-3 lg:px-4 xl:px-5 py-8 bg-zenix-bg noise-bg font-inter overflow-y-auto w-full">
     <!-- Ultra Pro Balance Card -->
     <div class="grid grid-cols-1 gap-6 mb-8">
       <div id="ultra-pro-balance-card" class="relative bg-zenix-card border border-zenix-border rounded-[20px] p-6 premium-card-enhanced overflow-hidden min-h-[126px]">
