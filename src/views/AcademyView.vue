@@ -40,8 +40,9 @@
                     class="course-card"
                 >
                     <!-- Image/Icon Area -->
-                    <div class="course-header-image">
-                        <i :class="getCourseIcon(index) + ' course-icon-placeholder'" :style="{ color: getCourseColor(index) }"></i>
+                    <div class="course-header-image" :class="{ 'has-cover': course.coverImage }">
+                        <img v-if="course.coverImage" :src="course.coverImage" :alt="course.title" loading="lazy" />
+                        <i v-else :class="getCourseIcon(index) + ' course-icon-placeholder'" :style="{ color: getCourseColor(index) }"></i>
                     </div>
 
                     <div class="card-body">

@@ -6,8 +6,8 @@
     background-color: #0B0B0B; /* zenix-bg */
     color: #DFDFDF; /* zenix-text */
     font-family: 'Inter', sans-serif;
-    margin-left: 260px; /* Ajuste para sidebar */
-    width: calc(100% - 260px);
+    margin-left: 240px; /* Ajustado para largura real da sidebar */
+    width: calc(100% - 240px);
 }
 
 /* Noise Background */
@@ -75,6 +75,12 @@ header {
     display: flex;
     align-items: center;
     justify-content: center;
+    overflow: hidden;
+}
+
+.course-header-image.has-cover {
+    background: none;
+    padding: 0;
 }
 
 .course-header-image img {
