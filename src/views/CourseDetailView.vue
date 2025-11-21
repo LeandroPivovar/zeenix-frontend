@@ -111,7 +111,7 @@
                         <span class="btn-text">{{ selectedLesson?.completed ? 'Concluído' : 'Marcar como concluído' }}</span>
                     </button>
                     <button class="btn-action">
-                        <i class="fas fa-rotate-right btn-icon"></i>
+                        <i class="fas fa-rotate-right btn-icon-small"></i>
                         <span class="btn-text">Assistir novamente</span>
                     </button>
                 </div>
@@ -341,8 +341,8 @@ export default {
 <style scoped src="../assets/css/views/courseDetailView.css"></style>
 <style scoped>
 .main-wrapper {
-    margin-left: 260px;
-    width: calc(100% - 260px);
+    margin-left: 240px;
+    width: calc(100% - 240px);
 }
 @media (max-width: 1024px) {
     .main-wrapper {
