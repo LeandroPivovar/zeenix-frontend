@@ -1,136 +1,178 @@
 <template>
-  <div class="course-layout noise-bg" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-    <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
-
-    <div class="course-main">
-      <header class="course-header">
+  <div class="layout-course-detail noise-bg">
+    
+    <!-- Header -->
+    <header class="course-header">
+      <div class="header-content">
         <div class="header-left">
-          <button class="back-link" @click="$router.push('/academy')">
-            <i class="fas fa-arrow-left"></i>
-            Voltar aos cursos
-          </button>
-          <div class="header-content">
-            <h1>Zenix Academy</h1>
-            <p>Cursos exclusivos para traders profissionais</p>
-          </div>
+          <h1 class="header-title">Zenix Academy</h1>
         </div>
-        <div class="user-info-block">
-          <div class="user-meta">
-            <div class="name">{{ currentUserName }}</div>
-            <div class="status">
-              <span class="pulse-dot"></span>
-              <span>Online</span>
+        <div class="header-right">
+          <div class="user-info">
+            <div class="user-details">
+              <div class="user-name">{{ getUserName() }}</div>
+              <div class="user-status">
+                <div class="status-dot pulse-dot"></div>
+                <span>Online</span>
+              </div>
+            </div>
+            <div class="user-avatar">
+              <i class="fa-solid fa-user"></i>
             </div>
           </div>
-          <div class="user-avatar">{{ userInitials }}</div>
         </div>
-      </header>
+      </div>
+    </header>
 
-      <main class="course-body">
-        <section class="video-content">
-          <nav class="breadcrumb">
-            <span>Zenix Academy</span>
-            <i class="fas fa-chevron-right"></i>
-            <span>{{ course?.title || 'Curso' }}</span>
-            <i class="fas fa-chevron-right" v-if="selectedLesson"></i>
-            <span v-if="selectedLesson">{{ selectedLesson.title }}</span>
-          </nav>
+    <!-- Main Content -->
+    <main class="main-content-flex">
+      
+      <!-- Left Column - Video & Content (70%) -->
+      <div class="video-content-column">
+        
+        <!-- Breadcrumb -->
+        <div class="breadcrumb">
+          <span @click="$router.push('/academy')" class="breadcrumb-link">Zenix Academy</span>
+          <i class="fa-solid fa-chevron-right"></i>
+          <span class="breadcrumb-text">{{ course?.title || 'Carregando...' }}</span>
+          <template v-if="selectedLesson">
+            <i class="fa-solid fa-chevron-right"></i>
+            <span class="breadcrumb-current">{{ selectedLesson.title }}</span>
+          </template>
+        </div>
 
-          <div class="video-card">
-            <div class="video-frame">
-              <template v-if="selectedLesson?.videoUrl">
-                <video class="lesson-video" controls :src="resolveMediaUrl(selectedLesson.videoUrl)">
-                  Seu navegador não suporta reprodução de vídeo.
-                </video>
-              </template>
-              <template v-else>
-                <div class="video-placeholder">
-                  <i class="fa-solid fa-play-circle" style="font-size: 4rem; color: rgba(34, 197, 94, 0.2);"></i>
-                  <p>{{ selectedLesson?.title || 'Selecione uma aula' }}</p>
+        <!-- Video Player -->
+        <div class="video-player-card">
+          <div class="video-player-wrapper">
+            <template v-if="selectedLesson && selectedLesson.videoUrl">
+              <video
+                class="lesson-video"
+                controls
+                :src="resolveMediaUrl(selectedLesson.videoUrl)"
+              >
+                Seu navegador não suporta reprodução de vídeo.
+              </video>
+            </template>
+            <template v-else>
+              <div class="video-placeholder">
+                <div class="placeholder-icon">
+                  <i class="fa-solid fa-play-circle"></i>
+                  <p>{{ selectedLesson ? 'Vídeo em breve' : 'Selecione uma aula para começar' }}</p>
                 </div>
                 <div class="zenix-watermark">ZENIX</div>
-              </template>
-            </div>
-          </div>
-
-          <div v-if="selectedLesson">
-            <h2>{{ selectedLesson.title }}</h2>
-            <p class="lesson-meta-line">{{ selectedLesson.description }}</p>
-            <button class="cta-button" v-if="course?.ctaLabel" @click="openCTA(course.ctaLink)">
-              {{ course.ctaLabel }}
-            </button>
-          </div>
-
-          <div class="materials-section">
-            <h3>Materiais complementares</h3>
-            <div class="materials-list" v-if="materialsList.length">
-              <div v-for="material in materialsList" :key="material.id || material.title" class="material-row" @click="downloadMaterial(material)">
-                <span>{{ material.title }}</span>
-                <i class="fa-solid fa-download" style="color:#22C55E;"></i>
               </div>
+            </template>
+          </div>
+        </div>
+
+        <!-- Lesson Title & Description -->
+        <div v-if="selectedLesson" class="lesson-info-section">
+          <h2 class="lesson-title-main">{{ selectedLesson.title }}</h2>
+          <p v-if="selectedLesson.description" class="lesson-description">{{ selectedLesson.description }}</p>
+          
+          <!-- Optional External Link (if lesson has external link) -->
+          <button v-if="selectedLesson.externalLink" class="btn-external-link" @click="openExternalLink(selectedLesson.externalLink)">
+            {{ selectedLesson.externalLinkText || 'Acessar recurso externo' }}
+          </button>
+        </div>
+
+        <!-- Materials Section -->
+        <div v-if="selectedLesson && selectedLesson.materials && selectedLesson.materials.length > 0" class="materials-section">
+          <h3 class="materials-title">Materiais complementares</h3>
+          <div class="materials-list">
+            <div 
+              v-for="(material, idx) in selectedLesson.materials" 
+              :key="idx"
+              class="material-item"
+              @click="downloadMaterial(material)"
+            >
+              <span class="material-name">{{ material.name || 'Material ' + (idx + 1) }}</span>
+              <i class="fa-solid fa-download"></i>
             </div>
-            <p v-else class="empty-materials">Nenhum material disponível para esta aula.</p>
           </div>
+        </div>
 
-          <div class="action-buttons">
-            <button class="action-btn" @click="markAsCompleted" :disabled="!selectedLesson || selectedLesson.completed || markingComplete">
-              <i class="fa-solid fa-check-circle" style="color:#22C55E;"></i>
-              <span>{{ selectedLesson?.completed ? 'Aula concluída' : 'Marcar como concluída' }}</span>
+        <!-- Action Buttons -->
+        <div v-if="selectedLesson" class="action-buttons-grid">
+          <button 
+            class="action-btn"
+            :class="{ 'completed': selectedLesson.completed }"
+            @click="markAsCompleted"
+            :disabled="selectedLesson.completed || markingComplete"
+          >
+            <i class="fa-solid fa-check-circle"></i>
+            <span>{{ selectedLesson.completed ? 'Aula concluída' : 'Marcar como concluído' }}</span>
+          </button>
+          <button class="action-btn" @click="replayLesson">
+            <i class="fa-solid fa-rotate-right"></i>
+            <span>Assistir novamente</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Sidebar - Course Playlist (30%) -->
+      <div class="course-playlist-sidebar">
+        <div class="playlist-header">
+          <h3 class="playlist-title">Conteúdo do Curso</h3>
+          <p class="playlist-meta">{{ totalLessons }} aulas • {{ course?.totalDuration || '0h 0min' }}</p>
+        </div>
+
+        <div v-if="loading" class="loading-info">Carregando módulos...</div>
+        <div v-else-if="error" class="error-info">{{ error }}</div>
+        
+        <div v-else class="modules-list">
+          <div 
+            v-for="(module, idx) in modules" 
+            :key="module.id || idx"
+            class="module-block"
+          >
+            <button class="module-header-btn" @click="toggleModule(idx)">
+              <div class="module-info">
+                <div class="module-title-text">Módulo {{ module.orderIndex || idx + 1 }}: {{ module.title }}</div>
+                <div class="module-progress-text">{{ getModuleProgressText(module) }}</div>
+              </div>
+              <i 
+                class="fa-solid module-chevron"
+                :class="module.expanded ? 'fa-chevron-down' : 'fa-chevron-right'"
+              ></i>
             </button>
-            <button class="action-btn" @click="replayLesson" :disabled="!selectedLesson">
-              <i class="fa-solid fa-rotate-right" style="color:#22C55E;"></i>
-              <span>Assistir novamente</span>
-            </button>
-          </div>
-        </section>
-
-        <aside class="course-playlist">
-          <div class="playlist-header">
-            <h3>Conteúdo do Curso</h3>
-            <p>{{ totalLessons }} aulas • {{ course?.totalDuration || '--' }}</p>
-          </div>
-
-          <div v-if="loading" class="loading-info">Carregando módulos...</div>
-          <div v-else-if="error" class="error-info">{{ error }}</div>
-
-          <div v-else>
-            <div class="playlist-module" v-for="(module, idx) in modules" :key="module.id || idx">
-              <button class="module-toggle" @click="toggleModule(idx)">
-                <div>
-                  <div>Módulo {{ module.orderIndex || idx + 1 }}: {{ module.title }}</div>
-                  <div class="module-progress">{{ module.lessons?.filter(l => l.completed).length || 0 }} / {{ module.lessons?.length || 0 }} concluído</div>
+            
+            <div v-if="module.expanded" class="lessons-list">
+              <div 
+                v-for="(lesson, lidx) in module.lessons" 
+                :key="lesson.id || lidx"
+                class="lesson-item-card"
+                :class="{ 
+                  'active': lesson.active,
+                  'completed': lesson.completed
+                }"
+                @click="selectLesson(lesson)"
+              >
+                <div class="lesson-thumbnail">
+                  <div class="thumbnail-gradient"></div>
+                  <i v-if="lesson.active" class="fa-solid fa-play play-icon"></i>
                 </div>
-                <i class="fa-solid" :class="module.expanded ? 'fa-chevron-down' : 'fa-chevron-right'"></i>
-              </button>
-              <div class="lesson-list" :class="{ expanded: module.expanded }">
-                <div 
-                  class="lesson-row" 
-                  v-for="(lesson, lidx) in module.lessons" 
-                  :key="lesson.id || lidx"
-                  :class="{ active: selectedLesson?.id === lesson.id }"
-                  @click="selectLesson(lesson)"
-                >
-                  <div class="lesson-thumb"></div>
-                  <div class="lesson-info">
-                    <div class="lesson-info-title">{{ lesson.title }}</div>
-                    <div class="lesson-info-duration">{{ lesson.duration }}</div>
+                <div class="lesson-details">
+                  <div class="lesson-title-row">
+                    <i v-if="lesson.completed" class="fa-solid fa-check-circle status-icon completed-icon"></i>
+                    <div v-else-if="lesson.active" class="status-dot pulse-dot active-dot"></div>
+                    <div v-else class="status-dot inactive-dot"></div>
+                    <span class="lesson-title-text">{{ lesson.title }}</span>
                   </div>
+                  <span class="lesson-duration-text">{{ lesson.duration || '0min' }}</span>
                 </div>
               </div>
             </div>
           </div>
-        </aside>
-      </main>
-    </div>
+        </div>
+      </div>
+    </main>
   </div>
 </template>
 
 <script>
-import AppSidebar from '../components/Sidebar.vue'
-
 export default {
   name: 'CourseDetailView',
-  components: { AppSidebar },
   data() {
     return {
       course: null,
@@ -138,9 +180,7 @@ export default {
       selectedLesson: null,
       loading: true,
       error: null,
-      markingComplete: false,
-      isSidebarOpen: false,
-      isSidebarCollapsed: false
+      markingComplete: false
     }
   },
   computed: {
@@ -148,7 +188,6 @@ export default {
       return this.modules.reduce((total, module) => total + (module.lessons?.length || 0), 0)
     },
     completedLessons() {
-      // TODO: Buscar progresso real do backend
       return this.modules.reduce((total, module) => {
         return total + (module.lessons?.filter(l => l.completed).length || 0)
       }, 0)
@@ -156,33 +195,11 @@ export default {
     progressPercentage() {
       if (this.totalLessons === 0) return 0
       return Math.round((this.completedLessons / this.totalLessons) * 100)
-    },
-    materialsList() {
-      return this.selectedLesson?.materials || []
-    },
-    currentUserName() {
-      const stored = localStorage.getItem('user')
-      if (stored) {
-        try {
-          const parsed = JSON.parse(stored)
-          return parsed.name || 'Usuário'
-        } catch (e) {
-          return 'Usuário'
-        }
-      }
-      return 'Usuário'
-    },
-    userInitials() {
-      const parts = this.currentUserName.split(' ')
-      if (parts.length >= 2) {
-        return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
-      }
-      return this.currentUserName.substring(0, 2).toUpperCase()
     }
   },
   mounted() {
-    this.loadFontAwesome()
-    this.fetchCourseDetails()
+    this.loadFontAwesome();
+    this.fetchCourseDetails();
   },
   watch: {
     '$route.params.id'() {
@@ -192,38 +209,32 @@ export default {
   methods: {
     loadFontAwesome() {
       if (!document.getElementById('fa-script')) {
-        const script = document.createElement('script')
-        script.id = 'fa-script'
-        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js'
-        script.crossOrigin = 'anonymous'
-        script.referrerPolicy = 'no-referrer'
-        document.head.appendChild(script)
+        const script = document.createElement('script');
+        script.id = 'fa-script';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js';
+        script.crossOrigin = 'anonymous';
+        script.referrerPolicy = 'no-referrer';
+        document.head.appendChild(script);
       }
     },
-    toggleSidebar() {
-      this.isSidebarOpen = !this.isSidebarOpen
-    },
-    closeSidebar() {
-      this.isSidebarOpen = false
-    },
-    toggleSidebarCollapse() {
-      this.isSidebarCollapsed = !this.isSidebarCollapsed
-    },
-    replayLesson() {
-      if (this.selectedLesson?.videoUrl) {
-        const video = document.querySelector('.lesson-video')
-        video?.load()
+    getUserName() {
+      try {
+        const userStr = localStorage.getItem('user');
+        if (userStr) {
+          const user = JSON.parse(userStr);
+          return user.name || 'Usuário';
+        }
+      } catch (e) {
+        // ignore
       }
+      return 'Usuário';
     },
-    openCTA(link) {
-      if (link) {
-        window.open(link, '_blank')
-      }
-    },
-    downloadMaterial(material) {
-      if (material?.url) {
-        window.open(this.resolveMediaUrl(material.url), '_blank')
-      }
+    getModuleProgressText(module) {
+      if (!module.lessons || module.lessons.length === 0) return '0% concluído';
+      const completed = module.lessons.filter(l => l.completed).length;
+      const total = module.lessons.length;
+      const percent = Math.round((completed / total) * 100);
+      return `${percent}% concluído`;
     },
     async fetchCourseDetails() {
       this.loading = true
@@ -252,7 +263,6 @@ export default {
         const data = await res.json()
         this.course = data
         
-        // Organizar módulos e aulas
         if (data.modules && Array.isArray(data.modules)) {
           this.modules = data.modules.map(module => ({
             ...module,
@@ -260,7 +270,6 @@ export default {
             lessons: module.lessons || []
           }))
           
-          // Expandir o primeiro módulo e selecionar a primeira aula
           if (this.modules.length > 0) {
             this.modules[0].expanded = true
             if (this.modules[0].lessons && this.modules[0].lessons.length > 0) {
@@ -307,9 +316,7 @@ export default {
           throw new Error('Erro ao marcar aula como concluída')
         }
 
-        // Atualizar o estado local
         this.selectedLesson.completed = true
-        // Atualizar também no array de módulos
         this.modules.forEach(m => {
           if (m.lessons) {
             const lesson = m.lessons.find(l => l.id === lessonId)
@@ -319,13 +326,28 @@ export default {
           }
         })
         
-        // Mostrar feedback visual
         alert('Aula marcada como concluída!')
       } catch (err) {
         console.error('Erro ao marcar aula como concluída:', err)
         alert('Não foi possível marcar a aula como concluída. Tente novamente.')
       } finally {
         this.markingComplete = false
+      }
+    },
+    replayLesson() {
+      if (!this.selectedLesson || !this.selectedLesson.videoUrl) return;
+      const video = document.querySelector('.lesson-video');
+      if (video) {
+        video.currentTime = 0;
+        video.play();
+      }
+    },
+    openExternalLink(url) {
+      window.open(url, '_blank');
+    },
+    downloadMaterial(material) {
+      if (material.url) {
+        window.open(this.resolveMediaUrl(material.url), '_blank');
       }
     },
     resolveMediaUrl(path) {
@@ -341,3 +363,6 @@ export default {
 </script>
 
 <style scoped src="../assets/css/views/courseDetailView.css"></style>
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+</style>
