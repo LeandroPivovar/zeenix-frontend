@@ -461,7 +461,8 @@ export default {
         this.$router.push(tool.route);
       }
     },
-    activateIA(ia) {
+    activateIA(_ia) {
+      // Navega para a página de IAs - pode usar _ia.id no futuro para ativar uma IA específica
       this.$router.push('/InvestmentIA');
     },
     handlePerformanceAction(perf) {
