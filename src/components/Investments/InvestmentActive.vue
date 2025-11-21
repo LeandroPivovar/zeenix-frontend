@@ -1223,11 +1223,50 @@ export default {
     min-height: 100vh;
     background-color: #0B0B0B;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+    box-sizing: border-box;
+}
+
+/* Ensure Font Awesome icons are visible */
+.fas,
+.far,
+.fab,
+.fa {
+    font-family: "Font Awesome 6 Free", "Font Awesome 6 Brands", "Font Awesome 6 Pro", "Font Awesome 6 Sharp" !important;
+    font-style: normal;
+    font-variant: normal;
+    text-rendering: auto;
+    -webkit-font-smoothing: antialiased;
+    display: inline-block;
+    line-height: 1;
+}
+
+.fas {
+    font-weight: 900;
+}
+
+.far {
+    font-weight: 400;
+}
+
+.fab {
+    font-family: "Font Awesome 6 Brands" !important;
+    font-weight: 400;
+}
+
+/* Ensure icons in buttons are visible */
+button i,
+.btn i,
+.eye-btn i {
+    display: inline-block;
+    width: auto;
+    height: auto;
 }
 
 .investment-active-main {
-    padding: 1.5rem 2rem;
+    padding: 1.5rem 20px;
     max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Premium Card */
@@ -1892,6 +1931,31 @@ export default {
     color: #DFDFDF;
 }
 
+/* Ensure all sections occupy 100% width */
+.performance-summary-section,
+.performance-cards-grid,
+.main-content-grid,
+.market-chart-card,
+.config-card-sticky,
+.status-footer-section,
+.status-footer-card {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Grid columns should occupy full width */
+.chart-column,
+.config-column {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Performance cards grid should adapt to full width */
+.performance-cards-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1rem;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
     .main-content-grid {
@@ -1910,7 +1974,7 @@ export default {
 
 @media (max-width: 768px) {
     .investment-active-main {
-        padding: 1rem;
+        padding: 1rem 15px;
     }
 
     .performance-cards-grid {

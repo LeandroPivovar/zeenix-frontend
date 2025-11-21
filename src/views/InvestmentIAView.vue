@@ -1210,7 +1210,7 @@ export default {
 }
 
 .header-content {
-    padding: 1rem 0.75rem;
+    padding: 1rem 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -2216,9 +2216,11 @@ export default {
 }
 
 .footer-content {
-    max-width: 80rem;
+    max-width: 100%;
+    width: 100%;
     margin: 0 auto;
-    padding: 3rem 2rem;
+    padding: 3rem 20px;
+    box-sizing: border-box;
 }
 
 .footer-grid {
