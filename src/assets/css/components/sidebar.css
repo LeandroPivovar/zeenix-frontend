@@ -1,306 +1,409 @@
+/* --- Sidebar Principal e Layout --- */
+
 .sidebar {
-    width: 240px;
-    background: #141515;
-    border-right: 1px solid rgba(255, 255, 255, 0.06);
-    color: #e5e7eb;
-    display: flex;
-    flex-direction: column;
-    padding: 16px 12px;
-    position: fixed;
-    left: 0;
-    top: 0;
-    height: 100vh;
-    z-index: 999;
-    box-sizing: border-box;
-    transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
+	width: 240px;
+	background: #141515;
+	border-right: 1px solid rgba(255, 255, 255, 0.06);
+	color: #e5e7eb;
+	display: flex;
+	flex-direction: column;
+	padding: 16px 12px;
+	position: fixed;
+	left: 0;
+	top: 0;
+	height: 100vh;
+	z-index: 999;
+	box-sizing: border-box;
+	transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
 }
+
+.separator {
+	height: 1px;
+	background: #3f3f3f;
+	margin: 8px 0;
+}
+
+/* --- Estado Colapsado (.collapsed) --- */
 
 .sidebar.collapsed {
-    width: 0;
-    padding: 0;
-    overflow: hidden;
-    border-right: none;
+	width: 72px; /* Ajustado para um tamanho fixo para o ícone e padding */
+	min-width: 72px; /* Garante que não diminua mais */
+	padding: 16px 8px; /* Reduz o padding lateral, mas mantém vertical */
+	overflow: hidden;
+	border-right: none;
 }
 
+/* Esconde textos principais e ajusta transição */
 .sidebar.collapsed .brand-text {
-    opacity: 0;
-    width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    transition: opacity 0.3s ease, width 0.3s ease;
+	opacity: 0;
+	width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	transition: opacity 0.2s ease, width 0.2s ease;
 }
 
+/* Ajusta o item de menu recolhido */
 .sidebar.collapsed .menu-item {
-    position: relative;
-    justify-content: center;
-    padding: 10px;
-    color: transparent;
-    font-size: 0;
+	position: relative;
+	justify-content: center;
+	padding: 10px 0; /* Centraliza verticalmente e elimina o padding lateral do texto */
+	color: transparent; /* Esconde o texto do link */
+	font-size: 0;
 }
 
+/* Adiciona o ícone SVG ao layout centralizado no modo colapsado */
+.sidebar.collapsed .menu-item .icon-sidebar {
+	color: #e5e7eb;
+	position: static; /* Volta à posição normal no flow */
+	transform: none;
+	opacity: 1;
+	margin-right: 0;
+	margin: 0 auto; /* Centraliza o ícone dentro do item de 72px */
+	transition: color 0.2s ease;
+}
+
+/* Ícone ativo no modo colapsado */
+.sidebar.collapsed .menu-item.active .icon-sidebar {
+	color: #a7f3d0;
+}
+
+/* Tooltip do Menu Item (colapsado) */
 .sidebar.collapsed .menu-item::after {
-    content: attr(data-text);
-    position: absolute;
-    left: 100%;
-    margin-left: 12px;
-    background: #1a1a1a;
-    padding: 8px 12px;
-    border-radius: 6px;
-    white-space: nowrap;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity 0.2s ease;
-    z-index: 1000;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+	content: attr(data-text);
+	position: absolute;
+	left: 100%;
+	top: 50%;
+	transform: translateY(-50%);
+	margin-left: 12px;
+	background: #1a1a1a;
+	color: #e5e7eb; /* Garante que o texto do tooltip tenha cor */
+	padding: 8px 12px;
+	border-radius: 6px;
+	white-space: nowrap;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 0.2s ease;
+	z-index: 1000;
+	border: 1px solid rgba(255, 255, 255, 0.1);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 .sidebar.collapsed .menu-item:hover::after {
-    opacity: 1;
+	opacity: 1;
 }
 
-.sidebar.collapsed .menu-item .icon-sidebar {
-    color: #e5e7eb;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
-    opacity: 1;
-    margin-right: 0;
-}
-
-.sidebar.collapsed .menu-item.active .icon-sidebar {
-    color: #a7f3d0;
-}
-
+/* Oculta informações do status/usuário */
 .sidebar.collapsed .user-info,
 .sidebar.collapsed .footer-row .online-text,
 .sidebar.collapsed .version {
-    opacity: 0;
-    width: 0;
-    overflow: hidden;
-    white-space: nowrap;
-    transition: opacity 0.3s ease, width 0.3s ease;
+	opacity: 0;
+	width: 0;
+	overflow: hidden;
+	white-space: nowrap;
+	transition: opacity 0.2s ease, width 0.2s ease;
 }
 
-.sidebar.collapsed .brand {
-    justify-content: center;
-}
-
-.sidebar.collapsed .user {
-    justify-content: center;
-}
-
+/* Centraliza containers no modo colapsado */
+.sidebar.collapsed .brand,
+.sidebar.collapsed .user,
 .sidebar.collapsed .footer-row {
-    justify-content: center;
+	justify-content: center;
 }
 
+/* Reposiciona o botão de toggle no modo colapsado (se ele for o único item visível no .brand) */
 .sidebar.collapsed .toggle-sidebar-btn {
-    position: absolute;
-    right: 8px;
-    top: 16px;
-    transform: none;
-    margin-left: 0;
-    z-index: 10;
+	position: static; /* Volta para o flow */
+	transform: none;
+	margin-left: 0;
+	z-index: 10;
+	order: 1; /* Garante que fique à direita no .brand (mesmo que os outros itens estejam com width: 0) */
 }
 
-.sidebar:not(.collapsed) .toggle-sidebar-btn {
-    margin-left: auto;
+/* Oculta o botão de toggle quando está colapsado para que apenas o ícone de expandir seja visto */
+/*
+.sidebar.collapsed .toggle-sidebar-btn {
+    display: none;
 }
+*/
+
+/* No modo expandido, o botão de toggle fica à direita */
+.sidebar:not(.collapsed) .toggle-sidebar-btn {
+	margin-left: auto;
+}
+
+/* --- Brand/Logo --- */
 
 .brand {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 16px;
-    position: relative;
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	margin-bottom: 16px;
+	position: relative;
 }
 
 .toggle-sidebar-btn {
-    margin-left: auto;
-    background: transparent;
-    border: none;
-    color: #9ca3af;
-    cursor: pointer;
-    padding: 4px;
-    border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: all 0.2s ease;
-    opacity: 0.7;
+	margin-left: auto;
+	background: transparent;
+	border: none;
+	color: #9ca3af;
+	cursor: pointer;
+	padding: 4px;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	opacity: 0.7;
 }
 
 .toggle-sidebar-btn:hover {
-    background: rgba(255, 255, 255, 0.08);
-    color: #e5e7eb;
-    opacity: 1;
+	background: rgba(255, 255, 255, 0.08);
+	color: #e5e7eb;
+	opacity: 1;
 }
 
 .toggle-sidebar-btn svg {
-    transition: transform 0.3s ease;
+	transition: transform 0.3s ease;
 }
+
 .avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 8px;
-    background: #1f2a24;
-    display: grid;
-    place-items: center;
-    font-weight: 700;
-    color: #a7f3d0;
+	width: 28px;
+	height: 28px;
+	border-radius: 8px;
+	background: #1f2a24;
+	display: grid;
+	place-items: center;
+	font-weight: 700;
+	color: #a7f3d0;
 }
+
 .brand-text .title {
-    font-weight: 700;
+	font-weight: 700;
 }
+
 .brand-text .subtitle {
-    font-size: 11px;
-    color: #9ca3af;
+	font-size: 11px;
+	color: #9ca3af;
 }
+
+/* --- Menu de Navegação --- */
 
 .menu {
-    display: grid;
-    gap: 6px;
+	display: grid;
+	gap: 6px;
+	flex-grow: 1; /* Permite que o menu ocupe o espaço restante */
 }
+
 .menu-item {
-    text-align: left;
-    padding: 10px 12px;
-    border-radius: 8px;
-    background: transparent;
-    color: #e5e7eb;
-    border: none;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    display: flex;
-    align-items: center;
-    transition: background-color 0.2s;
+	text-align: left;
+	padding: 10px 12px;
+	border-radius: 8px;
+	background: transparent;
+	color: #e5e7eb;
+	border: none;
+	cursor: pointer;
+	position: relative;
+	overflow: hidden;
+	display: flex;
+	align-items: center;
+	transition: background-color 0.2s, color 0.2s;
+	font-weight: 500; /* Ajustado para não ser muito bold por padrão */
 }
+
 .menu-item:hover {
-    background: rgba(255, 255, 255, 0.05);
+	background: rgba(255, 255, 255, 0.05);
 }
+
+/* Ícone/Dot Padrão */
+/* Use .icon-sidebar para os SVGs. Se você usa .dot, remova-o ou ajuste a lógica. */
+/* Mantive a classe .dot por compatibilidade, mas o .icon-sidebar é preferível para SVGs. */
 .menu-item .dot {
-    margin-right: 8px;
-    color: #6b7280;
-    z-index: 2; 
+	margin-right: 8px;
+	color: #6b7280;
+	z-index: 2; 
+}
+
+/* Estilo do Ícone (SVG ou IMG) */
+.icon-sidebar {
+	width: 18px; /* Levemente maior para mais destaque */
+	height: 18px;
+	margin-right: 8px; /* Aumentei a margem para melhor espaçamento no modo expandido */
+	color: inherit; /* ESSENCIAL: Herda a cor do .menu-item */
+	transition: color 0.2s ease;
+}
+
+/* Regras para SVGs que usam currentColor (para mudança de cor) */
+/* Isso é crucial se você estiver usando SVGs embutidos ou `<img src=...>` */
+.menu-item .icon-sidebar path[fill="currentColor"] {
+    fill: currentColor;
+}
+.menu-item .icon-sidebar path[stroke="currentColor"] {
+    stroke: currentColor;
 }
 
 
+/* Estado Ativo */
 .menu-item.active {
-    background: #0b1f16;
-    color: #a7f3d0;
-}
-.menu-item.active .dot {
-    color: #a7f3d0; 
+	background: #0b1f16;
+	color: #a7f3d0;
+	font-weight: 600;
 }
 
+.menu-item.active .dot {
+	color: #a7f3d0; 
+}
+
+/* Barra lateral à esquerda (Estilo ativo) */
 .menu-item.active::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 4px;
-    height: 100%;
-    background-color: #00FF87; 
-    border-radius: 8px 0 0 8px;
-    z-index: 1;
+	content: '';
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 4px;
+	height: 100%;
+	background-color: #00FF87; 
+	border-radius: 8px 0 0 8px;
+	z-index: 1;
 }
 .menu-item.active > * {
-    position: relative;
-    z-index: 2;
+	position: relative;
+	z-index: 2;
 }
+
+/* --- Status e Usuário (Rodapé) --- */
 
 .status {
-    margin-top: auto;
-    position: relative; 
+	margin-top: auto;
+	position: relative; 
+	padding-top: 10px;
+	border-top: 1px solid rgba(255, 255, 255, 0.06); /* Adiciona borda superior */
 }
+
 .user {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 0; /* Padding para a área clicável do usuário */
+	cursor: pointer;
+	border-radius: 8px;
+	transition: background 0.2s ease;
 }
+
+.user:hover {
+	background: rgba(255, 255, 255, 0.05);
+}
+
 .user-avatar {
-    width: 28px;
-    height: 28px;
-    border-radius: 50%;
-    background: #1f2a24;
-    color: #a7f3d0;
-    display: grid;
-    place-items: center;
-    font-weight: 700;
+	width: 28px;
+	height: 28px;
+	border-radius: 50%;
+	background: #1f2a24;
+	color: #a7f3d0;
+	display: grid;
+	place-items: center;
+	font-weight: 700;
+	/* Garante que o avatar não seja afetado pelo .sidebar.collapsed */
+	flex-shrink: 0;
 }
+
 .user-name {
-    font-size: 14px;
-    font-weight: 600;
+	font-size: 14px;
+	font-weight: 600;
 }
+
 .user-badge {
-    font-size: 11px;
-    color: #9ca3af;
+	font-size: 11px;
+	color: #9ca3af;
 }
+
 .footer-row {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 8px;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-top: 8px;
+	padding: 0 8px; /* Leve padding para alinhar com o conteúdo colapsado */
 }
+
 .online {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #22c55e;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: #22c55e;
+	flex-shrink: 0;
 }
+
 .version {
-    margin-left: auto;
-    font-size: 11px;
-    color: #9ca3af;
+	margin-left: auto;
+	font-size: 11px;
+	color: #9ca3af;
 }
+
+/* --- Menu do Usuário (Dropdown) --- */
 
 .user-menu {
-    position: absolute;
-    left: 12px;
-    right: 12px;
-    bottom: 48px;
-    background: #0f1411;
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 8px;
-    padding: 6px;
-    display: grid;
-    gap: 6px;
-    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+	position: absolute;
+	left: 12px;
+	right: 12px;
+	bottom: calc(48px + 10px); /* Ajusta a posição acima do status bar + padding */
+	background: #0f1411;
+	border: 1px solid rgba(255, 255, 255, 0.08);
+	border-radius: 8px;
+	padding: 6px;
+	display: grid;
+	gap: 6px;
+	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
+	z-index: 1010; /* Z-index alto para garantir que fique acima de tudo */
 }
+
 .user-menu-item {
-    text-align: left;
-    padding: 8px 10px;
-    border-radius: 6px;
-    background: transparent;
-    color: #e5e7eb;
-    border: none;
-    cursor: pointer;
+	text-align: left;
+	padding: 8px 10px;
+	border-radius: 6px;
+	background: transparent;
+	color: #e5e7eb;
+	border: none;
+	cursor: pointer;
 }
+
 .user-menu-item:hover {
-    background: rgba(255, 255, 255, 0.06);
+	background: rgba(255, 255, 255, 0.06);
 }
+
 .user-menu-item.danger {
-    color: #fca5a5;
+	color: #fca5a5;
 }
+
 .user-menu-item.danger:hover {
-    background: rgba(239, 68, 68, 0.12);
-}
-
-.icon-sidebar {
-    width: 15px;
-    height: 15px;
-    margin-right: 5px;
+	background: rgba(239, 68, 68, 0.12);
 }
 
 
+/* --- Media Queries (Mobile) --- */
 
 @media (max-width: 768px) {
-    .sidebar {
-        left: -240px;
-        box-shadow: 5px 0 15px rgba(0, 0, 0, 0.7);
-    }
+	.sidebar {
+		left: -240px;
+		box-shadow: 5px 0 15px rgba(0, 0, 0, 0.7);
+	}
 
-    .sidebar.is-open {
-        left: 0;
-    }
+	.sidebar.is-open {
+		left: 0;
+	}
+
+	/* No mobile, a sidebar deve estar sempre expandida quando aberta. */
+	/* Garante que o modo colapsado não seja aplicado acidentalmente se a largura for pequena. */
+	.sidebar.is-open.collapsed {
+		width: 240px;
+		min-width: 240px;
+		padding: 16px 12px;
+	}
+	
+	/* Desativa a lógica de ocultar texto no mobile, já que a sidebar estará sempre "aberta" quando visível. */
+	.sidebar.is-open.collapsed .brand-text,
+	.sidebar.is-open.collapsed .user-info,
+	.sidebar.is-open.collapsed .footer-row .online-text,
+	.sidebar.is-open.collapsed .version {
+		opacity: 1;
+		width: auto;
+	}
 }

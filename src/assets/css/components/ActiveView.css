@@ -248,6 +248,68 @@
     color: var(--zenix-secondary);
 }
 
+.chart-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.chart-type-selector,
+.timeframe-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.chart-type-option,
+.timeframe-option {
+    border: 1px solid var(--zenix-dark-border);
+    background: transparent;
+    color: #cbd5f5;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.chart-type-option:hover,
+.timeframe-option:hover:not(.disabled) {
+    border-color: var(--zenix-green);
+    color: var(--zenix-green);
+}
+.chart-type-option.active,
+.timeframe-option.active {
+    background: var(--zenix-green);
+    border-color: var(--zenix-green);
+    color: #0b0b0b;
+    font-weight: 600;
+}
+.timeframe-option.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.status-loading-spinner {
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    border: 3px solid rgba(247, 160, 26, 0.25);
+    border-top-color: #f7a01a;
+    animation: status-indicator-spin 0.9s linear infinite;
+}
+
+@keyframes status-indicator-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
 
 /* ------------------ Configuration & Log Grid ------------------ */
 

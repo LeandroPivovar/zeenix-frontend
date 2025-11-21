@@ -35,7 +35,7 @@
                     </div>
                     <div class="stat-card-primary status-indicator-panel">
                         <div class="status-indicator-content">
-                            <div class="ai-status-pulse pulse-active pulse-large"></div>
+                            <div class="status-loading-spinner"></div>
                             <p class="status-indicator-text">Analisando</p>
                             <p class="status-indicator-subtext">Aprimoramento possível</p>
                         </div>
@@ -50,7 +50,35 @@
                             <h3 class="card-title-small">Análise de Mercado</h3>
                             <div class="ai-status-pulse pulse-active pulse-small"></div>
                         </div>
-    
+                        
+                        <div class="chart-controls">
+                            <div class="chart-type-selector">
+                                <button
+                                    v-for="option in chartTypeOptions"
+                                    :key="option.value"
+                                    type="button"
+                                    class="chart-type-option"
+                                    :class="{ active: option.value === chartType }"
+                                    @click="setChartType(option.value)"
+                                >
+                                    {{ option.label }}
+                                </button>
+                            </div>
+                            <div class="timeframe-selector">
+                                <button
+                                    v-for="option in timeframeOptions"
+                                    :key="option.value"
+                                    type="button"
+                                    class="timeframe-option"
+                                    :class="{ active: option.value === selectedTimeframe, disabled: chartType !== 'candles' }"
+                                    :disabled="chartType !== 'candles'"
+                                    @click="setTimeframe(option.value)"
+                                >
+                                    {{ option.label }}
+                                </button>
+                            </div>
+                        </div>
+                        
                         <div ref="chartContainer" class="chart-placeholder"></div>
                     </div>
     
@@ -255,9 +283,21 @@ export default {
     data() {
         return {
             chart: null,
-            lineSeries: null,
+            currentSeries: null,
             chartInitialized: false,
             accountType: 'real',
+            chartType: 'candles',
+            chartTypeOptions: [
+                { label: 'Velas', value: 'candles' },
+                { label: 'Linhas', value: 'line' },
+            ],
+            selectedTimeframe: 60, // 1 minuto
+            timeframeOptions: [
+                { label: '1m', value: 60 },
+                { label: '2m', value: 120 },
+                { label: '5m', value: 300 },
+                { label: '15m', value: 900 }
+            ],
             
             // Estatísticas do dia
             dailyStats: {
@@ -781,6 +821,98 @@ export default {
             }
         },
 
+        setTimeframe(value) {
+            if (this.selectedTimeframe !== value) {
+                this.selectedTimeframe = value;
+            }
+        },
+        setChartType(type) {
+            if (this.chartType !== type) {
+                this.chartType = type;
+            }
+        },
+        aggregateTicksToCandles(timeframeSeconds) {
+            if (!Array.isArray(this.ticks) || this.ticks.length === 0) {
+                return [];
+            }
+
+            const sortedTicks = [...this.ticks].sort((a, b) => {
+                const timeA = Math.floor(a.epoch || a.time || 0);
+                const timeB = Math.floor(b.epoch || b.time || 0);
+                return timeA - timeB;
+            });
+
+            const candles = [];
+            let bucketStart = null;
+            let bucketTicks = [];
+
+            const finalizeBucket = () => {
+                if (!bucketTicks.length || bucketStart === null) return;
+                const prices = bucketTicks.map(t => t.price);
+                candles.push({
+                    time: bucketStart,
+                    open: bucketTicks[0].price,
+                    high: Math.max(...prices),
+                    low: Math.min(...prices),
+                    close: bucketTicks[bucketTicks.length - 1].price,
+                });
+            };
+
+            for (const tick of sortedTicks) {
+                const rawTime = Math.floor(tick.epoch || tick.time || Date.now() / 1000);
+                const price = Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0);
+                if (!price) continue;
+
+                const bucket = Math.floor(rawTime / timeframeSeconds) * timeframeSeconds;
+
+                if (bucketStart === null) {
+                    bucketStart = bucket;
+                }
+
+                if (bucket !== bucketStart) {
+                    finalizeBucket();
+                    bucketStart = bucket;
+                    bucketTicks = [];
+                }
+
+                bucketTicks.push({ time: rawTime, price });
+            }
+
+            finalizeBucket();
+            return candles;
+        },
+        createSeries(type) {
+            if (!this.chart) return;
+
+            if (this.currentSeries) {
+                try {
+                    this.chart.removeSeries(this.currentSeries);
+                } catch (error) {
+                    console.warn('[InvestmentActive] Não foi possível remover série anterior:', error);
+                }
+                this.currentSeries = null;
+            }
+
+            if (type === 'line') {
+                this.currentSeries = this.chart.addAreaSeries({
+                    lineColor: '#22C55E',
+                    topColor: 'rgba(34, 197, 94, 0.2)',
+                    bottomColor: 'rgba(34, 197, 94, 0.02)',
+                    lineWidth: 2,
+                    priceFormat: { type: 'price', precision: 4, minMove: 0.0001 },
+                });
+            } else {
+                this.currentSeries = this.chart.addCandlestickSeries({
+                    upColor: '#22C55E',
+                    borderUpColor: '#22C55E',
+                    wickUpColor: '#22C55E',
+                    downColor: '#ef4444',
+                    borderDownColor: '#ef4444',
+                    wickDownColor: '#ef4444',
+                    priceFormat: { type: 'price', precision: 4, minMove: 0.0001 },
+                });
+            }
+        },
         // Métodos para gráfico
         initChart() {
             if (this.chartInitialized || !this.$refs.chartContainer) {
@@ -823,18 +955,7 @@ export default {
                     },
                 });
 
-                this.lineSeries = this.chart.addAreaSeries({
-                    lineColor: '#22C55E',
-                    topColor: 'rgba(34, 197, 94, 0.2)',
-                    bottomColor: 'rgba(34, 197, 94, 0.02)',
-                    lineWidth: 2,
-                    priceFormat: {
-                        type: 'price',
-                        precision: 2,
-                        minMove: 0.01,
-                    },
-                });
-
+                this.createSeries(this.chartType);
                 this.chartInitialized = true;
                 console.log('[InvestmentActive] ✅ Gráfico inicializado');
                 this.updateChart();
@@ -844,18 +965,25 @@ export default {
         },
 
         updateChart() {
-            if (!this.chartInitialized || !this.lineSeries || this.ticks.length === 0) {
+            if (!this.chartInitialized || !this.currentSeries || this.ticks.length === 0) {
                 return;
             }
 
             try {
-                const data = this.ticks.map(tick => ({
-                    time: Math.floor(tick.epoch || Date.now() / 1000),
-                    value: tick.value || tick.price || 0,
-                }));
+                let data = [];
+                if (this.chartType === 'candles') {
+                    data = this.aggregateTicksToCandles(this.selectedTimeframe);
+                } else {
+                    data = this.ticks.map(tick => ({
+                        time: Math.floor(tick.epoch || tick.time || Date.now() / 1000),
+                        value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
+                    })).filter(point => point.value);
+                }
 
-                console.log('[InvestmentActive] Atualizando gráfico com', data.length, 'pontos');
-                this.lineSeries.setData(data);
+                if (!data.length) return;
+
+                console.log('[InvestmentActive] Atualizando gráfico com', data.length, this.chartType === 'candles' ? 'velas' : 'pontos');
+                this.currentSeries.setData(data);
                 this.chart.timeScale().fitContent();
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao atualizar gráfico:', error);
@@ -879,6 +1007,17 @@ export default {
             },
             deep: true,
             immediate: true
+        },
+        chartType() {
+            if (this.chartInitialized) {
+                this.createSeries(this.chartType);
+                this.updateChart();
+            }
+        },
+        selectedTimeframe() {
+            if (this.chartInitialized && this.chartType === 'candles') {
+                this.updateChart();
+            }
         }
     },
 

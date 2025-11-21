@@ -1,22 +1,26 @@
 <template>
-  <div class="layout" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-    <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
-    <header>
-      <button class="hamburger-menu" @click="handleHamburgerClick">
-        <span class="line"></span>
-        <span class="line"></span>
-        <span class="line"></span>
-      </button>
-      <h1 class="title">Zenix</h1>
-      <button class="notify-btn">
-        <img src="../assets/icons/notify.svg" alt="" width="20px">
-      </button>
-      <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
-    </header>
+  <div class="layout-home" :class="{ 'sidebar-collapsed': isSidebarCollapsed, 'no-sidebar': !connectedInfo }">
+    <!-- Sidebar e Header só aparecem quando conectado -->
+    <template v-if="connectedInfo">
+      <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
+      <header>
+        <button class="hamburger-menu" @click="handleHamburgerClick">
+          <span class="line"></span>
+          <span class="line"></span>
+          <span class="line"></span>
+        </button>
+        <h1 class="title">Zenix</h1>
+        <button class="notify-btn">
+          <img src="../assets/icons/notify.svg" alt="" width="20px">
+        </button>
+        <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
+      </header>
+    </template>
 
-    <main class="content" v-if="!connectedInfo && !loading">
+    <!-- Tela de Conexão (sem sidebar e header) -->
+    <main class="content welcome-screen" v-if="!connectedInfo && !loading">
       <div class="container">
-        <h1 class="title">Seja Bem-vindo, Marcos</h1>
+        <h1 class="title">Seja Bem-vindo, {{ firstName }}</h1>
         <p class="subtitle">Antes de começar a operar, você precisa conectar sua conta Deriv ou criar uma nova.</p>
         <div class="box">
           <div class="video-card">
@@ -54,11 +58,13 @@
       </div>
     </main>
 
+    <!-- Loading -->
     <main class="content loading-content" v-else-if="loading">
         <div class="loading-spinner"></div>
         <p class="loading-text">Verificando status da conexão...</p>
     </main>
 
+    <!-- Dashboard Conectado (com sidebar e header) -->
     <DashboardConnected v-else :info="connectedInfo" />
   </div>
 </template>
@@ -75,10 +81,94 @@ export default {
       connectedInfo: null,
       loading: true,
       isSidebarOpen: false,
-      isSidebarCollapsed: false
+      isSidebarCollapsed: false,
+      firstName: 'Usuário'
     }
   },
+  computed: {
+    userFirstName() {
+      const userInfo = localStorage.getItem('user')
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo)
+          if (user.name) {
+            return user.name.split(' ')[0]
+          }
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e)
+        }
+      }
+      return 'Usuário'
+    }
+  },
+  created() {
+    this.loadUserName()
+  },
   methods: {
+    async loadUserName() {
+      // Tentar pegar do localStorage primeiro
+      const userInfo = localStorage.getItem('user')
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo)
+          if (user.name) {
+            this.firstName = user.name.split(' ')[0]
+            console.log('[HomeView] Nome carregado do localStorage:', this.firstName)
+            return
+          }
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e)
+        }
+      }
+
+      // Se não tiver no localStorage, tentar decodificar o JWT
+      const token = localStorage.getItem('token')
+      if (token) {
+        try {
+          const payload = JSON.parse(atob(token.split('.')[1]))
+          console.log('[HomeView] Payload do token:', payload)
+          
+          // Tentar buscar o nome do usuário pela API
+          if (payload.sub || payload.userId || payload.id) {
+            try {
+              const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+              const response = await fetch(`${apiBase}/auth/me`, {
+                headers: {
+                  'Authorization': `Bearer ${token}`
+                }
+              })
+              
+              if (response.ok) {
+                const userData = await response.json()
+                console.log('[HomeView] Dados do usuário da API:', userData)
+                if (userData.name) {
+                  this.firstName = userData.name.split(' ')[0]
+                  localStorage.setItem('user', JSON.stringify({ name: userData.name, email: userData.email }))
+                  console.log('[HomeView] Nome definido:', this.firstName)
+                  return
+                }
+              }
+            } catch (apiError) {
+              console.error('[HomeView] Erro ao buscar dados do usuário:', apiError)
+            }
+          }
+          
+          // Fallback: tentar usar o campo name do payload se existir
+          if (payload.name) {
+            this.firstName = payload.name.split(' ')[0]
+            localStorage.setItem('user', JSON.stringify({ name: payload.name, email: payload.email }))
+            console.log('[HomeView] Nome do payload:', this.firstName)
+            return
+          }
+        } catch (e) {
+          console.error('[HomeView] Erro ao decodificar token:', e)
+        }
+      }
+
+      // Se não conseguiu de nenhuma forma, manter "Usuário"
+      console.log('[HomeView] Nome não encontrado, usando fallback')
+      this.firstName = 'Usuário'
+    },
     toggleSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen
     },
@@ -225,6 +315,7 @@ export default {
     }
   },
   async mounted() {
+    await this.loadUserName()
     await this.checkConnection(true)
   },
   watch: {
@@ -236,5 +327,6 @@ export default {
   }
 }
 </script>
+
 
 <style scoped src="../assets/css/views/homeView.css"></style>

@@ -1,10 +1,13 @@
-.layout {
+.layout-home {
     display: flex;
     flex-direction: column;
     min-height: 100vh;
     background: linear-gradient(to right, #0a0b0a, #131313);
     color: #e5e7eb;
     font-family: 'Inter', system-ui, sans-serif;
+    margin: 0;
+    width: 100%;
+    max-width: 100vw;
 }
 
 .content {

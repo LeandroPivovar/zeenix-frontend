@@ -1,5 +1,5 @@
 <template>
-  <div class="layout">
+  <div class="layout-course">
 		<header class="top-header-fixed">
 			<button class="back-btn" @click="$router.push('/academy')">
 				<img src="../assets/icons/back.svg" alt="" width="20px"> Voltar aos cursos
