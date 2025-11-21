@@ -1,544 +1,719 @@
 <template>
-  <div class="layout-content-agent-autonomo">
-    <div class="agent-header">
-      <div class="agent-status">
-        <div 
-          class="status-indicator" 
-          :class="{ 'status-active': agentStatus === 'ATIVO', 'status-paused': agentStatus === 'PAUSADO' }"
-        ></div>
-        <div class="agent-title">
-          <h2>Agente Autônomo: {{ agentStatus }}</h2>
-          <div class="agent-subtitle">
-            <p>Finalizando</p>
-          </div>
-        </div>
-      </div>
-      <div class="agent-right">
-        <div class="agent-text">
-          Estratégia: **Arkon** | Mercado: **Índices Sintéticos** | Risco: **Equilibrado** | Última execução: {{ lastExecutionTime }}
-        </div>
-      </div>
-    </div>
- 
-    <div class="metrics-grid">
-      <div class="metric-card">
-        <div class="metric-label">Lucro do dia</div>
-        <div class="metric-value" :class="{ 'positive': dailyProfit >= 0, 'negative': dailyProfit < 0 }">
-          <span v-if="dailyProfit >= 0">+</span>${{ dailyProfit.toFixed(2) }}
-        </div>
-        <div class="metric-change" :class="{ 'positive': dailyChange >= 0, 'negative': dailyChange < 0 }">
-          <span v-if="dailyChange >= 0">+</span>{{ dailyChange.toFixed(2) }}%
-        </div>
-      </div>
-      <div class="metric-card">
-        <div class="metric-label">Perda acumulada</div>
-        <div class="metric-value negative">
-          -${{ accumulatedLoss.toFixed(2) }}
-        </div>
-        <div class="metric-change negative">
-          -{{ accumulatedChange.toFixed(2) }}%
-        </div>
-      </div>
-      <div class="metric-card progress-card">
-        <div class="metric-label">Progresso até a meta</div>
+	<div class="layout-content-agent-autonomo">
+		<div class="agent-top">
+			<div class="agent-header">
+				<div class="agent-status">
+					<div class="agent-title">
+						<h2 class="agente-autonomo-text">Agente Autônomo</h2>
+						<div class="agent-subtitle">
+							<span class="status-badge">ATIVO</span>
+							<span class="status-dot">●</span>
+							<span id="agentStatus">Aguardando oportunidade</span>
+						</div>
+					</div>
+				</div>
+				<div class="agent-right">
+					<button @click="$emit('pausarAgente')" class="pause-btn top-pause-btn">
+						<span class="pause-icon">II</span> PAUSAR AGENTE
+					</button>
+				</div>
+			</div>
 
-        <div class="progress-bar-container">
-          <div class="progress-bar">
-            <div class="progress-fill" :style="{ width: Math.min(100, (dailyProfit / 50) * 100) + '%' }"></div>
-          </div>
-        </div>        
-        <div class="progress-label">
-          <span>Meta: $50</span>
-          <span>Stop: $25</span>
-        </div>
-      </div>
-    </div>
- 
-    <div class="chart-section">
-      <div class="chart-header">
-        <h3>Operações em Tempo Real</h3>
-      </div>
-      <div class="chart-canvas">
-        <div 
-          class="chart-point" 
-          v-for="(point, index) in realTimeOperations" 
-          :key="index"
-          :style="{ left: point.x + '%', top: point.y + '%' }"
-        >
-          <span class="chart-value">+${{ point.value.toFixed(2) }}</span>
-        </div>
-        <svg class="chart-line-svg" viewBox="0 0 100 100" preserveAspectRatio="none">
-          <polyline :points="chartLinePoints"></polyline>
-        </svg>
-      </div>
-    </div>
- 
-    <div class="history-section">
-      <div class="history-header">
-        <h3>Histórico de Operações</h3>
-      </div>
-      <table class="operations-table">
-        <thead>
-          <tr>
-            <th>Hora</th>
-            <th>Ativo</th>
-            <th>Tipo</th>
-            <th>Entrada</th>
-            <th>Saída</th>
-            <th>Resultado</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr v-for="(op, index) in operationHistory" :key="index">
-            <td>{{ op.time }}</td>
-            <td>{{ op.asset }}</td>
-            <td>{{ op.type }}</td>
-            <td>${{ op.entry.toFixed(2) }}</td>
-            <td>${{ op.exit.toFixed(2) }}</td>
-            <td :class="op.result >= 0 ? 'result-positive' : 'result-negative'">
-              {{ op.result >= 0 ? '+' : '' }}${{ op.result.toFixed(2) }}
-            </td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
- 
-    <div class="actions-section">
-      <div class="actions-header">
-        <h3>Ações do Agente</h3>
-      </div>
-      <div class="action-item" v-for="(action, index) in agentActions" :key="index">
-        <div class="action-icon" :class="action.status"></div>
-        <div class="action-content">
-          <div class="action-title">{{ action.title }}</div>
-          <div class="action-description">{{ action.description }}</div>
-        </div>
-      </div>
-    </div>
-  </div>
+			<div class="data-row-line">
+				<div class="data-item">
+					<span class="icon-bullet">● Estratégia</span> 
+					<div class="data-label">{{ agenteData.estrategia }}</div>
+				</div>
+				<div class="data-item">
+					<span class="icon-bullet">● Mercado</span> 
+					<div class="data-label">{{ agenteData.mercado }}</div>
+				</div>
+				<div class="data-item">
+					<span class="icon-bullet">● Tempo ativo</span>
+					<div class="data-label">{{ agenteData.tempoAtivo }}</div>
+				</div>
+				<div class="data-item">
+					<span class="icon-bullet">● Operações hoje</span> 
+					<div class="data-label">{{ agenteData.operacoesHoje }}</div>
+				</div>
+			</div>
+		</div>
+
+		<div class="metrics-grid">
+			<div class="metric-card">
+				<span class="arrow positive">↑</span>
+				<div class="metric-box">
+					<div class="metric-label">Lucro do dia</div>
+					<div class="metric-value positive">
+						+$32.50
+					</div>
+					<div class="metric-change positive">
+						+2.14%
+					</div>
+				</div>
+			</div>
+
+			<div class="metric-card">
+				<span class="arrow negative">↓</span>
+				<div class="metric-box">
+					<div class="metric-label">Perda acumulada</div>
+					
+					<div class="metric-value negative">
+						-$5.20
+					</div>
+					<div class="metric-change negative">
+						-0.34%
+					</div>
+				</div>
+			</div> 
+			<div class="progress-card">
+				<div class="metric-label">Progresso até a meta</div>
+				<div class="progress-bar-container">
+					<div class="progress-bar">
+						<div class="progress-fill" :style="{ width: progressoPorcentagem }"></div>
+					</div>
+				</div>
+				<div class="progress-label">
+					<span>Meta: ${{ progressoMeta.meta }}</span>
+					<span>Stop: ${{ progressoMeta.stop }}</span>
+				</div>
+			</div>
+		</div>
+
+		<div class="chart-section">
+			<div class="chart-controls">
+				
+				<div class="tab-controls">
+					<span
+						:class="['toggle-tab', { 'chart-title-active': abaAtiva === 'grafico' }]"
+						@click="trocarAba('grafico')"
+					>
+						Gráfico
+					</span>
+					<span
+						:class="['toggle-tab', { 'chart-title-active': abaAtiva === 'historico' }]"
+						@click="trocarAba('historico')"
+					>
+						Histórico
+					</span>
+				</div>
+
+				<div class="performance">
+					<span class="performance-title">Performance do Agente</span>
+					<span class="update-info">Última atualização: <span class="update-time">{{ ultimaAtualizacao }}</span></span>
+					
+					<div class="chart-settings">
+
+						<div class="control-group">
+							Timeframe:
+							<select v-model="timeframeSelecionado" class="custom-select">
+								<option v-for="tf in timeframes" :key="tf" :value="tf">{{ tf }}</option>
+							</select>
+						</div>
+
+						<div class="control-group">
+							Tipo:
+							<select v-model="tipoGraficoSelecionado" class="custom-select">
+								<option v-for="tipo in tiposGrafico" :key="tipo" :value="tipo">{{ tipo }}</option>
+							</select>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="chart-content">
+				<div id="contentGrafico" :class="['chart-canvas', { hidden: abaAtiva !== 'grafico' }]">
+					<p class="chart-placeholder" v-if="abaAtiva === 'grafico'">{{ graficoPlaceholder }}</p>
+				</div>
+
+				<div id="contentHistorico" :class="['history-content', { hidden: abaAtiva !== 'historico' }]">
+					<div class="history-header">
+						<h3>Histórico de Operações ({{ historicoOperacoes.length }})</h3>
+					</div>
+					<table class="operations-table">
+						<thead>
+							<tr>
+								<th>Hora</th>
+								<th>Ativo</th>
+								<th>Tipo</th>
+								<th>Entrada</th>
+								<th>Saída</th>
+								<th>Resultado</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="op in historicoOperacoes" :key="op.hora">
+								<td>{{ op.hora }}</td>
+								<td>{{ op.ativo }}</td>
+								<td>{{ op.tipo }}</td>
+								<td>${{ op.entrada }}</td>
+								<td>${{ op.saida }}</td>
+								<td :class="op.resultado.startsWith('+') ? 'result-positive' : 'result-negative'">
+									{{ op.resultado }}
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
+		</div>
+
+		<div class="actions-section">
+			<div class="actions-header">
+				<h3>Ações do Agente</h3>
+				<div class="actions-list">
+					<div v-for="acao in acoesAgente" :key="acao.hora" class="action-item">
+						<div :class="['action-icon', acao.classe]"></div>
+						<div class="action-content">
+							<div class="action-title">{{ acao.titulo }}</div>
+							<div class="action-description">{{ acao.descricao }}</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 </template>
- 
-<script setup>
-import { ref, onMounted, onUnmounted, computed } from 'vue';
- 
-// --- Dados Reativos (baseados na imagem e no script original) ---
-const agentStatus = ref('ATIVO');
-const lastExecutionTime = ref('14:32:16'); // Valor inicial da imagem
-const dailyProfit = ref(32.50); // Valor inicial da imagem
-const dailyChange = ref(2.34); // Valor inicial da imagem
-const accumulatedLoss = ref(8.20); // Valor inicial da imagem
-const accumulatedChange = ref(0.54); // Ajustado para 0.54% da imagem
 
-// Dados de simulação para o gráfico de linha (replicando visualmente a curva da imagem)
-const realTimeOperations = ref([
-    { x: 0, y: 75, value: 5.20 },
-    { x: 25, y: 60, value: 6.80 },
-    { x: 50, y: 80, value: 8.50 },
-    { x: 75, y: 70, value: 8.50 },
-    { x: 100, y: 55, value: 8.50 },
-]);
+<script>
+export default {
+	name: 'AgenteAutonomoPanel',
+	emits: ['pausarAgente'],
+	data() {
+		return {
+			abaAtiva: 'grafico', // 'grafico' está ativo na imagem
+			timeframeSelecionado: '5m',
+			tipoGraficoSelecionado: 'Linha',
+			ultimaAtualizacao: '14:32:15', // Valor da imagem
+			
+			// Dados do Topo
+			agenteData: {
+				estrategia: 'Arion',
+				mercado: 'Índices Sintéticos',
+				tempoAtivo: '2h 15m',
+				operacoesHoje: 12,
+			},
 
-const operationHistory = ref([
-    { time: '14:32:15', asset: 'Volatility 75', type: 'CALL', entry: 10.00, exit: 18.50, result: 8.50 },
-    { time: '14:15:42', asset: 'Volatility 100', type: 'PUT', entry: 10.00, exit: 15.20, result: 5.20 },
-    { time: '13:58:30', asset: 'Volatility 75', type: 'CALL', entry: 10.00, exit: 6.90, result: -3.10 },
-]);
+			// Métricas (Valores da Imagem)
+			progressoMeta: {
+				atual: 32.50,
+				meta: 50,
+				stop: 25,
+			},
 
-// Ações do Agente (baseado na imagem)
-const agentActions = ref([
-    { status: 'success', title: 'Operação finalizada com sucesso', description: '14:32:15 - Lucro de $8.50' },
-    { status: 'info', title: 'Entrada executada', description: '14:32:00 - CALL em Volatility 75' },
-    { status: 'warning', title: 'Volume detectado', description: '14:31:45 - Confirmação de padrão' },
-    { status: 'info', title: 'Aguardando padrão de estratégia', description: '14:30:00 - Análise em andamento' },
-]);
+			timeframes: ['5m', '1h', '1d'],
+			tiposGrafico: ['Linha', 'Candle'],
 
-// --- Computed Properties ---
+			// Ações (Ajustado para corresponder à imagem)
+			acoesAgente: [
+				{ hora: '14:32:15', classe: 'success', titulo: 'Operação finalizada com sucesso', descricao: '14:32:15 - Lucro de $8.50' },
+				{ hora: '14:32:00', classe: 'success', titulo: 'Entrada executada', descricao: '14:32:00 - CALL em Volatility 75' },
+				{ hora: '14:31:45', classe: 'warning', titulo: 'Volume detectado', descricao: '14:31:45 - Confirmação de padrão' },
+				{ hora: '14:30:00', classe: 'info', titulo: 'Aguardando padrão da estratégia', descricao: '14:30:00 - Análise em andamento' },
+			],
 
-// Gera a string de pontos para o polyline do SVG
-const chartLinePoints = computed(() => {
-    // A linha SVG inverte o eixo Y, então subtraímos de 100 para corresponder visualmente
-    return realTimeOperations.value.map(p => `${p.x},${100 - p.y}`).join(' ');
-});
+			// Histórico (Mantido como exemplo, não visível na imagem, mas necessário para o histórico)
+			historicoOperacoes: [
+				{ hora: '14:32:16', ativo: 'CALL1', tipo: 'Call', entrada: '83.80', saida: '85.20', resultado: '+$7.50' },
+				{ hora: '14:18:02', ativo: 'CALL1', tipo: 'Call', entrada: '82.60', saida: '81.30', resultado: '-$3.20' },
+				{ hora: '14:01:45', ativo: 'Volatility 75', tipo: 'Put', entrada: '156.40', saida: '158.90', resultado: '+$12.30' },
+				{ hora: '13:45:22', ativo: 'CALL1', tipo: 'Call', entrada: '84.15', saida: '83.50', resultado: '-$2.10' },
+				{ hora: '13:30:08', ativo: 'Volatility 75', tipo: 'Call', entrada: '155.20', saida: '157.80', resultado: '+$8.90' },
+			],
+		};
+	},
+	computed: {
+		// Progresso
+		progressoPorcentagem() {
+			const percentage = (this.progressoMeta.atual / this.progressoMeta.meta) * 100;
+			return `${Math.min(100, percentage).toFixed(0)}%`;
+		},
 
-// Adaptação para simular o gráfico de linha (não barras)
-const updateRealTimeChart = () => {
-    if (agentStatus.value === 'ATIVO') {
-        // Simula um "shift" nos pontos e adiciona um novo ponto no final
-        const newPoints = realTimeOperations.value.slice(1);
-        
-        // Simulação de valores e posições (Y entre 50 e 90 para manter a curva)
-        const lastY = newPoints[newPoints.length - 1]?.y || 70;
-        const newY = Math.max(50, Math.min(90, lastY + (Math.random() * 20 - 10)));
-        const newValue = (newY / 10); // Valor de exibição
-        
-        // Atualiza a posição X dos pontos existentes e adiciona o novo ponto
-        newPoints.forEach((p, index) => p.x = index * 25);
-        
-        newPoints.push({ x: 100, y: newY, value: newValue });
-        realTimeOperations.value = newPoints;
-    }
+		// Placeholder do Gráfico
+		graficoPlaceholder() {
+			return `Performance do Agente (Gráfico de ${this.tipoGraficoSelecionado} | ${this.timeframeSelecionado})`;
+		},
+	},
+	methods: {
+		trocarAba(aba) {
+			this.abaAtiva = aba;
+		},
+	},
 };
-
-const updateDailyProfit = () => {
-    if (agentStatus.value === 'ATIVO') {
-        const randomProfitChange = (Math.random() * 2 - 1) * 0.5; // Pequena flutuação
-        dailyProfit.value = Math.max(0, dailyProfit.value + randomProfitChange);
-        
-        // Simulação da mudança percentual
-        dailyChange.value = Math.max(0.01, (dailyProfit.value / 1500) * 100); // Base de 1500 (Exemplo)
-    }
-};
-
-const updateTime = () => {
-    const now = new Date();
-    // Replicando a formatação da imagem
-    lastExecutionTime.value = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
-}
-
-// --- Configuração de Intervalos ---
-let chartInterval;
-let profitInterval;
-let timeInterval;
-
-onMounted(() => {
-    // Inicia as simulações
-    chartInterval = setInterval(updateRealTimeChart, 3000);
-    profitInterval = setInterval(updateDailyProfit, 5000);
-    timeInterval = setInterval(updateTime, 1000);
-});
-
-onUnmounted(() => {
-    // Limpa os intervalos
-    clearInterval(chartInterval);
-    clearInterval(profitInterval);
-    clearInterval(timeInterval);
-});
 </script>
- 
+
 <style scoped>
-/* Estilos globais */
-.layout-content-agent-autonomo {
-    font-family: 'Arial', sans-serif;
-    background-color: #121212; /* Fundo escuro */
-    color: #f0f0f0; /* Cor do texto claro */
-    padding: 20px;
-    min-height: 100vh;
-}
+/* Estilos globais/Base */
 * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+	box-sizing: border-box;
+}
+
+/* Os estilos do body não são aplicados em componentes Vue, mas estão aqui para referência */
+.layout-content-agent-autonomo {
+	font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+	color: #f0f0f0;
 }
 
 /* Base de Seções */
-.agent-header, .metric-card, .chart-section, .history-section, .actions-section {
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    border-radius: 12px;
-    padding: 20px;
-    margin-bottom: 20px;
+.metric-card, .chart-section, .history-section, .actions-section {
+	background: #0a0a0a;
+	border: 1px solid #1a1a1a;
+	border-radius: 8px;
+	padding: 20px;
+	margin-bottom: 20px;
 }
 
-/* Header do Agente */
+.progress-card {
+	background: #0a0a0a;
+	border: 1px solid #1a1a1a;
+	border-radius: 8px;
+	padding: 20px;
+	margin-bottom: 20px;
+}
+
+.agent-top {
+	background: #0e0f0f;
+	padding: 30px;
+	border: 1px solid #1a1a1a;
+	border-radius: 8px;
+}
+
 .agent-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 15px;
+	padding-bottom: 15px;
 }
 
+/* Header do Agente - AJUSTES PARA PROXIMIDADE E PREENCHIMENTO */
 .agent-status {
-    display: flex;
-    align-items: center;
-    gap: 10px;
+	display: flex;
+	align-items: center;
+	flex-grow: 1; /* Permite que o contêiner de status cresça */
 }
 
-.status-indicator {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    animation: pulse 2s infinite;
-}
-
-.status-active {
-    background: #00ff00; /* Verde */
-}
-
-.status-paused {
-    background: #ffaa00; /* Laranja/Amarelo */
-    animation: none;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+.agent-title {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+	flex-grow: 1; /* Garante que o título cresça dentro do status */
+	background: #0e0f0f;
+	padding: 5px;
+	margin-right: 20px;
+	border-radius: 8px;
+	border: 1px solid #1a1a1a;
 }
 
 .agent-title h2 {
-    font-size: 18px;
-    font-weight: 600;
-    color: white;
+	font-size: 20px;
+	font-weight: 600;
+	color: white;
+	margin: 0;
 }
 
 .agent-subtitle {
-    font-size: 12px;
-    color: #a7a7a7;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+	color: #cfcdcd;
+}
+
+.status-badge {
+	background: #1a4d2e8e;
+	border: 1px solid #1a4d2e;
+	color: #ffffff;
+	padding: 4px 12px;
+	border-radius: 3px;
+	font-weight: 700;
+	font-size: 11px;
+}
+
+.status-dot {
+	display: flex;
+	align-items: center;
+	color: #00ff00;
+	font-size: 18px;
 }
 
 .agent-right {
-    display: flex;
-    align-items: center;
-    gap: 15px;
+	display: flex;
+	align-items: center;
 }
 
-.agent-text {
-    font-size: 12px;
-    color: #ccc;
+.top-pause-btn {
+	background: #451312;
+	color: white;
+	border: none;
+	padding: 10px 20px;
+	border-radius: 12px;
+	cursor: pointer;
+	font-size: 13px;
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	transition: background 0.2s;
+	height: 55px;
 }
 
-.pause-btn {
-    background: #2a2a2a;
-    border: 1px solid #3a3a3a;
-    color: #fff;
-    padding: 8px 15px;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    transition: all 0.3s;
+.top-pause-btn:hover {
+	background: #a00000;
 }
 
-.pause-btn:hover {
-    background: #3a3a3a;
+.pause-icon {
+	font-size: 14px;
+	font-weight: bold;
+}
+
+/* Dados em Linha */
+.data-row-line {
+	display: flex;
+	justify-content: space-between;
+	gap: 40px;
+	margin-bottom: 20px;
+}
+
+.data-item {
+	display: flex;
+	align-items: flex-start;
+	flex-direction: column;
+	text-align: left;
+	gap: 8px;
+	font-size: 12px;
+	color: #666;
+}
+
+.data-item .icon-bullet {
+	font-size:0.8rem;
+}
+
+.data-label {
+	font-size: 1rem;
+}
+
+.data-item .data-label {
+	color: #f0f0f0;
+	font-weight: 500;
+	text-align: left;
 }
 
 /* Cards de Métricas */
 .metrics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); /* Ajustado para 3 colunas */
-    gap: 20px;
+	display: grid;
+	grid-template-columns: 1fr 1fr 2fr;
+	gap: 15px;
+	margin-top: 1.5rem;
+}
+
+.metric-card {
+	background: #0a0a0a;
+	border: 1px solid #1a1a1a;
+	border-radius: 6px;
+	padding: 20px;
+	text-align: left;
+	display: flex;
+	flex-direction: row;
+	align-items: center;
+	gap: 20px;
+
 }
 
 .metric-label {
-    font-size: 12px;
-    color: #888;
-    margin-bottom: 8px;
+	font-size: 12px;
+	color: #a09e9e;
+	text-transform: capitalize;
+  text-align: left;
+}
+
+.metric-box {
+	display: flex;
+	flex-direction: column;
 }
 
 .metric-value {
-    font-size: 28px;
-    font-weight: 700;
-    margin-bottom: 4px;
+	font-size: 20px;
+	font-weight: 700;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+  margin: 5px 0;
 }
 
-.metric-value.positive {
-    color: #00ff00;
+.metric-card .arrow {
+	font-size: 30px;
+	position: relative;
 }
 
-.metric-value.negative {
-    color: #ff0000;
+.metric-value .arrow {
+	font-size: 20px;
 }
 
-.metric-card{
-    background: #1a1a1a;
-    border: 1px solid #2a2a2a;
-    border-radius: 12px;
-    padding: 20px;
-    text-align: left;
-}
+.metric-card .arrow.positive { color: #3eb83e; }
+.metric-card .arrow.negative { color: #ff4444; }
+
+.metric-value.positive { color: #3eb83e; }
+.metric-value.negative { color: #ff4444; }
 
 .metric-change {
-    font-size: 14px;
+	font-size: 13px;
 }
 
-.metric-change.positive {
-    color: #00ff00;
-}
-
-.metric-change.negative {
-    color: #ff0000;
-}
+.metric-change.positive { color: #3eb83e; }
+.metric-change.negative { color: #ff4444; }
 
 /* Progresso */
-.progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 11px;
-    color: #888;
-    margin-bottom: 6px;
+.progress-card {
+	/* CORREÇÃO: Força o layout a ser vertical, como na imagem original. */
+	display: flex;
+	flex-direction: column; 
+	justify-content: space-between;
 }
-/* Replicando layout da imagem para a barra de progresso */
-.progress-card .progress-label {
-    display: block; /* Quebra a linha do label 'Progresso até a meta' */
-    margin-top: 5px;
-    font-size: 14px;
-    color: #f0f0f0;
-}
-.progress-card .progress-label span:nth-child(1) {
-    float: left;
-    color: #888;
-}
-.progress-card .progress-label span:nth-child(2) {
-    float: right;
-    color: #888;
-}
+
 .progress-bar-container {
-    clear: both; /* Limpa o float */
-    margin-top: 15px;
+	margin-top: 10px;
+  margin-bottom: 0px;
 }
+
 .progress-bar {
-    width: 100%;
-    height: 6px;
-    background: #2a2a2a;
-    border-radius: 3px;
-    overflow: hidden;
+	width: 100%;
+	height: 10px;
+	background: #1a1a1a;
+	border-radius: 3px;
+	overflow: hidden;
 }
 
 .progress-fill {
-    height: 100%;
-    background: #00ff00;
-    transition: width 0.5s;
+	height: 100%;
+	background: #00ff00;
+	transition: width 0.5s;
 }
 
-/* Gráfico em Tempo Real */
-.chart-header h3 {
-    font-size: 16px;
-    font-weight: 600;
-    margin-bottom: 20px;
+.progress-label {
+	display: flex;
+	justify-content: space-between;
+	font-size: 12px;
+	color: #666;
+}
+
+/* Gráfico em Tempo Real - CONTROLES E TOGGLE */
+.chart-section {
+	padding: 20px;
+}
+
+.chart-controls {
+	/* Garante que as abas e a performance fiquem em colunas (uma em cima da outra) */
+	display: flex;
+	flex-direction: column; 
+	gap: 20px;
+	font-size: 13px;
+	color: #666;
+	padding-bottom: 15px;
+	border-bottom: 1px solid #1a1a1a;
+	margin-bottom: 20px;
+}
+
+/* Estilos dos Botões de Toggle (LINHA 1) */
+.tab-controls {
+	display: flex;
+	width: 100%;
+	/* Alinhamento das abas na sua imagem. */
+	justify-content: flex-start;
+	gap: 20px;
+}
+
+.toggle-tab {
+	cursor: pointer;
+	padding: 0 2px 8px 2px;
+	transition: all 0.2s;
+	color: #666;
+	font-weight: 500;
+}
+
+.toggle-tab:hover {
+	color: #999;
+}
+
+.chart-title-active {
+	font-weight: 600;
+	color: #f0f0f0;
+	border-bottom: 2px solid #00ff00;
+}
+
+/* Performance e Controles (LINHA 2) */
+.performance {
+	/* ESSENCIAL: Garante que os elementos na Linha 2 se espalhem horizontalmente */
+	display: flex;
+	flex-direction: row;
+	justify-content: space-between; /* Distribui o espaço entre os grupos */
+	align-items: center;
+	width: 100%;
+}
+
+.performance-title {
+	font-weight: 500;
+	color: #e7e7e7;
+  font-size: 1.2rem;
+	/* Alinhado à esquerda na performance */
+}
+
+.update-info {
+	color: #666;
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	/* Puxa a atualização para perto do título de Performance */
+	margin-right: auto;
+	margin-left: 20px; /* Pequeno espaçamento do título */
+}
+
+/* Configurações de Tempo/Tipo no lado direito */
+.chart-settings {
+	/* ESSENCIAL: Garante que este grupo fique na extrema direita */
+	margin-left: auto;
+	display: flex;
+	align-items: center;
+	gap: 20px;
+	font-size: 11px;
+	color: #666;
+}
+
+.control-group {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+}
+
+/* Estilo para o SELECT */
+.custom-select {
+	background-color: #0a0a0a;
+	color: #f0f0f0;
+	border: 1px solid #1a1a1a;
+	border-radius: 3px;
+	padding: 4px 10px;
+	font-size: 11px;
+	cursor: pointer;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	appearance: none;
+}
+
+/* Conteúdo (Gráfico/Histórico) */
+.chart-content {
+	min-height: 350px;
 }
 
 .chart-canvas {
-    position: relative;
-    height: 150px;
-    padding: 10px;
-    overflow: hidden;
+	position: relative;
+	height: 400px;
+	overflow: hidden;
+	background-color: #000000;
+	border: 1px solid #1a1a1a;
+	border-radius: 4px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
 }
 
-.chart-line-svg {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+.chart-placeholder {
+	color: #333;
+	font-style: italic;
+	font-size: 13px;
+	width: 100%;
+	height: 100%;
 }
 
-.chart-line-svg polyline {
-    fill: none;
-    stroke: #00ff00;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-    transition: points 0.5s;
-}
-/* Efeito de área verde embaixo da linha (como na imagem) */
-.chart-line-svg polyline::after {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 255, 0, 0.1);
-    clip-path: polygon(0% 100%, v-bind(chartLinePoints), 100% 100%);
-}
-
-.chart-point {
-    position: absolute;
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: #00ff00;
-    transform: translate(-50%, -50%);
-    z-index: 10;
-    transition: all 0.5s;
-}
-/* Valores em cima dos pontos (replicando o visual da imagem) */
-.chart-value {
-    position: absolute;
-    top: -20px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: 10px;
-    color: #00ff00;
-    white-space: nowrap;
-}
-
-
-/* Histórico de Operações */
+/* Estilos da Tabela de Histórico */
 .operations-table {
-    width: 100%;
-    border-collapse: collapse;
+	width: 100%;
+	border-collapse: collapse;
 }
 
 .operations-table th {
-    text-align: left;
-    padding: 12px;
-    font-size: 12px;
-    color: #888;
-    border-bottom: 1px solid #2a2a2a;
+	text-align: left;
+	padding: 12px;
+	font-size: 11px;
+	color: #666;
+	border-bottom: 1px solid #1a1a1a;
+	font-weight: 500;
+	text-transform: uppercase;
 }
 
 .operations-table td {
-    padding: 12px;
-    font-size: 14px;
-    border-bottom: 1px solid #2a2a2a;
-}
-
-.operations-table tr:last-child td {
-    border-bottom: none; /* Remove a linha do último item */
+	padding: 12px;
+	font-size: 13px;
+	border-bottom: 1px solid #1a1a1a;
+	color: #ccc;
 }
 
 .operations-table tr:hover {
-    background: #222;
+	background: #0f0f0f;
 }
 
-.result-positive {
-    color: #00ff00;
-}
-
-.result-negative {
-    color: #ff0000;
-}
+.result-positive { color: #00ff00; font-weight: 600; }
+.result-negative { color: #ff4444; font-weight: 600; }
 
 /* Ações do Agente */
-.action-item {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 10px 0;
-    border-bottom: 1px solid #2a2a2a;
+.actions-section {
+	padding: 20px;
 }
 
-.actions-section .action-item:last-child {
-    border-bottom: none;
+.actions-header h3 {
+  font-weight: 500;
+	color: #e7e7e7;
+  font-size: 1.2rem;
+  text-align: left;
+}
+
+.actions-list {
+	display: flex;
+	flex-direction: column;
+}
+
+.action-item {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 12px 0;
+	border-bottom: 1px solid #1a1a1a;
+}
+
+.actions-section .actions-list .action-item:last-child {
+	border-bottom: none;
 }
 
 .action-icon {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    margin-top: 6px; /* Alinhamento visual */
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	flex-shrink: 0;
+	margin-top: 6px;
 }
 
-.action-icon.success {
-    background: #00ff00;
-}
-
-.action-icon.info {
-    background: #0099ff; /* Azul */
-}
-
-.action-icon.warning {
-    background: #ffaa00; /* Amarelo */
-}
+.action-icon.success { background: #00ff00; }
+.action-icon.info { background: #ffaa00; } /* Cor amarela para 'Aguardando' na imagem */
+.action-icon.warning { background: #ffaa00; } /* Cor amarela para 'Volume Detectado' na imagem */
+.action-icon.error { background: #ff4444; }
 
 .action-title {
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 4px;
+	font-size: 13px;
+	font-weight: 500;
+	margin-bottom: 4px;
+	color: #f0f0f0;
+  text-align: left;
 }
 
 .action-description {
-    font-size: 12px;
-    color: #888;
+	font-size: 11px;
+	color: #666;
+  text-align: left;
+}
+
+.hidden {
+	display: none;
 }
 </style>

@@ -9,7 +9,11 @@
         />
         
         <div class="container">
-            <component :is="componenteAtual"></component>
+            <component 
+                :is="componenteAtual" 
+                v-bind="agenteData" 
+                @pausar-agente="toggleAgenteStatus" 
+            />
         </div>
         
         <footer class="agente-autonomo-footer">
@@ -24,7 +28,6 @@
 </template>
 
 <script>
-// Importa os componentes de layout e estado
 import AppSidebar from '../components/Sidebar.vue';
 import AgenteAutonomoActive from '../components/autonomo/AgenteAutonomoActive.vue';
 import AgenteAutonomoInactive from '../components/autonomo/AgenteAutonomoInactive.vue';
@@ -39,44 +42,190 @@ export default {
     
     data() {
         return {
-        // 1. Estado principal para controlar se o agente está ativo
-        agenteEstaAtivo: false, 
-        
-        // **Atenção:** As propriedades de sidebar (isSidebarOpen, isSidebarCollapsed) 
-        // precisam ser definidas aqui ou via Vuex/Pinia, caso ainda não estejam.
-        // Adicionei elas aqui como placeholders.
-        isSidebarOpen: true,
-        isSidebarCollapsed: false,
+            // Estado Principal
+            agenteEstaAtivo: false, // Começa como INATIVO
+            
+            // Dados de Configuração Estáticos
+            estrategia: 'Arkon',
+            mercado: 'Índices Sintéticos',
+            risco: 'Equilibrado',
+            goalValue: 50.00,
+            stopValue: 25.00,
+            
+            // Dados Reativos e de Simulação
+            dailyProfit: 0.00,
+            dailyChange: 0.00,
+            accumulatedLoss: 0.00,
+            accumulatedChange: 0.00,
+            lastExecutionTime: '00:00:00',
+            tempoAtivo: '0h 0m',
+            operacoesHoje: 0,
+            
+            // Dados de simulação para o gráfico
+            realTimeOperations: [
+                { x: 0, y: 75, value: 0.00 },
+                { x: 25, y: 75, value: 0.00 },
+                { x: 50, y: 75, value: 0.00 },
+                { x: 75, y: 75, value: 0.00 },
+                { x: 100, y: 75, value: 0.00 },
+            ],
+            
+            // Histórico de Operações
+            operationHistory: [],
+
+            // Ações do Agente
+            agentActions: [],
+
+            // Estado do Sidebar (Placeholder)
+            isSidebarOpen: true,
+            isSidebarCollapsed: false,
+            
+            // Intervalos de Simulação
+            chartInterval: null,
+            profitInterval: null,
+            timeAndMetricsInterval: null,
         };
     },
 
     computed: {
-        // 2. Propriedade computada para escolher o componente a ser exibido
         componenteAtual() {
-            // Retorna 'AgenteAutonomoActive' se estiver ativo, senão 'AgenteAutonomoInactive'
             return this.agenteEstaAtivo ? 'AgenteAutonomoActive' : 'AgenteAutonomoInactive';
         },
         
-        // 3. Propriedade computada para o texto dinâmico do botão
         textoDoBotao() {
             return this.agenteEstaAtivo ? 'Pausar Agente Autônomo' : 'Iniciar Agente Autônomo';
-        }
+        },
+        
+        // Objeto que combina todos os dados a serem passados via v-bind
+        agenteData() {
+            return {
+                estrategia: this.estrategia,
+                mercado: this.mercado,
+                risco: this.risco,
+                goalValue: this.goalValue,
+                stopValue: this.stopValue,
+                dailyProfit: this.dailyProfit,
+                dailyChange: this.dailyChange,
+                accumulatedLoss: this.accumulatedLoss,
+                accumulatedChange: this.accumulatedChange,
+                lastExecutionTime: this.lastExecutionTime,
+                tempoAtivo: this.tempoAtivo,
+                operacoesHoje: this.operacoesHoje,
+                realTimeOperations: this.realTimeOperations,
+                operationHistory: this.operationHistory,
+                agentActions: this.agentActions,
+                // Passa o status também para renderização interna (indicador, título)
+                agentStatus: this.agenteEstaAtivo ? 'ATIVO' : 'PAUSADO', 
+            };
+        },
     },
 
     methods: {
-        // 4. Método para alternar o estado do agente (Inicia e Pausa)
         toggleAgenteStatus() {
-            // Inverte o valor booleano atual
             this.agenteEstaAtivo = !this.agenteEstaAtivo;
 
             if (this.agenteEstaAtivo) {
-                console.log('Agente Autônomo INICIADO. Componente: Active.');
+                this.startSimulations();
+                this.addSystemAction('Agente Autônomo Iniciado', 'Aguardando padrões de mercado...');
             } else {
-                console.log('Agente Autônomo PAUSADO. Componente: Inactive.');
+                this.stopSimulations();
+                this.addSystemAction('Agente Autônomo Pausado', 'O sistema parou de analisar e operar.');
             }
         },
 
-        // Métodos de Sidebar, mantidos para completude
+        // --- Lógica de Simulação ---
+
+        updateTimeAndMetrics() {
+            if (!this.agenteEstaAtivo) return;
+
+            const now = new Date();
+            this.lastExecutionTime = `${now.getHours().toString().padStart(2, '0')}:${now.getMinutes().toString().padStart(2, '0')}:${now.getSeconds().toString().padStart(2, '0')}`;
+            
+            // Simulação de Lucro (Exemplo simplificado)
+            const randomProfitChange = (Math.random() * 5 - 2.5); // Flutuação entre -2.5 e +2.5
+            this.dailyProfit = Math.max(-this.stopValue, Math.min(this.goalValue, this.dailyProfit + randomProfitChange));
+            
+            // Simulação da mudança percentual (base de cálculo inicial fictícia)
+            const initialCapital = 1000; 
+            this.dailyChange = (this.dailyProfit / initialCapital) * 100;
+        },
+
+        updateRealTimeChart() {
+            if (!this.agenteEstaAtivo) return;
+
+            // Simula um "shift" nos pontos e adiciona um novo ponto no final
+            const newPoints = this.realTimeOperations.slice(1).map(p => ({
+                ...p,
+                x: p.x - 25 // Move os pontos existentes
+            }));
+            
+            // Cria novo ponto (Y entre 50 e 90 para manter a curva)
+            const lastY = this.realTimeOperations[this.realTimeOperations.length - 1]?.y || 75;
+            const newY = Math.max(50, Math.min(90, lastY + (Math.random() * 20 - 10)));
+            const newValue = Math.abs(this.dailyProfit / 5 + (Math.random() * 5 - 2.5)); // Valor de exibição
+            
+            // Adiciona o novo ponto na posição 100
+            newPoints.push({ x: 100, y: newY, value: newValue });
+            this.realTimeOperations = newPoints;
+
+            // Adiciona uma nova operação ao histórico a cada 3 atualizações do gráfico (exemplo)
+            if (Math.random() > 0.8) {
+                this.addNewOperation();
+            }
+        },
+
+        addNewOperation() {
+            const isProfit = Math.random() > 0.4;
+            const result = isProfit ? (Math.random() * 10 + 5) : (Math.random() * -10 - 5);
+            const assetName = Math.random() > 0.5 ? 'Volatility 75' : 'Boom 1000';
+            const type = Math.random() > 0.5 ? 'CALL' : 'PUT';
+            const entry = 10.00;
+            const exit = entry + result;
+
+            this.operationHistory.unshift({
+                time: this.lastExecutionTime,
+                asset: assetName,
+                type: type,
+                entry: entry,
+                exit: exit,
+                result: result
+            });
+
+            this.operacoesHoje++;
+            this.dailyProfit += result;
+            this.addSystemAction('Operação finalizada', `${this.lastExecutionTime} - ${isProfit ? 'Lucro' : 'Prejuízo'} de $${Math.abs(result).toFixed(2)}`, isProfit ? 'success' : 'error');
+            
+            // Limita o histórico
+            if (this.operationHistory.length > 5) {
+                this.operationHistory.pop();
+            }
+        },
+
+        addSystemAction(title, description, status = 'info') {
+            this.agentActions.unshift({
+                status: status, 
+                title: title, 
+                description: description
+            });
+            // Limita as ações
+            if (this.agentActions.length > 5) {
+                this.agentActions.pop();
+            }
+        },
+
+        startSimulations() {
+            this.timeAndMetricsInterval = setInterval(this.updateTimeAndMetrics, 1000); // 1 segundo
+            this.chartInterval = setInterval(this.updateRealTimeChart, 3000); // 3 segundos
+        },
+
+        stopSimulations() {
+            clearInterval(this.timeAndMetricsInterval);
+            clearInterval(this.chartInterval);
+            this.timeAndMetricsInterval = null;
+            this.chartInterval = null;
+        },
+
+        // Métodos de Sidebar (Placeholder)
         closeSidebar() {
             this.isSidebarOpen = false;
         },
@@ -84,50 +233,64 @@ export default {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         }
     },
+
+    mounted() {
+        // Inicializa o estado com uma ação
+        this.addSystemAction('Sistema carregado', 'Aguardando o início do agente...');
+    },
+
+    beforeUnmount() {
+        this.stopSimulations();
+    }
 };
 </script>
 
 <style scoped>
+/* Estilos do Componente Pai (Layout principal) */
 .layout-agente-autnomo {
     padding: 40px;
-    background-color: #0d0d0d; /* Fundo principal escuro */
+    background-color: #0d0d0d;
     min-height: 100vh;
     width: calc(100% - 240px);
     margin-left: 240px;
+    transition: margin-left 0.3s;
 }
 
-/* Estilos para o Footer e Botão */
+.layout-agente-autnomo.sidebar-collapsed {
+    width: calc(100% - 60px); /* Largura ajustada quando a sidebar é recolhida */
+    margin-left: 60px;
+}
+
+
+/* Estilos para o Footer e Botão (Fixos) */
 .agente-autonomo-footer {
-    position: fixed;
-    bottom: 0;
-    left: 240px; /* Alinhar com o conteúdo principal */
-    width: calc(100% - 240px);
-    background-color: #1a1a1a; /* Fundo mais escuro para o footer */
-    padding: 15px 40px;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.5);
     display: flex;
-    justify-content: flex-end; /* Alinhar o botão à direita */
+    justify-content: center;
     z-index: 1000;
+    transition: left 0.3s, width 0.3s;
+}
+
+.layout-agente-autnomo.sidebar-collapsed .agente-autonomo-footer {
+    left: 60px;
+    width: calc(100% - 60px);
 }
 
 .iniciar-button {
     background-color: #4CAF50; /* Verde para Iniciar */
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 15px 20px;
     text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
+    font-size: 18px;
     cursor: pointer;
     border-radius: 8px;
     transition: background-color 0.3s ease;
     font-weight: bold;
+    width: 100%;
 }
-
-.iniciar-button.pause-button {
-    background-color: #f44336; /* Vermelho para Pausar */
+.pause-button{
+    background: #333;
+    max-width: 300px;
 }
 
 .iniciar-button:hover {
