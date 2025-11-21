@@ -58,7 +58,9 @@
               <div class="text-center mb-8">
                 <div class="avatar-border w-24 h-24 mx-auto mb-4 flex items-center justify-center overflow-hidden bg-zenix-bg">
                   <img v-if="settings.profilePictureUrl" :src="settings.profilePictureUrl" alt="Profile" class="w-full h-full rounded-full object-cover">
-                  <div v-else class="text-2xl font-bold text-white">{{ initials }}</div>
+                  <div v-else class="w-full h-full flex items-center justify-center bg-zenix-card">
+                    <i class="fas fa-user text-4xl text-zenix-secondary"></i>
+                  </div>
                 </div>
                 <h2 class="text-xl font-bold text-white mb-1">{{ settings.name || 'Usuário' }}</h2>
                 <p class="text-zenix-secondary text-sm mb-1">{{ settings.email }}</p>
