@@ -1,5 +1,42 @@
 <template>
-  <main class="flex-1 px-4 lg:px-6 xl:px-8 py-8 bg-zenix-bg noise-bg font-inter">
+  <div class="flex flex-col h-full">
+    <!-- Header -->
+    <header class="bg-zenix-card border-b border-zenix-border px-4 lg:px-6 xl:px-8 py-4 flex items-center justify-between sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
+      <div class="flex items-center gap-4">
+        <button class="lg:hidden hamburger-menu" @click="$emit('toggle-sidebar')">
+          <span class="line"></span>
+          <span class="line"></span>
+          <span class="line"></span>
+        </button>
+        <h1 class="text-lg font-semibold text-zenix-text">Zenix</h1>
+      </div>
+      
+      <div class="flex items-center gap-4">
+        <!-- Status da Conexão Deriv -->
+        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A] border border-zenix-border rounded-lg">
+          <div class="w-2 h-2 bg-zenix-green rounded-full animate-pulse"></div>
+          <span class="text-xs text-zenix-secondary">Deriv Conectado</span>
+        </div>
+        
+        <!-- Notificações -->
+        <button class="relative p-2 hover:bg-zenix-bg rounded-lg transition-colors">
+          <i class="fas fa-bell text-zenix-secondary text-lg"></i>
+          <span class="absolute top-1 right-1 w-2 h-2 bg-zenix-green rounded-full"></span>
+        </button>
+        
+        <!-- Menu do Usuário -->
+        <div class="flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A] border border-zenix-border rounded-lg cursor-pointer hover:bg-[#0D0D0D] transition-colors">
+          <div class="w-8 h-8 bg-zenix-green rounded-full flex items-center justify-center text-black font-semibold text-sm">
+            {{ userInitials }}
+          </div>
+          <span class="hidden md:block text-sm text-zenix-text font-medium">{{ userName }}</span>
+          <i class="fas fa-chevron-down text-zenix-secondary text-xs"></i>
+        </div>
+      </div>
+    </header>
+    
+    <!-- Main Content -->
+    <main class="flex-1 px-4 lg:px-6 xl:px-8 py-8 bg-zenix-bg noise-bg font-inter overflow-y-auto">
     <!-- Ultra Pro Balance Card -->
     <div class="grid grid-cols-1 gap-6 mb-8">
       <div id="ultra-pro-balance-card" class="relative bg-zenix-card border border-zenix-border rounded-[20px] p-6 premium-card-enhanced overflow-hidden min-h-[126px]">
@@ -272,7 +309,8 @@
         </div>
       </div>
     </section>
-  </main>
+    </main>
+  </div>
 </template>
 
 <script>
@@ -444,6 +482,38 @@ export default {
       const real = this.balancesByCurrencyReal['BTC'];
       if (real !== undefined && real !== null) return real;
       return this.balancesByCurrency['BTC'] ?? 0;
+    },
+    userName() {
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          if (user.name) {
+            return user.name.split(' ')[0];
+          }
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e);
+        }
+      }
+      return 'Usuário';
+    },
+    userInitials() {
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          if (user.name) {
+            const names = user.name.split(' ');
+            if (names.length >= 2) {
+              return (names[0][0] + names[1][0]).toUpperCase();
+            }
+            return names[0][0].toUpperCase();
+          }
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e);
+        }
+      }
+      return 'U';
     }
   },
   mounted() {
@@ -814,6 +884,32 @@ export default {
 
 .animate-data-stream-delayed-2 {
   animation: data-stream 3s ease-in-out infinite 1s;
+}
+
+/* Header Hamburger Menu */
+.hamburger-menu {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  z-index: 10;
+}
+
+.hamburger-menu .line {
+  width: 100%;
+  height: 2px;
+  background-color: #e5e7eb;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.hamburger-menu:hover .line {
+  background-color: #00FF87;
 }
 
 </style>
