@@ -158,9 +158,22 @@
           <div class="flex items-center justify-between mb-4">
             <div>
               <p class="text-[10px] text-[#B0B0B0] font-medium mb-1 opacity-80">Lucro/Perda (Hoje)</p>
-              <div class="flex items-baseline space-x-2">
-                <p class="text-xl font-bold text-zenix-green">+{{ preferredCurrencyPrefix }}{{ todayProfit }}</p>
-                <span class="text-[11px] text-zenix-green bg-zenix-green/10 px-2 py-1 rounded-md font-semibold">+{{ todayProfitPercent }}%</span>
+              <div class="flex items-baseline space-x-2" v-if="!loadingTodayProfit">
+                <p :class="[
+                  'text-xl font-bold',
+                  todayProfit >= 0 ? 'text-zenix-green' : 'text-red-500'
+                ]">
+                  {{ todayProfit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ formatProfit(todayProfit) }}
+                </p>
+                <span :class="[
+                  'text-[11px] bg-zenix-green/10 px-2 py-1 rounded-md font-semibold',
+                  todayProfit >= 0 ? 'text-zenix-green' : 'text-red-500 bg-red-500/10'
+                ]">
+                  {{ todayProfit >= 0 ? '+' : '' }}{{ todayProfitPercent }}%
+                </span>
+              </div>
+              <div v-else class="flex items-center space-x-2">
+                <div class="animate-pulse bg-zenix-bg rounded h-6 w-32"></div>
               </div>
             </div>
           </div>
@@ -428,8 +441,9 @@ export default {
         name: 'Trader Elite',
         profit: '12.7'
       },
-      todayProfit: '3.247,50',
-      todayProfitPercent: '1.31'
+      todayProfit: 0,
+      todayProfitPercent: 0,
+      loadingTodayProfit: true
     }
   },
   computed: {
@@ -520,8 +534,19 @@ export default {
       return 'U';
     }
   },
-  mounted() {
+  watch: {
+    accountType() {
+      // Recalcular percentual quando mudar o tipo de conta
+      this.recalculateProfitPercent();
+    },
+    balanceNumeric() {
+      // Recalcular percentual quando o saldo mudar
+      this.recalculateProfitPercent();
+    }
+  },
+  async mounted() {
     this.initSparklines();
+    await this.loadTodayProfitLoss();
   },
   methods: {
     toggleBalance() {
@@ -562,6 +587,80 @@ export default {
           return 'D$'
         default:
           return currency ? `${currency} ` : ''
+      }
+    },
+    formatProfit(value) {
+      if (value === null || value === undefined) return '0,00';
+      return Math.abs(value).toLocaleString('pt-BR', { 
+        minimumFractionDigits: 2, 
+        maximumFractionDigits: 2 
+      });
+    },
+    recalculateProfitPercent() {
+      const currentBalance = this.balanceNumeric;
+      if (currentBalance > 0 && this.todayProfit !== 0) {
+        const initialBalance = currentBalance - this.todayProfit;
+        if (initialBalance > 0) {
+          const percent = (this.todayProfit / initialBalance) * 100;
+          this.todayProfitPercent = Math.abs(percent).toFixed(2);
+        } else if (this.todayProfit > 0) {
+          this.todayProfitPercent = '100.00';
+        } else {
+          this.todayProfitPercent = '0.00';
+        }
+      } else {
+        this.todayProfitPercent = '0.00';
+      }
+    },
+    async loadTodayProfitLoss() {
+      try {
+        this.loadingTodayProfit = true;
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          console.error('[Dashboard] Token não encontrado');
+          return;
+        }
+
+        const response = await fetch(`${apiBase}/trades/today-profit`, {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          this.todayProfit = parseFloat(data.totalProfit || 0);
+          
+          // Calcular percentual baseado no saldo atual
+          const currentBalance = this.balanceNumeric;
+          if (currentBalance > 0 && this.todayProfit !== 0) {
+            // Calcular o saldo inicial (saldo atual - lucro de hoje)
+            const initialBalance = currentBalance - this.todayProfit;
+            if (initialBalance > 0) {
+              const percent = (this.todayProfit / initialBalance) * 100;
+              this.todayProfitPercent = Math.abs(percent).toFixed(2);
+            } else if (this.todayProfit > 0) {
+              // Se o lucro é maior que o saldo atual, significa que começou com pouco
+              this.todayProfitPercent = '100.00';
+            } else {
+              this.todayProfitPercent = '0.00';
+            }
+          } else {
+            this.todayProfitPercent = '0.00';
+          }
+        } else {
+          console.error('[Dashboard] Erro ao buscar lucro/perda de hoje:', response.statusText);
+          this.todayProfit = 0;
+          this.todayProfitPercent = '0.00';
+        }
+      } catch (error) {
+        console.error('[Dashboard] Erro ao carregar lucro/perda de hoje:', error);
+      } finally {
+        this.loadingTodayProfit = false;
       }
     },
     initSparklines() {
