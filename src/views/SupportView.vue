@@ -18,39 +18,35 @@
         <section id="immediate-support" class="max-w-7xl mx-auto mb-16">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Chat Card -->
-            <div class="support-card bg-zenix-card border border-zenix-border rounded-2xl p-8 h-[160px] flex flex-col justify-between">
-              <div class="flex items-start justify-between">
-                <div>
-                  <div class="flex items-center space-x-3 mb-2">
-                    <i class="far fa-comment-dots text-white text-2xl"></i>
-                    <span class="px-2 py-1 bg-zenix-green/20 text-zenix-green text-[10px] font-bold rounded">Online agora</span>
-                  </div>
-                  <h3 class="text-white text-xl font-bold mb-1">Chat ao Vivo</h3>
-                  <p class="text-zenix-secondary text-sm">Suporte imediato com um atendente real</p>
+            <div class="support-card bg-zenix-card border border-zenix-border rounded-2xl p-8 min-h-[160px] flex flex-col">
+              <div class="flex-1 flex flex-col">
+                <div class="flex items-center space-x-3 mb-2">
+                  <i class="far fa-comment-dots text-white text-2xl"></i>
+                  <span class="px-2 py-1 bg-zenix-green/20 text-zenix-green text-[10px] font-bold rounded">Online agora</span>
                 </div>
+                <h3 class="text-white text-xl font-bold mb-1">Chat ao Vivo</h3>
+                <p class="text-zenix-secondary text-sm mb-4">Suporte imediato com um atendente real</p>
               </div>
               <button 
                 @click="startChat"
-                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3 rounded-lg transition-all"
+                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3 rounded-lg transition-all mt-auto"
               >
                 Iniciar Atendimento
               </button>
             </div>
 
             <!-- Ticket Card -->
-            <div class="support-card bg-zenix-card border border-zenix-border rounded-2xl p-8 h-[160px] flex flex-col justify-between">
-              <div class="flex items-start justify-between">
-                <div>
-                  <div class="mb-2">
-                    <i class="far fa-life-ring text-white text-2xl"></i>
-                  </div>
-                  <h3 class="text-white text-xl font-bold mb-1">Abrir Ticket</h3>
-                  <p class="text-zenix-secondary text-sm">Resposta em até 24h úteis</p>
+            <div class="support-card bg-zenix-card border border-zenix-border rounded-2xl p-8 min-h-[160px] flex flex-col">
+              <div class="flex-1 flex flex-col">
+                <div class="mb-2">
+                  <i class="far fa-life-ring text-white text-2xl"></i>
                 </div>
+                <h3 class="text-white text-xl font-bold mb-1">Abrir Ticket</h3>
+                <p class="text-zenix-secondary text-sm mb-4">Resposta em até 24h úteis</p>
               </div>
               <button 
                 @click="createTicket"
-                class="w-full border-2 border-zenix-green text-zenix-green hover:bg-zenix-green hover:text-white font-semibold py-3 rounded-lg transition-all"
+                class="w-full border-2 border-zenix-green text-zenix-green hover:bg-zenix-green hover:text-white font-semibold py-3 rounded-lg transition-all mt-auto"
               >
                 Criar Ticket
               </button>
