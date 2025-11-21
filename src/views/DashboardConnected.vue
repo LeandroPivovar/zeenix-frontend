@@ -219,7 +219,7 @@
               </div>
               <div :id="`sparkline-${ia.id}`" class="h-10 mb-3"></div>
               <button 
-                @click="activateIA(ia)"
+                @click="activateIA()"
                 class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-medium py-2 rounded-lg text-xs transition-all"
               >
                 Ativar IA
@@ -461,8 +461,8 @@ export default {
         this.$router.push(tool.route);
       }
     },
-    activateIA(_ia) {
-      // Navega para a página de IAs - pode usar _ia.id no futuro para ativar uma IA específica
+    activateIA() {
+      // Navega para a página de IAs
       this.$router.push('/InvestmentIA');
     },
     handlePerformanceAction(perf) {
