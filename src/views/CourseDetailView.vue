@@ -86,16 +86,22 @@
                 <!-- Materials Section -->
                 <div class="materials-section">
                     <h3 class="section-heading">Materiais complementares</h3>
-                    <div class="materials-list">
-                        <!-- Static example materials or dynamic if available -->
-                        <div class="material-item">
-                            <span class="material-name">Guia {{ course.title }} - Introdução.pdf</span>
+                    <div v-if="materialsLoading" class="materials-empty">
+                        Carregando materiais...
+                    </div>
+                    <div v-else-if="!lessonMaterials.length" class="materials-empty">
+                        Não há materiais complementares para este vídeo.
+                    </div>
+                    <div v-else class="materials-list">
+                        <button
+                            v-for="material in lessonMaterials"
+                            :key="material.id"
+                            class="material-item"
+                            @click="openMaterial(material)"
+                        >
+                            <span class="material-name">{{ material.name }}</span>
                             <i class="fas fa-download download-icon"></i>
-                        </div>
-                        <div class="material-item">
-                            <span class="material-name">Checklist de Operações.xlsx</span>
-                            <i class="fas fa-download download-icon"></i>
-                        </div>
+                        </button>
                     </div>
                 </div>
 
@@ -194,7 +200,9 @@ export default {
       loading: true,
       error: null,
       markingComplete: false,
-      userName: 'Usuário'
+      userName: 'Usuário',
+      lessonMaterials: [],
+      materialsLoading: false
     }
   },
   computed: {
@@ -271,6 +279,7 @@ export default {
             this.modules[0].expanded = true
             if (this.modules[0].lessons && this.modules[0].lessons.length > 0) {
               this.selectedLesson = this.modules[0].lessons[0]
+              await this.loadLessonMaterials(this.selectedLesson.id)
             }
           }
         }
@@ -284,8 +293,9 @@ export default {
     toggleModule(idx) {
       this.modules[idx].expanded = !this.modules[idx].expanded
     },
-    selectLesson(lesson) {
+    async selectLesson(lesson) {
       this.selectedLesson = lesson
+      await this.loadLessonMaterials(lesson.id)
     },
     getModuleProgress(module) {
         if (!module.lessons || module.lessons.length === 0) return 0;
@@ -326,6 +336,40 @@ export default {
         alert('Não foi possível marcar a aula como concluída.')
       } finally {
         this.markingComplete = false
+      }
+    },
+    async loadLessonMaterials(lessonId) {
+      if (!lessonId) {
+        this.lessonMaterials = []
+        return
+      }
+      this.materialsLoading = true
+      this.lessonMaterials = []
+      try {
+        const token = localStorage.getItem('token')
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+        const res = await fetch(`${apiBaseUrl}/courses/lessons/${lessonId}/materials`, {
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { Authorization: `Bearer ${token}` })
+          }
+        })
+        if (!res.ok) throw new Error('Erro ao carregar materiais')
+        const data = await res.json()
+        this.lessonMaterials = Array.isArray(data) ? data : []
+      } catch (err) {
+        console.error('Erro ao buscar materiais:', err)
+        this.lessonMaterials = []
+      } finally {
+        this.materialsLoading = false
+      }
+    },
+    openMaterial(material) {
+      if (!material) return
+      const path = material.filePath || material.link
+      const url = this.resolveMediaUrl(path)
+      if (url) {
+        window.open(url, '_blank')
       }
     },
     resolveMediaUrl(path) {

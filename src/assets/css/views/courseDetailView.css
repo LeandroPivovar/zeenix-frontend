@@ -14,10 +14,11 @@
 
 /* ... (restante do CSS mantido, apenas ajustando box-sizing e flex) ... */
 
-.course-header,
-.course-main {
+.layout.noise-bg {
     margin-left: 240px;
+    padding: 0 40px;
     width: calc(100% - 240px);
+    box-sizing: border-box;
 }
 
 /* Main Layout */
@@ -206,6 +207,16 @@
     overflow: hidden;
 }
 
+.materials-empty {
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    padding: 1rem 1.5rem;
+    color: #8D8D8D;
+    font-size: 0.875rem;
+    background-color: #0E0E0E;
+    text-align: center;
+}
+
 .material-item {
     display: flex;
     align-items: center;
@@ -215,6 +226,10 @@
     cursor: pointer;
     transition: background-color 0.2s;
     background-color: #0E0E0E;
+    border: none;
+    width: 100%;
+    font: inherit;
+    text-align: left;
 }
 
 .material-item:last-child {
@@ -232,6 +247,10 @@
 
 .download-icon {
     color: #22C55E;
+}
+
+.material-item:focus {
+    outline: none;
 }
 
 /* Action Buttons */
@@ -447,9 +466,9 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
-    .course-header,
-    .course-main {
+    .layout.noise-bg {
         margin-left: 0;
+        padding: 0 1rem;
         width: 100%;
     }
     .course-main {
