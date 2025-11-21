@@ -1,120 +1,105 @@
 <template>
-  <div class="academy-layout noise-bg">
-    <AppSidebar />
+  <div class="layout noise-bg" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
+    
+    <!-- Main Content -->
+    <div class="main-wrapper"> <!-- Wrapper to align with sidebar width logic in CSS -->
+        
+        <!-- Header -->
+        <header>
+            <div class="header-left">
+                <button class="hamburger-menu" @click="handleHamburgerClick">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <div class="header-content">
+                    <h1>Zenix Academy</h1>
+                    <p>Cursos exclusivos para traders profissionais</p>
+                </div>
+            </div>
+            <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
+        </header>
 
-    <div class="academy-main">
-      <header class="academy-header">
-        <div>
-          <h1>Zenix Academy</h1>
-          <p>Cursos exclusivos para traders profissionais</p>
-        </div>
-      </header>
-
-      <main class="academy-content">
-        <div v-if="loading" class="state-card">
-          <p>Carregando cursos...</p>
-        </div>
-
-        <div v-else-if="error" class="state-card">
-          <p>{{ error }}</p>
-          <button @click="fetchCourses" class="btn-primary">Tentar novamente</button>
-        </div>
-
-        <div v-else class="courses-grid">
-          <div 
-            v-for="course in courses" 
-            :key="course.id" 
-            class="course-card"
-          >
-            <div class="course-media" :class="getCourseMediaClass(course)">
-              <template v-if="course.coverImage">
-                <img :src="course.coverImage" :alt="course.title" />
-              </template>
-              <template v-else>
-                <i :class="['fas', getCourseIcon(course).icon, getCourseIcon(course).colorClass]"></i>
-              </template>
+        <!-- Courses Grid -->
+        <main class="academy-content">
+            <div v-if="loading" class="loading-container">
+                <p>Carregando cursos...</p>
             </div>
 
-            <div class="course-body">
-              <div class="course-header">
-                <div class="course-info">
-                  <h3>{{ course.title }}</h3>
-                  <p>{{ course.description }}</p>
-                </div>
-                <div class="tooltip">
-                  <i class="fas fa-info-circle"></i>
-                  <span class="tooltiptext">
-                    Este curso faz parte da formação oficial Zenix. Sua conclusão aumenta sua consistência operacional e libera novos conteúdos avançados.
-                  </span>
-                </div>
-              </div>
-
-              <div class="course-meta">
-                <div>
-                  <i class="fas fa-play-circle"></i>
-                  <span>{{ course.totalLessons }} {{ course.totalLessons === 1 ? 'aula' : 'aulas' }}</span>
-                </div>
-                <div>
-                  <i class="fas fa-clock"></i>
-                  <span>{{ course.totalDuration }}</span>
-                </div>
-              </div>
-
-              <div class="course-progress" v-if="courseProgress[course.id] > 0 && courseProgress[course.id] < 100">
-                <div class="progress-head">
-                  <span>Progresso</span>
-                  <span class="progress-value">{{ courseProgress[course.id] }}%</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" :style="{ width: courseProgress[course.id] + '%' }"></div>
-                </div>
-              </div>
-
-              <div class="course-progress" v-else-if="courseProgress[course.id] === 100">
-                <div class="progress-head">
-                  <span>Progresso</span>
-                  <span class="progress-value complete">100%</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 100%"></div>
-                </div>
-              </div>
-
-              <div class="course-progress" v-else>
-                <div class="progress-head">
-                  <span>Progresso</span>
-                  <span class="progress-value">0%</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress-fill" style="width: 0%"></div>
-                </div>
-              </div>
-
-              <button 
-                v-if="courseProgress[course.id] > 0 && courseProgress[course.id] < 100"
-                class="btn-primary" 
-                @click="$router.push(`/academy/course/${course.id}`)"
-              >
-                Continuar
-              </button>
-              <button 
-                v-else-if="courseProgress[course.id] === 0"
-                class="btn-outline" 
-                @click="$router.push(`/academy/course/${course.id}`)"
-              >
-                Iniciar
-              </button>
-              <button 
-                v-else
-                class="btn-primary" 
-                @click="$router.push(`/academy/course/${course.id}`)"
-              >
-                Revisar
-              </button>
+            <div v-else-if="error" class="error-container">
+                <p>{{ error }}</p>
+                <button @click="fetchCourses" class="action-btn btn-green" style="width: auto; padding: 0.75rem 2rem;">Tentar novamente</button>
             </div>
-          </div>
-        </div>
-      </main>
+
+            <div v-else class="courses-grid">
+                <!-- Course Card Loop -->
+                <div 
+                    v-for="(course, index) in courses" 
+                    :key="course.id" 
+                    class="course-card"
+                >
+                    <!-- Image/Icon Area -->
+                    <div class="course-header-image">
+                        <i :class="getCourseIcon(index) + ' course-icon-placeholder'" :style="{ color: getCourseColor(index) }"></i>
+                    </div>
+
+                    <div class="card-body">
+                        <div class="card-top">
+                            <div class="course-info">
+                                <h3 class="course-title">{{ course.title }}</h3>
+                                <p class="course-description">{{ course.description }}</p>
+                            </div>
+                            <div class="tooltip">
+                                <i class="fas fa-info-circle tooltip-icon"></i>
+                                <span class="tooltip-text">Este curso faz parte da formação oficial Zenix. Sua conclusão aumenta sua consistência operacional e libera novos conteúdos avançados.</span>
+                            </div>
+                        </div>
+                        
+                        <div class="course-meta">
+                            <div class="meta-item">
+                                <i class="fas fa-play-circle"></i>
+                                <span>{{ course.totalLessons }} {{ course.totalLessons === 1 ? 'aula' : 'aulas' }}</span>
+                            </div>
+                            <div class="meta-item">
+                                <i class="fas fa-clock"></i>
+                                <span>{{ course.totalDuration || '0h 0min' }}</span>
+                            </div>
+                        </div>
+                        
+                        <div class="progress-container">
+                            <div class="progress-label">
+                                <span class="progress-text">Progresso</span>
+                                <span 
+                                    class="progress-percent" 
+                                    :style="{ color: courseProgress[course.id] > 0 ? getCourseColor(index) : '#8D8D8D' }"
+                                >
+                                    {{ courseProgress[course.id] || 0 }}%
+                                </span>
+                            </div>
+                            <div class="progress-bar">
+                                <div class="progress-fill" :style="{ width: (courseProgress[course.id] || 0) + '%' }"></div>
+                            </div>
+                        </div>
+                        
+                        <button 
+                            v-if="(courseProgress[course.id] || 0) > 0"
+                            class="action-btn btn-green"
+                            @click="navigateToCourse(course.id)"
+                        >
+                            Continuar
+                        </button>
+                        <button 
+                            v-else
+                            class="action-btn btn-outline"
+                            @click="navigateToCourse(course.id)"
+                        >
+                            Iniciar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </main>
     </div>
   </div>
 </template>
@@ -130,13 +115,53 @@ export default {
       courses: [],
       loading: true,
       error: null,
-      courseProgress: {}
+      courseProgress: {}, 
+      isSidebarOpen: false,
+      isSidebarCollapsed: false
     }
   },
   mounted() {
-    this.fetchCourses()
+    this.loadFontAwesome();
+    this.fetchCourses();
   },
   methods: {
+    loadFontAwesome() {
+        if (!document.getElementById('fa-script')) {
+            const script = document.createElement('script');
+            script.id = 'fa-script';
+            script.src = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js';
+            script.crossOrigin = 'anonymous';
+            script.referrerPolicy = 'no-referrer';
+            document.head.appendChild(script);
+        }
+    },
+    getCourseIcon(index) {
+        const icons = ['fas fa-copy', 'fas fa-brain', 'fas fa-chart-line', 'fas fa-robot'];
+        return icons[index % icons.length];
+    },
+    getCourseColor(index) {
+        const colors = ['#22C55E', '#0099FF', '#FFD058', '#FF4747'];
+        return colors[index % colors.length];
+    },
+    toggleSidebar() {
+      this.isSidebarOpen = !this.isSidebarOpen
+    },
+    closeSidebar() {
+      this.isSidebarOpen = false
+    },
+    toggleSidebarCollapse() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed
+    },
+    handleHamburgerClick() {
+      if (this.isSidebarCollapsed) {
+        this.isSidebarCollapsed = false
+      } else {
+        this.toggleSidebar()
+      }
+    },
+    navigateToCourse(id) {
+        this.$router.push(`/academy/course/${id}`)
+    },
     async fetchCourses() {
       this.loading = true
       this.error = null
@@ -171,39 +196,24 @@ export default {
       }
     },
     calculateProgress() {
-      // TODO: Buscar progresso real do backend
-      // Por enquanto, simula progresso para demonstração
-      this.courses.forEach(course => {
-        // Mock: alguns cursos com progresso, outros sem
-        const mockProgress = Math.random() > 0.5 ? Math.floor(Math.random() * 100) : 0
-        this.courseProgress[course.id] = mockProgress
+      this.courses.forEach((course, index) => {
+        // Mock progress to match visual example somewhat or just random
+        // Example had: 43%, 0%, 78%, 25%
+        const mockPercentages = [43, 0, 78, 25];
+        this.courseProgress[course.id] = mockPercentages[index % mockPercentages.length];
       })
     },
     resolveImageUrl(url) {
       if (!url) return null
-      // Se já é uma URL completa (http/https), retorna como está
       if (url.startsWith('http://') || url.startsWith('https://')) {
         return url
       }
-      // Se começa com /, adiciona a base URL da API
       if (url.startsWith('/')) {
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
         return `${apiBaseUrl}${url}`
       }
-      // Caso contrário, assume que é um caminho relativo
       const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
       return `${apiBaseUrl}/${url}`
-    },
-    getCourseIcon(course) {
-      const title = (course.title || '').toLowerCase()
-      if (title.includes('copy')) return { icon: 'fa-copy', colorClass: 'icon-green' }
-      if (title.includes('ia') || title.includes('automação')) return { icon: 'fa-brain', colorClass: 'icon-blue' }
-      if (title.includes('análise') || title.includes('gráfico')) return { icon: 'fa-chart-line', colorClass: 'icon-yellow' }
-      if (title.includes('robô') || title.includes('estratégia')) return { icon: 'fa-robot', colorClass: 'icon-red' }
-      return { icon: 'fa-graduation-cap', colorClass: 'icon-green' }
-    },
-    getCourseMediaClass(course) {
-      return course.coverImage ? 'course-media has-image' : 'course-media'
     }
   }
 }
@@ -211,35 +221,14 @@ export default {
 
 <style scoped src="../assets/css/views/academyView.css"></style>
 <style scoped>
-.background-glow {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.22), transparent 45%),
-    radial-gradient(circle at 80% 15%, rgba(56, 189, 248, 0.18), transparent 50%),
-    radial-gradient(circle at 50% 75%, rgba(16, 185, 129, 0.18), transparent 55%),
-    rgba(9, 10, 12, 0.95);
-  z-index: -2;
-  pointer-events: none;
+.main-wrapper {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
 }
-
-.background-grid {
-  position: fixed;
-  inset: 0;
-  background-image: linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
-  background-size: 48px 48px;
-  z-index: -1;
-  opacity: 0.6;
-  pointer-events: none;
-  animation: moveGrid 18s linear infinite;
-}
-
-@keyframes moveGrid {
-  0% {
-    background-position: 0 0, 0 0;
-  }
-  100% {
-    background-position: -48px -48px, -48px -48px;
-  }
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 </style>
