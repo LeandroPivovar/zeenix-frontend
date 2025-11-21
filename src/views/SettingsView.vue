@@ -83,28 +83,6 @@
               </select>
             </div>
             <div class="form-group">
-              <label>Conta Deriv</label>
-              <div class="deriv-account-info">
-                <span v-if="hasDerivConnection" class="deriv-status connected">
-                  <span class="status-dot"></span>
-                  Conta conectada
-                </span>
-                <span v-else class="deriv-status disconnected">
-                  <span class="status-dot"></span>
-                  Nenhuma conta conectada
-                </span>
-                <button 
-                  v-if="hasDerivConnection" 
-                  class="disconnect-btn" 
-                  @click="disconnectDerivAccount"
-                  :disabled="disconnecting"
-                >
-                  <img v-if="disconnecting" src="../assets/icons/loading.svg" alt="" class="icon-settings">
-                  <span>{{ disconnecting ? 'Desconectando...' : 'Desconectar conta' }}</span>
-                </button>
-              </div>
-            </div>
-            <div class="form-group">
               <label>Notificações por e-mail</label>
               <div class="toggle-wrapper">
                 <input
@@ -270,8 +248,7 @@ export default {
       showChangePasswordModal: false,
       showChangePhotoModal: false,
       sidebarIsOpen: false,
-      isMobile: false, // Novo estado para detectar mobile
-      disconnecting: false // Estado para controlar desconexão da Deriv
+      isMobile: false // Novo estado para detectar mobile
     }
   },
   computed: {
@@ -286,30 +263,6 @@ export default {
     saveButtonText() {
       // Retorna "Salvar" no mobile e "Salvar Alterações" no desktop
       return this.isMobile ? 'Salvar' : 'Salvar Alterações';
-    },
-    hasDerivConnection() {
-      // Verifica se há conexão com a Deriv no localStorage
-      const connection = localStorage.getItem('deriv_connection');
-      const token = localStorage.getItem('deriv_token');
-      const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
-      
-      if (connection || token) {
-        return true;
-      }
-      
-      if (tokensByLoginIdStr) {
-        try {
-          const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-          if (tokensByLoginId && typeof tokensByLoginId === 'object' && Object.keys(tokensByLoginId).length > 0) {
-            return true;
-          }
-        } catch (e) {
-          // Se houver erro ao parsear, considera que não há conexão
-          console.warn('Erro ao verificar tokens da Deriv:', e);
-        }
-      }
-      
-      return false;
     }
   },
   mounted() {
@@ -585,48 +538,6 @@ export default {
     },
     closeSidebar() {
       this.sidebarIsOpen = false;
-    },
-    async disconnectDerivAccount() {
-      if (!confirm('Tem certeza que deseja desconectar sua conta da Deriv? Você precisará reconectar para usar os serviços de trading.')) {
-        return;
-      }
-
-      this.disconnecting = true;
-      try {
-        // Remover dados da Deriv do localStorage
-        localStorage.removeItem('deriv_token');
-        localStorage.removeItem('deriv_tokens_by_loginid');
-        localStorage.removeItem('deriv_connection');
-        localStorage.removeItem('deriv_app_id');
-        localStorage.removeItem('deriv_oauth_state');
-
-        // Opcionalmente, informar o backend sobre a desconexão
-        try {
-          const token = localStorage.getItem('token');
-          const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-          
-          await fetch(`${apiBaseUrl}/broker/deriv/disconnect`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              ...(token && { 'Authorization': `Bearer ${token}` })
-            }
-          });
-        } catch (backendError) {
-          // Se falhar ao notificar o backend, continua mesmo assim
-          console.warn('Não foi possível notificar o backend sobre a desconexão:', backendError);
-        }
-
-        alert('Conta da Deriv desconectada com sucesso!');
-        
-        // Forçar atualização do componente para refletir a mudança
-        this.$forceUpdate();
-      } catch (err) {
-        console.error('Erro ao desconectar conta da Deriv:', err);
-        alert('Erro ao desconectar conta. Tente novamente.');
-      } finally {
-        this.disconnecting = false;
-      }
     }
   }
 }
@@ -664,66 +575,5 @@ export default {
   100% {
     background-position: -48px -48px, -48px -48px;
   }
-}
-
-/* Estilos para conta Deriv */
-.deriv-account-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.deriv-status {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  font-size: 0.8125rem;
-  color: #9ca3af;
-}
-
-.deriv-status.connected {
-  color: #10B981;
-}
-
-.deriv-status.disconnected {
-  color: #6b7280;
-}
-
-.deriv-status .status-dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: #6b7280;
-}
-
-.deriv-status.connected .status-dot {
-  background: #10B981;
-}
-
-.disconnect-btn {
-  background: transparent;
-  border: 0.0625rem solid rgba(239, 68, 68, 0.3);
-  color: #ef4444;
-  border-radius: 0.375rem;
-  padding: 0.5rem 0.75rem;
-  font-size: 0.75rem;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.375rem;
-  transition: background-color 0.2s, border-color 0.2s, color 0.2s;
-  font-weight: 600;
-}
-
-.disconnect-btn:hover:not(:disabled) {
-  background: rgba(239, 68, 68, 0.1);
-  border-color: #ef4444;
-  color: #fca5a5;
-}
-
-.disconnect-btn:disabled {
-  opacity: 0.6;
-  cursor: not-allowed;
 }
 </style>

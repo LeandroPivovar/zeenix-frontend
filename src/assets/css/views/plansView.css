@@ -2,7 +2,7 @@
     display: flex; 
     flex-direction: column;
     min-height: 100vh; 
-    background: #0d0d0c; 
+    background: #050505; 
     color: #e5e7eb; 
     max-width: calc( 100% - 240px );
     margin-left: 240px;
@@ -11,70 +11,100 @@
 
 .plans-content { 
     flex: 1; 
-    padding: 24px; 
+    padding: 40px; 
     margin: 0 auto; 
     width: 100%;
     position: relative;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* Header Section */
-.plans-header {
+.header-section {
     text-align: center;
-    margin-bottom: 48px;
-    position: relative;
-    z-index: 1;
+    margin-bottom: 40px;
+    width: 100%;
+    max-width: 800px;
 }
 
 .main-title {
+    font-size: 32px;
     font-weight: 700;
-    font-size: 3rem;
-    color: #00E676;
-    margin: 0 0 16px;
+    color: #fff;
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 12px;
+    gap: 10px;
 }
 
-.crown-icon {
-    font-size: 2.5rem;
-    filter: grayscale(0);
+.title-icon {
+    font-size: 28px;
 }
 
-.header-subtitle {
+.main-subtitle {
+    font-size: 16px;
     color: #9ca3af;
-    font-size: 1rem;
-    margin: 0;
+    font-weight: 400;
 }
 
 /* Video Section */
 .video-section { 
-    margin-bottom: 48px; 
-    max-width: 1200px; 
-    background: #0e0f0f; 
+    margin-bottom: 60px; 
+    max-width: 1000px; 
+    background: #0a0a0a; 
     width: 100%; 
-    padding: 30px; 
-    border-radius: 12px; 
-    box-shadow: 0px 0px 10px #15794c33;
+    padding: 40px; 
+    border-radius: 16px; 
+    border: 1px solid #262626;
     position: relative;
     z-index: 1;
-    opacity: 0;
-    transform: translateY(20px);
-    animation: fadeInUp 0.6s ease-out forwards;
-    animation-delay: 0.1s;
 }
-.video-container { margin-bottom: 20px; display: flex; align-items: center; justify-content: center; gap: 24px;}
-.video-placeholder { width: 100%; aspect-ratio: 16/9; background: #1a1f1d; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); display: grid; place-items: center; cursor: pointer; position: relative; overflow: hidden; max-width: 800px;}
+
+.video-container { margin-bottom: 24px; display: flex; align-items: center; justify-content: center; }
+.video-placeholder { 
+    width: 100%; 
+    aspect-ratio: 16/9; 
+    background: #000; 
+    border-radius: 12px; 
+    border: 1px solid rgba(255,255,255,0.05); 
+    display: grid; 
+    place-items: center; 
+    cursor: pointer; 
+    position: relative; 
+    overflow: hidden; 
+    max-width: 800px;
+}
 .video-placeholder:hover { border-color: #10B981; }
-.play-button { width: 80px; height: 80px; background: #00E676; border-radius: 50%; display: grid; place-items: center; font-size: 32px; color: #04130b; transition: transform 0.2s; }
-.play-button:hover { transform: scale(1.1); }
+.play-button { 
+    width: 64px; 
+    height: 64px; 
+    background: rgba(16, 185, 129, 0.2); 
+    border-radius: 50%; 
+    display: grid; 
+    place-items: center; 
+    font-size: 24px; 
+    color: #10B981; 
+    transition: transform 0.2s, background 0.2s; 
+    backdrop-filter: blur(4px);
+}
+.play-button:hover { transform: scale(1.1); background: rgba(16, 185, 129, 0.3); }
 .video-player { padding: 20px; text-align: center; color: #9ca3af; }
-.video-info { text-align: left; }
-.video-title { font-weight: 700; font-size: 1.2rem; margin: 0 0 8px; text-align: left; }
-.video-description-container { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-.video-description { color: #9ca3af; font-size: 0.9rem; margin: 0; flex: 1; }
-.video-badge { background: #00E676; color: #04130b; padding: 4px 12px; border-radius: 9999px; font-size: 12px; font-weight: 600; }
+
+.video-info { text-align: left; max-width: 800px; margin: 0 auto; }
+.video-title { font-weight: 700; font-size: 18px; margin: 0 0 8px; display: flex; align-items: center; gap: 12px; color: #fff; }
+.video-badge { 
+    background: rgba(16, 185, 129, 0.1); 
+    color: #10B981; 
+    padding: 2px 8px; 
+    border-radius: 4px; 
+    font-size: 11px; 
+    font-weight: 600; 
+    border: 1px solid rgba(16, 185, 129, 0.2);
+}
+.video-description { color: #6b7280; font-size: 14px; line-height: 1.5; }
 
 /* Plans Section */
 .plans-section { 
@@ -84,157 +114,197 @@
     position: relative;
     z-index: 1;
 }
+
 .loading, .error { text-align: center; padding: 48px; color: #9ca3af; }
 .error { color: #ef4444; }
 .plans-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 48px; }
 
 /* Plan Cards */
 .plan-card { 
-    box-shadow: 0px 0px 20px #070704; 
-    background: #0f1411; 
-    border: 1px solid rgba(255,255,255,0.1); 
-    border-radius: 12px; 
-    padding: 24px; 
+    background: #050505; 
+    border: 1px solid #262626; 
+    border-radius: 16px; 
+    padding: 32px 24px; 
     position: relative; 
     transition: transform 0.2s, border-color 0.2s; 
     width: 100%; 
-    max-width: 350px; 
-    margin: auto;
-    opacity: 0;
-    transform: translateY(30px);
-    animation: fadeInUp 0.6s ease-out forwards;
-}
-
-/* Delays escalonados para cada card de plano */
-.plan-card:nth-child(1) { animation-delay: 0.5s; }
-.plan-card:nth-child(2) { animation-delay: 0.6s; }
-.plan-card:nth-child(3) { animation-delay: 0.7s; }
-.plan-card:hover { transform: translateY(-4px); border-color: rgba(255,255,255,0.2); }
-.plan-card.popular { border-color: #00E676; border-width: 2px; }
-.plan-card.recommended { border-color: #00E676; border-width: 2px; box-shadow: 0px 0px 20px rgba(0, 230, 118, 0.3); }
-
-/* Ícones dos planos */
-.plan-icon {
-    font-size: 2rem;
-    margin-bottom: 12px;
     display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 48px;
+    flex-direction: column;
 }
-.icon-rocket { filter: grayscale(1) brightness(2); }
-.icon-star { color: #00E676; }
-.icon-crown { color: #00E676; }
 
+.plan-card:hover { transform: translateY(-4px); border-color: #404040; }
+
+/* Estilização específica para cards populares e recomendados */
+.plan-card.popular { border-color: #10B981; box-shadow: 0 0 0 1px #10B981; }
+.plan-card.recommended { border-color: #10B981; box-shadow: 0 0 0 1px #10B981; }
+
+/* Badges */
 .plan-badge { 
     position: absolute; 
-    top: 16px; 
-    right: 16px; 
-    padding: 4px 10px; 
+    top: -12px; 
+    left: 50%; 
+    transform: translateX(-50%); 
+    padding: 4px 16px; 
     border-radius: 9999px; 
-    font-size: 10px; 
+    font-size: 11px; 
     font-weight: 700; 
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
 }
-.popular-badge { background: #00E676; color: #04130b; }
-.recommended-badge { background: #00E676; color: #04130b; }
-.plan-name { font-weight: 700; font-size: 24px; margin: 8px 0 16px; text-align: left; }
-.plan-price { margin-bottom: 24px; text-align: left; }
-.price-free { font-size: 28px; font-weight: 700; color: #e5e7eb; }
-.price-paid { display: flex; align-items: baseline; gap: 4px; }
-.currency { font-size: 20px; color: #9ca3af; }
-.amount { font-size: 36px; font-weight: 700; color: #e5e7eb; }
-.period { font-size: 16px; color: #9ca3af; margin-left: 4px; }
+.popular-badge { background: #10B981; color: #000; }
+.recommended-badge { background: #10B981; color: #000; } /* No print parece azul/verde, vou manter verde para consistência ou usar um gradiente se precisar */
+/* Ajuste para o badge "Recomendado" que parece azul no print? 
+   O print mostra um badge azul "RECOMENDADO" no plano Black. Vou ajustar. */
+.plan-card.recommended .plan-badge { background: #0ea5e9; color: #fff; }
+.plan-card.recommended { border-color: #10B981; box-shadow: 0 0 0 1px #10B981; } /* Mantendo borda verde como no print */
+
+
+.plan-icon-wrapper {
+    font-size: 32px;
+    margin-bottom: 16px;
+    /* Ícone cinza por padrão */
+    opacity: 0.5;
+}
+
+.plan-card.popular .plan-icon-wrapper,
+.plan-card.recommended .plan-icon-wrapper {
+    color: #10B981;
+    opacity: 1;
+}
+/* O ícone do Black parece verde/colorido no print. */
+
+.plan-name { 
+    font-weight: 700; 
+    font-size: 24px; 
+    margin: 0 0 8px; 
+    color: #fff;
+}
+
+.plan-price { margin-bottom: 32px; display: flex; align-items: baseline; gap: 4px; }
+.price-free { font-size: 32px; font-weight: 700; color: #fff; }
+.currency { font-size: 16px; color: #9ca3af; font-weight: 600; }
+.amount { font-size: 32px; font-weight: 700; color: #fff; }
+.period { font-size: 14px; color: #6b7280; }
 
 /* Features List */
-.plan-features { list-style: none; padding: 0; margin: 0 0 24px; display: grid; gap: 12px; }
-.feature-item { display: flex; align-items: center; gap: 12px; font-size: 14px; text-align: left;}
-.feature-icon { width: 20px; height: 20px; border-radius: 50%; display: grid; place-items: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
-.feature-icon.check { background: #00E676; color: #04130b; }
-.feature-icon.cross { background: #ef4444; color: #fff; }
+.plan-features { 
+    list-style: none; 
+    padding: 0; 
+    margin: 0 0 32px; 
+    display: flex; 
+    flex-direction: column; 
+    gap: 16px; 
+    flex: 1; /* Empurra o botão para baixo */
+}
+.feature-item { display: flex; align-items: flex-start; gap: 12px; font-size: 14px; text-align: left; color: #d1d5db; }
+.feature-icon { 
+    width: 18px; 
+    height: 18px; 
+    display: grid; 
+    place-items: center; 
+    font-size: 12px; 
+    font-weight: 700; 
+    flex-shrink: 0; 
+    margin-top: 2px;
+}
+.feature-icon.check { color: #10B981; background: transparent; }
+.feature-icon.cross { color: #6b7280; background: transparent; font-size: 14px; }
 .feature-text { flex: 1; }
 
 /* Plan Buttons */
 .plan-button { 
     width: 100%; 
-    padding: 12px; 
+    padding: 14px; 
     border-radius: 8px; 
-    border: none; 
     font-weight: 600; 
+    font-size: 14px;
     cursor: pointer; 
     transition: all 0.2s; 
+    background: transparent;
+    border: 1px solid #404040;
+    color: #fff;
 }
-.plan-button:not(.active):not(.upgrade) { 
-    background: #333333; 
-    color: #e5e7eb; 
-    border: 1px solid rgba(255,255,255,0.1); 
+
+.plan-button:hover:not(:disabled) { 
+    border-color: #fff;
 }
-.plan-button:not(.active):not(.upgrade):hover { 
-    background: rgba(255,255,255,0.1); 
+
+/* Botão verde para planos pagos/ativos */
+.plan-card.popular .plan-button,
+.plan-card.recommended .plan-button {
+    border-color: #10B981;
+    color: #10B981;
+    background: rgba(16, 185, 129, 0.05);
 }
+
+.plan-card.popular .plan-button:hover,
+.plan-card.recommended .plan-button:hover {
+    background: rgba(16, 185, 129, 0.1);
+}
+
+/* Botão ativo (Plano Atual) */
 .plan-button.active { 
-    background: #00E676; 
-    color: #04130b; 
+    background: rgba(16, 185, 129, 0.1);
+    border-color: #10B981;
+    color: #10B981;
     cursor: default; 
 }
+
 .plan-button.upgrade { 
-    background: #00E676; 
-    color: #04130b; 
-}
-.plan-button.upgrade:hover { 
-    background: #34D399; 
-}
-.plan-button:disabled { 
-    opacity: 0.5; 
-    cursor: not-allowed; 
+    /* Estilo específico para upgrade se quiser destacar mais */
 }
 
+.plan-button:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Animações */
-@keyframes fadeInUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0);
-    }
+
+/* Comparison Table (Mantida similar, ajustada para dark) */
+.comparison-section { 
+    max-width: 1200px; 
+    width: 100%; 
+    background: #0a0a0a; 
+    padding: 40px; 
+    border-radius: 16px;
+    border: 1px solid #262626;
+    position: relative;
+    z-index: 1; 
 }
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
+.table-container { overflow-x: auto; margin-bottom: 16px; }
+.comparison-table { width: 100%; border-collapse: collapse; background: transparent; }
+.comparison-table thead { background: transparent; }
+.comparison-table th { padding: 16px; font-weight: 600; font-size: 14px; color: #9ca3af; border-bottom: 1px solid #262626; text-align: center; }
+.comparison-table th:first-child { text-align: left; color: #fff; }
+.comparison-table td { 
+    padding: 16px; 
+    font-size: 14px; 
+    color: #6b7280; 
+    border-bottom: 1px solid #262626; 
+    text-align: center; 
 }
+.comparison-table tbody tr:last-child td { border-bottom: none; }
+.comparison-table tbody tr:hover { background: rgba(255,255,255,0.02); }
 
+/* Helpers */
+.th-green { color: #10B981 !important; }
+.text-green { color: #10B981 !important; font-weight: 600; }
+.text-white { color: #fff !important; }
+.icon-check { color: #10B981; }
+.icon-cross-circle { color: #ef4444; }
 
+.table-footer { text-align: center; color: #6b7280; font-size: 13px; margin-top: 24px; }
+.footer-bullet { color: #10B981; margin-right: 8px; }
+
+/* Responsividade */
 @media (max-width: 1200px) {
     .plans-grid { grid-template-columns: repeat(2, 1fr); }
+    .plan-card { max-width: none; }
 }
 
 @media (max-width: 768px) {
-    .layout { 
-        margin-left: 0; 
-        max-width: 100%; 
-        width: 100%;
-        margin: 0;
-		padding: 0;
-    }
-
-	.plans-content{
-		padding: 10px;
-	}
-
-	.plans-section{
-		padding: 0;
-		margin: 0;
-	}
+    .layout { margin-left: 0; max-width: 100%; }
+    .plans-content { padding: 20px; }
     .plans-grid { grid-template-columns: 1fr; }
-    .main-title { font-size: 2rem; }
-    .video-description-container { flex-direction: column; align-items: flex-start; }
+    .header-section { margin-bottom: 30px; }
+    .main-title { font-size: 24px; }
+    .video-section { padding: 20px; }
 }
