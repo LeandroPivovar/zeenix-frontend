@@ -1,8 +1,7 @@
 <template>
-	<div class="dashboard-container">
-
+	<div class="dashboard-container" :class="{ 'chart-only': showOnlyChart }">
 		
-		<section class="metric-section">
+		<section v-if="!showOnlyChart" class="metric-section">
 			<div class="metric-header">
 				<div class="header-left">
 					<h1 class="header-title">Visão da IA | Orion</h1>
@@ -56,7 +55,7 @@
 			</div>
 		</section>
 		
-		<div class="dashboard-body-grid-ia">
+		<div v-if="!showOnlyChart" class="dashboard-body-grid-ia">
 			<!-- Bloco 1: Mercado & Estratégia -->
 			<section class="section market-strategy-section">
 				<h3 class="section-title">Mercado & Estratégia ⓘ</h3>
@@ -245,14 +244,14 @@
 			</section>
 		</div>
 		
-		<hr class="separator-chart" />
+		<hr v-if="!showOnlyChart" class="separator-chart" />
 		
-		<section class="market-chart-section">
+		<section class="market-chart-section" :class="{ 'chart-only-mode': showOnlyChart }">
 			<div class="chart-header">
                 <div class="chart-header-info">
                     <h3 class="chart-title">Análise de Mercado</h3>
                     <p class="chart-info">
-                        EUR/USD - M5 | Última atualização: 14:32:15
+                        Volatility 10 Index - M5 | Última atualização: {{ lastUpdateTime }}
                     </p>
                 </div>
 				<div class="chart-legend">
@@ -309,6 +308,10 @@ export default {
 		lastUpdateTime: {
 			type: String,
 			default: '--:--:--'
+		},
+		showOnlyChart: {
+			type: Boolean,
+			default: false
 		}
 	},
 	data() {
@@ -739,6 +742,35 @@ export default {
 	color: var(--color-text-light);
 	padding: 100px 40px;
 	font-family: sans-serif; 
+}
+
+.dashboard-container.chart-only {
+	padding: 0;
+	background-color: transparent;
+	width: 100%;
+}
+
+.dashboard-container.chart-only .market-chart-section {
+	margin-top: 0;
+	padding: 1rem;
+	background-color: #0E0E0E;
+	border-radius: 0.75rem;
+	border: 1px solid #1C1C1C;
+	box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+}
+
+.dashboard-container.chart-only .chart-header {
+	padding: 0;
+	margin-bottom: 1rem;
+}
+
+.market-chart-section.chart-only-mode {
+	margin-top: 0;
+	padding: 1rem;
+	background-color: #0E0E0E;
+	border-radius: 0.75rem;
+	border: 1px solid #1C1C1C;
+	box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
 }
 
 .metric-header {

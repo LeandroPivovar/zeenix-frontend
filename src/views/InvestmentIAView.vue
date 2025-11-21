@@ -349,7 +349,7 @@
                                         <input 
                                             type="checkbox" 
                                             :checked="isInvestmentActive"
-                                            @change="toggleInvestmentState"
+                                            @change="handleToggleChange"
                                         >
                                         <span class="toggle-slider"></span>
                                     </label>
@@ -362,10 +362,9 @@
                     </div>
                 </div>
 
-                <!-- Chart Section -->
-                <section id="chart-section" class="chart-section">
+                <!-- Chart Section - Only show when IA is active -->
+                <section id="chart-section" class="chart-section" v-if="isInvestmentActive">
                     <InvestmentActive 
-                        v-if="isInvestmentActive" 
                         :ticks="ticks" 
                         :current-price="currentPrice"
                         :entry-value-config="entryValue"
@@ -375,11 +374,15 @@
                         :account-balance-prop="accountBalance"
                         :account-currency-prop="accountCurrency"
                     />
+                </section>
+
+                <!-- Chart Only Section - When IA is inactive, show only chart from InvestmentInactive -->
+                <section id="chart-section-inactive" class="chart-section" v-else>
                     <InvestmentInactive 
-                        v-else 
                         :ticks="ticks" 
                         :current-price="currentPrice"
                         :last-update-time="formattedLastUpdate"
+                        :show-only-chart="true"
                         @update:entryValue="entryValue = $event"
                         @update:profitTarget="profitTarget = $event"
                         @update:lossLimit="lossLimit = $event"
@@ -636,6 +639,19 @@ export default {
         toggleBalanceVisibility() {
             this.balanceVisible = !this.balanceVisible;
             console.log('[InvestmentIAView] 👁️ Visibilidade do saldo:', this.balanceVisible ? 'visível' : 'oculto');
+        },
+        
+        async handleToggleChange(event) {
+            const isChecked = event.target.checked;
+            console.log('[InvestmentIAView] 🔄 Toggle alterado:', isChecked ? 'Ativar' : 'Desativar');
+            
+            if (isChecked && !this.isInvestmentActive) {
+                // Ativando IA
+                await this.activateIA();
+            } else if (!isChecked && this.isInvestmentActive) {
+                // Desativando IA
+                await this.deactivateIA();
+            }
         },
         
         async toggleInvestmentState() {
@@ -1163,10 +1179,13 @@ export default {
     margin-left: 240px;
     min-height: 100vh;
     transition: margin-left 0.3s ease;
+    width: calc(100% - 240px);
+    box-sizing: border-box;
 }
 
 .main-content-wrapper.sidebar-collapsed {
     margin-left: 0;
+    width: 100%;
 }
 
 /* Top Header */
@@ -1180,17 +1199,23 @@ export default {
     border-bottom: 1px solid #1C1C1C;
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
     transition: left 0.3s ease;
+    width: calc(100% - 240px);
+    box-sizing: border-box;
 }
 
 .main-content-wrapper.sidebar-collapsed .top-header {
     left: 0;
+    width: 100%;
 }
 
 .header-content {
-    padding: 1rem 2rem;
+    padding: 1rem 0.75rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .balance-display-card {
@@ -1281,7 +1306,10 @@ export default {
 /* Main Content */
 .main-content {
     margin-top: 86px;
-    padding: 1.5rem 2rem;
+    padding: 1.5rem 0.75rem;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* AI Vision Panel */
@@ -1291,7 +1319,11 @@ export default {
     border-radius: 0.75rem;
     padding: 1.5rem;
     margin-bottom: 1.25rem;
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    width: calc(100% - 1.5rem);
+    box-sizing: border-box;
 }
 
 .premium-card {
@@ -1745,6 +1777,10 @@ export default {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
+    width: calc(100% - 1.5rem);
+    box-sizing: border-box;
 }
 
 .config-card {
@@ -2146,6 +2182,10 @@ export default {
 /* Chart Section */
 .chart-section {
     margin-bottom: 1.5rem;
+    margin-left: 0.75rem;
+    margin-right: 0.75rem;
+    width: calc(100% - 1.5rem);
+    box-sizing: border-box;
 }
 
 /* Footer */
@@ -2290,10 +2330,12 @@ export default {
 @media (max-width: 1024px) {
     .main-content-wrapper {
         margin-left: 0;
+        width: 100%;
     }
     
     .top-header {
         left: 0;
+        width: 100%;
     }
     
     .config-grid {
@@ -2307,11 +2349,19 @@ export default {
     .footer-grid {
         grid-template-columns: repeat(2, 1fr);
     }
+    
+    .ai-vision-card,
+    .config-grid,
+    .chart-section {
+        margin-left: 0.75rem;
+        margin-right: 0.75rem;
+        width: calc(100% - 1.5rem);
+    }
 }
 
 @media (max-width: 768px) {
     .main-content {
-        padding: 1rem;
+        padding: 1rem 0.75rem;
     }
     
     .footer-grid {
@@ -2320,6 +2370,14 @@ export default {
     
     .risk-buttons {
         grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .ai-vision-card,
+    .config-grid,
+    .chart-section {
+        margin-left: 0.5rem;
+        margin-right: 0.5rem;
+        width: calc(100% - 1rem);
     }
 }
 </style>
