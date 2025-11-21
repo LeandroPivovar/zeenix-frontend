@@ -56,10 +56,10 @@
             <!-- Profile Card -->
             <div id="profile-card" class="bg-zenix-card border border-zenix-border rounded-2xl p-6 lg:p-8 premium-card">
               <div class="text-center mb-8">
-                <div class="avatar-border w-24 h-24 mx-auto mb-4 flex items-center justify-center overflow-hidden bg-zenix-bg">
-                  <img v-if="settings.profilePictureUrl" :src="settings.profilePictureUrl" alt="Profile" class="w-full h-full rounded-full object-cover">
-                  <div v-else class="w-full h-full flex items-center justify-center bg-zenix-card">
-                    <i class="fas fa-user text-4xl text-zenix-secondary"></i>
+                <div class="avatar-border w-24 h-24 mx-auto mb-4">
+                  <div class="w-full h-full rounded-full overflow-hidden bg-zenix-card flex items-center justify-center">
+                    <img v-if="settings.profilePictureUrl" :src="settings.profilePictureUrl" alt="Profile" class="w-full h-full rounded-full object-cover">
+                    <i v-else class="fas fa-user text-4xl text-zenix-secondary"></i>
                   </div>
                 </div>
                 <h2 class="text-xl font-bold text-white mb-1">{{ settings.name || 'Usuário' }}</h2>
@@ -107,10 +107,10 @@
                   </select>
                 </div>
 
-                 <div>
+                <div>
                   <label class="block text-sm font-medium text-zenix-text mb-2">Moeda padrão</label>
                   <select v-model="settings.tradeCurrency" class="w-full bg-zenix-bg border border-zenix-border rounded-xl px-4 py-3 text-zenix-text focus:outline-none focus:border-zenix-green transition-all appearance-none">
-                    <option value="USD">USD (Real)</option>
+                    <option value="USD">USD</option>
                     <option value="BTC">BTC</option>
                     <option value="DEMO">DEMO (Conta virtual)</option>
                   </select>
@@ -124,11 +124,10 @@
                   </label>
                 </div>
 
-                <!-- Placeholder for Push Notifications if needed in future -->
-                <div class="flex items-center justify-between opacity-50 cursor-not-allowed" title="Em breve">
+                <div class="flex items-center justify-between">
                   <span class="text-sm font-medium text-zenix-text">Notificações push</span>
-                  <label class="switch pointer-events-none">
-                    <input type="checkbox" disabled>
+                  <label class="switch">
+                    <input type="checkbox" v-model="settings.pushNotifications">
                     <span class="slider"></span>
                   </label>
                 </div>
@@ -179,7 +178,7 @@
               <div class="space-y-4">
                 <div class="flex items-center justify-between" v-if="lastLogin">
                   <span class="text-sm text-zenix-secondary">Último login</span>
-                  <span class="text-sm text-zenix-text">{{ formatDateTime(lastLogin.date) }}</span>
+                  <span class="text-sm text-zenix-text">{{ formatDateTimeShort(lastLogin.date) }}</span>
                 </div>
 
                 <div class="flex items-center space-x-3" v-if="lastLogin">
@@ -226,13 +225,13 @@
           </div>
 
           <!-- Column 3 -->
-          <div class="space-y-8">
+          <div>
             <div id="history-card" class="bg-zenix-card border border-zenix-border rounded-2xl p-6 lg:p-8 premium-card h-full">
               <h3 class="text-lg font-bold text-white mb-6">Histórico de Alterações</h3>
               
-              <div class="space-y-4 max-h-[800px] overflow-y-auto custom-scrollbar pr-2">
+              <div class="space-y-0">
                 <template v-for="(log, index) in activityLogs" :key="log.id">
-                   <div class="activity-item p-4 border-l-2 border-transparent transition-all hover:bg-zenix-green/5 hover:border-zenix-green">
+                  <div class="activity-item p-4 border-l-2 border-transparent transition-all">
                     <div class="flex items-center justify-between mb-1">
                       <span class="text-xs text-zenix-secondary">{{ formatLogDate(log.createdAt) }}</span>
                     </div>
@@ -240,22 +239,21 @@
                   </div>
                   <div v-if="index < activityLogs.length - 1" class="border-t border-zenix-border"></div>
                 </template>
-                 <div v-if="activityLogs.length === 0" class="text-center py-8 text-zenix-secondary text-sm">
-                    Nenhuma alteração registrada ainda.
-                  </div>
+                <div v-if="activityLogs.length === 0" class="text-center py-8 text-zenix-secondary text-sm">
+                  Nenhuma alteração registrada ainda.
+                </div>
               </div>
             </div>
           </div>
         </div>
       </main>
 
-      <footer id="footer" class="border-t border-zenix-border bg-zenix-card/50 mt-auto">
+      <footer id="footer" class="border-t border-zenix-border bg-zenix-card/50 mt-16">
         <div class="max-w-7xl mx-auto px-8 py-8 text-center">
           <div class="flex items-center justify-center space-x-2 mb-4">
             <div class="w-8 h-8 bg-zenix-green rounded-lg flex items-center justify-center">
               <span class="text-white font-bold text-sm">Z</span>
             </div>
-            <span class="text-white font-bold">ZENIX</span>
           </div>
           <p class="text-zenix-secondary text-xs lg:text-sm">
             Plataforma de investimentos automatizados — Desde 2024 oferecendo soluções confiáveis
@@ -299,6 +297,7 @@ export default {
         language: 'pt-BR',
         timezone: 'America/Sao_Paulo',
         emailNotifications: true,
+        pushNotifications: true,
         twoFactorEnabled: false,
         tradeCurrency: 'USD'
       },
@@ -369,6 +368,7 @@ export default {
           language: data.language || 'pt-BR',
           timezone: data.timezone || 'America/Sao_Paulo',
           emailNotifications: data.emailNotifications !== false,
+          pushNotifications: data.pushNotifications !== false,
           twoFactorEnabled: data.twoFactorEnabled || false,
           tradeCurrency: data.tradeCurrency || 'USD'
         }
@@ -398,6 +398,7 @@ export default {
             language: this.settings.language,
             timezone: this.settings.timezone,
             emailNotifications: this.settings.emailNotifications,
+            pushNotifications: this.settings.pushNotifications,
             tradeCurrency: this.settings.tradeCurrency
           })
         })
@@ -578,6 +579,16 @@ export default {
       const d = new Date(date)
       return d.toLocaleString('pt-BR')
     },
+    formatDateTimeShort(date) {
+      if (!date) return ''
+      const d = new Date(date)
+      const day = String(d.getDate()).padStart(2, '0')
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const year = d.getFullYear()
+      const hours = String(d.getHours()).padStart(2, '0')
+      const minutes = String(d.getMinutes()).padStart(2, '0')
+      return `${day}/${month}/${year} — ${hours}:${minutes}`
+    },
     formatDevice(device, userAgent) {
       if (device) return device
       if (!userAgent) return 'Desconhecido'
@@ -625,6 +636,8 @@ export default {
 .text-zenix-blue { color: #0099FF; }
 .bg-zenix-bg { background-color: #0B0B0B; }
 .bg-zenix-card { background-color: #0E0E0E; }
+.bg-zenix-green { background-color: #22C55E; }
+.bg-zenix-green-hover { background-color: #16A34A; }
 .border-zenix-border { border-color: #1C1C1C; }
 .border-zenix-green { border-color: #22C55E; }
 .border-zenix-red { border-color: #FF4747; }
@@ -716,11 +729,12 @@ export default {
 .premium-card {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid #1C1C1C;
 }
 .premium-card:hover {
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
   transform: translateY(-2px);
-  border-color: #22C55E;
+  border: 1px solid #22C55E;
 }
 
 .glass-effect {
@@ -741,10 +755,18 @@ export default {
   background: linear-gradient(45deg, #22C55E, #16A34A);
   padding: 3px;
   border-radius: 50%;
+  display: inline-block;
 }
 
 .activity-item {
   transition: all 0.3s ease;
+  padding-left: 10px;
+}
+
+.activity-item:hover {
+  background: rgba(34, 197, 94, 0.03);
+  border-left: 3px solid #22C55E;
+  padding-left: 13px;
 }
 
 /* Switch Styles */
