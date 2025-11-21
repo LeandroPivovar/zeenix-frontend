@@ -1,177 +1,462 @@
 <template>
-    <div class="layout-ia-investment" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+    <div class="zenix-layout">
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
 
-        <main class="layout-content-investment">
-            <header class="header-investment">
-                <button 
-                    v-if="isSidebarCollapsed" 
-                    class="show-sidebar-btn" 
-                    @click="toggleSidebarCollapse" 
-                    aria-label="Mostrar sidebar"
-                    title="Mostrar sidebar"
-                >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 18L16 12L10 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-                <button 
-                    v-else
-                    class="hamburger-btn" 
-                    @click="toggleSidebar" 
-                    aria-label="Abrir menu"
-                >
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-                
-                <div class="header-info-container">
-                    
-                    <div class="header-info-item balance-item">
-                        <div class="balance-label-row">
-                            <span class="info-label">Saldo</span>
-                            <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
-                                <svg v-if="balanceVisible" width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z" fill="currentColor"/>
-                                </svg>
-                                <svg v-else width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M12 7c2.76 0 5 2.24 5 5 0 .65-.13 1.26-.36 1.83l2.92 2.92c1.51-1.26 2.7-2.89 3.43-4.75-1.73-4.39-6-7.5-11-7.5-1.4 0-2.74.25-3.98.7l2.16 2.16C10.74 7.13 11.35 7 12 7zM2 4.27l2.28 2.28.46.46C3.08 8.3 1.78 10.02 1 12c1.73 4.39 6 7.5 11 7.5 1.55 0 3.03-.3 4.38-.84l.42.42L19.73 22 21 20.73 3.27 3 2 4.27zM7.53 9.8l1.55 1.55c-.05.21-.08.43-.08.65 0 1.66 1.34 3 3 3 .22 0 .44-.03.65-.08l1.55 1.55c-.67.33-1.41.53-2.2.53-2.76 0-5-2.24-5-5 0-.79.2-1.53.53-2.2zm4.31-.78l3.15 3.15.02-.16c0-1.66-1.34-3-3-3l-.17.01z" fill="currentColor"/>
-                                </svg>
-                            </button>
-                        </div>
-                        <div class="info-value-group">
-                            <span class="info-value" v-if="balanceVisible">{{ formattedBalance }}</span>
-                            <span class="info-value" v-else>••••••</span>
-                            <span v-if="balanceVisible && isDemo" class="badge demo-badge">Demo</span>
-                            <span v-if="balanceVisible && !isDemo" class="badge real-badge">Real</span>
+        <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+            <header class="top-header">
+                <div class="header-content">
+                    <div class="header-spacer"></div>
+                    <div class="header-actions-right">
+                        <div class="balance-display-card">
+                            <div class="balance-header">
+                                <i class="far fa-wallet"></i>
+                                <div class="balance-info">
+                                    <span class="balance-label">Saldo Atual</span>
+                                    <div class="balance-value-row">
+                                        <span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ formattedBalance }}</span>
+                                        <span class="balance-value" v-else>••••••</span>
+                                        <button 
+                                            v-if="balanceVisible && !isDemo" 
+                                            class="account-type-btn real-btn"
+                                            @click="toggleBalanceVisibility"
+                                        >
+                                            Real
+                                        </button>
+                                        <button 
+                                            v-if="balanceVisible && isDemo" 
+                                            class="account-type-btn demo-btn"
+                                            @click="toggleBalanceVisibility"
+                                        >
+                                            Demo
+                                        </button>
+                                        <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
+                                            <i class="far fa-eye"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="header-info-item result-item">
-                        <span class="info-label">Resultado hoje</span>
-                        <div class="info-value-group">
-                            <span class="info-value result-value" :class="dailyProfitClass" v-if="balanceVisible">{{ formattedDailyProfit }}</span>
-                            <span class="info-value result-value" v-else>••••••</span>
-                            <span class="result-percent" :class="dailyProfitClass" v-if="balanceVisible">{{ formattedDailyProfitPercent }}</span>
-                        </div>
-                    </div>
-
-                    <div class="header-info-item trades-item">
-                        <span class="info-label">Trades hoje</span>
-                        <span class="info-value">{{ dailyStats.totalTrades }}</span>
-                    </div>
-
-                    <div class="header-info-item wins-item">
-                        <span class="info-label">Vitórias</span>
-                        <span class="info-value text-zenix-green">{{ dailyStats.wins || 0 }}</span>
-                    </div>
-
-                    <div class="header-info-item losses-item">
-                        <span class="info-label">Derrotas</span>
-                        <span class="info-value text-zenix-red" style="color: #f44336 !important;">{{ dailyStats.losses || 0 }}</span>
-                    </div>
-
-                    <div class="header-info-item status-item">
-                        <span class="info-label">Status</span>
-                        <div class="info-value-group">
-                            <span class="status-dot" :class="{ 'active': isInvestmentActive }"></span>
-                            <span class="info-value status-text" :class="{ 'active': isInvestmentActive }">IA {{ isInvestmentActive ? 'Ativa' : 'Inativa' }}</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="header-actions">
-                    <button class="btn-action pause-btn" :class="{ 'active': isInvestmentActive, 'inactive': !isInvestmentActive }" @click="toggleInvestmentState">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <path v-if="isInvestmentActive" d="M6 19H10V5H6V19ZM14 5V19H18V5H14Z" fill="white"/>
-                            <path v-else d="M8 5V19L19 12L8 5Z" fill="white"/>
-                        </svg>
-                        {{ isInvestmentActive ? 'Pausar IA' : 'Ativar IA' }}
-                    </button>
                 </div>
             </header>
-            
-                <InvestmentActive 
-                    v-if="isInvestmentActive" 
-                    :ticks="ticks" 
-                    :current-price="currentPrice"
-                    :entry-value-config="entryValue"
-                    :profit-target-config="profitTarget"
-                    :loss-limit-config="lossLimit"
-                    :mode-config="mode"
-                    :account-balance-prop="accountBalance"
-                    :account-currency-prop="accountCurrency"
-                />
-                <InvestmentInactive 
-                    v-else 
-                    :ticks="ticks" 
-                    :current-price="currentPrice"
-                    :last-update-time="formattedLastUpdate"
-                    @update:entryValue="entryValue = $event"
-                    @update:profitTarget="profitTarget = $event"
-                    @update:lossLimit="lossLimit = $event"
-                    @update:mode="mode = $event"
-                    @update:modoMartingale="modoMartingale = $event"
-                />
-        </main>
 
-        <footer class="zenix-footer">
-            <div class="footer-inner">
-                <div class="footer-grid">
-                    <div class="footer-brand-section">
-                        <div class="zenix-logo-text-footer">
-                            <div class="logo-main-text">ZENIX</div>
-                            <div class="logo-sub-text">PRO</div>
+            <main class="main-content">
+                <!-- Visão da IA Panel -->
+                <section id="ai-vision-panel" class="fade-in">
+                    <div class="ai-vision-card premium-card glow-green">
+                        <div class="ai-vision-header">
+                            <div>
+                                <h1 class="ai-vision-title">Visão da IA | Orion</h1>
+                                <p class="ai-vision-subtitle">Configure esta IA para iniciar operações</p>
+                            </div>
+                            <div class="balance-card-header">
+                                <div class="balance-header-content">
+                                    <i class="far fa-wallet"></i>
+                                    <div class="balance-info-header">
+                                        <span class="balance-label-header">Saldo Atual</span>
+                                        <div class="balance-value-row-header">
+                                            <span class="balance-value-header" v-if="balanceVisible">{{ formattedBalance }}</span>
+                                            <span class="balance-value-header" v-else>••••••</span>
+                                            <button 
+                                                v-if="balanceVisible && !isDemo" 
+                                                class="account-type-btn-header real-btn-header"
+                                            >
+                                                Real
+                                            </button>
+                                            <button 
+                                                v-if="balanceVisible && isDemo" 
+                                                class="account-type-btn-header demo-btn-header"
+                                            >
+                                                Demo
+                                            </button>
+                                            <button class="eye-toggle-btn-header" @click="toggleBalanceVisibility">
+                                                <i class="far fa-eye"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
-                        <p class="footer-description">
-                            Plataforma inteligente de investimentos com IA, copy trading e automação para traders profissionais.
-                        </p>
-                        <div class="footer-social-links">
-                            <a href="#" class="social-link">
-                                <i class="fa-brands fa-twitter text-sm"></i>
-                            </a>
-                            <a href="#" class="social-link">
-                                <i class="fa-brands fa-linkedin text-sm"></i>
-                            </a>
-                            <a href="#" class="social-link">
-                                <i class="fa-brands fa-instagram text-sm"></i>
-                            </a>
-                            <a href="#" class="social-link">
-                                <i class="fa-brands fa-youtube text-sm"></i>
-                            </a>
+
+                        <div class="ai-vision-grid">
+                            <div class="ai-brain-container">
+                                <div class="ai-brain-bg">
+                                    <!-- Animated Grid Background -->
+                                    <div class="animated-grid"></div>
+                                    
+                                    <!-- Central AI Core -->
+                                    <div class="ai-core-wrapper">
+                                        <!-- Outer Rotating Ring -->
+                                        <div class="ring-outer ai-glow-ring"></div>
+                                        <!-- Middle Rotating Ring -->
+                                        <div class="ring-middle"></div>
+                                        <!-- Inner Pulsing Core -->
+                                        <div class="core-pulse ai-pulse"></div>
+                                        <!-- Central Brain Icon -->
+                                        <div class="brain-icon ai-brain-glow">
+                                            <i class="fas fa-brain"></i>
+                                        </div>
+                                        <!-- Orbiting Data Nodes -->
+                                        <div class="orbit-node orbit-1"></div>
+                                        <div class="orbit-node orbit-2"></div>
+                                        <div class="orbit-node orbit-3"></div>
+                                    </div>
+                                    
+                                    <!-- Floating Particles -->
+                                    <div class="particles">
+                                        <div class="particle particle-1"></div>
+                                        <div class="particle particle-2"></div>
+                                        <div class="particle particle-3"></div>
+                                        <div class="particle particle-4"></div>
+                                    </div>
+                                    
+                                    <!-- Data Stream Lines -->
+                                    <div class="data-streams">
+                                        <div class="stream stream-1"></div>
+                                        <div class="stream stream-2"></div>
+                                        <div class="stream stream-3"></div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="ai-status-grid">
+                                <div class="status-info-card">
+                                    <p class="status-info-label">Status</p>
+                                    <p class="status-info-value" v-if="isInvestmentActive">Aguardando configuração</p>
+                                    <p class="status-info-value" v-else>Aguardando configuração</p>
+                                    <p class="status-info-detail">Configure para ativar esta IA</p>
+                                </div>
+                                <div class="status-info-card">
+                                    <p class="status-info-label">Ativo da IA</p>
+                                    <p class="status-info-value">Será exibido após configuração</p>
+                                    <p class="status-info-detail">Defina os parâmetros para revelar</p>
+                                </div>
+                                <div class="status-info-card">
+                                    <p class="status-info-label">Parâmetros</p>
+                                    <p class="status-info-value">Não definidos</p>
+                                    <p class="status-info-detail">Configure risco e entradas</p>
+                                </div>
+                                <div class="status-info-card">
+                                    <p class="status-info-label">Execução</p>
+                                    <p class="status-info-value" :class="{ 'active': isInvestmentActive }">
+                                        {{ isInvestmentActive ? 'IA Ativa' : 'IA Inativa' }}
+                                    </p>
+                                    <p class="status-info-detail">Ativada após configuração</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Configuration Cards Grid -->
+                <div class="config-grid">
+                    <!-- Mercado & Estratégia -->
+                    <div id="market-strategy-card" class="config-card premium-card">
+                        <h3 class="card-title">
+                            Mercado & Estratégia
+                            <i class="fas fa-info-circle"></i>
+                        </h3>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Selecione o mercado
+                                    <i class="fas fa-question-circle"></i>
+                                </label>
+                                <select id="marketSelect" class="form-select" v-model="selectedMarket">
+                                    <option value="vol10">Volatility 10 Index</option>
+                                    <option value="vol25">Volatility 25 Index</option>
+                                    <option value="vol50">Volatility 50 Index</option>
+                                    <option value="vol75">Volatility 75 Index</option>
+                                    <option value="vol100">Volatility 100 Index</option>
+                                    <option value="vol10_1s">Volatility 10 (1s) Index</option>
+                                    <option value="vol25_1s">Volatility 25 (1s) Index</option>
+                                    <option value="vol50_1s">Volatility 50 (1s) Index</option>
+                                    <option value="vol75_1s">Volatility 75 (1s) Index</option>
+                                    <option value="vol100_1s">Volatility 100 (1s) Index</option>
+                                    <option value="jump10">Jump 10 Index</option>
+                                    <option value="jump25">Jump 25 Index</option>
+                                    <option value="jump50">Jump 50 Index</option>
+                                    <option value="jump75">Jump 75 Index</option>
+                                    <option value="jump100">Jump 100 Index</option>
+                                </select>
+                                <p id="marketDescription" class="form-help">{{ marketDescription }}</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">
+                                    Estratégia
+                                    <i class="fas fa-question-circle"></i>
+                                </label>
+                                <select id="strategySelect" class="form-select" v-model="selectedStrategy">
+                                    <option value="orion">IA Orion</option>
+                                    <option value="vega">IA Vega</option>
+                                    <option value="pulse">IA Pulse</option>
+                                    <option value="nova">IA Nova</option>
+                                    <option value="titan">IA Titan</option>
+                                    <option value="phoenix">IA Phoenix</option>
+                                    <option value="quantum">IA Quantum</option>
+                                    <option value="nebula">IA Nebula</option>
+                                    <option value="apex">IA Apex</option>
+                                    <option value="zenith">IA Zenith</option>
+                                </select>
+                                <p id="strategyDescription" class="form-help">Análise técnica avançada com machine learning</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Modo de Negociação</label>
+                                <div class="mode-buttons">
+                                    <button 
+                                        id="modeVeloz" 
+                                        :class="['mode-btn', { 'active': mode === 'veloz' }]"
+                                        @click="mode = 'veloz'"
+                                    >
+                                        Veloz
+                                    </button>
+                                    <button 
+                                        id="modeModerate" 
+                                        :class="['mode-btn', { 'active': mode === 'moderado' }]"
+                                        @click="mode = 'moderado'"
+                                    >
+                                        Moderado
+                                    </button>
+                                    <button 
+                                        id="modeLento" 
+                                        :class="['mode-btn', { 'active': mode === 'lento' }]"
+                                        @click="mode = 'lento'"
+                                    >
+                                        Lento
+                                    </button>
+                                </div>
+                                <p id="modeDescription" class="form-help">{{ modeDescription }}</p>
+                            </div>
                         </div>
                     </div>
 
-                    <div v-for="section in footerSections" :key="section.title" class="footer-section">
-                        <h3 class="footer-section-title">{{ section.title }}</h3>
-                        <ul class="footer-links-list">
-                            <li v-for="link in section.links" :key="link">
-                                <a href="#" class="footer-link">{{ link }}</a>
-                            </li>
-                        </ul>
+                    <!-- Parâmetros de Entrada -->
+                    <div id="entry-params-card" class="config-card premium-card">
+                        <h3 class="card-title">Parâmetros de Entrada</h3>
+                        <div class="card-content">
+                            <div class="form-group">
+                                <label class="form-label">Valor de Entrada (USD)</label>
+                                <input 
+                                    type="number" 
+                                    class="form-input" 
+                                    v-model.number="entryValue"
+                                    min="0.35"
+                                    step="0.01"
+                                >
+                                <p class="form-help">{{ entryPercent }}% do saldo</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Alvo de Lucro (USD)</label>
+                                <input 
+                                    type="number" 
+                                    class="form-input" 
+                                    v-model.number="profitTarget"
+                                    min="0"
+                                    step="0.01"
+                                >
+                                <p class="form-help">{{ profitPercent }}% do saldo</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label class="form-label">Limite de Perda (USD)</label>
+                                <input 
+                                    type="number" 
+                                    class="form-input" 
+                                    v-model.number="lossLimit"
+                                    min="0"
+                                    step="0.01"
+                                >
+                                <p class="form-help">{{ lossPercent }}% do saldo</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Gerenciamento de Risco -->
+                    <div id="risk-management-card" class="config-card premium-card">
+                        <h3 class="card-title">Gerenciamento de Risco</h3>
+                        <div class="card-content">
+                            <div class="risk-buttons">
+                                <button 
+                                    :class="['risk-btn', { 'active': modoMartingale === 'fixo' }]"
+                                    @click="modoMartingale = 'fixo'"
+                                >
+                                    Fixo
+                                </button>
+                                <button 
+                                    :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
+                                    @click="modoMartingale = 'conservador'"
+                                >
+                                    Conservador
+                                </button>
+                                <button 
+                                    :class="['risk-btn', { 'active': modoMartingale === 'moderado' }]"
+                                    @click="modoMartingale = 'moderado'"
+                                >
+                                    Moderado
+                                </button>
+                                <button 
+                                    :class="['risk-btn', { 'active': modoMartingale === 'agressivo' }]"
+                                    @click="modoMartingale = 'agressivo'"
+                                >
+                                    Agressivo
+                                </button>
+                            </div>
+                            
+                            <div class="risk-indicator">
+                                <div class="risk-header">
+                                    <span class="risk-label">Nível de Risco</span>
+                                    <span id="riskLevelText" class="risk-level-text">{{ riskLevelText }}</span>
+                                </div>
+                                <div class="risk-bar-container">
+                                    <div id="riskBar" class="risk-bar" :style="{ width: riskBarWidth }"></div>
+                                </div>
+                                <p id="riskDescription" class="risk-description">{{ riskDescriptionText }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Controle da IA -->
+                    <div id="ai-control-card" class="config-card premium-card ai-control-card">
+                        <div class="ai-control-bg">
+                            <div class="animated-grid-ai"></div>
+                            <div class="particles-ai">
+                                <div class="particle-ai particle-ai-1"></div>
+                                <div class="particle-ai particle-ai-2"></div>
+                                <div class="particle-ai particle-ai-3"></div>
+                                <div class="particle-ai particle-ai-4"></div>
+                            </div>
+                            <div class="data-streams-ai">
+                                <div class="stream-ai stream-ai-1"></div>
+                                <div class="stream-ai stream-ai-2"></div>
+                                <div class="stream-ai stream-ai-3"></div>
+                            </div>
+                        </div>
+                        
+                        <div class="ai-control-content">
+                            <div class="ai-status-control">
+                                <div>
+                                    <p class="ai-status-title">Status da IA</p>
+                                    <p class="ai-status-subtitle">Controle de execução automática</p>
+                                </div>
+                                <div class="ai-status-toggle-wrapper">
+                                    <span id="aiStatusText" class="ai-status-text" :class="{ 'active': isInvestmentActive }">
+                                        {{ isInvestmentActive ? 'Ativada' : 'Desativada' }}
+                                    </span>
+                                    <label class="toggle-switch">
+                                        <input 
+                                            type="checkbox" 
+                                            :checked="isInvestmentActive"
+                                            @change="toggleInvestmentState"
+                                        >
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="ai-status-note">
+                                <p class="ai-note-text">Desativação manual pelo usuário</p>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div class="footer-bottom-bar">
-                    <div class="footer-bottom-content">
+                <!-- Chart Section -->
+                <section id="chart-section" class="chart-section">
+                    <InvestmentActive 
+                        v-if="isInvestmentActive" 
+                        :ticks="ticks" 
+                        :current-price="currentPrice"
+                        :entry-value-config="entryValue"
+                        :profit-target-config="profitTarget"
+                        :loss-limit-config="lossLimit"
+                        :mode-config="mode"
+                        :account-balance-prop="accountBalance"
+                        :account-currency-prop="accountCurrency"
+                    />
+                    <InvestmentInactive 
+                        v-else 
+                        :ticks="ticks" 
+                        :current-price="currentPrice"
+                        :last-update-time="formattedLastUpdate"
+                        @update:entryValue="entryValue = $event"
+                        @update:profitTarget="profitTarget = $event"
+                        @update:lossLimit="lossLimit = $event"
+                        @update:mode="mode = $event"
+                        @update:modoMartingale="modoMartingale = $event"
+                    />
+                </section>
+            </main>
+
+            <!-- Footer -->
+            <footer id="footer" class="zenix-footer">
+                <div class="footer-content">
+                    <div class="footer-grid">
+                        <div class="footer-brand">
+                            <div class="footer-logo">
+                                <span class="footer-logo-main">ZENIX</span>
+                                <span class="footer-logo-sub">PRO</span>
+                            </div>
+                            <p class="footer-description">
+                                Plataforma inteligente de investimentos com IA, copy trading e automação.
+                            </p>
+                            <div class="footer-social">
+                                <a href="#" class="social-icon"><i class="fa-brands fa-twitter"></i></a>
+                                <a href="#" class="social-icon"><i class="fa-brands fa-linkedin"></i></a>
+                                <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+                                <a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
+                            </div>
+                        </div>
+                        
+                        <div class="footer-column">
+                            <h3 class="footer-column-title">Produto</h3>
+                            <ul class="footer-links">
+                                <li><a href="#">IA de Investimento</a></li>
+                                <li><a href="#">Copy Trading</a></li>
+                                <li><a href="#">Agente Autônomo</a></li>
+                                <li><a href="#">Zenix Academy</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-column">
+                            <h3 class="footer-column-title">Empresa</h3>
+                            <ul class="footer-links">
+                                <li><a href="#">Sobre Nós</a></li>
+                                <li><a href="#">Planos</a></li>
+                                <li><a href="#">Blog</a></li>
+                                <li><a href="#">Carreiras</a></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="footer-column">
+                            <h3 class="footer-column-title">Suporte</h3>
+                            <ul class="footer-links">
+                                <li><a href="#">Central de Ajuda</a></li>
+                                <li><a href="#">Documentação</a></li>
+                                <li><a href="#">Status do Sistema</a></li>
+                                <li><a href="#">Contato</a></li>
+                            </ul>
+                        </div>
+                    </div>
+                    
+                    <div class="footer-bottom">
                         <p class="footer-copyright">© 2025 Zenix Pro. Todos os direitos reservados.</p>
-                        <div class="footer-legal-links">
-                            <a href="#" class="footer-link-legal">Política de Privacidade</a>
+                        <div class="footer-legal">
+                            <a href="#">Política de Privacidade</a>
                             <span class="footer-separator">|</span>
-                            <a href="#" class="footer-link-legal">Termos de Uso</a>
+                            <a href="#">Termos de Uso</a>
                             <span class="footer-separator">|</span>
-                            <a href="#" class="footer-link-legal">Cookies</a>
+                            <a href="#">Cookies</a>
                         </div>
                     </div>
                 </div>
-            </div>
-        </footer>
+            </footer>
+        </div>
     </div>
 </template>
 
 <script>
-// Componentes e lógica mantidos
 import AppSidebar from '../components/Sidebar.vue';
 import InvestmentInactive from '@/components/Investments/InvestmentInactive.vue'; 
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
@@ -187,32 +472,30 @@ export default {
         return {
             isSidebarOpen: false,
             isSidebarCollapsed: false,
-            // ⭐️ Alterado para 'false' para iniciar no estado Inativo
-            isInvestmentActive: false, 
-
-            // Dados de ticks para o gráfico
+            isInvestmentActive: false,
+            
             ticks: [],
             currentPrice: null,
             pollingInterval: null,
-
-            // Parâmetros da IA (recebidos do componente filho)
-            entryValue: 0.35, // Valor de entrada padrão (mínimo da Deriv)
+            
+            entryValue: 0.35,
             profitTarget: 100,
             lossLimit: 25,
             mode: 'veloz',
-            modoMartingale: 'conservador', // Modo de martingale: conservador, moderado, agressivo
-
-            // Dados da conta Deriv (para exibição no header)
+            modoMartingale: 'conservador',
+            
+            selectedMarket: 'vol10',
+            selectedStrategy: 'orion',
+            
             accountBalance: null,
             accountCurrency: 'USD',
             accountLoginid: null,
             isDemo: false,
             lastBalanceUpdate: null,
-            balanceVisible: true, // Controla visibilidade do saldo
+            balanceVisible: true,
             balanceUpdateInterval: null,
-            clockInterval: null, // Intervalo para atualizar horário
+            clockInterval: null,
             
-            // Estatísticas do dia
             dailyStats: {
                 profitLoss: 0,
                 profitLossPercent: 0,
@@ -222,21 +505,24 @@ export default {
                 losses: 0
             },
             statsUpdateInterval: null,
-
-            footerSections: [
-                {
-                    title: 'Produto',
-                    links: ['IA de Investimento', 'Copy Trading', 'Agente Autônomo', 'Zenix Academy']
-                },
-                {
-                    title: 'Empresa',
-                    links: ['Sobre Nós', 'Planos', 'Blog', 'Carreiras']
-                },
-                {
-                    title: 'Suporte',
-                    links: ['Central de Ajuda', 'Documentação', 'Status do Sistema', 'Contato']
-                }
-            ]
+            
+            marketDescriptions: {
+                vol10: 'Volatilidade constante de 10% com um tique por segundo',
+                vol25: 'Volatilidade constante de 25% com um tique por segundo',
+                vol50: 'Volatilidade constante de 50% com um tique por segundo',
+                vol75: 'Volatilidade constante de 75% com um tique por segundo',
+                vol100: 'Volatilidade constante de 100% com um tique por segundo',
+                vol10_1s: 'Volatilidade constante de 10% com um tique a cada 1 segundo',
+                vol25_1s: 'Volatilidade constante de 25% com um tique a cada 1 segundo',
+                vol50_1s: 'Volatilidade constante de 50% com um tique a cada 1 segundo',
+                vol75_1s: 'Volatilidade constante de 75% com um tique a cada 1 segundo',
+                vol100_1s: 'Volatilidade constante de 100% com um tique a cada 1 segundo',
+                jump10: 'Volatilidade de 10% com saltos ocasionais de aproximadamente 30%',
+                jump25: 'Volatilidade de 25% com saltos ocasionais de aproximadamente 60%',
+                jump50: 'Volatilidade de 50% com saltos ocasionais de aproximadamente 100%',
+                jump75: 'Volatilidade de 75% com saltos ocasionais de aproximadamente 150%',
+                jump100: 'Volatilidade de 100% com saltos ocasionais de aproximadamente 200%'
+            }
         }
     },
     watch: {
@@ -251,18 +537,19 @@ export default {
         },
         mode(newValue) {
             console.log('[InvestmentIAView] ⚡ Modo atualizado:', newValue);
+        },
+        selectedMarket(newValue) {
+            console.log('[InvestmentIAView] 📊 Mercado selecionado:', newValue);
         }
     },
     computed: {
-        // 💰 Formatar saldo com moeda
         formattedBalance() {
             if (this.accountBalance === null || this.accountBalance === undefined) {
-                return '--';
+                return '$0,00';
             }
-            return `${this.accountCurrency} ${this.accountBalance.toFixed(2)}`;
+            return `$${this.accountBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         },
         
-        // ⏰ Formatar horário atual (sempre atualizado)
         formattedLastUpdate() {
             const now = new Date();
             const hours = String(now.getHours()).padStart(2, '0');
@@ -271,7 +558,6 @@ export default {
             return `${hours}:${minutes}:${seconds}`;
         },
         
-        // 📊 Estatísticas formatadas
         formattedDailyProfit() {
             const value = this.dailyStats.profitLoss || 0;
             const sign = value >= 0 ? '+' : '';
@@ -286,16 +572,72 @@ export default {
         
         dailyProfitClass() {
             return this.dailyStats.profitLoss >= 0 ? 'profit-positive' : 'profit-negative';
+        },
+        
+        marketDescription() {
+            return this.marketDescriptions[this.selectedMarket] || this.marketDescriptions.vol10;
+        },
+        
+        modeDescription() {
+            const descriptions = {
+                'veloz': 'Mais negociações, menos precisão',
+                'moderado': 'Negociações e precisão moderado',
+                'lento': 'Menos operações, mais precisão'
+            };
+            return descriptions[this.mode] || descriptions.veloz;
+        },
+        
+        entryPercent() {
+            if (!this.accountBalance || this.accountBalance <= 0) return '0.00';
+            return ((this.entryValue / this.accountBalance) * 100).toFixed(2);
+        },
+        
+        profitPercent() {
+            if (!this.accountBalance || this.accountBalance <= 0) return '0.00';
+            return ((this.profitTarget / this.accountBalance) * 100).toFixed(2);
+        },
+        
+        lossPercent() {
+            if (!this.accountBalance || this.accountBalance <= 0) return '0.00';
+            return ((this.lossLimit / this.accountBalance) * 100).toFixed(2);
+        },
+        
+        riskLevelText() {
+            const labels = {
+                'fixo': 'Fixo',
+                'conservador': 'Baixo',
+                'moderado': 'Médio',
+                'agressivo': 'Alto'
+            };
+            return labels[this.modoMartingale] || 'Baixo';
+        },
+        
+        riskBarWidth() {
+            const widths = {
+                'fixo': '15%',
+                'conservador': '25%',
+                'moderado': '50%',
+                'agressivo': '75%'
+            };
+            return widths[this.modoMartingale] || '25%';
+        },
+        
+        riskDescriptionText() {
+            const descriptions = {
+                'fixo': 'Valor de entrada fixo sem variação',
+                'conservador': 'Proteção máxima do capital com crescimento estável',
+                'moderado': 'Equilíbrio entre proteção e crescimento',
+                'agressivo': 'Maior exposição para potencial de retorno elevado'
+            };
+            return descriptions[this.modoMartingale] || descriptions.conservador;
         }
     },
     methods: {
-        // 👁️ Alternar visibilidade do saldo
         toggleBalanceVisibility() {
             this.balanceVisible = !this.balanceVisible;
             console.log('[InvestmentIAView] 👁️ Visibilidade do saldo:', this.balanceVisible ? 'visível' : 'oculto');
         },
         
-        // Método para alternar o estado da IA
         async toggleInvestmentState() {
             if (this.isInvestmentActive) {
                 await this.deactivateIA();
@@ -304,7 +646,6 @@ export default {
             }
         },
 
-        // Ativar IA
         async activateIA() {
             try {
                 console.log('[InvestmentIAView] ===== ATIVANDO IA =====');
@@ -316,30 +657,25 @@ export default {
                     mode: this.mode
                 });
 
-                // VALIDAÇÃO: Garantir que entryValue não seja menor que 0.35
                 if (!this.entryValue || this.entryValue < 0.35) {
                     console.warn('[InvestmentIAView] ⚠️ Valor de entrada inválido:', this.entryValue);
                     return;
                 }
 
-                // Obter userId
                 const userId = this.getUserId();
                 if (!userId) {
                     console.error('[InvestmentIAView] ❌ Usuário não identificado');
                     return;
                 }
 
-                // Obter token Deriv
                 const derivToken = this.getDerivToken();
                 if (!derivToken) {
                     console.error('[InvestmentIAView] ❌ Token Deriv não encontrado');
                     return;
                 }
 
-                // Obter moeda preferida
                 const preferredCurrency = this.getPreferredCurrency();
                 
-                // Buscar saldo da conta ANTES de ativar a IA
                 console.log('[InvestmentIAView] 💰 Verificando saldo da conta...');
                 try {
                     const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
@@ -361,7 +697,6 @@ export default {
                         console.log('[InvestmentIAView] 💰 Saldo:', balance, currency);
                         console.log('[InvestmentIAView] 🔑 LoginID:', loginid);
                         
-                        // Log de aviso se saldo for insuficiente
                         if (balance < this.entryValue) {
                             console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente:', balance, 'necessário:', this.entryValue);
                         }
@@ -370,7 +705,6 @@ export default {
                     console.warn('[InvestmentIAView] ⚠️ Não foi possível verificar saldo:', balanceError);
                 }
 
-                // Usar os valores configurados pelo usuário
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
                 const response = await fetch(`${apiBase}/ai/activate`, {
                     method: 'POST',
@@ -403,7 +737,6 @@ export default {
             }
         },
 
-        // Desativar IA
         async deactivateIA() {
             try {
                 console.log('[InvestmentIAView] Desativando IA...');
@@ -439,7 +772,6 @@ export default {
             }
         },
 
-        // Obter userId do token JWT
         getUserId() {
             try {
                 const token = localStorage.getItem('token');
@@ -466,7 +798,6 @@ export default {
             }
         },
 
-        // Obter token Deriv
         getDerivToken() {
             console.log('[InvestmentIAView] Buscando token Deriv...');
 
@@ -484,7 +815,6 @@ export default {
                 console.error('[InvestmentIAView] Erro ao parsear deriv_connection:', error);
             }
 
-            // Se a moeda preferida for DEMO, buscar token de conta demo
             const isDemoPreferred = preferredCurrency?.toUpperCase() === 'DEMO';
             if (isDemoPreferred) {
                 try {
@@ -502,7 +832,6 @@ export default {
                 }
             }
 
-            // Se temos um loginid específico, buscar o token correspondente
             if (accountLoginid) {
                 try {
                     const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
@@ -518,7 +847,6 @@ export default {
                 }
             }
 
-            // Fallback: token padrão
             const defaultToken = localStorage.getItem('deriv_token');
             if (!defaultToken) {
                 console.error('[InvestmentIAView] ERRO: Nenhum token encontrado!');
@@ -527,7 +855,6 @@ export default {
             return defaultToken;
         },
 
-        // Obter moeda preferida (IGUAL AO OperationChart)
         getPreferredCurrency() {
             try {
                 const connectionStr = localStorage.getItem('deriv_connection');
@@ -535,8 +862,6 @@ export default {
                     const connection = JSON.parse(connectionStr);
                     if (connection.tradeCurrency) {
                         const currency = connection.tradeCurrency.toUpperCase();
-                        // NÃO converter DEMO para USD aqui - deixar o backend/Deriv API lidar
-                        // A conta DEMO pode ter saldo em USD, mas precisamos do token da conta demo certa
                         console.log('[InvestmentIAView] Moeda preferida:', currency);
                         return currency;
                     }
@@ -548,7 +873,6 @@ export default {
             return 'USD';
         },
 
-        // 💰 Buscar saldo da conta Deriv
         async fetchAccountBalance() {
             try {
                 const derivToken = this.getDerivToken();
@@ -589,18 +913,13 @@ export default {
             }
         },
 
-        // ⏰ Iniciar atualização periódica do saldo
         startBalanceUpdates() {
-            // Buscar saldo imediatamente
             this.fetchAccountBalance();
-            
-            // Atualizar a cada 30 segundos
             this.balanceUpdateInterval = setInterval(() => {
                 this.fetchAccountBalance();
-            }, 30000); // 30 segundos
+            }, 30000);
         },
 
-        // 🛑 Parar atualização periódica do saldo
         stopBalanceUpdates() {
             if (this.balanceUpdateInterval) {
                 clearInterval(this.balanceUpdateInterval);
@@ -608,16 +927,12 @@ export default {
             }
         },
 
-        // ⏰ Iniciar relógio em tempo real
         startClock() {
-            // Atualizar a cada segundo
             this.clockInterval = setInterval(() => {
-                // Forçar reatividade atualizando lastBalanceUpdate
                 this.lastBalanceUpdate = new Date();
-            }, 1000); // 1 segundo
+            }, 1000);
         },
 
-        // 🛑 Parar relógio
         stopClock() {
             if (this.clockInterval) {
                 clearInterval(this.clockInterval);
@@ -625,7 +940,6 @@ export default {
             }
         },
         
-        // 📊 Buscar estatísticas do dia
         async fetchDailyStats() {
             try {
                 const userId = this.getUserId();
@@ -675,12 +989,8 @@ export default {
             }
         },
         
-        // ⏰ Iniciar atualização periódica das estatísticas
         startStatsUpdates() {
-            // Buscar estatísticas imediatamente
             this.fetchDailyStats();
-            
-            // Atualizar a cada 10 segundos
             this.statsUpdateInterval = setInterval(() => {
                 this.fetchDailyStats();
             }, 10000);
@@ -688,7 +998,6 @@ export default {
             console.log('[InvestmentIAView] ⏰ Atualizações de stats iniciadas');
         },
         
-        // 🛑 Parar atualização periódica das estatísticas
         stopStatsUpdates() {
             if (this.statsUpdateInterval) {
                 clearInterval(this.statsUpdateInterval);
@@ -700,17 +1009,15 @@ export default {
         toggleSidebar() {
             this.isSidebarOpen = !this.isSidebarOpen;
         },
+        
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         },
 
-        // ===== MÉTODOS PARA CARREGAR DADOS DA IA =====
-        
         async startDataLoading() {
             try {
                 console.log('[InvestmentIAView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
                 
-                // Iniciar monitoramento no backend
                 const response = await fetch('https://taxafacil.site/api/ai/start', {
                     method: 'POST',
                     headers: {
@@ -724,8 +1031,6 @@ export default {
 
                 if (result.success) {
                     console.log('[InvestmentIAView] ✅ Carregamento de dados iniciado');
-                    
-                    // Iniciar polling para buscar dados a cada 2 segundos
                     this.startPolling();
                 } else {
                     console.warn('[InvestmentIAView] ⚠ Não foi possível iniciar:', result.message);
@@ -737,10 +1042,7 @@ export default {
         },
 
         startPolling() {
-            // Buscar dados imediatamente
             this.fetchTicks();
-
-            // Continuar buscando a cada 2 segundos
             this.pollingInterval = setInterval(() => {
                 this.fetchTicks();
             }, 2000);
@@ -808,26 +1110,20 @@ export default {
     },
 
     async mounted() {
-        // TESTE CRÍTICO - Sempre deve aparecer no console
         console.log('🚀 TESTE: InvestmentIAView mounted() foi chamado!');
         console.warn('⚠️ SE VOCÊ VÊ ESTA MENSAGEM, O COMPONENTE ESTÁ CARREGANDO!');
         
-        // Verificar se a IA já está ativa
         await this.checkAIStatus();
         
-        // Iniciar carregamento de dados
         console.log('[InvestmentIAView] Iniciando carregamento de dados...');
         this.startDataLoading();
         
-        // 💰 Iniciar atualização de saldo
         console.log('[InvestmentIAView] Iniciando atualização de saldo...');
         this.startBalanceUpdates();
         
-        // ⏰ Iniciar relógio
         console.log('[InvestmentIAView] Iniciando relógio em tempo real...');
         this.startClock();
         
-        // 📊 Iniciar atualização de estatísticas
         console.log('[InvestmentIAView] Iniciando atualização de estatísticas...');
         this.startStatsUpdates();
     },
@@ -836,15 +1132,12 @@ export default {
         console.log('[InvestmentIAView] Limpando polling antes de desmontar...');
         this.stopPolling();
         
-        // 💰 Parar atualização de saldo
         console.log('[InvestmentIAView] Parando atualização de saldo...');
         this.stopBalanceUpdates();
         
-        // ⏰ Parar relógio
         console.log('[InvestmentIAView] Parando relógio...');
         this.stopClock();
         
-        // 📊 Parar atualização de estatísticas
         console.log('[InvestmentIAView] Parando atualização de estatísticas...');
         this.stopStatsUpdates();
     }
@@ -852,574 +1145,1181 @@ export default {
 </script>
 
 <style scoped>
-/* ------------------ Layout Geral e Responsividade ------------------ */
+/* Importando estilos do design fornecido */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
-.layout-ia-investment {
-    min-height: 100vh;
-    background-color: var(--zenix-background);
-    color: var(--zenix-text);
-    font-family: Arial, sans-serif;
-    width: calc(100% - 240px);
-    margin-left: 240px;
-    transition: margin-left 0.3s ease, width 0.3s ease;
+* {
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
 }
 
-.layout-ia-investment.sidebar-collapsed {
-    width: 100%;
+.zenix-layout {
+    min-height: 100vh;
+    background-color: #0B0B0B;
+    color: #DFDFDF;
+}
+
+.main-content-wrapper {
+    margin-left: 240px;
+    min-height: 100vh;
+    transition: margin-left 0.3s ease;
+}
+
+.main-content-wrapper.sidebar-collapsed {
     margin-left: 0;
 }
 
-.layout-content-investment {
-    width: 100%;
-    padding: 0;
-}
-
-.dashboard-container {
-    padding: 40px 20px;
-    width: 100%;
-}
-
-/* Compensação de altura para o header fixo */
-.main-content-area {
-    width: 100%;
-    max-width: 100vw;
-    padding: 20px;
-    padding-top: var(--zenix-header-height); /* Adiciona espaço no topo */
-}
-
-/* Ajuste para quando a sidebar estiver fechada ou no mobile (o CSS da sidebar controlaria isso) */
-@media (max-width: 1024px) {
-    .layout-ia-investment {
-        width: 100%;
-        margin-left: 0;
-    }
-    
-    .header-investment {
-        max-width: 100%; /* O header fixo ocupa a largura total no mobile */
-    }
-}
-
-/* Botão hamburger (oculto em desktop) */
-.hamburger-btn {
-    display: none;
-    position: relative;
-    background: none;
-    color: white;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
-    border-radius: 6px;
-    transition: background-color 0.2s;
-    margin-right: 12px;
-}
-
-.hamburger-btn:hover {
-    background-color: rgba(255, 255, 255, 0.1);
-}
-
-.header-info-item[data-v-70480caa]:last-child {
-    margin-bottom: 0;
-}
-
-
-/* Botão para mostrar sidebar quando colapsada */
-.show-sidebar-btn {
-    display: flex;
-    position: relative;
-    background: rgba(20, 21, 21, 0.95);
-    color: white;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    cursor: pointer;
-    padding: 12px;
-    border-radius: 8px;
-    transition: all 0.2s;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    margin-right: 12px;
-}
-
-.show-sidebar-btn:hover {
-    background: rgba(30, 30, 30, 0.95);
-    border-color: rgba(255, 255, 255, 0.2);
-    transform: translateX(2px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
-}
-
-
-/* ------------------ Header (Baseado na Imagem) ------------------ */
-
-.header-investment {
-    display: flex;
-    justify-content: space-between; 
-    align-items: center;
-    padding: 15px 20px;
-    background-color: #0e0f0f; 
-    border-bottom: 1px solid var(--zenix-dark-border);
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    width: 100%;
-    
-    position: fixed; /* FIXO */
+/* Top Header */
+.top-header {
+    position: fixed;
     top: 0;
-    z-index: 10;
-    max-width: calc(100%);
-    height: var(--zenix-header-height);
-    transition: max-width 0.3s ease;
-    gap: 12px;
+    right: 0;
+    left: 240px;
+    z-index: 40;
+    background-color: #0B0B0B;
+    border-bottom: 1px solid #1C1C1C;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+    transition: left 0.3s ease;
 }
 
-.layout-ia-investment.sidebar-collapsed .header-investment {
-    max-width: 100%;
+.main-content-wrapper.sidebar-collapsed .top-header {
+    left: 0;
 }
 
-.header-info-container {
-    display: flex;
-    gap: 20px; /* Espaçamento mais apertado como na imagem */
-    align-items: center;
-}
-
-/* Removendo borda dos itens, mantendo apenas a separação */
-.header-info-item {
-    display: flex;
-    flex-direction: column;
-    white-space: nowrap; 
-    text-align: left;
-    padding-right: 20px; /* Espaçamento para o separador */
-    border-right: 1px solid var(--zenix-dark-border); /* Separador vertical */
-}
-
-/* O último item não tem separador */
-.header-info-item:last-child {
-    border-right: none;
-    padding-right: 0;
-}
-
-/* Ajuste para o item de Saldo, que é maior */
-.balance-item {
-     padding-right: 30px;
-}
-
-.balance-label-row {
+.header-content {
+    padding: 1rem 2rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 3px;
+}
+
+.balance-display-card {
+    background-color: #0E0E0E;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.balance-display-card:hover {
+    background: #111;
+    transform: translateY(-1px);
+}
+
+.balance-header {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.balance-header i {
+    color: #22C55E;
+    font-size: 0.75rem;
+}
+
+.balance-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.balance-label {
+    font-size: 0.625rem;
+    color: #7A7A7A;
+    font-weight: 500;
+}
+
+.balance-value-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.125rem;
+}
+
+.balance-value {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #DFDFDF;
+}
+
+.account-type-btn {
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    transition: all 0.2s;
+    border: none;
+    cursor: pointer;
+}
+
+.real-btn {
+    background-color: #22C55E;
+    color: #000;
+}
+
+.real-btn:hover {
+    background-color: #16A34A;
+}
+
+.demo-btn {
+    background-color: #333;
+    color: #A1A1A1;
 }
 
 .eye-toggle-btn {
     background: none;
     border: none;
+    color: #A1A1A1;
     cursor: pointer;
-    padding: 4px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0.7;
-    transition: opacity 0.2s;
-}
-
-.eye-toggle-btn:hover {
-    opacity: 1;
-}
-
-.eye-toggle-btn svg {
-    color: var(--zenix-secondary);
+    padding: 0.25rem;
     transition: color 0.2s;
 }
 
-.eye-toggle-btn:hover svg {
-    color: var(--zenix-text);
+.eye-toggle-btn:hover {
+    color: #DFDFDF;
 }
 
-
-.info-label {
-    font-size: 0.8rem;
-    color: var(--zenix-secondary);
-    margin-bottom: 3px;
-    font-weight: 500;
-    letter-spacing: 0.5px;
+/* Main Content */
+.main-content {
+    margin-top: 86px;
+    padding: 1.5rem 2rem;
 }
 
-.info-value-group {
+/* AI Vision Panel */
+.ai-vision-card {
+    background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    padding: 1.5rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+}
+
+.premium-card {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
+}
+
+.glow-green {
+    box-shadow: 0 0 16px rgba(34, 197, 94, 0.06);
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.ai-vision-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+
+.ai-vision-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #DFDFDF;
+    margin-bottom: 0.25rem;
+}
+
+.ai-vision-subtitle {
+    font-size: 0.875rem;
+    color: #A1A1A1;
+}
+
+.balance-card-header {
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+}
+
+.balance-header-content {
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 0.625rem;
 }
 
-.info-value {
-    font-size: 1.2rem; /* Aumentado para melhor destaque */
-    font-weight: 700;
+.balance-info-header {
+    display: flex;
+    flex-direction: column;
 }
 
-.info-value.text-zenix-red {
-    color: var(--zenix-red) !important;
-}
-
-.info-value.text-zenix-green {
-    color: var(--zenix-green) !important;
-}
-
-.losses-item .info-value,
-.header-info-item.losses-item .info-value,
-.header-info-item.losses-item span.info-value {
-    color: var(--zenix-red) !important;
-}
-
-.wins-item .info-value,
-.header-info-item.wins-item .info-value,
-.header-info-item.wins-item span.info-value {
-    color: var(--zenix-green) !important;
-}
-
-/* Estilos Específicos */
-.result-value {
-    color: var(--zenix-green); 
-}
-
-.result-percent {
-    font-size: 0.9rem;
-    color: var(--zenix-green);
+.balance-label-header {
+    font-size: 0.625rem;
+    color: #7A7A7A;
     font-weight: 500;
 }
 
-/* Cores dinâmicas de lucro/prejuízo */
-.profit-positive {
-    color: var(--zenix-green) !important;
+.balance-value-row-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.125rem;
 }
 
-.profit-negative {
-    color: #ef4444 !important; /* Vermelho para prejuízo */
+.balance-value-header {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #DFDFDF;
 }
 
-.text-zenix-green {
-    color: var(--zenix-green);
-}
-
-.text-zenix-red {
-    color: var(--zenix-red) !important;
-}
-
-.badge {
-    padding: 2px 6px;
-    border-radius: 4px;
-    font-size: 0.75rem;
+.account-type-btn-header {
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.625rem;
     font-weight: 600;
-    text-transform: uppercase;
+    border: none;
 }
 
-.real-badge {
-    background-color: var(--zenix-green);
-    color: #000000;
+.real-btn-header {
+    background-color: #22C55E;
+    color: #000;
 }
 
-.demo-badge {
-    background-color: #333333;
-    color: var(--zenix-secondary);
+.demo-btn-header {
+    background-color: #333;
+    color: #A1A1A1;
 }
 
-.status-item .info-value-group {
-    gap: 5px;
+.eye-toggle-btn-header {
+    background: none;
+    border: none;
+    color: #A1A1A1;
+    cursor: pointer;
 }
 
-.status-dot {
-    display: inline-block;
-    width: 8px;
-    height: 8px;
+/* AI Vision Grid */
+.ai-vision-grid {
+    display: grid;
+    grid-template-columns: 5fr 7fr;
+    gap: 1.25rem;
+}
+
+/* AI Brain Container */
+.ai-brain-container {
+    height: 220px;
+    overflow: hidden;
+    border-radius: 0.75rem;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, transparent 100%);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ai-brain-bg {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, transparent 50%, rgba(34, 197, 94, 0.1) 100%);
+}
+
+.animated-grid {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: gridMove 20s linear infinite;
+    opacity: 0.2;
+}
+
+@keyframes gridMove {
+    0% {
+        background-position: 0 0;
+    }
+    100% {
+        background-position: 20px 20px;
+    }
+}
+
+.ai-core-wrapper {
+    position: relative;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.ring-outer {
+    position: absolute;
+    width: 10rem;
+    height: 10rem;
+    border: 2px solid rgba(34, 197, 94, 0.3);
+    border-radius: 50%;
+    animation: rotate 8s linear infinite;
+}
+
+.ring-middle {
+    position: absolute;
+    width: 8rem;
+    height: 8rem;
+    border: 2px solid rgba(34, 197, 94, 0.4);
+    border-radius: 50%;
+    animation: rotate 6s linear infinite reverse;
+}
+
+@keyframes rotate {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.core-pulse {
+    position: absolute;
+    width: 6rem;
+    height: 6rem;
+    background: rgba(34, 197, 94, 0.2);
+    border-radius: 50%;
+    filter: blur(1.5rem);
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.ai-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.brain-icon {
+    position: relative;
+    z-index: 20;
+    font-size: 3rem;
+    color: #22C55E;
+    animation: brainPulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.4));
+}
+
+@keyframes brainPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 0.3;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.6;
+    }
+}
+
+.ai-brain-glow {
+    animation: brainPulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.4));
+}
+
+.ai-glow-ring {
+    animation: ringPulse 2s ease-in-out infinite;
+}
+
+@keyframes ringPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), 0 0 40px rgba(34, 197, 94, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(34, 197, 94, 0.4), 0 0 80px rgba(34, 197, 94, 0.2);
+    }
+}
+
+.orbit-node {
+    position: absolute;
+    background: #22C55E;
     border-radius: 50%;
 }
 
-.status-dot {
-    background-color: var(--zenix-red); /* Cor padrão inativa */
+.orbit-1 {
+    width: 0.75rem;
+    height: 0.75rem;
+    animation: orbit1 4s linear infinite;
 }
 
-.status-dot.active {
-    background-color: var(--zenix-green);
+.orbit-2 {
+    width: 0.5rem;
+    height: 0.5rem;
+    background: rgba(34, 197, 94, 0.7);
+    animation: orbit2 5s linear infinite;
 }
 
-.status-text {
-    font-size: 1.1rem;
-    font-weight: 500;
-    color: var(--zenix-red); /* Cor padrão inativa */
+.orbit-3 {
+    width: 0.625rem;
+    height: 0.625rem;
+    background: rgba(34, 197, 94, 0.8);
+    animation: orbit3 6s linear infinite;
 }
 
-.status-text.active {
-    color: var(--zenix-green);
+@keyframes orbit1 {
+    0% {
+        transform: rotate(0deg) translateX(5rem) rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg) translateX(5rem) rotate(-360deg);
+    }
 }
 
-/* Ações do Header */
-.header-actions {
-    display: flex;
-    gap: 10px;
+@keyframes orbit2 {
+    0% {
+        transform: rotate(0deg) translateX(4rem) rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg) translateX(4rem) rotate(-360deg);
+    }
 }
 
-.btn-action {
-    padding: 12px 20px; /* Aumentado um pouco */
-    border-radius: 8px;
+@keyframes orbit3 {
+    0% {
+        transform: rotate(0deg) translateX(3rem) rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg) translateX(3rem) rotate(-360deg);
+    }
+}
+
+.particles {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+.particle {
+    position: absolute;
+    background: #22C55E;
+    border-radius: 50%;
+}
+
+.particle-1 {
+    width: 0.25rem;
+    height: 0.25rem;
+    top: 20%;
+    left: 15%;
+    animation: float 3s ease-in-out infinite;
+}
+
+.particle-2 {
+    width: 0.375rem;
+    height: 0.375rem;
+    background: rgba(34, 197, 94, 0.7);
+    top: 60%;
+    left: 80%;
+    animation: float 4s ease-in-out infinite 0.5s;
+}
+
+.particle-3 {
+    width: 0.25rem;
+    height: 0.25rem;
+    background: rgba(34, 197, 94, 0.6);
+    top: 80%;
+    left: 30%;
+    animation: float 3.5s ease-in-out infinite 1s;
+}
+
+.particle-4 {
+    width: 0.375rem;
+    height: 0.375rem;
+    top: 40%;
+    left: 70%;
+    animation: float 4.5s ease-in-out infinite 1.5s;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-10px);
+    }
+}
+
+.data-streams {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0.3;
+}
+
+.stream {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #22C55E, transparent);
+}
+
+.stream-1 {
+    width: 5rem;
+    top: 30%;
+    left: -20px;
+    animation: streamRight 2s linear infinite;
+}
+
+.stream-2 {
+    width: 4rem;
+    top: 50%;
+    left: -20px;
+    animation: streamRight 2.5s linear infinite 0.5s;
+}
+
+.stream-3 {
+    width: 6rem;
+    top: 70%;
+    left: -20px;
+    animation: streamRight 3s linear infinite 1s;
+}
+
+@keyframes streamRight {
+    0% {
+        left: -20px;
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        left: 100%;
+        opacity: 0;
+    }
+}
+
+/* AI Status Grid */
+.ai-status-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+}
+
+.status-info-card {
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    padding: 1rem;
+    transition: all 0.3s ease;
+}
+
+.status-info-card:hover {
+    background: #111;
+    transform: translateY(-1px);
+}
+
+.status-info-label {
+    font-size: 0.625rem;
+    color: #A1A1A1;
+    margin-bottom: 0.5rem;
+}
+
+.status-info-value {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #A1A1A1;
+    margin-bottom: 0.25rem;
+}
+
+.status-info-value.active {
+    color: #22C55E;
+}
+
+.status-info-detail {
+    font-size: 0.625rem;
+    color: #7A7A7A;
+}
+
+/* Config Grid */
+.config-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+}
+
+.config-card {
+    background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+}
+
+.card-title {
+    font-size: 0.875rem;
     font-weight: 600;
+    color: #DFDFDF;
+    margin-bottom: 1rem;
     display: flex;
     align-items: center;
-    gap: 8px;
-    transition: background-color 0.2s;
-    border: none;
-    cursor: pointer ;
+    gap: 0.5rem;
 }
 
-/* Estilo do botão de Pausa/Ativação */
-.pause-btn.active {
-    background-color:  #348f37;
-    color: white;
-}
-.pause-btn.active:hover {
-    background-color: #3e8e41; /* Verde mais escuro no hover */
+.card-title i {
+    color: #A1A1A1;
+    font-size: 0.75rem;
+    cursor: pointer;
 }
 
-.pause-btn.inactive {
-    background-color:  #348f37; /* Exemplo para quando estiver Inativo (botão Ativar IA) */
-    color: white;
-}
-.pause-btn.inactive:hover {
-    background-color: #176417; /* Vermelho mais escuro no hover */
+.card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
 }
 
-/* ------------------ Responsividade do Header ------------------ */
-
-@media (max-width: 1024px) {
-    .hamburger-btn {
-        display: flex; /* Mostra o botão hamburger no mobile */
-    }
-    
-    .header-investment {
-        max-width: 100%;
-    }
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
-@media (max-width: 900px) {
-    .header-investment {
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 15px;
-        height: auto; /* Altura flexível */
-        position: relative; /* Deixa de ser fixo no topo em telas menores */
-        padding-top: 60px; /* Mais espaço para o hamburger se estiver ativado */
-    }
-    
-    .main-content-area {
-        padding-top: 20px; /* Remove a compensação fixa de altura */
-    }
-
-
-    .header-info-container {
-        width: 100%;
-        display: grid;
-        grid-template-columns: repeat(2, 1fr); /* 2 colunas */
-        gap: 20px 15px;
-    }
-    
-    .header-info-item {
-        border-right: none; /* Remove separador vertical */
-        padding-right: 0;
-        border-bottom: 1px solid var(--zenix-dark-border); /* Adiciona separador horizontal */
-        padding-bottom: 10px;
-    }
-
-    .header-info-item:last-child {
-        border-bottom: none;
-    }
-    
-    .header-actions {
-        width: 100%;
-        justify-content: space-between;
-        margin-top: 10px;
-    }
-
-    .btn-action {
-        flex-grow: 1; 
-        justify-content: center;
-    }
+.form-label {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    display: flex;
+    align-items: center;
+    gap: 0.375rem;
 }
 
-@media (max-width: 500px) {
-     .header-info-container {
-        grid-template-columns: 1fr; /* 1 coluna em telas muito pequenas */
-    }
+.form-label i {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    cursor: pointer;
 }
 
-
-/* ------------------ Footer Responsividade ------------------ */
-
-/* Estilos de Footer mantidos (sem alterações aqui, pois já estavam bons) */
-
-.zenix-footer {
-    background-color: var(--zenix-background);
-    border-top: 1px solid var(--zenix-dark-border);
-    padding: 30px;
-}
-
-.footer-inner {
+.form-select,
+.form-input {
     width: 100%;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    padding: 0.625rem 0.75rem;
+    font-size: 0.75rem;
+    color: #DFDFDF;
+    outline: none;
+    transition: border-color 0.2s;
+}
+
+.form-select:focus,
+.form-input:focus {
+    border-color: #22C55E;
+}
+
+.form-help {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    opacity: 0.6;
+}
+
+/* Mode Buttons */
+.mode-buttons {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.5rem;
+}
+
+.mode-btn {
+    padding: 0.5rem 0.75rem;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #A1A1A1;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.mode-btn:hover {
+    border-color: #22C55E;
+}
+
+.mode-btn.active {
+    background-color: #22C55E;
+    color: white;
+    border-color: #22C55E;
+}
+
+/* Risk Buttons */
+.risk-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.risk-btn {
+    padding: 0.5rem 0.75rem;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: #A1A1A1;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.risk-btn:hover {
+    border-color: #22C55E;
+}
+
+.risk-btn.active {
+    background-color: #22C55E;
+    color: white;
+    border-color: #22C55E;
+}
+
+/* Risk Indicator */
+.risk-indicator {
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    padding: 1rem;
+}
+
+.risk-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0.5rem;
+}
+
+.risk-label {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+}
+
+.risk-level-text {
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: #22C55E;
+}
+
+.risk-bar-container {
+    width: 100%;
+    background-color: #0E0E0E;
+    border-radius: 9999px;
+    height: 0.5rem;
+    margin-bottom: 0.75rem;
+}
+
+.risk-bar {
+    background-color: #22C55E;
+    height: 0.5rem;
+    border-radius: 9999px;
+    transition: width 0.3s ease;
+}
+
+.risk-description {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    opacity: 0.6;
+}
+
+/* AI Control Card */
+.ai-control-card {
+    position: relative;
+    overflow: hidden;
+    border: 2px solid rgba(34, 197, 94, 0.2);
+    box-shadow: 0 0 24px rgba(34, 197, 94, 0.08), 0 4px 16px rgba(0, 0, 0, 0.3);
+    background: radial-gradient(circle at top left, #0C0C0C 0%, #0A0A0A 100%);
+}
+
+.ai-control-bg {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.ai-control-bg::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, transparent 50%, transparent 100%);
+}
+
+.animated-grid-ai {
+    position: absolute;
+    inset: 0;
+    background-image: 
+        linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: gridMove 20s linear infinite;
+    opacity: 0.2;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.1) 0%, transparent 50%, rgba(34, 197, 94, 0.05) 100%);
+}
+
+.particles-ai {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    pointer-events: none;
+}
+
+.particle-ai {
+    position: absolute;
+    background: #22C55E;
+    border-radius: 50%;
+}
+
+.particle-ai-1 {
+    width: 0.25rem;
+    height: 0.25rem;
+    top: 20%;
+    left: 15%;
+    animation: float 3s ease-in-out infinite;
+}
+
+.particle-ai-2 {
+    width: 0.375rem;
+    height: 0.375rem;
+    background: rgba(34, 197, 94, 0.7);
+    top: 60%;
+    right: 20%;
+    animation: float 4s ease-in-out infinite 0.5s;
+}
+
+.particle-ai-3 {
+    width: 0.25rem;
+    height: 0.25rem;
+    background: rgba(34, 197, 94, 0.6);
+    bottom: 20%;
+    left: 30%;
+    animation: float 3.5s ease-in-out infinite 1s;
+}
+
+.particle-ai-4 {
+    width: 0.375rem;
+    height: 0.375rem;
+    top: 40%;
+    right: 30%;
+    animation: float 4.5s ease-in-out infinite 1.5s;
+}
+
+.data-streams-ai {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    opacity: 0.3;
+    pointer-events: none;
+}
+
+.stream-ai {
+    position: absolute;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #22C55E, transparent);
+}
+
+.stream-ai-1 {
+    width: 5rem;
+    top: 30%;
+    left: -20px;
+    animation: streamRight 2s linear infinite;
+}
+
+.stream-ai-2 {
+    width: 4rem;
+    top: 50%;
+    left: -20px;
+    animation: streamRight 2.5s linear infinite 0.5s;
+}
+
+.stream-ai-3 {
+    width: 6rem;
+    top: 70%;
+    left: -20px;
+    animation: streamRight 3s linear infinite 1s;
+}
+
+.ai-control-content {
+    position: relative;
+    z-index: 10;
+}
+
+.ai-status-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+}
+
+.ai-status-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #DFDFDF;
+    margin-bottom: 0.25rem;
+}
+
+.ai-status-subtitle {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+}
+
+.ai-status-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.ai-status-text {
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: #A1A1A1;
+}
+
+.ai-status-text.active {
+    color: #22C55E;
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.toggle-slider {
+    position: relative;
+    width: 4rem;
+    height: 2rem;
+    background-color: #0B0B0B;
+    border: 2px solid #1C1C1C;
+    border-radius: 9999px;
+    transition: 0.3s;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 1.5rem;
+    height: 1.5rem;
+    background-color: white;
+    border-radius: 50%;
+    transition: 0.3s;
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #22C55E;
+    border-color: #22C55E;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(2rem);
+}
+
+.ai-status-note {
+    text-align: center;
+}
+
+.ai-note-text {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    opacity: 0.6;
+    font-style: italic;
+}
+
+/* Chart Section */
+.chart-section {
+    margin-bottom: 1.5rem;
+}
+
+/* Footer */
+.zenix-footer {
+    background-color: #0B0B0B;
+    border-top: 1px solid #1C1C1C;
+    margin-top: 3rem;
+    width: 100%;
+}
+
+.footer-content {
+    max-width: 80rem;
     margin: 0 auto;
-    padding: 0 1rem;
+    padding: 3rem 2rem;
 }
 
 .footer-grid {
     display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 32px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3rem;
+    margin-bottom: 2rem;
 }
 
-.footer-brand-section {
-    grid-column: span 2;
+.footer-brand {
+    grid-column: span 1;
 }
 
-/* Mobile: O footer vira 2 colunas */
-@media (max-width: 768px) {
-    .footer-grid {
-        grid-template-columns: repeat(2, 1fr);
-        gap: 30px;
-    }
-
-    .footer-brand-section {
-        grid-column: span 2; 
-    }
-
-    .footer-section {
-        grid-column: span 1; 
-    }
-}
-
-/* Mobile Pequeno: O footer vira 1 coluna */
-@media (max-width: 480px) {
-    .footer-grid {
-        grid-template-columns: 1fr;
-        gap: 40px;
-    }
-
-    .footer-brand-section, .footer-section {
-        grid-column: span 1;
-    }
-
-    .footer-bottom-content {
-        flex-direction: column;
-        align-items: center;
-        gap: 10px;
-    }
-
-    .footer-legal-links {
-        flex-wrap: wrap;
-        justify-content: center;
-    }
-
-    .footer-separator:first-of-type {
-        display: none; 
-    }
-}
-
-.zenix-logo-text-footer {
+.footer-logo {
     display: flex;
     align-items: baseline;
-    gap: 4px;
-    margin-bottom: 12px;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
 }
 
-.logo-main-text {
-    font-size: 1.5rem;
-    font-weight: 800;
-    letter-spacing: 0.05em;
+.footer-logo-main {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #DFDFDF;
 }
 
-.logo-sub-text {
-    font-size: 0.875rem;
-    color: var(--zenix-secondary);
-    font-weight: 700;
+.footer-logo-sub {
+    font-size: 0.75rem;
+    color: #A1A1A1;
 }
 
 .footer-description {
-    font-size: 0.875rem;
-    color: var(--zenix-secondary);
-    margin-bottom: 24px;
-    text-align: left;
-    max-width: 350px;
+    color: #A1A1A1;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    opacity: 0.6;
 }
 
-.footer-social-links {
+.footer-social {
     display: flex;
-    gap: 16px;
+    align-items: center;
+    gap: 1rem;
 }
 
-.social-link {
-    color: var(--zenix-secondary);
+.social-icon {
+    color: #A1A1A1;
     transition: color 0.2s;
-}
-.social-link:hover {
-    color: var(--zenix-green);
+    opacity: 0.5;
 }
 
-.footer-section-title {
-    font-size: 0.875rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    text-align: left;
-
+.social-icon:hover {
+    color: #DFDFDF;
 }
 
-.footer-links-list {
+.footer-column-title {
+    color: #DFDFDF;
+    font-weight: 500;
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.footer-links {
     list-style: none;
     padding: 0;
     margin: 0;
     display: flex;
     flex-direction: column;
-    gap: 8px;
-    text-align: left;
-
+    gap: 0.625rem;
 }
 
-.footer-link {
-    font-size: 0.875rem;
-    color: var(--zenix-secondary);
+.footer-links a {
+    color: #A1A1A1;
+    font-size: 0.75rem;
     text-decoration: none;
     transition: color 0.2s;
-}
-.footer-link:hover {
-    color: var(--zenix-text);
+    opacity: 0.6;
 }
 
-.footer-bottom-bar {
-    margin-top: 32px;
-    padding-top: 16px;
-    border-top: 1px solid var(--zenix-dark-border);
+.footer-links a:hover {
+    color: #DFDFDF;
 }
 
-.footer-bottom-content {
+.footer-bottom {
+    border-top: 1px solid #1A1A1A;
+    padding-top: 2rem;
+    opacity: 0.4;
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+    .footer-bottom {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+    }
 }
 
 .footer-copyright {
+    color: #A1A1A1;
     font-size: 0.75rem;
-    color: var(--zenix-secondary);
 }
 
-.footer-legal-links {
+.footer-legal {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 1.5rem;
+    font-size: 0.75rem;
 }
 
-.footer-link-legal {
-    font-size: 0.75rem;
-    color: var(--zenix-secondary);
+.footer-legal a {
+    color: #A1A1A1;
     text-decoration: none;
     transition: color 0.2s;
 }
-.footer-link-legal:hover {
-    color: var(--zenix-text);
+
+.footer-legal a:hover {
+    color: #DFDFDF;
 }
 
 .footer-separator {
-    color: rgba(141, 141, 141, 0.5);
-    font-size: 0.75rem;
+    color: #1C1C1C;
 }
 
+/* Responsive */
+@media (max-width: 1024px) {
+    .main-content-wrapper {
+        margin-left: 0;
+    }
+    
+    .top-header {
+        left: 0;
+    }
+    
+    .config-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .ai-vision-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .footer-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .risk-buttons {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
 </style>
