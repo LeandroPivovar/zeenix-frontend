@@ -622,4 +622,12 @@ export default {
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 /* Custom styles específicos do componente - Tailwind processa as classes utilitárias */
+
+/* Sobrescreve o estilo do main apenas para este componente */
+main {
+  justify-content: flex-start !important;
+  align-items: flex-start !important;
+  padding: 0 !important;
+  z-index: 1;
+}
 </style>
