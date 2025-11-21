@@ -1307,7 +1307,7 @@ export default {
 /* Main Content */
 .main-content {
     margin-top: 86px;
-    padding: 1.5rem 0.75rem;
+    padding: 1.5rem 20px;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -1315,10 +1315,10 @@ export default {
 
 /* AI Vision Panel */
 #ai-vision-panel {
-    margin-left: 0.75rem;
-    margin-right: 0.75rem;
+    margin-left: 0;
+    margin-right: 0;
     margin-top: 1.5rem;
-    width: calc(100% - 1.5rem);
+    width: 100%;
     box-sizing: border-box;
 }
 
@@ -1781,12 +1781,12 @@ export default {
 /* Config Grid */
 .config-grid {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(3, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
-    margin-left: 0.75rem;
-    margin-right: 0.75rem;
-    width: calc(100% - 1.5rem);
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
     box-sizing: border-box;
 }
 
@@ -1796,6 +1796,8 @@ export default {
     border-radius: 0.75rem;
     padding: 1.25rem;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .card-title {
@@ -2189,9 +2191,19 @@ export default {
 /* Chart Section */
 .chart-section {
     margin-bottom: 1.5rem;
-    margin-left: 0.75rem;
-    margin-right: 0.75rem;
-    width: calc(100% - 1.5rem);
+    margin-left: 0;
+    margin-right: 0;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Ensure all cards and divs occupy 100% width */
+.ai-vision-card,
+.config-card,
+.config-grid,
+.chart-section,
+#ai-vision-panel {
+    width: 100%;
     box-sizing: border-box;
 }
 
@@ -2345,6 +2357,10 @@ export default {
         width: 100%;
     }
     
+    .main-content {
+        padding: 1.5rem 20px;
+    }
+    
     .config-grid {
         grid-template-columns: 1fr;
     }
@@ -2360,15 +2376,15 @@ export default {
     .ai-vision-card,
     .config-grid,
     .chart-section {
-        margin-left: 0.75rem;
-        margin-right: 0.75rem;
-        width: calc(100% - 1.5rem);
+        margin-left: 0;
+        margin-right: 0;
+        width: 100%;
     }
 }
 
 @media (max-width: 768px) {
     .main-content {
-        padding: 1rem 0.75rem;
+        padding: 1rem 15px;
     }
     
     .footer-grid {
@@ -2382,9 +2398,9 @@ export default {
     .ai-vision-card,
     .config-grid,
     .chart-section {
-        margin-left: 0.5rem;
-        margin-right: 0.5rem;
-        width: calc(100% - 1rem);
+        margin-left: 0;
+        margin-right: 0;
+        width: 100%;
     }
 }
 </style>
