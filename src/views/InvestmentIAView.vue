@@ -5,7 +5,10 @@
         <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <header class="top-header">
                 <div class="header-content">
-                    <div class="header-spacer"></div>
+                    <div class="header-left-content">
+                        <h1 class="header-title">IA Orion – Operação Automática Ativa</h1>
+                        <p class="header-subtitle">A IA está monitorando o mercado e executando operações conforme sua configuração.</p>
+                    </div>
                     <div class="header-actions-right">
                         <div class="balance-display-card">
                             <div class="balance-header">
@@ -15,26 +18,26 @@
                                     <div class="balance-value-row">
                                         <span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ formattedBalance }}</span>
                                         <span class="balance-value" v-else>••••••</span>
-                                        <button 
+                <button 
                                             v-if="balanceVisible && !isDemo" 
                                             class="account-type-btn real-btn"
                                             @click="toggleBalanceVisibility"
                                         >
                                             Real
-                                        </button>
-                                        <button 
+                </button>
+                <button 
                                             v-if="balanceVisible && isDemo" 
                                             class="account-type-btn demo-btn"
                                             @click="toggleBalanceVisibility"
                                         >
                                             Demo
-                                        </button>
-                                        <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
+                </button>
+                            <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
                                             <i class="far fa-eye"></i>
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
+                            </button>
+                        </div>
+                        </div>
+                    </div>
                         </div>
                     </div>
                 </div>
@@ -73,7 +76,7 @@
                                     <option value="jump100">Jump 100 Index</option>
                                 </select>
                                 <p id="marketDescription" class="form-help">{{ marketDescription }}</p>
-                            </div>
+                        </div>
                             
                             <div class="form-group">
                                 <label class="form-label">
@@ -93,8 +96,8 @@
                                     <option value="zenith">IA Zenith</option>
                                 </select>
                                 <p id="strategyDescription" class="form-help">Análise técnica avançada com machine learning</p>
-                            </div>
-                            
+                    </div>
+
                             <div class="form-group">
                                 <label class="form-label">Modo de Negociação</label>
                                 <div class="mode-buttons">
@@ -139,8 +142,8 @@
                                     step="0.01"
                                 >
                                 <p class="form-help">{{ entryPercent }}% do saldo</p>
-                            </div>
-                            
+                    </div>
+
                             <div class="form-group">
                                 <label class="form-label">Alvo de Lucro (USD)</label>
                                 <input 
@@ -151,8 +154,8 @@
                                     step="0.01"
                                 >
                                 <p class="form-help">{{ profitPercent }}% do saldo</p>
-                            </div>
-                            
+                    </div>
+
                             <div class="form-group">
                                 <label class="form-label">Limite de Perda (USD)</label>
                                 <input 
@@ -163,9 +166,9 @@
                                     step="0.01"
                                 >
                                 <p class="form-help">{{ lossPercent }}% do saldo</p>
-                            </div>
                         </div>
                     </div>
+                </div>
 
                     <!-- Gerenciamento de Risco -->
                     <div id="risk-management-card" class="config-card premium-card">
@@ -195,8 +198,8 @@
                                     @click="modoMartingale = 'agressivo'"
                                 >
                                     Agressivo
-                                </button>
-                            </div>
+                    </button>
+                </div>
                             
                             <div class="risk-indicator">
                                 <div class="risk-header">
@@ -257,45 +260,45 @@
 
                 <!-- Chart Section - Only show when IA is active -->
                 <section id="chart-section" class="chart-section" v-if="isInvestmentActive">
-                    <InvestmentActive 
-                        :ticks="ticks" 
-                        :current-price="currentPrice"
-                        :entry-value-config="entryValue"
-                        :profit-target-config="profitTarget"
-                        :loss-limit-config="lossLimit"
-                        :mode-config="mode"
-                        :account-balance-prop="accountBalance"
-                        :account-currency-prop="accountCurrency"
+                <InvestmentActive 
+                    :ticks="ticks" 
+                    :current-price="currentPrice"
+                    :entry-value-config="entryValue"
+                    :profit-target-config="profitTarget"
+                    :loss-limit-config="lossLimit"
+                    :mode-config="mode"
+                    :account-balance-prop="accountBalance"
+                    :account-currency-prop="accountCurrency"
                         @deactivate="deactivateIA"
-                    />
+                />
                 </section>
 
                 <!-- Chart Only Section - When IA is inactive, show only chart from InvestmentInactive -->
                 <section id="chart-section-inactive" class="chart-section" v-else>
-                    <InvestmentInactive 
-                        :ticks="ticks" 
-                        :current-price="currentPrice"
-                        :last-update-time="formattedLastUpdate"
+                <InvestmentInactive 
+                    :ticks="ticks" 
+                    :current-price="currentPrice"
+                    :last-update-time="formattedLastUpdate"
                         :show-only-chart="true"
-                        @update:entryValue="entryValue = $event"
-                        @update:profitTarget="profitTarget = $event"
-                        @update:lossLimit="lossLimit = $event"
-                        @update:mode="mode = $event"
-                        @update:modoMartingale="modoMartingale = $event"
-                    />
+                    @update:entryValue="entryValue = $event"
+                    @update:profitTarget="profitTarget = $event"
+                    @update:lossLimit="lossLimit = $event"
+                    @update:mode="mode = $event"
+                    @update:modoMartingale="modoMartingale = $event"
+                />
                 </section>
-            </main>
+        </main>
 
             <!-- Footer -->
             <footer id="footer" class="zenix-footer">
                 <div class="footer-content">
-                    <div class="footer-grid">
+                <div class="footer-grid">
                         <div class="footer-brand">
                             <div class="footer-logo">
                                 <span class="footer-logo-main">ZENIX</span>
                                 <span class="footer-logo-sub">PRO</span>
-                            </div>
-                            <p class="footer-description">
+                        </div>
+                        <p class="footer-description">
                                 Plataforma inteligente de investimentos com IA, copy trading e automação.
                             </p>
                             <div class="footer-social">
@@ -303,9 +306,9 @@
                                 <a href="#" class="social-icon"><i class="fa-brands fa-linkedin"></i></a>
                                 <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
                                 <a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-                            </div>
                         </div>
-                        
+                    </div>
+
                         <div class="footer-column">
                             <h3 class="footer-column-title">Produto</h3>
                             <ul class="footer-links">
@@ -313,8 +316,8 @@
                                 <li><a href="#">Copy Trading</a></li>
                                 <li><a href="#">Agente Autônomo</a></li>
                                 <li><a href="#">Zenix Academy</a></li>
-                            </ul>
-                        </div>
+                        </ul>
+                    </div>
                         
                         <div class="footer-column">
                             <h3 class="footer-column-title">Empresa</h3>
@@ -324,8 +327,8 @@
                                 <li><a href="#">Blog</a></li>
                                 <li><a href="#">Carreiras</a></li>
                             </ul>
-                        </div>
-                        
+                </div>
+
                         <div class="footer-column">
                             <h3 class="footer-column-title">Suporte</h3>
                             <ul class="footer-links">
@@ -345,10 +348,10 @@
                             <a href="#">Termos de Uso</a>
                             <span class="footer-separator">|</span>
                             <a href="#">Cookies</a>
-                        </div>
                     </div>
                 </div>
-            </footer>
+            </div>
+        </footer>
         </div>
     </div>
 </template>
@@ -369,18 +372,18 @@ export default {
         return {
             isSidebarOpen: false,
             isSidebarCollapsed: false,
-            isInvestmentActive: false,
-            
+            isInvestmentActive: false, 
+
             ticks: [],
             currentPrice: null,
             pollingInterval: null,
-            
+
             entryValue: 0.35,
             profitTarget: 100,
             lossLimit: 25,
             mode: 'veloz',
             modoMartingale: 'conservador',
-            
+
             selectedMarket: 'vol10',
             selectedStrategy: 'orion',
             
@@ -402,7 +405,7 @@ export default {
                 losses: 0
             },
             statsUpdateInterval: null,
-            
+
             marketDescriptions: {
                 vol10: 'Volatilidade constante de 10% com um tique por segundo',
                 vol25: 'Volatilidade constante de 25% com um tique por segundo',
@@ -923,7 +926,7 @@ export default {
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         },
-
+        
         async startDataLoading() {
             try {
                 console.log('[InvestmentIAView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
@@ -1089,12 +1092,15 @@ export default {
     right: 0;
     left: 240px;
     z-index: 40;
-    background-color: #0B0B0B;
+    background-color: #0E0E0E;
     border-bottom: 1px solid #1C1C1C;
-    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
     transition: left 0.3s ease;
     width: calc(100% - 240px);
     box-sizing: border-box;
+    min-height: 120px;
+    display: flex;
+    align-items: center;
 }
 
 .main-content-wrapper.sidebar-collapsed .top-header {
@@ -1103,13 +1109,36 @@ export default {
 }
 
 .header-content {
-    padding: 1rem 20px;
+    padding: 1.5rem 20px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
+    gap: 1.5rem;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
+}
+
+.header-left-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #DFDFDF;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.header-subtitle {
+    font-size: 0.875rem;
+    color: #A1A1A1;
+    margin: 0;
+    line-height: 1.4;
 }
 
 .balance-display-card {
@@ -1199,7 +1228,7 @@ export default {
 
 /* Main Content */
 .main-content {
-    margin-top: 86px;
+    margin-top: 150px;
     padding: 1.5rem 20px;
     max-width: 100%;
     width: 100%;
@@ -1253,7 +1282,7 @@ export default {
 .ai-vision-header {
     display: flex;
     align-items: flex-start;
-    justify-content: space-between;
+    justify-content: space-between; 
     margin-bottom: 1.5rem;
 }
 
@@ -1790,7 +1819,7 @@ export default {
 
 /* Risk Buttons */
 .risk-buttons {
-    display: grid;
+        display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 0.5rem;
     margin-bottom: 1rem;
@@ -1829,7 +1858,7 @@ export default {
 .risk-header {
     display: flex;
     align-items: center;
-    justify-content: space-between;
+        justify-content: space-between;
     margin-bottom: 0.5rem;
 }
 
@@ -1988,7 +2017,7 @@ export default {
 
 .ai-status-control {
     display: flex;
-    align-items: center;
+        align-items: center;
     justify-content: space-between;
     background-color: #0B0B0B;
     border: 1px solid #1C1C1C;
@@ -2209,8 +2238,8 @@ export default {
 @media (min-width: 768px) {
     .footer-bottom {
         flex-direction: row;
-        justify-content: space-between;
-        align-items: center;
+    justify-content: space-between;
+    align-items: center;
     }
 }
 
@@ -2278,7 +2307,26 @@ export default {
 }
 
 @media (max-width: 768px) {
+    .header-content {
+        padding: 1rem 15px;
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .header-left-content {
+        width: 100%;
+    }
+    
+    .header-title {
+        font-size: 1.25rem;
+    }
+    
+    .header-subtitle {
+        font-size: 0.8rem;
+    }
+    
     .main-content {
+        margin-top: 160px;
         padding: 1rem 15px;
     }
     

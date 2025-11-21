@@ -1,8 +1,7 @@
 <template>
-	<div class="dashboard-container">
-
-		
-		<section class="metric-section">
+	<div>
+		<!-- Only show old sections when NOT in chart-only mode -->
+		<section class="metric-section" v-if="!showOnlyChart">
 			<div class="metric-header">
 				<div class="header-left">
 					<h1 class="header-title">Visão da IA | Orion</h1>
@@ -56,7 +55,7 @@
 			</div>
 		</section>
 		
-		<div class="dashboard-body-grid-ia">
+		<div class="dashboard-body-grid-ia" v-if="!showOnlyChart">
 			<!-- Bloco 1: Mercado & Estratégia -->
 			<section class="section market-strategy-section">
 				<h3 class="section-title">Mercado & Estratégia ⓘ</h3>
@@ -245,7 +244,7 @@
 			</section>
 		</div>
 		
-		<!-- Chart section only shown when not in chart-only mode -->
+		<!-- Chart section - only shown when NOT in chart-only mode (old design) -->
 		<template v-if="!showOnlyChart">
 			<hr class="separator-chart" />
 			
@@ -292,6 +291,11 @@
 				<div ref="chartContainer" class="chart-placeholder"></div>
 			</section>
 		</template>
+		
+		<!-- Chart only section - shown when showOnlyChart is true (new design) -->
+		<section v-if="showOnlyChart" class="market-chart-section chart-only-section">
+			<div ref="chartContainer" class="chart-placeholder chart-only-placeholder"></div>
+		</section>
 	</div>
 </template>
 	
@@ -312,6 +316,10 @@ export default {
 		lastUpdateTime: {
 			type: String,
 			default: '--:--:--'
+		},
+		showOnlyChart: {
+			type: Boolean,
+			default: false
 		}
 	},
 	data() {
@@ -529,12 +537,23 @@ export default {
 			}
 		},
 		initChart() {
-			if (this.chartInitialized || !this.$refs.chartContainer) {
+			if (this.chartInitialized) {
+				return;
+			}
+
+			// Get the correct chart container (Vue may return array if multiple refs exist)
+			let container = this.$refs.chartContainer;
+			if (Array.isArray(container)) {
+				// If multiple refs exist, use the one that is visible
+				container = container.find(el => el && el.offsetParent !== null) || container[0];
+			}
+			
+			if (!container) {
+				console.warn('[InvestmentInactive] Chart container not found');
 				return;
 			}
 
 			try {
-				const container = this.$refs.chartContainer;
 				const containerWidth = container.offsetWidth || 800;
 				const containerHeight = 350;
 
@@ -764,12 +783,20 @@ export default {
 	--color-brain-icon: #1a4f1a; /* Verde escuro para o ícone do cérebro */
 }
 
-/* Base e Container */
-.dashboard-container {
-	background-color: var(--color-bg-dark);
-	color: var(--color-text-light);
-	padding: 100px 40px;
-	font-family: sans-serif; 
+/* Base styling - removed dashboard-container */
+
+/* Hide old sections when in chart-only mode */
+.chart-only-section {
+	padding: 0;
+	background-color: transparent;
+	border: none;
+	box-shadow: none;
+	margin: 0;
+}
+
+.chart-only-section .chart-placeholder {
+	width: 100%;
+	height: 400px;
 }
 
 .metric-header {
