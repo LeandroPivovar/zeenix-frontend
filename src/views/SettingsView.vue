@@ -627,7 +627,6 @@ export default {
 main {
   justify-content: flex-start !important;
   align-items: flex-start !important;
-  padding: 0 !important;
   z-index: 1;
 }
 </style>
