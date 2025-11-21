@@ -312,8 +312,12 @@
 }
 
 .btn-icon-small {
-    color: #22C55E;
     font-size: 0.75rem;
+    color: #22C55E;
+}
+
+.btn-icon-small.gray {
+    color: #6B7280;
 }
 
 /* Playlist Sidebar */
