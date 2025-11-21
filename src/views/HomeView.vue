@@ -1,5 +1,5 @@
 <template>
-  <div class="layout" :class="{ 'sidebar-collapsed': isSidebarCollapsed, 'no-sidebar': !connectedInfo }">
+  <div class="layout-home" :class="{ 'sidebar-collapsed': isSidebarCollapsed, 'no-sidebar': !connectedInfo }">
     <!-- Sidebar e Header só aparecem quando conectado -->
     <template v-if="connectedInfo">
       <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
@@ -327,5 +327,6 @@ export default {
   }
 }
 </script>
+
 
 <style scoped src="../assets/css/views/homeView.css"></style>
