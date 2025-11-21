@@ -1076,14 +1076,21 @@ export default {
                     priceFormat: { type: 'price', precision: 4, minMove: 0.0001 },
                 });
             } else {
+                // Gráfico de velas com aparência similar ao Pine Script
+                // Verde para altas, vermelho para baixas, preto como fundo
                 this.currentSeries = this.chart.addCandlestickSeries({
-                    upColor: '#22C55E',
-                    borderUpColor: '#22C55E',
-                    wickUpColor: '#22C55E',
-                    downColor: '#FF4747',
-                    borderDownColor: '#FF4747',
-                    wickDownColor: '#FF4747',
-                    priceFormat: { type: 'price', precision: 4, minMove: 0.0001 },
+                    upColor: '#22C55E',           // Cor do corpo da vela de alta (verde)
+                    downColor: '#FF4747',         // Cor do corpo da vela de baixa (vermelho)
+                    borderVisible: true,
+                    borderUpColor: '#22C55E',     // Borda da vela de alta
+                    borderDownColor: '#FF4747',   // Borda da vela de baixa
+                    wickUpColor: '#22C55E',       // Cor do pavio superior de alta
+                    wickDownColor: '#FF4747',     // Cor do pavio inferior de baixa
+                    priceFormat: { 
+                        type: 'price', 
+                        precision: 4, 
+                        minMove: 0.0001 
+                    },
                 });
             }
         },
@@ -1109,23 +1116,50 @@ export default {
                     height: containerHeight,
                     localization: { locale: 'pt-BR' },
                     layout: {
-                        background: { type: ColorType.Solid, color: '#1a1a1a' },
-                        textColor: '#f0f0f0',
+                        background: { type: ColorType.Solid, color: '#0B0B0B' },
+                        textColor: '#DFDFDF',
                     },
                     rightPriceScale: {
-                        borderVisible: false,
+                        borderColor: '#1C1C1C',
+                        scaleMargins: {
+                            top: 0.1,
+                            bottom: 0.1,
+                        },
+                    },
+                    leftPriceScale: {
+                        visible: false,
                     },
                     timeScale: {
-                        borderVisible: false,
+                        borderColor: '#1C1C1C',
                         timeVisible: true,
-                        secondsVisible: true,
+                        secondsVisible: false,
                     },
                     grid: {
-                        vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
-                        horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
+                        vertLines: { 
+                            color: '#1A1A1A',
+                            style: 0,
+                            visible: true,
+                        },
+                        horzLines: { 
+                            color: '#1A1A1A',
+                            style: 0,
+                            visible: true,
+                        },
                     },
                     crosshair: {
                         mode: 1,
+                        vertLine: {
+                            color: '#22C55E',
+                            width: 1,
+                            style: 3,
+                            labelBackgroundColor: '#22C55E',
+                        },
+                        horzLine: {
+                            color: '#22C55E',
+                            width: 1,
+                            style: 3,
+                            labelBackgroundColor: '#22C55E',
+                        },
                     },
                 });
 

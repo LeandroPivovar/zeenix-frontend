@@ -544,28 +544,56 @@ export default {
 					ticksCount: this.ticks.length
 				});
 
+				// Gráfico com estilo similar ao Pine Script
 				this.chart = createChart(container, {
 					width: containerWidth,
 					height: containerHeight,
 					localization: { locale: 'pt-BR' },
 					layout: {
-						background: { type: ColorType.Solid, color: '#242424' },
-						textColor: '#f0f0f0',
+						background: { type: ColorType.Solid, color: '#0B0B0B' },
+						textColor: '#DFDFDF',
 					},
 					rightPriceScale: {
-						borderVisible: false,
+						borderColor: '#1C1C1C',
+						scaleMargins: {
+							top: 0.1,
+							bottom: 0.1,
+						},
+					},
+					leftPriceScale: {
+						visible: false,
 					},
 					timeScale: {
-						borderVisible: false,
+						borderColor: '#1C1C1C',
 						timeVisible: true,
-						secondsVisible: true,
+						secondsVisible: false,
 					},
 					grid: {
-						vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
-						horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
+						vertLines: { 
+							color: '#1A1A1A',
+							style: 0,
+							visible: true,
+						},
+						horzLines: { 
+							color: '#1A1A1A',
+							style: 0,
+							visible: true,
+						},
 					},
 					crosshair: {
 						mode: 1,
+						vertLine: {
+							color: '#22C55E',
+							width: 1,
+							style: 3,
+							labelBackgroundColor: '#22C55E',
+						},
+						horzLine: {
+							color: '#22C55E',
+							width: 1,
+							style: 3,
+							labelBackgroundColor: '#22C55E',
+						},
 					},
 				});
 
