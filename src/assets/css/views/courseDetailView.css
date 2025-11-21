@@ -14,6 +14,12 @@
 
 /* ... (restante do CSS mantido, apenas ajustando box-sizing e flex) ... */
 
+.course-header,
+.course-main {
+    margin-left: 240px;
+    width: calc(100% - 240px);
+}
+
 /* Main Layout */
 .course-main {
     display: flex;
@@ -43,6 +49,8 @@
     flex-shrink: 0; /* Impedir encolhimento */
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
+    height: calc(100vh - 80px);
 }
 
 /* Header Adjustments */
@@ -439,6 +447,11 @@
 
 /* Responsive */
 @media (max-width: 1024px) {
+    .course-header,
+    .course-main {
+        margin-left: 0;
+        width: 100%;
+    }
     .course-main {
         flex-direction: column;
         height: auto;

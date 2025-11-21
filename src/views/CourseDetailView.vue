@@ -341,8 +341,7 @@ export default {
 <style scoped src="../assets/css/views/courseDetailView.css"></style>
 <style scoped>
 .main-wrapper {
-    margin-left: 240px;
-    width: calc(100% - 240px);
+    width: 100%;
 }
 @media (max-width: 1024px) {
     .main-wrapper {
