@@ -1211,7 +1211,7 @@ export default {
 
 /* Main Content */
 .main-content {
-    margin-top: 100px;
+    margin-top: 70px;
     padding: 1.5rem 20px;
     max-width: 100%;
     width: 100%;
@@ -2309,7 +2309,7 @@ export default {
     }
     
     .main-content {
-        margin-top: 100px;
+        margin-top: 80px;
         padding: 1rem 15px;
     }
     
