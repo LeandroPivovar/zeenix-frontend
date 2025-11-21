@@ -168,6 +168,8 @@ export default {
 }
 
 
+
+
 </style>
 
 <style scoped>
@@ -185,9 +187,9 @@ export default {
     margin: 0;
 }
 
-.layout-agent-autonomo[data-v-03907d1e]{
-    width: 100%;
+.layout-agente-autnomo[data-v-3812672c]{
     margin: 0;
+    width: 100%;
 }
 
 .layout{
