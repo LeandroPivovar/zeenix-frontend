@@ -2,184 +2,156 @@
 	<div class="layout">
 		<AppSidebar />
 		<main class="plans-content">
-			<!-- Removido background-glow e background-grid para fundo sólido -->
-			
-			<div class="header-section">
-				<h2 class="main-title">
-					<span class="title-icon">👑</span> Planos Zenix
-				</h2>
-				<p class="main-subtitle">Escolha seu plano e evolua dentro do ecossistema Zenix.</p>
-			</div>
+			<div class="max-w-7xl mx-auto w-full">
+				<div class="header-section">
+					<div class="header-title-wrapper">
+						<img src="../assets/icons/trophy.svg" alt="Crown" class="header-icon" v-if="false"> <!-- Usando font-awesome no design original, aqui adaptado -->
+						<i class="fas fa-crown text-zenix-green text-2xl header-icon-fa"></i>
+						<h1 class="main-title">Planos Zenix</h1>
+					</div>
+					<p class="main-subtitle">Escolha seu plano e evolua dentro do ecossistema Zenix.</p>
+				</div>
 
-			<div class="video-section">
-				<div class="video-container">
-					<div class="video-placeholder" @click="playVideo">
-						<div v-if="!isPlaying" class="play-button">
-							<span>▶</span>
+				<div class="video-card-wrapper">
+					<div class="video-thumbnail" @click="playVideo">
+						<div class="video-overlay"></div>
+						<div class="play-button-wrapper">
+							<div v-if="!isPlaying" class="play-button">
+								<i class="fas fa-play"></i>
+							</div>
+							<div v-else class="video-player-placeholder">
+								<!-- Aqui iria o player real -->
+								<p>Player de vídeo carregando...</p>
+							</div>
 						</div>
-						<div v-else class="video-player">
-							<p>Player de vídeo será integrado aqui</p>
+					</div>
+					<div class="video-details">
+						<div>
+							<h3 class="video-title">Marcos Explica os Planos Zenix</h3>
+							<p class="video-description">Assista e entenda qual plano se encaixa melhor no seu perfil de operações.</p>
+						</div>
+						<div class="video-duration-badge">
+							<span>2 min</span>
 						</div>
 					</div>
 				</div>
-				<div class="video-info">
-					<h2 class="video-title">Marcos Explica os Planos Zenix <span class="video-badge">2 min</span></h2>
 
-					<p class="video-description">
-						Assista e entenda qual plano se encaixa melhor no seu perfil de operações.
-					</p>
-				</div>
-			</div>
-
-			<div class="plans-section">
 				<div v-if="loading" class="loading">Carregando planos...</div>
 				<div v-else-if="error" class="error">{{ error }}</div>
+				
 				<div v-else class="plans-grid">
-					<div 
-						v-for="plan in plans" 
-						:key="plan.id"
-						class="plan-card"
-						:class="{ popular: plan.isPopular, recommended: plan.isRecommended }"
-					>
-						<div class="plan-icon-wrapper">
-							<span v-if="getPlanIcon(plan.name) === 'rocket'" class="plan-icon-emoji">🚀</span>
-							<span v-else-if="getPlanIcon(plan.name) === 'star'" class="plan-icon-emoji">⭐</span>
-							<span v-else-if="getPlanIcon(plan.name) === 'crown'" class="plan-icon-emoji">👑</span>
+					<!-- Card Starter -->
+					<div class="plan-card starter-card">
+						<div class="plan-icon-box">
+							<i class="fas fa-rocket"></i>
 						</div>
-
-						<div v-if="plan.isPopular" class="plan-badge popular-badge">MAIS POPULAR</div>
-						<div v-if="plan.isRecommended" class="plan-badge recommended-badge">
-							RECOMENDADO
+						<h3 class="plan-title">Starter</h3>
+						<div class="plan-price-wrapper">
+							<span class="plan-price-value">Gratuito</span>
 						</div>
-
-						<h3 class="plan-name">{{ plan.name }}</h3>
-						<div class="plan-price">
-							<span v-if="plan.price === 0" class="price-free">Gratuito</span>
-							<span v-else>
-								<span class="currency">R$</span>
-								<span class="amount">{{ Math.floor(plan.price) }}</span>
-								<span class="period">/mês</span>
-							</span>
-						</div>
-
-						<ul class="plan-features">
-							<li v-for="(value, key) in getPlanFeatures(plan)" :key="key" class="feature-item">
-								<span 
-									v-if="isFeatureEnabled(value)" 
-									class="feature-icon check"
-								>✓</span>
-								<span 
-									v-else-if="value === false" 
-									class="feature-icon cross"
-								>✗</span>
-								
-								<span class="feature-text">
-									{{ value === true ? key : formatFeature(key, value) }}
-								</span>
+						<ul class="plan-features-list">
+							<li class="feature-item">
+								<i class="fas fa-check feature-icon-check"></i>
+								<span>IA Orion limitada</span>
+							</li>
+							<li class="feature-item">
+								<i class="fas fa-check feature-icon-check"></i>
+								<span>10 sinais/dia</span>
+							</li>
+							<li class="feature-item">
+								<i class="fas fa-check feature-icon-check"></i>
+								<span>Suporte por e-mail</span>
+							</li>
+							<li class="feature-item">
+								<i class="fas fa-times feature-icon-cross"></i>
+								<span class="text-secondary">Sem Copy Trading</span>
 							</li>
 						</ul>
+						<button class="plan-btn btn-outline" @click="handlePlanAction({id: 'starter', price: 0, name: 'Starter'})">
+							Ativar plano básico
+						</button>
+					</div>
 
-						<button 
-							class="plan-button"
-							:class="{ 
-								active: currentPlan?.id === plan.id,
-								upgrade: plan.price > 0 && (!currentPlan || currentPlan.id !== plan.id)
-							}"
-							@click="handlePlanAction(plan)"
-							:disabled="activating"
-						>
-							<span v-if="currentPlan?.id === plan.id">Plano atual</span>
-							<span v-else-if="plan.price === 0">Ativar plano básico</span>
-							<span v-else-if="currentPlan && plan.price > currentPlan.price">
-								Fazer Upgrade <span>↑</span>
-							</span>
-							<span v-else>Escolher plano</span>
+					<!-- Card Pro -->
+					<div class="plan-card pro-card">
+						<div class="plan-badge-popular">
+							<span>MAIS POPULAR</span>
+						</div>
+						<div class="plan-icon-box icon-box-green">
+							<i class="fas fa-star"></i>
+						</div>
+						<h3 class="plan-title">Pro</h3>
+						<div class="plan-price-wrapper">
+							<span class="plan-price-value">R$ 67</span>
+							<span class="plan-price-period">/mês</span>
+						</div>
+						<ul class="plan-features-list">
+							<li class="feature-item">
+								<i class="fas fa-check feature-icon-check"></i>
+								<span>IA Orion completa</span>
+							</li>
+							<li class="feature-item">
+								<i class="fas fa-check feature-icon-check"></i>
+								<span>Copy Trading ilimitado</span>
+							</li>
+							<li class="feature-item">
+								<i class="fas fa-check feature-icon-check"></i>
+								<span>Zenix Academy completa</span>
+							</li>
+							<li class="feature-item">
+								<i class="fas fa-check feature-icon-check"></i>
+								<span>Suporte prioritário</span>
+							</li>
+						</ul>
+						<button class="plan-btn btn-green-soft disabled" disabled>
+							Plano atual
+						</button>
+					</div>
+
+					<!-- Card Black -->
+					<div class="plan-card black-card">
+						<div class="plan-badge-recommended">
+							<span>RECOMENDADO</span>
+						</div>
+						<div class="plan-icon-box icon-box-gradient">
+							<i class="fas fa-crown"></i>
+						</div>
+						<h3 class="plan-title">Zenix Black</h3>
+						<div class="plan-price-wrapper">
+							<span class="plan-price-value">R$ 147</span>
+							<span class="plan-price-period">/mês</span>
+						</div>
+						<ul class="plan-features-list">
+							<li class="feature-item">
+								<i class="fas fa-check feature-icon-check"></i>
+								<span>IA Orion Black Module</span>
+							</li>
+							<li class="feature-item">
+								<i class="fas fa-check feature-icon-check"></i>
+								<span>Copy Trading ilimitado</span>
+							</li>
+							<li class="feature-item">
+								<i class="fas fa-check feature-icon-check"></i>
+								<span>Zenix Academy completa</span>
+							</li>
+							<li class="feature-item">
+								<i class="fas fa-check feature-icon-check"></i>
+								<span>Suporte prioritário</span>
+							</li>
+						</ul>
+						<button class="plan-btn btn-green-soft disabled" disabled>
+							Plano atual
 						</button>
 					</div>
 				</div>
 			</div>
-
-			<div class="comparison-section">
-				<h2 class="section-title">
-					<span class="stats-icon">📊</span> Compare os Planos 
-				</h2>
-				<div class="table-container">
-					<table class="comparison-table">
-						<thead>
-							<tr>
-								<th class="plan-name">Funcionalidade</th>
-								<th 
-									v-for="plan in plans" 
-									:key="plan.id"
-									:class="{ 'th-green': isThGreen(plan.name) }"
-								>
-									{{ plan.name }}
-								</th>
-							</tr>
-						</thead>
-						<tbody>
-							<tr>
-								<td class="plan-name-table">IA Orion</td> 
-								<td 
-									v-for="plan in plans" 
-									:key="plan.id"
-									:class="getPlanTextColorClass(plan.name)"
-								>
-									{{ formatFeatureValue(plan.features?.orion_ai) }}
-								</td>
-							</tr>
-
-							<tr>
-								<td class="plan-name-table">Copy Trading</td> 
-								<td v-for="plan in plans" :key="plan.id">
-									<span v-if="plan.features?.copy_trading === false" class="icon-cross-circle">ⓧ</span>
-									<span v-else-if="plan.features?.copy_trading === true" class="icon-check">✓</span>
-									<span v-else-if="plan.features?.copy_trading === 'premium'" class="icon-star-vazada">☆</span> 
-									<span v-else>-</span>
-								</td>
-							</tr>
-							
-							<tr>
-								<td class="plan-name-table">Academy</td> 
-								<td 
-									v-for="plan in plans" 
-									:key="plan.id"
-									:class="getPlanTextColorClass(plan.name)"
-								>
-									{{ formatFeatureValue(plan.features?.academy) }}
-								</td>
-							</tr>
-
-							<tr>
-								<td class="plan-name-table">Suporte</td> 
-								<td 
-									v-for="plan in plans" 
-									:key="plan.id"
-									:class="getPlanTextColorClass(plan.name)"
-								>
-									{{ formatFeatureValue(plan.features?.support) }}
-								</td>
-							</tr>
-
-							<tr>
-								<td class="plan-name-table">Sinais Diários</td> 
-								<td 
-									v-for="plan in plans" 
-									:key="plan.id"
-									:class="getPlanTextColorClass(plan.name)"
-								>
-									{{ formatFeatureValue(plan.features?.signals_per_day) || '-' }}
-								</td>
-							</tr>
-						</tbody>
-					</table>
-				</div>
-				<p class="table-footer">
-					<span class="footer-bullet">•</span>
-					Todos os planos incluem segurança avançada Deriv API e suporte Zenix.
-				</p>
-			</div>
 		</main>
+		
+		<footer class="zenix-footer-mini">
+			<div class="footer-content-right">
+				<p>Administrador: Marcos Costa / Online / Versão v2.0</p>
+			</div>
+		</footer>
 	</div>
 </template>
 
@@ -191,220 +163,45 @@ export default {
 	components: { AppSidebar },
 	data() {
 		return {
-			plans: [],
+			plans: [], // Mantido para compatibilidade, mas layout está hardcoded por enquanto conforme pedido visual
 			currentPlan: null,
-			loading: true,
+			loading: false, // Forçando false para mostrar o layout estático
 			error: null,
 			activating: false,
 			isPlaying: false
 		}
 	},
 	mounted() {
-		this.fetchPlans()
-		this.fetchCurrentPlan()
+		// Carregamento de fonte e ícones necessários para este layout específico
+		this.loadDependencies();
+		// this.fetchPlans() // Comentado para garantir visual estático fiel primeiro
+		// this.fetchCurrentPlan()
 	},
 	methods: {
-		async fetchPlans() {
-			this.loading = true
-			this.error = null
-			try {
-				const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-				const res = await fetch(`${apiBaseUrl}/plans`)
-				
-				if (!res.ok) {
-					throw new Error('Erro ao buscar planos')
-				}
-
-				this.plans = await res.json()
-			} catch (err) {
-				console.error('Erro ao buscar planos:', err)
-				this.error = 'Não foi possível carregar os planos.'
-			} finally {
-				this.loading = false
+		loadDependencies() {
+			// FontAwesome já deve estar no projeto, mas garantindo
+			if (!document.getElementById('fa-script')) {
+				const script = document.createElement('script');
+				script.id = 'fa-script';
+				script.src = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js';
+				script.crossOrigin = 'anonymous';
+				script.referrerPolicy = 'no-referrer';
+				document.head.appendChild(script);
 			}
-		},
-		async fetchCurrentPlan() {
-			try {
-				const token = localStorage.getItem('token')
-				if (!token) return
-
-				const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-				const res = await fetch(`${apiBaseUrl}/plans/user/current`, {
-					headers: {
-						'Authorization': `Bearer ${token}`
-					}
-				})
-
-				if (res.ok) {
-					this.currentPlan = await res.json()
-				}
-			} catch (err) {
-				console.warn('Erro ao buscar plano atual:', err)
-			}
-		},
-		async handlePlanAction(plan) {
-			if (this.currentPlan?.id === plan.id) {
-				return // Já está ativo
-			}
-
-			if (plan.price === 0) {
-				// Plano gratuito
-				await this.activatePlan(plan.id)
-			} else {
-				// Plano pago - mostrar mensagem ou redirecionar para pagamento
-				alert(`O plano ${plan.name} requer processamento de pagamento. Funcionalidade em desenvolvimento.`)
-			}
-		},
-		async activatePlan(planId) {
-			this.activating = true
-			try {
-				const token = localStorage.getItem('token')
-				const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-				
-				const res = await fetch(`${apiBaseUrl}/plans/activate`, {
-					method: 'PUT',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${token}`
-					},
-					body: JSON.stringify({ planId })
-				})
-
-				if (!res.ok) {
-					const err = await res.json().catch(() => ({}))
-					throw new Error(err.message || 'Erro ao ativar plano')
-				}
-
-				await this.fetchCurrentPlan()
-				alert('Plano ativado com sucesso!')
-			} catch (err) {
-				alert(err.message || 'Erro ao ativar plano')
-			} finally {
-				this.activating = false
-			}
-		},
-		
-		isThGreen(planName) {
-			const normalizedName = planName.toLowerCase().trim();
-			// Retorna TRUE se for Pro ou Black para aplicar a classe de cor verde no TH
-			return normalizedName === 'pro' || normalizedName === 'plano pro' ||
-        normalizedName === 'black' || normalizedName === 'zenix black';
-		},
-		
-		getPlanTextColorClass(planName) {
-			const normalizedName = planName.toLowerCase().trim();
-			
-			// Retorna as classes CSS baseadas no nome do plano para o conteúdo (TD)
-			return {
-				// Plano Pro deve ser BRANCO
-				'text-white': normalizedName === 'pro' || normalizedName === 'plano pro',
-				// Plano Black deve ser VERDE
-				'text-green': normalizedName === 'black' || normalizedName === 'zenix black'
-				// Starter (ou Free) não recebe classe e mantém a cor cinza padrão do TD
-			};
-		},
-		
-		getPlanFeatures(plan) {
-			const features = {}
-			if (plan.features?.orion_ai) {
-				features['IA Orion'] = plan.features.orion_ai === 'limitada' ? 'limitada' : 
-										plan.features.orion_ai === 'completa' ? true : 
-										plan.features.orion_ai === 'black_module' ? 'Black Module' : true
-			}
-			if (plan.features?.signals_per_day !== undefined) {
-				features['Sinais/dia'] = plan.features.signals_per_day
-			}
-			if (plan.features?.copy_trading !== undefined) {
-				features['Copy Trading'] = plan.features.copy_trading
-			}
-			if (plan.features?.academy) {
-				features['Academy'] = plan.features.academy
-			}
-			if (plan.features?.support) {
-				features['Suporte'] = plan.features.support
-			}
-			if (plan.features?.dashboards) {
-				features['Dashboards Avançados'] = plan.features.dashboards
-			}
-			return features
-		},
-		
-		isFeatureEnabled(value) {
-			return value !== false && value !== undefined && value !== null
-		},
-		
-		formatFeature(key, value) {
-			if (value === true) return key
-			if (value === false) return `Sem ${key}`
-			if (typeof value === 'string') {
-				if (key === 'IA Orion') {
-					if (value === 'limitada') return 'IA Orion limitada'
-					if (value === 'completa') return 'IA Orion completa' 
-					if (value === 'black_module') return 'IA Orion Black Module'
-				}
-				if (key === 'Copy Trading' && value === 'premium') {
-					return 'Copy Trading Premium'
-				}
-				if (key === 'Copy Trading' && value === 'limitado') {
-					return 'Copy Trading limitado'
-				}
-				if (key === 'Academy') {
-					if (value === 'limitada') return 'Academy limitada'
-					if (value === 'completa') return 'Zenix Academy inclusa'
-					if (value === 'black_edition') return 'Academy Black Edition'
-				}
-				if (key === 'Suporte') {
-					if (value === 'email') return 'Suporte por e-mail'
-					if (value === 'prioritario') return 'Suporte prioritário'
-					if (value === '1on1') return 'Suporte 1:1 com Equipe'
-				}
-				if (key === 'Sinais/dia') {
-					return `${value} sinais/dia`
-				}
-				return value
-			}
-			if (typeof value === 'number') {
-				if (key === 'Sinais/dia') {
-					return `${value} sinais/dia` 
-				}
-			}
-			return String(value)
-		},
-
-		formatFeatureValue(value) {
-			if (value === false) return '-'
-			if (value === true) return '✓'
-			if (typeof value === 'string') {
-				if (value === 'parcial') return 'Parcial'
-				if (value === 'limitada') return 'Limitada'
-				if (value === 'completa') return 'Completa'
-				if (value === 'black_module') return 'Black Module' 
-				if (value === 'black_edition') return 'Black Edition'
-				if (value === 'email') return 'E-mail'
-				if (value === 'prioritario') return 'Prioritário'
-				if (value === '1on1') return '1:1' 
-				if (value === 'premium') return 'Premium'
-				if (value === 'limitado') return 'Limitado'
-				if (value === 'ilimitado') return 'Ilimitado' 
-				return value
-			}
-			return String(value)
 		},
 		playVideo() {
-			this.isPlaying = true
+			this.isPlaying = true;
 		},
-		getPlanIcon(planName) {
-			const name = planName.toLowerCase();
-			if (name.includes('starter') || name.includes('gratuito')) return 'rocket';
-			if (name.includes('pro')) return 'star';
-			if (name.includes('black')) return 'crown';
-			return 'rocket';
+		async handlePlanAction(plan) {
+			// Lógica simplificada para o botão do starter
+			alert(`Ação para o plano: ${plan.name}`);
 		}
 	}
 }
 </script>
 
 <style scoped src="../assets/css/views/plansView.css"></style>
-<!-- Estilos locais removidos pois o background será controlado pelo CSS global/arquivo importado -->
 <style scoped>
+/* Adicionando import da fonte Inter caso não esteja global */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 </style>
