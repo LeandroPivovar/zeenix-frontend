@@ -154,6 +154,18 @@
                             </div>
                         </div>
                         
+                        <!-- Chart Type Buttons -->
+                        <div class="chart-type-buttons">
+                            <button
+                                v-for="option in chartTypeOptions"
+                                :key="option.value"
+                                :class="['chart-type-btn', { 'active': chartType === option.value }]"
+                                @click="setChartType(option.value)"
+                            >
+                                {{ option.label }}
+                            </button>
+                        </div>
+                        
                         <div class="timeframe-buttons">
                             <button
                                 v-for="option in timeframeOptionsFormatted"
@@ -983,11 +995,29 @@ export default {
                 return [];
             }
 
-            const sortedTicks = [...this.ticks].sort((a, b) => {
-                const timeA = Math.floor(a.epoch || a.time || 0);
-                const timeB = Math.floor(b.epoch || b.time || 0);
-                return timeA - timeB;
-            });
+            // Filtrar e processar todos os ticks primeiro
+            const validTicks = this.ticks.map(tick => {
+                const rawTime = Math.floor(tick.epoch || tick.time || Date.now() / 1000);
+                const price = Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0);
+                return { time: rawTime, price };
+            }).filter(tick => tick.price > 0);
+
+            // Ordenar por tempo
+            const sortedTicks = [...validTicks].sort((a, b) => a.time - b.time);
+            const totalTicks = sortedTicks.length;
+
+            // Calcular timeframe adaptativo para manter aproximadamente a mesma quantidade de velas que ticks
+            // Objetivo: ter pelo menos 80% da quantidade de ticks em velas
+            let effectiveTimeframe = timeframeSeconds;
+            
+            // Estimar quantas velas teremos com o timeframe solicitado
+            const estimatedCandles = Math.max(1, Math.floor(totalTicks / Math.max(1, timeframeSeconds)));
+            
+            // Se o timeframe resultar em muito poucas velas (menos de 80% dos ticks), ajustar
+            if (estimatedCandles < totalTicks * 0.8 && totalTicks > 0) {
+                // Calcular timeframe que resulte em aproximadamente 90% da quantidade de ticks
+                effectiveTimeframe = Math.max(1, Math.floor(totalTicks / (totalTicks * 0.9)));
+            }
 
             const candles = [];
             let bucketStart = null;
@@ -1006,11 +1036,7 @@ export default {
             };
 
             for (const tick of sortedTicks) {
-                const rawTime = Math.floor(tick.epoch || tick.time || Date.now() / 1000);
-                const price = Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0);
-                if (!price) continue;
-
-                const bucket = Math.floor(rawTime / timeframeSeconds) * timeframeSeconds;
+                const bucket = Math.floor(tick.time / effectiveTimeframe) * effectiveTimeframe;
 
                 if (bucketStart === null) {
                     bucketStart = bucket;
@@ -1022,10 +1048,11 @@ export default {
                     bucketTicks = [];
                 }
 
-                bucketTicks.push({ time: rawTime, price });
+                bucketTicks.push(tick);
             }
 
             finalizeBucket();
+            
             return candles;
         },
         createSeries(type) {
@@ -1119,8 +1146,11 @@ export default {
             try {
                 let data = [];
                 if (this.chartType === 'candles') {
+                    // Usar o timeframe selecionado, mas a função aggregateTicksToCandles
+                    // já ajusta automaticamente para manter aproximadamente a mesma quantidade de pontos
                     data = this.aggregateTicksToCandles(this.selectedTimeframe);
                 } else {
+                    // Gráfico de linhas usa todos os ticks disponíveis
                     data = this.ticks.map(tick => ({
                         time: Math.floor(tick.epoch || tick.time || Date.now() / 1000),
                         value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
@@ -1604,6 +1634,38 @@ button i,
     right: 0;
     height: 2px;
     background-color: #22C55E;
+}
+
+.chart-type-buttons {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.chart-type-btn {
+    padding: 0.375rem 0.75rem;
+    background-color: #0B0B0B;
+    color: #A1A1A1;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.chart-type-btn:hover {
+    border-color: #22C55E;
+    color: #22C55E;
+}
+
+.chart-type-btn.active {
+    background-color: #22C55E;
+    color: #000;
+    border-color: #22C55E;
+    font-weight: 700;
 }
 
 .timeframe-buttons {

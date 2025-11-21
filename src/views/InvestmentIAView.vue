@@ -1781,7 +1781,7 @@ export default {
 /* Config Grid */
 .config-grid {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
     margin-left: 0;
