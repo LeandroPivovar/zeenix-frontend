@@ -8,7 +8,7 @@
         <div class="bg-white border border-zenix-card-border rounded-2xl p-10 login-card-shadow">
           
           <!-- Logo -->
-          <div class="mb-8 flex justify-center">
+          <div class="mb-8 flex justify-center">                                                                                                                                                                          
             <div class="flex items-center space-x-2">
               <div class="text-3xl font-bold text-zenix-text-dark">ZENI</div>
               <div class="text-3xl font-bold text-zenix-green">X</div>
@@ -86,14 +86,12 @@
       <div id="hero-section" class="w-[600px] pl-20">
         
         <!-- Main Title -->
-        <div class="mb-8">
-          <h2 class="font-bold leading-tight mb-6 zenix-title">
-            <span class="text-white typewriter-text">
-              <span v-for="(char, index) in displayedText" :key="index" :class="char === 'X' ? 'zenix-x text-zenix-green' : ''">{{ char }}</span>
-            </span>
+        <div class="mb-8 text-left">
+          <h2 class="text-8xl font-bold leading-tight mb-6 text-left" style="font-size: 4.5rem;">
+            <span v-html="typedTitle"></span>
           </h2>
-          <p class="text-xl text-white leading-relaxed text-left">
-            A única tecnologia criada para operar com a precisão que o mercado exige. A única tecnologia criada para operar com a precisão que o mercado exige. A única tecnologia criada para operar com a precisão que o mercado exige.
+          <p class="text-xl text-white leading-relaxed typing-text">
+            <span v-html="typedSubtitle"></span>
           </p>
         </div>
 
@@ -101,38 +99,38 @@
         <div id="benefits-list" class="space-y-8">
           
           <!-- Benefit 1 -->
-          <div class="flex items-start space-x-4">
+          <div class="flex items-start space-x-4 benefit-item" :class="{ 'animate-slide-in' : showBenefit1 }">
             <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
               <i class="fa-solid fa-brain text-zenix-green text-lg"></i>
             </div>
             <div class="text-left">
-              <h3 class="text-lg font-semibold text-white mb-1">IA de Investimento</h3>
-              <p class="text-sm text-zenix-light-gray leading-relaxed">Nenhum chute. Só cálculo e lógica e estratégia.</p>
+              <h3 class="text-lg font-semibold text-white mb-1">IA que analisa e decide com precisão</h3>
+              <p class="text-sm text-zenix-light-gray leading-relaxed">Nenhum chute. Só cálculo e lógica.</p>
             </div>
           </div>
 
           <!-- Benefit 2 -->
-          <div class="flex items-start space-x-4">
+          <div class="flex items-start space-x-4 benefit-item" :class="{ 'animate-slide-in' : showBenefit2 }">
             <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
               <i class="fa-solid fa-copy text-zenix-green text-lg"></i>
             </div>
             <div class="text-left">
-              <h3 class="text-lg font-semibold text-white mb-1">Copy Trading</h3>
+              <h3 class="text-lg font-semibold text-white mb-1">Copy Trading testado e validado</h3>
               <p class="text-sm text-zenix-light-gray leading-relaxed">Você copia estratégias que já funcionam de verdade.</p>
             </div>
           </div>
 
           <!-- Benefit 3 -->
-          <div class="flex items-start space-x-4">
+          <div class="flex items-start space-x-4 benefit-item" :class="{ 'animate-slide-in' : showBenefit3 }">
             <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
               <i class="fa-solid fa-robot text-zenix-green text-lg"></i>
             </div>
             <div class="text-left">
-              <h3 class="text-lg font-semibold text-white mb-1">Agente Autônomo</h3>
+              <h3 class="text-lg font-semibold text-white mb-1">Agente Autônomo que faz tudo por você</h3>
               <p class="text-sm text-zenix-light-gray leading-relaxed">Você ajusta uma vez — ele executa tudo, sem pausa e sem precisar olhar.</p>
             </div>
           </div>
-          <div class="flex items-start space-x-4">
+          <div class="flex items-start space-x-4 benefit-item" :class="{ 'animate-slide-in' : showBenefit4 }">
             <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
               <i class="fa-solid fa-chart-line text-zenix-green text-lg"></i>
             </div>
@@ -156,25 +154,83 @@ export default {
       password: '',
       isLoading: false,
       showPassword: false,
-      displayedText: '',
-      fullText: 'ZENIX',
-      typewriterSpeed: 150
+      fullTitle: 'ZENIX',
+      fullSubtitle: 'A única tecnologia criada para operar com a precisão que o mercado exige. A única tecnologia criada para operar com a precisão que o mercado exige. A única tecnologia criada para operar com a precisão que o mercado exige.',
+      typedTitle: '',
+      typedSubtitle: '',
+      showBenefit1: false,
+      showBenefit2: false,
+      showBenefit3: false,
+      showBenefit4: false
     }
   },
   mounted() {
-    this.startTypewriter();
+    this.startAnimations();
   },
   methods: {
-    startTypewriter() {
+    startAnimations() {
+      // 1. Primeiro o Zenix aparece letra por letra
+      this.typeTitle();
+    },
+    typeTitle() {
       let index = 0;
-      const type = () => {
-        if (index < this.fullText.length) {
-          this.displayedText += this.fullText.charAt(index);
+      const typingSpeed = 100; // velocidade de digitação em ms
+      
+      const typeChar = () => {
+        if (index < this.fullTitle.length) {
+          const char = this.fullTitle.charAt(index);
+          if (char === 'X') {
+            this.typedTitle += '<span class="text-zenix-green">X</span>';
+          } else {
+            this.typedTitle += `<span class="text-white">${char}</span>`;
+          }
           index++;
-          setTimeout(type, this.typewriterSpeed);
+          setTimeout(typeChar, typingSpeed);
+        } else {
+          // Após terminar o título, inicia o subtítulo
+          setTimeout(() => {
+            this.typeSubtitle();
+          }, 300);
         }
       };
-      type();
+      
+      // Inicia após um pequeno delay
+      setTimeout(typeChar, 300);
+    },
+    typeSubtitle() {
+      let index = 0;
+      const typingSpeed = 30; // velocidade de digitação em ms
+      
+      const typeChar = () => {
+        if (index < this.fullSubtitle.length) {
+          this.typedSubtitle += this.fullSubtitle.charAt(index);
+          index++;
+          setTimeout(typeChar, typingSpeed);
+        } else {
+          // Após terminar o subtítulo, inicia as qualidades
+          this.startBenefitsAnimation();
+        }
+      };
+      
+      typeChar();
+    },
+    startBenefitsAnimation() {
+      // 3. Depois cada uma das qualidades em sequência
+      setTimeout(() => {
+        this.showBenefit1 = true;
+      }, 500);
+      
+      setTimeout(() => {
+        this.showBenefit2 = true;
+      }, 1200);
+      
+      setTimeout(() => {
+        this.showBenefit3 = true;
+      }, 1900);
+      
+      setTimeout(() => {
+        this.showBenefit4 = true;
+      }, 2600);
     },
     togglePassword() {
       this.showPassword = !this.showPassword;
@@ -235,24 +291,6 @@ export default {
 }
 
 #hero-section .text-zenix-green {
-  color: #22C55E !important;
-}
-
-/* Efeito de typewriter e estilo ZENIX */
-.zenix-title {
-  font-size: 4.5rem !important;
-  line-height: 1.1;
-}
-
-.typewriter-text {
-  color: white !important;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  font-size: inherit;
-}
-
-.zenix-x {
-  display: inline-block;
   color: #22C55E !important;
 }
 
@@ -319,6 +357,23 @@ button.bg-zenix-green:disabled {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Efeito de digitação */
+.typing-text {
+  min-height: 1.75rem;
+}
+
+/* Animação dos benefícios da esquerda para direita */
+.benefit-item {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.benefit-item.animate-slide-in {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* Classes Tailwind CSS inline - estrutura exata do original */
