@@ -241,10 +241,20 @@
 
 .video-details {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: space-between;
+    justify-content: center;
     width: 100%;
     max-width: 100%;
+    text-align: center;
+    gap: 0.75rem;
+}
+
+.video-details > div:first-child {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
 }
 
 .video-title {
@@ -253,12 +263,14 @@
     color: #DFDFDF; /* text-zenix-text */
     margin-bottom: 0.25rem; /* mb-1 - reduzido */
     margin-top: 0;
+    text-align: center;
 }
 
 .video-description {
     font-size: 0.75rem; /* text-xs - reduzido */
     color: #8D8D8D; /* text-zenix-secondary */
     margin: 0;
+    text-align: center;
 }
 
 .video-duration-badge {
@@ -266,6 +278,7 @@
     background-color: rgba(34, 197, 94, 0.1); /* bg-zenix-green/10 */
     border: 1px solid rgba(34, 197, 94, 0.3); /* border-zenix-green/30 */
     border-radius: 0.5rem; /* rounded-lg */
+    margin: 0 auto; /* centraliza o badge */
 }
 
 .video-duration-badge span {
