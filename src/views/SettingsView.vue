@@ -157,18 +157,6 @@
                     Alterar senha
                   </button>
                 </div>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <span class="text-sm font-medium text-zenix-text block">Autenticação 2FA</span>
-                    <p class="text-xs" :class="settings.twoFactorEnabled ? 'text-zenix-green' : 'text-zenix-secondary'">
-                      {{ settings.twoFactorEnabled ? 'Ativa' : 'Inativa' }}
-                    </p>
-                  </div>
-                  <button @click="open2FAModal" class="bg-zenix-bg/70 hover:bg-zenix-green/10 text-zenix-text hover:text-zenix-green border border-zenix-border hover:border-zenix-green/40 px-4 py-2 rounded-lg transition-all text-xs lg:text-sm">
-                    Gerenciar 2FA
-                  </button>
-                </div>
               </div>
             </div>
 
@@ -561,9 +549,6 @@ export default {
     },
     downloadPersonalData() {
       this.$root.$toast.info('Funcionalidade de download de dados pessoais será implementada em breve')
-    },
-    open2FAModal() {
-      this.$root.$toast.info('Funcionalidade de autenticação em duas etapas será implementada em breve')
     },
     openDeleteAccountModal() {
       if (confirm('Tem certeza que deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.')) {

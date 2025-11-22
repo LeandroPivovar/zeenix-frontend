@@ -160,8 +160,8 @@ export default {
 .file-label i { font-size: 16px; }
 .mr-2 { margin-right: 8px; }
 .hint { font-size: 12px; color: #6b7280; margin-top: 4px; }
-.preview { margin: 16px 0; text-align: center; }
-.preview img { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid #10B981; }
+.preview { margin: 24px 0; display: flex; justify-content: center; align-items: center; width: 100%; }
+.preview img { width: 150px; height: 150px; border-radius: 50%; object-fit: cover; border: 3px solid #10B981; display: block; margin: 0 auto; }
 .uploading-message { color: #10B981; font-size: 14px; margin: 12px 0; text-align: center; }
 .error-message { color: #ef4444; font-size: 13px; margin: 12px 0; text-align: center; }
 .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
