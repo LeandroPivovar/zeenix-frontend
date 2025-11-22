@@ -227,13 +227,13 @@ export default {
                     if (response.status === 0 || response.status === 'undefined') {
                         alert('❌ Erro de conexão! Verifique se o backend está rodando em ' + baseUrl);
                     } else if (response.status === 404) {
-                        alert('❌ Endpoint não encontrado. Verifique a URL da API.');
+                        this.$root.$toast.info('❌ Endpoint não encontrado. Verifique a URL da API.');
                     } else if (response.status === 401) {
-                        alert('❌ Não autorizado. Faça login novamente.');
+                        this.$root.$toast.info('❌ Não autorizado. Faça login novamente.');
                     } else if (response.status >= 500) {
-                        alert('❌ Erro no servidor. Verifique os logs do backend.');
+                        this.$root.$toast.error('❌ Erro no servidor. Verifique os logs do backend.');
                     } else {
-                        alert(`❌ Erro ${response.status}: ${errorMessage}`);
+                        this.$root.$toast.error(`❌ Erro ${response.status}: ${errorMessage}`);
                     }
                     throw new Error(errorMessage);
                 }
@@ -256,7 +256,7 @@ export default {
                 
                 // Se for um erro de rede, mostrar mensagem clara
                 if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    alert('❌ Erro de conexão com o backend!\n\nVerifique:\n1. Se o backend está rodando (http://localhost:3000)\n2. Se há problemas de CORS\n3. Se a URL está correta');
+                    this.$root.$toast.error('❌ Erro de conexão com o backend!\n\nVerifique:\n1. Se o backend está rodando (http://localhost:3000)\n2. Se há problemas de CORS\n3. Se a URL está correta');
                 }
                 
                 this.experts = []; // Garante que a lista está vazia em caso de erro
@@ -320,7 +320,7 @@ export default {
                 const token = localStorage.getItem('token');
                 
                 if (!token) {
-                    alert('Você precisa estar autenticado para realizar esta ação');
+                    this.$root.$toast.info('Você precisa estar autenticado para realizar esta ação');
                     return;
                 }
 
@@ -356,7 +356,7 @@ export default {
                 }
 
                 await this.loadExperts();
-                alert('Sincronização iniciada!');
+                this.$root.$toast.info('Sincronização iniciada!');
             } catch (error) {
                 console.error('Erro ao sincronizar:', error);
                 alert(error.message || 'Erro ao sincronizar expert');
@@ -393,24 +393,24 @@ export default {
         async saveExpert() {
             // Validações básicas
             if (!this.expertForm.name || !this.expertForm.name.trim()) {
-                alert('Por favor, preencha o nome do expert');
+                this.$root.$toast.info('Por favor, preencha o nome do expert');
                 return;
             }
             
             if (!this.expertForm.email || !this.expertForm.email.trim()) {
-                alert('Por favor, preencha o email do expert');
+                this.$root.$toast.info('Por favor, preencha o email do expert');
                 return;
             }
             
             if (!this.expertForm.specialty || !this.expertForm.specialty.trim()) {
-                alert('Por favor, selecione a especialidade');
+                this.$root.$toast.info('Por favor, selecione a especialidade');
                 return;
             }
 
             // Validação de email
             const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
             if (!emailRegex.test(this.expertForm.email)) {
-                alert('Por favor, insira um email válido');
+                this.$root.$toast.info('Por favor, insira um email válido');
                 return;
             }
 
@@ -418,7 +418,7 @@ export default {
                 const token = localStorage.getItem('token');
                 
                 if (!token) {
-                    alert('❌ Você precisa estar autenticado para realizar esta ação.\n\nPor favor, faça login novamente.');
+                    this.$root.$toast.info('❌ Você precisa estar autenticado para realizar esta ação.\n\nPor favor, faça login novamente.');
                     return;
                 }
 
@@ -474,15 +474,15 @@ export default {
                     
                     // Mensagens de erro mais específicas
                     if (response.status === 401) {
-                        alert('❌ Não autorizado! Seu token pode ter expirado.\n\nPor favor, faça login novamente.');
+                        this.$root.$toast.info('❌ Não autorizado! Seu token pode ter expirado.\n\nPor favor, faça login novamente.');
                     } else if (response.status === 409) {
-                        alert(`❌ ${errorMessage}\n\nO email informado já está em uso.`);
+                        this.$root.$toast.error(`❌ ${errorMessage}\n\nO email informado já está em uso.`);
                     } else if (response.status === 400) {
-                        alert(`❌ Erro de validação:\n${errorMessage}`);
+                        this.$root.$toast.error(`❌ Erro de validação:\n${errorMessage}`);
                     } else if (response.status >= 500) {
-                        alert(`❌ Erro no servidor:\n${errorMessage}\n\nVerifique os logs do backend.`);
+                        this.$root.$toast.error(`❌ Erro no servidor:\n${errorMessage}\n\nVerifique os logs do backend.`);
                     } else {
-                        alert(`❌ Erro ao salvar expert:\n${errorMessage}`);
+                        this.$root.$toast.error(`❌ Erro ao salvar expert:\n${errorMessage}`);
                     }
                     throw new Error(errorMessage);
                 }
@@ -499,7 +499,7 @@ export default {
                 
                 // Se for um erro de rede, mostrar mensagem clara
                 if (error.name === 'TypeError' && error.message.includes('fetch')) {
-                    alert('❌ Erro de conexão com o backend!\n\nVerifique:\n1. Se o backend está rodando (http://localhost:3000)\n2. Se há problemas de CORS\n3. Se a URL está correta');
+                    this.$root.$toast.error('❌ Erro de conexão com o backend!\n\nVerifique:\n1. Se o backend está rodando (http://localhost:3000)\n2. Se há problemas de CORS\n3. Se a URL está correta');
                 } else if (!error.message.includes('HTTP') && !error.message.includes('não autorizado')) {
                     alert(error.message || 'Erro ao salvar expert. Verifique os dados e tente novamente.');
                 }
@@ -530,7 +530,7 @@ export default {
                 const token = localStorage.getItem('token');
                 
                 if (!token) {
-                    alert('Você precisa estar autenticado para realizar esta ação');
+                    this.$root.$toast.info('Você precisa estar autenticado para realizar esta ação');
                     return;
                 }
 
@@ -562,7 +562,7 @@ export default {
                 }
 
                 await this.loadExperts();
-                alert('Expert deletado com sucesso!');
+                this.$root.$toast.success('Expert deletado com sucesso!');
             } catch (error) {
                 console.error('Erro ao deletar expert:', error);
                 alert(error.message || 'Erro ao deletar expert');
@@ -589,7 +589,7 @@ export default {
                 await this.loadExperts();
             } catch (error) {
                 console.error('Erro ao alterar status:', error);
-                alert('Erro ao alterar status do expert');
+                this.$root.$toast.info('Erro ao alterar status do expert');
             }
         },
 
@@ -613,7 +613,7 @@ export default {
                 await this.loadExperts();
             } catch (error) {
                 console.error('Erro ao alterar verificação:', error);
-                alert('Erro ao alterar verificação do expert');
+                this.$root.$toast.info('Erro ao alterar verificação do expert');
             }
         },
 

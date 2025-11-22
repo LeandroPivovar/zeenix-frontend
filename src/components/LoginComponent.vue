@@ -255,7 +255,7 @@ export default {
         localStorage.removeItem('deriv_app_id');
         this.$router.push('/dashboard');
       } catch (e) {
-        alert(e.message || 'Erro inesperado');
+        this.$root.$toast.error(e.message || 'Erro inesperado');
       } finally {
         this.isLoading = false;
       }

@@ -336,7 +336,7 @@ export default {
         
       } catch (err) {
         console.error('Erro ao marcar aula:', err)
-        alert('Não foi possível marcar a aula como concluída.')
+        this.$root.$toast.error('Não foi possível marcar a aula como concluída.')
       } finally {
         this.markingComplete = false
       }

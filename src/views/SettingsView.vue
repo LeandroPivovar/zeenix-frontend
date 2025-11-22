@@ -431,10 +431,10 @@ export default {
         }
 
         await this.fetchSettings()
-        alert('Configurações salvas com sucesso!')
+        this.$root.$toast.success('Configurações salvas com sucesso!')
       } catch (err) {
         console.error('Erro ao salvar:', err)
-        alert('Erro ao salvar configurações. Tente novamente.')
+        this.$root.$toast.error('Erro ao salvar configurações. Tente novamente.')
       } finally {
         this.saving = false
       }
@@ -460,9 +460,9 @@ export default {
 
         await this.fetchSettings()
         this.closeEditNameModal()
-        alert('Nome atualizado com sucesso!')
+        this.$root.$toast.success('Nome atualizado com sucesso!')
       } catch (err) {
-        alert(err.message || 'Erro ao atualizar nome')
+        this.$root.$toast.error(err.message || 'Erro ao atualizar nome')
         throw err
       }
     },
@@ -487,9 +487,9 @@ export default {
 
         await this.fetchSettings()
         this.closeEditEmailModal()
-        alert('Email atualizado com sucesso!')
+        this.$root.$toast.success('Email atualizado com sucesso!')
       } catch (err) {
-        alert(err.message || 'Erro ao atualizar email')
+        this.$root.$toast.error(err.message || 'Erro ao atualizar email')
         throw err
       }
     },
@@ -517,9 +517,9 @@ export default {
 
         await this.fetchSettings()
         this.closeChangePasswordModal()
-        alert('Senha alterada com sucesso!')
+        this.$root.$toast.success('Senha alterada com sucesso!')
       } catch (err) {
-        alert(err.message || 'Erro ao alterar senha')
+        this.$root.$toast.error(err.message || 'Erro ao alterar senha')
         throw err
       }
     },
@@ -528,10 +528,10 @@ export default {
       try {
         await this.fetchSettings()
         this.closeChangePhotoModal()
-        alert('Foto atualizada com sucesso!')
+        this.$root.$toast.success('Foto atualizada com sucesso!')
       } catch (err) {
         console.error('Erro ao recarregar configurações:', err)
-        alert('Erro ao atualizar foto')
+        this.$root.$toast.error('Erro ao atualizar foto')
       }
     },
     async endAllSessions() {
@@ -554,20 +554,20 @@ export default {
         }
 
         await this.fetchSettings()
-        alert('Todas as sessões foram encerradas')
+        this.$root.$toast.success('Todas as sessões foram encerradas')
       } catch (err) {
-        alert('Erro ao encerrar sessões')
+        this.$root.$toast.error('Erro ao encerrar sessões')
       }
     },
     downloadPersonalData() {
-      alert('Funcionalidade de download de dados pessoais será implementada em breve')
+      this.$root.$toast.info('Funcionalidade de download de dados pessoais será implementada em breve')
     },
     open2FAModal() {
-      alert('Funcionalidade de autenticação em duas etapas será implementada em breve')
+      this.$root.$toast.info('Funcionalidade de autenticação em duas etapas será implementada em breve')
     },
     openDeleteAccountModal() {
       if (confirm('Tem certeza que deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.')) {
-        alert('Funcionalidade de exclusão de conta será implementada em breve')
+        this.$root.$toast.info('Funcionalidade de exclusão de conta será implementada em breve')
       }
     },
     openEditNameModal() { this.showEditNameModal = true },

@@ -410,7 +410,7 @@ export default {
     async handleRegister() {
       if (this.isLoading) return;
       if (this.password !== this.confirmPassword) {
-        alert('As senhas não correspondem!');
+        this.$root.$toast.error('As senhas não correspondem!');
         return;
       }
       this.isLoading = true;
@@ -426,10 +426,10 @@ export default {
         }
         const data = await res.json();
         localStorage.setItem('token', data.token);
-        alert('Cadastro realizado com sucesso');
+        this.$root.$toast.success('Cadastro realizado com sucesso');
         this.$router.push('/login');
       } catch (e) {
-        alert(e.message || 'Erro inesperado');
+        this.$root.$toast.error(e.message || 'Erro inesperado');
       } finally {
         this.isLoading = false;
       }

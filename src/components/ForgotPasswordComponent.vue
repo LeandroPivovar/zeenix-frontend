@@ -228,10 +228,10 @@ export default {
           throw new Error(err?.message || 'Erro ao enviar e-mail de recuperação');
         }
         
-        alert('Instruções de recuperação enviadas para seu e-mail!');
+        this.$root.$toast.success('Instruções de recuperação enviadas para seu e-mail!');
         this.$router.push('/login');
       } catch (e) {
-        alert(e.message || 'Erro inesperado. Tente novamente.');
+        this.$root.$toast.error(e.message || 'Erro inesperado. Tente novamente.');
       } finally {
         this.isLoading = false;
       }

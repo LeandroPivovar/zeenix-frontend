@@ -5,12 +5,6 @@
       :key="toast.id"
       :class="['toast', `toast-${toast.type}`]"
     >
-      <div class="toast-icon">
-        <span v-if="toast.type === 'success'">✓</span>
-        <span v-else-if="toast.type === 'error'">✕</span>
-        <span v-else-if="toast.type === 'warning'">⚠</span>
-        <span v-else>ℹ</span>
-      </div>
       <div class="toast-content">
         <div class="toast-message" v-html="toast.message"></div>
       </div>
@@ -103,55 +97,23 @@ export default {
 }
 
 .toast-success {
-  border-left: 4px solid #4CAF50;
-  background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, #1f1f1f 100%);
+  border-left: 4px solid #10B981;
+  background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, #1f1f1f 100%);
 }
 
 .toast-error {
-  border-left: 4px solid #f44336;
-  background: linear-gradient(135deg, rgba(244, 67, 54, 0.1) 0%, #1f1f1f 100%);
+  border-left: 4px solid #ef4444;
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, #1f1f1f 100%);
 }
 
 .toast-warning {
   border-left: 4px solid #ffc107;
-  background: linear-gradient(135deg, rgba(255, 193, 7, 0.1) 0%, #1f1f1f 100%);
+  background: linear-gradient(135deg, rgba(255, 193, 7, 0.15) 0%, #1f1f1f 100%);
 }
 
 .toast-info {
   border-left: 4px solid #2196F3;
-  background: linear-gradient(135deg, rgba(33, 150, 243, 0.1) 0%, #1f1f1f 100%);
-}
-
-.toast-icon {
-  flex-shrink: 0;
-  width: 24px;
-  height: 24px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  font-size: 16px;
-  font-weight: bold;
-}
-
-.toast-success .toast-icon {
-  background: rgba(76, 175, 80, 0.2);
-  color: #4CAF50;
-}
-
-.toast-error .toast-icon {
-  background: rgba(244, 67, 54, 0.2);
-  color: #f44336;
-}
-
-.toast-warning .toast-icon {
-  background: rgba(255, 193, 7, 0.2);
-  color: #ffc107;
-}
-
-.toast-info .toast-icon {
-  background: rgba(33, 150, 243, 0.2);
-  color: #2196F3;
+  background: linear-gradient(135deg, rgba(33, 150, 243, 0.15) 0%, #1f1f1f 100%);
 }
 
 .toast-content {

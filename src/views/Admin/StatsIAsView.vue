@@ -1210,7 +1210,7 @@ export default {
 		},
 
 		exportReportToPDF() {
-			alert(`Download do PDF de Estatísticas iniciado! (Arquivo: Relatorio_IAs_${this.filterStartDate}_a_${this.filterEndDate}.pdf)`);
+			this.$root.$toast.success(`Download do PDF de Estatísticas iniciado! (Arquivo: Relatorio_IAs_${this.filterStartDate}_a_${this.filterEndDate}.pdf)`);
 		},
 
 		// Métodos de monitoramento de IA
@@ -1265,11 +1265,11 @@ export default {
 					// pois aiMonitoring.isActive agora é true
 				} else {
 					console.error('[StatsIAsView] Erro ao iniciar monitoramento:', result.message);
-					alert('Erro ao iniciar monitoramento: ' + result.message);
+					this.$root.$toast.error('Erro ao iniciar monitoramento: ' + result.message);
 				}
 			} catch (error) {
 				console.error('[StatsIAsView] Erro ao iniciar monitoramento:', error);
-				alert('Erro ao conectar com o servidor');
+				this.$root.$toast.error('Erro ao conectar com o servidor');
 			}
 		},
 		
@@ -1428,7 +1428,7 @@ export default {
 
 	async startAutomatedTrading() {
 		if (this.tradingConfig.stakeAmount < 1) {
-			alert('Valor de entrada deve ser no mínimo $1');
+			this.$root.$toast.error('Valor de entrada deve ser no mínimo $1');
 			return;
 		}
 
@@ -1438,14 +1438,14 @@ export default {
 			// Obter userId do localStorage (token JWT ou user info)
 			const userId = this.getUserId();
 			if (!userId) {
-				alert('Erro: usuário não identificado. Por favor, faça login novamente.');
+				this.$root.$toast.error('Erro: usuário não identificado. Por favor, faça login novamente.');
 				return;
 			}
 			
 			// Obter token e moeda
 			const derivToken = this.getDerivToken();
 			if (!derivToken) {
-				alert('Por favor, conecte sua conta Deriv primeiro');
+				this.$root.$toast.error('Por favor, conecte sua conta Deriv primeiro');
 				return;
 			}
 			
@@ -1474,7 +1474,7 @@ export default {
 			if (result.success) {
 				this.tradingConfig.isActive = true;
 				console.log('[StatsIAsView] ✅ IA ativada em background!');
-				alert('✅ IA ativada! Ela continuará operando mesmo se você fechar a plataforma.');
+				this.$root.$toast.success('IA ativada! Ela continuará operando mesmo se você fechar a plataforma.');
 				
 				// Carregar estatísticas e histórico do banco
 				await this.loadSessionStats();
@@ -1483,11 +1483,11 @@ export default {
 				// Iniciar polling para atualizar a tela
 				this.startBackgroundPolling();
 			} else {
-				alert('❌ Erro ao ativar IA: ' + result.message);
+				this.$root.$toast.error('Erro ao ativar IA: ' + result.message);
 			}
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao ativar IA:', error);
-			alert('❌ Erro ao ativar IA. Verifique sua conexão.');
+			this.$root.$toast.error('Erro ao ativar IA. Verifique sua conexão.');
 		}
 	},
 
@@ -1497,7 +1497,7 @@ export default {
 		try {
 			const userId = this.getUserId();
 			if (!userId) {
-				alert('Erro: usuário não identificado.');
+				this.$root.$toast.error('Erro: usuário não identificado.');
 				return;
 			}
 			
@@ -1517,16 +1517,16 @@ export default {
 			if (result.success) {
 				this.tradingConfig.isActive = false;
 				console.log('[StatsIAsView] ✅ IA desativada!');
-				alert('✅ IA desativada com sucesso.');
+				this.$root.$toast.success('IA desativada com sucesso.');
 				
 				// Parar polling
 				this.stopBackgroundPolling();
 			} else {
-				alert('❌ Erro ao desativar IA: ' + result.message);
+				this.$root.$toast.error('Erro ao desativar IA: ' + result.message);
 			}
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao desativar IA:', error);
-			alert('❌ Erro ao desativar IA.');
+			this.$root.$toast.error('Erro ao desativar IA.');
 		}
 	},
 
@@ -1557,7 +1557,7 @@ export default {
 			
 			if (!derivToken) {
 				console.error('[StatsIAsView] Token da Deriv não encontrado');
-				alert('Por favor, conecte sua conta Deriv primeiro');
+				this.$root.$toast.error('Por favor, conecte sua conta Deriv primeiro');
 				return;
 			}
 			
@@ -1588,17 +1588,17 @@ export default {
 				
 				// Verificar se é erro de saldo insuficiente
 				if (tradeResult.error && tradeResult.error.includes('InsufficientBalance')) {
-					alert(
-						'❌ Saldo insuficiente!\n\n' +
+					this.$root.$toast.error(
+						'Saldo insuficiente!<br><br>' +
 						'Seu saldo não é suficiente para esta operação.\n\n' +
 						'💡 Dica: Se você tem uma conta DEMO USD, troque de conta no Dashboard:\n' +
 						'1. Vá para o Dashboard\n' +
 						'2. Clique no seletor de contas (canto superior direito)\n' +
 						'3. Selecione sua conta DEMO USD\n' +
 						'4. Volte para IAs de Investimento e tente novamente'
-					);
+					, 8000);
 				} else {
-					alert(`❌ Erro ao executar operação: ${tradeResult.error || tradeResult.message}`);
+					this.$root.$toast.error(`Erro ao executar operação: ${tradeResult.error || tradeResult.message}`);
 				}
 				
 				return;

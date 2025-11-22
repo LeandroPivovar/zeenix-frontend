@@ -210,7 +210,7 @@ export default {
         window.location.href = data.url
       } catch (error) {
         console.error('[HomeView] Erro ao iniciar conexão:', error)
-        alert(error?.message || 'Falha ao iniciar OAuth. Tente novamente.')
+        this.$root.$toast.error(error?.message || 'Falha ao iniciar OAuth. Tente novamente.')
         localStorage.removeItem('deriv_oauth_state')
       }
     },

@@ -290,11 +290,11 @@ export default {
       this.fetchFaqs()
     },
     startChat() {
-      alert('Funcionalidade de chat ao vivo será implementada em breve')
+      this.$root.$toast.info('Funcionalidade de chat ao vivo será implementada em breve')
       // Aqui você pode integrar com um sistema de chat real
     },
     createTicket() {
-      alert('Funcionalidade de criação de ticket será implementada em breve')
+      this.$root.$toast.info('Funcionalidade de criação de ticket será implementada em breve')
       // Aqui você pode abrir um modal ou redirecionar para criação de ticket
     }
   }

@@ -302,7 +302,7 @@ export default {
 				document.body.removeChild(link);
 			} catch (err) {
 				console.error('Erro ao exportar clientes:', err);
-				alert('Erro ao exportar lista de clientes');
+				this.$root.$toast.error('Erro ao exportar lista de clientes');
 			}
 		},
 		convertToCSV(data) {
