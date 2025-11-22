@@ -955,7 +955,9 @@ export default {
         async fetchTicks() {
             try {
                 console.log('[InvestmentIAView] Buscando ticks...');
-                const response = await fetch('https://taxafacil.site/api/ai/ticks');
+                // Buscar 2000 ticks para ter um gráfico maior
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/ticks?limit=2000`);
                 const result = await response.json();
 
                 console.log('[InvestmentIAView] Ticks recebidos:', {
