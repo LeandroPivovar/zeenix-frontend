@@ -62,9 +62,9 @@
                     <i v-else class="fas fa-user text-4xl text-zenix-secondary"></i>
                   </div>
                 </div>
-                <h2 class="text-xl font-bold text-white mb-1">{{ settings.name || 'Usuário' }}</h2>
-                <p class="text-zenix-secondary text-sm mb-1">{{ settings.email }}</p>
-                <p class="text-zenix-secondary text-xs">Conta criada em {{ formatDate(settings.createdAt) }}</p>
+                <h2 class="text-xl font-bold text-white mb-1 text-center">{{ settings.name || 'Usuário' }}</h2>
+                <p class="text-zenix-secondary text-sm mb-1 text-center">{{ settings.email }}</p>
+                <p class="text-zenix-secondary text-xs text-center">Conta criada em {{ formatDate(settings.createdAt) }}</p>
               </div>
 
               <div class="space-y-3">
