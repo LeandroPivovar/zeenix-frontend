@@ -60,13 +60,13 @@
 						</div>
 					</div>
 					<div class="video-details">
-						<div>
+						<div class="video-title-row">
 							<h3 class="video-title">Marcos Explica os Planos Zenix</h3>
-							<p class="video-description">Assista e entenda qual plano se encaixa melhor no seu perfil de operações.</p>
+							<div class="video-duration-badge">
+								<span>2 min</span>
+							</div>
 						</div>
-						<div class="video-duration-badge">
-							<span>2 min</span>
-						</div>
+						<p class="video-description">Assista e entenda qual plano se encaixa melhor no seu perfil de operações.</p>
 					</div>
 				</div>
 
