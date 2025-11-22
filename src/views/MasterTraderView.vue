@@ -139,40 +139,79 @@ export default {
 </script>
 
 <style>
+/* ---------------------------------------------------------------------------------- */
+/* 🛑 CSS GLOBAL (SEM SCOPE) - CORREÇÕES DE POSIÇÃO FIXA NO HEADER */
+/* Ajustes MÍNIMOS para anular o layout FIXO de componentes ANCESTRAIS.
+   Foco em anular 'position: fixed' e 'margin-top' no conteúdo principal.
+*/
+/* ---------------------------------------------------------------------------------- */
 
-.content-wrapper,
-.layout-content-investment[data-v-74055f],
-.layout-master-trader[data-v-74055f],
-.layout-sidebar-investment[data-v-7662ffc] { 
-    position: static !important;
-    padding: 0 !important; /* Remove o padding de compensação do header fixo */
-    top: auto !important;
-    left: auto !important;
-    right: auto !important;
-    height: auto !important; 
-    overflow-y: auto !important; 
-}
-
-.main-content-area[data-v-7662ffc]{
-    width: 100%;
-}
-
-/* Força o header da IA e outros headers a rolar E define a largura para 100% */
+/* 1. ANULA O POSITION: FIXED E Z-INDEX NO HEADER ANCESTRAL E SEUS COMPONENTES FILHOS */
+/* Mantemos estes para anular o comportamento fixo do header da aplicação inteira, se existir. */
 .header-master-trader,
-.header-investment {
-    position: static !important; 
+.header-content {
+    position: static !important;
     top: auto !important;
     z-index: auto !important;
-    /* REGRA CHAVE PARA A LARGURA 100% */
     width: 100% !important; 
 }
 
+/* 2. ANULA COMPENSAÇÃO DE MARGIN-TOP NO CONTEÚDO PRINCIPAL ANCESTRAL */
+/* Isso é crucial para que o conteúdo comece no topo e não abaixo de um header fixo invisível. */
+.main-content {
+    position: static !important;
+    width: 100%;
+}
 
+/* 3. Evita que o layout do IA de Investimento (e outros) sejam afetados globalmente */
+/* Removendo .layout-content-investment[data-v-74055f], .layout-master-trader[data-v-74055f], etc.
+   Esses correções devem ser tratadas no seu componente com `:scoped` ou de forma mais específica. */
 
+/* Correção pontual para o conteúdo dentro do MasterTrader, se o pai for muito restritivo */
+.layout-master-trader .content-wrapper {
+    /* Garante que o content-wrapper do *seu* componente role, se necessário. */
+    overflow-y: auto;
+    position: static; 
+    padding: 0 20px 20px 20px; /* Mantém o padding do scoped CSS */
+    flex-grow: 1;
+}
+
+/* Esconde o header duplicado (que pode estar vindo do componente Agente Autônomo) */
+.layout-master-trader .agente-autonomo-header {
+    display: none !important;
+}
 
 </style>
 
 <style scoped>
+/* ---------------------------------------------------------------------------------- */
+/* ✅ CSS LOCAL (SCOPED) - ESTILOS VISUAIS E DE LAYOUT GERAL */
+/* ---------------------------------------------------------------------------------- */
+:deep(.top-header[data-v-70480caa]) {
+    position: static !important;
+    top: auto !important; /* Garante que não haja compensação de topo */
+    z-index: auto !important; /* Evita que o elemento cubra o conteúdo */
+    width: 100% !important; /* Garante que o elemento rola */
+}
+
+:deep(.main-content-wrapper[data-v-70480caa]) {
+    margin-top: 0 !important; /* Remove a compensação de margin-top do conteúdo principal */
+    width: 100%; /* Garante que o conteúdo principal rola */
+    margin-left: 0;
+}
+
+:deep(.layout-agente-autnomo[data-v-3812672c]) {
+    margin: 0;
+    width: 100%;
+}
+
+:deep(.main-content[data-v-70480caa]) {
+    margin-top: 0 !important; /* Remove a compensação de margin-top do conteúdo principal */
+    width: 100%;
+}
+
+
+
 .layout-master-trader {
     display: flex;
     min-height: 100vh;
@@ -182,14 +221,8 @@ export default {
     margin-left: 240px;
 }
 
-.layout-ia-investment[data-v-70480caa]{
-    width: 100%;
-    margin: 0;
-}
-
-.layout-agente-autnomo[data-v-3812672c]{
-    margin: 0;
-    width: 100%;
+.layout-master-trader .agente-autonomo-header {
+  display: none !important; 
 }
 
 .layout{
@@ -201,48 +234,13 @@ export default {
     padding: 0 20px 20px 20px;
 }
 
-/* --------------------
-    Header (Título e Subtítulo - Removido do template, mas estilos mantidos se necessário)
-    -------------------- */
-.header-master-trader {
-    padding: 30px 0 20px 0;
-    border-bottom: 1px solid #30363d; /* Cor da borda/separador */
-    margin-bottom: 20px;
-}
-
-.header-inner {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-}
-
-.header-title {
-    font-size: 2.2rem;
-    font-weight: 600;
-    margin: 0;
-    color: #f0f6fc;
-}
-
-.header-subtitle {
-    font-size: 1rem;
-    color: #8b949e; /* Texto secundário/labels */
-    margin-top: 5px;
-}
-
-.btn-action {
-    background-color: #238636; /* Verde de destaque */
-    color: #f0f6fc;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 6px;
-    cursor: pointer;
-    font-size: 1rem;
-    font-weight: 600;
-    transition: background-color 0.2s ease;
-}
-
-.btn-action:hover {
-    background-color: #2ea043; /* Um verde um pouco mais claro */
+.header-master-trader,
+.header-content,
+.top-fix {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    width: 100% !important; 
 }
 
 /* --------------------
@@ -250,21 +248,34 @@ export default {
     -------------------- */
 .master-trader-status-nav {
     display: flex;
-    flex-direction: column; /* Manter como coluna para o topo e nav */
+    flex-direction: column; 
     align-items: stretch;
-    background-color: #0d0c0c; /* Fundo de elementos/cards */
+    background-color: #0d0c0c;
     border-radius: 8px;
     padding: 10px 20px;
     margin-bottom: 0; 
-    border-bottom: 1px solid #30363d; /* Linha separadora, ausente no seu código anterior */
+    border-bottom: 1px solid #30363d;
+    /* Certifica que o Nav também não tente ser fixo */
+    position: sticky; 
+    top: 0;
+    z-index: 10;
+}
+.master-trader-status-nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #0d0c0c;
+    border-radius: 0;
+    margin: 0 -20px 0 -20px; /* Estende para as bordas do content-wrapper */
+    padding: 10px 20px;
+    border-bottom: 1px solid #30363d;
 }
 
-/* NOVO ESTILO: Contêiner que agrupa os cards e as ações na mesma linha */
 .top-status-bar {
     display: flex;
-    justify-content: space-between; /* Espaço entre cards e ações */
+    justify-content: space-between;
     align-items: center;
-    padding-bottom: 10px; /* Adiciona um pequeno espaço antes da navegação de modos */
+    padding-bottom: 10px;
 }
 
 .status-cards-container {
@@ -289,7 +300,7 @@ export default {
 
 .status-label {
     font-size: 0.8rem;
-    color: #8b949e; /* Texto secundário/labels */
+    color: #8b949e;
     margin-bottom: 3px;
     text-align: left;
     padding-left: 0;
@@ -319,7 +330,7 @@ export default {
 .active-copy-trading .status-icon {
     width: 20px;
     height: 20px;
-    background-color: #23863721; /* Verde de destaque */
+    background-color: #23863721;
     border-radius: 12px;
     border: 1px solid #238636;
     position: relative;
@@ -339,19 +350,19 @@ export default {
 }
 
 .active-label {
-    color: #22c55e; /* Verde de destaque */
+    color: #22c55e;
     font-weight: 600;
 }
 
 .profit {
-    color: #22c55e; /* Verde de destaque */
+    color: #22c55e;
     font-weight: bold;
 }
 
 .status-actions {
     display: flex;
     gap: 15px;
-    border-left: 1px solid #30363d; /* Linha separadora, ausente no seu código anterior */
+    border-left: 1px solid #30363d;
     margin-left: 20px;
 }
 
@@ -361,7 +372,7 @@ export default {
     color: #f0f6fc;
     font-size: 1.2rem;
     cursor: pointer;
-    opacity: 0.5; /* Reduzida opacidade para os botões inativos */
+    opacity: 0.5;
     transition: opacity 0.2s;
     padding: 5px;
 }
@@ -370,9 +381,8 @@ export default {
     opacity: 0.8;
 }
 
-/* Estilização do ícone de usuário ativo (o último da imagem) */
 .action-icon-btn.active-user {
-    color: #238636; /* Verde de destaque */
+    color: #238636;
     opacity: 1;
 }
 
@@ -386,7 +396,6 @@ export default {
 .master-trader-mode-nav {
     display: flex;
     gap: 15px;
-    /* Alinhamento à esquerda, como na imagem */
     justify-content: flex-start;
     padding: 10px 0;
     margin: 0;
@@ -394,10 +403,10 @@ export default {
 
 .mode-nav-item {
     background-color: transparent;
-    color: #8b949e; /* Cor do texto padrão dos botões (claro na imagem) */
-    border: none; /* Remoção da borda para replicar a imagem */
+    color: #8b949e; 
+    border: none; 
     padding: 12px 25px;
-    border-radius: 0; /* Remoção do border-radius para replicar a imagem */
+    border-radius: 0; 
     cursor: pointer;
     font-size: 1rem;
     font-weight: 500;
@@ -412,33 +421,39 @@ export default {
 }
 
 .mode-nav-item i {
-    /* Ícones não visíveis no texto da imagem (apenas o texto) */
     display: none; 
 }
 
 .mode-nav-item:hover {
-    /* Fundo de botões hover */
     color: #f0f6fc;
 }
 
 .mode-nav-item.active {
     background-color: transparent;
-    color: #22c55e; /* Cor do texto ativo (na imagem ele é branco/claro) */
+    color: #22c55e; 
     font-weight: 600;
     box-shadow: 0px 0px 10px 1px #04310c;
-    border-bottom: 2px solid #22c55e; /* Linha verde/marcador de ativo na parte inferior */
+    border-bottom: 2px solid #22c55e; 
     border-radius: 12px;
 }
-
-
 
 /* Simulação de Ícone de Informação */
 .icon-info::before { content: 'ⓘ'; }
 
-/* Estilo Básico para a Área Principal (Opcional) */
+/* Estilo Básico para a Área Principal */
 .master-trader-main-content {
     border-radius: 8px;
     padding: 20px;
     min-height: 400px; 
+}
+
+/* --------------------
+    Media Queries
+    -------------------- */
+@media (max-width: 1024px) {
+    .layout-master-trader {
+        margin-left: 0;
+        width: 100%;
+    }
 }
 </style>
