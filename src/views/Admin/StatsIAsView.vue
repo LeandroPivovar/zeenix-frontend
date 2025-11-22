@@ -432,6 +432,131 @@
 
 				<!-- Seção de Trading Automático -->
 				<div v-if="aiMonitoring.isActive" class="ai-trading-section">
+					<!-- Performance Summary Cards -->
+					<div class="performance-summary-section">
+						<div class="performance-cards-grid">
+							<!-- Card 1 - Saldo Total -->
+							<div class="premium-card performance-card">
+								<div class="card-header-row">
+									<span class="card-label">Saldo Total</span>
+									<button class="eye-btn" @click="balanceVisibleActive = !balanceVisibleActive">
+										<i :class="balanceVisibleActive ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
+									</button>
+								</div>
+								<div class="card-value-large">
+									<span v-if="accountBalance !== null" class="balance-value" :class="{ 'hidden-value': !balanceVisibleActive }">
+										{{ formatBalance(accountBalance) }}
+									</span>
+									<span v-else class="text-zenix-secondary">Carregando...</span>
+								</div>
+								<div class="card-actions-row">
+									<button :class="['account-type-btn', accountType === 'Real' ? 'active' : '']" @click="accountType = 'Real'">Real</button>
+									<button :class="['account-type-btn', accountType === 'Demo' ? 'active' : '']" @click="accountType = 'Demo'">Demo</button>
+								</div>
+							</div>
+
+							<!-- Card 2 - Lucro do Dia -->
+							<div class="premium-card performance-card">
+								<div class="card-header-row">
+									<span class="card-label">Lucro do Dia</span>
+									<button class="eye-btn" @click="profitVisibleActive = !profitVisibleActive">
+										<i :class="profitVisibleActive ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
+									</button>
+								</div>
+								<div class="card-value-large">
+									<span :class="['profit-value', todayResult >= 0 ? 'positive' : 'negative', { 'hidden-value': !profitVisibleActive }]">
+										{{ todayResult >= 0 ? '+' : '' }}{{ formatCurrency(todayResult) }}
+									</span>
+								</div>
+								<span class="profit-percentage" :class="todayResultPercent >= 0 ? 'positive' : 'negative'">
+									{{ todayResultPercent >= 0 ? '+' : '' }}{{ todayResultPercent.toFixed(2) }}%
+								</span>
+							</div>
+
+							<!-- Card 3 - Winrate -->
+							<div class="premium-card performance-card">
+								<div class="card-header-row">
+									<span class="card-label">Winrate</span>
+									<button class="eye-btn" @click="winrateVisibleActive = !winrateVisibleActive">
+										<i :class="winrateVisibleActive ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
+									</button>
+								</div>
+								<div class="card-value-large">
+									<span class="winrate-value" :class="{ 'hidden-value': !winrateVisibleActive }">
+										{{ winRate }}%
+									</span>
+								</div>
+								<span class="text-xs" :class="winRate >= 70 ? 'text-zenix-green' : winRate >= 50 ? 'text-yellow-500' : 'text-zenix-red'" style="font-weight: 500;">
+									{{ winRate >= 70 ? 'Ótimo' : winRate >= 50 ? 'Regular' : 'Baixo' }}
+								</span>
+							</div>
+
+							<!-- Card 4 - Trades Hoje -->
+							<div class="premium-card performance-card">
+								<div class="card-header-row">
+									<span class="card-label">Trades Hoje</span>
+									<button class="eye-btn" @click="tradesVisibleActive = !tradesVisibleActive">
+										<i :class="tradesVisibleActive ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
+									</button>
+								</div>
+								<div class="card-value-large">
+									<span class="trades-value" :class="{ 'hidden-value': !tradesVisibleActive }">
+										{{ todayTrades }}
+									</span>
+								</div>
+								<div class="trades-stats-row">
+									<span class="text-xs text-zenix-green font-medium">{{ tradingStats.wins || 0 }} Vitórias</span>
+									<span class="text-xs text-zenix-red/70 font-medium">{{ tradingStats.losses || 0 }} Perdas</span>
+								</div>
+							</div>
+						</div>
+
+						<!-- Status da Operação Card -->
+						<div class="premium-card status-card">
+							<div class="status-card-content">
+								<div class="status-card-left">
+									<div class="ai-status-widget">
+										<div class="ai-status-bg"></div>
+										<div class="ai-status-content">
+											<div class="ai-status-spinner-wrapper">
+												<div class="ai-status-pulse-bg"></div>
+												<div class="ai-status-spinner">
+													<svg fill="none" viewBox="0 0 24 24" class="spinner-svg">
+														<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="20 60" opacity="0.3"></circle>
+														<circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="15 65" stroke-linecap="round"></circle>
+													</svg>
+												</div>
+											</div>
+										</div>
+									</div>
+									<div class="status-text-content">
+										<h3 class="status-title">Status da Operação</h3>
+										<div class="status-subtitle-row">
+											<span class="status-indicator-text text-[#FFD058] font-medium">Analisando</span>
+											<span class="status-indicator-dot">•</span>
+											<span class="status-indicator-subtext">Aguardando padrão de entrada</span>
+										</div>
+									</div>
+								</div>
+								<div class="status-card-right">
+									<div class="ai-online-indicator">
+										<div class="ai-pulse-dot"></div>
+										<span class="text-xs font-medium text-zenix-green">IA Online</span>
+									</div>
+									<button 
+										class="deactivate-ai-btn-new" 
+										@click="deactivateIAFromActive"
+										:disabled="isDeactivating"
+										title="Desativar IA"
+									>
+										<i class="fas fa-power-off"></i>
+										<span>{{ isDeactivating ? 'Desativando...' : 'Desativar IA' }}</span>
+									</button>
+								</div>
+							</div>
+						</div>
+					</div>
+
 					<div class="ai-trading-header">
 						<h2>🤖 Trading Automático com IA</h2>
 						
@@ -876,6 +1001,13 @@ export default {
 			todayResult: 0,
 			todayResultPercent: 0,
 			todayTrades: 0,
+			
+			// Visibilidade dos cards na seção IA ativa
+			balanceVisibleActive: true,
+			profitVisibleActive: true,
+			winrateVisibleActive: true,
+			tradesVisibleActive: true,
+			isDeactivating: false,
 			lastReadingTime: '--:--:--',
 			winRate: 78,
 			recentLogs: [],
@@ -1325,11 +1457,32 @@ export default {
 		},
 		
 		// Ativar IA a partir da tela padrão
-		async activateIAFromDefault() {
-			// Primeiro iniciar o monitoramento
-			await this.startAIMonitoring();
-			// A seção de monitoramento aparecerá automaticamente
-		},
+	async activateIAFromDefault() {
+		// Primeiro iniciar o monitoramento
+		await this.startAIMonitoring();
+		// A seção de monitoramento aparecerá automaticamente
+	},
+	
+	async deactivateIAFromActive() {
+		this.isDeactivating = true;
+		try {
+			// Desativar IA e trading
+			if (this.tradingConfig.isActive) {
+				await this.stopAutomatedTrading();
+			}
+			
+			// Parar monitoramento usando o método existente
+			this.stopAIMonitoring();
+			
+			console.log('[StatsIAsView] ✅ IA desativada da seção ativa');
+			this.$root.$toast.success('IA desativada com sucesso.');
+		} catch (error) {
+			console.error('[StatsIAsView] Erro ao desativar IA:', error);
+			this.$root.$toast.error('Erro ao desativar IA');
+		} finally {
+			this.isDeactivating = false;
+		}
+	},
 
 		async startAIMonitoring() {
 			try {
@@ -4513,5 +4666,335 @@ tbody tr:hover {
 	position: relative;
 	flex-wrap: wrap;
 	gap: 4px;
+}
+
+/* ========================================================== */
+/* Performance Cards Styles (IA Ativa)                       */
+/* ========================================================== */
+
+.performance-summary-section {
+	margin-bottom: 1.5rem;
+}
+
+.performance-cards-grid {
+	display: grid;
+	grid-template-columns: repeat(4, 1fr);
+	gap: 1rem;
+	margin-bottom: 1rem;
+}
+
+.performance-card {
+	padding: 1.25rem;
+	background-color: rgba(15, 23, 42, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 12px;
+}
+
+.card-header-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: 0.75rem;
+}
+
+.card-label {
+	font-size: 0.75rem;
+	color: #94a3b8;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+}
+
+.eye-btn {
+	cursor: pointer;
+	transition: all 0.2s ease;
+	opacity: 0.6;
+	background: none;
+	border: none;
+	color: #94a3b8;
+	padding: 0.25rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.eye-btn:hover {
+	opacity: 1;
+	color: #22C55E;
+}
+
+.eye-btn i {
+	font-size: 0.875rem;
+}
+
+.card-value-large {
+	margin-bottom: 0.75rem;
+}
+
+.card-value-large span {
+	font-size: 1.875rem;
+	font-weight: 700;
+	color: #f8fafc;
+}
+
+.hidden-value::before {
+	content: "••••••";
+	letter-spacing: 2px;
+}
+
+.hidden-value {
+	color: transparent !important;
+	font-size: 1.875rem !important;
+	font-weight: 700 !important;
+}
+
+.card-actions-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.account-type-btn {
+	padding: 0.375rem 0.75rem;
+	border-radius: 0.5rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	border: none;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	background-color: rgba(15, 23, 42, 0.8);
+	color: #94a3b8;
+	border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+.account-type-btn.active {
+	background-color: #22C55E;
+	color: #000;
+	border-color: #22C55E;
+}
+
+.profit-value.positive {
+	color: #22C55E;
+}
+
+.profit-value.negative {
+	color: #EF4444;
+}
+
+.profit-percentage {
+	font-size: 0.875rem;
+	font-weight: 500;
+	display: block;
+}
+
+.profit-percentage.positive {
+	color: #22C55E;
+}
+
+.profit-percentage.negative {
+	color: #EF4444;
+}
+
+.trades-stats-row {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	font-size: 0.75rem;
+	margin-top: 0.5rem;
+}
+
+/* Status Card */
+.status-card {
+	padding: 1.25rem;
+	margin-top: 1rem;
+	background-color: rgba(15, 23, 42, 0.6);
+	border: 1px solid rgba(148, 163, 184, 0.2);
+	border-radius: 12px;
+}
+
+.status-card-content {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 1rem;
+}
+
+.status-card-left {
+	display: flex;
+	align-items: center;
+	gap: 1rem;
+	flex: 1;
+}
+
+.ai-status-widget {
+	position: relative;
+	width: 3rem;
+	height: 3rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.ai-status-bg {
+	position: absolute;
+	inset: 0;
+	background-color: rgba(11, 11, 11, 0.5);
+	border: 1px solid #1C1C1C;
+	border-radius: 0.5rem;
+}
+
+.ai-status-content {
+	position: relative;
+	z-index: 10;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 0.375rem;
+}
+
+.ai-status-spinner-wrapper {
+	position: relative;
+}
+
+.ai-status-pulse-bg {
+	position: absolute;
+	inset: 0;
+	background-color: rgba(255, 208, 88, 0.2);
+	border-radius: 9999px;
+	filter: blur(12px);
+	animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+.ai-status-spinner {
+	position: relative;
+	width: 2.5rem;
+	height: 2.5rem;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.spinner-svg {
+	width: 1.75rem;
+	height: 1.75rem;
+	color: #FFD058;
+	animation: spin 3s linear infinite;
+}
+
+@keyframes spin {
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
+}
+
+.status-text-content {
+	flex: 1;
+	text-align: left;
+}
+
+.status-title {
+	font-size: 0.875rem;
+	font-weight: 600;
+	color: #f8fafc;
+	margin-bottom: 0.25rem;
+	text-align: left;
+}
+
+.status-subtitle-row {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	font-size: 0.75rem;
+	text-align: left;
+}
+
+.status-indicator-text {
+	font-weight: 500;
+	color: #FFD058;
+}
+
+.status-indicator-dot {
+	color: #94a3b8;
+}
+
+.status-indicator-subtext {
+	color: #94a3b8;
+}
+
+.status-card-right {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.ai-online-indicator {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+}
+
+.ai-pulse-dot {
+	width: 8px;
+	height: 8px;
+	background: #22C55E;
+	border-radius: 50%;
+	animation: pulse 2s ease-in-out infinite;
+	box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+}
+
+.deactivate-ai-btn-new {
+	display: flex;
+	align-items: center;
+	gap: 0.5rem;
+	padding: 0.5rem 1rem;
+	background-color: rgba(239, 68, 68, 0.1);
+	color: #EF4444;
+	border: 1px solid rgba(239, 68, 68, 0.3);
+	border-radius: 0.5rem;
+	font-size: 0.75rem;
+	font-weight: 600;
+	cursor: pointer;
+	transition: all 0.3s ease;
+}
+
+.deactivate-ai-btn-new:hover:not(:disabled) {
+	background-color: rgba(239, 68, 68, 0.2);
+	border-color: rgba(239, 68, 68, 0.5);
+}
+
+.deactivate-ai-btn-new:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.deactivate-ai-btn-new i {
+	font-size: 0.875rem;
+}
+
+/* Responsive adjustments */
+@media (max-width: 1200px) {
+	.performance-cards-grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+@media (max-width: 768px) {
+	.performance-cards-grid {
+		grid-template-columns: 1fr;
+	}
+	
+	.status-card-content {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+	
+	.status-card-right {
+		width: 100%;
+		justify-content: space-between;
+	}
 }
 </style>
