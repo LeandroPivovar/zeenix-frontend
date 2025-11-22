@@ -2724,30 +2724,6 @@ export default {
 		
 		return candles;
 	},
-	
-	/**
-	 * Cleanup: Remove o widget TradingView quando o componente for desmontado
-	 */
-	beforeUnmount() {
-		if (this.tradingViewWidget) {
-			try {
-				this.tradingViewWidget.remove();
-				this.tradingViewWidget = null;
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao remover widget TradingView:', error);
-			}
-		}
-		
-		// Limpar gráficos lightweight-charts também
-		if (this.marketChartActive) {
-			this.marketChartActive.remove();
-			this.marketChartActive = null;
-		}
-		if (this.marketChartInactive) {
-			this.marketChartInactive.remove();
-			this.marketChartInactive = null;
-		}
-	},
 },
 
 async mounted() {
@@ -2823,10 +2799,51 @@ async mounted() {
 	});
 },
 
-beforeUnmount() {
-	this.stopPolling();
-	this.stopBackgroundPolling();
-},
+	beforeUnmount() {
+		// Cleanup: Remove o widget TradingView quando o componente for desmontado
+		if (this.tradingViewWidget) {
+			try {
+				this.tradingViewWidget.remove();
+				this.tradingViewWidget = null;
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao remover widget TradingView:', error);
+			}
+		}
+		
+		// Limpar gráficos lightweight-charts também
+		if (this.marketChartActive) {
+			try {
+				this.marketChartActive.remove();
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao remover gráfico ativo:', error);
+			}
+			this.marketChartActive = null;
+		}
+		if (this.marketChartInactive) {
+			try {
+				this.marketChartInactive.remove();
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao remover gráfico inativo:', error);
+			}
+			this.marketChartInactive = null;
+		}
+		
+		// Limpar polling
+		if (this.aiPollingInterval) {
+			clearInterval(this.aiPollingInterval);
+			this.aiPollingInterval = null;
+		}
+		
+		// Limpar polling de background
+		if (this.backgroundPollingInterval) {
+			clearInterval(this.backgroundPollingInterval);
+			this.backgroundPollingInterval = null;
+		}
+		
+		// Limpar polling existente
+		this.stopPolling();
+		this.stopBackgroundPolling();
+	},
 }
 </script>
 
