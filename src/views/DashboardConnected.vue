@@ -193,31 +193,31 @@
               <!-- IA Recomendada -->
               <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg p-2.5 w-full">
                 <div class="flex items-center space-x-1.5 mb-1">
-                  <i class="fas fa-brain text-zenix-green text-[10px]"></i>
-                  <p class="text-[9px] text-[#A0A0A0] font-medium">IA Recomendada</p>
+                  <i class="fas fa-brain text-zenix-green text-xs"></i>
+                  <p class="text-[10px] text-[#A0A0A0] font-medium">IA Recomendada</p>
                 </div>
-                <p class="text-[13px] font-bold text-zenix-text mb-0.5">{{ recommendedIA.name }}</p>
-                <p class="text-[11px] text-zenix-green font-semibold">{{ recommendedIA.consistency }}% Consistência</p>
+                <p class="text-[15px] font-bold text-zenix-text mb-0.5">{{ recommendedIA.name }}</p>
+                <p class="text-xs text-zenix-green font-semibold">{{ recommendedIA.consistency }}% Consistência</p>
               </div>
               
               <!-- Copy Mais Rentável -->
               <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg p-2.5 w-full">
                 <div class="flex items-center space-x-1.5 mb-1">
-                  <i class="fas fa-copy text-zenix-green text-[10px]"></i>
-                  <p class="text-[9px] text-[#A0A0A0] font-medium">Copy Mais Rentável</p>
+                  <i class="fas fa-copy text-zenix-green text-xs"></i>
+                  <p class="text-[10px] text-[#A0A0A0] font-medium">Copy Mais Rentável</p>
                 </div>
-                <p class="text-[13px] font-bold text-zenix-text mb-0.5">{{ topTrader.name }}</p>
-                <p class="text-[11px] text-zenix-green font-semibold">+{{ topTrader.profit }}% hoje</p>
+                <p class="text-[15px] font-bold text-zenix-text mb-0.5">{{ topTrader.name }}</p>
+                <p class="text-xs text-zenix-green font-semibold">+{{ topTrader.profit }}% hoje</p>
               </div>
               
               <!-- Agente Autônomo -->
               <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg p-2.5 w-full">
                 <div class="flex items-center space-x-1.5 mb-1">
-                  <i class="fas fa-robot text-zenix-label text-[10px]"></i>
-                  <p class="text-[9px] text-[#A0A0A0] font-medium">Agente Autônomo</p>
+                  <i class="fas fa-robot text-zenix-label text-xs"></i>
+                  <p class="text-[10px] text-[#A0A0A0] font-medium">Agente Autônomo</p>
                 </div>
-                <p class="text-[13px] font-bold text-zenix-secondary mb-0.5">Nenhum ativo</p>
-                <p class="text-[9px] text-zenix-label">Ative para aumentar consistência</p>
+                <p class="text-[15px] font-bold text-zenix-secondary mb-0.5">Nenhum ativo</p>
+                <p class="text-[10px] text-zenix-label">Ative para aumentar consistência</p>
               </div>
             </div>
           </div>
@@ -232,21 +232,21 @@
         <div 
           v-for="(tool, index) in quickTools" 
           :key="index"
-          class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden premium-card transition-all duration-300 cursor-pointer h-[160px] flex tool-card relative w-full"
+          class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden premium-card transition-all duration-300 cursor-pointer h-[190px] flex tool-card relative w-full"
           @click="handleToolClick(tool)"
         >
           <div class="w-[40%] relative overflow-hidden flex-shrink-0">
             <img :src="tool.image" :alt="tool.alt" class="w-full h-full object-cover">
             <div class="absolute inset-0 bg-gradient-to-r from-transparent to-zenix-card"></div>
           </div>
-          <div class="flex-1 p-6 flex flex-col justify-between">
-            <div>
+          <div class="flex-1 p-6 flex flex-col justify-between min-h-0">
+            <div class="flex-shrink-0">
               <h3 class="text-sm font-semibold text-zenix-text mb-2">{{ tool.title }}</h3>
               <p class="text-xs text-zenix-secondary leading-relaxed">{{ tool.description }}</p>
             </div>
             <button 
               @click.stop="handleToolClick(tool)"
-              class="w-full bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold py-2.5 rounded-lg text-xs transition-all btn-primary-enhanced"
+              class="w-full bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold py-2.5 rounded-lg text-xs transition-all btn-primary-enhanced flex-shrink-0 mt-auto"
             >
               {{ tool.buttonText }}
             </button>
