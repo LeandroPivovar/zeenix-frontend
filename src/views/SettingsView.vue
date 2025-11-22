@@ -58,7 +58,7 @@
               <div class="text-center mb-8">
                 <div class="avatar-border w-24 h-24 mx-auto mb-4">
                   <div class="w-full h-full rounded-full overflow-hidden bg-zenix-card flex items-center justify-center">
-                    <img v-if="settings.profilePictureUrl" :src="settings.profilePictureUrl" alt="Profile" class="w-full h-full rounded-full object-cover">
+                    <img v-if="profilePictureFullUrl" :src="profilePictureFullUrl" alt="Profile" class="w-full h-full rounded-full object-cover">
                     <i v-else class="fas fa-user text-4xl text-zenix-secondary"></i>
                   </div>
                 </div>
@@ -326,6 +326,29 @@ export default {
     },
     saveButtonText() {
       return this.isMobile ? 'Salvar' : 'Salvar alterações';
+    },
+    profilePictureFullUrl() {
+      if (!this.settings.profilePictureUrl) return null
+      
+      // Se já é uma URL completa, retornar como está
+      if (this.settings.profilePictureUrl.startsWith('http://') || 
+          this.settings.profilePictureUrl.startsWith('https://')) {
+        return this.settings.profilePictureUrl
+      }
+      
+      // Se começa com /api/uploads, construir URL relativa ao domínio
+      // Em produção, o nginx vai servir /api/uploads diretamente
+      if (this.settings.profilePictureUrl.startsWith('/api/uploads')) {
+        // Pegar apenas o domínio base sem /api
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+        const baseUrl = apiBaseUrl.replace(/\/api$/, '')
+        return `${baseUrl}${this.settings.profilePictureUrl}`
+      }
+      
+      // Fallback para caminhos antigos /uploads/...
+      const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+      const baseUrl = apiBaseUrl.replace(/\/api$/, '')
+      return `${baseUrl}${this.settings.profilePictureUrl}`
     }
   },
   mounted() {
