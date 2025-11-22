@@ -12,7 +12,7 @@
 				</div>
 				<div class="main-header-right">
 					<button class="btn pdf-btn" @click="exportReportToPDF">
-						<img src="../../assets/icons/box-down.svg" alt="Exportar PDF" width="20px"> Exportar Relatório
+						<img :src="boxDownIcon" alt="Exportar PDF" width="20px"> Exportar Relatório
 					</button>
 				</div>
 			</div>
@@ -660,7 +660,7 @@
 				<div class="bottom-summary-cards">
 					<div class="bottom-card">
 						<div class="card-content">
-							<img src="../../assets/icons/robot.svg" alt="Total de IAs Ativas" class="card-icon" >
+							<img :src="robotIcon" alt="Total de IAs Ativas" class="card-icon" >
 							<div class="card-text-group"> 
 								<p class="card-value card-value-white">12</p>
 								<h3 class="card-title">Total de IAs Ativas</h3>
@@ -670,7 +670,7 @@
 
 					<div class="bottom-card">
 						<div class="card-content">
-							<img src="../../assets/icons/stats.svg" alt="Lucro Combinado (7 dias)" class="card-icon">
+							<img :src="statsIcon" alt="Lucro Combinado (7 dias)" class="card-icon">
 							<div class="card-text-group"> 
 								<p class="card-value positive-profit">+U$ 5.481,20</p>
 								<h3 class="card-title">Lucro Combinado (7 dias)</h3>
@@ -680,7 +680,7 @@
 
 					<div class="bottom-card">
 						<div class="card-content">
-							<img src="../../assets/icons/target-IA.svg" alt="Média de Acerto Global" class="card-icon">
+							<img :src="targetIAIcon" alt="Média de Acerto Global" class="card-icon">
 							<div class="card-text-group"> 
 								<p class="card-value card-value-white">72,4%</p>
 								<h3 class="card-title">Média de Acerto Global</h3>
@@ -690,7 +690,7 @@
 
 					<div class="bottom-card">
 						<div class="card-content">
-							<img src="../../assets/icons/trophy.svg" alt="IA com Maior Lucro" class="card-icon">
+							<img :src="trophyIcon" alt="IA com Maior Lucro" class="card-icon">
 							<div class="card-text-group"> 
 								<p class="card-value positive-profit">IA Zenix 2 <span class="card-value-white">(+3,848.93)</span></p>
 								<h3 class="card-title">IA com Maior Lucro</h3>
@@ -707,6 +707,11 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import LineChart from '../../components/LineChart.vue';
 import { createChart, ColorType } from 'lightweight-charts';
+import robotIcon from '@/assets/icons/robot.svg';
+import statsIcon from '@/assets/icons/stats.svg';
+import targetIAIcon from '@/assets/icons/target-IA.svg';
+import trophyIcon from '@/assets/icons/trophy.svg';
+import boxDownIcon from '@/assets/icons/box-down.svg';
 
 export default {
 	name: 'StatsIAs',
@@ -726,6 +731,12 @@ export default {
 		];
 
 		return {
+			robotIcon,
+			statsIcon,
+			targetIAIcon,
+			trophyIcon,
+			boxDownIcon,
+			
 			isSidebarOpen: true, 
 			isSidebarCollapsed: false,
 			
@@ -2113,7 +2124,41 @@ export default {
 	},
 },
 
-mounted() {
+async mounted() {
+	// Verificar se o usuário está conectado com a Deriv
+	console.log('[StatsIAsView] Verificando conexão Deriv...');
+	
+	const hasToken = !!localStorage.getItem('deriv_token');
+	if (!hasToken) {
+		try {
+			const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
+			if (tokensByLoginId) {
+				const parsed = JSON.parse(tokensByLoginId);
+				if (Object.keys(parsed).length === 0) {
+					console.warn('[StatsIAsView] Nenhum token Deriv encontrado, redirecionando para tela de conexão...');
+					this.$router.push('/dashboard');
+					return;
+				}
+			} else {
+				console.warn('[StatsIAsView] Nenhum token Deriv encontrado, redirecionando para tela de conexão...');
+				this.$router.push('/dashboard');
+				return;
+			}
+		} catch (e) {
+			console.warn('[StatsIAsView] Erro ao verificar tokens Deriv, redirecionando para tela de conexão...');
+			this.$router.push('/dashboard');
+			return;
+		}
+	}
+	
+	// Verificar conexão salva
+	const savedConnection = localStorage.getItem('deriv_connection');
+	if (!savedConnection) {
+		console.warn('[StatsIAsView] Nenhuma conexão Deriv encontrada, redirecionando para tela de conexão...');
+		this.$router.push('/dashboard');
+		return;
+	}
+	
 	// TESTE CRÍTICO - Sempre deve aparecer no console
 	console.log('🚀 TESTE: StatsIAsView mounted() foi chamado!');
 	console.log('[StatsIAsView] ===== COMPONENTE MONTADO =====');
@@ -2199,6 +2244,9 @@ h1{
 
 .main-content {
 	width: 100%;
+	margin-top: 70px;
+	padding: 4rem 20px 1.5rem 20px;
+	box-sizing: border-box;
 }
 
 .main-header h1 {
