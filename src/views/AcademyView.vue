@@ -1,28 +1,50 @@
 <template>
-  <div class="layout noise-bg" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+  <div class="zenix-layout">
     <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
-    
-    <!-- Main Content -->
-    <div class="main-wrapper"> <!-- Wrapper to align with sidebar width logic in CSS -->
-        
-        <!-- Header -->
-        <header>
-            <div class="header-left">
-                <button class="hamburger-menu" @click="handleHamburgerClick">
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-                <div class="header-content">
-                    <h1>Zenix Academy</h1>
-                    <p>Cursos exclusivos para traders profissionais</p>
+
+    <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <header class="top-header">
+            <div class="header-content">
+                <div class="header-left-content">
+                    <h1 class="header-title">Zenix Academy</h1>
+                    <p class="header-subtitle">Cursos exclusivos para traders profissionais</p>
+                </div>
+                <div class="header-actions-right">
+                    <div class="balance-display-card">
+                        <div class="balance-header">
+                            <i class="far fa-wallet"></i>
+                            <div class="balance-info">
+                                <span class="balance-label">Saldo Atual</span>
+                                <div class="balance-value-row">
+                                    <span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ formattedBalance }}</span>
+                                    <span class="balance-value" v-else>••••••</span>
+                                    <button 
+                                        v-if="balanceVisible && !isDemo" 
+                                        class="account-type-btn real-btn"
+                                        @click="toggleBalanceVisibility"
+                                    >
+                                        Real
+                                    </button>
+                                    <button 
+                                        v-if="balanceVisible && isDemo" 
+                                        class="account-type-btn demo-btn"
+                                        @click="toggleBalanceVisibility"
+                                    >
+                                        Demo
+                                    </button>
+                                    <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
+                                        <i class="far fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
-            <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
         </header>
 
         <!-- Courses Grid -->
-        <main class="academy-content">
+        <main class="main-content academy-content">
             <div v-if="loading" class="loading-container">
                 <p>Carregando cursos...</p>
             </div>
@@ -118,12 +140,24 @@ export default {
       error: null,
       courseProgress: {}, 
       isSidebarOpen: false,
-      isSidebarCollapsed: false
+      isSidebarCollapsed: false,
+      balanceVisible: true,
+      balance: 0,
+      isDemo: false
+    }
+  },
+  computed: {
+    formattedBalance() {
+      return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+      }).format(this.balance);
     }
   },
   mounted() {
     this.loadFontAwesome();
     this.fetchCourses();
+    this.fetchBalance();
   },
   methods: {
     loadFontAwesome() {
@@ -215,21 +249,34 @@ export default {
       }
       const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
       return `${apiBaseUrl}/${url}`
+    },
+    toggleBalanceVisibility() {
+      this.balanceVisible = !this.balanceVisible
+    },
+    async fetchBalance() {
+      try {
+        const token = localStorage.getItem('token')
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+        
+        const res = await fetch(`${apiBaseUrl}/settings/balance`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+          }
+        })
+
+        if (res.ok) {
+          const data = await res.json()
+          this.balance = data.balance || 0
+          this.isDemo = data.isDemo || false
+        }
+      } catch (err) {
+        console.error('Erro ao buscar saldo:', err)
+      }
     }
   }
 }
 </script>
 
 <style scoped src="../assets/css/views/academyView.css"></style>
-<style scoped>
-.main-wrapper {
-    display: flex;
-    flex-direction: column;
-    width: 100%;
-}
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-</style>
