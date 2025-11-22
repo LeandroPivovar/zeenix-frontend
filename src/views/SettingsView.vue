@@ -501,27 +501,13 @@ export default {
       }
     },
     async handleSavePhoto(photoUrl) {
+      // O upload já foi feito no modal, só precisamos recarregar as configurações
       try {
-        const token = localStorage.getItem('token')
-        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-
-        const res = await fetch(`${apiBaseUrl}/settings`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` })
-          },
-          body: JSON.stringify({ profilePictureUrl: photoUrl })
-        })
-
-        if (!res.ok) {
-          throw new Error('Erro ao atualizar foto')
-        }
-
         await this.fetchSettings()
         this.closeChangePhotoModal()
         alert('Foto atualizada com sucesso!')
       } catch (err) {
+        console.error('Erro ao recarregar configurações:', err)
         alert('Erro ao atualizar foto')
       }
     },
