@@ -451,11 +451,31 @@
 						<!-- Configurações Fixas (apenas visualização) -->
 						<div class="fixed-config-info">
 							<div class="config-info-item">
-								<label>Mercado:</label>
+								<label>
+									Mercado:
+									<div class="tooltip-container">
+										<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<circle cx="12" cy="12" r="10"></circle>
+											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+											<line x1="12" y1="17" x2="12.01" y2="17"></line>
+										</svg>
+										<span class="tooltip-text">Escolha o ativo que deseja operar.</span>
+									</div>
+								</label>
 								<span class="fixed-value">Volatilidade 100 (R_10)</span>
 							</div>
 							<div class="config-info-item">
-								<label>Estratégia:</label>
+								<label>
+									Estratégia:
+									<div class="tooltip-container">
+										<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<circle cx="12" cy="12" r="10"></circle>
+											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+											<line x1="12" y1="17" x2="12.01" y2="17"></line>
+										</svg>
+										<span class="tooltip-text">Modelo de análise usado pela IA</span>
+									</div>
+								</label>
 								<span class="fixed-value">Veloz Automático</span>
 							</div>
 							<div class="config-info-item">
@@ -787,11 +807,6 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import LineChart from '../../components/LineChart.vue';
 import { createChart, ColorType } from 'lightweight-charts';
-import robotIcon from '@/assets/icons/robot.svg';
-import statsIcon from '@/assets/icons/stats.svg';
-import targetIAIcon from '@/assets/icons/target-IA.svg';
-import trophyIcon from '@/assets/icons/trophy.svg';
-import boxDownIcon from '@/assets/icons/box-down.svg';
 
 export default {
 	name: 'StatsIAs',
@@ -811,11 +826,11 @@ export default {
 		];
 
 		return {
-			robotIcon,
-			statsIcon,
-			targetIAIcon,
-			trophyIcon,
-			boxDownIcon,
+			robotIcon: require('@/assets/icons/robot.svg'),
+			statsIcon: require('@/assets/icons/stats.svg'),
+			targetIAIcon: require('@/assets/icons/target-IA.svg'),
+			trophyIcon: require('@/assets/icons/trophy.svg'),
+			boxDownIcon: require('@/assets/icons/box-down.svg'),
 			
 			isSidebarOpen: true, 
 			isSidebarCollapsed: false,
@@ -2063,7 +2078,15 @@ export default {
 			this.marketChartInactive = createChart(container, {
 				width: containerWidth,
 				height: containerHeight,
-				localization: { locale: 'pt-BR' },
+				localization: { 
+					locale: 'pt-BR',
+					timeFormatter: (time) => {
+						const date = new Date(time * 1000);
+						const hours = String(date.getHours()).padStart(2, '0');
+						const minutes = String(date.getMinutes()).padStart(2, '0');
+						return `${hours}:${minutes}`;
+					}
+				},
 				layout: {
 					background: { type: ColorType.Solid, color: '#0B0B0B' },
 					textColor: '#DFDFDF',
@@ -2083,15 +2106,17 @@ export default {
 					timeVisible: true,
 					secondsVisible: false,
 					rightOffset: 10,
+					fixLeftEdge: false,
+					fixRightEdge: false,
 				},
 				grid: {
 					vertLines: { 
-						color: '#1A1A1A',
+						color: 'rgba(148, 163, 184, 0.1)',
 						style: 0,
 						visible: true,
 					},
 					horzLines: { 
-						color: '#1A1A1A',
+						color: 'rgba(148, 163, 184, 0.1)',
 						style: 0,
 						visible: true,
 					},
@@ -2111,6 +2136,22 @@ export default {
 						labelBackgroundColor: '#22C55E',
 					},
 				},
+				handleScroll: {
+					mouseWheel: true,
+					pressedMouseMove: true,
+					horzTouchDrag: true,
+					vertTouchDrag: true,
+				},
+				handleScale: {
+					axisPressedMouseMove: {
+						time: true,
+						price: true,
+					},
+					axisDoubleClickReset: true,
+					axisTouchDrag: true,
+					mouseWheel: true,
+					pinch: true,
+				},
 			});
 			
 			this.marketLineSeriesInactive = this.marketChartInactive.addCandlestickSeries({
@@ -2123,8 +2164,8 @@ export default {
 				wickDownColor: '#FF4747',
 				priceFormat: {
 					type: 'price',
-					precision: 4,
-					minMove: 0.0001,
+					precision: 1,
+					minMove: 0.1,
 				},
 			});
 			
@@ -2144,11 +2185,13 @@ export default {
 		}
 		
 		try {
-			// Converter ticks em velas para reduzir pontos
-			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks, 5); // 5 segundos por vela
+			// Converter ticks em velas - uma vela por segundo
+			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks, 1);
 			
-			this.marketLineSeriesInactive.setData(candles);
-			this.marketChartInactive.timeScale().fitContent();
+			if (candles.length > 0) {
+				this.marketLineSeriesInactive.setData(candles);
+				this.marketChartInactive.timeScale().fitContent();
+			}
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao atualizar gráfico de mercado (inativo):', error);
 		}
@@ -2170,7 +2213,15 @@ export default {
 			this.marketChartActive = createChart(container, {
 				width: containerWidth,
 				height: containerHeight,
-				localization: { locale: 'pt-BR' },
+				localization: { 
+					locale: 'pt-BR',
+					timeFormatter: (time) => {
+						const date = new Date(time * 1000);
+						const hours = String(date.getHours()).padStart(2, '0');
+						const minutes = String(date.getMinutes()).padStart(2, '0');
+						return `${hours}:${minutes}`;
+					}
+				},
 				layout: {
 					background: { type: ColorType.Solid, color: '#0B0B0B' },
 					textColor: '#DFDFDF',
@@ -2190,15 +2241,17 @@ export default {
 					timeVisible: true,
 					secondsVisible: false,
 					rightOffset: 10,
+					fixLeftEdge: false,
+					fixRightEdge: false,
 				},
 				grid: {
 					vertLines: { 
-						color: '#1A1A1A',
+						color: 'rgba(148, 163, 184, 0.1)',
 						style: 0,
 						visible: true,
 					},
 					horzLines: { 
-						color: '#1A1A1A',
+						color: 'rgba(148, 163, 184, 0.1)',
 						style: 0,
 						visible: true,
 					},
@@ -2218,6 +2271,22 @@ export default {
 						labelBackgroundColor: '#22C55E',
 					},
 				},
+				handleScroll: {
+					mouseWheel: true,
+					pressedMouseMove: true,
+					horzTouchDrag: true,
+					vertTouchDrag: true,
+				},
+				handleScale: {
+					axisPressedMouseMove: {
+						time: true,
+						price: true,
+					},
+					axisDoubleClickReset: true,
+					axisTouchDrag: true,
+					mouseWheel: true,
+					pinch: true,
+				},
 			});
 			
 			this.marketLineSeriesActive = this.marketChartActive.addCandlestickSeries({
@@ -2230,8 +2299,8 @@ export default {
 				wickDownColor: '#FF4747',
 				priceFormat: {
 					type: 'price',
-					precision: 4,
-					minMove: 0.0001,
+					precision: 1,
+					minMove: 0.1,
 				},
 			});
 			
@@ -2251,20 +2320,23 @@ export default {
 		}
 		
 		try {
-			// Converter ticks em velas para reduzir pontos
-			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks, 5); // 5 segundos por vela
+			// Converter ticks em velas - uma vela por segundo
+			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks, 1);
 			
-			this.marketLineSeriesActive.setData(candles);
-			this.marketChartActive.timeScale().fitContent();
+			if (candles.length > 0) {
+				this.marketLineSeriesActive.setData(candles);
+				this.marketChartActive.timeScale().fitContent();
+			}
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao atualizar gráfico de mercado (ativo):', error);
 		}
 	},
 	
 	/**
-	 * Converte ticks em velas (candles) para reduzir a quantidade de pontos
+	 * Converte ticks em velas (candles) - uma vela por segundo
+	 * Cada segundo agrupa todos os ticks daquele segundo em uma vela
 	 */
-	aggregateTicksToCandles(ticks, timeframeSeconds = 5) {
+	aggregateTicksToCandles(ticks, timeframeSeconds = 1) {
 		if (!Array.isArray(ticks) || ticks.length === 0) {
 			return [];
 		}
@@ -2284,55 +2356,49 @@ export default {
 		const sortedTicks = [...validTicks].sort((a, b) => a.time - b.time);
 		const totalTicks = sortedTicks.length;
 
-		// Ajustar timeframe para manter uma quantidade razoável de velas
-		// Objetivo: ter entre 100-500 velas dependendo da quantidade de ticks
-		let effectiveTimeframe = timeframeSeconds;
+		// Criar velas de 1 segundo - cada segundo é uma vela
+		// Isso garante que cada ponto no gráfico seja uma vela
+		const timeframe = 1; // 1 segundo por vela
 		
-		if (totalTicks > 1000) {
-			// Muitos ticks: aumentar timeframe para reduzir quantidade de velas
-			effectiveTimeframe = Math.max(5, Math.floor(totalTicks / 300));
-		} else if (totalTicks < 100) {
-			// Poucos ticks: diminuir timeframe para ter mais velas
-			effectiveTimeframe = Math.max(1, Math.floor(timeframeSeconds / 2));
-		}
-
 		const candles = [];
-		let bucketStart = null;
-		let bucketTicks = [];
+		const candleMap = new Map();
 
-		const finalizeBucket = () => {
-			if (!bucketTicks.length || bucketStart === null) return;
-			const prices = bucketTicks.map(t => t.price);
-			candles.push({
-				time: bucketStart,
-				open: bucketTicks[0].price,
-				high: Math.max(...prices),
-				low: Math.min(...prices),
-				close: bucketTicks[bucketTicks.length - 1].price,
-			});
-		};
-
+		// Agrupar ticks por segundo
 		for (const tick of sortedTicks) {
-			const bucket = Math.floor(tick.time / effectiveTimeframe) * effectiveTimeframe;
-
-			if (bucketStart === null) {
-				bucketStart = bucket;
+			const candleTime = Math.floor(tick.time / timeframe) * timeframe;
+			
+			if (!candleMap.has(candleTime)) {
+				candleMap.set(candleTime, {
+					time: candleTime,
+					open: tick.price,
+					high: tick.price,
+					low: tick.price,
+					close: tick.price,
+					ticks: [tick.price]
+				});
+			} else {
+				const candle = candleMap.get(candleTime);
+				candle.high = Math.max(candle.high, tick.price);
+				candle.low = Math.min(candle.low, tick.price);
+				candle.close = tick.price; // Último tick do segundo define o close
+				candle.ticks.push(tick.price);
 			}
-
-			if (bucket !== bucketStart) {
-				finalizeBucket();
-				bucketStart = bucket;
-				bucketTicks = [];
-			}
-
-			bucketTicks.push(tick);
 		}
 
-		finalizeBucket();
+		// Converter Map em array ordenado
+		const candlesArray = Array.from(candleMap.values())
+			.sort((a, b) => a.time - b.time)
+			.map(candle => ({
+				time: candle.time,
+				open: candle.open,
+				high: candle.high,
+				low: candle.low,
+				close: candle.close
+			}));
+
+		console.log(`[StatsIAsView] Convertidos ${totalTicks} ticks em ${candlesArray.length} velas (1 segundo por vela)`);
 		
-		console.log(`[StatsIAsView] Convertidos ${totalTicks} ticks em ${candles.length} velas (timeframe: ${effectiveTimeframe}s)`);
-		
-		return candles;
+		return candlesArray;
 	},
 },
 
@@ -3538,6 +3604,9 @@ tbody tr:hover {
 	color: #94a3b8;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
 }
 
 .config-info-item .fixed-value {
@@ -4378,8 +4447,10 @@ tbody tr:hover {
 .info-label,
 .status-label,
 .precision-label,
-.config-field label {
+.config-field label,
+.config-info-item label {
 	display: inline-flex;
 	align-items: center;
+	position: relative;
 }
 </style>
