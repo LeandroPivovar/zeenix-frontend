@@ -532,7 +532,7 @@ export default {
         },
         async saveCourse() {
             if (!this.course.name || this.course.name.trim() === '') {
-                alert('O nome do curso é obrigatório.');
+                this.$root.$toast.error('O nome do curso é obrigatório.');
                 return;
             }
             
@@ -587,7 +587,7 @@ export default {
                 
                 if (!response.ok) {
                     const error = await response.json().catch(() => ({ message: 'Erro ao salvar curso' }));
-                    alert(`Erro ao salvar curso: ${error.message}`);
+                    this.$root.$toast.error(`Erro ao salvar curso: ${error.message}`);
                     return;
                 }
                 
@@ -711,10 +711,10 @@ export default {
                 
                 await this.loadCourses();
                 await this.loadCourseDetails();
-                alert('Curso e todos os módulos/aulas salvos com sucesso!');
+                this.$root.$toast.success('Curso e todos os módulos/aulas salvos com sucesso!');
             } catch (error) {
                 console.error('Erro ao salvar curso:', error);
-                alert('Erro ao salvar curso. Verifique sua conexão.');
+                this.$root.$toast.info('Erro ao salvar curso. Verifique sua conexão.');
             }
         },
         // SEO & Compartilhamento
@@ -745,7 +745,7 @@ export default {
             event.target.value = '';
         },
         openSocialPreviewModal() {
-            alert('Funcionalidade de Preview Social ainda não implementada.');
+            this.$root.$toast.info('Funcionalidade de Preview Social ainda não implementada.');
         },
         getApiBaseUrl() {
             return process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
@@ -792,7 +792,7 @@ export default {
                 return data.path;
             } catch (error) {
                 console.error('Erro ao enviar imagem:', error);
-                alert('Não foi possível enviar a imagem. Tente novamente.');
+                this.$root.$toast.info('Não foi possível enviar a imagem. Tente novamente.');
                 return null;
             }
         },
@@ -813,21 +813,21 @@ export default {
                 });
                 if (!response.ok) {
                     const error = await response.json().catch(() => ({ message: 'Erro no upload de vídeo' }));
-                    alert(error.message || 'Erro no upload de vídeo.');
+                    this.$root.$toast.error(error.message || 'Erro no upload de vídeo.');
                     return null;
                 }
                 const data = await response.json();
                 return data.path;
             } catch (error) {
                 console.error('Erro ao enviar vídeo da aula:', error);
-                alert('Erro ao enviar vídeo da aula. Verifique sua conexão.');
+                this.$root.$toast.info('Erro ao enviar vídeo da aula. Verifique sua conexão.');
                 return null;
             }
         },
         // Preview
         openPreviewModal() {
             if (!this.course.selectedCourseId) {
-                alert('Selecione um curso para ver o preview.');
+                this.$root.$toast.info('Selecione um curso para ver o preview.');
                 return;
             }
             const currentCourseData = this.courses.find(c => c.id === this.course.selectedCourseId);
@@ -863,7 +863,7 @@ export default {
         async saveNewModule() {
             console.log('🔍 [AcademyManagement] Salvando novo módulo', this.newModule);
             if (!this.newModule.name) {
-                alert('O nome do módulo é obrigatório.');
+                this.$root.$toast.error('O nome do módulo é obrigatório.');
                 return;
             }
 
@@ -887,7 +887,7 @@ export default {
                 this.modules.push(newModuleObject);
                 this.closeNewModuleModal();
                 console.log('✅ [AcademyManagement] Módulo adicionado localmente. Total de módulos:', this.modules.length);
-                alert(`Módulo "${this.newModule.name}" adicionado localmente. Salve o curso para persistir.`);
+                this.$root.$toast.success(`Módulo "${this.newModule.name}" adicionado localmente. Salve o curso para persistir.`);
                 return;
             }
 
@@ -913,14 +913,14 @@ export default {
                 if (response.ok) {
                     await this.loadCourseDetails();
                     this.closeNewModuleModal();
-                    alert(`Módulo adicionado com sucesso!`);
+                    this.$root.$toast.success(`Módulo adicionado com sucesso!`);
                 } else {
                     const error = await response.json().catch(() => ({ message: 'Erro ao criar módulo' }));
-                    alert(`Erro ao criar módulo: ${error.message}`);
+                    this.$root.$toast.error(`Erro ao criar módulo: ${error.message}`);
                 }
             } catch (error) {
                 console.error('Erro ao criar módulo:', error);
-                alert('Erro ao criar módulo. Verifique sua conexão.');
+                this.$root.$toast.info('Erro ao criar módulo. Verifique sua conexão.');
             }
         },
         // Aula
@@ -944,7 +944,7 @@ export default {
         },
         async saveNewLesson() {
             if (!this.newLesson.moduleId || !this.newLesson.name) {
-                alert('O módulo e o nome da aula são obrigatórios.');
+                this.$root.$toast.error('O módulo e o nome da aula são obrigatórios.');
                 return;
             }
             
@@ -955,7 +955,7 @@ export default {
                 const module = this.modules.find(m => m.id === this.newLesson.moduleId);
                 
                 if (!module) {
-                    alert('Módulo não encontrado.');
+                    this.$root.$toast.info('Módulo não encontrado.');
                     return;
                 }
 
@@ -969,7 +969,7 @@ export default {
                         videoPath = uploadedVideoPath;
                         this.newLesson.videoPath = uploadedVideoPath;
                     } else if (!videoPath) {
-                        alert('Envie o vídeo da aula antes de salvar.');
+                        this.$root.$toast.info('Envie o vídeo da aula antes de salvar.');
                         return;
                     }
                 }
@@ -993,7 +993,7 @@ export default {
                     };
                     this.lessons.push(newLessonObject);
                     this.closeNewLessonModal();
-                    alert(`Aula "${this.newLesson.name}" adicionada localmente. Salve o curso para persistir.`);
+                    this.$root.$toast.info(`Aula "${this.newLesson.name}" adicionada localmente. Salve o curso para persistir.`);
                     return;
                 }
 
@@ -1020,14 +1020,14 @@ export default {
                 if (response.ok) {
                     await this.loadCourseDetails();
                     this.closeNewLessonModal();
-                    alert(`Aula "${this.newLesson.name}" salva com sucesso!`);
+                    this.$root.$toast.success(`Aula "${this.newLesson.name}" salva com sucesso!`);
                 } else {
                     const error = await response.json().catch(() => ({ message: 'Erro ao criar aula' }));
-                    alert(`Erro ao criar aula: ${error.message}`);
+                    this.$root.$toast.error(`Erro ao criar aula: ${error.message}`);
                 }
             } catch (error) {
                 console.error('Erro ao criar aula:', error);
-                alert('Erro ao criar aula. Verifique sua conexão.');
+                this.$root.$toast.info('Erro ao criar aula. Verifique sua conexão.');
             } finally {
                 this.isSavingLesson = false;
             }
@@ -1073,16 +1073,16 @@ export default {
                 } else {
                     const error = await response.json().catch(() => ({ message: response.statusText }));
                     console.error('Erro ao carregar materiais:', error);
-                    alert(error.message || 'Erro ao carregar materiais.');
+                    this.$root.$toast.error(error.message || 'Erro ao carregar materiais.');
                 }
             } catch (error) {
                 console.error('Erro ao carregar materiais:', error);
-                alert('Erro ao carregar materiais. Verifique sua conexão.');
+                this.$root.$toast.info('Erro ao carregar materiais. Verifique sua conexão.');
             }
         },
         async saveNewMaterial() {
             if (!this.newMaterial.name || !this.newMaterial.link) {
-                alert('O nome e o link do material são obrigatórios.');
+                this.$root.$toast.error('O nome e o link do material são obrigatórios.');
                 return;
             }
             
@@ -1103,7 +1103,7 @@ export default {
                 this.materialsList.push(newMaterialObject);
                 const materialName = this.newMaterial.name;
                 this.newMaterial = { name: '', type: 'PDF', link: '' };
-                alert(`Material "${materialName}" adicionado localmente. Salve o curso para persistir.`);
+                this.$root.$toast.success(`Material "${materialName}" adicionado localmente. Salve o curso para persistir.`);
                 return;
             }
             
@@ -1127,14 +1127,14 @@ export default {
                     const materialName = this.newMaterial.name;
                     this.newMaterial = { name: '', type: 'PDF', link: '' };
                     await this.loadMaterialsForLesson(this.selectedLessonIdForMaterials);
-                    alert(`Material "${materialName}" adicionado com sucesso!`);
+                    this.$root.$toast.success(`Material "${materialName}" adicionado com sucesso!`);
                 } else {
                     const error = await response.json().catch(() => ({ message: 'Erro ao criar material' }));
-                    alert(`Erro ao criar material: ${error.message}`);
+                    this.$root.$toast.error(`Erro ao criar material: ${error.message}`);
                 }
             } catch (error) {
                 console.error('Erro ao criar material:', error);
-                alert('Erro ao criar material. Verifique sua conexão.');
+                this.$root.$toast.info('Erro ao criar material. Verifique sua conexão.');
             }
         },
         async deleteMaterial(materialId) {
@@ -1153,13 +1153,13 @@ export default {
                         if (index !== -1) {
                             this.materialsList.splice(index, 1);
                         }
-                        alert('Material excluído.');
+                        this.$root.$toast.success('Material excluído.');
                     } else {
-                        alert('Erro ao excluir material.');
+                        this.$root.$toast.info('Erro ao excluir material.');
                     }
                 } catch (error) {
                     console.error('Erro ao excluir material:', error);
-                    alert('Erro ao excluir material.');
+                    this.$root.$toast.info('Erro ao excluir material.');
                 }
             }
         },

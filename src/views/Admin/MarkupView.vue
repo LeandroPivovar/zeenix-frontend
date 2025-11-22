@@ -255,7 +255,7 @@ export default {
         
         exportReportToPDF() {
             if (this.displayedClients.length === 0) {
-                alert('Não há dados para exportar no período selecionado.');
+                this.$root.$toast.warning('Não há dados para exportar no período selecionado.');
                 return;
             }
             // --- LÓGICA REAL DE EXPORTAÇÃO PARA PDF COM DOWNLOAD ---
@@ -294,7 +294,7 @@ export default {
             */
             
             // SIMULAÇÃO (Remova a linha abaixo após descomentar o bloco acima)
-            alert(`Download do PDF iniciado! (Arquivo: Relatorio_Comissoes_${this.filterStartDate}_a_${this.filterEndDate}.pdf)`);
+            this.$root.$toast.success(`Download do PDF iniciado! (Arquivo: Relatorio_Comissoes_${this.filterStartDate}_a_${this.filterEndDate}.pdf)`);
         }
     },
     computed: {

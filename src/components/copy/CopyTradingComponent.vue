@@ -267,7 +267,7 @@ export default {
             this.selectedPeriod = period;
         },
         activateCopy() {
-            alert('Copy ativado!');
+            this.$root.$toast.success('Copy ativado!');
         },
         togglePause() {
             this.isPaused = !this.isPaused;

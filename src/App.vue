@@ -1,6 +1,26 @@
 <template>
-  <router-view/>
+  <div>
+    <router-view/>
+    <ToastNotification ref="toast" />
+  </div>
 </template>
+
+<script>
+import ToastNotification from './components/Toast.vue'
+
+export default {
+  name: 'App',
+  components: {
+    ToastNotification
+  },
+  mounted() {
+    // Tornar o toast acessível globalmente
+    if (this.$refs.toast) {
+      this.$root.$toast = this.$refs.toast
+    }
+  }
+}
+</script>
 
 <style>
 #app {

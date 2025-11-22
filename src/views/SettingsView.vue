@@ -58,13 +58,13 @@
               <div class="text-center mb-8">
                 <div class="avatar-border w-24 h-24 mx-auto mb-4">
                   <div class="w-full h-full rounded-full overflow-hidden bg-zenix-card flex items-center justify-center">
-                    <img v-if="settings.profilePictureUrl" :src="settings.profilePictureUrl" alt="Profile" class="w-full h-full rounded-full object-cover">
+                    <img v-if="profilePictureFullUrl" :src="profilePictureFullUrl" alt="Profile" class="w-full h-full rounded-full object-cover">
                     <i v-else class="fas fa-user text-4xl text-zenix-secondary"></i>
                   </div>
                 </div>
-                <h2 class="text-xl font-bold text-white mb-1">{{ settings.name || 'Usuário' }}</h2>
-                <p class="text-zenix-secondary text-sm mb-1">{{ settings.email }}</p>
-                <p class="text-zenix-secondary text-xs">Conta criada em {{ formatDate(settings.createdAt) }}</p>
+                <h2 class="text-xl font-bold text-white mb-1 text-center">{{ settings.name || 'Usuário' }}</h2>
+                <p class="text-zenix-secondary text-sm mb-1 text-center">{{ settings.email }}</p>
+                <p class="text-zenix-secondary text-xs text-center">Conta criada em {{ formatDate(settings.createdAt) }}</p>
               </div>
 
               <div class="space-y-3">
@@ -155,18 +155,6 @@
                   </div>
                   <button @click="openChangePasswordModal" class="bg-zenix-bg/70 hover:bg-zenix-green/10 text-zenix-text hover:text-zenix-green border border-zenix-border hover:border-zenix-green/40 px-4 py-2 rounded-lg transition-all text-xs lg:text-sm">
                     Alterar senha
-                  </button>
-                </div>
-
-                <div class="flex items-center justify-between">
-                  <div>
-                    <span class="text-sm font-medium text-zenix-text block">Autenticação 2FA</span>
-                    <p class="text-xs" :class="settings.twoFactorEnabled ? 'text-zenix-green' : 'text-zenix-secondary'">
-                      {{ settings.twoFactorEnabled ? 'Ativa' : 'Inativa' }}
-                    </p>
-                  </div>
-                  <button @click="open2FAModal" class="bg-zenix-bg/70 hover:bg-zenix-green/10 text-zenix-text hover:text-zenix-green border border-zenix-border hover:border-zenix-green/40 px-4 py-2 rounded-lg transition-all text-xs lg:text-sm">
-                    Gerenciar 2FA
                   </button>
                 </div>
               </div>
@@ -326,6 +314,29 @@ export default {
     },
     saveButtonText() {
       return this.isMobile ? 'Salvar' : 'Salvar alterações';
+    },
+    profilePictureFullUrl() {
+      if (!this.settings.profilePictureUrl) return null
+      
+      // Se já é uma URL completa, retornar como está
+      if (this.settings.profilePictureUrl.startsWith('http://') || 
+          this.settings.profilePictureUrl.startsWith('https://')) {
+        return this.settings.profilePictureUrl
+      }
+      
+      // Se começa com /api/uploads, construir URL relativa ao domínio
+      // Em produção, o nginx vai servir /api/uploads diretamente
+      if (this.settings.profilePictureUrl.startsWith('/api/uploads')) {
+        // Pegar apenas o domínio base sem /api
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+        const baseUrl = apiBaseUrl.replace(/\/api$/, '')
+        return `${baseUrl}${this.settings.profilePictureUrl}`
+      }
+      
+      // Fallback para caminhos antigos /uploads/...
+      const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+      const baseUrl = apiBaseUrl.replace(/\/api$/, '')
+      return `${baseUrl}${this.settings.profilePictureUrl}`
     }
   },
   mounted() {
@@ -408,10 +419,10 @@ export default {
         }
 
         await this.fetchSettings()
-        alert('Configurações salvas com sucesso!')
+        this.$root.$toast.success('Configurações salvas com sucesso!')
       } catch (err) {
         console.error('Erro ao salvar:', err)
-        alert('Erro ao salvar configurações. Tente novamente.')
+        this.$root.$toast.error('Erro ao salvar configurações. Tente novamente.')
       } finally {
         this.saving = false
       }
@@ -437,9 +448,9 @@ export default {
 
         await this.fetchSettings()
         this.closeEditNameModal()
-        alert('Nome atualizado com sucesso!')
+        this.$root.$toast.success('Nome atualizado com sucesso!')
       } catch (err) {
-        alert(err.message || 'Erro ao atualizar nome')
+        this.$root.$toast.error(err.message || 'Erro ao atualizar nome')
         throw err
       }
     },
@@ -464,9 +475,9 @@ export default {
 
         await this.fetchSettings()
         this.closeEditEmailModal()
-        alert('Email atualizado com sucesso!')
+        this.$root.$toast.success('Email atualizado com sucesso!')
       } catch (err) {
-        alert(err.message || 'Erro ao atualizar email')
+        this.$root.$toast.error(err.message || 'Erro ao atualizar email')
         throw err
       }
     },
@@ -494,35 +505,21 @@ export default {
 
         await this.fetchSettings()
         this.closeChangePasswordModal()
-        alert('Senha alterada com sucesso!')
+        this.$root.$toast.success('Senha alterada com sucesso!')
       } catch (err) {
-        alert(err.message || 'Erro ao alterar senha')
+        this.$root.$toast.error(err.message || 'Erro ao alterar senha')
         throw err
       }
     },
-    async handleSavePhoto(photoUrl) {
+    async handleSavePhoto() {
+      // O upload já foi feito no modal, só precisamos recarregar as configurações
       try {
-        const token = localStorage.getItem('token')
-        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-
-        const res = await fetch(`${apiBaseUrl}/settings`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            ...(token && { 'Authorization': `Bearer ${token}` })
-          },
-          body: JSON.stringify({ profilePictureUrl: photoUrl })
-        })
-
-        if (!res.ok) {
-          throw new Error('Erro ao atualizar foto')
-        }
-
         await this.fetchSettings()
         this.closeChangePhotoModal()
-        alert('Foto atualizada com sucesso!')
+        this.$root.$toast.success('Foto atualizada com sucesso!')
       } catch (err) {
-        alert('Erro ao atualizar foto')
+        console.error('Erro ao recarregar configurações:', err)
+        this.$root.$toast.error('Erro ao atualizar foto')
       }
     },
     async endAllSessions() {
@@ -545,20 +542,17 @@ export default {
         }
 
         await this.fetchSettings()
-        alert('Todas as sessões foram encerradas')
+        this.$root.$toast.success('Todas as sessões foram encerradas')
       } catch (err) {
-        alert('Erro ao encerrar sessões')
+        this.$root.$toast.error('Erro ao encerrar sessões')
       }
     },
     downloadPersonalData() {
-      alert('Funcionalidade de download de dados pessoais será implementada em breve')
-    },
-    open2FAModal() {
-      alert('Funcionalidade de autenticação em duas etapas será implementada em breve')
+      this.$root.$toast.info('Funcionalidade de download de dados pessoais será implementada em breve')
     },
     openDeleteAccountModal() {
       if (confirm('Tem certeza que deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.')) {
-        alert('Funcionalidade de exclusão de conta será implementada em breve')
+        this.$root.$toast.info('Funcionalidade de exclusão de conta será implementada em breve')
       }
     },
     openEditNameModal() { this.showEditNameModal = true },

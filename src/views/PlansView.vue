@@ -194,7 +194,7 @@ export default {
 		},
 		async handlePlanAction(plan) {
 			// Lógica simplificada para o botão do starter
-			alert(`Ação para o plano: ${plan.name}`);
+			this.$root.$toast.info(`Ação para o plano: ${plan.name}`);
 		}
 	}
 }

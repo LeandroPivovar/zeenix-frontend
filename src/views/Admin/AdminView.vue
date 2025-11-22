@@ -413,7 +413,7 @@ export default {
                 };
             } catch (error) {
                 console.error('Erro ao carregar estatísticas:', error);
-                alert('Erro ao carregar estatísticas do painel');
+                this.$root.$toast.error('Erro ao carregar estatísticas do painel');
             } finally {
                 this.isLoadingStats = false;
             }
@@ -464,7 +464,7 @@ export default {
                 console.log('Administradores carregados:', this.admins.length);
             } catch (error) {
                 console.error('Erro ao carregar administradores:', error);
-                alert('Erro ao carregar lista de administradores');
+                this.$root.$toast.error('Erro ao carregar lista de administradores');
             }
         },
 
@@ -555,10 +555,10 @@ export default {
         
         saveConfigurations() {
             console.log('Configurações salvas:', this.config);
-            alert('Configurações salvas com sucesso!');
+            this.$root.$toast.success('Configurações salvas com sucesso!');
         },
         editAdmin(admin) {
-            alert(`Editando: ${admin.name}`);
+            this.$root.$toast.info(`Editando: ${admin.name}`);
         },
         
         async toggleStatus(admin) {
@@ -581,10 +581,10 @@ export default {
 
                 const updated = await response.json();
                 admin.status = updated.status;
-                alert(`Status alterado para: ${updated.status}`);
+                this.$root.$toast.success(`Status alterado para: ${updated.status}`);
             } catch (error) {
                 console.error('Erro ao alterar status:', error);
-                alert('Erro ao alterar status do administrador');
+                this.$root.$toast.error('Erro ao alterar status do administrador');
             }
         },
         
@@ -615,10 +615,10 @@ export default {
                 if (index > -1) {
                     this.admins.splice(index, 1);
                 }
-                alert(`Administrador ${admin.name} excluído com sucesso!`);
+                this.$root.$toast.success(`Administrador ${admin.name} excluído com sucesso!`);
             } catch (error) {
                 console.error('Erro ao excluir administrador:', error);
-                alert(error.message || 'Erro ao excluir administrador');
+                this.$root.$toast.error(error.message || 'Erro ao excluir administrador');
             }
         },
         
@@ -654,13 +654,13 @@ export default {
                 
                 // Mostrar senha temporária se foi gerada
                 if (created.tempPassword) {
-                    alert(
-                        `Administrador ${created.name} criado com sucesso!\n\n` +
-                        `Senha temporária: ${created.tempPassword}\n\n` +
+                    this.$root.$toast.success(
+                        `Administrador ${created.name} criado com sucesso!<br><br>` +
+                        `Senha temporária: ${created.tempPassword}<br><br>` +
                         `IMPORTANTE: Anote esta senha, ela não será exibida novamente.`
-                    );
+                    , 10000);
                 } else {
-                    alert(`Administrador ${created.name} adicionado com sucesso!`);
+                    this.$root.$toast.success(`Administrador ${created.name} adicionado com sucesso!`);
                 }
                 
                 this.newAdmin = {
@@ -674,7 +674,7 @@ export default {
                 this.showAddAdminModal = false;
             } catch (error) {
                 console.error('Erro ao adicionar administrador:', error);
-                alert(error.message || 'Erro ao adicionar administrador');
+                this.$root.$toast.error(error.message || 'Erro ao adicionar administrador');
             } finally {
                 this.isLoading = false;
             }
