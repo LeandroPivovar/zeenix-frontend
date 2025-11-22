@@ -139,15 +139,6 @@ export default {
 </script>
 
 <style>
-/* ---------------------------------------------------------------------------------- */
-/* 🛑 CSS GLOBAL (SEM SCOPE) - CORREÇÕES DE POSIÇÃO FIXA NO HEADER */
-/* Ajustes MÍNIMOS para anular o layout FIXO de componentes ANCESTRAIS.
-   Foco em anular 'position: fixed' e 'margin-top' no conteúdo principal.
-*/
-/* ---------------------------------------------------------------------------------- */
-
-/* 1. ANULA O POSITION: FIXED E Z-INDEX NO HEADER ANCESTRAL E SEUS COMPONENTES FILHOS */
-/* Mantemos estes para anular o comportamento fixo do header da aplicação inteira, se existir. */
 .header-master-trader,
 .header-content {
     position: static !important;
@@ -156,20 +147,12 @@ export default {
     width: 100% !important; 
 }
 
-/* 2. ANULA COMPENSAÇÃO DE MARGIN-TOP NO CONTEÚDO PRINCIPAL ANCESTRAL */
-/* Isso é crucial para que o conteúdo comece no topo e não abaixo de um header fixo invisível. */
 .main-content {
     position: static !important;
     width: 100%;
 }
 
-/* 3. Evita que o layout do IA de Investimento (e outros) sejam afetados globalmente */
-/* Removendo .layout-content-investment[data-v-74055f], .layout-master-trader[data-v-74055f], etc.
-   Esses correções devem ser tratadas no seu componente com `:scoped` ou de forma mais específica. */
-
-/* Correção pontual para o conteúdo dentro do MasterTrader, se o pai for muito restritivo */
 .layout-master-trader .content-wrapper {
-    /* Garante que o content-wrapper do *seu* componente role, se necessário. */
     overflow-y: auto;
     position: static; 
     padding: 0 20px 20px 20px; /* Mantém o padding do scoped CSS */
@@ -433,3 +416,4 @@ export default {
     }
 }
 </style>
+
