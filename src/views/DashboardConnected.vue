@@ -226,8 +226,8 @@
     </div>
     
     <!-- Quick Tools Section -->
-    <section id="quick-tools" class="mt-12 mb-16 w-full">
-      <h2 class="text-sm font-semibold text-zenix-text opacity-95 mb-4">Ferramentas Principais</h2>
+    <section id="quick-tools" class="mt-6 mb-6 w-full">
+      <h2 class="text-base font-semibold text-zenix-text opacity-95 mb-4">Ferramentas Principais</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
         <div 
           v-for="(tool, index) in quickTools" 
@@ -258,7 +258,7 @@
     <!-- Best IAs Section -->
     <section id="best-ias" class="mb-6 w-full">
       <div class="flex items-center justify-between mb-5">
-        <h2 class="text-sm font-semibold text-zenix-text">Melhores IA's Agora</h2>
+        <h2 class="text-base font-semibold text-zenix-text">Melhores IA's Agora</h2>
         <span class="text-xs text-zenix-label">Baseado no mercado em tempo real</span>
       </div>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5 w-full">
@@ -295,10 +295,10 @@
     </section>
     
     <!-- Overall Performance Section -->
-    <section id="overall-performance" class="mb-12 w-full">
+    <section id="overall-performance" class="mt-6 mb-12 w-full">
       <div class="bg-zenix-card border border-zenix-border rounded-xl p-10 premium-card w-full">
-        <h2 class="text-lg font-semibold text-zenix-text mb-2">Desempenho Geral</h2>
-        <p class="text-sm text-[#AFAFAF] mb-10">Você está deixando dinheiro na mesa. Ative todos os recursos para maximizar seus resultados.</p>
+        <h2 class="text-base font-semibold text-zenix-text mb-2">Desempenho Geral</h2>
+        <p class="text-sm text-[#AFAFAF] mb-10 text-left">Você está deixando dinheiro na mesa. Ative todos os recursos para maximizar seus resultados.</p>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 w-full">
           <div 
             v-for="(perf, index) in performanceData" 
