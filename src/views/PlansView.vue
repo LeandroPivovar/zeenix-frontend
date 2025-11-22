@@ -1,16 +1,50 @@
 <template>
-	<div class="layout">
-		<AppSidebar />
-		<main class="plans-content">
-			<div class="max-w-7xl mx-auto w-full">
-				<div class="header-section">
-					<div class="header-title-wrapper">
-						<img src="../assets/icons/trophy.svg" alt="Crown" class="header-icon" v-if="false"> <!-- Usando font-awesome no design original, aqui adaptado -->
-						<i class="fas fa-crown text-zenix-green text-2xl header-icon-fa"></i>
-						<h1 class="main-title">Planos Zenix</h1>
+	<div class="zenix-layout">
+		<AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
+
+		<div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+			<header class="top-header">
+				<div class="header-content">
+					<div class="header-left-content">
+						<h1 class="header-title">Planos Zenix</h1>
+						<p class="header-subtitle">Escolha seu plano e evolua dentro do ecossistema Zenix.</p>
 					</div>
-					<p class="main-subtitle">Escolha seu plano e evolua dentro do ecossistema Zenix.</p>
+					<div class="header-actions-right">
+						<div class="balance-display-card">
+							<div class="balance-header">
+								<i class="far fa-wallet"></i>
+								<div class="balance-info">
+									<span class="balance-label">Saldo Atual</span>
+									<div class="balance-value-row">
+										<span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ formattedBalance }}</span>
+										<span class="balance-value" v-else>••••••</span>
+										<button 
+											v-if="balanceVisible && !isDemo" 
+											class="account-type-btn real-btn"
+											@click="toggleBalanceVisibility"
+										>
+											Real
+										</button>
+										<button 
+											v-if="balanceVisible && isDemo" 
+											class="account-type-btn demo-btn"
+											@click="toggleBalanceVisibility"
+										>
+											Demo
+										</button>
+										<button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
+											<i class="far fa-eye"></i>
+										</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
 				</div>
+			</header>
+
+			<main class="plans-content">
+				<div class="max-w-7xl mx-auto w-full">
 
 				<div class="video-card-wrapper">
 					<div class="video-thumbnail" @click="playVideo">
@@ -144,14 +178,15 @@
 						</button>
 					</div>
 				</div>
-			</div>
-		</main>
-		
-		<footer class="zenix-footer-mini">
-			<div class="footer-content-right">
-				<p>Administrador: Marcos Costa / Online / Versão v2.0</p>
-			</div>
-		</footer>
+				</div>
+			</main>
+			
+			<footer class="zenix-footer-mini">
+				<div class="footer-content-right">
+					<p>Administrador: Marcos Costa / Online / Versão v2.0</p>
+				</div>
+			</footer>
+		</div>
 	</div>
 </template>
 
@@ -168,7 +203,21 @@ export default {
 			loading: false, // Forçando false para mostrar o layout estático
 			error: null,
 			activating: false,
-			isPlaying: false
+			isPlaying: false,
+			isSidebarOpen: true,
+			isSidebarCollapsed: false,
+			accountBalance: 0,
+			accountCurrency: 'USD',
+			accountLoginid: null,
+			isDemo: false,
+			balanceVisible: true,
+			balanceUpdateInterval: null
+		}
+	},
+	computed: {
+		formattedBalance() {
+			if (!this.accountBalance && this.accountBalance !== 0) return '0.00';
+			return this.accountBalance.toFixed(2);
 		}
 	},
 	mounted() {
@@ -176,6 +225,11 @@ export default {
 		this.loadDependencies();
 		// this.fetchPlans() // Comentado para garantir visual estático fiel primeiro
 		// this.fetchCurrentPlan()
+		this.fetchAccountBalance();
+		this.startBalanceUpdates();
+	},
+	beforeUnmount() {
+		this.stopBalanceUpdates();
 	},
 	methods: {
 		loadDependencies() {
@@ -195,6 +249,85 @@ export default {
 		async handlePlanAction(plan) {
 			// Lógica simplificada para o botão do starter
 			this.$root.$toast.info(`Ação para o plano: ${plan.name}`);
+		},
+		toggleSidebarCollapse() {
+			this.isSidebarCollapsed = !this.isSidebarCollapsed;
+		},
+		getDerivToken() {
+			try {
+				const derivInfoStr = localStorage.getItem('deriv_info');
+				if (derivInfoStr) {
+					const derivInfo = JSON.parse(derivInfoStr);
+					// Tenta obter token real primeiro
+					if (derivInfo.token) {
+						return derivInfo.token;
+					}
+					// Tenta obter do raw
+					if (derivInfo.raw && derivInfo.raw.token) {
+						return derivInfo.raw.token;
+					}
+				}
+				return null;
+			} catch (error) {
+				console.error('[PlansView] Erro ao obter token Deriv:', error);
+				return null;
+			}
+		},
+		async fetchAccountBalance() {
+			try {
+				const derivToken = this.getDerivToken();
+				if (!derivToken) {
+					console.warn('[PlansView] ❌ Token não disponível para buscar saldo');
+					return;
+				}
+
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const response = await fetch(`${apiBase}/ai/deriv-balance`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					},
+					body: JSON.stringify({ derivToken: derivToken }),
+				});
+
+				const result = await response.json();
+				if (result.success && result.data) {
+					this.accountBalance = result.data.balance;
+					this.accountCurrency = result.data.currency;
+					this.accountLoginid = result.data.loginid;
+					this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+					
+					console.log('[PlansView] ✅ Saldo atualizado:', {
+						balance: this.accountBalance,
+						currency: this.accountCurrency,
+						loginid: this.accountLoginid,
+						isDemo: this.isDemo
+					});
+				} else {
+					console.error('[PlansView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
+				}
+			} catch (error) {
+				console.error('[PlansView] ❌ Erro ao buscar saldo da conta:', error);
+			}
+		},
+		startBalanceUpdates() {
+			// Atualiza o saldo a cada 30 segundos
+			if (this.balanceUpdateInterval) {
+				clearInterval(this.balanceUpdateInterval);
+			}
+			this.balanceUpdateInterval = setInterval(() => {
+				this.fetchAccountBalance();
+			}, 30000);
+		},
+		stopBalanceUpdates() {
+			if (this.balanceUpdateInterval) {
+				clearInterval(this.balanceUpdateInterval);
+				this.balanceUpdateInterval = null;
+			}
+		},
+		toggleBalanceVisibility() {
+			this.balanceVisible = !this.balanceVisible;
 		}
 	}
 }
