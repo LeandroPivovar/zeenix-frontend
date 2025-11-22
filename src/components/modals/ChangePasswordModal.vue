@@ -148,12 +148,12 @@ export default {
 .modal-title { font-weight: 700; font-size: 20px; margin: 0 0 20px; }
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #9ca3af; }
-.input-wrapper { position: relative; width: 100%; }
-.form-input { width: 100%; background: #1a1f1d; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 40px 10px 10px; color: #e5e7eb; font-size: 14px; }
+.input-wrapper { position: relative; width: 100%; display: flex; align-items: center; }
+.form-input { width: 100%; background: #1a1f1d; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 40px 10px 10px; color: #e5e7eb; font-size: 14px; height: 42px; }
 .form-input:focus { outline: none; border-color: #10B981; }
-.toggle-password { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #9ca3af; cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
+.toggle-password { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #9ca3af; cursor: pointer; padding: 0; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
 .toggle-password:hover { color: #10B981; }
-.toggle-password i { font-size: 16px; }
+.toggle-password i { font-size: 16px; line-height: 1; }
 .error-message { color: #ef4444; font-size: 13px; margin-bottom: 12px; }
 .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
 .btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e5e7eb; border-radius: 8px; padding: 10px 20px; cursor: pointer; }
