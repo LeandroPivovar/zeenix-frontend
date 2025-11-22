@@ -14,7 +14,7 @@
                 </div>
                         <div class="card-value-large">
                             <span v-if="!isLoadingStats && accountBalanceProp" class="balance-value" :class="{ 'hidden-value': !balanceVisible }">
-                                {{ formattedBalance }}
+                                {{ balanceVisible ? formattedBalance : '••••••' }}
                             </span>
                             <span v-else class="text-zenix-secondary">Carregando...</span>
                         </div>
@@ -34,11 +34,11 @@
                     </div>
                         <div class="card-value-large">
                             <span v-if="!isLoadingStats" :class="['profit-value', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
-                                {{ formattedSessionProfitLoss }}
+                                {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
                             </span>
                             <span v-else class="text-zenix-secondary">--</span>
                         </div>
-                        <span v-if="!isLoadingStats && profitPercentage" class="profit-percentage text-zenix-green text-sm font-medium">{{ profitPercentage }}</span>
+                        <span v-if="!isLoadingStats && profitPercentage && profitVisible" class="profit-percentage text-zenix-green text-sm font-medium">{{ profitPercentage }}</span>
                     </div>
 
                     <!-- Card 3 - Winrate -->
@@ -51,11 +51,11 @@
                         </div>
                         <div class="card-value-large">
                             <span v-if="!isLoadingStats" class="winrate-value" :class="{ 'hidden-value': !winrateVisible }">
-                                {{ formattedSessionWinrate }}
+                                {{ winrateVisible ? formattedSessionWinrate : '•••' }}
                             </span>
                             <span v-else class="text-zenix-secondary">--</span>
                     </div>
-                        <span v-if="!isLoadingStats" class="text-xs text-zenix-green font-medium">{{ sessionWinrateLabel }}</span>
+                        <span v-if="!isLoadingStats && winrateVisible" class="text-xs text-zenix-green font-medium">{{ sessionWinrateLabel }}</span>
                 </div>
 
                     <!-- Card 4 - Trades Hoje -->
@@ -68,11 +68,11 @@
                             </div>
                         <div class="card-value-large">
                             <span v-if="!isLoadingStats" class="trades-value" :class="{ 'hidden-value': !tradesVisible }">
-                                {{ dailyStats.sessionTrades || 0 }}
+                                {{ tradesVisible ? (dailyStats.sessionTrades || 0) : '••' }}
                             </span>
                             <span v-else class="text-zenix-secondary">--</span>
                             </div>
-                        <div class="trades-stats-row">
+                        <div v-if="tradesVisible" class="trades-stats-row">
                             <span class="text-xs text-zenix-green font-medium">{{ dailyStats.sessionWins || 0 }} Vitórias</span>
                             <span class="text-xs text-zenix-red/70 font-medium">{{ dailyStats.sessionLosses || 0 }} Perdas</span>
                         </div>
@@ -1592,7 +1592,9 @@ button i,
 }
 
 .hidden-value {
-    letter-spacing: 2px;
+    letter-spacing: 4px;
+    user-select: none;
+    opacity: 0.8;
 }
 
 .card-actions-row {
