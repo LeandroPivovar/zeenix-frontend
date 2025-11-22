@@ -2,7 +2,7 @@
     <div class="zenix-layout">
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
 
-        <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <header class="top-header">
                 <div class="header-content">
                     <div class="header-left-content">
@@ -955,9 +955,7 @@ export default {
         async fetchTicks() {
             try {
                 console.log('[InvestmentIAView] Buscando ticks...');
-                // Buscar 2000 ticks para ter um gráfico maior
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const response = await fetch(`${apiBase}/ai/ticks?limit=2000`);
+                const response = await fetch('https://taxafacil.site/api/ai/ticks');
                 const result = await response.json();
 
                 console.log('[InvestmentIAView] Ticks recebidos:', {
@@ -1043,7 +1041,6 @@ export default {
 }
 </script>
 
-
 <style scoped>
 /* Importando estilos do design fornecido */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -1059,7 +1056,7 @@ export default {
     color: #DFDFDF;
 }
 
-.main-content-wrapper {
+.content-wrapper {
     margin-left: 240px;
     min-height: 100vh;
     transition: margin-left 0.3s ease;
@@ -1067,40 +1064,10 @@ export default {
     box-sizing: border-box;
 }
 
-.main-content-wrapper.sidebar-collapsed {
+.content-wrapper.sidebar-collapsed {
     margin-left: 0;
     width: 100%;
 }
-
-.balance-display-card {
-    background-color: #0E0E0E;
-    border: 1px solid #1C1C1C;
-    border-radius: 0.75rem;
-    padding: 0.75rem;
-    transition: all 0.3s ease;
-}
-
-.balance-display-card:hover {
-    background: #111;
-    transform: translateY(-1px);
-}
-
-.balance-header {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-}
-
-.balance-header i {
-    color: #22C55E;
-    font-size: 0.75rem;
-}
-
-.balance-info {
-    display: flex;
-    flex-direction: column;
-}
-
 
 /* Top Header */
 .top-header {
@@ -1117,7 +1084,7 @@ export default {
     box-sizing: border-box;
 }
 
-.main-content-wrapper.sidebar-collapsed .top-header {
+.content-wrapper.sidebar-collapsed .top-header {
     left: 0;
     width: 100%;
 }
@@ -1157,6 +1124,34 @@ export default {
     line-height: 1.4;
 }
 
+.balance-display-card {
+    background-color: #0E0E0E;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.balance-display-card:hover {
+    background: #111;
+    transform: translateY(-1px);
+}
+
+.balance-header {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.balance-header i {
+    color: #22C55E;
+    font-size: 0.75rem;
+}
+
+.balance-info {
+    display: flex;
+    flex-direction: column;
+}
 
 .balance-label {
     font-size: 0.625rem;
