@@ -177,6 +177,27 @@
                                 {{ option.label }}
                     </button>
                 </div>
+
+                        <!-- Zoom Controls -->
+                        <div class="zoom-controls">
+                            <button 
+                                class="zoom-btn" 
+                                @click="zoomOut"
+                                :disabled="chartPointsVisible >= maxChartPoints"
+                                title="Zoom Out"
+                            >
+                                <i class="fas fa-search-minus"></i>
+                            </button>
+                            <span class="zoom-indicator">{{ chartPointsVisible }} pontos</span>
+                            <button 
+                                class="zoom-btn" 
+                                @click="zoomIn"
+                                :disabled="chartPointsVisible <= minChartPoints"
+                                title="Zoom In"
+                            >
+                                <i class="fas fa-search-plus"></i>
+                            </button>
+                        </div>
             
                         <!-- Chart View -->
                         <div v-show="activeTab === 'chart'" id="chart-view" class="chart-view-container">
@@ -481,6 +502,12 @@ export default {
             
             // Estado de desativação
             isDeactivating: false,
+            
+            // Controle de zoom do gráfico
+            chartPointsVisible: 50, // Padrão: 50 pontos
+            minChartPoints: 10,
+            maxChartPoints: 500,
+            zoomLevels: [10, 25, 50, 100, 200, 300, 500], // Níveis de zoom disponíveis
         };
     },
     
@@ -1015,6 +1042,32 @@ export default {
                 this.chartType = type;
             }
         },
+        zoomIn() {
+            // Encontrar o próximo nível de zoom maior
+            const currentIndex = this.zoomLevels.findIndex(level => level >= this.chartPointsVisible);
+            if (currentIndex < this.zoomLevels.length - 1) {
+                this.chartPointsVisible = this.zoomLevels[currentIndex + 1];
+            } else if (this.chartPointsVisible < this.maxChartPoints) {
+                // Incremento de 50 se estiver entre níveis
+                this.chartPointsVisible = Math.min(this.chartPointsVisible + 50, this.maxChartPoints);
+            }
+            this.$nextTick(() => {
+                this.updateChart();
+            });
+        },
+        zoomOut() {
+            // Encontrar o próximo nível de zoom menor
+            const currentIndex = this.zoomLevels.findIndex(level => level >= this.chartPointsVisible);
+            if (currentIndex > 0) {
+                this.chartPointsVisible = this.zoomLevels[currentIndex - 1];
+            } else if (this.chartPointsVisible > this.minChartPoints) {
+                // Decremento de 50 se estiver entre níveis
+                this.chartPointsVisible = Math.max(this.chartPointsVisible - 50, this.minChartPoints);
+            }
+            this.$nextTick(() => {
+                this.updateChart();
+            });
+        },
         aggregateTicksToCandles(timeframeSeconds) {
             if (!Array.isArray(this.ticks) || this.ticks.length === 0) {
                 return [];
@@ -1027,22 +1080,26 @@ export default {
                 return { time: rawTime, price };
             }).filter(tick => tick.price > 0);
 
-            // Ordenar por tempo
-            const sortedTicks = [...validTicks].sort((a, b) => a.time - b.time);
+            // Ordenar por tempo (mais recentes primeiro)
+            const sortedTicks = [...validTicks].sort((a, b) => b.time - a.time);
             const totalTicks = sortedTicks.length;
 
-            // Calcular timeframe adaptativo para manter aproximadamente a mesma quantidade de velas que ticks
-            // Objetivo: ter pelo menos 80% da quantidade de ticks em velas
-            let effectiveTimeframe = timeframeSeconds;
+            // Limitar aos ticks mais recentes baseado no zoom
+            const ticksToUse = sortedTicks.slice(0, Math.min(this.chartPointsVisible * 10, totalTicks));
             
-            // Estimar quantas velas teremos com o timeframe solicitado
-            const estimatedCandles = Math.max(1, Math.floor(totalTicks / Math.max(1, timeframeSeconds)));
+            // Reverter para ordem cronológica (mais antigos primeiro) para agregação
+            const chronologicalTicks = [...ticksToUse].reverse();
+
+            // Calcular timeframe adaptativo baseado na quantidade desejada de velas
+            // Queremos aproximadamente chartPointsVisible velas
+            const timeSpan = chronologicalTicks.length > 1 
+                ? chronologicalTicks[chronologicalTicks.length - 1].time - chronologicalTicks[0].time
+                : timeframeSeconds;
             
-            // Se o timeframe resultar em muito poucas velas (menos de 80% dos ticks), ajustar
-            if (estimatedCandles < totalTicks * 0.8 && totalTicks > 0) {
-                // Calcular timeframe que resulte em aproximadamente 90% da quantidade de ticks
-                effectiveTimeframe = Math.max(1, Math.floor(totalTicks / (totalTicks * 0.9)));
-            }
+            // Calcular timeframe ideal para ter aproximadamente chartPointsVisible velas
+            let effectiveTimeframe = timeSpan > 0 
+                ? Math.max(timeframeSeconds, Math.floor(timeSpan / this.chartPointsVisible))
+                : timeframeSeconds;
 
             const candles = [];
             let bucketStart = null;
@@ -1060,7 +1117,7 @@ export default {
                 });
             };
 
-            for (const tick of sortedTicks) {
+            for (const tick of chronologicalTicks) {
                 const bucket = Math.floor(tick.time / effectiveTimeframe) * effectiveTimeframe;
 
                 if (bucketStart === null) {
@@ -1078,7 +1135,11 @@ export default {
 
             finalizeBucket();
             
-            return candles;
+            // Limitar a quantidade final de velas ao zoom desejado
+            // Pegar as últimas N velas (mais recentes)
+            const finalCandles = candles.slice(-this.chartPointsVisible);
+            
+            return finalCandles;
         },
         createSeries(type) {
             if (!this.chart) return;
@@ -1250,8 +1311,8 @@ export default {
         initLightweightChart() {
             try {
                 const container = this.$refs.chartContainer;
-                const containerWidth = container.offsetWidth || 800;
-                const containerHeight = 400;
+                const containerWidth = container.offsetWidth || 1200;
+                const containerHeight = 600; // Aumentado de 400 para 600
 
                 console.log('[InvestmentActive] Inicializando gráfico lightweight-charts...', {
                     width: containerWidth,
@@ -1262,10 +1323,16 @@ export default {
                 this.chart = createChart(container, {
                     width: containerWidth,
                     height: containerHeight,
-                    localization: { locale: 'pt-BR' },
+                    autoSize: true,
+                    localization: { 
+                        locale: 'pt-BR',
+                        dateFormat: 'dd/MM/yyyy',
+                        timeFormat: 'HH:mm'
+                    },
                     layout: {
                         background: { type: ColorType.Solid, color: '#131722' },
                         textColor: '#a9b2b8',
+                        fontSize: 12,
                     },
                     rightPriceScale: {
                         borderColor: '#363c4e',
@@ -1273,6 +1340,8 @@ export default {
                             top: 0.1,
                             bottom: 0.1,
                         },
+                        entireTextOnly: false,
+                        ticksVisible: true,
                     },
                     leftPriceScale: {
                         visible: false,
@@ -1281,6 +1350,13 @@ export default {
                         borderColor: '#363c4e',
                         timeVisible: true,
                         secondsVisible: false,
+                        rightOffset: 12,
+                        barSpacing: 2,
+                        minBarSpacing: 0.5,
+                        fixLeftEdge: false,
+                        fixRightEdge: true,
+                        lockVisibleTimeRangeOnResize: false,
+                        rightBarStaysOnScroll: true,
                     },
                     grid: {
                         vertLines: { 
@@ -1333,21 +1409,29 @@ export default {
             try {
                 let data = [];
                 if (this.chartType === 'candles') {
-                    // Usar o timeframe selecionado, mas a função aggregateTicksToCandles
-                    // já ajusta automaticamente para manter aproximadamente a mesma quantidade de pontos
+                    // Usar o timeframe selecionado com controle de zoom
                     data = this.aggregateTicksToCandles(this.selectedTimeframe);
                 } else {
-                    // Gráfico de linhas usa todos os ticks disponíveis
-                    data = this.ticks.map(tick => ({
-                        time: Math.floor(tick.epoch || tick.time || Date.now() / 1000),
-                        value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
-                    })).filter(point => point.value);
+                    // Gráfico de linhas: limitar aos pontos mais recentes baseado no zoom
+                    const sortedTicks = [...this.ticks]
+                        .map(tick => ({
+                            time: Math.floor(tick.epoch || tick.time || Date.now() / 1000),
+                            value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
+                        }))
+                        .filter(point => point.value)
+                        .sort((a, b) => a.time - b.time);
+                    
+                    // Pegar os últimos N pontos baseado no zoom
+                    const limitedTicks = sortedTicks.slice(-this.chartPointsVisible);
+                    data = limitedTicks;
                 }
 
                 if (!data.length) return;
 
                 console.log('[InvestmentActive] Atualizando gráfico com', data.length, this.chartType === 'candles' ? 'velas' : 'pontos');
                 this.currentSeries.setData(data);
+                
+                // Ajustar o gráfico para mostrar todos os dados
                 this.chart.timeScale().fitContent();
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao atualizar gráfico:', error);
@@ -1412,6 +1496,16 @@ export default {
                 });
             } else if (this.chartInitialized && this.chartType === 'candles') {
                 this.updateChart();
+            }
+        },
+        chartPointsVisible: {
+            handler() {
+                // Atualizar gráfico quando o zoom mudar
+                if (this.chartInitialized) {
+                    this.$nextTick(() => {
+                        this.updateChart();
+                    });
+                }
             }
         }
     },
@@ -1948,13 +2042,63 @@ button i,
     cursor: not-allowed;
 }
 
+/* Zoom Controls */
+.zoom-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 0.5rem;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    width: fit-content;
+}
+
+.zoom-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    background-color: #1C1C1C;
+    color: #A1A1A1;
+    border: 1px solid #363c4e;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 0.875rem;
+}
+
+.zoom-btn:hover:not(:disabled) {
+    background-color: #22C55E;
+    color: #000;
+    border-color: #22C55E;
+}
+
+.zoom-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.zoom-indicator {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    font-weight: 500;
+    min-width: 80px;
+    text-align: center;
+}
+
 .chart-view-container {
-    height: 400px;
+    height: 600px;
+    min-height: 600px;
+    width: 100%;
 }
 
 .chart-container {
     width: 100%;
     height: 100%;
+    min-height: 600px;
 }
 
 /* TradingView Chart Container */
