@@ -1,42 +1,48 @@
 <template>
   <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-    <!-- Header -->
-    <header class="bg-zenix-card border-b border-zenix-border px-3 lg:px-4 xl:px-5 py-4 flex items-center justify-between sticky top-0 z-50 backdrop-blur-sm bg-opacity-95">
-      <div class="flex items-center gap-4">
-        <button class="lg:hidden hamburger-menu" @click="$emit('toggle-sidebar')">
-          <span class="line"></span>
-          <span class="line"></span>
-          <span class="line"></span>
-        </button>
-        <h1 class="text-lg font-semibold text-zenix-text">Zenix</h1>
-      </div>
-      
-      <div class="flex items-center gap-4">
-        <!-- Status da Conexão Deriv -->
-        <div class="hidden md:flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A] border border-zenix-border rounded-lg">
-          <div class="w-2 h-2 bg-zenix-green rounded-full animate-pulse"></div>
-          <span class="text-xs text-zenix-secondary">Deriv Conectado</span>
+    <!-- Header - Mesmo padrão da tela de IA -->
+    <header class="top-header">
+      <div class="header-content">
+        <div class="header-left-content">
+          <h1 class="header-title">Dashboard Zenix</h1>
+          <p class="header-subtitle">Visão geral do seu desempenho e ferramentas principais.</p>
         </div>
-        
-        <!-- Notificações -->
-        <button class="relative p-2 hover:bg-zenix-bg rounded-lg transition-colors">
-          <i class="fas fa-bell text-zenix-secondary text-lg"></i>
-          <span class="absolute top-1 right-1 w-2 h-2 bg-zenix-green rounded-full"></span>
-        </button>
-        
-        <!-- Menu do Usuário -->
-        <div class="flex items-center gap-2 px-3 py-1.5 bg-[#0A0A0A] border border-zenix-border rounded-lg cursor-pointer hover:bg-[#0D0D0D] transition-colors">
-          <div class="w-8 h-8 bg-zenix-green rounded-full flex items-center justify-center text-black font-semibold text-sm">
-            {{ userInitials }}
+        <div class="header-actions-right">
+          <div class="balance-display-card">
+            <div class="balance-header">
+              <i class="far fa-wallet"></i>
+              <div class="balance-info">
+                <span class="balance-label">Saldo Atual</span>
+                <div class="balance-value-row">
+                  <span id="balanceValue" class="balance-value" v-if="!balanceHidden">{{ formattedBalance }}</span>
+                  <span class="balance-value" v-else>••••••</span>
+                  <button 
+                    v-if="!balanceHidden && accountType === 'real'" 
+                    class="account-type-btn real-btn"
+                    @click="toggleBalance"
+                  >
+                    Real
+                  </button>
+                  <button 
+                    v-if="!balanceHidden && accountType === 'demo'" 
+                    class="account-type-btn demo-btn"
+                    @click="toggleBalance"
+                  >
+                    Demo
+                  </button>
+                  <button class="eye-toggle-btn" @click="toggleBalance" :title="balanceHidden ? 'Mostrar saldo' : 'Ocultar saldo'">
+                    <i class="far fa-eye"></i>
+                  </button>
+                </div>
+              </div>
+            </div>
           </div>
-          <span class="hidden md:block text-sm text-zenix-text font-medium">{{ userName }}</span>
-          <i class="fas fa-chevron-down text-zenix-secondary text-xs"></i>
         </div>
       </div>
     </header>
     
     <!-- Main Content -->
-    <main class="flex-1 px-4 lg:px-5 xl:px-6 py-8 bg-zenix-bg noise-bg font-inter overflow-y-auto w-full">
+    <main class="main-content bg-zenix-bg noise-bg font-inter overflow-y-auto w-full">
     <!-- Ultra Pro Balance Card -->
     <div class="grid grid-cols-1 gap-0 mb-8 w-full">
       <div id="ultra-pro-balance-card" class="relative bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card-enhanced overflow-hidden min-h-[126px] w-full">
@@ -222,21 +228,29 @@
     <!-- Quick Tools Section -->
     <section id="quick-tools" class="mt-12 mb-16 w-full">
       <h2 class="text-sm font-semibold text-zenix-text opacity-95 mb-4">Ferramentas Principais</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-5 w-full">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
         <div 
           v-for="(tool, index) in quickTools" 
           :key="index"
-          class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card transition-all duration-300 cursor-pointer h-[200px] flex flex-col tool-card w-full"
+          class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden premium-card transition-all duration-300 cursor-pointer h-[160px] flex tool-card relative w-full"
           @click="handleToolClick(tool)"
         >
-          <div class="w-14 h-14 bg-zenix-bg rounded-xl flex items-center justify-center mb-4 border border-zenix-green icon-container">
-            <i :class="[tool.icon, 'text-zenix-green text-xl icon-glow']"></i>
+          <div class="w-[40%] relative overflow-hidden flex-shrink-0">
+            <img :src="tool.image" :alt="tool.alt" class="w-full h-full object-cover">
+            <div class="absolute inset-0 bg-gradient-to-r from-transparent to-zenix-card"></div>
           </div>
-          <h3 class="text-sm font-semibold text-zenix-text mb-2">{{ tool.title }}</h3>
-          <p class="text-xs text-zenix-secondary mb-auto leading-relaxed">{{ tool.description }}</p>
-          <button class="w-full bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold py-3 rounded-lg text-xs transition-all mt-4 btn-primary-enhanced">
-            {{ tool.buttonText }}
-          </button>
+          <div class="flex-1 p-6 flex flex-col justify-between">
+            <div>
+              <h3 class="text-sm font-semibold text-zenix-text mb-2">{{ tool.title }}</h3>
+              <p class="text-xs text-zenix-secondary leading-relaxed">{{ tool.description }}</p>
+            </div>
+            <button 
+              @click.stop="handleToolClick(tool)"
+              class="w-full bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold py-2.5 rounded-lg text-xs transition-all btn-primary-enhanced"
+            >
+              {{ tool.buttonText }}
+            </button>
+          </div>
         </div>
       </div>
     </section>
@@ -323,6 +337,76 @@
       </div>
     </section>
     </main>
+    
+    <!-- Footer -->
+    <footer id="footer" class="bg-zenix-bg border-t border-zenix-border mt-12 w-full">
+      <div class="max-w-7xl mx-auto px-8 py-12">
+        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
+          <div>
+            <div class="flex items-center space-x-2 mb-4">
+              <div class="text-lg font-semibold text-zenix-text">ZENIX</div>
+              <div class="text-xs text-zenix-label">PRO</div>
+            </div>
+            <p class="text-zenix-label text-xs leading-relaxed mb-6 opacity-60">
+              Plataforma inteligente de investimentos com IA, copy trading e automação.
+            </p>
+            <div class="flex items-center space-x-4">
+              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
+                <i class="fa-brands fa-twitter text-sm"></i>
+              </a>
+              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
+                <i class="fa-brands fa-linkedin text-sm"></i>
+              </a>
+              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
+                <i class="fa-brands fa-instagram text-sm"></i>
+              </a>
+              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
+                <i class="fa-brands fa-youtube text-sm"></i>
+              </a>
+            </div>
+          </div>
+          <div>
+            <h3 class="text-zenix-text font-medium mb-4 text-xs">Produto</h3>
+            <ul class="space-y-2.5 text-xs text-zenix-label opacity-60">
+              <li><a href="#" class="hover:text-zenix-text transition-colors">IA de Investimento</a></li>
+              <li><a href="#" class="hover:text-zenix-text transition-colors">Copy Trading</a></li>
+              <li><a href="#" class="hover:text-zenix-text transition-colors">Agente Autônomo</a></li>
+              <li><a href="#" class="hover:text-zenix-text transition-colors">Zenix Academy</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-zenix-text font-medium mb-4 text-xs">Empresa</h3>
+            <ul class="space-y-2.5 text-xs text-zenix-label opacity-60">
+              <li><a href="#" class="hover:text-zenix-text transition-colors">Sobre Nós</a></li>
+              <li><a href="#" class="hover:text-zenix-text transition-colors">Planos</a></li>
+              <li><a href="#" class="hover:text-zenix-text transition-colors">Blog</a></li>
+              <li><a href="#" class="hover:text-zenix-text transition-colors">Carreiras</a></li>
+            </ul>
+          </div>
+          <div>
+            <h3 class="text-zenix-text font-medium mb-4 text-xs">Suporte</h3>
+            <ul class="space-y-2.5 text-xs text-zenix-label opacity-60">
+              <li><a href="#" class="hover:text-zenix-text transition-colors">Central de Ajuda</a></li>
+              <li><a href="#" class="hover:text-zenix-text transition-colors">Documentação</a></li>
+              <li><a href="#" class="hover:text-zenix-text transition-colors">Status do Sistema</a></li>
+              <li><a href="#" class="hover:text-zenix-text transition-colors">Contato</a></li>
+            </ul>
+          </div>
+        </div>
+        <div class="border-t border-zenix-border pt-8 opacity-40">
+          <div class="flex flex-col md:flex-row justify-between items-center">
+            <p class="text-zenix-label text-xs mb-3 md:mb-0">© 2025 Zenix Pro. Todos os direitos reservados.</p>
+            <div class="flex space-x-6 text-xs">
+              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors">Política de Privacidade</a>
+              <span class="text-zenix-border">|</span>
+              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors">Termos de Uso</a>
+              <span class="text-zenix-border">|</span>
+              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors">Cookies</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
   </div>
 </template>
 
@@ -349,28 +433,36 @@ export default {
           title: 'IA de Investimento',
           description: 'Algoritmos inteligentes para maximizar seus lucros',
           buttonText: 'Acessar',
-          route: '/InvestmentIA'
+          route: '/InvestmentIA',
+          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/3597e3389b-f497a4d7c72b20551d57.png',
+          alt: 'abstract futuristic AI neural network glowing green circuits holographic technology dark background'
         },
         {
           icon: 'fas fa-copy',
           title: 'Copy Trading',
           description: 'Copie estratégias de traders experientes',
           buttonText: 'Acessar',
-          route: '/copy-trading'
+          route: '/copy-trading',
+          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/d4268ec183-9da7a5516b5d6e6a6820.png',
+          alt: 'abstract futuristic network connections holographic data streams glowing green nodes dark cyber background'
         },
         {
           icon: 'fas fa-chart-line',
           title: 'Operação Manual',
           description: 'Controle total sobre suas operações',
           buttonText: 'Acessar',
-          route: '/operation'
+          route: '/operation',
+          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/c7a6be6838-90ddd100efdbc01f96c9.png',
+          alt: 'abstract futuristic trading charts holographic financial data visualization glowing green graphs dark technology interface'
         },
         {
           icon: 'fas fa-robot',
           title: 'Agente Autônomo',
           description: 'Operações automatizadas 24/7',
           buttonText: 'Acessar',
-          route: '/agente-autonomo'
+          route: '/agente-autonomo',
+          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/1e365abefd-e72cf59c9eae4725f47b.png',
+          alt: 'abstract futuristic autonomous robot AI glowing green circuits automated systems holographic technology dark background'
         }
       ],
       bestIAs: [
@@ -738,6 +830,174 @@ export default {
     margin-left: 0;
     width: 100%;
   }
+}
+
+/* Top Header - Mesmo padrão da tela de IA */
+.top-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 240px;
+  z-index: 40;
+  background-color: #0E0E0E;
+  border-bottom: 1px solid #1C1C1C;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: left 0.3s ease;
+  width: calc(100% - 240px);
+  box-sizing: border-box;
+}
+
+.dashboard-content-wrapper.sidebar-collapsed .top-header {
+  left: 72px;
+  width: calc(100% - 72px);
+}
+
+@media (max-width: 1024px) {
+  .top-header {
+    left: 0;
+    width: 100%;
+  }
+  
+  .dashboard-content-wrapper.sidebar-collapsed .top-header {
+    left: 0;
+    width: 100%;
+  }
+}
+
+.header-content {
+  padding: 1rem 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-left-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #DFDFDF;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  font-size: 0.875rem;
+  color: #A1A1A1;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.header-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Balance Display Card */
+.balance-display-card {
+  background-color: #0E0E0E;
+  border: 1px solid #1C1C1C;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.balance-display-card:hover {
+  background: #111;
+  transform: translateY(-1px);
+}
+
+.balance-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.balance-header i {
+  color: #22C55E;
+  font-size: 0.75rem;
+}
+
+.balance-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.balance-label {
+  font-size: 0.625rem;
+  color: #7A7A7A;
+  font-weight: 500;
+}
+
+.balance-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.125rem;
+}
+
+.balance-value {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #DFDFDF;
+}
+
+.account-type-btn {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.real-btn {
+  background-color: #22C55E;
+  color: #000;
+}
+
+.real-btn:hover {
+  background-color: #16A34A;
+}
+
+.demo-btn {
+  background-color: #333;
+  color: #A1A1A1;
+}
+
+.eye-toggle-btn {
+  background: none;
+  border: none;
+  color: #A1A1A1;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s;
+}
+
+.eye-toggle-btn:hover {
+  color: #DFDFDF;
+}
+
+/* Main Content */
+.main-content {
+  margin-top: 70px;
+  padding: 4rem 20px 1.5rem 20px;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 /* Noise Background */
