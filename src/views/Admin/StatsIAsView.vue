@@ -680,10 +680,10 @@
 								<span>Volatility 10 • M5 • Última atualização: {{ aiMonitoring.lastUpdate || lastReadingTime }}</span>
 							</div>
 						</div>
-						<div class="market-chart-container tradingview-chart-container">
-							<div ref="marketChartContainerActive" id="tradingview-chart-active" class="market-chart-wrapper tradingview-wrapper"></div>
+						<div class="market-chart-container">
+							<div ref="marketChartContainerActive" class="market-chart-wrapper"></div>
 							<div v-if="!marketChartInitializedActive && aiMonitoring.ticks.length === 0" class="chart-placeholder">
-								<p>Carregando gráfico de velas...</p>
+								<p>Gráfico em tempo real (não implementado)</p>
 								<p class="chart-placeholder-hint">Aguardando dados de preço...</p>
 							</div>
 						</div>
@@ -933,10 +933,6 @@ import AppSidebar from '../../components/Sidebar.vue';
 import LineChart from '../../components/LineChart.vue';
 import { createChart, ColorType } from 'lightweight-charts';
 
-// TradingView Charting Library - verifique se está disponível globalmente
-const TradingView = window.TradingView || null;
-const Datafeeds = window.Datafeeds || null;
-
 export default {
 	name: 'StatsIAs',
 	components: {
@@ -1046,8 +1042,6 @@ export default {
 			marketChartActive: null,
 			marketLineSeriesActive: null,
 			marketChartInitializedActive: false,
-			tradingViewWidget: null, // Widget da TradingView para IA ativa
-			tradingViewDatafeed: null, // Datafeed customizado para TradingView
 			
 			closeSidebar: () => { }, 
 			toggleSidebarCollapse: () => {},
@@ -2381,119 +2375,9 @@ export default {
 	},
 	
 	/**
-	 * Cria um datafeed customizado para TradingView usando os ticks da API
-	 */
-	createTradingViewDatafeed() {
-		if (!Datafeeds) {
-			console.error('[StatsIAsView] Datafeeds não está disponível. Certifique-se de carregar datafeeds/udf/dist/bundle.js');
-			return null;
-		}
-
-		// Criar datafeed UDF compatível
-		const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-		const datafeed = new Datafeeds.UDFCompatibleDatafeed(`${apiBase}/ai/tradingview`, false);
-		
-		return datafeed;
-	},
-	
-	/**
-	 * Inicializa o gráfico de mercado para IA ativa usando TradingView Charting Library
+	 * Inicializa o gráfico de mercado para IA ativa
 	 */
 	initMarketChartActive() {
-		if (this.marketChartInitializedActive || !this.$refs.marketChartContainerActive) {
-			return;
-		}
-		
-		// Verificar se TradingView está disponível
-		if (!TradingView || !Datafeeds) {
-			console.warn('[StatsIAsView] TradingView Charting Library não está disponível. Usando lightweight-charts como fallback.');
-			this.initMarketChartActiveFallback();
-			return;
-		}
-		
-		try {
-			const container = this.$refs.marketChartContainerActive;
-			
-			// Limpar container
-			container.innerHTML = '';
-			
-			// Parâmetros de personalização conforme documentação
-			const overrides = {
-				// Configurações do painel (fundo, grade)
-				"paneProperties.background": "#131722",
-				"paneProperties.vertGridProperties.color": "#363c4e",
-				"paneProperties.horzGridProperties.color": "#363c4e",
-				"paneProperties.crossHairProperties.color": "#758696",
-				
-				// Configurações das escalas (eixos)
-				"scalesProperties.textColor": "#a9b2b8",
-				"scalesProperties.lineColor": "#363c4e",
-				
-				// Configurações do estilo de vela (Candlestick)
-				"mainSeriesProperties.style": 1, // 1 é o estilo Candlestick
-				"mainSeriesProperties.candleStyle.upColor": "#00a65a", // Cor da vela de alta (Verde)
-				"mainSeriesProperties.candleStyle.downColor": "#ff3a3a", // Cor da vela de baixa (Vermelho)
-				"mainSeriesProperties.candleStyle.drawWick": true,
-				"mainSeriesProperties.candleStyle.drawBorder": true,
-				"mainSeriesProperties.candleStyle.wickUpColor": "#00a65a",
-				"mainSeriesProperties.candleStyle.wickDownColor": "#ff3a3a",
-				"mainSeriesProperties.candleStyle.borderUpColor": "#00a65a",
-				"mainSeriesProperties.candleStyle.borderDownColor": "#ff3a3a",
-				"mainSeriesProperties.candleStyle.barColorsOnPrevClose": false,
-			};
-			
-			// Criar datafeed customizado
-			const datafeed = this.createTradingViewDatafeed();
-			if (!datafeed) {
-				console.warn('[StatsIAsView] Não foi possível criar datafeed. Usando fallback.');
-				this.initMarketChartActiveFallback();
-				return;
-			}
-			
-			// Configurar caminho da biblioteca (ajustar conforme sua estrutura de pastas)
-			const libraryPath = process.env.BASE_URL ? `${process.env.BASE_URL}charting_library/` : '/charting_library/';
-			
-			// Inicializar o Widget da TradingView
-			this.tradingViewWidget = new TradingView.widget({
-				container: container,
-				locale: 'pt',
-				library_path: libraryPath,
-				datafeed: datafeed,
-				symbol: 'R_10', // Volatility 10 Index
-				interval: '5', // 5 minutos
-				fullscreen: false,
-				autosize: true,
-				theme: 'dark',
-				overrides: overrides,
-				disabled_features: [
-					'use_localstorage_for_settings',
-					'volume_force_overlay',
-					'create_volume_indicator_by_default',
-				],
-				enabled_features: [
-					'study_templates',
-					'side_toolbar_in_fullscreen_mode',
-				],
-				charts_storage_url: 'https://saveload.tradingview.com',
-				charts_storage_api_version: '1.1',
-				client_id: 'tradingview.com',
-				user_id: 'public_user_id',
-				custom_css_url: null,
-			});
-			
-			console.log('[StatsIAsView] ✅ Gráfico TradingView inicializado para IA ativa');
-			this.marketChartInitializedActive = true;
-		} catch (error) {
-			console.error('[StatsIAsView] Erro ao inicializar gráfico TradingView (ativo):', error);
-			console.warn('[StatsIAsView] Tentando fallback para lightweight-charts...');
-			this.initMarketChartActiveFallback();
-		}
-	},
-	
-	/**
-	 * Fallback para lightweight-charts caso TradingView não esteja disponível
-	 */
-	initMarketChartActiveFallback() {
 		if (this.marketChartInitializedActive || !this.$refs.marketChartContainerActive) {
 			return;
 		}
@@ -2516,11 +2400,11 @@ export default {
 					}
 				},
 				layout: {
-					background: { type: ColorType.Solid, color: '#131722' },
-					textColor: '#a9b2b8',
+					background: { type: ColorType.Solid, color: '#0B0B0B' },
+					textColor: '#DFDFDF',
 				},
 				rightPriceScale: {
-					borderColor: '#363c4e',
+					borderColor: '#1C1C1C',
 					scaleMargins: {
 						top: 0.1,
 						bottom: 0.1,
@@ -2530,7 +2414,7 @@ export default {
 					visible: false,
 				},
 				timeScale: {
-					borderColor: '#363c4e',
+					borderColor: '#1C1C1C',
 					timeVisible: true,
 					secondsVisible: false,
 					rightOffset: 10,
@@ -2539,12 +2423,12 @@ export default {
 				},
 				grid: {
 					vertLines: { 
-						color: '#363c4e',
+						color: 'rgba(148, 163, 184, 0.1)',
 						style: 0,
 						visible: true,
 					},
 					horzLines: { 
-						color: '#363c4e',
+						color: 'rgba(148, 163, 184, 0.1)',
 						style: 0,
 						visible: true,
 					},
@@ -2552,14 +2436,16 @@ export default {
 				crosshair: {
 					mode: 1,
 					vertLine: {
-						color: '#758696',
+						color: '#22C55E',
 						width: 1,
 						style: 3,
+						labelBackgroundColor: '#22C55E',
 					},
 					horzLine: {
-						color: '#758696',
+						color: '#22C55E',
 						width: 1,
 						style: 3,
+						labelBackgroundColor: '#22C55E',
 					},
 				},
 				handleScroll: {
@@ -2581,13 +2467,13 @@ export default {
 			});
 			
 			this.marketLineSeriesActive = this.marketChartActive.addCandlestickSeries({
-				upColor: '#00a65a',
-				downColor: '#ff3a3a',
+				upColor: '#22C55E',
+				downColor: '#FF4747',
 				borderVisible: true,
-				borderUpColor: '#00a65a',
-				borderDownColor: '#ff3a3a',
-				wickUpColor: '#00a65a',
-				wickDownColor: '#ff3a3a',
+				borderUpColor: '#22C55E',
+				borderDownColor: '#FF4747',
+				wickUpColor: '#22C55E',
+				wickDownColor: '#FF4747',
 				priceFormat: {
 					type: 'price',
 					precision: 1,
@@ -2595,29 +2481,24 @@ export default {
 				},
 			});
 			
-			console.log('[StatsIAsView] ✅ Gráfico ativo inicializado com candlestick (fallback)');
+			console.log('[StatsIAsView] ✅ Gráfico ativo inicializado com candlestick');
 			this.marketChartInitializedActive = true;
 			
 			// Aguardar um pouco antes de atualizar para garantir que o container está pronto
 			setTimeout(() => {
 				if (this.aiMonitoring.ticks.length > 0) {
-			this.updateMarketChartActive();
+					this.updateMarketChartActive();
 				}
 			}, 200);
 		} catch (error) {
-			console.error('[StatsIAsView] Erro ao inicializar gráfico de mercado (ativo - fallback):', error);
+			console.error('[StatsIAsView] Erro ao inicializar gráfico de mercado (ativo):', error);
 		}
 	},
 	
 	/**
-	 * Atualiza o gráfico de mercado para IA ativa (apenas para fallback lightweight-charts)
+	 * Atualiza o gráfico de mercado para IA ativa
 	 */
 	updateMarketChartActive() {
-		// Se estiver usando TradingView, não precisa atualizar manualmente (ele gerencia via datafeed)
-		if (this.tradingViewWidget) {
-			return;
-		}
-		
 		if (!this.marketChartInitializedActive || !this.marketLineSeriesActive || this.aiMonitoring.ticks.length === 0) {
 			return;
 		}
@@ -2631,7 +2512,7 @@ export default {
 			if (candles.length > 0) {
 				console.log('[StatsIAsView] Atualizando gráfico com', candles.length, 'velas');
 				this.marketLineSeriesActive.setData(candles);
-			this.marketChartActive.timeScale().fitContent();
+				this.marketChartActive.timeScale().fitContent();
 			} else {
 				console.warn('[StatsIAsView] Nenhuma vela gerada para o gráfico ativo');
 			}
@@ -2800,47 +2681,6 @@ async mounted() {
 },
 
 	beforeUnmount() {
-		// Cleanup: Remove o widget TradingView quando o componente for desmontado
-		if (this.tradingViewWidget) {
-			try {
-				this.tradingViewWidget.remove();
-				this.tradingViewWidget = null;
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao remover widget TradingView:', error);
-			}
-		}
-		
-		// Limpar gráficos lightweight-charts também
-		if (this.marketChartActive) {
-			try {
-				this.marketChartActive.remove();
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao remover gráfico ativo:', error);
-			}
-			this.marketChartActive = null;
-		}
-		if (this.marketChartInactive) {
-			try {
-				this.marketChartInactive.remove();
-			} catch (error) {
-				console.error('[StatsIAsView] Erro ao remover gráfico inativo:', error);
-			}
-			this.marketChartInactive = null;
-		}
-		
-		// Limpar polling
-		if (this.aiPollingInterval) {
-			clearInterval(this.aiPollingInterval);
-			this.aiPollingInterval = null;
-		}
-		
-		// Limpar polling de background
-		if (this.backgroundPollingInterval) {
-			clearInterval(this.backgroundPollingInterval);
-			this.backgroundPollingInterval = null;
-		}
-		
-		// Limpar polling existente
 		this.stopPolling();
 		this.stopBackgroundPolling();
 	},

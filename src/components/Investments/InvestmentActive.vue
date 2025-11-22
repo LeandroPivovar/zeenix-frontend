@@ -180,7 +180,7 @@
             
                         <!-- Chart View -->
                         <div v-show="activeTab === 'chart'" id="chart-view" class="chart-view-container">
-                            <div ref="chartContainer" class="chart-container"></div>
+                            <div ref="chartContainer" id="tradingview-chart" class="chart-container tradingview-container"></div>
                         </div>
 
                         <!-- Logs View -->
@@ -241,14 +241,34 @@
                         <div class="config-content">
                             <!-- Estratégia -->
                             <div class="config-section">
-                                <p class="config-label">Estratégia</p>
+                                <p class="config-label">
+                                    Estratégia
+                                    <div class="tooltip-container">
+                                        <svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                        </svg>
+                                        <span class="tooltip-text">Modelo de análise usado pela IA</span>
+                                    </div>
+                                </p>
                                 <p class="config-value-main">{{ strategyName }}</p>
                                 <p class="config-description">Alta performance • Sinais avançados</p>
                             </div>
 
                             <!-- Mercado -->
                             <div class="config-section">
-                                <p class="config-label">Mercado</p>
+                                <p class="config-label">
+                                    Mercado
+                                    <div class="tooltip-container">
+                                        <svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                            <circle cx="12" cy="12" r="10"></circle>
+                                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
+                                        </svg>
+                                        <span class="tooltip-text">Escolha o ativo que deseja operar.</span>
+                                    </div>
+                                </p>
                                 <p class="config-value-main">Volatility 10 Index</p>
                                 <p class="config-description">Ticks de alta frequência</p>
                         </div>
@@ -344,6 +364,10 @@
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
 
+// TradingView Charting Library - verifique se está disponível globalmente
+const TradingView = window.TradingView || null;
+const Datafeeds = window.Datafeeds || null;
+
 export default {
     name: 'ZenixTradingDashboard',
     props: {
@@ -427,6 +451,7 @@ export default {
             aiActive: true,
             showDisconnectModal: false,
             activeTab: 'chart', // 'chart' or 'logs'
+            tradingViewWidget: null, // Widget da TradingView
             
             selectedMarket: 'EUR/USD',
             selectedStrategy: 'orion',
@@ -1094,18 +1119,141 @@ export default {
                 });
             }
         },
+        /**
+         * Cria um datafeed customizado para TradingView usando os ticks da API
+         */
+        createTradingViewDatafeed() {
+            if (!Datafeeds) {
+                console.error('[InvestmentActive] Datafeeds não está disponível. Certifique-se de carregar datafeeds/udf/dist/bundle.js');
+                return null;
+            }
+
+            // Criar datafeed UDF compatível
+            const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+            const datafeed = new Datafeeds.UDFCompatibleDatafeed(`${apiBase}/ai/tradingview`, false);
+            
+            return datafeed;
+        },
+
         // Métodos para gráfico
         initChart() {
             if (this.chartInitialized || !this.$refs.chartContainer) {
                 return;
             }
 
+            // Verificar se TradingView está disponível
+            if (TradingView && Datafeeds && this.chartType === 'candles') {
+                this.initTradingViewChart();
+            } else {
+                this.initLightweightChart();
+            }
+        },
+
+        /**
+         * Inicializa o gráfico usando TradingView Charting Library
+         */
+        initTradingViewChart() {
+            try {
+                const container = this.$refs.chartContainer;
+                
+                // Limpar container
+                container.innerHTML = '';
+                
+                // Parâmetros de personalização conforme documentação
+                const overrides = {
+                    // Configurações do painel (fundo, grade)
+                    "paneProperties.background": "#131722",
+                    "paneProperties.vertGridProperties.color": "#363c4e",
+                    "paneProperties.horzGridProperties.color": "#363c4e",
+                    "paneProperties.crossHairProperties.color": "#758696",
+                    
+                    // Configurações das escalas (eixos)
+                    "scalesProperties.textColor": "#a9b2b8",
+                    "scalesProperties.lineColor": "#363c4e",
+                    
+                    // Configurações do estilo de vela (Candlestick)
+                    "mainSeriesProperties.style": 1, // 1 é o estilo Candlestick
+                    "mainSeriesProperties.candleStyle.upColor": "#00a65a", // Cor da vela de alta (Verde)
+                    "mainSeriesProperties.candleStyle.downColor": "#ff3a3a", // Cor da vela de baixa (Vermelho)
+                    "mainSeriesProperties.candleStyle.drawWick": true,
+                    "mainSeriesProperties.candleStyle.drawBorder": true,
+                    "mainSeriesProperties.candleStyle.wickUpColor": "#00a65a",
+                    "mainSeriesProperties.candleStyle.wickDownColor": "#ff3a3a",
+                    "mainSeriesProperties.candleStyle.borderUpColor": "#00a65a",
+                    "mainSeriesProperties.candleStyle.borderDownColor": "#ff3a3a",
+                    "mainSeriesProperties.candleStyle.barColorsOnPrevClose": false,
+                };
+                
+                // Criar datafeed customizado
+                const datafeed = this.createTradingViewDatafeed();
+                if (!datafeed) {
+                    console.warn('[InvestmentActive] Não foi possível criar datafeed. Usando lightweight-charts.');
+                    this.initLightweightChart();
+                    return;
+                }
+                
+                // Configurar caminho da biblioteca
+                const libraryPath = process.env.BASE_URL ? `${process.env.BASE_URL}charting_library/` : '/charting_library/';
+                
+                // Converter timeframe para formato TradingView
+                const intervalMap = {
+                    60: '1',
+                    300: '5',
+                    900: '15',
+                    1800: '30',
+                    3600: '60',
+                    14400: '240',
+                    86400: 'D'
+                };
+                const interval = intervalMap[this.selectedTimeframe] || '5';
+                
+                // Inicializar o Widget da TradingView
+                this.tradingViewWidget = new TradingView.widget({
+                    container: container,
+                    locale: 'pt',
+                    library_path: libraryPath,
+                    datafeed: datafeed,
+                    symbol: 'R_10', // Volatility 10 Index
+                    interval: interval,
+                    fullscreen: false,
+                    autosize: true,
+                    theme: 'dark',
+                    overrides: overrides,
+                    disabled_features: [
+                        'use_localstorage_for_settings',
+                        'volume_force_overlay',
+                        'create_volume_indicator_by_default',
+                    ],
+                    enabled_features: [
+                        'study_templates',
+                        'side_toolbar_in_fullscreen_mode',
+                    ],
+                    charts_storage_url: 'https://saveload.tradingview.com',
+                    charts_storage_api_version: '1.1',
+                    client_id: 'tradingview.com',
+                    user_id: 'public_user_id',
+                    custom_css_url: null,
+                });
+                
+                console.log('[InvestmentActive] ✅ Gráfico TradingView inicializado');
+                this.chartInitialized = true;
+            } catch (error) {
+                console.error('[InvestmentActive] Erro ao inicializar gráfico TradingView:', error);
+                console.warn('[InvestmentActive] Tentando fallback para lightweight-charts...');
+                this.initLightweightChart();
+            }
+        },
+
+        /**
+         * Inicializa o gráfico usando lightweight-charts (fallback)
+         */
+        initLightweightChart() {
             try {
                 const container = this.$refs.chartContainer;
                 const containerWidth = container.offsetWidth || 800;
-                const containerHeight = 400; // Altura do gráfico no novo design
+                const containerHeight = 400;
 
-                console.log('[InvestmentActive] Inicializando gráfico...', {
+                console.log('[InvestmentActive] Inicializando gráfico lightweight-charts...', {
                     width: containerWidth,
                     height: containerHeight,
                     ticksCount: this.ticks.length
@@ -1116,11 +1264,11 @@ export default {
                     height: containerHeight,
                     localization: { locale: 'pt-BR' },
                     layout: {
-                        background: { type: ColorType.Solid, color: '#0B0B0B' },
-                        textColor: '#DFDFDF',
+                        background: { type: ColorType.Solid, color: '#131722' },
+                        textColor: '#a9b2b8',
                     },
                     rightPriceScale: {
-                        borderColor: '#1C1C1C',
+                        borderColor: '#363c4e',
                         scaleMargins: {
                             top: 0.1,
                             bottom: 0.1,
@@ -1130,18 +1278,18 @@ export default {
                         visible: false,
                     },
                     timeScale: {
-                        borderColor: '#1C1C1C',
+                        borderColor: '#363c4e',
                         timeVisible: true,
                         secondsVisible: false,
                     },
                     grid: {
                         vertLines: { 
-                            color: '#1A1A1A',
+                            color: '#363c4e',
                             style: 0,
                             visible: true,
                         },
                         horzLines: { 
-                            color: '#1A1A1A',
+                            color: '#363c4e',
                             style: 0,
                             visible: true,
                         },
@@ -1149,23 +1297,23 @@ export default {
                     crosshair: {
                         mode: 1,
                         vertLine: {
-                            color: '#22C55E',
+                            color: '#758696',
                             width: 1,
                             style: 3,
-                            labelBackgroundColor: '#22C55E',
+                            labelBackgroundColor: '#758696',
                         },
                         horzLine: {
-                            color: '#22C55E',
+                            color: '#758696',
                             width: 1,
                             style: 3,
-                            labelBackgroundColor: '#22C55E',
+                            labelBackgroundColor: '#758696',
                         },
                     },
                 });
 
                 this.createSeries(this.chartType);
                 this.chartInitialized = true;
-                console.log('[InvestmentActive] ✅ Gráfico inicializado');
+                console.log('[InvestmentActive] ✅ Gráfico lightweight-charts inicializado');
                 this.updateChart();
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao inicializar gráfico:', error);
@@ -1173,6 +1321,11 @@ export default {
         },
 
         updateChart() {
+            // Se estiver usando TradingView, não precisa atualizar manualmente (ele gerencia via datafeed)
+            if (this.tradingViewWidget) {
+                return;
+            }
+
             if (!this.chartInitialized || !this.currentSeries || this.ticks.length === 0) {
                 return;
             }
@@ -1232,12 +1385,32 @@ export default {
         },
         chartType() {
             if (this.chartInitialized) {
-                this.createSeries(this.chartType);
-                this.updateChart();
+                // Se mudar para candles e TradingView está disponível, reinicializar com TradingView
+                if (this.chartType === 'candles' && TradingView && Datafeeds && this.tradingViewWidget === null) {
+                    this.chartInitialized = false;
+                    if (this.chart) {
+                        this.chart.remove();
+                        this.chart = null;
+                    }
+                    this.$nextTick(() => {
+                        this.initChart();
+                    });
+                } else {
+                    this.createSeries(this.chartType);
+                    this.updateChart();
+                }
             }
         },
         selectedTimeframe() {
-            if (this.chartInitialized && this.chartType === 'candles') {
+            // Se TradingView estiver ativo, recriar com novo timeframe
+            if (this.tradingViewWidget && this.chartType === 'candles') {
+                this.chartInitialized = false;
+                this.tradingViewWidget.remove();
+                this.tradingViewWidget = null;
+                this.$nextTick(() => {
+                    this.initChart();
+                });
+            } else if (this.chartInitialized && this.chartType === 'candles') {
                 this.updateChart();
             }
         }
@@ -1265,8 +1438,24 @@ export default {
         // Parar atualizações de stats
         this.stopStatsUpdates();
         
+        // Cleanup: Remove o widget TradingView quando o componente for desmontado
+        if (this.tradingViewWidget) {
+            try {
+                this.tradingViewWidget.remove();
+                this.tradingViewWidget = null;
+            } catch (error) {
+                console.error('[InvestmentActive] Erro ao remover widget TradingView:', error);
+            }
+        }
+        
+        // Limpar gráfico lightweight-charts
         if (this.chart) {
-            this.chart.remove();
+            try {
+                this.chart.remove();
+            } catch (error) {
+                console.error('[InvestmentActive] Erro ao remover gráfico:', error);
+            }
+            this.chart = null;
         }
     }
 };
@@ -1523,6 +1712,7 @@ button i,
 
 .status-text-content {
     flex: 1;
+    text-align: left;
 }
 
 .status-title {
@@ -1530,6 +1720,7 @@ button i,
     font-weight: 600;
     color: #DFDFDF;
     margin-bottom: 0.25rem;
+    text-align: left;
 }
 
 .status-subtitle-row {
@@ -1537,6 +1728,7 @@ button i,
     align-items: center;
     gap: 0.5rem;
     font-size: 0.75rem;
+    text-align: left;
 }
 
 .status-indicator-text {
@@ -1763,6 +1955,13 @@ button i,
     height: 100%;
 }
 
+/* TradingView Chart Container */
+.tradingview-container {
+    width: 100%;
+    min-height: 500px;
+    background: #131722;
+}
+
 .logs-view-container {
     height: 400px;
     overflow-y: auto;
@@ -1875,6 +2074,10 @@ button i,
     margin-bottom: 0.5rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
 }
 
 .config-value-main {
@@ -2112,4 +2315,75 @@ button i,
         justify-content: space-between;
     }
 }
+
+/* Tooltip Styles */
+.tooltip-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    cursor: help;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+.icon-help {
+    width: 14px;
+    height: 14px;
+    color: #94a3b8;
+    transition: color 0.2s;
+    flex-shrink: 0;
+}
+
+.icon-help:hover {
+    color: #fff;
+}
+
+.tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    background-color: #1e293b;
+    color: #fff;
+    text-align: left;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    width: max-content;
+    max-width: 250px;
+    white-space: nowrap;
+    position: absolute;
+    z-index: 10000;
+    bottom: 100%;
+    left: 50%;
+    margin-bottom: 8px;
+    transform: translateX(-50%);
+    transition: opacity 0.2s ease, visibility 0.2s ease;
+    pointer-events: none;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    border: 1px solid #334155;
+}
+
+.tooltip-text::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    margin-left: -5px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #1e293b transparent transparent transparent;
+}
+
+.tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Ajustar config-label para suportar tooltips */
+.config-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    position: relative;
+}
+/* End Tooltip Styles */
 </style>
