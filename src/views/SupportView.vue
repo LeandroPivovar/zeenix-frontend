@@ -1,21 +1,52 @@
 <template>
-  <div class="bg-zenix-bg min-h-screen font-inter text-zenix-text">
-    <!-- Mobile Sidebar Overlay -->
-    <div
-      v-if="sidebarIsOpen && isMobile"
-      class="fixed inset-0 bg-black/50 z-40"
-      @click="closeSidebar"
-    ></div>
-
+  <div class="zenix-layout">
     <!-- Sidebar -->
-    <AppSidebar :is-open="sidebarIsOpen" @close-sidebar="closeSidebar" />
+    <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
 
-    <!-- Main Content -->
-    <div class="lg:ml-[240px] min-h-screen flex flex-col transition-all duration-300">
-      <main class="flex-1 py-16 px-4 lg:px-12">
-        
+    <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+      <header class="top-header">
+        <div class="header-content">
+          <div class="header-left-content">
+            <h1 class="header-title">Central de Suporte</h1>
+            <p class="header-subtitle">Encontre respostas rápidas ou entre em contato com nossa equipe.</p>
+          </div>
+          <div class="header-actions-right">
+            <div class="balance-display-card">
+              <div class="balance-header">
+                <i class="far fa-wallet"></i>
+                <div class="balance-info">
+                  <span class="balance-label">Saldo Atual</span>
+                  <div class="balance-value-row">
+                    <span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ formattedBalance }}</span>
+                    <span class="balance-value" v-else>••••••</span>
+                    <button 
+                      v-if="balanceVisible && !isDemo" 
+                      class="account-type-btn real-btn"
+                      @click="toggleBalanceVisibility"
+                    >
+                      Real
+                    </button>
+                    <button 
+                      v-if="balanceVisible && isDemo" 
+                      class="account-type-btn demo-btn"
+                      @click="toggleBalanceVisibility"
+                    >
+                      Demo
+                    </button>
+                    <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
+                      <i class="far fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main class="main-content">
         <!-- Immediate Support Section -->
-        <section id="immediate-support" class="max-w-7xl mx-auto mb-16">
+        <section id="immediate-support" class="support-section mb-16">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Chat Card -->
             <div class="support-card bg-zenix-card border border-zenix-border rounded-2xl p-8 min-h-[160px] flex flex-col">
@@ -55,8 +86,8 @@
         </section>
 
         <!-- Search Section -->
-        <section id="search-section" class="max-w-7xl mx-auto mb-16">
-          <div class="max-w-3xl mx-auto relative">
+        <section id="search-section" class="support-section mb-16">
+          <div class="search-container relative">
             <div class="bg-zenix-card border border-zenix-border rounded-2xl overflow-hidden shadow-lg">
               <div class="flex items-center px-6 py-5">
                 <i class="fas fa-search text-zenix-secondary mr-4 text-lg"></i>
@@ -91,7 +122,7 @@
         </section>
 
         <!-- FAQ Section -->
-        <section id="faq-section" class="max-w-7xl mx-auto mb-16">
+        <section id="faq-section" class="support-section mb-16">
           <h2 class="text-white text-2xl font-bold mb-8">Perguntas Frequentes</h2>
           
           <div v-if="loading" class="text-center py-8 text-zenix-secondary">
@@ -159,9 +190,16 @@ export default {
       loading: true,
       error: null,
       searchTimeout: null,
-      sidebarIsOpen: false,
+      isSidebarOpen: true,
+      isSidebarCollapsed: false,
       isMobile: false,
       showSuggestions: false,
+      accountBalance: 0,
+      accountCurrency: 'USD',
+      accountLoginid: null,
+      isDemo: false,
+      balanceVisible: true,
+      balanceUpdateInterval: null,
       searchSuggestions: [
         'Conectar corretora',
         'Erro de operação',
@@ -171,26 +209,96 @@ export default {
       ]
     }
   },
+  computed: {
+    formattedBalance() {
+      if (!this.accountBalance && this.accountBalance !== 0) return '0.00';
+      return this.accountBalance.toFixed(2);
+    }
+  },
   mounted() {
     this.fetchFaqs()
     window.addEventListener('resize', this.checkMobile)
     this.checkMobile()
+    this.fetchAccountBalance()
+    this.startBalanceUpdates()
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.checkMobile)
     if (this.searchTimeout) {
       clearTimeout(this.searchTimeout)
     }
+    this.stopBalanceUpdates()
   },
   methods: {
     checkMobile() {
       this.isMobile = window.innerWidth <= 1024
     },
-    toggleSidebar() {
-      this.sidebarIsOpen = !this.sidebarIsOpen
+    toggleSidebarCollapse() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed
     },
-    closeSidebar() {
-      this.sidebarIsOpen = false
+    getDerivToken() {
+      try {
+        const derivInfoStr = localStorage.getItem('deriv_info');
+        if (derivInfoStr) {
+          const derivInfo = JSON.parse(derivInfoStr);
+          if (derivInfo.token) {
+            return derivInfo.token;
+          }
+          if (derivInfo.raw && derivInfo.raw.token) {
+            return derivInfo.raw.token;
+          }
+        }
+        return null;
+      } catch (error) {
+        console.error('[SupportView] Erro ao obter token Deriv:', error);
+        return null;
+      }
+    },
+    async fetchAccountBalance() {
+      try {
+        const derivToken = this.getDerivToken();
+        if (!derivToken) {
+          console.warn('[SupportView] ❌ Token não disponível para buscar saldo');
+          return;
+        }
+
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const response = await fetch(`${apiBase}/ai/deriv-balance`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({ derivToken: derivToken }),
+        });
+
+        const result = await response.json();
+        if (result.success && result.data) {
+          this.accountBalance = result.data.balance;
+          this.accountCurrency = result.data.currency;
+          this.accountLoginid = result.data.loginid;
+          this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+        }
+      } catch (error) {
+        console.error('[SupportView] ❌ Erro ao buscar saldo da conta:', error);
+      }
+    },
+    startBalanceUpdates() {
+      if (this.balanceUpdateInterval) {
+        clearInterval(this.balanceUpdateInterval);
+      }
+      this.balanceUpdateInterval = setInterval(() => {
+        this.fetchAccountBalance();
+      }, 30000);
+    },
+    stopBalanceUpdates() {
+      if (this.balanceUpdateInterval) {
+        clearInterval(this.balanceUpdateInterval);
+        this.balanceUpdateInterval = null;
+      }
+    },
+    toggleBalanceVisibility() {
+      this.balanceVisible = !this.balanceVisible;
     },
     hideSuggestions() {
       // Delay para permitir clique nos itens
@@ -301,12 +409,243 @@ export default {
 }
 </script>
 
+<style scoped src="../assets/css/views/supportView.css"></style>
 <style scoped>
 /* Font Import */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 .font-inter {
   font-family: 'Inter', sans-serif;
+}
+
+/* Layout base igual ao da IA */
+.zenix-layout {
+  min-height: 100vh;
+  background-color: #0B0B0B;
+  color: #DFDFDF;
+  font-family: 'Inter', sans-serif;
+}
+
+.main-content-wrapper {
+  margin-left: 240px;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+  width: calc(100% - 240px);
+  box-sizing: border-box;
+}
+
+.main-content-wrapper.sidebar-collapsed {
+  margin-left: 0;
+  width: 100%;
+}
+
+/* Top Header */
+.top-header {
+  position: fixed;
+  top: 0;
+  right: 0;
+  left: 240px;
+  z-index: 40;
+  background-color: #0E0E0E;
+  border-bottom: 1px solid #1C1C1C;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: left 0.3s ease;
+  width: calc(100% - 240px);
+  box-sizing: border-box;
+}
+
+.main-content-wrapper.sidebar-collapsed .top-header {
+  left: 0;
+  width: 100%;
+}
+
+.header-content {
+  padding: 1rem 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-left-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #DFDFDF;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  font-size: 0.875rem;
+  color: #A1A1A1;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.balance-display-card {
+  background-color: #0E0E0E;
+  border: 1px solid #1C1C1C;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.balance-display-card:hover {
+  background: #111;
+  transform: translateY(-1px);
+}
+
+.balance-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.balance-header i {
+  color: #22C55E;
+  font-size: 0.75rem;
+}
+
+.balance-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.balance-label {
+  font-size: 0.625rem;
+  color: #7A7A7A;
+  font-weight: 500;
+}
+
+.balance-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.125rem;
+}
+
+.balance-value {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #DFDFDF;
+}
+
+.account-type-btn {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.real-btn {
+  background-color: #22C55E;
+  color: #000;
+}
+
+.real-btn:hover {
+  background-color: #16A34A;
+}
+
+.demo-btn {
+  background-color: #333;
+  color: #A1A1A1;
+}
+
+.eye-toggle-btn {
+  background: none;
+  border: none;
+  color: #A1A1A1;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s;
+}
+
+.eye-toggle-btn:hover {
+  color: #DFDFDF;
+}
+
+/* Main Content */
+.main-content {
+  margin-top: 70px;
+  padding: 1.5rem 20px;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Support Section - ocupa máxima largura respeitando padding */
+.support-section {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Search Container - ocupa máxima largura */
+.search-container {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Ajustes para cards ocuparem máxima largura */
+#immediate-support .grid {
+  width: 100% !important;
+  max-width: 100% !important;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1.5rem;
+}
+
+#immediate-support .support-card {
+  width: 100%;
+  min-width: 0;
+}
+
+/* Barra de pesquisa ocupar toda largura */
+#search-section .search-container {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+#search-section .bg-zenix-card {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+#search-section .flex {
+  width: 100%;
+}
+
+#search-section input {
+  width: 100%;
+  flex: 1;
+  min-width: 0;
+}
+
+/* Garantir que sections ocupem toda largura */
+.support-section {
+  width: 100%;
+  max-width: 100%;
+}
+
+#faq-section {
+  width: 100%;
+  max-width: 100%;
 }
 
 /* Support Card Hover Effect */
