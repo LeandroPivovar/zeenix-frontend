@@ -232,7 +232,7 @@
         <div 
           v-for="(tool, index) in quickTools" 
           :key="index"
-          class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden premium-card transition-all duration-300 cursor-pointer h-[190px] flex tool-card relative w-full"
+          class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden premium-card transition-all duration-300 cursor-pointer h-[198px] flex tool-card relative w-full"
           @click="handleToolClick(tool)"
         >
           <div class="w-[40%] relative overflow-hidden flex-shrink-0">
