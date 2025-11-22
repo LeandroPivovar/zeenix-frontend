@@ -166,25 +166,14 @@
                             </button>
             </div>
 
-                        <div class="timeframe-buttons">
-                    <button 
-                                v-for="option in timeframeOptionsFormatted"
-                                :key="option.value"
-                                :class="['timeframe-btn', { 'active': option.value === selectedTimeframe }]"
-                                :disabled="chartType !== 'candles'"
-                                @click="setTimeframe(option.value)"
-                            >
-                                {{ option.label }}
-                    </button>
-                </div>
-
                         <!-- Chart Size Controls -->
                         <div class="chart-size-controls">
                             <button 
                                 v-for="size in chartSizeOptions"
                                 :key="size.value"
-                                :class="['chart-size-btn', { 'active': chartPointsVisible === size.value }]"
-                                @click="setChartSize(size.value)"
+                                :class="['chart-size-btn', { 'active': selectedTimeframe === size.timeframe }]"
+                                :disabled="chartType !== 'candles'"
+                                @click="setChartSize(size.timeframe, size.points)"
                                 :title="size.label"
                             >
                                 {{ size.label }}
@@ -428,16 +417,7 @@ export default {
                 { label: 'Velas', value: 'candles' },
                 { label: 'Linhas', value: 'line' },
             ],
-            selectedTimeframe: 300, // 5 minutos (M5)
-            timeframeOptions: [
-                { label: 'M1', value: 60 },
-                { label: 'M5', value: 300 },
-                { label: 'M15', value: 900 },
-                { label: 'M30', value: 1800 },
-                { label: 'H1', value: 3600 },
-                { label: 'H4', value: 14400 },
-                { label: 'D1', value: 86400 }
-            ],
+            selectedTimeframe: 300, // 5 minutos (M5) - padrão Médio
             
             // Estatísticas do dia
             dailyStats: {
@@ -498,9 +478,9 @@ export default {
             // Controle de tamanho do gráfico
             chartPointsVisible: 200, // Padrão: 200 pontos (Médio)
             chartSizeOptions: [
-                { label: 'Pequeno', value: 100 },
-                { label: 'Médio', value: 200 },
-                { label: 'Grande', value: 300 }
+                { label: 'Pequeno', timeframe: 60, points: 200 },    // M1 - mais detalhado
+                { label: 'Médio', timeframe: 300, points: 200 },   // M5 - padrão
+                { label: 'Grande', timeframe: 900, points: 200 }    // M15 - menos detalhado
             ],
         };
     },
@@ -696,10 +676,6 @@ export default {
             return descriptions[this.selectedRisk] || 'Proteção máxima do capital com crescimento estável';
         },
 
-        // Timeframe options formatted
-        timeframeOptionsFormatted() {
-            return this.timeframeOptions;
-        },
 
         // Formatted balance
         formattedBalance() {
@@ -1026,19 +1002,15 @@ export default {
             }
         },
 
-        setTimeframe(value) {
-            if (this.selectedTimeframe !== value) {
-                this.selectedTimeframe = value;
-            }
-        },
         setChartType(type) {
             if (this.chartType !== type) {
                 this.chartType = type;
             }
         },
-        setChartSize(size) {
-            if (this.chartPointsVisible !== size) {
-                this.chartPointsVisible = size;
+        setChartSize(timeframe, points) {
+            if (this.selectedTimeframe !== timeframe) {
+                this.selectedTimeframe = timeframe;
+                this.chartPointsVisible = points;
                 this.$nextTick(() => {
                     this.updateChart();
                 });
@@ -1981,43 +1953,6 @@ button i,
     font-weight: 700;
 }
 
-.timeframe-buttons {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-    flex-wrap: wrap;
-}
-
-.timeframe-btn {
-    padding: 0.375rem 0.75rem;
-    background-color: #0B0B0B;
-    color: #A1A1A1;
-    border: 1px solid #1C1C1C;
-    border-radius: 0.5rem;
-    font-size: 0.75rem;
-    font-weight: 500;
-    cursor: pointer;
-    transition: all 0.3s ease;
-}
-
-.timeframe-btn:hover:not(:disabled) {
-    border-color: #22C55E;
-    color: #22C55E;
-}
-
-.timeframe-btn.active {
-    background-color: #22C55E;
-    color: #000;
-    border-color: #22C55E;
-    font-weight: 700;
-}
-
-.timeframe-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
 /* Chart Size Controls */
 .chart-size-controls {
     display: flex;
@@ -2049,6 +1984,11 @@ button i,
     color: #000;
     border-color: #22C55E;
     font-weight: 700;
+}
+
+.chart-size-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
 }
 
 .chart-view-container {
