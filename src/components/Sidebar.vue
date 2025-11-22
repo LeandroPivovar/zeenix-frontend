@@ -33,8 +33,8 @@
             </button>
             <button 
                 class="menu-item" 
-                :class="{ active: isCopyTradingActive }"
-                @click="navigateAndClose('/copy-trading')"
+                :class="{ active: isCopyTradersActive }"
+                @click="navigateAndClose('/copy-trader')"
                 data-text="Copy Trading"
             >
                 <img src="../assets/icons/copy.svg" alt="" class="icon-sidebar">
@@ -231,7 +231,7 @@ export default {
             return this.$route?.path === '/operation'
         },
         isCopyTradingActive() {
-            return this.$route?.path === '/copy-trading';
+            return this.$route?.path === '/copy-trader';
         },
 
         // PROPRIEDADES DE ADMIN CORRIGIDAS
