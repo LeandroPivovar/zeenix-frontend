@@ -241,7 +241,7 @@
                         <div class="config-content">
                             <!-- Estratégia -->
                             <div class="config-section">
-                                <p class="config-label">
+                                <div class="config-label">
                                     Estratégia
                                     <div class="tooltip-container">
                                         <svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -251,14 +251,14 @@
                                         </svg>
                                         <span class="tooltip-text">Modelo de análise usado pela IA</span>
                                     </div>
-                                </p>
+                                </div>
                                 <p class="config-value-main">{{ strategyName }}</p>
                                 <p class="config-description">Alta performance • Sinais avançados</p>
                             </div>
 
                             <!-- Mercado -->
                             <div class="config-section">
-                                <p class="config-label">
+                                <div class="config-label">
                                     Mercado
                                     <div class="tooltip-container">
                                         <svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -268,7 +268,7 @@
                                         </svg>
                                         <span class="tooltip-text">Escolha o ativo que deseja operar.</span>
                                     </div>
-                                </p>
+                                </div>
                                 <p class="config-value-main">Volatility 10 Index</p>
                                 <p class="config-description">Ticks de alta frequência</p>
                         </div>
