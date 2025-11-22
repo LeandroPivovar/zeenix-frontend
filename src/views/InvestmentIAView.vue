@@ -50,13 +50,17 @@
                     <div id="market-strategy-card" class="config-card premium-card">
                         <h3 class="card-title">
                             Mercado & Estratégia
-                            <i class="fas fa-info-circle"></i>
+                            <TooltipsCopyTraders position="left"> 
+                                <h4>🎯 Mercado & Estratégia</h4>
+                            </TooltipsCopyTraders>
                         </h3>
                         <div class="card-content">
                             <div class="form-group">
                                 <label class="form-label">
                                     Selecione o mercado
-                                    <i class="fas fa-question-circle"></i>
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Escolha o ativo que deseja operar</p>
+                                    </TooltipsCopyTraders>
                                 </label>
                                 <select id="marketSelect" class="form-select" v-model="selectedMarket">
                                     <option value="vol10">Volatility 10 Index</option>
@@ -81,7 +85,9 @@
                             <div class="form-group">
                                 <label class="form-label">
                                     Estratégia
-                                    <i class="fas fa-question-circle"></i>
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Modelo de análise usado pela IA</p>
+                                    </TooltipsCopyTraders>
                                 </label>
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
                                     <option value="orion">IA Orion</option>
@@ -345,12 +351,15 @@
 <script>
 import AppSidebar from '../components/Sidebar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
+import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
 
 export default {
     name: 'InvestmentIAView',
     components: {
         AppSidebar,
-        InvestmentActive
+        InvestmentActive,
+        TooltipsCopyTraders,
+
     },
     data() {
         return {
@@ -1734,7 +1743,7 @@ export default {
 }
 
 .form-label {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: #A1A1A1;
     display: flex;
     align-items: center;
@@ -1765,10 +1774,15 @@ export default {
     border-color: #22C55E;
 }
 
+.form-group input{
+    margin-bottom: 0rem;
+}
+
 .form-help {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: #A1A1A1;
     opacity: 0.6;
+    text-align: left;
 }
 
 /* Mode Buttons */
@@ -2000,7 +2014,7 @@ export default {
 
 .ai-status-control {
     display: flex;
-        align-items: center;
+    align-items: center;
     justify-content: space-between;
     background-color: #0B0B0B;
     border: 1px solid #1C1C1C;
@@ -2014,6 +2028,7 @@ export default {
     font-weight: 600;
     color: #DFDFDF;
     margin-bottom: 0.25rem;
+    text-align: left;
 }
 
 .ai-status-subtitle {
@@ -2043,6 +2058,7 @@ export default {
     display: inline-flex;
     align-items: center;
     cursor: pointer;
+    width: 100%;
 }
 
 .toggle-switch input {
@@ -2051,7 +2067,7 @@ export default {
     height: 0;
 }
 
-.toggle-slider {
+.toggle-slider[data-v-70480caa] {
     position: relative;
     width: 4rem;
     height: 2rem;
