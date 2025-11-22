@@ -35,8 +35,8 @@
                         </div>
                     </div>
                     <div class="status-actions">
-                        <button class="action-icon-btn"><i class="icon-bell"></i></button>
-                        <button class="action-icon-btn active-user"><i class="icon-user"></i></button>
+                        <button class="action-icon-btn"><img src="../assets/icons/notify.svg" alt="" width="30" height="30"></button>
+                        <button class="action-icon-btn active-user"><img src="../assets/icons/people.svg" alt="" width="30" height="30"></button>
                     </div>
 
                 </div>
@@ -86,8 +86,8 @@
 // Componentes necessários (crie estes arquivos .vue)
 import AppSidebar from '../components/Sidebar.vue'
 import CopiersDetails from '../components/CopiersDetails.vue'
-import AIInvestment from './InvestmentIAView.vue'
-import AgenteAutonomoView from './AgenteAutonomo.vue'
+import AIInvestment from '../components/InvestmentComponent.vue'
+import AgenteAutonomoView from '../components/AgentAutonomoComponent.vue'
 import ManualOperation from './OperationView.vue'
 
 export default {
@@ -181,36 +181,11 @@ export default {
     display: none !important;
 }
 
+
+
 </style>
 
 <style scoped>
-/* ---------------------------------------------------------------------------------- */
-/* ✅ CSS LOCAL (SCOPED) - ESTILOS VISUAIS E DE LAYOUT GERAL */
-/* ---------------------------------------------------------------------------------- */
-:deep(.top-header[data-v-70480caa]) {
-    position: static !important;
-    top: auto !important; /* Garante que não haja compensação de topo */
-    z-index: auto !important; /* Evita que o elemento cubra o conteúdo */
-    width: 100% !important; /* Garante que o elemento rola */
-}
-
-:deep(.main-content-wrapper[data-v-70480caa]) {
-    margin-top: 0 !important; /* Remove a compensação de margin-top do conteúdo principal */
-    width: 100%; /* Garante que o conteúdo principal rola */
-    margin-left: 0;
-}
-
-:deep(.layout-agente-autnomo[data-v-3812672c]) {
-    margin: 0;
-    width: 100%;
-}
-
-:deep(.main-content[data-v-70480caa]) {
-    margin-top: 0 !important; /* Remove a compensação de margin-top do conteúdo principal */
-    width: 100%;
-}
-
-
 
 .layout-master-trader {
     display: flex;
@@ -363,7 +338,8 @@ export default {
     display: flex;
     gap: 15px;
     border-left: 1px solid #30363d;
-    margin-left: 20px;
+    margin-left: 30px;
+    padding-left: 20px;
 }
 
 .action-icon-btn {
