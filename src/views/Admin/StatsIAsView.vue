@@ -70,7 +70,17 @@
 						</div>
 						<div class="status-item">
 							<span class="status-label">IA Orion</span>
-							<span class="status-value">Ativo Atual</span>
+							<span class="status-value">
+								Ativo Atual
+								<div class="tooltip-container">
+									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<circle cx="12" cy="12" r="10"></circle>
+										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+										<line x1="12" y1="17" x2="12.01" y2="17"></line>
+									</svg>
+									<span class="tooltip-text">Ativo que a IA analisa agora.</span>
+								</div>
+							</span>
 						</div>
 					</div>
 					<div class="market-info-grid">
@@ -83,22 +93,62 @@
 							<div class="info-value">M5</div>
 						</div>
 						<div class="info-item">
-							<div class="info-label">Probabilidade</div>
+							<div class="info-label">
+								Probabilidade
+								<div class="tooltip-container">
+									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<circle cx="12" cy="12" r="10"></circle>
+										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+										<line x1="12" y1="17" x2="12.01" y2="17"></line>
+									</svg>
+									<span class="tooltip-text">Chance estimada de acerto do próximo sinal.</span>
+								</div>
+							</div>
 							<div class="info-value high-confidence">82%</div>
 							<div class="info-hint">Alta confiança</div>
 						</div>
 						<div class="info-item">
-							<div class="info-label">Latência</div>
+							<div class="info-label">
+								Latência
+								<div class="tooltip-container">
+									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<circle cx="12" cy="12" r="10"></circle>
+										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+										<line x1="12" y1="17" x2="12.01" y2="17"></line>
+									</svg>
+									<span class="tooltip-text">Tempo de resposta da IA com o servidor.</span>
+								</div>
+							</div>
 							<div class="info-value excellent">12ms</div>
 							<div class="info-hint">Excelente</div>
 						</div>
 						<div class="info-item">
-							<div class="info-label">Última Leitura</div>
+							<div class="info-label">
+								Última Leitura
+								<div class="tooltip-container">
+									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<circle cx="12" cy="12" r="10"></circle>
+										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+										<line x1="12" y1="17" x2="12.01" y2="17"></line>
+									</svg>
+									<span class="tooltip-text">Momento da última análise do mercado.</span>
+								</div>
+							</div>
 							<div class="info-value">{{ lastReadingTime }}</div>
 							<div class="info-hint">Agora</div>
 						</div>
 						<div class="info-item">
-							<div class="info-label">Status</div>
+							<div class="info-label">
+								Status
+								<div class="tooltip-container">
+									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<circle cx="12" cy="12" r="10"></circle>
+										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+										<line x1="12" y1="17" x2="12.01" y2="17"></line>
+									</svg>
+									<span class="tooltip-text">Situação operacional da IA no momento.</span>
+								</div>
+							</div>
 							<div class="info-value status-active">Ativo</div>
 							<div class="info-hint">Monitorando</div>
 						</div>
@@ -109,7 +159,17 @@
 							<div class="precision-value">78%</div>
 						</div>
 						<div class="precision-item">
-							<div class="precision-label">WinRate</div>
+							<div class="precision-label">
+								WinRate
+								<div class="tooltip-container">
+									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<circle cx="12" cy="12" r="10"></circle>
+										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+										<line x1="12" y1="17" x2="12.01" y2="17"></line>
+									</svg>
+									<span class="tooltip-text">Taxa de acerto recente da IA.</span>
+								</div>
+							</div>
 							<div class="precision-value">{{ winRate }}%</div>
 						</div>
 					</div>
@@ -141,13 +201,33 @@
 						</div>
 						<div class="config-group-content">
 							<div class="config-field">
-								<label>Selecionar o mercado</label>
+								<label>
+									Selecionar o mercado
+									<div class="tooltip-container">
+										<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<circle cx="12" cy="12" r="10"></circle>
+											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+											<line x1="12" y1="17" x2="12.01" y2="17"></line>
+										</svg>
+										<span class="tooltip-text">Escolha o ativo que deseja operar.</span>
+									</div>
+								</label>
 								<div class="select-field disabled">
 									<span>EUR/USD - Forex</span>
 								</div>
 							</div>
 							<div class="config-field">
-								<label>Estratégia</label>
+								<label>
+									Estratégia
+									<div class="tooltip-container">
+										<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<circle cx="12" cy="12" r="10"></circle>
+											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+											<line x1="12" y1="17" x2="12.01" y2="17"></line>
+										</svg>
+										<span class="tooltip-text">Modelo de análise usado pela IA</span>
+									</div>
+								</label>
 								<div class="select-field disabled">
 									<span>IA Orion - Alta Performance</span>
 									<small>Análise técnica avançada com machine learning</small>
@@ -1985,35 +2065,66 @@ export default {
 				height: containerHeight,
 				localization: { locale: 'pt-BR' },
 				layout: {
-					background: { type: ColorType.Solid, color: '#0f172a' },
-					textColor: '#f8fafc',
+					background: { type: ColorType.Solid, color: '#0B0B0B' },
+					textColor: '#DFDFDF',
 				},
 				rightPriceScale: {
-					borderVisible: false,
+					borderColor: '#1C1C1C',
+					scaleMargins: {
+						top: 0.1,
+						bottom: 0.1,
+					},
+				},
+				leftPriceScale: {
+					visible: false,
 				},
 				timeScale: {
-					borderVisible: false,
+					borderColor: '#1C1C1C',
 					timeVisible: true,
-					secondsVisible: true,
+					secondsVisible: false,
+					rightOffset: 10,
 				},
 				grid: {
-					vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
-					horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
+					vertLines: { 
+						color: '#1A1A1A',
+						style: 0,
+						visible: true,
+					},
+					horzLines: { 
+						color: '#1A1A1A',
+						style: 0,
+						visible: true,
+					},
 				},
 				crosshair: {
 					mode: 1,
+					vertLine: {
+						color: '#22C55E',
+						width: 1,
+						style: 3,
+						labelBackgroundColor: '#22C55E',
+					},
+					horzLine: {
+						color: '#22C55E',
+						width: 1,
+						style: 3,
+						labelBackgroundColor: '#22C55E',
+					},
 				},
 			});
 			
-			this.marketLineSeriesInactive = this.marketChartInactive.addAreaSeries({
-				lineColor: '#10b981',
-				topColor: 'rgba(16, 185, 129, 0.2)',
-				bottomColor: 'rgba(16, 185, 129, 0.02)',
-				lineWidth: 2,
+			this.marketLineSeriesInactive = this.marketChartInactive.addCandlestickSeries({
+				upColor: '#22C55E',
+				downColor: '#FF4747',
+				borderVisible: true,
+				borderUpColor: '#22C55E',
+				borderDownColor: '#FF4747',
+				wickUpColor: '#22C55E',
+				wickDownColor: '#FF4747',
 				priceFormat: {
 					type: 'price',
-					precision: 2,
-					minMove: 0.01,
+					precision: 4,
+					minMove: 0.0001,
 				},
 			});
 			
@@ -2033,12 +2144,10 @@ export default {
 		}
 		
 		try {
-			const data = this.aiMonitoring.ticks.map(tick => ({
-				time: Math.floor(tick.epoch || Date.now() / 1000),
-				value: tick.value || tick.price || 0,
-			}));
+			// Converter ticks em velas para reduzir pontos
+			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks, 5); // 5 segundos por vela
 			
-			this.marketLineSeriesInactive.setData(data);
+			this.marketLineSeriesInactive.setData(candles);
 			this.marketChartInactive.timeScale().fitContent();
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao atualizar gráfico de mercado (inativo):', error);
@@ -2063,35 +2172,66 @@ export default {
 				height: containerHeight,
 				localization: { locale: 'pt-BR' },
 				layout: {
-					background: { type: ColorType.Solid, color: '#0f172a' },
-					textColor: '#f8fafc',
+					background: { type: ColorType.Solid, color: '#0B0B0B' },
+					textColor: '#DFDFDF',
 				},
 				rightPriceScale: {
-					borderVisible: false,
+					borderColor: '#1C1C1C',
+					scaleMargins: {
+						top: 0.1,
+						bottom: 0.1,
+					},
+				},
+				leftPriceScale: {
+					visible: false,
 				},
 				timeScale: {
-					borderVisible: false,
+					borderColor: '#1C1C1C',
 					timeVisible: true,
-					secondsVisible: true,
+					secondsVisible: false,
+					rightOffset: 10,
 				},
 				grid: {
-					vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
-					horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
+					vertLines: { 
+						color: '#1A1A1A',
+						style: 0,
+						visible: true,
+					},
+					horzLines: { 
+						color: '#1A1A1A',
+						style: 0,
+						visible: true,
+					},
 				},
 				crosshair: {
 					mode: 1,
+					vertLine: {
+						color: '#22C55E',
+						width: 1,
+						style: 3,
+						labelBackgroundColor: '#22C55E',
+					},
+					horzLine: {
+						color: '#22C55E',
+						width: 1,
+						style: 3,
+						labelBackgroundColor: '#22C55E',
+					},
 				},
 			});
 			
-			this.marketLineSeriesActive = this.marketChartActive.addAreaSeries({
-				lineColor: '#10b981',
-				topColor: 'rgba(16, 185, 129, 0.2)',
-				bottomColor: 'rgba(16, 185, 129, 0.02)',
-				lineWidth: 2,
+			this.marketLineSeriesActive = this.marketChartActive.addCandlestickSeries({
+				upColor: '#22C55E',
+				downColor: '#FF4747',
+				borderVisible: true,
+				borderUpColor: '#22C55E',
+				borderDownColor: '#FF4747',
+				wickUpColor: '#22C55E',
+				wickDownColor: '#FF4747',
 				priceFormat: {
 					type: 'price',
-					precision: 2,
-					minMove: 0.01,
+					precision: 4,
+					minMove: 0.0001,
 				},
 			});
 			
@@ -2111,16 +2251,88 @@ export default {
 		}
 		
 		try {
-			const data = this.aiMonitoring.ticks.map(tick => ({
-				time: Math.floor(tick.epoch || (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : Date.now() / 1000)),
-				value: tick.value || tick.price || 0,
-			}));
+			// Converter ticks em velas para reduzir pontos
+			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks, 5); // 5 segundos por vela
 			
-			this.marketLineSeriesActive.setData(data);
+			this.marketLineSeriesActive.setData(candles);
 			this.marketChartActive.timeScale().fitContent();
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao atualizar gráfico de mercado (ativo):', error);
 		}
+	},
+	
+	/**
+	 * Converte ticks em velas (candles) para reduzir a quantidade de pontos
+	 */
+	aggregateTicksToCandles(ticks, timeframeSeconds = 5) {
+		if (!Array.isArray(ticks) || ticks.length === 0) {
+			return [];
+		}
+
+		// Filtrar e processar todos os ticks primeiro
+		const validTicks = ticks.map(tick => {
+			const rawTime = Math.floor(tick.epoch || tick.time || (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : Date.now() / 1000));
+			const price = Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0);
+			return { time: rawTime, price };
+		}).filter(tick => tick.price > 0);
+
+		if (validTicks.length === 0) {
+			return [];
+		}
+
+		// Ordenar por tempo
+		const sortedTicks = [...validTicks].sort((a, b) => a.time - b.time);
+		const totalTicks = sortedTicks.length;
+
+		// Ajustar timeframe para manter uma quantidade razoável de velas
+		// Objetivo: ter entre 100-500 velas dependendo da quantidade de ticks
+		let effectiveTimeframe = timeframeSeconds;
+		
+		if (totalTicks > 1000) {
+			// Muitos ticks: aumentar timeframe para reduzir quantidade de velas
+			effectiveTimeframe = Math.max(5, Math.floor(totalTicks / 300));
+		} else if (totalTicks < 100) {
+			// Poucos ticks: diminuir timeframe para ter mais velas
+			effectiveTimeframe = Math.max(1, Math.floor(timeframeSeconds / 2));
+		}
+
+		const candles = [];
+		let bucketStart = null;
+		let bucketTicks = [];
+
+		const finalizeBucket = () => {
+			if (!bucketTicks.length || bucketStart === null) return;
+			const prices = bucketTicks.map(t => t.price);
+			candles.push({
+				time: bucketStart,
+				open: bucketTicks[0].price,
+				high: Math.max(...prices),
+				low: Math.min(...prices),
+				close: bucketTicks[bucketTicks.length - 1].price,
+			});
+		};
+
+		for (const tick of sortedTicks) {
+			const bucket = Math.floor(tick.time / effectiveTimeframe) * effectiveTimeframe;
+
+			if (bucketStart === null) {
+				bucketStart = bucket;
+			}
+
+			if (bucket !== bucketStart) {
+				finalizeBucket();
+				bucketStart = bucket;
+				bucketTicks = [];
+			}
+
+			bucketTicks.push(tick);
+		}
+
+		finalizeBucket();
+		
+		console.log(`[StatsIAsView] Convertidos ${totalTicks} ticks em ${candles.length} velas (timeframe: ${effectiveTimeframe}s)`);
+		
+		return candles;
 	},
 },
 
@@ -4101,5 +4313,73 @@ tbody tr:hover {
 	100% {
 		background-position: -48px -48px, -48px -48px;
 	}
+}
+
+/* Tooltip Styles */
+.tooltip-container {
+	position: relative;
+	display: inline-block;
+	cursor: help;
+	margin-left: 6px;
+	vertical-align: middle;
+}
+
+.icon-help {
+	width: 14px;
+	height: 14px;
+	color: #94a3b8;
+	transition: color 0.2s;
+}
+
+.icon-help:hover {
+	color: #fff;
+}
+
+.tooltip-text {
+	visibility: hidden;
+	opacity: 0;
+	background-color: #1e293b;
+	color: #fff;
+	text-align: center;
+	padding: 6px 10px;
+	border-radius: 6px;
+	font-size: 12px;
+	width: max-content;
+	max-width: 250px;
+	white-space: normal;
+	position: absolute;
+	z-index: 1000;
+	bottom: 125%;
+	left: 50%;
+	transform: translateX(-50%) translateY(-5px);
+	transition: opacity 0.3s, visibility 0.3s;
+	pointer-events: none;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+	border: 1px solid #334155;
+}
+
+.tooltip-text::after {
+	content: "";
+	position: absolute;
+	top: 100%;
+	left: 50%;
+	margin-left: -5px;
+	border-width: 5px;
+	border-style: solid;
+	border-color: #1e293b transparent transparent transparent;
+}
+
+.tooltip-container:hover .tooltip-text {
+	visibility: visible;
+	opacity: 1;
+}
+
+/* Ajustes para labels com tooltips */
+.info-label,
+.status-label,
+.precision-label,
+.config-field label {
+	display: inline-flex;
+	align-items: center;
 }
 </style>
