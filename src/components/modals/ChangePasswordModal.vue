@@ -4,31 +4,61 @@
       <h3 class="modal-title">Alterar Senha</h3>
       <div class="form-group">
         <label>Senha Atual</label>
-        <input 
-          type="password" 
-          v-model="currentPassword" 
-          class="form-input"
-          placeholder="Digite sua senha atual"
-        />
+        <div class="input-wrapper">
+          <input 
+            :type="showCurrentPassword ? 'text' : 'password'" 
+            v-model="currentPassword" 
+            class="form-input"
+            placeholder="Digite sua senha atual"
+          />
+          <button 
+            type="button" 
+            class="toggle-password" 
+            @click="showCurrentPassword = !showCurrentPassword"
+            tabindex="-1"
+          >
+            <i :class="showCurrentPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
       </div>
       <div class="form-group">
         <label>Nova Senha</label>
-        <input 
-          type="password" 
-          v-model="newPassword" 
-          class="form-input"
-          placeholder="Digite sua nova senha"
-        />
+        <div class="input-wrapper">
+          <input 
+            :type="showNewPassword ? 'text' : 'password'" 
+            v-model="newPassword" 
+            class="form-input"
+            placeholder="Digite sua nova senha"
+          />
+          <button 
+            type="button" 
+            class="toggle-password" 
+            @click="showNewPassword = !showNewPassword"
+            tabindex="-1"
+          >
+            <i :class="showNewPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
       </div>
       <div class="form-group">
         <label>Confirmar Nova Senha</label>
-        <input 
-          type="password" 
-          v-model="confirmPassword" 
-          class="form-input"
-          placeholder="Confirme sua nova senha"
-          @keyup.enter="handleSave"
-        />
+        <div class="input-wrapper">
+          <input 
+            :type="showConfirmPassword ? 'text' : 'password'" 
+            v-model="confirmPassword" 
+            class="form-input"
+            placeholder="Confirme sua nova senha"
+            @keyup.enter="handleSave"
+          />
+          <button 
+            type="button" 
+            class="toggle-password" 
+            @click="showConfirmPassword = !showConfirmPassword"
+            tabindex="-1"
+          >
+            <i :class="showConfirmPassword ? 'fas fa-eye-slash' : 'fas fa-eye'"></i>
+          </button>
+        </div>
       </div>
       <div v-if="error" class="error-message">{{ error }}</div>
       <div class="modal-actions">
@@ -52,7 +82,10 @@ export default {
       currentPassword: '',
       newPassword: '',
       confirmPassword: '',
-      error: ''
+      error: '',
+      showCurrentPassword: false,
+      showNewPassword: false,
+      showConfirmPassword: false
     }
   },
   computed: {
@@ -70,6 +103,9 @@ export default {
         this.newPassword = ''
         this.confirmPassword = ''
         this.error = ''
+        this.showCurrentPassword = false
+        this.showNewPassword = false
+        this.showConfirmPassword = false
       }
     },
     newPassword() {
@@ -112,8 +148,12 @@ export default {
 .modal-title { font-weight: 700; font-size: 20px; margin: 0 0 20px; }
 .form-group { margin-bottom: 16px; }
 .form-group label { display: block; margin-bottom: 8px; font-size: 14px; color: #9ca3af; }
-.form-input { width: 100%; background: #1a1f1d; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px; color: #e5e7eb; font-size: 14px; }
+.input-wrapper { position: relative; width: 100%; }
+.form-input { width: 100%; background: #1a1f1d; border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 10px 40px 10px 10px; color: #e5e7eb; font-size: 14px; }
 .form-input:focus { outline: none; border-color: #10B981; }
+.toggle-password { position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: transparent; border: none; color: #9ca3af; cursor: pointer; padding: 5px; display: flex; align-items: center; justify-content: center; transition: color 0.2s; }
+.toggle-password:hover { color: #10B981; }
+.toggle-password i { font-size: 16px; }
 .error-message { color: #ef4444; font-size: 13px; margin-bottom: 12px; }
 .modal-actions { display: flex; gap: 12px; justify-content: flex-end; margin-top: 24px; }
 .btn-cancel { background: transparent; border: 1px solid rgba(255,255,255,0.2); color: #e5e7eb; border-radius: 8px; padding: 10px 20px; cursor: pointer; }
