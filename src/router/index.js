@@ -20,6 +20,8 @@ import AcademyCoursesListView from '../views/Admin/AcademyCoursesListView.vue'
 import AdminView from '@/views/Admin/AdminView.vue'
 import MasterTraderView from '@/views/MasterTraderView.vue'
 import AgenteAutonomoView from '@/views/AgenteAutonomo.vue'
+import CopyTraders from '@/views/CopyTradersView.vue';
+
 const routes = [
   {
     path: '/',
@@ -172,7 +174,13 @@ const routes = [
     name: 'AgenteAutonomoView',
     component: AgenteAutonomoView,
     meta: { requiresAuth: true }
-  }
+  },
+  {
+    path: '/copy-trader',
+    name: 'CopyTradersView',
+    component: CopyTraders,  
+    meta: { requiresAuth: true }
+  },
 
 ]
 
