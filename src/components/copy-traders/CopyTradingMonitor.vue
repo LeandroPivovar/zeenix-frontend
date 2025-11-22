@@ -1,13 +1,9 @@
 <template>
     <div id="copy-trading-monitor">
-      <div class="tabs">
-        <button :class="['tab', { active: tabAtiva === 'config' }]" @click="setTab('config')">Configurar</button>
-        <button :class="['tab', { active: tabAtiva === 'monitor' }]" @click="setTab('monitor')">Acompanhar & Performance</button>
-      </div>
   
       <div v-if="tabAtiva === 'monitor'" class="grid">
         
-        <div class="card">
+        <div class="card div1">
           <div class="card-header">
             <span class="card-title">Resumo do Dia</span>
             <span class="tooltip">?</span>
@@ -33,7 +29,7 @@
           </div>
         </div>
   
-        <div class="card">
+        <div class="card status-card div2">
           <div class="card-header">
             <span class="card-title">Status Atual do Copy</span>
             <span class="tooltip">?</span>
@@ -78,7 +74,7 @@
           </div>
         </div>
   
-        <div class="card">
+        <div class="card div3">
           <div class="card-header">
             <span class="card-title">Operações Replicadas</span>
             <span class="tooltip">?</span>
@@ -97,7 +93,7 @@
           <button class="view-btn">Ver tudo</button>
         </div>
   
-        <div class="card">
+        <div class="card div4">
           <div class="card-header">
             <span class="card-title">Exposição & Risco</span>
             <span class="tooltip">?</span>
@@ -250,13 +246,35 @@
   * { margin: 0; padding: 0; box-sizing: border-box; }
   #copy-trading-monitor {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #000; color: #fff; padding: 20px; min-height: 100vh;
+    background: #0a0b0a; color: #fff; padding: 20px; min-height: 100vh;
   }
   .tabs { display: flex; gap: 24px; border-bottom: 1px solid #222; padding-bottom: 12px; margin-bottom: 20px; }
   .tab { background: none; border: none; color: #666; font-size: 14px; cursor: pointer; padding-bottom: 12px; }
   .tab.active { color: #fff; border-bottom: 2px solid #22c55e; margin-bottom: -13px; }
-  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
-  .card { background: #0a0a0a; border: 1px solid #1a1a1a; border-radius: 12px; padding: 20px; }
+
+  
+  .grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1.8fr;
+    gap: 16px;
+}
+
+
+.grid {
+display: grid;
+grid-template-columns: repeat(6, 1fr);
+grid-template-rows: repeat(5, 1fr);
+
+}
+
+.div1 { grid-area: 1 / 1 / 3 / 3; }
+.div2 { grid-area: 1 / 3 / 3 / 7; }
+.div3 { grid-area: 3 / 4 / 6 / 7; }
+.div4 { grid-area: 3 / 1 / 6 / 4; }
+
+
+
+  .card { background: #0e0f0f; border: 1px solid #1a1a1a; border-radius: 12px; padding: 20px; }
   .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
   .card-title { font-size: 14px; color: #999; font-weight: 500; }
   .tooltip { width: 16px; height: 16px; border: 1px solid #444; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; color: #666; cursor: help; }
@@ -265,7 +283,7 @@
   .profit-value { font-size: 28px; font-weight: 700; color: #22c55e; }
   .profit-percent { font-size: 12px; color: #22c55e; margin-left: 8px; }
   .stats-row { display: flex; gap: 24px; margin-bottom: 16px; }
-  .stat-item .label { font-size: 12px; color: #666; display: block; }
+  .stat-item .label { font-size: 12px; color: #9b9696 ; display: block; }
   .stat-item .value { font-size: 18px; font-weight: 600; }
   .stat-item .value.green { color: #22c55e; }
   .stat-item .value.red { color: #ef4444; }
@@ -273,14 +291,14 @@
   .weekly-value { font-size: 14px; color: #22c55e; font-weight: 500; }
   .status-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
   .status-row { display: flex; align-items: center; gap: 12px; }
-  .status-icon { width: 32px; height: 32px; background: rgba(34,197,94,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
+  .status-icon { width: 50px; height: 50px; background: rgba(34,197,94,0.15); border-radius: 50%; display: flex; align-items: center; justify-content: center; }
   .status-icon svg { width: 18px; height: 18px; color: #22c55e; }
-  .status-info .label { font-size: 11px; color: #666; }
+  .status-info .label { font-size: 12px; color: #838282; }
   .status-info .value { font-size: 13px; color: #22c55e; font-weight: 600; }
   .pause-btn { background: transparent; border: 1px solid #ef4444; color: #ef4444; padding: 10px 20px; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.2s; }
   .pause-btn:hover { background: rgba(239,68,68,0.1); }
   .trader-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-  .trader-info { display: flex; align-items: center; gap: 12px; }
+  .trader-info { display: flex; align-items: center; gap: 12px; background: #0a0b0a; padding: 15px 20px; border-radius: 8px; text-align: left;}
   .trader-avatar { width: 40px; height: 40px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
   .trader-avatar svg { width: 20px; height: 20px; color: #666; }
   .trader-details .label { font-size: 11px; color: #666; }
@@ -332,6 +350,27 @@
   .chart-area { margin-left: 40px; height: 100%; position: relative; }
   .chart-area svg { width: 100%; height: 100%; }
   .chart-x { display: flex; justify-content: space-between; margin-left: 40px; margin-top: 8px; font-size: 11px; color: #666; }
+  
+  /* ESTILOS INTERNOS DO STATUS CARD AJUSTADOS PARA PREENCHER MELHOR O ESPAÇO (mantidos para o caso de ter sido isso que deu a sensação de "mais largo") */
+  .status-card .trader-row {
+    /* No layout de 1 coluna, a justificação 'space-around' já ajuda a distribuir */
+    display: flex;
+    justify-content: space-between; 
+    align-items: center;
+    margin-bottom: 16px;
+    padding: 10px 0; 
+    flex-wrap: wrap; 
+  }
+  
+  .status-card .sync-row {
+      flex-direction: row; 
+      justify-content: space-between;
+      align-items: center;
+      gap: 24px;
+      padding-top: 10px;
+      border-top: 1px solid #151515;
+  }
+  
   @media (max-width: 768px) {
     .grid { grid-template-columns: 1fr; }
     .full-width { grid-column: span 1; }
