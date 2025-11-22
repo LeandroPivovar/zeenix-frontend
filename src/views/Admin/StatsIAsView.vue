@@ -12,7 +12,7 @@
 				</div>
 				<div class="main-header-right">
 					<button class="btn pdf-btn" @click="exportReportToPDF">
-						<img :src="boxDownIcon" alt="Exportar PDF" width="20px"> Exportar Relatório
+						<img src="../../assets/icons/box-down.svg" alt="Exportar PDF" width="20px"> Exportar Relatório
 					</button>
 				</div>
 			</div>
@@ -70,7 +70,7 @@
 						</div>
 						<div class="status-item">
 							<span class="status-label">IA Orion</span>
-							<span class="status-value">
+							<span class="status-value" style="display: inline-flex; align-items: center; gap: 4px;">
 								Ativo Atual
 								<div class="tooltip-container">
 									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -760,7 +760,7 @@
 				<div class="bottom-summary-cards">
 					<div class="bottom-card">
 						<div class="card-content">
-							<img :src="robotIcon" alt="Total de IAs Ativas" class="card-icon" >
+							<img src="../../assets/icons/robot.svg" alt="Total de IAs Ativas" class="card-icon" >
 							<div class="card-text-group"> 
 								<p class="card-value card-value-white">12</p>
 								<h3 class="card-title">Total de IAs Ativas</h3>
@@ -770,7 +770,7 @@
 
 					<div class="bottom-card">
 						<div class="card-content">
-							<img :src="statsIcon" alt="Lucro Combinado (7 dias)" class="card-icon">
+							<img src="../../assets/icons/stats.svg" alt="Lucro Combinado (7 dias)" class="card-icon">
 							<div class="card-text-group"> 
 								<p class="card-value positive-profit">+U$ 5.481,20</p>
 								<h3 class="card-title">Lucro Combinado (7 dias)</h3>
@@ -780,7 +780,7 @@
 
 					<div class="bottom-card">
 						<div class="card-content">
-							<img :src="targetIAIcon" alt="Média de Acerto Global" class="card-icon">
+							<img src="../../assets/icons/target-IA.svg" alt="Média de Acerto Global" class="card-icon">
 							<div class="card-text-group"> 
 								<p class="card-value card-value-white">72,4%</p>
 								<h3 class="card-title">Média de Acerto Global</h3>
@@ -790,7 +790,7 @@
 
 					<div class="bottom-card">
 						<div class="card-content">
-							<img :src="trophyIcon" alt="IA com Maior Lucro" class="card-icon">
+							<img src="../../assets/icons/trophy.svg" alt="IA com Maior Lucro" class="card-icon">
 							<div class="card-text-group"> 
 								<p class="card-value positive-profit">IA Zenix 2 <span class="card-value-white">(+3,848.93)</span></p>
 								<h3 class="card-title">IA com Maior Lucro</h3>
@@ -826,12 +826,6 @@ export default {
 		];
 
 		return {
-			robotIcon: require('@/assets/icons/robot.svg'),
-			statsIcon: require('@/assets/icons/stats.svg'),
-			targetIAIcon: require('@/assets/icons/target-IA.svg'),
-			trophyIcon: require('@/assets/icons/trophy.svg'),
-			boxDownIcon: require('@/assets/icons/box-down.svg'),
-			
 			isSidebarOpen: true, 
 			isSidebarCollapsed: false,
 			
@@ -1460,49 +1454,66 @@ export default {
 
 	async fetchAIData() {
 		try {
-			console.log('[StatsIAsView] Buscando ticks de https://taxafacil.site/api/ai/ticks...');
-			const response = await fetch('https://taxafacil.site/api/ai/ticks');
+			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+			console.log('[StatsIAsView] Buscando ticks de', `${apiBase}/ai/ticks`);
+			
+			const response = await fetch(`${apiBase}/ai/ticks`);
+			if (!response.ok) {
+				throw new Error(`HTTP error! status: ${response.status}`);
+			}
+			
 			const result = await response.json();
 
 			console.log('[StatsIAsView] Resposta de ticks:', {
 				success: result.success,
 				ticksCount: result.data?.ticks?.length || 0,
-				currentPrice: result.data?.currentPrice
+				currentPrice: result.data?.currentPrice,
+				firstTick: result.data?.ticks?.[0]
 			});
 
-			if (result.success) {
-				// Adicionar epoch aos ticks se não existir
-				const ticks = (result.data.ticks || []).map((tick, index) => ({
-					...tick,
-					epoch: tick.epoch || (Date.now() / 1000) - (result.data.ticks.length - index),
-				}));
+			if (result.success && result.data) {
+				// Estrutura Tick da API: { value, epoch, timestamp, digit, parity }
+				const ticks = result.data.ticks || [];
 				
-				console.log('[StatsIAsView] Ticks processados:', ticks.length);
+				console.log('[StatsIAsView] Ticks recebidos:', ticks.length);
+				console.log('[StatsIAsView] Exemplo de tick:', ticks[0]);
 				
-				this.aiMonitoring.ticks = ticks;
+				// Garantir que cada tick tenha epoch válido
+				const processedTicks = ticks.map((tick, index) => {
+					// Se não tiver epoch, calcular baseado no índice (assumindo 1 tick por segundo)
+					if (!tick.epoch) {
+						const baseEpoch = Date.now() / 1000;
+						tick.epoch = baseEpoch - (ticks.length - index - 1);
+					}
+					return tick;
+				});
+				
+				this.aiMonitoring.ticks = processedTicks;
 				this.aiMonitoring.currentPrice = result.data.currentPrice;
 				this.aiMonitoring.statistics = result.data.statistics;
 				this.aiMonitoring.lastUpdate = new Date().toLocaleTimeString('pt-BR');
 				
-				// Atualizar gráficos
+				// Atualizar gráficos após processar os ticks
 				this.$nextTick(() => {
-					if (!this.aiMonitoring.isActive) {
-						if (!this.marketChartInitializedInactive) {
-							console.log('[StatsIAsView] Inicializando gráfico inativo...');
-							this.initMarketChartInactive();
+					setTimeout(() => {
+						if (!this.aiMonitoring.isActive) {
+							if (!this.marketChartInitializedInactive) {
+								console.log('[StatsIAsView] Inicializando gráfico inativo...');
+								this.initMarketChartInactive();
+							} else {
+								console.log('[StatsIAsView] Atualizando gráfico inativo...');
+								this.updateMarketChartInactive();
+							}
 						} else {
-							console.log('[StatsIAsView] Atualizando gráfico inativo...');
-							this.updateMarketChartInactive();
+							if (!this.marketChartInitializedActive) {
+								console.log('[StatsIAsView] Inicializando gráfico ativo...');
+								this.initMarketChartActive();
+							} else {
+								console.log('[StatsIAsView] Atualizando gráfico ativo...');
+								this.updateMarketChartActive();
+							}
 						}
-					} else {
-						if (!this.marketChartInitializedActive) {
-							console.log('[StatsIAsView] Inicializando gráfico ativo...');
-							this.initMarketChartActive();
-						} else {
-							console.log('[StatsIAsView] Atualizando gráfico ativo...');
-							this.updateMarketChartActive();
-						}
-					}
+					}, 100);
 				});
 			}
 		} catch (error) {
@@ -2169,8 +2180,15 @@ export default {
 				},
 			});
 			
+			console.log('[StatsIAsView] ✅ Gráfico inativo inicializado com candlestick');
 			this.marketChartInitializedInactive = true;
-			this.updateMarketChartInactive();
+			
+			// Aguardar um pouco antes de atualizar para garantir que o container está pronto
+			setTimeout(() => {
+				if (this.aiMonitoring.ticks.length > 0) {
+					this.updateMarketChartInactive();
+				}
+			}, 200);
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao inicializar gráfico de mercado (inativo):', error);
 		}
@@ -2185,15 +2203,21 @@ export default {
 		}
 		
 		try {
-			// Converter ticks em velas - uma vela por segundo
-			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks, 1);
+			console.log('[StatsIAsView] Atualizando gráfico inativo. Ticks disponíveis:', this.aiMonitoring.ticks.length);
+			
+			// Converter ticks em velas
+			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks);
 			
 			if (candles.length > 0) {
+				console.log('[StatsIAsView] Atualizando gráfico com', candles.length, 'velas');
 				this.marketLineSeriesInactive.setData(candles);
 				this.marketChartInactive.timeScale().fitContent();
+			} else {
+				console.warn('[StatsIAsView] Nenhuma vela gerada para o gráfico inativo');
 			}
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao atualizar gráfico de mercado (inativo):', error);
+			console.error('[StatsIAsView] Stack:', error.stack);
 		}
 	},
 	
@@ -2304,8 +2328,15 @@ export default {
 				},
 			});
 			
+			console.log('[StatsIAsView] ✅ Gráfico ativo inicializado com candlestick');
 			this.marketChartInitializedActive = true;
-			this.updateMarketChartActive();
+			
+			// Aguardar um pouco antes de atualizar para garantir que o container está pronto
+			setTimeout(() => {
+				if (this.aiMonitoring.ticks.length > 0) {
+					this.updateMarketChartActive();
+				}
+			}, 200);
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao inicializar gráfico de mercado (ativo):', error);
 		}
@@ -2320,73 +2351,93 @@ export default {
 		}
 		
 		try {
-			// Converter ticks em velas - uma vela por segundo
-			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks, 1);
+			console.log('[StatsIAsView] Atualizando gráfico ativo. Ticks disponíveis:', this.aiMonitoring.ticks.length);
+			
+			// Converter ticks em velas
+			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks);
 			
 			if (candles.length > 0) {
+				console.log('[StatsIAsView] Atualizando gráfico com', candles.length, 'velas');
 				this.marketLineSeriesActive.setData(candles);
 				this.marketChartActive.timeScale().fitContent();
+			} else {
+				console.warn('[StatsIAsView] Nenhuma vela gerada para o gráfico ativo');
 			}
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao atualizar gráfico de mercado (ativo):', error);
+			console.error('[StatsIAsView] Stack:', error.stack);
 		}
 	},
 	
 	/**
 	 * Converte ticks em velas (candles) - uma vela por segundo
-	 * Cada segundo agrupa todos os ticks daquele segundo em uma vela
+	 * Estrutura Tick: { value: number, epoch: number, timestamp: string }
 	 */
-	aggregateTicksToCandles(ticks, timeframeSeconds = 1) {
+	aggregateTicksToCandles(ticks) {
 		if (!Array.isArray(ticks) || ticks.length === 0) {
+			console.log('[StatsIAsView] Nenhum tick disponível para converter');
 			return [];
 		}
 
-		// Filtrar e processar todos os ticks primeiro
-		const validTicks = ticks.map(tick => {
-			const rawTime = Math.floor(tick.epoch || tick.time || (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : Date.now() / 1000));
-			const price = Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0);
-			return { time: rawTime, price };
-		}).filter(tick => tick.price > 0);
+		console.log('[StatsIAsView] Iniciando conversão de ticks para velas. Total de ticks:', ticks.length);
+
+		// Filtrar e processar ticks - estrutura da API: { value, epoch, timestamp }
+		const validTicks = ticks
+			.map(tick => {
+				// Epoch vem em segundos Unix da API
+				const epoch = tick.epoch || (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : Date.now() / 1000);
+				const price = Number(tick.value || 0);
+				
+				if (!price || price <= 0) {
+					return null;
+				}
+				
+				return {
+					time: Math.floor(epoch), // Arredondar para segundo
+					price: price,
+					epoch: epoch
+				};
+			})
+			.filter(tick => tick !== null);
 
 		if (validTicks.length === 0) {
+			console.warn('[StatsIAsView] Nenhum tick válido após processamento');
 			return [];
 		}
+
+		console.log('[StatsIAsView] Ticks válidos:', validTicks.length);
 
 		// Ordenar por tempo
 		const sortedTicks = [...validTicks].sort((a, b) => a.time - b.time);
-		const totalTicks = sortedTicks.length;
-
-		// Criar velas de 1 segundo - cada segundo é uma vela
-		// Isso garante que cada ponto no gráfico seja uma vela
-		const timeframe = 1; // 1 segundo por vela
 		
-		const candles = [];
+		// Agrupar ticks por segundo - cada segundo vira uma vela
 		const candleMap = new Map();
 
-		// Agrupar ticks por segundo
 		for (const tick of sortedTicks) {
-			const candleTime = Math.floor(tick.time / timeframe) * timeframe;
+			const candleTime = tick.time;
 			
 			if (!candleMap.has(candleTime)) {
+				// Primeiro tick do segundo
 				candleMap.set(candleTime, {
 					time: candleTime,
 					open: tick.price,
 					high: tick.price,
 					low: tick.price,
 					close: tick.price,
-					ticks: [tick.price]
+					count: 1
 				});
 			} else {
+				// Adicionar tick ao segundo existente
 				const candle = candleMap.get(candleTime);
 				candle.high = Math.max(candle.high, tick.price);
 				candle.low = Math.min(candle.low, tick.price);
-				candle.close = tick.price; // Último tick do segundo define o close
-				candle.ticks.push(tick.price);
+				candle.close = tick.price; // Último tick define o close
+				candle.count++;
 			}
 		}
 
-		// Converter Map em array ordenado
-		const candlesArray = Array.from(candleMap.values())
+		// Converter Map em array ordenado (formato esperado pelo lightweight-charts)
+		const candles = Array.from(candleMap.values())
 			.sort((a, b) => a.time - b.time)
 			.map(candle => ({
 				time: candle.time,
@@ -2396,9 +2447,10 @@ export default {
 				close: candle.close
 			}));
 
-		console.log(`[StatsIAsView] Convertidos ${totalTicks} ticks em ${candlesArray.length} velas (1 segundo por vela)`);
+		console.log(`[StatsIAsView] ✅ Convertidos ${sortedTicks.length} ticks em ${candles.length} velas`);
+		console.log('[StatsIAsView] Primeiras 3 velas:', candles.slice(0, 3));
 		
-		return candlesArray;
+		return candles;
 	},
 },
 
@@ -2900,6 +2952,10 @@ tbody tr:hover {
 	font-weight: 600;
 	padding: 6px 16px;
 	border-radius: 8px;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	position: relative;
 }
 
 .status-value.inactive {
@@ -4387,9 +4443,10 @@ tbody tr:hover {
 /* Tooltip Styles */
 .tooltip-container {
 	position: relative;
-	display: inline-block;
+	display: inline-flex;
+	align-items: center;
 	cursor: help;
-	margin-left: 6px;
+	margin-left: 4px;
 	vertical-align: middle;
 }
 
@@ -4398,6 +4455,7 @@ tbody tr:hover {
 	height: 14px;
 	color: #94a3b8;
 	transition: color 0.2s;
+	flex-shrink: 0;
 }
 
 .icon-help:hover {
@@ -4409,19 +4467,20 @@ tbody tr:hover {
 	opacity: 0;
 	background-color: #1e293b;
 	color: #fff;
-	text-align: center;
-	padding: 6px 10px;
+	text-align: left;
+	padding: 8px 12px;
 	border-radius: 6px;
 	font-size: 12px;
 	width: max-content;
 	max-width: 250px;
-	white-space: normal;
+	white-space: nowrap;
 	position: absolute;
-	z-index: 1000;
-	bottom: 125%;
+	z-index: 10000;
+	bottom: 100%;
 	left: 50%;
-	transform: translateX(-50%) translateY(-5px);
-	transition: opacity 0.3s, visibility 0.3s;
+	margin-bottom: 8px;
+	transform: translateX(-50%);
+	transition: opacity 0.2s ease, visibility 0.2s ease;
 	pointer-events: none;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 	border: 1px solid #334155;
@@ -4452,5 +4511,7 @@ tbody tr:hover {
 	display: inline-flex;
 	align-items: center;
 	position: relative;
+	flex-wrap: wrap;
+	gap: 4px;
 }
 </style>
