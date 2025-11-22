@@ -183,17 +183,22 @@
     padding: 1rem; /* p-4 - reduzido */
     margin-bottom: 1.5rem; /* mb-6 - reduzido */
     box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); /* shadow-lg */
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Centraliza o conteúdo do card */
 }
 
 .video-thumbnail {
     aspect-ratio: 21 / 9; /* aspect mais largo e baixo */
     max-height: 180px; /* altura máxima limitada */
+    max-width: 100%; /* garante que não ultrapasse o card */
+    width: 100%;
     background-color: #0B0B0B; /* bg-zenix-bg */
     border-radius: 0.75rem; /* rounded-xl */
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1rem; /* mb-4 - reduzido */
+    margin: 0 auto 1rem; /* centralizado horizontalmente */
     border: 1px solid #1C1C1C; /* border-zenix-border */
     position: relative;
     overflow: hidden;
@@ -238,6 +243,8 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    width: 100%;
+    max-width: 100%;
 }
 
 .video-title {
