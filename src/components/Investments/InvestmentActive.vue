@@ -178,24 +178,16 @@
                     </button>
                 </div>
 
-                        <!-- Zoom Controls -->
-                        <div class="zoom-controls">
+                        <!-- Chart Size Controls -->
+                        <div class="chart-size-controls">
                             <button 
-                                class="zoom-btn" 
-                                @click="zoomOut"
-                                :disabled="chartPointsVisible >= maxChartPoints"
-                                title="Zoom Out"
+                                v-for="size in chartSizeOptions"
+                                :key="size.value"
+                                :class="['chart-size-btn', { 'active': chartPointsVisible === size.value }]"
+                                @click="setChartSize(size.value)"
+                                :title="size.label"
                             >
-                                <i class="fas fa-search-minus"></i>
-                            </button>
-                            <span class="zoom-indicator">{{ chartPointsVisible }} pontos</span>
-                            <button 
-                                class="zoom-btn" 
-                                @click="zoomIn"
-                                :disabled="chartPointsVisible <= minChartPoints"
-                                title="Zoom In"
-                            >
-                                <i class="fas fa-search-plus"></i>
+                                {{ size.label }}
                             </button>
                         </div>
             
@@ -503,11 +495,13 @@ export default {
             // Estado de desativação
             isDeactivating: false,
             
-            // Controle de zoom do gráfico
-            chartPointsVisible: 50, // Padrão: 50 pontos
-            minChartPoints: 10,
-            maxChartPoints: 500,
-            zoomLevels: [10, 25, 50, 100, 200, 300, 500], // Níveis de zoom disponíveis
+            // Controle de tamanho do gráfico
+            chartPointsVisible: 200, // Padrão: 200 pontos (Médio)
+            chartSizeOptions: [
+                { label: 'Pequeno', value: 100 },
+                { label: 'Médio', value: 200 },
+                { label: 'Grande', value: 300 }
+            ],
         };
     },
     
@@ -1042,31 +1036,13 @@ export default {
                 this.chartType = type;
             }
         },
-        zoomIn() {
-            // Encontrar o próximo nível de zoom maior
-            const currentIndex = this.zoomLevels.findIndex(level => level >= this.chartPointsVisible);
-            if (currentIndex < this.zoomLevels.length - 1) {
-                this.chartPointsVisible = this.zoomLevels[currentIndex + 1];
-            } else if (this.chartPointsVisible < this.maxChartPoints) {
-                // Incremento de 50 se estiver entre níveis
-                this.chartPointsVisible = Math.min(this.chartPointsVisible + 50, this.maxChartPoints);
+        setChartSize(size) {
+            if (this.chartPointsVisible !== size) {
+                this.chartPointsVisible = size;
+                this.$nextTick(() => {
+                    this.updateChart();
+                });
             }
-            this.$nextTick(() => {
-                this.updateChart();
-            });
-        },
-        zoomOut() {
-            // Encontrar o próximo nível de zoom menor
-            const currentIndex = this.zoomLevels.findIndex(level => level >= this.chartPointsVisible);
-            if (currentIndex > 0) {
-                this.chartPointsVisible = this.zoomLevels[currentIndex - 1];
-            } else if (this.chartPointsVisible > this.minChartPoints) {
-                // Decremento de 50 se estiver entre níveis
-                this.chartPointsVisible = Math.max(this.chartPointsVisible - 50, this.minChartPoints);
-            }
-            this.$nextTick(() => {
-                this.updateChart();
-            });
         },
         aggregateTicksToCandles(timeframeSeconds) {
             if (!Array.isArray(this.ticks) || this.ticks.length === 0) {
@@ -1162,16 +1138,16 @@ export default {
                     priceFormat: { type: 'price', precision: 4, minMove: 0.0001 },
                 });
             } else {
-                // Gráfico de velas com aparência similar ao Pine Script
-                // Verde para altas, vermelho para baixas, preto como fundo
+                // Gráfico de velas com aparência profissional similar ao TradingView
+                // Verde para altas, vermelho para baixas
                 this.currentSeries = this.chart.addCandlestickSeries({
-                    upColor: '#22C55E',           // Cor do corpo da vela de alta (verde)
-                    downColor: '#FF4747',         // Cor do corpo da vela de baixa (vermelho)
+                    upColor: '#00a65a',           // Cor do corpo da vela de alta (verde mais escuro, similar TradingView)
+                    downColor: '#ff3a3a',         // Cor do corpo da vela de baixa (vermelho)
                     borderVisible: true,
-                    borderUpColor: '#22C55E',     // Borda da vela de alta
-                    borderDownColor: '#FF4747',   // Borda da vela de baixa
-                    wickUpColor: '#22C55E',       // Cor do pavio superior de alta
-                    wickDownColor: '#FF4747',     // Cor do pavio inferior de baixa
+                    borderUpColor: '#00a65a',     // Borda da vela de alta
+                    borderDownColor: '#ff3a3a',   // Borda da vela de baixa
+                    wickUpColor: '#00a65a',       // Cor do pavio superior de alta
+                    wickDownColor: '#ff3a3a',     // Cor do pavio inferior de baixa
                     priceFormat: { 
                         type: 'price', 
                         precision: 4, 
@@ -2042,51 +2018,37 @@ button i,
     cursor: not-allowed;
 }
 
-/* Zoom Controls */
-.zoom-controls {
+/* Chart Size Controls */
+.chart-size-controls {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
+    gap: 0.5rem;
     margin-bottom: 1rem;
-    padding: 0.5rem;
+    flex-wrap: wrap;
+}
+
+.chart-size-btn {
+    padding: 0.375rem 0.75rem;
     background-color: #0B0B0B;
+    color: #A1A1A1;
     border: 1px solid #1C1C1C;
     border-radius: 0.5rem;
-    width: fit-content;
-}
-
-.zoom-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2rem;
-    height: 2rem;
-    background-color: #1C1C1C;
-    color: #A1A1A1;
-    border: 1px solid #363c4e;
-    border-radius: 0.375rem;
+    font-size: 0.75rem;
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s ease;
-    font-size: 0.875rem;
+    transition: all 0.3s ease;
 }
 
-.zoom-btn:hover:not(:disabled) {
+.chart-size-btn:hover {
+    border-color: #22C55E;
+    color: #22C55E;
+}
+
+.chart-size-btn.active {
     background-color: #22C55E;
     color: #000;
     border-color: #22C55E;
-}
-
-.zoom-btn:disabled {
-    opacity: 0.4;
-    cursor: not-allowed;
-}
-
-.zoom-indicator {
-    font-size: 0.75rem;
-    color: #A1A1A1;
-    font-weight: 500;
-    min-width: 80px;
-    text-align: center;
+    font-weight: 700;
 }
 
 .chart-view-container {
