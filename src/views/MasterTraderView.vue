@@ -104,7 +104,7 @@ export default {
             isSidebarOpen: false, 
             isSidebarCollapsed: false,
             // Variável de estado para controlar o modo ativo
-            activeMode: 'Agente Autônomo' 
+            activeMode: 'Detalhes Copiadores'
         }
     },
     computed: {
