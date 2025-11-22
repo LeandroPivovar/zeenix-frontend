@@ -273,9 +273,19 @@ export default {
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
+    background: #0e0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
 .progress-card {
+    background: #0e0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
     background: #0e0f0f;
     border: 1px solid #1a1a1a;
     border-radius: 8px;
@@ -288,9 +298,18 @@ export default {
     padding: 30px;
     border: 1px solid #1a1a1a;
     border-radius: 8px;
+    background: #0e0f0f;
+    padding: 30px;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
 }
 
 .agent-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -486,40 +505,36 @@ export default {
 
 /* Progresso */
 .progress-card {
-    /* CORREÇÃO: Força o layout a ser vertical, como na imagem original. */
-    display: flex;
-    flex-direction: column; 
-    justify-content: space-between;
+	/* CORREÇÃO: Força o layout a ser vertical, como na imagem original. */
+	display: flex;
+	flex-direction: column; 
+	justify-content: space-between;
 }
 
 .progress-bar-container {
-	margin: 0;
-    height: 10px; 
+	margin-top: 10px;
+  margin-bottom: 0px;
 }
 
 .progress-bar {
-    width: 100%;
-    /* 🎨 AJUSTE FINAL: Fundo da parte não preenchida conforme a imagem de debug */
-    background: #1A1A1A; 
-    /* 📐 CORREÇÃO DE ALTURA FORÇADA */
-    height: 10px !important; 
-    border-radius: 3px;
-    overflow: hidden;
+	width: 100%;
+	height: 10px;
+	background: #1a1a1a;
+	border-radius: 3px;
+	overflow: hidden;
 }
 
 .progress-fill {
-    /* 🎨 COR: Verde para o preenchimento */
-    background: #3C9C64; 
-    transition: width 0.5s;
-    /* 📐 CORREÇÃO DE ALTURA FORÇADA */
-    height: 10px !important; 
+	height: 100%;
+	background: #00ff00;
+	transition: width 0.5s;
 }
 
 .progress-label {
-    display: flex;
-    justify-content: space-between;
-    font-size: 12px;
-    color: #666;
+	display: flex;
+	justify-content: space-between;
+	font-size: 12px;
+	color: #666;
 }
 
 /* Gráfico em Tempo Real - CONTROLES E TOGGLE */

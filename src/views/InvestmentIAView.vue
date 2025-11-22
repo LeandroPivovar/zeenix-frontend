@@ -1041,6 +1041,7 @@ export default {
 }
 </script>
 
+
 <style scoped>
 /* Importando estilos do design fornecido */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
@@ -1068,6 +1069,36 @@ export default {
     margin-left: 0;
     width: 100%;
 }
+
+.balance-display-card {
+    background-color: #0E0E0E;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+    transition: all 0.3s ease;
+}
+
+.balance-display-card:hover {
+    background: #111;
+    transform: translateY(-1px);
+}
+
+.balance-header {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.balance-header i {
+    color: #22C55E;
+    font-size: 0.75rem;
+}
+
+.balance-info {
+    display: flex;
+    flex-direction: column;
+}
+
 
 /* Top Header */
 .top-header {
@@ -1124,34 +1155,6 @@ export default {
     line-height: 1.4;
 }
 
-.balance-display-card {
-    background-color: #0E0E0E;
-    border: 1px solid #1C1C1C;
-    border-radius: 0.75rem;
-    padding: 0.75rem;
-    transition: all 0.3s ease;
-}
-
-.balance-display-card:hover {
-    background: #111;
-    transform: translateY(-1px);
-}
-
-.balance-header {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-}
-
-.balance-header i {
-    color: #22C55E;
-    font-size: 0.75rem;
-}
-
-.balance-info {
-    display: flex;
-    flex-direction: column;
-}
 
 .balance-label {
     font-size: 0.625rem;
