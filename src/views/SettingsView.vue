@@ -500,7 +500,7 @@ export default {
         throw err
       }
     },
-    async handleSavePhoto(photoUrl) {
+    async handleSavePhoto() {
       // O upload já foi feito no modal, só precisamos recarregar as configurações
       try {
         await this.fetchSettings()
