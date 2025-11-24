@@ -1054,7 +1054,10 @@ export default {
 
 .main-content[data-v-6bc9cf2c]{
     margin: 0;
+    display: flex;
+    justify-content: flex-start;
 }
+
 .content-wrapper {
     min-height: 100vh;
     transition: margin-left 0.3s ease;
@@ -1209,18 +1212,12 @@ export default {
 
 /* Main Content */
 .main-content {
-    margin-top: 70px;
     padding: 1.5rem 20px;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
 }
 
-/* Remover margin-top quando dentro do MasterTrader */
-.layout-master-trader .main-content {
-    margin-top: 0 !important;
-    padding: 0 !important;
-}
 
 /* AI Vision Panel */
 #ai-vision-panel {
@@ -2050,6 +2047,7 @@ export default {
     display: inline-flex;
     align-items: center;
     cursor: pointer;
+    width: 4rem;
 }
 
 .toggle-switch input {
