@@ -1,7 +1,8 @@
 <template>
-    <div class="layout">
-        <main class="layout-content">
-            <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
+    <div class="layout-markup">            
+        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
+
+        <div class="layout-content">
             <div class="main-header header-markup">
                 <div class="main-header-left">
                     <h1>Markup - Comissões</h1>
@@ -91,7 +92,7 @@
                     </table>
                 </div>
             </div>
-        </main>
+        </div>
     </div>
 </template>
 
@@ -326,21 +327,23 @@ export default {
 
 <style scoped>
 /* Estilos não alterados */
-.layout {
+.layout-markup {
     background-color: #0e0f0f;
     color: #fff;
     min-height: 100vh;
     font-family: 'Roboto', sans-serif;
-}
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+    flex-direction: column;
+    max-width: calc(100% - 240px);
+    margin-left: 240px;
 
-.header-markup {
-    margin: 20px;
 }
 
 .main-header {
     display: flex;
     justify-content: space-between;
-    width: 100%;
     align-items: center;
     margin-bottom: 30px;
     opacity: 0;
@@ -348,12 +351,16 @@ export default {
 }
 
 .main-header-left {
-    width: 100%;
+    width: 90%;
     text-align: left;
     
 }
 
 .main-content {
+    width: 100%;
+}
+
+.main-header{
     width: 100%;
 }
 
@@ -515,6 +522,7 @@ tbody tr:hover {
     .pdf-btn {
         width: auto;
         min-width: 190px;
+        margin-right: 20px;
     }
 }
 
