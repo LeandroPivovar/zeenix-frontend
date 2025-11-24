@@ -243,7 +243,10 @@ export default {
         isExpertsActive() { return this.$route?.path === '/Experts'; },
         isClientesActive() { return this.$route?.path === '/Clientes'; },
         isWebhooksActive() { return this.$route?.path === '/Webhooks'; },
-        isAcademyManagementActive() { return this.$route?.path === '/AcademyManagement'; },
+        isAcademyManagementActive() { 
+            return this.$route?.path === '/AcademyManagement' || 
+                   this.$route?.path?.startsWith('/AcademyManagement/'); 
+        },
         isAdminViewActive() { return this.$route?.path === '/Admin'; },
         isMasterTraderActive() { return this.$route?.path === '/MasterTrader' || this.$route?.path === '/tradermestre'; },
         isInvestmentIAActive() { return this.$route?.path === '/InvestmentIA'; },

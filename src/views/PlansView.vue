@@ -44,7 +44,7 @@
 			</header>
 
 			<main class="plans-content">
-				<div class="max-w-7xl mx-auto w-full">
+				<div class="max-w-7xl mx-auto w-full" style="width: 100%; max-width: 100%;">
 
 				<div class="video-card-wrapper">
 					<div class="video-thumbnail" @click="playVideo">

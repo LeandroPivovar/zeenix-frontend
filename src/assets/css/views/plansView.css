@@ -164,13 +164,15 @@
     padding: 2.5rem 2rem 1.5rem 2rem; /* py-10 px-8 - aumentado top padding para espaçar do header */
     display: flex;
     flex-direction: column;
-    align-items: center;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .max-w-7xl {
-    max-width: 80rem;
+    max-width: 100%;
     width: 100%;
     margin: 0 auto;
+    box-sizing: border-box;
 }
 
 /* Header Section removida - agora está no top-header fixo */
@@ -186,6 +188,8 @@
     display: flex;
     flex-direction: column;
     align-items: center; /* Centraliza o conteúdo do card */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .video-thumbnail {
@@ -292,6 +296,8 @@
     grid-template-columns: repeat(3, 1fr);
     gap: 1rem; /* gap-4 - reduzido */
     margin-bottom: 1.5rem; /* mb-6 - reduzido */
+    width: 100%;
+    box-sizing: border-box;
 }
 
 /* Base Plan Card */
@@ -302,6 +308,9 @@
     display: flex;
     flex-direction: column;
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    min-height: 0; /* Permite que o card se adapte ao conteúdo */
 }
 
 /* Starter Card */
@@ -507,28 +516,63 @@
 .error { color: #EF4444; }
 
 /* Media Queries */
+@media (max-width: 1200px) {
+    .plans-grid {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
+    }
+    .plan-card {
+        padding: 1.25rem;
+    }
+}
+
 @media (max-width: 1024px) {
     .plans-grid {
-        grid-template-columns: 1fr;
-    }
-    .layout { 
-        margin-left: 0; 
-        width: 100%;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.75rem;
     }
     .plans-content {
         padding: 1.5rem;
     }
+    .video-card-wrapper {
+        padding: 0.875rem;
+    }
+    .video-thumbnail {
+        max-height: 150px;
+    }
 }
 
 @media (max-width: 768px) {
-    .main-title {
-        font-size: 1.875rem;
+    .plans-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
-    .header-section {
-        margin-bottom: 2rem;
+    .plans-content {
+        padding: 1rem;
     }
     .video-card-wrapper {
-        padding: 1.5rem;
-        margin-bottom: 2rem;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .video-thumbnail {
+        max-height: 120px;
+    }
+    .plan-card {
+        padding: 1.25rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .plans-content {
+        padding: 0.75rem;
+    }
+    .video-card-wrapper {
+        padding: 0.5rem;
+    }
+    .video-thumbnail {
+        max-height: 100px;
+    }
+    .plan-card {
+        padding: 1rem;
     }
 }
