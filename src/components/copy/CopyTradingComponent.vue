@@ -20,64 +20,39 @@
 
             <div class="config-section">
                 <h4>SELECIONAR TRADER</h4>
-                <div class="input-group">
-                    <input 
-                        type="text" 
-                        v-model="searchTrader" 
-                        placeholder="Buscar trader (nome/ID)" 
-                        @input="filterTraders"
-                    />
-                </div>
                 <div class="select-group">
-                    <select v-model="selectedTrader" @change="onTraderSelected">
+                    <select v-model="selectedTrader" @change="onTraderSelected" class="trader-select">
                         <option value="">Selecione um trader</option>
-                        <option v-for="trader in filteredTradersList" :key="trader.id" :value="trader.id">
+                        <option v-for="trader in tradersList" :key="trader.id" :value="trader.id">
                             {{ trader.name }} 
                         </option>
                     </select>
                 </div>
                 
-                <!-- Listagem de traders disponíveis -->
-                <div class="traders-list" v-if="!selectedTrader">
-                    <h5>Traders Disponíveis</h5>
-                    <div 
-                        class="trader-item" 
-                        v-for="trader in filteredTradersList" 
-                        :key="trader.id"
-                        @click="selectedTrader = trader.id; onTraderSelected()"
-                    >
-                        <div class="trader-item-header">
-                            <span class="trader-name">{{ trader.name }}</span>
-                            <span class="trader-roi">ROI: {{ trader.roi }}%</span>
+                <!-- Área de informações do trader -->
+                <div class="trader-info-area">
+                    <div v-if="!selectedTrader" class="trader-placeholder">
+                        <p class="placeholder-title">Nenhum trader selecionado</p>
+                        <p class="placeholder-subtitle">Clique no campo acima para escolher</p>
+                    </div>
+                    
+                    <div v-else class="trader-info-card">
+                        <div class="trader-info-row">
+                            <span class="info-label">Nome:</span>
+                            <span class="info-value">{{ selectedTraderStats.name }}</span>
                         </div>
-                        <div class="trader-item-stats">
-                            <span>DD: {{ trader.dd }}%</span>
-                            <span>{{ trader.followers }}k seguidores</span>
+                        <div class="trader-info-row">
+                            <span class="info-label">ROI:</span>
+                            <span class="info-value green">{{ selectedTraderStats.roi }}%</span>
                         </div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Informações do trader selecionado -->
-            <div class="section-divider"></div>
-            <div class="config-section" v-if="selectedTrader">
-                <h4>INFORMAÇÕES DO TRADER</h4>
-                <div class="trader-info-card">
-                    <div class="trader-info-row">
-                        <span class="info-label">Nome:</span>
-                        <span class="info-value">{{ selectedTraderStats.name }}</span>
-                    </div>
-                    <div class="trader-info-row">
-                        <span class="info-label">ROI:</span>
-                        <span class="info-value green">{{ selectedTraderStats.roi }}%</span>
-                    </div>
-                    <div class="trader-info-row">
-                        <span class="info-label">Drawdown:</span>
-                        <span class="info-value">{{ selectedTraderStats.dd }}%</span>
-                    </div>
-                    <div class="trader-info-row">
-                        <span class="info-label">Seguidores:</span>
-                        <span class="info-value">{{ selectedTraderStats.followers }}k</span>
+                        <div class="trader-info-row">
+                            <span class="info-label">Drawdown:</span>
+                            <span class="info-value">{{ selectedTraderStats.dd }}%</span>
+                        </div>
+                        <div class="trader-info-row">
+                            <span class="info-label">Seguidores:</span>
+                            <span class="info-value">{{ selectedTraderStats.followers }}k</span>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -336,7 +311,6 @@ export default {
             takeProfit: 500,
             blindStop: false,
             isPaused: false,
-            searchTrader: '',
             tradersList: [
                 { id: 't1', name: 'John Doe', roi: '45', dd: '8', followers: '1.2', winRate: '78%', totalTrades: '234' },
                 { id: 't2', name: 'Jane Smith', roi: '52', dd: '6', followers: '0.8', winRate: '82%', totalTrades: '189' },
@@ -347,16 +321,6 @@ export default {
         }
     },
     computed: {
-        filteredTradersList() {
-            if (!this.searchTrader) {
-                return this.tradersList;
-            }
-            const search = this.searchTrader.toLowerCase();
-            return this.tradersList.filter(trader => 
-                trader.name.toLowerCase().includes(search) || 
-                trader.id.toLowerCase().includes(search)
-            );
-        },
         selectedTraderStats() {
             const trader = this.tradersList.find(t => t.id === this.selectedTrader);
             return trader || { name: '', roi: '0', dd: '0', followers: '0', winRate: '0%', totalTrades: '0' };
@@ -365,9 +329,6 @@ export default {
     methods: {
         setPeriod(period) {
             this.selectedPeriod = period;
-        },
-        filterTraders() {
-            // O computed filteredTradersList já faz o filtro
         },
         onTraderSelected() {
             if (this.selectedTrader) {
