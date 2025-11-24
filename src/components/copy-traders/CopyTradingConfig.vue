@@ -9,27 +9,46 @@
 				</TooltipsCopyTraders>
 			</h3>
 			
-			<div class="search-wrapper">
-				<svg class="search-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path 
-						d="M15.5 14H14.71L14.43 13.73C15.41 12.59 16 11.11 16 9.5C16 5.91 13.09 3 9.5 3C5.91 3 3 5.91 3 9.5C3 13.09 5.91 16 9.5 16C11.11 16 12.59 15.41 13.73 14.43L14 14.71V15.5L19 20.49L20.49 19L15.5 14ZM9.5 14C7.01 14 5 11.99 5 9.5C5 7.01 7.01 5 9.5 5C11.99 5 14 7.01 14 9.5C14 11.99 11.99 14 9.5 14Z" 
-						fill="#555"
-					/>
-				</svg>
-				<input 
-					type="text" 
-					class="search-input" 
-					placeholder="Busque por nome ou ID do trader..."
-					v-model="searchQuery"
+			<div class="select-wrapper">
+				<select 
+					v-model="selectedTrader" 
+					@change="onTraderSelected"
+					class="trader-select"
 				>
+					<option value="">Selecione um trader</option>
+					<option v-for="trader in tradersList" :key="trader.id" :value="trader.id">
+						{{ trader.name }}
+					</option>
+				</select>
 			</div>
 			
-			<div class="empty-state">
-				<div class="empty-icon">
-					<img src="../../assets/icons/add-people.svg" alt="" width="50px" height="50px">
+			<div class="trader-info-area">
+				<div v-if="!selectedTrader" class="empty-state">
+					<div class="empty-icon">
+						<img src="../../assets/icons/add-people.svg" alt="" width="50px" height="50px">
+					</div>
+					<p>Nenhum trader selecionado</p>
+					<small>Clique no campo acima para escolher</small>
 				</div>
-				<p>Nenhum trader selecionado</p>
-				<small>Clique no campo acima para escolher</small>
+				
+				<div v-else class="trader-info-card">
+					<div class="trader-info-row">
+						<span class="info-label">Nome:</span>
+						<span class="info-value">{{ selectedTraderStats.name }}</span>
+					</div>
+					<div class="trader-info-row">
+						<span class="info-label">ROI:</span>
+						<span class="info-value green">{{ selectedTraderStats.roi }}%</span>
+					</div>
+					<div class="trader-info-row">
+						<span class="info-label">Drawdown:</span>
+						<span class="info-value">{{ selectedTraderStats.dd }}%</span>
+					</div>
+					<div class="trader-info-row">
+						<span class="info-label">Seguidores:</span>
+						<span class="info-value">{{ selectedTraderStats.followers }}k</span>
+					</div>
+				</div>
 			</div>
 		</div>
 
@@ -140,7 +159,7 @@
 						<p>Mostra o Trader Mestre atualmente selecionado.</p>
 					</TooltipsCopyTraders>
 				</span>
-				<span class="value">{{ selectedTraderName }}</span>
+				<span class="value">{{ selectedTraderName || 'Nenhum selecionado' }}</span>
 			</div>
 
 			<div class="summary-item">
@@ -230,17 +249,43 @@ export default {
 	},
 	data() {
 		return {
-			searchQuery: '',
-			selectedTraderName: 'TraderMaster',
+			selectedTrader: '',
+			selectedTraderName: '',
 			allocationType: 'percentage',
 			leverage: '1x',
 			stopLoss: '$250',
 			takeProfit: '$500',
 			armoredStopLossActive: true,
+			tradersList: [
+				{ id: 't1', name: 'John Doe', roi: '45', dd: '8', followers: '1.2' },
+				{ id: 't2', name: 'Jane Smith', roi: '52', dd: '6', followers: '0.8' },
+				{ id: 't3', name: 'TradeMaster', roi: '60', dd: '5', followers: '2.1' },
+				{ id: 't4', name: 'Elite Trader', roi: '48', dd: '7', followers: '1.5' },
+				{ id: 't5', name: 'Pro Trader', roi: '55', dd: '4', followers: '3.2' }
+			]
 		};
 	},
+	computed: {
+		selectedTraderStats() {
+			const trader = this.tradersList.find(t => t.id === this.selectedTrader);
+			return trader || { name: '', roi: '0', dd: '0', followers: '0' };
+		}
+	},
 	methods: {
+		onTraderSelected() {
+			if (this.selectedTrader) {
+				const trader = this.tradersList.find(t => t.id === this.selectedTrader);
+				this.selectedTraderName = trader ? trader.name : '';
+			} else {
+				this.selectedTraderName = '';
+			}
+		},
 		activateCopy() {
+			if (!this.selectedTrader) {
+				alert('Por favor, selecione um trader antes de ativar o copy!');
+				return;
+			}
+			
 			const config = {
 				trader: this.selectedTraderName,
 				allocationType: this.allocationType,
@@ -297,32 +342,70 @@ export default {
 
 /* --- Form Elements --- */
 
-/* Novo wrapper para posicionamento do ícone */
-.search-wrapper {
+/* Select wrapper */
+.select-wrapper {
 	position: relative;
 	margin-bottom: 20px;
 }
 
-/* Estilo do ícone SVG */
-.search-icon {
-	position: absolute;
-	top: 50%;
-	left: 16px; 
-	transform: translateY(-50%);
-	color: #555; 
-}
-
-/* CORREÇÃO: Aumenta a especificidade para garantir o padding esquerdo */
-.search-wrapper .search-input {
+.trader-select {
 	width: 100%;
 	background: #0a0a0a;
 	border: 1px solid #222;
 	border-radius: 6px;
-	/* Padding esquerdo de 48px para liberar espaço para o ícone */
-	padding: 12px 16px 12px 48px;
+	padding: 12px 16px;
 	color: #fff;
 	font-size: 14px;
-	margin-bottom: 0; 
+	cursor: pointer;
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg width='12' height='8' viewBox='0 0 12 8' fill='none' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1L6 6L11 1' stroke='%23888' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	padding-right: 40px;
+}
+
+.trader-select:focus {
+	outline: none;
+	border-color: #4ade80;
+}
+
+/* Área de informações do trader */
+.trader-info-area {
+	min-height: 120px;
+}
+
+.trader-info-card {
+	background: #0a0a0a;
+	border: 1px solid #222;
+	border-radius: 8px;
+	padding: 16px;
+}
+
+.trader-info-row {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 8px 0;
+	border-bottom: 1px solid #222;
+}
+
+.trader-info-row:last-child {
+	border-bottom: none;
+}
+
+.info-label {
+	font-size: 14px;
+	color: #a5a5a5;
+}
+
+.info-value {
+	font-size: 14px;
+	font-weight: 500;
+	color: #fff;
+}
+
+.info-value.green {
+	color: #4ade80;
 }
 
 /* Estilos gerais para inputs (exceto o de busca, que é mais específico) e selects */
@@ -335,10 +418,6 @@ select, input[type="text"] {
 	padding: 12px;
 	color: #fff;
 	font-size: 14px;
-}
-
-.search-input::placeholder {
-	color: #555;
 }
 
 select:focus, input[type="text"]:focus {
