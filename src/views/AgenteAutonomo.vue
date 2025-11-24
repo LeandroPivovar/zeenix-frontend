@@ -13,7 +13,7 @@
 							<div class="balance-info">
 								<span class="balance-label">Saldo Atual</span>
 								<div class="balance-value-row">
-									<span id="balanceValue" class="balance-value" v-if="balanceVisible">${{ formattedBalance }}</span>
+									<span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ formattedBalance }}</span>
 									<span class="balance-value" v-else>••••••</span>
 									<button 
 										v-if="balanceVisible && !isDemo" 
@@ -125,12 +125,13 @@ export default {
 			timeAndMetricsInterval: null,
 
 			// === DADOS DE HEADER/SALDO ===
-			accountBalance: 1234.56, // Valor inicial simulado
+			accountBalance: null,
 			accountCurrency: 'USD',
-			accountLoginid: 'CR12345',
+			accountLoginid: null,
 			isDemo: false, // Define se é conta demo ou real
 			balanceVisible: true,
 			balanceUpdateInterval: null,
+			preferredCurrency: 'USD',
 			// ==============================
 		};
 	},
@@ -169,9 +170,12 @@ export default {
 
 		// === COMPUTED DE HEADER/SALDO ===
 		formattedBalance() {
-			// Formata o saldo com duas casas decimais
-			if (!this.accountBalance && this.accountBalance !== 0) return '0.00';
-			return this.accountBalance.toFixed(2);
+			if (this.accountBalance === null || this.accountBalance === undefined) return '---';
+			const prefix = this.getCurrencyPrefix(this.preferredCurrency);
+			return `${prefix}${this.accountBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+		},
+		currencyPrefix() {
+			return this.getCurrencyPrefix(this.preferredCurrency);
 		}
 		// ==============================
 	},
@@ -205,9 +209,7 @@ export default {
 			const initialCapital = 1000; 
 			this.dailyChange = (this.dailyProfit / initialCapital) * 100;
 
-			// Simulação de atualização do Saldo da Conta
-			this.accountBalance += (Math.random() * 1.5 - 0.75);
-			this.accountBalance = Math.max(0, this.accountBalance); // Garante que não é negativo
+			// O saldo agora é atualizado via API, não mais simulado
 		},
 
 		updateRealTimeChart() {
@@ -297,18 +299,166 @@ export default {
 		toggleBalanceVisibility() {
 			this.balanceVisible = !this.balanceVisible;
 		},
-		// Os métodos de integração com API (fetchAccountBalance, getDerivToken, startBalanceUpdates, stopBalanceUpdates)
-		// foram substituídos aqui pela lógica de simulação dentro de updateTimeAndMetrics() para fins de demonstração,
-		// mantendo a estrutura original do template e do script.
-		// ===============================
+		
+		getPreferredCurrency() {
+			try {
+				const connectionStr = localStorage.getItem('deriv_connection');
+				if (connectionStr) {
+					const connection = JSON.parse(connectionStr);
+					if (connection.tradeCurrency) {
+						const currency = connection.tradeCurrency.toUpperCase();
+						console.log('[AgenteAutonomo] Moeda preferida:', currency);
+						return currency;
+					}
+				}
+			} catch (error) {
+				console.error('[AgenteAutonomo] Erro ao parsear deriv_connection:', error);
+			}
+			return 'USD';
+		},
+		
+		getDerivToken() {
+			console.log('[AgenteAutonomo] Buscando token Deriv...');
+			
+			let accountLoginid = null;
+			let preferredCurrency = null;
+			
+			try {
+				const connectionStr = localStorage.getItem('deriv_connection');
+				if (connectionStr) {
+					const connection = JSON.parse(connectionStr);
+					accountLoginid = connection.loginid;
+					preferredCurrency = connection.tradeCurrency;
+				}
+			} catch (error) {
+				console.error('[AgenteAutonomo] Erro ao parsear deriv_connection:', error);
+			}
+			
+			const isDemoPreferred = preferredCurrency?.toUpperCase() === 'DEMO';
+			if (isDemoPreferred) {
+				try {
+					const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+					const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+					
+					for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+						if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
+							console.log('[AgenteAutonomo] ✓ Token demo encontrado');
+							return token;
+						}
+					}
+				} catch (error) {
+					console.error('[AgenteAutonomo] Erro ao buscar token demo:', error);
+				}
+			}
+			
+			if (accountLoginid) {
+				try {
+					const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+					const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+					
+					const specificToken = tokensByLoginId[accountLoginid];
+					if (specificToken) {
+						console.log('[AgenteAutonomo] ✓ Token específico encontrado');
+						return specificToken;
+					}
+				} catch (error) {
+					console.error('[AgenteAutonomo] Erro ao buscar token específico:', error);
+				}
+			}
+			
+			const defaultToken = localStorage.getItem('deriv_token');
+			if (!defaultToken) {
+				console.error('[AgenteAutonomo] ERRO: Nenhum token encontrado!');
+			}
+			
+			return defaultToken;
+		},
+		
+		async fetchAccountBalance() {
+			try {
+				const derivToken = this.getDerivToken();
+				if (!derivToken) {
+					console.warn('[AgenteAutonomo] ❌ Token não disponível para buscar saldo');
+					return;
+				}
+				
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const response = await fetch(`${apiBase}/ai/deriv-balance`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					},
+					body: JSON.stringify({ derivToken: derivToken }),
+				});
+				
+				const result = await response.json();
+				if (result.success && result.data) {
+					this.accountBalance = result.data.balance;
+					this.accountCurrency = result.data.currency;
+					this.accountLoginid = result.data.loginid;
+					this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+					
+					// Atualizar moeda preferida
+					this.preferredCurrency = this.getPreferredCurrency();
+					
+					console.log('[AgenteAutonomo] ✅ Saldo atualizado:', {
+						balance: this.accountBalance,
+						currency: this.accountCurrency,
+						loginid: this.accountLoginid,
+						isDemo: this.isDemo,
+						preferredCurrency: this.preferredCurrency
+					});
+				} else {
+					console.error('[AgenteAutonomo] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
+				}
+			} catch (error) {
+				console.error('[AgenteAutonomo] ❌ Erro ao buscar saldo da conta:', error);
+			}
+		},
+		
+		startBalanceUpdates() {
+			this.fetchAccountBalance();
+			this.balanceUpdateInterval = setInterval(() => {
+				this.fetchAccountBalance();
+			}, 30000); // Atualiza a cada 30 segundos
+		},
+		
+		stopBalanceUpdates() {
+			if (this.balanceUpdateInterval) {
+				clearInterval(this.balanceUpdateInterval);
+				this.balanceUpdateInterval = null;
+			}
+		},
+		
+		getCurrencyPrefix(currency) {
+			switch ((currency || '').toUpperCase()) {
+				case 'USD':
+					return '$';
+				case 'EUR':
+					return '€';
+				case 'BTC':
+					return '₿';
+				case 'DEMO':
+					return 'D$';
+				default:
+					return currency ? `${currency} ` : '';
+			}
+		}
+		// ================================
 	},
 
 	mounted() {
 		// Inicializa o estado com uma ação
 		this.addSystemAction('Sistema carregado', 'Aguardando o início do agente...');
 		
-		// Inicializa a simulação de métricas (inclui saldo simulado) se não estiver ativo
-		// Note: A chamada original à API foi substituída por uma inicialização simples aqui.
+		// Buscar moeda preferida
+		this.preferredCurrency = this.getPreferredCurrency();
+		
+		// Iniciar atualizações de saldo
+		this.startBalanceUpdates();
+		
+		// Inicializa a simulação de métricas se não estiver ativo
 		if (!this.agenteEstaAtivo) {
 			this.timeAndMetricsInterval = setInterval(this.updateTimeAndMetrics, 1000);
 		}
@@ -316,8 +466,9 @@ export default {
 
 	beforeUnmount() {
 		this.stopSimulations();
+		this.stopBalanceUpdates();
 		
-		// Limpa o intervalo de métricas/saldo se o componente for destruído
+		// Limpa o intervalo de métricas se o componente for destruído
 		if (this.timeAndMetricsInterval) {
 			clearInterval(this.timeAndMetricsInterval);
 		}
