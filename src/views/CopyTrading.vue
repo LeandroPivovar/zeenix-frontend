@@ -19,6 +19,7 @@
                 :performance-data="performanceData"
                 @navigate-to-history="showPerformance = false; showHistory = true; updateHeaders()"
                 @navigate-to-performance="showPerformance = true; showHistory = false; updateHeaders()"
+                @copy-activated="handleCopyActivated"
             />
 
             <CopyHistory
@@ -131,6 +132,17 @@ export default {
             }
         },
         updateHeaders() {
+        },
+        handleCopyActivated() {
+            // Quando o copy é ativado, manter na tela de performance
+            this.showPerformance = true;
+            this.showHistory = false;
+            // Atualizar dados se necessário
+            this.loadCopyTradingData();
+        },
+        async loadCopyTradingData() {
+            // Carregar dados atualizados do copy trading
+            // Esta função pode ser expandida para buscar dados reais da API
         }
     }
 }

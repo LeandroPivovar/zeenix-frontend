@@ -95,6 +95,125 @@
     color: #a0a0a0;
 }
 
+/* Listagem de traders */
+.traders-list {
+    margin-top: 15px;
+    max-height: 300px;
+    overflow-y: auto;
+    border: 1px solid #333;
+    border-radius: 4px;
+    background-color: #2d2d2d;
+}
+
+.traders-list h5 {
+    font-size: 0.85rem;
+    color: #ffffff;
+    padding: 10px;
+    margin: 0;
+    border-bottom: 1px solid #333;
+    text-transform: uppercase;
+}
+
+.trader-item {
+    padding: 10px;
+    border-bottom: 1px solid #333;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.trader-item:hover {
+    background-color: #3a3a3a;
+}
+
+.trader-item:last-child {
+    border-bottom: none;
+}
+
+.trader-item-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.trader-name {
+    font-weight: bold;
+    color: #ffffff;
+    font-size: 0.9rem;
+}
+
+.trader-roi {
+    font-size: 0.85rem;
+    color: #00ff80;
+    font-weight: bold;
+}
+
+.trader-item-stats {
+    display: flex;
+    gap: 15px;
+    font-size: 0.75rem;
+    color: #a0a0a0;
+}
+
+/* Informações do trader selecionado */
+.trader-info-card {
+    background-color: #2d2d2d;
+    border: 1px solid #333;
+    border-radius: 4px;
+    padding: 15px;
+    margin-top: 10px;
+}
+
+.trader-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #333;
+}
+
+.trader-info-row:last-child {
+    border-bottom: none;
+}
+
+.info-label {
+    font-size: 0.85rem;
+    color: #a0a0a0;
+}
+
+.info-value {
+    font-size: 0.9rem;
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.info-value.green {
+    color: #00ff80;
+}
+
+/* Campo de ajuda */
+.help-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    line-height: 16px;
+    text-align: center;
+    border-radius: 50%;
+    background-color: #333;
+    color: #a0a0a0;
+    font-size: 0.7rem;
+    margin-left: 5px;
+    cursor: help;
+}
+
+.field-hint {
+    display: block;
+    font-size: 0.75rem;
+    color: #a0a0a0;
+    margin-top: 5px;
+    font-style: italic;
+}
+
 .toggle-buttons {
     display: flex;
     gap: 5px;

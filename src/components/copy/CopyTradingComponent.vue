@@ -21,81 +21,168 @@
             <div class="config-section">
                 <h4>SELECIONAR TRADER</h4>
                 <div class="input-group">
-                    <input type="text" placeholder="Buscar trader (nome/ID)" />
+                    <input 
+                        type="text" 
+                        v-model="searchTrader" 
+                        placeholder="Buscar trader (nome/ID)" 
+                        @input="filterTraders"
+                    />
                 </div>
                 <div class="select-group">
-                    <select v-model="selectedTrader">
-                        <option value="">Top Traders (ROI)</option>
-                        <option v-for="trader in tradersList" :key="trader.id" :value="trader.id">
+                    <select v-model="selectedTrader" @change="onTraderSelected">
+                        <option value="">Selecione um trader</option>
+                        <option v-for="trader in filteredTradersList" :key="trader.id" :value="trader.id">
                             {{ trader.name }} 
                         </option>
                     </select>
-                    <div class="trader-stats">
-                        ROI: {{ selectedTraderStats.roi }}% • DD: {{ selectedTraderStats.dd }}% • {{ selectedTraderStats.followers }}k
+                </div>
+                
+                <!-- Listagem de traders disponíveis -->
+                <div class="traders-list" v-if="!selectedTrader">
+                    <h5>Traders Disponíveis</h5>
+                    <div 
+                        class="trader-item" 
+                        v-for="trader in filteredTradersList" 
+                        :key="trader.id"
+                        @click="selectedTrader = trader.id; onTraderSelected()"
+                    >
+                        <div class="trader-item-header">
+                            <span class="trader-name">{{ trader.name }}</span>
+                            <span class="trader-roi">ROI: {{ trader.roi }}%</span>
+                        </div>
+                        <div class="trader-item-stats">
+                            <span>DD: {{ trader.dd }}%</span>
+                            <span>{{ trader.followers }}k seguidores</span>
+                        </div>
                     </div>
                 </div>
             </div>
             
+            <!-- Informações do trader selecionado -->
             <div class="section-divider"></div>
-
-            <div class="config-section">
-                <h4>MODO DE CÓPIA</h4>
-                <div class="toggle-buttons">
-                    <button
-                        :class="{ active: copyMode === 'proportion' }"
-                        @click="copyMode = 'proportion'"
-                    >
-                        Proporção (%) do saldo
-                    </button>
-                    <button
-                        :class="{ active: copyMode === 'fixed' }"
-                        @click="copyMode = 'fixed'"
-                    >
-                        Valor Fixo ($)
-                    </button>
+            <div class="config-section" v-if="selectedTrader">
+                <h4>INFORMAÇÕES DO TRADER</h4>
+                <div class="trader-info-card">
+                    <div class="trader-info-row">
+                        <span class="info-label">Nome:</span>
+                        <span class="info-value">{{ selectedTraderStats.name }}</span>
+                    </div>
+                    <div class="trader-info-row">
+                        <span class="info-label">ROI:</span>
+                        <span class="info-value green">{{ selectedTraderStats.roi }}%</span>
+                    </div>
+                    <div class="trader-info-row">
+                        <span class="info-label">Drawdown:</span>
+                        <span class="info-value">{{ selectedTraderStats.dd }}%</span>
+                    </div>
+                    <div class="trader-info-row">
+                        <span class="info-label">Seguidores:</span>
+                        <span class="info-value">{{ selectedTraderStats.followers }}k</span>
+                    </div>
                 </div>
             </div>
 
             <div class="section-divider"></div>
 
             <div class="config-section">
-                <h4>ALOCAÇÃO & LIMITES</h4>
-                <div class="row">
-                    <div class="field">
-                        <label>Alevaragem</label>
-                        <select v-model="leverage">
-                            <option>1:1</option>
-                            <option>1:2</option>
-                            <option>1:5</option>
-                        </select>
-                    </div>
-                    <div class="field">
-                        <label>Stop Loss ($)</label>
-                        <input type="number" v-model="stopLoss" placeholder="$100" />
-                    </div>
-                </div>
-                <div class="row">
-                    <div class="field">
-                        <label>Take Profit ($)</label>
-                        <input type="number" v-model="takeProfit" placeholder="$200" />
-                    </div>
-                    <div class="field">
-                        <label>Tipo SL/TP</label>
-                        <select v-model="slTpType">
-                            <option>Diário</option>
-                            <option>Semanal</option>
-                            <option>Mensal</option>
-                        </select>
+                <h4>CONFIGURAÇÕES DO COPY</h4>
+                
+                <!-- Tipo de Alocação -->
+                <div class="field">
+                    <label>
+                        Tipo de Alocação
+                        <span class="help-icon" title="Escolha entre proporção do saldo ou valor fixo">?</span>
+                    </label>
+                    <div class="toggle-buttons">
+                        <button
+                            :class="{ active: copyMode === 'proportion' }"
+                            @click="copyMode = 'proportion'"
+                        >
+                            Proporção (%)
+                        </button>
+                        <button
+                            :class="{ active: copyMode === 'fixed' }"
+                            @click="copyMode = 'fixed'"
+                        >
+                            Valor Fixo ($)
+                        </button>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="field switch">
-                        <label>Stop Loss Blindado</label>
-                        <div class="toggle-switch">
-                            <input type="checkbox" v-model="blindStop" />
-                            <span class="slider"></span>
-                        </div>
+
+                <!-- Valor/Proporção -->
+                <div class="field">
+                    <label>
+                        {{ copyMode === 'proportion' ? 'Proporção (%)' : 'Valor Fixo ($)' }}
+                    </label>
+                    <input 
+                        type="number" 
+                        v-model.number="allocationValue" 
+                        :placeholder="copyMode === 'proportion' ? 'Ex: 15' : 'Ex: 500'"
+                        :min="copyMode === 'proportion' ? 1 : 0.01"
+                        :max="copyMode === 'proportion' ? 100 : null"
+                        step="0.01"
+                    />
+                    <span class="field-hint" v-if="copyMode === 'proportion'">
+                        Percentual do seu saldo a ser alocado
+                    </span>
+                </div>
+
+                <!-- Alavancagem -->
+                <div class="field">
+                    <label>
+                        Alavancagem
+                        <span class="help-icon" title="Multiplicador de posição">?</span>
+                    </label>
+                    <select v-model="leverage">
+                        <option value="1:1">1x</option>
+                        <option value="1:2">2x</option>
+                        <option value="1:5">5x</option>
+                    </select>
+                </div>
+
+                <!-- Stop Loss -->
+                <div class="field">
+                    <label>
+                        Stop Loss
+                        <span class="help-icon" title="Limite máximo de perda permitido">?</span>
+                    </label>
+                    <input 
+                        type="number" 
+                        v-model.number="stopLoss" 
+                        placeholder="250" 
+                        min="0"
+                        step="0.01"
+                    />
+                </div>
+
+                <!-- Take Profit -->
+                <div class="field">
+                    <label>
+                        Take Profit
+                        <span class="help-icon" title="Meta de lucro diária">?</span>
+                    </label>
+                    <input 
+                        type="number" 
+                        v-model.number="takeProfit" 
+                        placeholder="500" 
+                        min="0"
+                        step="0.01"
+                    />
+                </div>
+
+                <!-- Stop Loss Blindado -->
+                <div class="field switch">
+                    <label>
+                        Stop Loss Blindado
+                        <span class="help-icon" title="Protege contra operações consecutivas fora do padrão">?</span>
+                    </label>
+                    <div class="toggle-switch">
+                        <input type="checkbox" v-model="blindStop" />
+                        <span class="slider"></span>
                     </div>
+                    <span class="field-hint" v-if="blindStop">
+                        Protege contra operações consecutivas fora do padrão
+                    </span>
                 </div>
             </div>
 
@@ -243,31 +330,184 @@ export default {
             selectedPeriod: '7',
             copyMode: 'proportion', 
             selectedTrader: '',
+            allocationValue: null,
             leverage: '1:1',
-            stopLoss: '100',
-            takeProfit: '200',
-            slTpType: 'Diário',
+            stopLoss: 250,
+            takeProfit: 500,
             blindStop: false,
             isPaused: false,
+            searchTrader: '',
             tradersList: [
-                { id: 't1', name: 'John Doe', roi: '45', dd: '8', followers: '1.2' },
-                { id: 't2', name: 'Jane Smith', roi: '52', dd: '6', followers: '0.8' },
-                { id: 't3', name: 'TradeMaster', roi: '60', dd: '5', followers: '2.1' }
+                { id: 't1', name: 'John Doe', roi: '45', dd: '8', followers: '1.2', winRate: '78%', totalTrades: '234' },
+                { id: 't2', name: 'Jane Smith', roi: '52', dd: '6', followers: '0.8', winRate: '82%', totalTrades: '189' },
+                { id: 't3', name: 'TradeMaster', roi: '60', dd: '5', followers: '2.1', winRate: '85%', totalTrades: '456' },
+                { id: 't4', name: 'Elite Trader', roi: '48', dd: '7', followers: '1.5', winRate: '80%', totalTrades: '312' },
+                { id: 't5', name: 'Pro Trader', roi: '55', dd: '4', followers: '3.2', winRate: '88%', totalTrades: '567' }
             ]
         }
     },
     computed: {
+        filteredTradersList() {
+            if (!this.searchTrader) {
+                return this.tradersList;
+            }
+            const search = this.searchTrader.toLowerCase();
+            return this.tradersList.filter(trader => 
+                trader.name.toLowerCase().includes(search) || 
+                trader.id.toLowerCase().includes(search)
+            );
+        },
         selectedTraderStats() {
             const trader = this.tradersList.find(t => t.id === this.selectedTrader);
-            return trader || { roi: '45', dd: '8', followers: '1.2' };
+            return trader || { name: '', roi: '0', dd: '0', followers: '0', winRate: '0%', totalTrades: '0' };
         }
     },
     methods: {
         setPeriod(period) {
             this.selectedPeriod = period;
         },
-        activateCopy() {
-            this.$root.$toast.success('Copy ativado!');
+        filterTraders() {
+            // O computed filteredTradersList já faz o filtro
+        },
+        onTraderSelected() {
+            if (this.selectedTrader) {
+                console.log('Trader selecionado:', this.selectedTrader);
+            }
+        },
+        async activateCopy() {
+            // Validações
+            if (!this.selectedTrader) {
+                if (this.$root.$toast) {
+                    this.$root.$toast.error('Selecione um trader antes de ativar o copy!');
+                }
+                return;
+            }
+
+            if (!this.allocationValue || this.allocationValue <= 0) {
+                if (this.$root.$toast) {
+                    this.$root.$toast.error('Informe o valor ou percentual de alocação!');
+                }
+                return;
+            }
+
+            if (this.copyMode === 'proportion' && (this.allocationValue > 100 || this.allocationValue < 1)) {
+                if (this.$root.$toast) {
+                    this.$root.$toast.error('A proporção deve estar entre 1% e 100%!');
+                }
+                return;
+            }
+
+            try {
+                const userId = this.getUserId();
+                if (!userId) {
+                    console.error('Usuário não identificado');
+                    return;
+                }
+
+                const derivToken = this.getDerivToken();
+                if (!derivToken) {
+                    console.error('Token Deriv não encontrado');
+                    return;
+                }
+
+                const selectedTraderData = this.tradersList.find(t => t.id === this.selectedTrader);
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/copy-trading/activate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        traderId: this.selectedTrader,
+                        traderName: selectedTraderData.name,
+                        allocationType: this.copyMode,
+                        allocationValue: this.allocationValue,
+                        allocationPercentage: this.copyMode === 'proportion' ? this.allocationValue : null,
+                        leverage: this.leverage,
+                        stopLoss: this.stopLoss,
+                        takeProfit: this.takeProfit,
+                        blindStopLoss: this.blindStop,
+                        derivToken: derivToken,
+                        currency: this.getPreferredCurrency() || 'USD'
+                    }),
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (this.$root.$toast) {
+                        this.$root.$toast.success('Copy ativado com sucesso!');
+                    }
+                    // Navegar para a tela de performance
+                    this.$emit('copy-activated');
+                } else {
+                    if (this.$root.$toast) {
+                        this.$root.$toast.error(result.message || 'Erro ao ativar copy');
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao ativar copy:', error);
+                if (this.$root.$toast) {
+                    this.$root.$toast.error('Erro ao ativar copy. Tente novamente.');
+                }
+            }
+        },
+        getUserId() {
+            try {
+                const token = localStorage.getItem('token');
+                if (token) {
+                    const payload = JSON.parse(atob(token.split('.')[1]));
+                    return payload.userId || payload.sub || payload.id;
+                }
+                const userInfoStr = localStorage.getItem('user_info');
+                if (userInfoStr) {
+                    const userInfo = JSON.parse(userInfoStr);
+                    return userInfo.id || userInfo.userId;
+                }
+                return null;
+            } catch (error) {
+                console.error('Erro ao obter userId:', error);
+                return null;
+            }
+        },
+        getDerivToken() {
+            try {
+                const connectionStr = localStorage.getItem('deriv_connection');
+                if (connectionStr) {
+                    const connection = JSON.parse(connectionStr);
+                    const accountLoginid = connection.loginid;
+
+                    if (accountLoginid) {
+                        const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+                        const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+                        const specificToken = tokensByLoginId[accountLoginid];
+                        if (specificToken) {
+                            return specificToken;
+                        }
+                    }
+                }
+                return localStorage.getItem('deriv_token');
+            } catch (error) {
+                console.error('Erro ao obter token Deriv:', error);
+                return localStorage.getItem('deriv_token');
+            }
+        },
+        getPreferredCurrency() {
+            try {
+                const connectionStr = localStorage.getItem('deriv_connection');
+                if (connectionStr) {
+                    const connection = JSON.parse(connectionStr);
+                    if (connection.tradeCurrency) {
+                        return connection.tradeCurrency.toUpperCase();
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao obter moeda preferida:', error);
+            }
+            return 'USD';
         },
         togglePause() {
             this.isPaused = !this.isPaused;
