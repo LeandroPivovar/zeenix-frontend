@@ -125,27 +125,27 @@
                         <div class="th login-original">Login Original</div>
                         <div class="th login-alvo">Login Alvo</div>
                         <div class="th saldo-alvo">Saldo Alvo</div>
-                        <div class="th status">Status</div>
+                        <div class="th status-expert">Status</div>
                         <div class="th actions">Ações</div>
                     </div>
                     <div class="table-body">
-                        <div v-if="isLoading" class="table-row">
+                        <div v-if="isLoading" class="table-row-experts">
                             <div class="td" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #999;">
                                 Carregando experts...
                             </div>
                         </div>
-                        <div v-else-if="experts.length === 0" class="table-row">
+                        <div v-else-if="experts.length === 0" class="table-row-experts">
                             <div class="td" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #999;">
                                 Nenhum expert cadastrado
                             </div>
                         </div>
-                        <div v-else class="table-row" v-for="expert in experts" :key="expert.id">
+                        <div v-else class="table-row-experts" v-for="expert in experts" :key="expert.id">
                             <div class="td email">{{ expert.email }}</div>
                             <div class="td trader-type">{{ expert.traderType || '-' }}</div>
                             <div class="td login-original">{{ expert.loginOriginal || '-' }}</div>
                             <div class="td login-alvo">{{ expert.loginAlvo || '-' }}</div>
                             <div class="td saldo-alvo">{{ formatCurrency(expert.saldoAlvo || 0) }}</div>
-                            <div class="td status" :class="getConnectionStatusClass(expert.connectionStatus)">
+                            <div class="td status-expert" :class="getConnectionStatusClass(expert.connectionStatus)">
                                 <span class="status-dot" :class="getConnectionStatusClass(expert.connectionStatus)"></span>
                                 {{ expert.connectionStatus || 'Desconectado' }}
                             </div>
@@ -770,7 +770,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
 
 body {
@@ -794,6 +794,8 @@ body {
 
 .layout-content {
     margin: 0;
+    display: flex;
+    justify-content: flex-start;
 }
 
 .hamburger-btn {
@@ -1049,14 +1051,14 @@ body {
 }
 
 .card-title {
-    font-size: 0.85rem;
+    font-size: 1rem;
     color: #aaa;
     margin: 0 0 5px 0;
-    text-transform: uppercase;
+    text-transform: capitalize;
 }
 
 .card-value {
-    font-size: 1.5rem;
+    font-size: 1.2rem;
     font-weight: 700;
     margin: 0;
     line-height: 1;
@@ -1069,7 +1071,7 @@ body {
 .last-up { animation-delay: 0.4s; }
 
 .active-expert .card-value {
-    font-size: 2.2rem;
+    font-size: 1.5rem;
     font-weight: 500;
 }
 .last-up .card-value {
@@ -1083,32 +1085,39 @@ body {
     font-weight: 700;
 }
 
+/* --- 3. Estilos da Tabela (Corrigido para usar Grid nas linhas de dados) --- */
 .experts-table {
     background-color: #1f1f1f;
     border-radius: 8px;
     padding: 0 20px 20px 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
     width: 100%;
+    overflow-x: scroll; 
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease-out forwards;
     animation-delay: 0.5s;
-    overflow-x: auto; 
-}
-
-.table-content-wrapper {
-    min-width: 900px; 
 }
 
 .table-header,
-.table-row {
-    display: grid;
-    grid-template-columns: 2fr 1.3fr 1.3fr 1.3fr 1.2fr 1fr 0.8fr; 
-    align-items: center;
-    padding: 10px 0;
+.table-row-experts {
+    /* 100% da largura do .table-content-wrapper (que é no mínimo 1000px) */
+    width: 100%; 
+    text-align: left;
+}
+
+.table-content-wrapper {
+    /* Garante largura suficiente para todas as 7 colunas */
+    min-width: 800px; 
 }
 
 .table-header {
+    /* CHAVE: Habilita o Grid Layout */
+    display: grid;
+    /* CHAVE: Define o tamanho relativo para as 7 colunas (Email, Tipo, Original, Alvo, Saldo, Status, Ações) */
+    grid-template-columns: 2fr 1.2fr 1.2fr 1fr 1.3fr 1.2fr 0.8fr; 
+    align-items: center;
+    padding: 10px 0;
     font-weight: 500;
     color: #aaa;
     font-size: 0.85rem;
@@ -1120,23 +1129,33 @@ body {
     padding-top: 10px;
 }
 
-.table-row {
+/* CORREÇÃO: Usando display: grid e o mesmo template de colunas do cabeçalho */
+.table-row-experts {
     color: #fff;
     font-size: 0.9rem;
     border-bottom: 1px solid #2a2a2a; 
+    display: grid; 
+    /* Usa o mesmo template de colunas do cabeçalho */
+    grid-template-columns: 2.4fr 1.2fr 1.3fr 1.2fr 1.3fr 1.2fr 1.2fr;
+    align-items: center;
+    width: 100%;
+    padding: 8px 0; /* Adiciona padding vertical à linha */
+    overflow: scroll;
 }
 
-.table-row:last-child {
+.table-row-experts:last-child {
     border-bottom: none;
 }
 
-.th, .td {
-    padding: 5px 10px;
-    overflow: hidden;
+/* CORREÇÃO: Ajustando o padding da célula, já que o padding vertical está na linha */
+.td {
+    padding: 0 10px; 
+    overflow: none;
     text-overflow: ellipsis;
-    white-space: nowrap;
+    white-space: nowrap; 
 }
 
+/* --- 3. Estilos de Status e Ações --- */
 .td.status {
     display: flex;
     align-items: center;
@@ -1151,16 +1170,19 @@ body {
     display: inline-block;
 }
 
+/* Cores dos status (Usando classes de status) */
 .status-dot.active { background-color: #4CAF50; }
-.status-dot.syncing { background-color: #ffc107; }
-.status-dot.disconnected { background-color: #f44336; }
-
 .td.status.active { color: #4CAF50; }
+
+.status-dot.syncing { background-color: #ffc107; }
 .td.status.syncing { color: #ffc107; }
+
+.status-dot.disconnected { background-color: #f44336; }
 .td.status.disconnected { color: #f44336; }
 
+/* Estilo do Saldo Alvo */
 .td.saldo-alvo {
-    color: #4CAF50;
+    color: #4CAF50; 
     font-weight: 500;
 }
 
@@ -1184,7 +1206,15 @@ body {
     color: #fff;
 }
 
-/* Media Queries Otimizadas */
+.action-btn.trash {
+    color: #f44336;
+}
+
+.status{
+    margin-top: none !important;
+    padding-top: none !important;
+    border: none !important;
+}
 
 @media (min-width: 769px) {
     /* Desktop: Sidebar e Layout */
