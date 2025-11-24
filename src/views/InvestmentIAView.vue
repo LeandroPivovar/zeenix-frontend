@@ -1220,8 +1220,8 @@ export default {
 
 /* Main Content */
 .main-content {
-    margin-top: 120px; /* Ajustado para compensar o header fixo */
-    padding: 1.5rem 20px;
+    margin-top: 90px; /* Margem pequena entre conteúdo e header */
+    padding: 1rem 20px; /* Padding reduzido */
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -1698,6 +1698,7 @@ export default {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
+    margin-top: 0; /* Remove margem superior extra */
     margin-left: 0;
     margin-right: 0;
     width: 100%;
@@ -2325,7 +2326,7 @@ export default {
     }
     
     .main-content {
-        margin-top: 140px; /* Ajustado para mobile onde o header pode ser maior */
+        margin-top: 100px; /* Margem ajustada para mobile */
         padding: 1rem 15px;
     }
     
