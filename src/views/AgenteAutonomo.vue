@@ -3,8 +3,8 @@
 		<header class="top-header">
 			<div class="header-content">
 				<div class="header-left-content">
-					<h1 class="header-title">Central de Suporte</h1>
-					<p class="header-subtitle">Encontre respostas rápidas ou entre em contato com nossa equipe.</p>
+					<h1 class="header-title">Agente Autônomo</h1>
+					<p class="header-subtitle">Configure e monitore seu agente de trading automatizado.</p>
 				</div>
 				<div class="header-actions-right">
 					<div class="balance-display-card">
@@ -341,9 +341,18 @@ export default {
 	margin-left: 0;
 }
 
+.layout-agente-autnomo.sidebar-collapsed .top-header {
+	left: 0;
+	width: 100%;
+}
+
 .container-componentes{
 	/* Padding superior ajustado para compensar o cabeçalho fixo */
-	padding: 90px 60px 20px 60px;
+	padding-top: 120px;
+	padding-left: 60px;
+	padding-right: 60px;
+	padding-bottom: 20px;
+	margin-top: 0;
 }
 
 /* Top Header */
