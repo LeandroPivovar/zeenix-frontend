@@ -165,7 +165,9 @@
     display: flex;
     flex-direction: column;
     width: 100%;
+    min-height: calc(100vh - 70px); /* Altura mínima para ocupar a viewport */
     box-sizing: border-box;
+    overflow-y: auto; /* Permite scroll se necessário */
 }
 
 .max-w-7xl {
@@ -173,6 +175,10 @@
     width: 100%;
     margin: 0 auto;
     box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
+    min-height: 0; /* Permite que o flex se ajuste */
+    flex: 1; /* Ocupa o espaço disponível */
 }
 
 /* Header Section removida - agora está no top-header fixo */
@@ -190,13 +196,15 @@
     align-items: center; /* Centraliza o conteúdo do card */
     width: 100%;
     box-sizing: border-box;
+    flex-shrink: 0; /* Não encolhe */
 }
 
 .video-thumbnail {
     aspect-ratio: 21 / 9; /* aspect mais largo e baixo */
-    max-height: 180px; /* altura máxima limitada */
+    max-height: min(180px, 15vh); /* altura máxima limitada e adaptável à viewport */
     max-width: 100%; /* garante que não ultrapasse o card */
     width: 100%;
+    height: auto; /* Altura automática baseada no aspect-ratio */
     background-color: #0B0B0B; /* bg-zenix-bg */
     border-radius: 0.75rem; /* rounded-xl */
     display: flex;
@@ -298,6 +306,9 @@
     margin-bottom: 1.5rem; /* mb-6 - reduzido */
     width: 100%;
     box-sizing: border-box;
+    flex: 1; /* Ocupa o espaço vertical disponível */
+    min-height: 0; /* Permite que o grid se ajuste */
+    align-items: stretch; /* Cards com mesma altura */
 }
 
 /* Base Plan Card */
@@ -311,6 +322,8 @@
     width: 100%;
     box-sizing: border-box;
     min-height: 0; /* Permite que o card se adapte ao conteúdo */
+    height: 100%; /* Ocupa toda a altura do grid item */
+    max-height: 100%; /* Não ultrapassa o container */
 }
 
 /* Starter Card */
@@ -397,6 +410,8 @@
     display: flex;
     flex-direction: column;
     gap: 0.5rem; /* space-y-2 - reduzido */
+    flex: 1; /* Ocupa o espaço disponível entre o preço e o botão */
+    min-height: 0; /* Permite flexibilidade */
 }
 
 .feature-item {
@@ -533,12 +548,13 @@
     }
     .plans-content {
         padding: 1.5rem;
+        min-height: calc(100vh - 70px);
     }
     .video-card-wrapper {
         padding: 0.875rem;
     }
     .video-thumbnail {
-        max-height: 150px;
+        max-height: min(150px, 12vh);
     }
 }
 
@@ -549,30 +565,34 @@
     }
     .plans-content {
         padding: 1rem;
+        min-height: calc(100vh - 70px);
     }
     .video-card-wrapper {
         padding: 0.75rem;
         margin-bottom: 1rem;
     }
     .video-thumbnail {
-        max-height: 120px;
+        max-height: min(120px, 10vh);
     }
     .plan-card {
         padding: 1.25rem;
+        height: auto; /* Altura automática em mobile */
     }
 }
 
 @media (max-width: 480px) {
     .plans-content {
         padding: 0.75rem;
+        min-height: calc(100vh - 70px);
     }
     .video-card-wrapper {
         padding: 0.5rem;
     }
     .video-thumbnail {
-        max-height: 100px;
+        max-height: min(100px, 8vh);
     }
     .plan-card {
         padding: 1rem;
+        height: auto; /* Altura automática em mobile pequeno */
     }
 }
