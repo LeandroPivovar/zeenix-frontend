@@ -1220,7 +1220,7 @@ export default {
 
 /* Main Content */
 .main-content {
-    margin-top: 70px;
+    margin-top: 120px; /* Ajustado para compensar o header fixo */
     padding: 1.5rem 20px;
     max-width: 100%;
     width: 100%;
@@ -2325,7 +2325,7 @@ export default {
     }
     
     .main-content {
-        margin-top: 80px;
+        margin-top: 140px; /* Ajustado para mobile onde o header pode ser maior */
         padding: 1rem 15px;
     }
     

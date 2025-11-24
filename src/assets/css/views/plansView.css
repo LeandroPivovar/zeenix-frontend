@@ -160,12 +160,12 @@
 }
 
 .plans-content { 
-    margin-top: 70px; /* Espaço para o header fixo */
-    padding: 2.5rem 2rem 1.5rem 2rem; /* py-10 px-8 - aumentado top padding para espaçar do header */
+    margin-top: 90px; /* Margem pequena entre conteúdo e header */
+    padding: 1.5rem 2rem 1.5rem 2rem; /* Padding reduzido para dar mais espaço */
     display: flex;
     flex-direction: column;
     width: 100%;
-    min-height: calc(100vh - 70px); /* Altura mínima para ocupar a viewport */
+    min-height: calc(100vh - 90px); /* Altura mínima ajustada */
     box-sizing: border-box;
     overflow-y: auto; /* Permite scroll se necessário */
 }
@@ -196,12 +196,12 @@
     align-items: center; /* Centraliza o conteúdo do card */
     width: 100%;
     box-sizing: border-box;
-    flex-shrink: 0; /* Não encolhe */
+    flex-shrink: 0; /* Não encolhe - prioridade para o vídeo */
 }
 
 .video-thumbnail {
     aspect-ratio: 21 / 9; /* aspect mais largo e baixo */
-    max-height: min(180px, 15vh); /* altura máxima limitada e adaptável à viewport */
+    max-height: min(220px, 20vh); /* Altura aumentada para dar preferência ao vídeo */
     max-width: 100%; /* garante que não ultrapasse o card */
     width: 100%;
     height: auto; /* Altura automática baseada no aspect-ratio */
@@ -306,24 +306,24 @@
     margin-bottom: 1.5rem; /* mb-6 - reduzido */
     width: 100%;
     box-sizing: border-box;
-    flex: 1; /* Ocupa o espaço vertical disponível */
+    flex: 0 0 auto; /* Não expande - altura baseada no conteúdo */
     min-height: 0; /* Permite que o grid se ajuste */
-    align-items: stretch; /* Cards com mesma altura */
+    align-items: start; /* Cards alinhados no topo, não esticam */
 }
 
 /* Base Plan Card */
 .plan-card {
     background-color: #0E0E0E; /* bg-zenix-card */
     border-radius: 1rem; /* rounded-2xl */
-    padding: 1.5rem; /* p-6 - reduzido */
+    padding: 1.25rem; /* Padding reduzido para diminuir altura */
     display: flex;
     flex-direction: column;
     position: relative;
     width: 100%;
     box-sizing: border-box;
     min-height: 0; /* Permite que o card se adapte ao conteúdo */
-    height: 100%; /* Ocupa toda a altura do grid item */
-    max-height: 100%; /* Não ultrapassa o container */
+    height: auto; /* Altura automática baseada no conteúdo */
+    max-height: none; /* Sem limite máximo de altura */
 }
 
 /* Starter Card */
@@ -350,13 +350,13 @@
 
 /* Plan Elements */
 .plan-icon-box {
-    width: 3rem; /* w-12 - reduzido */
-    height: 3rem; /* h-12 - reduzido */
+    width: 2.5rem; /* Reduzido */
+    height: 2.5rem; /* Reduzido */
     border-radius: 0.75rem; /* rounded-xl */
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 1rem; /* mb-4 - reduzido */
+    margin-bottom: 0.75rem; /* Margin reduzido */
     background-color: #0B0B0B; /* bg-zenix-bg (padrão) */
 }
 
@@ -382,19 +382,19 @@
 }
 
 .plan-title {
-    font-size: 1.25rem; /* text-xl - reduzido */
+    font-size: 1.125rem; /* Reduzido */
     font-weight: 700; /* font-bold */
     color: #DFDFDF; /* text-zenix-text */
-    margin-bottom: 0.5rem; /* mb-2 */
+    margin-bottom: 0.4rem; /* Margin reduzido */
     margin-top: 0;
 }
 
 .plan-price-wrapper {
-    margin-bottom: 1rem; /* mb-4 - reduzido */
+    margin-bottom: 0.75rem; /* Margin reduzido */
 }
 
 .plan-price-value {
-    font-size: 1.875rem; /* text-3xl - reduzido */
+    font-size: 1.5rem; /* Reduzido */
     font-weight: 700; /* font-bold */
     color: #DFDFDF; /* text-zenix-text */
 }
@@ -406,11 +406,10 @@
 .plan-features-list {
     list-style: none;
     padding: 0;
-    margin: 0 0 1rem; /* mb-4 - reduzido */
+    margin: 0 0 0.75rem; /* Margin reduzido */
     display: flex;
     flex-direction: column;
-    gap: 0.5rem; /* space-y-2 - reduzido */
-    flex: 1; /* Ocupa o espaço disponível entre o preço e o botão */
+    gap: 0.4rem; /* Gap reduzido entre itens */
     min-height: 0; /* Permite flexibilidade */
 }
 
@@ -444,9 +443,10 @@
 /* Buttons */
 .plan-btn {
     width: 100%; 
-    padding: 0.75rem 0; /* py-3 */
+    padding: 0.625rem 0; /* Padding reduzido */
     border-radius: 0.75rem; /* rounded-xl */
     font-weight: 600; /* font-semibold */
+    font-size: 0.875rem; /* Tamanho de fonte reduzido */
     cursor: pointer;
     transition: all 0.3s;
 }
@@ -547,14 +547,15 @@
         gap: 0.75rem;
     }
     .plans-content {
-        padding: 1.5rem;
-        min-height: calc(100vh - 70px);
+        margin-top: 90px;
+        padding: 1.25rem;
+        min-height: calc(100vh - 90px);
     }
     .video-card-wrapper {
         padding: 0.875rem;
     }
     .video-thumbnail {
-        max-height: min(150px, 12vh);
+        max-height: min(200px, 18vh); /* Mantém preferência ao vídeo */
     }
 }
 
@@ -564,35 +565,37 @@
         gap: 1rem;
     }
     .plans-content {
+        margin-top: 90px;
         padding: 1rem;
-        min-height: calc(100vh - 70px);
+        min-height: calc(100vh - 90px);
     }
     .video-card-wrapper {
         padding: 0.75rem;
         margin-bottom: 1rem;
     }
     .video-thumbnail {
-        max-height: min(120px, 10vh);
+        max-height: min(180px, 16vh); /* Mantém preferência ao vídeo */
     }
     .plan-card {
-        padding: 1.25rem;
+        padding: 1rem; /* Padding reduzido */
         height: auto; /* Altura automática em mobile */
     }
 }
 
 @media (max-width: 480px) {
     .plans-content {
+        margin-top: 90px;
         padding: 0.75rem;
-        min-height: calc(100vh - 70px);
+        min-height: calc(100vh - 90px);
     }
     .video-card-wrapper {
         padding: 0.5rem;
     }
     .video-thumbnail {
-        max-height: min(100px, 8vh);
+        max-height: min(160px, 14vh); /* Mantém preferência ao vídeo */
     }
     .plan-card {
-        padding: 1rem;
+        padding: 0.875rem; /* Padding reduzido */
         height: auto; /* Altura automática em mobile pequeno */
     }
 }
