@@ -14,10 +14,11 @@
 					v-model="selectedTrader" 
 					@change="onTraderSelected"
 					class="trader-select"
+					:disabled="loadingTraders"
 				>
-					<option value="">Selecione um trader</option>
+					<option value="">{{ loadingTraders ? 'Carregando traders...' : 'Selecione um trader' }}</option>
 					<option v-for="trader in tradersList" :key="trader.id" :value="trader.id">
-						{{ trader.name }}
+						{{ trader.name }} (ROI: {{ trader.roi }}%, Win Rate: {{ trader.winRate }}%)
 					</option>
 				</select>
 			</div>
@@ -256,13 +257,8 @@ export default {
 			stopLoss: '$250',
 			takeProfit: '$500',
 			armoredStopLossActive: true,
-			tradersList: [
-				{ id: 't1', name: 'John Doe', roi: '45', dd: '8', followers: '1.2' },
-				{ id: 't2', name: 'Jane Smith', roi: '52', dd: '6', followers: '0.8' },
-				{ id: 't3', name: 'TradeMaster', roi: '60', dd: '5', followers: '2.1' },
-				{ id: 't4', name: 'Elite Trader', roi: '48', dd: '7', followers: '1.5' },
-				{ id: 't5', name: 'Pro Trader', roi: '55', dd: '4', followers: '3.2' }
-			]
+			tradersList: [],
+			loadingTraders: false,
 		};
 	},
 	computed: {
@@ -272,6 +268,34 @@ export default {
 		}
 	},
 	methods: {
+		async loadTraders() {
+			this.loadingTraders = true;
+			try {
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const response = await fetch(`${apiBase}/copy-trading/traders`, {
+					method: 'GET',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					}
+				});
+
+				const result = await response.json();
+				if (result.success && result.data) {
+					this.tradersList = result.data;
+				} else {
+					console.error('Erro ao carregar traders:', result.message || 'Unknown error');
+					// Fallback para lista vazia se houver erro
+					this.tradersList = [];
+				}
+			} catch (error) {
+				console.error('Erro ao buscar traders disponíveis:', error);
+				// Fallback para lista vazia se houver erro
+				this.tradersList = [];
+			} finally {
+				this.loadingTraders = false;
+			}
+		},
 		onTraderSelected() {
 			if (this.selectedTrader) {
 				const trader = this.tradersList.find(t => t.id === this.selectedTrader);
@@ -298,6 +322,9 @@ export default {
 			console.log('Ativando Copy Trading com configurações:', config);
 			alert(`Copy Trading Ativado!\n\nTrader: ${config.trader}\nAlocação: ${config.allocationType === 'percentage' ? 'Porcentagem' : 'Valor Fixo'}\nAlavancagem: ${config.leverage}`);
 		},
+	},
+	async mounted() {
+		await this.loadTraders();
 	},
 };
 </script>
