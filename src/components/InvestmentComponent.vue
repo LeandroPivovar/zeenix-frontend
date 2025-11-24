@@ -1077,6 +1077,11 @@ export default {
     box-sizing: border-box;
 }
 
+/* Ocultar header quando dentro do MasterTrader */
+.layout-master-trader .top-header {
+    display: none !important;
+}
+
 .content-wrapper.sidebar-collapsed .top-header {
     left: 0;
     width: 100%;
@@ -1209,6 +1214,12 @@ export default {
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
+}
+
+/* Remover margin-top quando dentro do MasterTrader */
+.layout-master-trader .main-content {
+    margin-top: 0 !important;
+    padding: 0 !important;
 }
 
 /* AI Vision Panel */
