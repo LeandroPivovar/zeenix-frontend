@@ -155,7 +155,7 @@ export default {
       isLoading: false,
       showPassword: false,
       fullTitle: 'ZENIX',
-      fullSubtitle: 'A única tecnologia criada para operar com a precisão que o mercado exige. A única tecnologia criada para operar com a precisão que o mercado exige. A única tecnologia criada para operar com a precisão que o mercado exige.',
+      fullSubtitle: 'A única tecnologia criada para operar com a precisão que o mercado exige.',
       typedTitle: '',
       typedSubtitle: '',
       showBenefit1: false,
