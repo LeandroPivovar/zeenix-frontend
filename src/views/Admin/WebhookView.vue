@@ -13,7 +13,7 @@
                     <h1>Webhooks de Vendas</h1>
                     <p class="header-subtitle">Integre KiwiFy para sincronizar assinaturas, compras e renovações.</p>
                 </div>
-                <button class="btn btn-primary btn-new-connection">
+                <button class="btn add-webhook">
                     + Nova Conexão
                 </button>
             </header>
@@ -307,8 +307,16 @@ export default {
 }
 
 .header-webhook {
-    margin: 20px;
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
 }
+
+.add-webhook{
+    background-color: var(--color-success);
+} 
 
 .page-header {
     display: flex;
