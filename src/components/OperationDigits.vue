@@ -396,6 +396,7 @@
                         </div>
                     </div>
                 </div>
+                </div>
 
                 <!-- Trading Panel -->
                 <div class="trading-panel">
