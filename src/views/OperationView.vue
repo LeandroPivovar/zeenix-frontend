@@ -44,7 +44,7 @@
       </header>
 
       <main class="main-content">
-        <div class="flex gap-2 mb-6">
+        <div class="view-toggle-bar">
           <button
             class="px-6 py-3 bg-zenix-card border-b-2 border-zenix-green text-zenix-text text-sm font-semibold rounded-t-xl transition-all duration-300 shadow-[0_0_8px_rgba(0,0,0,0.25)]"
             :class="{ 'border-b-2 border-zenix-green': currentView === 'OperationChart', 'border-b-2 border-transparent': currentView !== 'OperationChart' }"
@@ -657,6 +657,18 @@ export default {
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 70px);
+}
+
+.view-toggle-bar {
+  display: flex;
+  gap: 0.5rem;
+  margin-left: 20px;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+  align-items: flex-start;
 }
 
 /* Footer */

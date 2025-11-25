@@ -10,7 +10,7 @@
 
     <div v-else class="operation-layout">
         <div class="col-chart flex-[7] flex flex-col gap-5">
-        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)]" style="height: calc(100vh - 280px);">
+        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A]">
             <div class="flex items-center gap-4">
               <select 
@@ -4785,16 +4785,24 @@ export default {
 .operation-layout {
   display: flex;
   gap: 1.5rem;
-  height: calc(100vh - 280px);
+  height: 100%;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+}
+
+.chart-container {
+  height: 100%;
+  flex: 1;
+  min-height: 0;
 }
 
 .col-chart {
   display: flex;
   flex-direction: column;
   gap: 1.25rem;
+  height: 100%;
+  min-height: 0;
 }
 
 </style>
