@@ -6,10 +6,8 @@
         </div>
             
         <div v-else class="digits-layout">
-            <!-- Top Row: Top Section + Trading Panel -->
-            <div class="top-row">
-                <!-- Header Section: Semáforo + Histórico -->
-                <div class="top-section">
+            <!-- Top Section: Semáforo + Histórico -->
+            <div class="top-section">
                     <!-- Card Semáforo -->
                     <div id="semaphoreCard" class="semaphore-card semaphore-fade" :class="semaphoreStateClass">
                         <div class="semaphore-header">
@@ -63,12 +61,11 @@
                             >
                                 {{ digit }}
                             </div>
-                        </div>
                     </div>
                 </div>
 
-                <!-- Trading Panel -->
-                <div class="trading-panel">
+            <!-- Trading Panel -->
+            <div class="trading-panel">
                     <div class="trading-panel-header">
                         <h3 class="card-header">Negociação Manual — Dígitos</h3>
                     </div>
@@ -178,7 +175,6 @@
                         <p v-if="tradeMessage" class="trade-message success">{{ tradeMessage }}</p>
                         <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
                     </div>
-                </div>
             </div>
 
             <!-- Main Content Grid -->
