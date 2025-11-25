@@ -121,51 +121,6 @@
           </div>
         </section>
 
-        <!-- Support Items Section -->
-        <section id="support-items-section" class="support-section mb-16">
-          <h2 class="text-white text-2xl font-bold mb-8">Guias e Tutoriais</h2>
-          
-          <div v-if="loadingItems" class="text-center py-8 text-zenix-secondary">
-            Carregando...
-          </div>
-          
-          <div v-else-if="supportItemsError" class="text-center py-8 text-zenix-red">
-            {{ supportItemsError }}
-          </div>
-          
-          <div v-else-if="supportItems.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div 
-              v-for="item in supportItems" 
-              :key="item.id"
-              class="support-item-card bg-zenix-card border border-zenix-border rounded-xl overflow-hidden hover:border-zenix-green transition-all cursor-pointer"
-              @click="toggleSupportItem(item.id)"
-            >
-              <div class="p-6">
-                <h3 class="text-white text-lg font-bold mb-2">{{ item.title }}</h3>
-                <div 
-                  v-if="expandedSupportItems[item.id]"
-                  class="support-item-content text-zenix-secondary text-sm mt-4"
-                  v-html="formatSupportItemContent(item.subtitle)"
-                ></div>
-                <div v-else class="text-zenix-secondary text-sm line-clamp-2" v-html="getSupportItemPreview(item.subtitle)"></div>
-                <div class="mt-4 flex items-center justify-between">
-                  <span class="text-zenix-secondary text-xs">{{ formatDate(item.createdAt) }}</span>
-                  <i 
-                    :class="[
-                      'fas text-zenix-green text-sm transition-transform duration-300',
-                      expandedSupportItems[item.id] ? 'fa-chevron-up' : 'fa-chevron-down'
-                    ]"
-                  ></i>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div v-else class="text-center py-8 text-zenix-secondary">
-            Nenhum guia disponível no momento.
-          </div>
-        </section>
-
         <!-- FAQ Section -->
         <section id="faq-section" class="support-section mb-16">
           <h2 class="text-white text-2xl font-bold mb-8">Perguntas Frequentes</h2>
@@ -179,6 +134,42 @@
           </div>
           
           <div v-else class="space-y-4">
+            <!-- Support Items (from support_items table) -->
+            <div 
+              v-for="item in supportItems" 
+              :key="'item-' + item.id"
+              class="faq-item bg-zenix-card border border-zenix-border rounded-xl overflow-hidden"
+            >
+              <button 
+                @click="toggleFaq('item-' + item.id)"
+                class="w-full faq-button flex items-center justify-between text-left hover:bg-zenix-bg/30 transition-all"
+              >
+                <span class="text-white font-semibold text-base text-left">{{ item.title }}</span>
+                <i 
+                  :class="[
+                    'fas text-zenix-green text-sm transition-transform duration-300',
+                    expandedFaqs['item-' + item.id] ? 'fa-minus rotate-180' : 'fa-plus'
+                  ]"
+                ></i>
+              </button>
+              <div 
+                :class="[
+                  'faq-answer text-left',
+                  expandedFaqs['item-' + item.id] ? 'open' : ''
+                ]"
+              >
+                <div 
+                  v-if="item.subtitle" 
+                  class="text-zenix-secondary text-sm text-left"
+                  v-html="formatSupportItemContent(item.subtitle)"
+                ></div>
+                <div v-else class="text-zenix-secondary text-sm text-left">
+                  Sem descrição disponível.
+                </div>
+              </div>
+            </div>
+            
+            <!-- FAQs (from faqs table) -->
             <div 
               v-for="faq in faqs" 
               :key="faq.id"
@@ -296,12 +287,9 @@ export default {
       faqs: [],
       expandedFaqs: {},
       supportItems: [],
-      expandedSupportItems: {},
       searchQuery: '',
       loading: true,
-      loadingItems: true,
       error: null,
-      supportItemsError: null,
       searchTimeout: null,
       isSidebarOpen: true,
       isSidebarCollapsed: false,
@@ -330,7 +318,6 @@ export default {
   },
   mounted() {
     this.fetchFaqs()
-    this.fetchSupportItems()
     window.addEventListener('resize', this.checkMobile)
     this.checkMobile()
     this.fetchAccountBalance()
@@ -431,15 +418,33 @@ export default {
       try {
         const query = this.searchQuery ? `?search=${encodeURIComponent(this.searchQuery)}` : ''
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-        const res = await fetch(`${apiBaseUrl}/support/faqs${query}`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        })
-        if (!res.ok) throw new Error('Erro ao buscar FAQs')
-        const data = await res.json()
-        this.faqs = data
+        
+        // Buscar FAQs e Support Items em paralelo
+        const [faqsRes, itemsRes] = await Promise.all([
+          fetch(`${apiBaseUrl}/support/faqs${query}`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          }),
+          fetch(`${apiBaseUrl}/support/items`, {
+            method: 'GET',
+            headers: { 'Content-Type': 'application/json' }
+          })
+        ])
+        
+        if (!faqsRes.ok) throw new Error('Erro ao buscar FAQs')
+        const faqsData = await faqsRes.json()
+        this.faqs = faqsData
+        
+        // Buscar support items
+        if (itemsRes.ok) {
+          const itemsData = await itemsRes.json()
+          this.supportItems = itemsData || []
+        } else {
+          this.supportItems = []
+        }
+        
         // Se não houver dados da API, usar FAQs padrão
-        if (data.length === 0) {
+        if (faqsData.length === 0 && this.supportItems.length === 0) {
           this.faqs = this.getDefaultFaqs()
         }
       } catch (err) {
@@ -447,6 +452,7 @@ export default {
         this.error = 'Não foi possível carregar as perguntas frequentes.'
         // Em caso de erro, usar FAQs padrão
         this.faqs = this.getDefaultFaqs()
+        this.supportItems = []
         this.loading = false
       } finally {
         this.loading = false
@@ -510,6 +516,8 @@ export default {
     },
     searchFaqs() {
       this.fetchFaqs()
+      // A busca também filtra os support items através do título
+      // Os support items são buscados junto com os FAQs
     },
     startChat() {
       this.$root.$toast.info('Funcionalidade de chat ao vivo será implementada em breve')
@@ -518,38 +526,6 @@ export default {
     createTicket() {
       this.$root.$toast.info('Funcionalidade de criação de ticket será implementada em breve')
       // Aqui você pode abrir um modal ou redirecionar para criação de ticket
-    },
-    async fetchSupportItems() {
-      this.loadingItems = true
-      this.supportItemsError = null
-      try {
-        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-        const res = await fetch(`${apiBaseUrl}/support/items`, {
-          method: 'GET',
-          headers: { 'Content-Type': 'application/json' }
-        })
-        if (!res.ok) throw new Error('Erro ao buscar itens de suporte')
-        const data = await res.json()
-        this.supportItems = data
-      } catch (err) {
-        console.error('Erro ao buscar itens de suporte:', err)
-        this.supportItemsError = 'Não foi possível carregar os guias e tutoriais.'
-        this.supportItems = []
-      } finally {
-        this.loadingItems = false
-      }
-    },
-    toggleSupportItem(id) {
-      this.expandedSupportItems = {
-        ...this.expandedSupportItems,
-        [id]: !this.expandedSupportItems[id]
-      }
-    },
-    getSupportItemPreview(subtitle) {
-      if (!subtitle) return 'Sem descrição'
-      // Remove tags HTML e limita a 100 caracteres
-      const text = subtitle.replace(/<[^>]*>/g, '').trim()
-      return text.length > 100 ? text.substring(0, 100) + '...' : text
     },
     formatSupportItemContent(subtitle) {
       if (!subtitle) return 'Sem descrição'
@@ -1040,43 +1016,26 @@ export default {
   color: #1C1C1C;
 }
 
-/* Support Items Styles */
-.support-item-card {
-  transition: all 0.3s ease;
-}
-
-.support-item-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.1);
-}
-
-.support-item-content {
-  animation: fadeIn 0.3s ease;
-}
-
-.support-item-content img {
+/* Support Items HTML Content Styles */
+.faq-answer img {
   max-width: 100%;
   height: auto;
   border-radius: 4px;
   margin: 10px 0;
+  display: block;
 }
 
-.line-clamp-2 {
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+.faq-answer p {
+  margin: 8px 0;
 }
 
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+.faq-answer ul, .faq-answer ol {
+  margin: 8px 0;
+  padding-left: 20px;
+}
+
+.faq-answer li {
+  margin: 4px 0;
 }
 
 /* Responsive Footer */
