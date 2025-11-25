@@ -437,13 +437,19 @@ export default {
 /* Layout base igual ao da IA */
 .zenix-layout {
   min-height: 100vh;
+  margin: 0;
+  padding: 0;
   background-color: #0B0B0B;
   color: #DFDFDF;
   font-family: 'Inter', sans-serif;
+  width: 100%;
+  overflow-x: hidden;
 }
 
 .main-content-wrapper {
+  margin: 0;
   margin-left: 350px;
+  padding: 0;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
   width: calc(100% - 350px);
