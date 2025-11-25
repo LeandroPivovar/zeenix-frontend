@@ -1,7 +1,7 @@
 <template>
   <div v-if="visible" class="overlay" @click.self="onClose">
     <div class="modal">
-      <h3 class="title">Conectar à Corretora (Deriv)</h3>
+      <h3 class="title">Conectar a corretora</h3>
       <p class="hint">Você será redirecionado para o site da Deriv para autorizar o acesso.</p>
 
       <div class="form">

@@ -31,19 +31,16 @@
         <div class="form-group">
           <label>Email <span class="required">*</span></label>
           <input type="email" v-model="formData.email" placeholder="seu@email.com" required>
-          <small>Será usado para login</small>
         </div>
         
         <div class="form-group">
           <label>WhatsApp/Telefone <span class="required">*</span></label>
           <input type="tel" v-model="formData.telefone" placeholder="+55 11 99999-9999" @input="formatPhone" required>
-          <small>Formato: +55 + DDD + número</small>
         </div>
         
         <div class="form-group">
           <label>Data de Nascimento <span class="required">*</span></label>
           <input type="date" v-model="formData.dataNascimento" @change="validateAge" required>
-          <small>Você deve ter 18 anos ou mais</small>
         </div>
         
         <!-- ENDEREÇO -->
@@ -52,7 +49,6 @@
         <div class="form-group">
           <label>Endereço Completo <span class="required">*</span></label>
           <input type="text" v-model="formData.endereco" placeholder="Rua das Flores, 123, Apto 45" required>
-          <small>Rua, número e complemento</small>
         </div>
         
         <div class="row">
@@ -64,7 +60,6 @@
           <div class="form-group">
             <label>Estado <span class="required">*</span></label>
             <input type="text" v-model="formData.estado" placeholder="SP" maxlength="2" @input="formData.estado = formData.estado.toUpperCase()" required>
-            <small>Sigla (2 letras)</small>
           </div>
         </div>
         
