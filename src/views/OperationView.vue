@@ -462,11 +462,11 @@ export default {
 
 .content-wrapper {
   margin: 0;
-  margin-left: 350px;
+  margin-left: 280px;
   padding: 0;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
-  width: calc(100% - 350px);
+  width: calc(100% - 280px);
   box-sizing: border-box;
 }
 
@@ -480,13 +480,13 @@ export default {
   position: fixed;
   top: 0;
   right: 0;
-  left: 350px;
+  left: 28cap;
   z-index: 40;
   background-color: #0E0E0E;
   border-bottom: 1px solid #1C1C1C;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   transition: left 0.3s ease;
-  width: calc(100% - 350px);
+  width: calc(100% - 280px);
   box-sizing: border-box;
 }
 
