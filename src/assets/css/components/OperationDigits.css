@@ -1,7 +1,7 @@
 /* Layout Principal */
 .main-container {
     flex-grow: 1;
-    padding: 32px;
+    padding: 20px;
     color: #DFDFDF;
     display: flex;
     flex-direction: column;
@@ -14,7 +14,7 @@
     display: grid;
     grid-template-columns: 1fr 320px;
     grid-template-rows: auto 1fr;
-    gap: 24px;
+    gap: 16px;
     align-items: start;
 }
 
@@ -31,8 +31,8 @@
 /* Top Section: Semáforo + Histórico */
 .top-section {
     display: grid;
-    grid-template-columns: 320px 500px;
-    gap: 24px;
+    grid-template-columns: 300px 1fr;
+    gap: 16px;
     align-items: stretch;
 }
 
@@ -44,10 +44,10 @@
     justify-content: space-between;
     background: oklch(0.23 0.09 140);
     border: 2px solid #22C55E;
-    width: 300px;
-    padding: 16px;
-    height: auto;
-    min-height: 120px;
+    width: 100%;
+    padding: 14px;
+    height: 100%;
+    min-height: 140px;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
     transition: all 0.3s ease;
 }
@@ -66,7 +66,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .semaphore-title-group {
@@ -167,20 +167,20 @@
     background: #0E0E0E;
     border: 1px solid #1C1C1C;
     border-radius: 14px;
-    padding: 16px;
-    height: auto;
-    min-height: 120px;
+    padding: 14px;
+    height: 100%;
+    min-height: 140px;
     display: flex;
     flex-direction: column;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
-    max-width: 500px;
+    width: 100%;
 }
 
 .card-header-with-help {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
 }
 
 .history-card .card-header-with-help {
@@ -237,7 +237,7 @@
 .main-content-grid {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 24px;
+    gap: 16px;
     align-items: start;
 }
 
@@ -245,15 +245,16 @@
 .analysis-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 24px;
-    align-items: start;
+    gap: 16px;
+    align-items: stretch;
 }
 
 /* Frequency Map Card */
 .frequency-map-card,
 .heatmap-card {
-    min-height: 360px;
-    padding: 26px;
+    min-height: 320px;
+    height: 100%;
+    padding: 20px;
     border-radius: 14px;
     background: #0E0E0E;
     border: 1px solid #1C1C1C;
@@ -272,11 +273,11 @@
 .frequency-map-grid,
 .heatmap-grid {
     display: flex;
-    gap: 8px;
+    gap: 6px;
     justify-content: space-between;
     align-items: flex-end;
     flex-grow: 1;
-    margin-top: 16px;
+    margin-top: 12px;
 }
 
 .frequency-digit-block,
@@ -351,7 +352,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
-    margin-top: 16px;
+    margin-top: 12px;
     flex-wrap: wrap;
 }
 
@@ -399,13 +400,9 @@
 /* Bottom Section */
 .bottom-section {
     display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 24px;
-}
-
-/* Terceiro card vai para nova linha ocupando toda a largura */
-.bottom-section > *:nth-child(3) {
-    grid-column: 1 / -1;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    align-items: stretch;
 }
 
 /* DVX Card */
@@ -413,19 +410,22 @@
     background: #0E0E0E;
     border: 1px solid #1C1C1C;
     border-radius: 14px;
-    padding: 26px;
+    padding: 20px;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .dvx-gauge-container {
     position: relative;
     width: 100%;
-    height: 160px;
+    height: 140px;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    margin-bottom: 24px;
+    margin-bottom: 16px;
     filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.2));
 }
 
@@ -511,15 +511,19 @@
     background: #0B0B0B;
     border: 1px solid #1C1C1C;
     border-radius: 14px;
-    padding: 26px;
+    padding: 20px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
 }
 
 .parity-meter-content,
 .high-low-content {
-    margin-top: 24px;
+    margin-top: 16px;
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
+    flex: 1;
 }
 
 .parity-meter-item,
@@ -616,8 +620,8 @@
 .high-low-recommendation {
     background: #0A0A0A;
     border-radius: 8px;
-    padding: 16px;
-    margin-top: 16px;
+    padding: 12px;
+    margin-top: 12px;
     display: flex;
     align-items: start;
     gap: 8px;
@@ -640,27 +644,27 @@
     grid-column: 2;
     grid-row: 1 / -1;
     position: sticky;
-    top: 0;
+    top: 20px;
     width: 100%;
     background: #0E0E0E;
     border: 1px solid #1C1C1C;
     border-radius: 12px;
-    padding: 20px;
-    max-height: calc(100vh - 32px);
+    padding: 18px;
+    max-height: calc(100vh - 40px);
     overflow-y: auto;
     align-self: start;
 }
 
 .trading-panel-header {
-    padding-bottom: 12px;
+    padding-bottom: 10px;
     border-bottom: 1px solid #1C1C1C;
-    margin-bottom: 20px;
+    margin-bottom: 16px;
 }
 
 .trading-panel-content {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 14px;
 }
 
 .input-group {
@@ -1083,6 +1087,14 @@
         position: relative;
         top: auto;
         max-height: none;
+    }
+    
+    .bottom-section {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
+    .bottom-section > *:nth-child(3) {
+        grid-column: 1 / -1;
     }
 }
 
