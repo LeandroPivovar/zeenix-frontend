@@ -9,217 +9,273 @@
     </div>
 
     <div v-else class="operation-layout">
-        <div class="col-chart">
-        <div class="chart-toolbar animated-fade" data-anim-index="0">
-          <div class="toolbar-group">
-            <label class="toolbar-label" for="symbol-select">Mercado</label>
-            <select
-              id="symbol-select"
-              v-model="symbol"
-              @change="handleSymbolChange"
-              :disabled="!isAuthorized || isLoadingSymbol"
-              class="select-field"
+        <div class="col-chart flex-[7] flex flex-col gap-5">
+        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)]" style="height: calc(100vh - 280px);">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A]">
+            <div class="flex items-center gap-4">
+              <select 
+                id="marketSelect"
+                v-model="symbol"
+                @change="handleSymbolChange"
+                :disabled="!isAuthorized || isLoadingSymbol"
+                class="bg-[#0F0F0F] border border-zenix-border rounded-lg px-3 py-2 text-xs text-zenix-text focus:outline-none focus:border-zenix-green transition-all duration-300"
+              >
+                <optgroup label="Índices Sintéticos">
+                  <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value" data-category="synthetic">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+                <optgroup label="Criptomoedas">
+                  <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value" data-category="crypto">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+                <optgroup label="Forex">
+                  <option v-for="market in [...(marketsByCategory['Forex Majors'] || []), ...(marketsByCategory['Forex Minors'] || []), ...(marketsByCategory['Forex Exotics'] || [])]" :key="market.value" :value="market.value" data-category="forex">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+                <optgroup label="Metais">
+                  <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value" data-category="metals">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+              </select>
+              <div class="flex gap-2">
+                <button 
+                  v-for="timeframe in ['1m', '2m', '5m', '15m', '30m']" 
+                  :key="timeframe"
+                  @click="setTimeframe(timeframe)"
+                  :class="[
+                    'px-3 py-1.5 border rounded-lg text-xs transition-all duration-300',
+                    selectedTimeframe === timeframe 
+                      ? 'bg-zenix-green border-zenix-green text-black font-semibold shadow-[0_0_8px_rgba(34,197,94,0.3)]' 
+                      : 'bg-[#0F0F0F] border-zenix-border text-zenix-text hover:bg-[#1A1A1A] hover:border-zenix-green'
+                  ]"
+                >
+                  {{ timeframe }}
+                </button>
+              </div>
+            </div>
+            <div class="flex gap-2">
+              <button class="w-8 h-8 bg-[#0F0F0F] border border-zenix-border rounded-lg flex items-center justify-center hover:bg-[#1A1A1A] hover:border-zenix-green transition-all duration-300">
+                <i class="far fa-search-plus text-xs text-zenix-text"></i>
+              </button>
+              <button class="w-8 h-8 bg-[#0F0F0F] border border-zenix-border rounded-lg flex items-center justify-center hover:bg-[#1A1A1A] hover:border-zenix-green transition-all duration-300">
+                <i class="far fa-search-minus text-xs text-zenix-text"></i>
+              </button>
+              <button class="w-8 h-8 bg-[#0F0F0F] border border-zenix-border rounded-lg flex items-center justify-center hover:bg-[#1A1A1A] hover:border-zenix-green transition-all duration-300">
+                <i class="far fa-redo text-xs text-zenix-text"></i>
+              </button>
+              <button class="w-8 h-8 bg-[#0F0F0F] border border-zenix-border rounded-lg flex items-center justify-center hover:bg-[#1A1A1A] hover:border-zenix-green transition-all duration-300">
+                <i class="far fa-expand text-xs text-zenix-text"></i>
+              </button>
+            </div>
+          </div>
+          
+          <div class="flex items-center gap-6 px-6 py-3 border-b border-[#1A1A1A]">
+            <button class="text-xs text-[#7A7A7A] hover:text-zenix-text transition-colors duration-300">Indicadores</button>
+            <button class="text-xs text-[#7A7A7A] hover:text-zenix-text transition-colors duration-300">Ferramentas</button>
+            <button class="text-xs text-[#7A7A7A] hover:text-zenix-text transition-colors duration-300">Desenhar linhas</button>
+            <button class="text-xs text-[#7A7A7A] hover:text-zenix-text transition-colors duration-300">Padrões</button>
+          </div>
+
+          <div id="candlestickChart" class="flex-1" ref="chartContainer" style="height: 400px;"></div>
+          <div v-if="!chartInitialized" class="chart-placeholder absolute inset-0 flex items-center justify-center">
+            <p class="text-zenix-secondary">{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
+          </div>
+          
+          <div class="border-t border-[#1A1A1A]">
+            <div id="volumeChart" style="height: 100px;"></div>
+          </div>
+          
+          <div class="border-t border-[#1A1A1A]">
+            <div id="rsiChart" style="height: 100px;"></div>
+          </div>
+        </div>
+        
+        <div class="border-t-2 bg-gradient-to-b from-[#101010] to-[#0E0E0E] px-6 py-4 rounded-xl shadow-[0_-2px_12px_rgba(34,197,94,0.08)]">
+          <div class="flex items-center justify-between mb-3">
+            <div class="flex items-center gap-2">
+              <i class="far fa-signal text-[11px] text-zenix-green"></i>
+              <span class="text-xs font-bold text-zenix-text tracking-wide uppercase">Sinal Gerado</span>
+            </div>
+            <button 
+              id="startAnalysisBtn" 
+              @click="startAnalysis"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold rounded-lg text-xs transition-all duration-300 shadow-[0_0_12px_rgba(34,197,94,0.3)] hover:shadow-[0_0_16px_rgba(34,197,94,0.4)]"
             >
-              <optgroup label="Índices Contínuos">
-                <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value">
-                  {{ market.label }}
-                </option>
-              </optgroup>
-              <optgroup label="Criptomoedas">
-                <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value">
-                  {{ market.label }}
-                </option>
-              </optgroup>
-              <optgroup label="Forex Majors">
-                <option v-for="market in marketsByCategory['Forex Majors']" :key="market.value" :value="market.value">
-                  {{ market.label }}
-                </option>
-              </optgroup>
-              <optgroup label="Forex Minors">
-                <option v-for="market in marketsByCategory['Forex Minors']" :key="market.value" :value="market.value">
-                  {{ market.label }}
-                </option>
-              </optgroup>
-              <optgroup label="Forex Exotics">
-                <option v-for="market in marketsByCategory['Forex Exotics']" :key="market.value" :value="market.value">
-                  {{ market.label }}
-                </option>
-              </optgroup>
-              <optgroup label="Metais">
-                <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value">
-                  {{ market.label }}
-                </option>
-              </optgroup>
-            </select>
-            <span v-if="isLoadingSymbol" class="loading-indicator">Atualizando...</span>
+              <i class="far fa-chart-line text-[9px]"></i>
+              <span>{{ analysisInProgress ? 'Atualizar Análise' : 'Iniciar Análise do Gráfico' }}</span>
+            </button>
           </div>
-
-          <div class="price-indicators" v-if="latestTick">
-            <div class="price-indicator">
-              <span class="indicator-label">Último preço</span>
-              <strong>{{ latestTick.value.toFixed(pricePrecision) }}</strong>
-            </div>
-            <div v-if="purchasePrice !== null" class="price-indicator entry-price">
-              <span class="indicator-label">Preço de compra</span>
-              <strong>{{ purchasePrice.toFixed(pricePrecision) }}</strong>
-            </div>
+          <div id="signalArea" class="min-h-[80px]">
+            <!-- Signal content will be inserted here -->
           </div>
-                </div>
+        </div>
+        </div>
 
-        <div class="chart-box animated-card" data-anim-index="1">
-          <div class="ai-recommendation-card" :class="{ 'hidden': !showAiCard }">
-            <div class="ai-card-header">
-              <div class="ai-header-left">
-                <span class="ai-icon">🧠</span>
-                <span class="ai-name">IA ORION</span>
-              </div>
-              <div class="ai-signal-badge">SINAL ATIVO</div>
-            </div>
-            <div class="ai-recommendation-section">
-              <div class="ai-recommendation-label">RECOMENDAÇÃO</div>
-              <div class="ai-arrow-up" :class="{ 'arrow-down': aiRecommendation?.action === 'PUT' }">
-                {{ aiRecommendation?.action === 'PUT' ? '⬇️' : '⬆️' }}
-              </div>
-              <div class="ai-action-text">{{ aiRecommendation?.action === 'PUT' ? 'VENDER' : 'COMPRAR' }}</div>
-            </div>
-            <div class="ai-info-section">
-              <div class="ai-info-item">
-                <span class="ai-info-label">Confiança:</span>
-                <span class="ai-info-value green">{{ aiRecommendation?.confidence || 0 }}%</span>
-              </div>
-                    </div>
-                    </div>
-          <div ref="chartContainer" class="line-chart-container"></div>
-          <div v-if="!chartInitialized" class="chart-placeholder">
-            <p>{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
-                </div>
+        <div class="flex-[3] bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
+          <div class="pb-3 border-b border-zenix-border mb-5">
+            <h3 class="text-base font-semibold text-zenix-text">Painel de Negociação Manual</h3>
+          </div>
+          
+          <div class="space-y-4">
+            <div>
+              <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                <i class="fas fa-chart-line text-zenix-green mr-2"></i>Mercado
+              </label>
+              <select 
+                id="marketSelectSidebar"
+                v-model="symbol"
+                @change="handleSymbolChange"
+                :disabled="!isAuthorized || isLoadingSymbol"
+                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
+              >
+                <optgroup label="Índices Sintéticos">
+                  <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value" data-category="synthetic">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+                <optgroup label="Criptomoedas">
+                  <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value" data-category="crypto">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+                <optgroup label="Forex">
+                  <option v-for="market in [...(marketsByCategory['Forex Majors'] || []), ...(marketsByCategory['Forex Minors'] || []), ...(marketsByCategory['Forex Exotics'] || [])]" :key="market.value" :value="market.value" data-category="forex">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+                <optgroup label="Metais">
+                  <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value" data-category="metals">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+              </select>
             </div>
             
-        <div class="chart-footer animated-fade" data-anim-index="2">
-          <div class="footer-meta">
-            <span>Resolução: {{ chartResolutionLabel }}</span>
-            <span>Última atualização: {{ lastUpdateLabel }}</span>
-          </div>
-            <p class="chart-footer-info">
-            Dados de preço em tempo real fornecidos pela Deriv. Operações executadas aparecerão no histórico.
-            </p>
-        </div>
-        </div>
-
-        <div class="col-sidebar">
-        <div class="card-order-config animated-card" data-anim-index="0">
-                <div class="card-title-header">
-                  <h4 class="card-title">Configuração da Ordem</h4>
-                  <div v-if="isDemoAccount && isAuthorized" class="demo-badge">
-                    <span class="demo-icon">🎮</span>
-                    <span>Conta Demo</span>
-                  </div>
-                </div>
-                
-                <div class="input-group">
-                    <label class="input-label">Tipo de contrato</label>
-                    <select v-model="localOrderConfig.type" class="select-field" :disabled="isTrading || !canUseCallPut">
-              <option value="CALL">Alta (CALL)</option>
-              <option value="PUT">Baixa (PUT)</option>
-                    </select>
-                    <div v-if="!canUseCallPut" class="warning-message" style="margin-top: 8px; padding: 8px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 4px; color: #fca5a5; font-size: 12px;">
-                      ⚠️ Este ativo não suporta contratos CALL/PUT. Use a operação com dígitos para negociar este ativo.
-                    </div>
-                </div>
-                
-                <div class="input-row-flex">
-                    <div class="input-group-half">
-              <label class="input-label">Tipo de duração</label>
-                        <div class="toggle-buttons">
-                <button @click="setDurationUnit('m')" :class="{ 'toggle-active': localOrderConfig.durationUnit === 'm' }" :disabled="isTrading || !canUseMinutes">Minutos</button>
-                <button @click="setDurationUnit('t')" :class="{ 'toggle-active': localOrderConfig.durationUnit === 't' }" :disabled="isTrading || !canUseTicks">Ticks</button>
-                        </div>
-                    </div>
-                    <div class="input-group-half">
-                        <label class="input-label">Duração</label>
+            <div>
+              <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                <i class="fas fa-exchange-alt text-zenix-green mr-2"></i>Tipo de Negociação
+              </label>
+              <select 
+                id="tradeTypeSelect"
+                v-model="localOrderConfig.type" 
+                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
+                :disabled="isTrading || !canUseCallPut"
+              >
+                <option value="">Selecione um mercado primeiro</option>
+                <option value="CALL">Alta (CALL)</option>
+                <option value="PUT">Baixa (PUT)</option>
+              </select>
+              <div v-if="!canUseCallPut" class="warning-message mt-2 p-2 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
+                ⚠️ Este ativo não suporta contratos CALL/PUT. Use a operação com dígitos para negociar este ativo.
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                <i class="fas fa-clock text-zenix-green mr-2"></i>Duração
+              </label>
+              <div class="flex gap-2">
+                <select 
+                  v-model="localOrderConfig.durationUnit"
+                  @change="setDurationUnit(localOrderConfig.durationUnit)"
+                  class="flex-1 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
+                  :disabled="isTrading"
+                >
+                  <option value="m">Minutos</option>
+                  <option value="t">Ticks</option>
+                </select>
+                <input 
+                  type="number" 
+                  :min="getValidDurationForSymbol(symbol).min" 
+                  :max="getValidDurationForSymbol(symbol).max"
+                  v-model.number="localOrderConfig.duration" 
+                  @input="onDurationChange"
+                  class="w-20 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
+                  :disabled="isTrading" 
+                />
+              </div>
+            </div>
+            
+            <div>
+              <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                <i class="fas fa-dollar-sign text-zenix-green mr-2"></i>Valor de entrada
+              </label>
               <input 
                 type="number" 
-                :min="getValidDurationForSymbol(symbol).min" 
-                :max="getValidDurationForSymbol(symbol).max"
-                v-model.number="localOrderConfig.duration" 
-                @input="onDurationChange"
-                class="input-field-value" 
+                :min="stakeLimits.min" 
+                :max="stakeLimits.max" 
+                step="0.01" 
+                v-model.number="localOrderConfig.value" 
+                @input="validateAndAdjustStake"
+                placeholder="Ex: 1.00, 2.50..."
+                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text placeholder:text-[#DFDFDF40] focus:outline-none focus:border-zenix-green transition-colors"
                 :disabled="isTrading" 
               />
-                    </div>
-                </div>
-                
-                <div class="input-group">
-            <label class="input-label">Valor da entrada ({{ displayCurrency }})</label>
-            <input 
-              type="number" 
-              :min="stakeLimits.min" 
-              :max="stakeLimits.max" 
-              step="0.01" 
-              v-model.number="localOrderConfig.value" 
-              @input="validateAndAdjustStake"
-              class="input-field-value" 
-              :disabled="isTrading" 
-            />
-            <div v-if="stakeLimits.min || stakeLimits.max" class="stake-limits-hint" style="font-size: 11px; color: rgba(148, 163, 184, 0.7); margin-top: 4px;">
-              Min: {{ displayCurrency }} {{ stakeLimits.min.toFixed(2) }} | Max: {{ displayCurrency }} {{ stakeLimits.max.toFixed(2) }}
+              <div v-if="stakeLimits.min || stakeLimits.max" class="text-xs text-zenix-secondary mt-1">
+                Min: {{ displayCurrency }} {{ stakeLimits.min.toFixed(2) }} | Max: {{ displayCurrency }} {{ stakeLimits.max.toFixed(2) }}
+              </div>
             </div>
-                </div>
-
-                <div class="action-buttons-group">
-                    <button 
-                      @click="selectTradeType('CALL')" 
-                      class="btn-selector btn-buy-selector" 
-                      :class="{ 'selected': localOrderConfig.type === 'CALL' }"
-                      :disabled="isTrading || !canUseCallPut"
-                    >
-                      BUY
-                    </button>
-                    <button 
-                      @click="selectTradeType('PUT')" 
-                      class="btn-selector btn-sell-selector" 
-                      :class="{ 'selected': localOrderConfig.type === 'PUT' }"
-                      :disabled="isTrading || !canUseCallPut"
-                    >
-                      SELL
-                </button>
-                </div>
-          <div v-if="currentProposalPrice" class="proposal-info">
-            <div class="proposal-price-label">Preço de Compra:</div>
-            <div class="proposal-price-value">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
-          </div>
-
-          <div v-if="realTimeProfit !== null && activeContract" class="profit-info" :class="{ 'profit-positive': realTimeProfit > 0, 'profit-negative': realTimeProfit < 0 }">
-            <div class="profit-label">P&L em Tempo Real:</div>
-            <div class="profit-value">{{ displayCurrency }} {{ realTimeProfit > 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}</div>
-          </div>
-
-          <button 
-            v-if="!activeContract"
-            @click="executeBuy" 
-            class="btn-execute-operation btn-buy" 
-            :disabled="isTrading || !isAuthorized || !canUseCallPut"
-          >
-            {{ isTrading ? 'Aguardando confirmação...' : (currentProposalId ? 'COMPRAR' : 'Aguardando proposta...') }}
-          </button>
-
-          <button 
-            v-if="activeContract && isSellEnabled"
-            @click="executeSell" 
-            class="btn-execute-operation btn-sell" 
-            :disabled="isTrading"
-          >
-            {{ isTrading ? 'Vendendo...' : 'VENDER' }}
-          </button>
-
-          <div v-if="formattedCountdown && activeContract" class="countdown-display">
-            <span class="countdown-label">Tempo restante:</span>
-            <span class="countdown-value">{{ formattedCountdown }}</span>
-          </div>
-
-          <p v-if="tradeMessage" class="trade-message success">{{ tradeMessage }}</p>
-          <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
+            
+            <div>
+              <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                <i class="fas fa-times text-zenix-green mr-2"></i>Multiplicador
+              </label>
+              <input 
+                type="number" 
+                placeholder="Ex: 50, 100, 150..."
+                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text placeholder:text-[#DFDFDF40] focus:outline-none focus:border-zenix-green transition-colors"
+              />
             </div>
+            
+            <div v-if="currentProposalPrice" class="bg-zenix-bg border border-zenix-border rounded-lg p-3">
+              <div class="text-xs text-zenix-secondary mb-1">Preço de Compra:</div>
+              <div class="text-base font-semibold text-zenix-text">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
+            </div>
+
+            <div v-if="realTimeProfit !== null && activeContract" class="bg-zenix-bg border rounded-lg p-3" :class="realTimeProfit > 0 ? 'border-zenix-green' : 'border-red-500'">
+              <div class="text-xs text-zenix-secondary mb-1">P&L em Tempo Real:</div>
+              <div class="text-base font-semibold" :class="realTimeProfit > 0 ? 'text-zenix-green' : 'text-red-500'">
+                {{ displayCurrency }} {{ realTimeProfit > 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-3">
+              <button 
+                v-if="!activeContract"
+                @click="executeBuy" 
+                id="buyButton"
+                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                :disabled="isTrading || !isAuthorized || !canUseCallPut"
+              >
+                <i class="fas fa-arrow-up"></i>
+                {{ isTrading ? 'Aguardando confirmação...' : (currentProposalId ? 'CALL / BUY' : 'Aguardando proposta...') }}
+              </button>
+              
+              <button 
+                v-if="activeContract && isSellEnabled"
+                @click="executeSell" 
+                id="sellButton"
+                class="w-full bg-[#FF4747] hover:bg-[#FF6161] text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                :disabled="isTrading"
+              >
+                <i class="fas fa-arrow-down"></i>
+                {{ isTrading ? 'Vendendo...' : 'PUT / SELL' }}
+              </button>
+            </div>
+
+            <div v-if="formattedCountdown && activeContract" class="countdown-display">
+              <span class="countdown-label">Tempo restante:</span>
+              <span class="countdown-value">{{ formattedCountdown }}</span>
+            </div>
+
+            <p v-if="tradeMessage" class="text-sm text-zenix-green">{{ tradeMessage }}</p>
+            <p v-if="tradeError" class="text-sm text-red-500">{{ tradeError }}</p>
+          </div>
+        </div>
 
         <TradeResultModal
           :visible="showTradeResultModal"
@@ -417,6 +473,8 @@ export default {
       retryTimeout: null,
       maxRetries: Infinity, // Tentar infinitamente
       retryDelay: 3000, // 3 segundos inicial
+      selectedTimeframe: '5m',
+      analysisInProgress: false,
     };
   },
   computed: {
@@ -2383,6 +2441,90 @@ export default {
       }
       
       this.localOrderConfig.durationUnit = unit;
+    },
+    setTimeframe(timeframe) {
+      this.selectedTimeframe = timeframe;
+      // Aqui você pode adicionar lógica para atualizar o gráfico com o novo timeframe
+      console.log('[OperationChart] Timeframe alterado para:', timeframe);
+    },
+    startAnalysis() {
+      if (this.analysisInProgress) {
+        // Se já está em progresso, apenas atualizar
+        return;
+      }
+      
+      this.analysisInProgress = true;
+      const signalArea = document.getElementById('signalArea');
+      if (!signalArea) return;
+      
+      // Mostrar estado de análise
+      signalArea.innerHTML = `
+        <div class="relative bg-zenix-card rounded-lg px-4 py-4 border border-zenix-border">
+          <div class="mb-3 inline-flex items-center gap-1.5 px-2.5 py-1 bg-zenix-bg border border-zenix-border rounded-md">
+            <div class="w-1.5 h-1.5 bg-zenix-green rounded-full animate-pulse"></div>
+            <span class="text-[9px] font-medium text-[#DFDFDF88] tracking-wide uppercase">IA em processamento</span>
+          </div>
+          <div class="flex items-center gap-3 mb-3">
+            <div class="flex-shrink-0 w-8 h-8 border-2 border-zenix-border border-t-zenix-green rounded-full animate-spin" style="animation-duration: 1.5s;"></div>
+            <div class="flex-1">
+              <h4 id="analysisStageText" class="text-sm font-semibold text-zenix-text mb-0.5">Coletando dados de mercado…</h4>
+              <p class="text-[10px] text-[#DFDFDF66]">Processando informações do ativo</p>
+            </div>
+          </div>
+          <div class="relative h-0.5 bg-zenix-bg rounded-full overflow-hidden">
+            <div class="absolute inset-0 bg-zenix-green/60 rounded-full" style="animation: progressBar 2s ease-in-out infinite;"></div>
+          </div>
+        </div>
+      `;
+      
+      // Animar através dos estágios
+      const stages = [
+        'Coletando dados de mercado…',
+        'Analisando comportamento do preço…',
+        'Avaliando padrões operacionais…',
+        'Gerando sinal ideal…'
+      ];
+      
+      let currentStage = 0;
+      const stageInterval = setInterval(() => {
+        currentStage++;
+        const textElement = document.getElementById('analysisStageText');
+        if (textElement && currentStage < stages.length) {
+          textElement.style.opacity = '0';
+          setTimeout(() => {
+            textElement.textContent = stages[currentStage];
+            textElement.style.opacity = '1';
+          }, 150);
+        }
+      }, 650);
+      
+      // Gerar sinal após os estágios completarem
+      setTimeout(() => {
+        clearInterval(stageInterval);
+        const directions = ['CALL', 'PUT'];
+        const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+        const isCall = randomDirection === 'CALL';
+        const now = new Date();
+        const entryTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + 'h';
+        const duration = `${this.localOrderConfig.duration}${this.localOrderConfig.durationUnit === 'm' ? 'min' : ' Ticks'}`;
+        
+        signalArea.innerHTML = `
+          <div class="bg-zenix-card border border-zenix-border rounded-lg px-3 py-2.5">
+            <div class="flex items-center justify-between mb-2.5 flex-wrap gap-2">
+              <div class="flex items-center gap-3 flex-wrap">
+                <span class="text-[11px] text-[#DFDFDF66] font-medium">${this.symbol}</span>
+                <span class="px-2 py-0.5 ${isCall ? 'bg-zenix-green/20 text-zenix-green' : 'bg-[#FF4747]/20 text-[#FF4747]'} text-[11px] font-semibold rounded ${isCall ? 'border-zenix-green/30' : 'border-[#FF4747]/30'} border">${randomDirection}</span>
+                <span class="text-[11px] text-[#DFDFDF88]">Entrada: <span class="text-zenix-text font-medium">${entryTime}</span></span>
+                <span class="text-[11px] text-[#DFDFDF88]">Duração: <span class="text-zenix-text font-medium">${duration}</span></span>
+                <span class="px-2 py-0.5 bg-zenix-green/10 text-zenix-green text-[10px] font-semibold rounded border border-zenix-green/20">● Ativo</span>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        this.analysisInProgress = false;
+      }, 2600);
+    },
       
       // Ajustar duração baseado na unidade e limites do símbolo
       let duration = Number(this.localOrderConfig.duration) || 1;
@@ -4529,6 +4671,65 @@ export default {
   50% {
     box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
   }
+}
+
+/* Estilos para selects conforme HTML fornecido */
+#marketSelect optgroup,
+#marketSelectSidebar optgroup,
+#tradeTypeSelect optgroup {
+  background-color: #0F0F0F;
+  color: #22C55E;
+  font-weight: 600;
+  font-size: 11px;
+  padding: 8px 0;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+#marketSelect option,
+#marketSelectSidebar option,
+#tradeTypeSelect option {
+  background-color: #0B0B0B;
+  color: #DFDFDF;
+  font-weight: 500;
+  font-size: 13px;
+  padding: 10px 12px;
+  border-left: 2px solid transparent;
+  transition: all 0.2s ease;
+}
+
+#marketSelect option:hover,
+#marketSelectSidebar option:hover,
+#tradeTypeSelect option:hover {
+  background-color: #111111;
+  border-left-color: #22C55E;
+  color: #22C55E;
+}
+
+/* Animação progressBar */
+@keyframes progressBar {
+  0% {
+    transform: translateX(-100%);
+  }
+  50% {
+    transform: translateX(0%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+/* Layout atualizado */
+.operation-layout {
+  display: flex;
+  gap: 1.5rem;
+  height: calc(100vh - 280px);
+}
+
+.col-chart {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
 }
 
 </style>

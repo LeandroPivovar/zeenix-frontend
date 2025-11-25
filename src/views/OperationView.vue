@@ -5,35 +5,30 @@
     <div class="operation-main" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <div class="background-glow"></div>
       <div class="background-grid"></div>
-      <header class="header-operation">
-        <button class="hamburger-btn" @click="handleHamburgerClick">&#9776;</button>
-       
-        <div class="header-title">
-          <span class="title-text">Operação Manual</span>
-        </div>
-        <div class="header-status">
-          {{ accountBalanceFormatted }}
-        </div>
-      </header>
+      <div class="mb-8">
+        <h1 class="text-2xl font-bold text-zenix-text mb-2 tracking-tight">
+          Operação Manual com Sinais
+        </h1>
+        <p class="text-sm text-[#A1A1A1]">
+          Execute operações manuais com apoio de sinais em tempo real.
+        </p>
+      </div>
 
-      <div class="view-toggle-bar">
-        <div class="toggle-group">
-          <button
-            class="toggle-button"
-            :class="{ active: currentView === 'OperationChart' }"
-            @click="changeView('OperationChart')"
-          >
-            Gráficos
-          </button>
-          <button
-            class="toggle-button"
-            :class="{ active: currentView === 'OperationDigits' }"
-            @click="changeView('OperationDigits')"
-          >
-            Dígitos
-          </button>
-        </div>
-        <span class="connection-indicator" v-if="loadingConnection">Atualizando saldo Deriv…</span>
+      <div class="flex gap-2 mb-6">
+        <button
+          class="px-6 py-3 bg-zenix-card border-b-2 border-zenix-green text-zenix-text text-sm font-semibold rounded-t-xl transition-all duration-300 shadow-[0_0_8px_rgba(0,0,0,0.25)]"
+          :class="{ 'border-b-2 border-zenix-green': currentView === 'OperationChart', 'border-b-2 border-transparent': currentView !== 'OperationChart' }"
+          @click="changeView('OperationChart')"
+        >
+          Análise gráfica
+        </button>
+        <button
+          class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+          :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationDigits', 'border-b-2 border-transparent': currentView !== 'OperationDigits' }"
+          @click="changeView('OperationDigits')"
+        >
+          Análise de dígitos
+        </button>
       </div>
 
       <div class="operation-content">
