@@ -297,11 +297,6 @@ export default {
                     placeholder: 'Digite a descrição do item de suporte...'
                 });
                 
-                // Configurar handler para imagens no Quill
-                this.quillEditor.getModule('toolbar').addHandler('image', () => {
-                    this.insertImage();
-                });
-                
                 // Carregar conteúdo se estiver editando
                 if (this.supportItemForm.subtitle) {
                     // Processar URLs de imagens no conteúdo HTML antes de carregar
@@ -318,6 +313,19 @@ export default {
                 this.quillEditor.on('text-change', () => {
                     if (this.quillEditor) {
                         this.supportItemForm.subtitle = this.quillEditor.root.innerHTML;
+                        // Corrigir imagens após mudanças
+                        this.$nextTick(() => {
+                            this.fixQuillImages();
+                        });
+                    }
+                });
+                
+                // Listener para quando imagens são inseridas
+                this.quillEditor.root.addEventListener('DOMNodeInserted', (event) => {
+                    if (event.target.tagName === 'IMG') {
+                        this.$nextTick(() => {
+                            this.fixQuillImages();
+                        });
                     }
                 });
             } catch (error) {
@@ -333,20 +341,60 @@ export default {
             
             // Encontrar todas as imagens no editor
             const images = this.quillEditor.root.querySelectorAll('img');
-            images.forEach(img => {
-                const src = img.getAttribute('src');
-                if (src && !src.startsWith('http://') && !src.startsWith('https://') && !src.startsWith('data:')) {
-                    // Se é um caminho relativo, construir URL completa
-                    const fullUrl = src.startsWith('/uploads/') 
-                        ? `${apiBase}${src}` 
-                        : `${apiBase}/uploads/${src}`;
-                    img.src = fullUrl;
+            console.log(`Encontradas ${images.length} imagens no editor`);
+            
+            images.forEach((img, index) => {
+                let src = img.getAttribute('src') || img.src;
+                if (!src) {
+                    console.warn(`Imagem ${index} sem src`);
+                    return;
+                }
+                
+                console.log(`Processando imagem ${index}:`, src);
+                
+                // Se já é URL completa ou data URI, apenas garantir estilos
+                if (src.startsWith('http://') || src.startsWith('https://') || src.startsWith('data:')) {
                     img.style.maxWidth = '100%';
                     img.style.height = 'auto';
                     img.style.display = 'block';
                     img.style.margin = '10px 0';
                     img.style.borderRadius = '4px';
+                    return;
                 }
+                
+                // Se é um caminho relativo, construir URL completa
+                let fullUrl;
+                if (src.startsWith('/uploads/')) {
+                    fullUrl = `${apiBase}${src}`;
+                } else if (src.startsWith('uploads/')) {
+                    fullUrl = `${apiBase}/${src}`;
+                } else {
+                    fullUrl = `${apiBase}/uploads/${src}`;
+                }
+                
+                console.log('Corrigindo URL de imagem:', { original: src, fullUrl, apiBase });
+                
+                // Atualizar src apenas se for diferente
+                if (img.src !== fullUrl) {
+                    img.src = fullUrl;
+                }
+                
+                img.style.maxWidth = '100%';
+                img.style.height = 'auto';
+                img.style.display = 'block';
+                img.style.margin = '10px 0';
+                img.style.borderRadius = '4px';
+                
+                // Adicionar handler de erro para debug
+                img.onerror = (e) => {
+                    console.error('Erro ao carregar imagem:', { fullUrl, src, error: e });
+                    this.showToast(`Erro ao carregar imagem: ${fullUrl}`, 'error', 5000);
+                };
+                
+                // Handler de sucesso
+                img.onload = () => {
+                    console.log('Imagem carregada com sucesso:', fullUrl);
+                };
             });
         },
         async saveSupportItem() {
@@ -457,35 +505,76 @@ export default {
                 return;
             }
             
+            // Mostrar loading
+            this.showToast('📤 Fazendo upload da imagem...', 'info', 2000);
+            
             // Fazer upload
             const uploadedPath = await this.uploadImage(file);
             if (uploadedPath && this.quillEditor) {
+                console.log('Caminho recebido do upload:', uploadedPath);
                 // Inserir imagem no editor Quill
                 this.insertImageIntoQuill(uploadedPath);
+                this.showToast('✅ Imagem adicionada com sucesso!', 'success', 3000);
+            } else if (!uploadedPath) {
+                this.showToast('❌ Falha ao fazer upload da imagem', 'error', 5000);
             }
             event.target.value = '';
         },
         insertImageIntoQuill(imagePath) {
-            if (!this.quillEditor) return;
+            if (!this.quillEditor) {
+                console.error('Quill editor não está inicializado');
+                return;
+            }
             
             const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-            // Remover /api se existir e construir URL completa
-            const apiBase = baseUrl.replace('/api', '');
-            const fullImageUrl = imagePath.startsWith('/uploads/') 
-                ? `${apiBase}${imagePath}` 
-                : imagePath.startsWith('http') 
-                    ? imagePath 
-                    : `${apiBase}${imagePath}`;
+            // Construir URL completa da imagem
+            let fullImageUrl;
+            
+            if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
+                // URL já é completa
+                fullImageUrl = imagePath;
+            } else if (imagePath.startsWith('/uploads/')) {
+                // Caminho relativo, construir URL completa
+                // Se baseUrl contém /api, remover para acessar os uploads
+                const apiBase = baseUrl.replace('/api', '');
+                fullImageUrl = `${apiBase}${imagePath}`;
+            } else {
+                // Caminho sem barra inicial
+                const apiBase = baseUrl.replace('/api', '');
+                fullImageUrl = `${apiBase}/uploads/${imagePath}`;
+            }
+            
+            console.log('Inserindo imagem no Quill:', { imagePath, fullImageUrl, baseUrl });
             
             // Obter a posição do cursor
             const range = this.quillEditor.getSelection(true);
             const index = range ? range.index : this.quillEditor.getLength();
             
-            // Inserir a imagem com URL completa
-            this.quillEditor.insertEmbed(index, 'image', fullImageUrl, 'user');
-            
-            // Mover o cursor após a imagem
-            this.quillEditor.setSelection(index + 1);
+            // Criar um elemento img para testar se a URL está correta
+            const testImg = new Image();
+            testImg.onload = () => {
+                console.log('Imagem carregada com sucesso, inserindo no Quill:', fullImageUrl);
+                // Inserir a imagem com URL completa usando insertEmbed
+                this.quillEditor.insertEmbed(index, 'image', fullImageUrl, 'user');
+                
+                // Mover o cursor após a imagem
+                this.quillEditor.setSelection(index + 1);
+                
+                // Forçar atualização visual após um pequeno delay
+                setTimeout(() => {
+                    this.fixQuillImages();
+                }, 200);
+            };
+            testImg.onerror = () => {
+                console.error('Erro ao carregar imagem de teste:', fullImageUrl);
+                // Mesmo assim, tentar inserir
+                this.quillEditor.insertEmbed(index, 'image', fullImageUrl, 'user');
+                this.quillEditor.setSelection(index + 1);
+                setTimeout(() => {
+                    this.fixQuillImages();
+                }, 200);
+            };
+            testImg.src = fullImageUrl;
         },
         processImageUrls(htmlContent) {
             if (!htmlContent) return '';
@@ -551,6 +640,8 @@ export default {
                 const formData = new FormData();
                 formData.append('file', file);
 
+                console.log('Fazendo upload de imagem para:', `${baseUrl}/support/items/upload/image`);
+
                 const response = await fetch(`${baseUrl}/support/items/upload/image`, {
                     method: 'POST',
                     headers: {
@@ -572,6 +663,7 @@ export default {
                 }
 
                 const result = await response.json();
+                console.log('Upload bem-sucedido, caminho retornado:', result.path);
                 return result.path;
             } catch (error) {
                 console.error('Erro ao fazer upload da imagem:', error);
