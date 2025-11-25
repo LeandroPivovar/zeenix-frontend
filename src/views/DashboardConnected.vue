@@ -763,13 +763,11 @@ export default {
       this.$router.push('/settings?tab=deposit');
     },
     disconnectAccount() {
-      if (confirm('Tem certeza que deseja desconectar da corretora?')) {
-        localStorage.removeItem('deriv_token');
-        localStorage.removeItem('deriv_tokens_by_loginid');
-        localStorage.removeItem('deriv_connection');
-        this.$router.push('/dashboard');
-        window.location.reload();
-      }
+      localStorage.removeItem('deriv_token');
+      localStorage.removeItem('deriv_tokens_by_loginid');
+      localStorage.removeItem('deriv_connection');
+      this.$router.push('/dashboard');
+      window.location.reload();
     },
     scrollToPerformance() {
       const element = document.getElementById('overall-performance');
