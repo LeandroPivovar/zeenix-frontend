@@ -930,9 +930,9 @@ input:checked + .slider:before {
     }
 
     .layout{
-        max-width: calc(100% - 300px);
+        max-width: calc(100% - 320px);
         padding: 0 20px;
-        margin-left: 300px;
+        margin-left: 320px;
     }
 }
 

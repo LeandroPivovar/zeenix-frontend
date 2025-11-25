@@ -2692,8 +2692,8 @@ async mounted() {
 	background-color: #121212;
 	color: #fff;
 	min-height: 100vh;
-	width: calc(100% - 300px);
-	margin-left: 300px;
+	width: calc(100% - 320px);
+	margin-left: 320px;
 	padding: 0 20px;
 	font-family: 'Roboto', sans-serif;
 }

@@ -76,8 +76,8 @@
     color: #f0f6fc;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding: 0;
-    width: calc(100% - 300px);
-    margin-left: 300px;
+    width: calc(100% - 320px);
+    margin-left: 320px;
     position: relative;
   }
   

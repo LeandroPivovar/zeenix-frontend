@@ -217,8 +217,8 @@
 
 	/* No mobile, a sidebar deve estar sempre expandida quando aberta. */
 	.sidebar.is-open.collapsed {
-		width: 300px;
-		min-width: 300px;
+		width: 320px;
+		min-width: 320px;
 	}
 	
 	/* Desativa a lógica de ocultar texto no mobile */
