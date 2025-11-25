@@ -61,6 +61,7 @@
 				:class="{ 'pause-button': agenteEstaAtivo }" >
 				{{ textoDoBotao }} 
 			</button>
+			<p class="text-footer">O agente executará operações automaticamente 24/7. Ao atingir a meta diária ou limite de perda, ele pausa e retoma somente no próximo ciclo</p>
 		</footer>
 	</div>
 </template>
@@ -648,16 +649,14 @@ export default {
 
 /* Estilos para o Footer e Botão (Fixos) */
 .agente-autonomo-footer {
-	position: fixed; /* Fixa o footer */
+	position: static; /* Fixa o footer */
 	bottom: 0;
-	left: 240px; /* Alinha com o conteúdo principal */
-	width: calc(100% - 240px); /* Ocupa a largura restante */
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	background-color: #0a0b0a; /* Fundo escuro */
 	border-top: 1px solid #1C1C1C;
-	padding: 10px 0;
+	padding: 30px 0;
 	z-index: 1000;
 	transition: left 0.3s, width 0.3s;
 	box-sizing: border-box;
@@ -669,7 +668,7 @@ export default {
 }
 
 .iniciar-button {
-	background-color: #4CAF50; /* Verde para Iniciar */
+	background-color: #22c55e; /* Verde para Iniciar */
 	color: white;
 	border: none;
 	padding: 15px 20px;
@@ -679,8 +678,7 @@ export default {
 	border-radius: 8px;
 	transition: background-color 0.3s ease;
 	font-weight: bold;
-	width: 93%; /* Ocupa a maior parte do espaço dentro do footer */
-	max-width: 600px; /* Limite de largura para botões grandes */
+	width: 93%; 
 }
 .pause-button{
 	background: #333;
@@ -689,5 +687,21 @@ export default {
 
 .iniciar-button:hover {
 	opacity: 0.9;
+}
+
+.agente-autonomo-footer{
+	text-align: center;	
+	display: flex;
+	justify-content: center;
+	flex-direction: column;
+	margin-top: 1rem;
+}
+
+.text-footer{
+	font-size:1rem;
+	color: rgb(148, 148, 148);
+	margin-top: 1rem;
+	margin-bottom: 1rem;
+	width:50%;
 }
 </style>
