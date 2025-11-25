@@ -25,9 +25,6 @@
 					<div class="video-details">
 						<div class="video-title-row">
 							<h3 class="video-title">Marcos Explica os Planos Zenix</h3>
-							<div class="video-duration-badge">
-								<span>2 min</span>
-							</div>
 						</div>
 						<p class="video-description">Assista e entenda qual plano se encaixa melhor no seu perfil de operações.</p>
 					</div>
