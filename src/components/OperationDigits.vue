@@ -133,10 +133,9 @@
                     </div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Trading Panel -->
-            <div class="trading-panel">
+                <!-- Trading Panel -->
+                <div class="trading-panel">
                     <div class="trading-panel-header">
                         <h3 class="card-header">Negociação Manual — Dígitos</h3>
                     </div>
@@ -247,6 +246,7 @@
                         <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
                     </div>
                 </div>
+            </div>
 
             <!-- Bottom Section: DVX, Paridade, Alto/Baixo -->
             <div class="bottom-section">
