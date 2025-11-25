@@ -121,6 +121,51 @@
           </div>
         </section>
 
+        <!-- Support Items Section -->
+        <section id="support-items-section" class="support-section mb-16">
+          <h2 class="text-white text-2xl font-bold mb-8">Guias e Tutoriais</h2>
+          
+          <div v-if="loadingItems" class="text-center py-8 text-zenix-secondary">
+            Carregando...
+          </div>
+          
+          <div v-else-if="supportItemsError" class="text-center py-8 text-zenix-red">
+            {{ supportItemsError }}
+          </div>
+          
+          <div v-else-if="supportItems.length > 0" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <div 
+              v-for="item in supportItems" 
+              :key="item.id"
+              class="support-item-card bg-zenix-card border border-zenix-border rounded-xl overflow-hidden hover:border-zenix-green transition-all cursor-pointer"
+              @click="toggleSupportItem(item.id)"
+            >
+              <div class="p-6">
+                <h3 class="text-white text-lg font-bold mb-2">{{ item.title }}</h3>
+                <div 
+                  v-if="expandedSupportItems[item.id]"
+                  class="support-item-content text-zenix-secondary text-sm mt-4"
+                  v-html="formatSupportItemContent(item.subtitle)"
+                ></div>
+                <div v-else class="text-zenix-secondary text-sm line-clamp-2" v-html="getSupportItemPreview(item.subtitle)"></div>
+                <div class="mt-4 flex items-center justify-between">
+                  <span class="text-zenix-secondary text-xs">{{ formatDate(item.createdAt) }}</span>
+                  <i 
+                    :class="[
+                      'fas text-zenix-green text-sm transition-transform duration-300',
+                      expandedSupportItems[item.id] ? 'fa-chevron-up' : 'fa-chevron-down'
+                    ]"
+                  ></i>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div v-else class="text-center py-8 text-zenix-secondary">
+            Nenhum guia disponível no momento.
+          </div>
+        </section>
+
         <!-- FAQ Section -->
         <section id="faq-section" class="support-section mb-16">
           <h2 class="text-white text-2xl font-bold mb-8">Perguntas Frequentes</h2>
@@ -250,9 +295,13 @@ export default {
     return {
       faqs: [],
       expandedFaqs: {},
+      supportItems: [],
+      expandedSupportItems: {},
       searchQuery: '',
       loading: true,
+      loadingItems: true,
       error: null,
+      supportItemsError: null,
       searchTimeout: null,
       isSidebarOpen: true,
       isSidebarCollapsed: false,
@@ -281,6 +330,7 @@ export default {
   },
   mounted() {
     this.fetchFaqs()
+    this.fetchSupportItems()
     window.addEventListener('resize', this.checkMobile)
     this.checkMobile()
     this.fetchAccountBalance()
@@ -468,6 +518,61 @@ export default {
     createTicket() {
       this.$root.$toast.info('Funcionalidade de criação de ticket será implementada em breve')
       // Aqui você pode abrir um modal ou redirecionar para criação de ticket
+    },
+    async fetchSupportItems() {
+      this.loadingItems = true
+      this.supportItemsError = null
+      try {
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+        const res = await fetch(`${apiBaseUrl}/support/items`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
+        if (!res.ok) throw new Error('Erro ao buscar itens de suporte')
+        const data = await res.json()
+        this.supportItems = data
+      } catch (err) {
+        console.error('Erro ao buscar itens de suporte:', err)
+        this.supportItemsError = 'Não foi possível carregar os guias e tutoriais.'
+        this.supportItems = []
+      } finally {
+        this.loadingItems = false
+      }
+    },
+    toggleSupportItem(id) {
+      this.expandedSupportItems = {
+        ...this.expandedSupportItems,
+        [id]: !this.expandedSupportItems[id]
+      }
+    },
+    getSupportItemPreview(subtitle) {
+      if (!subtitle) return 'Sem descrição'
+      // Remove tags HTML e limita a 100 caracteres
+      const text = subtitle.replace(/<[^>]*>/g, '').trim()
+      return text.length > 100 ? text.substring(0, 100) + '...' : text
+    },
+    formatSupportItemContent(subtitle) {
+      if (!subtitle) return 'Sem descrição'
+      // Processar imagens para garantir URLs corretas
+      const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+      const apiBase = baseUrl.replace('/api', '')
+      
+      // Substituir caminhos relativos de imagens por URLs completas
+      let content = subtitle.replace(/src="\/uploads\//g, `src="${apiBase}/uploads/`)
+      
+      // Garantir que imagens tenham estilo responsivo
+      content = content.replace(/<img/g, '<img style="max-width: 100%; height: auto; display: block; margin: 10px 0; border-radius: 4px;"')
+      
+      return content
+    },
+    formatDate(dateString) {
+      if (!dateString) return '-'
+      const date = new Date(dateString)
+      return date.toLocaleDateString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric'
+      })
     }
   }
 }
@@ -933,6 +1038,45 @@ export default {
 
 .footer-separator {
   color: #1C1C1C;
+}
+
+/* Support Items Styles */
+.support-item-card {
+  transition: all 0.3s ease;
+}
+
+.support-item-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 16px rgba(34, 197, 94, 0.1);
+}
+
+.support-item-content {
+  animation: fadeIn 0.3s ease;
+}
+
+.support-item-content img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  margin: 10px 0;
+}
+
+.line-clamp-2 {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 /* Responsive Footer */
