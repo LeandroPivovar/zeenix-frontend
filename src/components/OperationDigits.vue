@@ -247,7 +247,6 @@
                         <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
                     </div>
                 </div>
-            </div>
 
             <!-- Bottom Section: DVX, Paridade, Alto/Baixo -->
             <div class="bottom-section">
