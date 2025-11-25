@@ -33,9 +33,9 @@
     background: oklch(0.23 0.09 140);
     border: 2px solid #22C55E;
     width: 300px;
-    padding: 20px;
+    padding: 16px;
     height: auto;
-    min-height: 150px;
+    min-height: 120px;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
     transition: all 0.3s ease;
 }
@@ -54,7 +54,7 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
 
 .semaphore-title-group {
@@ -101,7 +101,7 @@
 }
 
 .semaphore-status {
-    font-size: 36px;
+    font-size: 32px;
     font-weight: 700;
     color: #22C55E;
     line-height: 1;
@@ -155,8 +155,8 @@
     background: #0E0E0E;
     border: 1px solid #1C1C1C;
     border-radius: 14px;
-    padding: 20px;
-    min-height: 150px;
+    padding: 16px;
+    min-height: 120px;
     height: auto;
     display: flex;
     flex-direction: column;
@@ -171,7 +171,11 @@
 }
 
 .history-card .card-header-with-help {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
+}
+
+.history-card .card-header {
+    font-size: 14px;
 }
 
 .card-header {
@@ -191,19 +195,19 @@
 .digit-history-grid {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 4px;
     flex: 1;
 }
 
 .digit-history-item {
-    width: 32px;
-    height: 32px;
+    width: 28px;
+    height: 28px;
     background: #1C1C1C;
     border-radius: 6px;
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 18px;
+    font-size: 16px;
     font-weight: 700;
     color: #DFDFDF;
     transition: all 0.2s ease;
@@ -382,8 +386,13 @@
 /* Bottom Section */
 .bottom-section {
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 24px;
+}
+
+/* Terceiro card vai para nova linha ocupando toda a largura */
+.bottom-section > *:nth-child(3) {
+    grid-column: 1 / -1;
 }
 
 /* DVX Card */
