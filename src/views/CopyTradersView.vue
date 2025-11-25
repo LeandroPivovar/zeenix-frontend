@@ -75,13 +75,15 @@
     background-color: #0b0b0a;
     color: #f0f6fc;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    padding: 20px;
+    padding: 0;
     width: calc(100% - 300px);
     margin-left: 300px;
+    position: relative;
   }
   
   .box {
     width: 100%;
+    padding: 20px;
   }
   
   /* --- Header --- */

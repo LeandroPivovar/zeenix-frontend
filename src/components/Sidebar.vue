@@ -44,7 +44,7 @@
                 href="#"
                 class="menu-item"
                 :class="{ active: isCopyTradingActive }"
-                @click.prevent="navigateAndClose('/copy-trading')"
+                @click.prevent="navigateAndClose('/copy-trader')"
                 data-text="Copy Trading"
             >
                 <i class="fa-solid fa-copy w-5 opacity-85"></i>
@@ -108,6 +108,16 @@
                 <span>Configuração</span>
             </a>
 
+            <a
+                href="#"
+                class="menu-item"
+                :class="{ active: isSupportActive }"
+                @click.prevent="navigateAndClose('/support')"
+                data-text="Suporte"
+            >
+                <i class="fa-solid fa-headset w-5 opacity-85"></i>
+                <span>Suporte</span>
+            </a>
 
         </nav>
         <div class="status">

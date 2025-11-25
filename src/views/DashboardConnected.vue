@@ -16,12 +16,12 @@
     <section id="integrated-hero-onboarding" class="w-full">
       <div class="relative w-full h-[620px] overflow-hidden">
         <div class="absolute inset-0">
-          <div class="absolute inset-0 w-full h-full animated-bg-container">
-            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/115dc9dc6f-4ab7d1a1c6f815b2fef3.png" alt="futuristic technology neural network glowing green circuits" class="absolute right-0 top-0 h-full w-full object-cover object-right animated-bg-image">
+          <div class="absolute inset-0 w-full h-full">
+            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/115dc9dc6f-4ab7d1a1c6f815b2fef3.png" alt="futuristic technology neural network glowing green circuits" class="absolute right-0 top-0 h-full w-full object-cover object-right">
           </div>
-          <div class="absolute inset-0 bg-gradient-to-r from-[#000000] via-[#000000]/95 via-30% via-[#000000]/85 via-45% via-[#000000]/70 via-55% via-[#000000]/50 via-65% via-[#000000]/30 via-75% via-[#000000]/15 via-85% to-transparent animated-gradient-overlay"></div>
-          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(34,197,94,0.08)_0%,rgba(34,197,94,0.04)_30%,transparent_60%)] hero-glow-pulse"></div>
-          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_40%,rgba(34,197,94,0.06)_0%,transparent_50%)] animated-radial-glow"></div>
+          <div class="absolute inset-0 bg-gradient-to-r from-[#000000] via-[#000000]/95 via-30% via-[#000000]/85 via-45% via-[#000000]/70 via-55% via-[#000000]/50 via-65% via-[#000000]/30 via-75% via-[#000000]/15 via-85% to-transparent"></div>
+          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(34,197,94,0.08)_0%,rgba(34,197,94,0.04)_30%,transparent_60%)]"></div>
+          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_40%,rgba(34,197,94,0.06)_0%,transparent_50%)]"></div>
           <div class="absolute left-0 top-0 w-[55%] h-full bg-gradient-to-r from-[#000000] via-[#000000]/90 to-transparent"></div>
           <div class="absolute inset-0 bg-gradient-to-t from-[#0B0B0B]/85 via-transparent via-50% to-[#0B0B0B]/20"></div>
           <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B]/15 via-transparent via-60% to-[#0B0B0B]/70"></div>
@@ -41,9 +41,9 @@
               <div class="relative bg-gradient-to-br from-[#0A0A0A] via-[#080808] to-[#060606] border border-[#1A1A1A]/40 rounded-[20px] p-6 h-[240px] flex flex-col transition-all duration-300 group overflow-hidden shadow-[0_0_40px_rgba(34,197,94,0.08),0_8px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_0_50px_rgba(34,197,94,0.12),0_10px_38px_rgba(0,0,0,0.7)]">
                 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.06)_0%,transparent_70%)] opacity-40"></div>
                 <div class="absolute top-5 left-5 flex items-center space-x-3 z-10">
-                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center unified-icon-container backdrop-blur-sm">
+                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center backdrop-blur-sm">
                     <div class="absolute inset-0 rounded-full bg-[#22C55E]/[0.03]"></div>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#22C55E] unified-icon-svg">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#22C55E]">
                       <circle cx="12" cy="12" r="10"></circle>
                       <path d="M12 6v6l4 2"></path>
                     </svg>
@@ -67,7 +67,7 @@
               <div class="relative bg-gradient-to-br from-[#0A0A0A] via-[#080808] to-[#060606] border border-[#1A1A1A]/40 rounded-[20px] p-6 h-[240px] flex flex-col transition-all duration-300 group overflow-hidden shadow-[0_0_40px_rgba(34,197,94,0.08),0_8px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_0_50px_rgba(34,197,94,0.12),0_10px_38px_rgba(0,0,0,0.7)]">
                 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.06)_0%,transparent_70%)] opacity-40"></div>
                 <div class="absolute top-5 left-5 flex items-center space-x-3 z-10">
-                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center unified-icon-container backdrop-blur-sm">
+                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center backdrop-blur-sm">
                     <div class="absolute inset-0 rounded-full bg-[#22C55E]/[0.03]"></div>
                     <i class="fas fa-microchip text-[#22C55E] text-sm"></i>
                   </div>
@@ -90,7 +90,7 @@
               <div class="relative bg-gradient-to-br from-[#0A0A0A] via-[#080808] to-[#060606] border border-[#1A1A1A]/40 rounded-[20px] p-6 h-[240px] flex flex-col transition-all duration-300 group overflow-hidden shadow-[0_0_40px_rgba(34,197,94,0.08),0_8px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_0_50px_rgba(34,197,94,0.12),0_10px_38px_rgba(0,0,0,0.7)]">
                 <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.06)_0%,transparent_70%)] opacity-40"></div>
                 <div class="absolute top-5 left-5 flex items-center space-x-3 z-10">
-                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center unified-icon-container backdrop-blur-sm">
+                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center backdrop-blur-sm">
                     <div class="absolute inset-0 rounded-full bg-[#22C55E]/[0.03]"></div>
                     <i class="fas fa-chart-line text-[#22C55E] text-sm"></i>
                   </div>
@@ -871,7 +871,7 @@ export default {
 
 /* Main Content */
 .main-content {
-  margin-top: 60px;
+  margin-top: 0;
   padding: 0;
   max-width: 100%;
   width: 100%;
@@ -894,34 +894,6 @@ export default {
 }
 
 /* Hero Section Styles */
-.animated-bg-container {
-  animation: bgPan 30s ease-in-out infinite;
-}
-
-.animated-bg-image {
-  animation: bgZoom 25s ease-in-out infinite;
-}
-
-.animated-gradient-overlay {
-  animation: gradientShift 8s ease-in-out infinite;
-}
-
-.animated-radial-glow {
-  animation: radialPulse 10s ease-in-out infinite;
-}
-
-.hero-glow-pulse {
-  animation: heroGlowPulse 5s ease-in-out infinite;
-}
-
-.unified-icon-container {
-  animation: unifiedIconPulse 3.5s ease-in-out infinite;
-}
-
-.unified-icon-svg {
-  filter: drop-shadow(rgba(34, 197, 94, 0.35) 0px 0px 5px);
-}
-
 .unified-button {
   box-shadow: rgba(34, 197, 94, 0.28) 0px 2px 10px;
   border: 1px solid rgba(255, 255, 255, 0.02);
@@ -930,64 +902,6 @@ export default {
 .unified-button:hover {
   box-shadow: rgba(34, 197, 94, 0.42) 0px 4px 18px;
   border-color: rgba(255, 255, 255, 0.04);
-}
-
-@keyframes bgPan {
-  0%, 100% {
-    transform: translate(0%, 0%);
-  }
-  50% {
-    transform: translate(-5%, -5%);
-  }
-}
-
-@keyframes bgZoom {
-  0%, 100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-}
-
-@keyframes gradientShift {
-  0%, 100% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.8;
-  }
-}
-
-@keyframes radialPulse {
-  0%, 100% {
-    opacity: 0.6;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.05);
-  }
-}
-
-@keyframes heroGlowPulse {
-  0%, 100% {
-    opacity: 0.8;
-  }
-  50% {
-    opacity: 1;
-  }
-}
-
-@keyframes unifiedIconPulse {
-  0%, 100% {
-    transform: scale(1);
-    opacity: 1;
-  }
-  50% {
-    transform: scale(1.05);
-    opacity: 0.9;
-  }
 }
 
 /* Noise Background */

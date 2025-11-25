@@ -457,10 +457,10 @@ export default {
 }
 
 .content-wrapper {
-  margin-left: 240px;
+  margin-left: 300px;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
-  width: calc(100% - 240px);
+  width: calc(100% - 300px);
   box-sizing: border-box;
 }
 
@@ -474,13 +474,13 @@ export default {
   position: fixed;
   top: 0;
   right: 0;
-  left: 240px;
+  left: 300px;
   z-index: 40;
   background-color: #0E0E0E;
   border-bottom: 1px solid #1C1C1C;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   transition: left 0.3s ease;
-  width: calc(100% - 240px);
+  width: calc(100% - 300px);
   box-sizing: border-box;
 }
 

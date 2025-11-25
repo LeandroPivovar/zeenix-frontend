@@ -336,8 +336,8 @@ export default {
     justify-content: flex-start;
     align-items: flex-start;
     flex-direction: column;
-    max-width: calc(100% - 240px);
-    margin-left: 240px;
+    max-width: calc(100% - 300px);
+    margin-left: 300px;
 
 }
 
