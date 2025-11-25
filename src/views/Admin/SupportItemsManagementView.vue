@@ -284,7 +284,7 @@ export default {
                     throw new Error(errorMessage);
                 }
 
-                const result = await response.json();
+                await response.json();
                 this.closeForm();
                 await this.loadSupportItems();
                 this.showToast(this.isEditing ? 'Item de suporte atualizado com sucesso!' : 'Item de suporte adicionado com sucesso!', 'success', 4000);
