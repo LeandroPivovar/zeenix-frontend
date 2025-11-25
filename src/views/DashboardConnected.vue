@@ -497,20 +497,6 @@ export default {
       }
       return 'Usuário';
     },
-    userName() {
-      const userInfo = localStorage.getItem('user');
-      if (userInfo) {
-        try {
-          const user = JSON.parse(userInfo);
-          if (user.name) {
-            return user.name.split(' ')[0];
-          }
-        } catch (e) {
-          console.error('Erro ao parsear informações do usuário:', e);
-        }
-      }
-      return 'Usuário';
-    },
   },
   watch: {
     accountType() {
