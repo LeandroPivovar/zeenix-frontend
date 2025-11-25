@@ -6,7 +6,7 @@
         </div>
             
         <div v-else class="digits-layout">
-            <!-- Header Section: Semáforo + Histórico -->
+            <!-- Header Section: Semáforo + Histórico + Trading Panel -->
             <div class="top-section">
                 <!-- Card Semáforo -->
                 <div id="semaphoreCard" class="semaphore-card semaphore-fade" :class="semaphoreStateClass">
@@ -61,76 +61,6 @@
                         >
                             {{ digit }}
                         </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Main Analysis Grid with Trading Panel -->
-            <div class="main-content-grid">
-                <div class="analysis-grid">
-                    <!-- Mapa de Frequência -->
-                    <div class="frequency-map-card">
-                    <div class="card-header-with-help">
-                        <h3 class="card-header">Mapa de Frequência dos Dígitos (0–9)</h3>
-                        <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
-                    </div>
-                    <div class="frequency-map-grid">
-                        <div v-for="item in digitFrequenciesWithStats" :key="'freq-'+item.digit" class="frequency-digit-block">
-                            <div class="frequency-percentage-label">{{ item.percentage }}%</div>
-                            <div 
-                                class="frequency-bar-visual" 
-                                :class="item.statusClass"
-                                :style="{ height: item.barHeight + 'px' }"
-                            ></div>
-                            <div class="frequency-digit-number">{{ item.digit }}</div>
-                            <div class="frequency-status-label">{{ item.statusText }}</div>
-                            <div class="frequency-z-score">Z: {{ item.zScore }}</div>
-                        </div>
-                    </div>
-                    </div>
-
-                    <!-- Heatmap Estatístico -->
-                    <div class="heatmap-card">
-                    <div class="card-header-with-help">
-                        <h3 class="card-header">Heatmap Estatístico de Dígitos (0–9)</h3>
-                        <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
-                    </div>
-                    <div class="heatmap-grid">
-                        <div 
-                            v-for="item in digitFrequenciesWithStats" 
-                            :key="'heat-'+item.digit" 
-                            class="heatmap-digit-block"
-                            :class="[item.statusClass, item.isHighlighted ? 'heatmap-highlighted' : '']"
-                        >
-                            <div class="frequency-percentage-label">{{ item.percentage }}%</div>
-                            <div 
-                                class="frequency-bar-visual" 
-                                :class="item.statusClass"
-                                :style="{ height: item.barHeight + 'px' }"
-                            ></div>
-                            <div class="frequency-digit-number">{{ item.digit }}</div>
-                            <div class="frequency-status-label">{{ item.statusText }}</div>
-                            <div class="frequency-z-score">Z: {{ item.zScore }}</div>
-                        </div>
-                    </div>
-                    <div class="heatmap-legend">
-                        <div class="legend-item">
-                            <div class="legend-dot legend-dot-green"></div>
-                            <span>Subaquecido</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-dot legend-dot-yellow"></div>
-                            <span>Normal</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-dot legend-dot-orange"></div>
-                            <span>Aquecido</span>
-                        </div>
-                        <div class="legend-item">
-                            <div class="legend-dot legend-dot-red"></div>
-                            <span>Sobreaquecido</span>
-                        </div>
-                    </div>
                     </div>
                 </div>
 
@@ -244,6 +174,76 @@
 
                         <p v-if="tradeMessage" class="trade-message success">{{ tradeMessage }}</p>
                         <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Analysis Grid -->
+            <div class="main-content-grid">
+                <div class="analysis-grid">
+                    <!-- Mapa de Frequência -->
+                    <div class="frequency-map-card">
+                    <div class="card-header-with-help">
+                        <h3 class="card-header">Mapa de Frequência dos Dígitos (0–9)</h3>
+                        <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                    </div>
+                    <div class="frequency-map-grid">
+                        <div v-for="item in digitFrequenciesWithStats" :key="'freq-'+item.digit" class="frequency-digit-block">
+                            <div class="frequency-percentage-label">{{ item.percentage }}%</div>
+                            <div 
+                                class="frequency-bar-visual" 
+                                :class="item.statusClass"
+                                :style="{ height: item.barHeight + 'px' }"
+                            ></div>
+                            <div class="frequency-digit-number">{{ item.digit }}</div>
+                            <div class="frequency-status-label">{{ item.statusText }}</div>
+                            <div class="frequency-z-score">Z: {{ item.zScore }}</div>
+                        </div>
+                    </div>
+                    </div>
+
+                    <!-- Heatmap Estatístico -->
+                    <div class="heatmap-card">
+                    <div class="card-header-with-help">
+                        <h3 class="card-header">Heatmap Estatístico de Dígitos (0–9)</h3>
+                        <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                    </div>
+                    <div class="heatmap-grid">
+                        <div 
+                            v-for="item in digitFrequenciesWithStats" 
+                            :key="'heat-'+item.digit" 
+                            class="heatmap-digit-block"
+                            :class="[item.statusClass, item.isHighlighted ? 'heatmap-highlighted' : '']"
+                        >
+                            <div class="frequency-percentage-label">{{ item.percentage }}%</div>
+                            <div 
+                                class="frequency-bar-visual" 
+                                :class="item.statusClass"
+                                :style="{ height: item.barHeight + 'px' }"
+                            ></div>
+                            <div class="frequency-digit-number">{{ item.digit }}</div>
+                            <div class="frequency-status-label">{{ item.statusText }}</div>
+                            <div class="frequency-z-score">Z: {{ item.zScore }}</div>
+                        </div>
+                    </div>
+                    <div class="heatmap-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot legend-dot-green"></div>
+                            <span>Subaquecido</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot legend-dot-yellow"></div>
+                            <span>Normal</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot legend-dot-orange"></div>
+                            <span>Aquecido</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot legend-dot-red"></div>
+                            <span>Sobreaquecido</span>
+                        </div>
+                    </div>
                     </div>
                 </div>
             </div>
