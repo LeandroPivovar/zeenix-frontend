@@ -119,7 +119,12 @@
                         ></i>
                         <span class="btn-text">{{ selectedLesson?.completed ? 'Concluído' : 'Marcar como concluído' }}</span>
                     </button>
-                    <button class="btn-action">
+                    <button 
+                        v-if="selectedLesson?.completed"
+                        class="btn-action"
+                        @click="markAsIncomplete"
+                        :disabled="markingIncomplete"
+                    >
                         <i class="fas fa-rotate-right btn-icon-small"></i>
                         <span class="btn-text">Assistir novamente</span>
                     </button>
@@ -203,6 +208,7 @@ export default {
       loading: true,
       error: null,
       markingComplete: false,
+      markingIncomplete: false,
       userName: 'Usuário',
       lessonMaterials: [],
       materialsLoading: false
@@ -339,6 +345,42 @@ export default {
         this.$root.$toast.error('Não foi possível marcar a aula como concluída.')
       } finally {
         this.markingComplete = false
+      }
+    },
+    async markAsIncomplete() {
+      if (!this.selectedLesson || !this.selectedLesson.completed) return
+      
+      this.markingIncomplete = true
+      try {
+        const token = localStorage.getItem('token')
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
+        const courseId = this.$route.params.id
+        const lessonId = this.selectedLesson.id
+        
+        const res = await fetch(`${apiBaseUrl}/courses/${courseId}/lessons/${lessonId}/complete`, {
+          method: 'DELETE',
+          headers: {
+            'Content-Type': 'application/json',
+            ...(token && { 'Authorization': `Bearer ${token}` })
+          }
+        })
+
+        if (!res.ok) throw new Error('Erro ao remover conclusão da aula')
+
+        // Update local state
+        this.selectedLesson.completed = false
+        
+        // Find and update inside modules array to reflect in sidebar
+        for (const m of this.modules) {
+            const l = m.lessons?.find(les => les.id === lessonId);
+            if (l) l.completed = false;
+        }
+        
+      } catch (err) {
+        console.error('Erro ao remover conclusão da aula:', err)
+        this.$root.$toast?.error?.('Não foi possível remover a conclusão da aula.') || alert('Não foi possível remover a conclusão da aula.')
+      } finally {
+        this.markingIncomplete = false
       }
     },
     async loadLessonMaterials(lessonId) {

@@ -87,6 +87,20 @@
 
 			<div class="form-group">
 				<label class="form-label">
+					{{ allocationType === 'percentage' ? 'Proporção (%)' : 'Valor Fixo ($)' }}
+				</label>
+				<input 
+					type="number" 
+					v-model.number="allocationValue"
+					:placeholder="allocationType === 'percentage' ? 'Ex: 15' : 'Ex: 500'"
+					:min="allocationType === 'percentage' ? 1 : 0.01"
+					:max="allocationType === 'percentage' ? 100 : null"
+					step="0.01"
+				>
+			</div>
+
+			<div class="form-group">
+				<label class="form-label">
 					Alavancagem
 					<TooltipsCopyTraders position="center">
 						<h4>Alavancagem</h4>
@@ -114,7 +128,7 @@
 						<p class="highlight-green">Recomendado: manter sempre configurado.</p>
 					</TooltipsCopyTraders>
 				</label>
-				<input type="text" v-model="stopLoss">
+				<input type="number" v-model.number="stopLoss" step="0.01" min="0" placeholder="250">
 			</div>
 
 			<div class="form-group">
@@ -126,7 +140,7 @@
 						<p>Quando este valor é alcançado, o sistema pausa as operações para preservar o ganho do dia.</p>
 					</TooltipsCopyTraders>
 				</label>
-				<input type="text" v-model="takeProfit">
+				<input type="number" v-model.number="takeProfit" step="0.01" min="0" placeholder="500">
 			</div>
 
 			<div class="toggle-wrapper">
@@ -230,7 +244,9 @@
 				</div>
 			</div>
 
-			<button class="activate-btn" @click="activateCopy">ATIVAR COPY</button>
+			<button class="activate-btn" @click="activateCopy" :disabled="activating">
+				{{ activating ? 'Ativando...' : 'ATIVAR COPY' }}
+			</button>
 
 			<p class="warning-text">
 				<span class="highlight">Aviso:</span> O Copy está configurado para operar com 
@@ -253,12 +269,14 @@ export default {
 			selectedTrader: '',
 			selectedTraderName: '',
 			allocationType: 'percentage',
+			allocationValue: null,
 			leverage: '1x',
-			stopLoss: '$250',
-			takeProfit: '$500',
+			stopLoss: 250,
+			takeProfit: 500,
 			armoredStopLossActive: true,
 			tradersList: [],
 			loadingTraders: false,
+			activating: false,
 		};
 	},
 	computed: {
@@ -304,23 +322,144 @@ export default {
 				this.selectedTraderName = '';
 			}
 		},
-		activateCopy() {
+		async activateCopy() {
+			// Validações
 			if (!this.selectedTrader) {
 				alert('Por favor, selecione um trader antes de ativar o copy!');
 				return;
 			}
-			
-			const config = {
-				trader: this.selectedTraderName,
-				allocationType: this.allocationType,
-				leverage: this.leverage,
-				stopLoss: this.stopLoss,
-				takeProfit: this.takeProfit,
-				armoredStopLoss: this.armoredStopLossActive,
-			};
-			
-			console.log('Ativando Copy Trading com configurações:', config);
-			alert(`Copy Trading Ativado!\n\nTrader: ${config.trader}\nAlocação: ${config.allocationType === 'percentage' ? 'Porcentagem' : 'Valor Fixo'}\nAlavancagem: ${config.leverage}`);
+
+			if (!this.allocationValue || this.allocationValue <= 0) {
+				alert('Por favor, informe o valor ou percentual de alocação!');
+				return;
+			}
+
+			if (this.allocationType === 'percentage' && (this.allocationValue > 100 || this.allocationValue < 1)) {
+				alert('A proporção deve estar entre 1% e 100%!');
+				return;
+			}
+
+			this.activating = true;
+
+			try {
+				const userId = this.getUserId();
+				if (!userId) {
+					alert('Erro: Usuário não identificado. Faça login novamente.');
+					this.activating = false;
+					return;
+				}
+
+				const derivToken = this.getDerivToken();
+				if (!derivToken) {
+					alert('Erro: Token Deriv não encontrado. Conecte sua conta Deriv primeiro.');
+					this.activating = false;
+					return;
+				}
+
+				const selectedTraderData = this.tradersList.find(t => t.id === this.selectedTrader);
+				if (!selectedTraderData) {
+					alert('Erro: Trader selecionado não encontrado.');
+					this.activating = false;
+					return;
+				}
+
+				// Limpar $ do leverage se existir
+				const leverageValue = this.leverage.replace('x', '').replace('X', '');
+				const leverageFormatted = `${leverageValue}x`;
+
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const response = await fetch(`${apiBase}/copy-trading/activate`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json',
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					},
+					body: JSON.stringify({
+						traderId: this.selectedTrader,
+						traderName: selectedTraderData.name,
+						allocationType: this.allocationType === 'percentage' ? 'proportion' : 'fixed',
+						allocationValue: this.allocationValue,
+						allocationPercentage: this.allocationType === 'percentage' ? this.allocationValue : null,
+						leverage: leverageFormatted,
+						stopLoss: this.stopLoss,
+						takeProfit: this.takeProfit,
+						blindStopLoss: this.armoredStopLossActive,
+						derivToken: derivToken,
+						currency: this.getPreferredCurrency() || 'USD'
+					}),
+				});
+
+				const result = await response.json();
+
+				if (result.success) {
+					alert('Copy Trading ativado com sucesso!');
+					// Emitir evento para navegar para a tela de performance
+					this.$emit('copy-activated');
+				} else {
+					alert(result.message || 'Erro ao ativar copy trading. Tente novamente.');
+				}
+			} catch (error) {
+				console.error('Erro ao ativar copy trading:', error);
+				alert('Erro ao ativar copy trading. Verifique sua conexão e tente novamente.');
+			} finally {
+				this.activating = false;
+			}
+		},
+		getUserId() {
+			try {
+				const token = localStorage.getItem('token');
+				if (token) {
+					const payload = JSON.parse(atob(token.split('.')[1]));
+					return payload.userId || payload.sub || payload.id;
+				}
+
+				const userInfoStr = localStorage.getItem('user_info');
+				if (userInfoStr) {
+					const userInfo = JSON.parse(userInfoStr);
+					return userInfo.id || userInfo.userId;
+				}
+
+				return null;
+			} catch (error) {
+				console.error('Erro ao obter userId:', error);
+				return null;
+			}
+		},
+		getDerivToken() {
+			try {
+				const connectionStr = localStorage.getItem('deriv_connection');
+				if (connectionStr) {
+					const connection = JSON.parse(connectionStr);
+					const accountLoginid = connection.loginid;
+
+					if (accountLoginid) {
+						const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+						const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+						const specificToken = tokensByLoginId[accountLoginid];
+						if (specificToken) {
+							return specificToken;
+						}
+					}
+				}
+				return localStorage.getItem('deriv_token');
+			} catch (error) {
+				console.error('Erro ao obter token Deriv:', error);
+				return localStorage.getItem('deriv_token');
+			}
+		},
+		getPreferredCurrency() {
+			try {
+				const connectionStr = localStorage.getItem('deriv_connection');
+				if (connectionStr) {
+					const connection = JSON.parse(connectionStr);
+					if (connection.tradeCurrency) {
+						return connection.tradeCurrency.toUpperCase();
+					}
+				}
+			} catch (error) {
+				console.error('Erro ao obter moeda preferida:', error);
+			}
+			return 'USD';
 		},
 	},
 	async mounted() {
