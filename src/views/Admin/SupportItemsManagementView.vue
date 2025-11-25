@@ -27,22 +27,8 @@
 
                         <div class="form-group" style="flex: 1 1 100%;">
                             <label for="subtitle">Descrição</label>
-                            <div class="rich-editor-wrapper">
-                                <div class="editor-toolbar">
-                                    <button type="button" class="toolbar-btn" @click="insertImage" title="Adicionar Imagem">
-                                        <i class="fas fa-image"></i> Adicionar Imagem
-                                    </button>
-                                </div>
-                                <div 
-                                    class="rich-editor" 
-                                    contenteditable="true"
-                                    @input="updateSubtitle"
-                                    @paste="handlePaste"
-                                    v-html="supportItemForm.subtitle"
-                                    placeholder="Digite a descrição do item de suporte. Use o botão acima para adicionar imagens."
-                                ></div>
-                            </div>
-                            <span class="hint-text">Descrição do item de suporte. Use o botão acima para adicionar imagens no texto.</span>
+                            <div ref="editorContainer" class="quill-editor-container"></div>
+                            <span class="hint-text">Descrição do item de suporte. Use a barra de ferramentas para formatar o texto e adicionar imagens.</span>
                             <input
                                 type="file"
                                 ref="inlineImageInput"
@@ -116,6 +102,8 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import ToastNotification from '../../components/Toast.vue';
 
+// Importar Quill via CDN (será carregado no index.html)
+
 export default {
     name: 'SupportItemsManagementView',
     components: {
@@ -136,6 +124,9 @@ export default {
             // Dados Dinâmicos
             supportItems: [],
             isLoading: true,
+            
+            // Editor
+            quillEditor: null,
         };
     },
     async mounted() {
@@ -147,6 +138,9 @@ export default {
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobileStatus);
         document.removeEventListener('click', this.handleClickOutside);
+        if (this.quillEditor) {
+            this.quillEditor = null;
+        }
     },
     methods: {
         // --- Métodos de Toast ---
@@ -234,9 +228,89 @@ export default {
             this.supportItemForm = this.getEmptySupportItemForm();
             this.isEditing = false;
             this.isFormVisible = true;
+            this.$nextTick(() => {
+                this.initQuillEditor();
+            });
         },
         closeForm() {
             this.isFormVisible = false;
+            if (this.quillEditor) {
+                // Limpar conteúdo do editor
+                if (this.$refs.editorContainer) {
+                    this.$refs.editorContainer.innerHTML = '';
+                }
+                this.quillEditor = null;
+            }
+        },
+        initQuillEditor() {
+            if (!this.$refs.editorContainer) {
+                // Tentar novamente após um pequeno delay
+                setTimeout(() => {
+                    if (this.$refs.editorContainer) {
+                        this.initQuillEditor();
+                    }
+                }, 100);
+                return;
+            }
+            
+            // Limpar editor anterior se existir
+            if (this.quillEditor) {
+                try {
+                    this.quillEditor = null;
+                } catch (e) {
+                    console.warn('Erro ao limpar editor anterior:', e);
+                }
+            }
+            
+            // Limpar container
+            this.$refs.editorContainer.innerHTML = '';
+            
+            // Verificar se Quill está disponível
+            if (typeof Quill === 'undefined') {
+                console.error('Quill não está carregado. Verifique se o CDN está incluído no index.html');
+                this.showToast('Erro ao carregar o editor. Recarregue a página.', 'error', 5000);
+                return;
+            }
+            
+            try {
+                // Criar novo editor Quill
+                this.quillEditor = new Quill(this.$refs.editorContainer, {
+                    theme: 'snow',
+                    modules: {
+                        toolbar: {
+                            container: [
+                                [{ 'header': [1, 2, 3, false] }],
+                                ['bold', 'italic', 'underline', 'strike'],
+                                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                                [{ 'color': [] }, { 'background': [] }],
+                                ['link', 'image'],
+                                ['clean']
+                            ],
+                            handlers: {
+                                image: () => {
+                                    this.insertImage();
+                                }
+                            }
+                        }
+                    },
+                    placeholder: 'Digite a descrição do item de suporte...'
+                });
+                
+                // Carregar conteúdo se estiver editando
+                if (this.supportItemForm.subtitle) {
+                    this.quillEditor.root.innerHTML = this.supportItemForm.subtitle;
+                }
+                
+                // Atualizar o v-model quando o conteúdo mudar
+                this.quillEditor.on('text-change', () => {
+                    if (this.quillEditor) {
+                        this.supportItemForm.subtitle = this.quillEditor.root.innerHTML;
+                    }
+                });
+            } catch (error) {
+                console.error('Erro ao inicializar Quill:', error);
+                this.showToast('Erro ao inicializar o editor. Tente novamente.', 'error', 5000);
+            }
         },
         async saveSupportItem() {
             // Validações básicas
@@ -260,9 +334,17 @@ export default {
 
                 const method = this.isEditing ? 'PUT' : 'POST';
 
+                // Obter conteúdo do editor Quill
+                let subtitleContent = null;
+                if (this.quillEditor) {
+                    subtitleContent = this.quillEditor.root.innerHTML.trim();
+                } else if (this.supportItemForm.subtitle) {
+                    subtitleContent = this.supportItemForm.subtitle.trim();
+                }
+                
                 const payload = {
                     title: this.supportItemForm.title.trim(),
-                    subtitle: this.supportItemForm.subtitle ? this.supportItemForm.subtitle.trim() : null,
+                    subtitle: subtitleContent || null,
                 };
 
                 const response = await fetch(url, {
@@ -321,12 +403,9 @@ export default {
             };
             this.isEditing = true;
             this.isFormVisible = true;
-            // Atualizar o editor após o DOM ser atualizado
+            // Inicializar editor com conteúdo após o DOM ser atualizado
             this.$nextTick(() => {
-                const editor = document.querySelector('.rich-editor');
-                if (editor) {
-                    editor.innerHTML = this.supportItemForm.subtitle;
-                }
+                this.initQuillEditor();
             });
         },
         insertImage() {
@@ -340,69 +419,28 @@ export default {
             
             // Fazer upload
             const uploadedPath = await this.uploadImage(file);
-            if (uploadedPath) {
-                // Inserir imagem no editor
-                this.insertImageIntoEditor(uploadedPath);
+            if (uploadedPath && this.quillEditor) {
+                // Inserir imagem no editor Quill
+                this.insertImageIntoQuill(uploadedPath);
             }
             event.target.value = '';
         },
-        insertImageIntoEditor(imagePath) {
-            const editor = document.querySelector('.rich-editor');
-            if (!editor) return;
+        insertImageIntoQuill(imagePath) {
+            if (!this.quillEditor) return;
             
             const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
             const fullImageUrl = imagePath.startsWith('/uploads/') 
                 ? `${baseUrl.replace('/api', '')}${imagePath}` 
                 : imagePath;
             
-            const img = document.createElement('img');
-            img.src = fullImageUrl;
-            img.style.maxWidth = '100%';
-            img.style.height = 'auto';
-            img.style.display = 'block';
-            img.style.margin = '10px 0';
-            img.style.borderRadius = '4px';
+            // Obter a posição do cursor
+            const range = this.quillEditor.getSelection(true);
             
-            // Inserir no cursor ou no final
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                range.deleteContents();
-                range.insertNode(img);
-                // Mover cursor após a imagem
-                range.setStartAfter(img);
-                range.collapse(true);
-                selection.removeAllRanges();
-                selection.addRange(range);
-            } else {
-                editor.appendChild(img);
-            }
+            // Inserir a imagem
+            this.quillEditor.insertEmbed(range.index, 'image', fullImageUrl, 'user');
             
-            // Atualizar o v-model
-            this.updateSubtitle();
-        },
-        updateSubtitle() {
-            const editor = document.querySelector('.rich-editor');
-            if (editor) {
-                this.supportItemForm.subtitle = editor.innerHTML;
-            }
-        },
-        handlePaste(event) {
-            // Permitir colar texto, mas processar imagens coladas
-            event.preventDefault();
-            const text = (event.clipboardData || window.clipboardData).getData('text/plain');
-            const selection = window.getSelection();
-            if (selection.rangeCount > 0) {
-                const range = selection.getRangeAt(0);
-                range.deleteContents();
-                const textNode = document.createTextNode(text);
-                range.insertNode(textNode);
-                range.setStartAfter(textNode);
-                range.collapse(true);
-                selection.removeAllRanges();
-                selection.addRange(range);
-            }
-            this.updateSubtitle();
+            // Mover o cursor após a imagem
+            this.quillEditor.setSelection(range.index + 1);
         },
         async uploadImage(file) {
             try {
@@ -829,61 +867,58 @@ body {
     font-size: 0.85rem;
 }
 
-.rich-editor-wrapper {
+.quill-editor-container {
+    background-color: #2a2a2a;
     border: 1px solid #3a3a3a;
     border-radius: 4px;
-    background-color: #2a2a2a;
-    overflow: hidden;
+    min-height: 300px;
 }
 
-.editor-toolbar {
-    border-bottom: 1px solid #3a3a3a;
-    padding: 8px;
+/* Estilos customizados para Quill no tema escuro */
+.quill-editor-container .ql-toolbar {
     background-color: #1f1f1f;
-    display: flex;
-    gap: 8px;
+    border-bottom: 1px solid #3a3a3a;
+    border-top-left-radius: 4px;
+    border-top-right-radius: 4px;
 }
 
-.toolbar-btn {
-    background-color: #4CAF50;
+.quill-editor-container .ql-toolbar .ql-stroke {
+    stroke: #fff;
+}
+
+.quill-editor-container .ql-toolbar .ql-fill {
+    fill: #fff;
+}
+
+.quill-editor-container .ql-toolbar .ql-picker-label {
     color: #fff;
-    border: none;
-    padding: 6px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.85rem;
-    transition: background-color 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
 }
 
-.toolbar-btn:hover {
-    background-color: #45a049;
+.quill-editor-container .ql-toolbar button:hover,
+.quill-editor-container .ql-toolbar button.ql-active {
+    background-color: #3a3a3a;
 }
 
-.toolbar-btn i {
-    font-size: 0.9rem;
-}
-
-.rich-editor {
-    min-height: 200px;
-    max-height: 400px;
-    overflow-y: auto;
-    padding: 12px;
+.quill-editor-container .ql-container {
+    background-color: #2a2a2a;
     color: #fff;
+    border-bottom-left-radius: 4px;
+    border-bottom-right-radius: 4px;
+    font-family: 'Roboto', sans-serif;
     font-size: 0.95rem;
-    line-height: 1.6;
-    outline: none;
 }
 
-.rich-editor:empty:before {
-    content: attr(placeholder);
+.quill-editor-container .ql-editor {
+    min-height: 250px;
+    color: #fff;
+}
+
+.quill-editor-container .ql-editor.ql-blank::before {
     color: #777;
-    pointer-events: none;
+    font-style: normal;
 }
 
-.rich-editor img {
+.quill-editor-container .ql-editor img {
     max-width: 100%;
     height: auto;
     display: block;
@@ -891,21 +926,21 @@ body {
     border-radius: 4px;
 }
 
-.rich-editor::-webkit-scrollbar {
-    width: 8px;
+.quill-editor-container .ql-snow .ql-picker {
+    color: #fff;
 }
 
-.rich-editor::-webkit-scrollbar-track {
-    background: #2a2a2a;
+.quill-editor-container .ql-snow .ql-picker-options {
+    background-color: #1f1f1f;
+    border: 1px solid #3a3a3a;
 }
 
-.rich-editor::-webkit-scrollbar-thumb {
-    background-color: #555;
-    border-radius: 4px;
+.quill-editor-container .ql-snow .ql-picker-item {
+    color: #fff;
 }
 
-.rich-editor::-webkit-scrollbar-thumb:hover {
-    background-color: #777;
+.quill-editor-container .ql-snow .ql-picker-item:hover {
+    background-color: #3a3a3a;
 }
 
 .td.actions {
