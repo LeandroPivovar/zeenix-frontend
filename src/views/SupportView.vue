@@ -141,7 +141,7 @@
             >
               <button 
                 @click="toggleFaq(faq.id)"
-                class="w-full px-8 py-5 flex items-center justify-between text-left hover:bg-zenix-bg/30 transition-all"
+                class="w-full faq-button flex items-center justify-between text-left hover:bg-zenix-bg/30 transition-all"
               >
                 <span class="text-white font-semibold text-base text-left">{{ faq.question }}</span>
                 <i 
@@ -153,7 +153,7 @@
               </button>
               <div 
                 :class="[
-                  'faq-answer px-8 pb-5 text-left',
+                  'faq-answer text-left',
                   expandedFaqs[faq.id] ? 'open' : ''
                 ]"
               >
@@ -727,7 +727,8 @@ export default {
   transition: all 0.3s ease;
 }
 
-.faq-item button {
+.faq-button {
+  padding: 1.25rem 2rem;
   text-align: left !important;
 }
 
@@ -743,6 +744,7 @@ export default {
   opacity: 0;
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
   text-align: left !important;
+  padding: 0 2rem 1.25rem 2rem;
 }
 
 .faq-answer.open {
