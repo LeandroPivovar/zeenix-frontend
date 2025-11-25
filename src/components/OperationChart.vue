@@ -289,22 +289,22 @@
         />
 
         <div class="card-last-orders animated-card" data-anim-index="1">
-                <h4 class="card-title">Últimas Ordens</h4>
-                
-                <div class="orders-table-header">
-                    <span>Hora</span>
-                    <span>Tipo</span>
-                    <span>Valor</span>
-                    <span>Lucro</span>
-                </div>
+          <h4 class="card-title">Últimas Ordens</h4>
+          
+          <div class="orders-table-header">
+            <span>Hora</span>
+            <span>Tipo</span>
+            <span>Valor</span>
+            <span>Lucro</span>
+          </div>
 
-                <div class="orders-list-scroll">
+          <div class="orders-list-scroll">
             <div v-if="!lastOrders.length" class="orders-empty">
               Nenhuma operação executada ainda.
             </div>
             <div v-for="(order, index) in lastOrders" :key="`order-${index}`" class="order-row">
               <span class="order-col">{{ order.time }}</span>
-                        <span class="order-col order-type-text">{{ order.type }}</span>
+              <span class="order-col order-type-text">{{ order.type }}</span>
               <span class="order-col order-result-text">{{ order.displayValue }}</span>
               <span class="order-col order-profit-text" :class="{ 
                 'profit-positive': order.profit != null && order.profit > 0,
@@ -313,11 +313,11 @@
                 {{ order.displayProfit || '--' }}
               </span>
             </div>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
+      </div>
     </div>
+  </div>
 </template>
 
 <script>
@@ -2441,6 +2441,23 @@ export default {
       }
       
       this.localOrderConfig.durationUnit = unit;
+      
+      // Ajustar duração baseado na unidade e limites do símbolo
+      let duration = Number(this.localOrderConfig.duration) || 1;
+      if (unit === 't') {
+        duration = Math.max(config.min, Math.min(duration, Math.min(10, config.max)));
+      } else {
+        duration = Math.max(config.min, Math.min(duration, config.max));
+      }
+      
+      this.localOrderConfig.duration = duration;
+      
+      // Resetar contadores ao mudar unidade
+      this.proposalRetryCount = 0;
+      this.tradeError = '';
+      
+      // Atualizar proposal quando unidade de duração mudar
+      this.subscribeToProposal();
     },
     setTimeframe(timeframe) {
       this.selectedTimeframe = timeframe;
@@ -2524,24 +2541,6 @@ export default {
         
         this.analysisInProgress = false;
       }, 2600);
-    },
-      
-      // Ajustar duração baseado na unidade e limites do símbolo
-      let duration = Number(this.localOrderConfig.duration) || 1;
-      if (unit === 't') {
-        duration = Math.max(config.min, Math.min(duration, Math.min(10, config.max)));
-      } else {
-        duration = Math.max(config.min, Math.min(duration, config.max));
-      }
-      
-      this.localOrderConfig.duration = duration;
-      
-      // Resetar contadores ao mudar unidade
-      this.proposalRetryCount = 0;
-      this.tradeError = '';
-      
-      // Atualizar proposal quando unidade de duração mudar
-      this.subscribeToProposal();
     },
     selectTradeType(type) {
       if (this.isTrading || this.activeContract) return;
