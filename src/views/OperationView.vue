@@ -669,6 +669,8 @@ export default {
   margin-top: 1.5rem;
   margin-bottom: 1rem;
   align-items: flex-start;
+  justify-content: flex-start;
+  width: 100%;
 }
 
 /* Footer */
