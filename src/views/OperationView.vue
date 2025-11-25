@@ -465,8 +465,8 @@ export default {
 }
 
 .content-wrapper.sidebar-collapsed {
-  margin-left: 0;
-  width: 100%;
+  margin-left: 72px;
+  width: calc(100% - 72px);
 }
 
 /* Top Header */
