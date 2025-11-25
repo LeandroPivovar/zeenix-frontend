@@ -442,65 +442,15 @@ export default {
         } else {
           this.supportItems = []
         }
-        
-        // Se não houver dados da API, usar FAQs padrão
-        if (faqsData.length === 0 && this.supportItems.length === 0) {
-          this.faqs = this.getDefaultFaqs()
-        }
       } catch (err) {
         console.error('Erro ao buscar FAQs:', err)
         this.error = 'Não foi possível carregar as perguntas frequentes.'
-        // Em caso de erro, usar FAQs padrão
-        this.faqs = this.getDefaultFaqs()
+        this.faqs = []
         this.supportItems = []
         this.loading = false
       } finally {
         this.loading = false
       }
-    },
-    getDefaultFaqs() {
-      return [
-        {
-          id: 'faq1',
-          question: 'Como conectar minha conta Deriv?',
-          answer: [
-            'Acesse Dashboard → Conectar Corretora',
-            'Insira suas credenciais Deriv (API Token)',
-            'Confirme a conexão',
-            'Processo seguro e instantâneo'
-          ]
-        },
-        {
-          id: 'faq2',
-          question: 'Copy Trading não está iniciando, o que fazer?',
-          answer: [
-            'Verifique se sua conta está conectada',
-            'Confirme se há saldo suficiente',
-            'Verifique o status do trader copiado',
-            'Reinicie a sessão se necessário'
-          ]
-        },
-        {
-          id: 'faq3',
-          question: 'Minhas operações não estão sendo replicadas',
-          answer: [
-            'Verifique conexão com a internet',
-            'Confirme permissões da API',
-            'Verifique limites de risco configurados',
-            'Entre em contato com suporte se persistir'
-          ]
-        },
-        {
-          id: 'faq4',
-          question: 'Não consigo acessar o Zenix Academy',
-          answer: [
-            'Verifique se está conectado à internet',
-            'Confirme se o navegador está atualizado',
-            'Reinicie o navegador',
-            'Entre em contato com suporte'
-          ]
-        }
-      ]
     },
     toggleFaq(id) {
       this.expandedFaqs = {
@@ -830,7 +780,7 @@ export default {
 }
 
 .faq-answer.open {
-  max-height: 500px;
+  max-height: none;
   opacity: 1;
 }
 
