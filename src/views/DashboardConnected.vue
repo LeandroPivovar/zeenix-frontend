@@ -1,58 +1,14 @@
 <template>
   <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
     <!-- Top Navbar -->
-    <nav id="top-navbar" class="fixed top-0 left-0 right-0 h-[60px] bg-[#0B0B0B] border-b border-[#1C1C1C] z-50" :style="{ left: isSidebarCollapsed ? '72px' : '240px', width: isSidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 240px)' }">
-      <div class="h-full px-6 flex items-center justify-between">
-        <div class="flex items-center space-x-8">
-          <div class="text-lg font-bold text-zenix-text tracking-tight">
-            ZENI<span class="text-zenix-green">X</span>
-          </div>
-          <a href="#" class="bg-transparent hover:bg-[#0E0E0E] text-[#A1A1A1] hover:text-[#25D366] font-medium px-4 py-2 rounded-lg text-sm inline-flex items-center space-x-2 transition-all duration-200 border border-[#1C1C1C] hover:border-[#25D366]/30">
-            <i class="fa-brands fa-whatsapp text-base"></i>
-            <span>Grupo de Alunos</span>
-          </a>
-        </div>
-        <div class="flex items-center space-x-6">
-          <button @click="openDepositFlow" class="bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold px-5 py-2 rounded-lg text-sm inline-flex items-center space-x-2 transition-all duration-200 shadow-[0_2px_8px_rgba(34,197,94,0.2)] hover:shadow-[0_4px_12px_rgba(34,197,94,0.3)]">
-            <i class="fas fa-plus text-xs"></i>
-            <span>Depositar Agora</span>
-          </button>
-          <div class="flex items-center space-x-3">
-            <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF]">
-              Saldo: {{ balanceHidden ? '••••••' : formattedBalance }}
-            </span>
-            <button @click="toggleBalance" class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors">
-              <i :id="balanceToggleIcon" :class="balanceHidden ? 'fas fa-eye text-sm' : 'fas fa-eye-slash text-sm'"></i>
-            </button>
-          </div>
-          <div class="relative">
-            <button @click="toggleProfileDropdown" class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200">
-              <span class="text-white font-semibold text-sm">{{ userInitials }}</span>
-            </button>
-            <div v-if="showProfileDropdown" id="profileDropdown" class="absolute right-0 top-12 w-56 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
-              <div class="p-3 border-b border-[#1C1C1C]">
-                <p class="text-sm font-semibold text-[#DFDFDF]">{{ userName }}</p>
-                <p class="text-xs text-[#7A7A7A]">{{ userEmail }}</p>
-              </div>
-              <div class="py-2">
-                <a href="#" class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors">
-                  <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
-                  Trocar de Conta
-                </a>
-                <a href="#" @click.prevent="$router.push('/settings')" class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors">
-                  <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
-                  Configurações
-                </a>
-                <a href="#" @click.prevent="disconnectAccount" class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors">
-                  <i class="fas fa-plug text-xs mr-3 text-[#7A7A7A]"></i>
-                  Sair da Corretora
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </nav>
+    <TopNavbar 
+      :is-sidebar-collapsed="isSidebarCollapsed"
+      :balance="info?.balance"
+      :account-type="accountType"
+      :balances-by-currency-real="balancesByCurrencyReal"
+      :balances-by-currency-demo="balancesByCurrencyDemo"
+      :currency-prefix="preferredCurrencyPrefix"
+    />
     
     <!-- Main Content -->
     <main class="main-content bg-zenix-bg noise-bg font-inter overflow-y-auto w-full">
@@ -99,8 +55,8 @@
                     <h3 class="text-[15px] font-semibold text-[#DFDFDF]/90 leading-tight tracking-tight">Depositar para começar</h3>
                     <p class="text-[11.5px] text-[#DFDFDF]/70 leading-[1.6]">Para melhores resultados indicados um deposito acima de $100.</p>
                   </div>
-                  <button @click="openDepositFlow" class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold py-2.5 px-5 rounded-[14px] text-[11px] transition-all inline-flex items-center justify-center space-x-2.5 group-hover:shadow-[0_6px_24px_rgba(34,197,94,0.35)] hover:translate-y-[-1px] mt-4 unified-button">
-                    <span>Depositar Agora</span>
+                  <button @click="$router.push('/settings?tab=deposit')" class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold py-2.5 px-5 rounded-[14px] text-[11px] transition-all inline-flex items-center justify-center space-x-2.5 group-hover:shadow-[0_6px_24px_rgba(34,197,94,0.35)] hover:translate-y-[-1px] mt-4 unified-button">
+                      <span>Depositar Agora</span>
                     <svg viewBox="0 0 16 16" fill="none" class="w-3 h-3 group-hover:translate-x-1 transition-transform">
                       <path d="M1 8h14m-6-6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
                     </svg>
@@ -349,8 +305,13 @@
 </template>
 
 <script>
+import TopNavbar from '../components/TopNavbar.vue'
+
 export default {
   name: 'DashboardConnected',
+  components: {
+    TopNavbar
+  },
   props: { 
     info: { 
       type: Object, 
@@ -363,9 +324,7 @@ export default {
   },
   data() {
     return {
-      balanceHidden: false,
       accountType: 'real',
-      showProfileDropdown: false,
       quickTools: [
         {
           icon: 'fas fa-brain',
@@ -478,14 +437,6 @@ export default {
     }
   },
   computed: {
-    formattedBalance() {
-      if (this.accountType === 'demo') {
-        const demo = this.usdDemoBalance || 0;
-        return `${this.preferredCurrencyPrefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      }
-      const value = this.balanceNumeric;
-      return `${this.preferredCurrencyPrefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-    },
     potentialValue() {
       const base = this.balanceNumeric;
       const projected = base * 0.12;
@@ -546,36 +497,20 @@ export default {
       }
       return 'Usuário';
     },
-    userInitials() {
+    userName() {
       const userInfo = localStorage.getItem('user');
       if (userInfo) {
         try {
           const user = JSON.parse(userInfo);
           if (user.name) {
-            const names = user.name.split(' ');
-            if (names.length >= 2) {
-              return (names[0][0] + names[1][0]).toUpperCase();
-            }
-            return names[0][0].toUpperCase();
+            return user.name.split(' ')[0];
           }
         } catch (e) {
           console.error('Erro ao parsear informações do usuário:', e);
         }
       }
-      return 'U';
+      return 'Usuário';
     },
-    userEmail() {
-      const userInfo = localStorage.getItem('user');
-      if (userInfo) {
-        try {
-          const user = JSON.parse(userInfo);
-          return user.email || 'email@exemplo.com';
-        } catch (e) {
-          console.error('Erro ao parsear informações do usuário:', e);
-        }
-      }
-      return 'email@exemplo.com';
-    }
   },
   watch: {
     accountType() {
@@ -590,16 +525,8 @@ export default {
   async mounted() {
     this.initSparklines();
     await this.loadTodayProfitLoss();
-    // Fechar dropdown quando clicar fora
-    document.addEventListener('click', this.handleClickOutside);
-  },
-  beforeUnmount() {
-    document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {
-    toggleBalance() {
-      this.balanceHidden = !this.balanceHidden;
-    },
     switchAccount(type) {
       this.accountType = type;
     },
@@ -748,32 +675,14 @@ export default {
         });
       }
     },
-    toggleProfileDropdown() {
-      this.showProfileDropdown = !this.showProfileDropdown;
-    },
-    handleClickOutside(event) {
-      const dropdown = document.getElementById('profileDropdown');
-      const button = event.target.closest('button');
-      if (dropdown && !dropdown.contains(event.target) && !button?.closest('.relative')) {
-        this.showProfileDropdown = false;
-      }
-    },
-    openDepositFlow() {
-      // Criar modal de depósito ou redirecionar
-      this.$router.push('/settings?tab=deposit');
-    },
-    disconnectAccount() {
-      localStorage.removeItem('deriv_token');
-      localStorage.removeItem('deriv_tokens_by_loginid');
-      localStorage.removeItem('deriv_connection');
-      this.$router.push('/dashboard');
-      window.location.reload();
-    },
     scrollToPerformance() {
       const element = document.getElementById('overall-performance');
       if (element) {
         element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+    },
+    openDepositFlow() {
+      this.$router.push('/settings?tab=deposit');
     }
   }
 }

@@ -3,47 +3,14 @@
     <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
 
     <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-      <header class="top-header">
-        <div class="header-content">
-          <div class="header-left-content">
-            <h1 class="header-title">Operação Manual com Sinais</h1>
-            <p class="header-subtitle">Execute operações manuais com apoio de sinais em tempo real.</p>
-          </div>
-          <div class="header-actions-right">
-            <div class="balance-display-card">
-              <div class="balance-header">
-                <i class="far fa-wallet"></i>
-                <div class="balance-info">
-                  <span class="balance-label">Saldo Atual</span>
-                  <div class="balance-value-row">
-                    <span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ accountBalanceFormatted }}</span>
-                    <span class="balance-value" v-else>••••••</span>
-                    <button 
-                      v-if="balanceVisible && accountType === 'real'" 
-                      class="account-type-btn real-btn"
-                      @click="toggleBalanceVisibility"
-                    >
-                      Real
-                    </button>
-                    <button 
-                      v-if="balanceVisible && accountType === 'demo'" 
-                      class="account-type-btn demo-btn"
-                      @click="toggleBalanceVisibility"
-                    >
-                      Demo
-                    </button>
-                    <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
-                      <i class="far fa-eye"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      <TopNavbar 
+        :is-sidebar-collapsed="isSidebarCollapsed"
+        :balance="accountBalanceValue"
+        :account-type="accountType"
+        :currency="accountCurrency"
+      />
 
-      <main class="main-content">
+      <main class="main-content" style="margin-top: 60px;">
         <div class="view-toggle-bar">
           <button
             class="px-6 py-3 bg-zenix-card border-b-2 border-zenix-green text-zenix-text text-sm font-semibold rounded-t-xl transition-all duration-300 shadow-[0_0_8px_rgba(0,0,0,0.25)]"
@@ -144,6 +111,7 @@
 
 <script>
 import AppSidebar from '../components/Sidebar.vue';
+import TopNavbar from '../components/TopNavbar.vue';
 import OperationChart from '../components/OperationChart.vue';
 import OperationDigits from '../components/OperationDigits.vue';
 
@@ -151,6 +119,7 @@ export default {
   name: 'OperationView',
   components: {
     AppSidebar,
+    TopNavbar,
     OperationChart,
     OperationDigits,
   },
@@ -170,7 +139,6 @@ export default {
       isSidebarOpen: false,
       isSidebarCollapsed: false,
       loadingConnection: false,
-      balanceVisible: true,
       accountType: 'real', // 'real' ou 'demo'
     };
   },
@@ -463,9 +431,6 @@ export default {
       } catch (error) {
         console.warn('Não foi possível atualizar cache da Deriv.', error);
       }
-    },
-    toggleBalanceVisibility() {
-      this.balanceVisible = !this.balanceVisible;
     },
   },
   async mounted() {

@@ -3,47 +3,14 @@
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
 
         <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-            <header class="top-header">
-                <div class="header-content">
-                    <div class="header-left-content">
-                        <h1 class="header-title">IA Orion – Operação Automática Ativa</h1>
-                        <p class="header-subtitle">A IA está monitorando o mercado e executando operações conforme sua configuração.</p>
-                    </div>
-                    <div class="header-actions-right">
-                        <div class="balance-display-card">
-                            <div class="balance-header">
-                                <i class="far fa-wallet"></i>
-                                <div class="balance-info">
-                                    <span class="balance-label">Saldo Atual</span>
-                                    <div class="balance-value-row">
-                                        <span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ formattedBalance }}</span>
-                                        <span class="balance-value" v-else>••••••</span>
-                <button 
-                                            v-if="balanceVisible && !isDemo" 
-                                            class="account-type-btn real-btn"
-                                            @click="toggleBalanceVisibility"
-                                        >
-                                            Real
-                </button>
-                <button 
-                                            v-if="balanceVisible && isDemo" 
-                                            class="account-type-btn demo-btn"
-                                            @click="toggleBalanceVisibility"
-                                        >
-                                            Demo
-                </button>
-                            <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
-                                            <i class="far fa-eye"></i>
-                            </button>
-                        </div>
-                        </div>
-                    </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
+            <TopNavbar 
+                :is-sidebar-collapsed="isSidebarCollapsed"
+                :balance="accountBalance"
+                :account-type="isDemo ? 'demo' : 'real'"
+                :currency="accountCurrency"
+            />
 
-            <main class="main-content">
+            <main class="main-content" style="margin-top: 60px;">
                 <!-- Configuration Cards Grid - Only show when IA is inactive -->
                 <div class="config-grid" v-if="!isInvestmentActive">
                     <!-- Mercado & Estratégia -->
@@ -350,6 +317,7 @@
 
 <script>
 import AppSidebar from '../components/Sidebar.vue';
+import TopNavbar from '../components/TopNavbar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
 
@@ -357,6 +325,7 @@ export default {
     name: 'InvestmentIAView',
     components: {
         AppSidebar,
+        TopNavbar,
         InvestmentActive,
         TooltipsCopyTraders,
 
@@ -385,7 +354,6 @@ export default {
             accountLoginid: null,
             isDemo: false,
             lastBalanceUpdate: null,
-            balanceVisible: true,
             balanceUpdateInterval: null,
             clockInterval: null,
             
@@ -526,10 +494,6 @@ export default {
         }
     },
     methods: {
-        toggleBalanceVisibility() {
-            this.balanceVisible = !this.balanceVisible;
-            console.log('[InvestmentIAView] 👁️ Visibilidade do saldo:', this.balanceVisible ? 'visível' : 'oculto');
-        },
         
         async handleToggleChange(event) {
             const isChecked = event.target.checked;

@@ -5,8 +5,13 @@
         :is-collapsed="isSidebarCollapsed" 
         @toggle-collapse="toggleSidebarCollapse" 
       />
+      <TopNavbar 
+        :is-sidebar-collapsed="isSidebarCollapsed"
+        :balance="0"
+        account-type="real"
+      />
   
-      <div class="box">
+      <div class="box" style="margin-top: 60px;">
         <div class="header">
           <h1>Copy Trading — Configuração Inicial</h1>
           <p>Configure risco, alocação e proteção antes de iniciar o Copy automático.</p>
@@ -35,6 +40,7 @@
   
   <script>
   import AppSidebar from '../components/Sidebar.vue';
+  import TopNavbar from '../components/TopNavbar.vue';
   import CopyTradingConfig from '../components/copy-traders/CopyTradingConfig.vue';
   import CopyTradingMonitor from '../components/copy-traders/CopyTradingMonitor.vue';
   
@@ -42,6 +48,7 @@
     name: 'CopyTrading',
     components: {
       AppSidebar,
+      TopNavbar,
       CopyTradingConfig,
       CopyTradingMonitor,
     },
