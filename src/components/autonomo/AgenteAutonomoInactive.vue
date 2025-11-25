@@ -149,7 +149,7 @@
 							min="0.01"
 							step="0.01"
 						>
-						<p style="font-size: 0.8em; color: #00ff66; margin-top: 5px;">2% do capital total</p>
+						<p style="font-size: 0.8em; color: #777; margin-top: 5px;">2% do capital total</p>
 					</div>
 					<div class="param-input-group">
 						<h3>Meta diária de lucro</h3>
@@ -325,6 +325,10 @@ export default {
 	margin-bottom: 30px;
 }
 
+.config-section h3{
+	color: white;
+}
+
 /* 🟢 ESTILOS DO TOOLTIP CUSTOMIZADO (POSICIONAMENTO CORRIGIDO) 🟢 */
 
 .section-with-tooltip {
@@ -470,6 +474,7 @@ span.icon-sumary-risk{
 	align-items: center;
 	justify-content: center;
 }
+
 
 .risk-options .option-card h3 {
 	margin-top: 5px; 

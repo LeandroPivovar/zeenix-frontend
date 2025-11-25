@@ -762,7 +762,7 @@ export default {
 	-webkit-appearance: none;
 	-moz-appearance: none;
 	appearance: none;
-	height: 25px; /* Altura uniforme */
+	height: 40px; /* Altura uniforme */
 }
 
 .custom-input-date {
