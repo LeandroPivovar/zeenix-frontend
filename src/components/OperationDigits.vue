@@ -88,10 +88,9 @@
                         </div>
                     </div>
                     </div>
-                </div>
 
-                <!-- Heatmap Estatístico -->
-                <div class="heatmap-card">
+                    <!-- Heatmap Estatístico -->
+                    <div class="heatmap-card">
                     <div class="card-header-with-help">
                         <h3 class="card-header">Heatmap Estatístico de Dígitos (0–9)</h3>
                         <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
@@ -132,11 +131,11 @@
                             <span>Sobreaquecido</span>
                         </div>
                     </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Trading Panel -->
-            <div class="trading-panel">
+                <!-- Trading Panel -->
+                <div class="trading-panel">
                     <div class="trading-panel-header">
                         <h3 class="card-header">Negociação Manual — Dígitos</h3>
                     </div>
