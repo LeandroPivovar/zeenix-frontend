@@ -6,66 +6,182 @@
         </div>
             
         <div v-else class="digits-layout">
-            <!-- Header Section: Semáforo + Histórico + Trading Panel -->
-            <div class="top-section">
-                <!-- Card Semáforo -->
-                <div id="semaphoreCard" class="semaphore-card semaphore-fade" :class="semaphoreStateClass">
-                    <div class="semaphore-header">
-                        <div class="semaphore-title-group">
-                            <i :class="['fas', semaphoreIcon, 'semaphore-icon']"></i>
-                            <h3 class="semaphore-title">{{ semaphoreTitle }}</h3>
-                        </div>
-                        <div class="relative group">
-                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
-                            <div class="tooltip-content">
-                                <div class="tooltip-title">Como Usar o Semáforo</div>
-                                <div class="tooltip-text">
-                                    Este é o indicador PRINCIPAL.<br><br>
-                                    Verde = sinal claro para operar com a estratégia mostrada.<br>
-                                    Amarelo = aguarde, sem padrão claro ainda.<br>
-                                    Vermelho = NÃO opere, condições desfavoráveis.<br><br>
-                                    <strong>Exemplo:</strong> Verde mostrando 'MATCHES 7, Confiança 78%' = Entre na Deriv e faça uma operação Matches no dígito 7 por 5 ticks.
+            <!-- Top Row: Top Section + Trading Panel -->
+            <div class="top-row">
+                <!-- Header Section: Semáforo + Histórico -->
+                <div class="top-section">
+                    <!-- Card Semáforo -->
+                    <div id="semaphoreCard" class="semaphore-card semaphore-fade" :class="semaphoreStateClass">
+                        <div class="semaphore-header">
+                            <div class="semaphore-title-group">
+                                <i :class="['fas', semaphoreIcon, 'semaphore-icon']"></i>
+                                <h3 class="semaphore-title">{{ semaphoreTitle }}</h3>
+                            </div>
+                            <div class="relative group">
+                                <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                                <div class="tooltip-content">
+                                    <div class="tooltip-title">Como Usar o Semáforo</div>
+                                    <div class="tooltip-text">
+                                        Este é o indicador PRINCIPAL.<br><br>
+                                        Verde = sinal claro para operar com a estratégia mostrada.<br>
+                                        Amarelo = aguarde, sem padrão claro ainda.<br>
+                                        Vermelho = NÃO opere, condições desfavoráveis.<br><br>
+                                        <strong>Exemplo:</strong> Verde mostrando 'MATCHES 7, Confiança 78%' = Entre na Deriv e faça uma operação Matches no dígito 7 por 5 ticks.
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                        <div class="semaphore-status-container">
+                            <div class="semaphore-status">{{ semaphoreStatus }}</div>
+                        </div>
+                        <div class="semaphore-reason-box">
+                            <div class="semaphore-reason-label">Razão</div>
+                            <div class="semaphore-reason">{{ semaphoreReason }}</div>
+                        </div>
                     </div>
-                    <div class="semaphore-status-container">
-                        <div class="semaphore-status">{{ semaphoreStatus }}</div>
-                    </div>
-                    <div class="semaphore-reason-box">
-                        <div class="semaphore-reason-label">Razão</div>
-                        <div class="semaphore-reason">{{ semaphoreReason }}</div>
+
+                    <!-- Card Histórico -->
+                    <div class="history-card">
+                        <div class="card-header-with-help">
+                            <h3 class="card-header">Histórico dos Últimos Dígitos</h3>
+                            <div class="relative group">
+                                <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help opacity-80"></i>
+                                <div class="tooltip-content">
+                                    <div class="tooltip-title">Visualização do Histórico</div>
+                                    <div class="tooltip-text">
+                                        Mostra os últimos 20 dígitos recebidos em tempo real. O dígito destacado (em verde) é o mais recente.<br><br>
+                                        Use este painel para validar visualmente padrões como repetições, alternâncias e clusters.
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="digit-history-grid">
+                            <div 
+                                v-for="(digit, index) in last20Digits" 
+                                :key="'hist-'+index" 
+                                :class="['digit-history-item', index === last20Digits.length - 1 ? 'digit-history-active' : '']"
+                            >
+                                {{ digit }}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Card Histórico -->
-                <div class="history-card">
-                    <div class="card-header-with-help">
-                        <h3 class="card-header">Histórico dos Últimos Dígitos</h3>
-                        <div class="relative group">
-                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help opacity-80"></i>
-                            <div class="tooltip-content">
-                                <div class="tooltip-title">Visualização do Histórico</div>
-                                <div class="tooltip-text">
-                                    Mostra os últimos 20 dígitos recebidos em tempo real. O dígito destacado (em verde) é o mais recente.<br><br>
-                                    Use este painel para validar visualmente padrões como repetições, alternâncias e clusters.
-                                </div>
+                <!-- Trading Panel -->
+                <div class="trading-panel">
+                    <div class="trading-panel-header">
+                        <h3 class="card-header">Negociação Manual — Dígitos</h3>
+                    </div>
+                    <div class="trading-panel-content">
+                        <div class="input-group">
+                            <label class="input-label">Mercado</label>
+                            <select v-model="symbol" @change="handleSymbolChange" :disabled="!isAuthorized || isLoadingSymbol" class="select-field">
+                                <optgroup label="Índices Contínuos">
+                                    <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Criptomoedas">
+                                    <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Forex Majors">
+                                    <option v-for="market in marketsByCategory['Forex Majors']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Forex Minors">
+                                    <option v-for="market in marketsByCategory['Forex Minors']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Forex Exotics">
+                                    <option v-for="market in marketsByCategory['Forex Exotics']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Metais">
+                                    <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Tipo de Operação</label>
+                            <select v-model="digitType" class="select-field" :disabled="isTrading" @change="onDigitTypeChange">
+                                <option value="DIGITMATCH">Dígitos (Último dígito)</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Duração</label>
+                            <div class="duration-input-group">
+                                <select class="duration-select">
+                                    <option>Ticks</option>
+                                </select>
+                                <input type="number" value="5" v-model.number="duration" class="duration-input" :disabled="isTrading" @input="subscribeToProposal" />
                             </div>
                         </div>
-                    </div>
-                    <div class="digit-history-grid">
-                        <div 
-                            v-for="(digit, index) in last20Digits" 
-                            :key="'hist-'+index" 
-                            :class="['digit-history-item', index === last20Digits.length - 1 ? 'digit-history-active' : '']"
-                        >
-                            {{ digit }}
+
+                        <div class="input-group">
+                            <label class="input-label">Previsão</label>
+                            <div class="prediction-buttons">
+                                <button class="prediction-btn">Acima</button>
+                                <button class="prediction-btn">Abaixo</button>
+                            </div>
                         </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Valor de entrada</label>
+                            <input 
+                                type="number" 
+                                placeholder="Ex: 1.00, 2.50..." 
+                                v-model.number="orderValue" 
+                                class="input-field-value" 
+                                :disabled="isTrading" 
+                                @input="subscribeToProposal"
+                            />
+                        </div>
+
+                        <div v-if="currentProposalPrice" class="proposal-info">
+                            <div class="proposal-price-label">Preço de Compra:</div>
+                            <div class="proposal-price-value">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
+                        </div>
+
+                        <div v-if="realTimeProfit !== null && activeContract" class="profit-info" :class="{ 'profit-positive': realTimeProfit > 0, 'profit-negative': realTimeProfit < 0 }">
+                            <div class="profit-label">P&L em Tempo Real:</div>
+                            <div class="profit-value">{{ displayCurrency }} {{ realTimeProfit > 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}</div>
+                        </div>
+
+                        <div class="trading-buttons">
+                            <button 
+                                v-if="!activeContract"
+                                @click="executeBuy" 
+                                class="btn-call" 
+                                :disabled="isTrading || !isAuthorized || !currentProposalId"
+                            >
+                                CALL
+                            </button>
+                            <button 
+                                v-if="!activeContract"
+                                @click="executeBuy" 
+                                class="btn-put" 
+                                :disabled="isTrading || !isAuthorized || !currentProposalId"
+                            >
+                                PUT
+                            </button>
+                        </div>
+
+                        <p v-if="tradeMessage" class="trade-message success">{{ tradeMessage }}</p>
+                        <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
                     </div>
                 </div>
             </div>
 
-            <!-- Main Content Grid with Trading Panel -->
+            <!-- Main Content Grid -->
             <div class="main-content-grid">
                 <div class="cards-grid">
                     <!-- Linha 1: Mapa de Frequência + Heatmap -->
@@ -283,119 +399,6 @@
                         </div>
                     </div>
                 </div>
-                </div>
-
-                <!-- Trading Panel -->
-                <div class="trading-panel">
-                    <div class="trading-panel-header">
-                        <h3 class="card-header">Negociação Manual — Dígitos</h3>
-                    </div>
-                    <div class="trading-panel-content">
-                        <div class="input-group">
-                            <label class="input-label">Mercado</label>
-                            <select v-model="symbol" @change="handleSymbolChange" :disabled="!isAuthorized || isLoadingSymbol" class="select-field">
-                                <optgroup label="Índices Contínuos">
-                                    <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                                <optgroup label="Criptomoedas">
-                                    <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                                <optgroup label="Forex Majors">
-                                    <option v-for="market in marketsByCategory['Forex Majors']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                                <optgroup label="Forex Minors">
-                                    <option v-for="market in marketsByCategory['Forex Minors']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                                <optgroup label="Forex Exotics">
-                                    <option v-for="market in marketsByCategory['Forex Exotics']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                                <optgroup label="Metais">
-                                    <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                            </select>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="input-label">Tipo de Operação</label>
-                            <select v-model="digitType" class="select-field" :disabled="isTrading" @change="onDigitTypeChange">
-                                <option value="DIGITMATCH">Dígitos (Último dígito)</option>
-                            </select>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="input-label">Duração</label>
-                            <div class="duration-input-group">
-                                <select class="duration-select">
-                                    <option>Ticks</option>
-                                </select>
-                                <input type="number" value="5" v-model.number="duration" class="duration-input" :disabled="isTrading" @input="subscribeToProposal" />
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="input-label">Previsão</label>
-                            <div class="prediction-buttons">
-                                <button class="prediction-btn">Acima</button>
-                                <button class="prediction-btn">Abaixo</button>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="input-label">Valor de entrada</label>
-                            <input 
-                                type="number" 
-                                placeholder="Ex: 1.00, 2.50..." 
-                                v-model.number="orderValue" 
-                                class="input-field-value" 
-                                :disabled="isTrading" 
-                                @input="subscribeToProposal"
-                            />
-                        </div>
-
-                        <div v-if="currentProposalPrice" class="proposal-info">
-                            <div class="proposal-price-label">Preço de Compra:</div>
-                            <div class="proposal-price-value">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
-                        </div>
-
-                        <div v-if="realTimeProfit !== null && activeContract" class="profit-info" :class="{ 'profit-positive': realTimeProfit > 0, 'profit-negative': realTimeProfit < 0 }">
-                            <div class="profit-label">P&L em Tempo Real:</div>
-                            <div class="profit-value">{{ displayCurrency }} {{ realTimeProfit > 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}</div>
-                        </div>
-
-                        <div class="trading-buttons">
-                            <button 
-                                v-if="!activeContract"
-                                @click="executeBuy" 
-                                class="btn-call" 
-                                :disabled="isTrading || !isAuthorized || !currentProposalId"
-                            >
-                                CALL
-                            </button>
-                            <button 
-                                v-if="!activeContract"
-                                @click="executeBuy" 
-                                class="btn-put" 
-                                :disabled="isTrading || !isAuthorized || !currentProposalId"
-                            >
-                                PUT
-                            </button>
-                        </div>
-
-                        <p v-if="tradeMessage" class="trade-message success">{{ tradeMessage }}</p>
-                        <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
-                    </div>
                 </div>
             </div>
 
