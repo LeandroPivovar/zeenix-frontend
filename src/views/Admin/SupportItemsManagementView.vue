@@ -26,9 +26,39 @@
                         </div>
 
                         <div class="form-group" style="flex: 1 1 100%;">
-                            <label for="content">Conteúdo</label>
-                            <textarea id="content" name="content" placeholder="Digite o conteúdo do item de suporte. Você pode usar HTML para formatar o texto, adicionar imagens, títulos, etc." v-model="supportItemForm.content" required></textarea>
-                            <span class="hint-text">Conteúdo do item de suporte. Use HTML para formatar (títulos, imagens, listas, etc.).</span>
+                            <label for="subtitle">Subtítulo</label>
+                            <textarea id="subtitle" name="subtitle" placeholder="Digite o subtítulo ou descrição do item de suporte" v-model="supportItemForm.subtitle" rows="3"></textarea>
+                            <span class="hint-text">Subtítulo ou descrição do item de suporte.</span>
+                        </div>
+
+                        <div class="form-group image-upload-group" style="flex: 1 1 100%;">
+                            <label>Foto</label>
+                            <div class="image-upload-area">
+                                <input
+                                    type="file"
+                                    ref="imageFileInput"
+                                    @change="handleImageUpload"
+                                    accept="image/*"
+                                    style="display: none;"
+                                />
+                                <div
+                                    class="upload-placeholder"
+                                    @click="$refs.imageFileInput.click()"
+                                    :class="{ 'hidden-on-preview': supportItemForm.imagePreview }"
+                                >
+                                    <span>Arraste ou clique para enviar imagem</span>
+                                </div>
+                                <div class="image-preview-box">
+                                    <img
+                                        v-if="supportItemForm.imagePreview"
+                                        :src="supportItemForm.imagePreview"
+                                        alt="Prévia da Imagem"
+                                        class="image-preview"
+                                    />
+                                    <span v-else>Preview da Imagem</span>
+                                </div>
+                            </div>
+                            <span class="hint-text">Imagem do item de suporte (opcional).</span>
                         </div>
 
                         <div class="divisor"></div>
@@ -56,7 +86,8 @@
                 <div class="table-content-wrapper">
                     <div class="table-header">
                         <div class="th title">Título</div>
-                        <div class="th content-preview">Prévia do Conteúdo</div>
+                        <div class="th subtitle">Subtítulo</div>
+                        <div class="th image">Imagem</div>
                         <div class="th created-at">Data de Criação</div>
                         <div class="th actions">Ações</div>
                     </div>
@@ -73,7 +104,11 @@
                         </div>
                         <div v-else class="table-row-support-items" v-for="item in supportItems" :key="item.id">
                             <div class="td title">{{ item.title }}</div>
-                            <div class="td content-preview" v-html="getContentPreview(item.content)"></div>
+                            <div class="td subtitle-preview">{{ item.subtitle || '-' }}</div>
+                            <div class="td image-preview-cell">
+                                <img v-if="item.imagePath" :src="getImageUrl(item.imagePath)" alt="Imagem" class="table-image-preview" />
+                                <span v-else>-</span>
+                            </div>
                             <div class="td created-at">{{ formatDate(item.createdAt) }}</div>
                             <div class="td actions">
                                 <button class="action-btn edit" aria-label="Editar" @click="editSupportItem(item)"><i class="fas fa-edit"></i></button>
@@ -180,11 +215,14 @@ export default {
             }
         },
 
-        getContentPreview(content) {
-            if (!content) return 'Sem conteúdo';
-            // Remove tags HTML e limita a 100 caracteres
-            const text = content.replace(/<[^>]*>/g, '').trim();
-            return text.length > 100 ? text.substring(0, 100) + '...' : text;
+        getImageUrl(imagePath) {
+            if (!imagePath) return null;
+            const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+            // Se já começa com /uploads, retorna direto, senão adiciona o baseUrl
+            if (imagePath.startsWith('/uploads/')) {
+                return `${baseUrl.replace('/api', '')}${imagePath}`;
+            }
+            return imagePath;
         },
 
         formatDate(dateString) {
@@ -204,7 +242,9 @@ export default {
             return {
                 id: null,
                 title: '',
-                content: '',
+                subtitle: '',
+                imagePath: '',
+                imagePreview: null,
             };
         },
 
@@ -221,11 +261,6 @@ export default {
             // Validações básicas
             if (!this.supportItemForm.title || !this.supportItemForm.title.trim()) {
                 this.showToast('⚠️ Por favor, preencha o título do item', 'warning', 4000);
-                return;
-            }
-            
-            if (!this.supportItemForm.content || !this.supportItemForm.content.trim()) {
-                this.showToast('⚠️ Por favor, preencha o conteúdo do item', 'warning', 4000);
                 return;
             }
 
@@ -246,7 +281,8 @@ export default {
 
                 const payload = {
                     title: this.supportItemForm.title.trim(),
-                    content: this.supportItemForm.content.trim(),
+                    subtitle: this.supportItemForm.subtitle ? this.supportItemForm.subtitle.trim() : null,
+                    imagePath: this.supportItemForm.imagePath || null,
                 };
 
                 const response = await fetch(url, {
@@ -301,10 +337,80 @@ export default {
             this.supportItemForm = { 
                 id: item.id,
                 title: item.title,
-                content: item.content,
+                subtitle: item.subtitle || '',
+                imagePath: item.imagePath || '',
+                imagePreview: item.imagePath ? this.getImageUrl(item.imagePath) : null,
             };
             this.isEditing = true;
             this.isFormVisible = true;
+        },
+        async handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (!file) {
+                this.supportItemForm.imagePath = '';
+                this.supportItemForm.imagePreview = null;
+                return;
+            }
+            
+            // Gerar preview local
+            this.generateLocalImagePreview(file);
+            
+            // Fazer upload
+            const uploadedPath = await this.uploadImage(file);
+            if (uploadedPath) {
+                this.supportItemForm.imagePath = uploadedPath;
+            } else {
+                this.supportItemForm.imagePreview = null;
+            }
+            event.target.value = '';
+        },
+        generateLocalImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                this.supportItemForm.imagePreview = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        },
+        async uploadImage(file) {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    this.showToast('❌ Você precisa estar autenticado para fazer upload', 'error', 5000);
+                    return null;
+                }
+
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const formData = new FormData();
+                formData.append('file', file);
+
+                const response = await fetch(`${baseUrl}/support/items/upload/image`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: formData,
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMessage = 'Erro ao fazer upload da imagem';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch (e) {
+                        errorMessage = errorText || `Erro HTTP ${response.status}`;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const result = await response.json();
+                return result.path;
+            } catch (error) {
+                console.error('Erro ao fazer upload da imagem:', error);
+                this.showToast(error.message || '❌ Erro ao fazer upload da imagem', 'error', 6000);
+                this.supportItemForm.imagePreview = null;
+                return null;
+            }
         },
         async deleteSupportItem(itemId) {
             const item = this.supportItems.find(i => i.id === itemId);
@@ -643,7 +749,7 @@ body {
 
 .table-header {
     display: grid;
-    grid-template-columns: 2fr 3fr 1.5fr 1fr;
+    grid-template-columns: 2fr 2.5fr 1.5fr 1.5fr 1fr;
     align-items: center;
     padding: 10px 0;
     font-weight: 500;
@@ -662,7 +768,7 @@ body {
     font-size: 0.9rem;
     border-bottom: 1px solid #2a2a2a; 
     display: grid; 
-    grid-template-columns: 2fr 3fr 1.5fr 1fr;
+    grid-template-columns: 2fr 2.5fr 1.5fr 1.5fr 1fr;
     align-items: center;
     width: 100%;
     padding: 8px 0;
@@ -679,7 +785,7 @@ body {
     white-space: nowrap; 
 }
 
-.td.content-preview {
+.td.subtitle-preview {
     white-space: normal;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -688,6 +794,70 @@ body {
     -webkit-box-orient: vertical;
     color: #aaa;
     font-size: 0.85rem;
+}
+
+.td.image-preview-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.table-image-preview {
+    max-width: 60px;
+    max-height: 60px;
+    object-fit: cover;
+    border-radius: 4px;
+}
+
+.image-upload-group {
+    margin-top: 10px;
+}
+
+.image-upload-area {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+}
+
+.upload-placeholder {
+    flex: 1;
+    border: 2px dashed #3a3a3a;
+    border-radius: 4px;
+    padding: 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    color: #aaa;
+}
+
+.upload-placeholder:hover {
+    border-color: #4CAF50;
+    color: #fff;
+}
+
+.upload-placeholder.hidden-on-preview {
+    display: none;
+}
+
+.image-preview-box {
+    flex: 1;
+    border: 1px solid #3a3a3a;
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2a2a2a;
+    color: #777;
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
+    border-radius: 4px;
 }
 
 .td.actions {
