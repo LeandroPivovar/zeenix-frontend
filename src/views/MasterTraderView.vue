@@ -175,8 +175,8 @@ export default {
     min-height: 100vh;
     background-color: #0b0b0a; /* Fundo escuro principal */
     color: #f0f6fc; /* Texto principal claro */
-    width: calc(100% - 320px);
-    margin-left: 320px;
+    width: calc(100% - 350px);
+    margin-left: 350px;
 }
 
 .layout-master-trader .agente-autonomo-header {
