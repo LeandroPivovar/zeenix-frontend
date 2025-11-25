@@ -21,6 +21,7 @@ import AdminView from '@/views/Admin/AdminView.vue'
 import MasterTraderView from '@/views/MasterTraderView.vue'
 import AgenteAutonomoView from '@/views/AgenteAutonomo.vue'
 import CopyTraders from '@/views/CopyTradersView.vue';
+import SupportItemsManagementView from '@/views/Admin/SupportItemsManagementView.vue';
 
 const routes = [
   {
@@ -179,6 +180,12 @@ const routes = [
     path: '/copy-trader',
     name: 'CopyTradersView',
     component: CopyTraders,  
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/SupportItems',
+    name: 'SupportItemsManagement',
+    component: SupportItemsManagementView,
     meta: { requiresAuth: true }
   },
 

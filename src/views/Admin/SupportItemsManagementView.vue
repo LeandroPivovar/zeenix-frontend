@@ -1,0 +1,802 @@
+<template>
+    <div class="layout" ref="layoutContainer" :class="{'layout-collapsed': isSidebarCollapsed && !isMobile}">
+        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
+        
+        <main class="layout-content">
+            <button class="hamburger-btn" @click="toggleSidebar" aria-label="Abrir menu">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+            </button>
+            
+            <div class="form-support-item" v-if="isFormVisible">
+                <form @submit.prevent="saveSupportItem">
+                    <div class="header-form">
+                        <h1>{{ isEditing ? 'Editar Item de Suporte' : 'Adicionar novo Item de Suporte' }}</h1>
+                        <a href="#" class="help-link">Ajuda</a>
+                        <button class="close-btn" type="button" @click="closeForm">×</button>
+                    </div>
+                    <p>Adicione informações sobre o item de suporte</p>
+
+                    <div class="form-container">
+                        <div class="form-group" style="flex: 1 1 100%;">
+                            <label for="title">Título</label>
+                            <input type="text" id="title" name="title" placeholder="ex: Como conectar minha conta" v-model="supportItemForm.title" required>
+                            <span class="hint-text">Título do item de suporte.</span>
+                        </div>
+
+                        <div class="form-group" style="flex: 1 1 100%;">
+                            <label for="content">Conteúdo</label>
+                            <textarea id="content" name="content" placeholder="Digite o conteúdo do item de suporte. Você pode usar HTML para formatar o texto, adicionar imagens, títulos, etc." v-model="supportItemForm.content" required></textarea>
+                            <span class="hint-text">Conteúdo do item de suporte. Use HTML para formatar (títulos, imagens, listas, etc.).</span>
+                        </div>
+
+                        <div class="divisor"></div>
+
+                        <div class="footer-form">
+                            <div class="right-footer">
+                                <h3>&nbsp;</h3>
+                            </div>
+                            <div class="left-footer">
+                                <button class="cancel-btn" type="button" @click="closeForm">Cancelar</button>
+                                <button class="save-btn" type="submit">{{ isEditing ? 'Salvar Alterações' : 'Adicionar Item' }}</button>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+
+            <div class="add-support-item-button-wrapper" v-if="!isFormVisible">
+                <button class="add-support-item-btn" @click="openForm">
+                    + Adicionar Novo Item de Suporte
+                </button>
+            </div>
+            
+            <div class="support-items-table">
+                <div class="table-content-wrapper">
+                    <div class="table-header">
+                        <div class="th title">Título</div>
+                        <div class="th content-preview">Prévia do Conteúdo</div>
+                        <div class="th created-at">Data de Criação</div>
+                        <div class="th actions">Ações</div>
+                    </div>
+                    <div class="table-body">
+                        <div v-if="isLoading" class="table-row-support-items">
+                            <div class="td" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #999;">
+                                Carregando itens de suporte...
+                            </div>
+                        </div>
+                        <div v-else-if="supportItems.length === 0" class="table-row-support-items">
+                            <div class="td" style="grid-column: 1 / -1; text-align: center; padding: 2rem; color: #999;">
+                                Nenhum item de suporte cadastrado
+                            </div>
+                        </div>
+                        <div v-else class="table-row-support-items" v-for="item in supportItems" :key="item.id">
+                            <div class="td title">{{ item.title }}</div>
+                            <div class="td content-preview" v-html="getContentPreview(item.content)"></div>
+                            <div class="td created-at">{{ formatDate(item.createdAt) }}</div>
+                            <div class="td actions">
+                                <button class="action-btn edit" aria-label="Editar" @click="editSupportItem(item)"><i class="fas fa-edit"></i></button>
+                                <button class="action-btn trash" aria-label="Deletar" @click="deleteSupportItem(item.id)"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="footer-view">
+            </div>
+        </main>
+        <ToastNotification ref="toast" />
+    </div>
+</template>
+
+<script>
+import AppSidebar from '../../components/Sidebar.vue';
+import ToastNotification from '../../components/Toast.vue';
+
+export default {
+    name: 'SupportItemsManagementView',
+    components: {
+        AppSidebar,
+        ToastNotification,
+    },
+    data() {
+        return {
+            isSidebarOpen: true, 
+            isSidebarCollapsed: false,
+            isMobile: false,
+            
+            // Gerenciamento do Formulário
+            isFormVisible: false,
+            isEditing: false,
+            supportItemForm: this.getEmptySupportItemForm(),
+            
+            // Dados Dinâmicos
+            supportItems: [],
+            isLoading: true,
+        };
+    },
+    async mounted() {
+        this.checkMobileStatus();
+        window.addEventListener('resize', this.checkMobileStatus);
+        document.addEventListener('click', this.handleClickOutside);
+        await this.loadSupportItems();
+    },
+    beforeUnmount() {
+        window.removeEventListener('resize', this.checkMobileStatus);
+        document.removeEventListener('click', this.handleClickOutside);
+    },
+    methods: {
+        // --- Métodos de Toast ---
+        showToast(message, type = 'info', duration = 5000) {
+            if (this.$refs.toast) {
+                if (type === 'success') {
+                    this.$refs.toast.success(message, duration);
+                } else if (type === 'error') {
+                    this.$refs.toast.error(message, duration);
+                } else if (type === 'warning') {
+                    this.$refs.toast.warning(message, duration);
+                } else {
+                    this.$refs.toast.info(message, duration);
+                }
+            }
+        },
+        
+        // --- Métodos de Integração com Backend ---
+        async loadSupportItems() {
+            this.isLoading = true;
+            try {
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const url = `${baseUrl}/support/items`;
+
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMessage = `Falha ao carregar itens de suporte: ${response.status} ${response.statusText}`;
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch (e) {
+                        errorMessage = errorText || errorMessage;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const data = await response.json();
+                this.supportItems = data;
+            } catch (error) {
+                console.error('Erro ao carregar itens de suporte:', error);
+                this.showToast('❌ Erro ao carregar itens de suporte', 'error', 6000);
+                this.supportItems = [];
+            } finally {
+                this.isLoading = false;
+            }
+        },
+
+        getContentPreview(content) {
+            if (!content) return 'Sem conteúdo';
+            // Remove tags HTML e limita a 100 caracteres
+            const text = content.replace(/<[^>]*>/g, '').trim();
+            return text.length > 100 ? text.substring(0, 100) + '...' : text;
+        },
+
+        formatDate(dateString) {
+            if (!dateString) return '-';
+            const date = new Date(dateString);
+            return date.toLocaleDateString('pt-BR', {
+                day: '2-digit',
+                month: '2-digit',
+                year: 'numeric',
+                hour: '2-digit',
+                minute: '2-digit',
+            });
+        },
+
+        // --- Métodos de Utilitário ---
+        getEmptySupportItemForm() {
+            return {
+                id: null,
+                title: '',
+                content: '',
+            };
+        },
+
+        // --- Métodos de Gerenciamento de Formulário (CRUD) ---
+        openForm() {
+            this.supportItemForm = this.getEmptySupportItemForm();
+            this.isEditing = false;
+            this.isFormVisible = true;
+        },
+        closeForm() {
+            this.isFormVisible = false;
+        },
+        async saveSupportItem() {
+            // Validações básicas
+            if (!this.supportItemForm.title || !this.supportItemForm.title.trim()) {
+                this.showToast('⚠️ Por favor, preencha o título do item', 'warning', 4000);
+                return;
+            }
+            
+            if (!this.supportItemForm.content || !this.supportItemForm.content.trim()) {
+                this.showToast('⚠️ Por favor, preencha o conteúdo do item', 'warning', 4000);
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    this.showToast('❌ Você precisa estar autenticado para realizar esta ação.<br><br>Por favor, faça login novamente.', 'error', 6000);
+                    return;
+                }
+
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const url = this.isEditing
+                    ? `${baseUrl}/support/items/${this.supportItemForm.id}`
+                    : `${baseUrl}/support/items`;
+
+                const method = this.isEditing ? 'PUT' : 'POST';
+
+                const payload = {
+                    title: this.supportItemForm.title.trim(),
+                    content: this.supportItemForm.content.trim(),
+                };
+
+                const response = await fetch(url, {
+                    method,
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMessage = 'Erro ao salvar item de suporte';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch (e) {
+                        if (errorText) {
+                            errorMessage = errorText;
+                        } else {
+                            errorMessage = `Erro HTTP ${response.status}: ${response.statusText}`;
+                        }
+                    }
+                    
+                    if (response.status === 401) {
+                        this.showToast('❌ Não autorizado! Seu token pode ter expirado.<br><br>Por favor, faça login novamente.', 'error', 7000);
+                    } else if (response.status === 400) {
+                        this.showToast(`❌ Erro de validação:<br>${errorMessage}`, 'error', 6000);
+                    } else if (response.status >= 500) {
+                        this.showToast(`❌ Erro no servidor:<br>${errorMessage}<br><br>Verifique os logs do backend.`, 'error', 8000);
+                    } else {
+                        this.showToast(`❌ Erro ao salvar item:<br>${errorMessage}`, 'error', 6000);
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                const result = await response.json();
+                this.closeForm();
+                await this.loadSupportItems();
+                this.showToast(this.isEditing ? 'Item de suporte atualizado com sucesso!' : 'Item de suporte adicionado com sucesso!', 'success', 4000);
+            } catch (error) {
+                console.error('Erro ao salvar item de suporte:', error);
+                if (error.name === 'TypeError' && error.message.includes('fetch')) {
+                    this.showToast('❌ Erro de conexão com o backend!<br><br>Verifique:<br>1. Se o backend está rodando (http://localhost:3000)<br>2. Se há problemas de CORS<br>3. Se a URL está correta', 'error', 8000);
+                } else if (!error.message.includes('HTTP') && !error.message.includes('não autorizado')) {
+                    this.showToast(error.message || '❌ Erro ao salvar item de suporte. Verifique os dados e tente novamente.', 'error', 6000);
+                }
+            }
+        },
+        editSupportItem(item) {
+            this.supportItemForm = { 
+                id: item.id,
+                title: item.title,
+                content: item.content,
+            };
+            this.isEditing = true;
+            this.isFormVisible = true;
+        },
+        async deleteSupportItem(itemId) {
+            const item = this.supportItems.find(i => i.id === itemId);
+            if (!confirm(`Tem certeza que deseja deletar o item "${item?.title || itemId}"?`)) {
+                return;
+            }
+
+            try {
+                const token = localStorage.getItem('token');
+                
+                if (!token) {
+                    this.showToast('❌ Você precisa estar autenticado para realizar esta ação', 'error', 5000);
+                    return;
+                }
+
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const url = `${baseUrl}/support/items/${itemId}`;
+
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+
+                if (!response.ok) {
+                    const errorText = await response.text();
+                    let errorMessage = 'Erro ao deletar item de suporte';
+                    try {
+                        const errorJson = JSON.parse(errorText);
+                        errorMessage = errorJson.message || errorMessage;
+                    } catch (e) {
+                        errorMessage = errorText || `Erro HTTP ${response.status}`;
+                    }
+                    throw new Error(errorMessage);
+                }
+
+                await this.loadSupportItems();
+                this.showToast('✅ Item de suporte deletado com sucesso!', 'success', 4000);
+            } catch (error) {
+                console.error('Erro ao deletar item de suporte:', error);
+                this.showToast(error.message || '❌ Erro ao deletar item de suporte', 'error', 6000);
+            }
+        },
+
+        // --- Métodos de Sidebar e Responsividade ---
+        checkMobileStatus() {
+            this.isMobile = window.innerWidth <= 768;
+            
+            if (!this.isMobile) {
+                this.isSidebarOpen = true;
+            } else {
+                this.isSidebarOpen = false;
+            }
+        },
+        toggleSidebarCollapse() {
+            this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        },
+        toggleSidebar() { 
+            if (this.isMobile) {
+                this.isSidebarOpen = !this.isSidebarOpen;
+            } else {
+                this.toggleSidebarCollapse();
+            }
+        },
+        handleClickOutside(event) {
+            if (this.isMobile && this.isSidebarOpen) {
+                const sidebarEl = this.$refs.layoutContainer.querySelector('.app-sidebar'); 
+                const isClickOutsideSidebar = sidebarEl && !sidebarEl.contains(event.target);
+                const isClickOnHamburger = event.target.closest('.hamburger-btn');
+                
+                if (isClickOutsideSidebar && !isClickOnHamburger) {
+                    this.isSidebarOpen = false;
+                }
+            }
+        },
+    }
+};
+</script>
+
+<style scoped>
+@import url('https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap');
+
+body {
+    color: #fff;
+    font-family: 'Roboto', sans-serif;
+    margin: 0;
+}
+
+.layout {
+    background-color: #0e0f0f;
+    color: #fff;
+    min-height: 100vh;
+    box-sizing: border-box;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+}
+
+.layout-collapsed {
+    margin-left: 80px; 
+    width: calc(100% - 80px);
+}
+
+.layout-content {
+    margin: 0;
+    display: flex;
+    justify-content: flex-start;
+    flex-direction: column;
+    padding: 20px;
+}
+
+.hamburger-btn {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    background: #1f1f1f;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #e5e7eb;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 6px;
+    display: none; 
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+}
+
+.hamburger-btn svg {
+    display: block;
+}
+
+.add-support-item-button-wrapper {
+    margin-top: 20px;
+    margin-bottom: 30px;
+    opacity: 0;
+    animation: fadeIn 0.5s ease-out forwards;
+}
+
+.add-support-item-btn {
+    background-color: #4CAF50;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 1rem;
+}
+
+.add-support-item-btn:hover {
+    background-color: #45a049;
+}
+
+.form-support-item {
+    background-color: #1f1f1f;
+    border-radius: 8px;
+    padding: 25px;
+    margin-bottom: 30px;
+    margin-top: 20px;
+    box-shadow: 0 4px 12px rgba(7, 51, 1, 0.4);
+    max-height: 80vh;
+    overflow-y: auto;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-out forwards; 
+    padding-right: 15px;
+}
+
+.form-support-item::-webkit-scrollbar { width: 8px; }
+.form-support-item::-webkit-scrollbar-track { background: #2a2a2a; border-radius: 10px; }
+.form-support-item::-webkit-scrollbar-thumb { background-color: #555; border-radius: 10px; }
+.form-support-item::-webkit-scrollbar-thumb:hover { background-color: #777; }
+
+.form-support-item .header-form {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #333;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.form-support-item h1 {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin: 0;
+}
+
+.form-support-item .help-link {
+    color: #00fa08;
+    text-decoration: none;
+    font-size: 0.9rem;
+    margin-left: auto;
+    margin-right: 20px;
+}
+
+.form-support-item .close-btn {
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.5rem;
+    cursor: pointer;
+    opacity: 0.6;
+    padding: 0;
+    line-height: 1;
+}
+
+.form-support-item > p {
+    color: #aaa;
+    margin-top: 0;
+    margin-bottom: 25px;
+}
+
+.form-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.form-group {
+    flex: 1 1 calc(50% - 10px);
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-size: 0.9rem;
+    color: #fff;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.form-group input,
+.form-group textarea {
+    background-color: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    color: #fff;
+    padding: 10px;
+    border-radius: 4px;
+    font-size: 1rem;
+    box-sizing: border-box;
+    width: 100%;
+    font-family: 'Roboto', sans-serif;
+}
+
+.form-group textarea {
+    min-height: 300px;
+    resize: vertical;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+    color: #777;
+}
+
+.form-group .hint-text {
+    font-size: 0.8rem;
+    color: #a09f9f;
+    margin-top: 5px;
+}
+
+.divisor {
+    height: 1px;
+    width: 100%;
+    background-color: #333;
+    margin: 20px 0;
+    border: 1px solid #535353;
+}
+
+.footer-form {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.right-footer h3 {
+    font-size: 0.9rem;
+    color: #4CAF50;
+    font-weight: 400;
+    margin: 0;
+}
+
+.left-footer button {
+    padding: 10px 20px;
+    border-radius: 4px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.cancel-btn {
+    background-color: transparent;
+    border: 1px solid #777;
+    color: #fff;
+    margin-right: 10px;
+}
+
+.cancel-btn:hover {
+    background-color: #333;
+}
+
+.save-btn {
+    background-color: #4CAF50;
+    border: none;
+    color: #fff;
+}
+
+.save-btn:hover {
+    background-color: #45a049;
+}
+
+.support-items-table {
+    background-color: #1f1f1f;
+    border-radius: 8px;
+    padding: 0 20px 20px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    overflow-x: scroll; 
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-out forwards;
+    animation-delay: 0.5s;
+}
+
+.table-header,
+.table-row-support-items {
+    width: 100%; 
+    text-align: left;
+}
+
+.table-content-wrapper {
+    min-width: 800px; 
+}
+
+.table-header {
+    display: grid;
+    grid-template-columns: 2fr 3fr 1.5fr 1fr;
+    align-items: center;
+    padding: 10px 0;
+    font-weight: 500;
+    color: #aaa;
+    font-size: 0.85rem;
+    border-bottom: 1px solid #333;
+    padding-top: 20px;
+}
+
+.table-body {
+    padding-top: 10px;
+}
+
+.table-row-support-items {
+    color: #fff;
+    font-size: 0.9rem;
+    border-bottom: 1px solid #2a2a2a; 
+    display: grid; 
+    grid-template-columns: 2fr 3fr 1.5fr 1fr;
+    align-items: center;
+    width: 100%;
+    padding: 8px 0;
+}
+
+.table-row-support-items:last-child {
+    border-bottom: none;
+}
+
+.td {
+    padding: 0 10px; 
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap; 
+}
+
+.td.content-preview {
+    white-space: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    color: #aaa;
+    font-size: 0.85rem;
+}
+
+.td.actions {
+    display: flex;
+    gap: 5px;
+    justify-content: flex-end;
+}
+
+.action-btn {
+    background: none;
+    border: none;
+    color: #aaa;
+    cursor: pointer;
+    padding: 5px;
+    font-size: 1rem;
+    transition: color 0.2s;
+}
+
+.action-btn:hover {
+    color: #fff;
+}
+
+.action-btn.trash {
+    color: #f44336;
+}
+
+.footer-view {
+    margin-top: 20px;
+}
+
+@media (min-width: 769px) {
+    .hamburger-btn {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .hamburger-btn {
+        display: block; 
+    }
+    
+    .layout {
+        width: 100%;
+        margin-left: 0;
+        padding: 10px;
+        padding-top: 60px;
+    }
+
+    .left-footer {
+        margin-top: 15px; 
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+    }
+
+    .left-footer button {
+        flex: 1;
+        max-width: 190px;
+        width: 100%;
+        text-align: center;
+    }
+
+    .cancel-btn {
+        margin-right: 0;
+        margin-bottom: 10px;
+    }
+
+    .form-container {
+        flex-direction: column;
+    }
+
+    .form-support-item {
+        padding: 15px;
+        max-height: 70vh;
+        margin-top: 20px;
+    }
+
+    .form-support-item h1 {
+        font-size: 1.2rem;
+    }
+
+    .form-support-item .help-link {
+        display: none; 
+    }
+
+    .support-items-table {
+        overflow-x: auto;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+</style>
+

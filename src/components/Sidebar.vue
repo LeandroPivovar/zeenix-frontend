@@ -200,6 +200,14 @@
             >
                 InvestmentIA
             </button>
+            <button
+                class="menu-item"
+                :class="{ active: isSupportItemsActive }"
+                @click="navigateAndClose('/SupportItems')"
+                data-text="Itens de Suporte"
+            >
+                Itens de Suporte
+            </button>
         </nav>
         <div class="status">
             <div class="footer-row">
@@ -253,6 +261,7 @@ export default {
         isAdminViewActive() { return this.$route?.path === '/Admin'; },
         isMasterTraderActive() { return this.$route?.path === '/MasterTrader' || this.$route?.path === '/tradermestre'; },
         isInvestmentIAActive() { return this.$route?.path === '/InvestmentIA'; },
+        isSupportItemsActive() { return this.$route?.path === '/SupportItems'; },
     },
     methods: {
         close() { if (this.isOpen) { this.$emit('close-sidebar') } },
