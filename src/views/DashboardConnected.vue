@@ -1,230 +1,167 @@
 <template>
   <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-    <!-- Header - Mesmo padrão da tela de IA -->
-    <header class="top-header">
-      <div class="header-content">
-        <div class="header-left-content">
-          <h1 class="header-title">Dashboard Zenix</h1>
-          <p class="header-subtitle">Visão geral do seu desempenho e ferramentas principais.</p>
+    <!-- Top Navbar -->
+    <nav id="top-navbar" class="fixed top-0 left-0 right-0 h-[60px] bg-[#0B0B0B] border-b border-[#1C1C1C] z-50" :style="{ left: isSidebarCollapsed ? '72px' : '240px', width: isSidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 240px)' }">
+      <div class="h-full px-6 flex items-center justify-between">
+        <div class="flex items-center space-x-8">
+          <div class="text-lg font-bold text-zenix-text tracking-tight">
+            ZENI<span class="text-zenix-green">X</span>
+          </div>
+          <a href="#" class="bg-transparent hover:bg-[#0E0E0E] text-[#A1A1A1] hover:text-[#25D366] font-medium px-4 py-2 rounded-lg text-sm inline-flex items-center space-x-2 transition-all duration-200 border border-[#1C1C1C] hover:border-[#25D366]/30">
+            <i class="fa-brands fa-whatsapp text-base"></i>
+            <span>Grupo de Alunos</span>
+          </a>
         </div>
-        <div class="header-actions-right">
-          <div class="balance-display-card">
-            <div class="balance-header">
-              <i class="far fa-wallet"></i>
-              <div class="balance-info">
-                <span class="balance-label">Saldo Atual</span>
-                <div class="balance-value-row">
-                  <span id="balanceValue" class="balance-value" v-if="!balanceHidden">{{ formattedBalance }}</span>
-                  <span class="balance-value" v-else>••••••</span>
-                  <button 
-                    v-if="!balanceHidden && accountType === 'real'" 
-                    class="account-type-btn real-btn"
-                    @click="toggleBalance"
-                  >
-                    Real
-                  </button>
-                  <button 
-                    v-if="!balanceHidden && accountType === 'demo'" 
-                    class="account-type-btn demo-btn"
-                    @click="toggleBalance"
-                  >
-                    Demo
-                  </button>
-                  <button class="eye-toggle-btn" @click="toggleBalance" :title="balanceHidden ? 'Mostrar saldo' : 'Ocultar saldo'">
-                    <i class="far fa-eye"></i>
-                  </button>
-                </div>
+        <div class="flex items-center space-x-6">
+          <button @click="openDepositFlow" class="bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold px-5 py-2 rounded-lg text-sm inline-flex items-center space-x-2 transition-all duration-200 shadow-[0_2px_8px_rgba(34,197,94,0.2)] hover:shadow-[0_4px_12px_rgba(34,197,94,0.3)]">
+            <i class="fas fa-plus text-xs"></i>
+            <span>Depositar Agora</span>
+          </button>
+          <div class="flex items-center space-x-3">
+            <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF]">
+              Saldo: {{ balanceHidden ? '••••••' : formattedBalance }}
+            </span>
+            <button @click="toggleBalance" class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors">
+              <i :id="balanceToggleIcon" :class="balanceHidden ? 'fas fa-eye text-sm' : 'fas fa-eye-slash text-sm'"></i>
+            </button>
+          </div>
+          <div class="relative">
+            <button @click="toggleProfileDropdown" class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200">
+              <span class="text-white font-semibold text-sm">{{ userInitials }}</span>
+            </button>
+            <div v-if="showProfileDropdown" id="profileDropdown" class="absolute right-0 top-12 w-56 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)]">
+              <div class="p-3 border-b border-[#1C1C1C]">
+                <p class="text-sm font-semibold text-[#DFDFDF]">{{ userName }}</p>
+                <p class="text-xs text-[#7A7A7A]">{{ userEmail }}</p>
+              </div>
+              <div class="py-2">
+                <a href="#" class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors">
+                  <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
+                  Trocar de Conta
+                </a>
+                <a href="#" @click.prevent="$router.push('/settings')" class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors">
+                  <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
+                  Configurações
+                </a>
+                <a href="#" @click.prevent="disconnectAccount" class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors">
+                  <i class="fas fa-plug text-xs mr-3 text-[#7A7A7A]"></i>
+                  Sair da Corretora
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </header>
+    </nav>
     
     <!-- Main Content -->
     <main class="main-content bg-zenix-bg noise-bg font-inter overflow-y-auto w-full">
-    <!-- Ultra Pro Balance Card -->
-    <div class="grid grid-cols-1 gap-0 mb-8 w-full">
-      <div id="ultra-pro-balance-card" class="relative bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card-enhanced overflow-hidden min-h-[126px] w-full">
-        <!-- Ultra Pro Abstract Background -->
-        <div class="absolute inset-0 pointer-events-none overflow-hidden">
-          <!-- Base gradient -->
-          <div class="absolute inset-0 bg-gradient-to-br from-[#0A0A0A] via-[#0D0D0D] to-[#080808]"></div>
-          
-          <!-- Animated Abstract Shapes -->
-          <div class="absolute inset-0">
-            <!-- Floating orbs -->
-            <div class="absolute top-[20%] right-[15%] w-32 h-32 rounded-full blur-2xl animate-float-slow" style="background: radial-gradient(circle, rgba(34, 197, 94, 0.2), transparent);"></div>
-            <div class="absolute top-[60%] right-[45%] w-24 h-24 rounded-full blur-xl animate-float-medium" style="background: radial-gradient(circle, rgba(34, 197, 94, 0.15), transparent);"></div>
-            <div class="absolute top-[40%] right-[70%] w-20 h-20 rounded-full blur-lg animate-float-fast" style="background: radial-gradient(circle, rgba(34, 197, 94, 0.1), transparent);"></div>
-            
-            <!-- Geometric lines -->
-            <svg xmlns="http://www.w3.org/2000/svg" class="absolute inset-0 w-full h-full opacity-20">
-              <defs>
-                <linearGradient id="lineGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" stop-color="#22C55E" stop-opacity="0.4"></stop>
-                  <stop offset="100%" stop-color="#22C55E" stop-opacity="0"></stop>
-                </linearGradient>
-              </defs>
-              <line x1="10%" y1="20%" x2="90%" y2="80%" stroke="url(#lineGrad)" stroke-width="1.5" stroke-dasharray="5,5" class="animate-dash"></line>
-              <line x1="20%" y1="70%" x2="80%" y2="30%" stroke="url(#lineGrad)" stroke-width="1" stroke-dasharray="3,3" class="animate-dash-reverse"></line>
-              <circle cx="75%" cy="25%" r="40" fill="none" stroke="rgba(34,197,94,0.15)" stroke-width="1.5" class="animate-pulse-ring"></circle>
-            </svg>
-            
-            <!-- Data stream effect -->
-            <div class="absolute inset-0 opacity-10">
-              <div class="absolute top-[15%] right-[25%] w-px h-16 bg-gradient-to-b from-zenix-green to-transparent animate-data-stream"></div>
-              <div class="absolute top-[45%] right-[55%] w-px h-12 bg-gradient-to-b from-zenix-green to-transparent animate-data-stream-delayed"></div>
-              <div class="absolute top-[65%] right-[35%] w-px h-14 bg-gradient-to-b from-zenix-green to-transparent animate-data-stream-delayed-2"></div>
-            </div>
+    <!-- Hero Onboarding Section -->
+    <section id="integrated-hero-onboarding" class="w-full">
+      <div class="relative w-full h-[620px] overflow-hidden">
+        <div class="absolute inset-0">
+          <div class="absolute inset-0 w-full h-full animated-bg-container">
+            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/115dc9dc6f-4ab7d1a1c6f815b2fef3.png" alt="futuristic technology neural network glowing green circuits" class="absolute right-0 top-0 h-full w-full object-cover object-right animated-bg-image">
           </div>
-          
-          <!-- Enhanced diagonal institutional lines with glow -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="absolute inset-0 w-full h-full opacity-[0.12]">
-            <defs>
-              <linearGradient id="diagonalGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stop-color="#22C55E" stop-opacity="0.5"></stop>
-                <stop offset="100%" stop-color="#22C55E" stop-opacity="0"></stop>
-              </linearGradient>
-              <filter id="glow">
-                <feGaussianBlur stdDeviation="2" result="coloredBlur"></feGaussianBlur>
-                <feMerge>
-                  <feMergeNode in="coloredBlur"></feMergeNode>
-                  <feMergeNode in="SourceGraphic"></feMergeNode>
-                </feMerge>
-              </filter>
-            </defs>
-            <line x1="0" y1="0" x2="100%" y2="100%" stroke="url(#diagonalGrad)" stroke-width="2" filter="url(#glow)"></line>
-            <line x1="15%" y1="0" x2="100%" y2="85%" stroke="url(#diagonalGrad)" stroke-width="1.5" filter="url(#glow)"></line>
-            <line x1="30%" y1="0" x2="100%" y2="70%" stroke="url(#diagonalGrad)" stroke-width="1"></line>
-          </svg>
-          
-          <!-- Enhanced green glow -->
-          <div class="absolute top-[15%] right-[20%] w-[500px] h-[500px] blur-3xl opacity-70" style="background: radial-gradient(circle, rgba(34,197,94,0.12), rgba(34,197,94,0.04), transparent);"></div>
-          <div class="absolute top-[40%] right-[35%] w-[300px] h-[300px] blur-2xl opacity-60" style="background: radial-gradient(circle, rgba(34,197,94,0.1), rgba(34,197,94,0.02), transparent);"></div>
-          
-          <!-- Grid pattern overlay -->
-          <div class="absolute inset-0 opacity-[0.03]">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-full h-full">
-              <defs>
-                <pattern id="ultragrid" width="40" height="40" patternUnits="userSpaceOnUse">
-                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(34,197,94,0.25)" stroke-width="0.6"></path>
-                </pattern>
-              </defs>
-              <rect width="100%" height="100%" fill="url(#ultragrid)"></rect>
-            </svg>
-          </div>
-          
-          <!-- Animated particles effect -->
-          <div class="absolute inset-0 opacity-[0.06]">
-            <div class="absolute top-[25%] right-[25%] w-1 h-1 bg-zenix-green rounded-full animate-pulse"></div>
-            <div class="absolute top-[45%] right-[40%] w-1 h-1 bg-zenix-green rounded-full animate-pulse" style="animation-delay: 0.5s;"></div>
-            <div class="absolute top-[65%] right-[30%] w-1 h-1 bg-zenix-green rounded-full animate-pulse" style="animation-delay: 1s;"></div>
-          </div>
+          <div class="absolute inset-0 bg-gradient-to-r from-[#000000] via-[#000000]/95 via-30% via-[#000000]/85 via-45% via-[#000000]/70 via-55% via-[#000000]/50 via-65% via-[#000000]/30 via-75% via-[#000000]/15 via-85% to-transparent animated-gradient-overlay"></div>
+          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(34,197,94,0.08)_0%,rgba(34,197,94,0.04)_30%,transparent_60%)] hero-glow-pulse"></div>
+          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_40%,rgba(34,197,94,0.06)_0%,transparent_50%)] animated-radial-glow"></div>
+          <div class="absolute left-0 top-0 w-[55%] h-full bg-gradient-to-r from-[#000000] via-[#000000]/90 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-[#0B0B0B]/85 via-transparent via-50% to-[#0B0B0B]/20"></div>
+          <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B]/15 via-transparent via-60% to-[#0B0B0B]/70"></div>
         </div>
-        
-        <!-- Content Layer -->
-        <div class="relative z-10 flex flex-col h-full">
-          <!-- Header Section -->
-          <div class="flex items-center justify-between mb-3">
-            <div class="flex items-center space-x-3">
-              <span id="balanceAmount" class="text-[31px] font-bold text-zenix-green balance-number leading-none tracking-tight">
-                {{ balanceHidden ? '******' : formattedBalance }}
-              </span>
-              <button @click="toggleBalance" class="text-zenix-label hover:text-zenix-text transition-all eye-icon-hover">
-                <i :class="balanceHidden ? 'fas fa-eye text-base' : 'fas fa-eye-slash text-base'"></i>
-              </button>
-            </div>
-            <div class="flex items-center bg-[#0F0F0F] border border-zenix-border rounded-full p-0.5">
-              <button 
-                @click="switchAccount('real')"
-                :class="[
-                  'px-3 py-1 rounded-full text-xs font-medium transition-all',
-                  accountType === 'real' ? 'bg-zenix-green text-black' : 'text-zenix-label'
-                ]"
-              >
-                Real
-              </button>
-              <button 
-                @click="switchAccount('demo')"
-                :class="[
-                  'px-3 py-1 rounded-full text-xs font-medium transition-all',
-                  accountType === 'demo' ? 'bg-zenix-green text-black' : 'text-zenix-label'
-                ]"
-              >
-                Demo
-              </button>
-            </div>
+        <div class="relative h-full flex flex-col justify-center px-16">
+          <div class="max-w-2xl mb-12">
+            <h1 class="text-[52px] font-bold text-white leading-[1.1] tracking-tight mb-3">
+              Bem-vindo ao Zenix, <span class="text-[#22C55E]">{{ userName }}</span>
+            </h1>
+            <p class="text-[15px] text-[#DFDFDF]/85 leading-relaxed">
+              Configure sua conta rapidamente e deixe a IA trabalhar por você.
+            </p>
           </div>
-          
-          <!-- Divider -->
-          <div class="w-full h-[1px] bg-[rgba(255,255,255,0.06)] mb-3"></div>
-          
-          <!-- Profit/Loss & Operations Section -->
-          <div class="flex items-center justify-between mb-4">
-            <div>
-              <p class="text-[10px] text-[#B0B0B0] font-medium mb-1 opacity-80">Lucro/Perda (Hoje)</p>
-              <div class="flex items-baseline space-x-2" v-if="!loadingTodayProfit">
-                <p :class="[
-                  'text-xl font-bold',
-                  todayProfit >= 0 ? 'text-zenix-green' : 'text-red-500'
-                ]">
-                  {{ todayProfit >= 0 ? '+' : '' }}{{ preferredCurrencyPrefix }}{{ formatProfit(todayProfit) }}
-                </p>
-                <span :class="[
-                  'text-[11px] bg-zenix-green/10 px-2 py-1 rounded-md font-semibold',
-                  todayProfit >= 0 ? 'text-zenix-green' : 'text-red-500 bg-red-500/10'
-                ]">
-                  {{ todayProfit >= 0 ? '+' : '' }}{{ todayProfitPercent }}%
-                </span>
-              </div>
-              <div v-else class="flex items-center space-x-2">
-                <div class="animate-pulse bg-zenix-bg rounded h-6 w-32"></div>
-              </div>
-            </div>
-          </div>
-          
-          <!-- Divider -->
-          <div class="w-full h-[1px] bg-[rgba(255,255,255,0.06)] mb-3"></div>
-          
-          <!-- MICROINSIGHTS ULTRA PRO -->
-          <div class="w-full">
-            <div class="grid grid-cols-3 gap-3 w-full">
-              <!-- IA Recomendada -->
-              <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg p-2.5 w-full">
-                <div class="flex items-center space-x-1.5 mb-1">
-                  <i class="fas fa-brain text-zenix-green text-xs"></i>
-                  <p class="text-[10px] text-[#A0A0A0] font-medium">IA Recomendada</p>
+          <div class="max-w-[1100px] w-full">
+            <div class="grid grid-cols-3 gap-6">
+              <!-- Card 1/3: Depositar -->
+              <div class="relative bg-gradient-to-br from-[#0A0A0A] via-[#080808] to-[#060606] border border-[#1A1A1A]/40 rounded-[20px] p-6 h-[240px] flex flex-col transition-all duration-300 group overflow-hidden shadow-[0_0_40px_rgba(34,197,94,0.08),0_8px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_0_50px_rgba(34,197,94,0.12),0_10px_38px_rgba(0,0,0,0.7)]">
+                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.06)_0%,transparent_70%)] opacity-40"></div>
+                <div class="absolute top-5 left-5 flex items-center space-x-3 z-10">
+                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center unified-icon-container backdrop-blur-sm">
+                    <div class="absolute inset-0 rounded-full bg-[#22C55E]/[0.03]"></div>
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#22C55E] unified-icon-svg">
+                      <circle cx="12" cy="12" r="10"></circle>
+                      <path d="M12 6v6l4 2"></path>
+                    </svg>
+                  </div>
+                  <span class="text-[10px] font-semibold text-[#22C55E]/60 tracking-wide">1/3</span>
                 </div>
-                <p class="text-[15px] font-bold text-zenix-text mb-0.5">{{ recommendedIA.name }}</p>
-                <p class="text-xs text-zenix-green font-semibold">{{ recommendedIA.consistency }}% Consistência</p>
-              </div>
-              
-              <!-- Copy Mais Rentável -->
-              <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg p-2.5 w-full">
-                <div class="flex items-center space-x-1.5 mb-1">
-                  <i class="fas fa-copy text-zenix-green text-xs"></i>
-                  <p class="text-[10px] text-[#A0A0A0] font-medium">Copy Mais Rentável</p>
+                <div class="mt-14 flex-1 flex flex-col justify-between relative z-10">
+                  <div class="space-y-3">
+                    <h3 class="text-[15px] font-semibold text-[#DFDFDF]/90 leading-tight tracking-tight">Depositar para começar</h3>
+                    <p class="text-[11.5px] text-[#DFDFDF]/70 leading-[1.6]">Para melhores resultados indicados um deposito acima de $100.</p>
+                  </div>
+                  <button @click="openDepositFlow" class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold py-2.5 px-5 rounded-[14px] text-[11px] transition-all inline-flex items-center justify-center space-x-2.5 group-hover:shadow-[0_6px_24px_rgba(34,197,94,0.35)] hover:translate-y-[-1px] mt-4 unified-button">
+                    <span>Depositar Agora</span>
+                    <svg viewBox="0 0 16 16" fill="none" class="w-3 h-3 group-hover:translate-x-1 transition-transform">
+                      <path d="M1 8h14m-6-6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                  </button>
                 </div>
-                <p class="text-[15px] font-bold text-zenix-text mb-0.5">{{ topTrader.name }}</p>
-                <p class="text-xs text-zenix-green font-semibold">+{{ topTrader.profit }}% hoje</p>
               </div>
-              
-              <!-- Agente Autônomo -->
-              <div class="bg-[#0A0A0A] border border-[#1A1A1A] rounded-lg p-2.5 w-full">
-                <div class="flex items-center space-x-1.5 mb-1">
-                  <i class="fas fa-robot text-zenix-label text-xs"></i>
-                  <p class="text-[10px] text-[#A0A0A0] font-medium">Agente Autônomo</p>
+              <!-- Card 2/3: Configurar IA -->
+              <div class="relative bg-gradient-to-br from-[#0A0A0A] via-[#080808] to-[#060606] border border-[#1A1A1A]/40 rounded-[20px] p-6 h-[240px] flex flex-col transition-all duration-300 group overflow-hidden shadow-[0_0_40px_rgba(34,197,94,0.08),0_8px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_0_50px_rgba(34,197,94,0.12),0_10px_38px_rgba(0,0,0,0.7)]">
+                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.06)_0%,transparent_70%)] opacity-40"></div>
+                <div class="absolute top-5 left-5 flex items-center space-x-3 z-10">
+                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center unified-icon-container backdrop-blur-sm">
+                    <div class="absolute inset-0 rounded-full bg-[#22C55E]/[0.03]"></div>
+                    <i class="fas fa-microchip text-[#22C55E] text-sm"></i>
+                  </div>
+                  <span class="text-[10px] font-semibold text-[#22C55E]/60 tracking-wide">2/3</span>
                 </div>
-                <p class="text-[15px] font-bold text-zenix-secondary mb-0.5">Nenhum ativo</p>
-                <p class="text-[10px] text-zenix-label">Ative para aumentar consistência</p>
+                <div class="mt-14 flex-1 flex flex-col justify-between relative z-10">
+                  <div class="space-y-3">
+                    <h3 class="text-[15px] font-semibold text-[#DFDFDF]/90 leading-tight tracking-tight">Configure uma IA ou Copy Trading</h3>
+                    <p class="text-[11.5px] text-[#DFDFDF]/70 leading-[1.6]">Escolha e ative sua estratégia automática. A IA opera por você com apenas 1 clique.</p>
+                  </div>
+                  <button @click="$router.push('/InvestmentIA')" class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold py-2.5 px-5 rounded-[14px] text-[11px] transition-all inline-flex items-center justify-center space-x-2.5 group-hover:shadow-[0_6px_24px_rgba(34,197,94,0.35)] hover:translate-y-[-1px] mt-4 unified-button">
+                    <span>Ativar IA Agora</span>
+                    <svg viewBox="0 0 16 16" fill="none" class="w-3 h-3 group-hover:translate-x-1 transition-transform">
+                      <path d="M1 8h14m-6-6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                  </button>
+                </div>
+              </div>
+              <!-- Card 3/3: Resultados -->
+              <div class="relative bg-gradient-to-br from-[#0A0A0A] via-[#080808] to-[#060606] border border-[#1A1A1A]/40 rounded-[20px] p-6 h-[240px] flex flex-col transition-all duration-300 group overflow-hidden shadow-[0_0_40px_rgba(34,197,94,0.08),0_8px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_0_50px_rgba(34,197,94,0.12),0_10px_38px_rgba(0,0,0,0.7)]">
+                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.06)_0%,transparent_70%)] opacity-40"></div>
+                <div class="absolute top-5 left-5 flex items-center space-x-3 z-10">
+                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center unified-icon-container backdrop-blur-sm">
+                    <div class="absolute inset-0 rounded-full bg-[#22C55E]/[0.03]"></div>
+                    <i class="fas fa-chart-line text-[#22C55E] text-sm"></i>
+                  </div>
+                  <span class="text-[10px] font-semibold text-[#22C55E]/60 tracking-wide">3/3</span>
+                </div>
+                <div class="mt-14 flex-1 flex flex-col justify-between relative z-10">
+                  <div class="space-y-3">
+                    <h3 class="text-[15px] font-semibold text-[#DFDFDF]/90 leading-tight tracking-tight">Acompanhe seus resultados</h3>
+                    <p class="text-[11.5px] text-[#DFDFDF]/70 leading-[1.6]">Veja lucros, consistência e operações em tempo real com total transparência.</p>
+                  </div>
+                  <button @click="scrollToPerformance" class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold py-2.5 px-5 rounded-[14px] text-[11px] transition-all inline-flex items-center justify-center space-x-2.5 group-hover:shadow-[0_6px_24px_rgba(34,197,94,0.35)] hover:translate-y-[-1px] mt-4 unified-button">
+                    <span>Ver Resultados</span>
+                    <svg viewBox="0 0 16 16" fill="none" class="w-3 h-3 group-hover:translate-x-1 transition-transform">
+                      <path d="M1 8h14m-6-6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
+                    </svg>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </section>
     
+    <div class="w-full h-px bg-gradient-to-r from-transparent via-zenix-border to-transparent my-8"></div>
+    
+    <div class="px-8 py-8">
     <!-- Quick Tools Section -->
     <section id="quick-tools" class="mt-6 mb-6 w-full">
       <h2 class="text-base font-semibold text-zenix-text opacity-95 mb-4">Ferramentas Principais</h2>
@@ -427,6 +364,7 @@ export default {
     return {
       balanceHidden: false,
       accountType: 'real',
+      showProfileDropdown: false,
       quickTools: [
         {
           icon: 'fas fa-brain',
@@ -624,6 +562,18 @@ export default {
         }
       }
       return 'U';
+    },
+    userEmail() {
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          return user.email || 'email@exemplo.com';
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e);
+        }
+      }
+      return 'email@exemplo.com';
     }
   },
   watch: {
@@ -639,6 +589,11 @@ export default {
   async mounted() {
     this.initSparklines();
     await this.loadTodayProfitLoss();
+    // Fechar dropdown quando clicar fora
+    document.addEventListener('click', this.handleClickOutside);
+  },
+  beforeUnmount() {
+    document.removeEventListener('click', this.handleClickOutside);
   },
   methods: {
     toggleBalance() {
@@ -790,6 +745,35 @@ export default {
             }
           });
         });
+      }
+    },
+    toggleProfileDropdown() {
+      this.showProfileDropdown = !this.showProfileDropdown;
+    },
+    handleClickOutside(event) {
+      const dropdown = document.getElementById('profileDropdown');
+      const button = event.target.closest('button');
+      if (dropdown && !dropdown.contains(event.target) && !button?.closest('.relative')) {
+        this.showProfileDropdown = false;
+      }
+    },
+    openDepositFlow() {
+      // Criar modal de depósito ou redirecionar
+      this.$router.push('/settings?tab=deposit');
+    },
+    disconnectAccount() {
+      if (confirm('Tem certeza que deseja desconectar da corretora?')) {
+        localStorage.removeItem('deriv_token');
+        localStorage.removeItem('deriv_tokens_by_loginid');
+        localStorage.removeItem('deriv_connection');
+        this.$router.push('/dashboard');
+        window.location.reload();
+      }
+    },
+    scrollToPerformance() {
+      const element = document.getElementById('overall-performance');
+      if (element) {
+        element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
     }
   }
@@ -993,11 +977,123 @@ export default {
 
 /* Main Content */
 .main-content {
-  margin-top: 70px;
-  padding: 4rem 20px 1.5rem 20px;
+  margin-top: 60px;
+  padding: 0;
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
+}
+
+/* Top Navbar Styles */
+#top-navbar {
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 0 20px rgba(34, 197, 94, 0.02);
+  backdrop-filter: blur(12px);
+  animation: fadeInSlide 0.35s ease-out;
+  transition: left 0.3s ease, width 0.3s ease;
+}
+
+@media (max-width: 1024px) {
+  #top-navbar {
+    left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+/* Hero Section Styles */
+.animated-bg-container {
+  animation: bgPan 30s ease-in-out infinite;
+}
+
+.animated-bg-image {
+  animation: bgZoom 25s ease-in-out infinite;
+}
+
+.animated-gradient-overlay {
+  animation: gradientShift 8s ease-in-out infinite;
+}
+
+.animated-radial-glow {
+  animation: radialPulse 10s ease-in-out infinite;
+}
+
+.hero-glow-pulse {
+  animation: heroGlowPulse 5s ease-in-out infinite;
+}
+
+.unified-icon-container {
+  animation: unifiedIconPulse 3.5s ease-in-out infinite;
+}
+
+.unified-icon-svg {
+  filter: drop-shadow(rgba(34, 197, 94, 0.35) 0px 0px 5px);
+}
+
+.unified-button {
+  box-shadow: rgba(34, 197, 94, 0.28) 0px 2px 10px;
+  border: 1px solid rgba(255, 255, 255, 0.02);
+}
+
+.unified-button:hover {
+  box-shadow: rgba(34, 197, 94, 0.42) 0px 4px 18px;
+  border-color: rgba(255, 255, 255, 0.04);
+}
+
+@keyframes bgPan {
+  0%, 100% {
+    transform: translate(0%, 0%);
+  }
+  50% {
+    transform: translate(-5%, -5%);
+  }
+}
+
+@keyframes bgZoom {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@keyframes gradientShift {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes radialPulse {
+  0%, 100% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes heroGlowPulse {
+  0%, 100% {
+    opacity: 0.8;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes unifiedIconPulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.9;
+  }
 }
 
 /* Noise Background */
