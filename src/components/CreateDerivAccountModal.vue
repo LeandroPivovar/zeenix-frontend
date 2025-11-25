@@ -2,19 +2,19 @@
   <div v-if="visible" class="overlay" @click.self="onClose">
     <div class="modal">
       <div class="modal-header">
-        <h3 class="title">🚀 Criar Conta na Deriv</h3>
+        <h3 class="title">Criar Conta na Deriv</h3>
         <button class="close-btn" @click="onClose" :disabled="loading">×</button>
       </div>
       
       <p class="subtitle">Preencha os dados abaixo para criar sua conta DEMO ($10.000) e REAL (USD)</p>
       
       <div class="info-box">
-        ℹ️ <strong>Conta DEMO liberada na hora!</strong> Você poderá operar imediatamente com $10.000 virtuais.
+        <strong>Conta DEMO liberada na hora!</strong> Você poderá operar imediatamente com $10.000 virtuais.
       </div>
 
       <form @submit.prevent="handleSubmit" class="form">
         <!-- DADOS PESSOAIS -->
-        <h4 class="section-title">📝 Dados Pessoais</h4>
+        <h4 class="section-title">Dados Pessoais</h4>
         
         <div class="row">
           <div class="form-group">
@@ -47,7 +47,7 @@
         </div>
         
         <!-- ENDEREÇO -->
-        <h4 class="section-title">📍 Endereço</h4>
+        <h4 class="section-title">Endereço</h4>
         
         <div class="form-group">
           <label>Endereço Completo <span class="required">*</span></label>
@@ -87,7 +87,7 @@
         </div>
         
         <!-- DECLARAÇÕES -->
-        <h4 class="section-title">✅ Declarações</h4>
+        <h4 class="section-title">Declarações</h4>
         
         <div class="checkbox-group">
           <div class="checkbox-item">
@@ -115,10 +115,10 @@
         <div v-if="error" class="error-box">{{ error }}</div>
         
         <button type="submit" class="submit-btn" :disabled="loading">
-          {{ loading ? '⏳ Criando contas...' : '✅ Criar Conta DEMO + REAL' }}
+          {{ loading ? 'Criando contas...' : 'Criar Conta DEMO + REAL' }}
         </button>
         
-        <p class="info-text">⏱ Leva apenas 2 minutos</p>
+        <p class="info-text">Leva apenas 2 minutos</p>
       </form>
     </div>
   </div>

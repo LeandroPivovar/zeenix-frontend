@@ -143,7 +143,7 @@
                 @click="toggleFaq(faq.id)"
                 class="w-full px-8 py-5 flex items-center justify-between text-left hover:bg-zenix-bg/30 transition-all"
               >
-                <span class="text-white font-semibold text-base">{{ faq.question }}</span>
+                <span class="text-white font-semibold text-base text-left">{{ faq.question }}</span>
                 <i 
                   :class="[
                     'fas text-zenix-green text-sm transition-transform duration-300',
@@ -153,16 +153,16 @@
               </button>
               <div 
                 :class="[
-                  'faq-answer px-8 pb-5',
+                  'faq-answer px-8 pb-5 text-left',
                   expandedFaqs[faq.id] ? 'open' : ''
                 ]"
               >
-                <div v-if="Array.isArray(faq.answer)" class="text-zenix-secondary text-sm space-y-2">
-                  <ul class="list-disc list-inside space-y-2">
-                    <li v-for="(item, index) in faq.answer" :key="index">{{ item }}</li>
+                <div v-if="Array.isArray(faq.answer)" class="text-zenix-secondary text-sm space-y-2 text-left">
+                  <ul class="list-disc list-inside space-y-2 text-left">
+                    <li v-for="(item, index) in faq.answer" :key="index" class="text-left">{{ item }}</li>
                   </ul>
                 </div>
-                <div v-else class="text-zenix-secondary text-sm">
+                <div v-else class="text-zenix-secondary text-sm text-left">
                   {{ faq.answer }}
                 </div>
               </div>
@@ -170,6 +170,70 @@
           </div>
         </section>
       </main>
+
+      <!-- Footer -->
+      <footer id="footer" class="zenix-footer">
+        <div class="footer-content">
+          <div class="footer-grid">
+            <div class="footer-brand">
+              <div class="footer-logo">
+                <span class="footer-logo-main">ZENIX</span>
+                <span class="footer-logo-sub">PRO</span>
+              </div>
+              <p class="footer-description">
+                Plataforma inteligente de investimentos com IA, copy trading e automação.
+              </p>
+              <div class="footer-social">
+                <a href="#" class="social-icon"><i class="fa-brands fa-twitter"></i></a>
+                <a href="#" class="social-icon"><i class="fa-brands fa-linkedin"></i></a>
+                <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
+              </div>
+            </div>
+
+            <div class="footer-column">
+              <h3 class="footer-column-title">Produto</h3>
+              <ul class="footer-links">
+                <li><a href="#">IA de Investimento</a></li>
+                <li><a href="#">Copy Trading</a></li>
+                <li><a href="#">Agente Autônomo</a></li>
+                <li><a href="#">Zenix Academy</a></li>
+              </ul>
+            </div>
+            
+            <div class="footer-column">
+              <h3 class="footer-column-title">Empresa</h3>
+              <ul class="footer-links">
+                <li><a href="#">Sobre Nós</a></li>
+                <li><a href="#">Planos</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Carreiras</a></li>
+              </ul>
+            </div>
+
+            <div class="footer-column">
+              <h3 class="footer-column-title">Suporte</h3>
+              <ul class="footer-links">
+                <li><a href="#">Central de Ajuda</a></li>
+                <li><a href="#">Documentação</a></li>
+                <li><a href="#">Status do Sistema</a></li>
+                <li><a href="#">Contato</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="footer-bottom">
+            <p class="footer-copyright">© 2025 Zenix Pro. Todos os direitos reservados.</p>
+            <div class="footer-legal">
+              <a href="#">Política de Privacidade</a>
+              <span class="footer-separator">|</span>
+              <a href="#">Termos de Uso</a>
+              <span class="footer-separator">|</span>
+              <a href="#">Cookies</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   </div>
 </template>
@@ -663,16 +727,39 @@ export default {
   transition: all 0.3s ease;
 }
 
+.faq-item button {
+  text-align: left !important;
+}
+
+.faq-item button span {
+  text-align: left !important;
+  display: block;
+  width: 100%;
+}
+
 .faq-answer {
   max-height: 0;
   overflow: hidden;
   opacity: 0;
   transition: max-height 0.4s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.3s ease;
+  text-align: left !important;
 }
 
 .faq-answer.open {
   max-height: 500px;
   opacity: 1;
+}
+
+.faq-answer > div {
+  text-align: left !important;
+}
+
+.faq-answer ul {
+  text-align: left !important;
+}
+
+.faq-answer li {
+  text-align: left !important;
 }
 
 /* Search Suggestions */
@@ -704,5 +791,162 @@ export default {
 
 ::-webkit-scrollbar-thumb:hover {
   background: #2C2C2C;
+}
+
+/* Footer */
+.zenix-footer {
+  background-color: #0B0B0B;
+  border-top: 1px solid #1C1C1C;
+  margin-top: 3rem;
+  width: 100%;
+}
+
+.footer-content {
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  padding: 3rem 20px;
+  box-sizing: border-box;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3rem;
+  margin-bottom: 2rem;
+}
+
+.footer-brand {
+  grid-column: span 1;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.footer-logo-main {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #DFDFDF;
+}
+
+.footer-logo-sub {
+  font-size: 0.75rem;
+  color: #A1A1A1;
+}
+
+.footer-description {
+  color: #A1A1A1;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
+  opacity: 0.6;
+}
+
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.social-icon {
+  color: #A1A1A1;
+  transition: color 0.2s;
+  opacity: 0.5;
+}
+
+.social-icon:hover {
+  color: #DFDFDF;
+}
+
+.footer-column-title {
+  color: #DFDFDF;
+  font-weight: 500;
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.footer-links a {
+  color: #A1A1A1;
+  font-size: 0.75rem;
+  text-decoration: none;
+  transition: color 0.2s;
+  opacity: 0.6;
+}
+
+.footer-links a:hover {
+  color: #DFDFDF;
+}
+
+.footer-bottom {
+  border-top: 1px solid #1A1A1A;
+  padding-top: 2rem;
+  opacity: 0.4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .footer-bottom {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.footer-copyright {
+  color: #A1A1A1;
+  font-size: 0.75rem;
+}
+
+.footer-legal {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.75rem;
+}
+
+.footer-legal a {
+  color: #A1A1A1;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-legal a:hover {
+  color: #DFDFDF;
+}
+
+.footer-separator {
+  color: #1C1C1C;
+}
+
+/* Responsive Footer */
+@media (max-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-content {
+    padding: 2rem 15px;
+  }
 }
 </style>
