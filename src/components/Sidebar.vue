@@ -204,9 +204,9 @@
                 class="menu-item"
                 :class="{ active: isSupportItemsActive }"
                 @click="navigateAndClose('/SupportItems')"
-                data-text="Itens de Suporte"
+                data-text="Admin Suporte"
             >
-                Itens de Suporte
+                Admin Suporte
             </button>
         </nav>
         <div class="status">

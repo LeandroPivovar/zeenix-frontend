@@ -2044,38 +2044,46 @@ export default {
 /* Toggle Switch */
 .toggle-switch {
     position: relative;
-    display: inline-flex;
-    align-items: center;
-    cursor: pointer;
+    display: inline-block;
     width: 4rem;
+    height: 2rem;
+    cursor: pointer;
+    flex-shrink: 0;
 }
 
 .toggle-switch input {
     opacity: 0;
     width: 0;
     height: 0;
+    position: absolute;
 }
 
 .toggle-slider {
-    position: relative;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     width: 4rem;
     height: 2rem;
     background-color: #0B0B0B;
     border: 2px solid #1C1C1C;
     border-radius: 9999px;
-    transition: 0.3s;
+    transition: all 0.3s ease;
+    cursor: pointer;
 }
 
 .toggle-slider::before {
     content: '';
     position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 1.5rem;
     height: 1.5rem;
+    width: 1.5rem;
+    left: 3px;
+    bottom: 2px;
     background-color: white;
     border-radius: 50%;
-    transition: 0.3s;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .toggle-switch input:checked + .toggle-slider {
@@ -2084,7 +2092,7 @@ export default {
 }
 
 .toggle-switch input:checked + .toggle-slider::before {
-    transform: translateX(2rem);
+    transform: translateX(calc(4rem - 1.5rem - 6px));
 }
 
 .ai-status-note {
