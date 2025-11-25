@@ -381,7 +381,7 @@ export default {
             // Atualizar o v-model
             this.updateSubtitle();
         },
-        updateSubtitle(event) {
+        updateSubtitle() {
             const editor = document.querySelector('.rich-editor');
             if (editor) {
                 this.supportItemForm.subtitle = editor.innerHTML;
