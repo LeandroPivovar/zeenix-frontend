@@ -22,29 +22,29 @@
             <div class="data-row-line">
                 <div class="data-item">
                     <span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/brain.png" alt="" width="15px">
-						Estratégia
-					</span> 
+                        <img src="../../assets/icons/brain.svg" alt="" width="15px" >
+                        Estratégia
+                    </span> 
                     <div class="data-label">{{ agenteData.estrategia }}</div>
                 </div>
                 <div class="data-item">
                     <span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/stats-green.svg" alt="" width="15px">		
-						Mercado
-						</span> 
+                        <img src="../../assets/icons/stats-green.svg" alt="" width="15px">      
+                        Mercado
+                        </span> 
                     <div class="data-label">{{ agenteData.mercado }}</div>
                 </div>
                 <div class="data-item">
                     <span class="icon-bullet" style="color: #666;"><img src="../../assets/icons/clock.svg" alt="" width="15px">
-					Tempo ativo
-					</span>
+                    Tempo ativo
+                    </span>
                     <div class="data-label">{{ agenteData.tempoAtivo }}</div>
                 </div>
                 <div class="data-item">
                     <span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/linechart.svg" alt="" width="15px">
-						Operações hoje
-					</span> 
+                        <img src="../../assets/icons/linechart.svg" alt="" width="15px">
+                        Operações hoje
+                    </span> 
                     <div class="data-label">{{ agenteData.operacoesHoje }}</div>
                 </div>
             </div>
@@ -115,19 +115,57 @@
                     
                     <div class="chart-settings">
 
-                        <div class="control-group">
-                            Timeframe:
-                            <select v-model="timeframeSelecionado" class="custom-select">
-                                <option v-for="tf in timeframes" :key="tf" :value="tf">{{ tf }}</option>
-                            </select>
-                        </div>
+                        <template v-if="abaAtiva === 'grafico'">
+                            <div class="control-group">
+                                Timeframe:
+                                <select v-model="unidadeTimeframeSelecionada" class="custom-select" style="width: 80px;">
+                                    <option value="minutos">Minutos</option>
+                                    <option value="horas">Horas</option>
+                                    <option value="Dias">Dias</option>
+                                </select>
 
-                        <div class="control-group">
-                            Tipo:
-                            <select v-model="tipoGraficoSelecionado" class="custom-select">
-                                <option v-for="tipo in tiposGrafico" :key="tipo" :value="tipo">{{ tipo }}</option>
-                            </select>
-                        </div>
+                                <select v-model="valorTimeframeSelecionado" class="custom-select" style="width: 70px;">
+                                    <option 
+                                        v-for="val in tempoOptions" 
+                                        :key="unidadeTimeframeSelecionada + val" 
+                                        :value="val"
+                                    >
+                                        {{ val }}
+                                    </option>
+                                </select>
+                            </div>
+
+                            <div class="control-group">
+                                Tipo:
+                                <select v-model="tipoGraficoSelecionado" class="custom-select">
+                                    <option v-for="tipo in tiposGrafico" :key="tipo" :value="tipo">{{ tipo }}</option>
+                                </select>
+                            </div>
+                        </template>
+
+                        <template v-else-if="abaAtiva === 'historico'">
+                            
+                            <button @click="exportarHistorico" class="export-btn">
+                                Exportar Histórico
+                            </button>
+                            <div class="control-div">
+                                <div class="control-group">
+                                    Período:
+                                    <select v-model="filtroDataSelecionado" class="custom-select" style="min-width: 130px;">
+                                        <option value="hoje">Hoje</option>
+                                        <option value="ontem">Ontem</option>
+                                        <option value="7d">Últimos 7 dias</option>
+                                        <option value="30d">Últimos 30 dias</option>
+                                        <option value="personalizado">Personalizado</option>
+                                    </select>
+                                </div>
+                                
+                                <div class="control-group" v-if="filtroDataSelecionado === 'personalizado'">
+                                    <span>A partir de:</span>
+                                    <input type="date" v-model="dataInicio" class="custom-input-date">
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
             </div>
@@ -139,7 +177,7 @@
 
                 <div id="contentHistorico" :class="['history-content', { hidden: abaAtiva !== 'historico' }]">
                     <div class="history-header">
-                        <h3>Histórico de Operações ({{ historicoOperacoes.length }})</h3>
+                        <h3>Histórico de Operações ({{ historicoOperacoesFiltradas.length }} de {{ historicoOperacoes.length }})</h3>
                     </div>
                     <table class="operations-table">
                         <thead>
@@ -153,7 +191,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="op in historicoOperacoes" :key="op.hora">
+                            <tr v-for="(op, index) in historicoOperacoesFiltradas.slice(0, 5)" :key="index">
                                 <td>{{ op.hora }}</td>
                                 <td>{{ op.ativo }}</td>
                                 <td>{{ op.tipo }}</td>
@@ -165,6 +203,13 @@
                             </tr>
                         </tbody>
                     </table>
+                    
+                    <div class="history-footer">
+                        <button @click="abrirModal" class="view-all-btn">
+                            Ver Todas as {{ historicoOperacoesFiltradas.length }} Operações
+                        </button>
+                    </div>
+                    
                 </div>
             </div>
         </div>
@@ -183,6 +228,41 @@
                 </div>
             </div>
         </div>
+        
+        <div v-if="isModalOpen" class="modal-overlay" @click.self="fecharModal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Histórico Completo de Operações ({{ historicoOperacoesFiltradas.length }})</h3>
+                    <button @click="fecharModal" class="close-modal-btn">X</button>
+                </div>
+                <div class="modal-body">
+                    <table class="operations-table modal-table">
+                        <thead>
+                            <tr>
+                                <th>Hora</th>
+                                <th>Ativo</th>
+                                <th>Tipo</th>
+                                <th>Entrada</th>
+                                <th>Saída</th>
+                                <th>Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(op, index) in historicoOperacoesFiltradas" :key="index">
+                                <td>{{ op.hora }}</td>
+                                <td>{{ op.ativo }}</td>
+                                <td>{{ op.tipo }}</td>
+                                <td>${{ op.entrada }}</td>
+                                <td>${{ op.saida }}</td>
+                                <td :class="op.resultado.startsWith('+') ? 'result-positive' : 'result-negative'">
+                                    {{ op.resultado }}
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </div>
 </template>
 
@@ -193,10 +273,19 @@ export default {
     data() {
         return {
             abaAtiva: 'grafico',
-            timeframeSelecionado: '5m',
-            tipoGraficoSelecionado: 'Linha',
+            // Variáveis para a lógica de Timeframe
+            unidadeTimeframeSelecionada: 'minutos', // m, h, D
+            valorTimeframeSelecionado: 5,     // 1, 5, 15, 1, 4, 1, etc.
+            tipoGraficoSelecionado: 'Gráfico de Linhas', 
             ultimaAtualizacao: '14:32:15',
+            isModalOpen: false, 
             
+            // Variáveis para a lógica de FILTRO DE DATA
+            // Opções: hoje, ontem, 7d, 30d, personalizado
+            filtroDataSelecionado: 'hoje', 
+            // Data padrão que simula a data de hoje para os filtros de simulação
+            dataInicio: '2025-11-25', 
+
             // Dados do Topo
             agenteData: {
                 estrategia: 'Arion',
@@ -205,18 +294,24 @@ export default {
                 operacoesHoje: 12,
             },
 
-            // Métricas (Valor ajustado para preenchimento de 85% visualmente)
+            // Métricas
             progressoMeta: {
-                // Progresso ajustado para 85% do total de 50, correspondendo ao visual da última imagem
                 atual: 42.50, 
                 meta: 50,
                 stop: 25,
             },
 
-            timeframes: ['5m', '1h', '1d'],
-            tiposGrafico: ['Linha', 'Candle'],
+            // Objeto de opções de Timeframe (ATUALIZADO CONFORME SOLICITADO)
+            timeframeOptions: {
+                minutos: [1, 2, 3, 5, 10, 15, 30], // 1, 2, 3, 5, 10, 15, 30 minutos
+                horas: [1, 2, 4, 8],             // 1, 2, 4, 8 horas
+                Dias: [1, 2, 3, 4, 5, 6, 7],    // 1, 2, 3, 4, 5, 6, 7 dias
+            },
+            
+            // Tipos de Gráfico (ATUALIZADO CONFORME SOLICITADO)
+            tiposGrafico: ['Gráfico de Linhas', 'Gráfico de Velas'], 
 
-            // Ações (Ajustado para corresponder à imagem)
+            // Ações (Mantido como estava)
             acoesAgente: [
                 { hora: '14:32:15', classe: 'success', titulo: 'Operação finalizada com sucesso', descricao: '14:32:15 - Lucro de $8.50' },
                 { hora: '14:32:00', classe: 'success', titulo: 'Entrada executada', descricao: '14:32:00 - CALL em Volatility 75' },
@@ -224,13 +319,23 @@ export default {
                 { hora: '14:30:00', classe: 'info', titulo: 'Aguardando padrão da estratégia', descricao: '14:30:00 - Análise em andamento' },
             ],
 
-            // Histórico (Mantido como exemplo)
+            // Histórico (Adicionado data para simular filtragem)
             historicoOperacoes: [
-                { hora: '14:32:16', ativo: 'CALL1', tipo: 'Call', entrada: '83.80', saida: '85.20', resultado: '+$7.50' },
-                { hora: '14:18:02', ativo: 'CALL1', tipo: 'Call', entrada: '82.60', saida: '81.30', resultado: '-$3.20' },
-                { hora: '14:01:45', ativo: 'Volatility 75', tipo: 'Put', entrada: '156.40', saida: '158.90', resultado: '+$12.30' },
-                { hora: '13:45:22', ativo: 'CALL1', tipo: 'Call', entrada: '84.15', saida: '83.50', resultado: '-$2.10' },
-                { hora: '13:30:08', ativo: 'Volatility 75', tipo: 'Call', entrada: '155.20', saida: '157.80', resultado: '+$8.90' },
+                { data: '2025-11-25', hora: '14:32:16', ativo: 'CALL1', tipo: 'Call', entrada: '83.80', saida: '85.20', resultado: '+$7.50' },
+                { data: '2025-11-25', hora: '14:18:02', ativo: 'CALL1', tipo: 'Call', entrada: '82.60', saida: '81.30', resultado: '-$3.20' },
+                { data: '2025-11-25', hora: '14:01:45', ativo: 'Volatility 75', tipo: 'Put', entrada: '156.40', saida: '158.90', resultado: '+$12.30' },
+                { data: '2025-11-25', hora: '13:45:22', ativo: 'CALL1', tipo: 'Call', entrada: '84.15', saida: '83.50', resultado: '-$2.10' },
+                { data: '2025-11-25', hora: '13:30:08', ativo: 'Volatility 75', tipo: 'Call', entrada: '155.20', saida: '157.80', resultado: '+$8.90' },
+                // Operações de dias anteriores para simulação de filtro
+                { data: '2025-11-24', hora: '13:15:00', ativo: 'CALL1', tipo: 'Put', entrada: '88.00', saida: '87.00', resultado: '-$1.50' },
+                { data: '2025-11-24', hora: '13:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '160.00', saida: '162.00', resultado: '+$10.00' },
+                { data: '2025-11-23', hora: '12:45:00', ativo: 'CALL1', tipo: 'Put', entrada: '81.00', saida: '80.00', resultado: '-$1.00' },
+                { data: '2025-11-22', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+$9.00' },
+                { data: '2025-11-21', hora: '12:30:00', ativo: 'CALL1', tipo: 'Put', entrada: '85.00', saida: '84.00', resultado: '-$1.00' },
+                { data: '2025-11-20', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+$9.00' },
+                // Adicionando datas mais antigas para testar o filtro "A partir de"
+                { data: '2025-11-01', hora: '10:00:00', ativo: 'CALL1', tipo: 'Put', entrada: '80.00', saida: '81.00', resultado: '+$2.00' },
+                { data: '2025-10-31', hora: '11:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '140.00', saida: '141.00', resultado: '+$1.00' },
             ],
         };
     },
@@ -240,14 +345,76 @@ export default {
             return `${Math.min(100, percentage).toFixed(0)}%`;
         },
 
-        graficoPlaceholder() {
-            return `Performance do Agente (Gráfico de ${this.tipoGraficoSelecionado} | ${this.timeframeSelecionado})`;
+        // Propriedade COMPUTADA que retorna as opções do segundo select (Timeframe)
+        tempoOptions() {
+            return this.timeframeOptions[this.unidadeTimeframeSelecionada] || [];
         },
+
+        // Propriedade COMPUTADA que gera a string final do Timeframe (e.g., '5m')
+        timeframeFinal() {
+            return `${this.valorTimeframeSelecionado}${this.unidadeTimeframeSelecionada}`;
+        },
+
+        graficoPlaceholder() {
+            return `Performance do Agente (Gráfico de ${this.tipoGraficoSelecionado} | ${this.timeframeFinal})`;
+        },
+        
+        // Propriedade COMPUTADA para FILTRAR o histórico
+        historicoOperacoesFiltradas() {
+            const { filtroDataSelecionado, dataInicio, historicoOperacoes } = this;
+            
+            // Lógica de filtragem simulada
+            switch (filtroDataSelecionado) {
+                case 'hoje':
+                    // Simula a data de hoje (2025-11-25)
+                    return historicoOperacoes.filter(op => op.data === '2025-11-25');
+                case 'ontem':
+                    // Simula a data de ontem (2025-11-24)
+                    return historicoOperacoes.filter(op => op.data === '2025-11-24');
+                case 'personalizado':
+                    // Filtra operações a partir da data de início selecionada (>=)
+                    if (dataInicio) {
+                        return historicoOperacoes.filter(op => op.data >= dataInicio);
+                    }
+                    return historicoOperacoes;
+                case '7d':
+                    // Simula últimos 7 dias (25/11 até 19/11)
+                    return historicoOperacoes.filter(op => op.data >= '2025-11-19');
+                default:
+                    return historicoOperacoes;
+            }
+        }
+    },
+    watch: {
+        // Observa a mudança da unidade (m/h/D) e ajusta o valor padrão
+        unidadeTimeframeSelecionada(novaUnidade) {
+            const primeiroValor = this.timeframeOptions[novaUnidade][0];
+            if (this.valorTimeframeSelecionado !== primeiroValor) {
+                this.valorTimeframeSelecionado = primeiroValor;
+            }
+        },
+        // Resetar a data de início quando muda o tipo de filtro (se não for personalizado)
+        filtroDataSelecionado(novoFiltro) {
+             if (novoFiltro !== 'personalizado') {
+                this.dataInicio = '2025-11-25'; // Volta para a data de hoje simulada
+            }
+        }
     },
     methods: {
         trocarAba(aba) {
             this.abaAtiva = aba;
         },
+        // Métodos para o modal
+        abrirModal() {
+            this.isModalOpen = true;
+        },
+        fecharModal() {
+            this.isModalOpen = false;
+        },
+        exportarHistorico() {
+            alert(`Simulando exportação do histórico. Filtro: ${this.filtroDataSelecionado}. Total de operações a exportar: ${this.historicoOperacoesFiltradas.length}`);
+            // Aqui seria a lógica real para gerar e baixar um arquivo CSV/Excel/PDF
+        }
     },
 };
 </script>
@@ -273,19 +440,9 @@ export default {
     border-radius: 8px;
     padding: 20px;
     margin-bottom: 20px;
-    background: #0e0f0f;
-    border: 1px solid #1a1a1a;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
 }
 
 .progress-card {
-    background: #0e0f0f;
-    border: 1px solid #1a1a1a;
-    border-radius: 8px;
-    padding: 20px;
-    margin-bottom: 20px;
     background: #0e0f0f;
     border: 1px solid #1a1a1a;
     border-radius: 8px;
@@ -298,10 +455,6 @@ export default {
     padding: 30px;
     border: 1px solid #1a1a1a;
     border-radius: 8px;
-    background: #0e0f0f;
-    padding: 30px;
-    border: 1px solid #1a1a1a;
-    border-radius: 8px;
 }
 
 .agent-header {
@@ -310,25 +463,20 @@ export default {
     align-items: center;
     margin-bottom: 15px;
     padding-bottom: 15px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-    padding-bottom: 15px;
 }
 
-/* Header do Agente - AJUSTES PARA PROXIMIDADE E PREENCHIMENTO */
+/* Header do Agente */
 .agent-status {
     display: flex;
     align-items: center;
-    flex-grow: 1; /* Permite que o contêiner de status cresça */
+    flex-grow: 1; 
 }
 
 .agent-title {
     display: flex;
     flex-direction: column;
     gap: 3px;
-    flex-grow: 1; /* Garante que o título cresça dentro do status */
+    flex-grow: 1; 
     background: #0e0f0f;
     padding: 5px;
     margin-right: 20px;
@@ -418,15 +566,11 @@ export default {
 
 .data-item .icon-bullet {
     font-size:0.8rem;
-	display: flex;
-	flex-direction: row;
-	align-items: center;
-	justify-content: center;
-	gap:10px;
-}
-
-.icon-bulelt{
-
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap:10px;
 }
 
 .data-label {
@@ -505,36 +649,36 @@ export default {
 
 /* Progresso */
 .progress-card {
-	/* CORREÇÃO: Força o layout a ser vertical, como na imagem original. */
-	display: flex;
-	flex-direction: column; 
-	justify-content: space-between;
+    /* Força o layout a ser vertical. */
+    display: flex;
+    flex-direction: column; 
+    justify-content: space-between;
 }
 
 .progress-bar-container {
-	margin-top: 10px;
-  margin-bottom: 0px;
+    margin-top: 10px;
+    margin-bottom: 0px;
 }
 
 .progress-bar {
-	width: 100%;
-	height: 10px;
-	background: #1a1a1a;
-	border-radius: 3px;
-	overflow: hidden;
+    width: 100%;
+    height: 10px;
+    background: #1a1a1a;
+    border-radius: 3px;
+    overflow: hidden;
 }
 
 .progress-fill {
-	height: 100%;
-	background: #00ff00;
-	transition: width 0.5s;
+    height: 100%;
+    background: #00ff00;
+    transition: width 0.5s;
 }
 
 .progress-label {
-	display: flex;
-	justify-content: space-between;
-	font-size: 12px;
-	color: #666;
+    display: flex;
+    justify-content: space-between;
+    font-size: 12px;
+    color: #666;
 }
 
 /* Gráfico em Tempo Real - CONTROLES E TOGGLE */
@@ -559,7 +703,6 @@ export default {
 .tab-controls {
     display: flex;
     width: 100%;
-    /* Alinhamento das abas na sua imagem. */
     justify-content: flex-start;
     gap: 20px;
 }
@@ -567,7 +710,7 @@ export default {
 .toggle-tab {
     cursor: pointer;
     padding: 0 2px 8px 2px;
-    transition: all 0.2s;
+    transition: all 0.1s;
     color: #666;
     font-weight: 500;
 }
@@ -579,12 +722,12 @@ export default {
 .chart-title-active {
     font-weight: 600;
     color: #f0f0f0;
-    border-bottom: 2px solid #00ff00;
+    border-bottom: 2px solid #22C55E;
 }
 
 /* Performance e Controles (LINHA 2) */
 .performance {
-    /* ESSENCIAL: Garante que os elementos na Linha 2 se espalhem horizontalmente */
+    /* Garante que os elementos na Linha 2 se espalhem horizontalmente */
     display: flex;
     flex-direction: row;
     justify-content: space-between; /* Distribui o espaço entre os grupos */
@@ -596,7 +739,6 @@ export default {
     font-weight: 500;
     color: #e7e7e7;
     font-size: 1.2rem;
-    /* Alinhado à esquerda na performance */
 }
 
 .update-info {
@@ -604,17 +746,19 @@ export default {
     display: flex;
     align-items: center;
     gap: 5px;
-    /* Puxa a atualização para perto do título de Performance */
     margin-right: auto;
     margin-left: 20px; /* Pequeno espaçamento do título */
 }
 
 /* Configurações de Tempo/Tipo no lado direito */
 .chart-settings {
-    /* ESSENCIAL: Garante que este grupo fique na extrema direita */
+    /* Garante que este grupo fique na extrema direita */
     margin-left: auto;
     display: flex;
-    align-items: center;
+    flex-direction: row;
+    flex-wrap: wrap; /* Permite que inputs de data quebrem a linha se necessário */
+    align-items: flex-end;
+    justify-content: flex-end;
     gap: 20px;
     font-size: 11px;
     color: #666;
@@ -624,11 +768,16 @@ export default {
     display: flex;
     align-items: center;
     gap: 6px;
-    width: 100%;
 }
 
-/* Estilo para o SELECT */
-.custom-select {
+.control-div {
+    display: flex;
+    flex-direction: row;
+    gap: 20px;
+}
+
+/* Estilo para o SELECT e INPUT DATE */
+.custom-select, .custom-input-date {
     background-color: #0a0a0a;
     color: #f0f0f0;
     border: 1px solid #1a1a1a;
@@ -639,6 +788,32 @@ export default {
     -webkit-appearance: none;
     -moz-appearance: none;
     appearance: none;
+    height: 25px; /* Altura uniforme */
+}
+
+.custom-input-date {
+    width: 120px; /* Largura para o campo de data */
+    padding: 4px 8px;
+    cursor: text;
+}
+
+/* Botão de Exportar */
+.export-btn {
+    background: #22c55e1a;
+    color: #22C55E;
+    border: 1px solid #22C55E;
+    padding:8px 10px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    width: 100%;
+    max-width: 180px;
+}
+
+.export-btn:hover {
+    background: #1a4d2e8e;
 }
 
 /* Conteúdo (Gráfico/Histórico) */
@@ -699,6 +874,32 @@ export default {
 .result-positive { color: #00ff00; font-weight: 600; }
 .result-negative { color: #ff4444; font-weight: 600; }
 
+/* Footer do Histórico (Botão Ver Tudo) */
+.history-footer {
+    display: flex;
+    justify-content: center;
+    padding: 15px 0;
+    border-top: 1px solid #1a1a1a;
+}
+
+.view-all-btn {
+    background: #22c55e1a;
+    color: #22C55E;
+    border: 1px solid #22C55E;
+    padding:8px 10px;
+    border-radius: 3px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    width: 100%;
+    max-width: 300px;
+}
+
+.view-all-btn:hover {
+    background: #1a4d2e8e;
+}
+
 /* Ações do Agente */
 .actions-section {
     padding: 20px;
@@ -723,7 +924,7 @@ export default {
 .action-item {
     display: flex;
     align-items: center;
-	justify-content: center;
+    justify-content: center;
     gap: 12px;
     padding: 12px 0;
     border-bottom: 1px solid #1a1a1a;
@@ -741,8 +942,8 @@ export default {
 }
 
 .action-icon.success { background: #00ff00; }
-.action-icon.info { background: #919090; } /* Cor amarela para 'Aguardando' na imagem */
-.action-icon.warning { background: #ffaa00; } /* Cor amarela para 'Volume Detectado' na imagem */
+.action-icon.info { background: #919090; } 
+.action-icon.warning { background: #ffaa00; } 
 .action-icon.error { background: #ff4444; }
 
 .action-content {
@@ -769,5 +970,78 @@ export default {
 
 .progress-card, .chart-section, .history-section, .actions-section, .metric-card {
     background: #0e0f0f;
+}
+
+/* Estilos do MODAL */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    background: #0e0f0f;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    width: 90%;
+    max-width: 800px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #1a1a1a;
+    flex-shrink: 0;
+}
+
+.modal-header h3 {
+    font-size: 1.3rem;
+    color: #f0f0f0;
+}
+
+.close-modal-btn {
+    background: none;
+    border: none;
+    color: #666;
+    font-size: 18px;
+    cursor: pointer;
+    padding: 5px 10px;
+}
+
+.close-modal-btn:hover {
+    color: #f0f0f0;
+}
+
+.modal-body {
+    padding: 0px 20px 20px 20px;
+    overflow-y: auto; /* Adiciona rolagem se o conteúdo for grande */
+    flex-grow: 1;
+}
+
+/* Ajustes na tabela dentro do modal */
+.modal-table {
+    margin-top: 10px;
+}
+
+.modal-table th, .modal-table td {
+    padding: 10px;
+    font-size: 13px;
+}
+
+.modal-table tr:last-child td {
+    border-bottom: 1px solid #1a1a1a; /* Garante que a borda continue, pois o modal tem rolagem */
 }
 </style>
