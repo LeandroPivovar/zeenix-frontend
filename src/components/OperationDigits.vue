@@ -5,25 +5,295 @@
             <p>{{ loadingMessage }}</p>
         </div>
             
-        <div v-else class="flex-row-gap">
-            <div class="col-left">
-                <div class="card">
-                    <h3 class="card-header space-between">
-                        Saldo da Conta 
-                        <span class="status-time status-green">🟢 Online</span>
-                    </h3>
-                    <p class="account-balance space-between">
-                        <span>{{ accountBalance }}</span> 
-                        <span v-if="balanceChange" :class="['balance-change', balanceChange >= 0 ? 'status-green' : 'status-red']">
-                            {{ balanceChange >= 0 ? '+' : '' }}{{ displayCurrency }} {{ Math.abs(balanceChange).toFixed(2) }}
-                        </span>
-                    </p>
-                    <p class="text-small-opacity">Operações de dígitos em tempo real.</p>
+        <div v-else class="digits-layout">
+            <!-- Header Section: Semáforo + Histórico -->
+            <div class="top-section">
+                <!-- Card Semáforo -->
+                <div id="semaphoreCard" class="semaphore-card semaphore-fade" :class="semaphoreStateClass">
+                    <div class="semaphore-header">
+                        <div class="semaphore-title-group">
+                            <i :class="['fas', semaphoreIcon, 'semaphore-icon']"></i>
+                            <h3 class="semaphore-title">{{ semaphoreTitle }}</h3>
+                        </div>
+                        <div class="relative group">
+                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                            <div class="tooltip-content">
+                                <div class="tooltip-title">Como Usar o Semáforo</div>
+                                <div class="tooltip-text">
+                                    Este é o indicador PRINCIPAL.<br><br>
+                                    Verde = sinal claro para operar com a estratégia mostrada.<br>
+                                    Amarelo = aguarde, sem padrão claro ainda.<br>
+                                    Vermelho = NÃO opere, condições desfavoráveis.<br><br>
+                                    <strong>Exemplo:</strong> Verde mostrando 'MATCHES 7, Confiança 78%' = Entre na Deriv e faça uma operação Matches no dígito 7 por 5 ticks.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="semaphore-status-container">
+                        <div class="semaphore-status">{{ semaphoreStatus }}</div>
+                    </div>
+                    <div class="semaphore-reason-box">
+                        <div class="semaphore-reason-label">Razão</div>
+                        <div class="semaphore-reason">{{ semaphoreReason }}</div>
+                    </div>
                 </div>
 
-                <div class="card">
-                    <h3 class="card-header">Configuração da Ordem</h3>
-                    
+                <!-- Card Histórico -->
+                <div class="history-card">
+                    <div class="card-header-with-help">
+                        <h3 class="card-header">Histórico dos Últimos Dígitos</h3>
+                        <div class="relative group">
+                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help opacity-80"></i>
+                            <div class="tooltip-content">
+                                <div class="tooltip-title">Visualização do Histórico</div>
+                                <div class="tooltip-text">
+                                    Mostra os últimos 20 dígitos recebidos em tempo real. O dígito destacado (em verde) é o mais recente.<br><br>
+                                    Use este painel para validar visualmente padrões como repetições, alternâncias e clusters.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="digit-history-grid">
+                        <div 
+                            v-for="(digit, index) in last20Digits" 
+                            :key="'hist-'+index" 
+                            :class="['digit-history-item', index === last20Digits.length - 1 ? 'digit-history-active' : '']"
+                        >
+                            {{ digit }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Main Analysis Grid -->
+            <div class="analysis-grid">
+                <!-- Mapa de Frequência -->
+                <div class="frequency-map-card">
+                    <div class="card-header-with-help">
+                        <h3 class="card-header">Mapa de Frequência dos Dígitos (0–9)</h3>
+                        <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                    </div>
+                    <div class="frequency-map-grid">
+                        <div v-for="item in digitFrequenciesWithStats" :key="'freq-'+item.digit" class="frequency-digit-block">
+                            <div class="frequency-percentage-label">{{ item.percentage }}%</div>
+                            <div 
+                                class="frequency-bar-visual" 
+                                :class="item.statusClass"
+                                :style="{ height: item.barHeight + 'px' }"
+                            ></div>
+                            <div class="frequency-digit-number">{{ item.digit }}</div>
+                            <div class="frequency-status-label">{{ item.statusText }}</div>
+                            <div class="frequency-z-score">Z: {{ item.zScore }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Heatmap Estatístico -->
+                <div class="heatmap-card">
+                    <div class="card-header-with-help">
+                        <h3 class="card-header">Heatmap Estatístico de Dígitos (0–9)</h3>
+                        <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                    </div>
+                    <div class="heatmap-grid">
+                        <div 
+                            v-for="item in digitFrequenciesWithStats" 
+                            :key="'heat-'+item.digit" 
+                            class="heatmap-digit-block"
+                            :class="[item.statusClass, item.isHighlighted ? 'heatmap-highlighted' : '']"
+                        >
+                            <div class="frequency-percentage-label">{{ item.percentage }}%</div>
+                            <div 
+                                class="frequency-bar-visual" 
+                                :class="item.statusClass"
+                                :style="{ height: item.barHeight + 'px' }"
+                            ></div>
+                            <div class="frequency-digit-number">{{ item.digit }}</div>
+                            <div class="frequency-status-label">{{ item.statusText }}</div>
+                            <div class="frequency-z-score">Z: {{ item.zScore }}</div>
+                        </div>
+                    </div>
+                    <div class="heatmap-legend">
+                        <div class="legend-item">
+                            <div class="legend-dot legend-dot-green"></div>
+                            <span>Subaquecido</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot legend-dot-yellow"></div>
+                            <span>Normal</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot legend-dot-orange"></div>
+                            <span>Aquecido</span>
+                        </div>
+                        <div class="legend-item">
+                            <div class="legend-dot legend-dot-red"></div>
+                            <span>Sobreaquecido</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bottom Section: DVX, Paridade, Alto/Baixo -->
+            <div class="bottom-section">
+                <!-- DVX Card -->
+                <div class="dvx-card">
+                    <div class="card-header-with-help">
+                        <div>
+                            <h3 class="card-header">Índice de Volatilidade (DVX)</h3>
+                            <p class="card-subtitle">Mede a variabilidade dos dígitos</p>
+                        </div>
+                        <div class="relative group">
+                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                            <div class="tooltip-content">
+                                <div class="tooltip-title">Como interpretar o DVX</div>
+                                <div class="tooltip-text">
+                                    O DVX mede a dispersão dos dígitos ao longo do tempo.<br><br>
+                                    • Verde (0–30): ambiente estável e ideal para operar<br>
+                                    • Amarelo (31–60): volatilidade moderada, operar com cautela<br>
+                                    • Vermelho (61–100): mercado errático — não operar
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="dvx-gauge-container">
+                        <svg width="240" height="120" class="dvx-gauge-svg">
+                            <path d="M 30 110 A 90 90 0 0 1 72 35" stroke="#22C55E" stroke-width="16" fill="none" opacity="0.4"></path>
+                            <path d="M 72 35 A 90 90 0 0 1 168 35" stroke="#FFD058" stroke-width="16" fill="none" opacity="0.4"></path>
+                            <path d="M 168 35 A 90 90 0 0 1 210 110" stroke="#FF4747" stroke-width="16" fill="none" opacity="0.4"></path>
+                            <line 
+                                x1="120" 
+                                y1="110" 
+                                :x2="dvxGaugeX2" 
+                                :y2="dvxGaugeY2" 
+                                stroke="#DFDFDF" 
+                                stroke-width="3" 
+                                stroke-linecap="round"
+                            ></line>
+                            <circle cx="120" cy="110" r="6" fill="#DFDFDF"></circle>
+                        </svg>
+                        <div class="dvx-value-container">
+                            <div class="dvx-value">{{ dvxValue }}</div>
+                            <div class="dvx-status" :class="dvxStatusClass">{{ dvxStatusText }}</div>
+                            <div class="dvx-subtitle">Ambiente {{ dvxEnvironmentText }}</div>
+                        </div>
+                    </div>
+                    <div class="dvx-legend">
+                        <div class="dvx-legend-item">
+                            <div class="dvx-legend-bar dvx-legend-green"></div>
+                            <span>0–30 | Baixa</span>
+                        </div>
+                        <div class="dvx-legend-item">
+                            <div class="dvx-legend-bar dvx-legend-yellow"></div>
+                            <span>30–60 | Moderada</span>
+                        </div>
+                        <div class="dvx-legend-item">
+                            <div class="dvx-legend-bar dvx-legend-red"></div>
+                            <span>60–100 | Alta</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Medidor de Paridade -->
+                <div class="parity-meter-card">
+                    <div class="card-header-with-help">
+                        <div>
+                            <h3 class="card-header">Medidor de Paridade</h3>
+                            <p class="card-subtitle">Distribuição Par vs Ímpar (esperado: 50/50)</p>
+                        </div>
+                        <div class="relative group">
+                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                            <div class="tooltip-content">
+                                <div class="tooltip-title">Estratégia Even/Odd</div>
+                                <div class="tooltip-text">
+                                    Mostra a distribuição de dígitos pares (0,2,4,6,8) vs ímpares (1,3,5,7,9).<br>
+                                    O esperado é 50/50. Se houver desequilíbrio (>55% para um lado),<br>
+                                    o próximo tick tende a reverter para o lado oposto.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="parity-meter-content">
+                        <div class="parity-meter-item">
+                            <div class="parity-meter-header">
+                                <span>Par (0,2,4,6,8)</span>
+                                <span class="parity-meter-percentage text-blue">{{ digitFrequency.parity.even }}%</span>
+                            </div>
+                            <div class="parity-meter-bar-container">
+                                <div class="parity-meter-bar parity-meter-bar-blue" :style="{ width: digitFrequency.parity.even + '%' }"></div>
+                                <div class="parity-meter-value">{{ evenCount }}</div>
+                            </div>
+                        </div>
+                        <div class="parity-meter-item">
+                            <div class="parity-meter-header">
+                                <span>Ímpar (1,3,5,7,9)</span>
+                                <span class="parity-meter-percentage text-orange">{{ digitFrequency.parity.odd }}%</span>
+                            </div>
+                            <div class="parity-meter-bar-container">
+                                <div class="parity-meter-bar parity-meter-bar-orange" :style="{ width: digitFrequency.parity.odd + '%' }"></div>
+                                <div class="parity-meter-value">{{ oddCount }}</div>
+                            </div>
+                        </div>
+                        <div class="parity-meter-recommendation">
+                            <i class="fas fa-check text-green"></i>
+                            <span>{{ parityRecommendationText }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Distribuição Alto/Baixo -->
+                <div class="high-low-card">
+                    <div class="card-header-with-help">
+                        <div>
+                            <h3 class="card-header">Distribuição Alto/Baixo</h3>
+                            <p class="card-subtitle">Baixos (0–4) vs Altos (5–9) — esperado: 50/50</p>
+                        </div>
+                        <div class="relative group">
+                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                            <div class="tooltip-content">
+                                <div class="tooltip-title">Estratégia Over/Under</div>
+                                <div class="tooltip-text">
+                                    Divide os dígitos em Baixos (0–4) e Altos (5–9).<br>
+                                    O esperado é 50/50. Desequilíbrio indica que o próximo tick<br>
+                                    terá maior probabilidade de ser do lado oposto.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="high-low-content">
+                        <div class="high-low-item">
+                            <div class="high-low-header">
+                                <span>Baixos (0–4)</span>
+                                <span class="high-low-percentage text-green">{{ lowPercentage }}%</span>
+                            </div>
+                            <div class="high-low-bar-container">
+                                <div class="high-low-bar high-low-bar-green" :style="{ width: lowPercentage + '%' }"></div>
+                                <div class="high-low-value">{{ lowCount }}</div>
+                            </div>
+                        </div>
+                        <div class="high-low-item">
+                            <div class="high-low-header">
+                                <span>Altos (5–9)</span>
+                                <span class="high-low-percentage text-purple">{{ highPercentage }}%</span>
+                            </div>
+                            <div class="high-low-bar-container">
+                                <div class="high-low-bar high-low-bar-purple" :style="{ width: highPercentage + '%' }"></div>
+                                <div class="high-low-value">{{ highCount }}</div>
+                            </div>
+                        </div>
+                        <div class="high-low-recommendation">
+                            <i class="fas fa-arrow-right text-green"></i>
+                            <span>{{ highLowRecommendationText }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Panel: Trading -->
+            <div class="trading-panel">
+                <div class="trading-panel-header">
+                    <h3 class="card-header">Negociação Manual — Dígitos</h3>
+                </div>
+                <div class="trading-panel-content">
                     <div class="input-group">
                         <label class="input-label">Mercado</label>
                         <select v-model="symbol" @change="handleSymbolChange" :disabled="!isAuthorized || isLoadingSymbol" class="select-field">
@@ -61,33 +331,40 @@
                     </div>
 
                     <div class="input-group">
-                        <label class="input-label">Tipo de contrato de dígito</label>
+                        <label class="input-label">Tipo de Operação</label>
                         <select v-model="digitType" class="select-field" :disabled="isTrading" @change="onDigitTypeChange">
-                            <option value="DIGITMATCH">Match (Igual)</option>
-                            <option value="DIGITDIFF">Differs (Diferente)</option>
-                            <option value="DIGITOVER">Over (Maior que)</option>
-                            <option value="DIGITUNDER">Under (Menor que)</option>
-                            <option value="DIGITEVEN">Even (Par)</option>
-                            <option value="DIGITODD">Odd (Ímpar)</option>
-                        </select>
-                </div>
-
-                    <div v-if="needsDigitBarrier" class="input-group">
-                        <label class="input-label">Dígito de referência (0-9)</label>
-                        <select v-model="digitBarrier" class="select-field" :disabled="isTrading" @change="subscribeToProposal">
-                            <option v-for="d in [0,1,2,3,4,5,6,7,8,9]" :key="d" :value="String(d)">{{ d }}</option>
+                            <option value="DIGITMATCH">Dígitos (Último dígito)</option>
                         </select>
                     </div>
 
-                    <div class="input-row-flex">
-                        <div class="input-group-half">
-                            <label class="input-label">Duração (Ticks)</label>
-                            <input type="number" min="1" max="10" v-model.number="duration" class="input-field-value" :disabled="isTrading" @input="subscribeToProposal" />
+                    <div class="input-group">
+                        <label class="input-label">Duração</label>
+                        <div class="duration-input-group">
+                            <select class="duration-select">
+                                <option>Ticks</option>
+                            </select>
+                            <input type="number" value="5" v-model.number="duration" class="duration-input" :disabled="isTrading" @input="subscribeToProposal" />
                         </div>
-                        <div class="input-group-half">
-                            <label class="input-label">Valor da entrada ({{ displayCurrency }})</label>
-                            <input type="number" min="0.35" step="0.01" v-model.number="orderValue" class="input-field-value" :disabled="isTrading" @input="subscribeToProposal" />
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Previsão</label>
+                        <div class="prediction-buttons">
+                            <button class="prediction-btn">Acima</button>
+                            <button class="prediction-btn">Abaixo</button>
                         </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Valor de entrada</label>
+                        <input 
+                            type="number" 
+                            placeholder="Ex: 1.00, 2.50..." 
+                            v-model.number="orderValue" 
+                            class="input-field-value" 
+                            :disabled="isTrading" 
+                            @input="subscribeToProposal"
+                        />
                     </div>
 
                     <div v-if="currentProposalPrice" class="proposal-info">
@@ -100,130 +377,57 @@
                         <div class="profit-value">{{ displayCurrency }} {{ realTimeProfit > 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}</div>
                     </div>
 
-                    <button 
-                        v-if="!activeContract"
-                        @click="executeBuy" 
-                        class="btn-execute-operation btn-buy" 
-                        :disabled="isTrading || !isAuthorized || !currentProposalId"
-                    >
-                        {{ isTrading ? 'Aguardando confirmação...' : 'COMPRAR' }}
-                    </button>
+                    <div class="trading-buttons">
+                        <button 
+                            v-if="!activeContract"
+                            @click="executeBuy" 
+                            class="btn-call" 
+                            :disabled="isTrading || !isAuthorized || !currentProposalId"
+                        >
+                            CALL
+                        </button>
+                        <button 
+                            v-if="!activeContract"
+                            @click="executeBuy" 
+                            class="btn-put" 
+                            :disabled="isTrading || !isAuthorized || !currentProposalId"
+                        >
+                            PUT
+                        </button>
+                    </div>
 
                     <p v-if="tradeMessage" class="trade-message success">{{ tradeMessage }}</p>
                     <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
                 </div>
-
-                <!-- Resultado da Operação -->
-                <div v-if="showResultNotification" class="result-notification-overlay" @click="closeResultNotification">
-                    <div class="result-notification" :class="resultNotificationClass" @click.stop>
-                        <div class="result-header">
-                            <h3>{{ resultNotificationTitle }}</h3>
-                            <button @click="closeResultNotification" class="close-btn">✕</button>
-                        </div>
-                        <div class="result-body">
-                            <div class="result-icon">{{ resultNotificationIcon }}</div>
-                            <div class="result-profit">
-                                {{ lastTradeResult.profit >= 0 ? '+' : '' }}{{ displayCurrency }} {{ (lastTradeResult.profit || 0).toFixed(2) }}
-                            </div>
-                            <div class="result-details">
-                                <div class="result-detail-item">
-                                    <span>Tipo:</span>
-                                    <span>{{ getDigitTypeLabel(lastTradeResult.direction) }} {{ lastTradeResult.barrier ? `(${lastTradeResult.barrier})` : '' }}</span>
-                                </div>
-                                <div class="result-detail-item">
-                                    <span>Investimento:</span>
-                                    <span>{{ displayCurrency }} {{ (lastTradeResult.buyPrice || 0).toFixed(2) }}</span>
-                                </div>
-                                <div class="result-detail-item">
-                                    <span>Retorno:</span>
-                                    <span>{{ displayCurrency }} {{ (lastTradeResult.sellPrice || 0).toFixed(2) }}</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3 class="card-header space-between">
-                        Status da Ordem
-                        <span v-if="activeContract" class="text-bold-yellow">{{ contractTimeRemaining }}</span>
-                    </h3>
-                    <div v-if="activeContract" class="order-status-labels">
-                        <span>Iniciado</span>
-                        <span class="status-yellow">Ativo</span>
-                        <span>Finalizado</span>
-                    </div>
-                    <div v-else class="order-status-labels">
-                        <span>Iniciado</span>
-                        <span>Analisando</span>
-                        <span>Finalizado</span>
-                    </div>
-                    <div class="progress-bar-container">
-                        <div v-if="activeContract" class="progress-bar-fill-yellow" :style="{ width: contractProgress + '%' }"></div>
-                        <div v-else class="progress-bar-fill-yellow" style="width: 50%"></div>
-                    </div>
-                    <p v-if="activeContract" class="order-analysis">Contrato ativo - Monitorando resultado...</p>
-                    <p v-else class="order-analysis">Aguardando operação...</p>
-                    <div v-if="activeContract" class="order-detail">
-                        <span>Tipo:</span>
-                        <span class="order-type-buy">{{ getDigitTypeLabel(digitType) }} {{ needsDigitBarrier ? `(${digitBarrier})` : '' }}</span>
-                    </div>
-                </div>
             </div>
 
-            <div class="col-middle">
-                <div class="card full-height">
-                    <h3 class="card-header">Últimos 20 Dígitos</h3>
-                    <div class="digit-list">
-                        <span v-for="(digit, index) in last20Digits.slice(0, 19)" :key="'d1'+index" class="digit-item">{{ digit }}</span>
-                        <span v-if="last20Digits.length >= 20" class="digit-item-active">{{ last20Digits[19] }}</span>
+            <!-- Resultado da Operação -->
+            <div v-if="showResultNotification" class="result-notification-overlay" @click="closeResultNotification">
+                <div class="result-notification" :class="resultNotificationClass" @click.stop>
+                    <div class="result-header">
+                        <h3>{{ resultNotificationTitle }}</h3>
+                        <button @click="closeResultNotification" class="close-btn">✕</button>
                     </div>
-                    <p class="digit-repetition">{{ currentRepetition }}</p>
-                    
-           
-                </div>
-
-                <div class="card">
-                    <h3 class="card-header">Paridade</h3>
-                    
-                    <div class="parity-section">
-                        <div class="parity-info">
-                            <p class="parity-label">Pares</p>
-                            <div class="parity-bar-bg margin-top-5">
-                                <div class="parity-bar-purple" :style="{ width: digitFrequency.parity.even + '%' }"></div>
+                    <div class="result-body">
+                        <div class="result-icon">{{ resultNotificationIcon }}</div>
+                        <div class="result-profit">
+                            {{ lastTradeResult.profit >= 0 ? '+' : '' }}{{ displayCurrency }} {{ (lastTradeResult.profit || 0).toFixed(2) }}
+                        </div>
+                        <div class="result-details">
+                            <div class="result-detail-item">
+                                <span>Tipo:</span>
+                                <span>{{ getDigitTypeLabel(lastTradeResult.direction) }} {{ lastTradeResult.barrier ? `(${lastTradeResult.barrier})` : '' }}</span>
+                            </div>
+                            <div class="result-detail-item">
+                                <span>Investimento:</span>
+                                <span>{{ displayCurrency }} {{ (lastTradeResult.buyPrice || 0).toFixed(2) }}</span>
+                            </div>
+                            <div class="result-detail-item">
+                                <span>Retorno:</span>
+                                <span>{{ displayCurrency }} {{ (lastTradeResult.sellPrice || 0).toFixed(2) }}</span>
                             </div>
                         </div>
-                        <span class="parity-percentage text-bold-purple">{{ digitFrequency.parity.even }}%</span>
                     </div>
-
-                    <div class="parity-section margin-top-10">
-                        <div class="parity-info">
-                            <p class="parity-label">Ímpares</p>
-                            <div class="parity-bar-bg margin-top-5">
-                                <div class="parity-bar-red" :style="{ width: digitFrequency.parity.odd + '%' }"></div>
-                            </div>
-                        </div>
-                        <span class="parity-percentage text-bold-red">{{ digitFrequency.parity.odd }}%</span>
-                    </div>
-
-                    <p :class="['parity-trend', parityTrendClass]">{{ parityTrendText }}</p>
-                    <p class="text-micro-opacity margin-top-5">"Paridade limpa" — equilíbrio traz previsibilidade.</p>
-                </div>
-            </div>
-
-            <div class="col-right">
-                <div class="card">
-                    <h3 class="card-header">Frequência por Dígito</h3>
-                    <div class="frequency-list">
-                        <div v-for="item in digitFrequencies" :key="item.digit" class="frequency-item">
-                            <span class="digit-label">{{ item.digit }}</span>
-                            <div class="frequency-bar-bg">
-                                <div :class="`frequency-bar frequency-bar-color-${item.digit}`" :style="{ width: item.percentage + '%' }"></div>
-                            </div>
-                            <span :class="['frequency-percentage', getFrequencyClass(item.digit, item.percentage)]">{{ item.percentage }}%</span>
-                        </div>
-                    </div>
-                    <p class="text-micro-opacity-border-top">Linha cinza marca a faixa neutra (10%)</p>
                 </div>
             </div>
         </div>
@@ -479,6 +683,193 @@ export default {
                 return '';
             }
             return this.lastTradeResult.profit >= 0 ? 'result-profit' : 'result-loss';
+        },
+        // Semáforo
+        semaphoreState() {
+            if (this.digitFrequency.digits.length < 50) {
+                return 'AGUARDAR';
+            }
+            const dvx = this.dvxValue;
+            if (dvx > 60) {
+                return 'STOP';
+            }
+            // Verificar padrões favoráveis
+            const frequencies = this.digitFrequenciesWithStats;
+            const hasClearPattern = frequencies.some(f => Math.abs(f.zScore) > 1.5);
+            if (hasClearPattern && dvx <= 30) {
+                return 'GO';
+            }
+            return 'AGUARDAR';
+        },
+        semaphoreStateClass() {
+            return `semaphore-${this.semaphoreState.toLowerCase()}`;
+        },
+        semaphoreIcon() {
+            const states = {
+                'GO': 'fa-check-circle',
+                'AGUARDAR': 'fa-clock',
+                'STOP': 'fa-exclamation-triangle'
+            };
+            return states[this.semaphoreState] || 'fa-clock';
+        },
+        semaphoreTitle() {
+            const states = {
+                'GO': 'OPERAR',
+                'AGUARDAR': 'AGUARDAR',
+                'STOP': 'NÃO OPERAR'
+            };
+            return states[this.semaphoreState] || 'AGUARDAR';
+        },
+        semaphoreStatus() {
+            return this.semaphoreState;
+        },
+        semaphoreReason() {
+            if (this.semaphoreState === 'GO') {
+                return 'Condição favorável identificada pelos padrões estatísticos.';
+            } else if (this.semaphoreState === 'AGUARDAR') {
+                return 'Aguardando mais dados (mínimo 50 ticks).';
+            } else {
+                return 'Alta volatilidade ou sinais contraditórios detectados.';
+            }
+        },
+        // DVX (Índice de Volatilidade)
+        dvxValue() {
+            if (this.digitFrequency.digits.length < 20) {
+                return 0;
+            }
+            const frequencies = this.digitFrequencies;
+            const expected = 10; // 10% esperado para cada dígito
+            let variance = 0;
+            frequencies.forEach(f => {
+                variance += Math.pow(f.percentage - expected, 2);
+            });
+            const stdDev = Math.sqrt(variance / 10);
+            // Normalizar para 0-100
+            return Math.min(100, Math.round((stdDev / 10) * 100));
+        },
+        dvxStatusClass() {
+            if (this.dvxValue <= 30) return 'dvx-status-green';
+            if (this.dvxValue <= 60) return 'dvx-status-yellow';
+            return 'dvx-status-red';
+        },
+        dvxStatusText() {
+            if (this.dvxValue <= 30) return 'Volatilidade Baixa';
+            if (this.dvxValue <= 60) return 'Volatilidade Moderada';
+            return 'Volatilidade Alta';
+        },
+        dvxEnvironmentText() {
+            if (this.dvxValue <= 30) return 'estável';
+            if (this.dvxValue <= 60) return 'moderado';
+            return 'arriscado';
+        },
+        // Estatísticas de dígitos com Z-score
+        digitFrequenciesWithStats() {
+            const totalDigits = this.digitFrequency.digits.length;
+            if (totalDigits === 0) {
+                return Array.from({ length: 10 }, (_, i) => ({
+                    digit: i,
+                    percentage: 0,
+                    zScore: 0,
+                    statusClass: 'status-normal',
+                    statusText: 'Normal',
+                    barHeight: 42,
+                    isHighlighted: false
+                }));
+            }
+            
+            const expected = totalDigits / 10;
+            const frequencies = this.digitFrequencies;
+            
+            return frequencies.map(item => {
+                const count = (item.percentage / 100) * totalDigits;
+                const zScore = expected > 0 ? ((count - expected) / Math.sqrt(expected)).toFixed(1) : 0;
+                const z = parseFloat(zScore);
+                
+                let statusClass, statusText, barHeight;
+                if (z < -1.5) {
+                    statusClass = 'status-underheated';
+                    statusText = 'Subaquec.';
+                    barHeight = 42;
+                } else if (z < -0.5) {
+                    statusClass = 'status-normal';
+                    statusText = 'Normal';
+                    barHeight = 81;
+                } else if (z < 1.5) {
+                    statusClass = 'status-heated';
+                    statusText = z < 0.5 ? 'Lev. aquec.' : 'Aquecido';
+                    barHeight = z < 0.5 ? 93 : 106;
+                } else {
+                    statusClass = 'status-overheated';
+                    statusText = 'Sobreaquec.';
+                    barHeight = 110;
+                }
+                
+                // Destacar dígito 7 se for subaquecido (exemplo do HTML)
+                const isHighlighted = item.digit === 7 && z < -1.5;
+                
+                return {
+                    digit: item.digit,
+                    percentage: item.percentage.toFixed(1),
+                    zScore: zScore,
+                    statusClass,
+                    statusText,
+                    barHeight,
+                    isHighlighted
+                };
+            });
+        },
+        // Contadores para paridade
+        evenCount() {
+            return this.digitFrequency.digits.filter(d => d % 2 === 0).length;
+        },
+        oddCount() {
+            return this.digitFrequency.digits.filter(d => d % 2 === 1).length;
+        },
+        parityRecommendationText() {
+            const diff = Math.abs(this.digitFrequency.parity.even - this.digitFrequency.parity.odd);
+            if (diff < 5) {
+                return 'Distribuição equilibrada — sem vantagem clara';
+            }
+            if (this.digitFrequency.parity.even > 55) {
+                return 'Próximo tick: maior probabilidade de ÍMPAR (ODD)';
+            } else {
+                return 'Próximo tick: maior probabilidade de PAR (EVEN)';
+            }
+        },
+        // Contadores para alto/baixo
+        lowCount() {
+            return this.digitFrequency.digits.filter(d => d >= 0 && d <= 4).length;
+        },
+        highCount() {
+            return this.digitFrequency.digits.filter(d => d >= 5 && d <= 9).length;
+        },
+        lowPercentage() {
+            const total = this.digitFrequency.digits.length;
+            return total > 0 ? Math.round((this.lowCount / total) * 100 * 10) / 10 : 0;
+        },
+        highPercentage() {
+            const total = this.digitFrequency.digits.length;
+            return total > 0 ? Math.round((this.highCount / total) * 100 * 10) / 10 : 0;
+        },
+        highLowRecommendationText() {
+            const diff = Math.abs(this.lowPercentage - this.highPercentage);
+            if (diff < 5) {
+                return 'Distribuição equilibrada — sem vantagem clara';
+            }
+            if (this.lowPercentage > 55) {
+                return 'Próximo tick: maior probabilidade de ALTO (OVER 4)';
+            } else {
+                return 'Próximo tick: maior probabilidade de BAIXO (UNDER 5)';
+            }
+        },
+        // DVX Gauge coordinates
+        dvxGaugeX2() {
+            const angle = (this.dvxValue / 100) * Math.PI - Math.PI / 2;
+            return 120 + 70 * Math.cos(angle);
+        },
+        dvxGaugeY2() {
+            const angle = (this.dvxValue / 100) * Math.PI - Math.PI / 2;
+            return 110 + 70 * Math.sin(angle);
         },
     },
     methods: {
