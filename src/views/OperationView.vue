@@ -1,48 +1,143 @@
 <template>
-  <div class="layout">
+  <div class="zenix-layout">
     <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
 
-    <div class="operation-main" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-      <div class="background-glow"></div>
-      <div class="background-grid"></div>
-      <div class="mb-8">
-        <h1 class="text-2xl font-bold text-zenix-text mb-2 tracking-tight">
-          Operação Manual com Sinais
-        </h1>
-        <p class="text-sm text-[#A1A1A1]">
-          Execute operações manuais com apoio de sinais em tempo real.
-        </p>
-      </div>
+    <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+      <header class="top-header">
+        <div class="header-content">
+          <div class="header-left-content">
+            <h1 class="header-title">Operação Manual com Sinais</h1>
+            <p class="header-subtitle">Execute operações manuais com apoio de sinais em tempo real.</p>
+          </div>
+          <div class="header-actions-right">
+            <div class="balance-display-card">
+              <div class="balance-header">
+                <i class="far fa-wallet"></i>
+                <div class="balance-info">
+                  <span class="balance-label">Saldo Atual</span>
+                  <div class="balance-value-row">
+                    <span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ accountBalanceFormatted }}</span>
+                    <span class="balance-value" v-else>••••••</span>
+                    <button 
+                      v-if="balanceVisible && accountType === 'real'" 
+                      class="account-type-btn real-btn"
+                      @click="toggleBalanceVisibility"
+                    >
+                      Real
+                    </button>
+                    <button 
+                      v-if="balanceVisible && accountType === 'demo'" 
+                      class="account-type-btn demo-btn"
+                      @click="toggleBalanceVisibility"
+                    >
+                      Demo
+                    </button>
+                    <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
+                      <i class="far fa-eye"></i>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
 
-      <div class="flex gap-2 mb-6">
-        <button
-          class="px-6 py-3 bg-zenix-card border-b-2 border-zenix-green text-zenix-text text-sm font-semibold rounded-t-xl transition-all duration-300 shadow-[0_0_8px_rgba(0,0,0,0.25)]"
-          :class="{ 'border-b-2 border-zenix-green': currentView === 'OperationChart', 'border-b-2 border-transparent': currentView !== 'OperationChart' }"
-          @click="changeView('OperationChart')"
-        >
-          Análise gráfica
-        </button>
-        <button
-          class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
-          :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationDigits', 'border-b-2 border-transparent': currentView !== 'OperationDigits' }"
-          @click="changeView('OperationDigits')"
-        >
-          Análise de dígitos
-        </button>
-      </div>
+      <main class="main-content">
+        <div class="flex gap-2 mb-6">
+          <button
+            class="px-6 py-3 bg-zenix-card border-b-2 border-zenix-green text-zenix-text text-sm font-semibold rounded-t-xl transition-all duration-300 shadow-[0_0_8px_rgba(0,0,0,0.25)]"
+            :class="{ 'border-b-2 border-zenix-green': currentView === 'OperationChart', 'border-b-2 border-transparent': currentView !== 'OperationChart' }"
+            @click="changeView('OperationChart')"
+          >
+            Análise gráfica
+          </button>
+          <button
+            class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+            :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationDigits', 'border-b-2 border-transparent': currentView !== 'OperationDigits' }"
+            @click="changeView('OperationDigits')"
+          >
+            Análise de dígitos
+          </button>
+        </div>
 
-      <div class="operation-content">
-        <component
-          :is="currentView"
-          :account-balance="accountBalanceFormatted"
-          :account-currency="accountCurrency"
-          :preferred-currency="preferredCurrency"
-          :account-loginid="accountLoginId"
-          :order-config="orderConfig"
-          :last-orders="lastOrdersFormatted"
-          @trade-result="handleTradeResult"
-        ></component>
-      </div>
+        <div class="operation-content">
+          <component
+            :is="currentView"
+            :account-balance="accountBalanceFormatted"
+            :account-currency="accountCurrency"
+            :preferred-currency="preferredCurrency"
+            :account-loginid="accountLoginId"
+            :order-config="orderConfig"
+            :last-orders="lastOrdersFormatted"
+            @trade-result="handleTradeResult"
+          ></component>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer id="footer" class="zenix-footer">
+        <div class="footer-content">
+          <div class="footer-grid">
+            <div class="footer-brand">
+              <div class="footer-logo">
+                <span class="footer-logo-main">ZENIX</span>
+                <span class="footer-logo-sub">PRO</span>
+              </div>
+              <p class="footer-description">
+                Plataforma inteligente de investimentos com IA, copy trading e automação.
+              </p>
+              <div class="footer-social">
+                <a href="#" class="social-icon"><i class="fa-brands fa-twitter"></i></a>
+                <a href="#" class="social-icon"><i class="fa-brands fa-linkedin"></i></a>
+                <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
+                <a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
+              </div>
+            </div>
+
+            <div class="footer-column">
+              <h3 class="footer-column-title">Produto</h3>
+              <ul class="footer-links">
+                <li><a href="#">IA de Investimento</a></li>
+                <li><a href="#">Copy Trading</a></li>
+                <li><a href="#">Agente Autônomo</a></li>
+                <li><a href="#">Zenix Academy</a></li>
+              </ul>
+            </div>
+            
+            <div class="footer-column">
+              <h3 class="footer-column-title">Empresa</h3>
+              <ul class="footer-links">
+                <li><a href="#">Sobre Nós</a></li>
+                <li><a href="#">Planos</a></li>
+                <li><a href="#">Blog</a></li>
+                <li><a href="#">Carreiras</a></li>
+              </ul>
+            </div>
+
+            <div class="footer-column">
+              <h3 class="footer-column-title">Suporte</h3>
+              <ul class="footer-links">
+                <li><a href="#">Central de Ajuda</a></li>
+                <li><a href="#">Documentação</a></li>
+                <li><a href="#">Status do Sistema</a></li>
+                <li><a href="#">Contato</a></li>
+              </ul>
+            </div>
+          </div>
+          
+          <div class="footer-bottom">
+            <p class="footer-copyright">© 2025 Zenix Pro. Todos os direitos reservados.</p>
+            <div class="footer-legal">
+              <a href="#">Política de Privacidade</a>
+              <span class="footer-separator">|</span>
+              <a href="#">Termos de Uso</a>
+              <span class="footer-separator">|</span>
+              <a href="#">Cookies</a>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   </div>
 </template>
@@ -75,6 +170,8 @@ export default {
       isSidebarOpen: false,
       isSidebarCollapsed: false,
       loadingConnection: false,
+      balanceVisible: true,
+      accountType: 'real', // 'real' ou 'demo'
     };
   },
   computed: {
@@ -246,7 +343,10 @@ export default {
       }
       if (loginid) {
         this.accountLoginId = loginid;
+        // Determinar tipo de conta (demo ou real) baseado no loginid
+        this.accountType = (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) ? 'demo' : 'real';
         console.log('[OperationView] LoginID atualizado:', this.accountLoginId);
+        console.log('[OperationView] Tipo de conta:', this.accountType);
       }
       
       // Armazenar tokens retornados pelo backend no localStorage
@@ -364,6 +464,9 @@ export default {
         console.warn('Não foi possível atualizar cache da Deriv.', error);
       }
     },
+    toggleBalanceVisibility() {
+      this.balanceVisible = !this.balanceVisible;
+    },
   },
   async mounted() {
     await this.checkConnection(true);
@@ -380,35 +483,351 @@ export default {
 
 <style src="../assets/css/views/operationView.css"></style>
 <style scoped>
-.background-glow {
-  position: fixed;
-  inset: 0;
-  background: radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.22), transparent 45%),
-    radial-gradient(circle at 80% 15%, rgba(56, 189, 248, 0.18), transparent 50%),
-    radial-gradient(circle at 50% 75%, rgba(16, 185, 129, 0.18), transparent 55%),
-    rgba(9, 10, 12, 0.95);
-  z-index: -2;
-  pointer-events: none;
+/* Layout */
+.zenix-layout {
+  min-height: 100vh;
+  background-color: #0B0B0B;
+  color: #DFDFDF;
+  font-family: 'Inter', sans-serif;
 }
 
-.background-grid {
+.content-wrapper {
+  margin-left: 240px;
+  min-height: 100vh;
+  transition: margin-left 0.3s ease;
+  width: calc(100% - 240px);
+  box-sizing: border-box;
+}
+
+.content-wrapper.sidebar-collapsed {
+  margin-left: 0;
+  width: 100%;
+}
+
+/* Top Header */
+.top-header {
   position: fixed;
-  inset: 0;
-  background-image: linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
-  background-size: 48px 48px;
-  z-index: -1;
+  top: 0;
+  right: 0;
+  left: 240px;
+  z-index: 40;
+  background-color: #0E0E0E;
+  border-bottom: 1px solid #1C1C1C;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+  transition: left 0.3s ease;
+  width: calc(100% - 240px);
+  box-sizing: border-box;
+}
+
+.content-wrapper.sidebar-collapsed .top-header {
+  left: 0;
+  width: 100%;
+}
+
+.header-content {
+  padding: 1rem 20px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1.5rem;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.header-left-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.header-title {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #DFDFDF;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.header-subtitle {
+  font-size: 0.875rem;
+  color: #A1A1A1;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.balance-display-card {
+  background-color: #0E0E0E;
+  border: 1px solid #1C1C1C;
+  border-radius: 0.75rem;
+  padding: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.balance-display-card:hover {
+  background: #111;
+  transform: translateY(-1px);
+}
+
+.balance-header {
+  display: flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+.balance-header i {
+  color: #22C55E;
+  font-size: 0.75rem;
+}
+
+.balance-info {
+  display: flex;
+  flex-direction: column;
+}
+
+.balance-label {
+  font-size: 0.625rem;
+  color: #7A7A7A;
+  font-weight: 500;
+}
+
+.balance-value-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.125rem;
+}
+
+.balance-value {
+  font-size: 1rem;
+  font-weight: bold;
+  color: #DFDFDF;
+}
+
+.account-type-btn {
+  padding: 0.125rem 0.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.625rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  border: none;
+  cursor: pointer;
+}
+
+.real-btn {
+  background-color: #22C55E;
+  color: #000;
+}
+
+.real-btn:hover {
+  background-color: #16A34A;
+}
+
+.demo-btn {
+  background-color: #333;
+  color: #A1A1A1;
+}
+
+.eye-toggle-btn {
+  background: none;
+  border: none;
+  color: #A1A1A1;
+  cursor: pointer;
+  padding: 0.25rem;
+  transition: color 0.2s;
+}
+
+.eye-toggle-btn:hover {
+  color: #DFDFDF;
+}
+
+.header-actions-right {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+/* Main Content */
+.main-content {
+  margin-top: 70px;
+  padding: 2rem 20px 1.5rem 20px;
+  max-width: 100%;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Footer */
+.zenix-footer {
+  background-color: #0B0B0B;
+  border-top: 1px solid #1C1C1C;
+  margin-top: 3rem;
+  width: 100%;
+}
+
+.footer-content {
+  max-width: 100%;
+  width: 100%;
+  margin: 0 auto;
+  padding: 3rem 20px;
+  box-sizing: border-box;
+}
+
+.footer-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 3rem;
+  margin-bottom: 2rem;
+}
+
+.footer-brand {
+  grid-column: span 1;
+}
+
+.footer-logo {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.footer-logo-main {
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: #DFDFDF;
+}
+
+.footer-logo-sub {
+  font-size: 0.75rem;
+  color: #A1A1A1;
+}
+
+.footer-description {
+  color: #A1A1A1;
+  font-size: 0.75rem;
+  line-height: 1.6;
+  margin-bottom: 1.5rem;
   opacity: 0.6;
-  pointer-events: none;
-  animation: moveGrid 18s linear infinite;
 }
 
-@keyframes moveGrid {
-  0% {
-    background-position: 0 0, 0 0;
+.footer-social {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.social-icon {
+  color: #A1A1A1;
+  transition: color 0.2s;
+  opacity: 0.5;
+}
+
+.social-icon:hover {
+  color: #DFDFDF;
+}
+
+.footer-column-title {
+  color: #DFDFDF;
+  font-weight: 500;
+  font-size: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.footer-links {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+}
+
+.footer-links a {
+  color: #A1A1A1;
+  font-size: 0.75rem;
+  text-decoration: none;
+  transition: color 0.2s;
+  opacity: 0.6;
+}
+
+.footer-links a:hover {
+  color: #DFDFDF;
+}
+
+.footer-bottom {
+  border-top: 1px solid #1A1A1A;
+  padding-top: 2rem;
+  opacity: 0.4;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .footer-bottom {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
   }
-  100% {
-    background-position: -48px -48px, -48px -48px;
+}
+
+.footer-copyright {
+  color: #A1A1A1;
+  font-size: 0.75rem;
+}
+
+.footer-legal {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  font-size: 0.75rem;
+}
+
+.footer-legal a {
+  color: #A1A1A1;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.footer-legal a:hover {
+  color: #DFDFDF;
+}
+
+.footer-separator {
+  color: #1C1C1C;
+}
+
+/* Responsive Footer */
+@media (max-width: 1024px) {
+  .footer-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .footer-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .footer-content {
+    padding: 2rem 15px;
+  }
+  
+  .header-content {
+    padding: 1rem 15px;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .top-header {
+    left: 0;
+    width: 100%;
+  }
+  
+  .main-content {
+    margin-top: 140px;
   }
 }
 </style>

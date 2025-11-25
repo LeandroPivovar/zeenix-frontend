@@ -72,13 +72,6 @@
               </button>
             </div>
           </div>
-          
-          <div class="flex items-center gap-6 px-6 py-3 border-b border-[#1A1A1A]">
-            <button class="text-xs text-[#7A7A7A] hover:text-zenix-text transition-colors duration-300">Indicadores</button>
-            <button class="text-xs text-[#7A7A7A] hover:text-zenix-text transition-colors duration-300">Ferramentas</button>
-            <button class="text-xs text-[#7A7A7A] hover:text-zenix-text transition-colors duration-300">Desenhar linhas</button>
-            <button class="text-xs text-[#7A7A7A] hover:text-zenix-text transition-colors duration-300">Padrões</button>
-          </div>
 
           <div id="candlestickChart" class="flex-1" ref="chartContainer" style="height: 400px;"></div>
           <div v-if="!chartInitialized" class="chart-placeholder absolute inset-0 flex items-center justify-center">
@@ -111,6 +104,34 @@
           </div>
           <div id="signalArea" class="min-h-[80px]">
             <!-- Signal content will be inserted here -->
+          </div>
+        </div>
+        
+        <div class="card-last-orders animated-card" data-anim-index="1">
+          <h4 class="card-title">Últimas Ordens</h4>
+          
+          <div class="orders-table-header">
+            <span>Hora</span>
+            <span>Tipo</span>
+            <span>Valor</span>
+            <span>Lucro</span>
+          </div>
+
+          <div class="orders-list-scroll">
+            <div v-if="!lastOrders.length" class="orders-empty">
+              Nenhuma operação executada ainda.
+            </div>
+            <div v-for="(order, index) in lastOrders" :key="`order-${index}`" class="order-row">
+              <span class="order-col">{{ order.time }}</span>
+              <span class="order-col order-type-text">{{ order.type }}</span>
+              <span class="order-col order-result-text">{{ order.displayValue }}</span>
+              <span class="order-col order-profit-text" :class="{ 
+                'profit-positive': order.profit != null && order.profit > 0,
+                'profit-negative': order.profit != null && order.profit < 0
+              }">
+                {{ order.displayProfit || '--' }}
+              </span>
+            </div>
           </div>
         </div>
         </div>
@@ -287,34 +308,6 @@
           :balance-after="finalTradeBalanceAfter"
           @close="closeTradeResultModal"
         />
-
-        <div class="card-last-orders animated-card" data-anim-index="1">
-          <h4 class="card-title">Últimas Ordens</h4>
-          
-          <div class="orders-table-header">
-            <span>Hora</span>
-            <span>Tipo</span>
-            <span>Valor</span>
-            <span>Lucro</span>
-          </div>
-
-          <div class="orders-list-scroll">
-            <div v-if="!lastOrders.length" class="orders-empty">
-              Nenhuma operação executada ainda.
-            </div>
-            <div v-for="(order, index) in lastOrders" :key="`order-${index}`" class="order-row">
-              <span class="order-col">{{ order.time }}</span>
-              <span class="order-col order-type-text">{{ order.type }}</span>
-              <span class="order-col order-result-text">{{ order.displayValue }}</span>
-              <span class="order-col order-profit-text" :class="{ 
-                'profit-positive': order.profit != null && order.profit > 0,
-                'profit-negative': order.profit != null && order.profit < 0
-              }">
-                {{ order.displayProfit || '--' }}
-              </span>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
 </template>
@@ -2463,7 +2456,7 @@ export default {
       // Aqui você pode adicionar lógica para atualizar o gráfico com o novo timeframe
       console.log('[OperationChart] Timeframe alterado para:', timeframe);
     },
-    startAnalysis() {
+    async startAnalysis() {
       if (this.analysisInProgress) {
         // Se já está em progresso, apenas atualizar
         return;
@@ -2471,7 +2464,10 @@ export default {
       
       this.analysisInProgress = true;
       const signalArea = document.getElementById('signalArea');
-      if (!signalArea) return;
+      if (!signalArea) {
+        this.analysisInProgress = false;
+        return;
+      }
       
       // Mostrar estado de análise
       signalArea.innerHTML = `
@@ -2514,32 +2510,100 @@ export default {
         }
       }, 650);
       
-      // Gerar sinal após os estágios completarem
-      setTimeout(() => {
+      try {
+        // Buscar recomendação da IA usando os ticks atuais
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token');
+        
+        if (!token) {
+          throw new Error('Token de autenticação não encontrado');
+        }
+        
+        // Preparar ticks para a API (últimos 10 ticks)
+        const ticksForAnalysis = this.ticks.slice(-10).map(tick => ({
+          value: Number(tick.value),
+          epoch: Number(tick.epoch) || (tick.time ? Math.floor(tick.time / 1000) : Math.floor(Date.now() / 1000))
+        }));
+        
+        if (ticksForAnalysis.length === 0) {
+          throw new Error('Não há dados de ticks disponíveis para análise');
+        }
+        
+        // Atualizar estágio
+        const textElement = document.getElementById('analysisStageText');
+        if (textElement) {
+          textElement.textContent = 'Consultando IA para recomendação…';
+        }
+        
+        // Buscar recomendação da IA
+        const response = await fetch(`${apiBaseUrl}/gemini/recommendation`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            ticks: ticksForAnalysis
+          })
+        });
+        
+        if (!response.ok) {
+          throw new Error('Erro ao buscar recomendação da IA');
+        }
+        
+        const aiRecommendation = await response.json();
         clearInterval(stageInterval);
-        const directions = ['CALL', 'PUT'];
-        const randomDirection = directions[Math.floor(Math.random() * directions.length)];
-        const isCall = randomDirection === 'CALL';
+        
+        // Processar resposta da IA
+        const direction = aiRecommendation.action || 'CALL';
+        const confidence = aiRecommendation.confidence || 50;
+        const reasoning = aiRecommendation.reasoning || '';
+        const isCall = direction === 'CALL';
         const now = new Date();
         const entryTime = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0') + 'h';
         const duration = `${this.localOrderConfig.duration}${this.localOrderConfig.durationUnit === 'm' ? 'min' : ' Ticks'}`;
         
+        // Exibir sinal gerado pela IA
         signalArea.innerHTML = `
           <div class="bg-zenix-card border border-zenix-border rounded-lg px-3 py-2.5">
             <div class="flex items-center justify-between mb-2.5 flex-wrap gap-2">
               <div class="flex items-center gap-3 flex-wrap">
                 <span class="text-[11px] text-[#DFDFDF66] font-medium">${this.symbol}</span>
-                <span class="px-2 py-0.5 ${isCall ? 'bg-zenix-green/20 text-zenix-green' : 'bg-[#FF4747]/20 text-[#FF4747]'} text-[11px] font-semibold rounded ${isCall ? 'border-zenix-green/30' : 'border-[#FF4747]/30'} border">${randomDirection}</span>
+                <span class="px-2 py-0.5 ${isCall ? 'bg-zenix-green/20 text-zenix-green' : 'bg-[#FF4747]/20 text-[#FF4747]'} text-[11px] font-semibold rounded ${isCall ? 'border-zenix-green/30' : 'border-[#FF4747]/30'} border">${direction}</span>
                 <span class="text-[11px] text-[#DFDFDF88]">Entrada: <span class="text-zenix-text font-medium">${entryTime}</span></span>
                 <span class="text-[11px] text-[#DFDFDF88]">Duração: <span class="text-zenix-text font-medium">${duration}</span></span>
                 <span class="px-2 py-0.5 bg-zenix-green/10 text-zenix-green text-[10px] font-semibold rounded border border-zenix-green/20">● Ativo</span>
               </div>
             </div>
+            ${confidence ? `
+              <div class="mt-2 pt-2 border-t border-zenix-border">
+                <div class="flex items-center gap-2 mb-1">
+                  <span class="text-[10px] text-[#DFDFDF66]">Confiança:</span>
+                  <span class="text-[11px] font-semibold ${confidence >= 70 ? 'text-zenix-green' : confidence >= 50 ? 'text-yellow-500' : 'text-orange-500'}">${confidence}%</span>
+                </div>
+                ${reasoning ? `<p class="text-[10px] text-[#DFDFDF88] mt-1">${reasoning}</p>` : ''}
+              </div>
+            ` : ''}
           </div>
         `;
         
         this.analysisInProgress = false;
-      }, 2600);
+      } catch (error) {
+        clearInterval(stageInterval);
+        console.error('[OperationChart] Erro ao buscar recomendação da IA:', error);
+        
+        // Exibir erro
+        signalArea.innerHTML = `
+          <div class="bg-zenix-card border border-red-500/30 rounded-lg px-3 py-2.5">
+            <div class="flex items-center gap-2 text-red-400">
+              <i class="fas fa-exclamation-triangle text-xs"></i>
+              <span class="text-xs font-medium">Erro ao gerar sinal: ${error.message || 'Erro desconhecido'}</span>
+            </div>
+          </div>
+        `;
+        
+        this.analysisInProgress = false;
+      }
     },
     selectTradeType(type) {
       if (this.isTrading || this.activeContract) return;
