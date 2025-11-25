@@ -13,9 +13,10 @@
 .digits-layout {
     display: grid;
     grid-template-columns: 1fr 320px;
-    grid-template-rows: auto 1fr;
+    grid-template-rows: auto 1fr auto;
     gap: 16px;
     align-items: start;
+    grid-auto-flow: row;
 }
 
 .top-section {
@@ -26,6 +27,21 @@
 .main-content-grid {
     grid-column: 1;
     grid-row: 2;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 16px;
+    align-items: start;
+    min-height: 0;
+}
+
+.bottom-section {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 16px;
+    align-items: stretch;
+    margin-top: 0;
 }
 
 /* Top Section: Semáforo + Histórico */
@@ -33,7 +49,8 @@
     display: grid;
     grid-template-columns: 300px 1fr;
     gap: 16px;
-    align-items: stretch;
+    align-items: start;
+    grid-auto-rows: min-content;
 }
 
 /* Card Semáforo */
@@ -46,7 +63,6 @@
     border: 2px solid #22C55E;
     width: 100%;
     padding: 14px;
-    height: 100%;
     min-height: 140px;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
     transition: all 0.3s ease;
@@ -168,12 +184,12 @@
     border: 1px solid #1C1C1C;
     border-radius: 14px;
     padding: 14px;
-    height: 100%;
-    min-height: 140px;
     display: flex;
     flex-direction: column;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
     width: 100%;
+    height: fit-content;
+    min-height: 140px;
 }
 
 .card-header-with-help {
@@ -209,7 +225,7 @@
     display: flex;
     flex-wrap: wrap;
     gap: 4px;
-    flex: 1;
+    align-content: flex-start;
 }
 
 .digit-history-item {
@@ -234,12 +250,6 @@
 }
 
 /* Main Content Grid - já definido no digits-layout grid */
-.main-content-grid {
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 16px;
-    align-items: start;
-}
 
 /* Analysis Grid */
 .analysis-grid {
@@ -247,13 +257,13 @@
     grid-template-columns: 1fr 1fr;
     gap: 16px;
     align-items: stretch;
+    min-height: 0;
 }
 
 /* Frequency Map Card */
 .frequency-map-card,
 .heatmap-card {
     min-height: 320px;
-    height: 100%;
     padding: 20px;
     border-radius: 14px;
     background: #0E0E0E;
@@ -397,13 +407,7 @@
     color: #8A8A8A;
 }
 
-/* Bottom Section */
-.bottom-section {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 16px;
-    align-items: stretch;
-}
+/* Bottom Section - já definido no digits-layout grid */
 
 /* DVX Card */
 .dvx-card {
