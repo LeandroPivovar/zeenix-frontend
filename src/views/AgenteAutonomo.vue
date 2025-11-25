@@ -20,15 +20,16 @@
 			/>
 		</div>
 		
-		<footer class="agente-autonomo-footer">
-			<button 
-				@click="toggleAgenteStatus" 
-				class="iniciar-button"
-				:class="{ 'pause-button': agenteEstaAtivo }" >
-				{{ textoDoBotao }} 
-			</button>
-			<p class="text-footer">O agente executará operações automaticamente 24/7. Ao atingir a meta diária ou limite de perda, ele pausa e retoma somente no próximo ciclo</p>
-		</footer>
+        <footer class="agente-autonomo-footer">
+            <button 
+                @click="toggleAgenteStatus" 
+                class="iniciar-button"
+                :class="{ 'pause-button': agenteEstaAtivo }" >
+                {{ textoDoBotao }} 
+            </button>
+            
+            <p v-if="!agenteEstaAtivo" class="text-footer">O agente executará operações automaticamente 24/7. Ao atingir a meta diária ou limite de perda, ele pausa e retoma somente no próximo ciclo</p>
+        </footer>
 	</div>
 </template>
 
