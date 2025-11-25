@@ -290,6 +290,12 @@
     background-color: transparent;
 }
 
+.btn-action.completed::before,
+.btn-action.completed::after {
+    content: none !important;
+    display: none !important;
+}
+
 .btn-green {
     background-color: #22C55E;
     border: 1px solid #22C55E;

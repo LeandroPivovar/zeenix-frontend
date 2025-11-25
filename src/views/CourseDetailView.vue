@@ -111,11 +111,11 @@
                         class="btn-action" 
                         :class="{ 'completed': selectedLesson?.completed }"
                         @click="markAsCompleted"
-                        :disabled="!selectedLesson || markingComplete"
+                        :disabled="!selectedLesson || markingComplete || selectedLesson?.completed"
                     >
                         <i
-                            class="fas fa-check-circle btn-icon-small"
-                            :class="{ gray: !selectedLesson?.completed }"
+                            v-if="!selectedLesson?.completed"
+                            class="fas fa-check-circle btn-icon-small gray"
                         ></i>
                         <span class="btn-text">{{ selectedLesson?.completed ? 'Concluído' : 'Marcar como concluído' }}</span>
                     </button>
