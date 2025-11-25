@@ -148,37 +148,63 @@
                     <div class="period-btns">
                         <button v-for="periodo in periodos" :key="periodo.label" :class="['period-btn', { active: periodoAtivo === periodo.label }]" @click="setPeriodo(periodo.label)">
                             <span v-if="periodo.label !== 'Personalizado'">{{ periodo.label }}</span>
-                            <span v-else>📅 {{ periodo.label }}</span>
+                            <span v-else class="periodo-personalizado-content">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: block; margin-right: 4px;">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" fill="none" stroke="currentColor"/>
+                                    <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor"/>
+                                    <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor"/>
+                                    <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor"/>
+                                </svg>
+                                <template v-if="periodoAtivo === 'Personalizado'">
+                                    Personalizado: {{ formatarData(dataInicioPersonalizada) }} - {{ formatarData(dataFimPersonalizada) }}
+                                </template>
+                                <template v-else>
+                                    {{ periodo.label }}
+                                </template>
+                            </span>
                         </button>
                     </div>
                 </div>
+                
+                <div v-if="showDateRangePicker" class="date-picker-area">
+                    <div class="date-input-group">
+                        <label for="date-start">Data Início:</label>
+                        <input id="date-start" type="date" v-model="dataInicioPersonalizada" class="date-input">
+                    </div>
+                    <div class="date-input-group">
+                        <label for="date-end">Data Fim:</label>
+                        <input id="date-end" type="date" v-model="dataFimPersonalizada" class="date-input">
+                    </div>
+                    <button class="apply-btn" @click="aplicarPeriodoPersonalizado">Aplicar</button>
+                </div>
+
                 <div class="chart-content">
                     <div class="chart-y">
                         <span v-for="y in chart.yLabels" :key="y">{{ y }}</span>
                     </div>
                     <div class="chart-area-wrapper">
-                            <div class="chart-area">
-                                <svg viewBox="0 0 600 180" preserveAspectRatio="none">
-                                    <defs>
-                                        <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
-                                            <stop offset="0%" stop-color="#22c55e" stop-opacity="0.3"/>
-                                            <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
-                                        </linearGradient>
-                                    </defs>
-                                    <line x1="0" y1="30" x2="600" y2="30" stroke="#222" stroke-dasharray="4"/>
-                                    <line x1="0" y1="90" x2="600" y2="90" stroke="#222" stroke-dasharray="4"/>
-                                    <line x1="0" y1="150" x2="600" y2="150" stroke="#222" stroke-dasharray="4"/>
-                                    <line x1="100" y1="0" x2="100" y2="180" stroke="#1a1a1a"/>
-                                    <line x1="200" y1="0" x2="200" y2="180" stroke="#1a1a1a"/>
-                                    <line x1="300" y1="0" x2="300" y2="180" stroke="#1a1a1a"/>
-                                    <line x1="400" y1="0" x2="400" y2="180" stroke="#1a1a1a"/>
-                                    <line x1="500" y1="0" x2="500" y2="180" stroke="#1a1a1a"/>
+                        <div class="chart-area">
+                            <svg viewBox="0 0 600 180" preserveAspectRatio="none">
+                                <defs>
+                                    <linearGradient id="grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                                        <stop offset="0%" stop-color="#22c55e" stop-opacity="0.3"/>
+                                        <stop offset="100%" stop-color="#22c55e" stop-opacity="0"/>
+                                    </linearGradient>
+                                </defs>
+                                <line x1="0" y1="30" x2="600" y2="30" stroke="#222" stroke-dasharray="4"/>
+                                <line x1="0" y1="90" x2="600" y2="90" stroke="#222" stroke-dasharray="4"/>
+                                <line x1="0" y1="150" x2="600" y2="150" stroke="#222" stroke-dasharray="4"/>
+                                <line x1="100" y1="0" x2="100" y2="180" stroke="#1a1a1a"/>
+                                <line x1="200" y1="0" x2="200" y2="180" stroke="#1a1a1a"/>
+                                <line x1="300" y1="0" x2="300" y2="180" stroke="#1a1a1a"/>
+                                <line x1="400" y1="0" x2="400" y2="180" stroke="#1a1a1a"/>
+                                <line x1="500" y1="0" x2="500" y2="180" stroke="#1a1a1a"/>
 
-                                    <polygon :points="chart.polygonPoints" fill="url(#grad)"/>
-                                    <polyline :points="chart.linePoints" fill="none" stroke="#22c55e" stroke-width="2"/>
-                                    <circle v-for="(point, index) in chart.points" :key="index" :cx="point.cx" :cy="point.cy" r="3" :fill="point.result === 'loss' ? '#ef4444' : '#22c55e'" stroke="none"/>
-                                </svg>
-                            </div>
+                                <polygon :points="chart.polygonPoints" fill="url(#grad)"/>
+                                <polyline :points="chart.linePoints" fill="none" stroke="#22c55e" stroke-width="2"/>
+                                <circle v-for="(point, index) in chart.points" :key="index" :cx="point.cx" :cy="point.cy" r="3" :fill="point.result === 'loss' ? '#ef4444' : '#22c55e'" stroke="none"/>
+                            </svg>
+                        </div>
                     </div>
                 </div>
                 
@@ -237,7 +263,7 @@
 </template>
 
 <script>
-import TooltipsCopyTraders from '../TooltipsCopyTraders.vue'; // Assumindo que o componente está em um arquivo separado ou localmente definido
+import TooltipsCopyTraders from '../TooltipsCopyTraders.vue'; 
 
 export default {
     name: 'CopyTradingMonitor',
@@ -245,7 +271,6 @@ export default {
         TooltipsCopyTraders,
     },
     data() {
-        // Dados do gráfico simulados para refletir a imagem
         const chartData = [
             { date: '01/11', value: 100, result: 'win' },
             { date: '02/11', value: 110, result: 'win' },
@@ -256,7 +281,6 @@ export default {
             { date: '07/11', value: 145, result: 'win' }
         ];
         
-        // Mapeamento de valor para coordenada Y (de 0 a 180)
         const maxChartValue = 150; 
         const chartHeight = 180;
         const chartWidth = 600;
@@ -276,13 +300,11 @@ export default {
             result: d.result
         }));
 
-        // Dados simulados para o modal (mais operações)
         const operacoesModal = [
             { time: '15:05', type: 'CALL', volume: 75, result: '+$17.60' },
             { time: '14:20', type: 'PUT', volume: 100, result: '+$19.40' },
             { time: '13:42', type: 'MATCHES', volume: 75, result: '+$15.80' },
             { time: '12:08', type: 'CALL', volume: 100, result: '-$4.20' },
-            // Operações adicionais para o modal
             { time: '11:15', type: 'PUT', volume: 50, result: '+$10.00' },
             { time: '10:55', type: 'CALL', volume: 75, result: '-$8.50' },
             { time: '09:30', type: 'MATCHES', volume: 100, result: '+$21.10' },
@@ -295,8 +317,12 @@ export default {
         return {
             tabAtiva: 'monitor', 
             periodoAtivo: '7 dias', 
-            // NOVO: Estado para controlar o modal
             showAllOperationsModal: false, 
+            
+            showDateRangePicker: false, 
+            
+            dataInicioPersonalizada: '2025-11-01',
+            dataFimPersonalizada: '2025-11-30', 
 
             resumo: {
                 lucroHoje: '+$89.50',
@@ -314,9 +340,7 @@ export default {
                 slValor: '$250',
                 tpValor: '$500',
             },
-            // Apenas as 4 primeiras operações para a visualização principal
             operacoes: operacoesModal.slice(0, 4), 
-            // Lista completa para o modal
             operacoesModal: operacoesModal,
             risco: {
                 exposicaoAtual: '2.3%',
@@ -352,9 +376,29 @@ export default {
         },
         setPeriodo(periodo) {
             this.periodoAtivo = periodo;
-            // Lógica para carregar dados do gráfico aqui
+            this.showDateRangePicker = periodo === 'Personalizado';
+            
+            if (this.periodoAtivo !== 'Personalizado') {
+                console.log(`Carregando dados para o período: ${periodo}`);
+            }
         },
-        // NOVO: Métodos para o modal
+        /**
+         * Formata a data de 'YYYY-MM-DD' para 'DD/MM', resolvendo o erro de no-unused-vars.
+         */
+        formatarData(dataISO) {
+            if (!dataISO) return '';
+            const parts = dataISO.split('-');
+            const month = parts[1];
+            const day = parts[2];
+            return `${day}/${month}`;
+        },
+        aplicarPeriodoPersonalizado() {
+            if (new Date(this.dataFimPersonalizada) < new Date(this.dataInicioPersonalizada)) {
+                alert("A data final não pode ser anterior à data inicial.");
+                return;
+            }
+            console.log(`Aplicando período personalizado de ${this.dataInicioPersonalizada} até ${this.dataFimPersonalizada}`);
+        },
         showModal() {
             this.showAllOperationsModal = true;
         },
@@ -366,7 +410,7 @@ export default {
 </script>
 
 <style scoped>
-/* Estilos copiado do HTML original */
+/* ESTILOS */
 * { margin: 0; padding: 0; box-sizing: border-box; }
 #copy-trading-monitor {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -462,8 +506,7 @@ export default {
 .sync-tag { font-size: 12px; color: #d4d3d3; background: #0a0b0a; padding: 6px 12px; border-radius: 8px; border: 1px solid #1d1c1c;}
 .sl-badge { background: rgba(34,197,94,0.15); border: 1px solid rgba(34,197,94,0.3); color: #22c55e; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 500; display: flex; align-items: center; gap: 8px; }
 
-/* * ESTILOS CORRIGIDOS PARA O CARD "OPERAÇÕES REPLICADAS" (div4) 
-*/
+/* CARD OPERAÇÕES REPLICADAS (div4) */
 .operations-list { 
     margin-bottom: 12px; 
     padding-top: 10px;
@@ -473,44 +516,40 @@ export default {
     display: flex; 
     justify-content: space-between; 
     align-items: center; 
-    padding: 14px 0; /* Aumentado o padding para mais espaço vertical (como na imagem) */
-    border: 1px solid #1a1a1a; /* Linha divisória mais escura/sólida */
+    padding: 14px 0; 
+    border: 1px solid #1a1a1a; 
     background: #0a0b0a;
     margin-bottom: 10px;
     border-radius: 12px;
 }
 .op-item:last-child { border-bottom: none; }
-
-/* Novo wrapper para agrupar elementos da esquerda (check, time, type, vol) */
 .op-left-wrapper { 
     display: flex; 
     align-items: center; 
 }
 
-/* Tamanhos e cores dos ícones (para corresponder à imagem) */
 .op-check { 
-    font-size: 18px; /* Aumenta o ícone de check */
+    font-size: 18px; 
     font-weight: 700; 
-
 }
 .op-check.win { color: #22c55e; max-width: 35px;}
 .op-check.loss { color: #ef4444; }
 
 .op-time { 
     font-size: 14px; 
-    color: #ccc; /* Mais visível */
-    margin-right: 15px; /* Espaço após a hora */
+    color: #ccc; 
+    margin-right: 15px; 
     max-width: 60px;
 }
 .op-type { 
     font-size: 14px; 
     font-weight: 400; 
-    padding: 4px 10px; /* Aumenta o tamanho do badge */
+    padding: 4px 10px; 
     border-radius: 6px; 
     text-transform: uppercase;
     width: 100%;
     text-align: center;
-    margin-right: 15px; /* Espaço após o tipo (badge) */
+    margin-right: 15px; 
 }
 
 .op-item span:nth-child(3){
@@ -529,19 +568,17 @@ export default {
     text-align: left;
 }
 
-/* Estilo do resultado na direita (separado do op-left-wrapper pelo space-between) */
 .op-result { 
-    font-size: 15px; /* Maior e mais destacado */
+    font-size: 15px; 
     font-weight: 600; 
 }
 .op-result.green { color: #22c55e; }
 .op-result.red { color: #ef4444; }
 
-/* Botão "Ver tudo" (agora abre o modal) */
 .view-btn { 
     width: 100%; 
     border: 1px solid #22c55e; 
-    background: transparent; /* Certifica-se de que não tem fundo */
+    background: transparent; 
     color: #22c55e; 
     padding: 12px; 
     border-radius: 8px; 
@@ -552,11 +589,10 @@ export default {
     transition: background 0.2s;
 }
 .view-btn:hover { background: #22c55e17; }
-/* * FIM DOS ESTILOS CORRIGIDOS 
-*/
+
 
 .risk-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 10px; border: 1px solid #151515; background: #0a0b0a; border-radius: 12px; margin-bottom: 8px;}
-.risk-row:last-of-type { border-bottom: 1px solid #151515; } /* Ajuste a borda para não ter dupla no final */
+.risk-row:last-of-type { border-bottom: 1px solid #151515; }
 .risk-label { font-size: 14px; color: #888; }
 .risk-value { font-size: 16px; font-weight: 600; }
 .risk-value.green { color: #22c55e; }
@@ -571,7 +607,27 @@ export default {
 .full-width { grid-column: 1 / -1; } 
 .chart-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
 .period-btns { display: flex; gap: 8px; }
-.period-btn { background: #1a1a1a; border: none; color: #929292; padding: 6px 14px; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; font-weight: 600;}
+.period-btn { 
+    background: #1a1a1a; 
+    border: none; 
+    color: #929292; 
+    padding: 6px 14px; 
+    border-radius: 6px; 
+    font-size: 12px; 
+    cursor: pointer; 
+    transition: all 0.2s; 
+    display: flex; 
+    align-items: center; 
+    gap: 4px; 
+    font-weight: 600;
+}
+
+/* NOVO CSS PARA ALINHAMENTO DO SVG E TEXTO */
+.periodo-personalizado-content {
+    display: flex;
+    align-items: center;
+}
+
 .period-btn.active { background: #22c55e21; color: #0fc552; border: 1px solid #22c55e; border-radius: 6px;}
 .period-btn:hover:not(.active) { color: #fff; }
 
@@ -661,34 +717,31 @@ export default {
     border-top: 1px solid #151515;
 }
 
-/* --- Estilos do Modal (NOVO) --- */
-
+/* --- Estilos do Modal --- */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: rgba(0, 0, 0, 0.8); /* Fundo escuro semitransparente */
+    background: rgba(0, 0, 0, 0.8);
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 1000; /* Garante que fique acima de tudo */
+    z-index: 1000;
 }
-
 .modal-content {
     background: #0e0f0f;
     border: 1px solid #1a1a1a;
     border-radius: 12px;
-    width: 90%; /* Responsividade */
-    max-width: 600px; /* Largura máxima */
-    max-height: 60vh; /* Altura máxima */
+    width: 90%;
+    max-width: 600px;
+    max-height: 60vh;
     display: flex;
     flex-direction: column;
     padding: 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
-
 .modal-header {
     display: flex;
     justify-content: space-between;
@@ -697,13 +750,11 @@ export default {
     padding-bottom: 15px;
     margin-bottom: 15px;
 }
-
 .modal-title {
     font-size: 20px;
     font-weight: 600;
     color: #fff;
 }
-
 .modal-close-btn {
     background: none;
     border: none;
@@ -713,19 +764,15 @@ export default {
     line-height: 1;
     padding: 0 10px;
 }
-
 .modal-body {
-    overflow-y: auto; /* Adiciona rolagem se o conteúdo for muito longo */
+    overflow-y: auto;
     flex-grow: 1;
 }
-
 .operations-list-modal {
     display: flex;
     flex-direction: column;
-    gap: 8px; /* Espaço entre os itens */
+    gap: 8px;
 }
-
-/* Replicando estilos de item de operação para o modal */
 .op-item-modal { 
     display: flex; 
     justify-content: space-between; 
@@ -738,22 +785,19 @@ export default {
 .op-left-wrapper-modal { 
     display: flex; 
     align-items: center; 
-    gap: 15px; /* Espaço entre os elementos de informação */
+    gap: 15px;
 }
-
 .op-check-modal { 
     font-size: 18px;
     font-weight: 700; 
 }
 .op-check-modal.win { color: #22c55e; }
 .op-check-modal.loss { color: #ef4444; }
-
 .op-time-modal { 
     font-size: 14px; 
     color: #929292;
     min-width: 50px;
 }
-
 .op-type-modal { 
     font-size: 12px; 
     font-weight: 500; 
@@ -765,15 +809,13 @@ export default {
     min-width: 70px;
     text-align: center;
 }
-
 .op-vol-modal { 
     font-size: 14px; 
     color: #ccc; 
-    flex-grow: 1; /* Permite que o volume ocupe o espaço restante */
+    flex-grow: 1;
     text-align: right;
     margin-right: 15px;
 }
-
 .op-result-modal { 
     font-size: 16px; 
     font-weight: 600; 
@@ -783,39 +825,49 @@ export default {
 .op-result-modal.green { color: #22c55e; }
 .op-result-modal.red { color: #ef4444; }
 
-
-/* Media Queries originais */
-@media (max-width: 1200px) {
-    .grid { grid-template-columns: repeat(4, 1fr); }
-    .div1 { grid-area: 1 / 1 / 2 / 3; }
-    .div2 { grid-area: 1 / 3 / 3 / 5; }
-    .div3 { grid-area: 3 / 3 / 5 / 5; }
-    .div4 { grid-area: 2 / 1 / 5 / 3; }
-    .performance-card { grid-area: 5 / 1 / 6 / 5; }
+/* --- ESTILOS PARA O DATE PICKER --- */
+.date-picker-area {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #1a1a1a;
+    justify-content: flex-end
+}
+.date-input-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+}
+.date-input-group label {
+    color: #929292;
+    white-space: nowrap; 
+    font-size: 11px;
+}
+.date-input {
+    background: #1a1a1a;
+    border: 1px solid #222;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+.apply-btn {
+    background: #22c55e;
+    border: none;
+    color: #ffffff;
+    padding: 6px 15px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    white-space: nowrap;
+}
+.apply-btn:hover {
+    background: #10b981;
 }
 
-@media (max-width: 768px) {
-    .grid { grid-template-columns: 1fr; }
-    .div1, .div2, .div3, .div4, .performance-card { grid-area: initial; }
-    .sync-row { flex-direction: column; align-items: flex-start; }
-    .performance-footer { flex-wrap: wrap; }
-    .footer-item { min-width: 45%; flex-grow: 0; }
-    
-    /* Media Query específica para o modal em telas pequenas */
-    .op-item-modal {
-        flex-wrap: wrap;
-        padding: 10px;
-    }
-    .op-left-wrapper-modal {
-        width: 100%;
-        margin-bottom: 5px;
-    }
-    .op-vol-modal, .op-result-modal {
-        flex-grow: 0;
-        width: auto;
-    }
-    .op-vol-modal {
-        text-align: left;
-    }
-}
 </style>

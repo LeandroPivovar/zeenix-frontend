@@ -1,45 +1,9 @@
 <template>
     <div class="zenix-layout">
-        <div class="content-wrapper">
-            <header class="top-header">
-                <div class="header-content">
-                    <div class="header-left-content">
-                        <h1 class="header-title">IA Orion – Operação Automática Ativa</h1>
-                        <p class="header-subtitle">A IA está monitorando o mercado e executando operações conforme sua configuração.</p>
-                    </div>
-                    <div class="header-actions-right">
-                        <div class="balance-display-card">
-                            <div class="balance-header">
-                                <i class="far fa-wallet"></i>
-                                <div class="balance-info">
-                                    <span class="balance-label">Saldo Atual</span>
-                                    <div class="balance-value-row">
-                                        <span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ formattedBalance }}</span>
-                                        <span class="balance-value" v-else>••••••</span>
-                <button 
-                                            v-if="balanceVisible && !isDemo" 
-                                            class="account-type-btn real-btn"
-                                            @click="toggleBalanceVisibility"
-                                        >
-                                            Real
-                </button>
-                <button 
-                                            v-if="balanceVisible && isDemo" 
-                                            class="account-type-btn demo-btn"
-                                            @click="toggleBalanceVisibility"
-                                        >
-                                            Demo
-                </button>
-                            <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
-                                            <i class="far fa-eye"></i>
-                            </button>
-                        </div>
-                        </div>
-                    </div>
-                        </div>
-                    </div>
-                </div>
-            </header>
+        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
+
+        <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+
 
             <main class="main-content">
                 <!-- Configuration Cards Grid - Only show when IA is inactive -->
@@ -48,13 +12,17 @@
                     <div id="market-strategy-card" class="config-card premium-card">
                         <h3 class="card-title">
                             Mercado & Estratégia
-                            <i class="fas fa-info-circle"></i>
+                            <TooltipsCopyTraders position="left"> 
+                                <h4>🎯 Mercado & Estratégia</h4>
+                            </TooltipsCopyTraders>
                         </h3>
                         <div class="card-content">
                             <div class="form-group">
                                 <label class="form-label">
                                     Selecione o mercado
-                                    <i class="fas fa-question-circle"></i>
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Escolha o ativo que deseja operar</p>
+                                    </TooltipsCopyTraders>
                                 </label>
                                 <select id="marketSelect" class="form-select" v-model="selectedMarket">
                                     <option value="vol10">Volatility 10 Index</option>
@@ -79,7 +47,9 @@
                             <div class="form-group">
                                 <label class="form-label">
                                     Estratégia
-                                    <i class="fas fa-question-circle"></i>
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Modelo de análise usado pela IA</p>
+                                    </TooltipsCopyTraders>
                                 </label>
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
                                     <option value="orion">IA Orion</option>
@@ -341,12 +311,17 @@
 </template>
 
 <script>
+import AppSidebar from '../components/Sidebar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
+import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
 
 export default {
     name: 'InvestmentIAView',
     components: {
-        InvestmentActive
+        AppSidebar,
+        InvestmentActive,
+        TooltipsCopyTraders,
+
     },
     data() {
         return {
@@ -372,7 +347,6 @@ export default {
             accountLoginid: null,
             isDemo: false,
             lastBalanceUpdate: null,
-            balanceVisible: true,
             balanceUpdateInterval: null,
             clockInterval: null,
             
@@ -513,10 +487,6 @@ export default {
         }
     },
     methods: {
-        toggleBalanceVisibility() {
-            this.balanceVisible = !this.balanceVisible;
-            console.log('[InvestmentIAView] 👁️ Visibilidade do saldo:', this.balanceVisible ? 'visível' : 'oculto');
-        },
         
         async handleToggleChange(event) {
             const isChecked = event.target.checked;
@@ -1052,42 +1022,21 @@ export default {
     color: #DFDFDF;
 }
 
-.main-content[data-v-6bc9cf2c]{
-    margin: 0;
-    display: flex;
-    justify-content: flex-start;
-}
-
 .content-wrapper {
     min-height: 100vh;
     transition: margin-left 0.3s ease;
     box-sizing: border-box;
-    width: 100%;
 }
 
 .content-wrapper.sidebar-collapsed {
-    margin-left: 0;
-    width: 100%;
+    margin-left: 72px;
+    width: calc(100% - 72px);
 }
 
-/* Top Header */
-.top-header {
-    position: static;
-    background-color: #0E0E0E;
-    border-bottom: 1px solid #1C1C1C;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    transition: left 0.3s ease;
-    box-sizing: border-box;
-}
-
-/* Ocultar header quando dentro do MasterTrader */
-.layout-master-trader .top-header {
-    display: none !important;
-}
 
 .content-wrapper.sidebar-collapsed .top-header {
-    left: 0;
-    width: 100%;
+    left: 72px;
+    width: calc(100% - 72px);
 }
 
 .header-content {
@@ -1212,12 +1161,13 @@ export default {
 
 /* Main Content */
 .main-content {
-    padding: 1.5rem 20px;
+    padding: 1rem 20px; /* Padding reduzido */
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
+    display: flex;
+    justify-content: flex-start;
 }
-
 
 /* AI Vision Panel */
 #ai-vision-panel {
@@ -1690,6 +1640,7 @@ export default {
     grid-template-columns: repeat(2, 1fr);
     gap: 1rem;
     margin-bottom: 1.5rem;
+    margin-top: 0; /* Remove margem superior extra */
     margin-left: 0;
     margin-right: 0;
     width: 100%;
@@ -1735,7 +1686,7 @@ export default {
 }
 
 .form-label {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: #A1A1A1;
     display: flex;
     align-items: center;
@@ -1759,7 +1710,6 @@ export default {
     color: #DFDFDF;
     outline: none;
     transition: border-color 0.2s;
-    margin: 0;
 }
 
 .form-select:focus,
@@ -1767,12 +1717,15 @@ export default {
     border-color: #22C55E;
 }
 
+.form-group input{
+    margin-bottom: 0rem;
+}
+
 .form-help {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: #A1A1A1;
     opacity: 0.6;
     text-align: left;
-
 }
 
 /* Mode Buttons */
@@ -2004,7 +1957,7 @@ export default {
 
 .ai-status-control {
     display: flex;
-        align-items: center;
+    align-items: center;
     justify-content: space-between;
     background-color: #0B0B0B;
     border: 1px solid #1C1C1C;
@@ -2018,6 +1971,7 @@ export default {
     font-weight: 600;
     color: #DFDFDF;
     margin-bottom: 0.25rem;
+    text-align: left;
 }
 
 .ai-status-subtitle {
@@ -2322,7 +2276,7 @@ export default {
     }
     
     .main-content {
-        margin-top: 80px;
+        margin-top: 100px; /* Margem ajustada para mobile */
         padding: 1rem 15px;
     }
     
