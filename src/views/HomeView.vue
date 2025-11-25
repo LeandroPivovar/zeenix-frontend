@@ -41,15 +41,13 @@
               </span>
           </button>
             
-          <a
+          <button
             class="link-button"
-            href="https://home.deriv.com/dashboard/signup"
-            target="_blank"
-            rel="noopener noreferrer"
+            @click="showCreateAccountModal = true"
           >
             <img src="../assets/icons/add-home.svg" alt="Criar Conta na Deriv" width="10px" class="icon-home" >
             Criar Conta na Deriv
-          </a>
+          </button>
         </div>
 
         <div class="separator"></div>
@@ -66,23 +64,32 @@
 
     <!-- Dashboard Conectado (com sidebar e header) -->
     <DashboardConnected v-else :info="connectedInfo" :is-sidebar-collapsed="isSidebarCollapsed" />
+    
+    <!-- Modal de Criação de Conta -->
+    <CreateDerivAccountModal 
+      :visible="showCreateAccountModal"
+      @close="showCreateAccountModal = false"
+      @success="handleAccountCreated"
+    />
   </div>
 </template>
 
 <script>
 import AppSidebar from '../components/Sidebar.vue'
 import DashboardConnected from './DashboardConnected.vue'
+import CreateDerivAccountModal from '../components/CreateDerivAccountModal.vue'
 
 export default {
   name: 'HomeView',
-  components: { AppSidebar, DashboardConnected },
+  components: { AppSidebar, DashboardConnected, CreateDerivAccountModal },
   data() {
     return { 
       connectedInfo: null,
       loading: true,
       isSidebarOpen: false,
       isSidebarCollapsed: false,
-      firstName: 'Usuário'
+      firstName: 'Usuário',
+      showCreateAccountModal: false
     }
   },
   computed: {
@@ -312,6 +319,15 @@ export default {
       } finally {
         this.loading = false
       }
+    },
+    handleAccountCreated(result) {
+      console.log('Conta criada com sucesso:', result);
+      this.$root.$toast?.success?.('Contas criadas com sucesso! Verifique seu email para as credenciais.') || 
+        alert('✅ Contas criadas com sucesso!\n\nConta DEMO: ' + (result.data?.demoAccountId || 'N/A') + '\nConta REAL: ' + (result.data?.realAccountId || 'N/A') + '\n\nVerifique seu email para as credenciais de acesso.');
+      // Recarregar status da conexão
+      setTimeout(() => {
+        this.checkConnection(true);
+      }, 2000);
     }
   },
   async mounted() {
