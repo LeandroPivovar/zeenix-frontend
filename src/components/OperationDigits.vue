@@ -133,9 +133,10 @@
                     </div>
                     </div>
                 </div>
+            </div>
 
-                <!-- Trading Panel -->
-                <div class="trading-panel">
+            <!-- Trading Panel -->
+            <div class="trading-panel">
                     <div class="trading-panel-header">
                         <h3 class="card-header">Negociação Manual — Dígitos</h3>
                     </div>
