@@ -359,7 +359,7 @@ export default {
 }
 
 .form-group {
-  margin-bottom: 20px;
+  margin-bottom: 12px;
 }
 
 .row {

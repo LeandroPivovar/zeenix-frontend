@@ -37,7 +37,7 @@
           <button class="primary button-primary" @click="startBrokerConnection">
               <span>
                   <img src="../assets/icons/Link.svg" alt="Conectar à Corretora" > 
-                  Conectar à Corretora
+                  Conectar a corretora
               </span>
           </button>
             
