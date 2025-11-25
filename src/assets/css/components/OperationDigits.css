@@ -31,7 +31,7 @@
     grid-column: 2;
     grid-row: 1 / -1;
     position: sticky;
-    top: 20px;
+    top: 0;
     align-self: start;
 }
 
@@ -275,7 +275,7 @@
     justify-content: space-between;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
     transition: all 0.3s ease;
-    margin-top: 60px;
+    margin-top: 40px;
 }
 
 .heatmap-card {
@@ -289,6 +289,7 @@
     justify-content: space-between;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
     transition: all 0.3s ease;
+    margin-top: 40px;
 }
 
 .frequency-map-card:hover,
@@ -535,7 +536,7 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    margin-bottom: 24px;
+    margin-bottom: 40px;
 }
 
 .parity-meter-content,
