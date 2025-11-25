@@ -7,10 +7,10 @@
 }
 
 .main-content-wrapper {
-    margin-left: 350px;
+    margin-left: 280px;
     min-height: 100vh;
     transition: margin-left 0.3s ease;
-    width: calc(100% - 350px);
+    width: calc(100% - 280px);
     box-sizing: border-box;
 }
 

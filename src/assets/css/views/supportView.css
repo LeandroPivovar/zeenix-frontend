@@ -3,13 +3,12 @@
 	min-height: 100vh; 
 	background: #0d0d0c;
 	color: #e5e7eb;
- 	width: 100% calc( 100% - 240px );
+ 	width: 100% calc( 100% - 280px );
 }
 
 .top-header-fixed {
 	position: fixed;
-	top: 0;
-	left: 240px; 
+	top: 0; 
 	right: 0;
 	height: 50px; 
 	background-color: #141515; 

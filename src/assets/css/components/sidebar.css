@@ -1,7 +1,10 @@
 /* --- Sidebar Principal e Layout --- */
 
+aside.sidebar,
 .sidebar {
-	width: 350px;
+	width: 280px !important;
+	min-width: 280px !important;
+	max-width: 280px !important;
 	background: #0B0B0B;
 	border-right: 1px solid #1C1C1C;
 	color: #DFDFDF;
@@ -16,6 +19,7 @@
 	transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
 	font-family: 'Inter', sans-serif;
 	overflow: hidden;
+	padding: 0 !important;
 }
 
 /* --- Estado Colapsado (.collapsed) --- */
