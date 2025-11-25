@@ -99,10 +99,11 @@
 </template>
 
 <script>
+/* eslint-disable no-undef */
 import AppSidebar from '../../components/Sidebar.vue';
 import ToastNotification from '../../components/Toast.vue';
 
-// Importar Quill via CDN (será carregado no index.html)
+// Quill é carregado via CDN no index.html, então é uma variável global
 
 export default {
     name: 'SupportItemsManagementView',
