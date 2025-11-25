@@ -2,7 +2,7 @@
   <nav 
     id="top-navbar" 
     class="fixed top-0 left-0 right-0 h-[60px] bg-[#0B0B0B] border-b border-[#1C1C1C] z-50" 
-    :style="{ left: isSidebarCollapsed ? '72px' : '300px', width: isSidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 300px)' }"
+    :style="{ left: isSidebarCollapsed ? '72px' : '320px', width: isSidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 320px)' }"
   >
     <div class="h-full px-6 flex items-center justify-between">
       <div class="flex items-center space-x-8">
