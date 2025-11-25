@@ -169,40 +169,6 @@
               </div>
             </div>
             
-            <!-- FAQs (from faqs table) -->
-            <div 
-              v-for="faq in faqs" 
-              :key="faq.id"
-              class="faq-item bg-zenix-card border border-zenix-border rounded-xl overflow-hidden"
-            >
-              <button 
-                @click="toggleFaq(faq.id)"
-                class="w-full faq-button flex items-center justify-between text-left hover:bg-zenix-bg/30 transition-all"
-              >
-                <span class="text-white font-semibold text-base text-left">{{ faq.question }}</span>
-                <i 
-                  :class="[
-                    'fas text-zenix-green text-sm transition-transform duration-300',
-                    expandedFaqs[faq.id] ? 'fa-minus rotate-180' : 'fa-plus'
-                  ]"
-                ></i>
-              </button>
-              <div 
-                :class="[
-                  'faq-answer text-left',
-                  expandedFaqs[faq.id] ? 'open' : ''
-                ]"
-              >
-                <div v-if="Array.isArray(faq.answer)" class="text-zenix-secondary text-sm space-y-2 text-left">
-                  <ul class="list-disc list-inside space-y-2 text-left">
-                    <li v-for="(item, index) in faq.answer" :key="index" class="text-left">{{ item }}</li>
-                  </ul>
-                </div>
-                <div v-else class="text-zenix-secondary text-sm text-left">
-                  {{ faq.answer }}
-                </div>
-              </div>
-            </div>
           </div>
         </section>
       </main>
@@ -284,7 +250,6 @@ export default {
   },
   data() {
     return {
-      faqs: [],
       expandedFaqs: {},
       supportItems: [],
       searchQuery: '',
@@ -416,34 +381,25 @@ export default {
       this.loading = true
       this.error = null
       try {
-        const query = this.searchQuery ? `?search=${encodeURIComponent(this.searchQuery)}` : ''
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
         
-        // Buscar FAQs e Support Items em paralelo
-        const [faqsRes, itemsRes] = await Promise.all([
-          fetch(`${apiBaseUrl}/support/faqs${query}`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-          }),
-          fetch(`${apiBaseUrl}/support/items`, {
-            method: 'GET',
-            headers: { 'Content-Type': 'application/json' }
-          })
-        ])
+        // Buscar apenas Support Items
+        const itemsRes = await fetch(`${apiBaseUrl}/support/items`, {
+          method: 'GET',
+          headers: { 'Content-Type': 'application/json' }
+        })
         
-        if (!faqsRes.ok) throw new Error('Erro ao buscar FAQs')
-        const faqsData = await faqsRes.json()
-        this.faqs = faqsData
-        
-        // Buscar support items
         if (itemsRes.ok) {
           const itemsData = await itemsRes.json()
           this.supportItems = itemsData || []
         } else {
           this.supportItems = []
         }
+        
+        // Não buscar mais FAQs
+        this.faqs = []
       } catch (err) {
-        console.error('Erro ao buscar FAQs:', err)
+        console.error('Erro ao buscar itens de suporte:', err)
         this.error = 'Não foi possível carregar as perguntas frequentes.'
         this.faqs = []
         this.supportItems = []
