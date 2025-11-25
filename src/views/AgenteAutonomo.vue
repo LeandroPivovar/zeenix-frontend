@@ -444,10 +444,10 @@ export default {
 .layout-agente-autnomo {
 	background-color: #0a0b0a;
 	min-height: 100vh;
-	width: calc(100% - 350px);
-	margin-left: 350px;
 	transition: margin-left 0.3s;
 	padding-bottom: 40px;
+	width: calc(100% -280px);
+	margin-left:280px;
 }
 
 .layout-agente-autnomo.sidebar-collapsed {
@@ -457,12 +457,12 @@ export default {
 
 .layout-agente-autnomo.sidebar-collapsed .top-header {
 	left: 0;
-	width: 100%;
+	width: 100%!important;
 }
 
 .container-componentes{
 	/* Padding superior ajustado para compensar o cabeçalho fixo */
-	padding-top: 120px;
+	padding-top: 60px;
 	padding-left: 60px;
 	padding-right: 60px;
 	padding-bottom: 20px;
@@ -472,15 +472,14 @@ export default {
 /* Top Header */
 .top-header {
 	position: fixed;
+	left: 0;
 	top: 0;
 	right: 0;
-	left: 350px;
 	z-index: 40;
 	background-color: #0E0E0E;
 	border-bottom: 1px solid #1C1C1C;
 	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
 	transition: left 0.3s ease;
-	width: calc(100% - 350px);
 	box-sizing: border-box;
 }
 
