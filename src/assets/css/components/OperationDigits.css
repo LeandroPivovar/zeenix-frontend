@@ -211,6 +211,14 @@
     border: 2px solid #22C55E;
 }
 
+/* Main Content Grid */
+.main-content-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 24px;
+    align-items: start;
+}
+
 /* Analysis Grid */
 .analysis-grid {
     display: grid;
@@ -602,16 +610,16 @@
 
 /* Trading Panel */
 .trading-panel {
-    position: fixed;
-    right: 32px;
-    top: 120px;
-    width: 320px;
+    position: sticky;
+    top: 32px;
+    width: 100%;
     background: #0E0E0E;
     border: 1px solid #1C1C1C;
     border-radius: 12px;
     padding: 20px;
-    max-height: calc(100vh - 160px);
+    max-height: calc(100vh - 64px);
     overflow-y: auto;
+    align-self: start;
 }
 
 .trading-panel-header {
@@ -1038,17 +1046,14 @@
 
 /* Responsive */
 @media (max-width: 1400px) {
-    .trading-panel {
-        position: relative;
-        right: auto;
-        top: auto;
-        width: 100%;
-        max-height: none;
+    .main-content-grid {
+        grid-template-columns: 1fr;
     }
     
-    .digits-layout {
-        display: flex;
-        flex-direction: column;
+    .trading-panel {
+        position: relative;
+        top: auto;
+        max-height: none;
     }
 }
 

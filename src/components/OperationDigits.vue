@@ -65,10 +65,11 @@
                 </div>
             </div>
 
-            <!-- Main Analysis Grid -->
-            <div class="analysis-grid">
-                <!-- Mapa de Frequência -->
-                <div class="frequency-map-card">
+            <!-- Main Analysis Grid with Trading Panel -->
+            <div class="main-content-grid">
+                <div class="analysis-grid">
+                    <!-- Mapa de Frequência -->
+                    <div class="frequency-map-card">
                     <div class="card-header-with-help">
                         <h3 class="card-header">Mapa de Frequência dos Dígitos (0–9)</h3>
                         <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
@@ -129,6 +130,119 @@
                             <div class="legend-dot legend-dot-red"></div>
                             <span>Sobreaquecido</span>
                         </div>
+                    </div>
+                </div>
+
+                <!-- Trading Panel -->
+                <div class="trading-panel">
+                    <div class="trading-panel-header">
+                        <h3 class="card-header">Negociação Manual — Dígitos</h3>
+                    </div>
+                    <div class="trading-panel-content">
+                        <div class="input-group">
+                            <label class="input-label">Mercado</label>
+                            <select v-model="symbol" @change="handleSymbolChange" :disabled="!isAuthorized || isLoadingSymbol" class="select-field">
+                                <optgroup label="Índices Contínuos">
+                                    <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Criptomoedas">
+                                    <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Forex Majors">
+                                    <option v-for="market in marketsByCategory['Forex Majors']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Forex Minors">
+                                    <option v-for="market in marketsByCategory['Forex Minors']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Forex Exotics">
+                                    <option v-for="market in marketsByCategory['Forex Exotics']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                                <optgroup label="Metais">
+                                    <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value">
+                                        {{ market.label }}
+                                    </option>
+                                </optgroup>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Tipo de Operação</label>
+                            <select v-model="digitType" class="select-field" :disabled="isTrading" @change="onDigitTypeChange">
+                                <option value="DIGITMATCH">Dígitos (Último dígito)</option>
+                            </select>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Duração</label>
+                            <div class="duration-input-group">
+                                <select class="duration-select">
+                                    <option>Ticks</option>
+                                </select>
+                                <input type="number" value="5" v-model.number="duration" class="duration-input" :disabled="isTrading" @input="subscribeToProposal" />
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Previsão</label>
+                            <div class="prediction-buttons">
+                                <button class="prediction-btn">Acima</button>
+                                <button class="prediction-btn">Abaixo</button>
+                            </div>
+                        </div>
+
+                        <div class="input-group">
+                            <label class="input-label">Valor de entrada</label>
+                            <input 
+                                type="number" 
+                                placeholder="Ex: 1.00, 2.50..." 
+                                v-model.number="orderValue" 
+                                class="input-field-value" 
+                                :disabled="isTrading" 
+                                @input="subscribeToProposal"
+                            />
+                        </div>
+
+                        <div v-if="currentProposalPrice" class="proposal-info">
+                            <div class="proposal-price-label">Preço de Compra:</div>
+                            <div class="proposal-price-value">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
+                        </div>
+
+                        <div v-if="realTimeProfit !== null && activeContract" class="profit-info" :class="{ 'profit-positive': realTimeProfit > 0, 'profit-negative': realTimeProfit < 0 }">
+                            <div class="profit-label">P&L em Tempo Real:</div>
+                            <div class="profit-value">{{ displayCurrency }} {{ realTimeProfit > 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}</div>
+                        </div>
+
+                        <div class="trading-buttons">
+                            <button 
+                                v-if="!activeContract"
+                                @click="executeBuy" 
+                                class="btn-call" 
+                                :disabled="isTrading || !isAuthorized || !currentProposalId"
+                            >
+                                CALL
+                            </button>
+                            <button 
+                                v-if="!activeContract"
+                                @click="executeBuy" 
+                                class="btn-put" 
+                                :disabled="isTrading || !isAuthorized || !currentProposalId"
+                            >
+                                PUT
+                            </button>
+                        </div>
+
+                        <p v-if="tradeMessage" class="trade-message success">{{ tradeMessage }}</p>
+                        <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
                     </div>
                 </div>
             </div>
@@ -285,119 +399,6 @@
                             <span>{{ highLowRecommendationText }}</span>
                         </div>
                     </div>
-                </div>
-            </div>
-
-            <!-- Right Panel: Trading -->
-            <div class="trading-panel">
-                <div class="trading-panel-header">
-                    <h3 class="card-header">Negociação Manual — Dígitos</h3>
-                </div>
-                <div class="trading-panel-content">
-                    <div class="input-group">
-                        <label class="input-label">Mercado</label>
-                        <select v-model="symbol" @change="handleSymbolChange" :disabled="!isAuthorized || isLoadingSymbol" class="select-field">
-                            <optgroup label="Índices Contínuos">
-                                <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value">
-                                    {{ market.label }}
-                                </option>
-                            </optgroup>
-                            <optgroup label="Criptomoedas">
-                                <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value">
-                                    {{ market.label }}
-                                </option>
-                            </optgroup>
-                            <optgroup label="Forex Majors">
-                                <option v-for="market in marketsByCategory['Forex Majors']" :key="market.value" :value="market.value">
-                                    {{ market.label }}
-                                </option>
-                            </optgroup>
-                            <optgroup label="Forex Minors">
-                                <option v-for="market in marketsByCategory['Forex Minors']" :key="market.value" :value="market.value">
-                                    {{ market.label }}
-                                </option>
-                            </optgroup>
-                            <optgroup label="Forex Exotics">
-                                <option v-for="market in marketsByCategory['Forex Exotics']" :key="market.value" :value="market.value">
-                                    {{ market.label }}
-                                </option>
-                            </optgroup>
-                            <optgroup label="Metais">
-                                <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value">
-                                    {{ market.label }}
-                                </option>
-                            </optgroup>
-                        </select>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Tipo de Operação</label>
-                        <select v-model="digitType" class="select-field" :disabled="isTrading" @change="onDigitTypeChange">
-                            <option value="DIGITMATCH">Dígitos (Último dígito)</option>
-                        </select>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Duração</label>
-                        <div class="duration-input-group">
-                            <select class="duration-select">
-                                <option>Ticks</option>
-                            </select>
-                            <input type="number" value="5" v-model.number="duration" class="duration-input" :disabled="isTrading" @input="subscribeToProposal" />
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Previsão</label>
-                        <div class="prediction-buttons">
-                            <button class="prediction-btn">Acima</button>
-                            <button class="prediction-btn">Abaixo</button>
-                        </div>
-                    </div>
-
-                    <div class="input-group">
-                        <label class="input-label">Valor de entrada</label>
-                        <input 
-                            type="number" 
-                            placeholder="Ex: 1.00, 2.50..." 
-                            v-model.number="orderValue" 
-                            class="input-field-value" 
-                            :disabled="isTrading" 
-                            @input="subscribeToProposal"
-                        />
-                    </div>
-
-                    <div v-if="currentProposalPrice" class="proposal-info">
-                        <div class="proposal-price-label">Preço de Compra:</div>
-                        <div class="proposal-price-value">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
-                    </div>
-
-                    <div v-if="realTimeProfit !== null && activeContract" class="profit-info" :class="{ 'profit-positive': realTimeProfit > 0, 'profit-negative': realTimeProfit < 0 }">
-                        <div class="profit-label">P&L em Tempo Real:</div>
-                        <div class="profit-value">{{ displayCurrency }} {{ realTimeProfit > 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}</div>
-                    </div>
-
-                    <div class="trading-buttons">
-                        <button 
-                            v-if="!activeContract"
-                            @click="executeBuy" 
-                            class="btn-call" 
-                            :disabled="isTrading || !isAuthorized || !currentProposalId"
-                        >
-                            CALL
-                        </button>
-                        <button 
-                            v-if="!activeContract"
-                            @click="executeBuy" 
-                            class="btn-put" 
-                            :disabled="isTrading || !isAuthorized || !currentProposalId"
-                        >
-                            PUT
-                        </button>
-                    </div>
-
-                    <p v-if="tradeMessage" class="trade-message success">{{ tradeMessage }}</p>
-                    <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
                 </div>
             </div>
 
