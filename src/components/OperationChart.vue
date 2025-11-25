@@ -4786,6 +4786,9 @@ export default {
   display: flex;
   gap: 1.5rem;
   height: calc(100vh - 280px);
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
 .col-chart {

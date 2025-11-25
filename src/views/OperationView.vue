@@ -653,7 +653,7 @@ export default {
 /* Main Content */
 .main-content {
   margin-top: 70px;
-  padding: 2rem 20px 1.5rem 20px;
+  padding: 0;
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
