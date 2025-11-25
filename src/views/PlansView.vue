@@ -44,8 +44,6 @@
 			</header>
 
 			<main class="plans-content">
-				<div class="max-w-7xl mx-auto w-full" style="width: 100%; max-width: 100%;">
-
 				<div class="video-card-wrapper">
 					<div class="video-thumbnail" @click="playVideo">
 						<div class="video-overlay"></div>
@@ -75,7 +73,7 @@
 				
 				<div v-else class="plans-grid">
 					<!-- Card Starter -->
-					<div class="plan-card starter-card">
+					<div class="plan-card starter-card div1">
 						<div class="plan-icon-box">
 							<i class="fas fa-rocket"></i>
 						</div>
@@ -107,7 +105,7 @@
 					</div>
 
 					<!-- Card Pro -->
-					<div class="plan-card pro-card">
+					<div class="plan-card pro-card div2">
 						<div class="plan-badge-popular">
 							<span>MAIS POPULAR</span>
 						</div>
@@ -143,7 +141,7 @@
 					</div>
 
 					<!-- Card Black -->
-					<div class="plan-card black-card">
+					<div class="plan-card black-card div3">
 						<div class="plan-badge-recommended">
 							<span>RECOMENDADO</span>
 						</div>
@@ -177,7 +175,6 @@
 							Plano atual
 						</button>
 					</div>
-				</div>
 				</div>
 			</main>
 			
