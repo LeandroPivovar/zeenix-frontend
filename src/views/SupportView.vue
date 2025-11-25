@@ -448,11 +448,11 @@ export default {
 
 .main-content-wrapper {
   margin: 0;
-  margin-left: 280px;
+  margin-left: 350px;
   padding: 0;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
-  width: calc(100% - 280px);
+  width: calc(100% - 350px);
   box-sizing: border-box;
 }
 
