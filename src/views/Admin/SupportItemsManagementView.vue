@@ -297,9 +297,21 @@ export default {
                     placeholder: 'Digite a descrição do item de suporte...'
                 });
                 
+                // Configurar handler para imagens no Quill
+                this.quillEditor.getModule('toolbar').addHandler('image', () => {
+                    this.insertImage();
+                });
+                
                 // Carregar conteúdo se estiver editando
                 if (this.supportItemForm.subtitle) {
-                    this.quillEditor.root.innerHTML = this.supportItemForm.subtitle;
+                    // Processar URLs de imagens no conteúdo HTML antes de carregar
+                    const processedContent = this.processImageUrls(this.supportItemForm.subtitle);
+                    this.quillEditor.root.innerHTML = processedContent;
+                    
+                    // Forçar atualização das imagens após carregar
+                    this.$nextTick(() => {
+                        this.fixQuillImages();
+                    });
                 }
                 
                 // Atualizar o v-model quando o conteúdo mudar
@@ -312,6 +324,30 @@ export default {
                 console.error('Erro ao inicializar Quill:', error);
                 this.showToast('Erro ao inicializar o editor. Tente novamente.', 'error', 5000);
             }
+        },
+        fixQuillImages() {
+            if (!this.quillEditor) return;
+            
+            const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+            const apiBase = baseUrl.replace('/api', '');
+            
+            // Encontrar todas as imagens no editor
+            const images = this.quillEditor.root.querySelectorAll('img');
+            images.forEach(img => {
+                const src = img.getAttribute('src');
+                if (src && !src.startsWith('http://') && !src.startsWith('https://') && !src.startsWith('data:')) {
+                    // Se é um caminho relativo, construir URL completa
+                    const fullUrl = src.startsWith('/uploads/') 
+                        ? `${apiBase}${src}` 
+                        : `${apiBase}/uploads/${src}`;
+                    img.src = fullUrl;
+                    img.style.maxWidth = '100%';
+                    img.style.height = 'auto';
+                    img.style.display = 'block';
+                    img.style.margin = '10px 0';
+                    img.style.borderRadius = '4px';
+                }
+            });
         },
         async saveSupportItem() {
             // Validações básicas
@@ -339,8 +375,11 @@ export default {
                 let subtitleContent = null;
                 if (this.quillEditor) {
                     subtitleContent = this.quillEditor.root.innerHTML.trim();
+                    // Normalizar URLs de imagens antes de salvar (remover baseUrl se existir)
+                    subtitleContent = this.normalizeImageUrlsForSave(subtitleContent);
                 } else if (this.supportItemForm.subtitle) {
                     subtitleContent = this.supportItemForm.subtitle.trim();
+                    subtitleContent = this.normalizeImageUrlsForSave(subtitleContent);
                 }
                 
                 const payload = {
@@ -430,18 +469,75 @@ export default {
             if (!this.quillEditor) return;
             
             const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+            // Remover /api se existir e construir URL completa
+            const apiBase = baseUrl.replace('/api', '');
             const fullImageUrl = imagePath.startsWith('/uploads/') 
-                ? `${baseUrl.replace('/api', '')}${imagePath}` 
-                : imagePath;
+                ? `${apiBase}${imagePath}` 
+                : imagePath.startsWith('http') 
+                    ? imagePath 
+                    : `${apiBase}${imagePath}`;
             
             // Obter a posição do cursor
             const range = this.quillEditor.getSelection(true);
+            const index = range ? range.index : this.quillEditor.getLength();
             
-            // Inserir a imagem
-            this.quillEditor.insertEmbed(range.index, 'image', fullImageUrl, 'user');
+            // Inserir a imagem com URL completa
+            this.quillEditor.insertEmbed(index, 'image', fullImageUrl, 'user');
             
             // Mover o cursor após a imagem
-            this.quillEditor.setSelection(range.index + 1);
+            this.quillEditor.setSelection(index + 1);
+        },
+        processImageUrls(htmlContent) {
+            if (!htmlContent) return '';
+            
+            const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+            const apiBase = baseUrl.replace('/api', '');
+            
+            // Processar todas as tags img no HTML para exibição
+            return htmlContent.replace(/<img([^>]*?)src=["']([^"']*?)["']([^>]*?)>/gi, (match, before, src, after) => {
+                // Se a URL já é completa (http/https), manter como está
+                if (src.startsWith('http://') || src.startsWith('https://')) {
+                    return match;
+                }
+                
+                // Se começa com /uploads, adicionar baseUrl
+                if (src.startsWith('/uploads/')) {
+                    const fullUrl = `${apiBase}${src}`;
+                    return `<img${before}src="${fullUrl}"${after} style="max-width: 100%; height: auto; display: block; margin: 10px 0; border-radius: 4px;">`;
+                }
+                
+                // Se não começa com /, adicionar /uploads/ e baseUrl
+                const fullUrl = `${apiBase}/uploads/${src}`;
+                return `<img${before}src="${fullUrl}"${after} style="max-width: 100%; height: auto; display: block; margin: 10px 0; border-radius: 4px;">`;
+            });
+        },
+        normalizeImageUrlsForSave(htmlContent) {
+            if (!htmlContent) return '';
+            
+            const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+            const apiBase = baseUrl.replace('/api', '');
+            
+            // Remover baseUrl das URLs antes de salvar, mantendo apenas o caminho relativo
+            return htmlContent.replace(/<img([^>]*?)src=["']([^"']*?)["']([^>]*?)>/gi, (match, before, src, after) => {
+                // Se contém o baseUrl, remover
+                if (src.includes(apiBase)) {
+                    const relativePath = src.replace(apiBase, '');
+                    return `<img${before}src="${relativePath}"${after}>`;
+                }
+                
+                // Se já é relativo, manter
+                if (src.startsWith('/uploads/')) {
+                    return match;
+                }
+                
+                // Se é URL completa de outro domínio, manter
+                if (src.startsWith('http://') || src.startsWith('https://')) {
+                    return match;
+                }
+                
+                // Caso contrário, manter como está
+                return match;
+            });
         },
         async uploadImage(file) {
             try {
@@ -480,7 +576,6 @@ export default {
             } catch (error) {
                 console.error('Erro ao fazer upload da imagem:', error);
                 this.showToast(error.message || '❌ Erro ao fazer upload da imagem', 'error', 6000);
-                this.supportItemForm.imagePreview = null;
                 return null;
             }
         },
