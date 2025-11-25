@@ -530,11 +530,12 @@ export default {
     formatSupportItemContent(subtitle) {
       if (!subtitle) return 'Sem descrição'
       // Processar imagens para garantir URLs corretas
+      // O NestJS serve arquivos estáticos em /api/uploads/ devido ao prefixo global
       const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
-      const apiBase = baseUrl.replace('/api', '')
       
       // Substituir caminhos relativos de imagens por URLs completas
-      let content = subtitle.replace(/src="\/uploads\//g, `src="${apiBase}/uploads/`)
+      // O baseUrl já inclui /api, então usamos diretamente
+      let content = subtitle.replace(/src="\/uploads\//g, `src="${baseUrl}/uploads/`)
       
       // Garantir que imagens tenham estilo responsivo
       content = content.replace(/<img/g, '<img style="max-width: 100%; height: auto; display: block; margin: 10px 0; border-radius: 4px;"')

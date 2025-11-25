@@ -337,7 +337,7 @@ export default {
             if (!this.quillEditor) return;
             
             const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-            const apiBase = baseUrl.replace('/api', '');
+            // O backend serve arquivos estáticos em /api/uploads/ devido ao prefixo global
             
             // Encontrar todas as imagens no editor
             const images = this.quillEditor.root.querySelectorAll('img');
@@ -363,13 +363,14 @@ export default {
                 }
                 
                 // Se é um caminho relativo, construir URL completa
+                // O backend serve em /api/uploads/
                 let fullUrl;
                 if (src.startsWith('/uploads/')) {
-                    fullUrl = `${apiBase}${src}`;
+                    fullUrl = `${baseUrl}${src}`;
                 } else if (src.startsWith('uploads/')) {
-                    fullUrl = `${apiBase}/${src}`;
+                    fullUrl = `${baseUrl}/${src}`;
                 } else {
-                    fullUrl = `${apiBase}/uploads/${src}`;
+                    fullUrl = `${baseUrl}/uploads/${src}`;
                 }
                 
                 console.log('Corrigindo URL de imagem:', { original: src, fullUrl, apiBase });
@@ -528,6 +529,7 @@ export default {
             
             const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
             // Construir URL completa da imagem
+            // O NestJS serve arquivos estáticos em /api/uploads/ devido ao prefixo global
             let fullImageUrl;
             
             if (imagePath.startsWith('http://') || imagePath.startsWith('https://')) {
@@ -535,13 +537,11 @@ export default {
                 fullImageUrl = imagePath;
             } else if (imagePath.startsWith('/uploads/')) {
                 // Caminho relativo, construir URL completa
-                // Se baseUrl contém /api, remover para acessar os uploads
-                const apiBase = baseUrl.replace('/api', '');
-                fullImageUrl = `${apiBase}${imagePath}`;
+                // O backend serve em /api/uploads/, então usamos baseUrl diretamente
+                fullImageUrl = `${baseUrl}${imagePath}`;
             } else {
                 // Caminho sem barra inicial
-                const apiBase = baseUrl.replace('/api', '');
-                fullImageUrl = `${apiBase}/uploads/${imagePath}`;
+                fullImageUrl = `${baseUrl}/uploads/${imagePath}`;
             }
             
             console.log('Inserindo imagem no Quill:', { imagePath, fullImageUrl, baseUrl });
@@ -580,7 +580,7 @@ export default {
             if (!htmlContent) return '';
             
             const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-            const apiBase = baseUrl.replace('/api', '');
+            // O backend serve arquivos estáticos em /api/uploads/ devido ao prefixo global
             
             // Processar todas as tags img no HTML para exibição
             return htmlContent.replace(/<img([^>]*?)src=["']([^"']*?)["']([^>]*?)>/gi, (match, before, src, after) => {
@@ -589,14 +589,14 @@ export default {
                     return match;
                 }
                 
-                // Se começa com /uploads, adicionar baseUrl
+                // Se começa com /uploads, adicionar baseUrl (que já inclui /api)
                 if (src.startsWith('/uploads/')) {
-                    const fullUrl = `${apiBase}${src}`;
+                    const fullUrl = `${baseUrl}${src}`;
                     return `<img${before}src="${fullUrl}"${after} style="max-width: 100%; height: auto; display: block; margin: 10px 0; border-radius: 4px;">`;
                 }
                 
                 // Se não começa com /, adicionar /uploads/ e baseUrl
-                const fullUrl = `${apiBase}/uploads/${src}`;
+                const fullUrl = `${baseUrl}/uploads/${src}`;
                 return `<img${before}src="${fullUrl}"${after} style="max-width: 100%; height: auto; display: block; margin: 10px 0; border-radius: 4px;">`;
             });
         },
