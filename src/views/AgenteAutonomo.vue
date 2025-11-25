@@ -444,8 +444,8 @@ export default {
 .layout-agente-autnomo {
 	background-color: #0a0b0a;
 	min-height: 100vh;
-	width: calc(100% - 240px);
-	margin-left: 240px;
+	width: calc(100% - 300px);
+	margin-left: 300px;
 	transition: margin-left 0.3s;
 	padding-bottom: 40px;
 }
@@ -474,7 +474,7 @@ export default {
 	position: fixed;
 	top: 0;
 	right: 0;
-	left: 240px;
+	left: 300px;
 	z-index: 40;
 	background-color: #0E0E0E;
 	border-bottom: 1px solid #1C1C1C;

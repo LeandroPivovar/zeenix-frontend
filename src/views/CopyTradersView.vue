@@ -76,8 +76,8 @@
     color: #f0f6fc;
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     padding: 20px;
-    width: calc(100% - 240px);
-    margin-left: 240px;
+    width: calc(100% - 300px);
+    margin-left: 300px;
   }
   
   .box {

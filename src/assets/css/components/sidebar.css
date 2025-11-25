@@ -1,13 +1,12 @@
 /* --- Sidebar Principal e Layout --- */
 
 .sidebar {
-	width: 240px;
-	background: #141515;
-	border-right: 1px solid rgba(255, 255, 255, 0.06);
-	color: #e5e7eb;
+	width: 300px;
+	background: #0B0B0B;
+	border-right: 1px solid #1C1C1C;
+	color: #DFDFDF;
 	display: flex;
 	flex-direction: column;
-	padding: 16px 12px;
 	position: fixed;
 	left: 0;
 	top: 0;
@@ -15,20 +14,15 @@
 	z-index: 999;
 	box-sizing: border-box;
 	transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
-}
-
-.separator {
-	height: 1px;
-	background: #3f3f3f;
-	margin: 8px 0;
+	font-family: 'Inter', sans-serif;
 }
 
 /* --- Estado Colapsado (.collapsed) --- */
 
 .sidebar.collapsed {
-	width: 72px; /* Ajustado para um tamanho fixo para o ícone e padding */
-	min-width: 72px; /* Garante que não diminua mais */
-	padding: 16px 8px; /* Reduz o padding lateral, mas mantém vertical */
+	width: 72px;
+	min-width: 72px;
+	padding: 16px 8px;
 	overflow: hidden;
 	border-right: none;
 }
@@ -46,25 +40,24 @@
 .sidebar.collapsed .menu-item {
 	position: relative;
 	justify-content: center;
-	padding: 10px 0; /* Centraliza verticalmente e elimina o padding lateral do texto */
-	color: transparent; /* Esconde o texto do link */
+	padding: 12px 0;
+	color: transparent;
 	font-size: 0;
 }
 
-/* Adiciona o ícone SVG ao layout centralizado no modo colapsado */
-.sidebar.collapsed .menu-item .icon-sidebar {
-	color: #e5e7eb;
-	position: static; /* Volta à posição normal no flow */
+/* Adiciona o ícone FontAwesome ao layout centralizado no modo colapsado */
+.sidebar.collapsed .menu-item i {
+	color: #A1A1A1;
+	position: static;
 	transform: none;
 	opacity: 1;
-	margin-right: 0;
-	margin: 0 auto; /* Centraliza o ícone dentro do item de 72px */
+	margin: 0 auto;
 	transition: color 0.2s ease;
 }
 
 /* Ícone ativo no modo colapsado */
-.sidebar.collapsed .menu-item.active .icon-sidebar {
-	color: #a7f3d0;
+.sidebar.collapsed .menu-item.active i {
+	color: #22C55E;
 }
 
 /* Tooltip do Menu Item (colapsado) */
@@ -76,7 +69,7 @@
 	transform: translateY(-50%);
 	margin-left: 12px;
 	background: #1a1a1a;
-	color: #e5e7eb; /* Garante que o texto do tooltip tenha cor */
+	color: #DFDFDF;
 	padding: 8px 12px;
 	border-radius: 6px;
 	white-space: nowrap;
@@ -110,279 +103,111 @@
 	justify-content: center;
 }
 
-/* Reposiciona o botão de toggle no modo colapsado (se ele for o único item visível no .brand) */
-.sidebar.collapsed .toggle-sidebar-btn {
-	position: static; /* Volta para o flow */
-	transform: none;
-	margin-left: 0;
-	z-index: 10;
-	order: 1; /* Garante que fique à direita no .brand (mesmo que os outros itens estejam com width: 0) */
-}
-
-/* Oculta o botão de toggle quando está colapsado para que apenas o ícone de expandir seja visto */
-/*
-.sidebar.collapsed .toggle-sidebar-btn {
-    display: none;
-}
-*/
-
-/* No modo expandido, o botão de toggle fica à direita */
-.sidebar:not(.collapsed) .toggle-sidebar-btn {
-	margin-left: auto;
-}
-
 /* --- Brand/Logo --- */
 
 .brand {
 	display: flex;
 	align-items: center;
-	gap: 12px;
-	margin-bottom: 16px;
-	position: relative;
-}
-
-.toggle-sidebar-btn {
-	margin-left: auto;
-	background: transparent;
-	border: none;
-	color: #9ca3af;
-	cursor: pointer;
-	padding: 4px;
-	border-radius: 6px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	transition: all 0.2s ease;
-	opacity: 0.7;
-}
-
-.toggle-sidebar-btn:hover {
-	background: rgba(255, 255, 255, 0.08);
-	color: #e5e7eb;
-	opacity: 1;
-}
-
-.toggle-sidebar-btn svg {
-	transition: transform 0.3s ease;
-}
-
-.avatar {
-	width: 28px;
-	height: 28px;
-	border-radius: 8px;
-	background: #1f2a24;
-	display: grid;
-	place-items: center;
-	font-weight: 700;
-	color: #a7f3d0;
-}
-
-.brand-text .title {
-	font-weight: 700;
-}
-
-.brand-text .subtitle {
-	font-size: 11px;
-	color: #9ca3af;
+	padding: 24px;
+	border-bottom: 1px solid #1C1C1C;
 }
 
 /* --- Menu de Navegação --- */
 
 .menu {
-	display: grid;
-	gap: 6px;
-	flex-grow: 1; /* Permite que o menu ocupe o espaço restante */
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	flex-grow: 1;
+	padding: 16px;
+	overflow-y: auto;
 }
 
 .menu-item {
 	text-align: left;
-	padding: 10px 12px;
+	padding: 12px 16px;
 	border-radius: 8px;
 	background: transparent;
-	color: #e5e7eb;
+	color: #A1A1A1;
 	border: none;
 	cursor: pointer;
 	position: relative;
 	overflow: hidden;
 	display: flex;
 	align-items: center;
-	transition: background-color 0.2s, color 0.2s;
-	font-weight: 500; /* Ajustado para não ser muito bold por padrão */
+	gap: 12px;
+	transition: all 0.2s ease;
+	font-size: 14px;
+	font-weight: 500;
+	text-decoration: none;
 }
 
 .menu-item:hover {
-	background: rgba(255, 255, 255, 0.05);
+	background-color: rgba(34, 197, 94, 0.05);
+	color: #DFDFDF;
 }
 
-/* Ícone/Dot Padrão */
-/* Use .icon-sidebar para os SVGs. Se você usa .dot, remova-o ou ajuste a lógica. */
-/* Mantive a classe .dot por compatibilidade, mas o .icon-sidebar é preferível para SVGs. */
-.menu-item .dot {
-	margin-right: 8px;
-	color: #6b7280;
-	z-index: 2; 
+.menu-item i {
+	width: 20px;
+	opacity: 0.85;
+	transition: opacity 0.2s ease;
 }
-
-/* Estilo do Ícone (SVG ou IMG) */
-.icon-sidebar {
-	width: 18px; /* Levemente maior para mais destaque */
-	height: 18px;
-	margin-right: 8px; /* Aumentei a margem para melhor espaçamento no modo expandido */
-	color: inherit; /* ESSENCIAL: Herda a cor do .menu-item */
-	transition: color 0.2s ease;
-}
-
-/* Regras para SVGs que usam currentColor (para mudança de cor) */
-/* Isso é crucial se você estiver usando SVGs embutidos ou `<img src=...>` */
-.menu-item .icon-sidebar path[fill="currentColor"] {
-    fill: currentColor;
-}
-.menu-item .icon-sidebar path[stroke="currentColor"] {
-    stroke: currentColor;
-}
-
 
 /* Estado Ativo */
 .menu-item.active {
-	background: #0b1f16;
-	color: #a7f3d0;
+	background-color: rgba(34, 197, 94, 0.1);
+	color: #DFDFDF;
 	font-weight: 600;
+	border-left: 2px solid #22C55E;
 }
 
-.menu-item.active .dot {
-	color: #a7f3d0; 
+.menu-item.active i {
+	opacity: 1;
 }
 
-/* Barra lateral à esquerda (Estilo ativo) */
-.menu-item.active::before {
-	content: '';
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 4px;
-	height: 100%;
-	background-color: #00FF87; 
-	border-radius: 8px 0 0 8px;
-	z-index: 1;
-}
-.menu-item.active > * {
-	position: relative;
-	z-index: 2;
+/* Separador */
+.separator {
+	height: 1px;
+	background: #1A1A1A;
+	margin: 12px 0;
 }
 
 /* --- Status e Usuário (Rodapé) --- */
 
 .status {
 	margin-top: auto;
-	position: relative; 
-	padding-top: 10px;
-	border-top: 1px solid rgba(255, 255, 255, 0.06); /* Adiciona borda superior */
-}
-
-.user {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 8px 0; /* Padding para a área clicável do usuário */
-	cursor: pointer;
-	border-radius: 8px;
-	transition: background 0.2s ease;
-}
-
-.user:hover {
-	background: rgba(255, 255, 255, 0.05);
-}
-
-.user-avatar {
-	width: 28px;
-	height: 28px;
-	border-radius: 50%;
-	background: #1f2a24;
-	color: #a7f3d0;
-	display: grid;
-	place-items: center;
-	font-weight: 700;
-	/* Garante que o avatar não seja afetado pelo .sidebar.collapsed */
-	flex-shrink: 0;
-}
-
-.user-name {
-	font-size: 14px;
-	font-weight: 600;
-}
-
-.user-badge {
-	font-size: 11px;
-	color: #9ca3af;
+	position: relative;
+	padding: 16px;
+	border-top: 1px solid #1C1C1C;
 }
 
 .footer-row {
 	display: flex;
 	align-items: center;
-	gap: 6px;
-	margin-top: 8px;
-	padding: 0 8px; /* Leve padding para alinhar com o conteúdo colapsado */
+	justify-content: space-between;
 }
 
-.online {
-	width: 6px;
-	height: 6px;
-	border-radius: 50%;
-	background: #22c55e;
-	flex-shrink: 0;
+.sair-text {
+	font-size: 12px;
+	color: #A1A1A1;
+	cursor: pointer;
+	transition: color 0.2s ease;
+}
+
+.sair-text:hover {
+	color: #DFDFDF;
 }
 
 .version {
-	margin-left: auto;
-	font-size: 11px;
-	color: #9ca3af;
+	font-size: 12px;
+	color: #7A7A7A;
 }
-
-/* --- Menu do Usuário (Dropdown) --- */
-
-.user-menu {
-	position: absolute;
-	left: 12px;
-	right: 12px;
-	bottom: calc(48px + 10px); /* Ajusta a posição acima do status bar + padding */
-	background: #0f1411;
-	border: 1px solid rgba(255, 255, 255, 0.08);
-	border-radius: 8px;
-	padding: 6px;
-	display: grid;
-	gap: 6px;
-	box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45);
-	z-index: 1010; /* Z-index alto para garantir que fique acima de tudo */
-}
-
-.user-menu-item {
-	text-align: left;
-	padding: 8px 10px;
-	border-radius: 6px;
-	background: transparent;
-	color: #e5e7eb;
-	border: none;
-	cursor: pointer;
-}
-
-.user-menu-item:hover {
-	background: rgba(255, 255, 255, 0.06);
-}
-
-.user-menu-item.danger {
-	color: #fca5a5;
-}
-
-.user-menu-item.danger:hover {
-	background: rgba(239, 68, 68, 0.12);
-}
-
 
 /* --- Media Queries (Mobile) --- */
 
 @media (max-width: 768px) {
 	.sidebar {
-		left: -240px;
+		left: -300px;
 		box-shadow: 5px 0 15px rgba(0, 0, 0, 0.7);
 	}
 
@@ -391,14 +216,12 @@
 	}
 
 	/* No mobile, a sidebar deve estar sempre expandida quando aberta. */
-	/* Garante que o modo colapsado não seja aplicado acidentalmente se a largura for pequena. */
 	.sidebar.is-open.collapsed {
-		width: 240px;
-		min-width: 240px;
-		padding: 16px 12px;
+		width: 300px;
+		min-width: 300px;
 	}
 	
-	/* Desativa a lógica de ocultar texto no mobile, já que a sidebar estará sempre "aberta" quando visível. */
+	/* Desativa a lógica de ocultar texto no mobile */
 	.sidebar.is-open.collapsed .brand-text,
 	.sidebar.is-open.collapsed .user-info,
 	.sidebar.is-open.collapsed .footer-row .online-text,
