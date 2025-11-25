@@ -3,47 +3,12 @@
 		<AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
 
 		<div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-			<header class="top-header">
-				<div class="header-content">
-					<div class="header-left-content">
-						<h1 class="header-title">Planos Zenix</h1>
-						<p class="header-subtitle">Escolha seu plano e evolua dentro do ecossistema Zenix.</p>
-					</div>
-					<div class="header-actions-right">
-						<div class="balance-display-card">
-							<div class="balance-header">
-								<i class="far fa-wallet"></i>
-								<div class="balance-info">
-									<span class="balance-label">Saldo Atual</span>
-									<div class="balance-value-row">
-										<span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ formattedBalance }}</span>
-										<span class="balance-value" v-else>••••••</span>
-										<button 
-											v-if="balanceVisible && !isDemo" 
-											class="account-type-btn real-btn"
-											@click="toggleBalanceVisibility"
-										>
-											Real
-										</button>
-										<button 
-											v-if="balanceVisible && isDemo" 
-											class="account-type-btn demo-btn"
-											@click="toggleBalanceVisibility"
-										>
-											Demo
-										</button>
-										<button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
-											<i class="far fa-eye"></i>
-										</button>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</header>
-
-			<main class="plans-content">
+			<TopNavbar 
+				:is-sidebar-collapsed="isSidebarCollapsed"
+				:balance="0"
+				account-type="real"
+			/>
+			<main class="plans-content" style="margin-top: 60px;">
 				<div class="video-card-wrapper">
 					<div class="video-thumbnail" @click="playVideo">
 						<div class="video-overlay"></div>
@@ -189,10 +154,11 @@
 
 <script>
 import AppSidebar from '../components/Sidebar.vue'
+import TopNavbar from '../components/TopNavbar.vue'
 
 export default {
 	name: 'PlansView',
-	components: { AppSidebar },
+	components: { AppSidebar, TopNavbar },
 	data() {
 		return {
 			plans: [], // Mantido para compatibilidade, mas layout está hardcoded por enquanto conforme pedido visual

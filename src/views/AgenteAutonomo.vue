@@ -1,52 +1,18 @@
 <template>
 	<div class="layout-agente-autnomo" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-		<header class="top-header">
-			<div class="header-content">
-				<div class="header-left-content">
-					<h1 class="header-title">Agente Autônomo</h1>
-					<p class="header-subtitle">Configure e monitore seu agente de trading automatizado.</p>
-				</div>
-				<div class="header-actions-right">
-					<div class="balance-display-card">
-						<div class="balance-header">
-							<i class="far fa-wallet"></i>
-							<div class="balance-info">
-								<span class="balance-label">Saldo Atual</span>
-								<div class="balance-value-row">
-									<span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ formattedBalance }}</span>
-									<span class="balance-value" v-else>••••••</span>
-									<button 
-										v-if="balanceVisible && !isDemo" 
-										class="account-type-btn real-btn"
-										@click="toggleBalanceVisibility"
-									>
-										Real
-									</button>
-									<button 
-										v-if="balanceVisible && isDemo" 
-										class="account-type-btn demo-btn"
-										@click="toggleBalanceVisibility"
-									>
-										Demo
-									</button>
-									<button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
-										<i class="far fa-eye"></i>
-									</button>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
-		</header>
 		<AppSidebar 
 			:is-open="isSidebarOpen" 
 			:is-collapsed="isSidebarCollapsed" 
 			@close-sidebar="closeSidebar" 
 			@toggle-collapse="toggleSidebarCollapse" 
 		/>
-		
-		<div class="container-componentes">
+		<TopNavbar 
+			:is-sidebar-collapsed="isSidebarCollapsed"
+			:balance="accountBalance"
+			:account-type="isDemo ? 'demo' : 'real'"
+			:currency="accountCurrency"
+		/>
+		<div class="container-componentes" style="margin-top: 60px;">
 			<component 
 				:is="componenteAtual" 
 				v-bind="agenteData" 
@@ -68,16 +34,17 @@
 
 <script>
 import AppSidebar from '../components/Sidebar.vue';
+import TopNavbar from '../components/TopNavbar.vue';
 import AgenteAutonomoActive from '../components/autonomo/AgenteAutonomoActive.vue';
 import AgenteAutonomoInactive from '../components/autonomo/AgenteAutonomoInactive.vue';
-// AppHeader foi removido pois a lógica está neste componente (Top-Header)
 
 export default {
 	name: 'AgenteAutonomoView',
 	components: {
 		AgenteAutonomoActive,
 		AgenteAutonomoInactive,
-		AppSidebar
+		AppSidebar,
+		TopNavbar
 	},
 	
 	data() {
@@ -130,7 +97,6 @@ export default {
 			accountCurrency: 'USD',
 			accountLoginid: null,
 			isDemo: false, // Define se é conta demo ou real
-			balanceVisible: true,
 			balanceUpdateInterval: null,
 			preferredCurrency: 'USD',
 			// ==============================
@@ -297,10 +263,6 @@ export default {
 		},
 
 		// === MÉTODOS DE HEADER/SALDO ===
-		toggleBalanceVisibility() {
-			this.balanceVisible = !this.balanceVisible;
-		},
-		
 		getPreferredCurrency() {
 			try {
 				const connectionStr = localStorage.getItem('deriv_connection');

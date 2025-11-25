@@ -4,47 +4,13 @@
     <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
 
     <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-      <header class="top-header">
-        <div class="header-content">
-          <div class="header-left-content">
-            <h1 class="header-title">Central de Suporte</h1>
-            <p class="header-subtitle">Encontre respostas rápidas ou entre em contato com nossa equipe.</p>
-          </div>
-          <div class="header-actions-right">
-            <div class="balance-display-card">
-              <div class="balance-header">
-                <i class="far fa-wallet"></i>
-                <div class="balance-info">
-                  <span class="balance-label">Saldo Atual</span>
-                  <div class="balance-value-row">
-                    <span id="balanceValue" class="balance-value" v-if="balanceVisible">{{ formattedBalance }}</span>
-                    <span class="balance-value" v-else>••••••</span>
-                    <button 
-                      v-if="balanceVisible && !isDemo" 
-                      class="account-type-btn real-btn"
-                      @click="toggleBalanceVisibility"
-                    >
-                      Real
-                    </button>
-                    <button 
-                      v-if="balanceVisible && isDemo" 
-                      class="account-type-btn demo-btn"
-                      @click="toggleBalanceVisibility"
-                    >
-                      Demo
-                    </button>
-                    <button class="eye-toggle-btn" @click="toggleBalanceVisibility" :title="balanceVisible ? 'Ocultar saldo' : 'Mostrar saldo'">
-                      <i class="far fa-eye"></i>
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <main class="main-content">
+      <TopNavbar 
+        :is-sidebar-collapsed="isSidebarCollapsed"
+        :balance="accountBalance"
+        :account-type="isDemo ? 'demo' : 'real'"
+        :currency="accountCurrency"
+      />
+      <main class="main-content" style="margin-top: 60px;">
         <!-- Immediate Support Section -->
         <section id="immediate-support" class="support-section mb-16">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -242,11 +208,13 @@
 
 <script>
 import AppSidebar from '../components/Sidebar.vue'
+import TopNavbar from '../components/TopNavbar.vue'
 
 export default {
   name: 'SupportView',
   components: {
-    AppSidebar
+    AppSidebar,
+    TopNavbar
   },
   data() {
     return {
@@ -264,7 +232,6 @@ export default {
       accountCurrency: 'USD',
       accountLoginid: null,
       isDemo: false,
-      balanceVisible: true,
       balanceUpdateInterval: null,
       searchSuggestions: [
         'Conectar corretora',
@@ -362,9 +329,6 @@ export default {
         clearInterval(this.balanceUpdateInterval);
         this.balanceUpdateInterval = null;
       }
-    },
-    toggleBalanceVisibility() {
-      this.balanceVisible = !this.balanceVisible;
     },
     hideSuggestions() {
       // Delay para permitir clique nos itens
