@@ -236,10 +236,10 @@
                         <thead>
                             <tr>
                                             <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Horário</th>
-                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Par</th>
-                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Direção</th>
-                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Resultado</th>
-                                            <th class="text-right py-3 px-4 text-xs font-medium text-zenix-secondary">P&L</th>
+                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Mercado</th>
+                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Negociação</th>
+                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Investimento</th>
+                                            <th class="text-right py-3 px-4 text-xs font-medium text-zenix-secondary">Retorno</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -252,11 +252,8 @@
                                         {{ op.direction }}
                                                 </span>
                                 </td>
-                                            <td class="py-3 px-4">
-                                                <span :class="['result-badge', op.result === 'WIN' ? 'win-badge' : 'loss-badge']">
-                                                    <i :class="`fas fa-${op.result === 'WIN' ? 'check' : 'times'} text-xs mr-1`"></i>
-                                        {{ op.result }}
-                                                </span>
+                                            <td class="py-3 px-4 text-xs text-zenix-text">
+                                    {{ op.investment }}
                                 </td>
                                             <td :class="['py-3 px-4 text-right text-sm font-bold', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
                                     {{ op.pnl }}
@@ -948,6 +945,7 @@ export default {
                     console.log('[InvestmentActive] 📊 Dados recebidos:', result.data);
                     
                     // Transformar dados do backend para o formato do frontend
+                    const defaultStakeAmount = this.sessionConfig.stakeAmount || this.entryValue || 0;
                     this.logOperations = result.data.map(trade => {
                         // Usar closedAt ou createdAt para o horário (priorizar closedAt)
                         const time = new Date(trade.closedAt || trade.createdAt).toLocaleTimeString('pt-BR', {
@@ -973,11 +971,15 @@ export default {
                         const profit = parseFloat(trade.profitLoss || 0);
                         const pnl = profit >= 0 ? `+$${profit.toFixed(2)}` : `$${profit.toFixed(2)}`;
                         
+                        // Investimento (stakeAmount) - usar do trade ou do default
+                        const investment = parseFloat(trade.stakeAmount || defaultStakeAmount || 0);
+                        const investmentFormatted = `$${investment.toFixed(2)}`;
+                        
                         return {
                             time: time,
                             pair: 'R_10', // Volatility 10 Index
                             direction: direction,
-                            result: result_trade,
+                            investment: investmentFormatted,
                             pnl: pnl
                         };
                     });
