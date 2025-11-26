@@ -27,7 +27,7 @@
                             </div>
                             <div class="bg-zenix-bg border border-zenix-border rounded-xl p-3 hover-lift">
                                 <div class="flex items-center space-x-2.5">
-                                    <i class="far fa-wallet text-zenix-green text-xs"></i>
+                                    <i class="far fa-wallet text-zenix-green text-base" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;"></i>
                                     <div class="flex flex-col">
                                         <span class="text-[10px] text-zenix-label font-medium">Saldo Atual</span>
                                         <div class="flex items-center space-x-2 mt-0.5">
@@ -52,7 +52,7 @@
                                                 class="text-zenix-secondary hover:text-zenix-text transition-colors"
                                                 @click="balanceVisible = !balanceVisible"
                                             >
-                                                <i :class="balanceVisible ? 'far fa-eye text-[10px]' : 'far fa-eye-slash text-[10px]'"></i>
+                                                <i :class="balanceVisible ? 'far fa-eye text-xs' : 'far fa-eye-slash text-xs'"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -68,21 +68,21 @@
                                     <div id="i9dlnn" class="absolute inset-0"></div>
                                 </div>
                                 <!-- Central AI Core -->
-                                <div class="relative z-10 flex items-center justify-center">
+                                <div class="relative z-10 flex items-center justify-center" style="width: 100%; height: 100%;">
                                     <!-- Outer Rotating Ring -->
-                                    <div id="irazem" class="absolute w-40 h-40 border-2 border-zenix-green/30 rounded-full ai-glow-ring"></div>
+                                    <div id="irazem" class="absolute w-40 h-40 border-2 border-zenix-green/30 rounded-full ai-glow-ring" style="opacity: 1;"></div>
                                     <!-- Middle Rotating Ring -->
-                                    <div id="i5uptv" class="absolute w-32 h-32 border-2 border-zenix-green/40 rounded-full"></div>
+                                    <div id="i5uptv" class="absolute w-32 h-32 border-2 border-zenix-green/40 rounded-full" style="opacity: 1;"></div>
                                     <!-- Inner Pulsing Core -->
-                                    <div class="absolute w-24 h-24 bg-zenix-green/20 rounded-full blur-xl ai-pulse"></div>
+                                    <div class="absolute w-24 h-24 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1;"></div>
                                     <!-- Central Brain Icon -->
-                                    <div class="relative z-20 ai-brain-glow">
-                                        <i class="fas fa-brain text-zenix-green text-5xl"></i>
+                                    <div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center;">
+                                        <i class="fas fa-brain text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3rem !important;"></i>
                                     </div>
                                     <!-- Orbiting Data Nodes -->
-                                    <div id="iyljui" class="absolute w-3 h-3 bg-zenix-green rounded-full"></div>
-                                    <div id="isxtjr" class="absolute w-2 h-2 bg-zenix-green/70 rounded-full"></div>
-                                    <div id="ijse57" class="absolute w-2.5 h-2.5 bg-zenix-green/80 rounded-full"></div>
+                                    <div id="iyljui" class="absolute w-3 h-3 bg-zenix-green rounded-full" style="opacity: 1;"></div>
+                                    <div id="isxtjr" class="absolute w-2 h-2 bg-zenix-green/70 rounded-full" style="opacity: 1;"></div>
+                                    <div id="ijse57" class="absolute w-2.5 h-2.5 bg-zenix-green/80 rounded-full" style="opacity: 1;"></div>
                                 </div>
                                 <!-- Floating Particles -->
                                 <div class="absolute inset-0 overflow-hidden">
@@ -1952,10 +1952,11 @@ export default {
 
 /* AI Vision Panel Specific Animations */
 #i9dlnn {
-    background-image: linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px), 
-                        linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(34, 197, 94, 0.15) 1px, transparent 1px), 
+                        linear-gradient(90deg, rgba(34, 197, 94, 0.15) 1px, transparent 1px);
     background-size: 20px 20px;
     animation: gridMove 20s linear infinite;
+    opacity: 1;
 }
 
 #irazem {
@@ -2064,17 +2065,25 @@ export default {
 @keyframes brainPulse {
     0%, 100% {
         transform: scale(1);
-        opacity: 0.3;
+        opacity: 1;
     }
     50% {
         transform: scale(1.1);
-        opacity: 0.6;
+        opacity: 0.9;
     }
 }
 
 .ai-brain-glow {
     animation: brainPulse 2s ease-in-out infinite;
     filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.4));
+    z-index: 30;
+    position: relative;
+}
+
+.ai-brain-glow i {
+    opacity: 1 !important;
+    display: block !important;
+    visibility: visible !important;
 }
 
 .ai-glow-ring {
