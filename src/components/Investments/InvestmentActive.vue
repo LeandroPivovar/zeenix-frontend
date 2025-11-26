@@ -957,16 +957,6 @@ export default {
                         // signal pode ser 'CALL' ou 'PUT', contractType também
                         const direction = (trade.signal || trade.contractType || 'CALL').toUpperCase();
                         
-                        // status é 'WON', 'LOST', 'PENDING', 'ACTIVE', 'ERROR'
-                        let result_trade;
-                        if (trade.status === 'WON') {
-                            result_trade = 'WIN';
-                        } else if (trade.status === 'LOST') {
-                            result_trade = 'LOSS';
-                        } else {
-                            result_trade = trade.status; // PENDING, ACTIVE, ERROR
-                        }
-                        
                         // profitLoss é o lucro/prejuízo (pode ser null se ainda não finalizou)
                         const profit = parseFloat(trade.profitLoss || 0);
                         const pnl = profit >= 0 ? `+$${profit.toFixed(2)}` : `$${profit.toFixed(2)}`;
