@@ -180,7 +180,7 @@
             <div class="grid grid-cols-12 gap-1 mb-6 px-3">
                 <!-- Left Column - Chart -->
                 <div id="ir8sfp" class="col-span-8">
-                    <div id="market-chart" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[800px]">
+                    <div id="market-chart" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h2 class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
@@ -271,7 +271,7 @@
 
                 <!-- Right Column - Config -->
                 <div class="col-span-4">
-                    <div id="i0k3nl" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[800px]">
+                    <div id="i0k3nl" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
                         <h3 class="text-base font-semibold text-zenix-text mb-6 flex items-center">
                             <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
                             Configuração Ativa
