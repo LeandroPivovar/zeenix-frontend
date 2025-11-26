@@ -162,7 +162,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div class="flex items-center space-x-2 mb-4">
+                        <div v-show="activeTab === 'chart'" class="flex items-center space-x-2 mb-4">
                             <button
                                 v-for="timeframe in timeframeOptions"
                                 :key="timeframe.value"
@@ -192,27 +192,27 @@
                                 <table class="logs-table">
                         <thead>
                             <tr>
-                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Horário</th>
-                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Mercado</th>
-                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Negociação</th>
-                                            <th class="text-left py-3 px-4 text-xs font-medium text-zenix-secondary">Investimento</th>
-                                            <th class="text-right py-3 px-4 text-xs font-medium text-zenix-secondary">Retorno</th>
+                                            <th class="text-left">Horário</th>
+                                            <th class="text-left">Mercado</th>
+                                            <th class="text-left">Negociação</th>
+                                            <th class="text-left">Investimento</th>
+                                            <th class="text-right">Retorno</th>
                             </tr>
                         </thead>
                         <tbody>
                                         <tr v-for="(op, index) in logOperations" :key="index" class="log-row">
-                                            <td class="py-3 px-4 text-xs text-zenix-text font-medium">{{ op.time }}</td>
-                                            <td class="py-3 px-4 text-xs text-zenix-text">{{ op.pair }}</td>
-                                            <td class="py-3 px-4">
+                                            <td>{{ op.time }}</td>
+                                            <td>{{ op.pair }}</td>
+                                            <td>
                                                 <span :class="['direction-badge', op.direction === 'CALL' ? 'call-badge' : 'put-badge']">
                                                     <i :class="`fas fa-arrow-${op.direction === 'CALL' ? 'up' : 'down'} text-xs mr-1`"></i>
                                         {{ op.direction }}
                                                 </span>
                                 </td>
-                                            <td class="py-3 px-4 text-xs text-zenix-text">
+                                            <td>
                                     {{ op.investment }}
                                 </td>
-                                            <td :class="['py-3 px-4 text-right text-sm font-bold', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
+                                            <td :class="['text-right', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
                                     {{ op.pnl }}
                                 </td>
                             </tr>
@@ -2009,12 +2009,27 @@ button i,
 }
 
 .log-row {
-    border-bottom: 1px solid rgba(28, 28, 28, 0.4);
+    border-bottom: none;
     transition: background-color 0.2s ease;
 }
 
 .log-row:hover {
-    background-color: rgba(255, 255, 255, 0.05);
+    background-color: rgba(255, 255, 255, 0.02);
+}
+
+.logs-table td,
+.logs-table th {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.7rem;
+}
+
+.logs-table td {
+    color: #666666;
+}
+
+.logs-table th {
+    color: #555555;
+    font-weight: 500;
 }
 
 .direction-badge,
