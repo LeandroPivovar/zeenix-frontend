@@ -6,7 +6,9 @@ aside.sidebar,
 	min-width: 280px !important;
 	max-width: 280px !important;
 	background: #0B0B0B;
-	border-right: 1px solid #1C1C1C;
+	border-right: none !important;
+	border-left: none !important;
+	border: none;
 	color: #DFDFDF;
 	display: flex;
 	flex-direction: column;
@@ -29,7 +31,9 @@ aside.sidebar,
 	min-width: 72px;
 	padding: 16px 8px;
 	overflow: hidden;
-	border-right: none;
+	border-right: none !important;
+	border-left: none !important;
+	border: none;
 }
 
 /* Esconde textos principais e ajusta transição */

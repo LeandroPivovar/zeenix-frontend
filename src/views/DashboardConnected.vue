@@ -155,9 +155,9 @@
           <p class="text-white/60 text-left">Configure sua conta rapidamente em 3 passos
             e deixe a IA trabalhar por você.</p>
         </div>
-        <div class="flex items-start relative">
+        <div class="flex items-start relative gap-4 w-full" style="width: 100%; box-sizing: border-box;">
               <!-- Card 1/3: Depositar -->
-              <div id="hero-card-1" class="rounded-[18px] p-8 h-56 w-80 flex flex-col justify-between transform scale-[0.88] transition-all duration-300 ease-out relative hover:scale-[0.91] z-[3] bg-[rgba(20,20,20,0.35)] border border-[rgba(34,197,94,0.25)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.18),inset_0_1px_1px_rgba(255,255,255,0.05)]">
+              <div id="hero-card-1" class="rounded-[18px] p-8 h-56 flex flex-col justify-between flex-1 transition-all duration-300 ease-out relative hover:scale-[1.02] z-[3] bg-[rgba(20,20,20,0.35)] border border-[rgba(34,197,94,0.25)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.18),inset_0_1px_1px_rgba(255,255,255,0.05)]" style="width: 100%; box-sizing: border-box;">
                 <div>
                   <h3 class="font-semibold mb-2 text-[rgba(255,255,255,0.92)]">
                     Deposite para começar</h3>
@@ -169,7 +169,7 @@
                 </button>
               </div>
               <!-- Card 2/3: Configurar IA -->
-              <div id="hero-card-2" class="rounded-[18px] p-8 h-56 w-80 flex flex-col justify-between transform scale-[0.88] -ml-6 transition-all duration-300 ease-out relative hover:scale-[0.90] z-[2] bg-[rgba(20,20,20,0.35)] border border-[rgba(255,255,255,0.12)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.08),inset_0_1px_1px_rgba(255,255,255,0.05)]">
+              <div id="hero-card-2" class="rounded-[18px] p-8 h-56 flex flex-col justify-between flex-1 transition-all duration-300 ease-out relative hover:scale-[1.02] z-[2] bg-[rgba(20,20,20,0.35)] border border-[rgba(255,255,255,0.12)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.08),inset_0_1px_1px_rgba(255,255,255,0.05)]" style="width: 100%; box-sizing: border-box;">
                 <div>
                   <h3 class="font-medium mb-2 text-[rgba(255,255,255,0.55)]">
                     Configure uma IA ou Copy Trading</h3>
@@ -181,7 +181,7 @@
                 </button>
               </div>
               <!-- Card 3/3: Resultados -->
-              <div id="hero-card-3" class="rounded-[18px] p-8 h-56 w-80 flex flex-col justify-between transform scale-[0.88] -ml-6 transition-all duration-300 ease-out relative hover:scale-[0.90] z-[1] bg-[rgba(20,20,20,0.35)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.08),inset_0_1px_1px_rgba(255,255,255,0.05)]">
+              <div id="hero-card-3" class="rounded-[18px] p-8 h-56 flex flex-col justify-between flex-1 transition-all duration-300 ease-out relative hover:scale-[1.02] z-[1] bg-[rgba(20,20,20,0.35)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.08),inset_0_1px_1px_rgba(255,255,255,0.05)]" style="width: 100%; box-sizing: border-box;">
                 <div>
                   <h3 class="font-medium mb-2 text-[rgba(255,255,255,0.55)]">
                     Acompanhe seus resultados</h3>
@@ -1351,30 +1351,30 @@ export default {
 @keyframes float-card-1 {
   0%,
   100% {
-    transform: translateY(0px) scale(0.88);
+    transform: translateY(0px);
   }
   50% {
-    transform: translateY(-8px) scale(0.88);
+    transform: translateY(-8px);
   }
 }
 
 @keyframes float-card-2 {
   0%,
   100% {
-    transform: translateY(0px) scale(0.88);
+    transform: translateY(0px);
   }
   50% {
-    transform: translateY(-10px) scale(0.88);
+    transform: translateY(-10px);
   }
 }
 
 @keyframes float-card-3 {
   0%,
   100% {
-    transform: translateY(0px) scale(0.88);
+    transform: translateY(0px);
   }
   50% {
-    transform: translateY(-12px) scale(0.88);
+    transform: translateY(-12px);
   }
 }
 

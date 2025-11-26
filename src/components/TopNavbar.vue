@@ -1,13 +1,13 @@
 <template>
   <nav 
     id="top-navbar" 
-    class="fixed top-0 left-0 right-0 h-[60px] bg-[#0B0B0B] border-b border-[#1C1C1C] z-50" 
+    class="fixed top-0 left-0 right-0 h-[60px] bg-[#0B0B0B] z-50" 
     :style="{ left: isSidebarCollapsed ? '72px' : '280px', width: isSidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 280px)' }"
   >
     <div class="h-full px-6 flex items-center justify-between">
       <div class="flex items-center space-x-8">
         <div class="text-lg font-bold text-zenix-text tracking-tight">
-          ZENI<span class="text-zenix-green">X</span>
+          Grupo de Alunos
         </div>
         <a 
           href="#" 
