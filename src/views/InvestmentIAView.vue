@@ -27,7 +27,9 @@
                             </div>
                             <div class="bg-zenix-bg border border-zenix-border rounded-xl p-3 hover-lift">
                                 <div class="flex items-center space-x-2.5">
-                                    <i class="far fa-wallet text-zenix-green text-base" style="display: inline-block !important; visibility: visible !important; opacity: 1 !important;"></i>
+                                    <div class="wallet-icon-wrapper" style="display: flex; align-items: center; justify-content: center; min-width: 20px; min-height: 20px;">
+                                        <i class="far fa-wallet text-zenix-green" style="font-size: 16px !important; display: inline-block !important; visibility: visible !important; opacity: 1 !important; line-height: 1 !important;"></i>
+                                    </div>
                                     <div class="flex flex-col">
                                         <span class="text-[10px] text-zenix-label font-medium">Saldo Atual</span>
                                         <div class="flex items-center space-x-2 mt-0.5">
@@ -52,7 +54,7 @@
                                                 class="text-zenix-secondary hover:text-zenix-text transition-colors"
                                                 @click="balanceVisible = !balanceVisible"
                                             >
-                                                <i :class="balanceVisible ? 'far fa-eye text-xs' : 'far fa-eye-slash text-xs'"></i>
+                                                <i :class="balanceVisible ? 'far fa-eye text-xs' : 'far fa-eye-slash text-xs'" style="display: inline-block !important; visibility: visible !important;"></i>
                                             </button>
                                         </div>
                                     </div>
@@ -106,7 +108,10 @@
                                     <p class="text-[10px] text-zenix-label mt-1">Configure para ativar esta IA</p>
                                 </div>
                                 <div class="bg-zenix-bg border border-zenix-border rounded-xl p-4 hover-lift">
-                                    <p class="text-[10px] text-zenix-secondary mb-2">Ativo da IA</p>
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <img src="@/assets/icons/target-IA.svg" alt="Ativo da IA" class="asset-icon" style="width: 16px !important; height: 16px !important; display: block !important; opacity: 0.6 !important; visibility: visible !important;">
+                                        <p class="text-[10px] text-zenix-secondary">Ativo da IA</p>
+                                    </div>
                                     <p class="text-sm font-semibold text-zenix-secondary">Será exibido após configuração</p>
                                     <p class="text-[10px] text-zenix-label mt-1">Defina os parâmetros para revelar</p>
                                 </div>
@@ -2084,6 +2089,39 @@ export default {
     opacity: 1 !important;
     display: block !important;
     visibility: visible !important;
+}
+
+/* Wallet Icon Styles */
+.wallet-icon-wrapper {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    min-width: 20px !important;
+    min-height: 20px !important;
+}
+
+.wallet-icon-wrapper i {
+    font-size: 16px !important;
+    display: inline-block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    line-height: 1 !important;
+    color: #22C55E !important;
+}
+
+/* Asset Icon Styles */
+.asset-icon {
+    width: 16px !important;
+    height: 16px !important;
+    display: block !important;
+    opacity: 0.6 !important;
+    flex-shrink: 0 !important;
+    visibility: visible !important;
+    object-fit: contain !important;
+}
+
+.asset-icon[src] {
+    filter: brightness(0) saturate(100%) invert(67%) sepia(90%) saturate(400%) hue-rotate(90deg) brightness(95%) contrast(85%);
 }
 
 .ai-glow-ring {
