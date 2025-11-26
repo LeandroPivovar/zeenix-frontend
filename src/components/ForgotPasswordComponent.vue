@@ -1,6 +1,6 @@
 <template>
   <!-- Main Container -->
-  <main id="forgot-main" class="min-h-screen flex items-center justify-center px-8 forgot-password-bg">
+  <main id="forgot-main" class="min-h-screen flex items-center justify-center px-8 gradient-glow">
     <div class="w-full max-w-7xl flex items-center justify-between login-container-wrapper">
       
       <!-- Left Column - Forgot Password Card -->
@@ -17,8 +17,8 @@
 
           <!-- Header -->
           <div class="mb-8">
-            <h1 class="text-2xl font-semibold text-zenix-text-dark mb-3">Recuperar senha</h1>
-            <p class="text-sm text-zenix-gray leading-relaxed">Insira seu e-mail para receber as instruções de recuperação de senha.</p>
+            <h1 class="text-2xl font-semibold text-zenix-text-dark mb-3">Acesse sua conta</h1>
+            <p class="text-sm text-zenix-gray leading-relaxed">Se você já possui uma conta, preencha seus dados para acessar a plataforma.</p>
           </div>
 
           <!-- Forgot Password Form -->
@@ -54,7 +54,7 @@
 
           <!-- Footer -->
           <div class="mt-10 pt-6 border-t border-zenix-input-border">
-            <p class="text-xs text-zenix-gray text-center leading-relaxed">Não recebeu o e-mail? Verifique sua caixa de spam ou <a href="#" class="text-zenix-green hover:underline">entre em contato</a>.</p>
+            <p class="text-xs text-zenix-gray text-center leading-relaxed">Ao acessar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
           </div>
         </div>
       </div>
@@ -81,8 +81,8 @@
               <i class="fa-solid fa-brain text-zenix-green text-lg"></i>
             </div>
             <div class="text-left">
-              <h3 class="text-lg font-semibold text-white mb-1">IA de Investimento</h3>
-              <p class="text-sm text-zenix-light-gray leading-relaxed">Nenhum chute. Só cálculo e lógica e estratégia.</p>
+              <h3 class="text-lg font-semibold text-white mb-1">IA que analisa e decide com precisão</h3>
+              <p class="text-sm text-zenix-light-gray leading-relaxed">Nenhum chute. Só cálculo e lógica.</p>
             </div>
           </div>
 
@@ -92,7 +92,7 @@
               <i class="fa-solid fa-copy text-zenix-green text-lg"></i>
             </div>
             <div class="text-left">
-              <h3 class="text-lg font-semibold text-white mb-1">Copy Trading</h3>
+              <h3 class="text-lg font-semibold text-white mb-1">Copy Trading testado e validado</h3>
               <p class="text-sm text-zenix-light-gray leading-relaxed">Você copia estratégias que já funcionam de verdade.</p>
             </div>
           </div>
@@ -103,12 +103,10 @@
               <i class="fa-solid fa-robot text-zenix-green text-lg"></i>
             </div>
             <div class="text-left">
-              <h3 class="text-lg font-semibold text-white mb-1">Agente Autônomo</h3>
+              <h3 class="text-lg font-semibold text-white mb-1">Agente Autônomo que faz tudo por você</h3>
               <p class="text-sm text-zenix-light-gray leading-relaxed">Você ajusta uma vez — ele executa tudo, sem pausa e sem precisar olhar.</p>
             </div>
           </div>
-
-          <!-- Benefit 4 -->
           <div class="flex items-start space-x-4 benefit-item" :class="{ 'animate-slide-in' : showBenefit4 }">
             <div class="w-12 h-12 benefit-icon rounded-full flex items-center justify-center flex-shrink-0">
               <i class="fa-solid fa-chart-line text-zenix-green text-lg"></i>
