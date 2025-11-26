@@ -90,7 +90,7 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div class="flex-1 h-full flex items-center justify-end min-w-0 relative overflow-hidden" style="margin: -1.25rem -1.25rem -1.25rem 0; height: calc(100% + 2.5rem);">
+                                <div class="flex-1 h-full flex items-center justify-end min-w-0 relative overflow-hidden" style="margin: -1.25rem -1.25rem -1.25rem 0; height: calc(100% + 2.5rem); width: 100%; flex: 1 1 auto; min-width: 0;">
                                     <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/10 to-transparent"></div>
                                     <!-- Animated Grid Background -->
                                     <div class="absolute inset-0 opacity-20">
