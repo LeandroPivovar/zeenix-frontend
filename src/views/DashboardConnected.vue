@@ -38,30 +38,16 @@
           <div class="max-w-[1100px] w-full">
             <div class="grid grid-cols-3 gap-6">
               <!-- Card 1/3: Depositar -->
-              <div class="relative bg-gradient-to-br from-[#0A0A0A] via-[#080808] to-[#060606] border border-[#1A1A1A]/40 rounded-[20px] p-6 h-[240px] flex flex-col transition-all duration-300 group overflow-hidden shadow-[0_0_40px_rgba(34,197,94,0.08),0_8px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_0_50px_rgba(34,197,94,0.12),0_10px_38px_rgba(0,0,0,0.7)]">
-                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.06)_0%,transparent_70%)] opacity-40"></div>
-                <div class="absolute top-5 left-5 flex items-center space-x-3 z-10">
-                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center backdrop-blur-sm">
-                    <div class="absolute inset-0 rounded-full bg-[#22C55E]/[0.03]"></div>
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" class="w-4 h-4 text-[#22C55E]">
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <path d="M12 6v6l4 2"></path>
-                    </svg>
-                  </div>
-                  <span class="text-[10px] font-semibold text-[#22C55E]/60 tracking-wide">1/3</span>
+              <div id="hero-card-1" class="rounded-[18px] p-8 h-[240px] w-full flex flex-col justify-between transform scale-[0.88] transition-all duration-300 ease-out relative hover:scale-[0.91] z-[3] bg-[rgba(20,20,20,0.35)] border border-[rgba(34,197,94,0.25)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.18),inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                <div>
+                  <h3 class="font-semibold mb-2 text-[rgba(255,255,255,0.92)]">
+                    Deposite para começar</h3>
+                  <p class="text-sm text-[rgba(255,255,255,0.70)]">Para melhores
+                    resultados indicamos um depósito acima de 100 dólares.</p>
                 </div>
-                <div class="mt-14 flex-1 flex flex-col justify-between relative z-10">
-                  <div class="space-y-3">
-                    <h3 class="text-[15px] font-semibold text-[#DFDFDF]/90 leading-tight tracking-tight">Depositar para começar</h3>
-                    <p class="text-[11.5px] text-[#DFDFDF]/70 leading-[1.6]">Para melhores resultados indicados um deposito acima de $100.</p>
-                  </div>
-                  <button @click="$router.push('/settings?tab=deposit')" class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold py-2.5 px-5 rounded-[14px] text-[11px] transition-all inline-flex items-center justify-center space-x-2.5 group-hover:shadow-[0_6px_24px_rgba(34,197,94,0.35)] hover:translate-y-[-1px] mt-4 unified-button">
-                      <span>Depositar Agora</span>
-                    <svg viewBox="0 0 16 16" fill="none" class="w-3 h-3 group-hover:translate-x-1 transition-transform">
-                      <path d="M1 8h14m-6-6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                  </button>
-                </div>
+                <button @click="$router.push('/settings?tab=deposit')" class="bg-[#22C55E] hover:bg-[#16A34A] text-white py-2 px-4 rounded-[12px] h-[46px] w-full font-medium transition-all shadow-[0_0_18px_rgba(34,197,94,0.35)] hover:shadow-[0_0_22px_rgba(34,197,94,0.45)]">
+                  Depositar agora
+                </button>
               </div>
               <!-- Card 2/3: Configurar IA -->
               <div class="relative bg-gradient-to-br from-[#0A0A0A] via-[#080808] to-[#060606] border border-[#1A1A1A]/40 rounded-[20px] p-6 h-[240px] flex flex-col transition-all duration-300 group overflow-hidden shadow-[0_0_40px_rgba(34,197,94,0.08),0_8px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_0_50px_rgba(34,197,94,0.12),0_10px_38px_rgba(0,0,0,0.7)]">
@@ -1205,6 +1191,42 @@ export default {
 
 .hamburger-menu:hover .line {
   background-color: #00FF87;
+}
+
+/* Hero Card 1 Styles */
+#hero-card-1 {
+  backdrop-filter: blur(20px);
+  box-shadow: rgba(34, 197, 94, 0.18) 0px 0px 20px;
+  transition-behavior: normal;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
+  transition-delay: 0s;
+  transition-property: all;
+  animation-duration: 6s;
+  animation-timing-function: ease-in-out;
+  animation-delay: 0s;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-fill-mode: none;
+  animation-play-state: running;
+  animation-name: float-card-1;
+  animation-timeline: auto;
+  animation-range-start: normal;
+  animation-range-end: normal;
+}
+
+#hero-card-1:hover {
+  animation-play-state: paused;
+}
+
+@keyframes float-card-1 {
+  0%,
+  100% {
+    transform: translateY(0px) scale(0.88);
+  }
+  50% {
+    transform: translateY(-8px) scale(0.88);
+  }
 }
 
 </style>
