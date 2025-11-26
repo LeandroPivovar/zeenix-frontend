@@ -10,7 +10,7 @@
 
     <div v-else class="operation-layout">
         <div class="col-chart flex-1 flex flex-col gap-5">
-        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container">
+        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full h-full">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A]">
             <div class="flex items-center gap-4">
               <select 
@@ -73,7 +73,7 @@
             </div>
           </div>
 
-          <div id="candlestickChart" class="flex-1" ref="chartContainer" style="height: 400px;"></div>
+          <div id="candlestickChart" class="flex-1 w-full h-full" ref="chartContainer"></div>
           <div v-if="!chartInitialized" class="chart-placeholder absolute inset-0 flex items-center justify-center">
             <p class="text-zenix-secondary">{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
           </div>
@@ -4794,6 +4794,13 @@ export default {
 .chart-container {
   height: 100%;
   flex: 1;
+  min-height: 0;
+  width: 100%;
+}
+
+#candlestickChart {
+  width: 100%;
+  height: 100%;
   min-height: 0;
 }
 
