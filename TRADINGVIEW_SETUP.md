@@ -69,3 +69,4 @@ As cores e configurações do gráfico TradingView estão definidas no método `
 - O datafeed customizado precisa ser configurado para conectar com a sua API de ticks
 - O fallback para `lightweight-charts` garante que o gráfico funcione mesmo sem a TradingView
 
+

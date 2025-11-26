@@ -3,19 +3,19 @@
         <main class="investment-active-main">
             <!-- Performance Summary Cards -->
             <section id="compact-performance-panel" class="mb-6">
-                <div id="iya1j" class="grid grid-cols-12 gap-2">
+                <div id="iya1j" class="grid grid-cols-12 gap-3 md:gap-4">
                     <!-- Card 1 - Saldo Total -->
-                    <div class="col-span-2">
-                        <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden">
+                    <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                        <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-4 md:p-5 premium-card h-[100px] md:h-[120px] flex flex-col justify-between relative overflow-hidden">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                             <div class="relative z-10">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Saldo Total</span>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[10px] md:text-xs text-zenix-label font-medium uppercase tracking-wide">Saldo Total</span>
                                     <button class="eye-btn" @click="balanceVisible = !balanceVisible">
-                                        <i :class="balanceVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
+                                        <i :class="balanceVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-xs"></i>
                                     </button>
                                 </div>
-                                <div class="text-xl font-bold text-zenix-text">
+                                <div class="text-2xl md:text-3xl font-bold text-zenix-text">
                                     <span v-if="!isLoadingStats && accountBalanceProp" :class="{ 'hidden-value': !balanceVisible }">
                                         {{ balanceVisible ? formattedBalance : '••••••' }}
                                     </span>
@@ -26,18 +26,18 @@
                     </div>
 
                     <!-- Card 2 - Lucro do Dia -->
-                    <div class="col-span-2">
-                        <div id="i790gh" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden">
+                    <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                        <div id="i790gh" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-4 md:p-5 premium-card h-[100px] md:h-[120px] flex flex-col justify-between relative overflow-hidden">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                             <div class="relative z-10">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Lucro do Dia</span>
+                                <div class="flex items-center justify-between mb-2">
+                                    <span class="text-[10px] md:text-xs text-zenix-label font-medium uppercase tracking-wide">Lucro do Dia</span>
                                     <button class="eye-btn" @click="profitVisible = !profitVisible">
-                                        <i :class="profitVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
+                                        <i :class="profitVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-xs"></i>
                                     </button>
                                 </div>
                                 <div class="flex items-baseline space-x-1.5">
-                                    <div v-if="!isLoadingStats" :class="['text-xl font-bold', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
+                                    <div v-if="!isLoadingStats" :class="['text-2xl md:text-3xl font-bold', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
                                         {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
                                     </div>
                                     <span v-if="!isLoadingStats && profitPercentage && profitVisible" class="text-[10px] text-zenix-green/80 font-medium">{{ profitPercentage }}</span>
@@ -48,23 +48,23 @@
                     </div>
 
                     <!-- Card 3 - Trades Hoje -->
-                    <div class="col-span-2">
-                        <div id="i42e4g" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between">
-                            <div class="flex items-center justify-between mb-1">
-                                <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
+                    <div class="col-span-12 md:col-span-6 lg:col-span-3">
+                        <div id="i42e4g" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-4 md:p-5 premium-card h-[100px] md:h-[120px] flex flex-col justify-between">
+                            <div class="flex items-center justify-between mb-2">
+                                <span class="text-[10px] md:text-xs text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
                                 <button class="eye-btn" @click="tradesVisible = !tradesVisible">
-                                    <i :class="tradesVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
+                                    <i :class="tradesVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-xs"></i>
                                 </button>
                             </div>
-                            <div class="flex items-center space-x-2">
-                                <span v-if="!isLoadingStats" id="i8cy7b" :class="['text-2xl font-bold text-zenix-green', { 'hidden-value': !tradesVisible }]">
+                            <div class="flex items-center space-x-2 md:space-x-3">
+                                <span v-if="!isLoadingStats" id="i8cy7b" :class="['text-2xl md:text-3xl font-bold text-zenix-green', { 'hidden-value': !tradesVisible }]">
                                     {{ tradesVisible ? (dailyStats.sessionWins || 0) : '••' }}
                                 </span>
                                 <div class="relative">
-                                    <span class="text-xl font-light text-zenix-secondary/40">|</span>
+                                    <span class="text-2xl md:text-3xl font-light text-zenix-secondary/40">|</span>
                                     <div class="absolute inset-0 bg-zenix-green/20 blur-sm"></div>
                                 </div>
-                                <span v-if="!isLoadingStats" id="idsh94" :class="['text-2xl font-bold text-zenix-red', { 'hidden-value': !tradesVisible }]">
+                                <span v-if="!isLoadingStats" id="idsh94" :class="['text-2xl md:text-3xl font-bold text-zenix-red', { 'hidden-value': !tradesVisible }]">
                                     {{ tradesVisible ? (dailyStats.sessionLosses || 0) : '••' }}
                                 </span>
                                 <span v-else class="text-zenix-secondary">--</span>
@@ -73,25 +73,25 @@
                     </div>
 
                     <!-- Card 4 - Status da IA -->
-                    <div id="ichwdn" class="col-span-6">
-                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[72px] relative overflow-hidden transition-all duration-700">
+                    <div id="ichwdn" class="col-span-12 md:col-span-12 lg:col-span-3">
+                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border border-[#22C55E]/10 rounded-[18px] p-5 md:p-6 premium-card h-[100px] md:h-[120px] relative overflow-hidden transition-all duration-700">
                             <div id="card-gradient" class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/8 to-transparent pointer-events-none transition-all duration-700"></div>
                             <div class="relative z-10 h-full flex items-center justify-between gap-6">
-                                <div class="flex items-center space-x-4 flex-shrink-0">
-                                    <div id="status-icon-container" class="w-12 h-12 bg-zenix-green/15 border border-zenix-green/30 rounded-xl flex items-center justify-center transition-all duration-700">
-                                        <i id="status-icon" class="fas fa-chart-line text-zenix-green text-lg ai-pulse"></i>
+                                <div class="flex items-center space-x-4 md:space-x-5 flex-shrink-0">
+                                    <div id="status-icon-container" class="w-14 h-14 md:w-16 md:h-16 bg-zenix-green/15 border border-zenix-green/30 rounded-xl flex items-center justify-center transition-all duration-700">
+                                        <i id="status-icon" class="fas fa-chart-line text-zenix-green text-xl md:text-2xl ai-pulse"></i>
                                     </div>
                                     <div>
-                                        <h3 id="status-title" class="text-base font-bold text-zenix-text leading-tight transition-all duration-700">
+                                        <h3 id="status-title" class="text-lg md:text-xl font-bold text-zenix-text leading-tight transition-all duration-700">
                                             {{ currentStatusTitle }}
                                         </h3>
-                                        <p id="status-description" class="text-[10px] text-zenix-secondary mt-0.5 leading-tight transition-all duration-700">
+                                        <p id="status-description" class="text-xs md:text-sm text-zenix-secondary mt-1 leading-tight transition-all duration-700">
                                             {{ currentStatusDescription }}
                                         </p>
                                     </div>
                                 </div>
                                 <div class="flex-1 h-full flex items-center justify-end min-w-0">
-                                    <svg id="status-animation" viewBox="0 0 280 72" preserveAspectRatio="xMaxYMid meet" class="w-full h-full max-w-[280px]">
+                                    <svg id="status-animation" viewBox="0 0 280 120" preserveAspectRatio="xMaxYMid meet" class="w-full h-full max-w-[320px]">
                                         <defs>
                                             <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                                 <stop offset="0%" stop-color="#22C55E" stop-opacity="0"></stop>
@@ -177,10 +177,10 @@
             </section>
     
             <!-- Main Content Grid -->
-            <div class="grid grid-cols-12 gap-3 mb-6">
+            <div class="grid grid-cols-12 gap-3 md:gap-4 mb-6">
                 <!-- Left Column - Chart -->
-                <div id="ir8sfp" class="col-span-8">
-                    <div id="market-chart" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[720px]">
+                <div id="ir8sfp" class="col-span-12 lg:col-span-8">
+                    <div id="market-chart" class="bg-zenix-card border border-zenix-border rounded-xl p-6 md:p-8 premium-card h-[600px] md:h-[720px] lg:h-[800px]">
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h2 class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
@@ -270,8 +270,8 @@
             </div>
 
                 <!-- Right Column - Config -->
-                <div class="col-span-4">
-                    <div id="i0k3nl" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[720px]">
+                <div class="col-span-12 lg:col-span-4">
+                    <div id="i0k3nl" class="bg-zenix-card border border-zenix-border rounded-xl p-6 md:p-8 premium-card h-[600px] md:h-[720px] lg:h-[800px]">
                         <h3 class="text-base font-semibold text-zenix-text mb-6 flex items-center">
                             <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
                             Configuração Ativa
