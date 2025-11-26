@@ -1,6 +1,14 @@
 <template>
     <div class="layout-master-trader" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
+        
+        <TopNavbar 
+            :is-sidebar-collapsed="isSidebarCollapsed"
+            :balance="accountBalance"
+            :account-type="isDemo ? 'demo' : 'real'"
+            :currency="accountCurrency"
+            @account-type-changed="handleAccountTypeChange"
+        />
 
         <div class="content-wrapper">
             <section class="master-trader-status-nav">
@@ -85,6 +93,7 @@
 <script>
 // Componentes necessários (crie estes arquivos .vue)
 import AppSidebar from '../components/Sidebar.vue'
+import TopNavbar from '../components/TopNavbar.vue'
 import CopiersDetails from '../components/CopiersDetails.vue'
 import AIInvestment from '../components/InvestmentComponent.vue'
 import AgenteAutonomoView from '../components/AgentAutonomoComponent.vue'
@@ -94,6 +103,7 @@ export default {
     name: 'MasterTraderView',
     components: {
         AppSidebar,
+        TopNavbar,
         CopiersDetails,
         AIInvestment,
         ManualOperation,
@@ -104,7 +114,14 @@ export default {
             isSidebarOpen: false, 
             isSidebarCollapsed: false,
             // Variável de estado para controlar o modo ativo
-            activeMode: 'Detalhes Copiadores'
+            activeMode: 'Detalhes Copiadores',
+            // Dados do header
+            accountBalance: null,
+            accountCurrency: 'USD',
+            accountLoginid: null,
+            isDemo: false,
+            balanceUpdateInterval: null,
+            preferredCurrency: 'USD'
         }
     },
     computed: {
@@ -133,7 +150,122 @@ export default {
         // Método para trocar o modo
         selectMode(modeName) {
             this.activeMode = modeName
+        },
+        handleAccountTypeChange(newAccountType) {
+            this.isDemo = newAccountType === 'demo';
+            console.log('[MasterTrader] Tipo de conta alterado para:', this.isDemo ? 'demo' : 'real');
+        },
+        getPreferredCurrency() {
+            try {
+                const connectionStr = localStorage.getItem('deriv_connection');
+                if (connectionStr) {
+                    const connection = JSON.parse(connectionStr);
+                    if (connection.tradeCurrency) {
+                        const currency = connection.tradeCurrency.toUpperCase();
+                        return currency;
+                    }
+                }
+            } catch (error) {
+                console.error('[MasterTrader] Erro ao parsear deriv_connection:', error);
+            }
+            return 'USD';
+        },
+        getDerivToken() {
+            let accountLoginid = null;
+            let preferredCurrency = null;
+            
+            try {
+                const connectionStr = localStorage.getItem('deriv_connection');
+                if (connectionStr) {
+                    const connection = JSON.parse(connectionStr);
+                    accountLoginid = connection.loginid;
+                    preferredCurrency = connection.tradeCurrency;
+                }
+            } catch (error) {
+                console.error('[MasterTrader] Erro ao parsear deriv_connection:', error);
+            }
+            
+            const isDemoPreferred = preferredCurrency?.toUpperCase() === 'DEMO';
+            if (isDemoPreferred) {
+                try {
+                    const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+                    const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+                    
+                    for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+                        if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
+                            return token;
+                        }
+                    }
+                } catch (error) {
+                    console.error('[MasterTrader] Erro ao buscar token demo:', error);
+                }
+            }
+            
+            if (accountLoginid) {
+                try {
+                    const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+                    const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+                    
+                    const specificToken = tokensByLoginId[accountLoginid];
+                    if (specificToken) {
+                        return specificToken;
+                    }
+                } catch (error) {
+                    console.error('[MasterTrader] Erro ao buscar token específico:', error);
+                }
+            }
+            
+            return localStorage.getItem('deriv_token');
+        },
+        async fetchAccountBalance() {
+            try {
+                const derivToken = this.getDerivToken();
+                if (!derivToken) {
+                    console.warn('[MasterTrader] ❌ Token não disponível para buscar saldo');
+                    return;
+                }
+                
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/deriv-balance`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ derivToken: derivToken }),
+                });
+                
+                const result = await response.json();
+                if (result.success && result.data) {
+                    this.accountBalance = result.data.balance;
+                    this.accountCurrency = result.data.currency;
+                    this.accountLoginid = result.data.loginid;
+                    this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+                    this.preferredCurrency = this.getPreferredCurrency();
+                }
+            } catch (error) {
+                console.error('[MasterTrader] ❌ Erro ao buscar saldo da conta:', error);
+            }
+        },
+        startBalanceUpdates() {
+            this.fetchAccountBalance();
+            this.balanceUpdateInterval = setInterval(() => {
+                this.fetchAccountBalance();
+            }, 30000);
+        },
+        stopBalanceUpdates() {
+            if (this.balanceUpdateInterval) {
+                clearInterval(this.balanceUpdateInterval);
+                this.balanceUpdateInterval = null;
+            }
         }
+    },
+    mounted() {
+        this.preferredCurrency = this.getPreferredCurrency();
+        this.startBalanceUpdates();
+    },
+    beforeUnmount() {
+        this.stopBalanceUpdates();
     }
 }
 </script>
@@ -190,6 +322,7 @@ export default {
 .content-wrapper {
     flex-grow: 1; 
     padding: 0 20px 20px 20px;
+    margin-top: 60px;
 }
 
 .header-master-trader,
