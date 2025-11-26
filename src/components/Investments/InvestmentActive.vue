@@ -6,7 +6,7 @@
                 <div id="iya1j" class="grid grid-cols-12 gap-3" style="width: 100%; box-sizing: border-box;">
                     <!-- Card 1 - Saldo Total -->
                     <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
-                        <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
+                        <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-1">
@@ -27,7 +27,7 @@
 
                     <!-- Card 2 - Lucro do Dia -->
                     <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
-                        <div id="i790gh" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
+                        <div id="i790gh" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-1">
@@ -49,7 +49,7 @@
 
                     <!-- Card 3 - Trades Hoje -->
                     <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
-                        <div id="i42e4g" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between" style="width: 100%; box-sizing: border-box;">
+                        <div id="i42e4g" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between" style="width: 100%; box-sizing: border-box;">
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
                                 <button class="eye-btn" @click="tradesVisible = !tradesVisible">
@@ -74,7 +74,7 @@
 
                     <!-- Card 4 - Status da IA -->
                     <div id="ichwdn" class="col-span-6" style="width: 100%; box-sizing: border-box;">
-                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[72px] relative overflow-hidden transition-all duration-700" style="width: 100%; box-sizing: border-box;">
+                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[100px] relative overflow-hidden transition-all duration-700" style="width: 100%; box-sizing: border-box;">
                             <div id="card-gradient" class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/8 to-transparent pointer-events-none transition-all duration-700"></div>
                             <div class="relative z-10 h-full flex items-center justify-between gap-6">
                                 <div class="flex items-center space-x-4 flex-shrink-0">
@@ -91,7 +91,7 @@
                                     </div>
                                 </div>
                                 <div class="flex-1 h-full flex items-center justify-end min-w-0">
-                                    <svg id="status-animation" viewBox="0 0 280 72" preserveAspectRatio="xMaxYMid meet" class="w-full h-full max-w-[280px]">
+                                    <svg id="status-animation" viewBox="0 0 280 100" preserveAspectRatio="xMaxYMid meet" class="w-full h-full max-w-[280px]">
                                         <defs>
                                             <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                                 <stop offset="0%" stop-color="#22C55E" stop-opacity="0"></stop>
@@ -2593,7 +2593,11 @@ button i,
 }
 
 .h-\[72px\] {
-    height: 72px;
+	height: 100px;
+}
+
+.h-\[100px\] {
+	height: 100px;
 }
 
 .h-\[600px\] {
@@ -3028,7 +3032,7 @@ button i,
 
 /* Specific IDs from HTML */
 #iya1j {
-	height: 80px;
+	height: 100px;
 	width: 100%;
 	box-sizing: border-box;
 }
@@ -3058,10 +3062,10 @@ button i,
 }
 
 #i0k3nl {
-    height: 600px;
-    display: flex;
-    flex-direction: column;
-    position: static;
+	height: 800px;
+	display: flex;
+	flex-direction: column;
+	position: static;
 }
 
 #i8cy7b {
