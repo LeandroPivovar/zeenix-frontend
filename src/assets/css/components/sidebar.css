@@ -135,7 +135,7 @@ aside.sidebar,
 	flex-direction: row;
 	border-bottom: none;
 	position: relative;
-	justify-content: center;
+	justify-content: flex-start;
 	overflow: visible;
 }
 
@@ -143,19 +143,19 @@ aside.sidebar,
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-start;
 	width: 100%;
 	position: relative;
 }
 
 .brand-text {
-	font-size: 1.5rem;
+	font-size: 1.875rem;
 	font-weight: 700;
 	color: #DFDFDF;
 	letter-spacing: -0.025em;
 	position: absolute;
-	left: 50%;
-	transform: translateX(-50%);
+	left: 16px;
+	transform: none;
 	white-space: nowrap;
 }
 
@@ -169,9 +169,8 @@ aside.sidebar,
 	text-decoration: none;
 	flex-shrink: 0;
 	position: absolute;
-	left: calc(50% + 40px);
-	transform: translateY(-50%) translateX(0);
-	margin-left: 50px;
+	right: 24px;
+	transform: translateY(-50%);
 	z-index: 1000;
 	top: 50%;
 	white-space: nowrap;
