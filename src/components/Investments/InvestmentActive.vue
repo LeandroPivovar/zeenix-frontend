@@ -2,191 +2,227 @@
     <div class="investment-active-wrapper">
         <main class="investment-active-main">
             <!-- Performance Summary Cards -->
-            <div id="performance-summary" class="performance-summary-section">
-                <div class="performance-cards-grid">
+            <section id="compact-performance-panel" class="mb-6">
+                <div id="iya1j" class="grid grid-cols-12 gap-3">
                     <!-- Card 1 - Saldo Total -->
-                    <div class="premium-card performance-card">
-                        <div class="card-header-row">
-                            <span class="card-label">Saldo Total</span>
-                            <button class="eye-btn" @click="balanceVisible = !balanceVisible">
-                                <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
-                            </button>
-                </div>
-                        <div class="card-value-large">
-                            <span v-if="!isLoadingStats && accountBalanceProp" class="balance-value" :class="{ 'hidden-value': !balanceVisible }">
-                                {{ balanceVisible ? formattedBalance : '••••••' }}
-                            </span>
-                            <span v-else class="text-zenix-secondary">Carregando...</span>
+                    <div class="col-span-2">
+                        <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Saldo Total</span>
+                                    <button class="eye-btn" @click="balanceVisible = !balanceVisible">
+                                        <i :class="balanceVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
+                                    </button>
+                                </div>
+                                <div class="text-xl font-bold text-zenix-text">
+                                    <span v-if="!isLoadingStats && accountBalanceProp" :class="{ 'hidden-value': !balanceVisible }">
+                                        {{ balanceVisible ? formattedBalance : '••••••' }}
+                                    </span>
+                                    <span v-else class="text-zenix-secondary">Carregando...</span>
+                                </div>
+                            </div>
                         </div>
-                        <div class="card-actions-row">
-                            <button :class="['account-type-btn', accountType === 'real' ? 'active' : '']" @click="accountType = 'real'">Real</button>
-                            <button :class="['account-type-btn', accountType === 'demo' ? 'active' : '']" @click="accountType = 'demo'">Demo</button>
                     </div>
-                        </div>
 
                     <!-- Card 2 - Lucro do Dia -->
-                    <div class="premium-card performance-card">
-                        <div class="card-header-row">
-                            <span class="card-label">Lucro do Dia</span>
-                            <button class="eye-btn" @click="profitVisible = !profitVisible">
-                                <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
-                            </button>
-                    </div>
-                        <div class="card-value-large">
-                            <span v-if="!isLoadingStats" :class="['profit-value', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
-                                {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
-                            </span>
-                            <span v-else class="text-zenix-secondary">--</span>
+                    <div class="col-span-2">
+                        <div id="i790gh" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden">
+                            <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
+                            <div class="relative z-10">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Lucro do Dia</span>
+                                    <button class="eye-btn" @click="profitVisible = !profitVisible">
+                                        <i :class="profitVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
+                                    </button>
+                                </div>
+                                <div class="flex items-baseline space-x-1.5">
+                                    <div v-if="!isLoadingStats" :class="['text-xl font-bold', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
+                                        {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
+                                    </div>
+                                    <span v-if="!isLoadingStats && profitPercentage && profitVisible" class="text-[10px] text-zenix-green/80 font-medium">{{ profitPercentage }}</span>
+                                    <span v-else-if="isLoadingStats" class="text-zenix-secondary">--</span>
+                                </div>
+                            </div>
                         </div>
-                        <span v-if="!isLoadingStats && profitPercentage && profitVisible" class="profit-percentage text-zenix-green text-sm font-medium">{{ profitPercentage }}</span>
                     </div>
 
-                    <!-- Card 3 - Winrate -->
-                    <div class="premium-card performance-card">
-                        <div class="card-header-row">
-                            <span class="card-label">Winrate</span>
-                            <button class="eye-btn" @click="winrateVisible = !winrateVisible">
-                                <i :class="winrateVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
-                            </button>
-                        </div>
-                        <div class="card-value-large">
-                            <span v-if="!isLoadingStats" class="winrate-value" :class="{ 'hidden-value': !winrateVisible }">
-                                {{ winrateVisible ? formattedSessionWinrate : '•••' }}
-                            </span>
-                            <span v-else class="text-zenix-secondary">--</span>
-                    </div>
-                        <span v-if="!isLoadingStats && winrateVisible" class="text-xs text-zenix-green font-medium">{{ sessionWinrateLabel }}</span>
-                </div>
-
-                    <!-- Card 4 - Trades Hoje -->
-                    <div class="premium-card performance-card">
-                        <div class="card-header-row">
-                            <span class="card-label">Trades Hoje</span>
-                            <button class="eye-btn" @click="tradesVisible = !tradesVisible">
-                                <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-xs"></i>
+                    <!-- Card 3 - Trades Hoje -->
+                    <div class="col-span-2">
+                        <div id="i42e4g" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between">
+                            <div class="flex items-center justify-between mb-1">
+                                <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
+                                <button class="eye-btn" @click="tradesVisible = !tradesVisible">
+                                    <i :class="tradesVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
                                 </button>
                             </div>
-                        <div class="card-value-large">
-                            <span v-if="!isLoadingStats" class="trades-value" :class="{ 'hidden-value': !tradesVisible }">
-                                {{ tradesVisible ? (dailyStats.sessionTrades || 0) : '••' }}
-                            </span>
-                            <span v-else class="text-zenix-secondary">--</span>
+                            <div class="flex items-center space-x-2">
+                                <span v-if="!isLoadingStats" id="i8cy7b" :class="['text-2xl font-bold text-zenix-green', { 'hidden-value': !tradesVisible }]">
+                                    {{ tradesVisible ? (dailyStats.sessionWins || 0) : '••' }}
+                                </span>
+                                <div class="relative">
+                                    <span class="text-xl font-light text-zenix-secondary/40">|</span>
+                                    <div class="absolute inset-0 bg-zenix-green/20 blur-sm"></div>
+                                </div>
+                                <span v-if="!isLoadingStats" id="idsh94" :class="['text-2xl font-bold text-zenix-red', { 'hidden-value': !tradesVisible }]">
+                                    {{ tradesVisible ? (dailyStats.sessionLosses || 0) : '••' }}
+                                </span>
+                                <span v-else class="text-zenix-secondary">--</span>
                             </div>
-                        <div v-if="tradesVisible" class="trades-stats-row">
-                            <span class="text-xs text-zenix-green font-medium">{{ dailyStats.sessionWins || 0 }} Vitórias</span>
-                            <span class="text-xs text-zenix-red/70 font-medium">{{ dailyStats.sessionLosses || 0 }} Perdas</span>
+                        </div>
+                    </div>
+
+                    <!-- Card 4 - Status da IA -->
+                    <div id="ichwdn" class="col-span-6">
+                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[72px] relative overflow-hidden transition-all duration-700">
+                            <div id="card-gradient" class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/8 to-transparent pointer-events-none transition-all duration-700"></div>
+                            <div class="relative z-10 h-full flex items-center justify-between gap-6">
+                                <div class="flex items-center space-x-4 flex-shrink-0">
+                                    <div id="status-icon-container" class="w-12 h-12 bg-zenix-green/15 border border-zenix-green/30 rounded-xl flex items-center justify-center transition-all duration-700">
+                                        <i id="status-icon" class="fas fa-chart-line text-zenix-green text-lg ai-pulse"></i>
+                                    </div>
+                                    <div>
+                                        <h3 id="status-title" class="text-base font-bold text-zenix-text leading-tight transition-all duration-700">
+                                            {{ currentStatusTitle }}
+                                        </h3>
+                                        <p id="status-description" class="text-[10px] text-zenix-secondary mt-0.5 leading-tight transition-all duration-700">
+                                            {{ currentStatusDescription }}
+                                        </p>
+                                    </div>
+                                </div>
+                                <div class="flex-1 h-full flex items-center justify-end min-w-0">
+                                    <svg id="status-animation" viewBox="0 0 280 72" preserveAspectRatio="xMaxYMid meet" class="w-full h-full max-w-[280px]">
+                                        <defs>
+                                            <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                <stop offset="0%" stop-color="#22C55E" stop-opacity="0"></stop>
+                                                <stop offset="50%" stop-color="#22C55E" stop-opacity="0.8"></stop>
+                                                <stop offset="100%" stop-color="#22C55E" stop-opacity="0"></stop>
+                                            </linearGradient>
+                                            <filter id="glow-filter">
+                                                <feGaussianBlur stdDeviation="2" result="coloredBlur"></feGaussianBlur>
+                                                <feMerge>
+                                                    <feMergeNode in="coloredBlur"></feMergeNode>
+                                                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                                                </feMerge>
+                                            </filter>
+                                            <radialGradient id="radar-gradient">
+                                                <stop offset="0%" stop-color="#22C55E" stop-opacity="0.6"></stop>
+                                                <stop offset="100%" stop-color="#22C55E" stop-opacity="0"></stop>
+                                            </radialGradient>
+                                        </defs>
+                                        <g opacity="0.15">
+                                            <line x1="20" y1="15" x2="260" y2="15" stroke="#22C55E" stroke-width="0.5"></line>
+                                            <line x1="20" y1="25" x2="260" y2="25" stroke="#22C55E" stroke-width="0.5"></line>
+                                            <line x1="20" y1="36" x2="260" y2="36" stroke="#22C55E" stroke-width="1"></line>
+                                            <line x1="20" y1="47" x2="260" y2="47" stroke="#22C55E" stroke-width="0.5"></line>
+                                            <line x1="20" y1="57" x2="260" y2="57" stroke="#22C55E" stroke-width="0.5"></line>
+                                        </g>
+                                        <path d="M 30,45 Q 70,25 110,40 T 190,35 Q 220,45 250,30" stroke="#22C55E" stroke-width="2" fill="none" opacity="0.4" filter="url(#glow-filter)">
+                                            <animate attributeName="d" values="M 30,45 Q 70,25 110,40 T 190,35 Q 220,45 250,30; M 30,40 Q 70,30 110,45 T 190,30 Q 220,40 250,35; M 30,45 Q 70,25 110,40 T 190,35 Q 220,45 250,30" dur="3s" repeatCount="indefinite"></animate>
+                                        </path>
+                                        <rect x="20" y="10" width="4" height="52" fill="url(#scan-gradient)" opacity="0.8">
+                                            <animate attributeName="x" values="20;260;20" dur="2.5s" repeatCount="indefinite"></animate>
+                                        </rect>
+                                        <g opacity="0.6">
+                                            <circle cx="50" cy="36" r="3" fill="#22C55E">
+                                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" repeatCount="indefinite"></animate>
+                                            </circle>
+                                            <circle cx="90" cy="30" r="3" fill="#22C55E">
+                                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.2s" repeatCount="indefinite"></animate>
+                                            </circle>
+                                            <circle cx="140" cy="38" r="3" fill="#22C55E">
+                                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.4s" repeatCount="indefinite"></animate>
+                                            </circle>
+                                            <circle cx="180" cy="33" r="3" fill="#22C55E">
+                                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.6s" repeatCount="indefinite"></animate>
+                                            </circle>
+                                            <circle cx="230" cy="40" r="3" fill="#22C55E">
+                                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.8s" repeatCount="indefinite"></animate>
+                                            </circle>
+                                        </g>
+                                        <circle cx="140" cy="36" r="25" fill="url(#radar-gradient)" opacity="0.3">
+                                            <animate attributeName="r" values="15;35;15" dur="2s" repeatCount="indefinite"></animate>
+                                            <animate attributeName="opacity" values="0.5;0.1;0.5" dur="2s" repeatCount="indefinite"></animate>
+                                        </circle>
+                                        <line x1="140" y1="36" x2="165" y2="36" stroke="#22C55E" stroke-width="1.5" opacity="0.8" filter="url(#glow-filter)">
+                                            <animateTransform attributeName="transform" type="rotate" values="0 140 36;360 140 36" dur="3s" repeatCount="indefinite"></animateTransform>
+                                        </line>
+                                        <circle cx="140" cy="36" r="4" fill="#22C55E" filter="url(#glow-filter)">
+                                            <animate attributeName="opacity" values="0.8;1;0.8" dur="1s" repeatCount="indefinite"></animate>
+                                        </circle>
+                                        <g opacity="0.4">
+                                            <rect x="25" y="60" width="8" height="4" fill="#22C55E" rx="1">
+                                                <animate attributeName="height" values="4;12;4" dur="0.8s" repeatCount="indefinite"></animate>
+                                                <animate attributeName="y" values="60;56;60" dur="0.8s" repeatCount="indefinite"></animate>
+                                            </rect>
+                                            <rect x="38" y="60" width="8" height="4" fill="#22C55E" rx="1">
+                                                <animate attributeName="height" values="4;16;4" dur="0.8s" begin="0.1s" repeatCount="indefinite"></animate>
+                                                <animate attributeName="y" values="60;52;60" dur="0.8s" begin="0.1s" repeatCount="indefinite"></animate>
+                                            </rect>
+                                            <rect x="51" y="60" width="8" height="4" fill="#22C55E" rx="1">
+                                                <animate attributeName="height" values="4;10;4" dur="0.8s" begin="0.2s" repeatCount="indefinite"></animate>
+                                                <animate attributeName="y" values="60;58;60" dur="0.8s" begin="0.2s" repeatCount="indefinite"></animate>
+                                            </rect>
+                                            <rect x="64" y="60" width="8" height="4" fill="#22C55E" rx="1">
+                                                <animate attributeName="height" values="4;14;4" dur="0.8s" begin="0.3s" repeatCount="indefinite"></animate>
+                                                <animate attributeName="y" values="60;54;60" dur="0.8s" begin="0.3s" repeatCount="indefinite"></animate>
+                                            </rect>
+                                        </g>
+                                    </svg>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
+            </section>
     
-                <!-- Status da IA Card -->
-                <div class="premium-card status-card">
-                    <div class="status-card-content">
-                        <div class="status-card-left">
-                            <div id="ai-status-widget" class="ai-status-widget">
-                                <div class="ai-status-bg"></div>
-                                <div id="status-analyzing" class="ai-status-content">
-                                    <div class="ai-status-spinner-wrapper">
-                                        <div class="ai-status-pulse-bg"></div>
-                                        <div class="ai-status-spinner">
-                                            <svg fill="none" viewBox="0 0 24 24" class="spinner-svg">
-                                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="20 60" opacity="0.3"></circle>
-                                                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-dasharray="15 65" stroke-linecap="round"></circle>
-                                            </svg>
-                        </div>
-                                </div>
-                            </div>
-                                </div>
-                            <div class="status-text-content">
-                                <h3 class="status-title">Status da Operação</h3>
-                                <div class="status-subtitle-row">
-                                    <span class="status-indicator-text text-[#FFD058] font-medium">Analisando</span>
-                                    <span class="status-indicator-dot">•</span>
-                                    <span class="status-indicator-subtext">Aguardando padrão de entrada</span>
-                                </div>
-                                </div>
-                                </div>
-                        <div class="status-card-right">
-                            <div class="ai-online-indicator">
-                                <div class="ai-pulse-dot"></div>
-                                <span class="text-xs font-medium text-zenix-green">IA Online</span>
-                            </div>
-                            <button 
-                                class="deactivate-ai-btn-new" 
-                                @click="handleDeactivate"
-                                :disabled="isDeactivating"
-                                title="Desativar IA"
-                            >
-                                <i class="fas fa-power-off"></i>
-                                <span>{{ isDeactivating ? 'Desativando...' : 'Desativar IA' }}</span>
-                            </button>
-                                    </div>
-                                    </div>
-                                </div>
-                            </div>
-                        
             <!-- Main Content Grid -->
-            <div class="main-content-grid">
+            <div class="grid grid-cols-12 gap-6 mb-6">
                 <!-- Left Column - Chart -->
-                <div class="chart-column">
-                    <div class="premium-card market-chart-card">
-                        <div class="chart-header">
+                <div id="ir8sfp" class="col-span-8">
+                    <div id="market-chart" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[600px]">
+                        <div class="flex items-center justify-between mb-4">
                             <div>
-                                <h2 class="chart-title">Análise de Mercado</h2>
-                                <p class="chart-subtitle">EUR/USD • M5 • Última atualização: {{ formattedLastUpdate }}</p>
+                                <h2 class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
+                                <p class="text-xs text-zenix-secondary mt-1">{{ selectedMarket }} • M5 • Última atualização: {{ formattedLastUpdate }}</p>
                             </div>
-                            <div class="chart-tabs">
+                            <div class="flex items-center space-x-6">
                                 <button 
                                     id="tab-chart" 
-                                    :class="['chart-tab-btn', activeTab === 'chart' ? 'active' : '']"
+                                    :class="['relative text-sm font-medium transition-all pb-1', activeTab === 'chart' ? 'text-zenix-green' : 'text-zenix-secondary hover:text-zenix-text']"
                                     @click="activeTab = 'chart'"
                                 >
                                     Gráfico
-                                    <div v-if="activeTab === 'chart'" class="tab-indicator"></div>
+                                    <div v-if="activeTab === 'chart'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-zenix-green"></div>
                                 </button>
                                 <button 
                                     id="tab-logs" 
-                                    :class="['chart-tab-btn', activeTab === 'logs' ? 'active' : '']"
+                                    :class="['relative text-sm font-medium transition-all pb-1', activeTab === 'logs' ? 'text-zenix-green' : 'text-zenix-secondary hover:text-zenix-text']"
                                     @click="activeTab = 'logs'"
                                 >
                                     Logs
+                                    <div v-if="activeTab === 'logs'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-zenix-green"></div>
                                 </button>
+                            </div>
                         </div>
-                    </div>
-                        
-                        <!-- Chart Type Buttons -->
-                        <div class="chart-type-buttons">
+                        <div class="flex items-center space-x-2 mb-4">
                             <button
-                                v-for="option in chartTypeOptions"
-                                :key="option.value"
-                                :class="['chart-type-btn', { 'active': chartType === option.value }]"
-                                @click="setChartType(option.value)"
+                                v-for="timeframe in timeframeOptions"
+                                :key="timeframe.value"
+                                :class="['timeframe-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all', selectedTimeframe === timeframe.value ? 'bg-zenix-green text-black border border-zenix-green font-bold' : 'bg-zenix-bg text-zenix-secondary border border-zenix-border hover:border-zenix-green hover:text-zenix-green']"
+                                @click="setChartSize(timeframe.value, timeframe.points)"
                             >
-                                {{ option.label }}
-                            </button>
-            </div>
-
-                        <!-- Chart Size Controls -->
-                        <div class="chart-size-controls">
-                            <button 
-                                v-for="size in chartSizeOptions"
-                                :key="size.value"
-                                :class="['chart-size-btn', { 'active': selectedTimeframe === size.timeframe }]"
-                                :disabled="chartType !== 'candles'"
-                                @click="setChartSize(size.timeframe, size.points)"
-                                :title="size.label"
-                            >
-                                {{ size.label }}
+                                {{ timeframe.label }}
                             </button>
                         </div>
             
                         <!-- Chart View -->
-                        <div v-show="activeTab === 'chart'" id="chart-view" class="chart-view-container">
-                            <div ref="chartContainer" id="tradingview-chart" class="chart-container tradingview-container"></div>
+                        <div v-show="activeTab === 'chart'" id="chart-view" class="h-[400px]">
+                            <div ref="chartContainer" id="tradingview-chart" class="chart-container tradingview-container h-full"></div>
                         </div>
 
                         <!-- Logs View -->
-                        <div v-show="activeTab === 'logs'" id="logs-view" class="logs-view-container">
+                        <div v-show="activeTab === 'logs'" id="logs-view" class="h-[400px] overflow-y-auto">
                     <div v-if="isLoadingLogs" class="loading-logs">
                         <p>Carregando histórico de operações...</p>
                     </div>
@@ -234,99 +270,80 @@
             </div>
 
                 <!-- Right Column - Config -->
-                <div class="config-column">
-                    <div class="premium-card config-card-sticky">
-                        <h3 class="config-card-title">
+                <div class="col-span-4">
+                    <div id="i0k3nl" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[600px]">
+                        <h3 class="text-base font-semibold text-zenix-text mb-6 flex items-center">
                             <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
                             Configuração Ativa
                         </h3>
-                        <div class="config-content">
+                        <div class="flex-1 flex flex-col justify-between">
                             <!-- Estratégia -->
-                            <div class="config-section">
-                                <div class="config-label">
-                                    Estratégia
-                                    <div class="tooltip-container">
-                                        <svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                                        </svg>
-                                        <span class="tooltip-text">Modelo de análise usado pela IA</span>
-                                    </div>
-                                </div>
-                                <p class="config-value-main">{{ strategyName }}</p>
-                                <p class="config-description">Alta performance • Sinais avançados</p>
+                            <div class="pb-5 border-b border-zenix-border/50">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase">Estratégia</p>
+                                <p class="text-base font-bold text-zenix-text mb-1">{{ strategyName }}</p>
+                                <p class="text-xs text-zenix-secondary">Alta performance • Sinais avançados</p>
                             </div>
 
                             <!-- Mercado -->
-                            <div class="config-section">
-                                <div class="config-label">
-                                    Mercado
-                                    <div class="tooltip-container">
-                                        <svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <circle cx="12" cy="12" r="10"></circle>
-                                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                                            <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                                        </svg>
-                                        <span class="tooltip-text">Escolha o ativo que deseja operar.</span>
-                                    </div>
-                                </div>
-                                <p class="config-value-main">Volatility 10 Index</p>
-                                <p class="config-description">Ticks de alta frequência</p>
-                        </div>
+                            <div class="py-5 border-b border-zenix-border/50">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase">Mercado</p>
+                                <p class="text-base font-bold text-zenix-text mb-1">{{ selectedMarket }}</p>
+                                <p class="text-xs text-zenix-secondary">Ticks de alta frequência</p>
+                            </div>
 
-                            <!-- Parâmetros -->
-                            <div class="config-section">
-                                <p class="config-label">Parâmetros</p>
-                                <div class="config-params-grid">
+                            <!-- Grid de Parâmetros -->
+                            <div class="py-5 border-b border-zenix-border/50">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-3 tracking-wide uppercase">Parâmetros</p>
+                                <div class="grid grid-cols-2 gap-4">
                                     <div>
-                                        <p class="param-label">Entrada</p>
-                                        <p class="param-value" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : '$50' }}</p>
-                                        <p class="param-value" v-else>Carregando...</p>
-                    </div>
+                                        <p class="text-xs text-zenix-secondary mb-1">Entrada</p>
+                                        <p class="text-lg font-bold text-zenix-text" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : '$50' }}</p>
+                                        <p class="text-lg font-bold text-zenix-text" v-else>Carregando...</p>
+                                    </div>
                                     <div>
-                                        <p class="param-label">Modo</p>
-                                        <p class="param-value">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Devagar' }}</p>
-                </div>
+                                        <p class="text-xs text-zenix-secondary mb-1">Modo</p>
+                                        <p class="text-lg font-bold text-zenix-text">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
+                                    </div>
                                     <div>
-                                        <p class="param-label">Alvo de Lucro</p>
-                                        <p class="param-value text-zenix-green" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
-                                        <p class="param-value" v-else>Carregando...</p>
-                </div>
+                                        <p class="text-xs text-zenix-secondary mb-1">Alvo de Lucro</p>
+                                        <p class="text-lg font-bold text-zenix-green" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
+                                        <p class="text-lg font-bold text-zenix-green" v-else>Carregando...</p>
+                                    </div>
                                     <div>
-                                        <p class="param-label">Limite de Perda</p>
-                                        <p class="param-value text-zenix-red" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
-                                        <p class="param-value" v-else>Carregando...</p>
-            </div>
+                                        <p class="text-xs text-zenix-secondary mb-1">Limite de Perda</p>
+                                        <p class="text-lg font-bold text-zenix-red" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
+                                        <p class="text-lg font-bold text-zenix-red" v-else>Carregando...</p>
+                                    </div>
                                 </div>
                             </div>
 
-                            <!-- Gerenciamento de Risco -->
-                            <div class="config-section">
-                                <p class="config-label">Gerenciamento de Risco</p>
-                                <div class="risk-management-row">
+                            <!-- Gerenciamento -->
+                            <div class="py-5 border-b border-zenix-border/50">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase">Gerenciamento de Risco</p>
+                                <div class="flex items-center justify-between">
                                     <div>
-                                        <p class="config-value-main">{{ realRiskLevel }}</p>
-                                        <p class="config-description">Proteção de capital ativa</p>
+                                        <p class="text-base font-bold text-zenix-text mb-1">{{ realRiskLevel }}</p>
+                                        <p class="text-xs text-zenix-secondary">Proteção de capital ativa</p>
                                     </div>
-                                    <div class="risk-level-badge">
+                                    <div class="px-3 py-1.5 bg-zenix-green/10 border border-zenix-green/20 rounded-lg">
                                         <p class="text-xs font-bold text-zenix-green">{{ realRiskLabel }}</p>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Status da IA -->
-                            <div class="config-section-last">
-                                <p class="config-label">Status da IA</p>
-                                <div class="ai-status-row">
-                                    <div class="ai-status-info">
-                                        <div class="ai-pulse-dot"></div>
-                                        <p class="config-value-main text-zenix-green">Ativa</p>
+                            <div class="pt-5">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-3 tracking-wide uppercase">Status da IA</p>
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex items-center space-x-2">
+                                        <div class="w-2 h-2 bg-zenix-green rounded-full ai-pulse"></div>
+                                        <p class="text-base font-bold text-zenix-green">Ativa</p>
                                     </div>
-                                    <p class="config-description">Monitorando em tempo real</p>
+                                    <p class="text-xs text-zenix-secondary">Monitorando em tempo real</p>
                                 </div>
+                                <!-- Botão Pausar -->
                                 <button 
-                                    class="pause-ai-btn"
+                                    class="w-full py-3 bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center space-x-2"
                                     @click="handleDeactivate"
                                     :disabled="isDeactivating"
                                 >
@@ -481,6 +498,15 @@ export default {
                 { label: 'Pequeno', timeframe: 60, points: 200 },    // M1 - mais detalhado
                 { label: 'Médio', timeframe: 300, points: 200 },   // M5 - padrão
                 { label: 'Grande', timeframe: 900, points: 200 }    // M15 - menos detalhado
+            ],
+            timeframeOptions: [
+                { label: 'M1', value: 60, points: 200 },
+                { label: 'M5', value: 300, points: 200 },
+                { label: 'M15', value: 900, points: 200 },
+                { label: 'M30', value: 1800, points: 200 },
+                { label: 'H1', value: 3600, points: 200 },
+                { label: 'H4', value: 14400, points: 200 },
+                { label: 'D1', value: 86400, points: 200 }
             ],
         };
     },
@@ -678,6 +704,14 @@ export default {
 
 
         // Formatted balance
+        currentStatusTitle() {
+            // Pode ser dinâmico baseado no estado da IA
+            return 'Analisando...';
+        },
+        currentStatusDescription() {
+            // Pode ser dinâmico baseado no estado da IA
+            return 'Buscando oportunidades';
+        },
         formattedBalance() {
             if (!this.accountBalanceProp) return '$0,00';
             const formatter = new Intl.NumberFormat('pt-BR', {
@@ -2434,4 +2468,626 @@ button i,
     position: relative;
 }
 /* End Tooltip Styles */
+
+/* Tailwind-like utility classes for new layout */
+.grid {
+    display: grid;
+}
+
+.grid-cols-12 {
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.col-span-2 {
+    grid-column: span 2 / span 2;
+}
+
+.col-span-4 {
+    grid-column: span 4 / span 4;
+}
+
+.col-span-6 {
+    grid-column: span 6 / span 6;
+}
+
+.col-span-8 {
+    grid-column: span 8 / span 8;
+}
+
+.gap-3 {
+    gap: 0.75rem;
+}
+
+.gap-6 {
+    gap: 1.5rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-3 {
+    margin-bottom: 0.75rem;
+}
+
+.mt-1 {
+    margin-top: 0.25rem;
+}
+
+.mt-0\.5 {
+    margin-top: 0.125rem;
+}
+
+.p-3 {
+    padding: 0.75rem;
+}
+
+.p-5 {
+    padding: 1.25rem;
+}
+
+.p-6 {
+    padding: 1.5rem;
+}
+
+.px-3 {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+}
+
+.py-1\.5 {
+    padding-top: 0.375rem;
+    padding-bottom: 0.375rem;
+}
+
+.py-3 {
+    padding-top: 0.75rem;
+    padding-bottom: 0.75rem;
+}
+
+.pt-5 {
+    padding-top: 1.25rem;
+}
+
+.pb-5 {
+    padding-bottom: 1.25rem;
+}
+
+.py-5 {
+    padding-top: 1.25rem;
+    padding-bottom: 1.25rem;
+}
+
+.h-\[72px\] {
+    height: 72px;
+}
+
+.h-\[600px\] {
+    height: 600px;
+}
+
+.h-\[400px\] {
+    height: 400px;
+}
+
+.h-full {
+    height: 100%;
+}
+
+.w-full {
+    width: 100%;
+}
+
+.w-12 {
+    width: 3rem;
+}
+
+.h-12 {
+    height: 3rem;
+}
+
+.w-2 {
+    width: 0.5rem;
+}
+
+.h-2 {
+    height: 0.5rem;
+}
+
+.w-8 {
+    width: 2rem;
+}
+
+.h-8 {
+    height: 2rem;
+}
+
+.max-w-\[280px\] {
+    max-width: 280px;
+}
+
+.min-w-0 {
+    min-width: 0;
+}
+
+.flex {
+    display: flex;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.flex-shrink-0 {
+    flex-shrink: 0;
+}
+
+.flex-1 {
+    flex: 1 1 0%;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.items-start {
+    align-items: flex-start;
+}
+
+.items-baseline {
+    align-items: baseline;
+}
+
+.items-end {
+    align-items: flex-end;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.justify-end {
+    justify-content: flex-end;
+}
+
+.space-x-1\.5 {
+    --tw-space-x-reverse: 0;
+    margin-right: calc(0.375rem * var(--tw-space-x-reverse));
+    margin-left: calc(0.375rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-x-2 {
+    --tw-space-x-reverse: 0;
+    margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+    margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-x-4 {
+    --tw-space-x-reverse: 0;
+    margin-right: calc(1rem * var(--tw-space-x-reverse));
+    margin-left: calc(1rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-x-6 {
+    --tw-space-x-reverse: 0;
+    margin-right: calc(1.5rem * var(--tw-space-x-reverse));
+    margin-left: calc(1.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.relative {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.z-10 {
+    z-index: 10;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.overflow-y-auto {
+    overflow-y: auto;
+}
+
+.rounded-2xl {
+    border-radius: 1rem;
+}
+
+.rounded-xl {
+    border-radius: 0.75rem;
+}
+
+.rounded-lg {
+    border-radius: 0.5rem;
+}
+
+.rounded-full {
+    border-radius: 9999px;
+}
+
+.border {
+    border-width: 1px;
+}
+
+.border-b {
+    border-bottom-width: 1px;
+}
+
+.border-zenix-border {
+    border-color: #1C1C1C;
+}
+
+.border-zenix-border\/50 {
+    border-color: rgba(28, 28, 28, 0.5);
+}
+
+.border-zenix-green {
+    border-color: #22C55E;
+}
+
+.border-zenix-green\/10 {
+    border-color: rgba(34, 197, 94, 0.1);
+}
+
+.border-zenix-green\/20 {
+    border-color: rgba(34, 197, 94, 0.2);
+}
+
+.border-zenix-green\/30 {
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.bg-zenix-card {
+    background-color: #0E0E0E;
+}
+
+.bg-zenix-bg {
+    background-color: #0B0B0B;
+}
+
+.bg-zenix-green {
+    background-color: #22C55E;
+}
+
+.bg-zenix-green\/10 {
+    background-color: rgba(34, 197, 94, 0.1);
+}
+
+.bg-zenix-green\/15 {
+    background-color: rgba(34, 197, 94, 0.15);
+}
+
+.bg-zenix-green\/20 {
+    background-color: rgba(34, 197, 94, 0.2);
+}
+
+.bg-zenix-yellow {
+    background-color: #FFD058;
+}
+
+.bg-gradient-to-b {
+    background-image: linear-gradient(to bottom, var(--tw-gradient-stops));
+}
+
+.bg-gradient-to-br {
+    background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+}
+
+.from-\[#0B0B0B\] {
+    --tw-gradient-from: #0B0B0B;
+    --tw-gradient-to: transparent;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.to-\[#080808\] {
+    --tw-gradient-to: #080808;
+}
+
+.from-\[#22C55E\]\/8 {
+    --tw-gradient-from: rgba(34, 197, 94, 0.08);
+    --tw-gradient-to: transparent;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.from-\[#22C55E\]\/5 {
+    --tw-gradient-from: rgba(34, 197, 94, 0.05);
+    --tw-gradient-to: transparent;
+    --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
+}
+
+.to-transparent {
+    --tw-gradient-to: transparent;
+}
+
+.text-zenix-text {
+    color: #DFDFDF;
+}
+
+.text-zenix-secondary {
+    color: #A1A1A1;
+}
+
+.text-zenix-label {
+    color: #7A7A7A;
+}
+
+.text-zenix-green {
+    color: #22C55E;
+}
+
+.text-zenix-green\/60 {
+    color: rgba(34, 197, 94, 0.6);
+}
+
+.text-zenix-green\/80 {
+    color: rgba(34, 197, 94, 0.8);
+}
+
+.text-zenix-red {
+    color: #FF4747;
+}
+
+.text-black {
+    color: #000;
+}
+
+.text-\[9px\] {
+    font-size: 9px;
+}
+
+.text-\[10px\] {
+    font-size: 10px;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
+}
+
+.text-lg {
+    font-size: 1.125rem;
+    line-height: 1.75rem;
+}
+
+.text-xl {
+    font-size: 1.25rem;
+    line-height: 1.75rem;
+}
+
+.text-2xl {
+    font-size: 1.5rem;
+    line-height: 2rem;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.font-light {
+    font-weight: 300;
+}
+
+.uppercase {
+    text-transform: uppercase;
+}
+
+.tracking-wide {
+    letter-spacing: 0.025em;
+}
+
+.leading-tight {
+    line-height: 1.25;
+}
+
+.text-left {
+    text-align: left;
+}
+
+.text-right {
+    text-align: right;
+}
+
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.duration-700 {
+    transition-duration: 700ms;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
+.pointer-events-none {
+    pointer-events: none;
+}
+
+.opacity-40 {
+    opacity: 0.4;
+}
+
+.hover\:bg-\[#FFE07A\]:hover {
+    background-color: #FFE07A;
+}
+
+.hover\:text-zenix-text:hover {
+    color: #DFDFDF;
+}
+
+.hover\:border-zenix-green:hover {
+    border-color: #22C55E;
+}
+
+.hover\:text-zenix-green:hover {
+    color: #22C55E;
+}
+
+/* AI Pulse Animation */
+.ai-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.6;
+    }
+}
+
+/* Status Animation SVG */
+#status-animation {
+    width: 100%;
+    height: 100%;
+}
+
+#status-animation svg {
+    width: 100%;
+    height: 100%;
+}
+
+/* Specific IDs from HTML */
+#iya1j {
+    height: 80px;
+}
+
+#ie22vl {
+    width: 155px;
+    left: 5px;
+}
+
+#i790gh {
+    width: 155px;
+}
+
+#i42e4g {
+    width: 155px;
+    position: relative;
+    left: 10px;
+}
+
+#ichwdn {
+    position: relative;
+    left: 15px;
+}
+
+#ir8sfp {
+    position: relative;
+}
+
+#i0k3nl {
+    height: 600px;
+    display: flex;
+    flex-direction: column;
+    position: static;
+}
+
+#i8cy7b {
+    text-shadow: rgba(34, 197, 94, 0.3) 0px 0px 20px;
+}
+
+#idsh94 {
+    text-shadow: rgba(255, 71, 71, 0.3) 0px 0px 20px;
+    font-size: 20px;
+    color: rgb(222, 59, 59);
+}
+
+#ai-status-card {
+    box-shadow: rgba(34, 197, 94, 0.08) 0px 0px 24px;
+    display: flex;
+    flex-direction: row-reverse;
+    justify-content: center;
+    position: sticky;
+    width: 440px;
+    left: 15px;
+    top: 0px;
+    padding-top: 0px;
+    padding-right: 0px;
+    padding-bottom: 0px;
+    padding-left: 0px;
+}
+
+#status-icon-container {
+    position: relative;
+    left: 10px;
+}
+
+/* Timeframe buttons */
+.timeframe-btn {
+    cursor: pointer;
+    border: 1px solid;
+}
+
+.timeframe-btn.active {
+    background-color: #22C55E;
+    color: #000;
+    border-color: #22C55E;
+    font-weight: 700;
+}
+
+/* Eye button improvements */
+.eye-btn {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+}
+
+.eye-btn:hover {
+    opacity: 1;
+    color: #22C55E;
+}
 </style>
