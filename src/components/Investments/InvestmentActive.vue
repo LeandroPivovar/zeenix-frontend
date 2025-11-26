@@ -2,8 +2,8 @@
     <div class="investment-active-wrapper">
         <main class="investment-active-main">
             <!-- Performance Summary Cards -->
-            <section id="compact-performance-panel" class="mb-6">
-                <div id="iya1j" class="grid grid-cols-12 gap-2">
+            <section id="compact-performance-panel" class="mb-6 px-3">
+                <div id="iya1j" class="grid grid-cols-12 gap-1">
                     <!-- Card 1 - Saldo Total -->
                     <div class="col-span-2">
                         <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between relative overflow-hidden">
@@ -177,7 +177,7 @@
             </section>
     
             <!-- Main Content Grid -->
-            <div class="grid grid-cols-12 gap-3 mb-6">
+            <div class="grid grid-cols-12 gap-1 mb-6 px-3">
                 <!-- Left Column - Chart -->
                 <div id="ir8sfp" class="col-span-8">
                     <div id="market-chart" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[800px]">
