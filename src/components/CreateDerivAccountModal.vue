@@ -8,11 +8,57 @@
       
       <p class="subtitle">Preencha os dados abaixo para criar sua conta DEMO ($10.000) e REAL (USD)</p>
       
-      <div class="info-box">
+      <div class="info-box" v-if="!emailVerified">
+        <strong>Passo 1:</strong> Verifique seu email primeiro. Um código será enviado para você.
+      </div>
+      
+      <div class="info-box success" v-if="emailVerified && !verificationCode">
+        <strong>✓ Email verificado!</strong> Verifique sua caixa de entrada e digite o código recebido.
+      </div>
+      
+      <div class="info-box" v-if="emailVerified && verificationCode">
         <strong>Conta DEMO liberada na hora!</strong> Você poderá operar imediatamente com $10.000 virtuais.
       </div>
 
-      <form @submit.prevent="handleSubmit" class="form">
+      <!-- PASSO 1: Verificar Email -->
+      <div v-if="!emailVerified" class="form">
+        <div class="form-group">
+          <label>Email <span class="required">*</span></label>
+          <input type="email" v-model="formData.email" placeholder="seu@email.com" required>
+        </div>
+        
+        <button type="button" @click="verifyEmail" class="submit-btn" :disabled="loading || !formData.email">
+          {{ loading ? 'Enviando código...' : 'Enviar Código de Verificação' }}
+        </button>
+      </div>
+
+      <!-- PASSO 2: Inserir Código -->
+      <div v-if="emailVerified && !verificationCode" class="form">
+        <div class="form-group">
+          <label>Código de Verificação <span class="required">*</span></label>
+          <input 
+            type="text" 
+            v-model="codeInput" 
+            placeholder="Digite o código recebido por email" 
+            maxlength="10"
+            @input="codeInput = codeInput.toUpperCase()"
+            required
+          >
+          <small>Verifique sua caixa de entrada e spam</small>
+        </div>
+        
+        <div class="button-group">
+          <button type="button" @click="backToEmail" class="secondary-btn">
+            Voltar
+          </button>
+          <button type="button" @click="confirmCode" class="submit-btn" :disabled="loading || !codeInput">
+            {{ loading ? 'Verificando...' : 'Confirmar Código' }}
+          </button>
+        </div>
+      </div>
+
+      <!-- PASSO 3: Preencher Dados e Criar Conta -->
+      <form v-if="emailVerified && verificationCode" @submit.prevent="handleSubmit" class="form">
         <!-- DADOS PESSOAIS -->
         <h4 class="section-title">Dados Pessoais</h4>
         
@@ -133,6 +179,9 @@ export default {
     return {
       loading: false,
       error: '',
+      emailVerified: false,
+      verificationCode: '',
+      codeInput: '',
       formData: {
         nome: '',
         sobrenome: '',
@@ -172,6 +221,61 @@ export default {
         naoPEP: false,
         naoFATCA: false
       };
+      this.error = '';
+      this.emailVerified = false;
+      this.verificationCode = '';
+      this.codeInput = '';
+    },
+    async verifyEmail() {
+      if (!this.formData.email) {
+        this.error = 'Por favor, informe um email válido.';
+        return;
+      }
+
+      this.loading = true;
+      this.error = '';
+
+      try {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const response = await fetch(`${apiBase}/broker/deriv/verify-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${localStorage.getItem('token')}`
+          },
+          body: JSON.stringify({
+            email: this.formData.email
+          })
+        });
+
+        const resultado = await response.json();
+
+        if (resultado.success) {
+          this.emailVerified = true;
+          this.error = '';
+        } else {
+          this.error = resultado.message || 'Erro ao verificar email. Tente novamente.';
+        }
+      } catch (erro) {
+        console.error('Erro ao verificar email:', erro);
+        this.error = 'Erro ao verificar email. Verifique sua conexão e tente novamente.';
+      } finally {
+        this.loading = false;
+      }
+    },
+    confirmCode() {
+      if (!this.codeInput || this.codeInput.length < 4) {
+        this.error = 'Por favor, digite o código de verificação recebido por email.';
+        return;
+      }
+
+      this.verificationCode = this.codeInput.trim();
+      this.error = '';
+    },
+    backToEmail() {
+      this.emailVerified = false;
+      this.codeInput = '';
+      this.verificationCode = '';
       this.error = '';
     },
     formatPhone(e) {
@@ -239,6 +343,11 @@ export default {
         return;
       }
       
+      if (!this.verificationCode) {
+        this.error = 'Código de verificação é obrigatório.';
+        return;
+      }
+
       this.loading = true;
       
       try {
@@ -252,7 +361,8 @@ export default {
           body: JSON.stringify({
             ...this.formData,
             telefone: telefoneNumeros,
-            cep: cepNumeros
+            cep: cepNumeros,
+            verificationCode: this.verificationCode // Código recebido por email
           })
         });
         
@@ -349,6 +459,11 @@ export default {
   border-radius: 4px;
   font-size: 13px;
   color: #22C55E;
+}
+
+.info-box.success {
+  background: rgba(34, 197, 94, 0.15);
+  border-left: 4px solid #22C55E;
 }
 
 .section-title {
@@ -491,6 +606,33 @@ input[type="checkbox"] {
   margin-top: 15px;
   font-size: 12px;
   color: #8D8D8D;
+}
+
+.button-group {
+  display: flex;
+  gap: 10px;
+}
+
+.secondary-btn {
+  flex: 1;
+  padding: 15px;
+  background: #1C1C1C;
+  color: #DFDFDF;
+  border: 1px solid #2C2C2C;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.secondary-btn:hover {
+  background: #2C2C2C;
+  border-color: #3C3C3C;
+}
+
+.submit-btn {
+  flex: 2;
 }
 
 @media (max-width: 768px) {
