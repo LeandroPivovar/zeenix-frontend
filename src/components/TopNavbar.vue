@@ -1,7 +1,7 @@
 <template>
   <nav 
     id="top-navbar" 
-    class="fixed top-0 left-0 right-0 h-[60px] bg-[#0B0B0B] z-50" 
+    class="fixed top-0 left-0 right-0 h-[60px] bg-[#0B0B0B] z-40" 
     :style="{ left: isSidebarCollapsed ? '72px' : '280px', width: isSidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 280px)' }"
   >
     <div class="h-full px-6 flex items-center justify-between">
@@ -342,10 +342,11 @@ export default {
 <style scoped>
 /* Top Navbar Styles */
 #top-navbar {
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.45), 0 0 20px rgba(34, 197, 94, 0.02);
+  box-shadow: none;
   backdrop-filter: blur(12px);
   animation: fadeInSlide 0.35s ease-out;
   transition: left 0.3s ease, width 0.3s ease;
+  border-bottom: none;
 }
 
 @media (max-width: 1024px) {
