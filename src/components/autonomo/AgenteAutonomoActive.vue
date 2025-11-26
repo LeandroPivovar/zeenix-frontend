@@ -867,8 +867,15 @@ export default {
 	background: #0f0f0f;
 }
 
-.result-positive { color: #22c55e; font-weight: 600; }
-.result-negative { color: #888888; font-weight: 600; }
+.operations-table td.result-positive { 
+	color: #22c55e !important; 
+	font-weight: 600; 
+}
+
+.operations-table td.result-negative { 
+	color: #888888 !important; 
+	font-weight: 600; 
+}
 
 /* Footer do Histórico (Total de Operações) */
 .history-footer {
