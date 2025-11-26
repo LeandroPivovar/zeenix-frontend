@@ -2006,6 +2006,15 @@ button i,
 
 .logs-table {
     width: 100%;
+    border-collapse: collapse;
+    border-spacing: 0;
+}
+
+.logs-table th,
+.logs-table td {
+    border: none;
+    border-bottom: none;
+    border-top: none;
 }
 
 .log-row {
