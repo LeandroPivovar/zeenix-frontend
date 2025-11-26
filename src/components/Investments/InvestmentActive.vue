@@ -90,8 +90,8 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div class="flex-1 h-full flex items-center justify-end min-w-0">
-                                    <svg id="status-animation" viewBox="0 0 280 100" preserveAspectRatio="none" style="width: 100%; min-width: 500px; height: 90%; flex: 1;">
+                                <div class="flex-1 h-full flex items-center justify-end min-w-0" style="margin: -1.25rem -1.25rem -1.25rem 0;">
+                                    <svg id="status-animation" viewBox="0 0 280 100" preserveAspectRatio="none" style="width: 100%; min-width: 500px; height: 100%; flex: 1;">
                                         <defs>
                                             <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                                 <stop offset="0%" stop-color="#22C55E" stop-opacity="0"></stop>
