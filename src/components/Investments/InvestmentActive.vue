@@ -2173,15 +2173,23 @@ button i,
 .logs-table th {
     padding: 0.5rem 0.75rem;
     font-size: 0.7rem;
+    text-align: left;
 }
 
 .logs-table td {
     color: #666666;
+    text-align: left;
 }
 
 .logs-table th {
     color: #555555;
     font-weight: 500;
+    text-align: left;
+}
+
+.logs-table th.text-right,
+.logs-table td.text-right {
+    text-align: right;
 }
 
 .direction-badge,
