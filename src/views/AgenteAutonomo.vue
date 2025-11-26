@@ -133,7 +133,9 @@ export default {
 				operationHistory: this.operationHistory,
 				agentActions: this.agentActions,
 				// Passa o status também para renderização interna (indicador, título)
-				agentStatus: this.agenteEstaAtivo ? 'ATIVO' : 'PAUSADO', 
+				agentStatus: this.agenteEstaAtivo ? 'ATIVO' : 'PAUSADO',
+				// Passa o saldo da conta para cálculo de porcentagens
+				accountBalance: this.accountBalance
 			};
 		},
 

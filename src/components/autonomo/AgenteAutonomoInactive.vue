@@ -149,7 +149,7 @@
 							min="0.01"
 							step="0.01"
 						>
-						<p style="font-size: 0.8em; color: #777; margin-top: 5px;">2% do capital total</p>
+						<p style="font-size: 0.8em; color: #777; margin-top: 5px;">{{ percentualValorOperacao }}% do capital total</p>
 					</div>
 					<div class="param-input-group">
 						<h3>Meta diária de lucro</h3>
@@ -160,7 +160,7 @@
 							min="0.01"
 							step="0.01"
 						>
-						<p style="font-size: 0.8em; color: #00ff66; margin-top: 5px;">+4% do capital total</p>
+						<p style="font-size: 0.8em; color: #00ff66; margin-top: 5px;">+{{ percentualMetaLucro }}% do capital total</p>
 					</div>
 					<div class="param-input-group">
 						<h3>Limite de perda do dia</h3>
@@ -171,7 +171,7 @@
 							min="0.01"
 							step="0.01"
 						>
-						<p style="font-size: 0.8em; color: red; margin-top: 5px;">-2% do capital total</p>
+						<p style="font-size: 0.8em; color: red; margin-top: 5px;">-{{ percentualLimitePerda }}% do capital total</p>
 					</div>
 				</div>
 			</section>
@@ -231,6 +231,12 @@
 <script>
 export default {
 	name: 'AgenteAutonomoView',
+	props: {
+		accountBalance: {
+			type: Number,
+			default: null
+		}
+	},
 	data() {
 		return {
 			// Estado de seleção inicial (Baseado na imagem)
@@ -282,6 +288,35 @@ export default {
 			return map[id] || id;
 		}
 	},
+	computed: {
+		capitalTotal() {
+			// Usa o accountBalance da prop, ou um valor padrão se não estiver disponível
+			return this.accountBalance || 2500.00;
+		},
+		percentualValorOperacao() {
+			if (!this.capitalTotal || this.capitalTotal === 0) return '0.00';
+			return ((this.valorOperacao / this.capitalTotal) * 100).toFixed(2);
+		},
+		percentualMetaLucro() {
+			if (!this.capitalTotal || this.capitalTotal === 0) return '0.00';
+			return ((this.metaLucro / this.capitalTotal) * 100).toFixed(2);
+		},
+		percentualLimitePerda() {
+			if (!this.capitalTotal || this.capitalTotal === 0) return '0.00';
+			return ((this.limitePerda / this.capitalTotal) * 100).toFixed(2);
+		}
+	},
+	watch: {
+		valorOperacao() {
+			// Atualiza automaticamente quando o valor é alterado
+		},
+		metaLucro() {
+			// Atualiza automaticamente quando o valor é alterado
+		},
+		limitePerda() {
+			// Atualiza automaticamente quando o valor é alterado
+		}
+	}
 }
 </script>
 
