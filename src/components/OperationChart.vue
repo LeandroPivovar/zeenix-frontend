@@ -9,7 +9,7 @@
     </div>
 
     <div v-else class="operation-layout">
-        <div class="col-chart flex-[7] flex flex-col gap-5">
+        <div class="col-chart flex-1 flex flex-col gap-5">
         <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A]">
             <div class="flex items-center gap-4">
@@ -136,7 +136,7 @@
         </div>
         </div>
 
-        <div class="flex-[2.1] bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
+        <div class="flex-[1.26] bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
           <div class="pb-3 border-b border-zenix-border mb-5">
             <h3 class="text-base font-semibold text-zenix-text">Painel de Negociação Manual</h3>
           </div>
