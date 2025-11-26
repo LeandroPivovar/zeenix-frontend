@@ -946,8 +946,12 @@ export default {
                     
                     console.log('[InvestmentActive] ✅ Log formatado:', this.logOperations);
                     
-                    // Plotar marcadores de entradas no gráfico
-                    this.plotEntryMarkers();
+                    // Plotar marcadores de entradas no gráfico após um delay para garantir que o gráfico esteja pronto
+                    this.$nextTick(() => {
+                        setTimeout(() => {
+                            this.plotEntryMarkers();
+                        }, 500);
+                    });
                 } else {
                     console.error('[InvestmentActive] ❌ Erro ao buscar histórico:', result.message || 'Unknown error');
                     this.logOperations = [];
@@ -967,18 +971,31 @@ export default {
             // Se os marcadores estão ocultos, limpar todos
             if (!this.showEntryMarkers) {
                 if (this.chart && this.currentSeries) {
-                    this.currentSeries.setMarkers([]);
+                    try {
+                        this.currentSeries.setMarkers([]);
+                    } catch (error) {
+                        console.warn('[InvestmentActive] Erro ao limpar marcadores:', error);
+                    }
                 }
                 return;
             }
             
             if (!this.logOperations || this.logOperations.length === 0) {
+                console.log('[InvestmentActive] ⚠️ Nenhuma operação disponível para plotar');
                 return;
             }
             
             // Se estiver usando lightweight-charts
-            if (this.chart && this.currentSeries) {
+            if (this.chart && this.currentSeries && !this.tradingViewWidget) {
                 try {
+                    console.log('[InvestmentActive] 📍 Tentando plotar marcadores...', {
+                        hasChart: !!this.chart,
+                        hasSeries: !!this.currentSeries,
+                        hasTradingView: !!this.tradingViewWidget,
+                        operationsCount: this.logOperations.length,
+                        showMarkers: this.showEntryMarkers
+                    });
+                    
                     // Verificar se temos ticks disponíveis
                     if (!this.ticks || this.ticks.length === 0) {
                         console.log('[InvestmentActive] ⚠️ Sem ticks disponíveis para plotar marcadores');
@@ -1023,7 +1040,7 @@ export default {
                     });
                     
                     // Criar marcadores apenas para operações válidas
-                    const markers = validOperations.map(op => {
+                    const markers = validOperations.map((op, index) => {
                         // Encontrar o tick mais próximo ao timestamp da operação
                         let closestTickTime = op.timestamp;
                         let minDiff = Infinity;
@@ -1036,6 +1053,12 @@ export default {
                             }
                         }
                         
+                        // Garantir que o timestamp está no formato correto (Unix timestamp em segundos)
+                        if (typeof closestTickTime !== 'number' || closestTickTime <= 0) {
+                            console.warn(`[InvestmentActive] ⚠️ Timestamp inválido para operação ${index}:`, closestTickTime);
+                            return null;
+                        }
+                        
                         // Determinar cor baseado no resultado (verde para lucro, vermelho para prejuízo)
                         const color = op.profit >= 0 ? '#22C55E' : '#FF4747';
                         
@@ -1044,13 +1067,18 @@ export default {
                             position: 'belowBar',
                             color: color,
                             shape: 'circle',
-                            size: 0, // Tamanho 0 para não mostrar o círculo, apenas o texto
+                            size: 1, // Tamanho do marcador
                             text: `${op.direction} ${op.pnl}`,
                         };
-                    });
+                    }).filter(marker => marker !== null); // Remover marcadores inválidos
                     
-                    this.currentSeries.setMarkers(markers);
-                    console.log('[InvestmentActive] ✅ Marcadores de entradas plotados:', markers.length);
+                    if (markers.length > 0) {
+                        console.log('[InvestmentActive] 📍 Plotando', markers.length, 'marcadores:', markers);
+                        this.currentSeries.setMarkers(markers);
+                        console.log('[InvestmentActive] ✅ Marcadores de entradas plotados com sucesso:', markers.length);
+                    } else {
+                        console.log('[InvestmentActive] ⚠️ Nenhum marcador válido para plotar');
+                    }
                 } catch (error) {
                     console.error('[InvestmentActive] ❌ Erro ao plotar marcadores:', error);
                 }
@@ -1447,8 +1475,12 @@ export default {
                 this.chartInitialized = true;
                 console.log('[InvestmentActive] ✅ Gráfico lightweight-charts inicializado');
                 this.updateChart();
-                // Plotar marcadores após inicializar o gráfico
-                setTimeout(() => this.plotEntryMarkers(), 500);
+                // Plotar marcadores após inicializar o gráfico e atualizar dados
+                this.$nextTick(() => {
+                    setTimeout(() => {
+                        this.plotEntryMarkers();
+                    }, 1000);
+                });
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao inicializar gráfico:', error);
             }
@@ -1493,8 +1525,12 @@ export default {
                 this.chart.timeScale().fitContent();
                 
                 // Atualizar marcadores quando o gráfico for atualizado
-                if (this.logOperations && this.logOperations.length > 0) {
-                    setTimeout(() => this.plotEntryMarkers(), 100);
+                if (this.logOperations && this.logOperations.length > 0 && this.showEntryMarkers) {
+                    this.$nextTick(() => {
+                        setTimeout(() => {
+                            this.plotEntryMarkers();
+                        }, 200);
+                    });
                 }
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao atualizar gráfico:', error);
