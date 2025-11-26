@@ -18,13 +18,10 @@
                             <div class="relative group">
                                 <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
                                 <div class="tooltip-content">
-                                    <div class="tooltip-title">Como Usar o Semáforo</div>
+                                    <div class="tooltip-title">🔵 Como Analisar?</div>
                                     <div class="tooltip-text">
-                                        Este é o indicador PRINCIPAL.<br><br>
-                                        Verde = sinal claro para operar com a estratégia mostrada.<br>
-                                        Amarelo = aguarde, sem padrão claro ainda.<br>
-                                        Vermelho = NÃO opere, condições desfavoráveis.<br><br>
-                                        <strong>Exemplo:</strong> Verde mostrando 'MATCHES 7, Confiança 78%' = Entre na Deriv e faça uma operação Matches no dígito 7 por 5 ticks.
+                                        Este é o indicador PRINCIPAL. Verde = sinal claro para operar com a estratégia mostrada. Amarelo = aguarde, sem padrão claro ainda. Vermelho = NÃO opere, condições desfavoráveis (alta volatilidade ou sinais contraditórios).<br><br>
+                                        <strong>Exemplo:</strong> Verde mostrando "MATCHES 7, Confiança 78%" = Entre na plataforma Deriv e faça uma operação Matches no dígito 7 por 5 ticks.
                                     </div>
                                 </div>
                             </div>
@@ -45,10 +42,10 @@
                             <div class="relative group">
                                 <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help opacity-80"></i>
                                 <div class="tooltip-content">
-                                    <div class="tooltip-title">Visualização do Histórico</div>
+                                    <div class="tooltip-title">🔵 Como Analisar?</div>
                                     <div class="tooltip-text">
-                                        Mostra os últimos 20 dígitos recebidos em tempo real. O dígito destacado (em verde) é o mais recente.<br><br>
-                                        Use este painel para validar visualmente padrões como repetições, alternâncias e clusters.
+                                        Mostra os últimos 20 dígitos recebidos em tempo real. O dígito destacado (azul maior) é o mais recente. Use para validar visualmente os padrões detectados e confirmar os dados do Heat Map.<br><br>
+                                        <strong>Exemplo:</strong> Se você vê 7-7-7-7 no histórico, confirma que há repetição consecutiva do dígito 7.
                                     </div>
                                 </div>
                             </div>
@@ -185,7 +182,16 @@
                     <div class="frequency-map-card">
                     <div class="card-header-with-help">
                         <h3 class="card-header">Mapa de Frequência dos Dígitos (0–9)</h3>
-                        <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                        <div class="relative group">
+                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                            <div class="tooltip-content">
+                                <div class="tooltip-title">🔵 Como Analisar?</div>
+                                <div class="tooltip-text">
+                                    Cada barra mostra quantas vezes aquele dígito apareceu. Verde escuro = apareceu pouco (subaquecido), Vermelho = apareceu muito (sobreaquecido). Dígitos subaquecidos têm maior probabilidade de aparecer em breve (reversão à média).<br><br>
+                                    <strong>Exemplo:</strong> Se o dígito 7 está vermelho (4%), ele está "devendo" aparecer. Considere estratégia MATCHES 7.
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="frequency-map-grid">
                         <div v-for="item in digitFrequenciesWithStats" :key="'freq-'+item.digit" class="frequency-digit-block">
@@ -205,7 +211,16 @@
                     <div class="heatmap-card">
                     <div class="card-header-with-help">
                         <h3 class="card-header">Heatmap Estatístico de Dígitos (0–9)</h3>
-                        <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                        <div class="relative group">
+                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
+                            <div class="tooltip-content">
+                                <div class="tooltip-title">🔵 Como Analisar?</div>
+                                <div class="tooltip-text">
+                                    Cada barra mostra quantas vezes aquele dígito apareceu. Verde escuro = apareceu pouco (subaquecido), Vermelho = apareceu muito (sobreaquecido). Dígitos subaquecidos têm maior probabilidade de aparecer em breve (reversão à média).<br><br>
+                                    <strong>Exemplo:</strong> Se o dígito 7 está vermelho (4%), ele está "devendo" aparecer. Considere estratégia MATCHES 7.
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     <div class="heatmap-grid">
                         <div 
@@ -255,12 +270,10 @@
                         <div class="relative group">
                             <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
                             <div class="tooltip-content">
-                                <div class="tooltip-title">Como interpretar o DVX</div>
+                                <div class="tooltip-title">🔵 Como Analisar?</div>
                                 <div class="tooltip-text">
-                                    O DVX mede a dispersão dos dígitos ao longo do tempo.<br><br>
-                                    • Verde (0–30): ambiente estável e ideal para operar<br>
-                                    • Amarelo (31–60): volatilidade moderada, operar com cautela<br>
-                                    • Vermelho (61–100): mercado errático — não operar
+                                    O DVX mede o quão "espalhados" estão os dígitos. Verde (0-30) = baixa volatilidade, ambiente ideal para operar. Amarelo (30-60) = moderado, cautela. Vermelho (60-100) = alta volatilidade, ambiente arriscado - reduza apostas ou não opere.<br><br>
+                                    <strong>Exemplo:</strong> DVX em 85 (vermelho) = mercado errático, padrões não confiáveis. Aguarde o ponteiro voltar para zona verde/amarela.
                                 </div>
                             </div>
                         </div>
@@ -313,11 +326,10 @@
                         <div class="relative group">
                             <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
                             <div class="tooltip-content">
-                                <div class="tooltip-title">Estratégia Even/Odd</div>
+                                <div class="tooltip-title">🔵 Como Analisar?</div>
                                 <div class="tooltip-text">
-                                    Mostra a distribuição de dígitos pares (0,2,4,6,8) vs ímpares (1,3,5,7,9).<br>
-                                    O esperado é 50/50. Se houver desequilíbrio (>55% para um lado),<br>
-                                    o próximo tick tende a reverter para o lado oposto.
+                                    Mostra a distribuição de dígitos pares (0,2,4,6,8) vs ímpares (1,3,5,7,9). O esperado é 50/50. Se houver desequilíbrio (>55% para um lado), o próximo tick tende a reverter para o lado oposto.<br><br>
+                                    <strong>Exemplo:</strong> Se Pares está em 62%, há excesso de pares. Próxima operação: aposte em ÍMPAR (ODD) na plataforma Deriv.
                                 </div>
                             </div>
                         </div>
@@ -360,11 +372,10 @@
                         <div class="relative group">
                             <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
                             <div class="tooltip-content">
-                                <div class="tooltip-title">Estratégia Over/Under</div>
+                                <div class="tooltip-title">🔵 Como Analisar?</div>
                                 <div class="tooltip-text">
-                                    Divide os dígitos em Baixos (0–4) e Altos (5–9).<br>
-                                    O esperado é 50/50. Desequilíbrio indica que o próximo tick<br>
-                                    terá maior probabilidade de ser do lado oposto.
+                                    Divide os dígitos em Baixos (0-4) e Altos (5-9). O esperado é 50/50. Desequilíbrio indica que o próximo tick terá maior probabilidade de ser do lado oposto.<br><br>
+                                    <strong>Exemplo:</strong> Se Baixos está em 58%, muitos dígitos 0-4 saíram. Próxima operação: escolha OVER 4 (apostar que o próximo será 5-9).
                                 </div>
                             </div>
                         </div>
