@@ -49,11 +49,10 @@
             </a>
 
             <a
-                v-if="canAccessCopyTrader"
                 href="#"
                 class="menu-item"
                 :class="{ active: isCopyTradingActive }"
-                @click.prevent="navigateAndClose('/copy-trader')"
+                @click.prevent="navigateAndClose('/copy-trading')"
                 data-text="Copy Trading"
             >
                 <i class="fa-solid fa-copy w-5 opacity-85"></i>
