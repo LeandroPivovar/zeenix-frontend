@@ -90,85 +90,42 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div class="flex-1 h-full flex items-center justify-end min-w-0" style="margin: -1.25rem -1.25rem -1.25rem 0;">
-                                    <svg id="status-animation" viewBox="0 0 280 100" preserveAspectRatio="none" style="width: 100%; min-width: 500px; height: 100%; flex: 1;">
-                                        <defs>
-                                            <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                                                <stop offset="0%" stop-color="#22C55E" stop-opacity="0"></stop>
-                                                <stop offset="50%" stop-color="#22C55E" stop-opacity="0.8"></stop>
-                                                <stop offset="100%" stop-color="#22C55E" stop-opacity="0"></stop>
-                                            </linearGradient>
-                                            <filter id="glow-filter">
-                                                <feGaussianBlur stdDeviation="2" result="coloredBlur"></feGaussianBlur>
-                                                <feMerge>
-                                                    <feMergeNode in="coloredBlur"></feMergeNode>
-                                                    <feMergeNode in="SourceGraphic"></feMergeNode>
-                                                </feMerge>
-                                            </filter>
-                                            <radialGradient id="radar-gradient">
-                                                <stop offset="0%" stop-color="#22C55E" stop-opacity="0.6"></stop>
-                                                <stop offset="100%" stop-color="#22C55E" stop-opacity="0"></stop>
-                                            </radialGradient>
-                                        </defs>
-                                        <g opacity="0.15">
-                                            <line x1="20" y1="15" x2="260" y2="15" stroke="#22C55E" stroke-width="0.5"></line>
-                                            <line x1="20" y1="25" x2="260" y2="25" stroke="#22C55E" stroke-width="0.5"></line>
-                                            <line x1="20" y1="36" x2="260" y2="36" stroke="#22C55E" stroke-width="1"></line>
-                                            <line x1="20" y1="47" x2="260" y2="47" stroke="#22C55E" stroke-width="0.5"></line>
-                                            <line x1="20" y1="57" x2="260" y2="57" stroke="#22C55E" stroke-width="0.5"></line>
-                                        </g>
-                                        <path d="M 30,45 Q 70,25 110,40 T 190,35 Q 220,45 250,30" stroke="#22C55E" stroke-width="2" fill="none" opacity="0.4" filter="url(#glow-filter)">
-                                            <animate attributeName="d" values="M 30,45 Q 70,25 110,40 T 190,35 Q 220,45 250,30; M 30,40 Q 70,30 110,45 T 190,30 Q 220,40 250,35; M 30,45 Q 70,25 110,40 T 190,35 Q 220,45 250,30" dur="3s" repeatCount="indefinite"></animate>
-                                        </path>
-                                        <rect x="20" y="10" width="4" height="52" fill="url(#scan-gradient)" opacity="0.8">
-                                            <animate attributeName="x" values="20;260;20" dur="2.5s" repeatCount="indefinite"></animate>
-                                        </rect>
-                                        <g opacity="0.6">
-                                            <circle cx="50" cy="36" r="3" fill="#22C55E">
-                                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" repeatCount="indefinite"></animate>
-                                            </circle>
-                                            <circle cx="90" cy="30" r="3" fill="#22C55E">
-                                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.2s" repeatCount="indefinite"></animate>
-                                            </circle>
-                                            <circle cx="140" cy="38" r="3" fill="#22C55E">
-                                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.4s" repeatCount="indefinite"></animate>
-                                            </circle>
-                                            <circle cx="180" cy="33" r="3" fill="#22C55E">
-                                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.6s" repeatCount="indefinite"></animate>
-                                            </circle>
-                                            <circle cx="230" cy="40" r="3" fill="#22C55E">
-                                                <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.8s" repeatCount="indefinite"></animate>
-                                            </circle>
-                                        </g>
-                                        <circle cx="140" cy="36" r="25" fill="url(#radar-gradient)" opacity="0.3">
-                                            <animate attributeName="r" values="15;35;15" dur="2s" repeatCount="indefinite"></animate>
-                                            <animate attributeName="opacity" values="0.5;0.1;0.5" dur="2s" repeatCount="indefinite"></animate>
-                                        </circle>
-                                        <line x1="140" y1="36" x2="165" y2="36" stroke="#22C55E" stroke-width="1.5" opacity="0.8" filter="url(#glow-filter)">
-                                            <animateTransform attributeName="transform" type="rotate" values="0 140 36;360 140 36" dur="3s" repeatCount="indefinite"></animateTransform>
-                                        </line>
-                                        <circle cx="140" cy="36" r="4" fill="#22C55E" filter="url(#glow-filter)">
-                                            <animate attributeName="opacity" values="0.8;1;0.8" dur="1s" repeatCount="indefinite"></animate>
-                                        </circle>
-                                        <g opacity="0.4">
-                                            <rect x="25" y="60" width="8" height="4" fill="#22C55E" rx="1">
-                                                <animate attributeName="height" values="4;12;4" dur="0.8s" repeatCount="indefinite"></animate>
-                                                <animate attributeName="y" values="60;56;60" dur="0.8s" repeatCount="indefinite"></animate>
-                                            </rect>
-                                            <rect x="38" y="60" width="8" height="4" fill="#22C55E" rx="1">
-                                                <animate attributeName="height" values="4;16;4" dur="0.8s" begin="0.1s" repeatCount="indefinite"></animate>
-                                                <animate attributeName="y" values="60;52;60" dur="0.8s" begin="0.1s" repeatCount="indefinite"></animate>
-                                            </rect>
-                                            <rect x="51" y="60" width="8" height="4" fill="#22C55E" rx="1">
-                                                <animate attributeName="height" values="4;10;4" dur="0.8s" begin="0.2s" repeatCount="indefinite"></animate>
-                                                <animate attributeName="y" values="60;58;60" dur="0.8s" begin="0.2s" repeatCount="indefinite"></animate>
-                                            </rect>
-                                            <rect x="64" y="60" width="8" height="4" fill="#22C55E" rx="1">
-                                                <animate attributeName="height" values="4;14;4" dur="0.8s" begin="0.3s" repeatCount="indefinite"></animate>
-                                                <animate attributeName="y" values="60;54;60" dur="0.8s" begin="0.3s" repeatCount="indefinite"></animate>
-                                            </rect>
-                                        </g>
-                                    </svg>
+                                <div class="flex-1 h-full flex items-center justify-end min-w-0 relative overflow-hidden" style="margin: -1.25rem -1.25rem -1.25rem 0;">
+                                    <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/10 to-transparent"></div>
+                                    <!-- Animated Grid Background -->
+                                    <div class="absolute inset-0 opacity-20">
+                                        <div class="absolute inset-0"></div>
+                                    </div>
+                                    <!-- Central AI Core -->
+                                    <div class="relative z-10 flex items-center justify-center w-full h-full">
+                                        <!-- Outer Rotating Ring -->
+                                        <div class="absolute w-32 h-32 border-2 border-zenix-green/30 rounded-full ai-glow-ring" style="opacity: 1;"></div>
+                                        <!-- Middle Rotating Ring -->
+                                        <div class="absolute w-24 h-24 border-2 border-zenix-green/40 rounded-full" style="opacity: 1;"></div>
+                                        <!-- Inner Pulsing Core -->
+                                        <div class="absolute w-16 h-16 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1;"></div>
+                                        <!-- Central Brain Icon -->
+                                        <div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center;">
+                                            <i class="fas fa-brain text-zenix-green text-4xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 2.5rem !important;"></i>
+                                        </div>
+                                        <!-- Orbiting Data Nodes -->
+                                        <div class="absolute w-2 h-2 bg-zenix-green rounded-full" style="opacity: 1;"></div>
+                                        <div class="absolute w-1.5 h-1.5 bg-zenix-green/70 rounded-full" style="opacity: 1;"></div>
+                                        <div class="absolute w-2 h-2 bg-zenix-green/80 rounded-full" style="opacity: 1;"></div>
+                                    </div>
+                                    <!-- Floating Particles -->
+                                    <div class="absolute inset-0 overflow-hidden">
+                                        <div class="absolute w-1 h-1 bg-zenix-green rounded-full"></div>
+                                        <div class="absolute w-1 h-1 bg-zenix-green/70 rounded-full"></div>
+                                        <div class="absolute w-1 h-1 bg-zenix-green/60 rounded-full"></div>
+                                        <div class="absolute w-1 h-1 bg-zenix-green rounded-full"></div>
+                                    </div>
+                                    <!-- Data Stream Lines -->
+                                    <div class="absolute inset-0 overflow-hidden opacity-30">
+                                        <div class="absolute h-px w-20 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                                        <div class="absolute h-px w-16 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                                        <div class="absolute h-px w-24 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
