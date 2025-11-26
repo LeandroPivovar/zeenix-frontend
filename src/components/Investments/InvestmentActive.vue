@@ -74,7 +74,7 @@
 
                     <!-- Card 4 - Status da IA -->
                     <div id="ichwdn" class="col-span-6" style="width: 100%; box-sizing: border-box;">
-                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border-2 border-[#22C55E]/10 rounded-[18px] p-6 premium-card h-[140px] relative overflow-hidden transition-all duration-700" style="width: 100%; box-sizing: border-box;">
+                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border-2 border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[100px] relative overflow-hidden transition-all duration-700" style="width: 100%; box-sizing: border-box;">
                             <div id="card-gradient" class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/8 to-transparent pointer-events-none transition-all duration-700"></div>
                             <div class="relative z-10 h-full flex items-center justify-between gap-8">
                                 <div class="flex items-center space-x-5 flex-shrink-0">
@@ -91,7 +91,7 @@
                                     </div>
                                 </div>
                                 <div class="flex-1 h-full flex items-center justify-end min-w-0">
-                                    <svg id="status-animation" viewBox="0 0 280 100" preserveAspectRatio="xMaxYMid meet" class="w-full h-full max-w-[600px] min-h-[120px]">
+                                    <svg id="status-animation" viewBox="0 0 280 100" preserveAspectRatio="xMaxYMid meet" class="w-full h-full" style="min-width: 500px; max-width: 100%;">
                                         <defs>
                                             <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                                 <stop offset="0%" stop-color="#22C55E" stop-opacity="0"></stop>
