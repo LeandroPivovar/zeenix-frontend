@@ -19,14 +19,26 @@
     min-height: 100vh;
     width: 100%;
     overflow-x: hidden;
-    padding: 0 20px;
+    padding: 30px 20px;
+    max-width: calc(100% - 280px);
+    margin-left: 280px;
+    
+    background-color: #0b0b0b;
+
+}
+
+.page-title{
+    color: rgb(214, 211, 211)!important;
 }
 .layout-content {
-    background-color: #0e0f0f;
+    background-color: #0b0b0b;
     min-height: 100vh;
     overflow-x: hidden;
     color: #f0f2f5;
     transition: margin-left 0.3s ease;
+}
+.page-title{
+    color: white;
 }
 .container{ width:100%;margin:0 auto;padding:20px 0;z-index:10}
 .page-header{display:flex;flex-direction:row;margin-bottom:30px;padding-bottom:20px;border-bottom:1px solid #2c3038; justify-content:space-between; align-items:center}
