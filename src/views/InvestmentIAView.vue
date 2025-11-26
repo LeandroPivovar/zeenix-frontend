@@ -11,6 +11,114 @@
             />
 
             <main class="main-content" style="margin-top: 60px;">
+                <!-- AI Vision Panel - Only show when IA is inactive -->
+                <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
+                    <div class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card glow-green">
+                        <div class="flex items-start justify-between mb-6">
+                            <div>
+                                <h1 class="text-xl font-bold text-zenix-text mb-1">Visão da IA | {{ selectedStrategyName }}</h1>
+                                <p class="text-sm text-zenix-secondary">Configure esta IA para iniciar operações</p>
+                            </div>
+                            <div class="bg-zenix-bg border border-zenix-border rounded-xl p-3 hover-lift">
+                                <div class="flex items-center space-x-2.5">
+                                    <i class="far fa-wallet text-zenix-green text-xs"></i>
+                                    <div class="flex flex-col">
+                                        <span class="text-[10px] text-zenix-label font-medium">Saldo Atual</span>
+                                        <div class="flex items-center space-x-2 mt-0.5">
+                                            <span id="balanceValue" class="text-base font-bold text-zenix-text">
+                                                {{ formattedBalance }}
+                                            </span>
+                                            <div class="flex items-center space-x-1">
+                                                <button 
+                                                    :class="['px-2 py-0.5 rounded text-[10px] font-semibold transition-all', isDemo ? 'bg-zenix-card text-zenix-secondary' : 'bg-zenix-green text-black hover:bg-zenix-green-hover']"
+                                                    @click="toggleAccountType('real')"
+                                                >
+                                                    Real
+                                                </button>
+                                                <button 
+                                                    :class="['px-2 py-0.5 rounded text-[10px] font-semibold transition-all', isDemo ? 'bg-zenix-green text-black hover:bg-zenix-green-hover' : 'bg-zenix-card text-zenix-secondary']"
+                                                    @click="toggleAccountType('demo')"
+                                                >
+                                                    Demo
+                                                </button>
+                                            </div>
+                                            <button 
+                                                class="text-zenix-secondary hover:text-zenix-text transition-colors"
+                                                @click="balanceVisible = !balanceVisible"
+                                            >
+                                                <i :class="balanceVisible ? 'far fa-eye text-[10px]' : 'far fa-eye-slash text-[10px]'"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="grid grid-cols-12 gap-5">
+                            <!-- AI Visualization Area -->
+                            <div class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border border-zenix-green/30 flex items-center justify-center relative">
+                                <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/5 via-transparent to-zenix-green/10"></div>
+                                <!-- Animated Grid Background -->
+                                <div class="absolute inset-0 opacity-20">
+                                    <div id="i9dlnn" class="absolute inset-0"></div>
+                                </div>
+                                <!-- Central AI Core -->
+                                <div class="relative z-10 flex items-center justify-center">
+                                    <!-- Outer Rotating Ring -->
+                                    <div id="irazem" class="absolute w-40 h-40 border-2 border-zenix-green/30 rounded-full ai-glow-ring"></div>
+                                    <!-- Middle Rotating Ring -->
+                                    <div id="i5uptv" class="absolute w-32 h-32 border-2 border-zenix-green/40 rounded-full"></div>
+                                    <!-- Inner Pulsing Core -->
+                                    <div class="absolute w-24 h-24 bg-zenix-green/20 rounded-full blur-xl ai-pulse"></div>
+                                    <!-- Central Brain Icon -->
+                                    <div class="relative z-20 ai-brain-glow">
+                                        <i class="fas fa-brain text-zenix-green text-5xl"></i>
+                                    </div>
+                                    <!-- Orbiting Data Nodes -->
+                                    <div id="iyljui" class="absolute w-3 h-3 bg-zenix-green rounded-full"></div>
+                                    <div id="isxtjr" class="absolute w-2 h-2 bg-zenix-green/70 rounded-full"></div>
+                                    <div id="ijse57" class="absolute w-2.5 h-2.5 bg-zenix-green/80 rounded-full"></div>
+                                </div>
+                                <!-- Floating Particles -->
+                                <div class="absolute inset-0 overflow-hidden">
+                                    <div id="iw45yh" class="absolute w-1 h-1 bg-zenix-green rounded-full"></div>
+                                    <div id="i2cpbj" class="absolute w-1.5 h-1.5 bg-zenix-green/70 rounded-full"></div>
+                                    <div id="ispbex" class="absolute w-1 h-1 bg-zenix-green/60 rounded-full"></div>
+                                    <div id="i7wi6r" class="absolute w-1.5 h-1.5 bg-zenix-green rounded-full"></div>
+                                </div>
+                                <!-- Data Stream Lines -->
+                                <div class="absolute inset-0 overflow-hidden opacity-30">
+                                    <div id="ivhu5o" class="absolute h-px w-20 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                                    <div id="iybi4e" class="absolute h-px w-16 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                                    <div id="icjipi" class="absolute h-px w-24 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                                </div>
+                            </div>
+                            <!-- Status Cards -->
+                            <div class="col-span-7 grid grid-cols-2 gap-4">
+                                <div class="bg-zenix-bg border border-zenix-border rounded-xl p-4 hover-lift">
+                                    <p class="text-[10px] text-zenix-secondary mb-2">Status</p>
+                                    <p class="text-base font-bold text-zenix-secondary">Aguardando configuração</p>
+                                    <p class="text-[10px] text-zenix-label mt-1">Configure para ativar esta IA</p>
+                                </div>
+                                <div class="bg-zenix-bg border border-zenix-border rounded-xl p-4 hover-lift">
+                                    <p class="text-[10px] text-zenix-secondary mb-2">Ativo da IA</p>
+                                    <p class="text-sm font-semibold text-zenix-secondary">Será exibido após configuração</p>
+                                    <p class="text-[10px] text-zenix-label mt-1">Defina os parâmetros para revelar</p>
+                                </div>
+                                <div class="bg-zenix-bg border border-zenix-border rounded-xl p-4 hover-lift">
+                                    <p class="text-[10px] text-zenix-secondary mb-2">Parâmetros</p>
+                                    <p class="text-base font-bold text-zenix-secondary">Não definidos</p>
+                                    <p class="text-[10px] text-zenix-label mt-1">Configure risco e entradas</p>
+                                </div>
+                                <div class="bg-zenix-bg border border-zenix-border rounded-xl p-4 hover-lift">
+                                    <p class="text-[10px] text-zenix-secondary mb-2">Execução</p>
+                                    <p class="text-base font-bold text-zenix-secondary">IA Inativa</p>
+                                    <p class="text-[10px] text-zenix-label mt-1">Ativada após configuração</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
                 <!-- Configuration Cards Grid - Only show when IA is inactive -->
                 <div class="config-grid" v-if="!isInvestmentActive">
                     <!-- Mercado & Estratégia -->
@@ -353,6 +461,7 @@ export default {
             accountCurrency: 'USD',
             accountLoginid: null,
             isDemo: false,
+            balanceVisible: true,
             lastBalanceUpdate: null,
             balanceUpdateInterval: null,
             clockInterval: null,
@@ -405,10 +514,29 @@ export default {
     },
     computed: {
         formattedBalance() {
+            if (!this.balanceVisible) {
+                return '••••••';
+            }
             if (this.accountBalance === null || this.accountBalance === undefined) {
                 return '$0,00';
             }
             return `$${this.accountBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        },
+        
+        selectedStrategyName() {
+            const strategyNames = {
+                'orion': 'Orion',
+                'vega': 'Vega',
+                'pulse': 'Pulse',
+                'nova': 'Nova',
+                'titan': 'Titan',
+                'phoenix': 'Phoenix',
+                'quantum': 'Quantum',
+                'nebula': 'Nebula',
+                'apex': 'Apex',
+                'zenith': 'Zenith'
+            };
+            return strategyNames[this.selectedStrategy] || 'Orion';
         },
         
         formattedLastUpdate() {
@@ -884,6 +1012,10 @@ export default {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         },
         
+        toggleAccountType(type) {
+            this.isDemo = type === 'demo';
+        },
+        
         async startDataLoading() {
             try {
                 console.log('[InvestmentIAView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
@@ -1220,6 +1352,412 @@ export default {
     box-shadow: 0 0 16px rgba(34, 197, 94, 0.06);
 }
 
+/* Tailwind-like utility classes for AI Vision Panel */
+.bg-zenix-card {
+    background-color: #0E0E0E;
+}
+
+.bg-zenix-bg {
+    background-color: #0B0B0B;
+}
+
+.border-zenix-border {
+    border-color: #1C1C1C;
+}
+
+.text-zenix-text {
+    color: #DFDFDF;
+}
+
+.text-zenix-secondary {
+    color: #A1A1A1;
+}
+
+.text-zenix-label {
+    color: #7A7A7A;
+}
+
+.text-zenix-green {
+    color: #22C55E;
+}
+
+.bg-zenix-green {
+    background-color: #22C55E;
+}
+
+.text-black {
+    color: #000;
+}
+
+.rounded-xl {
+    border-radius: 0.75rem;
+}
+
+.grid-cols-12 {
+    display: grid;
+    grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+.grid-cols-2 {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.col-span-5 {
+    grid-column: span 5 / span 5;
+}
+
+.col-span-7 {
+    grid-column: span 7 / span 7;
+}
+
+.gap-5 {
+    gap: 1.25rem;
+}
+
+.gap-4 {
+    gap: 1rem;
+}
+
+.gap-2 {
+    gap: 0.5rem;
+}
+
+.gap-2\.5 {
+    gap: 0.625rem;
+}
+
+.h-\[220px\] {
+    height: 220px;
+}
+
+.from-zenix-green\/10 {
+    --tw-gradient-from: rgba(34, 197, 94, 0.1);
+}
+
+.to-transparent {
+    --tw-gradient-to: transparent;
+}
+
+.bg-gradient-to-br {
+    background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
+}
+
+.border-zenix-green\/30 {
+    border-color: rgba(34, 197, 94, 0.3);
+}
+
+.w-40 {
+    width: 10rem;
+}
+
+.h-40 {
+    height: 10rem;
+}
+
+.w-32 {
+    width: 8rem;
+}
+
+.h-32 {
+    height: 8rem;
+}
+
+.w-24 {
+    width: 6rem;
+}
+
+.h-24 {
+    height: 6rem;
+}
+
+.w-3 {
+    width: 0.75rem;
+}
+
+.h-3 {
+    height: 0.75rem;
+}
+
+.w-2 {
+    width: 0.5rem;
+}
+
+.h-2 {
+    height: 0.5rem;
+}
+
+.w-2\.5 {
+    width: 0.625rem;
+}
+
+.h-2\.5 {
+    height: 0.625rem;
+}
+
+.w-1 {
+    width: 0.25rem;
+}
+
+.h-1 {
+    height: 0.25rem;
+}
+
+.w-1\.5 {
+    width: 0.375rem;
+}
+
+.h-1\.5 {
+    height: 0.375rem;
+}
+
+.w-20 {
+    width: 5rem;
+}
+
+.w-16 {
+    width: 4rem;
+}
+
+.h-px {
+    height: 1px;
+}
+
+.text-5xl {
+    font-size: 3rem;
+    line-height: 1;
+}
+
+.text-base {
+    font-size: 1rem;
+    line-height: 1.5rem;
+}
+
+.text-sm {
+    font-size: 0.875rem;
+    line-height: 1.25rem;
+}
+
+.text-xs {
+    font-size: 0.75rem;
+    line-height: 1rem;
+}
+
+.text-\[10px\] {
+    font-size: 10px;
+}
+
+.font-bold {
+    font-weight: 700;
+}
+
+.font-semibold {
+    font-weight: 600;
+}
+
+.font-medium {
+    font-weight: 500;
+}
+
+.mb-1 {
+    margin-bottom: 0.25rem;
+}
+
+.mb-2 {
+    margin-bottom: 0.5rem;
+}
+
+.mb-4 {
+    margin-bottom: 1rem;
+}
+
+.mb-5 {
+    margin-bottom: 1.25rem;
+}
+
+.mb-6 {
+    margin-bottom: 1.5rem;
+}
+
+.mt-0\.5 {
+    margin-top: 0.125rem;
+}
+
+.mt-1 {
+    margin-top: 0.25rem;
+}
+
+.p-3 {
+    padding: 0.75rem;
+}
+
+.p-4 {
+    padding: 1rem;
+}
+
+.p-6 {
+    padding: 1.5rem;
+}
+
+.px-2 {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+}
+
+.py-0\.5 {
+    padding-top: 0.125rem;
+    padding-bottom: 0.125rem;
+}
+
+.space-x-1 {
+    --tw-space-x-reverse: 0;
+    margin-right: calc(0.25rem * var(--tw-space-x-reverse));
+    margin-left: calc(0.25rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-x-2 {
+    --tw-space-x-reverse: 0;
+    margin-right: calc(0.5rem * var(--tw-space-x-reverse));
+    margin-left: calc(0.5rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.space-x-2\.5 {
+    --tw-space-x-reverse: 0;
+    margin-right: calc(0.625rem * var(--tw-space-x-reverse));
+    margin-left: calc(0.625rem * calc(1 - var(--tw-space-x-reverse)));
+}
+
+.flex {
+    display: flex;
+}
+
+.items-center {
+    align-items: center;
+}
+
+.items-start {
+    align-items: flex-start;
+}
+
+.justify-between {
+    justify-content: space-between;
+}
+
+.justify-center {
+    justify-content: center;
+}
+
+.flex-col {
+    flex-direction: column;
+}
+
+.relative {
+    position: relative;
+}
+
+.absolute {
+    position: absolute;
+}
+
+.inset-0 {
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+}
+
+.overflow-hidden {
+    overflow: hidden;
+}
+
+.z-10 {
+    z-index: 10;
+}
+
+.z-20 {
+    z-index: 20;
+}
+
+.opacity-20 {
+    opacity: 0.2;
+}
+
+.opacity-30 {
+    opacity: 0.3;
+}
+
+.blur-xl {
+    filter: blur(24px);
+}
+
+.rounded-full {
+    border-radius: 9999px;
+}
+
+.border-2 {
+    border-width: 2px;
+}
+
+.border {
+    border-width: 1px;
+}
+
+.bg-zenix-green\/20 {
+    background-color: rgba(34, 197, 94, 0.2);
+}
+
+.bg-zenix-green\/70 {
+    background-color: rgba(34, 197, 94, 0.7);
+}
+
+.bg-zenix-green\/80 {
+    background-color: rgba(34, 197, 94, 0.8);
+}
+
+.bg-zenix-green {
+    background-color: #22C55E;
+}
+
+.bg-gradient-to-r {
+    background-image: linear-gradient(to right, var(--tw-gradient-stops));
+}
+
+.from-transparent {
+    --tw-gradient-from: transparent;
+}
+
+.via-zenix-green {
+    --tw-gradient-via: #22C55E;
+}
+
+.to-transparent {
+    --tw-gradient-to: transparent;
+}
+
+.hover\:bg-zenix-green-hover:hover {
+    background-color: #16A34A;
+}
+
+.hover\:text-zenix-text:hover {
+    color: #DFDFDF;
+}
+
+.transition-all {
+    transition-property: all;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.transition-colors {
+    transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+    transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+    transition-duration: 150ms;
+}
+
+.cursor-pointer {
+    cursor: pointer;
+}
+
 .fade-in {
     animation: fadeIn 0.4s ease-out;
 }
@@ -1395,6 +1933,85 @@ export default {
     to {
         transform: rotate(360deg);
     }
+}
+
+/* AI Vision Panel Specific Animations */
+#i9dlnn {
+    background-image: linear-gradient(rgba(34, 197, 94, 0.1) 1px, transparent 1px), 
+                        linear-gradient(90deg, rgba(34, 197, 94, 0.1) 1px, transparent 1px);
+    background-size: 20px 20px;
+    animation: gridMove 20s linear infinite;
+}
+
+#irazem {
+    animation: rotate 8s linear infinite;
+}
+
+#i5uptv {
+    animation: rotate 6s linear infinite reverse;
+}
+
+#iyljui {
+    animation: orbit1 4s linear infinite;
+}
+
+#isxtjr {
+    animation: orbit2 5s linear infinite;
+}
+
+#ijse57 {
+    animation: orbit3 6s linear infinite;
+}
+
+#iw45yh {
+    top: 20%;
+    left: 15%;
+    animation: float 3s ease-in-out infinite;
+}
+
+#i2cpbj {
+    top: 60%;
+    left: 80%;
+    animation: float 4s ease-in-out infinite 0.5s;
+}
+
+#ispbex {
+    top: 80%;
+    left: 30%;
+    animation: float 3.5s ease-in-out infinite 1s;
+}
+
+#i7wi6r {
+    top: 40%;
+    left: 70%;
+    animation: float 4.5s ease-in-out infinite 1.5s;
+}
+
+#ivhu5o {
+    top: 30%;
+    left: -20px;
+    animation: streamRight 2s linear infinite;
+}
+
+#iybi4e {
+    top: 50%;
+    left: -20px;
+    animation: streamRight 2.5s linear infinite 0.5s;
+}
+
+#icjipi {
+    top: 70%;
+    left: -20px;
+    animation: streamRight 3s linear infinite 1s;
+}
+
+.hover-lift {
+    transition: all 0.3s ease;
+}
+
+.hover-lift:hover {
+    background: #111;
+    transform: translateY(-1px);
 }
 
 .core-pulse {
