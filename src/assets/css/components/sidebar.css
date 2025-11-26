@@ -149,7 +149,7 @@ aside.sidebar,
 }
 
 .brand-text {
-	font-size: 1.125rem;
+	font-size: 1.5rem;
 	font-weight: 700;
 	color: #DFDFDF;
 	letter-spacing: -0.025em;
@@ -171,7 +171,7 @@ aside.sidebar,
 	position: absolute;
 	left: calc(50% + 40px);
 	transform: translateY(-50%) translateX(0);
-	margin-left: 0;
+	margin-left: 50px;
 	z-index: 1000;
 	top: 50%;
 	white-space: nowrap;
