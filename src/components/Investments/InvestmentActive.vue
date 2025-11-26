@@ -90,41 +90,41 @@
                                         </p>
                                     </div>
                                 </div>
-                                <div class="flex-1 h-full flex items-center justify-end min-w-0 relative overflow-hidden" style="margin: -1.25rem -1.25rem -1.25rem 0;">
+                                <div class="flex-1 h-full flex items-center justify-end min-w-0 relative overflow-hidden" style="margin: -1.25rem -1.25rem -1.25rem 0; height: calc(100% + 2.5rem);">
                                     <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/10 to-transparent"></div>
                                     <!-- Animated Grid Background -->
                                     <div class="absolute inset-0 opacity-20">
                                         <div class="absolute inset-0"></div>
                                     </div>
                                     <!-- Central AI Core -->
-                                    <div class="relative z-10 flex items-center justify-center w-full h-full">
+                                    <div class="relative z-10 flex items-center justify-center w-full h-full" style="position: relative;">
                                         <!-- Outer Rotating Ring -->
-                                        <div class="absolute w-32 h-32 border-2 border-zenix-green/30 rounded-full ai-glow-ring" style="opacity: 1;"></div>
+                                        <div class="absolute w-32 h-32 border-2 border-zenix-green/30 rounded-full ai-glow-ring" style="opacity: 1; animation: ringPulse 2s ease-in-out infinite;"></div>
                                         <!-- Middle Rotating Ring -->
-                                        <div class="absolute w-24 h-24 border-2 border-zenix-green/40 rounded-full" style="opacity: 1;"></div>
+                                        <div class="absolute w-24 h-24 border-2 border-zenix-green/40 rounded-full" style="opacity: 1; animation: spin 8s linear infinite;"></div>
                                         <!-- Inner Pulsing Core -->
-                                        <div class="absolute w-16 h-16 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1;"></div>
+                                        <div class="absolute w-16 h-16 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
                                         <!-- Central Brain Icon -->
-                                        <div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center;">
+                                        <div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center; animation: brainPulse 2s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.4));">
                                             <i class="fas fa-brain text-zenix-green text-4xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 2.5rem !important;"></i>
                                         </div>
                                         <!-- Orbiting Data Nodes -->
-                                        <div class="absolute w-2 h-2 bg-zenix-green rounded-full" style="opacity: 1;"></div>
-                                        <div class="absolute w-1.5 h-1.5 bg-zenix-green/70 rounded-full" style="opacity: 1;"></div>
-                                        <div class="absolute w-2 h-2 bg-zenix-green/80 rounded-full" style="opacity: 1;"></div>
+                                        <div class="absolute w-2 h-2 bg-zenix-green rounded-full orbit-node" style="opacity: 1; animation: orbit1 4s linear infinite;"></div>
+                                        <div class="absolute w-1.5 h-1.5 bg-zenix-green/70 rounded-full orbit-node" style="opacity: 1; animation: orbit2 5s linear infinite;"></div>
+                                        <div class="absolute w-2 h-2 bg-zenix-green/80 rounded-full orbit-node" style="opacity: 1; animation: orbit3 6s linear infinite;"></div>
                                     </div>
                                     <!-- Floating Particles -->
                                     <div class="absolute inset-0 overflow-hidden">
-                                        <div class="absolute w-1 h-1 bg-zenix-green rounded-full"></div>
-                                        <div class="absolute w-1 h-1 bg-zenix-green/70 rounded-full"></div>
-                                        <div class="absolute w-1 h-1 bg-zenix-green/60 rounded-full"></div>
-                                        <div class="absolute w-1 h-1 bg-zenix-green rounded-full"></div>
+                                        <div class="absolute w-1 h-1 bg-zenix-green rounded-full particle" style="top: 20%; left: 15%; animation: float 3s ease-in-out infinite;"></div>
+                                        <div class="absolute w-1 h-1 bg-zenix-green/70 rounded-full particle" style="top: 60%; left: 80%; animation: float 4s ease-in-out infinite 0.5s;"></div>
+                                        <div class="absolute w-1 h-1 bg-zenix-green/60 rounded-full particle" style="top: 80%; left: 30%; animation: float 3.5s ease-in-out infinite 1s;"></div>
+                                        <div class="absolute w-1 h-1 bg-zenix-green rounded-full particle" style="top: 40%; left: 70%; animation: float 3.8s ease-in-out infinite 1.5s;"></div>
                                     </div>
                                     <!-- Data Stream Lines -->
                                     <div class="absolute inset-0 overflow-hidden opacity-30">
-                                        <div class="absolute h-px w-20 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
-                                        <div class="absolute h-px w-16 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
-                                        <div class="absolute h-px w-24 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                                        <div class="absolute h-px w-20 bg-gradient-to-r from-transparent via-zenix-green to-transparent" style="top: 30%; left: 10%; animation: streamRight 3s linear infinite;"></div>
+                                        <div class="absolute h-px w-16 bg-gradient-to-r from-transparent via-zenix-green to-transparent" style="top: 50%; left: 20%; animation: streamRight 4s linear infinite 0.5s;"></div>
+                                        <div class="absolute h-px w-24 bg-gradient-to-r from-transparent via-zenix-green to-transparent" style="top: 70%; left: 15%; animation: streamRight 3.5s linear infinite 1s;"></div>
                                     </div>
                                 </div>
                             </div>
@@ -3061,5 +3061,78 @@ button i,
 .eye-btn:hover {
     opacity: 1;
     color: #22C55E;
+}
+
+/* AI Animation Styles */
+@keyframes ringPulse {
+    0%, 100% {
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), 0 0 40px rgba(34, 197, 94, 0.1);
+    }
+    50% {
+        box-shadow: 0 0 40px rgba(34, 197, 94, 0.4), 0 0 80px rgba(34, 197, 94, 0.2);
+    }
+}
+
+@keyframes brainPulse {
+    0%, 100% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    50% {
+        transform: scale(1.1);
+        opacity: 0.9;
+    }
+}
+
+@keyframes orbit1 {
+    0% {
+        transform: rotate(0deg) translateX(3rem) rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg) translateX(3rem) rotate(-360deg);
+    }
+}
+
+@keyframes orbit2 {
+    0% {
+        transform: rotate(0deg) translateX(2.5rem) rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg) translateX(2.5rem) rotate(-360deg);
+    }
+}
+
+@keyframes orbit3 {
+    0% {
+        transform: rotate(0deg) translateX(2rem) rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg) translateX(2rem) rotate(-360deg);
+    }
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0) translateX(0);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translateY(-10px) translateX(5px);
+        opacity: 1;
+    }
+}
+
+@keyframes streamRight {
+    0% {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateX(200%);
+        opacity: 0;
+    }
 }
 </style>
