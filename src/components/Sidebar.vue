@@ -220,6 +220,17 @@
                     <i class="fa-solid fa-percent w-5 opacity-85"></i>
                     <span>Markup</span>
                 </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isPlansManagementActive }"
+                    @click.prevent="navigateAndClose('/PlansManagement')"
+                    data-text="Gerenciar Planos"
+                >
+                    <i class="fa-solid fa-crown w-5 opacity-85"></i>
+                    <span>Gerenciar Planos</span>
+                </a>
             </template>
 
         </nav>
@@ -274,6 +285,7 @@ export default {
         isMasterTraderActive() { return this.$route?.path === '/MasterTrader' || this.$route?.path === '/tradermestre'; },
         isInvestmentIAActive() { return this.$route?.path === '/InvestmentIA'; },
         isSupportItemsActive() { return this.$route?.path === '/SupportItems'; },
+        isPlansManagementActive() { return this.$route?.path === '/PlansManagement'; },
         isAdmin() {
             try {
                 const token = localStorage.getItem('token');

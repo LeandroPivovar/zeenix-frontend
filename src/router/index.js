@@ -22,6 +22,7 @@ import MasterTraderView from '@/views/MasterTraderView.vue'
 import AgenteAutonomoView from '@/views/AgenteAutonomo.vue'
 import CopyTraders from '@/views/CopyTradersView.vue';
 import SupportItemsManagementView from '@/views/Admin/SupportItemsManagementView.vue';
+import PlansManagementView from '@/views/Admin/PlansManagementView.vue';
 
 const routes = [
   {
@@ -186,6 +187,12 @@ const routes = [
     path: '/SupportItems',
     name: 'SupportItemsManagement',
     component: SupportItemsManagementView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/PlansManagement',
+    name: 'PlansManagement',
+    component: PlansManagementView,
     meta: { requiresAuth: true }
   },
 
