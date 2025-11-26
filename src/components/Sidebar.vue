@@ -72,6 +72,7 @@
             </a>
 
             <a
+                v-if="isAdmin || isTrader"
                 href="#"
                 class="menu-item"
                 :class="{ active: isMasterTraderActive }"
@@ -328,6 +329,27 @@ export default {
                        roleStr.includes('master') || roleStr.includes('admin') || roleStr.includes('trader');
             } catch (error) {
                 console.error('[Sidebar] Erro ao verificar acesso ao Copy Trader:', error);
+                return false;
+            }
+        },
+        isTrader() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+                
+                // Decodificar JWT token
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                
+                // Obter role do payload
+                const role = payload.role || payload.roles || payload.userRole || payload.user_role;
+                
+                if (!role) return false;
+                
+                // Verificar se role é trader
+                const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
+                return roleStr === 'trader' || roleStr.includes('trader');
+            } catch (error) {
+                console.error('[Sidebar] Erro ao verificar se usuário é trader:', error);
                 return false;
             }
         }

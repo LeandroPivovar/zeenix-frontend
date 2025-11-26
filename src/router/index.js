@@ -168,7 +168,7 @@ const routes = [
     path: '/MasterTrader',
     name: 'MasterTraderView',
     component: MasterTraderView,  
-    meta: { requiresAuth: true }  
+    meta: { requiresAuth: true, requiresRole: ['admin', 'trader'] }  
   },
   {
     path: '/agente-autonomo',
