@@ -77,14 +77,6 @@
           <div v-if="!chartInitialized" class="chart-placeholder absolute inset-0 flex items-center justify-center">
             <p class="text-zenix-secondary">{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
           </div>
-          
-          <div class="border-t border-[#1A1A1A]">
-            <div id="volumeChart" style="height: 100px;"></div>
-          </div>
-          
-          <div class="border-t border-[#1A1A1A]">
-            <div id="rsiChart" style="height: 100px;"></div>
-          </div>
         </div>
         
         <div class="border-t-2 bg-gradient-to-b from-[#101010] to-[#0E0E0E] px-6 py-4 rounded-xl shadow-[0_-2px_12px_rgba(34,197,94,0.08)]">
@@ -4798,6 +4790,8 @@ export default {
   width: 100%;
   display: flex;
   flex-direction: column;
+  padding: 0;
+  margin: 0;
 }
 
 #candlestickChart {
