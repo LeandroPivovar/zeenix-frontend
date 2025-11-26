@@ -73,7 +73,7 @@
                     </div>
 
                     <!-- Card 4 - Status da IA -->
-                    <div id="ichwdn" class="col-span-12" style="width: 100%; box-sizing: border-box;">
+                    <div id="ichwdn" class="col-span-6" style="width: 100%; box-sizing: border-box;">
                         <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border-2 border-[#22C55E]/10 rounded-[18px] p-6 premium-card h-[140px] relative overflow-hidden transition-all duration-700" style="width: 100%; box-sizing: border-box;">
                             <div id="card-gradient" class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/8 to-transparent pointer-events-none transition-all duration-700"></div>
                             <div class="relative z-10 h-full flex items-center justify-between gap-8">
