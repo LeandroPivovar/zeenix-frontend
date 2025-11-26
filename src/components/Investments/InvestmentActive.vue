@@ -2,11 +2,11 @@
     <div class="investment-active-wrapper">
         <main class="investment-active-main">
             <!-- Performance Summary Cards -->
-            <section id="compact-performance-panel" class="mb-6 px-3">
-                <div id="iya1j" class="grid grid-cols-12 gap-1">
+            <section id="compact-performance-panel" class="mb-6">
+                <div id="iya1j" class="grid grid-cols-12 gap-3">
                     <!-- Card 1 - Saldo Total -->
                     <div class="col-span-2">
-                        <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between relative overflow-hidden">
+                        <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-1">
@@ -27,7 +27,7 @@
 
                     <!-- Card 2 - Lucro do Dia -->
                     <div class="col-span-2">
-                        <div id="i790gh" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between relative overflow-hidden">
+                        <div id="i790gh" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-1">
@@ -49,7 +49,7 @@
 
                     <!-- Card 3 - Trades Hoje -->
                     <div class="col-span-2">
-                        <div id="i42e4g" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between">
+                        <div id="i42e4g" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between">
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
                                 <button class="eye-btn" @click="tradesVisible = !tradesVisible">
@@ -74,7 +74,7 @@
 
                     <!-- Card 4 - Status da IA -->
                     <div id="ichwdn" class="col-span-6">
-                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[100px] relative overflow-hidden transition-all duration-700">
+                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[72px] relative overflow-hidden transition-all duration-700">
                             <div id="card-gradient" class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/8 to-transparent pointer-events-none transition-all duration-700"></div>
                             <div class="relative z-10 h-full flex items-center justify-between gap-6">
                                 <div class="flex items-center space-x-4 flex-shrink-0">
@@ -91,7 +91,7 @@
                                     </div>
                                 </div>
                                 <div class="flex-1 h-full flex items-center justify-end min-w-0">
-                                    <svg id="status-animation" viewBox="0 0 280 100" preserveAspectRatio="xMaxYMid meet" class="w-full h-full max-w-[280px]">
+                                    <svg id="status-animation" viewBox="0 0 280 72" preserveAspectRatio="xMaxYMid meet" class="w-full h-full max-w-[280px]">
                                         <defs>
                                             <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                                 <stop offset="0%" stop-color="#22C55E" stop-opacity="0"></stop>
@@ -111,61 +111,61 @@
                                             </radialGradient>
                                         </defs>
                                         <g opacity="0.15">
-                                            <line x1="20" y1="20" x2="260" y2="20" stroke="#22C55E" stroke-width="0.5"></line>
-                                            <line x1="20" y1="35" x2="260" y2="35" stroke="#22C55E" stroke-width="0.5"></line>
-                                            <line x1="20" y1="60" x2="260" y2="60" stroke="#22C55E" stroke-width="1"></line>
-                                            <line x1="20" y1="85" x2="260" y2="85" stroke="#22C55E" stroke-width="0.5"></line>
-                                            <line x1="20" y1="100" x2="260" y2="100" stroke="#22C55E" stroke-width="0.5"></line>
+                                            <line x1="20" y1="15" x2="260" y2="15" stroke="#22C55E" stroke-width="0.5"></line>
+                                            <line x1="20" y1="25" x2="260" y2="25" stroke="#22C55E" stroke-width="0.5"></line>
+                                            <line x1="20" y1="36" x2="260" y2="36" stroke="#22C55E" stroke-width="1"></line>
+                                            <line x1="20" y1="47" x2="260" y2="47" stroke="#22C55E" stroke-width="0.5"></line>
+                                            <line x1="20" y1="57" x2="260" y2="57" stroke="#22C55E" stroke-width="0.5"></line>
                                         </g>
-                                        <path d="M 30,60 Q 70,40 110,55 T 190,50 Q 220,60 250,45" stroke="#22C55E" stroke-width="2" fill="none" opacity="0.4" filter="url(#glow-filter)">
-                                            <animate attributeName="d" values="M 30,60 Q 70,40 110,55 T 190,50 Q 220,60 250,45; M 30,55 Q 70,45 110,60 T 190,45 Q 220,55 250,50; M 30,60 Q 70,40 110,55 T 190,50 Q 220,60 250,45" dur="3s" repeatCount="indefinite"></animate>
+                                        <path d="M 30,45 Q 70,25 110,40 T 190,35 Q 220,45 250,30" stroke="#22C55E" stroke-width="2" fill="none" opacity="0.4" filter="url(#glow-filter)">
+                                            <animate attributeName="d" values="M 30,45 Q 70,25 110,40 T 190,35 Q 220,45 250,30; M 30,40 Q 70,30 110,45 T 190,30 Q 220,40 250,35; M 30,45 Q 70,25 110,40 T 190,35 Q 220,45 250,30" dur="3s" repeatCount="indefinite"></animate>
                                         </path>
-                                        <rect x="20" y="15" width="4" height="90" fill="url(#scan-gradient)" opacity="0.8">
+                                        <rect x="20" y="10" width="4" height="52" fill="url(#scan-gradient)" opacity="0.8">
                                             <animate attributeName="x" values="20;260;20" dur="2.5s" repeatCount="indefinite"></animate>
                                         </rect>
                                         <g opacity="0.6">
-                                            <circle cx="50" cy="60" r="3" fill="#22C55E">
+                                            <circle cx="50" cy="36" r="3" fill="#22C55E">
                                                 <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" repeatCount="indefinite"></animate>
                                             </circle>
-                                            <circle cx="90" cy="50" r="3" fill="#22C55E">
+                                            <circle cx="90" cy="30" r="3" fill="#22C55E">
                                                 <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.2s" repeatCount="indefinite"></animate>
                                             </circle>
-                                            <circle cx="140" cy="65" r="3" fill="#22C55E">
+                                            <circle cx="140" cy="38" r="3" fill="#22C55E">
                                                 <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.4s" repeatCount="indefinite"></animate>
                                             </circle>
-                                            <circle cx="180" cy="55" r="3" fill="#22C55E">
+                                            <circle cx="180" cy="33" r="3" fill="#22C55E">
                                                 <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.6s" repeatCount="indefinite"></animate>
                                             </circle>
-                                            <circle cx="230" cy="70" r="3" fill="#22C55E">
+                                            <circle cx="230" cy="40" r="3" fill="#22C55E">
                                                 <animate attributeName="opacity" values="0.3;1;0.3" dur="1.2s" begin="0.8s" repeatCount="indefinite"></animate>
                                             </circle>
                                         </g>
-                                        <circle cx="140" cy="60" r="30" fill="url(#radar-gradient)" opacity="0.3">
-                                            <animate attributeName="r" values="20;45;20" dur="2s" repeatCount="indefinite"></animate>
+                                        <circle cx="140" cy="36" r="25" fill="url(#radar-gradient)" opacity="0.3">
+                                            <animate attributeName="r" values="15;35;15" dur="2s" repeatCount="indefinite"></animate>
                                             <animate attributeName="opacity" values="0.5;0.1;0.5" dur="2s" repeatCount="indefinite"></animate>
                                         </circle>
-                                        <line x1="140" y1="60" x2="170" y2="60" stroke="#22C55E" stroke-width="1.5" opacity="0.8" filter="url(#glow-filter)">
-                                            <animateTransform attributeName="transform" type="rotate" values="0 140 60;360 140 60" dur="3s" repeatCount="indefinite"></animateTransform>
+                                        <line x1="140" y1="36" x2="165" y2="36" stroke="#22C55E" stroke-width="1.5" opacity="0.8" filter="url(#glow-filter)">
+                                            <animateTransform attributeName="transform" type="rotate" values="0 140 36;360 140 36" dur="3s" repeatCount="indefinite"></animateTransform>
                                         </line>
-                                        <circle cx="140" cy="60" r="4" fill="#22C55E" filter="url(#glow-filter)">
+                                        <circle cx="140" cy="36" r="4" fill="#22C55E" filter="url(#glow-filter)">
                                             <animate attributeName="opacity" values="0.8;1;0.8" dur="1s" repeatCount="indefinite"></animate>
                                         </circle>
                                         <g opacity="0.4">
-                                            <rect x="25" y="95" width="8" height="4" fill="#22C55E" rx="1">
+                                            <rect x="25" y="60" width="8" height="4" fill="#22C55E" rx="1">
                                                 <animate attributeName="height" values="4;12;4" dur="0.8s" repeatCount="indefinite"></animate>
-                                                <animate attributeName="y" values="95;91;95" dur="0.8s" repeatCount="indefinite"></animate>
+                                                <animate attributeName="y" values="60;56;60" dur="0.8s" repeatCount="indefinite"></animate>
                                             </rect>
-                                            <rect x="38" y="95" width="8" height="4" fill="#22C55E" rx="1">
+                                            <rect x="38" y="60" width="8" height="4" fill="#22C55E" rx="1">
                                                 <animate attributeName="height" values="4;16;4" dur="0.8s" begin="0.1s" repeatCount="indefinite"></animate>
-                                                <animate attributeName="y" values="95;87;95" dur="0.8s" begin="0.1s" repeatCount="indefinite"></animate>
+                                                <animate attributeName="y" values="60;52;60" dur="0.8s" begin="0.1s" repeatCount="indefinite"></animate>
                                             </rect>
-                                            <rect x="51" y="95" width="8" height="4" fill="#22C55E" rx="1">
+                                            <rect x="51" y="60" width="8" height="4" fill="#22C55E" rx="1">
                                                 <animate attributeName="height" values="4;10;4" dur="0.8s" begin="0.2s" repeatCount="indefinite"></animate>
-                                                <animate attributeName="y" values="95;93;95" dur="0.8s" begin="0.2s" repeatCount="indefinite"></animate>
+                                                <animate attributeName="y" values="60;58;60" dur="0.8s" begin="0.2s" repeatCount="indefinite"></animate>
                                             </rect>
-                                            <rect x="64" y="95" width="8" height="4" fill="#22C55E" rx="1">
+                                            <rect x="64" y="60" width="8" height="4" fill="#22C55E" rx="1">
                                                 <animate attributeName="height" values="4;14;4" dur="0.8s" begin="0.3s" repeatCount="indefinite"></animate>
-                                                <animate attributeName="y" values="95;89;95" dur="0.8s" begin="0.3s" repeatCount="indefinite"></animate>
+                                                <animate attributeName="y" values="60;54;60" dur="0.8s" begin="0.3s" repeatCount="indefinite"></animate>
                                             </rect>
                                         </g>
                                     </svg>
@@ -177,7 +177,7 @@
             </section>
     
             <!-- Main Content Grid -->
-            <div class="grid grid-cols-12 gap-1 mb-6 px-3">
+            <div class="grid grid-cols-12 gap-6 mb-6">
                 <!-- Left Column - Chart -->
                 <div id="ir8sfp" class="col-span-8">
                     <div id="market-chart" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
