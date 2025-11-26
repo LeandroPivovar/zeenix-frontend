@@ -7,6 +7,7 @@
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="accountBalanceValue"
         :account-type="accountType"
+        @account-type-changed="handleAccountTypeChange"
         :currency="accountCurrency"
       />
 
@@ -168,6 +169,14 @@ export default {
     },
   },
   methods: {
+    handleAccountTypeChange(newAccountType) {
+      // Alterna entre demo e real
+      this.accountType = newAccountType;
+      console.log('[OperationView] Tipo de conta alterado para:', this.accountType);
+      
+      // Recarrega a conexão para atualizar os dados da conta correta
+      this.checkConnection(true);
+    },
     formatCurrency(value, currency) {
       try {
         return new Intl.NumberFormat('pt-BR', {

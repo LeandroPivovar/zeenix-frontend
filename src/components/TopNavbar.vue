@@ -63,6 +63,7 @@
             <div class="py-2">
               <a 
                 href="#" 
+                @click.prevent="switchAccount"
                 class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
               >
                 <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
@@ -268,6 +269,16 @@ export default {
       localStorage.removeItem('deriv_connection');
       this.$router.push('/dashboard');
       window.location.reload();
+    },
+    switchAccount() {
+      // Alterna entre demo e real
+      const newAccountType = this.accountType === 'demo' ? 'real' : 'demo';
+      
+      // Emite evento para o componente pai
+      this.$emit('account-type-changed', newAccountType);
+      
+      // Fecha o dropdown
+      this.showProfileDropdown = false;
     },
     getCurrencyPrefix(currency) {
       switch ((currency || '').toUpperCase()) {

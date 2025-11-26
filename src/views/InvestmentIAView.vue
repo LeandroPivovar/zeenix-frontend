@@ -13,6 +13,7 @@
                 :balance="accountBalance"
                 :account-type="isDemo ? 'demo' : 'real'"
                 :currency="accountCurrency"
+                @account-type-changed="handleAccountTypeChangeFromNavbar"
             />
 
             <main class="main-content" style="margin-top: 60px;">
@@ -1024,6 +1025,10 @@ export default {
         
         toggleAccountType(type) {
             this.isDemo = type === 'demo';
+        },
+        handleAccountTypeChangeFromNavbar(newAccountType) {
+            // Alterna entre demo e real quando chamado do navbar
+            this.toggleAccountType(newAccountType);
         },
         
         async startDataLoading() {

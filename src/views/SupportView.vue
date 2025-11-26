@@ -9,6 +9,7 @@
         :balance="accountBalance"
         :account-type="isDemo ? 'demo' : 'real'"
         :currency="accountCurrency"
+        @account-type-changed="handleAccountTypeChange"
       />
       <main class="main-content" style="margin-top: 60px;">
         <!-- Immediate Support Section -->
@@ -263,6 +264,11 @@ export default {
     this.stopBalanceUpdates()
   },
   methods: {
+    handleAccountTypeChange(newAccountType) {
+      // Alterna entre demo e real
+      this.isDemo = newAccountType === 'demo';
+      console.log('[SupportView] Tipo de conta alterado para:', this.isDemo ? 'demo' : 'real');
+    },
     checkMobile() {
       this.isMobile = window.innerWidth <= 1024
     },

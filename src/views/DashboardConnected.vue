@@ -5,6 +5,7 @@
       :is-sidebar-collapsed="isSidebarCollapsed"
       :balance="info?.balance"
       :account-type="accountType"
+      @account-type-changed="switchAccount"
       :balances-by-currency-real="balancesByCurrencyReal"
       :balances-by-currency-demo="balancesByCurrencyDemo"
       :currency-prefix="preferredCurrencyPrefix"

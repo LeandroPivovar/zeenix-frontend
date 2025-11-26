@@ -11,6 +11,7 @@
 			:balance="accountBalance"
 			:account-type="isDemo ? 'demo' : 'real'"
 			:currency="accountCurrency"
+			@account-type-changed="handleAccountTypeChange"
 		/>
 		<div class="container-componentes" style="margin-top: 60px;">
 			<component 
@@ -149,6 +150,11 @@ export default {
 	},
 
 	methods: {
+		handleAccountTypeChange(newAccountType) {
+			// Alterna entre demo e real
+			this.isDemo = newAccountType === 'demo';
+			console.log('[AgenteAutonomo] Tipo de conta alterado para:', this.isDemo ? 'demo' : 'real');
+		},
 		toggleAgenteStatus() {
 			this.agenteEstaAtivo = !this.agenteEstaAtivo;
 

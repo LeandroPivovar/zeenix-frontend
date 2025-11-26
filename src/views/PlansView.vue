@@ -8,6 +8,7 @@
 				:balance="accountBalance"
 				:account-type="isDemo ? 'demo' : 'real'"
 				:currency="accountCurrency"
+				@account-type-changed="handleAccountTypeChange"
 			/>
 			<main class="plans-content" style="margin-top: 60px;">
 				<div class="video-card-wrapper">
@@ -193,6 +194,11 @@ export default {
 		this.stopBalanceUpdates();
 	},
 	methods: {
+		handleAccountTypeChange(newAccountType) {
+			// Alterna entre demo e real
+			this.isDemo = newAccountType === 'demo';
+			console.log('[PlansView] Tipo de conta alterado para:', this.isDemo ? 'demo' : 'real');
+		},
 		loadDependencies() {
 			// FontAwesome já deve estar no projeto, mas garantindo
 			if (!document.getElementById('fa-script')) {
