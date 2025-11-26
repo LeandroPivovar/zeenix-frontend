@@ -280,10 +280,15 @@ export default {
                 // Decodificar JWT token
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 
+                // Debug: log do payload para verificar se role está presente
+                console.log('[Sidebar] Token payload:', payload);
+                
                 // Verificar se o usuário tem role de admin
                 // Pode ser 'role', 'roles', 'userRole', 'isAdmin', etc.
                 const role = payload.role || payload.roles || payload.userRole || payload.user_role;
                 const isAdmin = payload.isAdmin || payload.is_admin;
+                
+                console.log('[Sidebar] Role encontrada:', role, 'isAdmin:', isAdmin);
                 
                 // Verificar se role contém 'admin' ou se isAdmin é true
                 if (isAdmin === true || isAdmin === 'true') {
@@ -292,7 +297,9 @@ export default {
                 
                 if (role) {
                     const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
-                    return roleStr.includes('admin') || roleStr === 'admin';
+                    const result = roleStr.includes('admin') || roleStr === 'admin';
+                    console.log('[Sidebar] Resultado da verificação de role:', result);
+                    return result;
                 }
                 
                 return false;

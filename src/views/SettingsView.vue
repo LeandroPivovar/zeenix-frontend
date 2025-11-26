@@ -21,13 +21,6 @@
               <i class="fas fa-bars text-lg"></i>
             </button>
             
-            <button class="text-zenix-secondary hover:text-white transition-all hidden lg:block" @click="$router.push('/dashboard')">
-              <i class="fas fa-arrow-left text-lg"></i>
-            </button>
-            <div class="text-left">
-              <h1 class="text-lg lg:text-xl font-bold text-white">Configurações de Perfil</h1>
-              <p class="text-xs text-zenix-secondary mt-0.5">Gerencie suas informações pessoais e preferências</p>
-            </div>
           </div>
           <button 
             @click="saveAll" 
