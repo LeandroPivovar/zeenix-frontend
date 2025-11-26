@@ -150,7 +150,10 @@
     margin-bottom: 16px;
     position: relative;
     padding: 0 4px; 
-    height: 32px; 
+    height: 60px;
+    min-height: 60px;
+    max-height: 60px;
+    box-sizing: border-box;
 }
 
 /* Remoção do avatar e subtítulo */

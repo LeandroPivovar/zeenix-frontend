@@ -146,9 +146,9 @@
           Ξ
         </div>
       </div>
-      <div class="relative z-10 px-8">
-        <div id="hero-header" class="mb-10 text-left">
-          <h1 id="ixl21c" class="text-3xl font-semibold mb-2 text-white/90 text-left">
+      <div class="relative z-10 px-3">
+        <div id="hero-header" class="mb-4 text-left">
+          <h1 id="ixl21c" class="text-3xl font-semibold mb-2 text-white/90 text-left mt-[14px]">
             Bem-vindo ao
             Zenix, <span id="itixvs">{{ userName }}</span></h1>
           <p class="text-white/60 text-left">Configure sua conta rapidamente em 3 passos
@@ -1510,7 +1510,7 @@ export default {
 }
 
 #ixl21c {
-  font-size: 34px;
+  font-size: 43px;
   position: relative;
   top: 7px;
 }
