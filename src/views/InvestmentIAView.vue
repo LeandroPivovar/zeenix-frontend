@@ -19,51 +19,16 @@
             <main class="main-content" style="margin-top: 60px;">
                 <!-- AI Vision Panel - Only show when IA is inactive -->
                 <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
-                    <div class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card glow-green">
-                        <div class="flex items-start justify-between mb-6">
-                            <div>
+                    <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green">
+                        <div class="mb-6">
+                            <div class="text-left">
                                 <h1 class="text-xl font-bold text-zenix-text mb-1">Visão da IA | {{ selectedStrategyName }}</h1>
                                 <p class="text-sm text-zenix-secondary">Configure esta IA para iniciar operações</p>
-                            </div>
-                            <div class="bg-zenix-bg border border-zenix-border rounded-xl p-3 hover-lift">
-                                <div class="flex items-center space-x-2.5">
-                                    <div class="wallet-icon-wrapper" style="display: flex; align-items: center; justify-content: center; min-width: 20px; min-height: 20px;">
-                                        <i class="far fa-wallet text-zenix-green" style="font-size: 16px !important; display: inline-block !important; visibility: visible !important; opacity: 1 !important; line-height: 1 !important;"></i>
-                                    </div>
-                                    <div class="flex flex-col">
-                                        <span class="text-[10px] text-zenix-label font-medium">Saldo Atual</span>
-                                        <div class="flex items-center space-x-2 mt-0.5">
-                                            <span id="balanceValue" class="text-base font-bold text-zenix-text">
-                                                {{ formattedBalance }}
-                                            </span>
-                                            <div class="flex items-center space-x-1">
-                                                <button 
-                                                    :class="['px-2 py-0.5 rounded text-[10px] font-semibold transition-all', isDemo ? 'bg-zenix-card text-zenix-secondary' : 'bg-zenix-green text-black hover:bg-zenix-green-hover']"
-                                                    @click="toggleAccountType('real')"
-                                                >
-                                                    Real
-                                                </button>
-                                                <button 
-                                                    :class="['px-2 py-0.5 rounded text-[10px] font-semibold transition-all', isDemo ? 'bg-zenix-green text-black hover:bg-zenix-green-hover' : 'bg-zenix-card text-zenix-secondary']"
-                                                    @click="toggleAccountType('demo')"
-                                                >
-                                                    Demo
-                                                </button>
-                                            </div>
-                                            <button 
-                                                class="text-zenix-secondary hover:text-zenix-text transition-colors"
-                                                @click="balanceVisible = !balanceVisible"
-                                            >
-                                                <i :class="balanceVisible ? 'far fa-eye text-xs' : 'far fa-eye-slash text-xs'" style="display: inline-block !important; visibility: visible !important;"></i>
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
                             </div>
                         </div>
                         <div class="grid grid-cols-12 gap-5">
                             <!-- AI Visualization Area -->
-                            <div class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border border-zenix-green/30 flex items-center justify-center relative">
+                            <div class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border-2 border-zenix-green/30 flex items-center justify-center relative">
                                 <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/5 via-transparent to-zenix-green/10"></div>
                                 <!-- Animated Grid Background -->
                                 <div class="absolute inset-0 opacity-20">
@@ -102,12 +67,12 @@
                             </div>
                             <!-- Status Cards -->
                             <div class="col-span-7 grid grid-cols-2 gap-4">
-                                <div class="bg-zenix-bg border border-zenix-border rounded-xl p-4 hover-lift">
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
                                     <p class="text-[10px] text-zenix-secondary mb-2">Status</p>
                                     <p class="text-base font-bold text-zenix-secondary">Aguardando configuração</p>
                                     <p class="text-[10px] text-zenix-label mt-1">Configure para ativar esta IA</p>
                                 </div>
-                                <div class="bg-zenix-bg border border-zenix-border rounded-xl p-4 hover-lift">
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
                                     <div class="flex items-center gap-2 mb-2">
                                         <img src="@/assets/icons/target-IA.svg" alt="Ativo da IA" class="asset-icon" style="width: 16px !important; height: 16px !important; display: block !important; opacity: 0.6 !important; visibility: visible !important;">
                                         <p class="text-[10px] text-zenix-secondary">Ativo da IA</p>
@@ -115,12 +80,12 @@
                                     <p class="text-sm font-semibold text-zenix-secondary">Será exibido após configuração</p>
                                     <p class="text-[10px] text-zenix-label mt-1">Defina os parâmetros para revelar</p>
                                 </div>
-                                <div class="bg-zenix-bg border border-zenix-border rounded-xl p-4 hover-lift">
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
                                     <p class="text-[10px] text-zenix-secondary mb-2">Parâmetros</p>
                                     <p class="text-base font-bold text-zenix-secondary">Não definidos</p>
                                     <p class="text-[10px] text-zenix-label mt-1">Configure risco e entradas</p>
                                 </div>
-                                <div class="bg-zenix-bg border border-zenix-border rounded-xl p-4 hover-lift">
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
                                     <p class="text-[10px] text-zenix-secondary mb-2">Execução</p>
                                     <p class="text-base font-bold text-zenix-secondary">IA Inativa</p>
                                     <p class="text-[10px] text-zenix-label mt-1">Ativada após configuração</p>
@@ -2350,7 +2315,7 @@ export default {
 
 .config-card {
     background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
-    border: 1px solid #1C1C1C;
+    border: 2px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1.25rem;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);

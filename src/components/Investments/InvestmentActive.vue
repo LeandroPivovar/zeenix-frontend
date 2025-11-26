@@ -6,7 +6,7 @@
                 <div id="iya1j" class="grid grid-cols-12 gap-3" style="width: 100%; box-sizing: border-box;">
                     <!-- Card 1 - Saldo Total -->
                     <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
-                        <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
+                        <div id="ie22vl" class="bg-[#0B0B0B]/80 border-2 border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-1">
@@ -27,7 +27,7 @@
 
                     <!-- Card 2 - Lucro do Dia -->
                     <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
-                        <div id="i790gh" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
+                        <div id="i790gh" class="bg-[#0B0B0B]/80 border-2 border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-1">
@@ -49,7 +49,7 @@
 
                     <!-- Card 3 - Trades Hoje -->
                     <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
-                        <div id="i42e4g" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between" style="width: 100%; box-sizing: border-box;">
+                        <div id="i42e4g" class="bg-[#0B0B0B]/80 border-2 border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between" style="width: 100%; box-sizing: border-box;">
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
                                 <button class="eye-btn" @click="tradesVisible = !tradesVisible">
@@ -74,7 +74,7 @@
 
                     <!-- Card 4 - Status da IA -->
                     <div id="ichwdn" class="col-span-6" style="width: 100%; box-sizing: border-box;">
-                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[100px] relative overflow-hidden transition-all duration-700" style="width: 100%; box-sizing: border-box;">
+                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border-2 border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[100px] relative overflow-hidden transition-all duration-700" style="width: 100%; box-sizing: border-box;">
                             <div id="card-gradient" class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/8 to-transparent pointer-events-none transition-all duration-700"></div>
                             <div class="relative z-10 h-full flex items-center justify-between gap-6">
                                 <div class="flex items-center space-x-4 flex-shrink-0">
@@ -180,7 +180,7 @@
             <div class="grid grid-cols-12 gap-6 mb-6" style="width: 100%; box-sizing: border-box;">
                 <!-- Left Column - Chart -->
                 <div id="ir8sfp" class="col-span-8">
-                    <div id="market-chart" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
+                    <div id="market-chart" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h2 class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
@@ -268,7 +268,7 @@
 
                 <!-- Right Column - Config -->
                 <div class="col-span-4">
-                    <div id="i0k3nl" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
+                    <div id="i0k3nl" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
                         <h3 class="text-base font-semibold text-zenix-text mb-6 flex items-center">
                             <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
                             Configuração Ativa

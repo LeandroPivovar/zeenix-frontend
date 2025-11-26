@@ -879,7 +879,7 @@ export default {
 	box-shadow: 0px 2px 10px #011401;
 	padding: 30px ;
 	border-radius: 8px;
-	border: 1px solid #191a19;
+	border: 2px solid #191a19;
 }
 
 /* Grid de Métricas */
@@ -900,7 +900,7 @@ export default {
 	flex-direction: column;
 	justify-content: space-between;
 	text-align: left;
-	border: 1px solid #191a19;
+	border: 2px solid #191a19;
 }
 
 .ai-brain-icon {
@@ -910,7 +910,7 @@ export default {
     justify-content: center;
     border-radius: 8px;
     background-color: rgba(20, 44, 15, 0.5);
-    border: 1px solid rgba(34, 197, 94, 0.2);
+    border: 2px solid rgba(34, 197, 94, 0.2);
     animation: background-blink 1.5s infinite linear; 
     position: relative;
     overflow: hidden;
@@ -1043,7 +1043,7 @@ p{
 	padding: 10px;
 	margin-top: 5px;
 	background-color: #0a0b0a;
-	border: 1px solid #242323;
+	border: 2px solid #242323;
 	border-radius: 4px;
 	color: var(--color-text-light);
 	font-size: 0.9rem;
