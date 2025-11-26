@@ -147,7 +147,7 @@
         </div>
       </div>
       <div class="relative z-10 px-3">
-        <div id="hero-header" class="mb-4 text-left">
+        <div id="hero-header" class="mb-4 text-left px-8">
           <h1 id="ixl21c" class="text-3xl font-semibold mb-2 text-white/90 text-left mt-[14px]">
             Bem-vindo ao
             Zenix, <span id="itixvs">{{ userName }}</span></h1>
