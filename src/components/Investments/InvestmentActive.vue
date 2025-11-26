@@ -73,25 +73,25 @@
                     </div>
 
                     <!-- Card 4 - Status da IA -->
-                    <div id="ichwdn" class="col-span-6" style="width: 100%; box-sizing: border-box;">
-                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border-2 border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[100px] relative overflow-hidden transition-all duration-700" style="width: 100%; box-sizing: border-box;">
+                    <div id="ichwdn" class="col-span-12" style="width: 100%; box-sizing: border-box;">
+                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border-2 border-[#22C55E]/10 rounded-[18px] p-6 premium-card h-[140px] relative overflow-hidden transition-all duration-700" style="width: 100%; box-sizing: border-box;">
                             <div id="card-gradient" class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/8 to-transparent pointer-events-none transition-all duration-700"></div>
-                            <div class="relative z-10 h-full flex items-center justify-between gap-6">
-                                <div class="flex items-center space-x-4 flex-shrink-0">
-                                    <div id="status-icon-container" class="w-12 h-12 bg-zenix-green/15 border border-zenix-green/30 rounded-xl flex items-center justify-center transition-all duration-700">
-                                        <i id="status-icon" class="fas fa-chart-line text-zenix-green text-lg ai-pulse"></i>
+                            <div class="relative z-10 h-full flex items-center justify-between gap-8">
+                                <div class="flex items-center space-x-5 flex-shrink-0">
+                                    <div id="status-icon-container" class="w-16 h-16 bg-zenix-green/15 border-2 border-zenix-green/30 rounded-xl flex items-center justify-center transition-all duration-700">
+                                        <i id="status-icon" class="fas fa-chart-line text-zenix-green text-2xl ai-pulse"></i>
                                     </div>
                                     <div>
-                                        <h3 id="status-title" class="text-base font-bold text-zenix-text leading-tight transition-all duration-700">
+                                        <h3 id="status-title" class="text-xl font-bold text-zenix-text leading-tight transition-all duration-700">
                                             {{ currentStatusTitle }}
                                         </h3>
-                                        <p id="status-description" class="text-[10px] text-zenix-secondary mt-0.5 leading-tight transition-all duration-700">
+                                        <p id="status-description" class="text-sm text-zenix-secondary mt-1 leading-tight transition-all duration-700">
                                             {{ currentStatusDescription }}
                                         </p>
                                     </div>
                                 </div>
                                 <div class="flex-1 h-full flex items-center justify-end min-w-0">
-                                    <svg id="status-animation" viewBox="0 0 280 100" preserveAspectRatio="xMaxYMid meet" class="w-full h-full max-w-[280px]">
+                                    <svg id="status-animation" viewBox="0 0 280 100" preserveAspectRatio="xMaxYMid meet" class="w-full h-full max-w-[600px] min-h-[120px]">
                                         <defs>
                                             <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                                 <stop offset="0%" stop-color="#22C55E" stop-opacity="0"></stop>
@@ -3072,9 +3072,6 @@ button i,
 
 #ai-status-card {
 	box-shadow: rgba(34, 197, 94, 0.08) 0px 0px 24px;
-	display: flex;
-	flex-direction: row-reverse;
-	justify-content: center;
 	position: relative;
 	width: 100%;
 	box-sizing: border-box;
@@ -3082,7 +3079,6 @@ button i,
 
 #status-icon-container {
     position: relative;
-    left: 10px;
 }
 
 /* Timeframe buttons */
