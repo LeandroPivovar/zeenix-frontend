@@ -342,6 +342,8 @@ export default {
 
 .layout-markup .layout-content {
     background-color: #0B0B0B;
+    width: 100%;
+    padding: 40px;
 }
 
 .main-header {
