@@ -42,11 +42,6 @@
                             <span class="status-value">$450</span>
                         </div>
                     </div>
-                    <div class="status-actions">
-                        <button class="action-icon-btn"><img src="../assets/icons/notify.svg" alt="" width="30" height="30"></button>
-                        <button class="action-icon-btn active-user"><img src="../assets/icons/people.svg" alt="" width="30" height="30"></button>
-                    </div>
-
                 </div>
                 <nav class="master-trader-mode-nav">
                     <button 
