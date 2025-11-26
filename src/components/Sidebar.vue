@@ -127,6 +127,99 @@
                 <span>Suporte</span>
             </a>
 
+            <!-- Links de Administração (apenas para admins) -->
+            <template v-if="isAdmin">
+                <div class="separator"></div>
+                
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isAdminViewActive }"
+                    @click.prevent="navigateAndClose('/Admin')"
+                    data-text="Admin"
+                >
+                    <i class="fa-solid fa-shield-halved w-5 opacity-85"></i>
+                    <span>Admin</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isStatsIAsActive }"
+                    @click.prevent="navigateAndClose('/StatsIAs')"
+                    data-text="Estatísticas IAs"
+                >
+                    <i class="fa-solid fa-chart-bar w-5 opacity-85"></i>
+                    <span>Estatísticas IAs</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isExpertsActive }"
+                    @click.prevent="navigateAndClose('/Experts')"
+                    data-text="Experts"
+                >
+                    <i class="fa-solid fa-user-tie w-5 opacity-85"></i>
+                    <span>Experts</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isClientesActive }"
+                    @click.prevent="navigateAndClose('/Clientes')"
+                    data-text="Clientes"
+                >
+                    <i class="fa-solid fa-users w-5 opacity-85"></i>
+                    <span>Clientes</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isWebhooksActive }"
+                    @click.prevent="navigateAndClose('/Webhooks')"
+                    data-text="Webhooks"
+                >
+                    <i class="fa-solid fa-webhook w-5 opacity-85"></i>
+                    <span>Webhooks</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isAcademyManagementActive }"
+                    @click.prevent="navigateAndClose('/AcademyManagement')"
+                    data-text="Gerenciar Academia"
+                >
+                    <i class="fa-solid fa-book w-5 opacity-85"></i>
+                    <span>Gerenciar Academia</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isSupportItemsActive }"
+                    @click.prevent="navigateAndClose('/SupportItems')"
+                    data-text="Itens de Suporte"
+                >
+                    <i class="fa-solid fa-ticket w-5 opacity-85"></i>
+                    <span>Itens de Suporte</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isMarkupActive }"
+                    @click.prevent="navigateAndClose('/markup')"
+                    data-text="Markup"
+                >
+                    <i class="fa-solid fa-percent w-5 opacity-85"></i>
+                    <span>Markup</span>
+                </a>
+            </template>
+
         </nav>
         <div class="status">
             <div class="footer-row">
@@ -179,6 +272,35 @@ export default {
         isMasterTraderActive() { return this.$route?.path === '/MasterTrader' || this.$route?.path === '/tradermestre'; },
         isInvestmentIAActive() { return this.$route?.path === '/InvestmentIA'; },
         isSupportItemsActive() { return this.$route?.path === '/SupportItems'; },
+        isAdmin() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+                
+                // Decodificar JWT token
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                
+                // Verificar se o usuário tem role de admin
+                // Pode ser 'role', 'roles', 'userRole', 'isAdmin', etc.
+                const role = payload.role || payload.roles || payload.userRole || payload.user_role;
+                const isAdmin = payload.isAdmin || payload.is_admin;
+                
+                // Verificar se role contém 'admin' ou se isAdmin é true
+                if (isAdmin === true || isAdmin === 'true') {
+                    return true;
+                }
+                
+                if (role) {
+                    const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
+                    return roleStr.includes('admin') || roleStr === 'admin';
+                }
+                
+                return false;
+            } catch (error) {
+                console.error('[Sidebar] Erro ao verificar se usuário é admin:', error);
+                return false;
+            }
+        }
     },
     methods: {
         close() { if (this.isOpen) { this.$emit('close-sidebar') } },
