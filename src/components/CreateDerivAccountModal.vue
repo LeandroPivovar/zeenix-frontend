@@ -365,7 +365,7 @@ export default {
 .row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 8px;
 }
 
 label {
