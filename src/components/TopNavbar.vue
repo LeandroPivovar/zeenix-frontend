@@ -32,8 +32,10 @@
           <button 
             @click="toggleBalance" 
             class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
+            type="button"
           >
-            <i :class="balanceHidden ? 'fas fa-eye text-sm' : 'fas fa-eye-slash text-sm'"></i>
+            <i v-if="balanceHidden" class="fas fa-eye-slash text-sm"></i>
+            <i v-else class="fas fa-eye text-sm"></i>
           </button>
         </div>
         <div class="relative">

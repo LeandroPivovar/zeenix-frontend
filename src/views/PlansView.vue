@@ -5,8 +5,9 @@
 		<div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
 			<TopNavbar 
 				:is-sidebar-collapsed="isSidebarCollapsed"
-				:balance="0"
-				account-type="real"
+				:balance="accountBalance"
+				:account-type="isDemo ? 'demo' : 'real'"
+				:currency="accountCurrency"
 			/>
 			<main class="plans-content" style="margin-top: 60px;">
 				<div class="video-card-wrapper">
@@ -215,18 +216,34 @@ export default {
 		},
 		getDerivToken() {
 			try {
+				// Tenta obter token padrão primeiro
+				const defaultToken = localStorage.getItem('deriv_token');
+				if (defaultToken) {
+					return defaultToken;
+				}
+
+				// Tenta obter de deriv_info
 				const derivInfoStr = localStorage.getItem('deriv_info');
 				if (derivInfoStr) {
 					const derivInfo = JSON.parse(derivInfoStr);
-					// Tenta obter token real primeiro
 					if (derivInfo.token) {
 						return derivInfo.token;
 					}
-					// Tenta obter do raw
 					if (derivInfo.raw && derivInfo.raw.token) {
 						return derivInfo.raw.token;
 					}
 				}
+
+				// Tenta obter de tokens_by_loginid (primeiro token disponível)
+				const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+				if (tokensByLoginIdStr) {
+					const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+					const firstToken = Object.values(tokensByLoginId)[0];
+					if (firstToken) {
+						return firstToken;
+					}
+				}
+
 				return null;
 			} catch (error) {
 				console.error('[PlansView] Erro ao obter token Deriv:', error);
