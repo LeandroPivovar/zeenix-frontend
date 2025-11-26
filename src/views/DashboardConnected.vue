@@ -147,11 +147,11 @@
         </div>
       </div>
       <div class="relative z-10 px-8">
-        <div id="hero-header" class="mb-10">
-          <h1 id="ixl21c" class="text-3xl font-semibold mb-2 text-white/90">
+        <div id="hero-header" class="mb-10 text-left">
+          <h1 id="ixl21c" class="text-3xl font-semibold mb-2 text-white/90 text-left">
             Bem-vindo ao
             Zenix, <span id="itixvs">{{ userName }}</span></h1>
-          <p class="text-white/60">Configure sua conta rapidamente em 3 passos
+          <p class="text-white/60 text-left">Configure sua conta rapidamente em 3 passos
             e deixe a IA trabalhar por você.</p>
         </div>
         <div class="flex items-start relative">
@@ -196,11 +196,11 @@
         </div>
       </section>
       
-      <div class="w-full h-px bg-gradient-to-r from-transparent via-zenix-border to-transparent my-8"></div>
+      <div class="w-full h-px bg-gradient-to-r from-transparent via-zenix-border to-transparent my-5"></div>
       
-      <div class="px-8 py-8">
+      <div class="px-8 py-5">
         <!-- Quick Tools Section -->
-        <section id="quick-tools" class="mt-6 mb-6 w-full">
+        <section id="quick-tools" class="mt-0 mb-6 w-full">
       <h2 class="text-base font-semibold text-zenix-text opacity-95 mb-4">Ferramentas Principais</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
         <div 
