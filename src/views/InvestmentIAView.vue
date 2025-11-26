@@ -2726,9 +2726,9 @@ export default {
 /* Chart Section */
 .chart-section {
     margin-bottom: 1.5rem;
-    margin-left: 0;
-    margin-right: 0;
-    width: 100%;
+    margin-left: -20px;
+    margin-right: -20px;
+    width: calc(100% + 40px);
     box-sizing: border-box;
 }
 
