@@ -84,10 +84,10 @@
     <!-- Modal de Seleção de Contas -->
     <div 
       v-if="showAccountModal" 
-      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center"
+      class="account-modal-overlay"
       @click.self="closeAccountModal"
     >
-      <div class="bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+      <div class="account-modal-container">
         <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between">
           <h2 class="text-xl font-semibold text-[#DFDFDF]">Selecionar Conta</h2>
           <button 
@@ -582,6 +582,58 @@ export default {
   animation: fadeInSlide 0.35s ease-out;
   transition: left 0.3s ease, width 0.3s ease;
   border-bottom: none;
+}
+
+/* Modal de Seleção de Contas */
+.account-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.account-modal-container {
+  background: #0E0E0E;
+  border: 1px solid #1C1C1C;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  width: 100%;
+  max-width: 32rem;
+  max-height: 80vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+  margin: auto;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (max-width: 1024px) {
