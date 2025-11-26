@@ -31,6 +31,69 @@
             
             <p v-if="!agenteEstaAtivo" class="text-footer">O agente executará operações automaticamente 24/7. Ao atingir a meta diária ou limite de perda, ele pausa e retoma somente no próximo ciclo</p>
         </footer>
+		
+		<!-- Footer -->
+		<footer id="footer" class="bg-zenix-bg mt-12 w-full">
+			<div class="max-w-7xl mx-auto px-8 py-12">
+				<div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
+					<div>
+						<div class="flex items-center space-x-2 mb-4">
+							<div class="text-lg font-semibold text-zenix-text">ZENIX</div>
+							<div class="text-xs text-zenix-label">PRO</div>
+						</div>
+						<p class="text-zenix-label text-xs leading-relaxed mb-6 opacity-60">
+							Plataforma inteligente de investimentos com IA, copy trading e automação.
+						</p>
+						<div class="flex items-center space-x-4">
+							<a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
+								<i class="fa-brands fa-twitter text-sm"></i>
+							</a>
+							<a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
+								<i class="fa-brands fa-linkedin text-sm"></i>
+							</a>
+							<a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
+								<i class="fa-brands fa-instagram text-sm"></i>
+							</a>
+							<a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
+								<i class="fa-brands fa-youtube text-sm"></i>
+							</a>
+						</div>
+					</div>
+					<div>
+						<h3 class="text-sm font-semibold text-zenix-text mb-4">Produtos</h3>
+						<ul class="space-y-2">
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Copy Trading</a></li>
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Agente Autônomo</a></li>
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Academia</a></li>
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Sinais de Trading</a></li>
+						</ul>
+					</div>
+					<div>
+						<h3 class="text-sm font-semibold text-zenix-text mb-4">Suporte</h3>
+						<ul class="space-y-2">
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Central de Ajuda</a></li>
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Contato</a></li>
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Termos de Uso</a></li>
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Política de Privacidade</a></li>
+						</ul>
+					</div>
+					<div>
+						<h3 class="text-sm font-semibold text-zenix-text mb-4">Empresa</h3>
+						<ul class="space-y-2">
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Sobre Nós</a></li>
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Blog</a></li>
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Carreiras</a></li>
+							<li><a href="#" class="text-zenix-label hover:text-zenix-text text-xs transition-colors">Parceiros</a></li>
+						</ul>
+					</div>
+				</div>
+				<div class="pt-8">
+					<p class="text-zenix-label text-xs text-center opacity-60">
+						© 2024 ZENIX PRO. Todos os direitos reservados.
+					</p>
+				</div>
+			</div>
+		</footer>
 	</div>
 </template>
 
