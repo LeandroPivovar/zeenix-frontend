@@ -81,17 +81,17 @@
                                     <div id="status-icon-container" class="w-16 h-16 bg-zenix-green/15 border-2 border-zenix-green/30 rounded-xl flex items-center justify-center transition-all duration-700">
                                         <i id="status-icon" class="fas fa-chart-line text-zenix-green text-2xl ai-pulse"></i>
                                     </div>
-                                    <div>
-                                        <h3 id="status-title" class="text-xl font-bold text-zenix-text leading-tight transition-all duration-700">
+                                    <div class="text-left">
+                                        <h3 id="status-title" class="text-xl font-bold text-zenix-text leading-tight transition-all duration-700 text-left">
                                             {{ currentStatusTitle }}
                                         </h3>
-                                        <p id="status-description" class="text-sm text-zenix-secondary mt-1 leading-tight transition-all duration-700">
+                                        <p id="status-description" class="text-sm text-zenix-secondary mt-1 leading-tight transition-all duration-700 text-left">
                                             {{ currentStatusDescription }}
                                         </p>
                                     </div>
                                 </div>
                                 <div class="flex-1 h-full flex items-center justify-end min-w-0">
-                                    <svg id="status-animation" viewBox="0 0 280 100" preserveAspectRatio="xMaxYMid meet" class="w-full h-full" style="min-width: 500px; max-width: 100%;">
+                                    <svg id="status-animation" viewBox="0 0 280 100" preserveAspectRatio="none" style="width: 100%; min-width: 500px; height: 100%; flex: 1;">
                                         <defs>
                                             <linearGradient id="scan-gradient" x1="0%" y1="0%" x2="100%" y2="0%">
                                                 <stop offset="0%" stop-color="#22C55E" stop-opacity="0"></stop>
