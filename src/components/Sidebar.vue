@@ -1,6 +1,18 @@
 <template>
     <aside class="sidebar" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <div class="brand">
+            <div class="brand-content">
+                <div class="text-lg font-bold text-zenix-text tracking-tight brand-text">
+                    ZENI<span class="text-zenix-green">X</span>
+                </div>
+                <a 
+                    href="#" 
+                    class="whatsapp-button bg-transparent hover:bg-[#0E0E0E] text-[#A1A1A1] hover:text-[#25D366] font-medium px-3 py-1.5 rounded-lg text-xs inline-flex items-center space-x-2 transition-all duration-200 border border-[#1C1C1C] hover:border-[#25D366]/30"
+                >
+                    <i class="fa-brands fa-whatsapp text-xs"></i>
+                    <span class="whatsapp-text">Grupo de Alunos</span>
+                </a>
+            </div>
         </div>
         <nav class="menu">
             <a

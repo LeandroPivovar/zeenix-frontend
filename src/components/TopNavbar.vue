@@ -6,16 +6,6 @@
   >
     <div class="h-full px-6 flex items-center justify-between">
       <div class="flex items-center space-x-8">
-        <div class="text-lg font-bold text-zenix-text tracking-tight">
-          Grupo de Alunos
-        </div>
-        <a 
-          href="#" 
-          class="bg-transparent hover:bg-[#0E0E0E] text-[#A1A1A1] hover:text-[#25D366] font-medium px-4 py-2 rounded-lg text-sm inline-flex items-center space-x-2 transition-all duration-200 border border-[#1C1C1C] hover:border-[#25D366]/30"
-        >
-          <i class="fa-brands fa-whatsapp text-base"></i>
-          <span>Grupo de Alunos</span>
-        </a>
       </div>
       <div class="flex items-center space-x-6">
         <button 

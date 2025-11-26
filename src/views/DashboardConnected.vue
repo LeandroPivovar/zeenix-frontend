@@ -14,7 +14,7 @@
     <!-- Main Content -->
     <main class="main-content bg-zenix-bg noise-bg font-inter overflow-y-auto w-full">
       <!-- Hero Onboarding Section -->
-      <section id="hero-section" class="w-full mt-16 py-8 pb-4 relative overflow-hidden group h-[560px]">
+      <section id="hero-section" class="w-full mt-16 py-12 px-8 relative overflow-hidden group h-[560px]">
       <div class="absolute inset-0 z-0 bg-[#0B0B0B]">
         <div class="absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
         </div>
@@ -147,8 +147,8 @@
           Ξ
         </div>
       </div>
-      <div class="relative z-10 px-3">
-        <div id="hero-header" class="mb-4 text-left px-8">
+      <div class="relative z-10 px-6">
+        <div id="hero-header" class="mb-6 text-left px-4">
           <h1 id="ixl21c" class="text-3xl font-semibold mb-2 text-white/90 text-left mt-[14px]">
             Bem-vindo ao
             Zenix, <span id="itixvs">{{ userName }}</span></h1>
