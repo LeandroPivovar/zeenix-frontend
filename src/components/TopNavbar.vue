@@ -41,9 +41,15 @@
         <div class="relative">
           <button 
             @click="toggleProfileDropdown" 
-            class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200"
+            class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 overflow-hidden"
           >
-            <span class="text-white font-semibold text-sm">{{ userInitials }}</span>
+            <img 
+              v-if="userProfilePicture" 
+              :src="userProfilePicture" 
+              :alt="userName"
+              class="w-full h-full object-cover rounded-full"
+            />
+            <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
           </button>
           <div 
             v-if="showProfileDropdown" 
@@ -122,7 +128,8 @@ export default {
   data() {
     return {
       balanceHidden: false,
-      showProfileDropdown: false
+      showProfileDropdown: false,
+      userProfilePictureUrl: null
     }
   },
   computed: {
@@ -194,13 +201,39 @@ export default {
         }
       }
       return 'email@exemplo.com';
+    },
+    userProfilePicture() {
+      if (!this.userProfilePictureUrl) return null;
+      
+      // Se já é uma URL completa, retornar como está
+      if (this.userProfilePictureUrl.startsWith('http://') || 
+          this.userProfilePictureUrl.startsWith('https://')) {
+        return this.userProfilePictureUrl;
+      }
+      
+      // Se começa com /api/uploads, construir URL relativa ao domínio
+      if (this.userProfilePictureUrl.startsWith('/api/uploads')) {
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = apiBaseUrl.replace(/\/api$/, '');
+        return `${baseUrl}${this.userProfilePictureUrl}`;
+      }
+      
+      // Fallback para caminhos antigos /uploads/...
+      const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = apiBaseUrl.replace(/\/api$/, '');
+      return `${baseUrl}${this.userProfilePictureUrl}`;
     }
   },
   mounted() {
     document.addEventListener('click', this.handleClickOutside);
+    window.addEventListener('storage', this.handleStorageChange);
+    window.addEventListener('userProfileUpdated', this.handleProfileUpdate);
+    this.loadUserProfilePicture();
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
+    window.removeEventListener('storage', this.handleStorageChange);
+    window.removeEventListener('userProfileUpdated', this.handleProfileUpdate);
   },
   methods: {
     toggleBalance() {
@@ -215,6 +248,16 @@ export default {
       if (dropdown && !dropdown.contains(event.target) && !button?.closest('.relative')) {
         this.showProfileDropdown = false;
       }
+    },
+    handleStorageChange(event) {
+      // Atualiza a foto quando o localStorage 'user' for alterado
+      if (event.key === 'user') {
+        this.loadUserProfilePicture();
+      }
+    },
+    handleProfileUpdate() {
+      // Atualiza a foto quando um evento customizado for disparado
+      this.loadUserProfilePicture();
     },
     openDepositFlow() {
       this.$router.push('/settings?tab=deposit');
@@ -238,6 +281,57 @@ export default {
           return 'D$'
         default:
           return currency ? `${currency} ` : '$'
+      }
+    },
+    async loadUserProfilePicture() {
+      try {
+        // Primeiro tenta buscar do localStorage (pode ter sido atualizado recentemente)
+        const userInfo = localStorage.getItem('user');
+        if (userInfo) {
+          try {
+            const user = JSON.parse(userInfo);
+            if (user.profilePictureUrl) {
+              this.userProfilePictureUrl = user.profilePictureUrl;
+              return;
+            }
+          } catch (e) {
+            // Ignorar erro de parsing
+          }
+        }
+
+        // Se não encontrou no localStorage, busca da API
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBaseUrl}/settings`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.profilePictureUrl) {
+            this.userProfilePictureUrl = data.profilePictureUrl;
+            
+            // Atualiza o localStorage para uso futuro
+            const userInfo = localStorage.getItem('user');
+            if (userInfo) {
+              try {
+                const user = JSON.parse(userInfo);
+                user.profilePictureUrl = data.profilePictureUrl;
+                localStorage.setItem('user', JSON.stringify(user));
+              } catch (e) {
+                // Ignorar erro de parsing
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[TopNavbar] Erro ao carregar foto do perfil:', error);
       }
     }
   }

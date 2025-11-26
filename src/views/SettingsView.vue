@@ -515,6 +515,22 @@ export default {
       // O upload já foi feito no modal, só precisamos recarregar as configurações
       try {
         await this.fetchSettings()
+        
+        // Atualiza o localStorage com a nova foto para que o TopNavbar possa atualizar
+        const userInfo = localStorage.getItem('user')
+        if (userInfo) {
+          try {
+            const user = JSON.parse(userInfo)
+            user.profilePictureUrl = this.settings.profilePictureUrl
+            localStorage.setItem('user', JSON.stringify(user))
+          } catch (e) {
+            console.error('Erro ao atualizar foto no localStorage:', e)
+          }
+        }
+        
+        // Dispara evento customizado para atualizar outros componentes
+        window.dispatchEvent(new CustomEvent('userProfileUpdated'))
+        
         this.closeChangePhotoModal()
         this.$root.$toast.success('Foto atualizada com sucesso!')
       } catch (err) {
