@@ -171,6 +171,13 @@
                             >
                                 {{ timeframe.label }}
                             </button>
+                            <button
+                                :class="['px-3 py-1.5 rounded-lg text-xs font-medium transition-all border', showEntryMarkers ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/40 hover:bg-zenix-green/30' : 'bg-zenix-bg text-zenix-secondary border-zenix-border hover:border-zenix-green hover:text-zenix-green']"
+                                @click="toggleEntryMarkers"
+                            >
+                                <i :class="showEntryMarkers ? 'far fa-eye' : 'far fa-eye-slash'" class="mr-1"></i>
+                                Entradas IA
+                            </button>
                         </div>
             
                         <!-- Chart View -->
@@ -415,6 +422,7 @@ export default {
             aiActive: true,
             showDisconnectModal: false,
             activeTab: 'chart', // 'chart' or 'logs'
+            showEntryMarkers: true, // Controla visibilidade dos marcadores de entradas da IA
             tradingViewWidget: null, // Widget da TradingView
             
             selectedMarket: 'EUR/USD',
@@ -956,6 +964,14 @@ export default {
          * Plota marcadores no gráfico mostrando onde foram as entradas da IA
          */
         plotEntryMarkers() {
+            // Se os marcadores estão ocultos, limpar todos
+            if (!this.showEntryMarkers) {
+                if (this.chart && this.currentSeries) {
+                    this.currentSeries.setMarkers([]);
+                }
+                return;
+            }
+            
             if (!this.logOperations || this.logOperations.length === 0) {
                 return;
             }
@@ -1022,14 +1038,13 @@ export default {
                         
                         // Determinar cor baseado no resultado (verde para lucro, vermelho para prejuízo)
                         const color = op.profit >= 0 ? '#22C55E' : '#FF4747';
-                        const shape = op.direction === 'CALL' ? 'arrowUp' : 'arrowDown';
                         
                         return {
                             time: closestTickTime,
                             position: 'belowBar',
                             color: color,
-                            shape: shape,
-                            size: 1,
+                            shape: 'circle',
+                            size: 0, // Tamanho 0 para não mostrar o círculo, apenas o texto
                             text: `${op.direction} ${op.pnl}`,
                         };
                     });
@@ -1044,6 +1059,14 @@ export default {
             else if (this.tradingViewWidget) {
                 console.log('[InvestmentActive] TradingView não suporta marcadores via API diretamente');
             }
+        },
+        
+        /**
+         * Alterna a visibilidade dos marcadores de entradas da IA
+         */
+        toggleEntryMarkers() {
+            this.showEntryMarkers = !this.showEntryMarkers;
+            this.plotEntryMarkers();
         },
 
         // 🔑 Obter userId do token JWT (mesmo método do InvestmentIAView.vue)
