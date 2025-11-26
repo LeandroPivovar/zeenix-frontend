@@ -80,6 +80,75 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de Seleção de Contas -->
+    <div 
+      v-if="showAccountModal" 
+      class="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center"
+      @click.self="closeAccountModal"
+    >
+      <div class="bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl shadow-[0_8px_32px_rgba(0,0,0,0.6)] w-full max-w-2xl max-h-[80vh] overflow-hidden flex flex-col">
+        <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-[#DFDFDF]">Selecionar Conta</h2>
+          <button 
+            @click="closeAccountModal"
+            class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
+          >
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+        
+        <div class="overflow-y-auto flex-1 p-6">
+          <div v-if="loadingAccounts" class="flex items-center justify-center py-12">
+            <div class="text-center">
+              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#22C55E] mb-4"></div>
+              <p class="text-[#A1A1A1]">Carregando contas...</p>
+            </div>
+          </div>
+          
+          <div v-else-if="availableAccounts.length === 0" class="text-center py-12">
+            <i class="fas fa-exclamation-circle text-[#7A7A7A] text-4xl mb-4"></i>
+            <p class="text-[#A1A1A1]">Nenhuma conta disponível</p>
+          </div>
+          
+          <div v-else class="space-y-3">
+            <div 
+              v-for="account in availableAccounts" 
+              :key="account.loginid"
+              @click="selectAccount(account)"
+              class="p-4 bg-[#0B0B0B] border border-[#1C1C1C] rounded-lg cursor-pointer hover:border-[#22C55E] hover:bg-[#0F0F0F] transition-all duration-200"
+              :class="{ 'border-[#22C55E] bg-[#0F0F0F]': isCurrentAccount(account) }"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <span class="text-sm font-semibold text-[#DFDFDF]">{{ account.loginid }}</span>
+                    <span 
+                      class="px-2 py-0.5 rounded text-xs font-medium"
+                      :class="account.isDemo ? 'bg-[#333] text-[#A1A1A1]' : 'bg-[#22C55E]/20 text-[#22C55E]'"
+                    >
+                      {{ account.isDemo ? 'DEMO' : 'REAL' }}
+                    </span>
+                    <span class="text-xs text-[#7A7A7A]">{{ account.currency }}</span>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <div>
+                      <p class="text-xs text-[#7A7A7A] mb-1">Saldo</p>
+                      <p class="text-base font-semibold text-[#DFDFDF]">
+                        {{ formatBalance(account.balance, account.currency) }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="isCurrentAccount(account)" class="ml-4">
+                  <i class="fas fa-check-circle text-[#22C55E] text-xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </nav>
 </template>
 
@@ -120,7 +189,10 @@ export default {
     return {
       balanceHidden: false,
       showProfileDropdown: false,
-      userProfilePictureUrl: null
+      userProfilePictureUrl: null,
+      showAccountModal: false,
+      loadingAccounts: false,
+      availableAccounts: []
     }
   },
   computed: {
@@ -260,15 +332,178 @@ export default {
       this.$router.push('/dashboard');
       window.location.reload();
     },
-    switchAccount() {
-      // Alterna entre demo e real
-      const newAccountType = this.accountType === 'demo' ? 'real' : 'demo';
-      
-      // Emite evento para o componente pai
-      this.$emit('account-type-changed', newAccountType);
-      
+    async switchAccount() {
       // Fecha o dropdown
       this.showProfileDropdown = false;
+      
+      // Abre o modal de seleção de contas
+      this.showAccountModal = true;
+      await this.loadAvailableAccounts();
+    },
+    async loadAvailableAccounts() {
+      this.loadingAccounts = true;
+      try {
+        // Buscar tokens armazenados
+        const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+        if (!tokensByLoginIdStr) {
+          console.warn('[TopNavbar] Nenhum token de conta encontrado');
+          this.availableAccounts = [];
+          return;
+        }
+
+        const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+        const loginIds = Object.keys(tokensByLoginId);
+        
+        if (loginIds.length === 0) {
+          this.availableAccounts = [];
+          return;
+        }
+
+        // Buscar informações de cada conta
+        const accounts = [];
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const token = localStorage.getItem('token');
+        const appId = localStorage.getItem('deriv_app_id') || '1089';
+
+        for (const loginid of loginIds) {
+          try {
+            const accountToken = tokensByLoginId[loginid];
+            
+            // Buscar informações da conta
+            const response = await fetch(`${apiBase}/broker/deriv/status`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                token: accountToken,
+                appId: parseInt(appId)
+              })
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              
+              // Determinar se é demo ou real
+              const isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT') || 
+                            (data.isDemo === true) || 
+                            (data.balancesByCurrencyDemo && Object.keys(data.balancesByCurrencyDemo).length > 0);
+              
+              // Obter saldo e moeda
+              let balance = 0;
+              let currency = 'USD';
+              
+              if (isDemo && data.balancesByCurrencyDemo) {
+                const currencies = Object.keys(data.balancesByCurrencyDemo);
+                if (currencies.length > 0) {
+                  currency = currencies[0];
+                  balance = data.balancesByCurrencyDemo[currency] || 0;
+                }
+              } else if (data.balancesByCurrencyReal) {
+                const currencies = Object.keys(data.balancesByCurrencyReal);
+                if (currencies.length > 0) {
+                  currency = currencies[0];
+                  balance = data.balancesByCurrencyReal[currency] || 0;
+                }
+              } else if (data.balance) {
+                balance = typeof data.balance === 'object' ? (data.balance.value || 0) : data.balance;
+                currency = data.currency || (data.balance.currency || 'USD');
+              }
+
+              accounts.push({
+                loginid,
+                token: accountToken,
+                isDemo,
+                balance,
+                currency: currency.toUpperCase()
+              });
+            }
+          } catch (error) {
+            console.error(`[TopNavbar] Erro ao buscar conta ${loginid}:`, error);
+          }
+        }
+
+        // Ordenar: contas reais primeiro, depois demo
+        accounts.sort((a, b) => {
+          if (a.isDemo === b.isDemo) return 0;
+          return a.isDemo ? 1 : -1;
+        });
+
+        this.availableAccounts = accounts;
+      } catch (error) {
+        console.error('[TopNavbar] Erro ao carregar contas:', error);
+        this.availableAccounts = [];
+      } finally {
+        this.loadingAccounts = false;
+      }
+    },
+    isCurrentAccount(account) {
+      const connectionStr = localStorage.getItem('deriv_connection');
+      if (!connectionStr) return false;
+      
+      try {
+        const connection = JSON.parse(connectionStr);
+        return connection.loginid === account.loginid;
+      } catch {
+        return false;
+      }
+    },
+    async selectAccount(account) {
+      try {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const token = localStorage.getItem('token');
+        const appId = localStorage.getItem('deriv_app_id') || '1089';
+
+        // Buscar informações completas da conta selecionada
+        const response = await fetch(`${apiBase}/broker/deriv/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            token: account.token,
+            appId: parseInt(appId),
+            currency: account.currency
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Atualizar localStorage com a conta selecionada
+          localStorage.setItem('deriv_token', account.token);
+          localStorage.setItem('deriv_connection', JSON.stringify({
+            ...data,
+            loginid: account.loginid,
+            currency: account.currency,
+            isDemo: account.isDemo,
+            timestamp: Date.now()
+          }));
+
+          // Emitir evento para atualizar o componente pai
+          const accountType = account.isDemo ? 'demo' : 'real';
+          this.$emit('account-type-changed', accountType);
+          
+          // Fechar modal e recarregar página para atualizar todos os componentes
+          this.closeAccountModal();
+          window.location.reload();
+        } else {
+          throw new Error('Erro ao selecionar conta');
+        }
+      } catch (error) {
+        console.error('[TopNavbar] Erro ao selecionar conta:', error);
+        alert('Erro ao trocar de conta. Tente novamente.');
+      }
+    },
+    closeAccountModal() {
+      this.showAccountModal = false;
+      this.availableAccounts = [];
+    },
+    formatBalance(balance, currency) {
+      const prefix = this.getCurrencyPrefix(currency);
+      return `${prefix}${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     },
     getCurrencyPrefix(currency) {
       switch ((currency || '').toUpperCase()) {
