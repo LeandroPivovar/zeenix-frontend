@@ -963,22 +963,76 @@ export default {
             // Se estiver usando lightweight-charts
             if (this.chart && this.currentSeries) {
                 try {
-                    const markers = this.logOperations
-                        .filter(op => op.timestamp)
-                        .map(op => {
-                            // Determinar cor baseado no resultado (verde para lucro, vermelho para prejuízo)
-                            const color = op.profit >= 0 ? '#22C55E' : '#FF4747';
-                            const shape = op.direction === 'CALL' ? 'arrowUp' : 'arrowDown';
-                            
-                            return {
-                                time: op.timestamp,
-                                position: 'belowBar',
-                                color: color,
-                                shape: shape,
-                                size: 1,
-                                text: `${op.direction} ${op.pnl}`,
-                            };
-                        });
+                    // Verificar se temos ticks disponíveis
+                    if (!this.ticks || this.ticks.length === 0) {
+                        console.log('[InvestmentActive] ⚠️ Sem ticks disponíveis para plotar marcadores');
+                        return;
+                    }
+                    
+                    // Obter timestamps dos ticks disponíveis
+                    const tickTimestamps = this.ticks
+                        .map(tick => Math.floor(tick.epoch || tick.time || Date.now() / 1000))
+                        .filter(ts => ts > 0)
+                        .sort((a, b) => a - b);
+                    
+                    if (tickTimestamps.length === 0) {
+                        console.log('[InvestmentActive] ⚠️ Nenhum timestamp válido de tick encontrado');
+                        return;
+                    }
+                    
+                    // Primeiro tick disponível
+                    const firstTickTime = tickTimestamps[0];
+                    // Começar a partir de 30 segundos após o primeiro tick
+                    const minTime = firstTickTime + 30;
+                    // Último tick disponível
+                    const maxTime = tickTimestamps[tickTimestamps.length - 1];
+                    
+                    console.log('[InvestmentActive] 📊 Range de ticks:', {
+                        firstTick: new Date(firstTickTime * 1000).toISOString(),
+                        minTime: new Date(minTime * 1000).toISOString(),
+                        maxTime: new Date(maxTime * 1000).toISOString(),
+                        totalTicks: tickTimestamps.length
+                    });
+                    
+                    // Filtrar operações que estejam dentro do range de ticks (a partir de 30 segundos)
+                    const validOperations = this.logOperations.filter(op => {
+                        if (!op.timestamp) return false;
+                        return op.timestamp >= minTime && op.timestamp <= maxTime;
+                    });
+                    
+                    console.log('[InvestmentActive] 📋 Operações válidas:', {
+                        total: this.logOperations.length,
+                        valid: validOperations.length,
+                        filtered: this.logOperations.length - validOperations.length
+                    });
+                    
+                    // Criar marcadores apenas para operações válidas
+                    const markers = validOperations.map(op => {
+                        // Encontrar o tick mais próximo ao timestamp da operação
+                        let closestTickTime = op.timestamp;
+                        let minDiff = Infinity;
+                        
+                        for (const tickTime of tickTimestamps) {
+                            const diff = Math.abs(tickTime - op.timestamp);
+                            if (diff < minDiff) {
+                                minDiff = diff;
+                                closestTickTime = tickTime;
+                            }
+                        }
+                        
+                        // Determinar cor baseado no resultado (verde para lucro, vermelho para prejuízo)
+                        const color = op.profit >= 0 ? '#22C55E' : '#FF4747';
+                        const shape = op.direction === 'CALL' ? 'arrowUp' : 'arrowDown';
+                        
+                        return {
+                            time: closestTickTime,
+                            position: 'belowBar',
+                            color: color,
+                            shape: shape,
+                            size: 1,
+                            text: `${op.direction} ${op.pnl}`,
+                        };
+                    });
                     
                     this.currentSeries.setMarkers(markers);
                     console.log('[InvestmentActive] ✅ Marcadores de entradas plotados:', markers.length);
@@ -1414,6 +1468,11 @@ export default {
                 
                 // Ajustar o gráfico para mostrar todos os dados
                 this.chart.timeScale().fitContent();
+                
+                // Atualizar marcadores quando o gráfico for atualizado
+                if (this.logOperations && this.logOperations.length > 0) {
+                    setTimeout(() => this.plotEntryMarkers(), 100);
+                }
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao atualizar gráfico:', error);
             }
@@ -1447,6 +1506,17 @@ export default {
                     }
                 });
             }
+        },
+        logOperations: {
+            handler(newOperations) {
+                if (newOperations && newOperations.length > 0 && this.chartInitialized && this.activeTab === 'chart') {
+                    console.log('[InvestmentActive] Operações atualizadas, replotando marcadores:', newOperations.length);
+                    this.$nextTick(() => {
+                        this.plotEntryMarkers();
+                    });
+                }
+            },
+            deep: true
         },
         chartType() {
             if (this.chartInitialized) {
