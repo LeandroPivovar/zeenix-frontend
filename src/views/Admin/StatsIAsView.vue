@@ -4681,8 +4681,8 @@ tbody tr:hover {
 }
 
 .performance-cards-grid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+	display: flex;
+	flex-wrap: wrap;
 	gap: 1rem;
 	margin-bottom: 1rem;
 	width: 100%;
@@ -4690,7 +4690,7 @@ tbody tr:hover {
 }
 
 .performance-card {
-	padding: 1rem;
+	padding: 0.75rem;
 	background-color: rgba(15, 23, 42, 0.6);
 	border: 1px solid rgba(148, 163, 184, 0.2);
 	border-radius: 12px;
@@ -4700,21 +4700,23 @@ tbody tr:hover {
 	flex-direction: column;
 	justify-content: space-between;
 	box-sizing: border-box;
+	flex-shrink: 0;
 }
 
 .card-header-row {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	margin-bottom: 0.75rem;
+	margin-bottom: 0.25rem;
 }
 
 .card-label {
-	font-size: 0.75rem;
+	font-size: 0.65rem;
 	color: #94a3b8;
 	font-weight: 500;
 	text-transform: uppercase;
 	letter-spacing: 0.5px;
+	line-height: 1.2;
 }
 
 .eye-btn {
@@ -4724,7 +4726,7 @@ tbody tr:hover {
 	background: none;
 	border: none;
 	color: #94a3b8;
-	padding: 0.25rem;
+	padding: 0.15rem;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -4736,15 +4738,16 @@ tbody tr:hover {
 }
 
 .eye-btn i {
-	font-size: 0.875rem;
+	font-size: 0.7rem;
 }
 
 .card-value-large {
-	margin-bottom: 0.75rem;
+	margin-bottom: 0.25rem;
+	line-height: 1.2;
 }
 
 .card-value-large span {
-	font-size: 1.875rem;
+	font-size: 1.25rem;
 	font-weight: 700;
 	color: #f8fafc;
 }
@@ -4763,13 +4766,14 @@ tbody tr:hover {
 .card-actions-row {
 	display: flex;
 	align-items: center;
-	gap: 0.5rem;
+	gap: 0.25rem;
+	margin-top: 0.25rem;
 }
 
 .account-type-btn {
-	padding: 0.375rem 0.75rem;
-	border-radius: 0.5rem;
-	font-size: 0.75rem;
+	padding: 0.2rem 0.5rem;
+	border-radius: 0.4rem;
+	font-size: 0.65rem;
 	font-weight: 600;
 	border: none;
 	cursor: pointer;
@@ -4794,9 +4798,11 @@ tbody tr:hover {
 }
 
 .profit-percentage {
-	font-size: 0.875rem;
+	font-size: 0.7rem;
 	font-weight: 500;
 	display: block;
+	line-height: 1.2;
+	margin-top: 0.1rem;
 }
 
 .profit-percentage.positive {
@@ -4810,9 +4816,10 @@ tbody tr:hover {
 .trades-stats-row {
 	display: flex;
 	align-items: center;
-	gap: 1rem;
-	font-size: 0.75rem;
-	margin-top: 0.5rem;
+	gap: 0.5rem;
+	font-size: 0.65rem;
+	margin-top: 0.25rem;
+	line-height: 1.2;
 }
 
 /* Status Card */
@@ -4990,7 +4997,6 @@ tbody tr:hover {
 /* Responsive adjustments */
 @media (max-width: 1200px) {
 	.performance-cards-grid {
-		grid-template-columns: repeat(2, 1fr);
 		width: 100%;
 		gap: 1rem;
 	}
@@ -4998,7 +5004,6 @@ tbody tr:hover {
 
 @media (max-width: 768px) {
 	.performance-cards-grid {
-		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 		width: 100%;
 		gap: 1rem;
 	}
