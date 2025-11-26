@@ -136,7 +136,7 @@
             <!-- Main Content Grid -->
             <div class="grid grid-cols-12 gap-6 mb-6" style="width: 100%; box-sizing: border-box;">
                 <!-- Left Column - Chart -->
-                <div id="ir8sfp" class="col-span-8">
+                <div id="ir8sfp" class="col-span-10">
                     <div id="market-chart" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
                         <div class="flex items-center justify-between mb-4">
                             <div>
@@ -231,7 +231,7 @@
             </div>
 
                 <!-- Right Column - Config -->
-                <div class="col-span-4">
+                <div class="col-span-2">
                     <div id="i0k3nl" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
                         <h3 class="text-base font-semibold text-zenix-text mb-6 flex items-center">
                             <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
