@@ -63,14 +63,16 @@
             </div>
 
             <!-- Trading Panel -->
-            <div class="trading-panel">
-                    <div class="trading-panel-header">
-                        <h3 class="card-header">Negociação Manual — Dígitos</h3>
+            <div class="trading-panel bg-zenix-card border border-zenix-border rounded-xl">
+                    <div class="pb-3 border-b border-zenix-border mb-5">
+                        <h3 class="text-base font-semibold text-zenix-text">Negociação Manual — Dígitos</h3>
                     </div>
-                    <div class="trading-panel-content">
+                    <div class="trading-panel-content space-y-4">
                         <div class="input-group">
-                            <label class="input-label">Mercado</label>
-                            <select v-model="symbol" @change="handleSymbolChange" :disabled="!isAuthorized || isLoadingSymbol" class="select-field">
+                            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                                <i class="fas fa-chart-line text-zenix-green mr-2"></i>Mercado
+                            </label>
+                            <select v-model="symbol" @change="handleSymbolChange" :disabled="!isAuthorized || isLoadingSymbol" class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors">
                                 <optgroup label="Índices Contínuos">
                                     <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value">
                                         {{ market.label }}
@@ -105,19 +107,23 @@
                         </div>
 
                         <div class="input-group">
-                            <label class="input-label">Tipo de Operação</label>
-                            <select v-model="digitType" class="select-field" :disabled="isTrading" @change="onDigitTypeChange">
+                            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                                <i class="fas fa-exchange-alt text-zenix-green mr-2"></i>Tipo de Operação
+                            </label>
+                            <select v-model="digitType" class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors" :disabled="isTrading" @change="onDigitTypeChange">
                                 <option value="DIGITMATCH">Dígitos (Último dígito)</option>
                             </select>
                         </div>
 
                         <div class="input-group">
-                            <label class="input-label">Duração</label>
-                            <div class="duration-input-group">
-                                <select class="duration-select">
+                            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                                <i class="fas fa-clock text-zenix-green mr-2"></i>Duração
+                            </label>
+                            <div class="flex gap-2">
+                                <select class="flex-1 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors">
                                     <option>Ticks</option>
                                 </select>
-                                <input type="number" value="5" v-model.number="duration" class="duration-input" :disabled="isTrading" @input="subscribeToProposal" />
+                                <input type="number" value="5" v-model.number="duration" class="w-20 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors" :disabled="isTrading" @input="subscribeToProposal" />
                             </div>
                         </div>
 
@@ -130,25 +136,29 @@
                         </div>
 
                         <div class="input-group">
-                            <label class="input-label">Valor de entrada</label>
+                            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                                <i class="fas fa-dollar-sign text-zenix-green mr-2"></i>Valor de entrada
+                            </label>
                             <input 
                                 type="number" 
                                 placeholder="Ex: 1.00, 2.50..." 
                                 v-model.number="orderValue" 
-                                class="input-field-value" 
+                                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text placeholder:text-[#DFDFDF40] focus:outline-none focus:border-zenix-green transition-colors" 
                                 :disabled="isTrading" 
                                 @input="subscribeToProposal"
                             />
                         </div>
 
-                        <div v-if="currentProposalPrice" class="proposal-info">
-                            <div class="proposal-price-label">Preço de Compra:</div>
-                            <div class="proposal-price-value">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
+                        <div v-if="currentProposalPrice" class="bg-zenix-bg border border-zenix-border rounded-lg p-3">
+                            <div class="text-xs text-zenix-secondary mb-1">Preço de Compra:</div>
+                            <div class="text-base font-semibold text-zenix-text">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
                         </div>
 
-                        <div v-if="realTimeProfit !== null && activeContract" class="profit-info" :class="{ 'profit-positive': realTimeProfit > 0, 'profit-negative': realTimeProfit < 0 }">
-                            <div class="profit-label">P&L em Tempo Real:</div>
-                            <div class="profit-value">{{ displayCurrency }} {{ realTimeProfit > 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}</div>
+                        <div v-if="realTimeProfit !== null && activeContract" class="bg-zenix-bg border rounded-lg p-3" :class="realTimeProfit > 0 ? 'border-zenix-green' : 'border-red-500'">
+                            <div class="text-xs text-zenix-secondary mb-1">P&L em Tempo Real:</div>
+                            <div class="text-base font-semibold" :class="realTimeProfit > 0 ? 'text-zenix-green' : 'text-red-500'">
+                                {{ displayCurrency }} {{ realTimeProfit > 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}
+                            </div>
                         </div>
 
                         <div class="trading-buttons">
