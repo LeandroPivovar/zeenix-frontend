@@ -3695,6 +3695,8 @@ tbody tr:hover {
 	margin-bottom: 30px;
 	animation: fadeIn 0.5s ease-out 0.2s forwards;
 	opacity: 0;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 /* Banner de IA Ativa */
@@ -4674,6 +4676,8 @@ tbody tr:hover {
 
 .performance-summary-section {
 	margin-bottom: 1.5rem;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .performance-cards-grid {
@@ -4681,13 +4685,20 @@ tbody tr:hover {
 	grid-template-columns: repeat(4, 1fr);
 	gap: 1rem;
 	margin-bottom: 1rem;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .performance-card {
-	padding: 1.25rem;
+	padding: 1.5rem;
 	background-color: rgba(15, 23, 42, 0.6);
 	border: 1px solid rgba(148, 163, 184, 0.2);
 	border-radius: 12px;
+	min-height: 180px;
+	display: flex;
+	flex-direction: column;
+	justify-content: space-between;
+	box-sizing: border-box;
 }
 
 .card-header-row {
@@ -4979,12 +4990,20 @@ tbody tr:hover {
 @media (max-width: 1200px) {
 	.performance-cards-grid {
 		grid-template-columns: repeat(2, 1fr);
+		width: 100%;
+		gap: 1rem;
 	}
 }
 
 @media (max-width: 768px) {
 	.performance-cards-grid {
 		grid-template-columns: 1fr;
+		width: 100%;
+		gap: 1rem;
+	}
+	
+	.performance-card {
+		min-height: 160px;
 	}
 	
 	.status-card-content {
