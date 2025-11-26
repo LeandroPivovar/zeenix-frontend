@@ -338,20 +338,6 @@ export default {
             result: d.result
         }));
 
-        const operacoesModal = [
-            { time: '15:05', type: 'CALL', volume: 75, investedValue: '$50.00', result: '+$17.60' },
-            { time: '14:20', type: 'PUT', volume: 100, investedValue: '$75.00', result: '+$19.40' },
-            { time: '13:42', type: 'MATCHES', volume: 75, investedValue: '$50.00', result: '+$15.80' },
-            { time: '12:08', type: 'CALL', volume: 100, investedValue: '$75.00', result: '-$4.20' },
-            { time: '11:15', type: 'PUT', volume: 50, investedValue: '$35.00', result: '+$10.00' },
-            { time: '10:55', type: 'CALL', volume: 75, investedValue: '$50.00', result: '-$8.50' },
-            { time: '09:30', type: 'MATCHES', volume: 100, investedValue: '$75.00', result: '+$21.10' },
-            { time: '08:45', type: 'CALL', volume: 50, investedValue: '$35.00', result: '+$9.90' },
-            { time: '07:20', type: 'PUT', volume: 75, investedValue: '$50.00', result: '+$12.30' },
-            { time: '06:00', type: 'MATCHES', volume: 50, investedValue: '$35.00', result: '-$5.00' },
-        ];
-
-
         return {
             tabAtiva: 'monitor', 
             periodoAtivo: '7 dias', 
