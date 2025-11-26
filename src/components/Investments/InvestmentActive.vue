@@ -3,7 +3,7 @@
         <main class="investment-active-main">
             <!-- Performance Summary Cards -->
             <section id="compact-performance-panel" class="mb-6">
-                <div id="iya1j" class="grid grid-cols-12 gap-3">
+                <div id="iya1j" class="grid grid-cols-12 gap-2">
                     <!-- Card 1 - Saldo Total -->
                     <div class="col-span-2">
                         <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden">
@@ -177,10 +177,10 @@
             </section>
     
             <!-- Main Content Grid -->
-            <div class="grid grid-cols-12 gap-6 mb-6">
+            <div class="grid grid-cols-12 gap-3 mb-6">
                 <!-- Left Column - Chart -->
                 <div id="ir8sfp" class="col-span-8">
-                    <div id="market-chart" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[600px]">
+                    <div id="market-chart" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[720px]">
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h2 class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
@@ -217,12 +217,12 @@
                         </div>
             
                         <!-- Chart View -->
-                        <div v-show="activeTab === 'chart'" id="chart-view" class="h-[400px]">
+                        <div v-show="activeTab === 'chart'" id="chart-view" class="h-[520px]">
                             <div ref="chartContainer" id="tradingview-chart" class="chart-container tradingview-container h-full"></div>
                         </div>
 
                         <!-- Logs View -->
-                        <div v-show="activeTab === 'logs'" id="logs-view" class="h-[400px] overflow-y-auto">
+                        <div v-show="activeTab === 'logs'" id="logs-view" class="h-[520px] overflow-y-auto">
                     <div v-if="isLoadingLogs" class="loading-logs">
                         <p>Carregando histórico de operações...</p>
                     </div>
@@ -271,7 +271,7 @@
 
                 <!-- Right Column - Config -->
                 <div class="col-span-4">
-                    <div id="i0k3nl" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[600px]">
+                    <div id="i0k3nl" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[720px]">
                         <h3 class="text-base font-semibold text-zenix-text mb-6 flex items-center">
                             <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
                             Configuração Ativa
@@ -1553,6 +1553,8 @@ export default {
     background-color: #0B0B0B;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
     box-sizing: border-box;
+    padding: 0;
+    margin: 0;
 }
 
 /* Ensure Font Awesome icons are visible */
@@ -1592,7 +1594,7 @@ button i,
 }
 
 .investment-active-main {
-    padding: 1.5rem 20px;
+    padding: 1.5rem 12px;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -2494,6 +2496,10 @@ button i,
     grid-column: span 8 / span 8;
 }
 
+.gap-2 {
+    gap: 0.5rem;
+}
+
 .gap-3 {
     gap: 0.75rem;
 }
@@ -2582,8 +2588,16 @@ button i,
     height: 600px;
 }
 
+.h-\[720px\] {
+    height: 720px;
+}
+
 .h-\[400px\] {
     height: 400px;
+}
+
+.h-\[520px\] {
+    height: 520px;
 }
 
 .h-full {
