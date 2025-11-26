@@ -4682,7 +4682,7 @@ tbody tr:hover {
 
 .performance-cards-grid {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 	gap: 1rem;
 	margin-bottom: 1rem;
 	width: 100%;
@@ -4690,11 +4690,12 @@ tbody tr:hover {
 }
 
 .performance-card {
-	padding: 1.5rem;
+	padding: 1rem;
 	background-color: rgba(15, 23, 42, 0.6);
 	border: 1px solid rgba(148, 163, 184, 0.2);
 	border-radius: 12px;
-	min-height: 180px;
+	width: 200px;
+	height: 80px;
 	display: flex;
 	flex-direction: column;
 	justify-content: space-between;
@@ -4997,13 +4998,14 @@ tbody tr:hover {
 
 @media (max-width: 768px) {
 	.performance-cards-grid {
-		grid-template-columns: 1fr;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
 		width: 100%;
 		gap: 1rem;
 	}
 	
 	.performance-card {
-		min-height: 160px;
+		width: 200px;
+		height: 80px;
 	}
 	
 	.status-card-content {
