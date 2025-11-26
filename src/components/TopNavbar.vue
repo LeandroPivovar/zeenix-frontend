@@ -385,68 +385,82 @@ export default {
             if (response.ok) {
               const data = await response.json();
               
+              console.log(`[TopNavbar] Dados recebidos para conta ${loginid}:`, data);
+              
               // Buscar informações específicas da conta pelo loginid
-              // A API pode retornar accountsByCurrency ou accounts diretamente
               let balance = 0;
               let currency = 'USD';
               let isDemo = false;
+              let accountFound = false;
               
-              // Tentar buscar da estrutura accountsByCurrency primeiro
-              if (data.accountsByCurrency) {
+              // Tentar buscar da estrutura accountsByCurrency primeiro (estrutura principal)
+              if (data.accountsByCurrency && typeof data.accountsByCurrency === 'object') {
                 for (const curr in data.accountsByCurrency) {
                   const accountList = data.accountsByCurrency[curr];
-                  const account = accountList.find(acc => acc.loginid === loginid);
-                  if (account) {
-                    balance = parseFloat(account.value) || 0;
-                    currency = curr.toUpperCase();
-                    isDemo = account.isDemo || false;
-                    break;
+                  if (Array.isArray(accountList)) {
+                    const account = accountList.find(acc => acc.loginid === loginid);
+                    if (account) {
+                      balance = parseFloat(account.value) || 0;
+                      currency = curr.toUpperCase();
+                      isDemo = account.isDemo || false;
+                      accountFound = true;
+                      console.log(`[TopNavbar] Conta encontrada em accountsByCurrency:`, { loginid, balance, currency, isDemo });
+                      break;
+                    }
                   }
                 }
               }
               
-              // Se não encontrou, tentar buscar diretamente do raw/accounts
-              if (balance === 0 && !currency) {
-                // Verificar se há estrutura raw com accounts
-                if (data.raw && data.raw.accounts && data.raw.accounts[loginid]) {
-                  const accountData = data.raw.accounts[loginid];
-                  currency = (accountData.currency || 'USD').toUpperCase();
-                  balance = accountData.converted_amount !== null && accountData.converted_amount !== undefined
-                    ? parseFloat(accountData.converted_amount) || 0
-                    : parseFloat(accountData.balance || 0);
-                  isDemo = accountData.demo_account === 1 || accountData.demo_account === true;
-                } else {
-                  // Fallback: determinar tipo e buscar saldo agregado
-                  isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT') || 
-                          (data.isDemo === true);
-                  
-                  if (isDemo && data.balancesByCurrencyDemo) {
-                    const currencies = Object.keys(data.balancesByCurrencyDemo);
-                    if (currencies.length > 0) {
-                      currency = currencies[0];
-                      balance = parseFloat(data.balancesByCurrencyDemo[currency]) || 0;
-                    }
-                  } else if (!isDemo && data.balancesByCurrencyReal) {
-                    const currencies = Object.keys(data.balancesByCurrencyReal);
-                    if (currencies.length > 0) {
-                      currency = currencies[0];
-                      balance = parseFloat(data.balancesByCurrencyReal[currency]) || 0;
-                    }
-                  } else if (data.balance) {
-                    balance = typeof data.balance === 'object' ? (parseFloat(data.balance.value) || 0) : (parseFloat(data.balance) || 0);
-                    currency = data.currency || (data.balance?.currency || 'USD');
-                  }
-                }
+              // Se não encontrou em accountsByCurrency, tentar buscar do raw.accounts
+              if (!accountFound && data.raw && data.raw.accounts && data.raw.accounts[loginid]) {
+                const accountData = data.raw.accounts[loginid];
+                currency = (accountData.currency || 'USD').toUpperCase();
+                // Usar converted_amount se disponível, senão balance
+                balance = accountData.converted_amount !== null && accountData.converted_amount !== undefined
+                  ? parseFloat(accountData.converted_amount) || 0
+                  : parseFloat(accountData.balance || 0);
+                isDemo = accountData.demo_account === 1 || accountData.demo_account === true;
+                accountFound = true;
+                console.log(`[TopNavbar] Conta encontrada em raw.accounts:`, { loginid, balance, currency, isDemo });
               }
               
-              // Garantir que sempre temos valores válidos (mesmo que sejam 0)
+              // Se ainda não encontrou, usar fallback com saldos agregados
+              if (!accountFound) {
+                // Determinar se é demo baseado no loginid
+                isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT');
+                
+                // Buscar saldo agregado por moeda (pode ser que a conta específica não esteja disponível)
+                if (isDemo && data.balancesByCurrencyDemo) {
+                  const currencies = Object.keys(data.balancesByCurrencyDemo);
+                  if (currencies.length > 0) {
+                    currency = currencies[0];
+                    balance = parseFloat(data.balancesByCurrencyDemo[currency]) || 0;
+                  }
+                } else if (!isDemo && data.balancesByCurrencyReal) {
+                  const currencies = Object.keys(data.balancesByCurrencyReal);
+                  if (currencies.length > 0) {
+                    currency = currencies[0];
+                    balance = parseFloat(data.balancesByCurrencyReal[currency]) || 0;
+                  }
+                } else if (data.balance) {
+                  // Último fallback: usar balance geral
+                  balance = typeof data.balance === 'object' ? (parseFloat(data.balance.value) || 0) : (parseFloat(data.balance) || 0);
+                  currency = data.currency || (data.balance?.currency || 'USD');
+                }
+                
+                console.log(`[TopNavbar] Usando fallback para conta ${loginid}:`, { balance, currency, isDemo });
+              }
+              
+              // Garantir que sempre temos valores válidos
               balance = parseFloat(balance) || 0;
               currency = (currency || 'USD').toUpperCase();
               
-              // Se ainda não determinamos se é demo, usar heurística
-              if (isDemo === false && loginid.startsWith('VRTC')) {
+              // Confirmar se é demo baseado no loginid (sobrescrever se necessário)
+              if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
                 isDemo = true;
               }
+
+              console.log(`[TopNavbar] Conta final:`, { loginid, balance, currency, isDemo });
 
               accounts.push({
                 loginid,
