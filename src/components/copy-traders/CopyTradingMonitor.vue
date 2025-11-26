@@ -88,17 +88,34 @@
                     </TooltipsCopyTraders>
                 </div>
                 <div class="operations-list">
-                    <div v-for="op in operacoes" :key="op.time" class="op-item">
-                        <div class="op-left-wrapper">
-                            <span :class="['op-check', op.result.startsWith('+') ? 'win' : 'loss']">
-                                {{ op.result.startsWith('+') ? '✓' : '✗' }}
-                            </span>
-                            <span class="op-time">{{ op.time }}</span>
-                            <span :class="['op-type', op.type.toLowerCase()]">{{ op.type }}</span>
-                            <span class="op-invested">{{ op.investedValue }}</span>
-                        </div>
-                        <span :class="['op-result', op.result.startsWith('+') ? 'green' : 'red']">{{ op.result }}</span>
-                    </div>
+                    <table class="operations-table">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Hora</th>
+                                <th>Tipo</th>
+                                <th>Valor Investido</th>
+                                <th>Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="op in operacoes" :key="op.time" class="op-item">
+                                <td>
+                                    <span :class="['op-check', op.result.startsWith('+') ? 'win' : 'loss']">
+                                        {{ op.result.startsWith('+') ? '✓' : '✗' }}
+                                    </span>
+                                </td>
+                                <td class="op-time">{{ op.time }}</td>
+                                <td>
+                                    <span :class="['op-type', op.type.toLowerCase()]">{{ op.type }}</span>
+                                </td>
+                                <td class="op-invested">{{ op.investedValue }}</td>
+                                <td>
+                                    <span :class="['op-result', op.result.startsWith('+') ? 'green' : 'red']">{{ op.result }}</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
                 <button class="view-btn" @click="showModal">Ver tudo</button>
             </div>
@@ -243,19 +260,34 @@
                 </div>
                 
                 <div class="modal-body">
-                    <div class="operations-list-modal">
-                        <div v-for="(op, index) in operacoesModal" :key="index" class="op-item-modal">
-                            <div class="op-left-wrapper-modal">
-                                <span :class="['op-check-modal', op.result.startsWith('+') ? 'win' : 'loss']">
-                                    {{ op.result.startsWith('+') ? '✓' : '✗' }}
-                                </span>
-                                <span class="op-time-modal">{{ op.time }}</span>
-                                <span :class="['op-type-modal', op.type.toLowerCase()]">{{ op.type }}</span>
-                            </div>
-                            <span class="op-invested-modal">{{ op.investedValue }}</span>
-                            <span :class="['op-result-modal', op.result.startsWith('+') ? 'green' : 'red']">{{ op.result }}</span>
-                        </div>
-                    </div>
+                    <table class="operations-table-modal">
+                        <thead>
+                            <tr>
+                                <th>Status</th>
+                                <th>Hora</th>
+                                <th>Tipo</th>
+                                <th>Valor Investido</th>
+                                <th>Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(op, index) in operacoesModal" :key="index" class="op-item-modal">
+                                <td>
+                                    <span :class="['op-check-modal', op.result.startsWith('+') ? 'win' : 'loss']">
+                                        {{ op.result.startsWith('+') ? '✓' : '✗' }}
+                                    </span>
+                                </td>
+                                <td class="op-time-modal">{{ op.time }}</td>
+                                <td>
+                                    <span :class="['op-type-modal', op.type.toLowerCase()]">{{ op.type }}</span>
+                                </td>
+                                <td class="op-invested-modal">{{ op.investedValue }}</td>
+                                <td>
+                                    <span :class="['op-result-modal', op.result.startsWith('+') ? 'green' : 'red']">{{ op.result }}</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
@@ -512,60 +544,86 @@ export default {
     padding-top: 10px;
     padding-bottom: 10px;
 }
-.op-item { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 14px 0; 
-    border: 1px solid #1a1a1a; 
-    background: #0a0b0a;
-    margin-bottom: 10px;
-    border-radius: 12px;
+
+.operations-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 10px;
 }
-.op-item:last-child { border-bottom: none; }
-.op-left-wrapper { 
-    display: flex; 
-    align-items: center; 
+
+.operations-table thead {
+    display: table-header-group;
+}
+
+.operations-table thead th {
+    font-size: 12px;
+    font-weight: 600;
+    color: #929292;
+    text-align: left;
+    padding: 10px 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.operations-table tbody {
+    display: table-row-group;
+}
+
+.operations-table tbody tr.op-item {
+    background: #0a0b0a;
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+    display: table-row;
+}
+
+.operations-table tbody tr.op-item td {
+    padding: 14px 12px;
+    vertical-align: middle;
+}
+
+.operations-table tbody tr.op-item:first-child td:first-child {
+    border-top-left-radius: 12px;
+}
+
+.operations-table tbody tr.op-item:first-child td:last-child {
+    border-top-right-radius: 12px;
+}
+
+.operations-table tbody tr.op-item:last-child td:first-child {
+    border-bottom-left-radius: 12px;
+}
+
+.operations-table tbody tr.op-item:last-child td:last-child {
+    border-bottom-right-radius: 12px;
 }
 
 .op-check { 
     font-size: 18px; 
     font-weight: 700; 
+    display: inline-block;
 }
-.op-check.win { color: #22c55e; max-width: 35px;}
+.op-check.win { color: #22c55e; }
 .op-check.loss { color: #ef4444; }
 
 .op-time { 
     font-size: 14px; 
     color: #ccc; 
-    margin-right: 15px; 
-    max-width: 60px;
 }
+
 .op-type { 
     font-size: 14px; 
     font-weight: 400; 
     padding: 4px 10px; 
     border-radius: 6px; 
     text-transform: uppercase;
-    width: 100%;
-    text-align: center;
-    margin-right: 15px; 
+    display: inline-block;
+    background: #1a1a1a;
+    color: #ccc;
 }
 
-.op-item span:nth-child(3){
-    width: 100%;
-    max-width: 100px;
-    min-width: 90px;
-    text-align: left;
-}
 .op-invested { 
     font-size: 14px; 
     color: #ccc; 
-    text-align: left;
-}
-
-.op-item span:nth-child(4){
-    text-align: left;
 }
 
 .op-result { 
@@ -768,35 +826,70 @@ export default {
     overflow-y: auto;
     flex-grow: 1;
 }
-.operations-list-modal {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+.operations-table-modal {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0 8px;
 }
-.op-item-modal { 
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center; 
-    padding: 10px 15px;
+
+.operations-table-modal thead {
+    display: table-header-group;
+}
+
+.operations-table-modal thead th {
+    font-size: 12px;
+    font-weight: 600;
+    color: #929292;
+    text-align: left;
+    padding: 10px 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border-bottom: 1px solid #1a1a1a;
+    padding-bottom: 12px;
+}
+
+.operations-table-modal tbody {
+    display: table-row-group;
+}
+
+.operations-table-modal tbody tr.op-item-modal {
     background: #0a0b0a;
-    border-radius: 8px;
     border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    display: table-row;
 }
-.op-left-wrapper-modal { 
-    display: flex; 
-    align-items: center; 
-    gap: 15px;
+
+.operations-table-modal tbody tr.op-item-modal td {
+    padding: 10px 12px;
+    vertical-align: middle;
 }
+
+.operations-table-modal tbody tr.op-item-modal:first-child td:first-child {
+    border-top-left-radius: 8px;
+}
+
+.operations-table-modal tbody tr.op-item-modal:first-child td:last-child {
+    border-top-right-radius: 8px;
+}
+
+.operations-table-modal tbody tr.op-item-modal:last-child td:first-child {
+    border-bottom-left-radius: 8px;
+}
+
+.operations-table-modal tbody tr.op-item-modal:last-child td:last-child {
+    border-bottom-right-radius: 8px;
+}
+
 .op-check-modal { 
     font-size: 18px;
     font-weight: 700; 
+    display: inline-block;
 }
 .op-check-modal.win { color: #22c55e; }
 .op-check-modal.loss { color: #ef4444; }
 .op-time-modal { 
     font-size: 14px; 
     color: #929292;
-    min-width: 50px;
 }
 .op-type-modal { 
     font-size: 12px; 
@@ -806,21 +899,15 @@ export default {
     text-transform: uppercase;
     background: #1a1a1a;
     color: #ccc;
-    min-width: 70px;
-    text-align: center;
+    display: inline-block;
 }
 .op-invested-modal { 
     font-size: 14px; 
     color: #ccc; 
-    flex-grow: 1;
-    text-align: right;
-    margin-right: 15px;
 }
 .op-result-modal { 
     font-size: 16px; 
     font-weight: 600; 
-    min-width: 80px;
-    text-align: right;
 }
 .op-result-modal.green { color: #22c55e; }
 .op-result-modal.red { color: #ef4444; }
