@@ -12,8 +12,8 @@
     
     <!-- Main Content -->
     <main class="main-content bg-zenix-bg noise-bg font-inter overflow-y-auto w-full">
-    <!-- Hero Onboarding Section -->
-    <section id="hero-section" class="px-8 py-8 pb-4 relative overflow-hidden group h-[560px]">
+      <!-- Hero Onboarding Section -->
+      <section id="hero-section" class="px-8 py-8 pb-4 relative overflow-hidden group h-[560px]">
       <div class="absolute inset-0 z-0 bg-[#0B0B0B]">
         <div class="absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
         </div>
@@ -194,14 +194,13 @@
               </div>
             </div>
         </div>
-      </div>
-    </section>
-    
-    <div class="w-full h-px bg-gradient-to-r from-transparent via-zenix-border to-transparent my-8"></div>
-    
-    <div class="px-8 py-8">
-    <!-- Quick Tools Section -->
-    <section id="quick-tools" class="mt-6 mb-6 w-full">
+      </section>
+      
+      <div class="w-full h-px bg-gradient-to-r from-transparent via-zenix-border to-transparent my-8"></div>
+      
+      <div class="px-8 py-8">
+        <!-- Quick Tools Section -->
+        <section id="quick-tools" class="mt-6 mb-6 w-full">
       <h2 class="text-base font-semibold text-zenix-text opacity-95 mb-4">Ferramentas Principais</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
         <div 
@@ -227,11 +226,11 @@
             </button>
           </div>
         </div>
-      </div>
-    </section>
-    
-    <!-- Best IAs Section -->
-    <section id="best-ias" class="mb-6 w-full">
+        </div>
+      </section>
+      
+      <!-- Best IAs Section -->
+      <section id="best-ias" class="mb-6 w-full">
       <div class="flex items-center justify-between mb-5">
         <h2 class="text-base font-semibold text-zenix-text">Melhores IA's Agora</h2>
         <span class="text-xs text-zenix-label">Baseado no mercado em tempo real</span>
@@ -267,10 +266,10 @@
           </div>
         </div>
       </div>
-    </section>
-    
-    <!-- Overall Performance Section -->
-    <section id="overall-performance" class="mt-6 mb-12 w-full">
+      </section>
+      
+      <!-- Overall Performance Section -->
+      <section id="overall-performance" class="mt-6 mb-12 w-full">
       <div class="bg-zenix-card border border-zenix-border rounded-xl p-10 premium-card w-full">
         <h2 class="text-base font-semibold text-zenix-text mb-2">Desempenho Geral</h2>
         <p class="text-sm text-[#AFAFAF] mb-10 text-left">Você está deixando dinheiro na mesa. Ative todos os recursos para maximizar seus resultados.</p>
@@ -310,8 +309,8 @@
           </div>
         </div>
       </div>
-    </section>
-    </div>
+      </section>
+      </div>
     </main>
     
     <!-- Footer -->
