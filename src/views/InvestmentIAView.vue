@@ -1,5 +1,10 @@
 <template>
     <div class="zenix-layout">
+        <!-- Full Screen Loader -->
+        <div v-if="isActivating" class="fullscreen-loader">
+            <div class="loader-spinner"></div>
+        </div>
+        
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
 
         <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
@@ -442,7 +447,8 @@ export default {
         return {
             isSidebarOpen: false,
             isSidebarCollapsed: false,
-            isInvestmentActive: false, 
+            isInvestmentActive: false,
+            isActivating: false, 
 
             ticks: [],
             currentPrice: null,
@@ -645,6 +651,7 @@ export default {
         },
 
         async activateIA() {
+            this.isActivating = true;
             try {
                 console.log('[InvestmentIAView] ===== ATIVANDO IA =====');
                 console.log('[InvestmentIAView] 💰 VALOR DE ENTRADA:', this.entryValue);
@@ -657,6 +664,7 @@ export default {
 
                 if (!this.entryValue || this.entryValue < 0.35) {
                     console.warn('[InvestmentIAView] ⚠️ Valor de entrada inválido:', this.entryValue);
+                    this.isActivating = false;
                     return;
                 }
 
@@ -732,6 +740,8 @@ export default {
                 }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', error);
+            } finally {
+                this.isActivating = false;
             }
         },
 
@@ -2933,6 +2943,32 @@ export default {
         margin-left: 0;
         margin-right: 0;
         width: 100%;
+    }
+}
+
+/* Full Screen Loader */
+.fullscreen-loader {
+    position: fixed;
+    inset: 0;
+    background: #000000;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.loader-spinner {
+    width: 60px;
+    height: 60px;
+    border: 4px solid rgba(34, 197, 94, 0.2);
+    border-top-color: #22C55E;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
     }
 }
 </style>
