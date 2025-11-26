@@ -227,7 +227,7 @@
 		</div>
 		
 		<!-- Footer -->
-		<footer id="footer" class="bg-zenix-bg border-t border-zenix-border mt-12 w-full">
+		<footer id="footer" class="bg-zenix-bg mt-12 w-full">
 			<div class="max-w-7xl mx-auto px-8 py-12">
 				<div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
 					<div>
@@ -281,7 +281,7 @@
 						</ul>
 					</div>
 				</div>
-				<div class="border-t border-zenix-border pt-8">
+				<div class="pt-8">
 					<p class="text-zenix-label text-xs text-center opacity-60">
 						© 2024 ZENIX PRO. Todos os direitos reservados.
 					</p>
