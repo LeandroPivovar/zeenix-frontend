@@ -135,7 +135,7 @@
                     <div>
                       <p class="text-xs text-[#7A7A7A] mb-1">Saldo</p>
                       <p class="text-base font-semibold text-[#DFDFDF]">
-                        {{ formatBalance(account.balance, account.currency) }}
+                        {{ formatBalance(account.balance || 0, account.currency) }}
                       </p>
                     </div>
                   </div>
@@ -385,38 +385,75 @@ export default {
             if (response.ok) {
               const data = await response.json();
               
-              // Determinar se é demo ou real
-              const isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT') || 
-                            (data.isDemo === true) || 
-                            (data.balancesByCurrencyDemo && Object.keys(data.balancesByCurrencyDemo).length > 0);
-              
-              // Obter saldo e moeda
+              // Buscar informações específicas da conta pelo loginid
+              // A API pode retornar accountsByCurrency ou accounts diretamente
               let balance = 0;
               let currency = 'USD';
+              let isDemo = false;
               
-              if (isDemo && data.balancesByCurrencyDemo) {
-                const currencies = Object.keys(data.balancesByCurrencyDemo);
-                if (currencies.length > 0) {
-                  currency = currencies[0];
-                  balance = data.balancesByCurrencyDemo[currency] || 0;
+              // Tentar buscar da estrutura accountsByCurrency primeiro
+              if (data.accountsByCurrency) {
+                for (const curr in data.accountsByCurrency) {
+                  const accountList = data.accountsByCurrency[curr];
+                  const account = accountList.find(acc => acc.loginid === loginid);
+                  if (account) {
+                    balance = parseFloat(account.value) || 0;
+                    currency = curr.toUpperCase();
+                    isDemo = account.isDemo || false;
+                    break;
+                  }
                 }
-              } else if (data.balancesByCurrencyReal) {
-                const currencies = Object.keys(data.balancesByCurrencyReal);
-                if (currencies.length > 0) {
-                  currency = currencies[0];
-                  balance = data.balancesByCurrencyReal[currency] || 0;
+              }
+              
+              // Se não encontrou, tentar buscar diretamente do raw/accounts
+              if (balance === 0 && !currency) {
+                // Verificar se há estrutura raw com accounts
+                if (data.raw && data.raw.accounts && data.raw.accounts[loginid]) {
+                  const accountData = data.raw.accounts[loginid];
+                  currency = (accountData.currency || 'USD').toUpperCase();
+                  balance = accountData.converted_amount !== null && accountData.converted_amount !== undefined
+                    ? parseFloat(accountData.converted_amount) || 0
+                    : parseFloat(accountData.balance || 0);
+                  isDemo = accountData.demo_account === 1 || accountData.demo_account === true;
+                } else {
+                  // Fallback: determinar tipo e buscar saldo agregado
+                  isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT') || 
+                          (data.isDemo === true);
+                  
+                  if (isDemo && data.balancesByCurrencyDemo) {
+                    const currencies = Object.keys(data.balancesByCurrencyDemo);
+                    if (currencies.length > 0) {
+                      currency = currencies[0];
+                      balance = parseFloat(data.balancesByCurrencyDemo[currency]) || 0;
+                    }
+                  } else if (!isDemo && data.balancesByCurrencyReal) {
+                    const currencies = Object.keys(data.balancesByCurrencyReal);
+                    if (currencies.length > 0) {
+                      currency = currencies[0];
+                      balance = parseFloat(data.balancesByCurrencyReal[currency]) || 0;
+                    }
+                  } else if (data.balance) {
+                    balance = typeof data.balance === 'object' ? (parseFloat(data.balance.value) || 0) : (parseFloat(data.balance) || 0);
+                    currency = data.currency || (data.balance?.currency || 'USD');
+                  }
                 }
-              } else if (data.balance) {
-                balance = typeof data.balance === 'object' ? (data.balance.value || 0) : data.balance;
-                currency = data.currency || (data.balance.currency || 'USD');
+              }
+              
+              // Garantir que sempre temos valores válidos (mesmo que sejam 0)
+              balance = parseFloat(balance) || 0;
+              currency = (currency || 'USD').toUpperCase();
+              
+              // Se ainda não determinamos se é demo, usar heurística
+              if (isDemo === false && loginid.startsWith('VRTC')) {
+                isDemo = true;
               }
 
               accounts.push({
                 loginid,
                 token: accountToken,
                 isDemo,
-                balance,
-                currency: currency.toUpperCase()
+                balance: balance, // Sempre mostrar o valor real, mesmo se for 0.00
+                currency: currency
               });
             }
           } catch (error) {
@@ -503,7 +540,9 @@ export default {
     },
     formatBalance(balance, currency) {
       const prefix = this.getCurrencyPrefix(currency);
-      return `${prefix}${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      // Sempre mostrar o saldo, mesmo se for zero
+      const value = parseFloat(balance) || 0;
+      return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     },
     getCurrencyPrefix(currency) {
       switch ((currency || '').toUpperCase()) {
