@@ -1,10 +1,6 @@
 <template>
     <aside class="sidebar" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <div class="brand">
-            <div class="flex items-center gap-2">
-                <span class="text-lg font-bold text-zenix-text">ZENIX</span>
-                <span class="text-xs font-semibold text-zenix-green bg-zenix-green bg-opacity-10 px-2 py-1 rounded">PRO</span>
-            </div>
         </div>
         <nav class="menu">
             <a
