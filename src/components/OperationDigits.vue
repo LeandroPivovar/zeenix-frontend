@@ -178,36 +178,7 @@
             <!-- Main Content Grid -->
             <div class="main-content-grid">
                 <div class="cards-grid">
-                    <!-- Linha 1: Mapa de Frequência + Heatmap -->
-                    <div class="frequency-map-card">
-                    <div class="card-header-with-help">
-                        <h3 class="card-header">Mapa de Frequência dos Dígitos (0–9)</h3>
-                        <div class="relative group">
-                            <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
-                            <div class="tooltip-content">
-                                <div class="tooltip-title">🔵 Como Analisar?</div>
-                                <div class="tooltip-text">
-                                    Cada barra mostra quantas vezes aquele dígito apareceu. Verde escuro = apareceu pouco (subaquecido), Vermelho = apareceu muito (sobreaquecido). Dígitos subaquecidos têm maior probabilidade de aparecer em breve (reversão à média).<br><br>
-                                    <strong>Exemplo:</strong> Se o dígito 7 está vermelho (4%), ele está "devendo" aparecer. Considere estratégia MATCHES 7.
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="frequency-map-grid">
-                        <div v-for="item in digitFrequenciesWithStats" :key="'freq-'+item.digit" class="frequency-digit-block">
-                            <div class="frequency-percentage-label">{{ item.percentage }}%</div>
-                            <div 
-                                class="frequency-bar-visual" 
-                                :class="item.statusClass"
-                                :style="{ height: item.barHeight + 'px' }"
-                            ></div>
-                            <div class="frequency-digit-number">{{ item.digit }}</div>
-                            <div class="frequency-status-label">{{ item.statusText }}</div>
-                            <div class="frequency-z-score">Z: {{ item.zScore }}</div>
-                        </div>
-                    </div>
-                    </div>
-
+                    <!-- Linha 1: Heatmap + DVX -->
                     <div class="heatmap-card">
                     <div class="card-header-with-help">
                         <h3 class="card-header">Heatmap Estatístico de Dígitos (0–9)</h3>
@@ -260,7 +231,7 @@
                     </div>
                     </div>
 
-                    <!-- Linha 2: DVX + Paridade -->
+                    <!-- Linha 1: Heatmap + DVX (continuação) -->
                     <div class="dvx-card">
                     <div class="card-header-with-help">
                         <div>
@@ -316,7 +287,7 @@
                     </div>
                 </div>
 
-                <!-- Medidor de Paridade -->
+                <!-- Linha 2: Paridade + Distribuição Alto/Baixo -->
                 <div class="parity-meter-card">
                     <div class="card-header-with-help">
                         <div>
