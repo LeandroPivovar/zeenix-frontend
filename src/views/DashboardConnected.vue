@@ -13,32 +13,150 @@
     <!-- Main Content -->
     <main class="main-content bg-zenix-bg noise-bg font-inter overflow-y-auto w-full">
     <!-- Hero Onboarding Section -->
-    <section id="integrated-hero-onboarding" class="w-full">
-      <div class="relative w-full h-[620px] overflow-hidden">
-        <div class="absolute inset-0">
-          <div class="absolute inset-0 w-full h-full">
-            <img src="https://storage.googleapis.com/uxpilot-auth.appspot.com/115dc9dc6f-4ab7d1a1c6f815b2fef3.png" alt="futuristic technology neural network glowing green circuits" class="absolute right-0 top-0 h-full w-full object-cover object-right">
-          </div>
-          <div class="absolute inset-0 bg-gradient-to-r from-[#000000] via-[#000000]/95 via-30% via-[#000000]/85 via-45% via-[#000000]/70 via-55% via-[#000000]/50 via-65% via-[#000000]/30 via-75% via-[#000000]/15 via-85% to-transparent"></div>
-          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_80%_50%,rgba(34,197,94,0.08)_0%,rgba(34,197,94,0.04)_30%,transparent_60%)]"></div>
-          <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_85%_40%,rgba(34,197,94,0.06)_0%,transparent_50%)]"></div>
-          <div class="absolute left-0 top-0 w-[55%] h-full bg-gradient-to-r from-[#000000] via-[#000000]/90 to-transparent"></div>
-          <div class="absolute inset-0 bg-gradient-to-t from-[#0B0B0B]/85 via-transparent via-50% to-[#0B0B0B]/20"></div>
-          <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B]/15 via-transparent via-60% to-[#0B0B0B]/70"></div>
+    <section id="hero-section" class="px-8 py-8 pb-4 relative overflow-hidden group h-[560px]">
+      <div class="absolute inset-0 z-0 bg-[#0B0B0B]">
+        <div class="absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
         </div>
-        <div class="relative h-full flex flex-col justify-center px-16">
-          <div class="max-w-2xl mb-12">
-            <h1 class="text-[52px] font-bold text-white leading-[1.1] tracking-tight mb-3">
-              Bem-vindo ao Zenix, <span class="text-[#22C55E]">{{ userName }}</span>
-            </h1>
-            <p class="text-[15px] text-[#DFDFDF]/85 leading-relaxed">
-              Configure sua conta rapidamente e deixe a IA trabalhar por você.
-            </p>
-          </div>
-          <div class="max-w-[1100px] w-full">
-            <div class="grid grid-cols-3 gap-6">
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(34,197,94,0.15)_0%,transparent_50%)]">
+        </div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_85%_30%,rgba(34,197,94,0.12)_0%,transparent_40%)]">
+        </div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_90%_70%,rgba(34,197,94,0.10)_0%,transparent_35%)]">
+        </div>
+        <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(34,197,94,0.08)_0%,transparent_40%)]">
+        </div>
+        <svg xmlns="http://www.w3.org/2000/svg" id="ik0zc" class="absolute inset-0 w-full h-full">
+          <defs>
+            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+              <stop offset="0%" id="iatpj">
+                <animate attributeName="stop-color" values="rgba(34,197,94,0.3);rgba(34,197,94,0.5);rgba(34,197,94,0.3)" dur="26.67s" repeatCount="indefinite"></animate>
+              </stop>
+              <stop offset="100%" id="ir5ig"></stop>
+            </linearGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="4" result="coloredBlur">
+              </feGaussianBlur>
+              <feMerge>
+                <feMergeNode in="coloredBlur"></feMergeNode>
+                <feMergeNode in="SourceGraphic"></feMergeNode>
+              </feMerge>
+            </filter>
+          </defs>
+          <circle cx="85%" cy="15%" r="2" fill="rgba(34,197,94,0.8)" filter="url(#glow)">
+            <animate attributeName="cy" values="15%;18%;15%" dur="20s" repeatCount="indefinite"></animate>
+            <animate attributeName="opacity" values="0.8;1;0.8" dur="20s" repeatCount="indefinite"></animate>
+          </circle>
+          <circle cx="90%" cy="40%" r="3" fill="rgba(34,197,94,0.9)" filter="url(#glow)">
+            <animate attributeName="cy" values="40%;37%;40%" dur="26.67s" repeatCount="indefinite"></animate>
+            <animate attributeName="r" values="3;4;3" dur="26.67s" repeatCount="indefinite"></animate>
+          </circle>
+          <circle cx="80%" cy="65%" r="2.5" fill="rgba(34,197,94,0.7)" filter="url(#glow)">
+            <animate attributeName="cy" values="65%;68%;65%" dur="33.33s" repeatCount="indefinite"></animate>
+          </circle>
+          <circle cx="88%" cy="25%" r="1.5" fill="rgba(34,197,94,0.6)" filter="url(#glow)">
+            <animate attributeName="cx" values="88%;90%;88%" dur="40s" repeatCount="indefinite"></animate>
+            <animate attributeName="cy" values="25%;28%;25%" dur="40s" repeatCount="indefinite"></animate>
+          </circle>
+          <circle cx="82%" cy="50%" r="2" fill="rgba(34,197,94,0.85)" filter="url(#glow)">
+            <animate attributeName="cy" values="50%;53%;50%" dur="30s" repeatCount="indefinite"></animate>
+          </circle>
+          <circle cx="15%" cy="20%" r="2.5" fill="rgba(34,197,94,0.75)" filter="url(#glow)">
+            <animate attributeName="cy" values="20%;23%;20%" dur="26.67s" repeatCount="indefinite"></animate>
+          </circle>
+          <circle cx="25%" cy="60%" r="2" fill="rgba(34,197,94,0.8)" filter="url(#glow)">
+            <animate attributeName="cy" values="60%;57%;60%" dur="33.33s" repeatCount="indefinite"></animate>
+          </circle>
+          <line x1="70%" y1="30%" x2="95%" y2="30%" stroke="rgba(34,197,94,0.3)" stroke-width="1">
+            <animate attributeName="x2" values="95%;100%;95%" dur="20s" repeatCount="indefinite"></animate>
+            <animate attributeName="opacity" values="0.3;0.6;0.3" dur="20s" repeatCount="indefinite"></animate>
+          </line>
+          <line x1="75%" y1="55%" x2="100%" y2="55%" stroke="rgba(34,197,94,0.25)" stroke-width="1">
+            <animate attributeName="x2" values="100%;95%;100%" dur="26.67s" repeatCount="indefinite"></animate>
+            <animate attributeName="opacity" values="0.25;0.5;0.25" dur="26.67s" repeatCount="indefinite"></animate>
+          </line>
+          <line x1="5%" y1="40%" x2="30%" y2="40%" stroke="rgba(34,197,94,0.3)" stroke-width="1">
+            <animate attributeName="x2" values="30%;35%;30%" dur="23.33s" repeatCount="indefinite"></animate>
+            <animate attributeName="opacity" values="0.3;0.6;0.3" dur="23.33s" repeatCount="indefinite"></animate>
+          </line>
+          <polygon points="85,80 95,100 75,100" fill="none" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" transform="translate(900, 100)">
+            <animateTransform attributeName="transform" type="rotate" values="0 950 150;10 950 150;0 950 150" dur="40s" repeatCount="indefinite"></animateTransform>
+            <animate attributeName="opacity" values="0.4;0.7;0.4" dur="40s" repeatCount="indefinite"></animate>
+          </polygon>
+          <path d="M 1100 200 Q 1150 220 1200 200 T 1300 200" fill="none" stroke="rgba(34,197,94,0.35)" stroke-width="2">
+            <animate attributeName="d" values="M 1100 200 Q 1150 220 1200 200 T 1300 200;M 1100 200 Q 1150 180 1200 200 T 1300 200;M 1100 200 Q 1150 220 1200 200 T 1300 200" dur="33.33s" repeatCount="indefinite"></animate>
+          </path>
+          <rect x="75%" y="10%" width="80" height="80" fill="none" stroke="rgba(34,197,94,0.2)" stroke-width="1" rx="5">
+            <animate attributeName="opacity" values="0.2;0.5;0.2" dur="26.67s" repeatCount="indefinite"></animate>
+            <animateTransform attributeName="transform" type="rotate" values="0 1100 100;5 1100 100;0 1100 100" dur="53.33s" repeatCount="indefinite"></animateTransform>
+          </rect>
+          <circle cx="92%" cy="35%" r="50" fill="none" stroke="rgba(34,197,94,0.15)" stroke-width="1.5">
+            <animate attributeName="r" values="50;60;50" dur="33.33s" repeatCount="indefinite"></animate>
+            <animate attributeName="opacity" values="0.15;0.3;0.15" dur="33.33s" repeatCount="indefinite"></animate>
+          </circle>
+          <circle cx="92%" cy="35%" r="50" fill="none" stroke="rgba(34,197,94,0.1)" stroke-width="1.5">
+            <animate attributeName="r" values="60;70;60" dur="33.33s" repeatCount="indefinite" begin="1.67s"></animate>
+            <animate attributeName="opacity" values="0.1;0.2;0.1" dur="33.33s" repeatCount="indefinite" begin="1.67s"></animate>
+          </circle>
+          <g transform="translate(1150, 250)">
+            <polygon points="0,-20 17.32,-10 17.32,10 0,20 -17.32,10 -17.32,-10" fill="none" stroke="rgba(34,197,94,0.35)" stroke-width="1.5">
+              <animateTransform attributeName="transform" type="rotate" values="0;360" dur="80s" repeatCount="indefinite" additive="sum"></animateTransform>
+            </polygon>
+          </g>
+          <g transform="translate(1100, 400)">
+            <polygon points="0,-15 12.99,-7.5 12.99,7.5 0,15 -12.99,7.5 -12.99,-7.5" fill="none" stroke="rgba(34,197,94,0.3)" stroke-width="1.5">
+              <animateTransform attributeName="transform" type="rotate" values="360;0" dur="66.67s" repeatCount="indefinite" additive="sum"></animateTransform>
+            </polygon>
+          </g>
+          <g transform="translate(150, 180)">
+            <polygon points="0,-18 15.59,-9 15.59,9 0,18 -15.59,9 -15.59,-9" fill="none" stroke="rgba(34,197,94,0.35)" stroke-width="1.5">
+              <animateTransform attributeName="transform" type="rotate" values="0;360" dur="93.33s" repeatCount="indefinite" additive="sum"></animateTransform>
+            </polygon>
+          </g>
+        </svg>
+      </div>
+      <div class="absolute inset-0 z-[1] pointer-events-none">
+        <div id="i99s1i" class="grid-pattern"></div>
+        <div id="ixr7uj">
+          BTC
+          <div id="ianwqb">$67,234</div>
+        </div>
+        <div id="ivafvh">
+          ETH
+          <div id="i6bn58">$3,421</div>
+        </div>
+        <div id="im44s3">
+          USD
+          <div id="ijm3gj">$1.00</div>
+        </div>
+        <div id="ibz4um">
+          ₿
+        </div>
+        <div id="ic8zog">
+          $
+        </div>
+        <div id="ixwg04">
+          SOL
+          <div id="ijp6v7">$142.87</div>
+        </div>
+        <div id="ih4yn4">
+          EUR
+          <div id="iyevqf">€0.92</div>
+        </div>
+        <div id="ioxiss">
+          Ξ
+        </div>
+      </div>
+      <div class="relative z-10">
+        <div id="hero-header" class="mb-10">
+          <h1 id="ixl21c" class="text-3xl font-semibold mb-2 text-white/90">
+            Bem-vindo ao
+            Zenix, <span id="itixvs">{{ userName }}</span></h1>
+          <p class="text-white/60">Configure sua conta rapidamente em 3 passos
+            e deixe a IA trabalhar por você.</p>
+        </div>
+        <div class="flex items-start relative">
               <!-- Card 1/3: Depositar -->
-              <div id="hero-card-1" class="rounded-[18px] p-8 h-[240px] w-full flex flex-col justify-between transform scale-[0.88] transition-all duration-300 ease-out relative hover:scale-[0.91] z-[3] bg-[rgba(20,20,20,0.35)] border border-[rgba(34,197,94,0.25)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.18),inset_0_1px_1px_rgba(255,255,255,0.05)]">
+              <div id="hero-card-1" class="rounded-[18px] p-8 h-56 w-80 flex flex-col justify-between transform scale-[0.88] transition-all duration-300 ease-out relative hover:scale-[0.91] z-[3] bg-[rgba(20,20,20,0.35)] border border-[rgba(34,197,94,0.25)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.18),inset_0_1px_1px_rgba(255,255,255,0.05)]">
                 <div>
                   <h3 class="font-semibold mb-2 text-[rgba(255,255,255,0.92)]">
                     Deposite para começar</h3>
@@ -50,53 +168,31 @@
                 </button>
               </div>
               <!-- Card 2/3: Configurar IA -->
-              <div class="relative bg-gradient-to-br from-[#0A0A0A] via-[#080808] to-[#060606] border border-[#1A1A1A]/40 rounded-[20px] p-6 h-[240px] flex flex-col transition-all duration-300 group overflow-hidden shadow-[0_0_40px_rgba(34,197,94,0.08),0_8px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_0_50px_rgba(34,197,94,0.12),0_10px_38px_rgba(0,0,0,0.7)]">
-                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.06)_0%,transparent_70%)] opacity-40"></div>
-                <div class="absolute top-5 left-5 flex items-center space-x-3 z-10">
-                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center backdrop-blur-sm">
-                    <div class="absolute inset-0 rounded-full bg-[#22C55E]/[0.03]"></div>
-                    <i class="fas fa-microchip text-[#22C55E] text-sm"></i>
-                  </div>
-                  <span class="text-[10px] font-semibold text-[#22C55E]/60 tracking-wide">2/3</span>
+              <div id="hero-card-2" class="rounded-[18px] p-8 h-56 w-80 flex flex-col justify-between transform scale-[0.88] -ml-6 transition-all duration-300 ease-out relative hover:scale-[0.90] z-[2] bg-[rgba(20,20,20,0.35)] border border-[rgba(255,255,255,0.12)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.08),inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                <div>
+                  <h3 class="font-medium mb-2 text-[rgba(255,255,255,0.55)]">
+                    Configure uma IA ou Copy Trading</h3>
+                  <p class="text-sm text-[rgba(255,255,255,0.40)]">Escolha e ative
+                    sua estratégia automática.</p>
                 </div>
-                <div class="mt-14 flex-1 flex flex-col justify-between relative z-10">
-                  <div class="space-y-3">
-                    <h3 class="text-[15px] font-semibold text-[#DFDFDF]/90 leading-tight tracking-tight">Configure uma IA ou Copy Trading</h3>
-                    <p class="text-[11.5px] text-[#DFDFDF]/70 leading-[1.6]">Escolha e ative sua estratégia automática. A IA opera por você com apenas 1 clique.</p>
-                  </div>
-                  <button @click="$router.push('/InvestmentIA')" class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold py-2.5 px-5 rounded-[14px] text-[11px] transition-all inline-flex items-center justify-center space-x-2.5 group-hover:shadow-[0_6px_24px_rgba(34,197,94,0.35)] hover:translate-y-[-1px] mt-4 unified-button">
-                    <span>Ativar IA Agora</span>
-                    <svg viewBox="0 0 16 16" fill="none" class="w-3 h-3 group-hover:translate-x-1 transition-transform">
-                      <path d="M1 8h14m-6-6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                  </button>
-                </div>
+                <button @click="$router.push('/InvestmentIA')" class="bg-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.15)] text-[rgba(255,255,255,0.40)] py-2 px-4 rounded-[10px] h-[42px] w-full font-medium transition-all border border-[rgba(255,255,255,0.12)]">
+                  Ativar IA agora
+                </button>
               </div>
               <!-- Card 3/3: Resultados -->
-              <div class="relative bg-gradient-to-br from-[#0A0A0A] via-[#080808] to-[#060606] border border-[#1A1A1A]/40 rounded-[20px] p-6 h-[240px] flex flex-col transition-all duration-300 group overflow-hidden shadow-[0_0_40px_rgba(34,197,94,0.08),0_8px_32px_rgba(0,0,0,0.6)] hover:shadow-[0_0_50px_rgba(34,197,94,0.12),0_10px_38px_rgba(0,0,0,0.7)]">
-                <div class="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(34,197,94,0.06)_0%,transparent_70%)] opacity-40"></div>
-                <div class="absolute top-5 left-5 flex items-center space-x-3 z-10">
-                  <div class="relative w-[38px] h-[38px] rounded-full bg-[#0E0E0E]/80 border border-[#22C55E]/20 flex items-center justify-center backdrop-blur-sm">
-                    <div class="absolute inset-0 rounded-full bg-[#22C55E]/[0.03]"></div>
-                    <i class="fas fa-chart-line text-[#22C55E] text-sm"></i>
-                  </div>
-                  <span class="text-[10px] font-semibold text-[#22C55E]/60 tracking-wide">3/3</span>
+              <div id="hero-card-3" class="rounded-[18px] p-8 h-56 w-80 flex flex-col justify-between transform scale-[0.88] -ml-6 transition-all duration-300 ease-out relative hover:scale-[0.90] z-[1] bg-[rgba(20,20,20,0.35)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.08),inset_0_1px_1px_rgba(255,255,255,0.05)]">
+                <div>
+                  <h3 class="font-medium mb-2 text-[rgba(255,255,255,0.55)]">
+                    Acompanhe seus resultados</h3>
+                  <p class="text-sm text-[rgba(255,255,255,0.40)]">Veja lucros,
+                    consistência e operações em tempo real com total
+                    transparência.</p>
                 </div>
-                <div class="mt-14 flex-1 flex flex-col justify-between relative z-10">
-                  <div class="space-y-3">
-                    <h3 class="text-[15px] font-semibold text-[#DFDFDF]/90 leading-tight tracking-tight">Acompanhe seus resultados</h3>
-                    <p class="text-[11.5px] text-[#DFDFDF]/70 leading-[1.6]">Veja lucros, consistência e operações em tempo real com total transparência.</p>
-                  </div>
-                  <button @click="scrollToPerformance" class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold py-2.5 px-5 rounded-[14px] text-[11px] transition-all inline-flex items-center justify-center space-x-2.5 group-hover:shadow-[0_6px_24px_rgba(34,197,94,0.35)] hover:translate-y-[-1px] mt-4 unified-button">
-                    <span>Ver Resultados</span>
-                    <svg viewBox="0 0 16 16" fill="none" class="w-3 h-3 group-hover:translate-x-1 transition-transform">
-                      <path d="M1 8h14m-6-6l6 6-6 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
-                    </svg>
-                  </button>
-                </div>
+                <button @click="scrollToPerformance" class="bg-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.15)] text-[rgba(255,255,255,0.40)] py-2 px-4 rounded-[10px] h-[42px] w-full font-medium transition-all border border-[rgba(255,255,255,0.12)]">
+                  Ver resultados
+                </button>
               </div>
             </div>
-          </div>
         </div>
       </div>
     </section>
@@ -1193,7 +1289,7 @@ export default {
   background-color: #00FF87;
 }
 
-/* Hero Card 1 Styles */
+/* Hero Card Styles */
 #hero-card-1 {
   backdrop-filter: blur(20px);
   box-shadow: rgba(34, 197, 94, 0.18) 0px 0px 20px;
@@ -1210,12 +1306,45 @@ export default {
   animation-fill-mode: none;
   animation-play-state: running;
   animation-name: float-card-1;
-  animation-timeline: auto;
-  animation-range-start: normal;
-  animation-range-end: normal;
 }
 
-#hero-card-1:hover {
+#hero-card-2 {
+  backdrop-filter: blur(10px);
+  transition-behavior: normal;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
+  transition-delay: 0s;
+  transition-property: all;
+  animation-duration: 7s;
+  animation-timing-function: ease-in-out;
+  animation-delay: 0.5s;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-fill-mode: none;
+  animation-play-state: running;
+  animation-name: float-card-2;
+}
+
+#hero-card-3 {
+  backdrop-filter: blur(8px);
+  transition-behavior: normal;
+  transition-duration: 0.25s;
+  transition-timing-function: ease;
+  transition-delay: 0s;
+  transition-property: all;
+  animation-duration: 8s;
+  animation-timing-function: ease-in-out;
+  animation-delay: 1s;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-fill-mode: none;
+  animation-play-state: running;
+  animation-name: float-card-3;
+}
+
+#hero-card-1:hover,
+#hero-card-2:hover,
+#hero-card-3:hover {
   animation-play-state: paused;
 }
 
@@ -1229,4 +1358,189 @@ export default {
   }
 }
 
+@keyframes float-card-2 {
+  0%,
+  100% {
+    transform: translateY(0px) scale(0.88);
+  }
+  50% {
+    transform: translateY(-10px) scale(0.88);
+  }
+}
+
+@keyframes float-card-3 {
+  0%,
+  100% {
+    transform: translateY(0px) scale(0.88);
+  }
+  50% {
+    transform: translateY(-12px) scale(0.88);
+  }
+}
+
+/* Hero Section Background Elements */
+.grid-pattern {
+  animation-duration: 4s;
+  animation-timing-function: ease-in-out;
+  animation-delay: 0s;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-fill-mode: none;
+  animation-play-state: running;
+  animation-name: grid-pulse;
+}
+
+#hero-header {
+  animation-duration: 6s;
+  animation-timing-function: ease-in-out;
+  animation-delay: 0s;
+  animation-iteration-count: infinite;
+  animation-direction: normal;
+  animation-fill-mode: none;
+  animation-play-state: running;
+  animation-name: float-header;
+}
+
+#i99s1i {
+  position: absolute;
+  top: 10%;
+  right: 5%;
+  width: 400px;
+  height: 400px;
+  background-image: linear-gradient(rgba(34, 197, 94, 0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(34, 197, 94, 0.12) 1px, transparent 1px);
+  background-size: 40px 40px;
+  opacity: 0.4;
+}
+
+#ixr7uj {
+  position: absolute;
+  top: 15%;
+  right: 15%;
+  font-size: 14px;
+  color: rgba(34, 197, 94, 0.6);
+  font-weight: 600;
+}
+
+#ianwqb {
+  font-size: 11px;
+  color: rgba(34, 197, 94, 0.5);
+}
+
+#ivafvh {
+  position: absolute;
+  top: 45%;
+  right: 8%;
+  font-size: 14px;
+  color: rgba(34, 197, 94, 0.6);
+  font-weight: 600;
+}
+
+#i6bn58 {
+  font-size: 11px;
+  color: rgba(34, 197, 94, 0.5);
+}
+
+#im44s3 {
+  position: absolute;
+  top: 70%;
+  right: 20%;
+  font-size: 14px;
+  color: rgba(34, 197, 94, 0.6);
+  font-weight: 600;
+}
+
+#ijm3gj {
+  font-size: 11px;
+  color: rgba(34, 197, 94, 0.5);
+}
+
+#ibz4um {
+  position: absolute;
+  top: 25%;
+  right: 25%;
+  font-size: 24px;
+  color: rgba(34, 197, 94, 0.4);
+}
+
+#ic8zog {
+  position: absolute;
+  top: 55%;
+  right: 18%;
+  font-size: 20px;
+  color: rgba(34, 197, 94, 0.35);
+}
+
+#ixwg04 {
+  position: absolute;
+  top: 30%;
+  left: 10%;
+  font-size: 14px;
+  color: rgba(34, 197, 94, 0.6);
+  font-weight: 600;
+}
+
+#ijp6v7 {
+  font-size: 11px;
+  color: rgba(34, 197, 94, 0.5);
+}
+
+#ih4yn4 {
+  position: absolute;
+  top: 60%;
+  left: 15%;
+  font-size: 14px;
+  color: rgba(34, 197, 94, 0.6);
+  font-weight: 600;
+}
+
+#iyevqf {
+  font-size: 11px;
+  color: rgba(34, 197, 94, 0.5);
+}
+
+#ioxiss {
+  position: absolute;
+  top: 35%;
+  right: 12%;
+  font-size: 18px;
+  color: rgba(34, 197, 94, 0.4);
+}
+
+#itixvs {
+  color: rgb(34, 197, 94);
+}
+
+#ixl21c {
+  font-size: 34px;
+  position: relative;
+  top: 7px;
+}
+
+#ik0zc {
+  height: 560px;
+}
+
+@keyframes grid-pulse {
+  0%,
+  100% {
+    opacity: 0.4;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.02);
+  }
+}
+
+@keyframes float-header {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
 </style>
+
