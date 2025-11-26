@@ -100,7 +100,7 @@ const routes = [
   {
     path: '/copy-trading',
     name: 'CopyTrading',
-    component: CopyTradingView,
+    component: CopyTraders,
     meta: { requiresAuth: true }
   },
   {
@@ -181,7 +181,7 @@ const routes = [
     path: '/copy-trader',
     name: 'CopyTradersView',
     component: CopyTraders,  
-    meta: { requiresAuth: true, requiresRole: ['master', 'admin', 'trader'] }
+    meta: { requiresAuth: true }
   },
   {
     path: '/SupportItems',
