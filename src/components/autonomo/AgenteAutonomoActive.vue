@@ -164,6 +164,10 @@
 									<span>A partir de:</span>
 									<input type="date" v-model="dataInicio" class="custom-input-date">
 								</div>
+								<div class="control-group" v-if="filtroDataSelecionado === 'personalizado'">
+									<span>Até:</span>
+									<input type="date" v-model="dataFim" class="custom-input-date">
+								</div>
 							</div>
 						</template>
 					</div>
@@ -246,6 +250,7 @@ export default {
 			filtroDataSelecionado: 'hoje',
 			// Data padrão que simula a data de hoje para os filtros de simulação
 			dataInicio: '2025-11-25',
+			dataFim: '2025-11-25',
 
 			// Dados do Topo
 			agenteData: {
@@ -327,7 +332,7 @@ export default {
 
 		// Propriedade COMPUTADA para FILTRAR o histórico
 		historicoOperacoesFiltradas() {
-			const { filtroDataSelecionado, dataInicio, historicoOperacoes } = this;
+			const { filtroDataSelecionado, dataInicio, dataFim, historicoOperacoes } = this;
 
 			// Função auxiliar para obter a data de N dias atrás
 			const getDateNDaysAgo = (n) => {
@@ -348,9 +353,15 @@ export default {
 					startDate = '2025-11-24';
 					return historicoOperacoes.filter(op => op.data === startDate);
 				case 'personalizado':
-					// Filtra operações a partir da data de início selecionada (>=)
-					if (dataInicio) {
+					// Filtra operações entre a data de início e a data de fim (>= e <=)
+					if (dataInicio && dataFim) {
+						return historicoOperacoes.filter(op => op.data >= dataInicio && op.data <= dataFim).sort((a, b) => new Date(b.data + 'T' + b.hora) - new Date(a.data + 'T' + a.hora));
+					} else if (dataInicio) {
+						// Se só tiver data de início, filtra a partir dela
 						return historicoOperacoes.filter(op => op.data >= dataInicio).sort((a, b) => new Date(b.data + 'T' + b.hora) - new Date(a.data + 'T' + a.hora));
+					} else if (dataFim) {
+						// Se só tiver data de fim, filtra até ela
+						return historicoOperacoes.filter(op => op.data <= dataFim).sort((a, b) => new Date(b.data + 'T' + b.hora) - new Date(a.data + 'T' + a.hora));
 					}
 					return historicoOperacoes;
 				case '7d':
@@ -374,10 +385,11 @@ export default {
 				this.valorTimeframeSelecionado = primeiroValor;
 			}
 		},
-		// Resetar a data de início quando muda o tipo de filtro (se não for personalizado)
+		// Resetar as datas quando muda o tipo de filtro (se não for personalizado)
 		filtroDataSelecionado(novoFiltro) {
 			if (novoFiltro !== 'personalizado') {
 				this.dataInicio = '2025-11-25'; // Volta para a data de hoje simulada
+				this.dataFim = '2025-11-25'; // Volta para a data de hoje simulada
 			}
 		}
 	},
