@@ -180,7 +180,7 @@ const routes = [
     path: '/copy-trader',
     name: 'CopyTradersView',
     component: CopyTraders,  
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['master', 'admin', 'trader'] }
   },
   {
     path: '/SupportItems',
@@ -200,6 +200,30 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth) {
     const token = localStorage.getItem('token')
     if (!token) return next({ path: '/login' })
+    
+    // Verificar role se necessário
+    if (to.meta.requiresRole && Array.isArray(to.meta.requiresRole)) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const role = payload.role || payload.roles || payload.userRole || payload.user_role
+        
+        if (!role) {
+          return next({ path: '/dashboard' })
+        }
+        
+        const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase()
+        const hasAccess = to.meta.requiresRole.some(allowedRole => 
+          roleStr === allowedRole.toLowerCase() || roleStr.includes(allowedRole.toLowerCase())
+        )
+        
+        if (!hasAccess) {
+          return next({ path: '/dashboard' })
+        }
+      } catch (error) {
+        console.error('[Router] Erro ao verificar role:', error)
+        return next({ path: '/dashboard' })
+      }
+    }
   }
   next()
 })

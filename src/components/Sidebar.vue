@@ -49,6 +49,7 @@
             </a>
 
             <a
+                v-if="canAccessCopyTrader"
                 href="#"
                 class="menu-item"
                 :class="{ active: isCopyTradingActive }"
@@ -305,6 +306,28 @@ export default {
                 return false;
             } catch (error) {
                 console.error('[Sidebar] Erro ao verificar se usuário é admin:', error);
+                return false;
+            }
+        },
+        canAccessCopyTrader() {
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) return false;
+                
+                // Decodificar JWT token
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                
+                // Obter role do payload
+                const role = payload.role || payload.roles || payload.userRole || payload.user_role;
+                
+                if (!role) return false;
+                
+                // Verificar se role é master, admin ou trader
+                const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
+                return roleStr === 'master' || roleStr === 'admin' || roleStr === 'trader' || 
+                       roleStr.includes('master') || roleStr.includes('admin') || roleStr.includes('trader');
+            } catch (error) {
+                console.error('[Sidebar] Erro ao verificar acesso ao Copy Trader:', error);
                 return false;
             }
         }

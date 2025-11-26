@@ -11,7 +11,7 @@
                     </TooltipsCopyTraders>
                 </div>
                 <div class="profit-box">
-                    <div class="profit-label">Lucro Hoje</div>
+                    <div class="profit-label">Lucro da Sessão</div>
                     <span class="profit-value">{{ resumo.lucroHoje }}</span>
                     <span class="profit-percent">{{ resumo.percentualHoje }}</span>
                 </div>
@@ -48,7 +48,7 @@
                             <div class="value">{{ statusCopy.status }}</div>
                         </div>
                     </div>
-                    <button class="pause-btn">PAUSAR COPY</button>
+                    <button class="pause-btn" @click="pauseCopy">PAUSAR COPY</button>
                 </div>
                 <div class="trader-row">
                     <div class="trader-info">
@@ -60,8 +60,8 @@
                             <div class="name">{{ statusCopy.trader }}</div>
                         </div>
                     </div>
-                    <div class="ops-today">
-                        <div class="label">Operações Hoje</div>
+                        <div class="ops-today">
+                        <div class="label">Operações Totais</div>
                         <div class="value">{{ statusCopy.operacoesHoje }}</div>
                     </div>
                 </div>
@@ -302,6 +302,12 @@ export default {
     components: {
         TooltipsCopyTraders,
     },
+    props: {
+        session: {
+            type: Object,
+            default: null,
+        },
+    },
     data() {
         const chartData = [
             { date: '01/11', value: 100, result: 'win' },
@@ -350,6 +356,7 @@ export default {
             tabAtiva: 'monitor', 
             periodoAtivo: '7 dias', 
             showAllOperationsModal: false, 
+            loadingOperations: false,
             
             showDateRangePicker: false, 
             
@@ -359,21 +366,21 @@ export default {
             resumo: {
                 lucroHoje: '+$89.50',
                 percentualHoje: '+1.7%',
-                wins: 8,
-                losses: 2,
+                wins: 0,
+                losses: 0,
                 lucroSemana: '+$142.00',
                 percentualSemana: '+2.3%',
             },
             statusCopy: {
                 status: 'COPIANDO',
-                trader: '@TraderMaster',
-                operacoesHoje: 3,
+                trader: '',
+                operacoesHoje: 0,
                 ultimaSincronizacao: 'há 2 minutos',
-                slValor: '$250',
-                tpValor: '$500',
+                slValor: '$0',
+                tpValor: '$0',
             },
-            operacoes: operacoesModal.slice(0, 4), 
-            operacoesModal: operacoesModal,
+            operacoes: [], 
+            operacoesModal: [],
             risco: {
                 exposicaoAtual: '2.3%',
                 slDiario: '$250',
@@ -436,8 +443,112 @@ export default {
         },
         closeModal() {
             this.showAllOperationsModal = false;
+        },
+        async loadSessionOperations() {
+            if (!this.session || !this.session.id) {
+                return;
+            }
+
+            this.loadingOperations = true;
+            try {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/copy-trading/session/${this.session.id}/operations`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    this.operacoesModal = result.data.map(op => ({
+                        time: this.formatTime(op.executedAt),
+                        type: op.operationType,
+                        volume: op.stakeAmount,
+                        investedValue: `$${op.stakeAmount.toFixed(2)}`,
+                        result: op.profit >= 0 ? `+$${op.profit.toFixed(2)}` : `-$${Math.abs(op.profit).toFixed(2)}`,
+                    }));
+                    this.operacoes = this.operacoesModal.slice(0, 4);
+                }
+            } catch (error) {
+                console.error('Erro ao carregar operações:', error);
+            } finally {
+                this.loadingOperations = false;
+            }
+        },
+        formatTime(dateString) {
+            if (!dateString) return '';
+            const date = new Date(dateString);
+            const hours = date.getHours().toString().padStart(2, '0');
+            const minutes = date.getMinutes().toString().padStart(2, '0');
+            return `${hours}:${minutes}`;
+        },
+        formatCurrency(value) {
+            if (value === null || value === undefined) return '$0.00';
+            const sign = value >= 0 ? '+' : '';
+            return `${sign}$${Math.abs(value).toFixed(2)}`;
+        },
+        updateSessionData() {
+            if (!this.session) return;
+
+            // Atualizar status
+            this.statusCopy.status = this.session.status === 'active' ? 'COPIANDO' : 'PAUSADO';
+            this.statusCopy.trader = this.session.traderName ? `@${this.session.traderName}` : '@Trader';
+            this.statusCopy.operacoesHoje = this.session.totalOperations || 0;
+            this.statusCopy.slValor = this.formatCurrency(this.session.stopLoss || 0);
+            this.statusCopy.tpValor = this.formatCurrency(this.session.takeProfit || 0);
+
+            // Calcular tempo desde última sincronização
+            if (this.session.lastOperationAt) {
+                const lastOp = new Date(this.session.lastOperationAt);
+                const now = new Date();
+                const diffMinutes = Math.floor((now - lastOp) / 60000);
+                if (diffMinutes < 1) {
+                    this.statusCopy.ultimaSincronizacao = 'há poucos segundos';
+                } else if (diffMinutes === 1) {
+                    this.statusCopy.ultimaSincronizacao = 'há 1 minuto';
+                } else {
+                    this.statusCopy.ultimaSincronizacao = `há ${diffMinutes} minutos`;
+                }
+            } else {
+                this.statusCopy.ultimaSincronizacao = 'Aguardando primeira operação';
+            }
+
+            // Atualizar resumo
+            const profit = this.session.totalProfit || 0;
+            const initialBalance = this.session.initialBalance || 1;
+            const percentual = initialBalance > 0 ? ((profit / initialBalance) * 100) : 0;
+            
+            this.resumo.lucroHoje = this.formatCurrency(profit);
+            this.resumo.percentualHoje = `${percentual >= 0 ? '+' : ''}${percentual.toFixed(2)}%`;
+            this.resumo.wins = this.session.totalWins || 0;
+            this.resumo.losses = this.session.totalLosses || 0;
+        },
+        async pauseCopy() {
+            if (confirm('Tem certeza que deseja pausar o copy trading? A sessão será encerrada.')) {
+                this.$emit('pause-copy');
+            }
+        },
+    },
+    watch: {
+        session: {
+            immediate: true,
+            handler(newSession) {
+                if (newSession) {
+                    this.updateSessionData();
+                    this.loadSessionOperations();
+                }
+            },
+        },
+    },
+    async mounted() {
+        if (this.session) {
+            this.updateSessionData();
+            await this.loadSessionOperations();
         }
-    }
+    },
 };
 </script>
 

@@ -13,27 +13,44 @@
   
       <div class="box" style="margin-top: 60px;">
         <div class="header">
-          <h1>Copy Trading — Configuração Inicial</h1>
-          <p>Configure risco, alocação e proteção antes de iniciar o Copy automático.</p>
+          <h1 v-if="hasActiveSession">Copy Trading — Acompanhar & Performance</h1>
+          <h1 v-else>Copy Trading — Configuração Inicial</h1>
+          <p v-if="hasActiveSession">Acompanhe suas operações e performance em tempo real.</p>
+          <p v-else>Configure risco, alocação e proteção antes de iniciar o Copy automático.</p>
         </div>
       
-        <div class="tabs">
+        <div class="tabs" v-if="hasActiveSession || !loading">
           <button 
             :class="['tab', { active: activeTab === 'config' }]" 
-            @click="activeTab = 'config'"
+            @click="switchToConfig"
+            v-if="!hasActiveSession"
+            :disabled="hasActiveSession"
           >
             Configurar
           </button>
           <button 
             :class="['tab', { active: activeTab === 'monitor' }]" 
-            @click="activeTab = 'monitor'"
+            @click="switchToMonitor"
+            v-if="hasActiveSession"
           >
             Acompanhar & Performance
           </button>
         </div>
       
-        <CopyTradingConfig v-if="activeTab === 'config'" />
-        <CopyTradingMonitor v-if="activeTab === 'monitor'" />
+        <div v-if="loading" class="loading-container">
+          <div class="loading-spinner"></div>
+          <p>Carregando dados do Copy Trading...</p>
+        </div>
+      
+        <CopyTradingConfig 
+          v-else-if="activeTab === 'config' && !hasActiveSession" 
+          @copy-activated="handleCopyActivated"
+        />
+        <CopyTradingMonitor 
+          v-else-if="activeTab === 'monitor' && hasActiveSession"
+          :session="activeSession"
+          @pause-copy="handlePauseCopy"
+        />
       </div>
     </div>
   </template>
@@ -57,12 +74,84 @@
         activeTab: 'config',
         isSidebarOpen: true,
         isSidebarCollapsed: false,
+        loading: true,
+        hasActiveSession: false,
+        activeSession: null,
       };
     },
     methods: {
       toggleSidebarCollapse() {
         this.isSidebarCollapsed = !this.isSidebarCollapsed;
       },
+      async checkActiveSession() {
+        this.loading = true;
+        try {
+          const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+          const response = await fetch(`${apiBase}/copy-trading/session/active`, {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+
+          const result = await response.json();
+          
+          if (result.success && result.data) {
+            this.hasActiveSession = true;
+            this.activeSession = result.data;
+            this.activeTab = 'monitor';
+          } else {
+            this.hasActiveSession = false;
+            this.activeSession = null;
+            this.activeTab = 'config';
+          }
+        } catch (error) {
+          console.error('Erro ao verificar sessão ativa:', error);
+          this.hasActiveSession = false;
+          this.activeSession = null;
+          this.activeTab = 'config';
+        } finally {
+          this.loading = false;
+        }
+      },
+      switchToConfig() {
+        this.activeTab = 'config';
+      },
+      switchToMonitor() {
+        if (this.hasActiveSession) {
+          this.activeTab = 'monitor';
+        }
+      },
+      async handleCopyActivated() {
+        // Recarregar sessão ativa e redirecionar para monitoramento
+        await this.checkActiveSession();
+      },
+      async handlePauseCopy() {
+        // Pausar copy e atualizar estado
+        try {
+          const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+          const response = await fetch(`${apiBase}/copy-trading/pause`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${localStorage.getItem('token')}`
+            }
+          });
+
+          const result = await response.json();
+          
+          if (result.success) {
+            // Recarregar para atualizar estado
+            await this.checkActiveSession();
+          }
+        } catch (error) {
+          console.error('Erro ao pausar copy:', error);
+        }
+      },
+    },
+    async mounted() {
+      await this.checkActiveSession();
     },
   };
   </script>
@@ -132,6 +221,29 @@
     color: #aaa;
   }
   
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    color: #888;
+  }
+
+  .loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #222;
+    border-top-color: #4ade80;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+  }
+
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
   @media (max-width: 900px) {
     .layout-copy-traders {
       width: 100%;
