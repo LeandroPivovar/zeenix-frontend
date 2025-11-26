@@ -38,9 +38,9 @@
                 <button
                   type="button"
                   @click="showPassword = !showPassword"
-                  class="absolute right-4 top-1/2 transform -translate-y-1/2 text-zenix-gray hover:text-zenix-text-dark transition-colors"
+                  class="absolute right-4 top-1/2 transform -translate-y-1/2 text-zenix-gray password-toggle transition-colors"
                 >
-                  <i :class="showPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+                  <i class="fa-regular" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'" id="eye-icon"></i>
                 </button>
               </div>
             </div>
@@ -60,9 +60,9 @@
                 <button
                   type="button"
                   @click="showConfirmPassword = !showConfirmPassword"
-                  class="absolute right-4 top-1/2 transform -translate-y-1/2 text-zenix-gray hover:text-zenix-text-dark transition-colors"
+                  class="absolute right-4 top-1/2 transform -translate-y-1/2 text-zenix-gray password-toggle transition-colors"
                 >
-                  <i :class="showConfirmPassword ? 'fa-solid fa-eye-slash' : 'fa-solid fa-eye'"></i>
+                  <i class="fa-regular" :class="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'" id="eye-icon-confirm"></i>
                 </button>
               </div>
               <p v-if="passwordMismatch" class="text-sm text-red-500 mt-1">As senhas não coincidem</p>
@@ -198,9 +198,20 @@ export default {
     if (!token) {
       this.error = 'Token inválido. Por favor, solicite uma nova recuperação de senha.';
     }
+    this.loadFontAwesome();
     this.startAnimations();
   },
   methods: {
+    loadFontAwesome() {
+      if (!document.getElementById('fa-script')) {
+        const script = document.createElement('script');
+        script.id = 'fa-script';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js';
+        script.crossOrigin = 'anonymous';
+        script.referrerPolicy = 'no-referrer';
+        document.head.appendChild(script);
+      }
+    },
     startAnimations() {
       // 1. Primeiro o Zenix aparece letra por letra
       this.typeTitle();
@@ -397,6 +408,11 @@ button.bg-zenix-green:disabled {
 .placeholder-zenix-gray::placeholder { color: #6A6A6A; }
 
 .focus\:border-zenix-green:focus { border-color: #22C55E; }
+
+/* Hover do toggle de senha - exatamente como no original */
+.password-toggle:hover {
+  color: #22C55E;
+}
 
 /* Gradient de fundo - exatamente como no original */
 .gradient-glow {

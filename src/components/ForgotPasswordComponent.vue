@@ -140,9 +140,20 @@ export default {
     }
   },
   mounted() {
+    this.loadFontAwesome();
     this.startAnimations();
   },
   methods: {
+    loadFontAwesome() {
+      if (!document.getElementById('fa-script')) {
+        const script = document.createElement('script');
+        script.id = 'fa-script';
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/js/all.min.js';
+        script.crossOrigin = 'anonymous';
+        script.referrerPolicy = 'no-referrer';
+        document.head.appendChild(script);
+      }
+    },
     startAnimations() {
       // 1. Primeiro o Zenix aparece letra por letra
       this.typeTitle();
