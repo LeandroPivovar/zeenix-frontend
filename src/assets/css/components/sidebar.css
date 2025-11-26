@@ -127,21 +127,24 @@ aside.sidebar,
 .brand {
 	display: flex;
 	align-items: center;
-	padding: 0 24px;
+	padding: 0;
 	height: 60px;
 	min-height: 60px;
 	max-height: 60px;
 	box-sizing: border-box;
 	flex-direction: row;
 	border-bottom: none;
+	position: relative;
+	justify-content: center;
 }
 
 .brand-content {
 	display: flex;
 	flex-direction: row;
 	align-items: center;
-	gap: 16px;
+	justify-content: center;
 	width: 100%;
+	position: relative;
 }
 
 .brand-text {
@@ -149,6 +152,9 @@ aside.sidebar,
 	font-weight: 700;
 	color: #DFDFDF;
 	letter-spacing: -0.025em;
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
 }
 
 .text-zenix-green {
@@ -160,6 +166,12 @@ aside.sidebar,
 	justify-content: center;
 	text-decoration: none;
 	flex-shrink: 0;
+	position: absolute;
+	right: -140px;
+	margin-right: 0;
+	z-index: 1000;
+	top: 50%;
+	transform: translateY(-50%);
 }
 
 .whatsapp-text {
@@ -178,6 +190,9 @@ aside.sidebar,
 	overflow: hidden;
 	white-space: nowrap;
 	transition: opacity 0.2s ease, width 0.2s ease;
+	position: static;
+	transform: none;
+	left: auto;
 }
 
 .sidebar.collapsed .whatsapp-text {
@@ -192,6 +207,8 @@ aside.sidebar,
 	width: auto;
 	padding: 8px;
 	justify-content: center;
+	position: absolute;
+	right: 8px;
 }
 
 .sidebar.collapsed .whatsapp-button i {
