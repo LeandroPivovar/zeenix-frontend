@@ -3983,6 +3983,8 @@ tbody tr:hover {
 	grid-template-columns: 1fr 1fr;
 	gap: 20px;
 	margin-top: 20px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .active-trade-card,
@@ -4176,6 +4178,8 @@ tbody tr:hover {
 	border: 1px solid rgba(148, 163, 184, 0.2);
 	border-radius: 12px;
 	padding: 20px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .trading-stats-card h3 {
@@ -4187,8 +4191,10 @@ tbody tr:hover {
 
 .stats-row {
 	display: grid;
-	grid-template-columns: repeat(4, 1fr);
+	grid-template-columns: repeat(4, minmax(0, 1fr));
 	gap: 16px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .stat-box {
@@ -4993,6 +4999,21 @@ tbody tr:hover {
 		width: 100%;
 		gap: 1rem;
 	}
+	
+	.stats-row {
+		grid-template-columns: repeat(2, 1fr);
+		width: 100%;
+	}
+	
+	.trading-active-content {
+		grid-template-columns: 1fr;
+		width: 100%;
+	}
+	
+	.trading-stats-card {
+		grid-column: span 1;
+		width: 100%;
+	}
 }
 
 @media (max-width: 768px) {
@@ -5000,6 +5021,21 @@ tbody tr:hover {
 		grid-template-columns: 1fr;
 		width: 100%;
 		gap: 1rem;
+	}
+	
+	.stats-row {
+		grid-template-columns: 1fr;
+		width: 100%;
+	}
+	
+	.trading-active-content {
+		grid-template-columns: 1fr;
+		width: 100%;
+	}
+	
+	.trading-stats-card {
+		grid-column: span 1;
+		width: 100%;
 	}
 	
 	.status-card-content {
