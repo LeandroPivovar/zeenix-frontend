@@ -2,7 +2,7 @@
     <aside class="sidebar" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <div class="brand">
             <div class="brand-content">
-                <div class="text-lg font-bold text-zenix-text tracking-tight brand-text">
+                <div class="brand-text">
                     ZENI<span class="text-zenix-green">X</span>
                 </div>
                 <a 

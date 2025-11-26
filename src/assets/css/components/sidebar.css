@@ -150,7 +150,7 @@ aside.sidebar,
 }
 
 .brand-text {
-	font-size: 1.8rem;
+	font-size: 1.8rem !important;
 	font-weight: 700;
 	color: #DFDFDF;
 	letter-spacing: -0.025em;
@@ -158,6 +158,7 @@ aside.sidebar,
 	left: 16px;
 	transform: none;
 	white-space: nowrap;
+	line-height: 1.2;
 }
 
 .text-zenix-green {
@@ -333,5 +334,29 @@ aside.sidebar,
 	.sidebar.is-open.collapsed .version {
 		opacity: 1;
 		width: auto;
+	}
+	
+	/* Garantir que o texto ZENIX mantenha 1.8rem em mobile */
+	.brand-text {
+		font-size: 1.8rem !important;
+	}
+}
+
+/* Garantir tamanho fixo em todas as resoluções */
+@media (min-width: 769px) {
+	.brand-text {
+		font-size: 1.8rem !important;
+	}
+}
+
+@media (min-width: 1024px) {
+	.brand-text {
+		font-size: 1.8rem !important;
+	}
+}
+
+@media (min-width: 1280px) {
+	.brand-text {
+		font-size: 1.8rem !important;
 	}
 }
