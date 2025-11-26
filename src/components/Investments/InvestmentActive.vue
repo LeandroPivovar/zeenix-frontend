@@ -381,6 +381,7 @@ export default {
         return {
             chart: null,
             currentSeries: null,
+            entryMarkersSeries: null, // Série para marcar pontos de entrada
             chartInitialized: false,
             accountType: 'real',
             chartType: 'candles',
@@ -927,7 +928,11 @@ export default {
                             pair: 'R_10', // Volatility 10 Index
                             direction: direction,
                             investment: investmentFormatted,
-                            pnl: pnl
+                            pnl: pnl,
+                            // Preservar timestamps originais para o gráfico
+                            createdAt: trade.createdAt,
+                            closedAt: trade.closedAt,
+                            timestamp: Math.floor(new Date(trade.closedAt || trade.createdAt).getTime() / 1000)
                         };
                     });
                     
@@ -1109,6 +1114,114 @@ export default {
                         minMove: 0.0001 
                     },
                 });
+            }
+            
+            // Criar série de linhas para marcar pontos de entrada da IA
+            this.createEntryMarkersSeries();
+        },
+        
+        /**
+         * Cria uma série de linhas para marcar os pontos de entrada da IA
+         */
+        createEntryMarkersSeries() {
+            if (!this.chart) return;
+            
+            // Remover série anterior se existir
+            if (this.entryMarkersSeries) {
+                try {
+                    this.chart.removeSeries(this.entryMarkersSeries);
+                } catch (error) {
+                    console.warn('[InvestmentActive] Não foi possível remover série de marcadores anterior:', error);
+                }
+                this.entryMarkersSeries = null;
+            }
+            
+            // Criar série de linhas para os pontos de entrada
+            this.entryMarkersSeries = this.chart.addLineSeries({
+                color: '#22C55E',
+                lineWidth: 2,
+                lineStyle: 2, // Linha tracejada
+                priceLineVisible: false,
+                lastValueVisible: false,
+                crosshairMarkerVisible: true,
+                crosshairMarkerRadius: 6,
+            });
+            
+            // Atualizar marcadores com os dados de entrada
+            this.updateEntryMarkers();
+        },
+        
+        /**
+         * Atualiza os marcadores de entrada no gráfico baseado nos logOperations
+         */
+        updateEntryMarkers() {
+            if (!this.entryMarkersSeries || !this.logOperations || this.logOperations.length === 0) {
+                return;
+            }
+            
+            try {
+                // Converter operações em pontos no gráfico
+                const entryPoints = this.logOperations
+                    .map(op => {
+                        // Usar timestamp preservado ou calcular
+                        let timestamp = op.timestamp;
+                        
+                        if (!timestamp) {
+                            // Tentar extrair do createdAt ou closedAt
+                            if (op.createdAt || op.closedAt) {
+                                timestamp = Math.floor(new Date(op.createdAt || op.closedAt).getTime() / 1000);
+                            } else {
+                                // Fallback: tentar converter o time string (formato HH:MM:SS)
+                                const today = new Date();
+                                const [hours, minutes, seconds] = op.time.split(':');
+                                if (hours && minutes && seconds) {
+                                    today.setHours(parseInt(hours), parseInt(minutes), parseInt(seconds), 0);
+                                    timestamp = Math.floor(today.getTime() / 1000);
+                                }
+                            }
+                        }
+                        
+                        if (!timestamp) return null;
+                        
+                        // Buscar o preço mais próximo no momento da entrada
+                        // Se não houver tick exato, usar o último tick antes da entrada
+                        let price = null;
+                        const sortedTicks = [...this.ticks]
+                            .map(tick => ({
+                                time: Math.floor((tick.epoch || tick.time || Date.now()) / 1000),
+                                value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
+                            }))
+                            .filter(tick => tick.value > 0)
+                            .sort((a, b) => a.time - b.time);
+                        
+                        // Encontrar o tick mais próximo (antes ou no momento da entrada)
+                        const closestTick = sortedTicks
+                            .filter(tick => tick.time <= timestamp)
+                            .sort((a, b) => b.time - a.time)[0];
+                        
+                        if (closestTick) {
+                            price = closestTick.value;
+                        } else {
+                            // Se não encontrar, usar o primeiro tick disponível
+                            price = sortedTicks.length > 0 ? sortedTicks[0].value : null;
+                        }
+                        
+                        if (!price) return null;
+                        
+                        return {
+                            time: timestamp,
+                            value: price,
+                        };
+                    })
+                    .filter(point => point !== null)
+                    .sort((a, b) => a.time - b.time);
+                
+                if (entryPoints.length > 0) {
+                    console.log('[InvestmentActive] Adicionando', entryPoints.length, 'marcadores de entrada no gráfico');
+                    this.entryMarkersSeries.setData(entryPoints);
+                }
+            } catch (error) {
+                console.error('[InvestmentActive] Erro ao atualizar marcadores de entrada:', error);
             }
         },
         /**
@@ -1362,6 +1475,9 @@ export default {
                 console.log('[InvestmentActive] Atualizando gráfico com', data.length, this.chartType === 'candles' ? 'velas' : 'pontos');
                 this.currentSeries.setData(data);
                 
+                // Atualizar marcadores de entrada
+                this.updateEntryMarkers();
+                
                 // Ajustar o gráfico para mostrar todos os dados
                 this.chart.timeScale().fitContent();
             } catch (error) {
@@ -1438,6 +1554,17 @@ export default {
                     });
                 }
             }
+        },
+        logOperations: {
+            handler() {
+                // Atualizar marcadores de entrada quando novas operações chegarem
+                if (this.chartInitialized && this.entryMarkersSeries) {
+                    this.$nextTick(() => {
+                        this.updateEntryMarkers();
+                    });
+                }
+            },
+            deep: true
         }
     },
 
