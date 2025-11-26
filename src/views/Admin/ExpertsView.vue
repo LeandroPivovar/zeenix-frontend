@@ -780,11 +780,20 @@ body {
 }
 
 .layout {
-    background-color: #0e0f0f;
+    background-color: #0B0B0B!important;
     color: #fff;
     min-height: 100vh;
     box-sizing: border-box;
     transition: margin-left 0.3s ease, width 0.3s ease;
+
+    width: calc(100% - 280px);
+    margin-left: 280px;
+
+}
+
+.layout-content {
+    background-color: #0B0B0B;
+    padding: 20px 0px 20px 0;
 }
 
 .layout-collapsed {

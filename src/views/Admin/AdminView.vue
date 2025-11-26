@@ -688,14 +688,17 @@ export default {
     display: flex;
     min-height: 100vh;
     font-family: Arial, sans-serif;
-    background-color: #0a0a0a;
+    background-color: #0b0b0b;
+    max-width: calc(100% - 280px);
+    margin-left: 280px;
+    padding: 30px 0;
 }
 
 .layout-content {
     flex-grow: 1;
     padding: 20px;
     overflow-y: auto;
-    background-color: #0a0a0a;
+    background-color: #0b0b0b;
 }
 
 .admin-dashboard {

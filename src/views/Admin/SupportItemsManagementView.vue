@@ -761,7 +761,7 @@ body {
 }
 
 .layout {
-    background-color: #0e0f0f;
+    background-color: #0B0B0B;
     color: #fff;
     min-height: 100vh;
     box-sizing: border-box;

@@ -278,7 +278,7 @@ export default {
 }
 </script>
 
-<style>
+<style scoped>
 :root {
     --color-bg-card:#131213;
     --color-text-light: #f9fafb;
@@ -292,7 +292,7 @@ export default {
 }
 
 .layout {
-    background-color: #0e0f0f;
+    background-color: #0B0B0B;
     color: #fff;
     min-height: 100vh;
     box-sizing: border-box;
@@ -302,8 +302,9 @@ export default {
 .layout-content {
     margin: 0;
     padding: 40px;
-    background: #0e0f0f;
     width: 100%;
+    
+    background-color: #0B0B0B !important;
 }
 
 .header-webhook {
@@ -311,7 +312,8 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 2rem;
+    margin: 2rem 0;
+
 }
 
 .add-webhook{
@@ -930,9 +932,9 @@ input:checked + .slider:before {
     }
 
     .layout{
-        max-width: calc(100% - 350px);
+        max-width: calc(100% - 280px);
         padding: 0 20px;
-        margin-left: 350px;
+        margin-left: 280px;
     }
 }
 

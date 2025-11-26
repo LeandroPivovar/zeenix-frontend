@@ -2689,11 +2689,11 @@ async mounted() {
 
 <style scoped>
 .layout {
-	background-color: #121212;
+	background-color: #0B0B0B;
 	color: #fff;
 	min-height: 100vh;
-	width: calc(100% - 350px);
-	margin-left: 350px;
+	width: calc(100% - 280px);
+	margin-left: 280px;
 	padding: 0 20px;
 	font-family: 'Roboto', sans-serif;
 }

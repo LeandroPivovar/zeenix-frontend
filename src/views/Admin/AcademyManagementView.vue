@@ -14,7 +14,7 @@
             <div class="container">
                 <header class="page-header">
                     <div class="header-info">
-                        <h1 class="page-title">Zenix Academy - Gestão de Cursos</h1>
+                        <h1 class="page-title" color="white">Zenix Academy - Gestão de Cursos</h1>
                         <p class="page-subtitle">Crie e organize cursos, módulos, aulas e materiais para o aluno.</p>
                     </div>
                     <div class="header-actions">

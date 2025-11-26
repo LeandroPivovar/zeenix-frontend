@@ -337,14 +337,18 @@ export default {
 .layout {
 	display: flex;
 	min-height: 100vh;
-    background-color: #0e0f0f;
+    background-color: #0b0b0b;
 	color: #e0e0e0; /* Texto claro */
 	font-family: 'Roboto', sans-serif;
-
+	max-width: calc(100% - 280px);
+	margin-left: 280px;
+	padding: 50px 0;
 }
 
 .layout-content {
 	justify-content: flex-start;
+	
+    background-color: #0b0b0b;
 }
 
 .c-icon{

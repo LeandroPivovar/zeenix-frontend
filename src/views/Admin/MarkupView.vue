@@ -328,7 +328,6 @@ export default {
 <style scoped>
 /* Estilos não alterados */
 .layout-markup {
-    background-color: #0e0f0f;
     color: #fff;
     min-height: 100vh;
     font-family: 'Roboto', sans-serif;
@@ -336,16 +335,20 @@ export default {
     justify-content: flex-start;
     align-items: flex-start;
     flex-direction: column;
-    max-width: calc(100% - 350px);
-    margin-left: 350px;
+    max-width: calc(100% - 280px);
+    margin-left: 280px;
 
+}
+
+.layout-markup .layout-content {
+    background-color: #0B0B0B;
 }
 
 .main-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 30px;
+    margin: 30px 0;
     opacity: 0;
     animation: fadeIn 0.5s ease-out forwards;
 }
