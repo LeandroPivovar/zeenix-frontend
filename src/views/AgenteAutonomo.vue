@@ -688,7 +688,6 @@ export default {
 	justify-content: center;
 	align-items: center;
 	background-color: #0a0b0a; /* Fundo escuro */
-	border-top: 1px solid #1C1C1C;
 	padding: 30px 0;
 	z-index: 1000;
 	transition: left 0.3s, width 0.3s;
