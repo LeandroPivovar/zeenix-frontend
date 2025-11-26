@@ -381,7 +381,6 @@ export default {
         return {
             chart: null,
             currentSeries: null,
-            entryMarkersSeries: null, // Série para marcar pontos de entrada
             chartInitialized: false,
             accountType: 'real',
             chartType: 'candles',
@@ -906,11 +905,14 @@ export default {
                     const defaultStakeAmount = this.sessionConfig.stakeAmount || this.entryValue || 0;
                     this.logOperations = result.data.map(trade => {
                         // Usar closedAt ou createdAt para o horário (priorizar closedAt)
-                        const time = new Date(trade.closedAt || trade.createdAt).toLocaleTimeString('pt-BR', {
+                        const tradeDate = new Date(trade.closedAt || trade.createdAt);
+                        const time = tradeDate.toLocaleTimeString('pt-BR', {
                             hour: '2-digit',
                             minute: '2-digit',
                             second: '2-digit'
                         });
+                        // Salvar timestamp para plotagem no gráfico
+                        const timestamp = Math.floor(tradeDate.getTime() / 1000);
                         
                         // signal pode ser 'CALL' ou 'PUT', contractType também
                         const direction = (trade.signal || trade.contractType || 'CALL').toUpperCase();
@@ -925,18 +927,19 @@ export default {
                         
                         return {
                             time: time,
+                            timestamp: timestamp,
                             pair: 'R_10', // Volatility 10 Index
                             direction: direction,
                             investment: investmentFormatted,
                             pnl: pnl,
-                            // Preservar timestamps originais para o gráfico
-                            createdAt: trade.createdAt,
-                            closedAt: trade.closedAt,
-                            timestamp: Math.floor(new Date(trade.closedAt || trade.createdAt).getTime() / 1000)
+                            profit: profit
                         };
                     });
                     
                     console.log('[InvestmentActive] ✅ Log formatado:', this.logOperations);
+                    
+                    // Plotar marcadores de entradas no gráfico
+                    this.plotEntryMarkers();
                 } else {
                     console.error('[InvestmentActive] ❌ Erro ao buscar histórico:', result.message || 'Unknown error');
                     this.logOperations = [];
@@ -946,6 +949,46 @@ export default {
                 this.logOperations = [];
             } finally {
                 this.isLoadingLogs = false;
+            }
+        },
+        
+        /**
+         * Plota marcadores no gráfico mostrando onde foram as entradas da IA
+         */
+        plotEntryMarkers() {
+            if (!this.logOperations || this.logOperations.length === 0) {
+                return;
+            }
+            
+            // Se estiver usando lightweight-charts
+            if (this.chart && this.currentSeries) {
+                try {
+                    const markers = this.logOperations
+                        .filter(op => op.timestamp)
+                        .map(op => {
+                            // Determinar cor baseado no resultado (verde para lucro, vermelho para prejuízo)
+                            const color = op.profit >= 0 ? '#22C55E' : '#FF4747';
+                            const shape = op.direction === 'CALL' ? 'arrowUp' : 'arrowDown';
+                            
+                            return {
+                                time: op.timestamp,
+                                position: 'belowBar',
+                                color: color,
+                                shape: shape,
+                                size: 1,
+                                text: `${op.direction} ${op.pnl}`,
+                            };
+                        });
+                    
+                    this.currentSeries.setMarkers(markers);
+                    console.log('[InvestmentActive] ✅ Marcadores de entradas plotados:', markers.length);
+                } catch (error) {
+                    console.error('[InvestmentActive] ❌ Erro ao plotar marcadores:', error);
+                }
+            }
+            // TradingView não suporta marcadores diretamente via API, mas podemos tentar usar shapes
+            else if (this.tradingViewWidget) {
+                console.log('[InvestmentActive] TradingView não suporta marcadores via API diretamente');
             }
         },
 
@@ -1114,114 +1157,6 @@ export default {
                         minMove: 0.0001 
                     },
                 });
-            }
-            
-            // Criar série de linhas para marcar pontos de entrada da IA
-            this.createEntryMarkersSeries();
-        },
-        
-        /**
-         * Cria uma série de linhas para marcar os pontos de entrada da IA
-         */
-        createEntryMarkersSeries() {
-            if (!this.chart) return;
-            
-            // Remover série anterior se existir
-            if (this.entryMarkersSeries) {
-                try {
-                    this.chart.removeSeries(this.entryMarkersSeries);
-                } catch (error) {
-                    console.warn('[InvestmentActive] Não foi possível remover série de marcadores anterior:', error);
-                }
-                this.entryMarkersSeries = null;
-            }
-            
-            // Criar série de linhas para os pontos de entrada
-            this.entryMarkersSeries = this.chart.addLineSeries({
-                color: '#22C55E',
-                lineWidth: 2,
-                lineStyle: 2, // Linha tracejada
-                priceLineVisible: false,
-                lastValueVisible: false,
-                crosshairMarkerVisible: true,
-                crosshairMarkerRadius: 6,
-            });
-            
-            // Atualizar marcadores com os dados de entrada
-            this.updateEntryMarkers();
-        },
-        
-        /**
-         * Atualiza os marcadores de entrada no gráfico baseado nos logOperations
-         */
-        updateEntryMarkers() {
-            if (!this.entryMarkersSeries || !this.logOperations || this.logOperations.length === 0) {
-                return;
-            }
-            
-            try {
-                // Converter operações em pontos no gráfico
-                const entryPoints = this.logOperations
-                    .map(op => {
-                        // Usar timestamp preservado ou calcular
-                        let timestamp = op.timestamp;
-                        
-                        if (!timestamp) {
-                            // Tentar extrair do createdAt ou closedAt
-                            if (op.createdAt || op.closedAt) {
-                                timestamp = Math.floor(new Date(op.createdAt || op.closedAt).getTime() / 1000);
-                            } else {
-                                // Fallback: tentar converter o time string (formato HH:MM:SS)
-                                const today = new Date();
-                                const [hours, minutes, seconds] = op.time.split(':');
-                                if (hours && minutes && seconds) {
-                                    today.setHours(parseInt(hours), parseInt(minutes), parseInt(seconds), 0);
-                                    timestamp = Math.floor(today.getTime() / 1000);
-                                }
-                            }
-                        }
-                        
-                        if (!timestamp) return null;
-                        
-                        // Buscar o preço mais próximo no momento da entrada
-                        // Se não houver tick exato, usar o último tick antes da entrada
-                        let price = null;
-                        const sortedTicks = [...this.ticks]
-                            .map(tick => ({
-                                time: Math.floor((tick.epoch || tick.time || Date.now()) / 1000),
-                                value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
-                            }))
-                            .filter(tick => tick.value > 0)
-                            .sort((a, b) => a.time - b.time);
-                        
-                        // Encontrar o tick mais próximo (antes ou no momento da entrada)
-                        const closestTick = sortedTicks
-                            .filter(tick => tick.time <= timestamp)
-                            .sort((a, b) => b.time - a.time)[0];
-                        
-                        if (closestTick) {
-                            price = closestTick.value;
-                        } else {
-                            // Se não encontrar, usar o primeiro tick disponível
-                            price = sortedTicks.length > 0 ? sortedTicks[0].value : null;
-                        }
-                        
-                        if (!price) return null;
-                        
-                        return {
-                            time: timestamp,
-                            value: price,
-                        };
-                    })
-                    .filter(point => point !== null)
-                    .sort((a, b) => a.time - b.time);
-                
-                if (entryPoints.length > 0) {
-                    console.log('[InvestmentActive] Adicionando', entryPoints.length, 'marcadores de entrada no gráfico');
-                    this.entryMarkersSeries.setData(entryPoints);
-                }
-            } catch (error) {
-                console.error('[InvestmentActive] Erro ao atualizar marcadores de entrada:', error);
             }
         },
         /**
@@ -1435,6 +1370,8 @@ export default {
                 this.chartInitialized = true;
                 console.log('[InvestmentActive] ✅ Gráfico lightweight-charts inicializado');
                 this.updateChart();
+                // Plotar marcadores após inicializar o gráfico
+                setTimeout(() => this.plotEntryMarkers(), 500);
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao inicializar gráfico:', error);
             }
@@ -1474,9 +1411,6 @@ export default {
 
                 console.log('[InvestmentActive] Atualizando gráfico com', data.length, this.chartType === 'candles' ? 'velas' : 'pontos');
                 this.currentSeries.setData(data);
-                
-                // Atualizar marcadores de entrada
-                this.updateEntryMarkers();
                 
                 // Ajustar o gráfico para mostrar todos os dados
                 this.chart.timeScale().fitContent();
@@ -1554,17 +1488,6 @@ export default {
                     });
                 }
             }
-        },
-        logOperations: {
-            handler() {
-                // Atualizar marcadores de entrada quando novas operações chegarem
-                if (this.chartInitialized && this.entryMarkersSeries) {
-                    this.$nextTick(() => {
-                        this.updateEntryMarkers();
-                    });
-                }
-            },
-            deep: true
         }
     },
 
