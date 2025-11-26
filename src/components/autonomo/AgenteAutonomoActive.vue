@@ -867,8 +867,8 @@ export default {
 	background: #0f0f0f;
 }
 
-.result-positive { color: #00ff00; font-weight: 600; }
-.result-negative { color: #ff4444; font-weight: 600; }
+.result-positive { color: #22c55e; font-weight: 600; }
+.result-negative { color: #888888; font-weight: 600; }
 
 /* Footer do Histórico (Total de Operações) */
 .history-footer {

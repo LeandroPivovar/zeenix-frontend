@@ -909,20 +909,25 @@ export default {
     align-items: center;
     justify-content: center;
     border-radius: 8px;
-
+    background-color: rgba(20, 44, 15, 0.5);
+    border: 1px solid rgba(34, 197, 94, 0.2);
     animation: background-blink 1.5s infinite linear; 
+    position: relative;
+    overflow: hidden;
 }
 
 .brain-icon-svg {
 	width: 150px;
 	height: 150px;
 	color: #22c55e; /* Verde Zenix */
-	opacity: 0.3;
+	opacity: 1;
 	transition: opacity 0.3s ease;
+	z-index: 1;
+	position: relative;
 }
 
 .ai-brain-icon:hover .brain-icon-svg {
-	opacity: 0.5;
+	opacity: 0.8;
 }
 
 .metric-detail {
