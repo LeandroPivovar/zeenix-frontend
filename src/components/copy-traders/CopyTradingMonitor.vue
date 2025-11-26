@@ -95,7 +95,7 @@
                             </span>
                             <span class="op-time">{{ op.time }}</span>
                             <span :class="['op-type', op.type.toLowerCase()]">{{ op.type }}</span>
-                            <span class="op-vol">Vol {{ op.volume }}</span>
+                            <span class="op-invested">{{ op.investedValue }}</span>
                         </div>
                         <span :class="['op-result', op.result.startsWith('+') ? 'green' : 'red']">{{ op.result }}</span>
                     </div>
@@ -252,7 +252,7 @@
                                 <span class="op-time-modal">{{ op.time }}</span>
                                 <span :class="['op-type-modal', op.type.toLowerCase()]">{{ op.type }}</span>
                             </div>
-                            <span class="op-vol-modal">Vol {{ op.volume }}</span>
+                            <span class="op-invested-modal">{{ op.investedValue }}</span>
                             <span :class="['op-result-modal', op.result.startsWith('+') ? 'green' : 'red']">{{ op.result }}</span>
                         </div>
                     </div>
@@ -301,16 +301,16 @@ export default {
         }));
 
         const operacoesModal = [
-            { time: '15:05', type: 'CALL', volume: 75, result: '+$17.60' },
-            { time: '14:20', type: 'PUT', volume: 100, result: '+$19.40' },
-            { time: '13:42', type: 'MATCHES', volume: 75, result: '+$15.80' },
-            { time: '12:08', type: 'CALL', volume: 100, result: '-$4.20' },
-            { time: '11:15', type: 'PUT', volume: 50, result: '+$10.00' },
-            { time: '10:55', type: 'CALL', volume: 75, result: '-$8.50' },
-            { time: '09:30', type: 'MATCHES', volume: 100, result: '+$21.10' },
-            { time: '08:45', type: 'CALL', volume: 50, result: '+$9.90' },
-            { time: '07:20', type: 'PUT', volume: 75, result: '+$12.30' },
-            { time: '06:00', type: 'MATCHES', volume: 50, result: '-$5.00' },
+            { time: '15:05', type: 'CALL', volume: 75, investedValue: '$50.00', result: '+$17.60' },
+            { time: '14:20', type: 'PUT', volume: 100, investedValue: '$75.00', result: '+$19.40' },
+            { time: '13:42', type: 'MATCHES', volume: 75, investedValue: '$50.00', result: '+$15.80' },
+            { time: '12:08', type: 'CALL', volume: 100, investedValue: '$75.00', result: '-$4.20' },
+            { time: '11:15', type: 'PUT', volume: 50, investedValue: '$35.00', result: '+$10.00' },
+            { time: '10:55', type: 'CALL', volume: 75, investedValue: '$50.00', result: '-$8.50' },
+            { time: '09:30', type: 'MATCHES', volume: 100, investedValue: '$75.00', result: '+$21.10' },
+            { time: '08:45', type: 'CALL', volume: 50, investedValue: '$35.00', result: '+$9.90' },
+            { time: '07:20', type: 'PUT', volume: 75, investedValue: '$50.00', result: '+$12.30' },
+            { time: '06:00', type: 'MATCHES', volume: 50, investedValue: '$35.00', result: '-$5.00' },
         ];
 
 
@@ -558,7 +558,7 @@ export default {
     min-width: 90px;
     text-align: left;
 }
-.op-vol { 
+.op-invested { 
     font-size: 14px; 
     color: #ccc; 
     text-align: left;
@@ -809,7 +809,7 @@ export default {
     min-width: 70px;
     text-align: center;
 }
-.op-vol-modal { 
+.op-invested-modal { 
     font-size: 14px; 
     color: #ccc; 
     flex-grow: 1;
