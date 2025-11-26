@@ -73,7 +73,7 @@
             </div>
           </div>
 
-          <div id="candlestickChart" class="flex-1 w-full h-full" ref="chartContainer"></div>
+          <div id="candlestickChart" class="flex-1 w-full min-h-0" ref="chartContainer"></div>
           <div v-if="!chartInitialized" class="chart-placeholder absolute inset-0 flex items-center justify-center">
             <p class="text-zenix-secondary">{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
           </div>
@@ -4796,11 +4796,23 @@ export default {
   flex: 1;
   min-height: 0;
   width: 100%;
+  display: flex;
+  flex-direction: column;
 }
 
 #candlestickChart {
   width: 100%;
+  flex: 1 1 0;
+  min-height: 0;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+
+#candlestickChart > * {
+  width: 100%;
   height: 100%;
+  flex: 1;
   min-height: 0;
 }
 
