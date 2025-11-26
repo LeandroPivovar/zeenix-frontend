@@ -3,10 +3,10 @@
         <main class="investment-active-main">
             <!-- Performance Summary Cards -->
             <section id="compact-performance-panel" class="mb-6">
-                <div id="iya1j" class="grid grid-cols-12 gap-3">
+                <div id="iya1j" class="grid grid-cols-12 gap-3" style="width: 100%; box-sizing: border-box;">
                     <!-- Card 1 - Saldo Total -->
-                    <div class="col-span-2">
-                        <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden">
+                    <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
+                        <div id="ie22vl" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-1">
@@ -26,8 +26,8 @@
                     </div>
 
                     <!-- Card 2 - Lucro do Dia -->
-                    <div class="col-span-2">
-                        <div id="i790gh" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden">
+                    <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
+                        <div id="i790gh" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-1">
@@ -48,8 +48,8 @@
                     </div>
 
                     <!-- Card 3 - Trades Hoje -->
-                    <div class="col-span-2">
-                        <div id="i42e4g" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between">
+                    <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
+                        <div id="i42e4g" class="bg-[#0B0B0B]/80 border border-[#1C1C1C] rounded-2xl p-3 premium-card h-[72px] flex flex-col justify-between" style="width: 100%; box-sizing: border-box;">
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
                                 <button class="eye-btn" @click="tradesVisible = !tradesVisible">
@@ -73,8 +73,8 @@
                     </div>
 
                     <!-- Card 4 - Status da IA -->
-                    <div id="ichwdn" class="col-span-6">
-                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[72px] relative overflow-hidden transition-all duration-700">
+                    <div id="ichwdn" class="col-span-6" style="width: 100%; box-sizing: border-box;">
+                        <div id="ai-status-card" class="bg-gradient-to-b from-[#0B0B0B] to-[#080808] border border-[#22C55E]/10 rounded-[18px] p-5 premium-card h-[72px] relative overflow-hidden transition-all duration-700" style="width: 100%; box-sizing: border-box;">
                             <div id="card-gradient" class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/8 to-transparent pointer-events-none transition-all duration-700"></div>
                             <div class="relative z-10 h-full flex items-center justify-between gap-6">
                                 <div class="flex items-center space-x-4 flex-shrink-0">
@@ -177,7 +177,7 @@
             </section>
     
             <!-- Main Content Grid -->
-            <div class="grid grid-cols-12 gap-6 mb-6">
+            <div class="grid grid-cols-12 gap-6 mb-6" style="width: 100%; box-sizing: border-box;">
                 <!-- Left Column - Chart -->
                 <div id="ir8sfp" class="col-span-8">
                     <div id="market-chart" class="bg-zenix-card border border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
@@ -2346,9 +2346,11 @@ button i,
 .market-chart-card,
 .config-card-sticky,
 .status-footer-section,
-.status-footer-card {
-    width: 100%;
-    box-sizing: border-box;
+.status-footer-card,
+#compact-performance-panel,
+#iya1j {
+	width: 100%;
+	box-sizing: border-box;
 }
 
 /* Grid columns should occupy full width */
@@ -2477,23 +2479,33 @@ button i,
 }
 
 .grid-cols-12 {
-    grid-template-columns: repeat(12, minmax(0, 1fr));
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .col-span-2 {
-    grid-column: span 2 / span 2;
+	grid-column: span 2 / span 2;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .col-span-4 {
-    grid-column: span 4 / span 4;
+	grid-column: span 4 / span 4;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .col-span-6 {
-    grid-column: span 6 / span 6;
+	grid-column: span 6 / span 6;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .col-span-8 {
-    grid-column: span 8 / span 8;
+	grid-column: span 8 / span 8;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .gap-2 {
@@ -3016,27 +3028,29 @@ button i,
 
 /* Specific IDs from HTML */
 #iya1j {
-    height: 80px;
+	height: 80px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 #ie22vl {
-    width: 155px;
-    left: 5px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 #i790gh {
-    width: 155px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 #i42e4g {
-    width: 155px;
-    position: relative;
-    left: 10px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 #ichwdn {
-    position: relative;
-    left: 15px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 #ir8sfp {
@@ -3061,18 +3075,13 @@ button i,
 }
 
 #ai-status-card {
-    box-shadow: rgba(34, 197, 94, 0.08) 0px 0px 24px;
-    display: flex;
-    flex-direction: row-reverse;
-    justify-content: center;
-    position: sticky;
-    width: 440px;
-    left: 15px;
-    top: 0px;
-    padding-top: 0px;
-    padding-right: 0px;
-    padding-bottom: 0px;
-    padding-left: 0px;
+	box-shadow: rgba(34, 197, 94, 0.08) 0px 0px 24px;
+	display: flex;
+	flex-direction: row-reverse;
+	justify-content: center;
+	position: relative;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 #status-icon-container {
