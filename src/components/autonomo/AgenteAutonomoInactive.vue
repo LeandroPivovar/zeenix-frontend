@@ -136,105 +136,106 @@
 						</div>
 					</div>
 				</section>
+				<div class="footer-section">
+					<section class="config-section daily-params-section">
+						<h2>Parâmetros Diários</h2>
+						<div class="daily-params-grid">
+							<div class="param-input-group">
+								<h3>Valor por operação</h3>
+								<input 
+									type="number" 
+									v-model.number="valorOperacao" 
+									class="input-editable"
+									min="0.01"
+									step="0.01"
+								>
+								<p style="font-size: 0.8em; color: #777; margin-top: 5px;">{{ percentualValorOperacao }}% do capital total</p>
+							</div>
+							<div class="param-input-group">
+								<h3>Meta diária de lucro</h3>
+								<input 
+									type="number" 
+									v-model.number="metaLucro" 
+									class="input-editable"
+									min="0.01"
+									step="0.01"
+								>
+								<p style="font-size: 0.8em; color: #00ff66; margin-top: 5px;">+{{ percentualMetaLucro }}% do capital total</p>
+							</div>
+							<div class="param-input-group">
+								<h3>Limite de perda do dia</h3>
+								<input 
+									type="number" 
+									v-model.number="limitePerda" 
+									class="input-editable"
+									min="0.01"
+									step="0.01"
+								>
+								<p style="font-size: 0.8em; color: red; margin-top: 5px;">-{{ percentualLimitePerda }}% do capital total</p>
+							</div>
+						</div>
+					</section>
 
-				<section class="config-section daily-params-section">
-					<h2>Parâmetros Diários</h2>
-					<div class="daily-params-grid">
-						<div class="param-input-group">
-							<h3>Valor por operação</h3>
-							<input 
-								type="number" 
-								v-model.number="valorOperacao" 
-								class="input-editable"
-								min="0.01"
-								step="0.01"
-							>
-							<p style="font-size: 0.8em; color: #777; margin-top: 5px;">{{ percentualValorOperacao }}% do capital total</p>
-						</div>
-						<div class="param-input-group">
-							<h3>Meta diária de lucro</h3>
-							<input 
-								type="number" 
-								v-model.number="metaLucro" 
-								class="input-editable"
-								min="0.01"
-								step="0.01"
-							>
-							<p style="font-size: 0.8em; color: #00ff66; margin-top: 5px;">+{{ percentualMetaLucro }}% do capital total</p>
-						</div>
-						<div class="param-input-group">
-							<h3>Limite de perda do dia</h3>
-							<input 
-								type="number" 
-								v-model.number="limitePerda" 
-								class="input-editable"
-								min="0.01"
-								step="0.01"
-							>
-							<p style="font-size: 0.8em; color: red; margin-top: 5px;">-{{ percentualLimitePerda }}% do capital total</p>
-						</div>
-					</div>
-				</section>
+					<section class="config-section summary-section">
+						<h2>Resumo da Configuração</h2>
+						<div class="summary-grid">
+							<div class="summary-item market-item">
+								<img src="../../assets/icons/stats-green.svg" alt="" width="15px" class="icon-sumary-risk">
+								<div class="summary-item-value">
+									<span>Mercado</span>
+									<strong>{{ getMarketTitle(selectedMarket) }}</strong>
+								</div>
+							</div>
+							<div class="summary-item value-per-op">
+								<svg class="icon-value-op" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M15 8.44c-.58 0-1.2-.35-1.78-.9-.67-.62-1.3-.77-2.02-.77-1.15 0-2.08.76-2.08 1.96 0 1.25.75 1.83 2.05 2.5.9.48 1.77.8 2.37 1.15 1.4.82 2.3 1.8 2.3 3.3 0 1.8-1.1 2.8-2.6 2.8-.82 0-1.6-.26-2.4-.76-.73-.46-1.5-.7-2.15-.7"></path><path d="M12 4v16"></path></svg>
+								<div class="summary-item-value">
+									<span>Valor por operação</span>
+									<strong>${{ valorOperacaoNumero.toFixed(2) }}</strong>
+								</div>
+							</div>
+							<div class="summary-item strategy-item">
+								<svg class="icon-summary-strategy" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+								<div class="summary-item-value">
+									<span>Estratégia</span>
+									<strong>{{ getStrategyTitle(selectedStrategy) }}</strong>
+								</div>
+							</div>
+							<div class="summary-item daily-goal">
+								<span class="icon-sumary-risk icon-green ">↑</span> 
+								<div class="summary-item-value">
+									<span>Meta diária</span>
+									<strong>${{ metaLucroNumero.toFixed(2) }}</strong>
+								</div>
+							</div>
+							<div class="summary-item risk-item">
+								<svg class="icon-summary-risk icon-green" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18v-6"></path><path d="M17 12h5l-1-4h-5z"></path><path d="M7 12H2l1-4h5z"></path><path d="M12 2L9 6h6z"></path><path d="M19 19c-3.3 0-6 2-6 3h6"></path><path d="M5 19c3.3 0 6 2 6 3H5"></path></svg>
+								<div class="summary-item-value">
+									<span>Nível de risco</span>
+									<strong>{{ getRiskTitle(selectedRisk) }}</strong>
+								</div>
+							</div>
+							<div class="summary-item daily-loss">
+								<span class="icon-sumary-risk icon-green">↓</span> 
+								<div class="summary-item-value">
+									<span>Limite de perda</span>
+									<strong>${{ limitePerdaNumero.toFixed(2) }}</strong>
+								</div>
+							</div>
+						</div>					
+						<button class="start-button" @click="iniciarAgente">
+							INICIAR AGENTE
+						</button>
+						<footer class="config-footer">
+							<p class="footer-text">
+								Ao iniciar, você concorda que o agente operará de forma autônoma
+								até que a meta diária seja atingida ou o limite de perda seja alcançado.
+							</p>
+						</footer>
+					</section>
 
-				<section class="config-section summary-section">
-					<h2>Resumo da Configuração</h2>
-					<div class="summary-grid">
-						<div class="summary-item market-item">
-							<img src="../../assets/icons/stats-green.svg" alt="" width="15px" class="icon-sumary-risk">
-							<div class="summary-item-value">
-								<span>Mercado</span>
-								<strong>{{ getMarketTitle(selectedMarket) }}</strong>
-							</div>
-						</div>
-						<div class="summary-item value-per-op">
-							<svg class="icon-value-op" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M15 8.44c-.58 0-1.2-.35-1.78-.9-.67-.62-1.3-.77-2.02-.77-1.15 0-2.08.76-2.08 1.96 0 1.25.75 1.83 2.05 2.5.9.48 1.77.8 2.37 1.15 1.4.82 2.3 1.8 2.3 3.3 0 1.8-1.1 2.8-2.6 2.8-.82 0-1.6-.26-2.4-.76-.73-.46-1.5-.7-2.15-.7"></path><path d="M12 4v16"></path></svg>
-							<div class="summary-item-value">
-								<span>Valor por operação</span>
-								<strong>${{ valorOperacaoNumero.toFixed(2) }}</strong>
-							</div>
-						</div>
-						<div class="summary-item strategy-item">
-							<svg class="icon-summary-strategy" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-							<div class="summary-item-value">
-								<span>Estratégia</span>
-								<strong>{{ getStrategyTitle(selectedStrategy) }}</strong>
-							</div>
-						</div>
-						<div class="summary-item daily-goal">
-							<span class="icon-sumary-risk icon-green ">↑</span> 
-							<div class="summary-item-value">
-								<span>Meta diária</span>
-								<strong>${{ metaLucroNumero.toFixed(2) }}</strong>
-							</div>
-						</div>
-						<div class="summary-item risk-item">
-							<svg class="icon-summary-risk icon-green" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 18v-6"></path><path d="M17 12h5l-1-4h-5z"></path><path d="M7 12H2l1-4h5z"></path><path d="M12 2L9 6h6z"></path><path d="M19 19c-3.3 0-6 2-6 3h6"></path><path d="M5 19c3.3 0 6 2 6 3H5"></path></svg>
-							<div class="summary-item-value">
-								<span>Nível de risco</span>
-								<strong>{{ getRiskTitle(selectedRisk) }}</strong>
-							</div>
-						</div>
-						<div class="summary-item daily-loss">
-							<span class="icon-sumary-risk icon-green">↓</span> 
-							<div class="summary-item-value">
-								<span>Limite de perda</span>
-								<strong>${{ limitePerdaNumero.toFixed(2) }}</strong>
-							</div>
-						</div>
-					</div>
-				</section>
+				</div>
 				
-				<section class="config-section">
-					<button class="start-button" @click="iniciarAgente">
-						INICIAR AGENTE
-					</button>
-					<footer class="config-footer">
-						<p class="footer-text">
-							Ao iniciar, você concorda que o agente operará de forma autônoma
-							até que a meta diária seja atingida ou o limite de perda seja alcançado.
-						</p>
-					</footer>
-				</section>
+
 			</div>
 		</div>
 		
@@ -568,8 +569,17 @@ span.icon-sumary-risk{
 /* 4. Parâmetros Diários */
 .daily-params-grid {
 	display: flex;
+	flex-direction: column;
 	gap: 20px;
-	width: 100%;
+	max-width: 700px;
+	min-width: 400px;
+}
+
+@media (min-width: 1600px){
+	.daily-params-grid {
+		max-width: 700px;
+		min-width: 700px;
+	}
 }
 .param-input-group h3 {
 	font-size: 0.8em;
@@ -615,12 +625,19 @@ span.icon-sumary-risk{
 /* 5. Resumo da Configuração */
 .summary-section {
 	padding: 25px;
-	
+	margin: auto;
+	display: flex;
+	flex-direction: column;
+	margin: 0;
+	max-width: 700px;
+
 }
+
 .summary-grid {
+	margin: 10px;
 	display: grid;
 	grid-template-columns: 1fr 1fr;
-	gap: 15px 40px;
+	gap: 30px 40px;
 }
 .summary-item {
 	display: flex;
@@ -686,24 +703,31 @@ span.icon-sumary-risk{
 	}
 }
 
+.footer-section{
+	display: flex;
+	width: 100%;
+	gap: 100px;
+}
 
 /* 6. Botão */
 .start-button {
 	width: 100%;
 	padding: 15px;
 	background-color: #22C55E;
-	color: #ffffff;
+	color: #000000;
 	border: none;
-	border-radius: 4px;
+	border-radius: 8px;
 	font-size: 1.0em;
 	font-weight: bold;
 	cursor: pointer;
 	letter-spacing: 1px;
 	transition: background-color 0.2s;
 	margin-top: 20px; /* Adicionado para separar do Resumo */
+	max-width: 550px;
+	margin-right: auto;
 }
 .start-button:hover {
-	background-color: #33ff88;
+	background-color: #1ca14d;
 }
 
 
@@ -713,15 +737,16 @@ span.icon-sumary-risk{
 	font-size: 0.9em;
 	color: #888;
 	
-	margin-top: 25px;
+	padding: 10px 20px;
 	line-height: 1.4;
 	display: flex;
 	justify-content: center;
 }
 
 .footer-text{
-	width: 80%;
+	width: 90%;
 	text-align: center;
+	margin-top: 10px;
 }
 
 @media (max-width: 600px) {
