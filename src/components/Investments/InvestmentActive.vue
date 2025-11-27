@@ -91,7 +91,10 @@
                                     </div>
                                 </div>
                                 <div class="flex-1 h-full flex items-center justify-end min-w-0 relative overflow-hidden" style="margin: -1.25rem -1.25rem -1.25rem 0; height: calc(100% + 2.5rem); width: 100%; flex: 1 1 auto; min-width: 0;">
-                                    <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/10 to-transparent"></div>
+                                    <!-- Gradiente suave entre preto e verde -->
+                                    <div class="absolute inset-0 status-card-gradient"></div>
+                                    <!-- Background verde animado -->
+                                    <div class="absolute inset-0 status-card-green-bg"></div>
                                     <!-- Animated Grid Background -->
                                     <div class="absolute inset-0 opacity-20">
                                         <div class="absolute inset-0"></div>
@@ -3385,6 +3388,41 @@ button i,
     100% {
         transform: translateX(200%);
         opacity: 0;
+    }
+}
+
+/* Gradiente suave entre preto e verde */
+.status-card-gradient {
+    background: linear-gradient(to right, 
+        rgba(11, 11, 11, 1) 0%,
+        rgba(11, 11, 11, 0.95) 20%,
+        rgba(11, 11, 11, 0.85) 40%,
+        rgba(20, 44, 15, 0.6) 60%,
+        rgba(20, 44, 15, 0.8) 80%,
+        rgba(20, 44, 15, 1) 100%
+    );
+    pointer-events: none;
+    z-index: 2;
+}
+
+/* Background verde animado */
+.status-card-green-bg {
+    background-color: rgb(20, 44, 15);
+    animation: background-blink 1.5s infinite linear;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Animação de piscar do background verde */
+@keyframes background-blink {
+    0% {
+        background-color: rgb(20, 44, 15); /* Cor 1 (Mais escura) */
+    }
+    50% {
+        background-color: rgb(18, 49, 25); /* Cor 2 (Um pouco menos escura) */
+    }
+    100% {
+        background-color: rgb(20, 44, 15); /* Volta à Cor 1 */
     }
 }
 </style>
