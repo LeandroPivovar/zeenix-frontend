@@ -708,7 +708,7 @@ export default {
                     console.log('[InvestmentIAView] ✅ IA ativada com sucesso!');
                     
                     // Buscar histórico de ticks para construir o gráfico
-                    await this.fetchTicksHistory(1000);
+                    await this.fetchTicksHistory(5000);
                 } else {
                     console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', result.message);
                 }
@@ -1008,9 +1008,9 @@ export default {
             try {
                 console.log('[InvestmentIAView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
                 
-                // Primeiro, buscar o histórico de 1000 ticks para construir o gráfico
-                console.log('[InvestmentIAView] 📊 Buscando histórico de 1000 ticks...');
-                await this.fetchTicksHistory(1000);
+                // Primeiro, buscar o histórico de 5000 ticks para construir o gráfico
+                console.log('[InvestmentIAView] 📊 Buscando histórico de 5000 ticks...');
+                await this.fetchTicksHistory(5000);
                 
                 // Depois, iniciar o serviço de monitoramento
                 const response = await fetch('https://taxafacil.site/api/ai/start', {
@@ -1036,7 +1036,7 @@ export default {
             }
         },
         
-        async fetchTicksHistory(limit = 1000) {
+        async fetchTicksHistory(limit = 5000) {
             try {
                 console.log(`[InvestmentIAView] 📊 Buscando histórico de ${limit} ticks...`);
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
@@ -1050,7 +1050,7 @@ export default {
                 });
 
                 if (result.success && result.data?.ticks) {
-                    // Manter apenas os últimos 1000 ticks
+                    // Manter apenas os últimos 5000 ticks
                     const historyTicks = result.data.ticks.slice(-limit);
                     this.ticks = historyTicks;
                     this.currentPrice = result.data.currentPrice;
@@ -1093,17 +1093,17 @@ export default {
                 if (result.success && result.data?.ticks) {
                     const newTicks = result.data.ticks || [];
                     
-                    // Se já temos histórico, mesclar mantendo os últimos 1000 ticks
+                    // Se já temos histórico, mesclar mantendo os últimos 5000 ticks
                     if (this.ticks && this.ticks.length > 0) {
                         // Pegar os últimos ticks do histórico atual
-                        const existingTicks = this.ticks.slice(-990); // Manter 990 do histórico
+                        const existingTicks = this.ticks.slice(-4990); // Manter 4990 do histórico
                         // Adicionar os novos ticks
                         const allTicks = [...existingTicks, ...newTicks];
-                        // Manter apenas os últimos 1000
-                        this.ticks = allTicks.slice(-1000);
+                        // Manter apenas os últimos 5000
+                        this.ticks = allTicks.slice(-5000);
                     } else {
-                        // Se não temos histórico ainda, usar os ticks recebidos (limitados a 1000)
-                        this.ticks = newTicks.slice(-1000);
+                        // Se não temos histórico ainda, usar os ticks recebidos (limitados a 5000)
+                        this.ticks = newTicks.slice(-5000);
                     }
                     
                     this.currentPrice = result.data.currentPrice;
@@ -1137,7 +1137,7 @@ export default {
                     if (config.isActive) {
                         console.log('[InvestmentIAView] ✅ IA JÁ ESTÁ ATIVA!');
                         // Buscar histórico de ticks para construir o gráfico
-                        await this.fetchTicksHistory(1000);
+                        await this.fetchTicksHistory(5000);
                     } else {
                         console.log('[InvestmentIAView] IA está inativa');
                     }
