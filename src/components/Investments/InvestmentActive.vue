@@ -303,7 +303,6 @@
                                         <div class="w-2 h-2 bg-zenix-green rounded-full ai-pulse"></div>
                                         <p class="text-base font-bold text-zenix-green">Ativa</p>
                                     </div>
-                                    <p class="text-xs text-zenix-secondary">Monitorando em tempo real</p>
                                 </div>
                                 <!-- Botão Pausar -->
                                 <button 
