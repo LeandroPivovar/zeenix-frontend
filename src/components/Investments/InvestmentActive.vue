@@ -255,7 +255,7 @@
                             <!-- Grid de Parâmetros -->
                             <div class="py-5 border-b border-zenix-border/50 text-left">
                                 <p class="text-[10px] text-[#7D7D7D] font-medium mb-3 tracking-wide uppercase text-left">Parâmetros</p>
-                                <div class="grid grid-cols-2 gap-4">
+                                <div class="grid grid-cols-2 gap-4 border border-zenix-border/30 rounded-lg p-4">
                                     <div class="text-left">
                                         <p class="text-xs text-zenix-secondary mb-1 text-left">Entrada</p>
                                         <p class="text-lg font-bold text-zenix-text text-left" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : '$50' }}</p>
@@ -1168,8 +1168,26 @@ export default {
             const sortedTicks = [...validTicks].sort((a, b) => b.time - a.time);
             const totalTicks = sortedTicks.length;
 
-            // Limitar aos ticks mais recentes baseado no zoom
-            const ticksToUse = sortedTicks.slice(0, Math.min(this.chartPointsVisible * 10, totalTicks));
+            // Calcular quantos ticks são necessários para 10 minutos
+            // Se os ticks são a cada segundo, 10 minutos = 600 segundos = 600 ticks
+            // Mas vamos garantir pelo menos 10 minutos de dados, então vamos usar mais ticks
+            const minTicksFor10Minutes = 600; // Mínimo de 600 ticks para 10 minutos (1 tick por segundo)
+            const ticksNeeded = Math.max(
+                minTicksFor10Minutes,
+                Math.ceil((10 * 60) / (timeframeSeconds || 1)) * 10, // Garantir pelo menos 10 minutos
+                this.chartPointsVisible * 10 // Ou o que já estava calculado
+            );
+            
+            // Limitar aos ticks mais recentes, garantindo pelo menos 10 minutos
+            const ticksToUse = sortedTicks.slice(0, Math.min(ticksNeeded, totalTicks));
+            
+            console.log('[InvestmentActive] Agregando ticks:', {
+                totalTicks,
+                ticksToUse: ticksToUse.length,
+                timeframeSeconds,
+                minTicksFor10Minutes,
+                ticksNeeded
+            });
             
             // Reverter para ordem cronológica (mais antigos primeiro) para agregação
             const chronologicalTicks = [...ticksToUse].reverse();
@@ -1219,9 +1237,22 @@ export default {
 
             finalizeBucket();
             
-            // Limitar a quantidade final de velas ao zoom desejado
+            // Calcular quantas velas são necessárias para mostrar 10 minutos
+            const candlesFor10Minutes = Math.ceil((10 * 60) / effectiveTimeframe);
+            const minCandles = Math.max(candlesFor10Minutes, this.chartPointsVisible);
+            
+            // Limitar a quantidade final de velas, garantindo pelo menos 10 minutos
             // Pegar as últimas N velas (mais recentes)
-            const finalCandles = candles.slice(-this.chartPointsVisible);
+            const finalCandles = candles.slice(-minCandles);
+            
+            console.log('[InvestmentActive] Velas geradas:', {
+                totalCandles: candles.length,
+                finalCandles: finalCandles.length,
+                candlesFor10Minutes,
+                minCandles,
+                effectiveTimeframe,
+                timeSpanMinutes: finalCandles.length > 0 ? ((finalCandles[finalCandles.length - 1].time - finalCandles[0].time) / 60).toFixed(2) : 0
+            });
             
             return finalCandles;
         },
@@ -1502,7 +1533,7 @@ export default {
                     // Usar o timeframe selecionado com controle de zoom
                     data = this.aggregateTicksToCandles(this.selectedTimeframe);
                 } else {
-                    // Gráfico de linhas: limitar aos pontos mais recentes baseado no zoom
+                    // Gráfico de linhas: garantir pelo menos 10 minutos de dados
                     const sortedTicks = [...this.ticks]
                         .map(tick => ({
                             time: Math.floor(tick.epoch || tick.time || Date.now() / 1000),
@@ -1511,9 +1542,19 @@ export default {
                         .filter(point => point.value)
                         .sort((a, b) => a.time - b.time);
                     
-                    // Pegar os últimos N pontos baseado no zoom
-                    const limitedTicks = sortedTicks.slice(-this.chartPointsVisible);
+                    // Calcular quantos ticks são necessários para 10 minutos (600 segundos)
+                    const minTicksFor10Minutes = 600;
+                    const ticksNeeded = Math.max(minTicksFor10Minutes, this.chartPointsVisible);
+                    
+                    // Pegar os últimos N pontos, garantindo pelo menos 10 minutos
+                    const limitedTicks = sortedTicks.slice(-ticksNeeded);
                     data = limitedTicks;
+                    
+                    console.log('[InvestmentActive] Gráfico de linhas:', {
+                        totalTicks: sortedTicks.length,
+                        ticksUsed: limitedTicks.length,
+                        timeSpanMinutes: limitedTicks.length > 0 ? ((limitedTicks[limitedTicks.length - 1].time - limitedTicks[0].time) / 60).toFixed(2) : 0
+                    });
                 }
 
                 if (!data.length) return;
