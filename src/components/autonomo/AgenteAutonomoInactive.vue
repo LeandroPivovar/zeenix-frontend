@@ -579,6 +579,12 @@ span.icon-sumary-risk{
 	.daily-params-grid {
 		max-width: 700px;
 		min-width: 700px;
+
+	}
+
+	.footer-text{
+		width: 90%;
+		margin-right: 100px;
 	}
 }
 .param-input-group h3 {
