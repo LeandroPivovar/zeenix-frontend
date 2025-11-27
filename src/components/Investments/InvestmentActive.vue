@@ -15,7 +15,7 @@
                                         <i :class="balanceVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
                                     </button>
                                 </div>
-                                <div class="text-xl font-bold text-zenix-text">
+                                <div class="text-xl font-bold text-zenix-text text-left">
                                     <span v-if="!isLoadingStats && accountBalanceProp" :class="{ 'hidden-value': !balanceVisible }">
                                         {{ balanceVisible ? formattedBalance : '••••••' }}
                                     </span>
@@ -36,11 +36,16 @@
                                         <i :class="profitVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
                                     </button>
                                 </div>
-                                <div class="flex items-baseline space-x-1.5">
+                                <div class="flex items-baseline space-x-1.5 text-left">
                                     <div v-if="!isLoadingStats" :class="['text-xl font-bold', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
                                         {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
                                     </div>
-                                    <span v-if="!isLoadingStats && profitPercentage && profitVisible" class="text-[10px] text-zenix-green/80 font-medium">{{ profitPercentage }}</span>
+                                    <span 
+                                        v-if="!isLoadingStats && profitPercentage && profitVisible" 
+                                        :class="['profit-percentage-badge', isProfitPositive ? 'profit-positive' : 'profit-negative']"
+                                    >
+                                        {{ profitPercentage }}
+                                    </span>
                                     <span v-else-if="isLoadingStats" class="text-zenix-secondary">--</span>
                                 </div>
                             </div>
@@ -56,7 +61,7 @@
                                     <i :class="tradesVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
                                 </button>
                             </div>
-                            <div class="flex items-center space-x-2">
+                            <div class="flex items-center space-x-2 text-left">
                                 <span v-if="!isLoadingStats" id="i8cy7b" :class="['text-2xl font-bold text-zenix-green', { 'hidden-value': !tradesVisible }]">
                                     {{ tradesVisible ? (dailyStats.sessionWins || 0) : '••' }}
                                 </span>
@@ -692,6 +697,13 @@ export default {
             const percentage = (profit / this.accountBalanceProp) * 100;
             const sign = percentage >= 0 ? '+' : '';
             return `${sign}${percentage.toFixed(2)}%`;
+        },
+        
+        // Check if profit is positive
+        isProfitPositive() {
+            if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return true;
+            const profit = this.dailyStats.sessionProfitLoss || 0;
+            return profit >= 0;
         },
 
         // Last update time
@@ -1877,6 +1889,25 @@ button i,
     font-size: 0.875rem;
     color: #22C55E;
     font-weight: 500;
+}
+
+.profit-percentage-badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.725rem;
+    font-weight: 600;
+    color: white;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.profit-positive {
+    background-color: #22C55E;
+}
+
+.profit-negative {
+    background-color: #FF4747;
 }
 
 .trades-stats-row {

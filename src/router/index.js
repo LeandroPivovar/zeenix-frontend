@@ -193,7 +193,7 @@ const routes = [
     name: 'PlansManagement',
     component: PlansManagementView,
     meta: { requiresAuth: true }
-  },
+  }
 
 ]
 

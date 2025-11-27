@@ -27,7 +27,14 @@
           >
             Análise de dígitos
           </button>
-        </div>
+          <button
+            class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+            :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLogs', 'border-b-2 border-transparent': currentView !== 'OperationLogs' }"
+            @click="changeView('OperationLogs')"
+          >
+            Registro
+          </button>
+          </div>
 
         <div class="operation-content">
           <component
@@ -38,6 +45,7 @@
             :account-loginid="accountLoginId"
             :order-config="orderConfig"
             :last-orders="lastOrdersFormatted"
+            :trade-results="lastOrdersFormatted"
             @trade-result="handleTradeResult"
           ></component>
         </div>
@@ -115,6 +123,7 @@ import AppSidebar from '../components/Sidebar.vue';
 import TopNavbar from '../components/TopNavbar.vue';
 import OperationChart from '../components/OperationChart.vue';
 import OperationDigits from '../components/OperationDigits.vue';
+import OperationLogs from '../components/OperationLogs.vue';
 
 export default {
   name: 'OperationView',
@@ -123,6 +132,7 @@ export default {
     TopNavbar,
     OperationChart,
     OperationDigits,
+    OperationLogs
   },
   data() {
     return {
@@ -651,6 +661,15 @@ export default {
   align-items: flex-start;
   justify-content: flex-start;
   width: 100%;
+}
+
+.operation-content {
+  flex: 1;
+  overflow: hidden;
+  padding: 0 20px 20px 20px;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
 }
 
 /* Footer */
