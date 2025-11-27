@@ -255,22 +255,22 @@
                             <!-- Grid de Parâmetros -->
                             <div class="py-5 border-b border-zenix-border/50 text-left">
                                 <p class="text-[10px] text-[#7D7D7D] font-medium mb-3 tracking-wide uppercase text-left">Parâmetros</p>
-                                <div class="grid grid-cols-2 gap-4 border border-zenix-border/30 rounded-lg p-4">
-                                    <div class="text-left">
+                                <div class="grid grid-cols-2 gap-4">
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-4">
                                         <p class="text-xs text-zenix-secondary mb-1 text-left">Entrada</p>
                                         <p class="text-lg font-bold text-zenix-text text-left" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : '$50' }}</p>
                                         <p class="text-lg font-bold text-zenix-text text-left" v-else>Carregando...</p>
                                     </div>
-                                    <div class="text-left">
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-4">
                                         <p class="text-xs text-zenix-secondary mb-1 text-left">Modo</p>
                                         <p class="text-lg font-bold text-zenix-text text-left">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
                                     </div>
-                                    <div class="text-left">
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-4">
                                         <p class="text-xs text-zenix-secondary mb-1 text-left">Alvo de Lucro</p>
                                         <p class="text-lg font-bold text-zenix-green text-left" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
                                         <p class="text-lg font-bold text-zenix-green text-left" v-else>Carregando...</p>
                                     </div>
-                                    <div class="text-left">
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-4">
                                         <p class="text-xs text-zenix-secondary mb-1 text-left">Limite de Perda</p>
                                         <p class="text-lg font-bold text-zenix-red text-left" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
                                         <p class="text-lg font-bold text-zenix-red text-left" v-else>Carregando...</p>

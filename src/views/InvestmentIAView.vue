@@ -1038,15 +1038,40 @@ export default {
         
         async fetchTicksHistory(limit = 5000) {
             try {
-                console.log(`[InvestmentIAView] 📊 Buscando histórico de ${limit} ticks...`);
+                // Log de início
+                console.log('[InvestmentIAView] ===== INÍCIO DO CARREGAMENTO DE HISTÓRICO =====');
+                console.log(`[InvestmentIAView] 📊 Iniciando busca de histórico de ${limit} ticks...`);
+                console.log(`[InvestmentIAView] ⏰ Timestamp de início: ${new Date().toISOString()}`);
+                
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const response = await fetch(`${apiBase}/ai/ticks?limit=${limit}`);
+                const url = `${apiBase}/ai/ticks?limit=${limit}`;
+                
+                // Log de envio da requisição
+                console.log('[InvestmentIAView] 📡 Enviando requisição para API...');
+                console.log(`[InvestmentIAView] 🔗 URL: ${url}`);
+                console.log(`[InvestmentIAView] 📋 Parâmetros: limit=${limit}`);
+                console.log(`[InvestmentIAView] ⏰ Timestamp de envio: ${new Date().toISOString()}`);
+                
+                const requestStartTime = Date.now();
+                const response = await fetch(url);
+                const requestEndTime = Date.now();
+                const requestDuration = requestEndTime - requestStartTime;
+                
+                // Log de retorno da API
+                console.log('[InvestmentIAView] 📥 Resposta recebida da API');
+                console.log(`[InvestmentIAView] ⏰ Timestamp de retorno: ${new Date().toISOString()}`);
+                console.log(`[InvestmentIAView] ⏱️ Tempo de requisição: ${requestDuration}ms`);
+                console.log(`[InvestmentIAView] 📊 Status HTTP: ${response.status} ${response.statusText}`);
+                console.log(`[InvestmentIAView] ✅ Response OK: ${response.ok}`);
+                
                 const result = await response.json();
-
-                console.log('[InvestmentIAView] Histórico de ticks recebido:', {
+                
+                console.log('[InvestmentIAView] 📦 Dados recebidos da API:', {
                     success: result.success,
                     ticksCount: result.data?.ticks?.length || 0,
-                    currentPrice: result.data?.currentPrice
+                    currentPrice: result.data?.currentPrice,
+                    hasData: !!result.data,
+                    hasTicks: !!result.data?.ticks
                 });
 
                 if (result.success && result.data?.ticks) {
@@ -1054,12 +1079,24 @@ export default {
                     const historyTicks = result.data.ticks.slice(-limit);
                     this.ticks = historyTicks;
                     this.currentPrice = result.data.currentPrice;
-                    console.log(`[InvestmentIAView] ✅ Histórico carregado: ${historyTicks.length} ticks`);
+                    
+                    console.log('[InvestmentIAView] ✅ Histórico processado com sucesso');
+                    console.log(`[InvestmentIAView] 📊 Ticks processados: ${historyTicks.length}`);
+                    console.log(`[InvestmentIAView] 💰 Preço atual: ${this.currentPrice}`);
+                    console.log(`[InvestmentIAView] ⏰ Timestamp de conclusão: ${new Date().toISOString()}`);
+                    console.log('[InvestmentIAView] ===== FIM DO CARREGAMENTO DE HISTÓRICO =====');
                 } else {
                     console.warn('[InvestmentIAView] ⚠ Nenhum histórico disponível ainda');
+                    console.warn('[InvestmentIAView] 📋 Resposta completa:', result);
+                    console.log('[InvestmentIAView] ===== FIM DO CARREGAMENTO DE HISTÓRICO (SEM DADOS) =====');
                 }
             } catch (error) {
-                console.error('[InvestmentIAView] ❌ Erro ao buscar histórico de ticks:', error);
+                console.error('[InvestmentIAView] ❌ Erro ao buscar histórico de ticks');
+                console.error(`[InvestmentIAView] ⏰ Timestamp do erro: ${new Date().toISOString()}`);
+                console.error('[InvestmentIAView] 🔴 Detalhes do erro:', error);
+                console.error('[InvestmentIAView] 📋 Mensagem:', error.message);
+                console.error('[InvestmentIAView] 📋 Stack:', error.stack);
+                console.log('[InvestmentIAView] ===== FIM DO CARREGAMENTO DE HISTÓRICO (ERRO) =====');
             }
         },
 
