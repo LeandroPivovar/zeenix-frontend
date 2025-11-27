@@ -706,6 +706,9 @@ export default {
                 if (result.success) {
                     this.isInvestmentActive = true;
                     console.log('[InvestmentIAView] ✅ IA ativada com sucesso!');
+                    
+                    // Buscar histórico de ticks para construir o gráfico
+                    await this.fetchTicksHistory(200);
                 } else {
                     console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', result.message);
                 }
@@ -1005,6 +1008,11 @@ export default {
             try {
                 console.log('[InvestmentIAView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
                 
+                // Primeiro, buscar o histórico de 200 ticks para construir o gráfico
+                console.log('[InvestmentIAView] 📊 Buscando histórico de 200 ticks...');
+                await this.fetchTicksHistory(200);
+                
+                // Depois, iniciar o serviço de monitoramento
                 const response = await fetch('https://taxafacil.site/api/ai/start', {
                     method: 'POST',
                     headers: {
@@ -1027,6 +1035,33 @@ export default {
                 console.error('[InvestmentIAView] Detalhes:', error.message);
             }
         },
+        
+        async fetchTicksHistory(limit = 200) {
+            try {
+                console.log(`[InvestmentIAView] 📊 Buscando histórico de ${limit} ticks...`);
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/ticks?limit=${limit}`);
+                const result = await response.json();
+
+                console.log('[InvestmentIAView] Histórico de ticks recebido:', {
+                    success: result.success,
+                    ticksCount: result.data?.ticks?.length || 0,
+                    currentPrice: result.data?.currentPrice
+                });
+
+                if (result.success && result.data?.ticks) {
+                    // Manter apenas os últimos 200 ticks
+                    const historyTicks = result.data.ticks.slice(-limit);
+                    this.ticks = historyTicks;
+                    this.currentPrice = result.data.currentPrice;
+                    console.log(`[InvestmentIAView] ✅ Histórico carregado: ${historyTicks.length} ticks`);
+                } else {
+                    console.warn('[InvestmentIAView] ⚠ Nenhum histórico disponível ainda');
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] ❌ Erro ao buscar histórico de ticks:', error);
+            }
+        },
 
         startPolling() {
             this.fetchTicks();
@@ -1044,8 +1079,9 @@ export default {
 
         async fetchTicks() {
             try {
-                console.log('[InvestmentIAView] Buscando ticks...');
-                const response = await fetch('https://taxafacil.site/api/ai/ticks');
+                console.log('[InvestmentIAView] Buscando novos ticks...');
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/ticks`);
                 const result = await response.json();
 
                 console.log('[InvestmentIAView] Ticks recebidos:', {
@@ -1054,8 +1090,22 @@ export default {
                     currentPrice: result.data?.currentPrice
                 });
 
-                if (result.success) {
-                    this.ticks = result.data.ticks || [];
+                if (result.success && result.data?.ticks) {
+                    const newTicks = result.data.ticks || [];
+                    
+                    // Se já temos histórico, mesclar mantendo os últimos 200 ticks
+                    if (this.ticks && this.ticks.length > 0) {
+                        // Pegar os últimos ticks do histórico atual
+                        const existingTicks = this.ticks.slice(-190); // Manter 190 do histórico
+                        // Adicionar os novos ticks
+                        const allTicks = [...existingTicks, ...newTicks];
+                        // Manter apenas os últimos 200
+                        this.ticks = allTicks.slice(-200);
+                    } else {
+                        // Se não temos histórico ainda, usar os ticks recebidos (limitados a 200)
+                        this.ticks = newTicks.slice(-200);
+                    }
+                    
                     this.currentPrice = result.data.currentPrice;
                     console.log('[InvestmentIAView] ✅ Ticks atualizados:', this.ticks.length);
                 }
@@ -1086,6 +1136,8 @@ export default {
                     
                     if (config.isActive) {
                         console.log('[InvestmentIAView] ✅ IA JÁ ESTÁ ATIVA!');
+                        // Buscar histórico de ticks para construir o gráfico
+                        await this.fetchTicksHistory(200);
                     } else {
                         console.log('[InvestmentIAView] IA está inativa');
                     }

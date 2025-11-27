@@ -233,58 +233,58 @@
                 <!-- Right Column - Config -->
                 <div class="col-span-2">
                     <div id="i0k3nl" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
-                        <h3 class="text-base font-semibold text-zenix-text mb-6 flex items-center">
+                        <h3 class="text-base font-semibold text-zenix-text mb-6 flex items-center text-left">
                             <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
                             Configuração Ativa
                         </h3>
-                        <div class="flex-1 flex flex-col justify-between">
+                        <div class="flex-1 flex flex-col justify-between text-left">
                             <!-- Estratégia -->
-                            <div class="pb-5 border-b border-zenix-border/50">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase">Estratégia</p>
-                                <p class="text-base font-bold text-zenix-text mb-1">{{ strategyName }}</p>
-                                <p class="text-xs text-zenix-secondary">Alta performance • Sinais avançados</p>
+                            <div class="pb-5 border-b border-zenix-border/50 text-left">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Estratégia</p>
+                                <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ strategyName }}</p>
+                                <p class="text-xs text-zenix-secondary text-left">Alta performance • Sinais avançados</p>
                             </div>
 
                             <!-- Mercado -->
-                            <div class="py-5 border-b border-zenix-border/50">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase">Mercado</p>
-                                <p class="text-base font-bold text-zenix-text mb-1">{{ selectedMarket }}</p>
-                                <p class="text-xs text-zenix-secondary">Ticks de alta frequência</p>
+                            <div class="py-5 border-b border-zenix-border/50 text-left">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Mercado</p>
+                                <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ selectedMarket }}</p>
+                                <p class="text-xs text-zenix-secondary text-left">Ticks de alta frequência</p>
                             </div>
 
                             <!-- Grid de Parâmetros -->
-                            <div class="py-5 border-b border-zenix-border/50">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-3 tracking-wide uppercase">Parâmetros</p>
+                            <div class="py-5 border-b border-zenix-border/50 text-left">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-3 tracking-wide uppercase text-left">Parâmetros</p>
                                 <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <p class="text-xs text-zenix-secondary mb-1">Entrada</p>
-                                        <p class="text-lg font-bold text-zenix-text" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : '$50' }}</p>
-                                        <p class="text-lg font-bold text-zenix-text" v-else>Carregando...</p>
+                                    <div class="text-left">
+                                        <p class="text-xs text-zenix-secondary mb-1 text-left">Entrada</p>
+                                        <p class="text-lg font-bold text-zenix-text text-left" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : '$50' }}</p>
+                                        <p class="text-lg font-bold text-zenix-text text-left" v-else>Carregando...</p>
                                     </div>
-                                    <div>
-                                        <p class="text-xs text-zenix-secondary mb-1">Modo</p>
-                                        <p class="text-lg font-bold text-zenix-text">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
+                                    <div class="text-left">
+                                        <p class="text-xs text-zenix-secondary mb-1 text-left">Modo</p>
+                                        <p class="text-lg font-bold text-zenix-text text-left">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
                                     </div>
-                                    <div>
-                                        <p class="text-xs text-zenix-secondary mb-1">Alvo de Lucro</p>
-                                        <p class="text-lg font-bold text-zenix-green" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
-                                        <p class="text-lg font-bold text-zenix-green" v-else>Carregando...</p>
+                                    <div class="text-left">
+                                        <p class="text-xs text-zenix-secondary mb-1 text-left">Alvo de Lucro</p>
+                                        <p class="text-lg font-bold text-zenix-green text-left" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
+                                        <p class="text-lg font-bold text-zenix-green text-left" v-else>Carregando...</p>
                                     </div>
-                                    <div>
-                                        <p class="text-xs text-zenix-secondary mb-1">Limite de Perda</p>
-                                        <p class="text-lg font-bold text-zenix-red" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
-                                        <p class="text-lg font-bold text-zenix-red" v-else>Carregando...</p>
+                                    <div class="text-left">
+                                        <p class="text-xs text-zenix-secondary mb-1 text-left">Limite de Perda</p>
+                                        <p class="text-lg font-bold text-zenix-red text-left" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
+                                        <p class="text-lg font-bold text-zenix-red text-left" v-else>Carregando...</p>
                                     </div>
                                 </div>
                             </div>
 
                             <!-- Gerenciamento -->
-                            <div class="py-5 border-b border-zenix-border/50">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase">Gerenciamento de Risco</p>
+                            <div class="py-5 border-b border-zenix-border/50 text-left">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Gerenciamento de Risco</p>
                                 <div class="flex items-center justify-between">
-                                    <div>
-                                        <p class="text-base font-bold text-zenix-text mb-1">{{ realRiskLevel }}</p>
-                                        <p class="text-xs text-zenix-secondary">Proteção de capital ativa</p>
+                                    <div class="text-left">
+                                        <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ realRiskLevel }}</p>
+                                        <p class="text-xs text-zenix-secondary text-left">Proteção de capital ativa</p>
                                     </div>
                                     <div class="px-3 py-1.5 bg-zenix-green/10 border border-zenix-green/20 rounded-lg">
                                         <p class="text-xs font-bold text-zenix-green">{{ realRiskLabel }}</p>
