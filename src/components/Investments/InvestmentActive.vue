@@ -140,7 +140,7 @@
             <div class="grid grid-cols-12 gap-6 mb-6" style="width: 100%; box-sizing: border-box;">
                 <!-- Left Column - Chart -->
                 <div id="ir8sfp" class="col-span-10">
-                    <div id="market-chart" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
+                    <div id="market-chart" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-[820px] flex flex-col">
                         <div class="flex items-center justify-between mb-4">
                             <div>
                                 <h2 class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
@@ -235,7 +235,7 @@
 
                 <!-- Right Column - Config -->
                 <div class="col-span-2">
-                    <div id="i0k3nl" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-[800px] flex flex-col">
+                    <div id="i0k3nl" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-[820px] flex flex-col">
                         <h3 class="text-base font-semibold text-zenix-text mb-6 flex items-center text-left">
                             <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
                             Configuração Ativa
@@ -3408,21 +3408,21 @@ button i,
 /* Background verde animado */
 .status-card-green-bg {
     background-color: rgb(20, 44, 15);
-    animation: background-blink 1.5s infinite linear;
+    animation: background-blink 1s infinite ease-in-out;
     pointer-events: none;
     z-index: 1;
 }
 
-/* Animação de piscar do background verde */
+/* Animação de piscar do background verde - mais evidente */
 @keyframes background-blink {
     0% {
-        background-color: rgb(20, 44, 15); /* Cor 1 (Mais escura) */
+        background-color: rgb(15, 35, 10); /* Cor 1 (Mais escura) */
     }
     50% {
-        background-color: rgb(18, 49, 25); /* Cor 2 (Um pouco menos escura) */
+        background-color: rgb(25, 60, 20); /* Cor 2 (Mais clara e evidente) */
     }
     100% {
-        background-color: rgb(20, 44, 15); /* Volta à Cor 1 */
+        background-color: rgb(15, 35, 10); /* Volta à Cor 1 */
     }
 }
 </style>
