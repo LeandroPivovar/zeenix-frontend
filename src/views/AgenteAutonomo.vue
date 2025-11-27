@@ -548,7 +548,6 @@ export default {
 }
 
 .container-componentes{
-    padding-top: 20px;
     padding-left: 60px;
     padding-right: 60px;
     padding-bottom: 20px;
