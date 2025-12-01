@@ -631,17 +631,47 @@ export default {
             },
           });
           
+          console.log('[OperationChart] lineSeries criado:', {
+            hasLineSeries: !!this.lineSeries,
+            chartHasSeries: this.chart.series().length > 0
+          });
+          
           // Forçar repaint do gráfico após criação
           this.$nextTick(() => {
             if (this.chart) {
+              // Verificar se o canvas foi criado
+              const canvas = container.querySelector('canvas');
+              if (canvas) {
+                console.log('[OperationChart] Canvas criado após initChart:', {
+                  width: canvas.width,
+                  height: canvas.height,
+                  style: {
+                    width: canvas.style.width,
+                    height: canvas.style.height,
+                    display: window.getComputedStyle(canvas).display
+                  }
+                });
+              } else {
+                console.warn('[OperationChart] ⚠ Canvas não encontrado após criação do gráfico!');
+              }
+              
               // Forçar atualização visual
               this.chart.timeScale().fitContent();
+              
               // Pequeno delay para garantir renderização
               setTimeout(() => {
                 if (this.chart && this.ticks.length > 0) {
                   this.chart.timeScale().fitContent();
+                  // Forçar resize novamente
+                  const rect = container.getBoundingClientRect();
+                  if (rect.width > 0 && rect.height > 0) {
+                    this.chart.applyOptions({
+                      width: rect.width,
+                      height: rect.height
+                    });
+                  }
                 }
-              }, 100);
+              }, 150);
             }
           });
 
@@ -2175,48 +2205,116 @@ export default {
         } else {
           // Primeira vez ou muitos dados novos, usar setData completo
           console.log('[OperationChart] Chamando lineSeries.setData com', validData.length, 'pontos...');
-          this.lineSeries.setData(validData);
-          console.log('[OperationChart] setData chamado com sucesso');
+          
+          // Forçar resize ANTES de setData para garantir que o canvas tenha dimensões corretas
+          const container = this.$refs.chartContainer;
+          if (container && this.chart) {
+            const rect = container.getBoundingClientRect();
+            console.log('[OperationChart] Dimensões do container antes de setData:', {
+              width: rect.width,
+              height: rect.height,
+              clientWidth: container.clientWidth,
+              clientHeight: container.clientHeight
+            });
+            
+            if (rect.width > 0 && rect.height > 0) {
+              // Forçar resize do gráfico
+              this.chart.applyOptions({
+                width: rect.width,
+                height: rect.height
+              });
+              console.log('[OperationChart] Gráfico redimensionado para:', { width: rect.width, height: rect.height });
+            }
+          }
+          
+          // Chamar setData
+          try {
+            this.lineSeries.setData(validData);
+            console.log('[OperationChart] setData chamado com sucesso');
+          } catch (error) {
+            console.error('[OperationChart] ERRO ao chamar setData:', error);
+            return;
+          }
           
           // Forçar atualização visual do gráfico
           if (this.chart) {
-            // Forçar resize primeiro para garantir que o canvas tenha dimensões corretas
-            const container = this.$refs.chartContainer;
+            // Ajustar escala de tempo imediatamente
+            try {
+              this.chart.timeScale().fitContent();
+              console.log('[OperationChart] fitContent chamado imediatamente após setData');
+            } catch (error) {
+              console.error('[OperationChart] ERRO ao chamar fitContent:', error);
+            }
+            
+            // Forçar resize novamente após setData para garantir renderização
             if (container) {
               const rect = container.getBoundingClientRect();
               if (rect.width > 0 && rect.height > 0) {
-                this.chart.applyOptions({
-                  width: rect.width,
-                  height: rect.height
+                // Usar requestAnimationFrame para garantir que o resize aconteça após o setData
+                requestAnimationFrame(() => {
+                  if (this.chart) {
+                    this.chart.applyOptions({
+                      width: rect.width,
+                      height: rect.height
+                    });
+                    this.chart.timeScale().fitContent();
+                    console.log('[OperationChart] Gráfico redimensionado e fitContent chamado via requestAnimationFrame');
+                  }
                 });
               }
             }
             
-            // Ajustar escala de tempo
-            this.chart.timeScale().fitContent();
-            
-            // Forçar repaint múltiplas vezes para garantir renderização
+            // Verificar se o canvas existe e está visível
             this.$nextTick(() => {
-              if (this.chart) {
-                this.chart.timeScale().fitContent();
-                // Pequeno delay adicional para garantir que o gráfico seja renderizado
+              if (this.chart && container) {
+                // Aguardar um pouco para o canvas ser criado
                 setTimeout(() => {
-                  if (this.chart) {
-                    this.chart.timeScale().fitContent();
-                    // Forçar um último repaint
-                    const container = this.$refs.chartContainer;
-                    if (container) {
+                  const canvas = container.querySelector('canvas');
+                  if (canvas) {
+                    console.log('[OperationChart] Canvas encontrado após setData:', {
+                      width: canvas.width,
+                      height: canvas.height,
+                      styleWidth: canvas.style.width,
+                      styleHeight: canvas.style.height,
+                      display: window.getComputedStyle(canvas).display,
+                      visibility: window.getComputedStyle(canvas).visibility,
+                      opacity: window.getComputedStyle(canvas).opacity,
+                      zIndex: window.getComputedStyle(canvas).zIndex
+                    });
+                    
+                    // Forçar fitContent novamente
+                    try {
+                      this.chart.timeScale().fitContent();
+                      
+                      // Forçar resize novamente
+                      const rect = container.getBoundingClientRect();
+                      if (rect.width > 0 && rect.height > 0) {
+                        this.chart.applyOptions({
+                          width: rect.width,
+                          height: rect.height
+                        });
+                        // Forçar fitContent novamente após resize
+                        this.chart.timeScale().fitContent();
+                      }
+                    } catch (error) {
+                      console.error('[OperationChart] ERRO ao chamar fitContent no nextTick:', error);
+                    }
+                  } else {
+                    console.warn('[OperationChart] ⚠ Canvas não encontrado no container após setData!');
+                    // Tentar novamente após mais um delay
+                    setTimeout(() => {
                       const canvas = container.querySelector('canvas');
                       if (canvas) {
-                        // Forçar redesenho do canvas
-                        const ctx = canvas.getContext('2d');
-                        if (ctx) {
-                          ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        console.log('[OperationChart] Canvas encontrado no segundo retry');
+                        if (this.chart) {
+                          this.chart.timeScale().fitContent();
                         }
+                      } else {
+                        console.error('[OperationChart] ❌ Canvas ainda não encontrado após múltiplas tentativas!');
                       }
-                    }
+                    }, 300);
                   }
-                }, 100);
+                }, 150);
               }
             });
           }
@@ -4970,6 +5068,23 @@ export default {
   display: block !important;
   width: 100% !important;
   height: 100% !important;
+  position: relative !important;
+  z-index: 1 !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+.chart-wrapper {
+  position: relative !important;
+  overflow: visible !important;
+}
+
+#candlestickChart canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  z-index: 1 !important;
 }
 
 .col-chart {
