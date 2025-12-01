@@ -209,7 +209,7 @@
                 :disabled="isTrading || !isAuthorized || !canUseCallPut"
               >
                 <i class="fas fa-arrow-up"></i>
-                {{ isTrading ? 'Aguardando confirmação...' : (currentProposalId ? 'CALL / BUY' : 'Aguardando proposta...') }}
+                {{ isTrading ? 'Aguardando confirmação...' : (currentProposalId ? 'Executar Ordem' : 'Aguardando proposta...') }}
               </button>
               
               <button 
