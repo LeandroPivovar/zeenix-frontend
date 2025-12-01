@@ -1942,6 +1942,17 @@ export default {
         // Gráfico já existe, atualizar diretamente
         // Forçar atualização mesmo durante reconexão
         console.log('[OperationChart] Gráfico já existe, atualizando com histórico...');
+        // Forçar resize antes de atualizar
+        const container = this.$refs.chartContainer;
+        if (container) {
+          const rect = container.getBoundingClientRect();
+          if (rect.width > 0 && rect.height > 0) {
+            this.chart.applyOptions({
+              width: rect.width,
+              height: rect.height
+            });
+          }
+        }
         this.$nextTick(() => {
           if (this.chart && this.lineSeries && this.ticks.length > 0) {
             this.updateChartFromTicks();
