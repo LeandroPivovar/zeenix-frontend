@@ -1,5 +1,11 @@
 <template>
   <div class="layout-home" :class="{ 'sidebar-collapsed': isSidebarCollapsed, 'no-sidebar': !connectedInfo }">
+    <!-- Fundo animado: luzes e partículas -->
+    <div class="animated-light-primary"></div>
+    <div class="animated-light-secondary"></div>
+    <div class="particles">
+      <span v-for="n in 12" :key="n" class="particle"></span>
+    </div>
     <!-- Sidebar e Header só aparecem quando conectado -->
     <template v-if="connectedInfo">
       <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
@@ -19,34 +25,72 @@
 
     <!-- Tela de Conexão (sem sidebar e header) -->
     <main class="content welcome-screen" v-if="!connectedInfo && !loading">
+      <!-- Indicador de Etapa (apenas mobile, todas as etapas) - fora do container para ocupar toda largura -->
+      <div v-if="showCreateAccountCard" class="step-indicator">
+        PASSO {{ currentAccountStep }}/3
+      </div>
       <div class="container">
-        <h1 class="title">Seja Bem-vindo, {{ firstName }}</h1>
-        <p class="subtitle">Antes de começar a operar, você precisa conectar sua conta Deriv ou criar uma nova.</p>
+        
+        <h1 v-if="!showCreateAccountCard || currentAccountStep === 1" class="title"> Bem-vindo, {{ firstName }}</h1>
+        <p v-if="!showCreateAccountCard || currentAccountStep === 1" class="subtitle">Antes de começar a operar, você precisa conectar sua conta Deriv ou criar uma nova.</p>
+        
         <div class="box">
-          <div class="video-card">
+          <!-- Título e botão X fora do card (apenas mobile, etapas 2 e 3) -->
+          <div v-if="showCreateAccountCard && currentAccountStep > 1" class="modal-header-external-wrapper">
+            <div class="modal-header-external">
+              <h3 class="title">Criar Conta na Deriv</h3>
+              <button class="close-btn" @click="handleCloseAccountCard" :disabled="false">×</button>
+            </div>
+          </div>
+          
+          <!-- Card de criação de conta (apenas mobile) -->
+          <div v-if="showCreateAccountCard" class="create-account-card-mobile">
+            <CreateDerivAccountModal 
+              :visible="true"
+              :inline="true"
+              @close="handleCloseAccountCard"
+              @success="handleAccountCreated"
+              @step-change="currentAccountStep = $event"
+            />
+          </div>
+          
+          <!-- Video (oculto no mobile quando card está ativo) -->
+          <div v-else class="video-card">
             <div class="video-placeholder">
               <div class="play">▶</div>
               <div class="video-text">Zenix Black Tutorial Video</div>
             </div>
           </div>
-          <h1 class="text-mobile">Zenix Black Tutorial Video</h1>
-          <p class="text-video">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
+          <h1 v-if="!showCreateAccountCard" class="text-mobile">Zenix Black Tutorial Video</h1>
+          <p v-if="!showCreateAccountCard" class="text-video">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
         </div>
+
+        <p v-if="!showCreateAccountCard" class="text-mobile-description">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
+      
 
         <div class="actions">
           <button class="primary button-primary" @click="startBrokerConnection">
-              <span>
-                  <img src="../assets/icons/Link.svg" alt="Conectar à Corretora" > 
-                  Conectar a corretora
-              </span>
+            <span>
+                <img src="../assets/icons/Link.svg" alt="Conectar à Corretora" > 
+                Conectar a corretora
+            </span>
           </button>
-            
           <button
+            v-if="!showCreateAccountCard"
             class="link-button"
-            @click="showCreateAccountModal = true"
+            @click="handleCreateAccountClick"
           >
-            <img src="../assets/icons/add-home.svg" alt="Criar Conta na Deriv" width="10px" class="icon-home" >
-            Criar Conta na Deriv
+              <img src="../assets/icons/add-home.svg" alt="Criar Conta na Deriv" width="10px" class="icon-home" >
+              Criar Conta na Deriv
+          </button>
+
+          <button
+            v-if="showCreateAccountCard"
+            class="link-button"
+            @click="handleCloseAccountCard"
+          >
+            <img src="../assets/icons/back.svg" alt="Voltar" width="10px" class="icon-home" >
+            Voltar
           </button>
         </div>
 
@@ -65,9 +109,11 @@
     <!-- Dashboard Conectado (com sidebar e header) -->
     <DashboardConnected v-else :info="connectedInfo" :is-sidebar-collapsed="isSidebarCollapsed" />
     
-    <!-- Modal de Criação de Conta -->
+    <!-- Modal de Criação de Conta (apenas desktop) -->
     <CreateDerivAccountModal 
+      v-if="!isMobile"
       :visible="showCreateAccountModal"
+      :inline="false"
       @close="showCreateAccountModal = false"
       @success="handleAccountCreated"
     />
@@ -89,7 +135,10 @@ export default {
       isSidebarOpen: false,
       isSidebarCollapsed: false,
       firstName: 'Usuário',
-      showCreateAccountModal: false
+      showCreateAccountModal: false,
+      showCreateAccountCard: false,
+      isMobile: false,
+      currentAccountStep: 1
     }
   },
   computed: {
@@ -110,6 +159,11 @@ export default {
   },
   created() {
     this.loadUserName()
+    this.checkMobile()
+    window.addEventListener('resize', this.checkMobile)
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.checkMobile)
   },
   methods: {
     async loadUserName() {
@@ -324,13 +378,32 @@ export default {
       console.log('Conta criada com sucesso:', result);
       this.$root.$toast?.success?.('Contas criadas com sucesso! Verifique seu email para as credenciais.') || 
         alert('✅ Contas criadas com sucesso!\n\nConta DEMO: ' + (result.data?.demoAccountId || 'N/A') + '\nConta REAL: ' + (result.data?.realAccountId || 'N/A') + '\n\nVerifique seu email para as credenciais de acesso.');
+      // Fechar card/modal
+      this.showCreateAccountCard = false;
+      this.showCreateAccountModal = false;
       // Recarregar status da conexão
       setTimeout(() => {
         this.checkConnection(true);
       }, 2000);
+    },
+    checkMobile() {
+      this.isMobile = window.innerWidth <= 768;
+    },
+    handleCreateAccountClick() {
+      if (this.isMobile) {
+        this.showCreateAccountCard = true;
+        this.currentAccountStep = 1;
+      } else {
+        this.showCreateAccountModal = true;
+      }
+    },
+    handleCloseAccountCard() {
+      this.showCreateAccountCard = false;
+      this.currentAccountStep = 1;
     }
   },
   async mounted() {
+    this.checkMobile()
     await this.loadUserName()
     await this.checkConnection(true)
   },
