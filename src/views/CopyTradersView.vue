@@ -19,19 +19,18 @@
           <p v-else>Configure risco, alocação e proteção antes de iniciar o Copy automático.</p>
         </div>
       
-        <div class="tabs" v-if="hasActiveSession || !loading">
+        <div class="tabs" v-if="hasActiveSession || !loading || activeTab === 'monitor'">
           <button 
             :class="['tab', { active: activeTab === 'config' }]" 
             @click="switchToConfig"
-            v-if="!hasActiveSession"
-            :disabled="hasActiveSession"
+            v-if="!hasActiveSession && activeTab !== 'monitor'"
           >
             Configurar
           </button>
           <button 
             :class="['tab', { active: activeTab === 'monitor' }]" 
             @click="switchToMonitor"
-            v-if="hasActiveSession"
+            v-if="hasActiveSession || activeTab === 'monitor'"
           >
             Acompanhar & Performance
           </button>
@@ -47,7 +46,7 @@
           @copy-activated="handleCopyActivated"
         />
         <CopyTradingMonitor 
-          v-else-if="activeTab === 'monitor' && hasActiveSession"
+          v-else-if="activeTab === 'monitor'"
           :session="activeSession"
           @pause-copy="handlePauseCopy"
         />
@@ -119,13 +118,36 @@
         this.activeTab = 'config';
       },
       switchToMonitor() {
-        if (this.hasActiveSession) {
-          this.activeTab = 'monitor';
+        // Permitir mudar para monitoramento mesmo sem sessão ativa (sem funcionalidade por enquanto)
+        this.activeTab = 'monitor';
+        
+        // Se não houver sessão ativa, criar uma temporária para exibir a tela
+        if (!this.hasActiveSession) {
+          this.hasActiveSession = true;
+          this.activeSession = { 
+            id: 'temp', 
+            status: 'active',
+            traderName: 'Aguardando dados...'
+          };
         }
       },
       async handleCopyActivated() {
         // Recarregar sessão ativa e redirecionar para monitoramento
         await this.checkActiveSession();
+        
+        // Forçar mudança para aba de monitoramento (sem funcionalidade por enquanto)
+        // Mesmo sem sessão ativa, exibir a tela de monitoramento
+        this.activeTab = 'monitor';
+        
+        // Se não houver sessão ativa, criar uma temporária para exibir a tela
+        if (!this.hasActiveSession) {
+          this.hasActiveSession = true;
+          this.activeSession = { 
+            id: 'temp', 
+            status: 'active',
+            traderName: 'Aguardando dados...'
+          };
+        }
       },
       async handlePauseCopy() {
         // Pausar copy e atualizar estado

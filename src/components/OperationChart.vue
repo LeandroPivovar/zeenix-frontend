@@ -2678,14 +2678,38 @@ export default {
     },
     getTokenForAccount() {
       console.log('[OperationChart] getTokenForAccount - Buscando token para conta');
-      console.log('[OperationChart] Parâmetros:', {
-        accountLoginid: this.accountLoginid,
-        preferredCurrency: this.preferredCurrency,
+      
+      // Ler snapshot de conexão para obter moeda preferida se a prop não estiver disponível
+      let effectivePreferredCurrency = this.preferredCurrency;
+      let effectiveAccountLoginid = this.accountLoginid;
+      
+      try {
+        const savedConnection = localStorage.getItem('deriv_connection');
+        if (savedConnection) {
+          const snapshot = JSON.parse(savedConnection);
+          if (!effectivePreferredCurrency || effectivePreferredCurrency === 'USD') {
+            effectivePreferredCurrency = snapshot?.preferredCurrency || effectivePreferredCurrency;
+            if (snapshot?.preferredCurrency) {
+              console.log('[OperationChart] 📋 Usando moeda preferida do snapshot:', effectivePreferredCurrency);
+            }
+          }
+          if (!effectiveAccountLoginid && snapshot?.loginid) {
+            effectiveAccountLoginid = snapshot.loginid;
+            console.log('[OperationChart] 📋 Usando LoginID do snapshot:', effectiveAccountLoginid);
+          }
+        }
+      } catch (error) {
+        console.warn('[OperationChart] Erro ao ler snapshot de conexão:', error);
+      }
+      
+      console.log('[OperationChart] Parâmetros efetivos:', {
+        accountLoginid: effectiveAccountLoginid,
+        preferredCurrency: effectivePreferredCurrency,
         accountCurrency: this.accountCurrency
       });
       
       // Se a moeda preferida for DEMO, priorizar contas demo
-      const isDemoPreferred = this.preferredCurrency?.toUpperCase() === 'DEMO';
+      const isDemoPreferred = effectivePreferredCurrency?.toUpperCase() === 'DEMO';
       if (isDemoPreferred) {
         console.log('[OperationChart] Moeda preferida é DEMO, buscando token de conta demo...');
         try {
@@ -2706,7 +2730,7 @@ export default {
       }
       
       // Se temos um loginid específico, tentar buscar o token correspondente
-      if (this.accountLoginid) {
+      if (effectiveAccountLoginid) {
         try {
           const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
           console.log('[OperationChart] Tokens armazenados (raw):', tokensByLoginIdStr);
@@ -2715,19 +2739,19 @@ export default {
           console.log('[OperationChart] Loginids disponíveis:', Object.keys(tokensByLoginId));
           
           // Verificar se o loginid é de uma conta demo (começa com VRTC ou VRT)
-          const isDemoLoginId = this.accountLoginid.startsWith('VRTC') || this.accountLoginid.startsWith('VRT');
+          const isDemoLoginId = effectiveAccountLoginid.startsWith('VRTC') || effectiveAccountLoginid.startsWith('VRT');
           if (isDemoLoginId) {
-            console.log('[OperationChart] ✓ LoginID identificado como conta DEMO:', this.accountLoginid);
+            console.log('[OperationChart] ✓ LoginID identificado como conta DEMO:', effectiveAccountLoginid);
           }
           
-          const specificToken = tokensByLoginId[this.accountLoginid];
+          const specificToken = tokensByLoginId[effectiveAccountLoginid];
           if (specificToken) {
-            console.log('[OperationChart] ✓ Token específico encontrado para loginid:', this.accountLoginid);
+            console.log('[OperationChart] ✓ Token específico encontrado para loginid:', effectiveAccountLoginid);
             console.log('[OperationChart] - Tipo de conta:', isDemoLoginId ? 'DEMO' : 'REAL');
             console.log('[OperationChart] - Token (preview):', `${specificToken.substring(0, 10)}...`);
             return specificToken;
           } else {
-            console.warn('[OperationChart] ⚠ Token específico NÃO encontrado para loginid:', this.accountLoginid);
+            console.warn('[OperationChart] ⚠ Token específico NÃO encontrado para loginid:', effectiveAccountLoginid);
             console.warn('[OperationChart] Loginids disponíveis:', Object.keys(tokensByLoginId));
             
             // Se for conta demo e não encontrou token específico, tentar encontrar qualquer token demo
@@ -4206,8 +4230,12 @@ export default {
       console.log('[OperationChart] Inicializando gráfico...');
       this.initChart();
       
-      console.log('[OperationChart] Inicializando conexão WebSocket...');
-      this.initConnection();
+      // Aguardar um ciclo para garantir que as props foram processadas
+      // O getTokenForAccount vai ler o snapshot diretamente se a prop não estiver disponível
+      this.$nextTick(() => {
+        console.log('[OperationChart] Inicializando conexão WebSocket...');
+        this.initConnection();
+      });
       
       this.startExpirationTimer();
       this.startAiRecommendationCycle();
