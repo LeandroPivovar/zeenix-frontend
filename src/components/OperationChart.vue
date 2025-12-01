@@ -404,6 +404,7 @@ export default {
       updateEntrySpotLine: null,
       entryMarker: null,
       entryTime: null,
+      entrySpot: null,
       purchasePrice: null,
       isSellEnabled: false,
       isDemoAccount: false,
@@ -3408,6 +3409,10 @@ export default {
         const entryColor = '#94a3b8'; // Cinza para linha de referência
         const entryTimeUnix = Math.floor(Number(entryTime));
         
+        // Armazenar valores para preservar ao mudar tipo de gráfico
+        this.entrySpot = entrySpot;
+        this.entryTime = entryTimeUnix;
+        
         console.log('[OperationChart] Adicionando linha de entrada:', {
           entrySpot,
           entryTime: entryTimeUnix,
@@ -3689,6 +3694,7 @@ export default {
           this.updateEntrySpotLine = null;
           this.entryMarker = null;
           this.entryTime = null;
+          this.entrySpot = null;
           
           // Remover marcadores da série principal (linha ou vela)
           const mainSeries = this.lineSeries || this.candleSeries;
@@ -4135,9 +4141,9 @@ export default {
           setTimeout(() => this.updateChartFromTicks(), 300);
         }
         // Re-adicionar linha de entrada se existir
-        if (this.entrySpotLine && this.entryTime) {
+        if (this.entrySpot && this.entryTime) {
           setTimeout(() => {
-            this.addEntrySpotLine(this.entrySpotLine._data?.[0]?.value || this.activeContract?.entry_spot, this.entryTime);
+            this.addEntrySpotLine(this.entrySpot, this.entryTime);
           }, 500);
         }
       }
