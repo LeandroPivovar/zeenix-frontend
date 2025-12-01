@@ -518,50 +518,40 @@ export default {
     },
     methods: {
     initChart() {
-      console.log('[OperationChart] ========== INICIANDO CRIAÇÃO DO GRÁFICO ==========');
-      
-      // Verificar se o gráfico já existe
       if (this.chart) {
-        console.log('[OperationChart] Gráfico já existe, não inicializando novamente');
         return;
       }
       
-      // Verificar se já está inicializando
       if (this.isInitializingChart) {
-        console.log('[OperationChart] Gráfico já está sendo inicializado, aguardando...');
         return;
       }
       
       this.isInitializingChart = true;
       
-      // Aguardar próximo tick do Vue para garantir que o DOM está pronto
       this.$nextTick(() => {
         const container = this.$refs.chartContainer;
         
         if (!container) {
-          console.error('[OperationChart] ERRO: Container do gráfico não encontrado no DOM');
           this.isInitializingChart = false;
+          setTimeout(() => this.initChart(), 100);
           return;
         }
         
-        // Obter dimensões do container
+        // Limpar container
+        container.innerHTML = '';
+        
         const rect = container.getBoundingClientRect();
-        const width = rect.width || container.clientWidth || 800;
-        const height = rect.height || container.clientHeight || 600;
+        const width = Math.max(rect.width || container.clientWidth || 800, 100);
+        const height = Math.max(rect.height || container.clientHeight || 600, 100);
         
-        console.log('[OperationChart] Dimensões do container:', { width, height });
-        
-        // Verificar se tem dimensões válidas
         if (width <= 0 || height <= 0) {
-          console.warn('[OperationChart] Container sem dimensões válidas, tentando novamente...');
           this.isInitializingChart = false;
           setTimeout(() => this.initChart(), 200);
           return;
         }
         
         try {
-          // Criar o gráfico
-          console.log('[OperationChart] Criando gráfico Lightweight Charts...');
+          // Criar gráfico
           this.chart = createChart(container, {
             width: width,
             height: height,
@@ -571,7 +561,6 @@ export default {
             },
             rightPriceScale: {
               borderVisible: false,
-              textColor: '#DFDFDF',
             },
             leftPriceScale: {
               visible: false,
@@ -579,69 +568,37 @@ export default {
             timeScale: {
               borderVisible: false,
               timeVisible: true,
-              secondsVisible: true,
             },
             grid: {
               vertLines: { color: 'rgba(28, 28, 28, 0.5)' },
               horzLines: { color: 'rgba(28, 28, 28, 0.5)' },
             },
-            crosshair: {
-              mode: 1,
-              vertLine: {
-                color: '#22C55E',
-                width: 1,
-              },
-              horzLine: {
-                color: '#22C55E',
-                width: 1,
-              },
-            },
           });
           
-          // Criar série de linha (gráfico de linhas simples)
-          console.log('[OperationChart] Criando série de linha...');
+          // Criar série de linha
           this.lineSeries = this.chart.addLineSeries({
             color: '#22C55E',
             lineWidth: 2,
-            priceFormat: {
-              type: 'price',
-              precision: 2,
-              minMove: 0.01,
-            },
           });
           
-          console.log('[OperationChart] ✓ Gráfico criado com sucesso!');
           this.chartInitialized = true;
           this.isInitializingChart = false;
           
-          // Registrar evento de redimensionamento
-          window.addEventListener('resize', this.handleResize);
-          
-          // Se já temos dados, plotar imediatamente
-          if (this.ticks.length > 0) {
-            console.log('[OperationChart] Plotando dados existentes:', this.ticks.length, 'ticks');
-            setTimeout(() => {
-              this.updateChartFromTicks();
-            }, 200);
-          } else {
-            console.log('[OperationChart] Aguardando dados históricos...');
+          // Redimensionar ao redimensionar janela
+          if (!this._resizeHandler) {
+            this._resizeHandler = () => {
+              this.handleResize();
+            };
+            window.addEventListener('resize', this._resizeHandler);
           }
           
-          // Garantir que o gráfico seja atualizado quando dados chegarem
-          // Criar um watcher para ticks
-          if (!this._ticksWatcher) {
-            this._ticksWatcher = this.$watch('ticks', (newTicks) => {
-              if (newTicks && newTicks.length > 0 && this.chart && this.lineSeries) {
-                console.log('[OperationChart] Watcher detectou novos ticks, atualizando gráfico...');
-                setTimeout(() => {
-                  this.updateChartFromTicks();
-                }, 100);
-              }
-            }, { deep: true });
+          // Plotar dados se existirem
+          if (this.ticks.length > 0) {
+            setTimeout(() => this.updateChartFromTicks(), 100);
           }
           
         } catch (error) {
-          console.error('[OperationChart] ERRO ao criar gráfico:', error);
+          console.error('[OperationChart] Erro ao criar gráfico:', error);
           this.isInitializingChart = false;
           this.chartInitialized = false;
         }
@@ -2126,118 +2083,49 @@ export default {
       }
     },
     updateChartFromTicks() {
-      // Não atualizar se o componente está sendo destruído
-      if (this.isDestroying) {
-        console.warn('[OperationChart] Componente está sendo destruído, ignorando atualização');
+      if (this.isDestroying || !this.ticks.length) {
         return;
       }
       
-      console.log('[OperationChart] ========== ATUALIZANDO GRÁFICO ==========');
-      console.log('[OperationChart] Total de ticks:', this.ticks.length);
-      
-      // Verificar se temos dados
-      if (!this.ticks.length) {
-        console.log('[OperationChart] Nenhum tick disponível ainda');
-        return;
-      }
-      
-      // Se o gráfico não existe, criar primeiro
       if (!this.chart || !this.lineSeries) {
-        console.log('[OperationChart] Gráfico não existe, criando...');
         if (!this.isInitializingChart) {
           this.initChart();
-          // Aguardar criação e tentar novamente
-          setTimeout(() => {
-            if (this.chart && this.lineSeries) {
-              this.updateChartFromTicks();
-            }
-          }, 300);
+          setTimeout(() => this.updateChartFromTicks(), 300);
         }
         return;
       }
       
-      // Preparar dados para o gráfico
-      // Converter ticks para formato esperado pelo Lightweight Charts
-      let chartData = this.ticks
+      // Preparar dados
+      const chartData = this.ticks
         .map(tick => {
           const time = Math.floor(Number(tick.epoch));
           const value = Number(tick.value);
-          
-          // Validar dados
           if (isNaN(time) || isNaN(value) || time <= 0) {
-            console.warn('[OperationChart] Tick inválido ignorado:', tick);
             return null;
           }
-          
           return { time, value };
         })
         .filter(item => item !== null)
-        .sort((a, b) => a.time - b.time); // Ordenar por tempo
+        .sort((a, b) => a.time - b.time);
       
-      if (chartData.length === 0) {
-        console.warn('[OperationChart] Nenhum dado válido após processamento');
+      if (!chartData.length) {
         return;
       }
       
-      // Verificar se os timestamps são válidos (Unix timestamp em segundos)
-      // Se os timestamps parecem muito grandes ou muito pequenos, corrigir
-      const now = Math.floor(Date.now() / 1000);
-      const firstTime = chartData[0].time;
-      const lastTime = chartData[chartData.length - 1].time;
-      
-      // Se os timestamps são do futuro ou muito antigos, regenerar baseado no tempo atual
-      if (firstTime > now + 3600 || firstTime < now - 86400) {
-        console.warn('[OperationChart] Timestamps inválidos detectados, regenerando...', {
-          firstTime,
-          lastTime,
-          now,
-          firstTimeIsFuture: firstTime > now,
-          firstTimeTooOld: firstTime < now - 86400
-        });
-        
-        // Gerar novos timestamps baseados no tempo atual
-        chartData = chartData.map((point, index) => ({
-          value: point.value,
-          time: now - (chartData.length - index - 1) * 2 // 2 segundos por ponto
-        }));
-        
-        console.log('[OperationChart] Timestamps regenerados:', {
-          firstTime: chartData[0].time,
-          lastTime: chartData[chartData.length - 1].time,
-          now
-        });
-      }
-      
-      console.log('[OperationChart] Plotando', chartData.length, 'pontos no gráfico');
-      console.log('[OperationChart] Primeiro ponto:', chartData[0]);
-      console.log('[OperationChart] Último ponto:', chartData[chartData.length - 1]);
-      console.log('[OperationChart] Range de tempo:', {
-        primeiro: new Date(chartData[0].time * 1000).toLocaleString(),
-        ultimo: new Date(chartData[chartData.length - 1].time * 1000).toLocaleString(),
-        duracaoSegundos: chartData[chartData.length - 1].time - chartData[0].time
-      });
-      
       try {
-        // Verificar se é atualização incremental (apenas 1 ponto novo)
         const previousCount = this.previousDataCount || 0;
         const isIncremental = chartData.length === previousCount + 1 && previousCount > 0;
         
         if (isIncremental && previousCount > 0) {
-          // Atualização incremental: adicionar apenas o novo ponto
-          const newPoint = chartData[chartData.length - 1];
-          console.log('[OperationChart] Atualização incremental, adicionando ponto:', newPoint);
-          this.lineSeries.update(newPoint);
+          this.lineSeries.update(chartData[chartData.length - 1]);
         } else {
-          // Primeira vez ou muitos dados novos: usar setData completo
-          console.log('[OperationChart] Atualização completa, definindo', chartData.length, 'pontos');
           this.lineSeries.setData(chartData);
           
-          // Forçar resize do gráfico antes de ajustar escala
+          // Ajustar dimensões
           const container = this.$refs.chartContainer;
           if (container) {
             const rect = container.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {
-              console.log('[OperationChart] Redimensionando gráfico para:', rect.width, 'x', rect.height);
               this.chart.applyOptions({
                 width: rect.width,
                 height: rect.height
@@ -2245,69 +2133,19 @@ export default {
             }
           }
           
-          // Aguardar um frame antes de ajustar escala
-          requestAnimationFrame(() => {
-            try {
-              // Ajustar escala para mostrar todos os dados
+          // Ajustar escala
+          this.$nextTick(() => {
+            if (this.chart) {
               this.chart.timeScale().fitContent();
-              console.log('[OperationChart] Escala ajustada com fitContent');
-              
-              // Verificar se o canvas existe e está visível
-              if (container) {
-                const canvas = container.querySelector('canvas');
-                if (canvas) {
-                  console.log('[OperationChart] Canvas encontrado:', {
-                    width: canvas.width,
-                    height: canvas.height,
-                    visible: canvas.offsetWidth > 0 && canvas.offsetHeight > 0,
-                    display: window.getComputedStyle(canvas).display,
-                    visibility: window.getComputedStyle(canvas).visibility
-                  });
-                  
-                  // Garantir que o canvas está visível
-                  canvas.style.display = 'block';
-                  canvas.style.visibility = 'visible';
-                  canvas.style.opacity = '1';
-                  
-                  // Forçar repaint
-                  const ctx = canvas.getContext('2d');
-                  if (ctx) {
-                    ctx.clearRect(0, 0, canvas.width, canvas.height);
-                  }
-                } else {
-                  console.warn('[OperationChart] ⚠️ Canvas não encontrado no container!');
-                }
-              }
-              
-              // Forçar uma segunda atualização após um pequeno delay
-              setTimeout(() => {
-                if (this.chart && this.lineSeries) {
-                  this.chart.timeScale().fitContent();
-                  console.log('[OperationChart] Segunda atualização de escala aplicada');
-                }
-              }, 100);
-            } catch (scaleError) {
-              console.error('[OperationChart] Erro ao ajustar escala:', scaleError);
             }
           });
         }
         
-        // Salvar contagem para próxima atualização
         this.previousDataCount = chartData.length;
         this.chartInitialized = true;
         
-        console.log('[OperationChart] ✓ Gráfico atualizado com sucesso!');
-        
       } catch (error) {
-        console.error('[OperationChart] ERRO ao atualizar gráfico:', error);
-        console.error('[OperationChart] Stack:', error.stack);
-        console.error('[OperationChart] Dados que causaram erro:', {
-          chartDataLength: chartData.length,
-          firstPoint: chartData[0],
-          lastPoint: chartData[chartData.length - 1],
-          hasChart: !!this.chart,
-          hasLineSeries: !!this.lineSeries
-        });
+        console.error('[OperationChart] Erro ao atualizar gráfico:', error);
       }
     },
     supportsCallPut(symbol) {
@@ -4363,8 +4201,11 @@ export default {
     this.removeEntrySpotLine();
     
     this.teardownConnection();
+    if (this._resizeHandler) {
+      window.removeEventListener('resize', this._resizeHandler);
+      this._resizeHandler = null;
+    }
     if (this.chart) {
-      window.removeEventListener('resize', this.handleResize);
       try {
         this.chart.remove();
         console.log('[OperationChart] Gráfico removido com sucesso');
