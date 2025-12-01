@@ -622,7 +622,22 @@ export default {
             console.log('[OperationChart] Plotando dados existentes:', this.ticks.length, 'ticks');
             setTimeout(() => {
               this.updateChartFromTicks();
-            }, 100);
+            }, 200);
+          } else {
+            console.log('[OperationChart] Aguardando dados históricos...');
+          }
+          
+          // Garantir que o gráfico seja atualizado quando dados chegarem
+          // Criar um watcher para ticks
+          if (!this._ticksWatcher) {
+            this._ticksWatcher = this.$watch('ticks', (newTicks) => {
+              if (newTicks && newTicks.length > 0 && this.chart && this.lineSeries) {
+                console.log('[OperationChart] Watcher detectou novos ticks, atualizando gráfico...');
+                setTimeout(() => {
+                  this.updateChartFromTicks();
+                }, 100);
+              }
+            }, { deep: true });
           }
           
         } catch (error) {
@@ -996,12 +1011,33 @@ export default {
       this.remainingTime = null;
     },
     handleMessage(msg) {
+      // Log para debug - verificar TODAS as mensagens recebidas
+      console.log('[OperationChart] 📨 Mensagem recebida da Deriv:', {
+        msg_type: msg.msg_type,
+        hasError: !!msg.error,
+        hasHistory: !!msg.history,
+        hasTick: !!msg.tick,
+        hasEchoReq: !!msg.echo_req,
+        echoReqType: msg.echo_req?.ticks_history ? 'ticks_history' : msg.echo_req?.contracts_for ? 'contracts_for' : 'other',
+        keys: Object.keys(msg)
+      });
+      
       // Log para debug - verificar se contracts_for está chegando
       if (msg.msg_type === 'contracts_for') {
         console.log('[OperationChart] 🔍 Mensagem contracts_for recebida:', {
           hasError: !!msg.error,
           hasContractsFor: !!msg.contracts_for,
           msgType: msg.msg_type
+        });
+      }
+      
+      // Log especial para mensagens de histórico
+      if (msg.msg_type === 'history' || msg.history || (msg.echo_req && msg.echo_req.ticks_history)) {
+        console.log('[OperationChart] 🎯 MENSAGEM DE HISTÓRICO DETECTADA!', {
+          msg_type: msg.msg_type,
+          hasHistory: !!msg.history,
+          hasPrices: !!(msg.history && msg.history.prices),
+          pricesCount: msg.history && Array.isArray(msg.history.prices) ? msg.history.prices.length : 0
         });
       }
       
@@ -1123,6 +1159,8 @@ export default {
           break;
         }
         case 'history':
+          console.log('[OperationChart] ========== MENSAGEM HISTORY RECEBIDA ==========');
+          console.log('[OperationChart] Mensagem completa:', JSON.stringify(msg, null, 2));
           this.processHistory(msg);
           break;
         case 'candles':
@@ -1153,6 +1191,19 @@ export default {
           this.processActiveSymbols(msg);
           break;
         default:
+          // Log para mensagens não tratadas - pode conter dados históricos
+          console.log('[OperationChart] ⚠️ Mensagem não tratada:', {
+            msg_type: msg.msg_type || 'undefined',
+            hasHistory: !!msg.history,
+            hasTick: !!msg.tick,
+            keys: Object.keys(msg)
+          });
+          
+          // Verificar se é uma mensagem de histórico que não foi detectada
+          if (msg.history || (msg.echo_req && msg.echo_req.ticks_history)) {
+            console.log('[OperationChart] 🎯 Histórico encontrado em mensagem não tratada, processando...');
+            this.processHistory(msg);
+          }
           break;
       }
     },
@@ -1859,31 +1910,75 @@ export default {
       console.log('[OperationChart] ✅ Active symbols:', Object.keys(this.activeSymbolsCache).length);
     },
     processHistory(msg) {
-      console.log('[OperationChart] processHistory - Processando histórico de ticks');
-      const history = msg.history;
-      if (!history || !history.prices) {
-        console.warn('[OperationChart] Histórico inválido ou sem preços:', msg);
+      console.log('[OperationChart] ========== PROCESSANDO HISTÓRICO ==========');
+      console.log('[OperationChart] Mensagem recebida:', {
+        hasHistory: !!msg.history,
+        hasEchoReq: !!msg.echo_req,
+        msgType: msg.msg_type,
+        keys: Object.keys(msg)
+      });
+      
+      // A Deriv pode retornar o histórico em diferentes formatos
+      // Verificar se está em msg.history ou em outra estrutura
+      let history = msg.history;
+      
+      // Se não encontrou em msg.history, tentar em outros lugares
+      if (!history && msg.echo_req && msg.echo_req.subscribe === 1) {
+        // Pode estar na raiz da mensagem
+        history = msg;
+      }
+      
+      // Verificar estrutura de dados
+      if (!history) {
+        console.error('[OperationChart] ❌ Histórico não encontrado na mensagem:', msg);
+        return;
+      }
+      
+      console.log('[OperationChart] Estrutura do histórico encontrada:', {
+        hasPrices: !!history.prices,
+        hasTimes: !!history.times,
+        pricesType: Array.isArray(history.prices) ? 'array' : typeof history.prices,
+        pricesLength: Array.isArray(history.prices) ? history.prices.length : 'N/A',
+        timesLength: Array.isArray(history.times) ? history.times.length : 'N/A',
+      });
+      
+      // Verificar se tem prices (array de preços)
+      if (!history.prices || !Array.isArray(history.prices)) {
+        console.error('[OperationChart] ❌ Histórico sem array de preços:', history);
         return;
       }
       
       const prices = history.prices.map(price => Number(price));
-      const times = history.times?.map(time => Number(time)) || [];
-      const newTicks = prices.map((value, index) => ({ value, epoch: times[index] || index }));
+      const times = history.times && Array.isArray(history.times) 
+        ? history.times.map(time => Number(time)) 
+        : [];
+      
+      console.log('[OperationChart] Dados extraídos:', {
+        pricesCount: prices.length,
+        timesCount: times.length,
+        firstPrice: prices[0],
+        lastPrice: prices[prices.length - 1],
+        firstTime: times[0] || 'N/A',
+        lastTime: times[times.length - 1] || 'N/A'
+      });
+      
+      // Criar ticks com epoch ou usar índices como fallback
+      const newTicks = prices.map((value, index) => {
+        const epoch = times[index] || (Date.now() / 1000 - (prices.length - index) * 2); // Fallback: 2 segundos por tick
+        return { value, epoch: Math.floor(epoch) };
+      });
       
       // Se está em reconexão e já temos ticks, preservar os dados existentes
-      // Apenas substituir se for uma nova conexão ou se os dados são mais recentes
       if (this.isReconnecting && this.ticks.length > 0) {
         console.log('[OperationChart] Em reconexão, preservando dados existentes do gráfico');
-        // Não substituir os ticks durante reconexão - manter os dados visíveis
-        // Os novos ticks serão adicionados incrementalmente via processTick
         this.isLoadingSymbol = false;
-        return; // Não atualizar o gráfico com dados antigos durante reconexão
+        return;
       }
       
-      // Substituir ticks apenas se não estiver em reconexão
+      // Substituir ticks
       this.ticks = newTicks;
       
-      console.log('[OperationChart] Histórico processado:', {
+      console.log('[OperationChart] ✅ Histórico processado:', {
         ticksCount: this.ticks.length,
         firstTick: this.ticks[0],
         lastTick: this.ticks[this.ticks.length - 1]
@@ -1897,8 +1992,27 @@ export default {
       this.isLoadingSymbol = false;
       
       // Atualizar o gráfico com os dados históricos
-      console.log('[OperationChart] Atualizando gráfico com histórico de', this.ticks.length, 'ticks');
-      this.updateChartFromTicks();
+      console.log('[OperationChart] 📊 Chamando updateChartFromTicks com', this.ticks.length, 'ticks');
+      
+      // Forçar atualização imediata
+      if (this.chart && this.lineSeries) {
+        console.log('[OperationChart] Gráfico já existe, atualizando imediatamente...');
+        this.updateChartFromTicks();
+      } else {
+        console.log('[OperationChart] Gráfico não existe ainda, aguardando criação...');
+        // Aguardar um pouco para garantir que o gráfico está pronto
+        this.$nextTick(() => {
+          setTimeout(() => {
+            if (!this.chart || !this.lineSeries) {
+              console.log('[OperationChart] Gráfico ainda não existe, criando...');
+              this.initChart();
+            }
+            setTimeout(() => {
+              this.updateChartFromTicks();
+            }, 200);
+          }, 100);
+        });
+      }
     },
     processCandles(msg) {
       const candles = msg.candles || [];
