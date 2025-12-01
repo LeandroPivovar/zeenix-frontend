@@ -1880,7 +1880,20 @@ export default {
       
       const prices = history.prices.map(price => Number(price));
       const times = history.times?.map(time => Number(time)) || [];
-      this.ticks = prices.map((value, index) => ({ value, epoch: times[index] || index }));
+      const newTicks = prices.map((value, index) => ({ value, epoch: times[index] || index }));
+      
+      // Se está em reconexão e já temos ticks, preservar os dados existentes
+      // Apenas substituir se for uma nova conexão ou se os dados são mais recentes
+      if (this.isReconnecting && this.ticks.length > 0) {
+        console.log('[OperationChart] Em reconexão, preservando dados existentes do gráfico');
+        // Não substituir os ticks durante reconexão - manter os dados visíveis
+        // Os novos ticks serão adicionados incrementalmente via processTick
+        this.isLoadingSymbol = false;
+        return; // Não atualizar o gráfico com dados antigos durante reconexão
+      }
+      
+      // Substituir ticks apenas se não estiver em reconexão
+      this.ticks = newTicks;
       
       console.log('[OperationChart] Histórico processado:', {
         ticksCount: this.ticks.length,
@@ -4039,21 +4052,39 @@ export default {
       
       console.log('[OperationChart] ⚠ accountLoginid mudou:', {
         antigo: oldVal,
-        novo: newVal
+        novo: newVal,
+        currentLoginid: this.currentLoginid,
+        isAuthorized: this.isAuthorized,
+        wsState: this.ws ? this.ws.readyState : 'no ws'
       });
       
-      // Verificar se já está conectado e autorizado com o mesmo loginid
-      if (this.isAuthorized && this.currentLoginid === newVal && this.ws && this.ws.readyState === WebSocket.OPEN) {
-        console.log('[OperationChart] ✅ Já está conectado e autorizado com este loginid, cancelando reconexão desnecessária');
-        this.currentLoginid = newVal; // Atualizar referência
-        return;
+      // Se a conexão já está ativa e autorizada, verificar se precisa realmente reconectar
+      if (this.isAuthorized && this.ws && this.ws.readyState === WebSocket.OPEN) {
+        // Se o currentLoginid já corresponde ao novo valor, não reconectar
+        if (this.currentLoginid === newVal) {
+          console.log('[OperationChart] ✅ Já está conectado e autorizado com este loginid, cancelando reconexão desnecessária');
+          return;
+        }
+        
+        // Se oldVal era null (primeira vez recebendo o loginid), verificar se a conexão atual já está com esse loginid
+        // Isso acontece quando a conexão é estabelecida antes do accountLoginid ser definido
+        if (!oldVal && this.currentLoginid) {
+          // Se já temos um loginid na conexão atual, verificar se é diferente
+          if (this.currentLoginid !== newVal) {
+            console.log('[OperationChart] Loginid da conexão atual (' + this.currentLoginid + ') é diferente do novo (' + newVal + '), reconexão necessária');
+          } else {
+            console.log('[OperationChart] ✅ Conexão atual já está com o loginid correto, cancelando reconexão');
+            return;
+          }
+        }
       }
       
-      // Se não está autorizado ou a conexão não está aberta, verificar se precisa reconectar
+      // Se não está autorizado ou a conexão não está aberta, apenas atualizar referência
+      // A inicialização normal vai acontecer
       if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        console.log('[OperationChart] Conexão não está ativa, será inicializada normalmente');
+        console.log('[OperationChart] Conexão não está ativa, apenas atualizando referência. Inicialização normal acontecerá');
         this.currentLoginid = newVal;
-        return; // Deixar a inicialização normal acontecer
+        return;
       }
       
       // Evitar múltiplas reconexões simultâneas
@@ -4063,8 +4094,8 @@ export default {
       }
       
       // Só reconectar se realmente necessário (loginid diferente E conexão ativa)
-      if (this.currentLoginid !== newVal && this.isAuthorized) {
-        console.log('[OperationChart] Loginid realmente mudou e conexão está ativa, iniciando reconexão');
+      if (this.currentLoginid !== newVal) {
+        console.log('[OperationChart] Loginid realmente mudou (' + this.currentLoginid + ' -> ' + newVal + '), iniciando reconexão');
         this.isReconnecting = true;
         this.currentLoginid = newVal;
         
