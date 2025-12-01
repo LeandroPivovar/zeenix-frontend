@@ -363,6 +363,24 @@ export default {
             this.activating = true;
 
             try {
+                // Por enquanto, desativar a chamada à API e apenas exibir o monitoramento
+                console.log('Ativando copy trading (sem chamada à API por enquanto)...');
+                
+                // Simular um pequeno delay para feedback visual
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Emitir evento para redirecionar para monitoramento
+                this.$emit('copy-activated');
+                
+                console.log('Redirecionando para tela de monitoramento...');
+            } catch (error) {
+                console.error('Erro ao ativar copy trading:', error);
+            } finally {
+                this.activating = false;
+            }
+
+            /* Código da API comentado temporariamente
+            try {
                 const userId = this.getUserId();
                 if (!userId) {
                     console.error('Erro: Usuário não identificado. Faça login novamente.');
@@ -437,6 +455,7 @@ export default {
             } finally {
                 this.activating = false;
             }
+            */
         },
         getUserId() {
             try {
