@@ -633,7 +633,7 @@ export default {
           
           console.log('[OperationChart] lineSeries criado:', {
             hasLineSeries: !!this.lineSeries,
-            chartHasSeries: this.chart.series().length > 0
+            chartHasSeries: !!this.lineSeries
           });
           
           // Forçar repaint do gráfico após criação
