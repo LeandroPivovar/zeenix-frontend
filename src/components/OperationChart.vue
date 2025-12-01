@@ -758,6 +758,47 @@ export default {
         }
       });
     },
+    ensureChartVisible(canvas, container) {
+      if (!canvas || !this.chart) return;
+      
+      console.log('[OperationChart] Canvas encontrado após setData:', {
+        width: canvas.width,
+        height: canvas.height,
+        styleWidth: canvas.style.width,
+        styleHeight: canvas.style.height,
+        display: window.getComputedStyle(canvas).display,
+        visibility: window.getComputedStyle(canvas).visibility,
+        opacity: window.getComputedStyle(canvas).opacity,
+        zIndex: window.getComputedStyle(canvas).zIndex
+      });
+      
+      // Garantir que o canvas está visível
+      if (canvas.style.display === 'none') {
+        canvas.style.display = 'block';
+      }
+      if (window.getComputedStyle(canvas).opacity === '0') {
+        canvas.style.opacity = '1';
+      }
+      if (window.getComputedStyle(canvas).visibility === 'hidden') {
+        canvas.style.visibility = 'visible';
+      }
+      
+      // Forçar fitContent e resize
+      try {
+        this.chart.timeScale().fitContent();
+        
+        const rect = container.getBoundingClientRect();
+        if (rect.width > 0 && rect.height > 0) {
+          this.chart.applyOptions({
+            width: rect.width,
+            height: rect.height
+          });
+          this.chart.timeScale().fitContent();
+        }
+      } catch (error) {
+        console.error('[OperationChart] ERRO ao garantir visibilidade do gráfico:', error);
+      }
+    },
     handleResize() {
       if (!this.chart || !this.$refs.chartContainer) return;
       const container = this.$refs.chartContainer;
@@ -2008,8 +2049,19 @@ export default {
           if (this.chart && this.lineSeries && this.ticks.length > 0) {
             // Aguardar um pouco mais para garantir que o gráfico está totalmente renderizado
             setTimeout(() => {
+              // Forçar resize antes de atualizar
+              const container = this.$refs.chartContainer;
+              if (container && this.chart) {
+                const rect = container.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
+                  this.chart.applyOptions({
+                    width: rect.width,
+                    height: rect.height
+                  });
+                }
+              }
               this.updateChartFromTicks();
-            }, 100);
+            }, 150);
           }
         });
       }
@@ -2255,27 +2307,29 @@ export default {
           try {
             this.lineSeries.setData(validData);
             console.log('[OperationChart] setData chamado com sucesso');
-            
-            // Forçar atualização visual imediatamente após setData
-            if (this.chart) {
-              // Ajustar escala de tempo imediatamente
-              try {
-                this.chart.timeScale().fitContent();
-                console.log('[OperationChart] fitContent chamado imediatamente após setData');
-              } catch (error) {
-                console.error('[OperationChart] ERRO ao chamar fitContent:', error);
-              }
-              
-              // Forçar repaint do gráfico
-              this.chart.timeScale().scrollToPosition(0, false);
-            }
           } catch (error) {
             console.error('[OperationChart] ERRO ao chamar setData:', error);
             return;
           }
           
-          // Forçar atualização visual do gráfico
+          // Forçar atualização visual do gráfico imediatamente após setData
           if (this.chart) {
+            try {
+              // Ajustar escala de tempo
+              this.chart.timeScale().fitContent();
+              console.log('[OperationChart] fitContent chamado imediatamente após setData');
+              
+              // Forçar resize para garantir renderização
+              const currentRect = container.getBoundingClientRect();
+              if (currentRect.width > 0 && currentRect.height > 0) {
+                this.chart.applyOptions({
+                  width: currentRect.width,
+                  height: currentRect.height
+                });
+              }
+            } catch (error) {
+              console.error('[OperationChart] ERRO ao chamar fitContent:', error);
+            }
             
             // Forçar resize novamente após setData para garantir renderização
             if (container) {
@@ -2295,57 +2349,34 @@ export default {
               }
             }
             
-            // Verificar se o canvas existe e está visível
-            this.$nextTick(() => {
+            // Verificar se o canvas existe e está visível - usar requestAnimationFrame para garantir renderização
+            requestAnimationFrame(() => {
               if (this.chart && container) {
-                // Aguardar um pouco para o canvas ser criado
-                setTimeout(() => {
-                  const canvas = container.querySelector('canvas');
-                  if (canvas) {
-                    console.log('[OperationChart] Canvas encontrado após setData:', {
-                      width: canvas.width,
-                      height: canvas.height,
-                      styleWidth: canvas.style.width,
-                      styleHeight: canvas.style.height,
-                      display: window.getComputedStyle(canvas).display,
-                      visibility: window.getComputedStyle(canvas).visibility,
-                      opacity: window.getComputedStyle(canvas).opacity,
-                      zIndex: window.getComputedStyle(canvas).zIndex
-                    });
-                    
-                    // Forçar fitContent novamente
-                    try {
-                      this.chart.timeScale().fitContent();
-                      
-                      // Forçar resize novamente
+                // Verificar canvas imediatamente
+                let canvas = container.querySelector('canvas');
+                
+                // Se não encontrou, tentar novamente após um pequeno delay
+                if (!canvas) {
+                  setTimeout(() => {
+                    canvas = container.querySelector('canvas');
+                    if (canvas) {
+                      this.ensureChartVisible(canvas, container);
+                    } else {
+                      console.warn('[OperationChart] ⚠ Canvas não encontrado após setData - tentando forçar renderização...');
+                      // Forçar resize do gráfico para garantir que o canvas seja criado
                       const rect = container.getBoundingClientRect();
-                      if (rect.width > 0 && rect.height > 0) {
+                      if (rect.width > 0 && rect.height > 0 && this.chart) {
                         this.chart.applyOptions({
                           width: rect.width,
                           height: rect.height
                         });
-                        // Forçar fitContent novamente após resize
                         this.chart.timeScale().fitContent();
                       }
-                    } catch (error) {
-                      console.error('[OperationChart] ERRO ao chamar fitContent no nextTick:', error);
                     }
-                  } else {
-                    console.warn('[OperationChart] ⚠ Canvas não encontrado no container após setData!');
-                    // Tentar novamente após mais um delay
-                    setTimeout(() => {
-                      const canvas = container.querySelector('canvas');
-                      if (canvas) {
-                        console.log('[OperationChart] Canvas encontrado no segundo retry');
-                        if (this.chart) {
-                          this.chart.timeScale().fitContent();
-                        }
-                      } else {
-                        console.error('[OperationChart] ❌ Canvas ainda não encontrado após múltiplas tentativas!');
-                      }
-                    }, 300);
-                  }
-                }, 150);
+                  }, 100);
+                } else {
+                  this.ensureChartVisible(canvas, container);
+                }
               }
             });
           }
@@ -5103,12 +5134,11 @@ export default {
   display: block !important;
   width: 100% !important;
   height: 100% !important;
-  position: absolute !important;
-  top: 0 !important;
-  left: 0 !important;
+  position: relative !important;
   z-index: 1 !important;
   opacity: 1 !important;
   visibility: visible !important;
+  pointer-events: auto !important;
 }
 
 #candlestickChart canvas {
