@@ -35,34 +35,13 @@
             >
               Registro
             </button>
-          </div>
-          
-          <div class="card-last-orders-sidebar">
-            <h4 class="card-title">Últimas Ordens</h4>
-            
-            <div class="orders-table-header">
-              <span>Hora</span>
-              <span>Tipo</span>
-              <span>Valor</span>
-              <span>Lucro</span>
-            </div>
-
-            <div class="orders-list-scroll">
-              <div v-if="!lastOrdersFormatted.length" class="orders-empty">
-                Nenhuma operação executada ainda.
-              </div>
-              <div v-for="(order, index) in lastOrdersFormatted" :key="`order-${index}`" class="order-row">
-                <span class="order-col">{{ order.time }}</span>
-                <span class="order-col order-type-text">{{ order.type }}</span>
-                <span class="order-col order-result-text">{{ order.displayValue }}</span>
-                <span class="order-col order-profit-text" :class="{ 
-                  'profit-positive': order.profit != null && order.profit > 0,
-                  'profit-negative': order.profit != null && order.profit < 0
-                }">
-                  {{ order.displayProfit || '--' }}
-                </span>
-              </div>
-            </div>
+            <button
+              class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+              :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLastOrders', 'border-b-2 border-transparent': currentView !== 'OperationLastOrders' }"
+              @click="changeView('OperationLastOrders')"
+            >
+              Últimas Ordens
+            </button>
           </div>
         </div>
 
@@ -154,6 +133,7 @@ import TopNavbar from '../components/TopNavbar.vue';
 import OperationChart from '../components/OperationChart.vue';
 import OperationDigits from '../components/OperationDigits.vue';
 import OperationLogs from '../components/OperationLogs.vue';
+import OperationLastOrders from '../components/OperationLastOrders.vue';
 
 export default {
   name: 'OperationView',
@@ -162,7 +142,8 @@ export default {
     TopNavbar,
     OperationChart,
     OperationDigits,
-    OperationLogs
+    OperationLogs,
+    OperationLastOrders
   },
   data() {
     return {
@@ -698,143 +679,6 @@ export default {
   gap: 0.5rem;
   align-items: flex-start;
   justify-content: flex-start;
-}
-
-.card-last-orders-sidebar {
-  background: #0E0E0E;
-  border: 1px solid #1C1C1C;
-  border-radius: 0.75rem;
-  padding: 1rem;
-  min-width: 280px;
-  max-width: 320px;
-  flex-shrink: 0;
-}
-
-.card-last-orders-sidebar .card-title {
-  margin-bottom: 15px;
-  font-size: 16px;
-  color: #DFDFDF;
-  font-weight: 600;
-}
-
-.card-last-orders-sidebar .orders-table-header {
-  display: flex;
-  justify-content: space-between;
-  font-size: 12px;
-  color: #A1A1A1;
-  padding-bottom: 5px;
-  margin-bottom: 5px;
-  border-bottom: 1px solid #1C1C1C;
-}
-
-.card-last-orders-sidebar .orders-table-header span {
-  flex: 1;
-  text-align: left;
-  font-weight: 500;
-}
-
-.card-last-orders-sidebar .orders-table-header span:nth-child(1) {
-  flex: 0 0 25%;
-}
-
-.card-last-orders-sidebar .orders-table-header span:nth-child(2) {
-  flex: 0 0 20%;
-  text-align: center;
-}
-
-.card-last-orders-sidebar .orders-table-header span:nth-child(3) {
-  flex: 0 0 25%;
-  text-align: right;
-}
-
-.card-last-orders-sidebar .orders-table-header span:nth-child(4) {
-  flex: 0 0 30%;
-  text-align: right;
-}
-
-.card-last-orders-sidebar .orders-list-scroll {
-  max-height: 400px;
-  overflow-y: auto;
-  padding-right: 5px;
-}
-
-.card-last-orders-sidebar .orders-list-scroll::-webkit-scrollbar {
-  width: 6px;
-}
-
-.card-last-orders-sidebar .orders-list-scroll::-webkit-scrollbar-thumb {
-  background-color: #555;
-  border-radius: 3px;
-}
-
-.card-last-orders-sidebar .orders-list-scroll::-webkit-scrollbar-track {
-  background-color: #0B0B0B;
-}
-
-.card-last-orders-sidebar .order-row {
-  display: flex;
-  justify-content: space-between;
-  font-size: 13px;
-  padding: 8px 0;
-  color: #DFDFDF;
-  border-bottom: 1px solid rgba(28, 28, 28, 0.5);
-}
-
-.card-last-orders-sidebar .order-row:last-child {
-  border-bottom: none;
-}
-
-.card-last-orders-sidebar .order-col {
-  flex: 1;
-  text-align: left;
-}
-
-.card-last-orders-sidebar .order-col:nth-child(1) {
-  flex: 0 0 25%;
-}
-
-.card-last-orders-sidebar .order-col:nth-child(2) {
-  flex: 0 0 20%;
-  text-align: center;
-}
-
-.card-last-orders-sidebar .order-col:nth-child(3) {
-  flex: 0 0 25%;
-  text-align: right;
-}
-
-.card-last-orders-sidebar .order-col:nth-child(4) {
-  flex: 0 0 30%;
-  text-align: right;
-}
-
-.card-last-orders-sidebar .order-type-text {
-  text-align: center !important;
-}
-
-.card-last-orders-sidebar .order-result-text {
-  text-align: right !important;
-  font-weight: 500;
-}
-
-.card-last-orders-sidebar .order-profit-text {
-  text-align: right !important;
-  font-weight: 600;
-}
-
-.card-last-orders-sidebar .order-profit-text.profit-positive {
-  color: #22C55E;
-}
-
-.card-last-orders-sidebar .order-profit-text.profit-negative {
-  color: #FF4747;
-}
-
-.card-last-orders-sidebar .orders-empty {
-  padding: 16px;
-  text-align: center;
-  color: #7A7A7A;
-  font-size: 13px;
 }
 
 .operation-content {
