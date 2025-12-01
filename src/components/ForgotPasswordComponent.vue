@@ -1,6 +1,6 @@
 <template>
   <!-- Main Container -->
-  <main id="forgot-main" class="min-h-screen flex items-center justify-center px-8 gradient-glow">
+  <main id="forgot-main" class="min-h-screen flex items-center justify-center px-8">
     <div class="w-full max-w-7xl flex items-center justify-between login-container-wrapper">
       
       <!-- Left Column - Forgot Password Card -->
@@ -8,7 +8,7 @@
         <div class="bg-white border border-zenix-card-border rounded-2xl p-10 login-card-shadow">
           
           <!-- Logo -->
-          <div class="mb-8 flex justify-center">
+          <div class="mb-8 flex justify-center forgot-logo">
             <div class="flex items-center space-x-2">
               <div class="text-3xl font-bold text-zenix-text-dark">ZENI</div>
               <div class="text-3xl font-bold text-zenix-green">X</div>
@@ -18,7 +18,7 @@
           <!-- Header -->
           <div class="mb-8">
             <h1 class="text-2xl font-semibold text-zenix-text-dark mb-3">Acesse sua conta</h1>
-            <p class="text-sm text-zenix-gray leading-relaxed">Se você já possui uma conta, preencha seus dados para acessar a plataforma.</p>
+            <p class="text-sm text-zenix-gray leading-relaxed forgot-text">Se você já possui uma conta, preencha seus dados para acessar a plataforma.</p>
           </div>
 
           <!-- Forgot Password Form -->
@@ -53,8 +53,8 @@
           </div>
 
           <!-- Footer -->
-          <div class="mt-10 pt-6 border-t border-zenix-input-border">
-            <p class="text-xs text-zenix-gray text-center leading-relaxed">Ao acessar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
+          <div class="mt-10 pt-6 border-t border-zenix-input-border footer-login">
+            <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao acessar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
           </div>
         </div>
       </div>
@@ -279,23 +279,6 @@ export default {
   color: #22C55E !important;
 }
 
-/* Efeito de digitação */
-.typing-text {
-  min-height: 1.75rem;
-}
-
-/* Animação dos benefícios da esquerda para direita */
-.benefit-item {
-  opacity: 0;
-  transform: translateX(-50px);
-  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
-}
-
-.benefit-item.animate-slide-in {
-  opacity: 1;
-  transform: translateX(0);
-}
-
 .bg-zenix-green { background-color: #22C55E; }
 .hover\:bg-zenix-green-hover:hover { background-color: #16A34A; }
 .bg-zenix-input-bg { background-color: #F5F5F5; }
@@ -323,11 +306,6 @@ button.bg-zenix-green:disabled {
 
 .focus\:border-zenix-green:focus { border-color: #22C55E; }
 
-/* Background gradient */
-.forgot-password-bg {
-  background: #0B0B0B;
-}
-
 /* Gradient de fundo - exatamente como no original */
 .gradient-glow {
   background: #0B0B0B;
@@ -345,6 +323,11 @@ button.bg-zenix-green:disabled {
   border: 1px solid rgba(22, 163, 74, 0.3);
 }
 
+/* Hover do toggle de senha - exatamente como no original */
+.password-toggle:hover {
+  color: #22C55E;
+}
+
 /* Spinner de loading */
 .spinner {
   display: inline-block;
@@ -359,6 +342,23 @@ button.bg-zenix-green:disabled {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Efeito de digitação */
+.typing-text {
+  min-height: 1.75rem;
+}
+
+/* Animação dos benefícios da esquerda para direita */
+.benefit-item {
+  opacity: 0;
+  transform: translateX(-50px);
+  transition: opacity 0.6s ease-out, transform 0.6s ease-out;
+}
+
+.benefit-item.animate-slide-in {
+  opacity: 1;
+  transform: translateX(0);
 }
 
 /* Classes Tailwind CSS inline - estrutura exata do original */
@@ -486,24 +486,39 @@ button.bg-zenix-green:disabled {
   }
 }
 
+@media (min-width: 1024px) {
+  #hero-mobile {
+    display: none !important;
+  }
+
+  main{
+    background: #0B0B0B;
+  }
+}
+
+
 /* Responsividade - Tablets (768px - 1024px) */
 @media (max-width: 1024px) {
   .login-container-wrapper {
     justify-content: center;
+    flex-direction: column;
   }
   
-  #hero-section {
-    display: none;
+  #hero-mobile {
+    display: flex !important;;
   }
   
   #forgot-section {
     width: 100% !important;
-    max-width: 420px;
+    max-width: 450px;
   }
   
   #forgot-main {
     padding-left: 1rem;
     padding-right: 1rem;
+    padding-top: 1.5rem;
+    flex-direction: column-reverse;
+    padding-bottom: 1.5rem;
   }
   
   .p-10 {
@@ -522,7 +537,12 @@ button.bg-zenix-green:disabled {
 /* Responsividade - Mobile grande (640px - 768px) */
 @media (max-width: 768px) {
   #forgot-section {
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+  
+  #forgot-main {
+    padding-bottom: 1rem;
   }
   
   .p-10 {
@@ -556,8 +576,10 @@ button.bg-zenix-green:disabled {
   #forgot-main {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    display: flex !important;
+    background: radial-gradient(circle at top, #0b0d0c 0%, #0d2520 100%);
   }
   
   .w-\[480px\] {
@@ -624,6 +646,115 @@ button.bg-zenix-green:disabled {
   
   .rounded-2xl {
     border-radius: 0.875rem !important;
+  }
+
+  /* Layout em coluna: hero acima do card no mobile */
+  .login-container-wrapper {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.5rem;
+  }
+
+  #hero-section {
+    display: block;
+    width: 100% !important;
+    max-width: 360px !important;
+    padding-left: 0 !important;
+    margin: 0 auto;
+  }
+
+  /* Card mais estreito e centralizado para ficar igual ao layout */
+  #forgot-section {
+    width: 100% !important;
+    max-width: 360px !important;
+    margin: 0 auto !important;
+    padding: 0;
+    padding-top: 4rem !important;
+  }
+
+  /* Ajuste de cores apenas no mobile para ficar igual ao layout */
+  #forgot-section .bg-white {
+    background-color: #050B0B !important;
+    border-color: #111827 !important;
+  }
+
+  #forgot-section .bg-zenix-input-bg {
+    background-color: #050B0B !important;
+    border-color: #111827 !important;
+  }
+
+  #forgot-section .border-zenix-input-border {
+    border-color: #111827 !important;
+  }
+
+  #forgot-section .text-zenix-text-dark {
+    color: #F9FAFB !important;
+  }
+
+  #forgot-section .text-zenix-gray {
+    color: #9CA3AF !important;
+  }
+
+  #forgot-section .placeholder-zenix-gray::placeholder {
+    color: #6B7280 !important;
+  }
+
+  #forgot-section h1 {
+    font-size: 1.65rem !important;
+  }
+
+
+  /* Logo fora visualmente do card apenas no mobile */
+  .login-logo {
+    position: absolute;
+    top: 4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+  }
+
+  .login-logo .text-zenix-text-dark,
+  .login-logo .text-zenix-green {
+    font-size: 2.5rem !important;
+    line-height: 1;
+    margin: 0;
+  }
+
+  #hero-section {
+    display: none !important;
+  }
+
+  .forgot-logo {
+    position: absolute;
+    top: 5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+  }
+
+  .forgot-logo .text-zenix-text-dark, 
+  .forgot-logo .text-zenix-green {
+    font-size: 2.5rem !important;
+    line-height: 1;
+    margin: 0;
+  }
+
+  .forgot-text{
+    font-size: 1rem !important;
+  }
+
+  .footer-text{
+    font-size: 0.8rem !important;
+  }
+
+
+  
+}
+
+@media (max-width: 375px){
+  .forgot-logo{
+    top: 3rem !important;
   }
 }
 </style>

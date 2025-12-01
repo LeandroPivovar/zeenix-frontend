@@ -8,7 +8,7 @@
         <div class="bg-white border border-zenix-card-border rounded-2xl p-10 login-card-shadow">
           
           <!-- Logo -->
-          <div class="mb-8 flex justify-center">                                                                                                                                                                          
+          <div class="mb-8 flex justify-center login-logo">                                                                                                                                                                          
             <div class="flex items-center space-x-2">
               <div class="text-3xl font-bold text-zenix-text-dark">ZENI</div>
               <div class="text-3xl font-bold text-zenix-green">X</div>
@@ -18,7 +18,7 @@
           <!-- Header -->
           <div class="mb-8">
             <h1 class="text-2xl font-semibold text-zenix-text-dark mb-3">Acesse sua conta</h1>
-            <p class="text-sm text-zenix-gray leading-relaxed">Se você já possui uma conta, preencha seus dados para acessar a plataforma.</p>
+            <p class="text-sm text-zenix-gray leading-relaxed forgot-text">Se você já possui uma conta, preencha seus dados para acessar a plataforma.</p>
           </div>
 
           <!-- Login Form -->
@@ -76,8 +76,8 @@
           </div>
 
           <!-- Footer -->
-          <div class="mt-10 pt-6 border-t border-zenix-input-border">
-            <p class="text-xs text-zenix-gray text-center leading-relaxed">Ao acessar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
+          <div class="mt-10 pt-6 border-t border-zenix-input-border footer-login">
+            <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao acessar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
           </div>
         </div>
       </div>
@@ -512,34 +512,48 @@ button.bg-zenix-green:disabled {
   }
 }
 
+@media (min-width: 1024px) {
+  #hero-mobile {
+    display: none !important;
+  }
+}
+
+
 /* Responsividade - Tablets (768px - 1024px) */
 @media (max-width: 1024px) {
   .login-container-wrapper {
     justify-content: center;
+    flex-direction: column;
   }
-  
-  #hero-section {
-    display: none;
+
+
+
+  #hero-mobile {
+    display: flex !important;;
   }
-  
+
   #login-section {
     width: 100% !important;
-    max-width: 420px;
+    max-width: 450px;
+
   }
-  
+
   #login-main {
     padding-left: 1rem;
     padding-right: 1rem;
+    padding-top: 1.5rem;
+    flex-direction: column-reverse;
+    padding-bottom: 1.5rem;
   }
-  
+
   .p-10 {
     padding: 2rem !important;
   }
-  
+
   .text-2xl {
     font-size: 1.375rem !important;
   }
-  
+
   .text-sm {
     font-size: 0.8125rem !important;
   }
@@ -548,25 +562,31 @@ button.bg-zenix-green:disabled {
 /* Responsividade - Mobile grande (640px - 768px) */
 @media (max-width: 768px) {
   #login-section {
-    max-width: 100%;
+    width: 100% !important;
+    max-width: 100% !important;
   }
-  
+
+  #login-main {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
   .p-10 {
     padding: 1.75rem !important;
   }
-  
+
   .text-3xl {
     font-size: 1.75rem !important;
   }
-  
+
   .text-2xl {
     font-size: 1.25rem !important;
   }
-  
+
   .mb-8 {
     margin-bottom: 1.5rem !important;
   }
-  
+
   .space-y-6 > * + * {
     margin-top: 1.25rem !important;
   }
@@ -582,8 +602,10 @@ button.bg-zenix-green:disabled {
   #login-main {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-top: 1.5rem;
+    padding-bottom: 1.5rem;
+    display: flex !important;
+    background: radial-gradient(circle at top, #0b0d0c 0%, #0d2520 100%);
   }
   
   .w-\[480px\] {
@@ -650,6 +672,92 @@ button.bg-zenix-green:disabled {
   
   .rounded-2xl {
     border-radius: 0.875rem !important;
+  }
+
+  /* Layout em coluna: hero acima do card no mobile */
+  .login-container-wrapper {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.5rem;
+  }
+
+  #hero-section {
+    display: block;
+    width: 100% !important;
+    max-width: 360px !important;
+    padding-left: 0 !important;
+    margin: 0 auto;
+  }
+
+  /* Card mais estreito e centralizado para ficar igual ao layout */
+  #login-section {
+    width: 100% !important;
+    max-width: 360px !important;
+    margin: 0 auto !important;
+    padding: 0;
+    padding-top: 4rem !important;
+  }
+
+  /* Ajuste de cores apenas no mobile para ficar igual ao layout */
+  #login-section .bg-white {
+    background-color: #050B0B !important;
+    border-color: #111827 !important;
+  }
+
+  #login-section .bg-zenix-input-bg {
+    background-color: #050B0B !important;
+    border-color: #111827 !important;
+  }
+
+  #login-section .border-zenix-input-border {
+    border-color: #111827 !important;
+  }
+
+  #login-section .text-zenix-text-dark {
+    color: #F9FAFB !important;
+    
+  }
+
+  #login-section .text-zenix-gray {
+    color: #9CA3AF !important;
+  }
+
+  #login-section .placeholder-zenix-gray::placeholder {
+    color: #6B7280 !important;
+  }
+
+  #login-section h1 {
+    font-size: 1.65rem !important;
+  }
+
+
+  /* Logo fora visualmente do card apenas no mobile
+     - Altura da tela > 600px  -> top: 4rem
+     - Altura da tela <= 600px -> top: 1rem (ajuste automático abaixo) */
+  .login-logo {
+    position: absolute;
+    top: 4rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+  }
+
+  .login-logo .text-zenix-text-dark,
+  .login-logo .text-zenix-green {
+    font-size: 2.5rem !important;
+    line-height: 1;
+    margin: 0;
+  }
+
+  .leading-relaxed{
+    font-size: 0.675rem !important;
+  }
+}
+
+@media (max-width: 375px){
+  .login-logo{
+    top: 2rem !important;
   }
 }
 </style>
