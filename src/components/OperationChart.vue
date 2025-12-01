@@ -4066,16 +4066,15 @@ export default {
           return;
         }
         
-        // Se oldVal era null (primeira vez recebendo o loginid), verificar se a conexão atual já está com esse loginid
-        // Isso acontece quando a conexão é estabelecida antes do accountLoginid ser definido
+        // Se oldVal era null (primeira vez recebendo o loginid após conexão já estabelecida)
+        // E a conexão primária já está funcionando, não reconectar
+        // Apenas atualizar a referência para que futuras mudanças sejam detectadas
         if (!oldVal && this.currentLoginid) {
-          // Se já temos um loginid na conexão atual, verificar se é diferente
-          if (this.currentLoginid !== newVal) {
-            console.log('[OperationChart] Loginid da conexão atual (' + this.currentLoginid + ') é diferente do novo (' + newVal + '), reconexão necessária');
-          } else {
-            console.log('[OperationChart] ✅ Conexão atual já está com o loginid correto, cancelando reconexão');
-            return;
-          }
+          console.log('[OperationChart] ⚠ Primeira vez recebendo loginid (' + newVal + '), mas conexão primária já está funcionando com (' + this.currentLoginid + ')');
+          console.log('[OperationChart] ✅ Cancelando reconexão - mantendo conexão primária ativa');
+          // Apenas atualizar referência sem reconectar
+          this.currentLoginid = newVal;
+          return;
         }
       }
       
@@ -4093,9 +4092,10 @@ export default {
         return;
       }
       
-      // Só reconectar se realmente necessário (loginid diferente E conexão ativa)
-      if (this.currentLoginid !== newVal) {
-        console.log('[OperationChart] Loginid realmente mudou (' + this.currentLoginid + ' -> ' + newVal + '), iniciando reconexão');
+      // Só reconectar se realmente necessário (loginid mudou de um valor para outro diferente)
+      // E ambos oldVal e newVal são valores válidos (não null)
+      if (oldVal && newVal && oldVal !== newVal && this.currentLoginid !== newVal) {
+        console.log('[OperationChart] Loginid realmente mudou (' + oldVal + ' -> ' + newVal + '), iniciando reconexão');
         this.isReconnecting = true;
         this.currentLoginid = newVal;
         
