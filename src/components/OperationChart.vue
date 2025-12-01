@@ -764,20 +764,24 @@ export default {
         this.teardownConnection();
       }
 
-      // Limpar dados do gráfico para reinicializar
-      this.ticks = [];
-      this.latestTick = null;
+      // NÃO limpar os ticks durante reconexão - preservar dados do gráfico
+      // Apenas marcar como carregando para mostrar estado de loading
       this.isLoadingSymbol = true;
-      this.previousDataCount = 0; // Resetar contador ao reiniciar conexão
+      // Não resetar previousDataCount para manter contagem correta
       
-      // Garantir que o gráfico existe antes de limpar
-      if (this.chart && this.$refs.chartContainer) {
-        console.log('[OperationChart] Limpando dados do gráfico para reinicialização');
-        // Não destruir o gráfico, apenas limpar os dados
-        // O gráfico será atualizado quando novos dados chegarem
-      } else if (!this.chart && this.$refs.chartContainer) {
+      // Garantir que o gráfico existe e está pronto
+      if (!this.chart && this.$refs.chartContainer) {
         console.log('[OperationChart] Gráfico não existe, inicializando...');
         this.initChart();
+      } else if (this.chart && this.$refs.chartContainer) {
+        console.log('[OperationChart] Gráfico existe, preservando durante reconexão');
+        // Garantir que o gráfico está visível
+        this.$nextTick(() => {
+          if (this.chart && this.ticks.length > 0) {
+            // Se já temos dados, atualizar o gráfico
+            this.updateChartFromTicks();
+          }
+        });
       }
 
       this.connectionError = '';
@@ -1011,10 +1015,21 @@ export default {
           
           this.isAuthorized = true;
           this.isConnecting = false;
+          const wasReconnecting = this.isReconnecting;
           this.isReconnecting = false; // Resetar flag de reconexão
           this.currentLoginid = loginid; // Armazenar loginid atual
           this.connectionError = ''; // Limpar erro ao conectar com sucesso
           this.retryCount = 0; // Resetar contador de tentativas
+          
+          // Se estava em reconexão e o gráfico existe, garantir que será atualizado
+          if (wasReconnecting && this.chart && this.ticks.length > 0) {
+            console.log('[OperationChart] Reconexão concluída, garantindo que gráfico será atualizado');
+            this.$nextTick(() => {
+              if (this.chart && this.lineSeries && this.ticks.length > 0) {
+                this.updateChartFromTicks();
+              }
+            });
+          }
           
           // Limpar timeout de reconexão
           if (this.reconnectTimeout) {
@@ -1871,7 +1886,13 @@ export default {
         }, 250);
       } else {
         // Gráfico já existe, atualizar diretamente
-        this.updateChartFromTicks();
+        // Forçar atualização mesmo durante reconexão
+        console.log('[OperationChart] Gráfico já existe, atualizando com histórico...');
+        this.$nextTick(() => {
+          if (this.chart && this.lineSeries && this.ticks.length > 0) {
+            this.updateChartFromTicks();
+          }
+        });
       }
     },
     processCandles(msg) {
