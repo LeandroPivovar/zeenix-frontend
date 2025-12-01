@@ -550,7 +550,9 @@ export default {
         console.log('[Chart] Gráfico já existe, removendo antes de recriar...');
         try {
           this.chart.remove();
-        } catch (e) {}
+        } catch (e) {
+          console.warn('[Chart] Erro ao remover gráfico anterior:', e);
+        }
         this.chart = null;
         this.lineSeries = null;
         this.candleSeries = null;
@@ -654,13 +656,17 @@ export default {
       if (this.lineSeries && this.chart) {
         try {
           this.chart.removeSeries(this.lineSeries);
-        } catch (e) {}
+        } catch (e) {
+          console.warn('[Chart] Erro ao remover série de linha:', e);
+        }
         this.lineSeries = null;
       }
       if (this.candleSeries && this.chart) {
         try {
           this.chart.removeSeries(this.candleSeries);
-        } catch (e) {}
+        } catch (e) {
+          console.warn('[Chart] Erro ao remover série de velas:', e);
+        }
         this.candleSeries = null;
       }
       
@@ -2268,7 +2274,6 @@ export default {
     },
     createCandlesFromTicks(ticks) {
       // Agrupar ticks em velas de 1 minuto
-      const candles = [];
       const candleMap = new Map();
       
       ticks.forEach(tick => {

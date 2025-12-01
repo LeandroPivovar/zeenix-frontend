@@ -71,7 +71,6 @@
             </a>
 
             <a
-                v-if="isAdmin || isTrader"
                 href="#"
                 class="menu-item"
                 :class="{ active: isMasterTraderActive }"
@@ -128,8 +127,8 @@
                 <span>Suporte</span>
             </a>
 
-            <!-- Links de Administração (apenas para admins) -->
-            <template v-if="isAdmin">
+            <!-- Links de Administração (acesso liberado) -->
+            <template>
                 <div class="separator"></div>
                 
                 <a
