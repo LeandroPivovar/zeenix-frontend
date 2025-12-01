@@ -28,6 +28,30 @@
                   {{ timeframe }}
                 </button>
               </div>
+              <div class="flex gap-2 ml-4 pl-4 border-l border-zenix-border">
+                <button 
+                  @click="chartType = 'line'"
+                  :class="[
+                    'px-3 py-1.5 border rounded-lg text-xs transition-all duration-300',
+                    chartType === 'line'
+                      ? 'bg-zenix-green border-zenix-green text-black font-semibold shadow-[0_0_8px_rgba(34,197,94,0.3)]' 
+                      : 'bg-[#0F0F0F] border-zenix-border text-zenix-text hover:bg-[#1A1A1A] hover:border-zenix-green'
+                  ]"
+                >
+                  <i class="far fa-chart-line mr-1"></i> Linha
+                </button>
+                <button 
+                  @click="chartType = 'candle'"
+                  :class="[
+                    'px-3 py-1.5 border rounded-lg text-xs transition-all duration-300',
+                    chartType === 'candle'
+                      ? 'bg-zenix-green border-zenix-green text-black font-semibold shadow-[0_0_8px_rgba(34,197,94,0.3)]' 
+                      : 'bg-[#0F0F0F] border-zenix-border text-zenix-text hover:bg-[#1A1A1A] hover:border-zenix-green'
+                  ]"
+                >
+                  <i class="far fa-chart-bar mr-1"></i> Velas
+                </button>
+              </div>
             </div>
             <div class="flex gap-2">
               <button class="w-8 h-8 bg-[#0F0F0F] border border-zenix-border rounded-lg flex items-center justify-center hover:bg-[#1A1A1A] hover:border-zenix-green transition-all duration-300">
@@ -347,6 +371,8 @@ export default {
       lastUpdate: null,
       chart: null,
       lineSeries: null,
+      candleSeries: null,
+      chartType: 'line', // 'line' ou 'candle'
       timeScaleMarkers: [],
             localOrderConfig: {
         type: 'CALL',
@@ -518,32 +544,55 @@ export default {
     },
     methods: {
     initChart() {
-      if (this.chart) return;
-      if (this.isInitializingChart) return;
+      console.log('[Chart] ========== INICIANDO GRÁFICO DO ZERO ==========');
+      
+      if (this.chart) {
+        console.log('[Chart] Gráfico já existe, removendo antes de recriar...');
+        try {
+          this.chart.remove();
+        } catch (e) {}
+        this.chart = null;
+        this.lineSeries = null;
+        this.candleSeries = null;
+      }
+      
+      if (this.isInitializingChart) {
+        console.log('[Chart] Já está inicializando...');
+        return;
+      }
       
       this.isInitializingChart = true;
       
       this.$nextTick(() => {
         const container = this.$refs.chartContainer;
+        
         if (!container) {
+          console.error('[Chart] Container não encontrado');
           this.isInitializingChart = false;
           setTimeout(() => this.initChart(), 100);
           return;
         }
         
+        // Limpar completamente o container
         container.innerHTML = '';
         
         const rect = container.getBoundingClientRect();
-        const width = Math.max(rect.width || 800, 100);
-        const height = Math.max(rect.height || 600, 100);
+        const width = Math.max(rect.width || container.clientWidth || 800, 100);
+        const height = Math.max(rect.height || container.clientHeight || 600, 100);
+        
+        console.log('[Chart] Dimensões:', { width, height });
         
         if (width <= 0 || height <= 0) {
+          console.warn('[Chart] Dimensões inválidas, tentando novamente...');
           this.isInitializingChart = false;
           setTimeout(() => this.initChart(), 200);
           return;
         }
         
         try {
+          console.log('[Chart] Criando gráfico Lightweight Charts...');
+          
+          // Criar gráfico base
           this.chart = createChart(container, {
             width,
             height,
@@ -551,8 +600,12 @@ export default {
               background: { type: ColorType.Solid, color: '#0B0B0B' },
               textColor: '#DFDFDF',
             },
-            rightPriceScale: { borderVisible: false },
-            leftPriceScale: { visible: false },
+            rightPriceScale: {
+              borderVisible: false,
+            },
+            leftPriceScale: {
+              visible: false,
+            },
             timeScale: {
               borderVisible: false,
               timeVisible: true,
@@ -561,31 +614,73 @@ export default {
               vertLines: { color: 'rgba(28, 28, 28, 0.5)' },
               horzLines: { color: 'rgba(28, 28, 28, 0.5)' },
             },
+            crosshair: {
+              mode: 1,
+            },
           });
           
-          this.lineSeries = this.chart.addLineSeries({
-            color: '#22C55E',
-            lineWidth: 2,
-          });
+          console.log('[Chart] Gráfico criado, criando séries...');
+          
+          // Criar séries baseado no tipo
+          this.createSeries();
           
           this.chartInitialized = true;
           this.isInitializingChart = false;
           
+          console.log('[Chart] ✓ Gráfico totalmente inicializado!');
+          
+          // Registrar resize handler
           if (!this._resizeHandler) {
             this._resizeHandler = () => this.handleResize();
             window.addEventListener('resize', this._resizeHandler);
           }
           
+          // Plotar dados se existirem
           if (this.ticks.length > 0) {
-            setTimeout(() => this.updateChartFromTicks(), 200);
+            console.log('[Chart] Temos', this.ticks.length, 'ticks, plotando...');
+            setTimeout(() => this.updateChartFromTicks(), 300);
           }
           
         } catch (error) {
-          console.error('[Chart] Erro ao criar:', error);
+          console.error('[Chart] ❌ Erro ao criar gráfico:', error);
+          console.error('[Chart] Stack:', error.stack);
           this.isInitializingChart = false;
           this.chartInitialized = false;
         }
       });
+    },
+    createSeries() {
+      // Remover séries antigas
+      if (this.lineSeries && this.chart) {
+        try {
+          this.chart.removeSeries(this.lineSeries);
+        } catch (e) {}
+        this.lineSeries = null;
+      }
+      if (this.candleSeries && this.chart) {
+        try {
+          this.chart.removeSeries(this.candleSeries);
+        } catch (e) {}
+        this.candleSeries = null;
+      }
+      
+      // Criar série baseado no tipo
+      if (this.chartType === 'candle') {
+        console.log('[Chart] Criando série de velas...');
+        this.candleSeries = this.chart.addCandlestickSeries({
+          upColor: '#22C55E',
+          downColor: '#EF4444',
+          borderVisible: false,
+          wickUpColor: '#22C55E',
+          wickDownColor: '#EF4444',
+        });
+      } else {
+        console.log('[Chart] Criando série de linha...');
+        this.lineSeries = this.chart.addLineSeries({
+          color: '#22C55E',
+          lineWidth: 2,
+        });
+      }
     },
     ensureChartVisible(canvas, container) {
       if (!canvas || !this.chart) {
@@ -1964,10 +2059,12 @@ export default {
       console.log('[Chart] Processando histórico:', this.ticks.length, 'ticks');
       
       // Garantir que o gráfico existe
-      if (!this.chart || !this.lineSeries) {
+      const hasMainSeries = (this.chartType === 'line' && this.lineSeries) || (this.chartType === 'candle' && this.candleSeries);
+      if (!this.chart || !hasMainSeries) {
         this.initChart();
         setTimeout(() => {
-          if (this.chart && this.lineSeries) {
+          const hasSeriesAfterInit = (this.chartType === 'line' && this.lineSeries) || (this.chartType === 'candle' && this.candleSeries);
+          if (this.chart && hasSeriesAfterInit) {
             this.updateChartFromTicks();
           } else {
             setTimeout(() => this.updateChartFromTicks(), 500);
@@ -2060,43 +2157,75 @@ export default {
       }
     },
     updateChartFromTicks() {
-      console.log('[Chart] updateChartFromTicks - Iniciando');
+      console.log('[Chart] ========== ATUALIZANDO GRÁFICO ==========');
       
-      if (this.isDestroying || !this.ticks.length) {
+      if (this.isDestroying) {
+        console.log('[Chart] Componente está sendo destruído, cancelando atualização');
         return;
       }
       
-      if (!this.chart || !this.lineSeries) {
-        if (!this.isInitializingChart) {
-          this.initChart();
-          setTimeout(() => this.updateChartFromTicks(), 500);
-        }
+      if (!this.ticks.length) {
+        console.warn('[Chart] Nenhum tick disponível');
         return;
       }
       
-      // Converter ticks para formato do gráfico
-      const chartData = this.ticks
-        .map(tick => {
-          const time = Math.floor(Number(tick.epoch));
-          const value = Number(tick.value);
-          if (!isNaN(time) && !isNaN(value) && time > 0) {
-            return { time, value };
-          }
-          return null;
-        })
-        .filter(Boolean)
-        .sort((a, b) => a.time - b.time);
+      // Garantir que o gráfico existe
+      if (!this.chart) {
+        console.log('[Chart] Gráfico não existe, inicializando...');
+        this.initChart();
+        setTimeout(() => this.updateChartFromTicks(), 500);
+        return;
+      }
       
-      if (!chartData.length) {
-        console.warn('[Chart] Nenhum dado válido');
+      // Verificar se a série existe, senão criar
+      const hasLineSeries = this.chartType === 'line' && this.lineSeries;
+      const hasCandleSeries = this.chartType === 'candle' && this.candleSeries;
+      
+      if (!hasLineSeries && !hasCandleSeries) {
+        console.log('[Chart] Série não existe, criando...');
+        this.createSeries();
+        // Aguardar um pouco para a série ser criada
+        setTimeout(() => this.updateChartFromTicks(), 200);
         return;
       }
       
       try {
-        // Sempre usar setData para garantir que funcione
-        this.lineSeries.setData(chartData);
+        // Converter ticks para formato do gráfico
+        const validTicks = this.ticks
+          .map(tick => {
+            const time = Math.floor(Number(tick.epoch));
+            const value = Number(tick.value);
+            if (!isNaN(time) && !isNaN(value) && time > 0 && value > 0) {
+              return { time, value };
+            }
+            return null;
+          })
+          .filter(Boolean)
+          .sort((a, b) => a.time - b.time);
         
-        // Redimensionar
+        if (!validTicks.length) {
+          console.warn('[Chart] Nenhum tick válido após filtro');
+          return;
+        }
+        
+        console.log('[Chart] Processando', validTicks.length, 'ticks válidos');
+        
+        // Plotar dados baseado no tipo
+        if (this.chartType === 'candle' && this.candleSeries) {
+          // Para velas, precisamos agrupar ticks em períodos
+          // Por enquanto, vamos criar velas baseadas nos ticks (1 minuto)
+          const candles = this.createCandlesFromTicks(validTicks);
+          console.log('[Chart] Criadas', candles.length, 'velas');
+          this.candleSeries.setData(candles);
+          console.log('[Chart] ✓ Velas plotadas com sucesso');
+        } else if (this.lineSeries) {
+          // Para linha, usar diretamente os ticks
+          console.log('[Chart] Plotando linha com', validTicks.length, 'pontos');
+          this.lineSeries.setData(validTicks);
+          console.log('[Chart] ✓ Linha plotada com sucesso');
+        }
+        
+        // Redimensionar gráfico
         const container = this.$refs.chartContainer;
         if (container) {
           const rect = container.getBoundingClientRect();
@@ -2108,21 +2237,63 @@ export default {
           }
         }
         
-        // Ajustar escala
+        // Ajustar escala para mostrar todos os dados
         this.$nextTick(() => {
           if (this.chart) {
-            this.chart.timeScale().fitContent();
+            try {
+              this.chart.timeScale().fitContent();
+              console.log('[Chart] ✓ Escala ajustada');
+            } catch (e) {
+              console.warn('[Chart] Erro ao ajustar escala:', e);
+            }
           }
         });
         
-        this.previousDataCount = chartData.length;
-        this.chartInitialized = true;
+        // Atualizar linha de entrada se existir
+        if (this.updateEntrySpotLine) {
+          try {
+            this.updateEntrySpotLine();
+          } catch (lineError) {
+            console.warn('[Chart] Erro ao atualizar linha de entrada:', lineError);
+          }
+        }
         
-        console.log('[Chart] ✓ Gráfico atualizado com', chartData.length, 'pontos');
+        this.chartInitialized = true;
+        console.log('[Chart] ========== ATUALIZAÇÃO COMPLETA ==========');
         
       } catch (error) {
-        console.error('[Chart] Erro:', error);
+        console.error('[Chart] ❌ Erro ao atualizar gráfico:', error);
+        console.error('[Chart] Stack:', error.stack);
       }
+    },
+    createCandlesFromTicks(ticks) {
+      // Agrupar ticks em velas de 1 minuto
+      const candles = [];
+      const candleMap = new Map();
+      
+      ticks.forEach(tick => {
+        // Arredondar para o minuto
+        const candleTime = Math.floor(tick.time / 60) * 60;
+        
+        if (!candleMap.has(candleTime)) {
+          candleMap.set(candleTime, {
+            time: candleTime,
+            open: tick.value,
+            high: tick.value,
+            low: tick.value,
+            close: tick.value
+          });
+        } else {
+          const candle = candleMap.get(candleTime);
+          candle.high = Math.max(candle.high, tick.value);
+          candle.low = Math.min(candle.low, tick.value);
+          candle.close = tick.value;
+        }
+      });
+      
+      // Converter map para array e ordenar
+      return Array.from(candleMap.values())
+        .sort((a, b) => a.time - b.time);
     },
     supportsCallPut(symbol) {
       // Verifica se o símbolo suporta contratos CALL/PUT (Rise/Fall)
@@ -3313,41 +3484,44 @@ export default {
           const markerTimeForSeries = closestTickTime || (this.ticks.length > 0 ? Math.floor(Number(this.ticks[this.ticks.length - 1].epoch)) : markerTime);
           const markerValueForSeries = closestTick?.value || (this.ticks.length > 0 ? this.ticks[this.ticks.length - 1].value : markerValue);
           
-          if (this.lineSeries) {
+          // Adicionar marcador na série principal (linha ou vela)
+          const mainSeries = this.lineSeries || this.candleSeries;
+          if (mainSeries) {
             const markerColor = this.localOrderConfig.type === 'CALL' ? '#3b82f6' : '#ef4444';
             
-            // Calcular um valor para o marcador que fique acima da linha de entrada
-            // Adicionar um offset de 0.5% do valor de entrada para garantir que o marcador apareça acima
-            const offsetPercent = 0.005; // 0.5%
-            const markerValueAboveLine = entrySpot * (1 + offsetPercent);
-            
-            // Adicionar um ponto temporário na série principal no momento da entrada
-            // com um valor ligeiramente maior que entrySpot para que o marcador apareça acima da linha
-            this.lineSeries.update({
-              time: markerTimeForSeries,
-              value: markerValueAboveLine
-            });
+            // Para linha, adicionar um ponto temporário acima da linha
+            if (this.lineSeries) {
+              const offsetPercent = 0.005; // 0.5%
+              const markerValueAboveLine = entrySpot * (1 + offsetPercent);
+              
+              this.lineSeries.update({
+                time: markerTimeForSeries,
+                value: markerValueAboveLine
+              });
+              
+              this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueAboveLine, originalTime: markerTime };
+            } else {
+              this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueForSeries, originalTime: markerTime };
+            }
             
             // Adicionar marcador no momento exato da compra
-            // Usar 'aboveBar' para posicionar acima do ponto
             const entryMarker = {
               time: markerTimeForSeries,
               position: 'aboveBar',
               color: markerColor,
               shape: 'circle',
-              size: 4, // Tamanho maior para melhor visibilidade
+              size: 4,
               text: `ENTRADA ${this.localOrderConfig.type}`,
             };
             
-            // Adicionar o marcador (setMarkers substitui todos os marcadores existentes)
-            this.lineSeries.setMarkers([entryMarker]);
+            mainSeries.setMarkers([entryMarker]);
             
             // Forçar atualização imediata
             this.$nextTick(() => {
-              // Re-adicionar o marcador para garantir que seja exibido
-              this.lineSeries.setMarkers([entryMarker]);
+              if (mainSeries) {
+                mainSeries.setMarkers([entryMarker]);
+              }
             });
-            this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueAboveLine, originalTime: markerTime };
             
             console.log('[OperationChart] Marcador adicionado na série principal:', {
               markerTime: markerTimeForSeries,
@@ -3355,27 +3529,26 @@ export default {
               value: markerValueForSeries,
               spot: entrySpot,
               color: markerColor,
-              usingClosestTick: !!closestTickTime
+              seriesType: this.lineSeries ? 'line' : 'candle'
             });
-            
-            // Não ajustar zoom automaticamente - deixar o usuário controlar
           } else {
-            console.warn('[OperationChart] lineSeries não está disponível para adicionar marcador');
+            console.warn('[OperationChart] Série principal não está disponível para adicionar marcador');
             // Armazenar informações do marcador para adicionar depois
             this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueForSeries, originalTime: markerTime };
             
             // Tentar novamente após um delay
             setTimeout(() => {
-              if (this.lineSeries && this.entryMarker) {
+              const mainSeriesRetry = this.lineSeries || this.candleSeries;
+              if (mainSeriesRetry && this.entryMarker) {
                 const markerColor = this.localOrderConfig.type === 'CALL' ? '#3b82f6' : '#ef4444';
-                this.lineSeries.setMarkers([
+                mainSeriesRetry.setMarkers([
                   {
                     time: this.entryMarker.time,
-                    position: 'inBar',
+                    position: 'aboveBar',
                     color: markerColor,
                     shape: 'circle',
-                    size: 3,
-                    text: `Entrada ${this.localOrderConfig.type}`,
+                    size: 4,
+                    text: `ENTRADA ${this.localOrderConfig.type}`,
                   }
                 ]);
                 console.log('[OperationChart] Marcador adicionado após retry');
@@ -3410,7 +3583,8 @@ export default {
               ]);
               
               // Atualizar marcador com P&L se disponível
-              if (this.lineSeries && this.entryMarker) {
+              const mainSeries = this.lineSeries || this.candleSeries;
+              if (mainSeries && this.entryMarker) {
                 const profitText = this.realTimeProfit !== null
                   ? (this.realTimeProfit >= 0 
                       ? `+${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`
@@ -3424,36 +3598,34 @@ export default {
                 // Usar o tempo original do marcador (não o tempo do tick mais próximo)
                 const markerTimeToUse = this.entryMarker.originalTime || this.entryMarker.time;
                 
-                // Verificar se o tempo do marcador é válido (não mais antigo que o último tick)
-                // Se for muito antigo, não tentar atualizar o ponto na série principal
-                const lastTickTime = this.ticks.length > 0 ? Math.floor(Number(this.ticks[this.ticks.length - 1].epoch)) : null;
-                const canUpdatePoint = lastTickTime && markerTimeToUse >= lastTickTime;
-                
-                if (canUpdatePoint) {
-                  // Garantir que o ponto na série principal esteja acima da linha de entrada
-                  // Calcular um valor que fique acima da linha de entrada (0.5% acima)
-                  const offsetPercent = 0.005; // 0.5%
-                  const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
+                // Para linha, tentar atualizar o ponto
+                if (this.lineSeries) {
+                  const lastTickTime = this.ticks.length > 0 ? Math.floor(Number(this.ticks[this.ticks.length - 1].epoch)) : null;
+                  const canUpdatePoint = lastTickTime && markerTimeToUse >= lastTickTime;
                   
-                  // Atualizar o ponto na série principal para manter o marcador acima da linha
-                  try {
-                    this.lineSeries.update({
-                      time: markerTimeToUse,
-                      value: markerValueAboveLine
-                    });
-                  } catch (error) {
-                    // Se falhar ao atualizar, apenas atualizar o marcador
-                    console.warn('[OperationChart] Não foi possível atualizar ponto na série:', error);
+                  if (canUpdatePoint) {
+                    const offsetPercent = 0.005; // 0.5%
+                    const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
+                    
+                    try {
+                      this.lineSeries.update({
+                        time: markerTimeToUse,
+                        value: markerValueAboveLine
+                      });
+                    } catch (error) {
+                      console.warn('[OperationChart] Não foi possível atualizar ponto na série:', error);
+                    }
                   }
                 }
                 
-                this.lineSeries.setMarkers([
+                // Atualizar marcador na série principal
+                mainSeries.setMarkers([
                   {
                     time: markerTimeToUse,
                     position: 'aboveBar',
                     color: markerColor,
                     shape: 'circle',
-                    size: 4, // Tamanho maior
+                    size: 4,
                     text: profitText,
                   }
                 ]);
@@ -3513,9 +3685,10 @@ export default {
           this.entryMarker = null;
           this.entryTime = null;
           
-          // Remover marcadores da série principal
-          if (this.lineSeries) {
-            this.lineSeries.setMarkers([]);
+          // Remover marcadores da série principal (linha ou vela)
+          const mainSeries = this.lineSeries || this.candleSeries;
+          if (mainSeries) {
+            mainSeries.setMarkers([]);
           }
           
           console.log('[OperationChart] Linha de entrada e marcador removidos');
@@ -3947,6 +4120,23 @@ export default {
     },
   },
   watch: {
+    chartType(newType, oldType) {
+      if (newType !== oldType && this.chart) {
+        console.log('[Chart] Tipo de gráfico mudou de', oldType, 'para', newType);
+        // Recriar séries
+        this.createSeries();
+        // Replotar dados
+        if (this.ticks.length > 0) {
+          setTimeout(() => this.updateChartFromTicks(), 300);
+        }
+        // Re-adicionar linha de entrada se existir
+        if (this.entrySpotLine && this.entryTime) {
+          setTimeout(() => {
+            this.addEntrySpotLine(this.entrySpotLine._data?.[0]?.value || this.activeContract?.entry_spot, this.entryTime);
+          }, 500);
+        }
+      }
+    },
     showAiCard(newVal) {
       if (newVal) {
         // Quando o card aparece, toca o som
