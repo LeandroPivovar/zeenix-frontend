@@ -105,6 +105,12 @@
 						>
 						Histórico
 					</span>
+					<span
+						:class="['toggle-tab', { 'chart-title-active': abaAtiva === 'registro' }]"
+						@click="trocarAba('registro')"
+						>
+						Registro
+					</span>
 				</div>
 				<div class="performance">
 					<span class="performance-title">Performance do Agente</span>
@@ -198,6 +204,9 @@
 						</table>
 					</div>
 				</div>
+				<div id="contentRegistro" :class="['register-content', { hidden: abaAtiva !== 'registro' }]">
+					<OperationLogs :trade-results="formattedTradeResults" />
+				</div>
 			</div>
 		</div>
 		<div class="actions-section">
@@ -218,8 +227,13 @@
 </template>
 
 <script>
+	import OperationLogs from '../OperationLogs.vue';
+
 	export default {
 		name: 'AgenteAutonomoPanel',
+		components: {
+			OperationLogs
+		},
 		emits: ['pausarAgente'],
 		data() {
 			return {
@@ -323,6 +337,50 @@
 					default:
 						return historicoOperacoes.sort((a, b) => new Date(b.data + 'T' + b.hora) - new Date(a.data + 'T' + a.hora));
 				}
+			},
+			// Transformar dados do histórico para o formato esperado pelo OperationLogs
+			formattedTradeResults() {
+				if (!this.historicoOperacoes || this.historicoOperacoes.length === 0) {
+					return [];
+				}
+				
+				return this.historicoOperacoes.map((op, index) => {
+					// Extrair valores numéricos
+					const entrada = parseFloat(op.entrada) || 0;
+					const saida = parseFloat(op.saida) || entrada;
+					
+					// Extrair resultado (ganho/perda)
+					const resultadoStr = op.resultado || '+$0.00';
+					const resultadoMatch = resultadoStr.replace('$', '').replace('+', '').replace(',', '');
+					const profit = parseFloat(resultadoMatch) || 0;
+					
+					// Determinar direção baseado no tipo
+					const direction = op.tipo === 'Call' ? 'CALL' : (op.tipo === 'Put' ? 'PUT' : 'CALL');
+					
+					// Criar ID único
+					const contractId = `autonomo-${op.data}-${op.hora}-${index}`;
+					
+					// Converter data e hora para timestamp
+					const dateTime = new Date(`${op.data}T${op.hora}`);
+					const time = Math.floor(dateTime.getTime() / 1000);
+					
+					return {
+						contractId: contractId,
+						id: contractId,
+						buyPrice: entrada,
+						price: entrada,
+						direction: direction,
+						type: direction,
+						profit: profit,
+						profitLoss: profit,
+						exitTick: saida.toFixed(2),
+						sellPrice: saida,
+						closePrice: saida,
+						status: 'CLOSED',
+						time: time,
+						stakeAmount: entrada
+					};
+				});
 			}
 		},
 		watch: {
@@ -778,6 +836,14 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+	}
+
+	.register-content {
+		min-height: 400px;
+	}
+
+	.register-content.hidden {
+		display: none;
 	}
 
 	.chart-placeholder {
