@@ -147,53 +147,180 @@
           Ξ
         </div>
       </div>
-      <div class="relative z-10 px-6">
-        <div id="hero-header" class="mb-6 text-left px-4">
-          <h1 id="ixl21c" class="text-3xl font-semibold mb-2 text-white/90 text-left mt-[14px]">
-            Bem-vindo ao
-            Zenix, <span id="itixvs">{{ userName }}</span></h1>
-          <p class="text-white/60 text-left">Configure sua conta rapidamente em 3 passos
-            e deixe a IA trabalhar por você.</p>
-        </div>
-        <div class="flex items-start relative gap-4 w-full" style="width: 100%; box-sizing: border-box;">
-              <!-- Card 1/3: Depositar -->
-              <div id="hero-card-1" class="rounded-[18px] p-8 h-56 flex flex-col justify-between flex-1 transition-all duration-300 ease-out relative hover:scale-[1.02] z-[3] bg-[rgba(20,20,20,0.35)] border border-[rgba(34,197,94,0.25)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.18),inset_0_1px_1px_rgba(255,255,255,0.05)]" style="width: 100%; box-sizing: border-box;">
-                <div>
-                  <h3 class="font-semibold mb-2 text-[rgba(255,255,255,0.92)]">
-                    Deposite para começar</h3>
-                  <p class="text-sm text-[rgba(255,255,255,0.70)]">Para melhores
-                    resultados indicamos um depósito acima de 100 dólares.</p>
+      <div class="relative z-10 h-full max-w-[1400px] mx-auto px-12">
+        <div class="grid grid-cols-2 gap-20 h-full items-center">
+          <div class="flex flex-col justify-center space-y-10">
+            <div class="space-y-6">
+              <h1 class="text-[56px] font-bold leading-[1.1] tracking-[-0.03em]">
+                <span class="text-white">Seja bem-vindo,</span><br><span class="text-[#22C55E]">{{ userName }}</span>
+              </h1>
+              <p class="text-[18px] text-white/60 leading-[1.7] max-w-[520px]">
+                Comece agora configurando sua conta e realizando seu primeiro depósito.
+              </p>
+            </div>
+            <div class="pt-4">
+              <button 
+                @click="$router.push('/settings?tab=deposit')"
+                class="relative bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white text-base font-semibold px-10 py-4 rounded-xl transition-all duration-300 overflow-hidden group shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] hover:scale-105"
+              >
+                <span class="relative z-10 flex items-center space-x-2">
+                  <span>Depositar agora</span>
+                  <i class="fas fa-arrow-right text-sm"></i>
+                </span>
+                <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
+              </button>
+            </div>
+          </div>
+          <div class="relative h-full flex items-center justify-center">
+            <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.08)_0%,transparent_70%)] blur-[100px] opacity-60"></div>
+            <div class="relative w-[560px] h-[560px]">
+              <!-- Central Core -->
+              <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-36 h-36 group transition-transform duration-700 ease-out hover:scale-110 z-20">
+                <div class="relative w-full h-full">
+                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-2xl border-2 border-[rgba(34,197,94,0.6)] shadow-[0_0_60px_rgba(34,197,94,0.5),0_0_120px_rgba(34,197,94,0.3),inset_0_0_40px_rgba(34,197,94,0.2)] transition-all duration-700 ease-out group-hover:shadow-[0_0_80px_rgba(34,197,94,0.6),0_0_160px_rgba(34,197,94,0.4),inset_0_0_50px_rgba(34,197,94,0.25)] group-hover:border-[rgba(34,197,94,0.8)] animate-center-pulse">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.4)_0%,transparent_70%)] animate-pulse"></div>
+                  </div>
+                  <div class="absolute inset-0 flex items-center justify-center transition-transform duration-700 ease-out group-hover:scale-105">
+                    <i class="fas fa-brain text-[#22C55E] text-5xl drop-shadow-[0_0_25px_rgba(34,197,94,1)] transition-all duration-700 ease-out group-hover:drop-shadow-[0_0_35px_rgba(34,197,94,1)]"></i>
+                  </div>
                 </div>
-                <button @click="$router.push('/settings?tab=deposit')" class="bg-[#22C55E] hover:bg-[#16A34A] text-white py-2 px-4 rounded-[12px] h-[46px] w-full font-medium transition-all shadow-[0_0_18px_rgba(34,197,94,0.35)] hover:shadow-[0_0_22px_rgba(34,197,94,0.45)]">
-                  Depositar agora
-                </button>
               </div>
-              <!-- Card 2/3: Configurar IA -->
-              <div id="hero-card-2" class="rounded-[18px] p-8 h-56 flex flex-col justify-between flex-1 transition-all duration-300 ease-out relative hover:scale-[1.02] z-[2] bg-[rgba(20,20,20,0.35)] border border-[rgba(255,255,255,0.12)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.08),inset_0_1px_1px_rgba(255,255,255,0.05)]" style="width: 100%; box-sizing: border-box;">
-                <div>
-                  <h3 class="font-medium mb-2 text-[rgba(255,255,255,0.55)]">
-                    Configure uma IA ou Copy Trading</h3>
-                  <p class="text-sm text-[rgba(255,255,255,0.40)]">Escolha e ative
-                    sua estratégia automática.</p>
+              <!-- SVG Lines -->
+              <svg class="absolute inset-0 w-full h-full pointer-events-none">
+                <defs>
+                  <filter id="glow-line">
+                    <feGaussianBlur stdDeviation="2" result="coloredBlur"></feGaussianBlur>
+                    <feMerge>
+                      <feMergeNode in="coloredBlur"></feMergeNode>
+                      <feMergeNode in="SourceGraphic"></feMergeNode>
+                    </feMerge>
+                  </filter>
+                </defs>
+                <line x1="280" y1="280" x2="420" y2="160" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" stroke-dasharray="4 8" filter="url(#glow-line)">
+                  <animate attributeName="stroke-dashoffset" from="0" to="12" dur="1.5s" repeatCount="indefinite"></animate>
+                </line>
+                <line x1="280" y1="280" x2="140" y2="220" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" stroke-dasharray="4 8" filter="url(#glow-line)">
+                  <animate attributeName="stroke-dashoffset" from="0" to="12" dur="1.5s" repeatCount="indefinite"></animate>
+                </line>
+                <line x1="280" y1="280" x2="140" y2="380" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" stroke-dasharray="4 8" filter="url(#glow-line)">
+                  <animate attributeName="stroke-dashoffset" from="0" to="12" dur="1.5s" repeatCount="indefinite"></animate>
+                </line>
+                <line x1="280" y1="280" x2="420" y2="340" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" stroke-dasharray="4 8" filter="url(#glow-line)">
+                  <animate attributeName="stroke-dashoffset" from="0" to="12" dur="1.5s" repeatCount="indefinite"></animate>
+                </line>
+                <line x1="280" y1="280" x2="380" y2="420" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" stroke-dasharray="4 8" filter="url(#glow-line)">
+                  <animate attributeName="stroke-dashoffset" from="0" to="12" dur="1.5s" repeatCount="indefinite"></animate>
+                </line>
+              </svg>
+              <!-- Floating Cards -->
+              <div class="absolute top-[15%] right-[10%] w-32 h-20 group transition-all duration-500 hover:scale-105 animate-[float-card-1_6s_ease-in-out_infinite]">
+                <div class="relative w-full h-full">
+                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-xl border border-[rgba(34,197,94,0.3)] shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.15)] group-hover:shadow-[0_6px_28px_rgba(0,0,0,0.9),0_0_45px_rgba(34,197,94,0.3)]">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(34,197,94,0.06)_0%,transparent_60%)]"></div>
+                  </div>
+                  <div class="absolute inset-0 flex items-center px-4 space-x-2">
+                    <div class="w-9 h-9 rounded-lg bg-[rgba(247,147,26,0.12)] border border-[rgba(247,147,26,0.25)] flex items-center justify-center">
+                      <i class="fab fa-bitcoin text-[#F7931A] text-base"></i>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="text-[11px] font-semibold text-white/90">BTC</span>
+                      <span class="text-[9px] text-[#22C55E] font-medium">$43,250</span>
+                    </div>
+                  </div>
                 </div>
-                <button @click="$router.push('/InvestmentIA')" class="bg-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.15)] text-[rgba(255,255,255,0.40)] py-2 px-4 rounded-[10px] h-[42px] w-full font-medium transition-all border border-[rgba(255,255,255,0.12)]">
-                  Ativar IA agora
-                </button>
               </div>
-              <!-- Card 3/3: Resultados -->
-              <div id="hero-card-3" class="rounded-[18px] p-8 h-56 flex flex-col justify-between flex-1 transition-all duration-300 ease-out relative hover:scale-[1.02] z-[1] bg-[rgba(20,20,20,0.35)] border border-[rgba(255,255,255,0.08)] backdrop-blur-[18px] shadow-[0_0_20px_rgba(34,197,94,0.08),inset_0_1px_1px_rgba(255,255,255,0.05)]" style="width: 100%; box-sizing: border-box;">
-                <div>
-                  <h3 class="font-medium mb-2 text-[rgba(255,255,255,0.55)]">
-                    Acompanhe seus resultados</h3>
-                  <p class="text-sm text-[rgba(255,255,255,0.40)]">Veja lucros,
-                    consistência e operações em tempo real com total
-                    transparência.</p>
+              <div class="absolute top-[32%] left-[4%] w-32 h-20 group transition-all duration-500 hover:scale-105 animate-[float-card-2_7s_ease-in-out_infinite]">
+                <div class="relative w-full h-full">
+                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-xl border border-[rgba(34,197,94,0.3)] shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.15)] group-hover:shadow-[0_6px_28px_rgba(0,0,0,0.9),0_0_45px_rgba(34,197,94,0.3)]">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(34,197,94,0.06)_0%,transparent_60%)]"></div>
+                  </div>
+                  <div class="absolute inset-0 flex items-center px-4 space-x-2">
+                    <div class="w-9 h-9 rounded-lg bg-[rgba(38,161,123,0.12)] border border-[rgba(38,161,123,0.25)] flex items-center justify-center">
+                      <span class="text-[#26A17B] text-sm font-bold">₮</span>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="text-[11px] font-semibold text-white/90">USDT</span>
+                      <span class="text-[9px] text-[#22C55E] font-medium">$1.00</span>
+                    </div>
+                  </div>
                 </div>
-                <button @click="scrollToPerformance" class="bg-[rgba(255,255,255,0.12)] hover:bg-[rgba(255,255,255,0.15)] text-[rgba(255,255,255,0.40)] py-2 px-4 rounded-[10px] h-[42px] w-full font-medium transition-all border border-[rgba(255,255,255,0.12)]">
-                  Ver resultados
-                </button>
+              </div>
+              <div class="absolute bottom-[28%] left-[8%] w-32 h-20 group transition-all duration-500 hover:scale-105 animate-[float-card-3_8s_ease-in-out_infinite]">
+                <div class="relative w-full h-full">
+                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-xl border border-[rgba(34,197,94,0.3)] shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.15)] group-hover:shadow-[0_6px_28px_rgba(0,0,0,0.9),0_0_45px_rgba(34,197,94,0.3)]">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(34,197,94,0.06)_0%,transparent_60%)]"></div>
+                  </div>
+                  <div class="absolute inset-0 flex items-center px-4 space-x-2">
+                    <div class="w-9 h-9 rounded-lg bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.25)] flex items-center justify-center">
+                      <i class="fas fa-dollar-sign text-[#22C55E] text-sm"></i>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="text-[11px] font-semibold text-white/90">USD</span>
+                      <span class="text-[9px] text-[#22C55E] font-medium">+2.4%</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <div class="absolute top-[48%] right-[8%] w-36 h-20 group transition-all duration-500 hover:scale-105 animate-[float-card-1_6.5s_ease-in-out_infinite]">
+                <div class="relative w-full h-full">
+                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-xl border border-[rgba(34,197,94,0.3)] shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.15)] group-hover:shadow-[0_6px_28px_rgba(0,0,0,0.9),0_0_45px_rgba(34,197,94,0.3)]">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(34,197,94,0.06)_0%,transparent_60%)]"></div>
+                  </div>
+                  <div class="absolute inset-0 flex items-center px-4 space-x-2">
+                    <div class="w-9 h-9 rounded-lg bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.25)] flex items-center justify-center">
+                      <i class="fas fa-robot text-[#22C55E] text-sm"></i>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="text-[11px] font-semibold text-[#22C55E]">IA Orion</span>
+                      <span class="text-[9px] text-white/50 font-medium">Ativo</span>
+                    </div>
+                    <div class="absolute top-2 right-2 w-2 h-2 bg-[#22C55E] rounded-full shadow-[0_0_10px_rgba(34,197,94,1)] animate-pulse"></div>
+                  </div>
+                </div>
+              </div>
+              <div class="absolute bottom-[16%] right-[14%] w-36 h-20 group transition-all duration-500 hover:scale-105 animate-[float-card-2_7.5s_ease-in-out_infinite]">
+                <div class="relative w-full h-full">
+                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-xl border border-[rgba(34,197,94,0.3)] shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.15)] group-hover:shadow-[0_6px_28px_rgba(0,0,0,0.9),0_0_45px_rgba(34,197,94,0.3)]">
+                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(34,197,94,0.06)_0%,transparent_60%)]"></div>
+                  </div>
+                  <div class="absolute inset-0 flex items-center px-4 space-x-2">
+                    <div class="w-9 h-9 rounded-lg bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.25)] flex items-center justify-center">
+                      <i class="fas fa-chart-line text-[#22C55E] text-sm"></i>
+                    </div>
+                    <div class="flex flex-col">
+                      <span class="text-[11px] font-semibold text-white/90">Lucro</span>
+                      <span class="text-[12px] text-[#22C55E] font-bold">+12.4%</span>
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+      </section>
+      
+      <!-- Ticker Section -->
+      <section id="ticker-section" class="px-8 py-3 relative overflow-hidden border-t border-[#22C55E]/20 bg-[rgba(11,11,11,0.8)] backdrop-blur-sm">
+        <div class="relative z-10 max-w-[1400px] mx-auto">
+          <div class="relative overflow-hidden">
+            <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
+            <div id="ticker-scroll" class="flex items-center whitespace-nowrap">
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Marcos V. lucrou <span class="text-[#22C55E] font-semibold">$103,70</span> usando IA Pulse</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Andre S. ativou IA Vega e iniciou operações</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Ricardo M. sacou <span class="text-[#22C55E] font-semibold">$82,10</span> do Copy Trading</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">João P. depositou <span class="text-[#22C55E] font-semibold">$150</span> e ativou IA Orion</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Felipe A. teve lucro de <span class="text-[#22C55E] font-semibold">$27,40</span> em operações manuais</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Beatriz M. ativou IA Titan para volatilidade extrema</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Rafael C. lucrou <span class="text-[#22C55E] font-semibold">$311,00</span> com IA Pulse</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Matheus L. ganhou <span class="text-[#22C55E] font-semibold">$57,22</span> com Copy Trade automatizado</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Marcos V. lucrou <span class="text-[#22C55E] font-semibold">$103,70</span> usando IA Pulse</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Andre S. ativou IA Vega e iniciou operações</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Ricardo M. sacou <span class="text-[#22C55E] font-semibold">$82,10</span> do Copy Trading</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">João P. depositou <span class="text-[#22C55E] font-semibold">$150</span> e ativou IA Orion</span></div>
+            </div>
+          </div>
         </div>
       </section>
       
@@ -231,85 +358,173 @@
       </section>
       
       <!-- Best IAs Section -->
-      <section id="best-ias" class="mb-6 w-full">
-      <div class="flex items-center justify-between mb-5">
-        <h2 class="text-base font-semibold text-zenix-text">Melhores IA's Agora</h2>
-        <span class="text-xs text-zenix-label">Baseado no mercado em tempo real</span>
-      </div>
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 lg:gap-5 w-full">
-        <div 
-          v-for="(ia, index) in bestIAs" 
-          :key="index"
-          class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden premium-card hover:border-zenix-green transition-all h-[200px] w-full"
-        >
-          <div class="flex h-full">
-            <div class="w-[35%] relative overflow-hidden flex-shrink-0">
-              <img :src="ia.image" :alt="ia.name" class="w-full h-full object-cover">
-              <div class="absolute inset-0 bg-gradient-to-r from-transparent to-zenix-card"></div>
-            </div>
-            <div class="flex-1 p-5 flex flex-col justify-between min-w-0">
-              <div>
-                <h3 class="text-base font-semibold text-zenix-text mb-1 truncate">{{ ia.name }}</h3>
-                <span class="text-xs text-zenix-label">{{ ia.category }}</span>
-                <div class="flex items-baseline space-x-2 mt-3">
-                  <p class="text-2xl font-bold text-zenix-green">{{ ia.consistency }}%</p>
-                  <p class="text-xs text-zenix-label">Consistência</p>
-                </div>
+      <section id="best-ai-section" class="px-12 pt-20 pb-20 relative">
+        <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
+        <div class="relative z-10 max-w-[1400px] mx-auto">
+          <div class="text-left mb-8 space-y-2">
+            <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Melhores IA's Agora</h2>
+            <p class="text-[17px] text-[#9B9B9B] max-w-3xl leading-[1.75]">
+              Escolha entre as inteligências artificiais mais avançadas do mercado. Cada IA foi otimizada para diferentes estratégias e perfis de risco, garantindo máxima performance em suas operações.
+            </p>
+          </div>
+          <div class="w-full h-[1px] bg-[#1C1C1C] opacity-35 mb-12"></div>
+          <div class="grid grid-cols-4 gap-6 mb-20">
+            <div 
+              v-for="(ia, index) in bestIAs" 
+              :key="index"
+              :id="`ai-card-${index + 1}`"
+              class="relative bg-[#0B0B0B] rounded-[20px] overflow-hidden shadow-[0_12px_48px_rgba(0,0,0,0.6),0_0_0_1px_rgba(34,197,94,0.08),0_0_32px_rgba(34,197,94,0.15),0_8px_20px_rgba(34,197,94,0.12)] hover:shadow-[0_20px_64px_rgba(0,0,0,0.7),0_0_0_1px_rgba(34,197,94,0.25),0_0_48px_rgba(34,197,94,0.25),0_12px_28px_rgba(34,197,94,0.18)] transition-all duration-500 group hover:-translate-y-1.5"
+            >
+              <div class="absolute -inset-4 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.10)_0%,transparent_70%)] blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
+              <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,197,94,0.04)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.02)_0%,transparent_70%)] animate-pulse" :style="{ animationDelay: `${index * 0.5}s`, animationDuration: '4s' }"></div>
+              <div class="h-[182px] w-full overflow-hidden relative">
+                <img :src="ia.image" :alt="ia.alt || ia.name" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-[1.21] group-hover:saturate-[1.30] group-hover:-translate-y-0.5" style="filter: brightness(1.23) saturate(1.3) drop-shadow(0 0 12px rgba(34,197,94,0.18));">
+                <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[rgba(11,11,11,0.3)] to-[#0B0B0B]"></div>
+                <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent opacity-60"></div>
               </div>
-              <div :id="`sparkline-${ia.id}`" class="h-10 mb-3"></div>
-              <button 
-                @click="activateIA()"
-                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-medium py-2 rounded-lg text-xs transition-all"
-              >
-                Ativar IA
-              </button>
+              <div class="p-6 flex flex-col gap-3.5 relative">
+                <div class="flex flex-col gap-2">
+                  <h3 class="text-xl font-semibold text-[rgba(255,255,255,0.95)] transition-colors duration-300 group-hover:text-white">{{ ia.name }}</h3>
+                  <p class="text-sm text-[rgba(255,255,255,0.78)] leading-relaxed transition-colors duration-300 group-hover:text-[rgba(255,255,255,0.85)]">{{ ia.description || ia.category }}</p>
+                </div>
+                <button 
+                  @click="activateIA()"
+                  class="w-full h-12 bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_6px_20px_rgba(34,197,94,0.38),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_28px_rgba(34,197,94,0.53),inset_0_1px_0_rgba(255,255,255,0.15)] group/btn"
+                  style="filter: brightness(1.05) saturate(1.08);"
+                >
+                  <span>Ativar IA</span>
+                  <i class="fas fa-arrow-right text-xs transition-transform duration-300 group-hover/btn:translate-x-1"></i>
+                </button>
+              </div>
             </div>
           </div>
         </div>
-      </div>
       </section>
       
-      <!-- Overall Performance Section -->
-      <section id="overall-performance" class="mt-6 mb-12 w-full">
-      <div class="bg-zenix-card border border-zenix-border rounded-xl p-10 premium-card w-full">
-        <h2 class="text-base font-semibold text-zenix-text mb-2">Desempenho Geral</h2>
-        <p class="text-sm text-[#AFAFAF] mb-10 text-left">Você está deixando dinheiro na mesa. Ative todos os recursos para maximizar seus resultados.</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 w-full">
-          <div 
-            v-for="(perf, index) in performanceData" 
-            :key="index"
-            class="flex flex-col space-y-5 bg-zenix-bg border border-[#1C1C1C] rounded-xl p-7 performance-card hover:border-zenix-green transition-all w-full"
-          >
-            <div class="flex items-center justify-between">
-              <div class="w-11 h-11 bg-zenix-card rounded-lg flex items-center justify-center border border-zenix-green/20 icon-perf-container">
-                <i :class="[perf.icon, 'text-zenix-green text-lg icon-perf']"></i>
-              </div>
+      <!-- Ticker Section 2 -->
+      <section id="ticker-section-2" class="px-8 py-3 relative overflow-hidden border-t border-[#22C55E]/20 bg-[rgba(11,11,11,0.8)] backdrop-blur-sm">
+        <div class="relative z-10 max-w-[1400px] mx-auto">
+          <div class="relative overflow-hidden">
+            <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
+            <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
+            <div id="ticker-scroll-2" class="flex items-center whitespace-nowrap">
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Marcos V. lucrou <span class="text-[#22C55E] font-semibold">$103,70</span> usando IA Pulse</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Andre S. ativou IA Vega e iniciou operações</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Ricardo M. sacou <span class="text-[#22C55E] font-semibold">$82,10</span> do Copy Trading</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">João P. depositou <span class="text-[#22C55E] font-semibold">$150</span> e ativou IA Orion</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Felipe A. teve lucro de <span class="text-[#22C55E] font-semibold">$27,40</span> em operações manuais</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Beatriz M. ativou IA Titan para volatilidade extrema</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Rafael C. lucrou <span class="text-[#22C55E] font-semibold">$311,00</span> com IA Pulse</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Matheus L. ganhou <span class="text-[#22C55E] font-semibold">$57,22</span> com Copy Trade automatizado</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Marcos V. lucrou <span class="text-[#22C55E] font-semibold">$103,70</span> usando IA Pulse</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Andre S. ativou IA Vega e iniciou operações</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Ricardo M. sacou <span class="text-[#22C55E] font-semibold">$82,10</span> do Copy Trading</span></div>
+              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">João P. depositou <span class="text-[#22C55E] font-semibold">$150</span> e ativou IA Orion</span></div>
             </div>
-            <h3 class="text-sm font-semibold text-zenix-text opacity-95">{{ perf.title }}</h3>
-            <div class="h-8 relative overflow-hidden">
-              <svg viewBox="0 0 100 30" preserveAspectRatio="none" class="w-full h-full">
-                <path :d="perf.chartPath" fill="none" stroke="rgba(34,197,94,0.6)" stroke-width="1.5" class="perf-line"></path>
-              </svg>
-            </div>
-            <div class="flex items-baseline space-x-2">
-              <span class="text-3xl font-bold text-zenix-green perf-number">{{ perf.percentage }}</span>
-              <span class="text-xs text-zenix-label">esta semana</span>
-            </div>
-            <p class="text-xs text-[#AFAFAF] perf-usage">
-              Você usou <span class="font-semibold text-zenix-text">{{ perf.usage }}%</span> do potencial
-            </p>
-            <div class="w-full bg-[#1C1C1C] rounded-full h-2 overflow-hidden">
-              <div class="bg-zenix-green h-2 rounded-full perf-bar" :style="{ width: perf.usage + '%' }"></div>
-            </div>
-            <button 
-              @click="handlePerformanceAction(perf)"
-              class="w-full bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold py-2.5 rounded-lg text-xs transition-all btn-primary mt-2"
-            >
-              {{ perf.buttonText }}
-            </button>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Divider -->
+      <div class="relative flex items-center justify-center -mt-[70px] mb-[60px] px-12 z-20">
+        <div class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
+          <div class="w-0.5 h-[30px] relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#0E0E0E] via-[#22C55E] to-[#0E0E0E] blur-[6px] opacity-40"></div>
+          </div>
+          <div class="w-0.5 h-[30px] relative overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-b from-[#0E0E0E] via-[#22C55E] to-[#0E0E0E] blur-[6px] opacity-40"></div>
           </div>
         </div>
       </div>
+      
+      <!-- Overall Performance Section -->
+      <section id="performance-section" class="px-12 pt-0 pb-36 relative">
+        <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
+        <div class="w-full h-[1px] bg-[#1C1C1C] opacity-35 mb-12"></div>
+        <div class="relative z-10 max-w-[1400px] mx-auto">
+          <div class="text-left mb-8 space-y-2">
+            <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Desempenho Geral</h2>
+            <p class="text-[17px] text-[#9B9B9B] max-w-3xl leading-[1.75]">
+              Ative agora os recursos que podem aumentar seus resultados automaticamente.<br>
+              Cada ferramenta desligada é lucro não realizado.
+            </p>
+          </div>
+          <div class="grid grid-cols-4 gap-4 justify-items-center">
+            <div 
+              v-for="(perf, index) in performanceData" 
+              :key="index"
+              :id="`performance-card-${index + 1}`"
+              class="relative bg-gradient-to-br from-[#0E0E0E] to-[#0B0B0B] rounded-[18px] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_0_1px_rgba(34,197,94,0.12),0_0_40px_rgba(34,197,94,0.18),0_16px_24px_rgba(34,197,94,0.09)] border border-[#1C1C1C] w-full h-auto transition-all duration-[250ms] ease-out hover:scale-[1.02] hover:shadow-[0_12px_48px_rgba(0,0,0,0.65),0_0_0_1px_rgba(34,197,94,0.18),0_0_60px_rgba(34,197,94,0.28),0_20px_32px_rgba(34,197,94,0.12)] hover:bg-gradient-to-br hover:from-[#111111] hover:to-[#0A0A0A] group"
+            >
+              <div class="absolute -inset-4 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.12)_0%,transparent_70%)] blur-[80px] opacity-100 -z-10 transition-opacity duration-[250ms] group-hover:opacity-125"></div>
+              <div class="p-6 flex flex-col gap-6">
+                <div class="flex items-start justify-between">
+                  <div class="w-[70px] h-[70px] bg-gradient-to-br from-[#22C55E]/10 to-[#16A34A]/5 rounded-xl flex items-center justify-center border border-[#22C55E]/20 shadow-[0_0_32px_rgba(34,197,94,0.28)]" :class="`animate-icon-pulse${index > 0 ? `-delay-${index}` : ''}`">
+                    <i :class="[perf.icon, 'text-[#22C55E] text-[37px] drop-shadow-[0_0_12px_rgba(34,197,94,0.32)]']"></i>
+                  </div>
+                  <div class="text-right">
+                    <div class="text-3xl font-bold text-[#22C55E]">{{ perf.percentage }}</div>
+                    <div class="text-xs text-white/50 mt-1">esta semana</div>
+                  </div>
+                </div>
+                <div class="h-16 relative transition-transform duration-[250ms] group-hover:translate-y-[-1px]">
+                  <svg viewBox="0 0 200 60" preserveAspectRatio="none" class="w-full h-full" :style="{ filter: 'drop-shadow(0 0 3px rgba(34,197,94,0.35))' }">
+                    <defs>
+                      <linearGradient :id="`lineGradient${index + 1}`" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="rgba(34,197,94,0.4)" stop-opacity="1"></stop>
+                        <stop offset="100%" stop-color="rgba(34,197,94,0)" stop-opacity="1"></stop>
+                      </linearGradient>
+                      <linearGradient :id="`strokeGradient${index + 1}`" x1="0%" y1="0%" x2="100%" y2="0%">
+                        <stop offset="0%" stop-color="rgba(34,197,94,0.95)" stop-opacity="1"></stop>
+                        <stop offset="100%" stop-color="rgb(34,197,94)" stop-opacity="1"></stop>
+                      </linearGradient>
+                      <filter :id="`blur${index + 1}`">
+                        <feGaussianBlur in="SourceGraphic" stdDeviation="0.5"></feGaussianBlur>
+                      </filter>
+                      <filter :id="`glow${index + 1}`">
+                        <feGaussianBlur stdDeviation="2" result="coloredBlur"></feGaussianBlur>
+                        <feMerge>
+                          <feMergeNode in="coloredBlur"></feMergeNode>
+                          <feMergeNode in="SourceGraphic"></feMergeNode>
+                        </feMerge>
+                      </filter>
+                    </defs>
+                    <path :d="perf.chartPathFull || perf.chartPath" fill="none" :stroke="`url(#strokeGradient${index + 1})`" stroke-width="2.7" :filter="`url(#blur${index + 1})`" style="filter: brightness(1.33);"></path>
+                    <circle cx="200" :cy="perf.chartEndY || 15" r="2.5" fill="#22C55E" :filter="`url(#glow${index + 1})`"></circle>
+                    <path :d="`${perf.chartPathFull || perf.chartPath} L200,60 L0,60 Z`" :fill="`url(#lineGradient${index + 1})`"></path>
+                  </svg>
+                </div>
+                <div class="space-y-3">
+                  <div class="flex items-center justify-between text-sm"><span class="text-white/70">{{ perf.title }}</span></div>
+                  <div class="space-y-2">
+                    <div class="flex items-center justify-between text-xs">
+                      <span class="text-white/50">Potencial usado</span>
+                      <span :class="perf.usage > 0 ? 'text-[#22C55E] font-bold' : 'text-white/30 font-bold'" :style="perf.usage > 0 ? { filter: 'brightness(1.18) saturate(1.2);' } : { filter: 'brightness(1.1);' }">{{ perf.usage }}%</span>
+                    </div>
+                    <div class="w-full h-[9.7px] bg-[#1C1C1C] rounded-full overflow-hidden">
+                      <div 
+                        :class="perf.usage > 0 ? 'animate-bar-fill relative overflow-hidden' : ''"
+                        class="h-full bg-gradient-to-r from-[#22C55E] via-[#1ED65F] to-[#16A34A] rounded-full shadow-[0_0_14px_rgba(34,197,94,0.65)]" 
+                        :style="{ width: perf.usage + '%', filter: 'brightness(1.08) saturate(1.2);' }"
+                      >
+                        <div v-if="perf.usage > 0" class="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-bar-shimmer"></div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <button 
+                  @click="handlePerformanceAction(perf)"
+                  class="w-full h-11 bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-[0_6px_20px_rgba(34,197,94,0.35),0_0_22px_rgba(34,197,94,0.12),0_2px_4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_28px_rgba(34,197,94,0.45),0_0_30px_rgba(34,197,94,0.25),0_3px_6px_rgba(0,0,0,0.4)] active:scale-[0.97] group/btn"
+                  style="filter: brightness(1.1) saturate(1.1);"
+                >
+                  <span>{{ perf.buttonText }}</span>
+                  <i class="fas fa-arrow-right text-xs transition-transform duration-200 group-hover/btn:translate-x-[3px]"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
       </section>
       </div>
     </main>
@@ -448,27 +663,43 @@ export default {
       bestIAs: [
         {
           id: 'orion',
-          name: 'Orion',
+          name: 'IA Orion',
           category: 'Alta performance',
+          description: 'Operações curtas e precisas nos movimentos dos Índices Sintéticos.',
           consistency: 82,
-          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/9ce74d6fb3-62541b7b8a479386c6ef.png',
+          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/d5da89075d-89d4400832faf3146f3f.png',
+          alt: 'circular neural network core with bright neon green glowing connections and energy nodes on pure black background, elegant thin lines, soft green ambient glow, futuristic digital brain structure',
           sparklineData: [45, 52, 48, 58, 55, 62, 58, 65, 62, 68]
         },
         {
           id: 'vega',
-          name: 'Vega',
+          name: 'IA Vega',
           category: 'Risco moderado',
+          description: 'Consistência diária operando tendências estáveis.',
           consistency: 76,
-          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/e59cfdfd69-a362376d603368410fde.png',
+          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/32a220d5d1-0e8a97180ab9e8d7d494.png',
+          alt: 'smooth flowing neural energy waves in neon green, continuous fluid motion with glowing particles following wave patterns on pure black background, elegant ambient green glow, digital energy visualization',
           sparklineData: [40, 45, 42, 48, 50, 47, 52, 55, 53, 58]
         },
         {
           id: 'pulse',
-          name: 'Pulse',
+          name: 'IA Pulse',
           category: 'Alta velocidade',
+          description: 'Estratégia agressiva para volatilidade intensa.',
           consistency: 91,
-          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/55bc31f629-45ed3611bcfc1eed8b5a.png',
+          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/e3205bf243-eec06ca9c726e87c0cc2.png',
+          alt: 'continuous neural pulse line with intense electric green energy spikes filling entire frame, fluid movements with glowing particles following pulse rhythm on pure black background, bright neon green peaks, soft ambient glow, zoomed in close-up view',
           sparklineData: [50, 58, 55, 65, 62, 70, 68, 75, 72, 80]
+        },
+        {
+          id: 'titan',
+          name: 'IA Titan',
+          category: 'Alta volatilidade',
+          description: 'IA projetada para capturar grandes movimentos de preço.',
+          consistency: 88,
+          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/9c4f4d6555-824e01b659da0692b15c.png',
+          alt: 'sharp triangular neural energy peaks in neon green, geometric synthetic forms with internal illumination on pure black background, non-organic digital aesthetic, glowing edges and soft ambient green light',
+          sparklineData: [48, 55, 52, 62, 60, 68, 65, 72, 70, 78]
         }
       ],
       performanceData: [
@@ -478,15 +709,19 @@ export default {
           percentage: '+12.4%',
           usage: 32,
           buttonText: 'Ativar agora',
-          chartPath: 'M0,20 L20,15 L40,18 L60,12 L80,14 L100,8'
+          chartPath: 'M0,20 L20,15 L40,18 L60,12 L80,14 L100,8',
+          chartPathFull: 'M0,45 L25,42 L50,38 L75,35 L100,30 L125,28 L150,25 L175,20 L200,15',
+          chartEndY: 15
         },
         {
-          icon: 'fas fa-clone',
+          icon: 'fas fa-copy',
           title: 'Copy Trading',
           percentage: '+8.7%',
           usage: 0,
           buttonText: 'Ativar agora',
-          chartPath: 'M0,22 L20,18 L40,20 L60,16 L80,17 L100,13'
+          chartPath: 'M0,22 L20,18 L40,20 L60,16 L80,17 L100,13',
+          chartPathFull: 'M0,48 L25,46 L50,44 L75,40 L100,38 L125,35 L150,32 L175,28 L200,25',
+          chartEndY: 25
         },
         {
           icon: 'fas fa-robot',
@@ -494,15 +729,19 @@ export default {
           percentage: '+15.2%',
           usage: 0,
           buttonText: 'Ativar agora',
-          chartPath: 'M0,18 L20,14 L40,16 L60,10 L80,12 L100,6'
+          chartPath: 'M0,18 L20,14 L40,16 L60,10 L80,12 L100,6',
+          chartPathFull: 'M0,50 L25,48 L50,45 L75,42 L100,38 L125,33 L150,28 L175,22 L200,18',
+          chartEndY: 18
         },
         {
-          icon: 'fas fa-wave-square',
+          icon: 'fas fa-chart-line',
           title: 'Operações com Sinais',
           percentage: '+10.9%',
           usage: 58,
           buttonText: 'Operar agora',
-          chartPath: 'M0,19 L20,16 L40,17 L60,13 L80,14 L100,10'
+          chartPath: 'M0,19 L20,16 L40,17 L60,13 L80,14 L100,10',
+          chartPathFull: 'M0,46 L25,44 L50,41 L75,38 L100,35 L125,32 L150,28 L175,24 L200,22',
+          chartEndY: 22
         }
       ],
       recommendedIA: {
@@ -1539,6 +1778,303 @@ export default {
   }
   50% {
     transform: translateY(-8px);
+  }
+}
+
+/* Ticker Scroll Animation */
+@keyframes ticker-scroll {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+#ticker-scroll,
+#ticker-scroll-2 {
+  animation: ticker-scroll 60s linear infinite;
+}
+
+/* Center Pulse Animation */
+@keyframes center-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 32px rgba(34, 197, 94, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 48px rgba(34, 197, 94, 0.6);
+  }
+}
+
+.animate-center-pulse {
+  animation: center-pulse 3s ease-in-out infinite;
+}
+
+/* Float Card Animations */
+@keyframes float-card-1 {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes float-card-2 {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes float-card-3 {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+/* Bar Fill and Shimmer */
+@keyframes bar-fill {
+  0% {
+    width: 0%;
+  }
+  100% {
+    width: var(--bar-width);
+  }
+}
+
+@keyframes bar-shimmer {
+  0% {
+    transform: translateX(-200%);
+  }
+  100% {
+    transform: translateX(200%);
+  }
+}
+
+.animate-bar-fill {
+  animation: bar-fill 1s ease-out;
+}
+
+.animate-bar-shimmer {
+  animation: bar-shimmer 2s ease-in-out infinite;
+}
+
+/* Icon Pulse Animations */
+@keyframes icon-pulse {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes icon-pulse-delay-1 {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes icon-pulse-delay-2 {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes icon-pulse-delay-3 {
+  0%,
+  100% {
+    opacity: 0.8;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.05);
+  }
+}
+
+.animate-icon-pulse {
+  animation: icon-pulse 3s ease-in-out infinite;
+}
+
+.animate-icon-pulse-delay-1 {
+  animation: icon-pulse-delay-1 3s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.animate-icon-pulse-delay-2 {
+  animation: icon-pulse-delay-2 3s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-icon-pulse-delay-3 {
+  animation: icon-pulse-delay-3 3s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+/* Chart Wave Animations */
+@keyframes chart-wave {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes chart-wave-delay-1 {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes chart-wave-delay-2 {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+@keyframes chart-wave-delay-3 {
+  0% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-2px);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.animate-chart-wave {
+  animation: chart-wave 4s ease-in-out infinite;
+}
+
+.animate-chart-wave-delay-1 {
+  animation: chart-wave-delay-1 4s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+.animate-chart-wave-delay-2 {
+  animation: chart-wave-delay-2 4s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.animate-chart-wave-delay-3 {
+  animation: chart-wave-delay-3 4s ease-in-out infinite;
+  animation-delay: 1.5s;
+}
+
+/* Light Sweep Animation */
+@keyframes light-sweep {
+  0% {
+    background: linear-gradient(90deg, transparent 0%, transparent 100%);
+  }
+  15% {
+    background: linear-gradient(90deg, transparent 0%, rgba(34, 197, 94, 0.14) 25%, transparent 50%, transparent 100%);
+  }
+  50% {
+    background: linear-gradient(90deg, transparent 0%, transparent 40%, rgba(34, 197, 94, 0.14) 50%, transparent 60%, transparent 100%);
+  }
+  85% {
+    background: linear-gradient(90deg, transparent 0%, transparent 50%, rgba(34, 197, 94, 0.14) 75%, transparent 100%);
+  }
+  100% {
+    background: linear-gradient(90deg, transparent 0%, transparent 100%);
+  }
+}
+
+.animate-light-sweep {
+  animation: light-sweep 7s ease-in-out infinite;
+  animation-delay: 5s;
+}
+
+.animate-light-sweep-delay-1 {
+  animation: light-sweep 7s ease-in-out infinite;
+  animation-delay: 5.5s;
+}
+
+.animate-light-sweep-delay-2 {
+  animation: light-sweep 7s ease-in-out infinite;
+  animation-delay: 6s;
+}
+
+.animate-light-sweep-delay-3 {
+  animation: light-sweep 7s ease-in-out infinite;
+  animation-delay: 6.5s;
+}
+
+/* Hero Section Height Fix */
+#hero-section {
+  height: 700px;
+}
+
+@media (max-width: 1024px) {
+  #hero-section {
+    height: auto;
+    min-height: 600px;
+  }
+  
+  .grid.grid-cols-2 {
+    grid-template-columns: 1fr;
+  }
+  
+  .grid.grid-cols-4 {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .grid.grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+  
+  #best-ai-section .grid.grid-cols-4 {
+    grid-template-columns: 1fr;
+  }
+  
+  #performance-section .grid.grid-cols-4 {
+    grid-template-columns: 1fr;
   }
 }
 
