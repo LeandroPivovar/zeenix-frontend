@@ -739,7 +739,6 @@ export default {
                 
                 // Valores numéricos (o backend já retorna parseFloat, mas garantimos)
                 const stakeAmount = parseFloat(trade.stakeAmount) || 0;
-                const entryPrice = parseFloat(trade.entryPrice) || 0;
                 const exitPrice = trade.exitPrice != null ? parseFloat(trade.exitPrice) : null;
                 const profitLoss = trade.profitLoss != null ? parseFloat(trade.profitLoss) : null;
                 
