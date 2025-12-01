@@ -1949,9 +1949,16 @@ export default {
       }
       
       const prices = history.prices.map(price => Number(price));
-      const times = history.times && Array.isArray(history.times) 
-        ? history.times.map(time => Number(time)) 
-        : [];
+      
+      // Tentar obter times de diferentes lugares
+      let times = [];
+      if (history.times && Array.isArray(history.times) && history.times.length > 0) {
+        times = history.times.map(time => Number(time));
+      } else if (msg.subscription?.id) {
+        // Se não tem times, gerar baseado no tempo atual
+        const now = Math.floor(Date.now() / 1000);
+        times = prices.map((_, index) => now - (prices.length - index - 1) * 2); // 2 segundos por tick
+      }
       
       console.log('[OperationChart] Dados extraídos:', {
         pricesCount: prices.length,
@@ -1959,13 +1966,35 @@ export default {
         firstPrice: prices[0],
         lastPrice: prices[prices.length - 1],
         firstTime: times[0] || 'N/A',
-        lastTime: times[times.length - 1] || 'N/A'
+        lastTime: times[times.length - 1] || 'N/A',
+        hasValidTimes: times.length === prices.length
       });
       
-      // Criar ticks com epoch ou usar índices como fallback
+      // Criar ticks com epoch válido
+      // A Deriv geralmente não retorna times explícitos em ticks_history
+      // Vamos gerar timestamps baseados no tempo atual, retrocedendo
+      const now = Math.floor(Date.now() / 1000);
       const newTicks = prices.map((value, index) => {
-        const epoch = times[index] || (Date.now() / 1000 - (prices.length - index) * 2); // Fallback: 2 segundos por tick
-        return { value, epoch: Math.floor(epoch) };
+        // Se temos times válidos da API, usar eles
+        // Caso contrário, gerar timestamps retrocedendo do tempo atual
+        let epoch;
+        if (times[index] && times[index] > 1000000000) { // Validar que é um Unix timestamp válido (após 2001)
+          epoch = Math.floor(Number(times[index]));
+        } else {
+          // Gerar timestamp retrocedendo 2 segundos por tick do último ao primeiro
+          // O último tick é o mais recente (agora ou alguns segundos atrás)
+          epoch = now - (prices.length - index - 1) * 2;
+        }
+        return { value, epoch };
+      });
+      
+      console.log('[OperationChart] Ticks criados:', {
+        count: newTicks.length,
+        firstTick: newTicks[0],
+        lastTick: newTicks[newTicks.length - 1],
+        timeRange: newTicks.length > 1 ? newTicks[newTicks.length - 1].epoch - newTicks[0].epoch : 0,
+        firstTimeFormatted: new Date(newTicks[0].epoch * 1000).toLocaleString(),
+        lastTimeFormatted: new Date(newTicks[newTicks.length - 1].epoch * 1000).toLocaleString()
       });
       
       // Se está em reconexão e já temos ticks, preservar os dados existentes
@@ -2129,13 +2158,14 @@ export default {
       
       // Preparar dados para o gráfico
       // Converter ticks para formato esperado pelo Lightweight Charts
-      const chartData = this.ticks
+      let chartData = this.ticks
         .map(tick => {
           const time = Math.floor(Number(tick.epoch));
           const value = Number(tick.value);
           
           // Validar dados
           if (isNaN(time) || isNaN(value) || time <= 0) {
+            console.warn('[OperationChart] Tick inválido ignorado:', tick);
             return null;
           }
           
@@ -2149,9 +2179,43 @@ export default {
         return;
       }
       
+      // Verificar se os timestamps são válidos (Unix timestamp em segundos)
+      // Se os timestamps parecem muito grandes ou muito pequenos, corrigir
+      const now = Math.floor(Date.now() / 1000);
+      const firstTime = chartData[0].time;
+      const lastTime = chartData[chartData.length - 1].time;
+      
+      // Se os timestamps são do futuro ou muito antigos, regenerar baseado no tempo atual
+      if (firstTime > now + 3600 || firstTime < now - 86400) {
+        console.warn('[OperationChart] Timestamps inválidos detectados, regenerando...', {
+          firstTime,
+          lastTime,
+          now,
+          firstTimeIsFuture: firstTime > now,
+          firstTimeTooOld: firstTime < now - 86400
+        });
+        
+        // Gerar novos timestamps baseados no tempo atual
+        chartData = chartData.map((point, index) => ({
+          value: point.value,
+          time: now - (chartData.length - index - 1) * 2 // 2 segundos por ponto
+        }));
+        
+        console.log('[OperationChart] Timestamps regenerados:', {
+          firstTime: chartData[0].time,
+          lastTime: chartData[chartData.length - 1].time,
+          now
+        });
+      }
+      
       console.log('[OperationChart] Plotando', chartData.length, 'pontos no gráfico');
       console.log('[OperationChart] Primeiro ponto:', chartData[0]);
       console.log('[OperationChart] Último ponto:', chartData[chartData.length - 1]);
+      console.log('[OperationChart] Range de tempo:', {
+        primeiro: new Date(chartData[0].time * 1000).toLocaleString(),
+        ultimo: new Date(chartData[chartData.length - 1].time * 1000).toLocaleString(),
+        duracaoSegundos: chartData[chartData.length - 1].time - chartData[0].time
+      });
       
       try {
         // Verificar se é atualização incremental (apenas 1 ponto novo)
@@ -2168,8 +2232,64 @@ export default {
           console.log('[OperationChart] Atualização completa, definindo', chartData.length, 'pontos');
           this.lineSeries.setData(chartData);
           
-          // Ajustar escala para mostrar todos os dados
-          this.chart.timeScale().fitContent();
+          // Forçar resize do gráfico antes de ajustar escala
+          const container = this.$refs.chartContainer;
+          if (container) {
+            const rect = container.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              console.log('[OperationChart] Redimensionando gráfico para:', rect.width, 'x', rect.height);
+              this.chart.applyOptions({
+                width: rect.width,
+                height: rect.height
+              });
+            }
+          }
+          
+          // Aguardar um frame antes de ajustar escala
+          requestAnimationFrame(() => {
+            try {
+              // Ajustar escala para mostrar todos os dados
+              this.chart.timeScale().fitContent();
+              console.log('[OperationChart] Escala ajustada com fitContent');
+              
+              // Verificar se o canvas existe e está visível
+              if (container) {
+                const canvas = container.querySelector('canvas');
+                if (canvas) {
+                  console.log('[OperationChart] Canvas encontrado:', {
+                    width: canvas.width,
+                    height: canvas.height,
+                    visible: canvas.offsetWidth > 0 && canvas.offsetHeight > 0,
+                    display: window.getComputedStyle(canvas).display,
+                    visibility: window.getComputedStyle(canvas).visibility
+                  });
+                  
+                  // Garantir que o canvas está visível
+                  canvas.style.display = 'block';
+                  canvas.style.visibility = 'visible';
+                  canvas.style.opacity = '1';
+                  
+                  // Forçar repaint
+                  const ctx = canvas.getContext('2d');
+                  if (ctx) {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                  }
+                } else {
+                  console.warn('[OperationChart] ⚠️ Canvas não encontrado no container!');
+                }
+              }
+              
+              // Forçar uma segunda atualização após um pequeno delay
+              setTimeout(() => {
+                if (this.chart && this.lineSeries) {
+                  this.chart.timeScale().fitContent();
+                  console.log('[OperationChart] Segunda atualização de escala aplicada');
+                }
+              }, 100);
+            } catch (scaleError) {
+              console.error('[OperationChart] Erro ao ajustar escala:', scaleError);
+            }
+          });
         }
         
         // Salvar contagem para próxima atualização
@@ -2181,6 +2301,13 @@ export default {
       } catch (error) {
         console.error('[OperationChart] ERRO ao atualizar gráfico:', error);
         console.error('[OperationChart] Stack:', error.stack);
+        console.error('[OperationChart] Dados que causaram erro:', {
+          chartDataLength: chartData.length,
+          firstPoint: chartData[0],
+          lastPoint: chartData[chartData.length - 1],
+          hasChart: !!this.chart,
+          hasLineSeries: !!this.lineSeries
+        });
       }
     },
     supportsCallPut(symbol) {
@@ -4911,4 +5038,5 @@ export default {
   min-height: 0;
 }
 
+</style>
 </style>
