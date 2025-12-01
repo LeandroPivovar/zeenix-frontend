@@ -103,9 +103,27 @@ export default {
     },
     
     addLogFromTradeResult(result, logId) {
+      // Obter timestamp real do registro (prioridade: createdAt, closedAt, time, ou agora)
+      let recordTimestamp = null;
+      if (result.createdAt) {
+        // Se for string, converter para Date; se já for Date, usar diretamente
+        recordTimestamp = result.createdAt instanceof Date ? result.createdAt : new Date(result.createdAt);
+      } else if (result.closedAt) {
+        recordTimestamp = result.closedAt instanceof Date ? result.closedAt : new Date(result.closedAt);
+      } else if (result.time) {
+        // Se time for um timestamp em segundos, converter para milissegundos
+        const timestamp = typeof result.time === 'number' ? result.time : parseInt(result.time);
+        recordTimestamp = new Date(timestamp * 1000);
+      }
+      
+      // Validar se a data é válida
+      if (recordTimestamp && isNaN(recordTimestamp.getTime())) {
+        recordTimestamp = null;
+      }
+      
       // Log de preparação para comprar contrato (apenas se status indicar)
       if (result.status === 'PURCHASE_PENDING' || result.status === 'BUYING' || result.status === 'EXECUTED') {
-        this.addLog('info', `Preparando para comprar contrato`, logId);
+        this.addLog('info', `Preparando para comprar contrato`, logId, recordTimestamp);
       }
       
       // Log de contrato comprado (usar stakeAmount ou buyPrice)
@@ -116,19 +134,27 @@ export default {
         const priceFormatted = typeof buyPrice === 'number' 
           ? buyPrice.toFixed(2) 
           : buyPrice;
-        this.addLog('purchase', `Contrato comprado | $${priceFormatted} | Volatility 100 Index`, logId);
+        this.addLog('purchase', `Contrato comprado | $${priceFormatted} | Volatility 100 Index`, logId, recordTimestamp);
         
-        // Log de condição de pagamento (apenas uma vez por contrato)
+        // Log de condição de pagamento (apenas uma vez por contrato) - usar mesmo timestamp
         const direction = result.direction || result.type;
         if (direction) {
           const condition = direction === 'CALL' || direction === 'Up'
             ? 'Ganhe o pagamento se o último dígito de Volatility 100 Index for par após 1 ticks.'
             : 'Ganhe o pagamento se o último dígito de Volatility 100 Index for um número ímpar após 1 ticks.';
-          this.addLog('info', condition, `${logId}-condition`);
+          this.addLog('info', condition, `${logId}-condition`, recordTimestamp);
         }
       }
       
       // Log de resultado (ganho ou perda) - apenas se a operação estiver fechada
+      // Para resultado, usar closedAt se disponível, senão usar createdAt
+      let resultTimestamp = recordTimestamp;
+      if (result.closedAt) {
+        resultTimestamp = new Date(result.closedAt);
+      } else if (result.createdAt && !resultTimestamp) {
+        resultTimestamp = new Date(result.createdAt);
+      }
+      
       if (result.status === 'CLOSED' || (result.profit != null && result.profitLoss != null)) {
         const profit = result.profit != null ? Number(result.profit) : (result.profitLoss != null ? Number(result.profitLoss) : null);
         
@@ -140,23 +166,25 @@ export default {
             : 'N/A';
           
           if (profit > 0) {
-            this.addLog('gain', `Ganho $${profit.toFixed(2)} | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`);
+            this.addLog('gain', `Ganho $${profit.toFixed(2)} | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`, resultTimestamp);
           } else if (profit < 0) {
-            this.addLog('loss', `Perda $${Math.abs(profit).toFixed(2)} | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`);
+            this.addLog('loss', `Perda $${Math.abs(profit).toFixed(2)} | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`, resultTimestamp);
           } else {
-            this.addLog('info', `Operação finalizada | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`);
+            this.addLog('info', `Operação finalizada | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`, resultTimestamp);
           }
         }
       }
       
       // Log de status da estratégia
       if (result.strategyStatus) {
-        this.addLog('strategy', result.strategyStatus, `${logId}-strategy`);
+        this.addLog('strategy', result.strategyStatus, `${logId}-strategy`, recordTimestamp);
       }
     },
     
-    addLog(type, message, id = null) {
-      const timestamp = this.formatTime(new Date());
+    addLog(type, message, id = null, recordDate = null) {
+      // Usar a data do registro se fornecida, senão usar a data atual
+      const dateToUse = recordDate || new Date();
+      const timestamp = this.formatDateTime(dateToUse);
       const logEntry = {
         id: id || `log-${Date.now()}-${Math.random()}`,
         timestamp,
@@ -177,6 +205,17 @@ export default {
           this.$refs.logsContainer.scrollTop = 0;
         }
       });
+    },
+    
+    formatDateTime(date) {
+      // Formatar como DD/MM/YYYY HH:MM:SS
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = date.getFullYear();
+      const hours = String(date.getHours()).padStart(2, '0');
+      const minutes = String(date.getMinutes()).padStart(2, '0');
+      const seconds = String(date.getSeconds()).padStart(2, '0');
+      return `${day}/${month}/${year} ${hours}:${minutes}:${seconds}`;
     },
     
     clearLogs() {
@@ -302,13 +341,15 @@ export default {
 .log-timestamp {
   color: #7A7A7A;
   font-weight: 500;
-  min-width: 80px;
+  min-width: 160px;
   flex-shrink: 0;
+  text-align: left;
 }
 
 .log-message {
   flex: 1;
   word-break: break-word;
+  text-align: left;
 }
 
 /* Tipos de log */

@@ -13,34 +13,6 @@
         <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full h-full">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A]">
             <div class="flex items-center gap-4">
-              <select 
-                id="marketSelect"
-                v-model="symbol"
-                @change="handleSymbolChange"
-                :disabled="!isAuthorized || isLoadingSymbol"
-                class="bg-[#0F0F0F] border border-zenix-border rounded-lg px-3 py-2 text-xs text-zenix-text focus:outline-none focus:border-zenix-green transition-all duration-300"
-              >
-                <optgroup label="Índices Sintéticos">
-                  <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value" data-category="synthetic">
-                    {{ market.label }}
-                  </option>
-                </optgroup>
-                <optgroup label="Criptomoedas">
-                  <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value" data-category="crypto">
-                    {{ market.label }}
-                  </option>
-                </optgroup>
-                <optgroup label="Forex">
-                  <option v-for="market in [...(marketsByCategory['Forex Majors'] || []), ...(marketsByCategory['Forex Minors'] || []), ...(marketsByCategory['Forex Exotics'] || [])]" :key="market.value" :value="market.value" data-category="forex">
-                    {{ market.label }}
-                  </option>
-                </optgroup>
-                <optgroup label="Metais">
-                  <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value" data-category="metals">
-                    {{ market.label }}
-                  </option>
-                </optgroup>
-              </select>
               <div class="flex gap-2">
                 <button 
                   v-for="timeframe in ['1m', '2m', '5m', '15m', '30m']" 
@@ -128,7 +100,7 @@
         </div>
         </div>
 
-        <div class="max-w-[280px] w-[280px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
+        <div class="max-w-[340px] w-[340px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
           <div class="pb-3 border-b border-zenix-border mb-5">
             <h3 class="text-base font-semibold text-zenix-text">Painel de Negociação Manual</h3>
           </div>
@@ -4728,7 +4700,6 @@ export default {
 }
 
 /* Estilos para selects conforme HTML fornecido */
-#marketSelect optgroup,
 #marketSelectSidebar optgroup,
 #tradeTypeSelect optgroup {
   background-color: #0F0F0F;
@@ -4740,7 +4711,6 @@ export default {
   text-transform: uppercase;
 }
 
-#marketSelect option,
 #marketSelectSidebar option,
 #tradeTypeSelect option {
   background-color: #0B0B0B;
@@ -4752,7 +4722,6 @@ export default {
   transition: all 0.2s ease;
 }
 
-#marketSelect option:hover,
 #marketSelectSidebar option:hover,
 #tradeTypeSelect option:hover {
   background-color: #111111;

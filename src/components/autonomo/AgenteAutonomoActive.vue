@@ -360,9 +360,13 @@
 					// Criar ID único
 					const contractId = `autonomo-${op.data}-${op.hora}-${index}`;
 					
-					// Converter data e hora para timestamp
+					// Converter data e hora para timestamp e Date objects
 					const dateTime = new Date(`${op.data}T${op.hora}`);
 					const time = Math.floor(dateTime.getTime() / 1000);
+					
+					// Criar createdAt e closedAt (assumindo que a hora é quando foi fechado)
+					const createdAt = dateTime.toISOString();
+					const closedAt = dateTime.toISOString(); // Usar mesma data/hora já que não temos separação
 					
 					return {
 						contractId: contractId,
@@ -378,7 +382,9 @@
 						closePrice: saida,
 						status: 'CLOSED',
 						time: time,
-						stakeAmount: entrada
+						stakeAmount: entrada,
+						createdAt: createdAt,
+						closedAt: closedAt
 					};
 				});
 			}
