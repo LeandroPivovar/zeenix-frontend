@@ -1,12 +1,5 @@
 <template>
   <div class="operation-last-orders-container">
-    <div class="orders-header">
-      <h2 class="orders-title">Últimas Ordens</h2>
-      <div class="orders-count" v-if="orders.length > 0">
-        {{ orders.length }} {{ orders.length === 1 ? 'ordem' : 'ordens' }}
-      </div>
-    </div>
-    
     <div class="orders-content">
       <div class="orders-table-wrapper">
         <table class="orders-table">
@@ -80,34 +73,10 @@ export default {
   overflow: hidden;
 }
 
-.orders-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1.5rem;
-  border-bottom: 1px solid #1C1C1C;
-  background: #0B0B0B;
-}
-
-.orders-title {
-  font-size: 1.25rem;
-  font-weight: 600;
-  color: #DFDFDF;
-  margin: 0;
-}
-
-.orders-count {
-  font-size: 0.875rem;
-  color: #7A7A7A;
-  background: #1C1C1C;
-  padding: 0.375rem 0.75rem;
-  border-radius: 0.5rem;
-}
-
 .orders-content {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
+  padding: 1.5rem;
 }
 
 .orders-table-wrapper {
@@ -259,14 +228,6 @@ export default {
 
 /* Responsive */
 @media (max-width: 768px) {
-  .orders-header {
-    padding: 1rem;
-  }
-
-  .orders-title {
-    font-size: 1rem;
-  }
-
   .orders-table th,
   .orders-table td {
     padding: 0.75rem 0.5rem;

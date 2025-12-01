@@ -45,7 +45,7 @@
             </div>
           </div>
 
-          <div id="candlestickChart" class="flex-1 w-full min-h-0" ref="chartContainer"></div>
+          <div id="candlestickChart" class="flex-1 w-full min-h-0 chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative;"></div>
           <div v-if="!chartInitialized" class="chart-placeholder absolute inset-0 flex items-center justify-center">
             <p class="text-zenix-secondary">{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
           </div>
@@ -584,11 +584,15 @@ export default {
             height: containerHeight,
             localization: { locale: 'pt-BR' },
             layout: {
-              background: { type: ColorType.Solid, color: '#0f172a' },
-              textColor: '#f8fafc',
+              background: { type: ColorType.Solid, color: '#0B0B0B' },
+              textColor: '#DFDFDF',
             },
             rightPriceScale: {
               borderVisible: false,
+              textColor: '#DFDFDF',
+            },
+            leftPriceScale: {
+              visible: false,
             },
             timeScale: {
               borderVisible: false,
@@ -597,24 +601,48 @@ export default {
               rightOffset: Math.floor(containerWidth * 0.15), // 15% de espaço à direita
             },
             grid: {
-              vertLines: { color: 'rgba(148, 163, 184, 0.1)' },
-              horzLines: { color: 'rgba(148, 163, 184, 0.1)' },
+              vertLines: { color: 'rgba(28, 28, 28, 0.5)' },
+              horzLines: { color: 'rgba(28, 28, 28, 0.5)' },
             },
             crosshair: {
               mode: 1,
+              vertLine: {
+                color: '#22C55E',
+                width: 1,
+                style: 0,
+              },
+              horzLine: {
+                color: '#22C55E',
+                width: 1,
+                style: 0,
+              },
             },
           });
 
           this.lineSeries = this.chart.addAreaSeries({
-            lineColor: '#4ade80',
-            topColor: 'rgba(74, 222, 128, 0.2)',
-            bottomColor: 'rgba(74, 222, 128, 0.02)',
+            lineColor: '#22C55E',
+            topColor: 'rgba(34, 197, 94, 0.3)',
+            bottomColor: 'rgba(34, 197, 94, 0.05)',
             lineWidth: 2,
             priceFormat: {
               type: 'price',
               precision: this.pricePrecision,
               minMove: Math.pow(10, -this.pricePrecision),
             },
+          });
+          
+          // Forçar repaint do gráfico após criação
+          this.$nextTick(() => {
+            if (this.chart) {
+              // Forçar atualização visual
+              this.chart.timeScale().fitContent();
+              // Pequeno delay para garantir renderização
+              setTimeout(() => {
+                if (this.chart && this.ticks.length > 0) {
+                  this.chart.timeScale().fitContent();
+                }
+              }, 100);
+            }
           });
 
           console.log('[OperationChart] ✓ Gráfico e lineSeries criados com sucesso');
@@ -628,6 +656,26 @@ export default {
               height: containerHeight,
               offsetWidth: container.offsetWidth,
               offsetHeight: container.offsetHeight
+            }
+          });
+          
+          // Garantir que o gráfico seja renderizado corretamente
+          this.$nextTick(() => {
+            if (this.chart) {
+              // Forçar atualização visual
+              this.chart.timeScale().fitContent();
+              // Verificar se o container está visível
+              const isVisible = container.offsetParent !== null && 
+                               container.offsetWidth > 0 && 
+                               container.offsetHeight > 0;
+              if (!isVisible) {
+                console.warn('[OperationChart] Container não está visível, aguardando...');
+                setTimeout(() => {
+                  if (this.chart) {
+                    this.chart.timeScale().fitContent();
+                  }
+                }, 200);
+              }
             }
           });
           
@@ -682,6 +730,12 @@ export default {
           height: containerHeight,
           timeScale: {
             rightOffset: Math.floor(containerWidth * 0.15), // 15% de espaço à direita
+          }
+        });
+        // Forçar repaint após redimensionamento
+        this.$nextTick(() => {
+          if (this.chart) {
+            this.chart.timeScale().fitContent();
           }
         });
         console.log('[OperationChart] Gráfico redimensionado:', {
@@ -2041,10 +2095,16 @@ export default {
           // Forçar atualização visual do gráfico
           if (this.chart) {
             this.chart.timeScale().fitContent();
-            // Forçar repaint
+            // Forçar repaint múltiplas vezes para garantir renderização
             this.$nextTick(() => {
               if (this.chart) {
-                this.chart.timeScale().scrollToPosition(0, false);
+                this.chart.timeScale().fitContent();
+                // Pequeno delay adicional para garantir que o gráfico seja renderizado
+                setTimeout(() => {
+                  if (this.chart) {
+                    this.chart.timeScale().fitContent();
+                  }
+                }, 50);
               }
             });
           }
@@ -4742,6 +4802,8 @@ export default {
   position: relative;
   display: flex;
   flex-direction: column;
+  background-color: #0B0B0B;
+  overflow: hidden;
 }
 
 #candlestickChart > * {
@@ -4749,6 +4811,17 @@ export default {
   height: 100%;
   flex: 1;
   min-height: 0;
+}
+
+.chart-wrapper {
+  background-color: #0B0B0B !important;
+  min-height: 400px;
+}
+
+.chart-wrapper canvas {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .col-chart {
