@@ -370,30 +370,6 @@
         </div>
       </section>
       
-      <!-- Ticker Section 2 -->
-      <section id="ticker-section-2" class="px-8 py-3 relative overflow-hidden border-t border-[#22C55E]/20 bg-[rgba(11,11,11,0.8)] backdrop-blur-sm w-full">
-        <div class="relative z-10 w-full">
-          <div class="relative overflow-hidden w-full">
-            <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
-            <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
-            <div id="ticker-scroll-2" class="flex items-center whitespace-nowrap w-full">
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Marcos V. lucrou <span class="text-[#22C55E] font-semibold">$103,70</span> usando IA Pulse</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Andre S. ativou IA Vega e iniciou operações</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Ricardo M. sacou <span class="text-[#22C55E] font-semibold">$82,10</span> do Copy Trading</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">João P. depositou <span class="text-[#22C55E] font-semibold">$150</span> e ativou IA Orion</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Felipe A. teve lucro de <span class="text-[#22C55E] font-semibold">$27,40</span> em operações manuais</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Beatriz M. ativou IA Titan para volatilidade extrema</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Rafael C. lucrou <span class="text-[#22C55E] font-semibold">$311,00</span> com IA Pulse</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Matheus L. ganhou <span class="text-[#22C55E] font-semibold">$57,22</span> com Copy Trade automatizado</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Marcos V. lucrou <span class="text-[#22C55E] font-semibold">$103,70</span> usando IA Pulse</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Andre S. ativou IA Vega e iniciou operações</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Ricardo M. sacou <span class="text-[#22C55E] font-semibold">$82,10</span> do Copy Trading</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">João P. depositou <span class="text-[#22C55E] font-semibold">$150</span> e ativou IA Orion</span></div>
-            </div>
-          </div>
-        </div>
-      </section>
-      
       <!-- Divider -->
       <div class="relative flex items-center justify-center -mt-[70px] mb-[60px] px-12 z-20">
         <div class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
@@ -1759,8 +1735,7 @@ export default {
   }
 }
 
-#ticker-scroll,
-#ticker-scroll-2 {
+#ticker-scroll {
   animation: ticker-scroll 60s linear infinite;
 }
 
