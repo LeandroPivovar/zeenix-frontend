@@ -728,78 +728,52 @@ export default {
         // Transformar dados do backend para o formato esperado pelo OperationLogs
         formattedTradeResults() {
             // Usar dados originais do backend se disponíveis, senão usar logOperations transformado
-            const sourceData = this.rawTradeHistory.length > 0 ? this.rawTradeHistory : this.logOperations;
-            
-            if (!sourceData || sourceData.length === 0) {
+            if (!this.rawTradeHistory || this.rawTradeHistory.length === 0) {
                 return [];
             }
             
-            // Se temos dados originais do backend, usar diretamente
-            if (this.rawTradeHistory.length > 0) {
-                return this.rawTradeHistory.map((trade, index) => {
-                    const contractId = trade.contract_id || trade.contractId || trade.id || `trade-${trade.created_at || Date.now()}-${index}`;
-                    const entryPrice = parseFloat(trade.entry_price) || 0;
-                    const exitPrice = parseFloat(trade.exit_price) || entryPrice;
-                    const profitLoss = parseFloat(trade.profit_loss) || 0;
-                    const stakeAmount = parseFloat(trade.stake_amount) || 0;
-                    const direction = (trade.contract_type || trade.gemini_signal || 'CALL').toUpperCase();
-                    const status = trade.status || (profitLoss !== 0 ? 'CLOSED' : 'PENDING');
-                    
-                    // Converter timestamp para epoch
-                    let time = Date.now();
-                    if (trade.created_at) {
-                        const date = new Date(trade.created_at);
-                        time = Math.floor(date.getTime() / 1000);
-                    }
-                    
-                    return {
-                        contractId: contractId,
-                        id: contractId,
-                        buyPrice: entryPrice,
-                        price: entryPrice,
-                        direction: direction,
-                        type: direction,
-                        profit: profitLoss,
-                        profitLoss: profitLoss,
-                        exitTick: exitPrice.toFixed(2),
-                        sellPrice: exitPrice,
-                        closePrice: exitPrice,
-                        status: status,
-                        time: time,
-                        stakeAmount: stakeAmount,
-                        createdAt: trade.created_at,
-                        closedAt: trade.closed_at
-                    };
-                });
-            }
-            
-            // Fallback: transformar logOperations (formato já transformado)
-            return this.logOperations.map((op, index) => {
-                // Extrair valores numéricos do formato string
-                const investmentMatch = op.investment ? op.investment.replace('$', '').replace(',', '') : '0';
-                const investment = parseFloat(investmentMatch) || 0;
+            // O backend retorna dados em camelCase: entryPrice, exitPrice, stakeAmount, etc.
+            return this.rawTradeHistory.map((trade, index) => {
+                // IDs únicos
+                const contractId = trade.id || `trade-${trade.createdAt || Date.now()}-${index}`;
                 
-                const pnlMatch = op.pnl ? op.pnl.replace('$', '').replace('+', '').replace(',', '') : '0';
-                const pnl = parseFloat(pnlMatch) || 0;
+                // Valores numéricos (o backend já retorna parseFloat, mas garantimos)
+                const stakeAmount = parseFloat(trade.stakeAmount) || 0;
+                const entryPrice = parseFloat(trade.entryPrice) || 0;
+                const exitPrice = trade.exitPrice != null ? parseFloat(trade.exitPrice) : null;
+                const profitLoss = trade.profitLoss != null ? parseFloat(trade.profitLoss) : null;
                 
-                const contractId = op.contractId || op.id || `trade-${op.timestamp || Date.now()}-${index}`;
-                const exitTick = op.exitTick || op.sellPrice || op.closePrice || '0.00';
+                // Direção (signal ou contractType)
+                const direction = (trade.signal || trade.contractType || 'CALL').toUpperCase();
+                
+                // Status
+                const status = trade.status || (profitLoss != null ? 'CLOSED' : 'PENDING');
+                
+                // Converter timestamp para epoch (em segundos)
+                let time = Math.floor(Date.now() / 1000);
+                if (trade.createdAt) {
+                    const date = new Date(trade.createdAt);
+                    time = Math.floor(date.getTime() / 1000);
+                }
                 
                 return {
                     contractId: contractId,
                     id: contractId,
-                    buyPrice: investment,
-                    price: investment,
-                    direction: op.direction || 'CALL',
-                    type: op.direction || 'CALL',
-                    profit: pnl,
-                    profitLoss: pnl,
-                    exitTick: exitTick,
-                    sellPrice: exitTick,
-                    closePrice: exitTick,
-                    status: 'CLOSED',
-                    time: op.timestamp || Date.now(),
-                    stakeAmount: investment
+                    // buyPrice deve ser o stakeAmount (valor investido), não o entryPrice
+                    buyPrice: stakeAmount,
+                    price: stakeAmount,
+                    direction: direction,
+                    type: direction,
+                    profit: profitLoss,
+                    profitLoss: profitLoss,
+                    exitTick: exitPrice != null ? exitPrice.toFixed(2) : null,
+                    sellPrice: exitPrice,
+                    closePrice: exitPrice,
+                    status: status,
+                    time: time,
+                    stakeAmount: stakeAmount,
+                    createdAt: trade.createdAt,
+                    closedAt: trade.closedAt
                 };
             });
         },

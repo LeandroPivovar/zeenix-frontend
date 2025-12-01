@@ -41,16 +41,31 @@ export default {
   },
   data() {
     return {
-      logs: []
+      logs: [],
+      processedIds: new Set() // Rastrear IDs já processados para evitar duplicatas
     };
   },
   watch: {
     tradeResults: {
       handler(newResults, oldResults) {
-        if (newResults && newResults.length > 0) {
-          // Processar apenas novos resultados
-          const oldLength = oldResults ? oldResults.length : 0;
-          const newItems = newResults.slice(0, newResults.length - oldLength);
+        if (!newResults || newResults.length === 0) {
+          return;
+        }
+        
+        // Se é a primeira vez (oldResults é undefined ou vazio), limpar e processar todos
+        if (!oldResults || oldResults.length === 0) {
+          // Limpar logs e IDs processados quando receber novos dados pela primeira vez
+          this.logs = [];
+          this.processedIds.clear();
+          this.processTradeResults(newResults);
+        } else {
+          // Processar apenas novos resultados (comparar por ID)
+          const oldIds = new Set(oldResults.map(r => r.contractId || r.id).filter(Boolean));
+          const newItems = newResults.filter(r => {
+            const id = r.contractId || r.id;
+            return id && !oldIds.has(id);
+          });
+          
           if (newItems.length > 0) {
             this.processTradeResults(newItems);
           }
@@ -70,41 +85,40 @@ export default {
     
     processTradeResults(results) {
       // Processar apenas novos resultados que ainda não foram logados
-      const existingLogIds = new Set(this.logs.map(log => log.id).filter(Boolean));
-      
       results.forEach((result, index) => {
         // Usar contractId, id, ou criar um ID único baseado no timestamp e dados
         const logId = result.contractId 
           || result.id 
           || `${result.time || Date.now()}-${result.type || 'UNKNOWN'}-${index}`;
         
-        // Verificar se já foi processado
-        if (existingLogIds.has(logId) || 
-            existingLogIds.has(`${logId}-result`) || 
-            existingLogIds.has(`${logId}-condition`)) {
+        // Verificar se já foi processado usando o Set de IDs processados
+        if (this.processedIds.has(logId)) {
           return; // Já foi processado
         }
         
-        existingLogIds.add(logId);
+        // Marcar como processado
+        this.processedIds.add(logId);
         this.addLogFromTradeResult(result, logId);
       });
     },
     
     addLogFromTradeResult(result, logId) {
-      // Log de preparação para comprar contrato
+      // Log de preparação para comprar contrato (apenas se status indicar)
       if (result.status === 'PURCHASE_PENDING' || result.status === 'BUYING' || result.status === 'EXECUTED') {
         this.addLog('info', `Preparando para comprar contrato`, logId);
       }
       
-      // Log de contrato comprado (usar price se buyPrice não estiver disponível)
-      const buyPrice = result.buyPrice != null ? result.buyPrice : result.price;
-      if (buyPrice != null) {
+      // Log de contrato comprado (usar stakeAmount ou buyPrice)
+      const buyPrice = result.buyPrice != null ? result.buyPrice : (result.stakeAmount != null ? result.stakeAmount : result.price);
+      
+      // Só adicionar log de compra se tiver um valor válido maior que zero
+      if (buyPrice != null && buyPrice > 0) {
         const priceFormatted = typeof buyPrice === 'number' 
           ? buyPrice.toFixed(2) 
           : buyPrice;
         this.addLog('purchase', `Contrato comprado | $${priceFormatted} | Volatility 100 Index`, logId);
         
-        // Log de condição de pagamento
+        // Log de condição de pagamento (apenas uma vez por contrato)
         const direction = result.direction || result.type;
         if (direction) {
           const condition = direction === 'CALL' || direction === 'Up'
@@ -114,31 +128,30 @@ export default {
         }
       }
       
-      // Log de resultado (ganho ou perda)
-      if (result.status === 'CLOSED' || result.profit != null || result.result) {
-        const profit = result.profit != null ? Number(result.profit) : 0;
-        const exitTick = result.exitTick || result.sellPrice || result.closePrice || '748.00';
-        const exitTickFormatted = typeof exitTick === 'number' 
-          ? exitTick.toFixed(2) 
-          : exitTick;
+      // Log de resultado (ganho ou perda) - apenas se a operação estiver fechada
+      if (result.status === 'CLOSED' || (result.profit != null && result.profitLoss != null)) {
+        const profit = result.profit != null ? Number(result.profit) : (result.profitLoss != null ? Number(result.profitLoss) : null);
         
-        if (profit > 0) {
-          this.addLog('gain', `Ganho $${profit.toFixed(2)} | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`);
-        } else if (profit < 0) {
-          this.addLog('loss', `Perda $${Math.abs(profit).toFixed(2)} | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`);
-        } else if (result.status === 'CLOSED') {
-          this.addLog('info', `Operação finalizada | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`);
+        // Só processar se tiver um valor de profit válido
+        if (profit != null) {
+          const exitTick = result.exitTick || result.sellPrice || result.closePrice;
+          const exitTickFormatted = exitTick != null 
+            ? (typeof exitTick === 'number' ? exitTick.toFixed(2) : exitTick)
+            : 'N/A';
+          
+          if (profit > 0) {
+            this.addLog('gain', `Ganho $${profit.toFixed(2)} | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`);
+          } else if (profit < 0) {
+            this.addLog('loss', `Perda $${Math.abs(profit).toFixed(2)} | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`);
+          } else {
+            this.addLog('info', `Operação finalizada | Volatility 100 Index | Tique de saída ${exitTickFormatted}`, `${logId}-result`);
+          }
         }
       }
       
       // Log de status da estratégia
       if (result.strategyStatus) {
         this.addLog('strategy', result.strategyStatus, `${logId}-strategy`);
-      }
-      
-      // Log de negociação finalizada
-      if (result.status === 'CLOSED') {
-        this.addLog('strategy', 'Negociação finalizada', `${logId}-finalized`);
       }
     },
     
@@ -168,6 +181,7 @@ export default {
     
     clearLogs() {
       this.logs = [];
+      this.processedIds.clear();
     },
     
     // Método público para adicionar logs manualmente
