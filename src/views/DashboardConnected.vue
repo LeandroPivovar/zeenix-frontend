@@ -150,11 +150,11 @@
       <div class="relative z-10 h-full max-w-[1400px] mx-auto px-12">
         <div class="grid grid-cols-2 gap-20 h-full items-center">
           <div class="flex flex-col justify-center space-y-10">
-            <div class="space-y-6">
-              <h1 class="text-[56px] font-bold leading-[1.1] tracking-[-0.03em]">
+            <div class="space-y-6 text-left">
+              <h1 class="text-[72px] font-bold leading-[1.1] tracking-[-0.03em] text-left">
                 <span class="text-white">Seja bem-vindo,</span><br><span class="text-[#22C55E]">{{ userName }}</span>
               </h1>
-              <p class="text-[18px] text-white/60 leading-[1.7] max-w-[520px]">
+              <p class="text-[22px] text-white/60 leading-[1.7] max-w-[600px] text-left">
                 Comece agora configurando sua conta e realizando seu primeiro depósito.
               </p>
             </div>
@@ -324,39 +324,7 @@
         </div>
       </section>
       
-      <div class="w-full h-px bg-gradient-to-r from-transparent via-zenix-border to-transparent my-5"></div>
-      
       <div class="px-8 py-5">
-        <!-- Quick Tools Section -->
-        <section id="quick-tools" class="mt-0 mb-6 w-full">
-      <h2 class="text-base font-semibold text-zenix-text opacity-95 mb-4">Ferramentas Principais</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-        <div 
-          v-for="(tool, index) in quickTools" 
-          :key="index"
-          class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden premium-card transition-all duration-300 cursor-pointer h-[198px] flex tool-card relative w-full"
-          @click="handleToolClick(tool)"
-        >
-          <div class="w-[40%] relative overflow-hidden flex-shrink-0">
-            <img :src="tool.image" :alt="tool.alt" class="w-full h-full object-cover">
-            <div class="absolute inset-0 bg-gradient-to-r from-transparent to-zenix-card"></div>
-          </div>
-          <div class="flex-1 p-6 flex flex-col justify-between min-h-0">
-            <div class="flex-shrink-0">
-              <h3 class="text-sm font-semibold text-zenix-text mb-2">{{ tool.title }}</h3>
-              <p class="text-xs text-zenix-secondary leading-relaxed">{{ tool.description }}</p>
-            </div>
-            <button 
-              @click.stop="handleToolClick(tool)"
-              class="w-full bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold py-2.5 rounded-lg text-xs transition-all btn-primary-enhanced flex-shrink-0 mt-auto"
-            >
-              {{ tool.buttonText }}
-            </button>
-          </div>
-        </div>
-        </div>
-      </section>
-      
       <!-- Best IAs Section -->
       <section id="best-ai-section" class="px-12 pt-20 pb-20 relative">
         <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
