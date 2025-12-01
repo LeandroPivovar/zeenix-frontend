@@ -147,9 +147,9 @@
           Ξ
         </div>
       </div>
-      <div class="relative z-10 h-full max-w-[1400px] mx-auto px-12">
-        <div class="grid grid-cols-2 gap-20 h-full items-center">
-          <div class="flex flex-col justify-center space-y-10">
+      <div class="relative z-10 h-full w-full px-12">
+        <div class="flex justify-between items-center h-full gap-20">
+          <div class="flex flex-col justify-center space-y-10 flex-shrink-0">
             <div class="space-y-6 text-left">
               <h1 class="text-[72px] font-bold leading-[1.1] tracking-[-0.03em] text-left">
                 <span class="text-white">Seja bem-vindo,</span><br><span class="text-[#22C55E]">{{ userName }}</span>
@@ -324,11 +324,11 @@
         </div>
       </section>
       
-      <div class="px-8 py-5">
+      <div class="px-8 py-5 w-full">
       <!-- Best IAs Section -->
-      <section id="best-ai-section" class="px-12 pt-20 pb-20 relative">
+      <section id="best-ai-section" class="px-12 pt-20 pb-20 relative w-full">
         <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
-        <div class="relative z-10 max-w-[1400px] mx-auto">
+        <div class="relative z-10 w-full">
           <div class="text-left mb-8 space-y-2">
             <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Melhores IA's Agora</h2>
             <p class="text-[17px] text-[#9B9B9B] max-w-3xl leading-[1.75]">
@@ -407,10 +407,10 @@
       </div>
       
       <!-- Overall Performance Section -->
-      <section id="performance-section" class="px-12 pt-0 pb-36 relative">
+      <section id="performance-section" class="px-12 pt-0 pb-36 relative w-full">
         <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
         <div class="w-full h-[1px] bg-[#1C1C1C] opacity-35 mb-12"></div>
-        <div class="relative z-10 max-w-[1400px] mx-auto">
+        <div class="relative z-10 w-full">
           <div class="text-left mb-8 space-y-2">
             <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Desempenho Geral</h2>
             <p class="text-[17px] text-[#9B9B9B] max-w-3xl leading-[1.75]">
