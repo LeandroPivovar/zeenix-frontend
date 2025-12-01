@@ -45,8 +45,8 @@
             </div>
           </div>
 
-          <div id="candlestickChart" class="flex-1 w-full min-h-0 chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative;"></div>
-          <div v-if="!chartInitialized" class="chart-placeholder absolute inset-0 flex items-center justify-center">
+          <div id="candlestickChart" class="flex-1 w-full min-h-0 chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative; z-index: 1;"></div>
+          <div v-if="!chartInitialized && !ticks.length" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
             <p class="text-zenix-secondary">{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
           </div>
         </div>
@@ -690,11 +690,22 @@ export default {
             setTimeout(() => {
               if (this.chart && this.lineSeries) {
                 console.log('[OperationChart] Atualizando gráfico com dados existentes...');
+                // Forçar resize antes de atualizar
+                const container = this.$refs.chartContainer;
+                if (container) {
+                  const rect = container.getBoundingClientRect();
+                  if (rect.width > 0 && rect.height > 0) {
+                    this.chart.applyOptions({
+                      width: rect.width,
+                      height: rect.height
+                    });
+                  }
+                }
                 this.updateChartFromTicks();
               } else {
                 console.error('[OperationChart] Gráfico ou lineSeries não disponível após timeout');
               }
-            }, 150);
+            }, 200);
           } else {
             console.log('[OperationChart] Nenhum tick disponível ainda, aguardando...');
           }
@@ -2158,7 +2169,21 @@ export default {
           
           // Forçar atualização visual do gráfico
           if (this.chart) {
+            // Forçar resize primeiro para garantir que o canvas tenha dimensões corretas
+            const container = this.$refs.chartContainer;
+            if (container) {
+              const rect = container.getBoundingClientRect();
+              if (rect.width > 0 && rect.height > 0) {
+                this.chart.applyOptions({
+                  width: rect.width,
+                  height: rect.height
+                });
+              }
+            }
+            
+            // Ajustar escala de tempo
             this.chart.timeScale().fitContent();
+            
             // Forçar repaint múltiplas vezes para garantir renderização
             this.$nextTick(() => {
               if (this.chart) {
@@ -2167,8 +2192,20 @@ export default {
                 setTimeout(() => {
                   if (this.chart) {
                     this.chart.timeScale().fitContent();
+                    // Forçar um último repaint
+                    const container = this.$refs.chartContainer;
+                    if (container) {
+                      const canvas = container.querySelector('canvas');
+                      if (canvas) {
+                        // Forçar redesenho do canvas
+                        const ctx = canvas.getContext('2d');
+                        if (ctx) {
+                          ctx.clearRect(0, 0, canvas.width, canvas.height);
+                        }
+                      }
+                    }
                   }
-                }, 50);
+                }, 100);
               }
             });
           }
