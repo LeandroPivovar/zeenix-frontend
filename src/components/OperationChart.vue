@@ -45,7 +45,7 @@
             </div>
           </div>
 
-          <div id="candlestickChart" class="flex-1 w-full min-h-0 chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative; z-index: 1;"></div>
+          <div id="candlestickChart" class="flex-1 w-full chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative; z-index: 1; min-height: 400px; height: 100%;"></div>
           <div v-if="!chartInitialized && !ticks.length" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
             <p class="text-zenix-secondary">{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
           </div>
@@ -1976,16 +1976,40 @@ export default {
         const container = this.$refs.chartContainer;
         if (container) {
           const rect = container.getBoundingClientRect();
+          console.log('[OperationChart] Dimensões do container ao atualizar:', {
+            width: rect.width,
+            height: rect.height,
+            clientWidth: container.clientWidth,
+            clientHeight: container.clientHeight
+          });
           if (rect.width > 0 && rect.height > 0) {
             this.chart.applyOptions({
               width: rect.width,
               height: rect.height
             });
+          } else {
+            console.warn('[OperationChart] Container tem dimensões inválidas, aguardando...');
+            setTimeout(() => {
+              if (this.chart && this.lineSeries && this.ticks.length > 0) {
+                const newRect = container.getBoundingClientRect();
+                if (newRect.width > 0 && newRect.height > 0) {
+                  this.chart.applyOptions({
+                    width: newRect.width,
+                    height: newRect.height
+                  });
+                  this.updateChartFromTicks();
+                }
+              }
+            }, 200);
+            return;
           }
         }
         this.$nextTick(() => {
           if (this.chart && this.lineSeries && this.ticks.length > 0) {
-            this.updateChartFromTicks();
+            // Aguardar um pouco mais para garantir que o gráfico está totalmente renderizado
+            setTimeout(() => {
+              this.updateChartFromTicks();
+            }, 100);
           }
         });
       }
@@ -2231,6 +2255,20 @@ export default {
           try {
             this.lineSeries.setData(validData);
             console.log('[OperationChart] setData chamado com sucesso');
+            
+            // Forçar atualização visual imediatamente após setData
+            if (this.chart) {
+              // Ajustar escala de tempo imediatamente
+              try {
+                this.chart.timeScale().fitContent();
+                console.log('[OperationChart] fitContent chamado imediatamente após setData');
+              } catch (error) {
+                console.error('[OperationChart] ERRO ao chamar fitContent:', error);
+              }
+              
+              // Forçar repaint do gráfico
+              this.chart.timeScale().scrollToPosition(0, false);
+            }
           } catch (error) {
             console.error('[OperationChart] ERRO ao chamar setData:', error);
             return;
@@ -2238,13 +2276,6 @@ export default {
           
           // Forçar atualização visual do gráfico
           if (this.chart) {
-            // Ajustar escala de tempo imediatamente
-            try {
-              this.chart.timeScale().fitContent();
-              console.log('[OperationChart] fitContent chamado imediatamente após setData');
-            } catch (error) {
-              console.error('[OperationChart] ERRO ao chamar fitContent:', error);
-            }
             
             // Forçar resize novamente após setData para garantir renderização
             if (container) {
@@ -5061,22 +5092,23 @@ export default {
 
 .chart-wrapper {
   background-color: #0B0B0B !important;
-  min-height: 400px;
+  min-height: 400px !important;
+  position: relative !important;
+  overflow: visible !important;
+  width: 100% !important;
+  height: 100% !important;
 }
 
 .chart-wrapper canvas {
   display: block !important;
   width: 100% !important;
   height: 100% !important;
-  position: relative !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
   z-index: 1 !important;
   opacity: 1 !important;
   visibility: visible !important;
-}
-
-.chart-wrapper {
-  position: relative !important;
-  overflow: visible !important;
 }
 
 #candlestickChart canvas {
