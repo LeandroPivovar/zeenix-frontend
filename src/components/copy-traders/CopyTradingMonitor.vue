@@ -435,6 +435,16 @@ export default {
                 return;
             }
 
+            // Se a sessão for temporária (sem funcionalidade por enquanto), não fazer chamada à API
+            if (this.session.id === 'temp') {
+                console.log('[CopyTradingMonitor] Sessão temporária detectada, usando dados mockados (sem funcionalidade por enquanto)');
+                this.loadingOperations = false;
+                // Usar dados vazios ou mockados
+                this.operacoesModal = [];
+                this.operacoes = [];
+                return;
+            }
+
             this.loadingOperations = true;
             try {
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
