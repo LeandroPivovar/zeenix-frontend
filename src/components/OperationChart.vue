@@ -639,24 +639,36 @@ export default {
           // Forçar repaint do gráfico após criação
           this.$nextTick(() => {
             if (this.chart) {
-              // Verificar se o canvas foi criado
-              const canvas = container.querySelector('canvas');
-              if (canvas) {
-                console.log('[OperationChart] Canvas criado após initChart:', {
-                  width: canvas.width,
-                  height: canvas.height,
-                  style: {
-                    width: canvas.style.width,
-                    height: canvas.style.height,
-                    display: window.getComputedStyle(canvas).display
-                  }
-                });
-              } else {
-                console.warn('[OperationChart] ⚠ Canvas não encontrado após criação do gráfico!');
-              }
+              // Verificar se o canvas foi criado - tentar múltiplas vezes
+              const checkCanvasCreated = (attempt = 0) => {
+                const canvas = container.querySelector('canvas');
+                if (canvas) {
+                  console.log('[OperationChart] Canvas criado após initChart:', {
+                    width: canvas.width,
+                    height: canvas.height,
+                    style: {
+                      width: canvas.style.width,
+                      height: canvas.style.height,
+                      display: window.getComputedStyle(canvas).display
+                    }
+                  });
+                  
+                  // Garantir que o canvas está visível
+                  canvas.style.display = 'block';
+                  canvas.style.visibility = 'visible';
+                  canvas.style.opacity = '1';
+                  
+                  // Forçar atualização visual
+                  this.chart.timeScale().fitContent();
+                } else if (attempt < 10) {
+                  // Tentar novamente após um pequeno delay
+                  setTimeout(() => checkCanvasCreated(attempt + 1), 50);
+                } else {
+                  console.warn('[OperationChart] ⚠ Canvas não encontrado após múltiplas tentativas na criação!');
+                }
+              };
               
-              // Forçar atualização visual
-              this.chart.timeScale().fitContent();
+              checkCanvasCreated(0);
               
               // Pequeno delay para garantir renderização
               setTimeout(() => {
@@ -759,7 +771,32 @@ export default {
       });
     },
     ensureChartVisible(canvas, container) {
-      if (!canvas || !this.chart) return;
+      if (!canvas || !this.chart) {
+        // Tentar encontrar canvas de outras formas
+        if (this.chart && container) {
+          // Tentar encontrar todos os canvas no container
+          const allCanvases = container.querySelectorAll('canvas');
+          if (allCanvases.length > 0) {
+            canvas = allCanvases[0];
+            console.log('[OperationChart] Canvas encontrado via querySelectorAll:', allCanvases.length);
+          } else {
+            // Tentar encontrar canvas no elemento pai
+            const parent = container.parentElement;
+            if (parent) {
+              const parentCanvas = parent.querySelector('canvas');
+              if (parentCanvas) {
+                canvas = parentCanvas;
+                console.log('[OperationChart] Canvas encontrado no elemento pai');
+              }
+            }
+          }
+        }
+        
+        if (!canvas) {
+          console.warn('[OperationChart] Canvas não encontrado para garantir visibilidade');
+          return;
+        }
+      }
       
       console.log('[OperationChart] Canvas encontrado após setData:', {
         width: canvas.width,
@@ -769,19 +806,17 @@ export default {
         display: window.getComputedStyle(canvas).display,
         visibility: window.getComputedStyle(canvas).visibility,
         opacity: window.getComputedStyle(canvas).opacity,
-        zIndex: window.getComputedStyle(canvas).zIndex
+        zIndex: window.getComputedStyle(canvas).zIndex,
+        offsetWidth: canvas.offsetWidth,
+        offsetHeight: canvas.offsetHeight
       });
       
       // Garantir que o canvas está visível
-      if (canvas.style.display === 'none') {
-        canvas.style.display = 'block';
-      }
-      if (window.getComputedStyle(canvas).opacity === '0') {
-        canvas.style.opacity = '1';
-      }
-      if (window.getComputedStyle(canvas).visibility === 'hidden') {
-        canvas.style.visibility = 'visible';
-      }
+      canvas.style.display = 'block';
+      canvas.style.visibility = 'visible';
+      canvas.style.opacity = '1';
+      canvas.style.position = 'relative';
+      canvas.style.zIndex = '1';
       
       // Forçar fitContent e resize
       try {
@@ -794,7 +829,16 @@ export default {
             height: rect.height
           });
           this.chart.timeScale().fitContent();
+          
+          // Forçar repaint
+          requestAnimationFrame(() => {
+            if (this.chart) {
+              this.chart.timeScale().fitContent();
+            }
+          });
         }
+        
+        console.log('[OperationChart] ✓ Canvas garantido como visível e gráfico atualizado');
       } catch (error) {
         console.error('[OperationChart] ERRO ao garantir visibilidade do gráfico:', error);
       }
@@ -2349,35 +2393,43 @@ export default {
               }
             }
             
-            // Verificar se o canvas existe e está visível - usar requestAnimationFrame para garantir renderização
-            requestAnimationFrame(() => {
-              if (this.chart && container) {
-                // Verificar canvas imediatamente
-                let canvas = container.querySelector('canvas');
-                
-                // Se não encontrou, tentar novamente após um pequeno delay
-                if (!canvas) {
+            // Verificar se o canvas existe e está visível - usar múltiplas tentativas
+            const checkCanvas = (attempt = 0) => {
+              if (!this.chart || !container) return;
+              
+              const canvas = container.querySelector('canvas');
+              if (canvas) {
+                this.ensureChartVisible(canvas, container);
+              } else if (attempt < 5) {
+                // Tentar novamente após um pequeno delay
+                setTimeout(() => {
+                  checkCanvas(attempt + 1);
+                }, 100 * (attempt + 1));
+              } else {
+                console.warn('[OperationChart] ⚠ Canvas não encontrado após múltiplas tentativas - forçando renderização...');
+                // Forçar resize do gráfico para garantir que o canvas seja criado
+                const rect = container.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0 && this.chart) {
+                  this.chart.applyOptions({
+                    width: rect.width,
+                    height: rect.height
+                  });
+                  this.chart.timeScale().fitContent();
+                  
+                  // Tentar encontrar canvas novamente após resize
                   setTimeout(() => {
-                    canvas = container.querySelector('canvas');
-                    if (canvas) {
-                      this.ensureChartVisible(canvas, container);
-                    } else {
-                      console.warn('[OperationChart] ⚠ Canvas não encontrado após setData - tentando forçar renderização...');
-                      // Forçar resize do gráfico para garantir que o canvas seja criado
-                      const rect = container.getBoundingClientRect();
-                      if (rect.width > 0 && rect.height > 0 && this.chart) {
-                        this.chart.applyOptions({
-                          width: rect.width,
-                          height: rect.height
-                        });
-                        this.chart.timeScale().fitContent();
-                      }
+                    const canvasAfterResize = container.querySelector('canvas');
+                    if (canvasAfterResize) {
+                      this.ensureChartVisible(canvasAfterResize, container);
                     }
-                  }, 100);
-                } else {
-                  this.ensureChartVisible(canvas, container);
+                  }, 200);
                 }
               }
+            };
+            
+            // Iniciar verificação após um pequeno delay para dar tempo ao gráfico renderizar
+            requestAnimationFrame(() => {
+              checkCanvas(0);
             });
           }
         }
