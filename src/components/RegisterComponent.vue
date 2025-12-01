@@ -1,6 +1,6 @@
 <template>
   <!-- Main Container -->
-  <main id="register-main" class="min-h-screen flex items-center justify-center px-8 py-8">
+  <main id="register-main" class="min-h-screen flex items-center justify-center px-8">
     <div class="w-full max-w-7xl flex items-center justify-between login-container-wrapper">
       
       <!-- Left Column - Register Card -->
@@ -8,7 +8,7 @@
         <div class="bg-white border border-zenix-card-border rounded-2xl p-8 login-card-shadow w-full">
           
           <!-- Logo -->
-          <div class="mb-6 flex justify-center">
+          <div class="mb-6 flex justify-center register-logo">
             <div class="flex items-center space-x-2">
               <div class="text-2xl font-bold text-zenix-text-dark">ZENI</div>
               <div class="text-2xl font-bold text-zenix-green">X</div>
@@ -18,7 +18,7 @@
           <!-- Header -->
           <div class="mb-6">
             <h1 class="text-xl font-semibold text-zenix-text-dark mb-2">Crie sua conta</h1>
-            <p class="text-sm text-zenix-gray leading-relaxed">Preencha seus dados para criar uma conta na plataforma.</p>
+            <p class="text-sm text-zenix-gray leading-relaxed forgot-text">Preencha seus dados para criar uma conta na plataforma.</p>
           </div>
 
           <!-- Register Form -->
@@ -184,8 +184,8 @@
           </div>
 
           <!-- Footer -->
-          <div class="mt-6 pt-4 border-t border-zenix-input-border">
-            <p class="text-xs text-zenix-gray text-center leading-relaxed">Ao cadastrar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
+          <div class="mt-6 pt-4 border-t border-zenix-input-border footer-login">
+            <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao cadastrar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
           </div>
         </div>
       </div>
@@ -636,10 +636,19 @@ button.bg-zenix-green:disabled {
 .flex-shrink-0 { flex-shrink: 0; }
 .max-w-md { max-width: 28rem; }
 
-/* Container wrapper responsivo */
+/* Container wrapper responsivo (igual ao login) */
 .login-container-wrapper {
   flex-wrap: wrap;
   gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  #hero-mobile {
+    display: none !important;
+  }
+  #register-section {
+    margin: 2rem !important;
+  }
 }
 
 /* Responsividade - Monitores médios (1280px - 1440px) */
@@ -650,12 +659,7 @@ button.bg-zenix-green:disabled {
   }
   
   #hero-section {
-    padding-left: 3rem !important;
-    max-width: 550px !important;
-  }
-  
-  #register-section {
-    max-width: 400px !important;
+    padding-left: 3rem;
   }
   
   .text-6xl {
@@ -664,10 +668,6 @@ button.bg-zenix-green:disabled {
   
   .login-container-wrapper {
     gap: 1.5rem;
-  }
-  
-  .p-8 {
-    padding: 1.75rem !important;
   }
 }
 
@@ -683,12 +683,12 @@ button.bg-zenix-green:disabled {
   }
   
   #hero-section {
-    padding-left: 2rem !important;
-    max-width: 500px !important;
+    padding-left: 2rem;
+    width: 500px !important;
   }
   
   #register-section {
-    max-width: 380px !important;
+    max-width: 420px !important;
   }
   
   .text-6xl {
@@ -712,7 +712,7 @@ button.bg-zenix-green:disabled {
   }
   
   #hero-section {
-    display: none;
+    display: block;
   }
   
   #register-section {
@@ -778,23 +778,19 @@ button.bg-zenix-green:disabled {
   }
 }
 
-/* Responsividade - Mobile pequeno (< 640px) */
+/* Responsividade - Mobile pequeno (< 640px) - igual ao login */
 @media (max-width: 640px) {
   #register-main {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
-    padding-top: 1rem;
-    padding-bottom: 1rem;
+    padding-top: 4rem;
+    padding-bottom: 1.5rem;
+    display: flex !important;
+    background: radial-gradient(circle at top, #0b0d0c 0%, #0d2520 100%);
   }
   
-  #register-section {
+  .w-\[480px\] {
     width: 100% !important;
-    max-width: 100% !important;
-  }
-  
-  #register-main {
-    padding-top: 0.75rem;
-    padding-bottom: 0.75rem;
   }
   
   .p-8 {
@@ -858,5 +854,78 @@ button.bg-zenix-green:disabled {
   .rounded-2xl {
     border-radius: 0.875rem !important;
   }
+
+  /* Layout em coluna: hero acima do card no mobile, igual login */
+  .login-container-wrapper {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.5rem;
+  }
+
+  #hero-section {
+    display: block;
+    width: 100% !important;
+    max-width: 360px !important;
+    padding-left: 0 !important;
+    margin: 0 auto;
+  }
+
+  #register-section {
+    width: 100% !important;
+    max-width: 360px !important;
+    margin: 0 auto;
+    padding: 0;
+    padding-top: 4rem !important;
+  }
+
+  /* Ajuste de cores para combinar com o login mobile */
+  #register-section .bg-white {
+    background-color: #050B0B !important;
+    border-color: #111827 !important;
+  }
+
+  #register-section .bg-zenix-input-bg {
+    background-color: #050B0B !important;
+    border-color: #111827 !important;
+  }
+
+  #register-section .border-zenix-input-border {
+    border-color: #111827 !important;
+  }
+
+  #register-section .text-zenix-text-dark {
+    color: #F9FAFB !important;
+  }
+
+  #register-section .text-zenix-gray {
+    color: #9CA3AF !important;
+  }
+
+  #register-section .placeholder-zenix-gray::placeholder {
+    color: #6B7280 !important;
+  }
+
+  .register-logo .text-zenix-text-dark,
+  .register-logo .text-zenix-green {
+    font-size: 2.5rem !important;
+    line-height: 1;
+    margin: 0;
+  }
+
+  .register-logo {
+    position: absolute;
+    top: 3rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+  }
+
+  button.bg-zenix-green {
+  background-color: #22C55E !important;
+  color: white !important;
+  border: none !important;
+  border-radius: 0.625rem !important;
+}
 }
 </style>
