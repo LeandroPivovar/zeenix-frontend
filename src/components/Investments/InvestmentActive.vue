@@ -168,6 +168,14 @@
                                     Logs
                                     <div v-if="activeTab === 'logs'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-zenix-green"></div>
                                 </button>
+                                <button 
+                                    id="tab-register" 
+                                    :class="['relative text-sm font-medium transition-all pb-1', activeTab === 'register' ? 'text-zenix-green' : 'text-zenix-secondary hover:text-zenix-text']"
+                                    @click="activeTab = 'register'"
+                                >
+                                    Registro
+                                    <div v-if="activeTab === 'register'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-zenix-green"></div>
+                                </button>
                             </div>
                         </div>
                         <div v-show="activeTab === 'chart'" class="flex items-center space-x-2 mb-4">
@@ -234,6 +242,11 @@
                         </tbody>
                     </table>
                             </div>
+                        </div>
+
+                        <!-- Register View -->
+                        <div v-show="activeTab === 'register'" id="register-view" class="h-[600px]">
+                            <OperationLogs :trade-results="formattedTradeResults" />
                         </div>
                 </div>
             </div>
@@ -350,6 +363,7 @@
 
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
+import OperationLogs from '../OperationLogs.vue';
 
 // TradingView Charting Library - verifique se está disponível globalmente
 const TradingView = window.TradingView || null;
@@ -357,6 +371,9 @@ const Datafeeds = window.Datafeeds || null;
 
 export default {
     name: 'ZenixTradingDashboard',
+    components: {
+        OperationLogs
+    },
     props: {
         ticks: {
             type: Array,
@@ -428,7 +445,7 @@ export default {
             tradesVisible: true,
             aiActive: true,
             showDisconnectModal: false,
-            activeTab: 'chart', // 'chart' or 'logs'
+            activeTab: 'chart', // 'chart', 'logs', or 'register'
             showEntryMarkers: true, // Controla visibilidade dos marcadores de entradas da IA
             tradingViewWidget: null, // Widget da TradingView
             
@@ -456,6 +473,7 @@ export default {
             
             // Log de operações (será carregado via API)
             logOperations: [],
+            rawTradeHistory: [], // Dados originais do backend antes da transformação
             isLoadingLogs: true,
             
             // Estado de desativação
@@ -707,6 +725,85 @@ export default {
         },
 
         // Last update time
+        // Transformar dados do backend para o formato esperado pelo OperationLogs
+        formattedTradeResults() {
+            // Usar dados originais do backend se disponíveis, senão usar logOperations transformado
+            const sourceData = this.rawTradeHistory.length > 0 ? this.rawTradeHistory : this.logOperations;
+            
+            if (!sourceData || sourceData.length === 0) {
+                return [];
+            }
+            
+            // Se temos dados originais do backend, usar diretamente
+            if (this.rawTradeHistory.length > 0) {
+                return this.rawTradeHistory.map((trade, index) => {
+                    const contractId = trade.contract_id || trade.contractId || trade.id || `trade-${trade.created_at || Date.now()}-${index}`;
+                    const entryPrice = parseFloat(trade.entry_price) || 0;
+                    const exitPrice = parseFloat(trade.exit_price) || entryPrice;
+                    const profitLoss = parseFloat(trade.profit_loss) || 0;
+                    const stakeAmount = parseFloat(trade.stake_amount) || 0;
+                    const direction = (trade.contract_type || trade.gemini_signal || 'CALL').toUpperCase();
+                    const status = trade.status || (profitLoss !== 0 ? 'CLOSED' : 'PENDING');
+                    
+                    // Converter timestamp para epoch
+                    let time = Date.now();
+                    if (trade.created_at) {
+                        const date = new Date(trade.created_at);
+                        time = Math.floor(date.getTime() / 1000);
+                    }
+                    
+                    return {
+                        contractId: contractId,
+                        id: contractId,
+                        buyPrice: entryPrice,
+                        price: entryPrice,
+                        direction: direction,
+                        type: direction,
+                        profit: profitLoss,
+                        profitLoss: profitLoss,
+                        exitTick: exitPrice.toFixed(2),
+                        sellPrice: exitPrice,
+                        closePrice: exitPrice,
+                        status: status,
+                        time: time,
+                        stakeAmount: stakeAmount,
+                        createdAt: trade.created_at,
+                        closedAt: trade.closed_at
+                    };
+                });
+            }
+            
+            // Fallback: transformar logOperations (formato já transformado)
+            return this.logOperations.map((op, index) => {
+                // Extrair valores numéricos do formato string
+                const investmentMatch = op.investment ? op.investment.replace('$', '').replace(',', '') : '0';
+                const investment = parseFloat(investmentMatch) || 0;
+                
+                const pnlMatch = op.pnl ? op.pnl.replace('$', '').replace('+', '').replace(',', '') : '0';
+                const pnl = parseFloat(pnlMatch) || 0;
+                
+                const contractId = op.contractId || op.id || `trade-${op.timestamp || Date.now()}-${index}`;
+                const exitTick = op.exitTick || op.sellPrice || op.closePrice || '0.00';
+                
+                return {
+                    contractId: contractId,
+                    id: contractId,
+                    buyPrice: investment,
+                    price: investment,
+                    direction: op.direction || 'CALL',
+                    type: op.direction || 'CALL',
+                    profit: pnl,
+                    profitLoss: pnl,
+                    exitTick: exitTick,
+                    sellPrice: exitTick,
+                    closePrice: exitTick,
+                    status: 'CLOSED',
+                    time: op.timestamp || Date.now(),
+                    stakeAmount: investment
+                };
+            });
+        },
+        
         formattedLastUpdate() {
             if (!this.currentPrice || this.ticks.length === 0) {
                 return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
@@ -922,6 +1019,9 @@ export default {
                 if (result.success && result.data) {
                     console.log('[InvestmentActive] ✅ Histórico recebido:', result.data.length, 'operações');
                     console.log('[InvestmentActive] 📊 Dados recebidos:', result.data);
+                    
+                    // Armazenar dados originais para uso no OperationLogs
+                    this.rawTradeHistory = result.data;
                     
                     // Transformar dados do backend para o formato do frontend
                     const defaultStakeAmount = this.sessionConfig.stakeAmount || this.entryValue || 0;
