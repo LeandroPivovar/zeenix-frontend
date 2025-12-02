@@ -144,7 +144,7 @@
             <!-- Main Content Grid -->
             <div class="grid grid-cols-12 gap-6 mb-6 items-stretch" style="width: 100%; box-sizing: border-box;">
                 <!-- Left Column - Chart -->
-                <div id="ir8sfp" class="col-span-10 flex">
+                <div id="ir8sfp" class="col-span-9 flex">
                     <div id="market-chart" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-full flex flex-col w-full">
                         <div class="flex items-center justify-between mb-4">
                             <div>
@@ -223,7 +223,7 @@
                             </tr>
                         </thead>
                         <tbody>
-                                        <tr v-for="(op, index) in logOperations" :key="index" class="log-row">
+                                        <tr v-for="(op, index) in logOperations" :key="index" :class="['log-row', index % 2 === 0 ? 'log-row-even' : 'log-row-odd']">
                                             <td>{{ op.time }}</td>
                                             <td>{{ op.pair }}</td>
                                             <td>
@@ -252,8 +252,8 @@
             </div>
 
                 <!-- Right Column - Config -->
-                <div class="col-span-2 flex">
-                    <div id="i0k3nl" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-full flex flex-col w-full">
+                <div class="col-span-3 flex">
+                    <div id="i0k3nl" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-full flex flex-col w-full ">
                         <h3 class="text-base font-semibold text-zenix-text mb-6 flex items-center text-left">
                             <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
                             Configuração Ativa
@@ -324,7 +324,7 @@
                                 </div>
                                 <!-- Botão Pausar -->
                                 <button 
-                                    class="w-full py-3 bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center space-x-2"
+                                    class="w-full py-3 bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
                                     @click="handleDeactivate"
                                     :disabled="isDeactivating"
                                 >
@@ -2348,24 +2348,32 @@ button i,
     transition: background-color 0.2s ease;
 }
 
+.log-row-even {
+    background-color: rgba(255, 255, 255, 0.01);
+}
+
+.log-row-odd {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
 .log-row:hover {
-    background-color: rgba(255, 255, 255, 0.02);
+    background-color: rgba(255, 255, 255, 0.05) !important;
 }
 
 .logs-table td,
 .logs-table th {
     padding: 0.5rem 0.75rem;
-    font-size: 0.7rem;
+    font-size: 0.75rem;
     text-align: left;
 }
 
 .logs-table td {
-    color: #666666;
+    color: #838383;
     text-align: left;
 }
 
 .logs-table th {
-    color: #555555;
+    color: #7D7D7D;
     font-weight: 500;
     text-align: left;
 }
@@ -2793,6 +2801,12 @@ button i,
 
 .col-span-2 {
 	grid-column: span 2 / span 2;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.col-span-3 {
+	grid-column: span 3 / span 3;
 	width: 100%;
 	box-sizing: border-box;
 }
@@ -3419,6 +3433,12 @@ button i,
 .eye-btn:hover {
     opacity: 1;
     color: #22C55E;
+}
+
+.pause-btn {
+
+    margin-bottom: 5px;
+    gap: 5px;
 }
 
 /* AI Animation Styles */
