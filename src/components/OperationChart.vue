@@ -4886,7 +4886,7 @@ export default {
         this.selectedDigit = null;
       }
     },
-    'unifiedOrderConfig.value'(newVal) {
+    'unifiedOrderConfig.value'() {
       if (this.unifiedOrderConfig.type) {
         clearTimeout(this._unifiedProposalTimeout);
         this._unifiedProposalTimeout = setTimeout(() => {
@@ -4894,7 +4894,7 @@ export default {
         }, 500);
       }
     },
-    'unifiedOrderConfig.duration'(newVal) {
+    'unifiedOrderConfig.duration'() {
       if (this.unifiedOrderConfig.type) {
         clearTimeout(this._unifiedProposalTimeout);
         this._unifiedProposalTimeout = setTimeout(() => {
