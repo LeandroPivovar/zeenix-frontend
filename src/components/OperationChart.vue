@@ -9,7 +9,7 @@
     </div>
 
     <div v-else class="operation-layout">
-        <div class="col-chart flex-1 flex flex-col gap-6">
+        <div class="col-chart flex-1 flex flex-col gap-4">
         <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full" style="min-height: 845px;">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A]">
             <div class="flex items-center gap-4">
@@ -96,7 +96,7 @@
         </div>
         </div>
 
-        <div class="max-w-[440px] w-[440px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
+        <div class="max-w-[480px] w-[480px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
           <div class="pb-3 border-b border-zenix-border mb-5">
             <h3 class="text-base font-semibold text-zenix-text">Painel de Negociação Manual</h3>
           </div>
@@ -4566,7 +4566,7 @@ export default {
 <style scoped>
 .operation-layout {
   display: flex;
-  gap: 24px;
+  gap: 16px;
   width: 100%;
 }
 
@@ -5144,7 +5144,7 @@ export default {
 /* Layout atualizado */
 .operation-layout {
   display: flex;
-  gap: 1.5rem;
+  gap: 1rem;
   height: 100%;
   width: 100%;
   max-width: 100%;
