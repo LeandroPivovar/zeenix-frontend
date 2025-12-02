@@ -75,7 +75,7 @@
           </div>
         </div>
         
-        <div class="border-t-2 bg-gradient-to-b from-[#101010] to-[#0E0E0E] px-6 py-4 rounded-xl shadow-[0_-2px_12px_rgba(34,197,94,0.08)]">
+        <div class="border-t-2 bg-gradient-to-b from-[#101010] to-[#0E0E0E] px-6 py-4 rounded-xl shadow-[0_-2px_12px_rgba(34,197,94,0.08)] mb-10">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
               <i class="far fa-signal text-[11px] text-zenix-green"></i>
