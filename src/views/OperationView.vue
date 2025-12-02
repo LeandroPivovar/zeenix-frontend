@@ -659,7 +659,7 @@ export default {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  height: calc(100vh - 70px);
+  min-height: calc(100vh - 70px);
 }
 
 .view-toggle-bar-wrapper {
@@ -682,11 +682,10 @@ export default {
 
 .operation-content {
   flex: 1;
-  overflow: hidden;
+  overflow: visible;
   padding: 0 20px 20px 20px;
   display: flex;
   flex-direction: column;
-  min-height: 0;
 }
 
 /* Footer */

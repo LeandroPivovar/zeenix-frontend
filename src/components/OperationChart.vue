@@ -5734,14 +5734,12 @@ export default {
 .operation-chart-wrapper {
   position: relative;
   width: 100%;
-  height: 100%;
   min-height: 100vh;
 }
 
 .operation-layout {
   display: flex;
   gap: 0.75rem;
-  height: 100%;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
