@@ -657,7 +657,7 @@
 	}
 
 	.metric-value.positive {
-		color: #3eb83e;
+		color: #22C55E;
 	}
 
 	.metric-value.negative {
@@ -669,7 +669,7 @@
 	}
 
 	.metric-change.positive {
-		color: #3eb83e;
+		color: #22C55E;
 	}
 
 	.metric-change.negative {
@@ -1023,7 +1023,7 @@
 	}
 
 	.agent-top {
-		padding: 30px 0;
+		padding: 30px 0px 0px 0;
 		background: none;
 		border: none;
 	}
@@ -1072,6 +1072,7 @@
 	.metrics-grid {
 		grid-template-columns: 1fr;
 		gap: 10px;
+		
 	}
 
 	.metric-card,
@@ -1259,6 +1260,7 @@
 		gap: 0;
 		border: 1px solid #333;
 		border-radius: 12px;
+		background: linear-gradient(135deg, #0c150f 0%, #0f1311 50%, #0b0e0b 100%)!important;
 	}
 
 	.metric-card{
@@ -1274,7 +1276,7 @@
 		margin: 0;
 		border: none;
 		padding: 0px 20px 0;
-
+		background: 0;
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
