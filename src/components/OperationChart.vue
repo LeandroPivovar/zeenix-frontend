@@ -96,7 +96,7 @@
         </div>
         </div>
 
-        <div class="max-w-[420px] w-[420px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
+        <div class="max-w-[440px] w-[440px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
           <div class="pb-3 border-b border-zenix-border mb-5">
             <h3 class="text-base font-semibold text-zenix-text">Painel de Negociação Manual</h3>
           </div>
