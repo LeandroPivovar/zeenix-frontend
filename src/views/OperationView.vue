@@ -53,7 +53,6 @@
             :preferred-currency="preferredCurrency"
             :account-loginid="accountLoginId"
             :order-config="orderConfig"
-            :last-orders="lastOrdersFormatted"
             :trade-results="lastOrdersFormatted"
             @trade-result="handleTradeResult"
           ></component>

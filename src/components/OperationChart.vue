@@ -331,11 +331,6 @@ export default {
         preferredCurrency: { type: String, default: 'USD' },
         accountLoginid: { type: String, default: null },
         orderConfig: { type: Object, required: true },
-        lastOrders: { 
-            type: Array, 
-            required: true,
-      default: () => [],
-    },
     },
     data() {
         return {
