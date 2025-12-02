@@ -594,6 +594,13 @@ export default {
         
         try {
           console.log('[Chart] Criando gráfico Lightweight Charts...');
+          console.log('[Chart] Container info:', {
+            innerHTML: container.innerHTML.length,
+            childNodes: container.childNodes.length,
+            display: window.getComputedStyle(container).display,
+            visibility: window.getComputedStyle(container).visibility,
+            opacity: window.getComputedStyle(container).opacity
+          });
           
           // Criar gráfico base
           this.chart = createChart(container, {
@@ -622,7 +629,10 @@ export default {
             },
           });
           
-          console.log('[Chart] Gráfico criado, criando séries...');
+          console.log('[Chart] Gráfico criado!');
+          console.log('[Chart] Canvas adicionado ao container:', container.childNodes.length);
+          console.log('[Chart] Primeiro child:', container.firstChild);
+          console.log('[Chart] Criando séries...');
           
           // Criar séries baseado no tipo
           this.createSeries();
@@ -2223,13 +2233,22 @@ export default {
           // Por enquanto, vamos criar velas baseadas nos ticks (1 minuto)
           const candles = this.createCandlesFromTicks(validTicks);
           console.log('[Chart] Criadas', candles.length, 'velas');
+          console.log('[Chart] Exemplo de vela:', candles[0]);
           this.candleSeries.setData(candles);
           console.log('[Chart] ✓ Velas plotadas com sucesso');
         } else if (this.lineSeries) {
           // Para linha, usar diretamente os ticks
           console.log('[Chart] Plotando linha com', validTicks.length, 'pontos');
+          console.log('[Chart] Primeiros 3 pontos:', validTicks.slice(0, 3));
+          console.log('[Chart] Últimos 3 pontos:', validTicks.slice(-3));
+          console.log('[Chart] lineSeries existe?', !!this.lineSeries);
+          console.log('[Chart] chart existe?', !!this.chart);
           this.lineSeries.setData(validTicks);
           console.log('[Chart] ✓ Linha plotada com sucesso');
+          console.log('[Chart] Container após plotar:', {
+            childNodes: this.$refs.chartContainer?.childNodes.length,
+            firstChild: this.$refs.chartContainer?.firstChild
+          });
         }
         
         // Redimensionar gráfico
@@ -2250,6 +2269,33 @@ export default {
             try {
               this.chart.timeScale().fitContent();
               console.log('[Chart] ✓ Escala ajustada');
+              
+              // Verificar visibilidade do canvas
+              const container = this.$refs.chartContainer;
+              if (container && container.firstChild) {
+                const canvas = container.querySelector('canvas');
+                if (canvas) {
+                  const canvasStyle = window.getComputedStyle(canvas);
+                  console.log('[Chart] Canvas info:', {
+                    exists: true,
+                    width: canvas.width,
+                    height: canvas.height,
+                    display: canvasStyle.display,
+                    visibility: canvasStyle.visibility,
+                    opacity: canvasStyle.opacity,
+                    position: canvasStyle.position
+                  });
+                  
+                  // Forçar visibilidade se necessário
+                  if (canvasStyle.display === 'none' || canvasStyle.visibility === 'hidden') {
+                    console.warn('[Chart] Canvas está oculto! Forçando visibilidade...');
+                    canvas.style.display = 'block';
+                    canvas.style.visibility = 'visible';
+                  }
+                } else {
+                  console.error('[Chart] ❌ Canvas não encontrado no container!');
+                }
+              }
             } catch (e) {
               console.warn('[Chart] Erro ao ajustar escala:', e);
             }
