@@ -11,6 +11,13 @@
 							<span id="agentStatus">Aguardando oportunidade</span>
 						</div>
 					</div>
+					<div class="agent-title-mobile">
+						<div class="agent-title-header">
+							<h2>Agente Autônomo</h2>
+							<p>Operando automaticamente no mercado</p>
+						</div>
+					<div class="dot"><span>●</span>Ativo</div>
+					</div>
 				</div>
 				<!-- ... (código anterior) -->
 				<div class="agent-right">
@@ -65,7 +72,7 @@
 					</div>
 				</div>
 			</div>
-			<div class="metric-card">
+			<div class="metric-card metric-negative">
 				<span class="arrow negative">↓</span>
 				<div class="metric-box">
 					<div class="metric-label">Perda acumulada</div>
@@ -522,7 +529,7 @@
 	.status-dot {
 		display: flex;
 		align-items: center;
-		color: #00ff00;
+		color: #22c55e;
 		font-size: 18px;
 	}
 
@@ -684,13 +691,13 @@
 		width: 100%;
 		height: 10px;
 		background: #1a1a1a;
-		border-radius: 3px;
+		border-radius: 12px;
 		overflow: hidden;
 	}
 
 	.progress-fill {
 		height: 100%;
-		background: #00ff00;
+		background: #22C55E;
 		transition: width 0.5s;
 	}
 
@@ -961,7 +968,7 @@
 	}
 
 	.action-icon.success {
-		background: #00ff00;
+		background: #22C55E;
 	}
 
 	.action-icon.info {
@@ -1005,4 +1012,301 @@
 	.metric-card {
 		background: #0e0f0f;
 	}
+	@media (min-width: 1024px) {
+		.agent-title-mobile{
+			display: none;
+		}
+	}
+	@media (max-width: 768px) {
+	.layout-content-agent-autonomo {
+		padding: 10px;
+	}
+
+	.agent-top {
+		padding: 30px 0;
+		background: none;
+		border: none;
+	}
+
+	.agent-header {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 15px;
+	}
+
+	.agent-status {
+		width: 100%;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.agent-title {
+		margin-right: 0;
+		width: 100%;
+	}
+
+	.agent-right {
+		width: 100%;
+		justify-content: flex-end;
+	}
+
+	.top-pause-btn {
+		width: 100%;
+		justify-content: center;
+		height: auto;
+		padding: 12px 20px;
+		font-size: 14px;
+	}
+
+	/* 👇 Alteração aqui 👇 */
+	.data-row-line {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 15px;
+	}
+
+	.data-item {
+		width: 100%;
+	}
+
+	.metrics-grid {
+		grid-template-columns: 1fr;
+		gap: 10px;
+	}
+
+	.metric-card,
+	.progress-card {
+		flex-direction: row;
+		align-items: center;
+		gap: 15px;
+	}
+
+	.metric-box {
+		flex-grow: 1;
+	}
+
+	.progress-card {
+		flex-direction: column;
+	}
+
+	.chart-section {
+		padding: 15px;
+	}
+
+	.chart-controls {
+		flex-direction: column;
+		gap: 15px;
+	}
+
+	.tab-controls {
+		width: 100%;
+		justify-content: space-between;
+	}
+
+	.performance {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 10px;
+		width: 100%;
+	}
+
+	.update-info {
+		margin-left: 0;
+		margin-right: 0;
+	}
+
+	.chart-settings {
+		width: 100%;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 10px;
+	}
+
+	.control-group {
+		width: 100%;
+	}
+
+	.custom-select,
+	.custom-input-date {
+		width: 100%;
+		max-width: none;
+	}
+
+	.export-btn {
+		width: 100%;
+		max-width: none;
+	}
+
+	.chart-content {
+		min-height: 250px;
+	}
+
+	.chart-canvas {
+		height: 250px;
+	}
+
+	.table-scroll-wrapper {
+		max-height: 250px;
+	}
+
+	.operations-table th,
+	.operations-table td {
+		padding: 8px 6px;
+		font-size: 12px;
+	}
+
+	.actions-section {
+		padding: 15px;
+	}
+
+	.actions-header h3 {
+		font-size: 1rem;
+	}
+
+	.action-item {
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 8px;
+	}
+
+	.action-icon {
+		width: 10px;
+		height: 10px;
+	}
+
+	.action-title {
+		font-size: 14px;
+	}
+
+	.action-description {
+		font-size: 12px;
+	}
+
+	.icon-bullet img{
+		display: none  !important;;
+	}
+
+	.data-item{
+		border: #1d1d1c 1px solid;
+		background: #0a120c;
+		padding: 10px;
+		gap: 0;
+		border-radius: 8px;
+	}
+
+	.data-label{
+		font-size: 14px;
+	}
+
+	.pause-btn{
+		display: none;
+	}
+
+	.agent-title{
+		display: none;
+	}
+
+	.agent-title-mobile{
+		display: flex;
+
+	}
+
+	.agent-header{
+		margin: 0;
+	}
+
+	.agent-title-mobile{
+		display: flex;
+		justify-content: space-between !important;
+		flex-direction: row;
+		width: 100% !important;
+		align-items: center;
+
+	
+	}
+
+	.agent-title-header p{
+		font-size: 14px;
+		color: #89909b;
+	}
+
+	.dot{
+		display: flex;
+		align-items: center;
+		gap: 5px;
+		font-size: 13px;
+		color: #22C55E;
+	}
+
+	.dot span{
+		font-size: 15px;
+		box-shadow:0px 0px 10px 2px #c3c4c3;
+		border-radius: 50%;
+		width: 4px;
+		height: 4px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}	
+
+	.metric-negative{
+		display: none;
+	}
+
+	.metrics-grid{
+		display: flex;
+		flex-direction: column;
+		gap: 0;
+		border: 1px solid #333;
+		border-radius: 12px;
+	}
+
+	.metric-card{
+		background: none;
+		margin: 20px;
+		border: none;
+		border-bottom: 1px solid #333;
+		border-radius: 0%;
+		padding: 0px 0px 20px 0;
+	}
+
+	.progress-card{
+		margin: 0;
+		border: none;
+		padding: 0px 20px 0;
+
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		justify-content: flex-start;
+		gap: 10px;
+	}
+
+	.arrow{
+		display: none;
+	}
+
+	.progress-bar-container{
+		width: 100%;
+	}
+
+	.progress-label{
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		width: 100%;
+		font-size: 14px;
+		color: #89909b;
+		font-weight: 500;
+		margin-bottom: 10px;
+		padding: 10px;
+	}
+
+	.actions-section{
+		display: none;
+	}
+
+	
+}
 </style>
