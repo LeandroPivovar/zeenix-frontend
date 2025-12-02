@@ -96,7 +96,7 @@
         </div>
         </div>
 
-        <div class="max-w-[480px] w-[480px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
+        <div class="max-w-[540px] w-[540px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
           <div class="pb-3 border-b border-zenix-border mb-5">
             <h3 class="text-base font-semibold text-zenix-text">Painel de Negociação Manual</h3>
           </div>
@@ -182,7 +182,7 @@
                   Min: {{ displayCurrency }} 0.35 | Max: {{ displayCurrency }} 50000.00
                 </template>
                 <template v-else-if="stakeLimits.min || stakeLimits.max">
-                  Min: {{ displayCurrency }} {{ stakeLimits.min.toFixed(2) }} | Max: {{ displayCurrency }} {{ stakeLimits.max.toFixed(2) }}
+                Min: {{ displayCurrency }} {{ stakeLimits.min.toFixed(2) }} | Max: {{ displayCurrency }} {{ stakeLimits.max.toFixed(2) }}
                 </template>
               </div>
             </div>
@@ -214,13 +214,13 @@
                 <label class="block text-[10px] font-medium text-[#DFDFDF88] mb-1.5 uppercase tracking-wider">
                   Dígito Previsto (0-9)
                 </label>
-                <div class="grid grid-cols-5 gap-1.5">
+                <div class="flex flex-wrap gap-1.5 justify-center">
                   <button
                     v-for="digit in 10"
                     :key="digit - 1"
                     @click="selectDigit(digit - 1)"
                     :class="[
-                      'aspect-square rounded-md border font-semibold text-sm transition-all',
+                      'w-[40px] h-[40px] rounded-md border font-semibold text-sm transition-all flex items-center justify-center',
                       selectedDigit === (digit - 1)
                         ? 'bg-zenix-green border-zenix-green text-black shadow-[0_0_8px_rgba(34,197,94,0.3)]'
                         : 'bg-zenix-bg border-zenix-border text-zenix-text hover:border-zenix-green hover:bg-[#1A1A1A]'
@@ -5155,7 +5155,7 @@ export default {
 <style scoped>
 .operation-layout {
   display: flex;
-  gap: 16px;
+  gap: 12px;
   width: 100%;
 }
 
@@ -5740,7 +5740,7 @@ export default {
 
 .operation-layout {
   display: flex;
-  gap: 1rem;
+  gap: 0.75rem;
   height: 100%;
   width: 100%;
   max-width: 100%;
