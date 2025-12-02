@@ -130,35 +130,6 @@
               </button>
             </div>
             
-            <!-- Card de Previsão de Dígitos (aparece quando tipo for de dígito) -->
-            <div v-if="isDigitType && unifiedOrderConfig.type" class="bg-gradient-to-br from-zenix-bg to-[#0F0F0F] border border-zenix-green/30 rounded-xl p-4 space-y-3">
-              <div class="flex items-center gap-2 pb-2 border-b border-zenix-border">
-                <i class="fas fa-hashtag text-zenix-green"></i>
-                <span class="text-sm font-semibold text-zenix-text">Previsão</span>
-              </div>
-              
-              <div>
-                <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-                  DÍGITO PREVISTO (0-9)
-                </label>
-                <div class="grid grid-cols-5 gap-2">
-                  <button
-                    v-for="digit in 10"
-                    :key="digit - 1"
-                    @click="selectDigit(digit - 1)"
-                    :class="[
-                      'aspect-square rounded-lg border-2 font-bold text-base transition-all',
-                      selectedDigit === (digit - 1)
-                        ? 'bg-zenix-green border-zenix-green text-black shadow-[0_0_12px_rgba(34,197,94,0.3)]'
-                        : 'bg-zenix-bg border-zenix-border text-zenix-text hover:border-zenix-green hover:bg-[#1A1A1A]'
-                    ]"
-                  >
-                    {{ digit - 1 }}
-                  </button>
-                </div>
-              </div>
-            </div>
-            
             <div>
               <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
                 <i class="fas fa-clock text-zenix-green mr-2"></i>{{ isDigitType ? 'Número de Ticks' : 'Duração' }}
@@ -230,6 +201,35 @@
             <div v-if="currentProposalPrice" class="bg-zenix-bg border border-zenix-border rounded-lg p-3">
               <div class="text-xs text-zenix-secondary mb-1">Preço de Compra:</div>
               <div class="text-base font-semibold text-zenix-text">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
+            </div>
+
+            <!-- Card de Previsão de Dígitos (aparece quando tipo for de dígito) -->
+            <div v-if="isDigitType && unifiedOrderConfig.type" class="bg-gradient-to-br from-zenix-bg to-[#0F0F0F] border border-zenix-green/30 rounded-xl p-4 space-y-3">
+              <div class="flex items-center gap-2 pb-2 border-b border-zenix-border">
+                <i class="fas fa-hashtag text-zenix-green"></i>
+                <span class="text-sm font-semibold text-zenix-text">Previsão</span>
+              </div>
+              
+              <div>
+                <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                  DÍGITO PREVISTO (0-9)
+                </label>
+                <div class="grid grid-cols-5 gap-2">
+                  <button
+                    v-for="digit in 10"
+                    :key="digit - 1"
+                    @click="selectDigit(digit - 1)"
+                    :class="[
+                      'aspect-square rounded-lg border-2 font-bold text-base transition-all',
+                      selectedDigit === (digit - 1)
+                        ? 'bg-zenix-green border-zenix-green text-black shadow-[0_0_12px_rgba(34,197,94,0.3)]'
+                        : 'bg-zenix-bg border-zenix-border text-zenix-text hover:border-zenix-green hover:bg-[#1A1A1A]'
+                    ]"
+                  >
+                    {{ digit - 1 }}
+                  </button>
+                </div>
+              </div>
             </div>
 
             <div v-if="realTimeProfit !== null && activeContract" class="bg-zenix-bg border rounded-lg p-3" :class="realTimeProfit > 0 ? 'border-zenix-green' : 'border-red-500'">
