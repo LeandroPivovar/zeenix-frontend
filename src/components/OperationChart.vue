@@ -569,9 +569,6 @@ export default {
       this.$nextTick(() => {
         const container = this.$refs.chartContainer;
         
-        // Armazenar referência do container original
-        this._chartContainerElement = container;
-        
         if (!container) {
           console.error('[Chart] Container não encontrado');
           this.isInitializingChart = false;
@@ -579,7 +576,19 @@ export default {
           return;
         }
         
-        // Limpar completamente o container
+        // Armazenar referência do container original ANTES de qualquer manipulação
+        this._chartContainerElement = container;
+        
+        // NÃO limpar o container se já tiver um gráfico
+        if (container.querySelector('.tv-lightweight-charts')) {
+          console.log('[Chart] Container já tem um gráfico, usando existente');
+          const existingChart = container.querySelector('.tv-lightweight-charts');
+          console.log('[Chart] Gráfico existente encontrado:', existingChart);
+          this.isInitializingChart = false;
+          return;
+        }
+        
+        // Limpar completamente o container apenas se não tiver gráfico
         container.innerHTML = '';
         
         const rect = container.getBoundingClientRect();
@@ -634,25 +643,33 @@ export default {
           
           console.log('[Chart] Gráfico criado!');
           
-          // Aguardar um momento para o Lightweight Charts adicionar o canvas ao DOM
+          // IMPORTANTE: Armazenar o elemento do gráfico para referência futura
           this.$nextTick(() => {
-            console.log('[Chart] Canvas adicionado ao container:', container.childNodes.length);
-            console.log('[Chart] Primeiro child:', container.firstChild);
-            console.log('[Chart] Children do container:', Array.from(container.children).map(c => ({
-              tagName: c.tagName,
-              className: c.className,
-              childCount: c.children.length
-            })));
-            
-            // Verificar se o canvas foi realmente adicionado
-            const canvas = container.querySelector('canvas');
-            console.log('[Chart] Canvas encontrado?', !!canvas);
-            if (canvas) {
-              console.log('[Chart] Canvas dimensions:', {
-                width: canvas.width,
-                height: canvas.height,
-                style: canvas.style.cssText
+            const chartElement = container.querySelector('.tv-lightweight-charts');
+            if (chartElement) {
+              console.log('[Chart] Elemento do gráfico criado:', {
+                childNodes: container.childNodes.length,
+                chartElement: chartElement.tagName,
+                chartClassName: chartElement.className
               });
+              
+              // Marcar o elemento como permanente
+              chartElement.setAttribute('data-chart-initialized', 'true');
+              
+              // Verificar se o canvas foi realmente adicionado
+              const canvas = chartElement.querySelector('canvas');
+              console.log('[Chart] Canvas encontrado?', !!canvas);
+              if (canvas) {
+                console.log('[Chart] Canvas dimensions:', {
+                  width: canvas.width,
+                  height: canvas.height,
+                  style: canvas.style.cssText
+                });
+              } else {
+                console.error('[Chart] ❌ Canvas não encontrado após criação!');
+              }
+            } else {
+              console.error('[Chart] ❌ Elemento .tv-lightweight-charts não foi criado!');
             }
           });
           
@@ -2213,6 +2230,35 @@ export default {
       // Garantir que o gráfico existe
       if (!this.chart) {
         console.log('[Chart] Gráfico não existe, inicializando...');
+        this.initChart();
+        setTimeout(() => this.updateChartFromTicks(), 500);
+        return;
+      }
+      
+      // VERIFICAÇÃO CRÍTICA: Se o container foi limpo, precisamos recriar o gráfico
+      const container = this.$refs.chartContainer;
+      if (container && container.childNodes.length === 0) {
+        console.error('[Chart] ❌ CONTAINER FOI LIMPO! Elemento DOM foi recriado pelo Vue');
+        console.log('[Chart] Recriando gráfico...');
+        this.chart = null;
+        this.lineSeries = null;
+        this.candleSeries = null;
+        this.chartInitialized = false;
+        this.initChart();
+        setTimeout(() => this.updateChartFromTicks(), 500);
+        return;
+      }
+      
+      // Verificar se o elemento do gráfico ainda está no DOM
+      const chartElement = container?.querySelector('.tv-lightweight-charts');
+      if (!chartElement) {
+        console.error('[Chart] ❌ Elemento do gráfico não encontrado no container!');
+        console.log('[Chart] Container HTML:', container?.innerHTML.substring(0, 100));
+        console.log('[Chart] Recriando gráfico completamente...');
+        this.chart = null;
+        this.lineSeries = null;
+        this.candleSeries = null;
+        this.chartInitialized = false;
         this.initChart();
         setTimeout(() => this.updateChartFromTicks(), 500);
         return;
