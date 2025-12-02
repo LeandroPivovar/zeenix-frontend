@@ -1,6 +1,6 @@
 <template>
     <div class="operation-chart-wrapper">
-    <div v-if="connectionError || isConnecting" class="connection-loading-card animated-card" data-anim-index="0">
+    <div v-if="connectionError || isConnecting" class="connection-loading-card animated-card" data-anim-index="0" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; background-color: rgba(11, 11, 11, 0.95);">
       <div class="loading-indicator-wrapper">
         <div class="spinner-large"></div>
         <p class="loading-message">{{ loadingMessage }}</p>
@@ -8,7 +8,7 @@
       </div>
     </div>
 
-    <div v-else class="operation-layout">
+    <div class="operation-layout">
         <div class="col-chart flex-1 flex flex-col gap-4">
         <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full" style="min-height: 845px;">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A]">
@@ -5736,6 +5736,13 @@ export default {
 }
 
 /* Layout atualizado */
+.operation-chart-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 100vh;
+}
+
 .operation-layout {
   display: flex;
   gap: 1rem;
