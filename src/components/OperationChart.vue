@@ -106,52 +106,30 @@
               <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
                 <i class="fas fa-chart-line text-zenix-green mr-2"></i>Mercado
               </label>
-              <select 
-                id="marketSelectSidebar"
-                v-model="symbol"
-                @change="handleSymbolChange"
+              <button
+                @click="showMarketModal = true"
                 :disabled="!isAuthorized || isLoadingSymbol"
-                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
+                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors hover:border-zenix-green disabled:opacity-50 disabled:cursor-not-allowed text-left flex items-center justify-between"
               >
-                <optgroup label="Índices Sintéticos">
-                  <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value" data-category="synthetic">
-                    {{ market.label }}
-                  </option>
-                </optgroup>
-                <optgroup label="Criptomoedas">
-                  <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value" data-category="crypto">
-                    {{ market.label }}
-                  </option>
-                </optgroup>
-                <optgroup label="Forex">
-                  <option v-for="market in [...(marketsByCategory['Forex Majors'] || []), ...(marketsByCategory['Forex Minors'] || []), ...(marketsByCategory['Forex Exotics'] || [])]" :key="market.value" :value="market.value" data-category="forex">
-                    {{ market.label }}
-                  </option>
-                </optgroup>
-                <optgroup label="Metais">
-                  <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value" data-category="metals">
-                    {{ market.label }}
-                  </option>
-                </optgroup>
-              </select>
+                <span>{{ selectedMarketLabel || 'Selecione um mercado' }}</span>
+                <i class="fas fa-chevron-down text-xs"></i>
+              </button>
             </div>
             
             <div>
               <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
                 <i class="fas fa-exchange-alt text-zenix-green mr-2"></i>Tipo de Negociação
               </label>
-              <select 
-                id="tradeTypeSelect"
-                v-model="localOrderConfig.type" 
-                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
-                :disabled="isTrading || !canUseCallPut"
+              <button
+                @click="showTradeTypeModal = true"
+                :disabled="!symbol || isTrading || availableTradeTypes.length === 0"
+                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors hover:border-zenix-green disabled:opacity-50 disabled:cursor-not-allowed text-left flex items-center justify-between"
               >
-                <option value="">Selecione um mercado primeiro</option>
-                <option value="CALL">Alta (CALL)</option>
-                <option value="PUT">Baixa (PUT)</option>
-              </select>
-              <div v-if="!canUseCallPut" class="warning-message mt-2 p-2 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
-                ⚠️ Este ativo não suporta contratos CALL/PUT. Use a operação com dígitos para negociar este ativo.
+                <span>{{ selectedTradeTypeLabel || 'Selecione um tipo' }}</span>
+                <i class="fas fa-chevron-down text-xs"></i>
+              </button>
+              <div v-if="availableTradeTypes.length === 0 && symbol" class="warning-message mt-2 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-yellow-400 text-xs">
+                <i class="fas fa-info-circle mr-1"></i> Carregando tipos disponíveis...
               </div>
             </div>
             
@@ -229,11 +207,14 @@
                 v-if="!activeContract"
                 @click="executeBuy" 
                 id="buyButton"
-                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
-                :disabled="isTrading || !isAuthorized || !canUseCallPut"
+                :class="[
+                  'w-full font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2',
+                  getTradeButtonClass()
+                ]"
+                :disabled="isTrading || !isAuthorized || !localOrderConfig.type"
               >
-                <i class="fas fa-arrow-up"></i>
-                {{ isTrading ? 'Aguardando confirmação...' : (currentProposalId ? 'Executar Ordem' : 'Aguardando proposta...') }}
+                <i :class="getTradeButtonIcon()"></i>
+                {{ getTradeButtonText() }}
               </button>
               
               <button 
@@ -243,8 +224,8 @@
                 class="w-full bg-[#FF4747] hover:bg-[#FF6161] text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
                 :disabled="isTrading"
               >
-                <i class="fas fa-arrow-down"></i>
-                {{ isTrading ? 'Vendendo...' : 'PUT / SELL' }}
+                <i class="fas fa-times-circle"></i>
+                {{ isTrading ? 'Vendendo...' : 'Fechar Posição' }}
               </button>
             </div>
 
@@ -270,10 +251,33 @@
         />
       </div>
     </div>
+    
+    <!-- Modal de seleção de mercado -->
+    <SelectionModal
+      :show="showMarketModal"
+      title="Selecionar Mercado"
+      :items="allMarketsForModal"
+      :selected-value="symbol"
+      search-placeholder="Buscar mercado..."
+      @select="handleMarketSelect"
+      @close="showMarketModal = false"
+    />
+    
+    <!-- Modal de seleção de tipo de negociação -->
+    <SelectionModal
+      :show="showTradeTypeModal"
+      title="Selecionar Tipo de Negociação"
+      :items="tradeTypesForModal"
+      :selected-value="localOrderConfig.type"
+      search-placeholder="Buscar tipo..."
+      @select="handleTradeTypeSelect"
+      @close="showTradeTypeModal = false"
+    />
 </template>
 
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
+import SelectionModal from './SelectionModal.vue';
 import TradeResultModal from './TradeResultModal.vue';
 
 const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
@@ -282,6 +286,7 @@ export default {
     name: 'OperationChart',
     components: {
       TradeResultModal,
+      SelectionModal,
     },
     props: {
         accountBalance: { type: String, required: true },
@@ -311,6 +316,15 @@ export default {
       tradeMessage: '',
       tradeError: '',
       symbol: 'R_100',
+      // Modals
+      showMarketModal: false,
+      showTradeTypeModal: false,
+      // Asset Index data from Deriv
+      assetIndexData: null,
+      isLoadingAssetIndex: false,
+      availableTradeTypes: [],
+      availableDurations: {},
+      selectedTradeType: null,
       // Cache de dados de contratos por símbolo
       contractsData: {}, // { symbol: { contractTypes, minDuration, maxDuration, minStake, maxStake, allowedUnits } }
       isLoadingContracts: false,
@@ -444,6 +458,30 @@ export default {
       });
       return grouped;
     },
+    allMarketsForModal() {
+      // Converte markets para o formato do modal
+      return this.markets.map(market => ({
+        value: market.value,
+        label: market.label,
+        description: market.category
+      }));
+    },
+    selectedMarketLabel() {
+      const market = this.markets.find(m => m.value === this.symbol);
+      return market ? market.label : null;
+    },
+    tradeTypesForModal() {
+      // Converte availableTradeTypes para o formato do modal
+      return this.availableTradeTypes.map(type => ({
+        value: type.value,
+        label: type.label,
+        description: type.duration
+      }));
+    },
+    selectedTradeTypeLabel() {
+      const type = this.availableTradeTypes.find(t => t.value === this.localOrderConfig.type);
+      return type ? type.label : null;
+    },
     canUseCallPut() {
       return this.supportsCallPut(this.symbol);
     },
@@ -544,6 +582,274 @@ export default {
     },
     },
     methods: {
+    // ===== ASSET INDEX E MODAIS =====
+    async fetchAssetIndex() {
+      if (this.isLoadingAssetIndex || this.assetIndexData) {
+        console.log('[AssetIndex] Já carregado ou carregando');
+        return;
+      }
+      
+      console.log('[AssetIndex] 🔍 Buscando asset index da Deriv...');
+      this.isLoadingAssetIndex = true;
+      
+      try {
+        const message = {
+          asset_index: 1,
+          landing_company_short: 'svg'
+        };
+        
+        const response = await this.sendDerivMessage(message);
+        
+        if (response && response.asset_index) {
+          this.assetIndexData = response.asset_index;
+          console.log('[AssetIndex] ✅ Asset index recebido:', this.assetIndexData.length, 'assets');
+          return response;
+        } else {
+          console.error('[AssetIndex] ❌ Resposta inválida:', response);
+        }
+      } catch (error) {
+        console.error('[AssetIndex] ❌ Erro ao buscar asset index:', error);
+      } finally {
+        this.isLoadingAssetIndex = false;
+      }
+    },
+    
+    updateAvailableTradeTypes(symbolCode) {
+      if (!this.assetIndexData) {
+        console.log('[TradeTypes] Asset index não carregado ainda');
+        this.availableTradeTypes = [];
+        return;
+      }
+      
+      console.log('[TradeTypes] 🔍 Buscando tipos disponíveis para:', symbolCode);
+      
+      // Encontrar o asset no asset_index
+      const asset = this.assetIndexData.find(([code]) => code === symbolCode);
+      
+      if (!asset) {
+        console.warn('[TradeTypes] ⚠️ Asset não encontrado:', symbolCode);
+        this.availableTradeTypes = [];
+        return;
+      }
+      
+      const [, displayName, tradeTypesArray] = asset;
+      console.log('[TradeTypes] Asset encontrado:', displayName);
+      console.log('[TradeTypes] Trade types disponíveis:', tradeTypesArray.length);
+      
+      // Mapear os tipos de negociação
+      const tradeTypeMap = {
+        'callput': { value: 'CALL', label: 'Rise/Fall (Alta/Baixa)', putValue: 'PUT' },
+        'callputequal': { value: 'CALLE', label: 'Rise/Fall Equal', putValue: 'PUTE' },
+        'touchnotouch': { value: 'ONETOUCH', label: 'Touch/No Touch', putValue: 'NOTOUCH' },
+        'endsinout': { value: 'EXPIRYIN', label: 'Ends Between/Ends Outside', putValue: 'EXPIRYOUT' },
+        'staysinout': { value: 'RANGE', label: 'Stays Between/Goes Outside', putValue: 'UPORDOWN' },
+        'multiplier': { value: 'MULTUP', label: 'Multiply Up/Multiply Down', putValue: 'MULTDOWN' }
+      };
+      
+      const types = [];
+      const durationsMap = {};
+      
+      tradeTypesArray.forEach(([tradeType, displayName, minDuration, maxDuration]) => {
+        const mapped = tradeTypeMap[tradeType];
+        
+        if (mapped) {
+          const durationText = minDuration && maxDuration 
+            ? `${minDuration} - ${maxDuration}` 
+            : 'No Expiry';
+          
+          // Adicionar CALL/UP
+          types.push({
+            value: mapped.value,
+            label: `${displayName} (Alta)`,
+            duration: durationText,
+            minDuration,
+            maxDuration,
+            tradeType
+          });
+          
+          // Adicionar PUT/DOWN
+          if (mapped.putValue) {
+            types.push({
+              value: mapped.putValue,
+              label: `${displayName} (Baixa)`,
+              duration: durationText,
+              minDuration,
+              maxDuration,
+              tradeType
+            });
+          }
+          
+          // Armazenar durações
+          durationsMap[mapped.value] = { min: minDuration, max: maxDuration };
+          if (mapped.putValue) {
+            durationsMap[mapped.putValue] = { min: minDuration, max: maxDuration };
+          }
+        }
+      });
+      
+      this.availableTradeTypes = types;
+      this.availableDurations = durationsMap;
+      
+      console.log('[TradeTypes] ✅ Tipos configurados:', types.length);
+      console.log('[TradeTypes] Durações:', durationsMap);
+    },
+    
+    handleMarketSelect(market) {
+      console.log('[MarketSelect] Mercado selecionado:', market);
+      this.symbol = market.value;
+      this.updateAvailableTradeTypes(market.value);
+      this.handleSymbolChange();
+    },
+    
+    handleTradeTypeSelect(type) {
+      console.log('[TradeTypeSelect] Tipo selecionado:', type);
+      this.localOrderConfig.type = type.value;
+      this.selectedTradeType = type;
+      
+      // Atualizar limites de duração baseado no tipo selecionado
+      if (this.availableDurations[type.value]) {
+        const dur = this.availableDurations[type.value];
+        console.log('[TradeTypeSelect] Limites de duração:', dur);
+        // Aplicar limites de duração aqui se necessário
+      }
+    },
+    
+    // Métodos auxiliares para UI dinâmica
+    getTradeButtonClass() {
+      const type = this.localOrderConfig.type;
+      if (!type) return 'bg-gray-600 cursor-not-allowed';
+      
+      // Tipos de ALTA/CALL = Verde
+      if (type.includes('CALL') || type === 'ONETOUCH' || type === 'EXPIRYIN' || type === 'RANGE' || type === 'MULTUP') {
+        return 'bg-zenix-green hover:bg-zenix-green-hover text-white';
+      }
+      // Tipos de BAIXA/PUT = Vermelho
+      if (type.includes('PUT') || type === 'NOTOUCH' || type === 'EXPIRYOUT' || type === 'UPORDOWN' || type === 'MULTDOWN') {
+        return 'bg-[#FF4747] hover:bg-[#FF6161] text-white';
+      }
+      
+      return 'bg-zenix-green hover:bg-zenix-green-hover text-white';
+    },
+    
+    getTradeButtonIcon() {
+      const type = this.localOrderConfig.type;
+      if (!type) return 'fas fa-ban';
+      
+      // Tipos de ALTA
+      if (type.includes('CALL') || type === 'MULTUP') {
+        return 'fas fa-arrow-up';
+      }
+      // Tipos de BAIXA
+      if (type.includes('PUT') || type === 'MULTDOWN') {
+        return 'fas fa-arrow-down';
+      }
+      // Touch
+      if (type === 'ONETOUCH') {
+        return 'fas fa-bullseye';
+      }
+      // No Touch
+      if (type === 'NOTOUCH') {
+        return 'fas fa-times-circle';
+      }
+      // Range/Stays
+      if (type === 'RANGE' || type === 'EXPIRYIN') {
+        return 'fas fa-compress';
+      }
+      // Up or Down / Goes Outside
+      if (type === 'UPORDOWN' || type === 'EXPIRYOUT') {
+        return 'fas fa-expand';
+      }
+      
+      return 'fas fa-arrow-up';
+    },
+    
+    getTradeButtonText() {
+      const type = this.localOrderConfig.type;
+      
+      if (this.isTrading) {
+        return 'Aguardando confirmação...';
+      }
+      
+      if (!type) {
+        return 'Selecione um tipo de negociação';
+      }
+      
+      if (!this.currentProposalId) {
+        return 'Aguardando proposta...';
+      }
+      
+      // Mapear tipos para textos específicos
+      const textMap = {
+        'CALL': 'Executar CALL (Alta)',
+        'PUT': 'Executar PUT (Baixa)',
+        'CALLE': 'Executar Rise Equal',
+        'PUTE': 'Executar Fall Equal',
+        'ONETOUCH': 'Executar Touch',
+        'NOTOUCH': 'Executar No Touch',
+        'EXPIRYIN': 'Executar Ends Between',
+        'EXPIRYOUT': 'Executar Ends Outside',
+        'RANGE': 'Executar Stays Between',
+        'UPORDOWN': 'Executar Goes Outside',
+        'MULTUP': 'Executar Multiply Up',
+        'MULTDOWN': 'Executar Multiply Down'
+      };
+      
+      return textMap[type] || 'Executar Ordem';
+    },
+    
+    // Método genérico para enviar mensagem e aguardar resposta
+    sendDerivMessage(message) {
+      return new Promise((resolve, reject) => {
+        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+          reject(new Error('WebSocket não conectado'));
+          return;
+        }
+        
+        // Gerar um ID único para a mensagem
+        const reqId = Date.now();
+        message.req_id = reqId;
+        
+        console.log('[sendDerivMessage] Enviando:', message);
+        
+        // Listener temporário para esta resposta específica
+        const messageHandler = (event) => {
+          try {
+            const response = JSON.parse(event.data);
+            
+            if (response.req_id === reqId) {
+              this.ws.removeEventListener('message', messageHandler);
+              
+              if (response.error) {
+                console.error('[sendDerivMessage] Erro na resposta:', response.error);
+                reject(new Error(response.error.message));
+              } else {
+                console.log('[sendDerivMessage] Resposta recebida:', response);
+                resolve(response);
+              }
+            }
+          } catch (error) {
+            console.error('[sendDerivMessage] Erro ao processar resposta:', error);
+          }
+        };
+        
+        this.ws.addEventListener('message', messageHandler);
+        
+        // Timeout de 10 segundos
+        setTimeout(() => {
+          this.ws.removeEventListener('message', messageHandler);
+          reject(new Error('Timeout ao aguardar resposta'));
+        }, 10000);
+        
+        // Enviar mensagem
+        try {
+          this.ws.send(JSON.stringify(message));
+        } catch (error) {
+          this.ws.removeEventListener('message', messageHandler);
+          reject(error);
+        }
+      });
+    },
+    
     initChart() {
       console.log('[Chart] ========== INICIANDO GRÁFICO DO ZERO ==========');
       
@@ -1167,6 +1473,12 @@ export default {
           this.currentLoginid = loginid; // Armazenar loginid atual
           this.connectionError = ''; // Limpar erro ao conectar com sucesso
           this.retryCount = 0; // Resetar contador de tentativas
+          
+          // Buscar asset index após autorização
+          if (!this.assetIndexData) {
+            console.log('[OperationChart] Iniciando busca de asset index...');
+            this.fetchAssetIndex();
+          }
           
           // Se estava em reconexão e o gráfico existe, garantir que será atualizado
           if (wasReconnecting && this.chart && this.ticks.length > 0) {
@@ -4306,6 +4618,15 @@ export default {
             this.addEntrySpotLine(this.entrySpot, this.entryTime);
           }, 500);
         }
+      }
+    },
+    symbol(newSymbol, oldSymbol) {
+      if (newSymbol !== oldSymbol && this.assetIndexData) {
+        console.log('[Watch] Símbolo mudou para:', newSymbol);
+        this.updateAvailableTradeTypes(newSymbol);
+        // Reset trade type selection
+        this.localOrderConfig.type = '';
+        this.selectedTradeType = null;
       }
     },
     showAiCard(newVal) {
