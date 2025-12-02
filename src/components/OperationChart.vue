@@ -569,6 +569,9 @@ export default {
       this.$nextTick(() => {
         const container = this.$refs.chartContainer;
         
+        // Armazenar referência do container original
+        this._chartContainerElement = container;
+        
         if (!container) {
           console.error('[Chart] Container não encontrado');
           this.isInitializingChart = false;
@@ -630,8 +633,29 @@ export default {
           });
           
           console.log('[Chart] Gráfico criado!');
-          console.log('[Chart] Canvas adicionado ao container:', container.childNodes.length);
-          console.log('[Chart] Primeiro child:', container.firstChild);
+          
+          // Aguardar um momento para o Lightweight Charts adicionar o canvas ao DOM
+          this.$nextTick(() => {
+            console.log('[Chart] Canvas adicionado ao container:', container.childNodes.length);
+            console.log('[Chart] Primeiro child:', container.firstChild);
+            console.log('[Chart] Children do container:', Array.from(container.children).map(c => ({
+              tagName: c.tagName,
+              className: c.className,
+              childCount: c.children.length
+            })));
+            
+            // Verificar se o canvas foi realmente adicionado
+            const canvas = container.querySelector('canvas');
+            console.log('[Chart] Canvas encontrado?', !!canvas);
+            if (canvas) {
+              console.log('[Chart] Canvas dimensions:', {
+                width: canvas.width,
+                height: canvas.height,
+                style: canvas.style.cssText
+              });
+            }
+          });
+          
           console.log('[Chart] Criando séries...');
           
           // Criar séries baseado no tipo
@@ -2243,11 +2267,38 @@ export default {
           console.log('[Chart] Últimos 3 pontos:', validTicks.slice(-3));
           console.log('[Chart] lineSeries existe?', !!this.lineSeries);
           console.log('[Chart] chart existe?', !!this.chart);
+          console.log('[Chart] Referências antes de setData:', {
+            chartExists: !!this.chart,
+            lineSeriesExists: !!this.lineSeries,
+            containerExists: !!this.$refs.chartContainer,
+            containerChildNodes: this.$refs.chartContainer?.childNodes.length,
+            chartContainerRef: this.$refs.chartContainer?.id || 'no-id',
+            originalContainerExists: !!this._chartContainerElement,
+            originalContainerChildNodes: this._chartContainerElement?.childNodes.length,
+            samteRef: this.$refs.chartContainer === this._chartContainerElement
+          });
+          
           this.lineSeries.setData(validTicks);
+          
           console.log('[Chart] ✓ Linha plotada com sucesso');
           console.log('[Chart] Container após plotar:', {
             childNodes: this.$refs.chartContainer?.childNodes.length,
-            firstChild: this.$refs.chartContainer?.firstChild
+            firstChild: this.$refs.chartContainer?.firstChild,
+            chartStillExists: !!this.chart,
+            lineSeriesStillExists: !!this.lineSeries
+          });
+          
+          // Verificar se o canvas está em algum lugar do DOM
+          const allCanvases = document.querySelectorAll('canvas');
+          console.log('[Chart] Todos os canvas na página:', allCanvases.length);
+          allCanvases.forEach((canvas, index) => {
+            console.log(`[Chart] Canvas ${index}:`, {
+              width: canvas.width,
+              height: canvas.height,
+              parent: canvas.parentElement?.className,
+              grandparent: canvas.parentElement?.parentElement?.className,
+              id: canvas.parentElement?.parentElement?.id
+            });
           });
         }
         
@@ -2272,28 +2323,45 @@ export default {
               
               // Verificar visibilidade do canvas
               const container = this.$refs.chartContainer;
-              if (container && container.firstChild) {
-                const canvas = container.querySelector('canvas');
-                if (canvas) {
-                  const canvasStyle = window.getComputedStyle(canvas);
-                  console.log('[Chart] Canvas info:', {
-                    exists: true,
-                    width: canvas.width,
-                    height: canvas.height,
-                    display: canvasStyle.display,
-                    visibility: canvasStyle.visibility,
-                    opacity: canvasStyle.opacity,
-                    position: canvasStyle.position
-                  });
+              if (container) {
+                // Procurar por TODOS os canvas na página
+                const allCanvases = document.querySelectorAll('canvas');
+                console.log('[Chart] Total de canvas na página:', allCanvases.length);
+                
+                // Procurar especificamente pelo canvas do Lightweight Charts
+                const chartWrapper = container.querySelector('.tv-lightweight-charts');
+                console.log('[Chart] Wrapper do Lightweight Charts encontrado?', !!chartWrapper);
+                
+                if (chartWrapper) {
+                  console.log('[Chart] Children do wrapper:', chartWrapper.children.length);
+                  const canvas = chartWrapper.querySelector('canvas');
                   
-                  // Forçar visibilidade se necessário
-                  if (canvasStyle.display === 'none' || canvasStyle.visibility === 'hidden') {
-                    console.warn('[Chart] Canvas está oculto! Forçando visibilidade...');
-                    canvas.style.display = 'block';
-                    canvas.style.visibility = 'visible';
+                  if (canvas) {
+                    const canvasStyle = window.getComputedStyle(canvas);
+                    console.log('[Chart] ✅ Canvas encontrado! Info:', {
+                      exists: true,
+                      width: canvas.width,
+                      height: canvas.height,
+                      display: canvasStyle.display,
+                      visibility: canvasStyle.visibility,
+                      opacity: canvasStyle.opacity,
+                      position: canvasStyle.position,
+                      wrapperClass: chartWrapper.className
+                    });
+                    
+                    // Forçar visibilidade se necessário
+                    if (canvasStyle.display === 'none' || canvasStyle.visibility === 'hidden' || canvasStyle.opacity === '0') {
+                      console.warn('[Chart] ⚠️ Canvas está oculto! Forçando visibilidade...');
+                      canvas.style.display = 'block !important';
+                      canvas.style.visibility = 'visible !important';
+                      canvas.style.opacity = '1 !important';
+                    }
+                  } else {
+                    console.error('[Chart] ❌ Canvas não encontrado dentro do wrapper!');
                   }
                 } else {
-                  console.error('[Chart] ❌ Canvas não encontrado no container!');
+                  console.error('[Chart] ❌ Wrapper .tv-lightweight-charts não encontrado!');
+                  console.log('[Chart] Container HTML:', container.innerHTML.substring(0, 200));
                 }
               }
             } catch (e) {
