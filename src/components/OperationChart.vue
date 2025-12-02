@@ -121,26 +121,53 @@
                 <i class="fas fa-exchange-alt text-zenix-green mr-2"></i>Tipo de Negociação
               </label>
               <button
-                @click="showTradeTypeModal = true"
-                :disabled="!symbol || isTrading || availableTradeTypes.length === 0"
+                @click="showUnifiedTradeTypeModal = true"
+                :disabled="!symbol || isTrading"
                 class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors hover:border-zenix-green disabled:opacity-50 disabled:cursor-not-allowed text-left flex items-center justify-between"
               >
-                <span>{{ selectedTradeTypeLabel || 'Selecione um tipo' }}</span>
+                <span>{{ unifiedSelectedTypeLabel || 'Selecione um tipo' }}</span>
                 <i class="fas fa-chevron-down text-xs"></i>
               </button>
-              <div v-if="availableTradeTypes.length === 0 && symbol" class="warning-message mt-2 p-2 bg-yellow-500/10 border border-yellow-500/30 rounded text-yellow-400 text-xs">
-                <i class="fas fa-info-circle mr-1"></i> Carregando tipos disponíveis...
+            </div>
+            
+            <!-- Card de Previsão de Dígitos (aparece quando tipo for de dígito) -->
+            <div v-if="isDigitType && unifiedOrderConfig.type" class="bg-gradient-to-br from-zenix-bg to-[#0F0F0F] border border-zenix-green/30 rounded-xl p-4 space-y-3">
+              <div class="flex items-center gap-2 pb-2 border-b border-zenix-border">
+                <i class="fas fa-hashtag text-zenix-green"></i>
+                <span class="text-sm font-semibold text-zenix-text">Previsão</span>
+              </div>
+              
+              <div>
+                <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                  DÍGITO PREVISTO (0-9)
+                </label>
+                <div class="grid grid-cols-5 gap-2">
+                  <button
+                    v-for="digit in 10"
+                    :key="digit - 1"
+                    @click="selectDigit(digit - 1)"
+                    :class="[
+                      'aspect-square rounded-lg border-2 font-bold text-base transition-all',
+                      selectedDigit === (digit - 1)
+                        ? 'bg-zenix-green border-zenix-green text-black shadow-[0_0_12px_rgba(34,197,94,0.3)]'
+                        : 'bg-zenix-bg border-zenix-border text-zenix-text hover:border-zenix-green hover:bg-[#1A1A1A]'
+                    ]"
+                  >
+                    {{ digit - 1 }}
+                  </button>
+                </div>
               </div>
             </div>
             
             <div>
               <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-                <i class="fas fa-clock text-zenix-green mr-2"></i>Duração
+                <i class="fas fa-clock text-zenix-green mr-2"></i>{{ isDigitType ? 'Número de Ticks' : 'Duração' }}
               </label>
               <div class="flex gap-2">
                 <select 
-                  v-model="localOrderConfig.durationUnit"
-                  @change="setDurationUnit(localOrderConfig.durationUnit)"
+                  v-if="!isDigitType"
+                  v-model="unifiedOrderConfig.durationUnit"
+                  @change="setDurationUnit(unifiedOrderConfig.durationUnit)"
                   class="flex-1 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
                   :disabled="isTrading"
                 >
@@ -149,14 +176,19 @@
                 </select>
                 <input 
                   type="number" 
-                  :min="getValidDurationForSymbol(symbol).min" 
-                  :max="getValidDurationForSymbol(symbol).max"
-                  v-model.number="localOrderConfig.duration" 
+                  :min="isDigitType ? 1 : getValidDurationForSymbol(symbol).min" 
+                  :max="isDigitType ? 10 : getValidDurationForSymbol(symbol).max"
+                  v-model.number="unifiedOrderConfig.duration" 
                   @input="onDurationChange"
-                  class="w-20 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
+                  :class="[
+                    'bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors',
+                    isDigitType ? 'flex-1' : 'w-20'
+                  ]"
                   :disabled="isTrading" 
                 />
+                <span v-if="isDigitType" class="flex items-center text-xs text-zenix-secondary px-2">ticks</span>
               </div>
+              <p v-if="isDigitType" class="text-xs text-zenix-secondary mt-1">1-10 ticks</p>
             </div>
             
             <div>
@@ -165,17 +197,22 @@
               </label>
               <input 
                 type="number" 
-                :min="stakeLimits.min" 
-                :max="stakeLimits.max" 
+                :min="isDigitType ? 0.35 : stakeLimits.min" 
+                :max="isDigitType ? 50000 : stakeLimits.max" 
                 step="0.01" 
-                v-model.number="localOrderConfig.value" 
+                v-model.number="unifiedOrderConfig.value" 
                 @input="validateAndAdjustStake"
                 placeholder="Ex: 1.00, 2.50..."
                 class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text placeholder:text-[#DFDFDF40] focus:outline-none focus:border-zenix-green transition-colors"
                 :disabled="isTrading" 
               />
-              <div v-if="stakeLimits.min || stakeLimits.max" class="text-xs text-zenix-secondary mt-1">
-                Min: {{ displayCurrency }} {{ stakeLimits.min.toFixed(2) }} | Max: {{ displayCurrency }} {{ stakeLimits.max.toFixed(2) }}
+              <div class="text-xs text-zenix-secondary mt-1">
+                <template v-if="isDigitType">
+                  Min: {{ displayCurrency }} 0.35 | Max: {{ displayCurrency }} 50000.00
+                </template>
+                <template v-else-if="stakeLimits.min || stakeLimits.max">
+                  Min: {{ displayCurrency }} {{ stakeLimits.min.toFixed(2) }} | Max: {{ displayCurrency }} {{ stakeLimits.max.toFixed(2) }}
+                </template>
               </div>
             </div>
             
@@ -211,7 +248,7 @@
                   'w-full font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2',
                   getTradeButtonClass()
                 ]"
-                :disabled="isTrading || !isAuthorized || !localOrderConfig.type"
+                :disabled="isTrading || !isAuthorized || !unifiedOrderConfig.type || (isDigitType && showDigitSelection && selectedDigit === null)"
               >
                 <i :class="getTradeButtonIcon()"></i>
                 {{ getTradeButtonText() }}
@@ -263,15 +300,15 @@
       @close="showMarketModal = false"
     />
     
-    <!-- Modal de seleção de tipo de negociação -->
+    <!-- Modal unificado de seleção de tipo de negociação -->
     <SelectionModal
-      :show="showTradeTypeModal"
+      :show="showUnifiedTradeTypeModal"
       title="Selecionar Tipo de Negociação"
-      :items="tradeTypesForModal"
-      :selected-value="localOrderConfig.type"
+      :items="unifiedTradeTypesForModal"
+      :selected-value="unifiedOrderConfig.type"
       search-placeholder="Buscar tipo..."
-      @select="handleTradeTypeSelect"
-      @close="showTradeTypeModal = false"
+      @select="handleUnifiedTradeTypeSelect"
+      @close="showUnifiedTradeTypeModal = false"
     />
 </template>
 
@@ -318,13 +355,22 @@ export default {
       symbol: 'R_100',
       // Modals
       showMarketModal: false,
-      showTradeTypeModal: false,
+      showUnifiedTradeTypeModal: false,
       // Asset Index data from Deriv
       assetIndexData: null,
       isLoadingAssetIndex: false,
       availableTradeTypes: [],
       availableDurations: {},
       selectedTradeType: null,
+      // Operação Unificada (CALL/PUT e Dígitos)
+      unifiedOrderConfig: {
+        type: '',
+        duration: 1,
+        durationUnit: 'm',
+        value: 10
+      },
+      selectedDigit: null,
+      availableDigitTypes: [],
       // Cache de dados de contratos por símbolo
       contractsData: {}, // { symbol: { contractTypes, minDuration, maxDuration, minStake, maxStake, allowedUnits } }
       isLoadingContracts: false,
@@ -481,6 +527,43 @@ export default {
     selectedTradeTypeLabel() {
       const type = this.availableTradeTypes.find(t => t.value === this.localOrderConfig.type);
       return type ? type.label : null;
+    },
+    // Computed Unificados
+    unifiedTradeTypesForModal() {
+      // Combinar tipos de CALL/PUT com tipos de dígitos
+      const callPutTypes = this.availableTradeTypes.map(type => ({
+        value: type.value,
+        label: type.label,
+        description: type.duration,
+        category: 'Opções Binárias'
+      }));
+      
+      const digitTypes = this.availableDigitTypes.map(type => ({
+        value: type.value,
+        label: type.label,
+        description: type.description,
+        category: 'Previsão de Dígitos'
+      }));
+      
+      return [...callPutTypes, ...digitTypes];
+    },
+    unifiedSelectedTypeLabel() {
+      // Procurar em ambos os tipos
+      let type = this.availableTradeTypes.find(t => t.value === this.unifiedOrderConfig.type);
+      if (!type) {
+        type = this.availableDigitTypes.find(t => t.value === this.unifiedOrderConfig.type);
+      }
+      return type ? type.label : null;
+    },
+    isDigitType() {
+      // Verifica se o tipo selecionado é de dígitos
+      const digitTypeCodes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER', 'DIGITODD', 'DIGITEVEN'];
+      return digitTypeCodes.includes(this.unifiedOrderConfig.type);
+    },
+    showDigitSelection() {
+      // Mostrar seletor de dígito apenas para MATCH e DIFFER
+      const typesNeedingDigit = ['DIGITMATCH', 'DIGITDIFF'];
+      return typesNeedingDigit.includes(this.unifiedOrderConfig.type);
     },
     canUseCallPut() {
       return this.supportsCallPut(this.symbol);
@@ -714,10 +797,146 @@ export default {
       }
     },
     
+    // ===== MÉTODOS UNIFICADOS =====
+    handleUnifiedTradeTypeSelect(type) {
+      console.log('[UnifiedTradeType] Tipo selecionado:', type);
+      this.unifiedOrderConfig.type = type.value;
+      
+      // Se for tipo de dígito, configurar duração para ticks
+      if (this.isDigitType) {
+        this.unifiedOrderConfig.durationUnit = 't';
+        if (this.unifiedOrderConfig.duration > 10 || this.unifiedOrderConfig.duration < 1) {
+          this.unifiedOrderConfig.duration = 5;
+        }
+        // Reset seleção de dígito
+        this.selectedDigit = null;
+      } else {
+        // Para CALL/PUT, usar minutos por padrão
+        this.unifiedOrderConfig.durationUnit = 'm';
+      }
+      
+      // Buscar proposta
+      this.subscribeToUnifiedProposal();
+    },
+    
+    initializeDigitTypes() {
+      console.log('[DigitTypes] 🔍 Inicializando tipos de dígitos...');
+      
+      const digitTypes = [
+        {
+          value: 'DIGITMATCH',
+          label: 'Igual (Matches)',
+          description: 'O último dígito será igual ao selecionado'
+        },
+        {
+          value: 'DIGITDIFF',
+          label: 'Diferente (Differs)',
+          description: 'O último dígito será diferente do selecionado'
+        },
+        {
+          value: 'DIGITOVER',
+          label: 'Acima (Over)',
+          description: 'O último dígito será maior que 5'
+        },
+        {
+          value: 'DIGITUNDER',
+          label: 'Abaixo (Under)',
+          description: 'O último dígito será menor que 5'
+        },
+        {
+          value: 'DIGITODD',
+          label: 'Ímpar (Odd)',
+          description: 'O último dígito será ímpar'
+        },
+        {
+          value: 'DIGITEVEN',
+          label: 'Par (Even)',
+          description: 'O último dígito será par'
+        }
+      ];
+      
+      this.availableDigitTypes = digitTypes;
+      console.log('[DigitTypes] ✅ Tipos configurados:', digitTypes.length);
+    },
+    
+    selectDigit(digit) {
+      console.log('[DigitSelect] Dígito selecionado:', digit);
+      this.selectedDigit = digit;
+      
+      // Atualizar proposta com o novo dígito
+      if (this.isDigitType) {
+        this.subscribeToUnifiedProposal();
+      }
+    },
+    
+    async subscribeToUnifiedProposal() {
+      if (!this.unifiedOrderConfig.type || !this.symbol) {
+        return;
+      }
+      
+      // Para tipos de dígito que precisam de seleção, verificar
+      if (this.isDigitType && this.showDigitSelection && this.selectedDigit === null) {
+        console.log('[UnifiedProposal] Aguardando seleção de dígito');
+        return;
+      }
+      
+      console.log('[UnifiedProposal] 📊 Buscando proposta...');
+      
+      try {
+        const proposal = {
+          proposal: 1,
+          amount: this.unifiedOrderConfig.value,
+          basis: 'stake',
+          contract_type: this.unifiedOrderConfig.type,
+          currency: this.displayCurrency.replace('$', '').replace('D$', 'USD'),
+          duration: this.unifiedOrderConfig.duration,
+          duration_unit: this.isDigitType ? 't' : this.unifiedOrderConfig.durationUnit,
+          symbol: this.symbol,
+          subscribe: 1
+        };
+        
+        // Adicionar barrier para tipos MATCH e DIFFER
+        if (this.showDigitSelection && this.selectedDigit !== null) {
+          proposal.barrier = this.selectedDigit.toString();
+        }
+        
+        console.log('[UnifiedProposal] Proposta:', proposal);
+        
+        const response = await this.sendDerivMessage(proposal);
+        
+        if (response && response.proposal) {
+          if (this.isDigitType) {
+            // Atualizar para dígitos
+            this.currentProposalPrice = response.proposal.ask_price;
+            this.currentProposalId = response.proposal.id;
+          } else {
+            // Manter lógica existente para CALL/PUT
+            this.currentProposalPrice = response.proposal.ask_price;
+            this.currentProposalId = response.proposal.id;
+          }
+          console.log('[UnifiedProposal] ✅ Proposta recebida:', {
+            price: this.currentProposalPrice,
+            id: this.currentProposalId
+          });
+        }
+      } catch (error) {
+        console.error('[UnifiedProposal] ❌ Erro:', error);
+        this.tradeError = 'Erro ao buscar proposta: ' + error.message;
+      }
+    },
+    
     // Métodos auxiliares para UI dinâmica
     getTradeButtonClass() {
-      const type = this.localOrderConfig.type;
+      const type = this.unifiedOrderConfig.type;
       if (!type) return 'bg-gray-600 cursor-not-allowed';
+      
+      // Tipos de dígitos - sempre verde
+      if (this.isDigitType) {
+        if (this.showDigitSelection && this.selectedDigit === null) {
+          return 'bg-gray-600 cursor-not-allowed';
+        }
+        return 'bg-zenix-green hover:bg-zenix-green-hover text-white';
+      }
       
       // Tipos de ALTA/CALL = Verde
       if (type.includes('CALL') || type === 'ONETOUCH' || type === 'EXPIRYIN' || type === 'RANGE' || type === 'MULTUP') {
@@ -732,8 +951,16 @@ export default {
     },
     
     getTradeButtonIcon() {
-      const type = this.localOrderConfig.type;
+      const type = this.unifiedOrderConfig.type;
       if (!type) return 'fas fa-ban';
+      
+      // Tipos de dígitos
+      if (this.isDigitType) {
+        if (this.showDigitSelection && this.selectedDigit === null) {
+          return 'fas fa-hand-pointer';
+        }
+        return 'fas fa-hashtag';
+      }
       
       // Tipos de ALTA
       if (type.includes('CALL') || type === 'MULTUP') {
@@ -764,7 +991,7 @@ export default {
     },
     
     getTradeButtonText() {
-      const type = this.localOrderConfig.type;
+      const type = this.unifiedOrderConfig.type;
       
       if (this.isTrading) {
         return 'Aguardando confirmação...';
@@ -772,6 +999,26 @@ export default {
       
       if (!type) {
         return 'Selecione um tipo de negociação';
+      }
+      
+      // Para tipos de dígito
+      if (this.isDigitType) {
+        if (this.showDigitSelection && this.selectedDigit === null) {
+          return 'Selecione um dígito';
+        }
+        if (!this.currentProposalId) {
+          return 'Aguardando proposta...';
+        }
+        
+        const digitTextMap = {
+          'DIGITMATCH': `Executar Previsão: Igual a ${this.selectedDigit}`,
+          'DIGITDIFF': `Executar Previsão: Diferente de ${this.selectedDigit}`,
+          'DIGITOVER': 'Executar Previsão: Acima de 5',
+          'DIGITUNDER': 'Executar Previsão: Abaixo de 5',
+          'DIGITODD': 'Executar Previsão: Ímpar',
+          'DIGITEVEN': 'Executar Previsão: Par'
+        };
+        return digitTextMap[type] || 'Executar Previsão';
       }
       
       if (!this.currentProposalId) {
@@ -1478,6 +1725,12 @@ export default {
           if (!this.assetIndexData) {
             console.log('[OperationChart] Iniciando busca de asset index...');
             this.fetchAssetIndex();
+          }
+          
+          // Inicializar tipos de dígitos
+          if (this.availableDigitTypes.length === 0) {
+            console.log('[OperationChart] Inicializando tipos de dígitos...');
+            this.initializeDigitTypes();
           }
           
           // Se estava em reconexão e o gráfico existe, garantir que será atualizado
@@ -4621,12 +4874,32 @@ export default {
       }
     },
     symbol(newSymbol, oldSymbol) {
-      if (newSymbol !== oldSymbol && this.assetIndexData) {
+      if (newSymbol !== oldSymbol) {
         console.log('[Watch] Símbolo mudou para:', newSymbol);
-        this.updateAvailableTradeTypes(newSymbol);
+        if (this.assetIndexData) {
+          this.updateAvailableTradeTypes(newSymbol);
+        }
         // Reset trade type selection
         this.localOrderConfig.type = '';
+        this.unifiedOrderConfig.type = '';
         this.selectedTradeType = null;
+        this.selectedDigit = null;
+      }
+    },
+    'unifiedOrderConfig.value'(newVal) {
+      if (this.unifiedOrderConfig.type) {
+        clearTimeout(this._unifiedProposalTimeout);
+        this._unifiedProposalTimeout = setTimeout(() => {
+          this.subscribeToUnifiedProposal();
+        }, 500);
+      }
+    },
+    'unifiedOrderConfig.duration'(newVal) {
+      if (this.unifiedOrderConfig.type) {
+        clearTimeout(this._unifiedProposalTimeout);
+        this._unifiedProposalTimeout = setTimeout(() => {
+          this.subscribeToUnifiedProposal();
+        }, 500);
       }
     },
     showAiCard(newVal) {
