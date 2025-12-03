@@ -132,21 +132,21 @@
         }
       },
       async handleCopyActivated() {
-        // Recarregar sessão ativa e redirecionar para monitoramento
+        console.log('🔄 [CopyTradersView] Copy ativado, recarregando sessão...');
+        
+        // Aguardar um pouco para garantir que a sessão foi criada no banco
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // Recarregar sessão ativa da API
         await this.checkActiveSession();
         
-        // Forçar mudança para aba de monitoramento (sem funcionalidade por enquanto)
-        // Mesmo sem sessão ativa, exibir a tela de monitoramento
+        // Mudar para aba de monitoramento
         this.activeTab = 'monitor';
         
-        // Se não houver sessão ativa, criar uma temporária para exibir a tela
-        if (!this.hasActiveSession) {
-          this.hasActiveSession = true;
-          this.activeSession = { 
-            id: 'temp', 
-            status: 'active',
-            traderName: 'Aguardando dados...'
-          };
+        if (this.hasActiveSession && this.activeSession) {
+          console.log('✅ [CopyTradersView] Sessão ativa carregada:', this.activeSession);
+        } else {
+          console.warn('⚠️ [CopyTradersView] Nenhuma sessão ativa encontrada após ativação');
         }
       },
       async handlePauseCopy() {

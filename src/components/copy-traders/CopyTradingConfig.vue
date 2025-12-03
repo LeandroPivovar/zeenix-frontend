@@ -363,24 +363,6 @@ export default {
             this.activating = true;
 
             try {
-                // Por enquanto, desativar a chamada à API e apenas exibir o monitoramento
-                console.log('Ativando copy trading (sem chamada à API por enquanto)...');
-                
-                // Simular um pequeno delay para feedback visual
-                await new Promise(resolve => setTimeout(resolve, 500));
-                
-                // Emitir evento para redirecionar para monitoramento
-                this.$emit('copy-activated');
-                
-                console.log('Redirecionando para tela de monitoramento...');
-            } catch (error) {
-                console.error('Erro ao ativar copy trading:', error);
-            } finally {
-                this.activating = false;
-            }
-
-            /* Código da API comentado temporariamente
-            try {
                 const userId = this.getUserId();
                 if (!userId) {
                     console.error('Erro: Usuário não identificado. Faça login novamente.');
@@ -418,6 +400,7 @@ export default {
                     apiAllocationPercentage = 100; 
                 }
 
+                console.log('🚀 Ativando copy trading via API...');
 
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
                 const response = await fetch(`${apiBase}/copy-trading/activate`, {
@@ -444,18 +427,18 @@ export default {
                 const result = await response.json();
 
                 if (result.success) {
-                    console.log('Copy Trading ativado com sucesso!');
+                    console.log('✅ Copy Trading ativado com sucesso!');
+                    console.log('📊 Sessão criada:', result.data);
                     this.$emit('copy-activated');
                 } else {
-                    console.error(result.message || 'Erro ao ativar copy trading. Tente novamente.');
+                    console.error('❌ Erro ao ativar:', result.message || 'Erro ao ativar copy trading. Tente novamente.');
                 }
             } catch (error) {
-                console.error('Erro ao ativar copy trading:', error);
+                console.error('❌ Erro ao ativar copy trading:', error);
                 console.error('Erro ao ativar copy trading. Verifique sua conexão e tente novamente.');
             } finally {
                 this.activating = false;
             }
-            */
         },
         getUserId() {
             try {
