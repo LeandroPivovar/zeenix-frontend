@@ -1,9 +1,12 @@
 <template>
-  <div class="layout noise-bg">
+  <div class="course-layout">
     <!-- Sidebar (AppSidebar handles fixed positioning) -->
     <!-- Note: AppSidebar logic handles its own width/collapsing. 
          We wrap the main content to offset it correctly via CSS (.layout margin-left) -->
-    <AppSidebar :is-open="false" :is-collapsed="false" />
+    <AppSidebar :is-open="sidebarOpen" :is-collapsed="false" />
+    
+    <!-- Overlay para fechar sidebar em mobile -->
+    <div v-if="sidebarOpen" class="sidebar-overlay" @click="closeSidebar"></div>
 
     <!-- Main Content Wrapper -->
     <div class="main-wrapper">
@@ -12,9 +15,13 @@
         <header class="course-header">
             <div class="header-inner">
                 <div class="header-left">
-                    <button class="back-btn" @click="$router.push('/academy')">
+                    <button class="hamburger-btn" @click="toggleSidebar" aria-label="Menu">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                    
+                    <button class="back-btn" @click="$router.push('/academy')" aria-label="Voltar para Academy">
                         <i class="fas fa-arrow-left"></i>
-                        Voltar
+                        <span class="back-btn-text">Voltar</span>
                     </button>
                     <h1 class="header-title">Zenix Academy</h1>
                 </div>
@@ -54,6 +61,23 @@
                     </div>
                 </div>
 
+                <!-- Lesson Title com Badges -->
+                <div class="lesson-title-section" v-if="selectedLesson">
+                    <div class="lesson-header-top">
+                        <h2 class="lesson-main-title">{{ selectedLesson.title }}</h2>
+                        <div class="lesson-meta-badges">
+                            <span class="lesson-duration-badge">
+                                <i class="fas fa-clock" style="font-size: 0.75rem; margin-right: 0.25rem;"></i>
+                                {{ selectedLesson.duration || '0:00' }}
+                            </span>
+                            <span v-if="selectedLesson.completed" class="lesson-status-badge">
+                                <span class="status-indicator"></span>
+                                Concluída
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
                 <!-- Video Player -->
                 <div class="video-player-section">
                     <div class="video-container">
@@ -74,12 +98,23 @@
                     </div>
                 </div>
 
-                <!-- Lesson Title -->
-                <div class="lesson-title-section" v-if="selectedLesson">
-                    <h2 class="lesson-main-title">{{ selectedLesson.title }}</h2>
-                    <!-- Optional External Link/CTA Button from design -->
-                    <button v-if="false" class="action-btn btn-green" style="margin-bottom: 1.5rem;">
-                        Criar seu cadastro
+                <!-- Navigation Buttons (Anterior/Próxima) -->
+                <div class="navigation-buttons" v-if="selectedLesson">
+                    <button 
+                        class="btn-nav btn-prev" 
+                        @click="gotoPreviousLesson"
+                        :disabled="!hasPreviousLesson"
+                    >
+                        <i class="fas fa-chevron-left btn-icon"></i>
+                        <span>Anterior</span>
+                    </button>
+                    <button 
+                        class="btn-nav btn-next" 
+                        @click="gotoNextLesson"
+                        :disabled="!hasNextLesson"
+                    >
+                        <span>Próxima</span>
+                        <i class="fas fa-chevron-right btn-icon"></i>
                     </button>
                 </div>
 
@@ -143,7 +178,7 @@
                     <div v-for="(module, idx) in modules" :key="module.id || idx" class="module-container">
                         <button class="module-trigger" @click="toggleModule(idx)">
                             <div class="module-info">
-                                <div class="module-title">Módulo {{ module.orderIndex || idx + 1 }}: {{ module.title }}</div>
+                                <div class="module-title">Módulo {{ module.orderIndex || idx + 1 }} — {{ module.title }}</div>
                                 <div class="module-progress" :style="{ color: getModuleProgress(module) === 100 ? '#22C55E' : '#8D8D8D' }">
                                     {{ getModuleProgress(module) }}% concluído
                                 </div>
@@ -161,23 +196,29 @@
                             >
                                 <div class="lesson-thumbnail">
                                     <div class="thumbnail-gradient"></div>
-                                    <div class="play-overlay" v-if="selectedLesson && selectedLesson.id === lesson.id">
+                                    <div class="play-overlay">
                                         <i class="fas fa-play" style="font-size: 0.75rem; color: #22C55E;"></i>
                                     </div>
                                 </div>
                                 <div class="lesson-info">
-                                    <div style="display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0.25rem;">
-                                        <i v-if="lesson.completed" class="fas fa-check-circle check-icon"></i>
-                                        <div v-else-if="selectedLesson && selectedLesson.id === lesson.id" class="pulse-dot status-dot"></div>
-                                        <div v-else class="status-circle"></div>
-                                        <span class="lesson-name">{{ lesson.title }}</span>
-                                    </div>
+                                    <span class="lesson-name">{{ lesson.title }}</span>
                                     <span class="lesson-duration">{{ lesson.duration || '5m 00s' }}</span>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
+
+                <!-- Botão Concluir -->
+                <button 
+                    v-if="selectedLesson"
+                    class="complete-lesson-btn"
+                    @click="markAsCompleted"
+                    :disabled="!selectedLesson || markingComplete || selectedLesson?.completed"
+                >
+                    <i class="fas fa-check btn-icon"></i>
+                    <span>{{ selectedLesson?.completed ? 'Concluída' : 'Concluir' }}</span>
+                </button>
             </div>
 
         </main>
@@ -211,12 +252,25 @@ export default {
       markingIncomplete: false,
       userName: 'Usuário',
       lessonMaterials: [],
-      materialsLoading: false
+      materialsLoading: false,
+      sidebarOpen: false
     }
   },
   computed: {
     totalLessons() {
       return this.modules.reduce((total, module) => total + (module.lessons?.length || 0), 0)
+    },
+    hasPreviousLesson() {
+      if (!this.selectedLesson) return false
+      const allLessons = this.getAllLessons()
+      const currentIndex = allLessons.findIndex(l => l.id === this.selectedLesson.id)
+      return currentIndex > 0
+    },
+    hasNextLesson() {
+      if (!this.selectedLesson) return false
+      const allLessons = this.getAllLessons()
+      const currentIndex = allLessons.findIndex(l => l.id === this.selectedLesson.id)
+      return currentIndex >= 0 && currentIndex < allLessons.length - 1
     }
   },
   mounted() {
@@ -422,6 +476,37 @@ export default {
       if (path.startsWith('http://') || path.startsWith('https://')) return path
       const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
       return `${apiBaseUrl}${path}`
+    },
+    toggleSidebar() {
+      this.sidebarOpen = !this.sidebarOpen
+    },
+    closeSidebar() {
+      this.sidebarOpen = false
+    },
+    getAllLessons() {
+      const allLessons = []
+      for (const module of this.modules) {
+        if (module.lessons && Array.isArray(module.lessons)) {
+          allLessons.push(...module.lessons)
+        }
+      }
+      return allLessons
+    },
+    gotoPreviousLesson() {
+      if (!this.hasPreviousLesson) return
+      const allLessons = this.getAllLessons()
+      const currentIndex = allLessons.findIndex(l => l.id === this.selectedLesson.id)
+      if (currentIndex > 0) {
+        this.selectLesson(allLessons[currentIndex - 1])
+      }
+    },
+    gotoNextLesson() {
+      if (!this.hasNextLesson) return
+      const allLessons = this.getAllLessons()
+      const currentIndex = allLessons.findIndex(l => l.id === this.selectedLesson.id)
+      if (currentIndex >= 0 && currentIndex < allLessons.length - 1) {
+        this.selectLesson(allLessons[currentIndex + 1])
+      }
     }
   }
 }
@@ -430,12 +515,115 @@ export default {
 <style scoped src="../assets/css/views/courseDetailView.css"></style>
 <style scoped>
 .main-wrapper {
-    width: 100%;
+    width: 100%!important;
 }
+
+/* Botão Hambúrguer - apenas mobile */
+.hamburger-btn {
+    display: none;
+    background: none;
+    border: none;
+    color: #DFDFDF;
+    cursor: pointer;
+    font-size: 1.25rem;
+    padding: 0.5rem;
+    transition: color 0.2s;
+    min-width: 44px;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+}
+
+.hamburger-btn:hover {
+    color: #22C55E;
+}
+
+.hamburger-btn:focus {
+    outline: 2px solid #22C55E;
+    outline-offset: 2px;
+    border-radius: 0.25rem;
+}
+
 @media (max-width: 1024px) {
+    .hamburger-btn {
+        display: flex;
+    }
+
     .main-wrapper {
-        margin-left: 0;
-        width: 100%;
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .hamburger-btn {
+        font-size: 1.125rem;
+    }
+}
+
+/* Overlay do sidebar em mobile */
+.sidebar-overlay {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    .sidebar-overlay {
+        display: block;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 998;
+        animation: fadeIn 0.3s ease-in-out;
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+</style>
+
+<style>
+/* Estilos não-scoped para sobrescrever .layout no elemento raiz */
+@media (max-width: 1024px) {
+    .layout.noise-bg {
+        margin-left: 0 !important;
+        width: 100% !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Esconde o sidebar em mobile por padrão */
+    .sidebar {
+        left: -280px !important;
+        transition: left 0.3s ease-in-out !important;
+    }
+    
+    /* Mostra o sidebar quando estiver aberto */
+    .sidebar.is-open {
+        left: 0 !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .layout.noise-bg {
+        padding-left: 0.5rem !important;
+        padding-right: 0.5rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .layout.noise-bg {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
 }
 </style>
