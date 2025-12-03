@@ -52,109 +52,85 @@
                     </div>
                 </div>
 
-                <div v-if="loading" class="loading">Carregando planos...</div>
-                <div v-else-if="error" class="error">{{ error }}</div>
+                <div v-if="loading" class="loading">
+                    <i class="fas fa-spinner fa-spin"></i> Carregando planos...
+                </div>
+                <div v-else-if="error" class="error">
+                    <i class="fas fa-exclamation-triangle"></i> {{ error }}
+                </div>
                 
                 <div v-else class="plans-grid">
-                    
-                    <div class="plan-card starter-card">
-                        <div class="plan-icon-box">
-                            <i class="fas fa-rocket"></i>
-                        </div>
-                        <h3 class="plan-title">Starter</h3>
-                        <div class="plan-price-wrapper">
-                            <span class="plan-price-value">Gratuito</span>
-                        </div>
-                        <ul class="plan-features-list">
-                            <li class="feature-item">
-                                <i class="fas fa-check feature-icon-check"></i>
-                                <span>IA Orion limitada</span>
-                            </li>
-                            <li class="feature-item">
-                                <i class="fas fa-check feature-icon-check"></i>
-                                <span>10 sinais/dia</span>
-                            </li>
-                            <li class="feature-item">
-                                <i class="fas fa-check feature-icon-check"></i>
-                                <span>Suporte por e-mail</span>
-                            </li>
-                            <li class="feature-item">
-                                <i class="fas fa-times feature-icon-cross"></i>
-                                <span class="text-secondary">Sem Copy Trading</span>
-                            </li>
-                        </ul>
-                        <button class="plan-btn btn-outline" @click="handlePlanAction({id: 'starter', price: 0, name: 'Starter'})">
-                            Ativar plano básico
-                        </button>
-                    </div>
-
-                    <div class="plan-card pro-card">
-                        <div class="plan-badge-popular">
+                    <div 
+                        v-for="plan in plans" 
+                        :key="plan.id"
+                        class="plan-card"
+                        :class="[
+                            plan.slug === 'starter' ? 'starter-card' : '',
+                            plan.slug === 'pro' ? 'pro-card' : '',
+                            plan.slug === 'black' ? 'black-card' : ''
+                        ]"
+                    >
+                        <!-- Badge Popular -->
+                        <div v-if="plan.isPopular" class="plan-badge-popular">
                             <span>MAIS POPULAR</span>
                         </div>
-                        <div class="plan-icon-box icon-box-green">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <h3 class="plan-title">Pro</h3>
-                        <div class="plan-price-wrapper">
-                            <span class="plan-price-value">R$ 67</span>
-                            <span class="plan-price-period">/mês</span>
-                        </div>
-                        <ul class="plan-features-list">
-                            <li class="feature-item">
-                                <i class="fas fa-check feature-icon-check"></i>
-                                <span>IA Orion completa</span>
-                            </li>
-                            <li class="feature-item">
-                                <i class="fas fa-check feature-icon-check"></i>
-                                <span>Copy Trading ilimitado</span>
-                            </li>
-                            <li class="feature-item">
-                                <i class="fas fa-check feature-icon-check"></i>
-                                <span>Zenix Academy completa</span>
-                            </li>
-                            <li class="feature-item">
-                                <i class="fas fa-check feature-icon-check"></i>
-                                <span>Suporte prioritário</span>
-                            </li>
-                        </ul>
-                        <button class="plan-btn btn-green-soft disabled" disabled>
-                            Plano atual
-                        </button>
-                    </div>
-
-                    <div class="plan-card black-card">
-                        <div class="plan-badge-recommended">
+                        
+                        <!-- Badge Recomendado -->
+                        <div v-if="plan.isRecommended" class="plan-badge-recommended">
                             <span>RECOMENDADO</span>
                         </div>
-                        <div class="plan-icon-box icon-box-gradient">
-                            <i class="fas fa-crown"></i>
+                        
+                        <!-- Ícone do Plano -->
+                        <div class="plan-icon-box" :class="{
+                            'icon-box-green': plan.slug === 'pro',
+                            'icon-box-gradient': plan.slug === 'black'
+                        }">
+                            <i :class="[
+                                'fas',
+                                plan.slug === 'starter' ? 'fa-rocket' : '',
+                                plan.slug === 'pro' ? 'fa-star' : '',
+                                plan.slug === 'black' ? 'fa-crown' : 'fa-gem'
+                            ]"></i>
                         </div>
-                        <h3 class="plan-title">Zenix Black</h3>
+                        
+                        <!-- Título -->
+                        <h3 class="plan-title">{{ plan.name }}</h3>
+                        
+                        <!-- Preço -->
                         <div class="plan-price-wrapper">
-                            <span class="plan-price-value">R$ 147</span>
-                            <span class="plan-price-period">/mês</span>
+                            <span class="plan-price-value">
+                                {{ plan.price === 0 ? 'Gratuito' : `R$ ${plan.price.toFixed(0)}` }}
+                            </span>
+                            <span v-if="plan.price > 0" class="plan-price-period">
+                                /{{ plan.billingPeriod === 'month' ? 'mês' : plan.billingPeriod }}
+                            </span>
                         </div>
-                        <ul class="plan-features-list">
-                            <li class="feature-item">
-                                <i class="fas fa-check feature-icon-check"></i>
-                                <span>IA Orion Black Module</span>
-                            </li>
-                            <li class="feature-item">
-                                <i class="fas fa-check feature-icon-check"></i>
-                                <span>Copy Trading ilimitado</span>
-                            </li>
-                            <li class="feature-item">
-                                <i class="fas fa-check feature-icon-check"></i>
-                                <span>Zenix Academy completa</span>
-                            </li>
-                            <li class="feature-item">
-                                <i class="fas fa-check feature-icon-check"></i>
-                                <span>Suporte prioritário</span>
+                        
+                        <!-- Features -->
+                        <ul class="plan-features-list" v-if="plan.features && typeof plan.features === 'object'">
+                            <li v-for="(value, key) in plan.features" :key="key" class="feature-item">
+                                <i :class="[
+                                    'fas',
+                                    value === false || value === 'false' || value === 'limitada' 
+                                        ? 'fa-times feature-icon-cross' 
+                                        : 'fa-check feature-icon-check'
+                                ]"></i>
+                                <span :class="{ 'text-secondary': value === false || value === 'false' }">
+                                    {{ formatFeature(key, value) }}
+                                </span>
                             </li>
                         </ul>
-                        <button class="plan-btn btn-green-soft disabled black-card-btn" disabled>
-                            Plano atual
+                        
+                        <!-- Botão de Ação -->
+                        <button 
+                            class="plan-btn" 
+                            :class="[
+                                plan.slug === 'starter' ? 'btn-outline' : '',
+                                plan.slug === 'pro' || plan.slug === 'black' ? 'btn-green-soft' : ''
+                            ]"
+                            @click="handlePlanAction(plan)"
+                        >
+                            {{ plan.price === 0 ? 'Ativar plano básico' : 'Assinar plano' }}
                         </button>
                     </div>
                 </div>
@@ -209,6 +185,7 @@ export default {
     },
     mounted() {
         this.loadDependencies();
+        this.fetchPlansFromAPI();
         this.fetchAccountBalance();
         this.startBalanceUpdates();
     },
@@ -238,6 +215,77 @@ export default {
         },
         playVideo() {
             this.isPlaying = true;
+        },
+        async fetchPlansFromAPI() {
+            try {
+                this.loading = true;
+                this.error = null;
+                
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/plans`);
+                
+                if (!response.ok) {
+                    throw new Error('Erro ao carregar planos');
+                }
+                
+                const plans = await response.json();
+                
+                // Filtrar apenas planos ativos e ordenar
+                this.plans = plans
+                    .filter(plan => plan.isActive)
+                    .sort((a, b) => a.displayOrder - b.displayOrder);
+                
+                console.log('✅ [PlansView] Planos carregados:', this.plans);
+            } catch (error) {
+                console.error('❌ [PlansView] Erro ao carregar planos:', error);
+                this.error = 'Não foi possível carregar os planos. Tente novamente.';
+                // Fallback para planos padrão em caso de erro
+                this.plans = [];
+            } finally {
+                this.loading = false;
+            }
+        },
+        formatFeature(key, value) {
+            // Mapa de tradução de features
+            const featureNames = {
+                'orion_ai': 'IA Orion',
+                'signals_per_day': 'Sinais por dia',
+                'copy_trading': 'Copy Trading',
+                'academy': 'Zenix Academy',
+                'support': 'Suporte',
+                'dashboards': 'Dashboards personalizados'
+            };
+            
+            const featureName = featureNames[key] || key;
+            
+            // Se valor é false, retornar "Sem [feature]"
+            if (value === false || value === 'false') {
+                return `Sem ${featureName}`;
+            }
+            
+            // Se valor é string, usar como sufixo
+            if (typeof value === 'string') {
+                const translations = {
+                    'limitada': 'limitada',
+                    'completa': 'completa',
+                    'black_module': 'Black Module',
+                    'black_edition': 'Black Edition',
+                    'email': 'por e-mail',
+                    'prioritario': 'prioritário',
+                    '1on1': '1 on 1',
+                    'premium': 'Premium',
+                    'ilimitado': 'ilimitado'
+                };
+                return `${featureName} ${translations[value] || value}`;
+            }
+            
+            // Se valor é número
+            if (typeof value === 'number') {
+                return `${featureName}: ${value}`;
+            }
+            
+            // Padrão
+            return value === true ? featureName : `${featureName}: ${value}`;
         },
         async handlePlanAction(plan) {
             // Placeholder para ação do botão
