@@ -64,8 +64,13 @@
                             <span class="hint-text">Ordem na lista (menor = primeiro).</span>
                         </div>
                         <div class="form-group" style="flex: 1 1 100%;">
-                            <label>Benefícios do Plano</label>
+                            <label>Benefícios do Plano (Total: {{ planForm.benefits ? planForm.benefits.length : 0 }})</label>
                             <div class="benefits-list">
+                                <!-- Debug: Mostrar se array existe -->
+                                <div v-if="!planForm.benefits || planForm.benefits.length === 0" style="color: #ff9800; padding: 10px; background: #2a2a2a; border-radius: 4px; margin-bottom: 10px;">
+                                    ⚠️ Nenhum benefício configurado. Clique em "Adicionar Benefício" abaixo.
+                                </div>
+                                
                                 <div v-for="(benefit, index) in planForm.benefits" :key="index" class="benefit-item">
                                     <input 
                                         type="text" 
@@ -81,7 +86,7 @@
                                     <i class="fas fa-plus"></i> Adicionar Benefício
                                 </button>
                             </div>
-                            <span class="hint-text">Lista de benefícios do plano.</span>
+                            <span class="hint-text">Lista de benefícios do plano. Adicione recursos que o plano oferece.</span>
                         </div>
                         <div class="form-group">
                             <label class="checkbox-label">
@@ -205,7 +210,19 @@ export default {
             // Gerenciamento do Formulário
             isFormVisible: false,
             isEditing: false,
-            planForm: this.getEmptyPlanForm(),
+            planForm: {
+                id: null,
+                name: '',
+                slug: '',
+                price: 0,
+                currency: 'BRL',
+                billingPeriod: 'month',
+                benefits: ['', '', ''],  // Inicializar com 3 campos
+                isPopular: false,
+                isRecommended: false,
+                isActive: true,
+                displayOrder: 0,
+            },
             
             // Dados Dinâmicos
             plans: [],
@@ -213,6 +230,9 @@ export default {
         };
     },
     async mounted() {
+        console.log('🔍 [PlansManagement] Componente montado');
+        console.log('📋 [PlansManagement] planForm.benefits inicial:', this.planForm.benefits);
+        
         this.checkMobileStatus();
         window.addEventListener('resize', this.checkMobileStatus);
         document.addEventListener('click', this.handleClickOutside);
@@ -304,19 +324,21 @@ export default {
 
         // --- Métodos de Utilitário ---
         getEmptyPlanForm() {
-            return {
+            const form = {
                 id: null,
                 name: '',
                 slug: '',
                 price: 0,
                 currency: 'BRL',
                 billingPeriod: 'month',
-                benefits: [''],
+                benefits: ['', '', ''],  // Começar com 3 campos vazios
                 isPopular: false,
                 isRecommended: false,
                 isActive: true,
                 displayOrder: 0,
             };
+            console.log('📋 [PlansManagement] Formulário vazio criado com', form.benefits.length, 'benefícios');
+            return form;
         },
         
         formatCurrency(value, currency = 'BRL') {
@@ -336,11 +358,13 @@ export default {
 
         addBenefit() {
             this.planForm.benefits.push('');
+            console.log('➕ [PlansManagement] Benefício adicionado. Total:', this.planForm.benefits.length);
         },
 
         removeBenefit(index) {
             if (this.planForm.benefits.length > 1) {
                 this.planForm.benefits.splice(index, 1);
+                console.log('➖ [PlansManagement] Benefício removido. Total:', this.planForm.benefits.length);
             }
         },
 
@@ -349,6 +373,14 @@ export default {
             this.planForm = this.getEmptyPlanForm();
             this.isEditing = false;
             this.isFormVisible = true;
+            
+            console.log('📝 [PlansManagement] Abrindo formulário novo plano');
+            console.log('📋 [PlansManagement] Benefícios iniciais:', this.planForm.benefits);
+            
+            // Debug: Forçar re-renderização
+            this.$nextTick(() => {
+                console.log('✅ [PlansManagement] Formulário renderizado com', this.planForm.benefits.length, 'benefícios');
+            });
         },
         
         closeForm() {
@@ -439,6 +471,14 @@ export default {
             const features = plan.features || {};
             const benefits = features.benefits || [];
             
+            // Garantir que sempre tenha pelo menos um benefício vazio para exibir o input
+            const benefitsList = Array.isArray(benefits) && benefits.length > 0 
+                ? benefits 
+                : [''];
+            
+            console.log('📝 [PlansManagement] Editando plano:', plan.name);
+            console.log('📋 [PlansManagement] Benefícios carregados:', benefitsList);
+            
             this.planForm = { 
                 id: plan.id,
                 name: plan.name,
@@ -446,7 +486,7 @@ export default {
                 price: plan.price,
                 currency: plan.currency,
                 billingPeriod: plan.billingPeriod,
-                benefits: benefits.length > 0 ? benefits : [''],
+                benefits: benefitsList,
                 isPopular: plan.isPopular || false,
                 isRecommended: plan.isRecommended || false,
                 isActive: plan.isActive !== undefined ? plan.isActive : true,
@@ -454,6 +494,11 @@ export default {
             };
             this.isEditing = true;
             this.isFormVisible = true;
+            
+            // Debug: Forçar re-renderização
+            this.$nextTick(() => {
+                console.log('✅ [PlansManagement] Formulário renderizado com', this.planForm.benefits.length, 'benefícios');
+            });
         },
         
         async deletePlan(planId) {
@@ -718,37 +763,62 @@ body {
     display: flex;
     flex-direction: column;
     gap: 10px;
+    width: 100%;
 }
 
 .benefit-item {
     display: flex;
     gap: 10px;
     align-items: center;
+    width: 100%;
 }
 
 .benefit-input {
     flex: 1;
+    background-color: #2a2a2a !important;
+    border: 1px solid #3a3a3a !important;
+    color: #fff !important;
+    padding: 10px !important;
+    border-radius: 4px !important;
+    font-size: 1rem !important;
+    min-height: 40px;
 }
 
 .remove-benefit-btn {
-    background: #f44336;
-    border: none;
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
+    background: #f44336 !important;
+    border: none !important;
+    color: #fff !important;
+    padding: 8px 12px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
+    min-width: 40px;
+    transition: all 0.2s;
+}
+
+.remove-benefit-btn:hover {
+    background: #d32f2f !important;
+    transform: scale(1.05);
 }
 
 .add-benefit-btn {
-    background: #4CAF50;
-    border: none;
-    color: #fff;
-    padding: 8px 12px;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 0.9rem;
+    background: #4CAF50 !important;
+    border: none !important;
+    color: #fff !important;
+    padding: 10px 16px !important;
+    border-radius: 4px !important;
+    cursor: pointer !important;
+    font-size: 0.9rem !important;
     margin-top: 5px;
+    width: 100%;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.add-benefit-btn:hover {
+    background: #45a049 !important;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
 }
 
 .select-wrapper {
