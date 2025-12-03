@@ -58,15 +58,17 @@
             
             <div class="form-group">
                 <label class="form-label">
-                    Tipo de Alocação
+                    Tipo de Replicação
                     <TooltipsCopyTraders position="center">
                         <div class="section-title">Proporção (%)</div>
-                        <p>Replica a mesma porcentagem de risco usada pelo Trader Mestre em cada operação.</p>
-                        <p>Se o mestre entrar com 2% do saldo dele, você também entra com 2% do seu saldo.</p>
-                        <p class="caution">Use valores moderados para evitar risco excessivo.</p>
+                        <p>Replica a mesma porcentagem de risco usada pelo Trader Mestre.</p>
+                        <p class="example">Exemplo: Se o mestre entrar com 2% do saldo dele, você também entra com 2% do seu saldo.</p>
+                        <p class="caution">Recomendado para contas com saldos diferentes do trader.</p>
+                        
                         <div class="section-title">Valor Fixo ($)</div>
-                        <p>Replica exatamente o mesmo valor financeiro que o Trader Mestre usa nas operações.</p>
-                        <p>Se o mestre entrar com $5, sua conta também entra com $5, independentemente do seu saldo total.</p>
+                        <p>Replica exatamente o mesmo valor financeiro do Trader Mestre.</p>
+                        <p class="example">Exemplo: Se o mestre entrar com $5, sua conta também entra com $5.</p>
+                        <p class="caution">Recomendado para contas com saldo similar ao trader.</p>
                     </TooltipsCopyTraders>
                 </label>
                 <div class="allocation-buttons-group">
@@ -85,18 +87,6 @@
                 </div>
             </div>
 
-            <div class="form-group" v-if="allocationType === 'fixed'">
-                <label class="form-label">
-                    Valor Fixo ($)
-                </label>
-                <input 
-                    type="number" 
-                    v-model.number="allocationValue"
-                    placeholder="Ex: 500"
-                    min="0.01"
-                    step="0.01"
-                >
-            </div>
             <div class="form-group">
                 <label class="form-label">
                     Alavancagem
@@ -188,19 +178,16 @@
             
             <div class="summary-item">
                 <span class="label">
-                    Valor de Entrada
+                    Base de Replicação
                     <TooltipsCopyTraders position="left">
-                        <h4>Valor de Entrada</h4>
-                        <p>Valor ou porcentagem que será usado em cada operação copiada.</p>
+                        <h4>Base de Replicação</h4>
+                        <p>Como o sistema irá replicar as operações do trader.</p>
+                        <p><strong>Proporção:</strong> Mesma % do saldo</p>
+                        <p><strong>Valor Fixo:</strong> Mesmo valor exato</p>
                     </TooltipsCopyTraders>
                 </span>
                 <span class="value">
-                    <template v-if="allocationType === 'fixed'">
-                        {{ allocationValue || 0.00 }}
-                    </template>
-                    <template v-else>
-                        Padrão (100%)
-                    </template>
+                    {{ allocationType === 'fixed' ? 'Mesmo Valor do Trader' : 'Mesma % do Trader' }}
                 </span>
             </div>
 
@@ -349,16 +336,8 @@ export default {
                 return;
             }
 
-            // Validação de Alocação:
-            if (this.allocationType === 'fixed') {
-                // Se for Valor Fixo, o valor não pode ser nulo ou <= 0
-                if (!this.allocationValue || this.allocationValue <= 0) {
-                    console.error('Erro de validação: Por favor, informe o Valor Fixo de alocação!');
-                    return;
-                }
-            }
-            // Se for 'percentage', a lógica de input foi removida e o valor será padronizado.
-
+            // Não precisa mais validar allocation_value
+            // O sistema irá replicar automaticamente os valores do trader
 
             this.activating = true;
 
@@ -389,16 +368,10 @@ export default {
                 const leverageFormatted = `${leverageValue}x`;
                 
                 // Lógica de valores para API
+                // O valor será replicado automaticamente do trader, não precisa configurar
                 const apiAllocationType = this.allocationType === 'percentage' ? 'proportion' : 'fixed';
-                let apiAllocationValue = null;
-                let apiAllocationPercentage = null;
-
-                if (this.allocationType === 'fixed') {
-                    apiAllocationValue = this.allocationValue;
-                } else {
-                    // Se for 'percentage', assume-se 100% como padrão
-                    apiAllocationPercentage = 100; 
-                }
+                const apiAllocationValue = null;  // Sempre null - será baseado no trader
+                const apiAllocationPercentage = this.allocationType === 'percentage' ? 100 : null;
 
                 console.log('🚀 Ativando copy trading via API...');
 

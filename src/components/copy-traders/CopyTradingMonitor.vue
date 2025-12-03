@@ -523,9 +523,7 @@ export default {
             this.resumo.losses = this.session.totalLosses || 0;
         },
         async pauseCopy() {
-            if (confirm('Tem certeza que deseja pausar o copy trading? A sessão será encerrada.')) {
-                this.$emit('pause-copy');
-            }
+            this.$emit('pause-copy');
         },
     },
     watch: {

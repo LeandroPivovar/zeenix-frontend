@@ -127,8 +127,8 @@
                 <span>Suporte</span>
             </a>
 
-            <!-- Links de Administração (acesso liberado) -->
-            <template>
+            <!-- Links de Administração (apenas para admins) -->
+            <template v-if="isAdmin">
                 <div class="separator"></div>
                 
                 <a
@@ -362,6 +362,19 @@ export default {
                 console.error('[Sidebar] Erro ao verificar se usuário é trader:', error);
                 return false;
             }
+        }
+    },
+    mounted() {
+        // Debug: Verificar automaticamente se usuário é admin
+        console.log('🔍 [Sidebar] Verificando acesso admin...');
+        console.log('🔐 [Sidebar] É admin?', this.isAdmin);
+        
+        if (this.isAdmin) {
+            console.log('✅ [Sidebar] Links admin serão exibidos');
+        } else {
+            console.log('❌ [Sidebar] Links admin NÃO serão exibidos');
+            console.log('💡 [Sidebar] Para verificar sua role, execute no console:');
+            console.log('   const token = localStorage.getItem("token"); console.log(JSON.parse(atob(token.split(".")[1])));');
         }
     },
     methods: {
