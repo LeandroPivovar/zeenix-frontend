@@ -316,18 +316,37 @@ export default {
         mapPlanFromBackend(plan) {
             const features = plan.features || {};
             
+            console.log('🔍 [MapPlan] Plano:', plan.name);
+            console.log('   📦 Features raw:', features);
+            console.log('   📦 Type of features:', typeof features);
+            console.log('   📦 Is string?', typeof features === 'string');
+            
+            // Se features vier como string JSON, fazer parse
+            let parsedFeatures = features;
+            if (typeof features === 'string') {
+                try {
+                    parsedFeatures = JSON.parse(features);
+                    console.log('   ✅ Features parseado:', parsedFeatures);
+                } catch (e) {
+                    console.error('   ❌ Erro ao fazer parse de features:', e);
+                    parsedFeatures = {};
+                }
+            }
+            
             // Extrair benefícios do features
             let benefits = [];
-            if (features.benefits && Array.isArray(features.benefits)) {
-                benefits = features.benefits.filter(b => b && b.trim());  // Remover vazios
+            if (parsedFeatures.benefits && Array.isArray(parsedFeatures.benefits)) {
+                benefits = parsedFeatures.benefits.filter(b => b && b.trim());  // Remover vazios
+                console.log('   ✅ Benefícios encontrados:', benefits.length, '→', benefits);
+            } else {
+                console.log('   ⚠️ Nenhum benefício encontrado em features.benefits');
             }
             
             // Se não houver benefícios, adicionar um campo vazio
             if (benefits.length === 0) {
                 benefits = [''];
+                console.log('   📝 Adicionado benefício vazio para input');
             }
-            
-            console.log('🔄 [MapPlan]', plan.name, '→ Benefícios:', benefits);
             
             return {
                 id: plan.id,
@@ -336,7 +355,7 @@ export default {
                 price: plan.price || 0,
                 currency: plan.currency || 'BRL',
                 billingPeriod: plan.billingPeriod || 'month',
-                features: features,
+                features: parsedFeatures,
                 benefits: benefits,
                 isPopular: plan.isPopular || false,
                 isRecommended: plan.isRecommended || false,

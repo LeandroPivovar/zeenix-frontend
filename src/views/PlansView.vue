@@ -106,18 +106,21 @@
                             </span>
                         </div>
                         
-                        <!-- Features -->
-                        <ul class="plan-features-list" v-if="plan.features && typeof plan.features === 'object'">
-                            <li v-for="(value, key) in plan.features" :key="key" class="feature-item">
-                                <i :class="[
-                                    'fas',
-                                    value === false || value === 'false' || value === 'limitada' 
-                                        ? 'fa-times feature-icon-cross' 
-                                        : 'fa-check feature-icon-check'
-                                ]"></i>
-                                <span :class="{ 'text-secondary': value === false || value === 'false' }">
-                                    {{ formatFeature(key, value) }}
-                                </span>
+                        <!-- Benefícios do Plano -->
+                        <ul class="plan-features-list">
+                            <li 
+                                v-for="(benefit, index) in getPlanBenefits(plan)" 
+                                :key="`benefit-${index}`" 
+                                class="feature-item"
+                            >
+                                <i class="fas fa-check feature-icon-check"></i>
+                                <span>{{ benefit }}</span>
+                            </li>
+                            
+                            <!-- Mensagem se não houver benefícios -->
+                            <li v-if="getPlanBenefits(plan).length === 0" class="feature-item">
+                                <i class="fas fa-info-circle" style="color: #666;"></i>
+                                <span style="color: #666;">Nenhum benefício configurado</span>
                             </li>
                         </ul>
                         
@@ -245,47 +248,35 @@ export default {
                 this.loading = false;
             }
         },
-        formatFeature(key, value) {
-            // Mapa de tradução de features
-            const featureNames = {
-                'orion_ai': 'IA Orion',
-                'signals_per_day': 'Sinais por dia',
-                'copy_trading': 'Copy Trading',
-                'academy': 'Zenix Academy',
-                'support': 'Suporte',
-                'dashboards': 'Dashboards personalizados'
-            };
-            
-            const featureName = featureNames[key] || key;
-            
-            // Se valor é false, retornar "Sem [feature]"
-            if (value === false || value === 'false') {
-                return `Sem ${featureName}`;
+        getPlanBenefits(plan) {
+            // Extrair array de benefícios do features
+            if (!plan.features) {
+                console.log(`📦 [GetBenefits] ${plan.name} → Sem features`);
+                return [];
             }
             
-            // Se valor é string, usar como sufixo
-            if (typeof value === 'string') {
-                const translations = {
-                    'limitada': 'limitada',
-                    'completa': 'completa',
-                    'black_module': 'Black Module',
-                    'black_edition': 'Black Edition',
-                    'email': 'por e-mail',
-                    'prioritario': 'prioritário',
-                    '1on1': '1 on 1',
-                    'premium': 'Premium',
-                    'ilimitado': 'ilimitado'
-                };
-                return `${featureName} ${translations[value] || value}`;
+            // Se features for string, fazer parse
+            let features = plan.features;
+            if (typeof features === 'string') {
+                try {
+                    features = JSON.parse(features);
+                    console.log(`📦 [GetBenefits] ${plan.name} → Features parseado:`, features);
+                } catch (e) {
+                    console.error('[PlansView] Erro ao fazer parse de features:', e);
+                    return [];
+                }
             }
             
-            // Se valor é número
-            if (typeof value === 'number') {
-                return `${featureName}: ${value}`;
+            // Verificar se tem array de benefits
+            if (features.benefits && Array.isArray(features.benefits)) {
+                const benefits = features.benefits.filter(b => b && b.trim());
+                console.log(`✅ [GetBenefits] ${plan.name} → ${benefits.length} benefícios:`, benefits);
+                return benefits;
             }
             
-            // Padrão
-            return value === true ? featureName : `${featureName}: ${value}`;
+            console.log(`⚠️ [GetBenefits] ${plan.name} → features.benefits não é array ou está vazio`);
+            console.log('   Features completo:', features);
+            return [];
         },
         async handlePlanAction(plan) {
             // Placeholder para ação do botão
