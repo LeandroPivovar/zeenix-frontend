@@ -161,12 +161,21 @@
                 </div>
             </div>
 
-            <button class="activate-button" @click="activateCopy">
-                Ativar Copy
+            <button 
+                class="activate-button" 
+                @click="activateCopy"
+                :disabled="isActive && sessionStatus === 'active'"
+                :class="{ 'button-disabled': isActive && sessionStatus === 'active' }"
+            >
+                {{ isActive && sessionStatus === 'active' ? 'Copy Ativo' : 'Ativar Copy' }}
             </button>
 
-            <div class="pause-link" @click="togglePause">
-                {{ isPaused ? 'Reativar' : 'Pausar' }}/Desativar
+            <div 
+                class="pause-link" 
+                @click="togglePause"
+                v-if="isActive"
+            >
+                {{ sessionStatus === 'paused' ? 'Retomar Copy' : 'Pausar Copy' }}
             </div>
         </aside>
 
@@ -311,13 +320,13 @@ export default {
             takeProfit: 500,
             blindStop: false,
             isPaused: false,
-            tradersList: [
-                { id: 't1', name: 'John Doe', roi: '45', dd: '8', followers: '1.2', winRate: '78%', totalTrades: '234' },
-                { id: 't2', name: 'Jane Smith', roi: '52', dd: '6', followers: '0.8', winRate: '82%', totalTrades: '189' },
-                { id: 't3', name: 'TradeMaster', roi: '60', dd: '5', followers: '2.1', winRate: '85%', totalTrades: '456' },
-                { id: 't4', name: 'Elite Trader', roi: '48', dd: '7', followers: '1.5', winRate: '80%', totalTrades: '312' },
-                { id: 't5', name: 'Pro Trader', roi: '55', dd: '4', followers: '3.2', winRate: '88%', totalTrades: '567' }
-            ]
+            isActive: false,
+            sessionStatus: null,
+            activeSession: null,
+            configId: null,
+            tradersList: [],
+            isLoadingTraders: false,
+            isLoadingConfig: false
         }
     },
     computed: {
@@ -325,6 +334,11 @@ export default {
             const trader = this.tradersList.find(t => t.id === this.selectedTrader);
             return trader || { name: '', roi: '0', dd: '0', followers: '0', winRate: '0%', totalTrades: '0' };
         }
+    },
+    async mounted() {
+        await this.loadAvailableTraders();
+        await this.loadCopyTradingConfig();
+        await this.loadActiveSession();
     },
     methods: {
         setPeriod(period) {
@@ -400,8 +414,11 @@ export default {
 
                 if (result.success) {
                     if (this.$root.$toast) {
-                        this.$root.$toast.success('Copy ativado com sucesso!');
+                        this.$root.$toast.success('Copy ativado com sucesso! Sessão criada.');
                     }
+                    // Recarregar configuração e sessão
+                    await this.loadCopyTradingConfig();
+                    await this.loadActiveSession();
                     // Navegar para a tela de performance
                     this.$emit('copy-activated');
                 } else {
@@ -470,8 +487,156 @@ export default {
             }
             return 'USD';
         },
-        togglePause() {
-            this.isPaused = !this.isPaused;
+        async togglePause() {
+            try {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const token = localStorage.getItem('token');
+
+                if (this.sessionStatus === 'paused') {
+                    // Retomar copy trading
+                    const response = await fetch(`${apiBase}/copy-trading/resume`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        if (this.$root.$toast) {
+                            this.$root.$toast.success('Copy trading retomado com sucesso!');
+                        }
+                        await this.loadCopyTradingConfig();
+                        await this.loadActiveSession();
+                    } else {
+                        if (this.$root.$toast) {
+                            this.$root.$toast.error(result.message || 'Erro ao retomar copy trading');
+                        }
+                    }
+                } else {
+                    // Pausar copy trading
+                    const response = await fetch(`${apiBase}/copy-trading/pause`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+
+                    const result = await response.json();
+
+                    if (result.success) {
+                        if (this.$root.$toast) {
+                            this.$root.$toast.success('Copy trading pausado com sucesso!');
+                        }
+                        await this.loadCopyTradingConfig();
+                        await this.loadActiveSession();
+                    } else {
+                        if (this.$root.$toast) {
+                            this.$root.$toast.error(result.message || 'Erro ao pausar copy trading');
+                        }
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao pausar/retomar copy:', error);
+                if (this.$root.$toast) {
+                    this.$root.$toast.error('Erro ao pausar/retomar copy. Tente novamente.');
+                }
+            }
+        },
+        async loadAvailableTraders() {
+            try {
+                this.isLoadingTraders = true;
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                
+                const response = await fetch(`${apiBase}/copy-trading/traders`);
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    this.tradersList = result.data;
+                } else {
+                    console.warn('Nenhum trader disponível encontrado');
+                    // Fallback para dados mockados se necessário
+                    this.tradersList = [
+                        { id: 't1', name: 'John Doe', roi: '45', dd: '8', followers: '1.2', winRate: '78%', totalTrades: '234' },
+                        { id: 't2', name: 'Jane Smith', roi: '52', dd: '6', followers: '0.8', winRate: '82%', totalTrades: '189' },
+                        { id: 't3', name: 'TradeMaster', roi: '60', dd: '5', followers: '2.1', winRate: '85%', totalTrades: '456' }
+                    ];
+                }
+            } catch (error) {
+                console.error('Erro ao carregar traders:', error);
+                // Fallback para dados mockados em caso de erro
+                this.tradersList = [
+                    { id: 't1', name: 'John Doe', roi: '45', dd: '8', followers: '1.2', winRate: '78%', totalTrades: '234' },
+                    { id: 't2', name: 'Jane Smith', roi: '52', dd: '6', followers: '0.8', winRate: '82%', totalTrades: '189' }
+                ];
+            } finally {
+                this.isLoadingTraders = false;
+            }
+        },
+        async loadCopyTradingConfig() {
+            try {
+                this.isLoadingConfig = true;
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const token = localStorage.getItem('token');
+
+                const response = await fetch(`${apiBase}/copy-trading/config`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    const config = result.data;
+                    this.isActive = config.isActive;
+                    this.sessionStatus = config.sessionStatus;
+                    this.configId = config.id;
+                    
+                    // Carregar configurações existentes
+                    this.selectedTrader = config.traderId;
+                    this.copyMode = config.allocationType;
+                    this.allocationValue = config.allocationType === 'proportion' 
+                        ? config.allocationPercentage 
+                        : config.allocationValue;
+                    this.leverage = config.leverage;
+                    this.stopLoss = config.stopLoss;
+                    this.takeProfit = config.takeProfit;
+                    this.blindStop = config.blindStopLoss;
+                    this.isPaused = config.sessionStatus === 'paused';
+                }
+            } catch (error) {
+                console.error('Erro ao carregar configuração:', error);
+            } finally {
+                this.isLoadingConfig = false;
+            }
+        },
+        async loadActiveSession() {
+            try {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const token = localStorage.getItem('token');
+
+                const response = await fetch(`${apiBase}/copy-trading/session/active`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success && result.data) {
+                    this.activeSession = result.data;
+                    this.sessionStatus = result.data.status;
+                } else {
+                    this.activeSession = null;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar sessão ativa:', error);
+                this.activeSession = null;
+            }
         },
         navigateToHistory() {
             this.$emit('navigate-to-history');
