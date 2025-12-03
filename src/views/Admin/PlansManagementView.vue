@@ -64,56 +64,40 @@
                             <span class="hint-text">Ordem na lista (menor = primeiro).</span>
                         </div>
                         <div class="form-group" style="flex: 1 1 100%;">
-                            <label style="display: block !important; margin-bottom: 10px !important;">
-                                Benefícios do Plano (Total: {{ planForm.benefits ? planForm.benefits.length : 0 }})
+                            <label style="display: block; margin-bottom: 8px; font-size: 0.9rem; color: #fff; font-weight: 500;">
+                                Benefícios do Plano <span style="color: #4CAF50;">({{ planForm.benefits ? planForm.benefits.length : 0 }})</span>
                             </label>
                             
-                            <!-- Debug Visual -->
-                            <div style="background: #1a1a1a; padding: 8px; border-radius: 4px; margin-bottom: 10px; font-size: 0.85rem; color: #888;">
-                                🔍 Debug: Array tem {{ planForm.benefits ? planForm.benefits.length : 0 }} item(ns)
-                                <template v-if="planForm.benefits && planForm.benefits.length > 0">
-                                    → Renderizando {{ planForm.benefits.length }} input(s) abaixo
-                                </template>
-                            </div>
-                            
-                            <div class="benefits-list" style="display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important; background: rgba(255,0,0,0.05) !important; padding: 10px !important; border-radius: 4px !important;">
-                                <!-- Debug: Mostrar se array existe -->
-                                <div v-if="!planForm.benefits || planForm.benefits.length === 0" style="color: #ff9800; padding: 10px; background: #2a2a2a; border-radius: 4px; margin-bottom: 10px;">
-                                    ⚠️ Nenhum benefício configurado. Clique em "Adicionar Benefício" abaixo.
+                            <div class="benefits-container">
+                                <!-- Lista de benefícios -->
+                                <div 
+                                    v-for="(benefit, index) in planForm.benefits" 
+                                    :key="`benefit-${index}`" 
+                                    class="benefit-row"
+                                >
+                                    <span class="benefit-number">{{ index + 1 }}.</span>
+                                    <input 
+                                        type="text" 
+                                        v-model="planForm.benefits[index]" 
+                                        :placeholder="`Ex: IA Orion completa`"
+                                        class="benefit-input-compact"
+                                    >
+                                    <button 
+                                        type="button" 
+                                        @click="removeBenefit(index)" 
+                                        class="remove-benefit-btn-compact" 
+                                        v-if="planForm.benefits.length > 1"
+                                        title="Remover benefício"
+                                    >
+                                        <i class="fas fa-times"></i>
+                                    </button>
                                 </div>
                                 
-                                <!-- Lista de benefícios -->
-                                <template v-if="planForm.benefits && planForm.benefits.length > 0">
-                                    <div 
-                                        v-for="(benefit, index) in planForm.benefits" 
-                                        :key="`benefit-${index}`" 
-                                        class="benefit-item"
-                                        style="display: flex !important; gap: 10px !important; align-items: center !important; width: 100% !important; min-height: 50px !important; visibility: visible !important; opacity: 1 !important;"
-                                    >
-                                        <input 
-                                            type="text" 
-                                            v-model="planForm.benefits[index]" 
-                                            :placeholder="`Benefício ${index + 1}`"
-                                            class="benefit-input"
-                                            style="display: block !important; visibility: visible !important; opacity: 1 !important; width: 100% !important; background-color: #2a2a2a !important; color: #fff !important; border: 1px solid #3a3a3a !important; padding: 10px !important; border-radius: 4px !important; min-height: 40px !important;"
-                                        >
-                                        <button 
-                                            type="button" 
-                                            @click="removeBenefit(index)" 
-                                            class="remove-benefit-btn" 
-                                            v-if="planForm.benefits.length > 1"
-                                            style="display: block !important; visibility: visible !important;"
-                                        >
-                                            <i class="fas fa-times"></i>
-                                        </button>
-                                    </div>
-                                </template>
-                                
-                                <button type="button" @click="addBenefit" class="add-benefit-btn">
+                                <button type="button" @click="addBenefit" class="add-benefit-btn-compact">
                                     <i class="fas fa-plus"></i> Adicionar Benefício
                                 </button>
                             </div>
-                            <span class="hint-text">Lista de benefícios do plano. Adicione recursos que o plano oferece.</span>
+                            <span class="hint-text">Lista de recursos/benefícios que o plano oferece (ex: "Copy Trading ilimitado")</span>
                         </div>
                         <div class="form-group">
                             <label class="checkbox-label">
@@ -331,7 +315,19 @@ export default {
 
         mapPlanFromBackend(plan) {
             const features = plan.features || {};
-            const benefits = features.benefits || [];
+            
+            // Extrair benefícios do features
+            let benefits = [];
+            if (features.benefits && Array.isArray(features.benefits)) {
+                benefits = features.benefits.filter(b => b && b.trim());  // Remover vazios
+            }
+            
+            // Se não houver benefícios, adicionar um campo vazio
+            if (benefits.length === 0) {
+                benefits = [''];
+            }
+            
+            console.log('🔄 [MapPlan]', plan.name, '→ Benefícios:', benefits);
             
             return {
                 id: plan.id,
@@ -341,7 +337,7 @@ export default {
                 currency: plan.currency || 'BRL',
                 billingPeriod: plan.billingPeriod || 'month',
                 features: features,
-                benefits: Array.isArray(benefits) ? benefits : [],
+                benefits: benefits,
                 isPopular: plan.isPopular || false,
                 isRecommended: plan.isRecommended || false,
                 isActive: plan.isActive !== undefined ? plan.isActive : true,
@@ -495,16 +491,14 @@ export default {
         },
         
         editPlan(plan) {
-            const features = plan.features || {};
-            const benefits = features.benefits || [];
-            
-            // Garantir que sempre tenha pelo menos um benefício vazio para exibir o input
-            const benefitsList = Array.isArray(benefits) && benefits.length > 0 
-                ? benefits 
+            // Usar os benefícios já processados do mapPlanFromBackend
+            const benefitsList = plan.benefits && plan.benefits.length > 0 
+                ? [...plan.benefits]  // Clone do array
                 : [''];
             
             console.log('📝 [PlansManagement] Editando plano:', plan.name);
-            console.log('📋 [PlansManagement] Benefícios carregados:', benefitsList);
+            console.log('📋 [PlansManagement] Benefícios do plano:', benefitsList);
+            console.log('📦 [PlansManagement] Features completas:', plan.features);
             
             this.planForm = { 
                 id: plan.id,
@@ -519,12 +513,20 @@ export default {
                 isActive: plan.isActive !== undefined ? plan.isActive : true,
                 displayOrder: plan.displayOrder || 0,
             };
+            
             this.isEditing = true;
             this.isFormVisible = true;
             
-            // Debug: Forçar re-renderização
+            // Debug: Forçar re-renderização e verificar
             this.$nextTick(() => {
-                console.log('✅ [PlansManagement] Formulário renderizado com', this.planForm.benefits.length, 'benefícios');
+                console.log('✅ [PlansManagement] Formulário renderizado');
+                console.log('📝 [PlansManagement] planForm.benefits:', this.planForm.benefits);
+                console.log('🔢 [PlansManagement] Total de benefícios:', this.planForm.benefits.length);
+                
+                // Mostrar cada benefício
+                this.planForm.benefits.forEach((b, i) => {
+                    console.log(`   ${i + 1}. "${b}"`);
+                });
             });
         },
         
@@ -786,57 +788,92 @@ body {
     margin-top: 5px;
 }
 
-.benefits-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: 100%;
+/* Novo estilo compacto para benefícios */
+.benefits-container {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    width: 100% !important;
+    background-color: #1a1a1a !important;
+    padding: 12px !important;
+    border-radius: 6px !important;
+    border: 1px solid #3a3a3a !important;
+    min-height: 60px !important;
 }
 
-.benefit-item {
+.benefit-row {
     display: flex !important;
-    gap: 10px;
-    align-items: center;
-    width: 100%;
+    gap: 8px !important;
+    align-items: center !important;
+    width: 100% !important;
     visibility: visible !important;
     opacity: 1 !important;
-    min-height: 50px;
 }
 
-.benefit-input {
-    flex: 1;
+.benefit-number {
+    color: #4CAF50 !important;
+    font-weight: 600 !important;
+    font-size: 0.9rem !important;
+    min-width: 25px !important;
+    text-align: right !important;
+    flex-shrink: 0 !important;
+}
+
+.benefit-input-compact {
+    flex: 1 !important;
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
     background-color: #2a2a2a !important;
     border: 1px solid #3a3a3a !important;
     color: #fff !important;
-    padding: 10px !important;
+    padding: 8px 12px !important;
     border-radius: 4px !important;
-    font-size: 1rem !important;
-    min-height: 40px;
-    width: 100% !important;
-    box-sizing: border-box;
+    font-size: 0.9rem !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+    line-height: 20px !important;
+    transition: all 0.2s !important;
+    box-sizing: border-box !important;
 }
 
-.remove-benefit-btn {
+.benefit-input-compact:focus {
+    outline: none !important;
+    border-color: #4CAF50 !important;
+    box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.2) !important;
+}
+
+.benefit-input-compact::placeholder {
+    color: #666 !important;
+    opacity: 1 !important;
+}
+
+.remove-benefit-btn-compact {
     background: #f44336 !important;
     border: none !important;
     color: #fff !important;
-    padding: 8px 12px !important;
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+    min-height: 32px !important;
     border-radius: 4px !important;
     cursor: pointer !important;
-    font-size: 0.9rem !important;
-    min-width: 40px;
-    transition: all 0.2s;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    transition: all 0.2s !important;
+    flex-shrink: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-.remove-benefit-btn:hover {
+.remove-benefit-btn-compact:hover {
     background: #d32f2f !important;
     transform: scale(1.05);
 }
 
-.add-benefit-btn {
+.add-benefit-btn-compact {
     background: #4CAF50 !important;
     border: none !important;
     color: #fff !important;
@@ -844,13 +881,16 @@ body {
     border-radius: 4px !important;
     cursor: pointer !important;
     font-size: 0.9rem !important;
-    margin-top: 5px;
-    width: 100%;
-    transition: all 0.2s;
-    font-weight: 500;
+    width: 100% !important;
+    transition: all 0.2s !important;
+    font-weight: 500 !important;
+    margin-top: 4px !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
-.add-benefit-btn:hover {
+.add-benefit-btn-compact:hover {
     background: #45a049 !important;
     transform: translateY(-1px);
     box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
