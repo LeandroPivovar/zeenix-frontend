@@ -113,14 +113,12 @@
                                 :key="`benefit-${index}`" 
                                 class="feature-item"
                             >
-                                <i class="fas fa-check feature-icon-check"></i>
                                 <span>{{ benefit }}</span>
                             </li>
                             
                             <!-- Mensagem se não houver benefícios -->
                             <li v-if="getPlanBenefits(plan).length === 0" class="feature-item">
-                                <i class="fas fa-info-circle" style="color: #666;"></i>
-                                <span style="color: #666;">Nenhum benefício configurado</span>
+                                <span style="color: #666; font-style: italic;">Nenhum benefício configurado</span>
                             </li>
                         </ul>
                         

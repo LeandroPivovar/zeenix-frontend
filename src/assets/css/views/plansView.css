@@ -257,37 +257,19 @@
 
 .feature-item { 
     display: flex; 
-    align-items: center; 
-    gap: 0.75rem;
-    min-height: 24px;
-    line-height: 1.4;
-}
-
-.feature-icon-check { 
-    color: #22C55E; 
-    font-size: 0.875rem;
-    flex-shrink: 0;
-    width: 16px;
-    text-align: center;
-}
-
-.feature-icon-cross { 
-    color: #8D8D8D; 
-    font-size: 0.875rem;
-    flex-shrink: 0;
-    width: 16px;
-    text-align: center;
+    align-items: flex-start;
+    min-height: 20px;
+    line-height: 1.5;
+    text-align: left;
 }
 
 .feature-item span { 
     font-size: 0.8125rem; 
     color: #DFDFDF;
     line-height: 1.5;
-    flex: 1;
-}
-
-.feature-item .text-secondary { 
-    color: #8D8D8D; 
+    width: 100%;
+    text-align: left;
+    word-wrap: break-word;
 }
 
 /* Buttons */
