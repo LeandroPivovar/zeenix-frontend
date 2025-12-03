@@ -64,24 +64,51 @@
                             <span class="hint-text">Ordem na lista (menor = primeiro).</span>
                         </div>
                         <div class="form-group" style="flex: 1 1 100%;">
-                            <label>Benefícios do Plano (Total: {{ planForm.benefits ? planForm.benefits.length : 0 }})</label>
-                            <div class="benefits-list">
+                            <label style="display: block !important; margin-bottom: 10px !important;">
+                                Benefícios do Plano (Total: {{ planForm.benefits ? planForm.benefits.length : 0 }})
+                            </label>
+                            
+                            <!-- Debug Visual -->
+                            <div style="background: #1a1a1a; padding: 8px; border-radius: 4px; margin-bottom: 10px; font-size: 0.85rem; color: #888;">
+                                🔍 Debug: Array tem {{ planForm.benefits ? planForm.benefits.length : 0 }} item(ns)
+                                <template v-if="planForm.benefits && planForm.benefits.length > 0">
+                                    → Renderizando {{ planForm.benefits.length }} input(s) abaixo
+                                </template>
+                            </div>
+                            
+                            <div class="benefits-list" style="display: flex !important; flex-direction: column !important; gap: 10px !important; width: 100% !important; background: rgba(255,0,0,0.05) !important; padding: 10px !important; border-radius: 4px !important;">
                                 <!-- Debug: Mostrar se array existe -->
                                 <div v-if="!planForm.benefits || planForm.benefits.length === 0" style="color: #ff9800; padding: 10px; background: #2a2a2a; border-radius: 4px; margin-bottom: 10px;">
                                     ⚠️ Nenhum benefício configurado. Clique em "Adicionar Benefício" abaixo.
                                 </div>
                                 
-                                <div v-for="(benefit, index) in planForm.benefits" :key="index" class="benefit-item">
-                                    <input 
-                                        type="text" 
-                                        v-model="planForm.benefits[index]" 
-                                        :placeholder="`Benefício ${index + 1}`"
-                                        class="benefit-input"
+                                <!-- Lista de benefícios -->
+                                <template v-if="planForm.benefits && planForm.benefits.length > 0">
+                                    <div 
+                                        v-for="(benefit, index) in planForm.benefits" 
+                                        :key="`benefit-${index}`" 
+                                        class="benefit-item"
+                                        style="display: flex !important; gap: 10px !important; align-items: center !important; width: 100% !important; min-height: 50px !important; visibility: visible !important; opacity: 1 !important;"
                                     >
-                                    <button type="button" @click="removeBenefit(index)" class="remove-benefit-btn" v-if="planForm.benefits.length > 1">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
+                                        <input 
+                                            type="text" 
+                                            v-model="planForm.benefits[index]" 
+                                            :placeholder="`Benefício ${index + 1}`"
+                                            class="benefit-input"
+                                            style="display: block !important; visibility: visible !important; opacity: 1 !important; width: 100% !important; background-color: #2a2a2a !important; color: #fff !important; border: 1px solid #3a3a3a !important; padding: 10px !important; border-radius: 4px !important; min-height: 40px !important;"
+                                        >
+                                        <button 
+                                            type="button" 
+                                            @click="removeBenefit(index)" 
+                                            class="remove-benefit-btn" 
+                                            v-if="planForm.benefits.length > 1"
+                                            style="display: block !important; visibility: visible !important;"
+                                        >
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                </template>
+                                
                                 <button type="button" @click="addBenefit" class="add-benefit-btn">
                                     <i class="fas fa-plus"></i> Adicionar Benefício
                                 </button>
@@ -767,14 +794,20 @@ body {
 }
 
 .benefit-item {
-    display: flex;
+    display: flex !important;
     gap: 10px;
     align-items: center;
     width: 100%;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 50px;
 }
 
 .benefit-input {
     flex: 1;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
     background-color: #2a2a2a !important;
     border: 1px solid #3a3a3a !important;
     color: #fff !important;
@@ -782,6 +815,8 @@ body {
     border-radius: 4px !important;
     font-size: 1rem !important;
     min-height: 40px;
+    width: 100% !important;
+    box-sizing: border-box;
 }
 
 .remove-benefit-btn {
