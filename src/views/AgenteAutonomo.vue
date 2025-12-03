@@ -905,11 +905,12 @@
     color: #dfdfdf;
   }
   
-  /* * ---------------------------------------------------
-   * 🚀 SEÇÃO DE RESPONSIVIDADE (COM A CORREÇÃO) 🚀
-   * ---------------------------------------------------
-  */
-  
+
+  @media screen and (max-width: 1400px) {
+    .footer-section[data-v-558ac89a] {   
+        max-width: 200px !important;
+     }
+  }
   /* Responsividade Tablet */
   @media screen and (max-width: 1024px) {
     .layout-agente-autnomo {
@@ -930,6 +931,7 @@
     .container-componentes {
       padding: 0 2rem 20px 2rem;
       margin-top: 80px;
+
     }
   
     .top-header {
@@ -969,9 +971,9 @@
   @media screen and (max-width: 768px) {
     .container-componentes {
       padding: 0 1rem 20px 1rem;
-      margin-top: 80px;
+      margin-top: 50px;
+      background: radial-gradient(ellipse 120% 60% at 50% 0%, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.08) 25%, rgba(34, 197, 94, 0.03) 50%, transparent 80%); 
     }
-  
     .header-content {
       padding: 1rem 15px 1rem 70px; /* Espaço para o hambúrguer */
       flex-direction: column;
