@@ -165,7 +165,7 @@
                                     :class="['relative text-sm font-medium transition-all pb-1', activeTab === 'register' ? 'text-zenix-green' : 'text-zenix-secondary hover:text-zenix-text']"
                                     @click="activeTab = 'register'"
                                 >
-                                    Histórico
+                                    Registros
                                     <div v-if="activeTab === 'register'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-zenix-green"></div>
                                 </button>
                                 <button 
@@ -173,7 +173,7 @@
                                     :class="['relative text-sm font-medium transition-all pb-1', activeTab === 'logs' ? 'text-zenix-green' : 'text-zenix-secondary hover:text-zenix-text']"
                                     @click="activeTab = 'logs'"
                                 >
-                                    Registros
+                                    Histórico
                                     <div v-if="activeTab === 'logs'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-zenix-green"></div>
                                 </button>
                             </div>
@@ -929,7 +929,87 @@ export default {
             this.addLog('info', `Alvo de Lucro: $${this.sessionConfig.profitTarget || 25}`);
             this.addLog('info', `Limite de Perda: $${this.sessionConfig.lossLimit || 20}`);
             this.addLog('info', '🔌 Conectado à Deriv API (R_10)');
-            this.addLog('info', '📡 Sistema operacional. Aguardando operações reais...');
+            this.addLog('info', '📡 Aguardando dados de mercado...');
+            
+            // Adicionar exemplo de log completo (será substituído por dados reais)
+            this.addExampleLogs();
+        },
+        
+        /**
+         * Adiciona logs de exemplo para demonstração
+         * Será substituído por logs reais do backend via WebSocket
+         */
+        addExampleLogs() {
+            // Simular alguns ticks de coleta
+            setTimeout(() => {
+                this.addLog('tick', 'Tick #1: 5463.782 → Dígito: 2 (PAR) | Amostra: 1/20');
+            }, 1000);
+            
+            setTimeout(() => {
+                this.addLog('tick', 'Tick #2: 5463.789 → Dígito: 9 (ÍMPAR) | Amostra: 2/20');
+            }, 2000);
+            
+            setTimeout(() => {
+                this.addLog('tick', 'Tick #3: 5463.801 → Dígito: 1 (ÍMPAR) | Amostra: 3/20');
+            }, 3000);
+            
+            // Simular análise completa
+            setTimeout(() => {
+                this.addLog('info', '✅ Amostra completa! Iniciando análise...');
+                this.addLog('analise', '🔍 ANÁLISE ZENIX v2.0');
+                this.addLog('analise', 'Distribuição: PAR: 60.0% (12/20) | ÍMPAR: 40.0% (8/20)');
+                this.addLog('analise', 'Desequilíbrio: 60.0% PAR ✅ (≥ 60.0% requerido)');
+                this.addLog('analise', '🔢 ANÁLISE 1: Desequilíbrio Base');
+                this.addLog('analise', 'PAR: 60.0% → Operar ÍMPAR');
+                this.addLog('analise', 'Confiança base: 60.0%');
+                this.addLog('analise', '🔁 ANÁLISE 2: Sequências Repetidas');
+                this.addLog('analise', 'Sequência: 6 PAR consecutivos ✅');
+                this.addLog('analise', 'Bônus: +12%');
+                this.addLog('analise', '📈 ANÁLISE 3: Micro-Tendências');
+                this.addLog('analise', 'Aceleração: 15.0% ✅ (>10%)');
+                this.addLog('analise', 'Bônus: +8%');
+                this.addLog('analise', '⚡ ANÁLISE 4: Força do Desequilíbrio');
+                this.addLog('analise', 'Velocidade: 8.0% ✅ (>5%)');
+                this.addLog('analise', 'Bônus: +10%');
+                this.addLog('analise', '🎯 CONFIANÇA FINAL');
+                this.addLog('analise', 'Base: 60.0% + Seq: 12% + Micro: 8% + Força: 10%');
+                this.addLog('analise', 'Total: 90.0% (limite: 95%)');
+                this.addLog('analise', '✅ 90.0% ≥ 60% (mínimo)');
+                this.addLog('sinal', '✅ SINAL GERADO');
+                this.addLog('sinal', 'Operação: ÍMPAR');
+                this.addLog('sinal', 'Confiança: 90.0%');
+                this.addLog('sinal', 'Valor: $0.50');
+            }, 5000);
+            
+            // Simular execução de operação
+            setTimeout(() => {
+                this.addLog('operacao', '🎯 EXECUTANDO OPERAÇÃO #1');
+                this.addLog('operacao', 'Ativo: R_10');
+                this.addLog('operacao', 'Direção: ÍMPAR');
+                this.addLog('operacao', 'Valor: $0.50');
+                this.addLog('operacao', 'Payout: 0.95 (95%)');
+                this.addLog('operacao', 'Lucro esperado: $0.47');
+                this.addLog('operacao', 'Martingale: NÃO (operação normal)');
+                this.addLog('operacao', 'Status: Aguardando resultado...');
+                this.addLog('info', '⏳ Aguardando próximo tick...');
+            }, 6000);
+            
+            // Simular resultado
+            setTimeout(() => {
+                this.addLog('tick', 'Tick #21: 5463.957 → Dígito: 7 (ÍMPAR)');
+                this.addLog('resultado', '🎉 VITÓRIA!');
+                this.addLog('resultado', 'Operação #1: ÍMPAR');
+                this.addLog('resultado', 'Resultado: 7 (ÍMPAR) ✅');
+                this.addLog('resultado', 'Investido: -$0.50');
+                this.addLog('resultado', 'Retorno: +$0.97');
+                this.addLog('resultado', 'Lucro: +$0.47');
+                this.addLog('resultado', 'Capital: $100.00 → $100.47');
+                this.addLog('resultado', 'ROI sessão: +0.47%');
+                this.addLog('resultado', 'Vitórias: 1 | Derrotas: 0');
+                this.addLog('resultado', 'Taxa acerto: 100.0%');
+                this.addLog('resultado', 'Próxima aposta: $0.50 (normal)');
+                this.addLog('info', '📡 Aguardando próximo sinal...');
+            }, 7500);
         },
         
         /**
