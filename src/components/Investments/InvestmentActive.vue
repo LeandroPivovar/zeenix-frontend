@@ -400,7 +400,6 @@
 
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
-import OperationLogs from '../OperationLogs.vue';
 
 // TradingView Charting Library - verifique se está disponível globalmente
 const TradingView = window.TradingView || null;
@@ -408,9 +407,6 @@ const Datafeeds = window.Datafeeds || null;
 
 export default {
     name: 'ZenixTradingDashboard',
-    components: {
-        OperationLogs
-    },
     props: {
         ticks: {
             type: Array,
