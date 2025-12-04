@@ -269,7 +269,11 @@
                                 </div>
                             </div>
                             
-                            <div ref="logsContainer" class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed" style="scroll-behavior: smooth;">
+                            <div 
+                                ref="logsContainer" 
+                                class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar" 
+                                style="scroll-behavior: smooth; max-height: 500px;"
+                            >
                                 <div v-if="realtimeLogs.length === 0" class="text-zenix-secondary text-left py-12 px-4">
                                     <i class="fas fa-info-circle text-2xl mb-2"></i>
                                     <p>Nenhum evento registrado ainda.</p>
@@ -3903,5 +3907,31 @@ button i,
     100% {
         background-color: rgb(15, 35, 10); /* Volta à Cor 1 */
     }
+}
+
+/* ===== SCROLLBAR CUSTOMIZADA PARA LOGS ===== */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: rgba(16, 185, 129, 0.3);
+    border-radius: 4px;
+    transition: background 0.3s ease;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: rgba(16, 185, 129, 0.5);
+}
+
+/* Firefox */
+.custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(16, 185, 129, 0.3) rgba(0, 0, 0, 0.3);
 }
 </style>
