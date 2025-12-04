@@ -959,31 +959,24 @@ export default {
                 
                 const result = await response.json();
                 if (result.success && result.data && Array.isArray(result.data)) {
-                    // Atualizar logs apenas se houver novos
-                    if (result.data.length > this.realtimeLogs.length) {
-                        result.data.forEach(log => {
-                            // Evitar duplicados
-                            const exists = this.realtimeLogs.some(existing => 
-                                existing.timestamp === log.timestamp && existing.message === log.message
-                            );
-                            if (!exists) {
-                                this.realtimeLogs.push({
-                                    timestamp: log.timestamp,
-                                    type: log.type,
-                                    icon: log.icon,
-                                    message: log.message
-                                });
-                            }
-                        });
-                        
-                        // Auto-scroll
-                        this.$nextTick(() => {
-                            const container = this.$refs.logsContainer;
-                            if (container) {
-                                container.scrollTop = container.scrollHeight;
-                            }
-                        });
-                    }
+                    // 🔄 SUBSTITUIR array inteiro para forçar reatividade do Vue
+                    const newLogs = result.data.map(log => ({
+                        timestamp: log.timestamp,
+                        type: log.type,
+                        icon: log.icon,
+                        message: log.message
+                    }));
+                    
+                    // Inverter ordem (mais recentes no topo)
+                    this.realtimeLogs = newLogs.reverse();
+                    
+                    // Auto-scroll para o final
+                    this.$nextTick(() => {
+                        const container = this.$refs.logsContainer;
+                        if (container) {
+                            container.scrollTop = container.scrollHeight;
+                        }
+                    });
                 }
             } catch (error) {
                 console.error('[InvestmentActive] Erro ao buscar logs:', error);
