@@ -161,20 +161,20 @@
                                     <div v-if="activeTab === 'chart'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-zenix-green"></div>
                                 </button>
                                 <button 
-                                    id="tab-logs" 
-                                    :class="['relative text-sm font-medium transition-all pb-1', activeTab === 'logs' ? 'text-zenix-green' : 'text-zenix-secondary hover:text-zenix-text']"
-                                    @click="activeTab = 'logs'"
-                                >
-                                    Logs
-                                    <div v-if="activeTab === 'logs'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-zenix-green"></div>
-                                </button>
-                                <button 
                                     id="tab-register" 
                                     :class="['relative text-sm font-medium transition-all pb-1', activeTab === 'register' ? 'text-zenix-green' : 'text-zenix-secondary hover:text-zenix-text']"
                                     @click="activeTab = 'register'"
                                 >
-                                    Registro
+                                    Histórico
                                     <div v-if="activeTab === 'register'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-zenix-green"></div>
+                                </button>
+                                <button 
+                                    id="tab-logs" 
+                                    :class="['relative text-sm font-medium transition-all pb-1', activeTab === 'logs' ? 'text-zenix-green' : 'text-zenix-secondary hover:text-zenix-text']"
+                                    @click="activeTab = 'logs'"
+                                >
+                                    Registros
+                                    <div v-if="activeTab === 'logs'" class="absolute bottom-0 left-0 right-0 h-0.5 bg-zenix-green"></div>
                                 </button>
                             </div>
                         </div>
