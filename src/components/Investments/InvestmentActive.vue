@@ -1099,8 +1099,6 @@ export default {
         },
         
         async fetchDailyStats() {
-        
-        async fetchDailyStats() {
             try {
                 console.log('[InvestmentActive] 📊 Buscando estatísticas do dia...');
                 
