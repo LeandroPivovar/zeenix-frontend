@@ -959,16 +959,18 @@ export default {
                 
                 const result = await response.json();
                 if (result.success && result.data && Array.isArray(result.data)) {
+                    console.log('[InvestmentActive] ✅ Logs recebidos:', result.data.length);
+                    
                     // 🔄 SUBSTITUIR array inteiro para forçar reatividade do Vue
-                    const newLogs = result.data.map(log => ({
+                    // Backend já retorna em ordem DESC (mais recentes primeiro), então mantemos a ordem
+                    this.realtimeLogs = result.data.map(log => ({
                         timestamp: log.timestamp,
                         type: log.type,
                         icon: log.icon,
                         message: log.message
                     }));
                     
-                    // Inverter ordem (mais recentes no topo)
-                    this.realtimeLogs = newLogs.reverse();
+                    console.log('[InvestmentActive] 📊 Array atualizado:', this.realtimeLogs.length);
                     
                     // Auto-scroll para o final
                     this.$nextTick(() => {
@@ -979,7 +981,7 @@ export default {
                     });
                 }
             } catch (error) {
-                console.error('[InvestmentActive] Erro ao buscar logs:', error);
+                console.error('[InvestmentActive] ❌ Erro ao buscar logs:', error);
             }
         },
         
