@@ -511,6 +511,7 @@ export default {
             
             // Logs em tempo real (ZENIX v2.0)
             realtimeLogs: [],
+            logPollingInterval: null,
             
             // Estado de desativação
             isDeactivating: false,
@@ -929,92 +930,82 @@ export default {
             this.addLog('info', `Alvo de Lucro: $${this.sessionConfig.profitTarget || 25}`);
             this.addLog('info', `Limite de Perda: $${this.sessionConfig.lossLimit || 20}`);
             this.addLog('info', '🔌 Conectado à Deriv API (R_10)');
-            this.addLog('info', '📡 Aguardando dados de mercado...');
+            this.addLog('info', '📡 Sistema operacional. Aguardando operações reais...');
             
-            // Adicionar exemplo de log completo (será substituído por dados reais)
-            this.addExampleLogs();
+            // Iniciar polling de logs do backend
+            this.startLogPolling();
         },
         
         /**
-         * Adiciona logs de exemplo para demonstração
-         * Será substituído por logs reais do backend via WebSocket
+         * Inicia polling de logs do backend
          */
-        addExampleLogs() {
-            // Simular alguns ticks de coleta
-            setTimeout(() => {
-                this.addLog('tick', 'Tick #1: 5463.782 → Dígito: 2 (PAR) | Amostra: 1/20');
-            }, 1000);
-            
-            setTimeout(() => {
-                this.addLog('tick', 'Tick #2: 5463.789 → Dígito: 9 (ÍMPAR) | Amostra: 2/20');
-            }, 2000);
-            
-            setTimeout(() => {
-                this.addLog('tick', 'Tick #3: 5463.801 → Dígito: 1 (ÍMPAR) | Amostra: 3/20');
-            }, 3000);
-            
-            // Simular análise completa (USANDO VALORES REAIS DA CONFIGURAÇÃO)
-            const stake = this.sessionConfig.stakeAmount || 10;
-            const lucroEsperado = stake * 0.95;
-            const capitalInicial = 1000; // Exemplo
-            
-            setTimeout(() => {
-                this.addLog('info', '✅ Amostra completa! Iniciando análise...');
-                this.addLog('analise', '🔍 ANÁLISE ZENIX v2.0');
-                this.addLog('analise', 'Distribuição: PAR: 60.0% (12/20) | ÍMPAR: 40.0% (8/20)');
-                this.addLog('analise', 'Desequilíbrio: 60.0% PAR ✅ (≥ 60.0% requerido)');
-                this.addLog('analise', '🔢 ANÁLISE 1: Desequilíbrio Base');
-                this.addLog('analise', 'PAR: 60.0% → Operar ÍMPAR');
-                this.addLog('analise', 'Confiança base: 60.0%');
-                this.addLog('analise', '🔁 ANÁLISE 2: Sequências Repetidas');
-                this.addLog('analise', 'Sequência: 6 PAR consecutivos ✅');
-                this.addLog('analise', 'Bônus: +12%');
-                this.addLog('analise', '📈 ANÁLISE 3: Micro-Tendências');
-                this.addLog('analise', 'Aceleração: 15.0% ✅ (>10%)');
-                this.addLog('analise', 'Bônus: +8%');
-                this.addLog('analise', '⚡ ANÁLISE 4: Força do Desequilíbrio');
-                this.addLog('analise', 'Velocidade: 8.0% ✅ (>5%)');
-                this.addLog('analise', 'Bônus: +10%');
-                this.addLog('analise', '🎯 CONFIANÇA FINAL');
-                this.addLog('analise', 'Base: 60.0% + Seq: 12% + Micro: 8% + Força: 10%');
-                this.addLog('analise', 'Total: 90.0% (limite: 95%)');
-                this.addLog('analise', '✅ 90.0% ≥ 60% (mínimo)');
-                this.addLog('sinal', '✅ SINAL GERADO');
-                this.addLog('sinal', 'Operação: ÍMPAR');
-                this.addLog('sinal', 'Confiança: 90.0%');
-                this.addLog('sinal', `Valor: $${stake.toFixed(2)}`);
-            }, 5000);
-            
-            // Simular execução de operação
-            setTimeout(() => {
-                this.addLog('operacao', '🎯 EXECUTANDO OPERAÇÃO #1');
-                this.addLog('operacao', 'Ativo: R_10');
-                this.addLog('operacao', 'Direção: ÍMPAR');
-                this.addLog('operacao', `Valor: $${stake.toFixed(2)}`);
-                this.addLog('operacao', 'Payout: 0.95 (95%)');
-                this.addLog('operacao', `Lucro esperado: $${lucroEsperado.toFixed(2)}`);
-                this.addLog('operacao', 'Martingale: NÃO (operação normal)');
-                this.addLog('operacao', 'Status: Aguardando resultado...');
-                this.addLog('info', '⏳ Aguardando próximo tick...');
-            }, 6000);
-            
-            // Simular resultado
-            setTimeout(() => {
-                this.addLog('tick', 'Tick #21: 5463.957 → Dígito: 7 (ÍMPAR)');
-                this.addLog('resultado', '🎉 VITÓRIA!');
-                this.addLog('resultado', 'Operação #1: ÍMPAR');
-                this.addLog('resultado', 'Resultado: 7 (ÍMPAR) ✅');
-                this.addLog('resultado', `Investido: -$${stake.toFixed(2)}`);
-                this.addLog('resultado', `Retorno: +$${(stake + lucroEsperado).toFixed(2)}`);
-                this.addLog('resultado', `Lucro: +$${lucroEsperado.toFixed(2)}`);
-                this.addLog('resultado', `Capital: $${capitalInicial.toFixed(2)} → $${(capitalInicial + lucroEsperado).toFixed(2)}`);
-                this.addLog('resultado', `ROI sessão: +${(lucroEsperado / capitalInicial * 100).toFixed(2)}%`);
-                this.addLog('resultado', 'Vitórias: 1 | Derrotas: 0');
-                this.addLog('resultado', 'Taxa acerto: 100.0%');
-                this.addLog('resultado', `Próxima aposta: $${stake.toFixed(2)} (normal)`);
-                this.addLog('info', '📡 Aguardando próximo sinal...');
-            }, 7500);
+        async fetchRealtimeLogs() {
+            try {
+                const userId = this.getUserId();
+                if (!userId) return;
+                
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const url = `${apiBase}/ai/logs/${userId}`;
+                
+                const response = await fetch(url, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                
+                if (!response.ok) return;
+                
+                const result = await response.json();
+                if (result.success && result.data && Array.isArray(result.data)) {
+                    // Atualizar logs apenas se houver novos
+                    if (result.data.length > this.realtimeLogs.length) {
+                        result.data.forEach(log => {
+                            // Evitar duplicados
+                            const exists = this.realtimeLogs.some(existing => 
+                                existing.timestamp === log.timestamp && existing.message === log.message
+                            );
+                            if (!exists) {
+                                this.realtimeLogs.push({
+                                    timestamp: log.timestamp,
+                                    type: log.type,
+                                    icon: log.icon,
+                                    message: log.message
+                                });
+                            }
+                        });
+                        
+                        // Auto-scroll
+                        this.$nextTick(() => {
+                            const container = this.$refs.logsContainer;
+                            if (container) {
+                                container.scrollTop = container.scrollHeight;
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('[InvestmentActive] Erro ao buscar logs:', error);
+            }
         },
+        
+        startLogPolling() {
+            // Buscar logs a cada 2 segundos
+            this.logPollingInterval = setInterval(() => {
+                if (this.sessionConfig.isActive) {
+                    this.fetchRealtimeLogs();
+                }
+            }, 2000);
+        },
+        
+        stopLogPolling() {
+            if (this.logPollingInterval) {
+                clearInterval(this.logPollingInterval);
+                this.logPollingInterval = null;
+            }
+        },
+        
         
         /**
          * Simula log de análise completa (será substituído por dados reais do backend via WebSocket)
@@ -2091,6 +2082,9 @@ export default {
     beforeUnmount() {
         // Parar atualizações de stats
         this.stopStatsUpdates();
+        
+        // Parar polling de logs
+        this.stopLogPolling();
         
         // Cleanup: Remove o widget TradingView quando o componente for desmontado
         if (this.tradingViewWidget) {
