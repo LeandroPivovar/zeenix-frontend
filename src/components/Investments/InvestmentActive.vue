@@ -37,8 +37,8 @@
                                     </button>
                                 </div>
                                 <div class="flex items-baseline space-x-1.5 text-left">
-                                    <div v-if="!isLoadingStats" :class="['text-xl font-bold', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
-                                        {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
+                                    <div v-if="!isLoadingStats" :class="['text-2xl font-bold', sessionBalanceClass, { 'hidden-value': !profitVisible }]">
+                                        {{ profitVisible ? formattedSessionBalance : '••••••' }}
                                     </div>
                                     <span 
                                         v-if="!isLoadingStats && profitPercentage && profitVisible" 
@@ -201,8 +201,51 @@
                             <div ref="chartContainer" id="tradingview-chart" class="chart-container tradingview-container h-full"></div>
                         </div>
 
-                        <!-- Histórico View (Logs Detalhados em Tempo Real) -->
-                        <div v-show="activeTab === 'logs'" id="logs-view" class="h-[600px] overflow-hidden flex flex-col">
+                        <!-- Histórico View (Tabela de Operações Executadas) -->
+                        <div v-show="activeTab === 'logs'" id="logs-view" class="h-[600px] overflow-y-auto">
+                            <div v-if="isLoadingLogs" class="loading-logs">
+                                <p>Carregando histórico de operações...</p>
+                            </div>
+                            
+                            <div v-else-if="logOperations.length === 0" class="no-logs">
+                                <p>Nenhuma operação executada ainda.</p>
+                            </div>
+                            
+                            <div v-else class="logs-table-wrapper">
+                                <table class="logs-table">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-left">Horário</th>
+                                            <th class="text-left">Mercado</th>
+                                            <th class="text-left">Negociação</th>
+                                            <th class="text-left">Investimento</th>
+                                            <th class="text-right">Retorno</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr v-for="(op, index) in logOperations" :key="index" :class="['log-row', index % 2 === 0 ? 'log-row-even' : 'log-row-odd']">
+                                            <td>{{ op.time }}</td>
+                                            <td>{{ op.pair }}</td>
+                                            <td>
+                                                <span :class="['direction-badge', op.direction === 'CALL' ? 'call-badge' : 'put-badge']">
+                                                    <i :class="`fas fa-arrow-${op.direction === 'CALL' ? 'up' : 'down'} text-xs mr-1`"></i>
+                                                    {{ op.direction }}
+                                                </span>
+                                            </td>
+                                            <td>
+                                                {{ op.investment }}
+                                            </td>
+                                            <td :class="['text-right', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
+                                                {{ op.pnl }}
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <!-- Registros View (Logs Detalhados em Tempo Real) -->
+                        <div v-show="activeTab === 'register'" id="register-view" class="h-[600px] overflow-hidden flex flex-col">
                             <div class="flex items-center justify-between mb-3 px-2">
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs text-zenix-secondary">📋 Registro de Eventos em Tempo Real</span>
@@ -227,25 +270,20 @@
                             </div>
                             
                             <div ref="logsContainer" class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed" style="scroll-behavior: smooth;">
-                                <div v-if="realtimeLogs.length === 0" class="text-zenix-secondary text-center py-12">
+                                <div v-if="realtimeLogs.length === 0" class="text-zenix-secondary text-left py-12 px-4">
                                     <i class="fas fa-info-circle text-2xl mb-2"></i>
                                     <p>Nenhum evento registrado ainda.</p>
                                     <p class="text-xs mt-1">Os logs aparecerão aqui em tempo real quando a IA estiver ativa.</p>
                                 </div>
                                 
-                                <div v-else>
-                                    <div v-for="(log, index) in realtimeLogs" :key="index" :class="getLogClass(log)" class="mb-1">
+                                <div v-else class="text-left">
+                                    <div v-for="(log, index) in realtimeLogs" :key="index" :class="getLogClass(log)" class="mb-0.5 text-left">
                                         <span class="text-gray-500">[{{ log.timestamp }}]</span>
-                                        <span class="ml-2">{{ log.icon }}</span>
-                                        <span :style="{ paddingLeft: (log.level || 0) * 16 + 'px' }">{{ log.message }}</span>
+                                        <span class="ml-1">{{ log.icon }}</span>
+                                        <span class="ml-1">{{ log.message }}</span>
                                     </div>
                                 </div>
                             </div>
-                        </div>
-
-                        <!-- Register View -->
-                        <div v-show="activeTab === 'register'" id="register-view" class="h-[600px]">
-                            <OperationLogs :trade-results="formattedTradeResults" />
                         </div>
                 </div>
             </div>
@@ -713,7 +751,7 @@ export default {
         // Profit percentage
         profitPercentage() {
             if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return null;
-            const profit = this.dailyStats.sessionProfitLoss || 0;
+            const profit = this.dailyStats.sessionBalance || 0;
             const percentage = (profit / this.accountBalanceProp) * 100;
             const sign = percentage >= 0 ? '+' : '';
             return `${sign}${percentage.toFixed(2)}%`;
@@ -722,7 +760,7 @@ export default {
         // Check if profit is positive
         isProfitPositive() {
             if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return true;
-            const profit = this.dailyStats.sessionProfitLoss || 0;
+            const profit = this.dailyStats.sessionBalance || 0;
             return profit >= 0;
         },
 
@@ -796,9 +834,8 @@ export default {
          * Adiciona um log ao histórico em tempo real
          * @param {string} type - Tipo do log (info, tick, analise, sinal, operacao, resultado, alerta, erro)
          * @param {string} message - Mensagem do log
-         * @param {number} level - Nível de indentação (0, 1, 2)
          */
-        addLog(type, message, level = 0) {
+        addLog(type, message) {
             const icons = {
                 info: 'ℹ️',
                 tick: '📥',
@@ -821,8 +858,7 @@ export default {
                 timestamp,
                 type,
                 icon: icons[type] || 'ℹ️',
-                message,
-                level
+                message
             };
             
             this.realtimeLogs.push(newLog);
@@ -861,15 +897,14 @@ export default {
             if (this.realtimeLogs.length === 0) return;
             
             const text = this.realtimeLogs.map(log => {
-                const indent = '  '.repeat(log.level || 0);
-                return `[${log.timestamp}] ${log.icon} ${indent}${log.message}`;
+                return `[${log.timestamp}] ${log.icon} ${log.message}`;
             }).join('\n');
             
             const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            a.download = `orion-logs-${new Date().toISOString().slice(0, 10)}.txt`;
+            a.download = `zenix-logs-${new Date().toISOString().slice(0, 10)}.txt`;
             document.body.appendChild(a);
             a.click();
             document.body.removeChild(a);
@@ -890,124 +925,15 @@ export default {
          */
         logSystemInit() {
             this.realtimeLogs = []; // Limpar sem chamar clearLogs() para evitar loop
-            this.addLog('info', '═══════════════════════════════════════════');
-            this.addLog('info', '    ✨ SISTEMA ZENIX v2.0 INICIADO ✨    ');
-            this.addLog('info', '═══════════════════════════════════════════');
-            this.addLog('info', '');
+            this.addLog('info', '✨ SISTEMA ZENIX v2.0 INICIADO');
             this.addLog('info', '📋 CONFIGURAÇÃO ATIVA:');
-            this.addLog('info', `├─ Modo: ${this.sessionConfig.mode ? this.sessionConfig.mode.toUpperCase() : 'VELOZ'}`, 1);
-            this.addLog('info', `├─ Entrada: $${this.sessionConfig.stakeAmount ? this.sessionConfig.stakeAmount.toFixed(2) : '0.50'}`, 1);
-            this.addLog('info', `├─ Martingale: ${this.sessionConfig.modoMartingale ? this.sessionConfig.modoMartingale.toUpperCase() : 'AGRESSIVO'}`, 1);
-            this.addLog('info', `├─ Alvo de Lucro: $${this.sessionConfig.profitTarget || 25}`, 1);
-            this.addLog('info', `└─ Limite de Perda: $${this.sessionConfig.lossLimit || 20}`, 1);
-            this.addLog('info', '');
-            this.addLog('info', '🔌 Conectado à Deriv API');
-            this.addLog('info', `├─ Symbol: R_10 (Volatility 10 Index)`, 1);
-            this.addLog('info', `└─ Status: ✅ Ativo`, 1);
-            this.addLog('info', '');
-            
-            // Adicionar log de exemplo de coleta
-            const amostra = this.sessionConfig.mode === 'veloz' ? 10 : this.sessionConfig.mode === 'moderado' ? 20 : 50;
-            this.addLog('info', `📊 Iniciando coleta de amostra inicial (${amostra} ticks)`);
-            this.addLog('info', '⏳ Aguardando dados em tempo real...');
-            this.addLog('info', '');
-            this.addLog('info', '─────────────────────────────────────────');
-            this.addLog('info', '');
-            
-            // Adicionar exemplo de log completo (será substituído por dados reais)
-            this.addExampleLogs();
-        },
-        
-        /**
-         * Adiciona logs de exemplo para demonstração
-         * Será substituído por logs reais do backend via WebSocket
-         */
-        addExampleLogs() {
-            // Simular alguns ticks de coleta
-            setTimeout(() => {
-                this.addLog('tick', 'Tick #1: 5463.782 → Dígito: 2 (PAR) | Amostra: 1/20');
-            }, 1000);
-            
-            setTimeout(() => {
-                this.addLog('tick', 'Tick #2: 5463.789 → Dígito: 9 (ÍMPAR) | Amostra: 2/20');
-            }, 2000);
-            
-            setTimeout(() => {
-                this.addLog('tick', 'Tick #3: 5463.801 → Dígito: 1 (ÍMPAR) | Amostra: 3/20');
-            }, 3000);
-            
-            // Simular análise completa
-            setTimeout(() => {
-                this.addLog('info', '');
-                this.addLog('info', '✅ Amostra completa! Iniciando análise...');
-                this.addLog('analise', '═══════════════════════════════════════════');
-                this.addLog('analise', '🔍 ANÁLISE ZENIX v2.0');
-                this.addLog('analise', '═══════════════════════════════════════════');
-                this.addLog('analise', '');
-                this.addLog('analise', '├─ 📊 Distribuição: PAR: 60.0% (12/20) | ÍMPAR: 40.0% (8/20)', 1);
-                this.addLog('analise', '├─ Desequilíbrio: 60.0% PAR ✅ (≥ 60.0% requerido)', 1);
-                this.addLog('analise', '│', 1);
-                this.addLog('analise', '├─ 🔢 ANÁLISE 1: Desequilíbrio Base', 1);
-                this.addLog('analise', '│  └─ PAR: 60.0% → Operar ÍMPAR', 1);
-                this.addLog('analise', '│  └─ Confiança base: 60.0%', 1);
-                this.addLog('analise', '│', 1);
-                this.addLog('analise', '├─ 🔁 ANÁLISE 2: Sequências Repetidas', 1);
-                this.addLog('analise', '│  └─ Sequência: 6 PAR consecutivos ✅', 1);
-                this.addLog('analise', '│  └─ Bônus: +12%', 1);
-                this.addLog('analise', '│', 1);
-                this.addLog('analise', '├─ 📈 ANÁLISE 3: Micro-Tendências', 1);
-                this.addLog('analise', '│  └─ Aceleração: 15.0% ✅ (>10%)', 1);
-                this.addLog('analise', '│  └─ Bônus: +8%', 1);
-                this.addLog('analise', '│', 1);
-                this.addLog('analise', '├─ ⚡ ANÁLISE 4: Força do Desequilíbrio', 1);
-                this.addLog('analise', '│  └─ Velocidade: 8.0% ✅ (>5%)', 1);
-                this.addLog('analise', '│  └─ Bônus: +10%', 1);
-                this.addLog('analise', '│', 1);
-                this.addLog('analise', '├─ 🎯 CONFIANÇA FINAL', 1);
-                this.addLog('analise', '│  └─ Base: 60.0% + Seq: 12% + Micro: 8% + Força: 10%', 1);
-                this.addLog('analise', '│  └─ Total: 90.0% (limite: 95%)', 1);
-                this.addLog('analise', '│  └─ ✅ 90.0% ≥ 60% (mínimo)', 1);
-                this.addLog('analise', '│', 1);
-                this.addLog('analise', '└─ ✅ SINAL GERADO', 1);
-                this.addLog('sinal', '   └─ Operação: ÍMPAR', 1);
-                this.addLog('sinal', '   └─ Confiança: 90.0%', 1);
-                this.addLog('sinal', '   └─ Valor: $0.50', 1);
-                this.addLog('info', '');
-            }, 5000);
-            
-            // Simular execução de operação
-            setTimeout(() => {
-                this.addLog('operacao', '🎯 EXECUTANDO OPERAÇÃO #1');
-                this.addLog('operacao', '├─ Ativo: R_10', 1);
-                this.addLog('operacao', '├─ Direção: ÍMPAR', 1);
-                this.addLog('operacao', '├─ Valor: $0.50', 1);
-                this.addLog('operacao', '├─ Payout: 0.95 (95%)', 1);
-                this.addLog('operacao', '├─ Lucro esperado: $0.47', 1);
-                this.addLog('operacao', '├─ Martingale: NÃO (operação normal)', 1);
-                this.addLog('operacao', '└─ Status: Aguardando resultado...', 1);
-                this.addLog('info', '⏳ Aguardando próximo tick...');
-                this.addLog('info', '');
-            }, 6000);
-            
-            // Simular resultado
-            setTimeout(() => {
-                this.addLog('tick', 'Tick #21: 5463.957 → Dígito: 7 (ÍMPAR)');
-                this.addLog('resultado', '🎉 VITÓRIA!');
-                this.addLog('resultado', '├─ Operação #1: ÍMPAR', 1);
-                this.addLog('resultado', '├─ Resultado: 7 (ÍMPAR) ✅', 1);
-                this.addLog('resultado', '├─ Investido: -$0.50', 1);
-                this.addLog('resultado', '├─ Retorno: +$0.97', 1);
-                this.addLog('resultado', '├─ Lucro: +$0.47', 1);
-                this.addLog('resultado', '├─ Capital: $100.00 → $100.47', 1);
-                this.addLog('resultado', '├─ ROI sessão: +0.47%', 1);
-                this.addLog('resultado', '├─ Vitórias: 1 | Derrotas: 0', 1);
-                this.addLog('resultado', '├─ Taxa acerto: 100.0%', 1);
-                this.addLog('resultado', '└─ Próxima aposta: $0.50 (normal)', 1);
-                this.addLog('info', '');
-                this.addLog('info', '─────────────────────────────────────────');
-                this.addLog('info', '');
-                this.addLog('info', '📡 Aguardando próximo sinal...');
-            }, 7500);
+            this.addLog('info', `Modo: ${this.sessionConfig.mode ? this.sessionConfig.mode.toUpperCase() : 'VELOZ'}`);
+            this.addLog('info', `Entrada: $${this.sessionConfig.stakeAmount ? this.sessionConfig.stakeAmount.toFixed(2) : '0.50'}`);
+            this.addLog('info', `Martingale: ${this.sessionConfig.modoMartingale ? this.sessionConfig.modoMartingale.toUpperCase() : 'AGRESSIVO'}`);
+            this.addLog('info', `Alvo de Lucro: $${this.sessionConfig.profitTarget || 25}`);
+            this.addLog('info', `Limite de Perda: $${this.sessionConfig.lossLimit || 20}`);
+            this.addLog('info', '🔌 Conectado à Deriv API (R_10)');
+            this.addLog('info', '📡 Sistema operacional. Aguardando operações reais...');
         },
         
         /**
@@ -1015,36 +941,30 @@ export default {
          */
         logAnaliseCompleta(analise) {
             this.addLog('analise', 'ANÁLISE INICIADA');
-            this.addLog('analise', `├─ Histórico (últimos 20): [${analise.historico || '...'}]`, 1);
-            this.addLog('analise', `├─ Distribuição: PAR: ${analise.percPar}% | ÍMPAR: ${analise.percImpar}%`, 1);
-            this.addLog('analise', `├─ Desequilíbrio: ${analise.desequilibrio}% ${analise.ladoDeseq} ${analise.desequilibrioOK ? '✅' : '❌'}`, 1);
-            this.addLog('analise', '│', 1);
-            this.addLog('analise', '├─ 🔢 ANÁLISE 1: Desequilíbrio Base', 1);
-            this.addLog('analise', `│  └─ ${analise.ladoDeseq}: ${analise.desequilibrio}% → Operar ${analise.operacao}`, 1);
-            this.addLog('analise', `│  └─ Confiança base: ${analise.confiancaBase}%`, 1);
-            this.addLog('analise', '│', 1);
-            this.addLog('analise', '├─ 🔁 ANÁLISE 2: Sequências Repetidas', 1);
-            this.addLog('analise', `│  └─ Maior sequência: ${analise.sequencia} ticks ${analise.sequencia >= 5 ? '✅' : '❌'}`, 1);
-            this.addLog('analise', `│  └─ Bônus: +${analise.bonusSeq}%`, 1);
-            this.addLog('analise', '│', 1);
-            this.addLog('analise', '├─ 📈 ANÁLISE 3: Micro-Tendências', 1);
-            this.addLog('analise', `│  └─ Aceleração: ${analise.aceleracao}% ${analise.aceleracao > 10 ? '✅' : '❌'}`, 1);
-            this.addLog('analise', `│  └─ Bônus: +${analise.bonusMicro}%`, 1);
-            this.addLog('analise', '│', 1);
-            this.addLog('analise', '├─ ⚡ ANÁLISE 4: Força do Desequilíbrio', 1);
-            this.addLog('analise', `│  └─ Velocidade: ${analise.velocidade}% ${analise.velocidade > 5 ? '✅' : '❌'}`, 1);
-            this.addLog('analise', `│  └─ Bônus: +${analise.bonusForca}%`, 1);
-            this.addLog('analise', '│', 1);
-            this.addLog('analise', '├─ 🎯 CONFIANÇA FINAL', 1);
-            this.addLog('analise', `│  └─ Total: ${analise.confiancaFinal}% (limite: 95%)`, 1);
-            this.addLog('analise', `│  └─ ${analise.confiancaOK ? '✅' : '❌'} ${analise.confiancaFinal}% ${analise.confiancaOK ? '≥' : '<'} ${analise.confianciaMin}%`, 1);
+            this.addLog('analise', `Distribuição: PAR: ${analise.percPar}% | ÍMPAR: ${analise.percImpar}%`);
+            this.addLog('analise', `Desequilíbrio: ${analise.desequilibrio}% ${analise.ladoDeseq} ${analise.desequilibrioOK ? '✅' : '❌'}`);
+            this.addLog('analise', '🔢 ANÁLISE 1: Desequilíbrio Base');
+            this.addLog('analise', `${analise.ladoDeseq}: ${analise.desequilibrio}% → Operar ${analise.operacao}`);
+            this.addLog('analise', `Confiança base: ${analise.confiancaBase}%`);
+            this.addLog('analise', '🔁 ANÁLISE 2: Sequências Repetidas');
+            this.addLog('analise', `Maior sequência: ${analise.sequencia} ticks ${analise.sequencia >= 5 ? '✅' : '❌'}`);
+            this.addLog('analise', `Bônus: +${analise.bonusSeq}%`);
+            this.addLog('analise', '📈 ANÁLISE 3: Micro-Tendências');
+            this.addLog('analise', `Aceleração: ${analise.aceleracao}% ${analise.aceleracao > 10 ? '✅' : '❌'}`);
+            this.addLog('analise', `Bônus: +${analise.bonusMicro}%`);
+            this.addLog('analise', '⚡ ANÁLISE 4: Força do Desequilíbrio');
+            this.addLog('analise', `Velocidade: ${analise.velocidade}% ${analise.velocidade > 5 ? '✅' : '❌'}`);
+            this.addLog('analise', `Bônus: +${analise.bonusForca}%`);
+            this.addLog('analise', '🎯 CONFIANÇA FINAL');
+            this.addLog('analise', `Total: ${analise.confiancaFinal}% (limite: 95%)`);
+            this.addLog('analise', `${analise.confiancaOK ? '✅' : '❌'} ${analise.confiancaFinal}% ${analise.confiancaOK ? '≥' : '<'} ${analise.confianciaMin}%`);
             
             if (analise.confiancaOK) {
-                this.addLog('analise', '└─ ✅ SINAL GERADO', 1);
-                this.addLog('analise', `   └─ Direção: ${analise.operacao}`, 1);
-                this.addLog('analise', `   └─ Confiança: ${analise.confiancaFinal}%`, 1);
+                this.addLog('sinal', '✅ SINAL GERADO');
+                this.addLog('sinal', `Direção: ${analise.operacao}`);
+                this.addLog('sinal', `Confiança: ${analise.confiancaFinal}%`);
             } else {
-                this.addLog('analise', '└─ ❌ Confiança insuficiente. Aguardando...', 1);
+                this.addLog('analise', '❌ Confiança insuficiente. Aguardando...');
             }
         },
         
@@ -1053,20 +973,20 @@ export default {
          */
         logOperacaoExecutada(op) {
             this.addLog('operacao', `🎯 EXECUTANDO OPERAÇÃO #${op.numero}${op.martingale ? ' (MARTINGALE)' : ''}`);
-            this.addLog('operacao', `├─ Ativo: ${op.ativo}`, 1);
-            this.addLog('operacao', `├─ Direção: ${op.direcao}`, 1);
-            this.addLog('operacao', `├─ Valor: $${op.valor.toFixed(2)}`, 1);
-            this.addLog('operacao', `├─ Payout: 0.95 (95%)`, 1);
-            this.addLog('operacao', `├─ Lucro esperado: $${(op.valor * 0.95).toFixed(2)}`, 1);
+            this.addLog('operacao', `Ativo: ${op.ativo}`);
+            this.addLog('operacao', `Direção: ${op.direcao}`);
+            this.addLog('operacao', `Valor: $${op.valor.toFixed(2)}`);
+            this.addLog('operacao', `Payout: 0.95 (95%)`);
+            this.addLog('operacao', `Lucro esperado: $${(op.valor * 0.95).toFixed(2)}`);
             
             if (op.martingale) {
-                this.addLog('operacao', `├─ Martingale: SIM (entrada ${op.entradaMartingale})`, 1);
-                this.addLog('operacao', `├─ Objetivo: Recuperar $${op.perdaAcumulada.toFixed(2)}`, 1);
+                this.addLog('operacao', `Martingale: SIM (entrada ${op.entradaMartingale})`);
+                this.addLog('operacao', `Objetivo: Recuperar $${op.perdaAcumulada.toFixed(2)}`);
             } else {
-                this.addLog('operacao', `├─ Martingale: NÃO (operação normal)`, 1);
+                this.addLog('operacao', `Martingale: NÃO (operação normal)`);
             }
             
-            this.addLog('operacao', `└─ Status: Aguardando resultado...`, 1);
+            this.addLog('operacao', `Status: Aguardando resultado...`);
         },
         
         /**
@@ -1076,26 +996,26 @@ export default {
             const vitoria = resultado.status === 'WON';
             
             this.addLog('resultado', vitoria ? '🎉 VITÓRIA!' : '❌ DERROTA');
-            this.addLog('resultado', `├─ Operação #${resultado.numero}: ${resultado.direcao}`, 1);
-            this.addLog('resultado', `├─ Resultado: ${resultado.digitoSaida} (${resultado.paridadeSaida}) ${vitoria ? '✅' : '❌'}`, 1);
-            this.addLog('resultado', `├─ Investido: -$${resultado.investido.toFixed(2)}`, 1);
-            this.addLog('resultado', `├─ Retorno: +$${vitoria ? resultado.retorno.toFixed(2) : '0.00'}`, 1);
-            this.addLog('resultado', `├─ ${vitoria ? 'Lucro' : 'Perda'}: ${vitoria ? '+' : ''}$${resultado.lucro.toFixed(2)}`, 1);
-            this.addLog('resultado', `├─ Capital: $${resultado.capitalAntes.toFixed(2)} → $${resultado.capitalDepois.toFixed(2)}`, 1);
-            this.addLog('resultado', `├─ ROI sessão: ${resultado.roi >= 0 ? '+' : ''}${resultado.roi.toFixed(2)}%`, 1);
-            this.addLog('resultado', `├─ Vitórias: ${resultado.vitorias} | Derrotas: ${resultado.derrotas}`, 1);
-            this.addLog('resultado', `├─ Taxa acerto: ${resultado.taxaAcerto.toFixed(1)}%`, 1);
+            this.addLog('resultado', `Operação #${resultado.numero}: ${resultado.direcao}`);
+            this.addLog('resultado', `Resultado: ${resultado.digitoSaida} (${resultado.paridadeSaida}) ${vitoria ? '✅' : '❌'}`);
+            this.addLog('resultado', `Investido: -$${resultado.investido.toFixed(2)}`);
+            this.addLog('resultado', `Retorno: +$${vitoria ? resultado.retorno.toFixed(2) : '0.00'}`);
+            this.addLog('resultado', `${vitoria ? 'Lucro' : 'Perda'}: ${vitoria ? '+' : ''}$${resultado.lucro.toFixed(2)}`);
+            this.addLog('resultado', `Capital: $${resultado.capitalAntes.toFixed(2)} → $${resultado.capitalDepois.toFixed(2)}`);
+            this.addLog('resultado', `ROI sessão: ${resultado.roi >= 0 ? '+' : ''}${resultado.roi.toFixed(2)}%`);
+            this.addLog('resultado', `Vitórias: ${resultado.vitorias} | Derrotas: ${resultado.derrotas}`);
+            this.addLog('resultado', `Taxa acerto: ${resultado.taxaAcerto.toFixed(1)}%`);
             
             if (vitoria && resultado.martingaleAtivo) {
-                this.addLog('resultado', `├─ Recuperação: +$${resultado.perdaRecuperada.toFixed(2)}`, 1);
-                this.addLog('resultado', `├─ 🔄 MARTINGALE RESETADO`, 1);
+                this.addLog('resultado', `Recuperação: +$${resultado.perdaRecuperada.toFixed(2)}`);
+                this.addLog('resultado', `🔄 MARTINGALE RESETADO`);
             } else if (!vitoria) {
-                this.addLog('resultado', `├─ Perda acumulada: -$${resultado.perdaAcumulada.toFixed(2)}`, 1);
-                this.addLog('resultado', `├─ 🔄 MARTINGALE ATIVADO (${resultado.modoMartingale.toUpperCase()})`, 1);
-                this.addLog('resultado', `├─ Próxima aposta: $${resultado.proximaAposta.toFixed(2)}`, 1);
+                this.addLog('resultado', `Perda acumulada: -$${resultado.perdaAcumulada.toFixed(2)}`);
+                this.addLog('resultado', `🔄 MARTINGALE ATIVADO (${resultado.modoMartingale.toUpperCase()})`);
+                this.addLog('resultado', `Próxima aposta: $${resultado.proximaAposta.toFixed(2)}`);
             }
             
-            this.addLog('resultado', `└─ Próxima operação em breve...`, 1);
+            this.addLog('info', '');
         },
         
         async fetchDailyStats() {
@@ -1349,35 +1269,6 @@ export default {
                     });
                     
                     console.log('[InvestmentActive] ✅ Log formatado:', this.logOperations);
-                    
-                    // 📋 Adicionar logs em tempo real para os últimos 5 trades
-                    if (result.data.length > 0 && this.realtimeLogs.length === 0) {
-                        // Apenas na primeira carga, adicionar logs dos últimos trades
-                        const ultimosTrades = result.data.slice(-5).reverse();
-                        ultimosTrades.forEach(trade => {
-                            const vitoria = trade.status === 'WON';
-                            const profit = parseFloat(trade.profitLoss) || 0;
-                            const stake = parseFloat(trade.stakeAmount) || 0;
-                            
-                            this.logResultadoOperacao({
-                                status: trade.status,
-                                numero: trade.id,
-                                direcao: trade.contractType === 'DIGITEVEN' ? 'PAR' : 'ÍMPAR',
-                                digitoSaida: trade.exitPrice ? Math.floor(parseFloat(trade.exitPrice)) % 10 : '?',
-                                paridadeSaida: trade.exitPrice && (Math.floor(parseFloat(trade.exitPrice)) % 10 % 2 === 0) ? 'PAR' : 'ÍMPAR',
-                                investido: stake,
-                                retorno: vitoria ? profit + stake : 0,
-                                lucro: profit,
-                                capitalAntes: 0,
-                                capitalDepois: 0,
-                                roi: 0,
-                                vitorias: 0,
-                                derrotas: 0,
-                                taxaAcerto: 0,
-                                martingaleAtivo: false
-                            });
-                        });
-                    }
                     
                     // Plotar marcadores de entradas no gráfico após um delay para garantir que o gráfico esteja pronto
                     this.$nextTick(() => {
@@ -2763,39 +2654,35 @@ button i,
 /* ============================================ */
 /* LOGS EM TEMPO REAL - ZENIX v2.0            */
 /* ============================================ */
-#logs-view {
-    background: rgba(15, 23, 42, 0.3);
-}
-
-#logs-view .text-blue-400 {
+#register-view .text-blue-400 {
     color: #60a5fa;
 }
 
-#logs-view .text-gray-400 {
+#register-view .text-gray-400 {
     color: #9ca3af;
 }
 
-#logs-view .text-purple-400 {
+#register-view .text-purple-400 {
     color: #c084fc;
 }
 
-#logs-view .text-yellow-400 {
+#register-view .text-yellow-400 {
     color: #facc15;
 }
 
-#logs-view .text-cyan-400 {
+#register-view .text-cyan-400 {
     color: #22d3ee;
 }
 
-#logs-view .text-green-400 {
+#register-view .text-green-400 {
     color: #4ade80;
 }
 
-#logs-view .text-orange-400 {
+#register-view .text-orange-400 {
     color: #fb923c;
 }
 
-#logs-view .text-red-500 {
+#register-view .text-red-500 {
     color: #ef4444;
 }
 
