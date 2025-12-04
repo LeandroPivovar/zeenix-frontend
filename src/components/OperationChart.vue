@@ -1,6 +1,6 @@
 <template>
     <div class="operation-chart-wrapper">
-    <div v-if="connectionError || isConnecting" class="connection-loading-card animated-card" data-anim-index="0" style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; z-index: 1000; background-color: rgba(11, 11, 11, 0.95);">
+    <div v-if="connectionError || isConnecting" class="connection-loading-card animated-card" data-anim-index="0">
       <div class="loading-indicator-wrapper">
         <div class="spinner-large"></div>
         <p class="loading-message">{{ loadingMessage }}</p>
@@ -8,8 +8,8 @@
       </div>
     </div>
 
-    <div class="operation-layout">
-        <div class="col-chart flex-1 flex flex-col gap-4">
+    <div v-else class="operation-layout">
+        <div class="col-chart flex-1 flex flex-col gap-5">
         <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full" style="min-height: 845px;">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A]">
             <div class="flex items-center gap-4">
@@ -26,30 +26,6 @@
                   ]"
                 >
                   {{ timeframe }}
-                </button>
-              </div>
-              <div class="flex gap-2 ml-4 pl-4 border-l border-zenix-border">
-                <button 
-                  @click="chartType = 'line'"
-                  :class="[
-                    'px-3 py-1.5 border rounded-lg text-xs transition-all duration-300',
-                    chartType === 'line'
-                      ? 'bg-zenix-green border-zenix-green text-black font-semibold shadow-[0_0_8px_rgba(34,197,94,0.3)]' 
-                      : 'bg-[#0F0F0F] border-zenix-border text-zenix-text hover:bg-[#1A1A1A] hover:border-zenix-green'
-                  ]"
-                >
-                  <i class="far fa-chart-line mr-1"></i> Linha
-                </button>
-                <button 
-                  @click="chartType = 'candle'"
-                  :class="[
-                    'px-3 py-1.5 border rounded-lg text-xs transition-all duration-300',
-                    chartType === 'candle'
-                      ? 'bg-zenix-green border-zenix-green text-black font-semibold shadow-[0_0_8px_rgba(34,197,94,0.3)]' 
-                      : 'bg-[#0F0F0F] border-zenix-border text-zenix-text hover:bg-[#1A1A1A] hover:border-zenix-green'
-                  ]"
-                >
-                  <i class="far fa-chart-bar mr-1"></i> Velas
                 </button>
               </div>
             </div>
@@ -75,7 +51,7 @@
           </div>
         </div>
         
-        <div class="border-t-2 bg-gradient-to-b from-[#101010] to-[#0E0E0E] px-6 py-4 rounded-xl shadow-[0_-2px_12px_rgba(34,197,94,0.08)] mb-10">
+        <div class="border-t-2 bg-gradient-to-b from-[#101010] to-[#0E0E0E] px-6 py-4 rounded-xl shadow-[0_-2px_12px_rgba(34,197,94,0.08)]">
           <div class="flex items-center justify-between mb-3">
             <div class="flex items-center gap-2">
               <i class="far fa-signal text-[11px] text-zenix-green"></i>
@@ -96,7 +72,7 @@
         </div>
         </div>
 
-        <div class="max-w-[540px] w-[540px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
+        <div class="max-w-[420px] w-[420px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
           <div class="pb-3 border-b border-zenix-border mb-5">
             <h3 class="text-base font-semibold text-zenix-text">Painel de Negociação Manual</h3>
           </div>
@@ -106,39 +82,63 @@
               <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
                 <i class="fas fa-chart-line text-zenix-green mr-2"></i>Mercado
               </label>
-              <button
-                @click="showMarketModal = true"
+              <select 
+                id="marketSelectSidebar"
+                v-model="symbol"
+                @change="handleSymbolChange"
                 :disabled="!isAuthorized || isLoadingSymbol"
-                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors hover:border-zenix-green disabled:opacity-50 disabled:cursor-not-allowed text-left flex items-center justify-between"
+                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
               >
-                <span>{{ selectedMarketLabel || 'Selecione um mercado' }}</span>
-                <i class="fas fa-chevron-down text-xs"></i>
-              </button>
+                <optgroup label="Índices Sintéticos">
+                  <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value" data-category="synthetic">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+                <optgroup label="Criptomoedas">
+                  <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value" data-category="crypto">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+                <optgroup label="Forex">
+                  <option v-for="market in [...(marketsByCategory['Forex Majors'] || []), ...(marketsByCategory['Forex Minors'] || []), ...(marketsByCategory['Forex Exotics'] || [])]" :key="market.value" :value="market.value" data-category="forex">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+                <optgroup label="Metais">
+                  <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value" data-category="metals">
+                    {{ market.label }}
+                  </option>
+                </optgroup>
+              </select>
             </div>
             
             <div>
               <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
                 <i class="fas fa-exchange-alt text-zenix-green mr-2"></i>Tipo de Negociação
               </label>
-              <button
-                @click="showUnifiedTradeTypeModal = true"
-                :disabled="!symbol || isTrading"
-                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors hover:border-zenix-green disabled:opacity-50 disabled:cursor-not-allowed text-left flex items-center justify-between"
+              <select 
+                id="tradeTypeSelect"
+                v-model="localOrderConfig.type" 
+                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
+                :disabled="isTrading || !canUseCallPut"
               >
-                <span>{{ unifiedSelectedTypeLabel || 'Selecione um tipo' }}</span>
-                <i class="fas fa-chevron-down text-xs"></i>
-              </button>
+                <option value="">Selecione um mercado primeiro</option>
+                <option value="CALL">Alta (CALL)</option>
+                <option value="PUT">Baixa (PUT)</option>
+              </select>
+              <div v-if="!canUseCallPut" class="warning-message mt-2 p-2 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
+                ⚠️ Este ativo não suporta contratos CALL/PUT. Use a operação com dígitos para negociar este ativo.
+              </div>
             </div>
             
             <div>
               <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-                <i class="fas fa-clock text-zenix-green mr-2"></i>{{ isDigitType ? 'Número de Ticks' : 'Duração' }}
+                <i class="fas fa-clock text-zenix-green mr-2"></i>Duração
               </label>
               <div class="flex gap-2">
                 <select 
-                  v-if="!isDigitType"
-                  v-model="unifiedOrderConfig.durationUnit"
-                  @change="setDurationUnit(unifiedOrderConfig.durationUnit)"
+                  v-model="localOrderConfig.durationUnit"
+                  @change="setDurationUnit(localOrderConfig.durationUnit)"
                   class="flex-1 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
                   :disabled="isTrading"
                 >
@@ -147,19 +147,14 @@
                 </select>
                 <input 
                   type="number" 
-                  :min="isDigitType ? 1 : getValidDurationForSymbol(symbol).min" 
-                  :max="isDigitType ? 10 : getValidDurationForSymbol(symbol).max"
-                  v-model.number="unifiedOrderConfig.duration" 
+                  :min="getValidDurationForSymbol(symbol).min" 
+                  :max="getValidDurationForSymbol(symbol).max"
+                  v-model.number="localOrderConfig.duration" 
                   @input="onDurationChange"
-                  :class="[
-                    'bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors',
-                    isDigitType ? 'flex-1' : 'w-20'
-                  ]"
+                  class="w-20 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
                   :disabled="isTrading" 
                 />
-                <span v-if="isDigitType" class="flex items-center text-xs text-zenix-secondary px-2">ticks</span>
               </div>
-              <p v-if="isDigitType" class="text-xs text-zenix-secondary mt-1">1-10 ticks</p>
             </div>
             
             <div>
@@ -168,22 +163,17 @@
               </label>
               <input 
                 type="number" 
-                :min="isDigitType ? 0.35 : stakeLimits.min" 
-                :max="isDigitType ? 50000 : stakeLimits.max" 
+                :min="stakeLimits.min" 
+                :max="stakeLimits.max" 
                 step="0.01" 
-                v-model.number="unifiedOrderConfig.value" 
+                v-model.number="localOrderConfig.value" 
                 @input="validateAndAdjustStake"
                 placeholder="Ex: 1.00, 2.50..."
                 class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text placeholder:text-[#DFDFDF40] focus:outline-none focus:border-zenix-green transition-colors"
                 :disabled="isTrading" 
               />
-              <div class="text-xs text-zenix-secondary mt-1">
-                <template v-if="isDigitType">
-                  Min: {{ displayCurrency }} 0.35 | Max: {{ displayCurrency }} 50000.00
-                </template>
-                <template v-else-if="stakeLimits.min || stakeLimits.max">
+              <div v-if="stakeLimits.min || stakeLimits.max" class="text-xs text-zenix-secondary mt-1">
                 Min: {{ displayCurrency }} {{ stakeLimits.min.toFixed(2) }} | Max: {{ displayCurrency }} {{ stakeLimits.max.toFixed(2) }}
-                </template>
               </div>
             </div>
             
@@ -203,35 +193,6 @@
               <div class="text-base font-semibold text-zenix-text">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
             </div>
 
-            <!-- Card de Previsão de Dígitos (aparece quando tipo for de dígito) -->
-            <div v-if="isDigitType && unifiedOrderConfig.type" class="bg-gradient-to-br from-zenix-bg to-[#0F0F0F] border border-zenix-green/30 rounded-xl p-3 space-y-2">
-              <div class="flex items-center gap-2 pb-2 border-b border-zenix-border">
-                <i class="fas fa-hashtag text-zenix-green text-xs"></i>
-                <span class="text-xs font-semibold text-zenix-text">Previsão</span>
-              </div>
-              
-              <div>
-                <label class="block text-[10px] font-medium text-[#DFDFDF88] mb-1.5 uppercase tracking-wider">
-                  Dígito Previsto (0-9)
-                </label>
-                <div class="flex flex-wrap gap-1.5 justify-center">
-                  <button
-                    v-for="digit in 10"
-                    :key="digit - 1"
-                    @click="selectDigit(digit - 1)"
-                    :class="[
-                      'w-[40px] h-[40px] rounded-md border font-semibold text-sm transition-all flex items-center justify-center',
-                      selectedDigit === (digit - 1)
-                        ? 'bg-zenix-green border-zenix-green text-black shadow-[0_0_8px_rgba(34,197,94,0.3)]'
-                        : 'bg-zenix-bg border-zenix-border text-zenix-text hover:border-zenix-green hover:bg-[#1A1A1A]'
-                    ]"
-                  >
-                    {{ digit - 1 }}
-                  </button>
-                </div>
-              </div>
-            </div>
-
             <div v-if="realTimeProfit !== null && activeContract" class="bg-zenix-bg border rounded-lg p-3" :class="realTimeProfit > 0 ? 'border-zenix-green' : 'border-red-500'">
               <div class="text-xs text-zenix-secondary mb-1">P&L em Tempo Real:</div>
               <div class="text-base font-semibold" :class="realTimeProfit > 0 ? 'text-zenix-green' : 'text-red-500'">
@@ -244,14 +205,11 @@
                 v-if="!activeContract"
                 @click="executeBuy" 
                 id="buyButton"
-                :class="[
-                  'w-full font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2',
-                  getTradeButtonClass()
-                ]"
-                :disabled="isTrading || !isAuthorized || !unifiedOrderConfig.type || (isDigitType && showDigitSelection && selectedDigit === null)"
+                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                :disabled="isTrading || !isAuthorized || !canUseCallPut"
               >
-                <i :class="getTradeButtonIcon()"></i>
-                {{ getTradeButtonText() }}
+                <i class="fas fa-arrow-up"></i>
+                {{ isTrading ? 'Aguardando confirmação...' : (currentProposalId ? 'Executar Ordem' : 'Aguardando proposta...') }}
               </button>
               
               <button 
@@ -261,8 +219,8 @@
                 class="w-full bg-[#FF4747] hover:bg-[#FF6161] text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
                 :disabled="isTrading"
               >
-                <i class="fas fa-times-circle"></i>
-                {{ isTrading ? 'Vendendo...' : 'Fechar Posição' }}
+                <i class="fas fa-arrow-down"></i>
+                {{ isTrading ? 'Vendendo...' : 'PUT / SELL' }}
               </button>
             </div>
 
@@ -288,33 +246,10 @@
         />
       </div>
     </div>
-    
-    <!-- Modal de seleção de mercado -->
-    <SelectionModal
-      :show="showMarketModal"
-      title="Selecionar Mercado"
-      :items="allMarketsForModal"
-      :selected-value="symbol"
-      search-placeholder="Buscar mercado..."
-      @select="handleMarketSelect"
-      @close="showMarketModal = false"
-    />
-    
-    <!-- Modal unificado de seleção de tipo de negociação -->
-    <SelectionModal
-      :show="showUnifiedTradeTypeModal"
-      title="Selecionar Tipo de Negociação"
-      :items="unifiedTradeTypesForModal"
-      :selected-value="unifiedOrderConfig.type"
-      search-placeholder="Buscar tipo..."
-      @select="handleUnifiedTradeTypeSelect"
-      @close="showUnifiedTradeTypeModal = false"
-    />
 </template>
 
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
-import SelectionModal from './SelectionModal.vue';
 import TradeResultModal from './TradeResultModal.vue';
 
 const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
@@ -323,7 +258,6 @@ export default {
     name: 'OperationChart',
     components: {
       TradeResultModal,
-      SelectionModal,
     },
     props: {
         accountBalance: { type: String, required: true },
@@ -331,6 +265,11 @@ export default {
         preferredCurrency: { type: String, default: 'USD' },
         accountLoginid: { type: String, default: null },
         orderConfig: { type: Object, required: true },
+        lastOrders: { 
+            type: Array, 
+            required: true,
+      default: () => [],
+    },
     },
     data() {
         return {
@@ -348,24 +287,6 @@ export default {
       tradeMessage: '',
       tradeError: '',
       symbol: 'R_100',
-      // Modals
-      showMarketModal: false,
-      showUnifiedTradeTypeModal: false,
-      // Asset Index data from Deriv
-      assetIndexData: null,
-      isLoadingAssetIndex: false,
-      availableTradeTypes: [],
-      availableDurations: {},
-      selectedTradeType: null,
-      // Operação Unificada (CALL/PUT e Dígitos)
-      unifiedOrderConfig: {
-        type: '',
-        duration: 1,
-        durationUnit: 'm',
-        value: 10
-      },
-      selectedDigit: null,
-      availableDigitTypes: [],
       // Cache de dados de contratos por símbolo
       contractsData: {}, // { symbol: { contractTypes, minDuration, maxDuration, minStake, maxStake, allowedUnits } }
       isLoadingContracts: false,
@@ -426,8 +347,6 @@ export default {
       lastUpdate: null,
       chart: null,
       lineSeries: null,
-      candleSeries: null,
-      chartType: 'line', // 'line' ou 'candle'
       timeScaleMarkers: [],
             localOrderConfig: {
         type: 'CALL',
@@ -459,7 +378,6 @@ export default {
       updateEntrySpotLine: null,
       entryMarker: null,
       entryTime: null,
-      entrySpot: null,
       purchasePrice: null,
       isSellEnabled: false,
       isDemoAccount: false,
@@ -498,67 +416,6 @@ export default {
         grouped[category].push(market);
       });
       return grouped;
-    },
-    allMarketsForModal() {
-      // Converte markets para o formato do modal
-      return this.markets.map(market => ({
-        value: market.value,
-        label: market.label,
-        description: market.category
-      }));
-    },
-    selectedMarketLabel() {
-      const market = this.markets.find(m => m.value === this.symbol);
-      return market ? market.label : null;
-    },
-    tradeTypesForModal() {
-      // Converte availableTradeTypes para o formato do modal
-      return this.availableTradeTypes.map(type => ({
-        value: type.value,
-        label: type.label,
-        description: type.duration
-      }));
-    },
-    selectedTradeTypeLabel() {
-      const type = this.availableTradeTypes.find(t => t.value === this.localOrderConfig.type);
-      return type ? type.label : null;
-    },
-    // Computed Unificados
-    unifiedTradeTypesForModal() {
-      // Combinar tipos de CALL/PUT com tipos de dígitos
-      const callPutTypes = this.availableTradeTypes.map(type => ({
-        value: type.value,
-        label: type.label,
-        description: type.duration,
-        category: 'Opções Binárias'
-      }));
-      
-      const digitTypes = this.availableDigitTypes.map(type => ({
-        value: type.value,
-        label: type.label,
-        description: type.description,
-        category: 'Previsão de Dígitos'
-      }));
-      
-      return [...callPutTypes, ...digitTypes];
-    },
-    unifiedSelectedTypeLabel() {
-      // Procurar em ambos os tipos
-      let type = this.availableTradeTypes.find(t => t.value === this.unifiedOrderConfig.type);
-      if (!type) {
-        type = this.availableDigitTypes.find(t => t.value === this.unifiedOrderConfig.type);
-      }
-      return type ? type.label : null;
-    },
-    isDigitType() {
-      // Verifica se o tipo selecionado é de dígitos
-      const digitTypeCodes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITOVER', 'DIGITUNDER', 'DIGITODD', 'DIGITEVEN'];
-      return digitTypeCodes.includes(this.unifiedOrderConfig.type);
-    },
-    showDigitSelection() {
-      // Mostrar seletor de dígito apenas para MATCH e DIFFER
-      const typesNeedingDigit = ['DIGITMATCH', 'DIGITDIFF'];
-      return typesNeedingDigit.includes(this.unifiedOrderConfig.type);
     },
     canUseCallPut() {
       return this.supportsCallPut(this.symbol);
@@ -660,518 +517,79 @@ export default {
     },
     },
     methods: {
-    // ===== ASSET INDEX E MODAIS =====
-    async fetchAssetIndex() {
-      if (this.isLoadingAssetIndex || this.assetIndexData) {
-        console.log('[AssetIndex] Já carregado ou carregando');
-        return;
-      }
-      
-      console.log('[AssetIndex] 🔍 Buscando asset index da Deriv...');
-      this.isLoadingAssetIndex = true;
-      
-      try {
-        const message = {
-          asset_index: 1,
-          landing_company_short: 'svg'
-        };
-        
-        const response = await this.sendDerivMessage(message);
-        
-        if (response && response.asset_index) {
-          this.assetIndexData = response.asset_index;
-          console.log('[AssetIndex] ✅ Asset index recebido:', this.assetIndexData.length, 'assets');
-          return response;
-        } else {
-          console.error('[AssetIndex] ❌ Resposta inválida:', response);
-        }
-      } catch (error) {
-        console.error('[AssetIndex] ❌ Erro ao buscar asset index:', error);
-      } finally {
-        this.isLoadingAssetIndex = false;
-      }
-    },
-    
-    updateAvailableTradeTypes(symbolCode) {
-      if (!this.assetIndexData) {
-        console.log('[TradeTypes] Asset index não carregado ainda');
-        this.availableTradeTypes = [];
-        return;
-      }
-      
-      console.log('[TradeTypes] 🔍 Buscando tipos disponíveis para:', symbolCode);
-      
-      // Encontrar o asset no asset_index
-      const asset = this.assetIndexData.find(([code]) => code === symbolCode);
-      
-      if (!asset) {
-        console.warn('[TradeTypes] ⚠️ Asset não encontrado:', symbolCode);
-        this.availableTradeTypes = [];
-        return;
-      }
-      
-      const [, displayName, tradeTypesArray] = asset;
-      console.log('[TradeTypes] Asset encontrado:', displayName);
-      console.log('[TradeTypes] Trade types disponíveis:', tradeTypesArray.length);
-      
-      // Mapear os tipos de negociação
-      const tradeTypeMap = {
-        'callput': { value: 'CALL', label: 'Rise/Fall (Alta/Baixa)', putValue: 'PUT' },
-        'callputequal': { value: 'CALLE', label: 'Rise/Fall Equal', putValue: 'PUTE' },
-        'touchnotouch': { value: 'ONETOUCH', label: 'Touch/No Touch', putValue: 'NOTOUCH' },
-        'endsinout': { value: 'EXPIRYIN', label: 'Ends Between/Ends Outside', putValue: 'EXPIRYOUT' },
-        'staysinout': { value: 'RANGE', label: 'Stays Between/Goes Outside', putValue: 'UPORDOWN' },
-        'multiplier': { value: 'MULTUP', label: 'Multiply Up/Multiply Down', putValue: 'MULTDOWN' }
-      };
-      
-      const types = [];
-      const durationsMap = {};
-      
-      tradeTypesArray.forEach(([tradeType, displayName, minDuration, maxDuration]) => {
-        const mapped = tradeTypeMap[tradeType];
-        
-        if (mapped) {
-          const durationText = minDuration && maxDuration 
-            ? `${minDuration} - ${maxDuration}` 
-            : 'No Expiry';
-          
-          // Adicionar CALL/UP
-          types.push({
-            value: mapped.value,
-            label: `${displayName} (Alta)`,
-            duration: durationText,
-            minDuration,
-            maxDuration,
-            tradeType
-          });
-          
-          // Adicionar PUT/DOWN
-          if (mapped.putValue) {
-            types.push({
-              value: mapped.putValue,
-              label: `${displayName} (Baixa)`,
-              duration: durationText,
-              minDuration,
-              maxDuration,
-              tradeType
-            });
-          }
-          
-          // Armazenar durações
-          durationsMap[mapped.value] = { min: minDuration, max: maxDuration };
-          if (mapped.putValue) {
-            durationsMap[mapped.putValue] = { min: minDuration, max: maxDuration };
-          }
-        }
-      });
-      
-      this.availableTradeTypes = types;
-      this.availableDurations = durationsMap;
-      
-      console.log('[TradeTypes] ✅ Tipos configurados:', types.length);
-      console.log('[TradeTypes] Durações:', durationsMap);
-    },
-    
-    handleMarketSelect(market) {
-      console.log('[MarketSelect] Mercado selecionado:', market);
-      this.symbol = market.value;
-      this.updateAvailableTradeTypes(market.value);
-      this.handleSymbolChange();
-    },
-    
-    handleTradeTypeSelect(type) {
-      console.log('[TradeTypeSelect] Tipo selecionado:', type);
-      this.localOrderConfig.type = type.value;
-      this.selectedTradeType = type;
-      
-      // Atualizar limites de duração baseado no tipo selecionado
-      if (this.availableDurations[type.value]) {
-        const dur = this.availableDurations[type.value];
-        console.log('[TradeTypeSelect] Limites de duração:', dur);
-        // Aplicar limites de duração aqui se necessário
-      }
-    },
-    
-    // ===== MÉTODOS UNIFICADOS =====
-    handleUnifiedTradeTypeSelect(type) {
-      console.log('[UnifiedTradeType] Tipo selecionado:', type);
-      this.unifiedOrderConfig.type = type.value;
-      
-      // Se for tipo de dígito, configurar duração para ticks
-      if (this.isDigitType) {
-        this.unifiedOrderConfig.durationUnit = 't';
-        if (this.unifiedOrderConfig.duration > 10 || this.unifiedOrderConfig.duration < 1) {
-          this.unifiedOrderConfig.duration = 5;
-        }
-        // Reset seleção de dígito
-        this.selectedDigit = null;
-      } else {
-        // Para CALL/PUT, usar minutos por padrão
-        this.unifiedOrderConfig.durationUnit = 'm';
-      }
-      
-      // Buscar proposta
-      this.subscribeToUnifiedProposal();
-    },
-    
-    initializeDigitTypes() {
-      console.log('[DigitTypes] 🔍 Inicializando tipos de dígitos...');
-      
-      const digitTypes = [
-        {
-          value: 'DIGITMATCH',
-          label: 'Igual (Matches)',
-          description: 'O último dígito será igual ao selecionado'
-        },
-        {
-          value: 'DIGITDIFF',
-          label: 'Diferente (Differs)',
-          description: 'O último dígito será diferente do selecionado'
-        },
-        {
-          value: 'DIGITOVER',
-          label: 'Acima (Over)',
-          description: 'O último dígito será maior que 5'
-        },
-        {
-          value: 'DIGITUNDER',
-          label: 'Abaixo (Under)',
-          description: 'O último dígito será menor que 5'
-        },
-        {
-          value: 'DIGITODD',
-          label: 'Ímpar (Odd)',
-          description: 'O último dígito será ímpar'
-        },
-        {
-          value: 'DIGITEVEN',
-          label: 'Par (Even)',
-          description: 'O último dígito será par'
-        }
-      ];
-      
-      this.availableDigitTypes = digitTypes;
-      console.log('[DigitTypes] ✅ Tipos configurados:', digitTypes.length);
-    },
-    
-    selectDigit(digit) {
-      console.log('[DigitSelect] Dígito selecionado:', digit);
-      this.selectedDigit = digit;
-      
-      // Atualizar proposta com o novo dígito
-      if (this.isDigitType) {
-        this.subscribeToUnifiedProposal();
-      }
-    },
-    
-    async subscribeToUnifiedProposal() {
-      if (!this.unifiedOrderConfig.type || !this.symbol) {
-        return;
-      }
-      
-      // Para tipos de dígito que precisam de seleção, verificar
-      if (this.isDigitType && this.showDigitSelection && this.selectedDigit === null) {
-        console.log('[UnifiedProposal] Aguardando seleção de dígito');
-        return;
-      }
-      
-      console.log('[UnifiedProposal] 📊 Buscando proposta...');
-      
-      try {
-        const proposal = {
-          proposal: 1,
-          amount: this.unifiedOrderConfig.value,
-          basis: 'stake',
-          contract_type: this.unifiedOrderConfig.type,
-          currency: this.displayCurrency.replace('$', '').replace('D$', 'USD'),
-          duration: this.unifiedOrderConfig.duration,
-          duration_unit: this.isDigitType ? 't' : this.unifiedOrderConfig.durationUnit,
-          symbol: this.symbol,
-          subscribe: 1
-        };
-        
-        // Adicionar barrier para tipos MATCH e DIFFER
-        if (this.showDigitSelection && this.selectedDigit !== null) {
-          proposal.barrier = this.selectedDigit.toString();
-        }
-        
-        console.log('[UnifiedProposal] Proposta:', proposal);
-        
-        const response = await this.sendDerivMessage(proposal);
-        
-        if (response && response.proposal) {
-          if (this.isDigitType) {
-            // Atualizar para dígitos
-            this.currentProposalPrice = response.proposal.ask_price;
-            this.currentProposalId = response.proposal.id;
-          } else {
-            // Manter lógica existente para CALL/PUT
-            this.currentProposalPrice = response.proposal.ask_price;
-            this.currentProposalId = response.proposal.id;
-          }
-          console.log('[UnifiedProposal] ✅ Proposta recebida:', {
-            price: this.currentProposalPrice,
-            id: this.currentProposalId
-          });
-        }
-      } catch (error) {
-        console.error('[UnifiedProposal] ❌ Erro:', error);
-        this.tradeError = 'Erro ao buscar proposta: ' + error.message;
-      }
-    },
-    
-    // Métodos auxiliares para UI dinâmica
-    getTradeButtonClass() {
-      const type = this.unifiedOrderConfig.type;
-      if (!type) return 'bg-gray-600 cursor-not-allowed';
-      
-      // Tipos de dígitos - sempre verde
-      if (this.isDigitType) {
-        if (this.showDigitSelection && this.selectedDigit === null) {
-          return 'bg-gray-600 cursor-not-allowed';
-        }
-        return 'bg-zenix-green hover:bg-zenix-green-hover text-white';
-      }
-      
-      // Tipos de ALTA/CALL = Verde
-      if (type.includes('CALL') || type === 'ONETOUCH' || type === 'EXPIRYIN' || type === 'RANGE' || type === 'MULTUP') {
-        return 'bg-zenix-green hover:bg-zenix-green-hover text-white';
-      }
-      // Tipos de BAIXA/PUT = Vermelho
-      if (type.includes('PUT') || type === 'NOTOUCH' || type === 'EXPIRYOUT' || type === 'UPORDOWN' || type === 'MULTDOWN') {
-        return 'bg-[#FF4747] hover:bg-[#FF6161] text-white';
-      }
-      
-      return 'bg-zenix-green hover:bg-zenix-green-hover text-white';
-    },
-    
-    getTradeButtonIcon() {
-      const type = this.unifiedOrderConfig.type;
-      if (!type) return 'fas fa-ban';
-      
-      // Tipos de dígitos
-      if (this.isDigitType) {
-        if (this.showDigitSelection && this.selectedDigit === null) {
-          return 'fas fa-hand-pointer';
-        }
-        return 'fas fa-hashtag';
-      }
-      
-      // Tipos de ALTA
-      if (type.includes('CALL') || type === 'MULTUP') {
-        return 'fas fa-arrow-up';
-      }
-      // Tipos de BAIXA
-      if (type.includes('PUT') || type === 'MULTDOWN') {
-        return 'fas fa-arrow-down';
-      }
-      // Touch
-      if (type === 'ONETOUCH') {
-        return 'fas fa-bullseye';
-      }
-      // No Touch
-      if (type === 'NOTOUCH') {
-        return 'fas fa-times-circle';
-      }
-      // Range/Stays
-      if (type === 'RANGE' || type === 'EXPIRYIN') {
-        return 'fas fa-compress';
-      }
-      // Up or Down / Goes Outside
-      if (type === 'UPORDOWN' || type === 'EXPIRYOUT') {
-        return 'fas fa-expand';
-      }
-      
-      return 'fas fa-arrow-up';
-    },
-    
-    getTradeButtonText() {
-      const type = this.unifiedOrderConfig.type;
-      
-      if (this.isTrading) {
-        return 'Aguardando confirmação...';
-      }
-      
-      if (!type) {
-        return 'Selecione um tipo de negociação';
-      }
-      
-      // Para tipos de dígito
-      if (this.isDigitType) {
-        if (this.showDigitSelection && this.selectedDigit === null) {
-          return 'Selecione um dígito';
-        }
-        if (!this.currentProposalId) {
-          return 'Aguardando proposta...';
-        }
-        
-        const digitTextMap = {
-          'DIGITMATCH': `Executar Previsão: Igual a ${this.selectedDigit}`,
-          'DIGITDIFF': `Executar Previsão: Diferente de ${this.selectedDigit}`,
-          'DIGITOVER': 'Executar Previsão: Acima de 5',
-          'DIGITUNDER': 'Executar Previsão: Abaixo de 5',
-          'DIGITODD': 'Executar Previsão: Ímpar',
-          'DIGITEVEN': 'Executar Previsão: Par'
-        };
-        return digitTextMap[type] || 'Executar Previsão';
-      }
-      
-      if (!this.currentProposalId) {
-        return 'Aguardando proposta...';
-      }
-      
-      // Mapear tipos para textos específicos
-      const textMap = {
-        'CALL': 'Executar CALL (Alta)',
-        'PUT': 'Executar PUT (Baixa)',
-        'CALLE': 'Executar Rise Equal',
-        'PUTE': 'Executar Fall Equal',
-        'ONETOUCH': 'Executar Touch',
-        'NOTOUCH': 'Executar No Touch',
-        'EXPIRYIN': 'Executar Ends Between',
-        'EXPIRYOUT': 'Executar Ends Outside',
-        'RANGE': 'Executar Stays Between',
-        'UPORDOWN': 'Executar Goes Outside',
-        'MULTUP': 'Executar Multiply Up',
-        'MULTDOWN': 'Executar Multiply Down'
-      };
-      
-      return textMap[type] || 'Executar Ordem';
-    },
-    
-    // Método genérico para enviar mensagem e aguardar resposta
-    sendDerivMessage(message) {
-      return new Promise((resolve, reject) => {
-        if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-          reject(new Error('WebSocket não conectado'));
-          return;
-        }
-        
-        // Gerar um ID único para a mensagem
-        const reqId = Date.now();
-        message.req_id = reqId;
-        
-        console.log('[sendDerivMessage] Enviando:', message);
-        
-        // Listener temporário para esta resposta específica
-        const messageHandler = (event) => {
-          try {
-            const response = JSON.parse(event.data);
-            
-            if (response.req_id === reqId) {
-              this.ws.removeEventListener('message', messageHandler);
-              
-              if (response.error) {
-                console.error('[sendDerivMessage] Erro na resposta:', response.error);
-                reject(new Error(response.error.message));
-              } else {
-                console.log('[sendDerivMessage] Resposta recebida:', response);
-                resolve(response);
-              }
-            }
-          } catch (error) {
-            console.error('[sendDerivMessage] Erro ao processar resposta:', error);
-          }
-        };
-        
-        this.ws.addEventListener('message', messageHandler);
-        
-        // Timeout de 10 segundos
-        setTimeout(() => {
-          this.ws.removeEventListener('message', messageHandler);
-          reject(new Error('Timeout ao aguardar resposta'));
-        }, 10000);
-        
-        // Enviar mensagem
-        try {
-          this.ws.send(JSON.stringify(message));
-        } catch (error) {
-          this.ws.removeEventListener('message', messageHandler);
-          reject(error);
-        }
-      });
-    },
-    
     initChart() {
-      console.log('[Chart] ========== INICIANDO GRÁFICO DO ZERO ==========');
+      console.log('[OperationChart] initChart - Iniciando inicialização do gráfico');
+      console.log('[OperationChart] Estado antes de inicializar:', {
+        hasChart: !!this.chart,
+        hasChartContainer: !!this.$refs.chartContainer,
+        chartContainerElement: this.$refs.chartContainer
+      });
       
       if (this.chart) {
-        console.log('[Chart] Gráfico já existe, removendo antes de recriar...');
-        try {
-          this.chart.remove();
-        } catch (e) {
-          console.warn('[Chart] Erro ao remover gráfico anterior:', e);
-        }
-        this.chart = null;
-        this.lineSeries = null;
-        this.candleSeries = null;
+        console.warn('[OperationChart] Gráfico já existe, não inicializando novamente');
+        return;
       }
       
+      // Verificar se já está inicializando para evitar múltiplas chamadas
       if (this.isInitializingChart) {
-        console.log('[Chart] Já está inicializando...');
+        console.log('[OperationChart] Gráfico já está sendo inicializado, aguardando...');
         return;
       }
       
       this.isInitializingChart = true;
       
+      if (!this.$refs.chartContainer) {
+        console.error('[OperationChart] ERRO: chartContainer não está disponível no DOM');
+        this.isInitializingChart = false;
+        return;
+      }
+
+      // Aguardar o próximo tick para garantir que o DOM está totalmente renderizado
       this.$nextTick(() => {
         const container = this.$refs.chartContainer;
-        
         if (!container) {
-          console.error('[Chart] Container não encontrado');
+          console.error('[OperationChart] ERRO: chartContainer não está disponível após nextTick');
+          this.isInitializingChart = false;
+          return;
+        }
+
+        // Forçar recálculo das dimensões
+        const containerRect = container.getBoundingClientRect();
+        const containerHeight = containerRect.height || container.clientHeight || 400;
+        const containerWidth = containerRect.width || container.clientWidth || 800;
+        
+        console.log('[OperationChart] Criando gráfico no container...');
+        console.log('[OperationChart] Dimensões do container:', {
+          width: containerWidth,
+          height: containerHeight,
+          clientWidth: container.clientWidth,
+          clientHeight: container.clientHeight,
+          boundingRect: {
+            width: containerRect.width,
+            height: containerRect.height
+          }
+        });
+        
+        // Garantir que o container tem dimensões válidas
+        if (containerWidth <= 0 || containerHeight <= 0) {
+          console.warn('[OperationChart] Container tem dimensões inválidas, aguardando...');
           this.isInitializingChart = false;
           setTimeout(() => this.initChart(), 100);
           return;
         }
         
-        // Armazenar referência do container original ANTES de qualquer manipulação
-        this._chartContainerElement = container;
-        
-        // NÃO limpar o container se já tiver um gráfico
-        if (container.querySelector('.tv-lightweight-charts')) {
-          console.log('[Chart] Container já tem um gráfico, usando existente');
-          const existingChart = container.querySelector('.tv-lightweight-charts');
-          console.log('[Chart] Gráfico existente encontrado:', existingChart);
-          this.isInitializingChart = false;
-          return;
-        }
-        
-        // Limpar completamente o container apenas se não tiver gráfico
-        container.innerHTML = '';
-        
-        const rect = container.getBoundingClientRect();
-        const width = Math.max(rect.width || container.clientWidth || 800, 100);
-        const height = Math.max(rect.height || container.clientHeight || 600, 100);
-        
-        console.log('[Chart] Dimensões:', { width, height });
-        
-        if (width <= 0 || height <= 0) {
-          console.warn('[Chart] Dimensões inválidas, tentando novamente...');
-          this.isInitializingChart = false;
-          setTimeout(() => this.initChart(), 200);
-          return;
-        }
-        
         try {
-          console.log('[Chart] Criando gráfico Lightweight Charts...');
-          console.log('[Chart] Container info:', {
-            innerHTML: container.innerHTML.length,
-            childNodes: container.childNodes.length,
-            display: window.getComputedStyle(container).display,
-            visibility: window.getComputedStyle(container).visibility,
-            opacity: window.getComputedStyle(container).opacity
-          });
-          
-          // Criar gráfico base
           this.chart = createChart(container, {
-            width,
-            height,
+            width: containerWidth,
+            height: containerHeight,
+            localization: { locale: 'pt-BR' },
             layout: {
               background: { type: ColorType.Solid, color: '#0B0B0B' },
               textColor: '#DFDFDF',
             },
             rightPriceScale: {
               borderVisible: false,
+              textColor: '#DFDFDF',
             },
             leftPriceScale: {
               visible: false,
@@ -1179,6 +597,8 @@ export default {
             timeScale: {
               borderVisible: false,
               timeVisible: true,
+              secondsVisible: true,
+              rightOffset: Math.floor(containerWidth * 0.15), // 15% de espaço à direita
             },
             grid: {
               vertLines: { color: 'rgba(28, 28, 28, 0.5)' },
@@ -1186,107 +606,169 @@ export default {
             },
             crosshair: {
               mode: 1,
+              vertLine: {
+                color: '#22C55E',
+                width: 1,
+                style: 0,
+              },
+              horzLine: {
+                color: '#22C55E',
+                width: 1,
+                style: 0,
+              },
+            },
+          });
+
+          this.lineSeries = this.chart.addAreaSeries({
+            lineColor: '#22C55E',
+            topColor: 'rgba(34, 197, 94, 0.3)',
+            bottomColor: 'rgba(34, 197, 94, 0.05)',
+            lineWidth: 2,
+            priceFormat: {
+              type: 'price',
+              precision: this.pricePrecision,
+              minMove: Math.pow(10, -this.pricePrecision),
             },
           });
           
-          console.log('[Chart] Gráfico criado!');
+          console.log('[OperationChart] lineSeries criado:', {
+            hasLineSeries: !!this.lineSeries,
+            chartHasSeries: !!this.lineSeries
+          });
           
-          // IMPORTANTE: Armazenar o elemento do gráfico para referência futura
+          // Forçar repaint do gráfico após criação
           this.$nextTick(() => {
-            const chartElement = container.querySelector('.tv-lightweight-charts');
-            if (chartElement) {
-              console.log('[Chart] Elemento do gráfico criado:', {
-                childNodes: container.childNodes.length,
-                chartElement: chartElement.tagName,
-                chartClassName: chartElement.className
-              });
+            if (this.chart) {
+              // Verificar se o canvas foi criado - tentar múltiplas vezes
+              const checkCanvasCreated = (attempt = 0) => {
+                const canvas = container.querySelector('canvas');
+                if (canvas) {
+                  console.log('[OperationChart] Canvas criado após initChart:', {
+                    width: canvas.width,
+                    height: canvas.height,
+                    style: {
+                      width: canvas.style.width,
+                      height: canvas.style.height,
+                      display: window.getComputedStyle(canvas).display
+                    }
+                  });
+                  
+                  // Garantir que o canvas está visível
+                  canvas.style.display = 'block';
+                  canvas.style.visibility = 'visible';
+                  canvas.style.opacity = '1';
+                  
+                  // Forçar atualização visual
+                  this.chart.timeScale().fitContent();
+                } else if (attempt < 10) {
+                  // Tentar novamente após um pequeno delay
+                  setTimeout(() => checkCanvasCreated(attempt + 1), 50);
+                } else {
+                  console.warn('[OperationChart] ⚠ Canvas não encontrado após múltiplas tentativas na criação!');
+                }
+              };
               
-              // Marcar o elemento como permanente
-              chartElement.setAttribute('data-chart-initialized', 'true');
+              checkCanvasCreated(0);
               
-              // Verificar se o canvas foi realmente adicionado
-              const canvas = chartElement.querySelector('canvas');
-              console.log('[Chart] Canvas encontrado?', !!canvas);
-              if (canvas) {
-                console.log('[Chart] Canvas dimensions:', {
-                  width: canvas.width,
-                  height: canvas.height,
-                  style: canvas.style.cssText
-                });
-              } else {
-                console.error('[Chart] ❌ Canvas não encontrado após criação!');
-              }
-            } else {
-              console.error('[Chart] ❌ Elemento .tv-lightweight-charts não foi criado!');
+              // Pequeno delay para garantir renderização
+              setTimeout(() => {
+                if (this.chart && this.ticks.length > 0) {
+                  this.chart.timeScale().fitContent();
+                  // Forçar resize novamente
+                  const rect = container.getBoundingClientRect();
+                  if (rect.width > 0 && rect.height > 0) {
+                    this.chart.applyOptions({
+                      width: rect.width,
+                      height: rect.height
+                    });
+                  }
+                }
+              }, 150);
+            }
+          });
+
+          console.log('[OperationChart] ✓ Gráfico e lineSeries criados com sucesso');
+          console.log('[OperationChart] Estado após inicialização:', {
+            hasChart: !!this.chart,
+            hasLineSeries: !!this.lineSeries,
+            ticksCount: this.ticks.length,
+            containerVisible: container.offsetParent !== null,
+            containerDimensions: {
+              width: containerWidth,
+              height: containerHeight,
+              offsetWidth: container.offsetWidth,
+              offsetHeight: container.offsetHeight
             }
           });
           
-          console.log('[Chart] Criando séries...');
-          
-          // Criar séries baseado no tipo
-          this.createSeries();
+          // Garantir que o gráfico seja renderizado corretamente
+          this.$nextTick(() => {
+            if (this.chart) {
+              // Forçar atualização visual
+              this.chart.timeScale().fitContent();
+              // Verificar se o container está visível
+              const isVisible = container.offsetParent !== null && 
+                               container.offsetWidth > 0 && 
+                               container.offsetHeight > 0;
+              if (!isVisible) {
+                console.warn('[OperationChart] Container não está visível, aguardando...');
+                setTimeout(() => {
+                  if (this.chart) {
+                    this.chart.timeScale().fitContent();
+                  }
+                }, 200);
+              }
+            }
+          });
           
           this.chartInitialized = true;
-          this.isInitializingChart = false;
+          this.isInitializingChart = false; // Resetar flag após criação bem-sucedida
           
-          console.log('[Chart] ✓ Gráfico totalmente inicializado!');
-          
-          // Registrar resize handler
-          if (!this._resizeHandler) {
-            this._resizeHandler = () => this.handleResize();
-            window.addEventListener('resize', this._resizeHandler);
-          }
-          
-          // Plotar dados se existirem
+          // Se já temos ticks, atualizar o gráfico imediatamente
           if (this.ticks.length > 0) {
-            console.log('[Chart] Temos', this.ticks.length, 'ticks, plotando...');
-            setTimeout(() => this.updateChartFromTicks(), 300);
+            console.log('[OperationChart] Já temos ticks, atualizando gráfico imediatamente...');
+            console.log('[OperationChart] Total de ticks disponíveis:', this.ticks.length);
+            // Aguardar um pouco mais para garantir que o gráfico está totalmente inicializado
+            setTimeout(() => {
+              if (this.chart && this.lineSeries) {
+                console.log('[OperationChart] Atualizando gráfico com dados existentes...');
+                // Forçar resize antes de atualizar
+                const container = this.$refs.chartContainer;
+                if (container) {
+                  const rect = container.getBoundingClientRect();
+                  if (rect.width > 0 && rect.height > 0) {
+                    this.chart.applyOptions({
+                      width: rect.width,
+                      height: rect.height
+                    });
+                  }
+                }
+                this.updateChartFromTicks();
+              } else {
+                console.error('[OperationChart] Gráfico ou lineSeries não disponível após timeout');
+              }
+            }, 200);
+          } else {
+            console.log('[OperationChart] Nenhum tick disponível ainda, aguardando...');
           }
+          window.addEventListener('resize', this.handleResize);
           
+          // Aguardar um pouco antes de redimensionar para garantir que está renderizado
+          setTimeout(() => {
+            this.handleResize();
+            // Forçar uma atualização visual do gráfico
+            if (this.chart && this.lineSeries && this.ticks.length > 0) {
+              this.$nextTick(() => {
+                this.updateChartFromTicks();
+              });
+            }
+          }, 100);
         } catch (error) {
-          console.error('[Chart] ❌ Erro ao criar gráfico:', error);
-          console.error('[Chart] Stack:', error.stack);
-          this.isInitializingChart = false;
-          this.chartInitialized = false;
+          console.error('[OperationChart] ERRO ao criar gráfico:', error);
+          console.error('[OperationChart] Stack trace:', error.stack);
+          this.isInitializingChart = false; // Resetar flag em caso de erro
         }
       });
-    },
-    createSeries() {
-      // Remover séries antigas
-      if (this.lineSeries && this.chart) {
-        try {
-          this.chart.removeSeries(this.lineSeries);
-        } catch (e) {
-          console.warn('[Chart] Erro ao remover série de linha:', e);
-        }
-        this.lineSeries = null;
-      }
-      if (this.candleSeries && this.chart) {
-        try {
-          this.chart.removeSeries(this.candleSeries);
-        } catch (e) {
-          console.warn('[Chart] Erro ao remover série de velas:', e);
-        }
-        this.candleSeries = null;
-      }
-      
-      // Criar série baseado no tipo
-      if (this.chartType === 'candle') {
-        console.log('[Chart] Criando série de velas...');
-        this.candleSeries = this.chart.addCandlestickSeries({
-          upColor: '#22C55E',
-          downColor: '#EF4444',
-          borderVisible: false,
-          wickUpColor: '#22C55E',
-          wickDownColor: '#EF4444',
-        });
-      } else {
-        console.log('[Chart] Criando série de linha...');
-        this.lineSeries = this.chart.addLineSeries({
-          color: '#22C55E',
-          lineWidth: 2,
-        });
-      }
     },
     ensureChartVisible(canvas, container) {
       if (!canvas || !this.chart) {
@@ -1652,33 +1134,12 @@ export default {
       this.remainingTime = null;
     },
     handleMessage(msg) {
-      // Log para debug - verificar TODAS as mensagens recebidas
-      console.log('[OperationChart] 📨 Mensagem recebida da Deriv:', {
-        msg_type: msg.msg_type,
-        hasError: !!msg.error,
-        hasHistory: !!msg.history,
-        hasTick: !!msg.tick,
-        hasEchoReq: !!msg.echo_req,
-        echoReqType: msg.echo_req?.ticks_history ? 'ticks_history' : msg.echo_req?.contracts_for ? 'contracts_for' : 'other',
-        keys: Object.keys(msg)
-      });
-      
       // Log para debug - verificar se contracts_for está chegando
       if (msg.msg_type === 'contracts_for') {
         console.log('[OperationChart] 🔍 Mensagem contracts_for recebida:', {
           hasError: !!msg.error,
           hasContractsFor: !!msg.contracts_for,
           msgType: msg.msg_type
-        });
-      }
-      
-      // Log especial para mensagens de histórico
-      if (msg.msg_type === 'history' || msg.history || (msg.echo_req && msg.echo_req.ticks_history)) {
-        console.log('[OperationChart] 🎯 MENSAGEM DE HISTÓRICO DETECTADA!', {
-          msg_type: msg.msg_type,
-          hasHistory: !!msg.history,
-          hasPrices: !!(msg.history && msg.history.prices),
-          pricesCount: msg.history && Array.isArray(msg.history.prices) ? msg.history.prices.length : 0
         });
       }
       
@@ -1715,18 +1176,6 @@ export default {
           this.currentLoginid = loginid; // Armazenar loginid atual
           this.connectionError = ''; // Limpar erro ao conectar com sucesso
           this.retryCount = 0; // Resetar contador de tentativas
-          
-          // Buscar asset index após autorização
-          if (!this.assetIndexData) {
-            console.log('[OperationChart] Iniciando busca de asset index...');
-            this.fetchAssetIndex();
-          }
-          
-          // Inicializar tipos de dígitos
-          if (this.availableDigitTypes.length === 0) {
-            console.log('[OperationChart] Inicializando tipos de dígitos...');
-            this.initializeDigitTypes();
-          }
           
           // Se estava em reconexão e o gráfico existe, garantir que será atualizado
           if (wasReconnecting && this.chart && this.ticks.length > 0) {
@@ -1812,8 +1261,6 @@ export default {
           break;
         }
         case 'history':
-          console.log('[OperationChart] ========== MENSAGEM HISTORY RECEBIDA ==========');
-          console.log('[OperationChart] Mensagem completa:', JSON.stringify(msg, null, 2));
           this.processHistory(msg);
           break;
         case 'candles':
@@ -1844,19 +1291,6 @@ export default {
           this.processActiveSymbols(msg);
           break;
         default:
-          // Log para mensagens não tratadas - pode conter dados históricos
-          console.log('[OperationChart] ⚠️ Mensagem não tratada:', {
-            msg_type: msg.msg_type || 'undefined',
-            hasHistory: !!msg.history,
-            hasTick: !!msg.tick,
-            keys: Object.keys(msg)
-          });
-          
-          // Verificar se é uma mensagem de histórico que não foi detectada
-          if (msg.history || (msg.echo_req && msg.echo_req.ticks_history)) {
-            console.log('[OperationChart] 🎯 Histórico encontrado em mensagem não tratada, processando...');
-            this.processHistory(msg);
-          }
           break;
       }
     },
@@ -2563,104 +1997,31 @@ export default {
       console.log('[OperationChart] ✅ Active symbols:', Object.keys(this.activeSymbolsCache).length);
     },
     processHistory(msg) {
-      console.log('[OperationChart] ========== PROCESSANDO HISTÓRICO ==========');
-      console.log('[OperationChart] Mensagem recebida:', {
-        hasHistory: !!msg.history,
-        hasEchoReq: !!msg.echo_req,
-        msgType: msg.msg_type,
-        keys: Object.keys(msg)
-      });
-      
-      // A Deriv pode retornar o histórico em diferentes formatos
-      // Verificar se está em msg.history ou em outra estrutura
-      let history = msg.history;
-      
-      // Se não encontrou em msg.history, tentar em outros lugares
-      if (!history && msg.echo_req && msg.echo_req.subscribe === 1) {
-        // Pode estar na raiz da mensagem
-        history = msg;
-      }
-      
-      // Verificar estrutura de dados
-      if (!history) {
-        console.error('[OperationChart] ❌ Histórico não encontrado na mensagem:', msg);
-        return;
-      }
-      
-      console.log('[OperationChart] Estrutura do histórico encontrada:', {
-        hasPrices: !!history.prices,
-        hasTimes: !!history.times,
-        pricesType: Array.isArray(history.prices) ? 'array' : typeof history.prices,
-        pricesLength: Array.isArray(history.prices) ? history.prices.length : 'N/A',
-        timesLength: Array.isArray(history.times) ? history.times.length : 'N/A',
-      });
-      
-      // Verificar se tem prices (array de preços)
-      if (!history.prices || !Array.isArray(history.prices)) {
-        console.error('[OperationChart] ❌ Histórico sem array de preços:', history);
+      console.log('[OperationChart] processHistory - Processando histórico de ticks');
+      const history = msg.history;
+      if (!history || !history.prices) {
+        console.warn('[OperationChart] Histórico inválido ou sem preços:', msg);
         return;
       }
       
       const prices = history.prices.map(price => Number(price));
-      
-      // Tentar obter times de diferentes lugares
-      let times = [];
-      if (history.times && Array.isArray(history.times) && history.times.length > 0) {
-        times = history.times.map(time => Number(time));
-      } else if (msg.subscription?.id) {
-        // Se não tem times, gerar baseado no tempo atual
-        const now = Math.floor(Date.now() / 1000);
-        times = prices.map((_, index) => now - (prices.length - index - 1) * 2); // 2 segundos por tick
-      }
-      
-      console.log('[OperationChart] Dados extraídos:', {
-        pricesCount: prices.length,
-        timesCount: times.length,
-        firstPrice: prices[0],
-        lastPrice: prices[prices.length - 1],
-        firstTime: times[0] || 'N/A',
-        lastTime: times[times.length - 1] || 'N/A',
-        hasValidTimes: times.length === prices.length
-      });
-      
-      // Criar ticks com epoch válido
-      // A Deriv geralmente não retorna times explícitos em ticks_history
-      // Vamos gerar timestamps baseados no tempo atual, retrocedendo
-      const now = Math.floor(Date.now() / 1000);
-      const newTicks = prices.map((value, index) => {
-        // Se temos times válidos da API, usar eles
-        // Caso contrário, gerar timestamps retrocedendo do tempo atual
-        let epoch;
-        if (times[index] && times[index] > 1000000000) { // Validar que é um Unix timestamp válido (após 2001)
-          epoch = Math.floor(Number(times[index]));
-        } else {
-          // Gerar timestamp retrocedendo 2 segundos por tick do último ao primeiro
-          // O último tick é o mais recente (agora ou alguns segundos atrás)
-          epoch = now - (prices.length - index - 1) * 2;
-        }
-        return { value, epoch };
-      });
-      
-      console.log('[OperationChart] Ticks criados:', {
-        count: newTicks.length,
-        firstTick: newTicks[0],
-        lastTick: newTicks[newTicks.length - 1],
-        timeRange: newTicks.length > 1 ? newTicks[newTicks.length - 1].epoch - newTicks[0].epoch : 0,
-        firstTimeFormatted: new Date(newTicks[0].epoch * 1000).toLocaleString(),
-        lastTimeFormatted: new Date(newTicks[newTicks.length - 1].epoch * 1000).toLocaleString()
-      });
+      const times = history.times?.map(time => Number(time)) || [];
+      const newTicks = prices.map((value, index) => ({ value, epoch: times[index] || index }));
       
       // Se está em reconexão e já temos ticks, preservar os dados existentes
+      // Apenas substituir se for uma nova conexão ou se os dados são mais recentes
       if (this.isReconnecting && this.ticks.length > 0) {
         console.log('[OperationChart] Em reconexão, preservando dados existentes do gráfico');
+        // Não substituir os ticks durante reconexão - manter os dados visíveis
+        // Os novos ticks serão adicionados incrementalmente via processTick
         this.isLoadingSymbol = false;
-        return;
+        return; // Não atualizar o gráfico com dados antigos durante reconexão
       }
       
-      // Substituir ticks
+      // Substituir ticks apenas se não estiver em reconexão
       this.ticks = newTicks;
       
-      console.log('[OperationChart] ✅ Histórico processado:', {
+      console.log('[OperationChart] Histórico processado:', {
         ticksCount: this.ticks.length,
         firstTick: this.ticks[0],
         lastTick: this.ticks[this.ticks.length - 1]
@@ -2673,23 +2034,80 @@ export default {
       
       this.isLoadingSymbol = false;
       
-      // Atualizar o gráfico com os dados históricos
-      console.log('[Chart] Processando histórico:', this.ticks.length, 'ticks');
-      
-      // Garantir que o gráfico existe
-      const hasMainSeries = (this.chartType === 'line' && this.lineSeries) || (this.chartType === 'candle' && this.candleSeries);
-      if (!this.chart || !hasMainSeries) {
+      // Garantir que o gráfico existe antes de atualizar
+      if (!this.chart) {
+        console.log('[OperationChart] Gráfico não existe ainda, criando...');
         this.initChart();
+        // Aguardar um pouco para garantir que o gráfico foi criado
         setTimeout(() => {
-          const hasSeriesAfterInit = (this.chartType === 'line' && this.lineSeries) || (this.chartType === 'candle' && this.candleSeries);
-          if (this.chart && hasSeriesAfterInit) {
+          if (this.chart && this.lineSeries && this.ticks.length > 0) {
+            console.log('[OperationChart] Gráfico criado, atualizando com histórico...');
             this.updateChartFromTicks();
           } else {
-            setTimeout(() => this.updateChartFromTicks(), 500);
+            console.warn('[OperationChart] Gráfico não disponível após criação, tentando novamente...');
+            // Tentar novamente após mais um delay
+            setTimeout(() => {
+              if (this.ticks.length > 0) {
+                this.updateChartFromTicks();
+              }
+            }, 300);
           }
-        }, 300);
+        }, 250);
       } else {
-        setTimeout(() => this.updateChartFromTicks(), 100);
+        // Gráfico já existe, atualizar diretamente
+        // Forçar atualização mesmo durante reconexão
+        console.log('[OperationChart] Gráfico já existe, atualizando com histórico...');
+        // Forçar resize antes de atualizar
+        const container = this.$refs.chartContainer;
+        if (container) {
+          const rect = container.getBoundingClientRect();
+          console.log('[OperationChart] Dimensões do container ao atualizar:', {
+            width: rect.width,
+            height: rect.height,
+            clientWidth: container.clientWidth,
+            clientHeight: container.clientHeight
+          });
+          if (rect.width > 0 && rect.height > 0) {
+            this.chart.applyOptions({
+              width: rect.width,
+              height: rect.height
+            });
+          } else {
+            console.warn('[OperationChart] Container tem dimensões inválidas, aguardando...');
+            setTimeout(() => {
+              if (this.chart && this.lineSeries && this.ticks.length > 0) {
+                const newRect = container.getBoundingClientRect();
+                if (newRect.width > 0 && newRect.height > 0) {
+                  this.chart.applyOptions({
+                    width: newRect.width,
+                    height: newRect.height
+                  });
+                  this.updateChartFromTicks();
+                }
+              }
+            }, 200);
+            return;
+          }
+        }
+        this.$nextTick(() => {
+          if (this.chart && this.lineSeries && this.ticks.length > 0) {
+            // Aguardar um pouco mais para garantir que o gráfico está totalmente renderizado
+            setTimeout(() => {
+              // Forçar resize antes de atualizar
+              const container = this.$refs.chartContainer;
+              if (container && this.chart) {
+                const rect = container.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
+                  this.chart.applyOptions({
+                    width: rect.width,
+                    height: rect.height
+                  });
+                }
+              }
+              this.updateChartFromTicks();
+            }, 150);
+          }
+        });
       }
     },
     processCandles(msg) {
@@ -2775,251 +2193,294 @@ export default {
       }
     },
     updateChartFromTicks() {
-      console.log('[Chart] ========== ATUALIZANDO GRÁFICO ==========');
-      
+      // Não atualizar se o componente está sendo destruído
       if (this.isDestroying) {
-        console.log('[Chart] Componente está sendo destruído, cancelando atualização');
+        console.warn('[OperationChart] Componente está sendo destruído, ignorando atualização');
         return;
       }
+      
+      console.log('[OperationChart] updateChartFromTicks - Iniciando atualização do gráfico');
+      console.log('[OperationChart] Estado atual:', {
+        ticksCount: this.ticks.length,
+        hasChart: !!this.chart,
+        hasLineSeries: !!this.lineSeries,
+        hasChartContainer: !!this.$refs.chartContainer,
+        chartInitialized: this.chartInitialized,
+        isAuthorized: this.isAuthorized,
+        connectionError: this.connectionError,
+        isConnecting: this.isConnecting,
+        isDestroying: this.isDestroying
+      });
       
       if (!this.ticks.length) {
-        console.warn('[Chart] Nenhum tick disponível');
+        console.warn('[OperationChart] Nenhum tick disponível para plotar');
+        this.chartInitialized = false;
         return;
       }
       
-      // Garantir que o gráfico existe
+      // Garantir que o chartContainer está disponível
+      if (!this.$refs.chartContainer) {
+        console.warn('[OperationChart] chartContainer não está disponível no DOM');
+        // Tentar novamente no próximo tick
+        return;
+      }
+      
       if (!this.chart) {
-        console.log('[Chart] Gráfico não existe, inicializando...');
+        console.log('[OperationChart] Gráfico não existe, inicializando...');
+        // Se já está inicializando, aguardar
+        if (this.isInitializingChart) {
+          console.log('[OperationChart] Gráfico já está sendo inicializado, aguardando...');
+          setTimeout(() => {
+            if (this.chart && this.lineSeries) {
+              this.updateChartFromTicks();
+            }
+          }, 300);
+          return;
+        }
         this.initChart();
-        setTimeout(() => this.updateChartFromTicks(), 500);
+        // Aguardar um pouco mais para garantir que o gráfico foi totalmente criado e renderizado
+        setTimeout(() => {
+          if (!this.chart || !this.lineSeries) {
+            console.error('[OperationChart] ERRO: Gráfico ou lineSeries não está definido após initChart');
+            // Tentar novamente se ainda houver ticks
+            if (this.ticks.length > 0) {
+              console.log('[OperationChart] Tentando novamente após erro...');
+              setTimeout(() => this.updateChartFromTicks(), 200);
+            }
+            return;
+          }
+          // Continuar com a atualização após o gráfico ser criado
+          console.log('[OperationChart] Gráfico criado, atualizando com dados...');
+          this.updateChartFromTicks();
+        }, 250);
         return;
       }
       
-      // VERIFICAÇÃO CRÍTICA: Se o container foi limpo, precisamos recriar o gráfico
-      const container = this.$refs.chartContainer;
-      if (container && container.childNodes.length === 0) {
-        console.error('[Chart] ❌ CONTAINER FOI LIMPO! Elemento DOM foi recriado pelo Vue');
-        console.log('[Chart] Recriando gráfico...');
-        this.chart = null;
-        this.lineSeries = null;
-        this.candleSeries = null;
-        this.chartInitialized = false;
-        this.initChart();
-        setTimeout(() => this.updateChartFromTicks(), 500);
+      if (!this.lineSeries) {
+        console.error('[OperationChart] ERRO: lineSeries não está definido após initChart');
         return;
       }
+
+      // Lightweight Charts espera time como Unix timestamp (segundos desde 1970)
+      // A Deriv retorna epoch em segundos, então podemos usar diretamente
+      // Mas precisamos garantir que seja um número inteiro (não float)
+      const data = this.ticks.map(tick => {
+        // Garantir que epoch seja um número válido
+        const epoch = Math.floor(Number(tick.epoch));
+        const value = Number(tick.value);
+        
+        if (isNaN(epoch) || isNaN(value) || epoch <= 0) {
+          console.warn('[OperationChart] Tick inválido ignorado:', tick);
+          return null;
+        }
+        
+        return { time: epoch, value: value };
+      }).filter(item => item !== null);
       
-      // Verificar se o elemento do gráfico ainda está no DOM
-      const chartElement = container?.querySelector('.tv-lightweight-charts');
-      if (!chartElement) {
-        console.error('[Chart] ❌ Elemento do gráfico não encontrado no container!');
-        console.log('[Chart] Container HTML:', container?.innerHTML.substring(0, 100));
-        console.log('[Chart] Recriando gráfico completamente...');
-        this.chart = null;
-        this.lineSeries = null;
-        this.candleSeries = null;
-        this.chartInitialized = false;
-        this.initChart();
-        setTimeout(() => this.updateChartFromTicks(), 500);
-        return;
-      }
+      // Ordenar por tempo para garantir ordem correta
+      data.sort((a, b) => a.time - b.time);
       
-      // Verificar se a série existe, senão criar
-      const hasLineSeries = this.chartType === 'line' && this.lineSeries;
-      const hasCandleSeries = this.chartType === 'candle' && this.candleSeries;
+      console.log('[OperationChart] Atualizando gráfico com', data.length, 'pontos de dados');
+      console.log('[OperationChart] Primeiros 3 pontos (detalhado):', JSON.stringify(data.slice(0, 3), null, 2));
+      console.log('[OperationChart] Últimos 3 pontos (detalhado):', JSON.stringify(data.slice(-3), null, 2));
       
-      if (!hasLineSeries && !hasCandleSeries) {
-        console.log('[Chart] Série não existe, criando...');
-        this.createSeries();
-        // Aguardar um pouco para a série ser criada
-        setTimeout(() => this.updateChartFromTicks(), 200);
+      if (data.length === 0) {
+        console.warn('[OperationChart] Nenhum dado válido para plotar');
         return;
       }
       
       try {
-        // Converter ticks para formato do gráfico
-        const validTicks = this.ticks
-          .map(tick => {
-            const time = Math.floor(Number(tick.epoch));
-            const value = Number(tick.value);
-            if (!isNaN(time) && !isNaN(value) && time > 0 && value > 0) {
-              return { time, value };
-            }
-            return null;
-          })
-          .filter(Boolean)
-          .sort((a, b) => a.time - b.time);
-        
-        if (!validTicks.length) {
-          console.warn('[Chart] Nenhum tick válido após filtro');
+        // Validar dados antes de atualizar
+        const validData = data.filter(point => {
+          return point && 
+                 point.time != null && 
+                 point.value != null && 
+                 !isNaN(point.value) &&
+                 isFinite(point.value);
+        });
+
+        if (validData.length === 0) {
+          console.warn('[OperationChart] Nenhum dado válido após filtragem');
           return;
         }
-        
-        console.log('[Chart] Processando', validTicks.length, 'ticks válidos');
-        
-        // Plotar dados baseado no tipo
-        if (this.chartType === 'candle' && this.candleSeries) {
-          // Para velas, precisamos agrupar ticks em períodos
-          // Por enquanto, vamos criar velas baseadas nos ticks (1 minuto)
-          const candles = this.createCandlesFromTicks(validTicks);
-          console.log('[Chart] Criadas', candles.length, 'velas');
-          console.log('[Chart] Exemplo de vela:', candles[0]);
-          this.candleSeries.setData(candles);
-          console.log('[Chart] ✓ Velas plotadas com sucesso');
-        } else if (this.lineSeries) {
-          // Para linha, usar diretamente os ticks
-          console.log('[Chart] Plotando linha com', validTicks.length, 'pontos');
-          console.log('[Chart] Primeiros 3 pontos:', validTicks.slice(0, 3));
-          console.log('[Chart] Últimos 3 pontos:', validTicks.slice(-3));
-          console.log('[Chart] lineSeries existe?', !!this.lineSeries);
-          console.log('[Chart] chart existe?', !!this.chart);
-          console.log('[Chart] Referências antes de setData:', {
-            chartExists: !!this.chart,
-            lineSeriesExists: !!this.lineSeries,
-            containerExists: !!this.$refs.chartContainer,
-            containerChildNodes: this.$refs.chartContainer?.childNodes.length,
-            chartContainerRef: this.$refs.chartContainer?.id || 'no-id',
-            originalContainerExists: !!this._chartContainerElement,
-            originalContainerChildNodes: this._chartContainerElement?.childNodes.length,
-            samteRef: this.$refs.chartContainer === this._chartContainerElement
-          });
-          
-          this.lineSeries.setData(validTicks);
-          
-          console.log('[Chart] ✓ Linha plotada com sucesso');
-          console.log('[Chart] Container após plotar:', {
-            childNodes: this.$refs.chartContainer?.childNodes.length,
-            firstChild: this.$refs.chartContainer?.firstChild,
-            chartStillExists: !!this.chart,
-            lineSeriesStillExists: !!this.lineSeries
-          });
-          
-          // Verificar se o canvas está em algum lugar do DOM
-          const allCanvases = document.querySelectorAll('canvas');
-          console.log('[Chart] Todos os canvas na página:', allCanvases.length);
-          allCanvases.forEach((canvas, index) => {
-            console.log(`[Chart] Canvas ${index}:`, {
-              width: canvas.width,
-              height: canvas.height,
-              parent: canvas.parentElement?.className,
-              grandparent: canvas.parentElement?.parentElement?.className,
-              id: canvas.parentElement?.parentElement?.id
-            });
+
+        if (validData.length !== data.length) {
+          console.warn('[OperationChart] Alguns pontos inválidos foram filtrados:', {
+            original: data.length,
+            valid: validData.length,
+            removed: data.length - validData.length
           });
         }
         
-        // Redimensionar gráfico
-        const container = this.$refs.chartContainer;
-        if (container) {
-          const rect = container.getBoundingClientRect();
-          if (rect.width > 0 && rect.height > 0) {
-            this.chart.applyOptions({
+        // Verificar se é um novo tick incremental (apenas 1 ponto a mais que o anterior)
+        const previousDataCount = this.previousDataCount || 0;
+        const isIncrementalUpdate = validData.length === previousDataCount + 1 && previousDataCount > 0;
+        
+        if (isIncrementalUpdate) {
+          // Apenas adicionar o novo ponto usando update
+          const lastPoint = validData[validData.length - 1];
+          console.log('[OperationChart] Atualizando gráfico com novo ponto incremental:', lastPoint);
+          this.lineSeries.update(lastPoint);
+          // Não fazer scroll automático - deixar o usuário controlar o zoom
+        } else {
+          // Primeira vez ou muitos dados novos, usar setData completo
+          console.log('[OperationChart] Chamando lineSeries.setData com', validData.length, 'pontos...');
+          
+          // Forçar resize ANTES de setData para garantir que o canvas tenha dimensões corretas
+          const container = this.$refs.chartContainer;
+          if (container && this.chart) {
+            const rect = container.getBoundingClientRect();
+            console.log('[OperationChart] Dimensões do container antes de setData:', {
               width: rect.width,
-              height: rect.height
+              height: rect.height,
+              clientWidth: container.clientWidth,
+              clientHeight: container.clientHeight
             });
+            
+            if (rect.width > 0 && rect.height > 0) {
+              // Forçar resize do gráfico
+              this.chart.applyOptions({
+                width: rect.width,
+                height: rect.height
+              });
+              console.log('[OperationChart] Gráfico redimensionado para:', { width: rect.width, height: rect.height });
+            }
+
           }
-        }
-        
-        // Ajustar escala para mostrar todos os dados
-        this.$nextTick(() => {
+          
+          // Chamar setData
+          try {
+            this.lineSeries.setData(validData);
+            console.log('[OperationChart] setData chamado com sucesso');
+          } catch (error) {
+            console.error('[OperationChart] ERRO ao chamar setData:', error);
+            return;
+          }
+          
+          // Forçar atualização visual do gráfico imediatamente após setData
           if (this.chart) {
             try {
+              // Ajustar escala de tempo
               this.chart.timeScale().fitContent();
-              console.log('[Chart] ✓ Escala ajustada');
+              console.log('[OperationChart] fitContent chamado imediatamente após setData');
               
-              // Verificar visibilidade do canvas
-              const container = this.$refs.chartContainer;
-              if (container) {
-                // Procurar por TODOS os canvas na página
-                const allCanvases = document.querySelectorAll('canvas');
-                console.log('[Chart] Total de canvas na página:', allCanvases.length);
-                
-                // Procurar especificamente pelo canvas do Lightweight Charts
-                const chartWrapper = container.querySelector('.tv-lightweight-charts');
-                console.log('[Chart] Wrapper do Lightweight Charts encontrado?', !!chartWrapper);
-                
-                if (chartWrapper) {
-                  console.log('[Chart] Children do wrapper:', chartWrapper.children.length);
-                  const canvas = chartWrapper.querySelector('canvas');
-                  
-                  if (canvas) {
-                    const canvasStyle = window.getComputedStyle(canvas);
-                    console.log('[Chart] ✅ Canvas encontrado! Info:', {
-                      exists: true,
-                      width: canvas.width,
-                      height: canvas.height,
-                      display: canvasStyle.display,
-                      visibility: canvasStyle.visibility,
-                      opacity: canvasStyle.opacity,
-                      position: canvasStyle.position,
-                      wrapperClass: chartWrapper.className
+              // Forçar resize para garantir renderização
+              const currentRect = container.getBoundingClientRect();
+              if (currentRect.width > 0 && currentRect.height > 0) {
+                this.chart.applyOptions({
+                  width: currentRect.width,
+                  height: currentRect.height
+                });
+              }
+            } catch (error) {
+              console.error('[OperationChart] ERRO ao chamar fitContent:', error);
+            }
+            
+            // Forçar resize novamente após setData para garantir renderização
+            if (container) {
+              const rect = container.getBoundingClientRect();
+              if (rect.width > 0 && rect.height > 0) {
+                // Usar requestAnimationFrame para garantir que o resize aconteça após o setData
+                requestAnimationFrame(() => {
+                  if (this.chart) {
+                    this.chart.applyOptions({
+                      width: rect.width,
+                      height: rect.height
                     });
-                    
-                    // Forçar visibilidade se necessário
-                    if (canvasStyle.display === 'none' || canvasStyle.visibility === 'hidden' || canvasStyle.opacity === '0') {
-                      console.warn('[Chart] ⚠️ Canvas está oculto! Forçando visibilidade...');
-                      canvas.style.display = 'block !important';
-                      canvas.style.visibility = 'visible !important';
-                      canvas.style.opacity = '1 !important';
-                    }
-                  } else {
-                    console.error('[Chart] ❌ Canvas não encontrado dentro do wrapper!');
+                    this.chart.timeScale().fitContent();
+                    console.log('[OperationChart] Gráfico redimensionado e fitContent chamado via requestAnimationFrame');
                   }
-                } else {
-                  console.error('[Chart] ❌ Wrapper .tv-lightweight-charts não encontrado!');
-                  console.log('[Chart] Container HTML:', container.innerHTML.substring(0, 200));
+                });
+              }
+            }
+            
+            // Verificar se o canvas existe e está visível - usar múltiplas tentativas
+            const checkCanvas = (attempt = 0) => {
+              if (!this.chart || !container) return;
+              
+              const canvas = container.querySelector('canvas');
+              if (canvas) {
+                this.ensureChartVisible(canvas, container);
+              } else if (attempt < 5) {
+                // Tentar novamente após um pequeno delay
+                setTimeout(() => {
+                  checkCanvas(attempt + 1);
+                }, 100 * (attempt + 1));
+              } else {
+                console.warn('[OperationChart] ⚠ Canvas não encontrado após múltiplas tentativas - forçando renderização...');
+                // Forçar resize do gráfico para garantir que o canvas seja criado
+                const rect = container.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0 && this.chart) {
+                  this.chart.applyOptions({
+                    width: rect.width,
+                    height: rect.height
+                  });
+                  this.chart.timeScale().fitContent();
+                  
+                  // Tentar encontrar canvas novamente após resize
+                  setTimeout(() => {
+                    const canvasAfterResize = container.querySelector('canvas');
+                    if (canvasAfterResize) {
+                      this.ensureChartVisible(canvasAfterResize, container);
+                    }
+                  }, 200);
                 }
               }
-            } catch (e) {
-              console.warn('[Chart] Erro ao ajustar escala:', e);
-            }
-          }
-        });
-        
-        // Atualizar linha de entrada se existir
-        if (this.updateEntrySpotLine) {
-          try {
-            this.updateEntrySpotLine();
-          } catch (lineError) {
-            console.warn('[Chart] Erro ao atualizar linha de entrada:', lineError);
+            };
+            
+            // Iniciar verificação após um pequeno delay para dar tempo ao gráfico renderizar
+            requestAnimationFrame(() => {
+              checkCanvas(0);
+            });
           }
         }
+        
+        // Armazenar contagem de dados para próxima verificação
+        this.previousDataCount = validData.length;
         
         this.chartInitialized = true;
-        console.log('[Chart] ========== ATUALIZAÇÃO COMPLETA ==========');
-        
+        console.log('[OperationChart] ✓ Gráfico atualizado com sucesso');
       } catch (error) {
-        console.error('[Chart] ❌ Erro ao atualizar gráfico:', error);
-        console.error('[Chart] Stack:', error.stack);
-      }
-    },
-    createCandlesFromTicks(ticks) {
-      // Agrupar ticks em velas de 1 minuto
-      const candleMap = new Map();
-      
-      ticks.forEach(tick => {
-        // Arredondar para o minuto
-        const candleTime = Math.floor(tick.time / 60) * 60;
+        console.error('[OperationChart] ERRO ao atualizar gráfico:', error);
+        console.error('[OperationChart] Stack trace:', error.stack);
+        console.error('[OperationChart] Dados que causaram o erro:', {
+          dataLength: data.length,
+          firstItem: data[0],
+          lastItem: data[data.length - 1],
+          chartInitialized: this.chartInitialized,
+          ticksLength: this.ticks.length
+        });
         
-        if (!candleMap.has(candleTime)) {
-          candleMap.set(candleTime, {
-            time: candleTime,
-            open: tick.value,
-            high: tick.value,
-            low: tick.value,
-            close: tick.value
-          });
-        } else {
-          const candle = candleMap.get(candleTime);
-          candle.high = Math.max(candle.high, tick.value);
-          candle.low = Math.min(candle.low, tick.value);
-          candle.close = tick.value;
-        }
-      });
-      
-      // Converter map para array e ordenar
-      return Array.from(candleMap.values())
-        .sort((a, b) => a.time - b.time);
+        // Tentar recuperar o gráfico reinicializando
+        console.warn('[OperationChart] Tentando recuperar gráfico após erro...');
+        this.chartInitialized = false;
+        this.previousDataCount = 0;
+        
+        // Aguardar um pouco e tentar reinicializar
+        setTimeout(() => {
+          if (this.chart && this.lineSeries) {
+            console.log('[OperationChart] Tentando atualizar gráfico novamente após erro...');
+            try {
+              // Tentar com setData completo para forçar reinicialização
+              const validData = data.filter(point => {
+                return point && point.time != null && point.value != null && 
+                       !isNaN(point.value) && isFinite(point.value);
+              });
+              if (validData.length > 0) {
+                this.lineSeries.setData(validData);
+                this.previousDataCount = validData.length;
+                this.chartInitialized = true;
+                console.log('[OperationChart] ✓ Gráfico recuperado com sucesso!');
+              }
+            } catch (retryError) {
+              console.error('[OperationChart] Falha na recuperação automática:', retryError);
+              // Se falhar novamente, reinicializar completamente o gráfico
+              console.warn('[OperationChart] Reinicializando gráfico completamente...');
+              this.initChart();
+            }
+          }
+        }, 100);
+      }
     },
     supportsCallPut(symbol) {
       // Verifica se o símbolo suporta contratos CALL/PUT (Rise/Fall)
@@ -4129,10 +3590,6 @@ export default {
         const entryColor = '#94a3b8'; // Cinza para linha de referência
         const entryTimeUnix = Math.floor(Number(entryTime));
         
-        // Armazenar valores para preservar ao mudar tipo de gráfico
-        this.entrySpot = entrySpot;
-        this.entryTime = entryTimeUnix;
-        
         console.log('[OperationChart] Adicionando linha de entrada:', {
           entrySpot,
           entryTime: entryTimeUnix,
@@ -4214,44 +3671,41 @@ export default {
           const markerTimeForSeries = closestTickTime || (this.ticks.length > 0 ? Math.floor(Number(this.ticks[this.ticks.length - 1].epoch)) : markerTime);
           const markerValueForSeries = closestTick?.value || (this.ticks.length > 0 ? this.ticks[this.ticks.length - 1].value : markerValue);
           
-          // Adicionar marcador na série principal (linha ou vela)
-          const mainSeries = this.lineSeries || this.candleSeries;
-          if (mainSeries) {
+          if (this.lineSeries) {
             const markerColor = this.localOrderConfig.type === 'CALL' ? '#3b82f6' : '#ef4444';
             
-            // Para linha, adicionar um ponto temporário acima da linha
-            if (this.lineSeries) {
-              const offsetPercent = 0.005; // 0.5%
-              const markerValueAboveLine = entrySpot * (1 + offsetPercent);
-              
-              this.lineSeries.update({
-                time: markerTimeForSeries,
-                value: markerValueAboveLine
-              });
-              
-              this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueAboveLine, originalTime: markerTime };
-            } else {
-              this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueForSeries, originalTime: markerTime };
-            }
+            // Calcular um valor para o marcador que fique acima da linha de entrada
+            // Adicionar um offset de 0.5% do valor de entrada para garantir que o marcador apareça acima
+            const offsetPercent = 0.005; // 0.5%
+            const markerValueAboveLine = entrySpot * (1 + offsetPercent);
+            
+            // Adicionar um ponto temporário na série principal no momento da entrada
+            // com um valor ligeiramente maior que entrySpot para que o marcador apareça acima da linha
+            this.lineSeries.update({
+              time: markerTimeForSeries,
+              value: markerValueAboveLine
+            });
             
             // Adicionar marcador no momento exato da compra
+            // Usar 'aboveBar' para posicionar acima do ponto
             const entryMarker = {
               time: markerTimeForSeries,
               position: 'aboveBar',
               color: markerColor,
               shape: 'circle',
-              size: 4,
+              size: 4, // Tamanho maior para melhor visibilidade
               text: `ENTRADA ${this.localOrderConfig.type}`,
             };
             
-            mainSeries.setMarkers([entryMarker]);
+            // Adicionar o marcador (setMarkers substitui todos os marcadores existentes)
+            this.lineSeries.setMarkers([entryMarker]);
             
             // Forçar atualização imediata
             this.$nextTick(() => {
-              if (mainSeries) {
-                mainSeries.setMarkers([entryMarker]);
-              }
+              // Re-adicionar o marcador para garantir que seja exibido
+              this.lineSeries.setMarkers([entryMarker]);
             });
+            this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueAboveLine, originalTime: markerTime };
             
             console.log('[OperationChart] Marcador adicionado na série principal:', {
               markerTime: markerTimeForSeries,
@@ -4259,26 +3713,27 @@ export default {
               value: markerValueForSeries,
               spot: entrySpot,
               color: markerColor,
-              seriesType: this.lineSeries ? 'line' : 'candle'
+              usingClosestTick: !!closestTickTime
             });
+            
+            // Não ajustar zoom automaticamente - deixar o usuário controlar
           } else {
-            console.warn('[OperationChart] Série principal não está disponível para adicionar marcador');
+            console.warn('[OperationChart] lineSeries não está disponível para adicionar marcador');
             // Armazenar informações do marcador para adicionar depois
             this.entryMarker = { time: markerTimeForSeries, spot: entrySpot, value: markerValueForSeries, originalTime: markerTime };
             
             // Tentar novamente após um delay
             setTimeout(() => {
-              const mainSeriesRetry = this.lineSeries || this.candleSeries;
-              if (mainSeriesRetry && this.entryMarker) {
+              if (this.lineSeries && this.entryMarker) {
                 const markerColor = this.localOrderConfig.type === 'CALL' ? '#3b82f6' : '#ef4444';
-                mainSeriesRetry.setMarkers([
+                this.lineSeries.setMarkers([
                   {
                     time: this.entryMarker.time,
-                    position: 'aboveBar',
+                    position: 'inBar',
                     color: markerColor,
                     shape: 'circle',
-                    size: 4,
-                    text: `ENTRADA ${this.localOrderConfig.type}`,
+                    size: 3,
+                    text: `Entrada ${this.localOrderConfig.type}`,
                   }
                 ]);
                 console.log('[OperationChart] Marcador adicionado após retry');
@@ -4313,8 +3768,7 @@ export default {
               ]);
               
               // Atualizar marcador com P&L se disponível
-              const mainSeries = this.lineSeries || this.candleSeries;
-              if (mainSeries && this.entryMarker) {
+              if (this.lineSeries && this.entryMarker) {
                 const profitText = this.realTimeProfit !== null
                   ? (this.realTimeProfit >= 0 
                       ? `+${this.displayCurrency} ${this.realTimeProfit.toFixed(2)}`
@@ -4328,34 +3782,36 @@ export default {
                 // Usar o tempo original do marcador (não o tempo do tick mais próximo)
                 const markerTimeToUse = this.entryMarker.originalTime || this.entryMarker.time;
                 
-                // Para linha, tentar atualizar o ponto
-                if (this.lineSeries) {
-                  const lastTickTime = this.ticks.length > 0 ? Math.floor(Number(this.ticks[this.ticks.length - 1].epoch)) : null;
-                  const canUpdatePoint = lastTickTime && markerTimeToUse >= lastTickTime;
+                // Verificar se o tempo do marcador é válido (não mais antigo que o último tick)
+                // Se for muito antigo, não tentar atualizar o ponto na série principal
+                const lastTickTime = this.ticks.length > 0 ? Math.floor(Number(this.ticks[this.ticks.length - 1].epoch)) : null;
+                const canUpdatePoint = lastTickTime && markerTimeToUse >= lastTickTime;
+                
+                if (canUpdatePoint) {
+                  // Garantir que o ponto na série principal esteja acima da linha de entrada
+                  // Calcular um valor que fique acima da linha de entrada (0.5% acima)
+                  const offsetPercent = 0.005; // 0.5%
+                  const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
                   
-                  if (canUpdatePoint) {
-                    const offsetPercent = 0.005; // 0.5%
-                    const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
-                    
-                    try {
-                      this.lineSeries.update({
-                        time: markerTimeToUse,
-                        value: markerValueAboveLine
-                      });
-                    } catch (error) {
-                      console.warn('[OperationChart] Não foi possível atualizar ponto na série:', error);
-                    }
+                  // Atualizar o ponto na série principal para manter o marcador acima da linha
+                  try {
+                    this.lineSeries.update({
+                      time: markerTimeToUse,
+                      value: markerValueAboveLine
+                    });
+                  } catch (error) {
+                    // Se falhar ao atualizar, apenas atualizar o marcador
+                    console.warn('[OperationChart] Não foi possível atualizar ponto na série:', error);
                   }
                 }
                 
-                // Atualizar marcador na série principal
-                mainSeries.setMarkers([
+                this.lineSeries.setMarkers([
                   {
                     time: markerTimeToUse,
                     position: 'aboveBar',
                     color: markerColor,
                     shape: 'circle',
-                    size: 4,
+                    size: 4, // Tamanho maior
                     text: profitText,
                   }
                 ]);
@@ -4414,12 +3870,10 @@ export default {
           this.updateEntrySpotLine = null;
           this.entryMarker = null;
           this.entryTime = null;
-          this.entrySpot = null;
           
-          // Remover marcadores da série principal (linha ou vela)
-          const mainSeries = this.lineSeries || this.candleSeries;
-          if (mainSeries) {
-            mainSeries.setMarkers([]);
+          // Remover marcadores da série principal
+          if (this.lineSeries) {
+            this.lineSeries.setMarkers([]);
           }
           
           console.log('[OperationChart] Linha de entrada e marcador removidos');
@@ -4851,52 +4305,6 @@ export default {
     },
   },
   watch: {
-    chartType(newType, oldType) {
-      if (newType !== oldType && this.chart) {
-        console.log('[Chart] Tipo de gráfico mudou de', oldType, 'para', newType);
-        // Recriar séries
-        this.createSeries();
-        // Replotar dados
-        if (this.ticks.length > 0) {
-          setTimeout(() => this.updateChartFromTicks(), 300);
-        }
-        // Re-adicionar linha de entrada se existir
-        if (this.entrySpot && this.entryTime) {
-          setTimeout(() => {
-            this.addEntrySpotLine(this.entrySpot, this.entryTime);
-          }, 500);
-        }
-      }
-    },
-    symbol(newSymbol, oldSymbol) {
-      if (newSymbol !== oldSymbol) {
-        console.log('[Watch] Símbolo mudou para:', newSymbol);
-        if (this.assetIndexData) {
-          this.updateAvailableTradeTypes(newSymbol);
-        }
-        // Reset trade type selection
-        this.localOrderConfig.type = '';
-        this.unifiedOrderConfig.type = '';
-        this.selectedTradeType = null;
-        this.selectedDigit = null;
-      }
-    },
-    'unifiedOrderConfig.value'() {
-      if (this.unifiedOrderConfig.type) {
-        clearTimeout(this._unifiedProposalTimeout);
-        this._unifiedProposalTimeout = setTimeout(() => {
-          this.subscribeToUnifiedProposal();
-        }, 500);
-      }
-    },
-    'unifiedOrderConfig.duration'() {
-      if (this.unifiedOrderConfig.type) {
-        clearTimeout(this._unifiedProposalTimeout);
-        this._unifiedProposalTimeout = setTimeout(() => {
-          this.subscribeToUnifiedProposal();
-        }, 500);
-      }
-    },
     showAiCard(newVal) {
       if (newVal) {
         // Quando o card aparece, toca o som
@@ -5127,11 +4535,8 @@ export default {
     this.removeEntrySpotLine();
     
     this.teardownConnection();
-    if (this._resizeHandler) {
-      window.removeEventListener('resize', this._resizeHandler);
-      this._resizeHandler = null;
-    }
     if (this.chart) {
+      window.removeEventListener('resize', this.handleResize);
       try {
         this.chart.remove();
         console.log('[OperationChart] Gráfico removido com sucesso');
@@ -5155,7 +4560,7 @@ export default {
 <style scoped>
 .operation-layout {
   display: flex;
-  gap: 12px;
+  gap: 24px;
   width: 100%;
 }
 
@@ -5731,15 +5136,10 @@ export default {
 }
 
 /* Layout atualizado */
-.operation-chart-wrapper {
-  position: relative;
-  width: 100%;
-  min-height: 100vh;
-}
-
 .operation-layout {
   display: flex;
-  gap: 0.75rem;
+  gap: 1.5rem;
+  height: 100%;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -5810,4 +5210,4 @@ export default {
   min-height: 0;
 }
 
-</style>
+</style></style>

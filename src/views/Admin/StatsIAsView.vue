@@ -1106,14 +1106,15 @@ export default {
 					});
 					const result = await response.json();
 					
-					if (result.success && result.data) {
-						this.todayTrades = result.data.totalTrades || 0;
-						this.todayResult = result.data.profitLoss || 0;
-						
-						// Calcular percentual (assumindo saldo inicial de 10000)
-						const initialBalance = 10000;
-						this.todayResultPercent = (this.todayResult / initialBalance) * 100;
-					}
+				if (result.success && result.data) {
+					this.todayTrades = result.data.totalTrades || 0;
+					// ✅ ZENIX v2.0: Usar session_balance do banco (não profitLoss somado)
+					this.todayResult = result.data.sessionBalance || 0;
+					
+					// Calcular percentual baseado no capital inicial da sessão
+					const initialBalance = result.data.stakeAmount || 10000;
+					this.todayResultPercent = (this.todayResult / initialBalance) * 100;
+				}
 				}
 				
 				// Carregar estatísticas agregadas do StatsIAs

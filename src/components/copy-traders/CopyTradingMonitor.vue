@@ -523,7 +523,7 @@ export default {
             this.resumo.losses = this.session.totalLosses || 0;
         },
         async pauseCopy() {
-            this.$emit('pause-copy');
+                this.$emit('pause-copy');
         },
     },
     watch: {
