@@ -271,7 +271,6 @@
                             
                             <div 
                                 ref="logsContainer" 
-                                @scroll="onLogsScroll"
                                 class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar relative" 
                                 style="scroll-behavior: smooth; max-height: 500px;"
                             >
@@ -289,16 +288,6 @@
                                     </div>
                                 </div>
                                 
-                                <!-- Botão "Ir para o final" - aparece quando não está no final -->
-                                <button
-                                    v-if="showScrollToBottom && realtimeLogs.length > 0"
-                                    @click="scrollToBottom"
-                                    class="absolute bottom-4 right-4 bg-zenix-green/90 hover:bg-zenix-green text-black px-3 py-2 rounded-lg shadow-lg transition-all duration-200 flex items-center gap-2 text-xs font-semibold z-10"
-                                    title="Ir para os logs mais recentes"
-                                >
-                                    <i class="fas fa-arrow-down"></i>
-                                    <span>Novos logs</span>
-                                </button>
                             </div>
                         </div>
                 </div>
@@ -528,7 +517,7 @@ export default {
             // Logs em tempo real (ZENIX v2.0)
             realtimeLogs: [],
             logPollingInterval: null,
-            showScrollToBottom: false, // Controla visibilidade do botão "ir para o final"
+            lastLogTimestamp: null, // Timestamp do último log recebido (para detectar novos)
             
             // Estado de desativação
             isDeactivating: false,
@@ -890,54 +879,19 @@ export default {
                 message
             };
             
-            this.realtimeLogs.push(newLog);
+            // ✅ Adicionar no INÍCIO do array (topo) - logs mais novos no topo
+            this.realtimeLogs.unshift(newLog);
             
-            // ✅ Auto-scroll apenas se o usuário já estiver no final
+            // ✅ Auto-scroll para o topo apenas se o usuário já estiver no topo
             this.$nextTick(() => {
-                this.scrollToBottomIfNeeded();
+                const container = this.$refs.logsContainer;
+                if (container) {
+                    // Se está no topo (ou próximo - margem de 50px), manter no topo
+                    if (container.scrollTop <= 50) {
+                        container.scrollTop = 0;
+                    }
+                }
             });
-        },
-        
-        /**
-         * Verifica se deve fazer auto-scroll e faz apenas se o usuário estiver no final
-         */
-        scrollToBottomIfNeeded() {
-            const container = this.$refs.logsContainer;
-            if (!container) return;
-            
-            // Verificar se o usuário está no final (ou próximo do final - margem de 50px)
-            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight <= 50;
-            
-            // Só fazer scroll se estiver no final
-            if (isAtBottom) {
-                container.scrollTop = container.scrollHeight;
-                this.showScrollToBottom = false; // Ocultar botão quando estiver no final
-            } else {
-                this.showScrollToBottom = true; // Mostrar botão quando não estiver no final
-            }
-        },
-        
-        /**
-         * Handler do evento scroll - atualiza visibilidade do botão
-         */
-        onLogsScroll() {
-            const container = this.$refs.logsContainer;
-            if (!container) return;
-            
-            // Verificar se está no final (margem de 50px)
-            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight <= 50;
-            this.showScrollToBottom = !isAtBottom;
-        },
-        
-        /**
-         * Scroll manual para o final dos logs
-         */
-        scrollToBottom() {
-            const container = this.$refs.logsContainer;
-            if (!container) return;
-            
-            container.scrollTop = container.scrollHeight;
-            this.showScrollToBottom = false;
         },
         
         /**
@@ -986,6 +940,7 @@ export default {
          */
         clearLogs() {
             this.realtimeLogs = [];
+            this.lastLogTimestamp = null;
         },
         
         /**
@@ -993,6 +948,7 @@ export default {
          */
         logSystemInit() {
             this.realtimeLogs = []; // Limpar sem chamar clearLogs() para evitar loop
+            this.lastLogTimestamp = null; // Resetar timestamp
             this.addLog('info', '✨ SISTEMA ZENIX v2.0 INICIADO');
             this.addLog('info', '📋 CONFIGURAÇÃO ATIVA:');
             this.addLog('info', `Modo: ${this.sessionConfig.mode ? this.sessionConfig.mode.toUpperCase() : 'VELOZ'}`);
@@ -1030,35 +986,58 @@ export default {
                 
                 const result = await response.json();
                 if (result.success && result.data && Array.isArray(result.data)) {
-                    console.log('[InvestmentActive] ✅ Logs recebidos:', result.data.length);
-                    
-                    // 🔄 SUBSTITUIR array inteiro para forçar reatividade do Vue
-                    // Backend já retorna em ordem DESC (mais recentes primeiro), então mantemos a ordem
-                    this.realtimeLogs = result.data.map(log => ({
+                    // Converter logs recebidos
+                    const newLogs = result.data.map(log => ({
                         timestamp: log.timestamp,
                         type: log.type,
                         icon: log.icon,
                         message: log.message
                     }));
                     
-                    console.log('[InvestmentActive] 📊 Array atualizado:', this.realtimeLogs.length);
-                    
-                    // ✅ Auto-scroll apenas se o usuário já estiver no final
-                    // Na primeira carga, sempre fazer scroll para o final
-                    this.$nextTick(() => {
-                        const container = this.$refs.logsContainer;
-                        if (container) {
-                            // Se é a primeira vez ou já está no final, fazer scroll
-                            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight <= 50;
-                            if (isAtBottom || !this.showScrollToBottom) {
-                                container.scrollTop = container.scrollHeight;
-                                this.showScrollToBottom = false;
-                            } else {
-                                // Se não está no final, mostrar botão
-                                this.showScrollToBottom = true;
-                            }
+                    // ✅ Se é a primeira carga, substituir tudo
+                    // Backend retorna em ordem DESC (mais novos primeiro), então não precisa inverter
+                    if (this.realtimeLogs.length === 0 || !this.lastLogTimestamp) {
+                        // Backend já retorna mais novos primeiro, então usar direto
+                        this.realtimeLogs = newLogs;
+                        if (this.realtimeLogs.length > 0) {
+                            this.lastLogTimestamp = this.realtimeLogs[0].timestamp;
                         }
-                    });
+                        console.log('[InvestmentActive] 📊 Primeira carga:', this.realtimeLogs.length, 'logs');
+                        
+                        // Scroll para o topo (onde estão os logs mais novos)
+                        this.$nextTick(() => {
+                            const container = this.$refs.logsContainer;
+                            if (container) {
+                                container.scrollTop = 0;
+                            }
+                        });
+                    } else {
+                        // ✅ Adicionar apenas logs novos (comparar timestamps)
+                        const existingTimestamps = new Set(this.realtimeLogs.map(log => log.timestamp));
+                        const logsToAdd = newLogs.filter(log => !existingTimestamps.has(log.timestamp));
+                        
+                        if (logsToAdd.length > 0) {
+                            // Verificar se usuário está no topo (vendo logs mais novos)
+                            const container = this.$refs.logsContainer;
+                            const isAtTop = container && container.scrollTop <= 50;
+                            
+                            // Adicionar novos logs no INÍCIO do array (topo)
+                            // Backend já retorna mais novos primeiro, então usar direto
+                            this.realtimeLogs = [...logsToAdd, ...this.realtimeLogs];
+                            
+                            // Atualizar timestamp do último log
+                            this.lastLogTimestamp = this.realtimeLogs[0].timestamp;
+                            
+                            console.log('[InvestmentActive] ➕ Adicionados', logsToAdd.length, 'novos logs');
+                            
+                            // Se estava no topo, manter no topo
+                            this.$nextTick(() => {
+                                if (container && isAtTop) {
+                                    container.scrollTop = 0;
+                                }
+                            });
+                        }
+                    }
                 }
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao buscar logs:', error);
