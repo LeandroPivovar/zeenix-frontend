@@ -271,7 +271,8 @@
                             
                             <div 
                                 ref="logsContainer" 
-                                class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar" 
+                                @scroll="onLogsScroll"
+                                class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar relative" 
                                 style="scroll-behavior: smooth; max-height: 500px;"
                             >
                                 <div v-if="realtimeLogs.length === 0" class="text-zenix-secondary text-left py-12 px-4">
@@ -287,6 +288,17 @@
                                         <span class="ml-1">{{ log.message }}</span>
                                     </div>
                                 </div>
+                                
+                                <!-- Botão "Ir para o final" - aparece quando não está no final -->
+                                <button
+                                    v-if="showScrollToBottom && realtimeLogs.length > 0"
+                                    @click="scrollToBottom"
+                                    class="absolute bottom-4 right-4 bg-zenix-green/90 hover:bg-zenix-green text-black px-3 py-2 rounded-lg shadow-lg transition-all duration-200 flex items-center gap-2 text-xs font-semibold z-10"
+                                    title="Ir para os logs mais recentes"
+                                >
+                                    <i class="fas fa-arrow-down"></i>
+                                    <span>Novos logs</span>
+                                </button>
                             </div>
                         </div>
                 </div>
@@ -516,6 +528,7 @@ export default {
             // Logs em tempo real (ZENIX v2.0)
             realtimeLogs: [],
             logPollingInterval: null,
+            showScrollToBottom: false, // Controla visibilidade do botão "ir para o final"
             
             // Estado de desativação
             isDeactivating: false,
@@ -819,10 +832,22 @@ export default {
         },
         
         formattedLastUpdate() {
+            // 🕐 TIMESTAMP NO HORÁRIO DE BRASÍLIA (UTC-3)
             if (!this.currentPrice || this.ticks.length === 0) {
-                return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+                return new Date().toLocaleTimeString('pt-BR', { 
+                    timeZone: 'America/Sao_Paulo',
+                    hour: '2-digit', 
+                    minute: '2-digit',
+                    hour12: false
+                });
             }
-            return new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            return new Date().toLocaleTimeString('pt-BR', { 
+                timeZone: 'America/Sao_Paulo',
+                hour: '2-digit', 
+                minute: '2-digit', 
+                second: '2-digit',
+                hour12: false
+            });
         }
     },
     
@@ -848,11 +873,14 @@ export default {
                 erro: '🚫'
             };
             
+            // 🕐 TIMESTAMP NO HORÁRIO DE BRASÍLIA (UTC-3)
             const now = new Date();
             const timestamp = now.toLocaleTimeString('pt-BR', {
+                timeZone: 'America/Sao_Paulo',
                 hour: '2-digit',
                 minute: '2-digit',
-                second: '2-digit'
+                second: '2-digit',
+                hour12: false
             });
             
             const newLog = {
@@ -864,13 +892,52 @@ export default {
             
             this.realtimeLogs.push(newLog);
             
-            // Auto-scroll para o final
+            // ✅ Auto-scroll apenas se o usuário já estiver no final
             this.$nextTick(() => {
-                const container = this.$refs.logsContainer;
-                if (container) {
-                    container.scrollTop = container.scrollHeight;
-                }
+                this.scrollToBottomIfNeeded();
             });
+        },
+        
+        /**
+         * Verifica se deve fazer auto-scroll e faz apenas se o usuário estiver no final
+         */
+        scrollToBottomIfNeeded() {
+            const container = this.$refs.logsContainer;
+            if (!container) return;
+            
+            // Verificar se o usuário está no final (ou próximo do final - margem de 50px)
+            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight <= 50;
+            
+            // Só fazer scroll se estiver no final
+            if (isAtBottom) {
+                container.scrollTop = container.scrollHeight;
+                this.showScrollToBottom = false; // Ocultar botão quando estiver no final
+            } else {
+                this.showScrollToBottom = true; // Mostrar botão quando não estiver no final
+            }
+        },
+        
+        /**
+         * Handler do evento scroll - atualiza visibilidade do botão
+         */
+        onLogsScroll() {
+            const container = this.$refs.logsContainer;
+            if (!container) return;
+            
+            // Verificar se está no final (margem de 50px)
+            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight <= 50;
+            this.showScrollToBottom = !isAtBottom;
+        },
+        
+        /**
+         * Scroll manual para o final dos logs
+         */
+        scrollToBottom() {
+            const container = this.$refs.logsContainer;
+            if (!container) return;
+            
+            container.scrollTop = container.scrollHeight;
+            this.showScrollToBottom = false;
         },
         
         /**
@@ -976,11 +1043,20 @@ export default {
                     
                     console.log('[InvestmentActive] 📊 Array atualizado:', this.realtimeLogs.length);
                     
-                    // Auto-scroll para o final
+                    // ✅ Auto-scroll apenas se o usuário já estiver no final
+                    // Na primeira carga, sempre fazer scroll para o final
                     this.$nextTick(() => {
                         const container = this.$refs.logsContainer;
                         if (container) {
-                            container.scrollTop = container.scrollHeight;
+                            // Se é a primeira vez ou já está no final, fazer scroll
+                            const isAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight <= 50;
+                            if (isAtBottom || !this.showScrollToBottom) {
+                                container.scrollTop = container.scrollHeight;
+                                this.showScrollToBottom = false;
+                            } else {
+                                // Se não está no final, mostrar botão
+                                this.showScrollToBottom = true;
+                            }
                         }
                     });
                 }
@@ -1307,11 +1383,14 @@ export default {
                     const defaultStakeAmount = this.sessionConfig.stakeAmount || this.entryValue || 0;
                     this.logOperations = result.data.map(trade => {
                         // Usar closedAt ou createdAt para o horário (priorizar closedAt)
+                        // 🕐 TIMESTAMP NO HORÁRIO DE BRASÍLIA (UTC-3)
                         const tradeDate = new Date(trade.closedAt || trade.createdAt);
                         const time = tradeDate.toLocaleTimeString('pt-BR', {
+                            timeZone: 'America/Sao_Paulo',
                             hour: '2-digit',
                             minute: '2-digit',
-                            second: '2-digit'
+                            second: '2-digit',
+                            hour12: false
                         });
                         // Salvar timestamp para plotagem no gráfico
                         const timestamp = Math.floor(tradeDate.getTime() / 1000);
