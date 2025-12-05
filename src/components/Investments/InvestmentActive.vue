@@ -937,11 +937,60 @@ export default {
         },
         
         /**
-         * Limpa todos os logs
+         * Limpa todos os logs (frontend e backend)
          */
-        clearLogs() {
-            this.realtimeLogs = [];
-            this.lastLogTimestamp = null;
+        async clearLogs() {
+            try {
+                // Buscar userId do token
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    console.error('[InvestmentActive] ❌ Token não encontrado');
+                    return;
+                }
+                
+                // Decodificar JWT para pegar userId
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const userId = payload.sub;
+                
+                if (!userId) {
+                    console.error('[InvestmentActive] ❌ UserId não encontrado no token');
+                    return;
+                }
+                
+                // Construir URL da API
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const url = `${apiBase}/ai/logs/${userId}`;
+                
+                console.log('[InvestmentActive] 🗑️ Deletando logs em:', url);
+                
+                // Deletar logs do backend
+                const response = await fetch(url, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('[InvestmentActive] ✅ Logs deletados do backend:', result.message);
+                } else {
+                    const errorData = await response.json().catch(() => ({ message: response.statusText }));
+                    console.error('[InvestmentActive] ❌ Erro ao deletar logs do backend:', errorData.message || response.statusText);
+                }
+                
+                // Limpar logs do frontend
+                this.realtimeLogs = [];
+                this.lastLogTimestamp = null;
+                
+                console.log('[InvestmentActive] ✅ Logs limpos (frontend e backend)');
+            } catch (error) {
+                console.error('[InvestmentActive] ❌ Erro ao limpar logs:', error);
+                // Mesmo com erro, limpar frontend
+                this.realtimeLogs = [];
+                this.lastLogTimestamp = null;
+            }
         },
         
         /**
@@ -998,8 +1047,11 @@ export default {
                 if (result.success && result.data && Array.isArray(result.data)) {
                     console.log('[InvestmentActive] 📥 Logs recebidos do backend:', result.data.length, 'logs');
                     // Converter logs recebidos
+                    // ✅ INCLUIR id e created_at PARA COMPARAÇÃO CORRETA
                     const newLogs = result.data.map(log => ({
+                        id: log.id,
                         timestamp: log.timestamp,
+                        created_at: log.created_at,
                         type: log.type,
                         icon: log.icon,
                         message: log.message
@@ -1012,7 +1064,8 @@ export default {
                         // Vue 3: reatividade automática, não precisa de $set
                         this.realtimeLogs = newLogs;
                         if (this.realtimeLogs.length > 0) {
-                            this.lastLogTimestamp = this.realtimeLogs[0].timestamp;
+                            // ✅ Usar created_at para comparação (mais preciso que timestamp formatado)
+                            this.lastLogTimestamp = this.realtimeLogs[0].created_at || this.realtimeLogs[0].timestamp;
                         }
                         console.log('[InvestmentActive] 📊 Primeira carga:', this.realtimeLogs.length, 'logs');
                         
@@ -1024,16 +1077,20 @@ export default {
                             }
                         });
                     } else {
-                        // ✅ Adicionar apenas logs novos (comparar timestamps)
-                        const existingTimestamps = new Set(this.realtimeLogs.map(log => log.timestamp));
-                        const logsToAdd = newLogs.filter(log => !existingTimestamps.has(log.timestamp));
+                        // ✅ Adicionar apenas logs novos (comparar por ID ou created_at)
+                        // Usar ID se disponível, senão usar created_at
+                        const existingIds = new Set(this.realtimeLogs.map(log => log.id || log.created_at || log.timestamp));
+                        const logsToAdd = newLogs.filter(log => {
+                            const logId = log.id || log.created_at || log.timestamp;
+                            return !existingIds.has(logId);
+                        });
                         
                         console.log('[InvestmentActive] 🔍 Verificando novos logs:', {
                             totalRecebidos: newLogs.length,
                             jaExistem: this.realtimeLogs.length,
                             novos: logsToAdd.length,
-                            timestampsExistentes: Array.from(existingTimestamps).slice(0, 5),
-                            timestampsNovos: logsToAdd.map(l => l.timestamp).slice(0, 5)
+                            idsExistentes: Array.from(existingIds).slice(0, 5),
+                            idsNovos: logsToAdd.map(l => l.id || l.created_at || l.timestamp).slice(0, 5)
                         });
                         
                         if (logsToAdd.length > 0) {
@@ -1047,8 +1104,8 @@ export default {
                             // Vue 3: reatividade automática, não precisa de $set
                             this.realtimeLogs = [...logsToAdd, ...this.realtimeLogs];
                             
-                            // Atualizar timestamp do último log
-                            this.lastLogTimestamp = this.realtimeLogs[0].timestamp;
+                            // Atualizar timestamp do último log (usar created_at se disponível)
+                            this.lastLogTimestamp = this.realtimeLogs[0].created_at || this.realtimeLogs[0].timestamp;
                             
                             console.log('[InvestmentActive] ✅ Adicionados', logsToAdd.length, 'novos logs. Total agora:', this.realtimeLogs.length);
                             
