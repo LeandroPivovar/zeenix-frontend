@@ -880,9 +880,8 @@ export default {
             };
             
             // ✅ Adicionar no INÍCIO do array (topo) - logs mais novos no topo
-            // Usar $set para garantir reatividade do Vue
-            const newArray = [newLog, ...this.realtimeLogs];
-            this.$set(this, 'realtimeLogs', newArray);
+            // Vue 3: reatividade automática, não precisa de $set
+            this.realtimeLogs = [newLog, ...this.realtimeLogs];
             
             // ✅ Auto-scroll para o topo apenas se o usuário já estiver no topo
             this.$nextTick(() => {
@@ -1010,8 +1009,8 @@ export default {
                     // Backend retorna em ordem DESC (mais novos primeiro), então não precisa inverter
                     if (this.realtimeLogs.length === 0 || !this.lastLogTimestamp) {
                         // Backend já retorna mais novos primeiro, então usar direto
-                        // ✅ FORÇAR REATIVIDADE: Usar $set para garantir atualização
-                        this.$set(this, 'realtimeLogs', newLogs);
+                        // Vue 3: reatividade automática, não precisa de $set
+                        this.realtimeLogs = newLogs;
                         if (this.realtimeLogs.length > 0) {
                             this.lastLogTimestamp = this.realtimeLogs[0].timestamp;
                         }
@@ -1045,10 +1044,8 @@ export default {
                             // ✅ FORÇAR REATIVIDADE DO VUE: Criar novo array
                             // Adicionar novos logs no INÍCIO do array (topo)
                             // Backend já retorna mais novos primeiro, então usar direto
-                            const newLogsArray = [...logsToAdd, ...this.realtimeLogs];
-                            
-                            // Atualizar usando Vue.set ou atribuição direta para forçar reatividade
-                            this.$set(this, 'realtimeLogs', newLogsArray);
+                            // Vue 3: reatividade automática, não precisa de $set
+                            this.realtimeLogs = [...logsToAdd, ...this.realtimeLogs];
                             
                             // Atualizar timestamp do último log
                             this.lastLogTimestamp = this.realtimeLogs[0].timestamp;
