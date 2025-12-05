@@ -552,7 +552,7 @@ export default {
           this.isInitializingChart = false;
           return;
         }
-
+        
         // Forçar recálculo das dimensões
         const containerRect = container.getBoundingClientRect();
         const containerHeight = containerRect.height || container.clientHeight || 400;
@@ -618,7 +618,7 @@ export default {
               },
             },
           });
-
+          
           this.lineSeries = this.chart.addAreaSeries({
             lineColor: '#22C55E',
             topColor: 'rgba(34, 197, 94, 0.3)',
@@ -652,7 +652,7 @@ export default {
                       display: window.getComputedStyle(canvas).display
                     }
                   });
-                  
+          
                   // Garantir que o canvas está visível
                   canvas.style.display = 'block';
                   canvas.style.visibility = 'visible';
@@ -665,7 +665,7 @@ export default {
                   setTimeout(() => checkCanvasCreated(attempt + 1), 50);
                 } else {
                   console.warn('[OperationChart] ⚠ Canvas não encontrado após múltiplas tentativas na criação!');
-                }
+          }
               };
               
               checkCanvasCreated(0);
@@ -684,7 +684,7 @@ export default {
                   }
                 }
               }, 150);
-            }
+          }
           });
 
           console.log('[OperationChart] ✓ Gráfico e lineSeries criados com sucesso');
@@ -698,8 +698,8 @@ export default {
               height: containerHeight,
               offsetWidth: container.offsetWidth,
               offsetHeight: container.offsetHeight
-            }
-          });
+        }
+      });
           
           // Garantir que o gráfico seja renderizado corretamente
           this.$nextTick(() => {
@@ -744,7 +744,7 @@ export default {
                   }
                 }
                 this.updateChartFromTicks();
-              } else {
+      } else {
                 console.error('[OperationChart] Gráfico ou lineSeries não disponível após timeout');
               }
             }, 200);
@@ -2049,8 +2049,8 @@ export default {
             setTimeout(() => {
               if (this.ticks.length > 0) {
                 this.updateChartFromTicks();
-              }
-            }, 300);
+          }
+        }, 300);
           }
         }, 250);
       } else {
@@ -2260,18 +2260,18 @@ export default {
         console.error('[OperationChart] ERRO: lineSeries não está definido após initChart');
         return;
       }
-
+      
       // Lightweight Charts espera time como Unix timestamp (segundos desde 1970)
       // A Deriv retorna epoch em segundos, então podemos usar diretamente
       // Mas precisamos garantir que seja um número inteiro (não float)
       const data = this.ticks.map(tick => {
         // Garantir que epoch seja um número válido
         const epoch = Math.floor(Number(tick.epoch));
-        const value = Number(tick.value);
+            const value = Number(tick.value);
         
         if (isNaN(epoch) || isNaN(value) || epoch <= 0) {
           console.warn('[OperationChart] Tick inválido ignorado:', tick);
-          return null;
+            return null;
         }
         
         return { time: epoch, value: value };
@@ -2279,16 +2279,16 @@ export default {
       
       // Ordenar por tempo para garantir ordem correta
       data.sort((a, b) => a.time - b.time);
-      
+        
       console.log('[OperationChart] Atualizando gráfico com', data.length, 'pontos de dados');
       console.log('[OperationChart] Primeiros 3 pontos (detalhado):', JSON.stringify(data.slice(0, 3), null, 2));
       console.log('[OperationChart] Últimos 3 pontos (detalhado):', JSON.stringify(data.slice(-3), null, 2));
       
       if (data.length === 0) {
         console.warn('[OperationChart] Nenhum dado válido para plotar');
-        return;
-      }
-      
+          return;
+        }
+        
       try {
         // Validar dados antes de atualizar
         const validData = data.filter(point => {
@@ -2327,9 +2327,9 @@ export default {
           console.log('[OperationChart] Chamando lineSeries.setData com', validData.length, 'pontos...');
           
           // Forçar resize ANTES de setData para garantir que o canvas tenha dimensões corretas
-          const container = this.$refs.chartContainer;
+        const container = this.$refs.chartContainer;
           if (container && this.chart) {
-            const rect = container.getBoundingClientRect();
+          const rect = container.getBoundingClientRect();
             console.log('[OperationChart] Dimensões do container antes de setData:', {
               width: rect.width,
               height: rect.height,
@@ -2337,12 +2337,12 @@ export default {
               clientHeight: container.clientHeight
             });
             
-            if (rect.width > 0 && rect.height > 0) {
+          if (rect.width > 0 && rect.height > 0) {
               // Forçar resize do gráfico
-              this.chart.applyOptions({
-                width: rect.width,
-                height: rect.height
-              });
+            this.chart.applyOptions({
+              width: rect.width,
+              height: rect.height
+            });
               console.log('[OperationChart] Gráfico redimensionado para:', { width: rect.width, height: rect.height });
             }
 
@@ -2432,7 +2432,7 @@ export default {
             requestAnimationFrame(() => {
               checkCanvas(0);
             });
-          }
+        }
         }
         
         // Armazenar contagem de dados para próxima verificação
@@ -2471,7 +2471,7 @@ export default {
                 this.previousDataCount = validData.length;
                 this.chartInitialized = true;
                 console.log('[OperationChart] ✓ Gráfico recuperado com sucesso!');
-              }
+        }
             } catch (retryError) {
               console.error('[OperationChart] Falha na recuperação automática:', retryError);
               // Se falhar novamente, reinicializar completamente o gráfico
@@ -3676,15 +3676,15 @@ export default {
             
             // Calcular um valor para o marcador que fique acima da linha de entrada
             // Adicionar um offset de 0.5% do valor de entrada para garantir que o marcador apareça acima
-            const offsetPercent = 0.005; // 0.5%
-            const markerValueAboveLine = entrySpot * (1 + offsetPercent);
-            
+              const offsetPercent = 0.005; // 0.5%
+              const markerValueAboveLine = entrySpot * (1 + offsetPercent);
+              
             // Adicionar um ponto temporário na série principal no momento da entrada
             // com um valor ligeiramente maior que entrySpot para que o marcador apareça acima da linha
-            this.lineSeries.update({
-              time: markerTimeForSeries,
-              value: markerValueAboveLine
-            });
+              this.lineSeries.update({
+                time: markerTimeForSeries,
+                value: markerValueAboveLine
+              });
             
             // Adicionar marcador no momento exato da compra
             // Usar 'aboveBar' para posicionar acima do ponto
@@ -3784,24 +3784,24 @@ export default {
                 
                 // Verificar se o tempo do marcador é válido (não mais antigo que o último tick)
                 // Se for muito antigo, não tentar atualizar o ponto na série principal
-                const lastTickTime = this.ticks.length > 0 ? Math.floor(Number(this.ticks[this.ticks.length - 1].epoch)) : null;
-                const canUpdatePoint = lastTickTime && markerTimeToUse >= lastTickTime;
-                
-                if (canUpdatePoint) {
+                  const lastTickTime = this.ticks.length > 0 ? Math.floor(Number(this.ticks[this.ticks.length - 1].epoch)) : null;
+                  const canUpdatePoint = lastTickTime && markerTimeToUse >= lastTickTime;
+                  
+                  if (canUpdatePoint) {
                   // Garantir que o ponto na série principal esteja acima da linha de entrada
                   // Calcular um valor que fique acima da linha de entrada (0.5% acima)
-                  const offsetPercent = 0.005; // 0.5%
-                  const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
-                  
+                    const offsetPercent = 0.005; // 0.5%
+                    const markerValueAboveLine = this.entryMarker.spot * (1 + offsetPercent);
+                    
                   // Atualizar o ponto na série principal para manter o marcador acima da linha
-                  try {
-                    this.lineSeries.update({
-                      time: markerTimeToUse,
-                      value: markerValueAboveLine
-                    });
-                  } catch (error) {
+                    try {
+                      this.lineSeries.update({
+                        time: markerTimeToUse,
+                        value: markerValueAboveLine
+                      });
+                    } catch (error) {
                     // Se falhar ao atualizar, apenas atualizar o marcador
-                    console.warn('[OperationChart] Não foi possível atualizar ponto na série:', error);
+                      console.warn('[OperationChart] Não foi possível atualizar ponto na série:', error);
                   }
                 }
                 

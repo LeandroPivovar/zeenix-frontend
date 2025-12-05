@@ -880,7 +880,9 @@ export default {
             };
             
             // ✅ Adicionar no INÍCIO do array (topo) - logs mais novos no topo
-            this.realtimeLogs.unshift(newLog);
+            // Usar $set para garantir reatividade do Vue
+            const newArray = [newLog, ...this.realtimeLogs];
+            this.$set(this, 'realtimeLogs', newArray);
             
             // ✅ Auto-scroll para o topo apenas se o usuário já estiver no topo
             this.$nextTick(() => {
@@ -968,11 +970,17 @@ export default {
          */
         async fetchRealtimeLogs() {
             try {
+                console.log('[InvestmentActive] 🔄 fetchRealtimeLogs chamado');
                 const userId = this.getUserId();
-                if (!userId) return;
+                if (!userId) {
+                    console.warn('[InvestmentActive] ⚠️ UserId não disponível para buscar logs');
+                    return;
+                }
                 
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
                 const url = `${apiBase}/ai/logs/${userId}`;
+                
+                console.log('[InvestmentActive] 📡 Buscando logs em:', url);
                 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -982,10 +990,14 @@ export default {
                     }
                 });
                 
-                if (!response.ok) return;
+                if (!response.ok) {
+                    console.warn('[InvestmentActive] ⚠️ Erro ao buscar logs:', response.status, response.statusText);
+                    return;
+                }
                 
                 const result = await response.json();
                 if (result.success && result.data && Array.isArray(result.data)) {
+                    console.log('[InvestmentActive] 📥 Logs recebidos do backend:', result.data.length, 'logs');
                     // Converter logs recebidos
                     const newLogs = result.data.map(log => ({
                         timestamp: log.timestamp,
@@ -998,7 +1010,8 @@ export default {
                     // Backend retorna em ordem DESC (mais novos primeiro), então não precisa inverter
                     if (this.realtimeLogs.length === 0 || !this.lastLogTimestamp) {
                         // Backend já retorna mais novos primeiro, então usar direto
-                        this.realtimeLogs = newLogs;
+                        // ✅ FORÇAR REATIVIDADE: Usar $set para garantir atualização
+                        this.$set(this, 'realtimeLogs', newLogs);
                         if (this.realtimeLogs.length > 0) {
                             this.lastLogTimestamp = this.realtimeLogs[0].timestamp;
                         }
@@ -1016,19 +1029,31 @@ export default {
                         const existingTimestamps = new Set(this.realtimeLogs.map(log => log.timestamp));
                         const logsToAdd = newLogs.filter(log => !existingTimestamps.has(log.timestamp));
                         
+                        console.log('[InvestmentActive] 🔍 Verificando novos logs:', {
+                            totalRecebidos: newLogs.length,
+                            jaExistem: this.realtimeLogs.length,
+                            novos: logsToAdd.length,
+                            timestampsExistentes: Array.from(existingTimestamps).slice(0, 5),
+                            timestampsNovos: logsToAdd.map(l => l.timestamp).slice(0, 5)
+                        });
+                        
                         if (logsToAdd.length > 0) {
                             // Verificar se usuário está no topo (vendo logs mais novos)
                             const container = this.$refs.logsContainer;
                             const isAtTop = container && container.scrollTop <= 50;
                             
+                            // ✅ FORÇAR REATIVIDADE DO VUE: Criar novo array
                             // Adicionar novos logs no INÍCIO do array (topo)
                             // Backend já retorna mais novos primeiro, então usar direto
-                            this.realtimeLogs = [...logsToAdd, ...this.realtimeLogs];
+                            const newLogsArray = [...logsToAdd, ...this.realtimeLogs];
+                            
+                            // Atualizar usando Vue.set ou atribuição direta para forçar reatividade
+                            this.$set(this, 'realtimeLogs', newLogsArray);
                             
                             // Atualizar timestamp do último log
                             this.lastLogTimestamp = this.realtimeLogs[0].timestamp;
                             
-                            console.log('[InvestmentActive] ➕ Adicionados', logsToAdd.length, 'novos logs');
+                            console.log('[InvestmentActive] ✅ Adicionados', logsToAdd.length, 'novos logs. Total agora:', this.realtimeLogs.length);
                             
                             // Se estava no topo, manter no topo
                             this.$nextTick(() => {
@@ -1036,6 +1061,8 @@ export default {
                                     container.scrollTop = 0;
                                 }
                             });
+                        } else {
+                            console.log('[InvestmentActive] ℹ️ Nenhum log novo para adicionar');
                         }
                     }
                 }
@@ -1045,16 +1072,30 @@ export default {
         },
         
         startLogPolling() {
+            // Parar polling anterior se existir
+            this.stopLogPolling();
+            
+            console.log('[InvestmentActive] 🚀 Iniciando polling de logs (a cada 2s)');
+            
             // Buscar logs a cada 2 segundos
             this.logPollingInterval = setInterval(() => {
-                if (this.sessionConfig.isActive) {
+                // Verificar se IA está ativa (pode ser 1 ou true)
+                const isActive = this.sessionConfig.isActive === 1 || this.sessionConfig.isActive === true;
+                if (isActive) {
                     this.fetchRealtimeLogs();
+                } else {
+                    console.log('[InvestmentActive] ⏸️ IA não está ativa, parando polling...');
+                    this.stopLogPolling();
                 }
             }, 2000);
+            
+            // Buscar logs imediatamente na primeira vez
+            this.fetchRealtimeLogs();
         },
         
         stopLogPolling() {
             if (this.logPollingInterval) {
+                console.log('[InvestmentActive] ⏹️ Parando polling de logs...');
                 clearInterval(this.logPollingInterval);
                 this.logPollingInterval = null;
             }
@@ -1303,9 +1344,27 @@ export default {
                     
                     console.log('[InvestmentActive] ✅ Config atualizada:', this.sessionConfig);
                     
-                    // Se IA está ativa e logs estão vazios, inicializar logs
-                    if (this.sessionConfig.isActive && this.realtimeLogs.length === 0) {
-                        this.logSystemInit();
+                    // ✅ Se IA está ativa, garantir que polling está rodando
+                    const isActive = this.sessionConfig.isActive === 1 || this.sessionConfig.isActive === true;
+                    if (isActive) {
+                        console.log('[InvestmentActive] ✅ IA está ativa, verificando polling...');
+                        // Se logs estão vazios, inicializar
+                        if (this.realtimeLogs.length === 0) {
+                            console.log('[InvestmentActive] 📋 Logs vazios, inicializando...');
+                            this.logSystemInit();
+                        } else {
+                            // Se já tem logs mas polling não está rodando, iniciar
+                            if (!this.logPollingInterval) {
+                                console.log('[InvestmentActive] 🔄 Reiniciando polling de logs...');
+                                this.startLogPolling();
+                            } else {
+                                console.log('[InvestmentActive] ✅ Polling já está rodando');
+                            }
+                        }
+                    } else {
+                        // Se IA não está ativa, parar polling
+                        console.log('[InvestmentActive] ⏸️ IA não está ativa, parando polling...');
+                        this.stopLogPolling();
                     }
                 } else {
                     console.error('[InvestmentActive] ❌ Formato de resposta inválido:', result);
@@ -2110,16 +2169,48 @@ export default {
                     });
                 }
             }
+        },
+        // ✅ Watcher para iniciar/parar polling quando IA for ativada/desativada
+        'sessionConfig.isActive': {
+            handler(newVal, oldVal) {
+                const isActive = newVal === 1 || newVal === true;
+                const wasActive = oldVal === 1 || oldVal === true;
+                
+                if (isActive && !wasActive) {
+                    // IA foi ativada - iniciar polling
+                    console.log('[InvestmentActive] ✅ IA ativada, iniciando polling de logs...');
+                    if (this.realtimeLogs.length === 0) {
+                        this.logSystemInit();
+                    } else {
+                        this.startLogPolling();
+                    }
+                } else if (!isActive && wasActive) {
+                    // IA foi desativada - parar polling
+                    console.log('[InvestmentActive] ⏸️ IA desativada, parando polling de logs...');
+                    this.stopLogPolling();
+                }
+            },
+            immediate: false
         }
     },
 
     mounted() {
         console.log('[InvestmentActive] Componente montado. Ticks:', this.ticks.length);
         
-        // 📊 Inicializar logs se IA estiver ativa
-        if (this.sessionConfig && this.sessionConfig.isActive) {
-            this.logSystemInit();
-        }
+        // 📊 Buscar configuração primeiro (assíncrono)
+        this.fetchSessionConfig().then(() => {
+            // Após config carregada, verificar se IA está ativa
+            const isActive = this.sessionConfig.isActive === 1 || this.sessionConfig.isActive === true;
+            if (isActive) {
+                console.log('[InvestmentActive] ✅ IA está ativa, inicializando logs...');
+                if (this.realtimeLogs.length === 0) {
+                    this.logSystemInit();
+                } else {
+                    // Se já tem logs, apenas iniciar polling
+                    this.startLogPolling();
+                }
+            }
+        });
         
         // 📊 Buscar estatísticas do dia
         this.startStatsUpdates();
