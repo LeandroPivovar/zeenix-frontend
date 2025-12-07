@@ -5,20 +5,24 @@
       
       <!-- Left Column - Register Card -->
       <div id="register-section" class="w-full max-w-[420px] flex-shrink-0">
-        <div class="bg-white border border-zenix-card-border rounded-2xl p-8 login-card-shadow w-full">
+        <div class="bg-white border border-zenix-card-border rounded-2xl p-8 login-card-shadow w-full register-card">
           
           <!-- Logo -->
-          <div class="mb-6 flex justify-center register-logo">
-            <div class="flex items-center space-x-2">
-              <div class="text-2xl font-bold text-zenix-text-dark">ZENI</div>
-              <div class="text-2xl font-bold text-zenix-green">X</div>
+          <div class="mb-12 flex justify-center register-logo">
+            <div class="flex items-center space-x-2 logo-animation">
+              <div class="text-2xl font-bold text-zenix-text-dark">
+                <span v-if="isMobile" v-html="typedLogoTitle" class="logo-text"></span>
+                <template v-else>
+                  <span class="text-zenix-text-dark">ZENI</span><span class="text-zenix-green">X</span>
+                </template>
+              </div>
             </div>
           </div>
 
           <!-- Header -->
-          <div class="mb-6">
-            <h1 class="text-xl font-semibold text-zenix-text-dark mb-2">Crie sua conta</h1>
-            <p class="text-sm text-zenix-gray leading-relaxed forgot-text">Preencha seus dados para criar uma conta na plataforma.</p>
+          <div class="mb-6 header-section">
+            <h1 class="text-2xl font-semibold text-zenix-text-dark mb-2 header-title">Crie sua conta</h1>
+            <p class="text-sm text-zenix-gray leading-relaxed forgot-text header-subtitle">Preencha seus dados para criar uma conta na plataforma.</p>
           </div>
 
           <!-- Register Form -->
@@ -26,63 +30,90 @@
             <!-- Name Input -->
             <div>
               <label class="block text-sm font-medium text-zenix-text-dark mb-2">Nome Completo</label>
-              <input 
-                type="text" 
-                v-model="name"
-                placeholder="Digite seu nome completo" 
-                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
-                required
-              >
+              <div class="relative">
+                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 16C2 13.2386 4.23858 11 7 11H9C11.7614 11 14 13.2386 14 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <input 
+                  type="text" 
+                  v-model="name"
+                  placeholder="Digite seu nome completo" 
+                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                  required
+                >
+              </div>
             </div>
 
             <!-- Email Input -->
             <div>
               <label class="block text-sm font-medium text-zenix-text-dark mb-2">E-mail</label>
-              <input 
-                type="email" 
-                v-model="email"
-                placeholder="Digite seu e-mail" 
-                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
-                required
-              >
+              <div class="relative">
+                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 4L8 8L14 4M2 4H14V12H2V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <input 
+                  type="email" 
+                  v-model="email"
+                  placeholder="Digite seu e-mail" 
+                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                  required
+                >
+              </div>
             </div>
 
             <!-- CPF Input -->
             <div>
               <label class="block text-sm font-medium text-zenix-text-dark mb-2">CPF</label>
-              <input 
-                type="text" 
-                v-model="cpf"
-                @input="formatCPF"
-                placeholder="000.000.000-00" 
-                maxlength="14"
-                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
-              >
+              <div class="relative">
+                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M8 8C10.2091 8 12 6.20914 12 4C12 1.79086 10.2091 0 8 0C5.79086 0 4 1.79086 4 4C4 6.20914 5.79086 8 8 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M2 16C2 13.2386 4.23858 11 7 11H9C11.7614 11 14 13.2386 14 16" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <input 
+                  type="text" 
+                  v-model="cpf"
+                  @input="formatCPF"
+                  placeholder="000.000.000-00" 
+                  maxlength="14"
+                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                >
+              </div>
             </div>
 
             <!-- WhatsApp Input -->
             <div>
               <label class="block text-sm font-medium text-zenix-text-dark mb-2">WhatsApp</label>
-              <input 
-                type="text" 
-                v-model="whatsapp"
-                @input="formatPhone"
-                placeholder="(41) 99999-9999" 
-                maxlength="15"
-                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
-              >
+              <div class="relative">
+                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M3.5 1.5C2.67157 1.5 2 2.17157 2 3V13C2 13.8284 2.67157 14.5 3.5 14.5H5.5L6.5 16.5H9.5L10.5 14.5H12.5C13.3284 14.5 14 13.8284 14 13V3C14 2.17157 13.3284 1.5 12.5 1.5H3.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M6 6H10M6 9H8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+                <input 
+                  type="text" 
+                  v-model="whatsapp"
+                  @input="formatPhone"
+                  placeholder="(41) 99999-9999" 
+                  maxlength="15"
+                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                >
+              </div>
             </div>
 
             <!-- Password Input -->
             <div>
               <label class="block text-sm font-medium text-zenix-text-dark mb-2">Senha</label>
               <div class="relative">
+                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 6H11V4C11 2.89543 10.1046 2 9 2H7C5.89543 2 5 2.89543 5 4V6H4C3.44772 6 3 6.44772 3 7V13C3 13.5523 3.44772 14 4 14H12C12.5523 14 13 13.5523 13 13V7C13 6.44772 12.5523 6 12 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M6 4C6 3.44772 6.44772 3 7 3H9C9.55228 3 10 3.44772 10 4V6H6V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <input 
                   :type="showPassword ? 'text' : 'password'" 
                   id="password-input" 
                   v-model="password"
                   placeholder="Digite sua senha" 
-                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 pr-12 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-12 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
                   required
                 >
                 <button 
@@ -90,7 +121,15 @@
                   @click="togglePassword" 
                   class="absolute right-4 top-1/2 transform -translate-y-1/2 text-zenix-gray password-toggle transition-colors"
                 >
-                  <i class="fa-regular" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                  <!-- Eye SVG -->
+                  <svg v-if="!showPassword" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 8C1 8 3.5 4 8 4C12.5 4 15 8 15 8C15 8 12.5 12 8 12C3.5 12 1 8 1 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                  <!-- Eye-slash SVG -->
+                  <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9.5 4.5C11.5 5 13 6.5 14 8M6.5 11.5C4.5 11 3 9.5 2 8M2 4L14 12M14 4L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
                 </button>
               </div>
               
@@ -136,12 +175,16 @@
             <div>
               <label class="block text-sm font-medium text-zenix-text-dark mb-2">Confirmar Senha</label>
               <div class="relative">
+                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 6H11V4C11 2.89543 10.1046 2 9 2H7C5.89543 2 5 2.89543 5 4V6H4C3.44772 6 3 6.44772 3 7V13C3 13.5523 3.44772 14 4 14H12C12.5523 14 13 13.5523 13 13V7C13 6.44772 12.5523 6 12 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M6 4C6 3.44772 6.44772 3 7 3H9C9.55228 3 10 3.44772 10 4V6H6V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <input 
                   :type="showConfirmPassword ? 'text' : 'password'" 
                   id="confirm-password-input" 
                   v-model="confirmPassword"
                   placeholder="Confirme sua senha" 
-                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-3 pr-12 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-12 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
                   required
                 >
                 <button 
@@ -149,7 +192,15 @@
                   @click="toggleConfirmPassword" 
                   class="absolute right-4 top-1/2 transform -translate-y-1/2 text-zenix-gray password-toggle transition-colors"
                 >
-                  <i class="fa-regular" :class="showConfirmPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
+                  <!-- Eye SVG -->
+                  <svg v-if="!showConfirmPassword" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 8C1 8 3.5 4 8 4C12.5 4 15 8 15 8C15 8 12.5 12 8 12C3.5 12 1 8 1 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                  <!-- Eye-slash SVG -->
+                  <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9.5 4.5C11.5 5 13 6.5 14 8M6.5 11.5C4.5 11 3 9.5 2 8M2 4L14 12M14 4L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
                 </button>
               </div>
               
@@ -185,7 +236,7 @@
 
           <!-- Footer -->
           <div class="mt-6 pt-4 border-t border-zenix-input-border footer-login">
-            <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao cadastrar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
+            <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao continuar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
           </div>
         </div>
       </div>
@@ -252,6 +303,11 @@
         </div>
       </div>
     </div>
+    
+    <!-- Disclaimer apenas no mobile -->
+    <div class="mobile-disclaimer">
+      <p class="disclaimer-text">Deriv offers complex derivatives, such as options and contracts for difference ("CFDs"). These products may not be suitable for all clients, and trading them puts you at risk. Please make sure that you understand the following risks before trading Deriv products: a) you may lose some or all of the money you invest in the trade, b) if your trade involves currency conversion, exchange rates will affect your profit and loss. You should never trade with borrowed money or with money that you cannot afford to lose.</p>
+    </div>
   </main>
 </template>
 
@@ -276,6 +332,10 @@ export default {
       fullSubtitle: 'A única tecnologia criada para operar com a precisão que o mercado exige.',
       typedTitle: '',
       typedSubtitle: '',
+      fullLogoTitle: 'ZENIX',
+      typedLogoTitle: '',
+      isMobile: false,
+      logoAnimationStarted: false,
       showBenefit1: false,
       showBenefit2: false,
       showBenefit3: false,
@@ -283,6 +343,7 @@ export default {
     }
   },
   mounted() {
+    this.isMobile = window.innerWidth <= 640;
     this.startAnimations();
   },
   watch: {
@@ -292,8 +353,37 @@ export default {
   },
   methods: {
     startAnimations() {
-      // 1. Primeiro o Zenix aparece letra por letra
-      this.typeTitle();
+      // 1. Primeiro o logo ZENIX aparece letra por letra (apenas no mobile)
+      if (window.innerWidth <= 640 && !this.logoAnimationStarted) {
+        this.logoAnimationStarted = true;
+        this.typeLogoTitle();
+      }
+      // 2. Depois o Zenix do hero aparece letra por letra
+      setTimeout(() => {
+        this.typeTitle();
+      }, 500);
+    },
+    typeLogoTitle() {
+      // Reset do título antes de começar
+      this.typedLogoTitle = '';
+      let index = 0;
+      const typingSpeed = 100; // velocidade de digitação em ms
+      
+      const typeChar = () => {
+        if (index < this.fullLogoTitle.length) {
+          const char = this.fullLogoTitle.charAt(index);
+          if (char === 'X') {
+            this.typedLogoTitle += '<span class="text-zenix-green">X</span>';
+          } else {
+            this.typedLogoTitle += `<span class="text-zenix-text-dark">${char}</span>`;
+          }
+          index++;
+          setTimeout(typeChar, typingSpeed);
+        }
+      };
+      
+      // Inicia após um pequeno delay
+      setTimeout(typeChar, 200);
     },
     typeTitle() {
       let index = 0;
@@ -472,6 +562,33 @@ export default {
 /* Efeito de digitação */
 .typing-text {
   min-height: 1.75rem;
+}
+
+/* Animação de opacidade do logo da esquerda para direita (desktop) */
+.logo-animation {
+  overflow: hidden;
+}
+
+.logo-letter {
+  opacity: 0;
+  animation: fadeInLeft 0.8s ease-out forwards;
+}
+
+.logo-letter:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.logo-letter:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Animação dos benefícios da esquerda para direita */
@@ -783,10 +900,16 @@ button.bg-zenix-green:disabled {
   #register-main {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
-    padding-top: 4rem;
-    padding-bottom: 1.5rem;
+    padding-top: 1.5rem;
+    padding-bottom: 0;
     display: flex !important;
-    background: radial-gradient(circle at top, #0b0d0c 0%, #0d2520 100%);
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 100vh;
+    background: transparent;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
   }
   
   .w-\[480px\] {
@@ -874,15 +997,23 @@ button.bg-zenix-green:disabled {
   #register-section {
     width: 100% !important;
     max-width: 360px !important;
-    margin: 0 auto;
+    margin: 0 auto !important;
     padding: 0;
     padding-top: 4rem !important;
   }
 
+  /* Remover fundo do card apenas no mobile */
+  #register-section .register-card {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+  }
+
   /* Ajuste de cores para combinar com o login mobile */
   #register-section .bg-white {
-    background-color: #050B0B !important;
-    border-color: #111827 !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
   }
 
   #register-section .bg-zenix-input-bg {
@@ -906,19 +1037,162 @@ button.bg-zenix-green:disabled {
     color: #6B7280 !important;
   }
 
+  /* Ajustes de espaçamento e fonte para corresponder à imagem */
+  .header-section {
+    margin-bottom: 2.5rem !important;
+    margin-top: 1.5rem !important;
+    text-align: center !important;
+  }
+
+  .header-title {
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.75rem !important;
+    margin-top: 0 !important;
+    color: #FFFFFF !important;
+    text-align: center !important;
+  }
+
+  .header-subtitle {
+    font-size: 0.8125rem !important;
+    line-height: 1.5 !important;
+    color: #9CA3AF !important;
+    text-align: center !important;
+    margin-bottom: 0 !important;
+  }
+
+  /* Ajustes nos inputs */
+  #register-section input {
+    padding: 0.875rem 1rem !important;
+    font-size: 0.875rem !important;
+    background-color: #1F2937 !important;
+    border-color: #374151 !important;
+    color: #FFFFFF !important;
+  }
+
+  /* Ajustar padding dos inputs com ícones */
+  #register-section input[type="email"],
+  #register-section input[type="password"],
+  #register-section input[type="text"] {
+    padding-left: 2.5rem !important;
+  }
+
+  #register-section input::placeholder {
+    color: #6B7280 !important;
+  }
+
+  #register-section label {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.5rem !important;
+    color: #FFFFFF !important;
+  }
+
+  /* Ícones dos inputs (SVG) */
+  .input-icon {
+    color: #9CA3AF !important;
+    width: 16px !important;
+    height: 16px !important;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* Botão ajustes */
+  #register-section button.bg-zenix-green {
+    padding: 0.875rem 1.5rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 0.5rem !important;
+    font-weight: 600 !important;
+    background-color: #22C55E !important;
+    color: #FFFFFF !important;
+  }
+
+  #register-section button.bg-zenix-green i {
+    color: #FFFFFF !important;
+  }
+
+  /* Links */
+  #register-section a {
+    color: #9CA3AF !important;
+  }
+
+  #register-section a.text-zenix-green {
+    color: #22C55E !important;
+  }
+
+  /* Footer ajustes */
+  .footer-login {
+    margin-top: 2rem !important;
+    padding-top: 1.5rem !important;
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .footer-text {
+    font-size: 0.6875rem !important;
+    line-height: 1.5 !important;
+    color: #9CA3AF !important;
+  }
+
+  .footer-text a {
+    color: #22C55E !important;
+    text-decoration: underline !important;
+  }
+
   .register-logo .text-zenix-text-dark,
-  .register-logo .text-zenix-green {
-    font-size: 2.5rem !important;
+  .register-logo .logo-text span.text-zenix-text-dark {
+    font-size: 2rem !important;
     line-height: 1;
     margin: 0;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+  }
+
+  .register-logo .text-zenix-green,
+  .register-logo .logo-text span.text-zenix-green {
+    font-size: 2rem !important;
+    line-height: 1;
+    margin: 0;
+    color: #22C55E !important;
+    font-weight: 700 !important;
+  }
+
+  /* Remover espaçamento entre letras no mobile */
+  .register-logo .logo-animation {
+    gap: 0 !important;
+  }
+
+  .register-logo .logo-animation > * {
+    margin: 0 !important;
   }
 
   .register-logo {
     position: absolute;
-    top: 3rem;
+    top: 2rem;
     left: 50%;
     transform: translateX(-50%);
     z-index: 20;
+  }
+
+  /* Animação do logo letra por letra (mobile) */
+  .register-logo .logo-animation {
+    overflow: hidden;
+  }
+
+  .register-logo .logo-text {
+    display: inline-block;
+  }
+
+  .register-logo .logo-text span {
+    display: inline-block;
+  }
+
+  /* Espaçamento do card após o logo */
+  #register-section {
+    padding-top: 7rem !important;
+  }
+
+  /* Ajuste de padding interno do card */
+  #register-section .register-card {
+    padding: 0 !important;
   }
 
   button.bg-zenix-green {
@@ -927,5 +1201,30 @@ button.bg-zenix-green:disabled {
   border: none !important;
   border-radius: 0.625rem !important;
 }
+
+  /* Disclaimer no final da página apenas no mobile */
+  .mobile-disclaimer {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: auto auto 1rem;
+    padding: 0 1rem;
+    padding-bottom: 1.5rem;
+    margin-top: 4.5rem;
+  }
+
+  .disclaimer-text {
+    font-size: 0.625rem;
+    line-height: 1.6;
+    color: #9CA3AF;
+    text-align: center;
+  }
+}
+
+/* Ocultar disclaimer no desktop */
+@media (min-width: 641px) {
+  .mobile-disclaimer {
+    display: none !important;
+  }
 }
 </style>
