@@ -1,7 +1,25 @@
 <template>
   <div class="zenix-layout">
+    <!-- Overlay para fechar sidebar em mobile -->
+    <div 
+      class="sidebar-overlay" 
+      :class="{ 'show': isMobileMenuOpen && isMobile }" 
+      @click="closeMobileMenu"
+    ></div>
+
+    <!-- Botão Hambúrguer para Mobile -->
+    <button class="mobile-hamburger-btn" @click="toggleMobileMenu" aria-label="Menu">
+      <i class="fas fa-bars"></i>
+    </button>
+
     <!-- Sidebar -->
-    <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
+    <AppSidebar 
+      :class="{ 'mobile-open': isMobileMenuOpen && isMobile }"
+      :is-open="isSidebarOpen" 
+      :is-collapsed="isSidebarCollapsed" 
+      @toggle-collapse="toggleSidebarCollapse"
+      @close-sidebar="closeMobileMenu"
+    />
 
     <div class="main-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <TopNavbar 
@@ -16,35 +34,53 @@
         <section id="immediate-support" class="support-section mb-16">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <!-- Chat Card -->
-            <div class="support-card bg-zenix-card border border-zenix-border rounded-2xl p-8 min-h-[160px] flex flex-col">
-              <div class="flex-1 flex flex-col">
+            <div class="support-card bg-zenix-card border border-zenix-border rounded-2xl p-8 min-h-[160px] flex flex-col mobile-card-gradient mobile-ticket-card">
+              <div class="flex-1 flex flex-col desktop-layout">
                 <div class="flex items-center space-x-3 mb-2">
                   <i class="far fa-comment-dots text-white text-2xl"></i>
                   <span class="px-2 py-1 bg-zenix-green/20 text-zenix-green text-[10px] font-bold rounded">Online agora</span>
                 </div>
                 <h3 class="text-white text-xl font-bold mb-1">Chat ao Vivo</h3>
-                <p class="text-zenix-secondary text-sm mb-4">Suporte imediato com um atendente real</p>
+                <p class="text-zenix-secondary text-sm mb-4">Suporte imediato com um atendente real.</p>
+              </div>
+              <div class="flex-1 flex flex-row items-center space-x-2.5 mobile-layout mobile-ticket-content">
+                <div class="flex flex-col items-center">
+                  <i class="far fa-comment-dots text-white text-3xl"></i>
+                </div>
+                <div class="flex-1 flex flex-col">
+                  <h3 class="text-white text-lg font-bold text-left mobile-title-size">Chat ao Vivo</h3>
+                  <p class="text-zenix-secondary text-sm text-left mobile-text-size">Suporte imediato com um atendente real.</p>
+                </div>
               </div>
               <button 
                 @click="startChat"
-                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3 rounded-lg transition-all mt-auto"
+                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3 rounded-lg transition-all mobile-chat-button mobile-ticket-button"
               >
                 Iniciar Atendimento
               </button>
             </div>
 
             <!-- Ticket Card -->
-            <div class="support-card bg-zenix-card border border-zenix-border rounded-2xl p-8 min-h-[160px] flex flex-col">
-              <div class="flex-1 flex flex-col">
+            <div class="support-card bg-zenix-card border border-zenix-border rounded-2xl p-8 min-h-[160px] flex flex-col mobile-card-gradient mobile-ticket-card">
+              <div class="flex-1 flex flex-col desktop-layout">
                 <div class="mb-2">
-                  <i class="far fa-life-ring text-white text-2xl"></i>
+                  <i class="far fa-file-alt text-white text-2xl"></i>
                 </div>
                 <h3 class="text-white text-xl font-bold mb-1">Abrir Ticket</h3>
-                <p class="text-zenix-secondary text-sm mb-4">Resposta em até 24h úteis</p>
+                <p class="text-zenix-secondary text-sm mb-4">Resposta em até 24h úteis.</p>
+              </div>
+              <div class="flex-1 flex flex-row items-center space-x-2.5 mobile-layout mobile-ticket-content">
+                <div class="flex flex-col items-center">
+                  <i class="far fa-file-alt text-white text-3xl"></i>
+                </div>
+                <div class="flex-1 flex flex-col">
+                  <h3 class="text-white text-lg font-bold text-left">Abrir Ticket</h3>
+                  <p class="text-zenix-secondary text-sm text-left mobile-text-size">Resposta em até 24h úteis.</p>
+                </div>
               </div>
               <button 
                 @click="createTicket"
-                class="w-full border-2 border-zenix-green text-zenix-green hover:bg-zenix-green hover:text-white font-semibold py-3 rounded-lg transition-all mt-auto"
+                class="w-full border-2 border-zenix-green text-zenix-green hover:bg-zenix-green hover:text-white font-semibold py-3 rounded-lg transition-all mobile-ticket-button"
               >
                 Criar Ticket
               </button>
@@ -90,7 +126,7 @@
 
         <!-- FAQ Section -->
         <section id="faq-section" class="support-section mb-16">
-          <h2 class="text-white text-2xl font-bold mb-8">Perguntas Frequentes</h2>
+          <h2 class="text-white text-2xl font-bold mb-8 mobile-faq-title">Perguntas Frequentes</h2>
           
           <div v-if="loading" class="text-center py-8 text-zenix-secondary">
             Carregando...
@@ -228,6 +264,7 @@ export default {
       isSidebarOpen: true,
       isSidebarCollapsed: false,
       isMobile: false,
+      isMobileMenuOpen: false,
       showSuggestions: false,
       accountBalance: 0,
       accountCurrency: 'USD',
@@ -274,6 +311,12 @@ export default {
     },
     toggleSidebarCollapse() {
       this.isSidebarCollapsed = !this.isSidebarCollapsed
+    },
+    toggleMobileMenu() {
+      this.isMobileMenuOpen = !this.isMobileMenuOpen
+    },
+    closeMobileMenu() {
+      this.isMobileMenuOpen = false
     },
     getDerivToken() {
       try {
@@ -454,11 +497,11 @@ export default {
 
 .main-content-wrapper {
   margin: 0;
-  margin-left: 350px;
+  margin-left: 280px;
   padding: 0;
   min-height: 100vh;
   transition: margin-left 0.3s ease;
-  width: calc(100% - 350px);
+  width: calc(100% - 280px);
   box-sizing: border-box;
 }
 
@@ -472,13 +515,13 @@ export default {
   position: fixed;
   top: 0;
   right: 0;
-  left: 350px;
+  left: 280px;
   z-index: 40;
   background-color: #0E0E0E;
   border-bottom: 1px solid #1C1C1C;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   transition: left 0.3s ease;
-  width: calc(100% - 350px);
+  width: calc(100% - 280px);
   box-sizing: border-box;
 }
 
@@ -614,6 +657,10 @@ export default {
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-start;
 }
 
 /* Support Section - ocupa máxima largura respeitando padding */
@@ -630,13 +677,15 @@ export default {
   box-sizing: border-box;
 }
 
-/* Ajustes para cards ocuparem máxima largura */
-#immediate-support .grid {
-  width: 100% !important;
-  max-width: 100% !important;
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 1.5rem;
+/* Ajustes para cards ocuparem máxima largura - DESKTOP */
+@media (min-width: 768px) {
+  #immediate-support .grid {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
 }
 
 #immediate-support .support-card {
@@ -935,6 +984,253 @@ export default {
   
   .footer-content {
     padding: 2rem 15px;
+  }
+}
+
+/* MOBILE MENU & RESPONSIVIDADE */
+/* Botão Hambúrguer (Mobile Only) */
+.mobile-hamburger-btn {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 15px;
+  z-index: 60;
+  background-color: #0E0E0E;
+  border: 1px solid #1C1C1C;
+  color: #DFDFDF;
+  width: 40px;
+  height: 40px;
+  border-radius: 8px;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  transition: all 0.3s ease;
+}
+
+.mobile-hamburger-btn:hover {
+  border-color: #22C55E;
+  color: #22C55E;
+}
+
+/* Overlay Escuro */
+.sidebar-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(2px);
+  z-index: 45;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s ease;
+}
+
+.sidebar-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+@media (max-width: 768px) {
+  /* Mostra hambúrguer */
+  .mobile-hamburger-btn {
+    display: flex;
+  }
+
+  /* Conteúdo Principal expande 100% */
+  .main-content-wrapper,
+  .main-content-wrapper.sidebar-collapsed {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+
+  /* Sidebar vira gaveta (Drawer) - APENAS NO MOBILE */
+  .zenix-layout .sidebar {
+    position: fixed !important;
+    top: 0;
+    left: 0;
+    height: 100vh;
+    z-index: 50;
+    transform: translateX(-100%);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: 280px !important;
+    box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+    background-color: #0B0B0B;
+  }
+
+  /* Classe ativa para abrir menu - APENAS NO MOBILE */
+  .zenix-layout .sidebar.mobile-open {
+    transform: translateX(0);
+  }
+
+  /* Ajustes de padding no mobile - manter mesma posição */
+  .main-content {
+    padding: 1rem 15px !important;
+    margin-top: 60px !important;
+    padding-top: 1rem !important;
+  }
+
+  /* Garantir que os cards fiquem empilhados no mobile */
+  #immediate-support .grid {
+    grid-template-columns: 1fr !important;
+    gap: 1rem !important;
+  }
+
+  /* Esconder layout desktop e mostrar mobile */
+  .desktop-layout {
+    display: none !important;
+  }
+
+  .mobile-layout {
+    display: flex !important;
+  }
+
+  /* Esconder "Online agora" no mobile */
+  .mobile-layout .fa-comment-dots {
+    margin-bottom: 0 !important;
+  }
+
+  /* Remover margins das sections no mobile */
+  .support-section {
+    margin-bottom: 0 !important;
+  }
+
+  /* Espaçamento da seção search no mobile (deve vir depois para ter prioridade) */
+  .mobile-search-section {
+    margin-top: 1rem !important;
+    margin-bottom: 2rem !important;
+  }
+
+  /* Garantir que a search section tenha o espaçamento correto, sobrescrevendo mb-16 */
+  #search-section.mobile-search-section,
+  #search-section.support-section {
+    margin-top: 1rem !important;
+    margin-bottom: 2rem !important;
+  }
+
+  /* Aumentar padding dos cards no mobile (10px a mais) */
+  .support-card {
+    padding: 1.5rem !important; /* 24px - aumentou 10px de 0.875rem (14px) */
+    min-height: auto !important;
+  }
+
+  /* Aumentar margin-top e margin-bottom do card Abrir Ticket em 0.5rem */
+  .mobile-ticket-card {
+    margin-top: 0.5rem !important;
+    margin-bottom: 0.5rem !important;
+  }
+
+  /* Espaçamento entre texto e botão no card Abrir Ticket */
+  .mobile-ticket-content {
+    margin-bottom: 0.75rem !important;
+  }
+
+  .mobile-ticket-button {
+    margin-top: 0.75rem !important;
+  }
+
+  /* Remover margin do título no mobile */
+  .mobile-layout h3 {
+    margin-bottom: 0 !important;
+  }
+
+  /* Aumentar bem pouco a fonte do texto no mobile */
+  .mobile-text-size {
+    font-size: 0.9375rem !important; /* 15px - um pouco maior que text-sm (14px) */
+  }
+
+  /* Aumentar um pouco a fonte de Perguntas Frequentes no mobile */
+  .mobile-faq-title {
+    font-size: 1.5rem !important; /* 24px - um pouco maior que text-2xl (20px) */
+  }
+
+  /* Gradiente nos cards no mobile (igual ao Settings) */
+  .mobile-card-gradient {
+    background: linear-gradient(135deg, rgba(19, 29, 19, 0.95) 0%, rgba(10, 20, 10, 0.98) 50%, rgba(5, 10, 5, 0.95) 100%);
+    background-blend-mode: normal;
+    position: relative;
+  }
+
+  .mobile-card-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(8, 36, 18, 0.05) 50%, transparent 80%);
+    border-radius: 1rem;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .mobile-card-gradient > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Botão Iniciar Atendimento verde com texto preto no mobile */
+  .mobile-chat-button {
+    background-color: #22C55E !important;
+    color: #000000 !important;
+  }
+
+  .mobile-chat-button:hover {
+    background-color: #16A34A !important;
+    color: #000000 !important;
+  }
+}
+
+/* Desktop: manter layout original */
+@media (min-width: 769px) {
+  .desktop-layout {
+    display: flex !important;
+  }
+
+  .mobile-layout {
+    display: none !important;
+  }
+}
+
+/* GARANTIR QUE NO DESKTOP O SIDEBAR CONTINUE NORMAL */
+@media (min-width: 769px) {
+  .zenix-layout .sidebar {
+    position: fixed !important;
+    left: 0 !important;
+    top: 0 !important;
+    transform: none !important;
+    width: 280px !important;
+  }
+  
+  .zenix-layout .sidebar.mobile-open {
+    transform: none !important;
+  }
+  
+  .mobile-hamburger-btn {
+    display: none !important;
+  }
+  
+  .sidebar-overlay {
+    display: none !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+  }
+
+  /* Remover gradiente e estilos mobile no desktop */
+  .mobile-card-gradient {
+    background: inherit !important;
+  }
+
+  .mobile-card-gradient::before {
+    display: none !important;
+  }
+
+  .mobile-chat-button {
+    background-color: #22C55E !important;
+    color: #FFFFFF !important;
+  }
+
+  .mobile-chat-button:hover {
+    background-color: #16A34A !important;
   }
 }
 </style>
