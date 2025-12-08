@@ -1827,7 +1827,26 @@ export default {
       
       const prices = history.prices.map(price => Number(price));
       const times = history.times?.map(time => Number(time)) || [];
-      const newTicks = prices.map((value, index) => ({ value, epoch: times[index] || index }));
+      
+      // Criar ticks com validação rigorosa
+      const newTicks = prices
+        .map((price, index) => {
+          const value = Number(price);
+          const epoch = times[index] ? Math.floor(Number(times[index])) : null;
+          
+          // Validar valores
+          if (isNaN(value) || !isFinite(value) || value <= 0) {
+            return null;
+          }
+          
+          // Se não tem epoch válido, usar o timestamp atual menos o offset
+          const validEpoch = epoch && !isNaN(epoch) && epoch > 0 
+            ? epoch 
+            : Math.floor(Date.now() / 1000) - (prices.length - index);
+          
+          return { value, epoch: validEpoch };
+        })
+        .filter(tick => tick !== null && tick.value > 0 && tick.epoch > 0);
       
       // Se está em reconexão e já temos ticks, preservar os dados existentes
       // Apenas substituir se for uma nova conexão ou se os dados são mais recentes
@@ -1841,6 +1860,7 @@ export default {
       
       // Substituir ticks apenas se não estiver em reconexão
       this.ticks = newTicks;
+      this.previousDataCount = 0; // Resetar contador para forçar setData completo
       
       console.log('[OperationChart] Histórico processado:', {
         ticksCount: this.ticks.length,
@@ -1855,7 +1875,10 @@ export default {
       
       this.isLoadingSymbol = false;
       
-      // Garantir que o gráfico existe antes de atualizar
+      // Atualizar gráfico com histórico
+      this.updateChartFromTicks();
+      
+      // Garantir que o gráfico existe antes de atualizar (fallback)
       if (!this.chart) {
         console.log('[OperationChart] Gráfico não existe ainda, criando...');
         this.initChart();
@@ -2026,20 +2049,28 @@ export default {
         return;
       }
 
-      // Converter ticks para formato do gráfico
+      // Converter ticks para formato do gráfico com validação rigorosa
       const data = this.ticks
         .map(tick => {
-          const time = Math.floor(Number(tick.epoch));
-          const value = Number(tick.value);
-          if (isNaN(time) || isNaN(value) || time <= 0) {
+          if (!tick || tick.epoch === null || tick.epoch === undefined || tick.value === null || tick.value === undefined) {
             return null;
           }
+          
+          const time = Math.floor(Number(tick.epoch));
+          const value = Number(tick.value);
+          
+          // Validação rigorosa
+          if (isNaN(time) || isNaN(value) || time <= 0 || value <= 0 || !isFinite(time) || !isFinite(value)) {
+            return null;
+          }
+          
           return { time, value };
         })
-        .filter(item => item !== null)
+        .filter(item => item !== null && item.time !== null && item.value !== null)
         .sort((a, b) => a.time - b.time);
 
       if (data.length === 0) {
+        console.warn('[Chart] Nenhum dado válido após filtragem');
         return;
       }
 
@@ -2048,9 +2079,12 @@ export default {
         const previousCount = this.previousDataCount || 0;
         const isIncremental = data.length === previousCount + 1 && previousCount > 0;
 
-        if (isIncremental) {
-          // Atualizar apenas o último ponto
-          this.lineSeries.update(data[data.length - 1]);
+        if (isIncremental && previousCount > 0) {
+          // Atualizar apenas o último ponto - garantir que é válido
+          const lastPoint = data[data.length - 1];
+          if (lastPoint && lastPoint.time && lastPoint.value && !isNaN(lastPoint.value) && !isNaN(lastPoint.time)) {
+            this.lineSeries.update(lastPoint);
+          }
         } else {
           // Atualizar todos os dados
           this.lineSeries.setData(data);
@@ -2061,6 +2095,18 @@ export default {
         this.chartInitialized = true;
       } catch (error) {
         console.error('[Chart] Erro ao atualizar:', error);
+        // Em caso de erro, tentar recriar o gráfico
+        if (error.message && error.message.includes('null')) {
+          console.warn('[Chart] Erro de valor null detectado, recriando gráfico...');
+          this.chart = null;
+          this.lineSeries = null;
+          this.chartInitialized = false;
+          this.previousDataCount = 0;
+          setTimeout(() => {
+            this.initChart();
+            setTimeout(() => this.updateChartFromTicks(), 300);
+          }, 100);
+        }
       }
     },
     supportsCallPut(symbol) {
