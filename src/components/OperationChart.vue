@@ -2031,44 +2031,49 @@ export default {
           datasetExists: !!dataset
         });
         
-        // Substituir arrays completamente para evitar reatividade
-        dataset.data.length = 0;
-        this.chart.data.labels.length = 0;
+        // Criar arrays completamente novos usando JSON para garantir que são primitivos
+        // Isso remove qualquer conexão com proxies Vue
+        const serializedData = JSON.stringify(validData);
+        const serializedLabels = JSON.stringify(validLabels);
+        const newDataArray = JSON.parse(serializedData);
+        const newLabelsArray = JSON.parse(serializedLabels);
         
-        // Adicionar novos valores (primitivos)
-        for (let i = 0; i < validData.length; i++) {
-          dataset.data.push(validData[i]);
-          this.chart.data.labels.push(validLabels[i]);
-        }
+        // Substituir completamente os arrays
+        dataset.data = newDataArray;
+        this.chart.data.labels = newLabelsArray;
 
-        console.log('[Chart] Dados adicionados ao dataset:', {
+        console.log('[Chart] Dados atribuídos ao dataset:', {
           dataLength: dataset.data.length,
           labelsLength: this.chart.data.labels.length,
           firstDataPoint: dataset.data[0],
           lastDataPoint: dataset.data[dataset.data.length - 1]
         });
 
-        // Atualizar gráfico sem animação
-        this.chart.update('none');
-        console.log('[Chart] ✓ Gráfico atualizado com sucesso,', validData.length, 'pontos');
+        // Usar double requestAnimationFrame para garantir que está completamente fora do ciclo Vue
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            try {
+              if (this.chart && this.chart.data && this.chart.data.datasets && this.chart.data.datasets[0]) {
+                // Verificar novamente antes de atualizar
+                if (this.chart.chartArea && this.chart.chartArea.width > 0) {
+                  this.chart.update('none');
+                  console.log('[Chart] ✓ Gráfico atualizado com sucesso,', validData.length, 'pontos');
+                } else {
+                  console.warn('[Chart] Gráfico não tem chartArea válido no RAF');
+                }
+              }
+            } catch (updateError) {
+              console.error('[Chart] Erro ao chamar update:', updateError.message);
+              // NÃO recriar o gráfico - apenas parar para evitar loops infinitos
+              this.chartReady = false;
+            }
+          });
+        });
       } catch (error) {
         console.error('[Chart] Erro ao atualizar:', error);
-        // Se erro persistir, marcar gráfico como não pronto e tentar recriar
-        if (error.message && (error.message.includes('Maximum call stack') || error.message.includes('fullSize'))) {
-          this.chartReady = false;
-          setTimeout(() => {
-            if (this.chart) {
-              try {
-                this.chart.destroy();
-              } catch (e) {
-                // Ignorar
-              }
-            }
-            this.chart = null;
-            this.chartReady = false;
-            this.initChart();
-          }, 500);
-        }
+        // NÃO recriar o gráfico automaticamente - isso causa loops infinitos
+        // Apenas marcar como não pronto
+        this.chartReady = false;
       }
     },
 
