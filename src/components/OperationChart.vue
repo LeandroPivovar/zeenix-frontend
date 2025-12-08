@@ -586,6 +586,22 @@ export default {
               },
               onResize: (chart, size) => {
                 console.log('[Chart] Gráfico redimensionado:', size);
+                // Se o gráfico foi redimensionado para 0x0, tentar corrigir
+                if (size && (size.width === 0 || size.height === 0)) {
+                  console.warn('[Chart] Gráfico redimensionado para dimensões inválidas, tentando corrigir...');
+                  const container = this.$refs.chartContainer;
+                  if (container) {
+                    const rect = container.getBoundingClientRect();
+                    if (rect.width > 0 && rect.height > 0) {
+                      // Forçar resize com dimensões corretas
+                      setTimeout(() => {
+                        if (this.chart && this.chart.canvas) {
+                          this.chart.resize();
+                        }
+                      }, 100);
+                    }
+                  }
+                }
               }
             }
           });
@@ -1847,11 +1863,18 @@ export default {
       if (!this.chart) {
         console.log('[Chart] Gráfico não existe, criando...');
         this.initChart();
+        // Aguardar um pouco mais para garantir que o gráfico foi criado
+        setTimeout(() => {
+          console.log('[Chart] Chamando updateChart após criar gráfico...');
+          this.updateChart();
+        }, 300);
+      } else {
+        console.log('[Chart] Gráfico existe, chamando updateChart...');
+        this.$nextTick(() => {
+          console.log('[Chart] Dentro do nextTick, chamando updateChart...');
+          this.updateChart();
+        });
       }
-      
-      this.$nextTick(() => {
-        this.updateChart();
-      });
     },
     processCandles(msg) {
       const candles = msg.candles || [];
@@ -1933,20 +1956,35 @@ export default {
       }
     },
     updateChart() {
+      console.log('[Chart] updateChart chamado', {
+        isUpdatingChart: this.isUpdatingChart,
+        ticksLength: this.ticks.length,
+        hasChart: !!this.chart
+      });
+      
       // Limpar timeout anterior se existir
       if (this.updateChartTimeout) {
         clearTimeout(this.updateChartTimeout);
       }
 
-      if (this.isUpdatingChart || !this.ticks.length) {
+      if (this.isUpdatingChart) {
+        console.log('[Chart] Já está atualizando, ignorando chamada');
+        return;
+      }
+
+      if (!this.ticks.length) {
+        console.log('[Chart] Sem ticks para atualizar');
         return;
       }
 
       if (!this.chart) {
+        console.log('[Chart] Gráfico não existe, criando...');
         this.initChart();
         this.updateChartTimeout = setTimeout(() => this.updateChart(), 200);
         return;
       }
+      
+      console.log('[Chart] Iniciando atualização do gráfico...');
 
       // Debounce de 100ms para evitar múltiplas atualizações
       this.updateChartTimeout = setTimeout(() => {
