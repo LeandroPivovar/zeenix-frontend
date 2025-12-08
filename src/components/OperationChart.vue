@@ -314,6 +314,7 @@ export default {
       ],
       ticks: [],
       isDestroying: false,
+      isUpdatingChart: false,
       latestTick: null,
       lastUpdate: null,
       chart: null,
@@ -499,13 +500,10 @@ export default {
       }
 
       this.$nextTick(() => {
-        const canvas = container.querySelector('canvas');
+        let canvas = container.querySelector('canvas');
         if (!canvas) {
-          // Criar canvas se não existir
-          const newCanvas = document.createElement('canvas');
-          container.appendChild(newCanvas);
-          this.initChart();
-          return;
+          canvas = document.createElement('canvas');
+          container.appendChild(canvas);
         }
 
         const rect = container.getBoundingClientRect();
@@ -515,9 +513,9 @@ export default {
         }
 
         try {
-          // Destruir gráfico anterior se existir
           if (this.chart) {
             this.chart.destroy();
+            this.chart = null;
           }
 
           const ctx = canvas.getContext('2d');
@@ -538,33 +536,28 @@ export default {
                 borderWidth: 2,
                 fill: true,
                 tension: 0.4,
-                pointRadius: 0,
-                pointHoverRadius: 0
+                pointRadius: 0
               }]
             },
             options: {
               responsive: true,
               maintainAspectRatio: false,
+              animation: false,
               plugins: {
                 legend: {
                   display: false
                 },
                 tooltip: {
-                  enabled: true
+                  enabled: false
                 }
               },
               scales: {
                 x: {
-                  display: true,
-                  grid: {
-                    color: 'rgba(28, 28, 28, 0.5)'
-                  },
-                  ticks: {
-                    color: '#DFDFDF'
-                  }
+                  display: false
                 },
                 y: {
                   display: true,
+                  position: 'right',
                   grid: {
                     color: 'rgba(28, 28, 28, 0.5)'
                   },
@@ -572,10 +565,6 @@ export default {
                     color: '#DFDFDF'
                   }
                 }
-              },
-              interaction: {
-                intersect: false,
-                mode: 'index'
               }
             }
           });
@@ -1893,37 +1882,53 @@ export default {
       }
     },
     updateChart() {
+      if (this.isUpdatingChart) {
+        return;
+      }
+
       if (!this.ticks.length) {
         return;
       }
 
       if (!this.chart) {
         this.initChart();
+        setTimeout(() => this.updateChart(), 200);
         return;
       }
 
-      const data = this.ticks
-        .map(tick => {
-          const time = Number(tick.epoch) * 1000; // Converter para milissegundos
-          const value = Number(tick.value);
-          if (isNaN(time) || isNaN(value) || time <= 0 || value <= 0) {
-            return null;
-          }
-          return { x: time, y: value };
-        })
-        .filter(item => item !== null)
-        .sort((a, b) => a.x - b.x);
-
-      if (data.length === 0) {
-        return;
-      }
+      this.isUpdatingChart = true;
 
       try {
-        this.chart.data.labels = data.map((_, i) => i);
-        this.chart.data.datasets[0].data = data.map(d => d.y);
-        this.chart.update('none'); // 'none' para atualização sem animação
+        const values = this.ticks
+          .map(tick => {
+            const value = Number(tick.value);
+            if (isNaN(value) || value <= 0) {
+              return null;
+            }
+            return value;
+          })
+          .filter(item => item !== null);
+
+        if (values.length === 0) {
+          this.isUpdatingChart = false;
+          return;
+        }
+
+        this.chart.data.labels = values.map((_, i) => i);
+        this.chart.data.datasets[0].data = values;
+        this.chart.update('none');
       } catch (error) {
         console.error('[Chart] Erro ao atualizar:', error);
+        if (this.chart) {
+          try {
+            this.chart.destroy();
+          } catch (e) {
+            // Ignorar erro ao destruir
+          }
+          this.chart = null;
+        }
+      } finally {
+        this.isUpdatingChart = false;
       }
     },
     supportsCallPut(symbol) {
