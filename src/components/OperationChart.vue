@@ -10,42 +10,12 @@
 
     <div v-else class="operation-layout">
         <div class="col-chart flex-1 flex flex-col gap-5">
-        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full" style="min-height: 845px;">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A]">
-            <div class="flex items-center gap-4">
-              <div class="flex gap-2">
-                <button 
-                  v-for="timeframe in ['1m', '2m', '5m', '15m', '30m']" 
-                  :key="timeframe"
-                  @click="setTimeframe(timeframe)"
-                  :class="[
-                    'px-3 py-1.5 border rounded-lg text-xs transition-all duration-300',
-                    selectedTimeframe === timeframe 
-                      ? 'bg-zenix-green border-zenix-green text-black font-semibold shadow-[0_0_8px_rgba(34,197,94,0.3)]' 
-                      : 'bg-[#0F0F0F] border-zenix-border text-zenix-text hover:bg-[#1A1A1A] hover:border-zenix-green'
-                  ]"
-                >
-                  {{ timeframe }}
-                </button>
-              </div>
-            </div>
-            <div class="flex gap-2">
-              <button class="w-8 h-8 bg-[#0F0F0F] border border-zenix-border rounded-lg flex items-center justify-center hover:bg-[#1A1A1A] hover:border-zenix-green transition-all duration-300">
-                <i class="far fa-search-plus text-xs text-zenix-text"></i>
-              </button>
-              <button class="w-8 h-8 bg-[#0F0F0F] border border-zenix-border rounded-lg flex items-center justify-center hover:bg-[#1A1A1A] hover:border-zenix-green transition-all duration-300">
-                <i class="far fa-search-minus text-xs text-zenix-text"></i>
-              </button>
-              <button class="w-8 h-8 bg-[#0F0F0F] border border-zenix-border rounded-lg flex items-center justify-center hover:bg-[#1A1A1A] hover:border-zenix-green transition-all duration-300">
-                <i class="far fa-redo text-xs text-zenix-text"></i>
-              </button>
-              <button class="w-8 h-8 bg-[#0F0F0F] border border-zenix-border rounded-lg flex items-center justify-center hover:bg-[#1A1A1A] hover:border-zenix-green transition-all duration-300">
-                <i class="far fa-expand text-xs text-zenix-text"></i>
-              </button>
-            </div>
+        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full" style="height: 700px;">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A] flex-shrink-0">
+            <h3 class="text-base font-semibold text-zenix-text">Gráfico</h3>
           </div>
 
-          <div id="candlestickChart" class="flex-1 w-full chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative; z-index: 1; min-height: 400px; height: 100%;"></div>
+          <div id="candlestickChart" class="w-full chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative; flex: 1; min-height: 0; height: 100%;"></div>
           <div v-if="!ticks.length" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
             <p class="text-zenix-secondary">{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
           </div>
@@ -575,10 +545,33 @@ export default {
             lineWidth: 2,
           });
 
+          // Verificar se o canvas foi criado
+          const canvas = container.querySelector('canvas');
+          if (canvas) {
+            console.log('[Chart] Canvas encontrado:', {
+              width: canvas.width,
+              height: canvas.height,
+              display: window.getComputedStyle(canvas).display,
+              visibility: window.getComputedStyle(canvas).visibility,
+              opacity: window.getComputedStyle(canvas).opacity
+            });
+            // Forçar estilos no canvas
+            canvas.style.display = 'block';
+            canvas.style.visibility = 'visible';
+            canvas.style.opacity = '1';
+            canvas.style.position = 'absolute';
+            canvas.style.top = '0';
+            canvas.style.left = '0';
+            canvas.style.zIndex = '10';
+          } else {
+            console.warn('[Chart] Canvas não encontrado após criar gráfico');
+          }
+
           console.log('[Chart] Gráfico criado com sucesso', {
             hasChart: !!this.chart,
             hasLineSeries: !!this.lineSeries,
-            ticksCount: this.ticks.length
+            ticksCount: this.ticks.length,
+            hasCanvas: !!canvas
           });
 
           window.addEventListener('resize', this.handleResize);
@@ -4802,12 +4795,22 @@ export default {
   background-color: #0B0B0B !important;
 }
 
+#candlestickChart {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  background-color: #0B0B0B !important;
+  display: block !important;
+}
+
 #candlestickChart canvas {
   display: block !important;
   width: 100% !important;
   height: 100% !important;
-  position: relative !important;
-  z-index: 1 !important;
+  position: absolute !important;
+  top: 0 !important;
+  left: 0 !important;
+  z-index: 10 !important;
   background-color: #0B0B0B !important;
   opacity: 1 !important;
   visibility: visible !important;
