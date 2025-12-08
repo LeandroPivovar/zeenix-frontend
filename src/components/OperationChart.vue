@@ -504,7 +504,15 @@ export default {
         let canvas = container.querySelector('canvas');
         if (!canvas) {
           canvas = document.createElement('canvas');
+          canvas.style.display = 'block';
+          canvas.style.width = '100%';
+          canvas.style.height = '100%';
+          canvas.style.position = 'relative';
+          canvas.style.zIndex = '10';
           container.appendChild(canvas);
+          console.log('[Chart] Canvas criado e adicionado ao DOM');
+        } else {
+          console.log('[Chart] Canvas já existe, reutilizando');
         }
 
         const rect = container.getBoundingClientRect();
@@ -525,6 +533,11 @@ export default {
             return;
           }
 
+          // Garantir que o canvas está visível
+          canvas.style.display = 'block';
+          canvas.style.visibility = 'visible';
+          canvas.style.opacity = '1';
+          
           this.chart = new Chart(ctx, {
             type: 'line',
             data: {
@@ -544,6 +557,10 @@ export default {
               responsive: true,
               maintainAspectRatio: false,
               animation: false,
+              interaction: {
+                intersect: false,
+                mode: 'index'
+              },
               plugins: {
                 legend: {
                   display: false
@@ -566,6 +583,9 @@ export default {
                     color: '#DFDFDF'
                   }
                 }
+              },
+              onResize: (chart, size) => {
+                console.log('[Chart] Gráfico redimensionado:', size);
               }
             }
           });
@@ -1960,11 +1980,49 @@ export default {
             data[i] = values[i];
           }
           
+          // Verificar se o canvas ainda existe no DOM
+          const canvas = this.chart.canvas;
+          if (!canvas || !canvas.parentNode) {
+            console.warn('[Chart] Canvas não encontrado no DOM, recriando gráfico...');
+            this.chart = null;
+            this.initChart();
+            this.isUpdatingChart = false;
+            this.updateChartTimeout = null;
+            return;
+          }
+
           this.chart.data.labels = labels;
           this.chart.data.datasets[0].data = data;
           
+          console.log('[Chart] Atualizando gráfico com', values.length, 'pontos');
+          console.log('[Chart] Estado antes da atualização:', {
+            hasChart: !!this.chart,
+            canvasVisible: canvas.offsetParent !== null,
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height,
+            canvasDisplay: window.getComputedStyle(canvas).display,
+            canvasOpacity: window.getComputedStyle(canvas).opacity,
+            dataLength: this.chart?.data?.datasets?.[0]?.data?.length
+          });
+          
           // Atualizar gráfico
           this.chart.update('none');
+          
+          // Verificar se o gráfico ainda existe após a atualização
+          if (!this.chart || !this.chart.canvas) {
+            console.error('[Chart] Gráfico foi destruído durante a atualização!');
+            this.chart = null;
+            this.initChart();
+            this.isUpdatingChart = false;
+            this.updateChartTimeout = null;
+            return;
+          }
+          
+          console.log('[Chart] Gráfico atualizado com sucesso', {
+            canvasStillVisible: this.chart.canvas.offsetParent !== null,
+            canvasWidth: this.chart.canvas.width,
+            canvasHeight: this.chart.canvas.height
+          });
         } catch (error) {
           console.error('[Chart] Erro ao atualizar:', error);
           if (this.chart) {
