@@ -120,9 +120,27 @@
 					</span>
 				</div>
 				<div class="performance">
-					<span class="performance-title">Performance do Agente</span>
-					<span class="update-info">Última atualização: <span class="update-time">{{ ultimaAtualizacao }}</span></span>
-					<div class="chart-settings">
+					<div class="performance-header" v-if="abaAtiva === 'grafico'">
+						<div class="performance-title-wrapper">
+							<span class="performance-title">Performance do Agente</span>
+							<span class="update-info">Última atualização: <span class="update-time">{{ ultimaAtualizacao }}</span></span>
+						</div>
+						<!-- Select simples apenas no mobile -->
+						<select v-model="periodoMobile" class="custom-select mobile-period-select">
+							<option value="hoje">Hoje</option>
+							<option value="ontem">Ontem</option>
+							<option value="7d">Últimos 7 dias</option>
+							<option value="30d">Últimos 30 dias</option>
+						</select>
+					</div>
+					<!-- Header desktop sempre visível -->
+					<div class="performance-header desktop-performance-header">
+						<div class="performance-title-wrapper">
+							<span class="performance-title">Performance do Agente</span>
+							<span class="update-info">Última atualização: <span class="update-time">{{ ultimaAtualizacao }}</span></span>
+						</div>
+					</div>
+					<div class="chart-settings desktop-chart-settings">
 						<template v-if="abaAtiva === 'grafico'">
 							<div class="control-group">
 								Timeframe:
@@ -184,7 +202,41 @@
 					<div class="history-header">
 						<h3>Histórico de Operações ({{ historicoOperacoesFiltradas.length }})</h3>
 					</div>
-					<div class="table-scroll-wrapper">
+					<!-- Título e subtítulo mobile -->
+					<div class="mobile-history-header">
+						<h3 class="mobile-history-title">Histórico de Operações</h3>
+						<p class="mobile-history-subtitle">Últimas operações realizadas</p>
+					</div>
+					<!-- Cards mobile -->
+					<div class="mobile-history-cards">
+						<div v-for="(op, index) in historicoOperacoesFiltradas" :key="index" class="mobile-history-card">
+							<div class="mobile-history-card-header">
+								<span class="mobile-history-time">{{ op.hora }}</span>
+								<span :class="['mobile-history-badge', op.tipo === 'Call' ? 'badge-call' : 'badge-put']">
+									{{ op.tipo.toUpperCase() }}
+								</span>
+								<span class="mobile-history-volume">Vol {{ op.volume }}</span>
+							</div>
+							<div class="mobile-history-details">
+								<div class="mobile-history-detail-column">
+									<span class="detail-label">Entrada</span>
+									<span class="detail-value">${{ op.entrada }}</span>
+								</div>
+								<div class="mobile-history-detail-column">
+									<span class="detail-label">Saída</span>
+									<span class="detail-value">${{ op.saida }}</span>
+								</div>
+								<div class="mobile-history-detail-column">
+									<span class="detail-label">Resultado</span>
+									<span :class="['detail-value', op.resultado.startsWith('+') ? 'result-positive' : 'result-negative']">
+										{{ op.resultado }}
+									</span>
+								</div>
+							</div>
+						</div>
+					</div>
+					<!-- Tabela desktop -->
+					<div class="table-scroll-wrapper desktop-history-table">
 						<table class="operations-table">
 							<thead>
 								<tr>
@@ -215,6 +267,22 @@
 					<OperationLogs :trade-results="formattedTradeResults" />
 				</div>
 			</div>
+			<!-- Cards Maior Ganho e Maior Perda - apenas mobile e apenas na aba gráfico -->
+			<div v-if="abaAtiva === 'grafico'" class="mobile-performance-cards">
+				<div class="mobile-performance-card">
+					<div class="mobile-performance-label">Maior Ganho</div>
+					<div class="mobile-performance-value positive">+${{ maiorGanho.toFixed(2) }}</div>
+				</div>
+				<div class="mobile-performance-card">
+					<div class="mobile-performance-label">Maior Perda</div>
+					<div class="mobile-performance-value negative">-${{ maiorPerda.toFixed(2) }}</div>
+				</div>
+			</div>
+			<!-- Botão Pausar Agente - apenas mobile e apenas na aba gráfico -->
+			<button v-if="abaAtiva === 'grafico'" @click="pausarAgenteEIrParaTopo" class="mobile-pause-agent-btn">
+				<span class="mobile-pause-icon">II</span>
+				Pausar Agente
+			</button>
 		</div>
 		<div class="actions-section">
 			<div class="actions-header">
@@ -252,6 +320,9 @@
 				filtroDataSelecionado: 'hoje',
 				dataInicio: '2025-11-25',
 				dataFim: '2025-11-25',
+				periodoMobile: 'hoje',
+				maiorGanho: 8.50,
+				maiorPerda: 2.30,
 				agenteData: {
 					estrategia: 'Arion',
 					mercado: 'Índices Sintéticos',
@@ -276,19 +347,23 @@
 					{ hora: '14:30:00', classe: 'info', titulo: 'Aguardando padrão da estratégia', descricao: '14:30:00 - Análise em andamento' },
 				],
 				historicoOperacoes: [
-					{ data: '2025-11-25', hora: '14:32:16', ativo: 'CALL1', tipo: 'Call', entrada: '83.80', saida: '85.20', resultado: '+$7.50' },
-					{ data: '2025-11-25', hora: '14:18:02', ativo: 'CALL1', tipo: 'Call', entrada: '82.60', saida: '81.30', resultado: '-$3.20' },
-					{ data: '2025-11-25', hora: '14:01:45', ativo: 'Volatility 75', tipo: 'Put', entrada: '156.40', saida: '158.90', resultado: '+$12.30' },
-					{ data: '2025-11-25', hora: '13:45:22', ativo: 'CALL1', tipo: 'Call', entrada: '84.15', saida: '83.50', resultado: '-$2.10' },
-					{ data: '2025-11-25', hora: '13:30:08', ativo: 'Volatility 75', tipo: 'Call', entrada: '155.20', saida: '157.80', resultado: '+$8.90' },
-					{ data: '2025-11-24', hora: '13:15:00', ativo: 'CALL1', tipo: 'Put', entrada: '88.00', saida: '87.00', resultado: '-$1.50' },
-					{ data: '2025-11-24', hora: '13:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '160.00', saida: '162.00', resultado: '+$10.00' },
-					{ data: '2025-11-23', hora: '12:45:00', ativo: 'CALL1', tipo: 'Put', entrada: '81.00', saida: '80.00', resultado: '-$1.00' },
-					{ data: '2025-11-22', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+$9.00' },
-					{ data: '2025-11-21', hora: '12:30:00', ativo: 'CALL1', tipo: 'Put', entrada: '85.00', saida: '84.00', resultado: '-$1.00' },
-					{ data: '2025-11-20', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+$9.00' },
-					{ data: '2025-11-01', hora: '10:00:00', ativo: 'CALL1', tipo: 'Put', entrada: '80.00', saida: '81.00', resultado: '+$2.00' },
-					{ data: '2025-10-31', hora: '11:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '140.00', saida: '141.00', resultado: '+$1.00' },
+					{ data: '2025-11-25', hora: '14:32:16', ativo: 'CALL1', tipo: 'Call', entrada: '83.80', saida: '85.20', resultado: '+$7.50', volume: '75' },
+					{ data: '2025-11-25', hora: '14:22:18', ativo: 'Volatility 75', tipo: 'Call', entrada: '2.00', saida: '3.85', resultado: '+$1.85', volume: '75' },
+					{ data: '2025-11-25', hora: '14:18:42', ativo: 'Volatility 75', tipo: 'Put', entrada: '2.00', saida: '0.00', resultado: '-$2.00', volume: '50' },
+					{ data: '2025-11-25', hora: '14:15:33', ativo: 'Volatility 75', tipo: 'Call', entrada: '3.00', saida: '5.70', resultado: '+$2.70', volume: '100' },
+					{ data: '2025-11-25', hora: '14:12:08', ativo: 'Volatility 75', tipo: 'Call', entrada: '1.50', saida: '2.92', resultado: '+$1.42', volume: '25' },
+					{ data: '2025-11-25', hora: '14:18:02', ativo: 'CALL1', tipo: 'Call', entrada: '82.60', saida: '81.30', resultado: '-$3.20', volume: '75' },
+					{ data: '2025-11-25', hora: '14:01:45', ativo: 'Volatility 75', tipo: 'Put', entrada: '156.40', saida: '158.90', resultado: '+$12.30', volume: '75' },
+					{ data: '2025-11-25', hora: '13:45:22', ativo: 'CALL1', tipo: 'Call', entrada: '84.15', saida: '83.50', resultado: '-$2.10', volume: '75' },
+					{ data: '2025-11-25', hora: '13:30:08', ativo: 'Volatility 75', tipo: 'Call', entrada: '155.20', saida: '157.80', resultado: '+$8.90', volume: '75' },
+					{ data: '2025-11-24', hora: '13:15:00', ativo: 'CALL1', tipo: 'Put', entrada: '88.00', saida: '87.00', resultado: '-$1.50', volume: '75' },
+					{ data: '2025-11-24', hora: '13:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '160.00', saida: '162.00', resultado: '+$10.00', volume: '75' },
+					{ data: '2025-11-23', hora: '12:45:00', ativo: 'CALL1', tipo: 'Put', entrada: '81.00', saida: '80.00', resultado: '-$1.00', volume: '75' },
+					{ data: '2025-11-22', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+$9.00', volume: '75' },
+					{ data: '2025-11-21', hora: '12:30:00', ativo: 'CALL1', tipo: 'Put', entrada: '85.00', saida: '84.00', resultado: '-$1.00', volume: '75' },
+					{ data: '2025-11-20', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+$9.00', volume: '75' },
+					{ data: '2025-11-01', hora: '10:00:00', ativo: 'CALL1', tipo: 'Put', entrada: '80.00', saida: '81.00', resultado: '+$2.00', volume: '75' },
+					{ data: '2025-10-31', hora: '11:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '140.00', saida: '141.00', resultado: '+$1.00', volume: '75' },
 				],
 			};
 		},
@@ -450,10 +525,17 @@
 	}
 
 	.metric-card,
-	.chart-section,
+	.chart-section {
+		background: #0f0f0e;
+		border: 1px solid #1a1a1a;
+		border-radius: 8px;
+		padding: 20px;
+		margin-bottom: 20px;
+	}
+
 	.history-section,
 	.actions-section {
-		background: #0e0f0f;
+		background: #0f0f0e;
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
 		padding: 20px;
@@ -461,7 +543,7 @@
 	}
 
 	.progress-card {
-		background: #0e0f0f;
+		background: #0f0f0e;
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
 		padding: 20px;
@@ -469,7 +551,7 @@
 	}
 
 	.agent-top {
-		background: #0e0f0f;
+		background: #0f0f0e;
 		padding: 30px;
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
@@ -711,6 +793,7 @@
 	.chart-section {
 		padding: 20px;
 		margin-top: 1.5rem;
+		background: linear-gradient(135deg, rgba(14, 14, 14, 0.95) 0%, rgba(10, 10, 10, 0.98) 50%, rgba(5, 5, 5, 0.95) 100%);
 	}
 
 	.chart-controls {
@@ -757,10 +840,27 @@
 		width: 100%;
 	}
 
+	.performance-header {
+		display: flex;
+		flex-direction: row;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 15px;
+		flex: 1;
+	}
+
+	.performance-title-wrapper {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		flex: 1;
+	}
+
 	.performance-title {
 		font-weight: 500;
 		color: #e7e7e7;
 		font-size: 1.2rem;
+		text-align: left;
 	}
 
 	.update-info {
@@ -768,8 +868,45 @@
 		display: flex;
 		align-items: center;
 		gap: 5px;
-		margin-right: auto;
-		margin-left: 20px;
+		font-size: 0.875rem;
+	}
+
+	.mobile-period-select {
+		display: none;
+	}
+
+	.desktop-performance-header {
+		display: flex;
+	}
+
+	@media (max-width: 768px) {
+		.desktop-performance-header {
+			display: none !important;
+		}
+	}
+
+	.mobile-history-header {
+		display: none;
+	}
+
+	.mobile-history-cards {
+		display: none;
+	}
+
+	.mobile-performance-cards {
+		display: none;
+	}
+
+	.mobile-pause-agent-btn {
+		display: none;
+	}
+
+	.mobile-period-select {
+		display: none;
+	}
+
+	.desktop-history-table {
+		display: block;
 	}
 
 	.chart-settings {
@@ -857,6 +994,22 @@
 
 	.register-content.hidden {
 		display: none;
+	}
+
+	.history-header {
+		display: block;
+		margin-bottom: 20px;
+	}
+
+	.history-header h3 {
+		font-weight: 500;
+		color: #e7e7e7;
+		font-size: 1.2rem;
+		text-align: left;
+		padding-bottom: 0;
+		border-bottom: none;
+		margin-bottom: 0;
+		width: 100%;
 	}
 
 	.chart-placeholder {
@@ -1006,11 +1159,14 @@
 	}
 
 	.progress-card,
-	.chart-section,
+	.chart-section {
+		background: #0f0f0e;
+	}
+
 	.history-section,
 	.actions-section,
 	.metric-card {
-		background: #0e0f0f;
+		background: #0f0f0e;
 	}
 	@media (min-width: 1024px) {
 		.agent-title-mobile{
@@ -1101,7 +1257,7 @@
 
 	.tab-controls {
 		width: 100%;
-		justify-content: space-between;
+		justify-content: space-around;
 	}
 
 	.performance {
@@ -1111,10 +1267,146 @@
 		width: 100%;
 	}
 
-	.update-info {
-		margin-left: 0;
-		margin-right: 0;
+	.performance-header {
+		width: 100%;
+		display: flex;
+		flex-direction: row;
+		justify-content: space-between;
+		align-items: center;
+		gap: 10px;
 	}
+
+		.update-info {
+			margin-left: 0;
+			margin-right: 0;
+		}
+
+		.mobile-hide {
+			display: none !important;
+		}
+
+		.mobile-hide-on-history {
+			display: none !important;
+		}
+
+
+		.history-header {
+			display: none !important;
+		}
+
+		.mobile-history-header {
+			display: block;
+			margin-bottom: 20px;
+			text-align: left;
+		}
+
+		.mobile-history-title {
+			font-size: 1.5rem;
+			font-weight: 700;
+			color: #f0f0f0;
+			margin: 0 0 8px 0;
+			text-align: left;
+		}
+
+		.mobile-history-subtitle {
+			font-size: 0.875rem;
+			color: #a09e9e;
+			margin: 0;
+			text-align: left;
+		}
+
+		.mobile-history-cards {
+			display: flex;
+			flex-direction: column;
+			gap: 15px;
+			max-height: 60vh;
+			overflow-y: auto;
+		}
+
+		.mobile-history-card {
+			background: #0e0f0f;
+			border: none;
+			border-radius: 8px;
+			
+			padding: 15px;
+			
+			border: 1px solid #1a1a1a;
+		}
+
+		.mobile-history-card-header {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin-bottom: 12px;
+			padding-bottom: 12px;
+			border-bottom: 1px solid #1a1a1a;
+		}
+
+		.mobile-history-time {
+			font-size: 14px;
+			color: #f0f0f0;
+			font-weight: 500;
+		}
+
+		.mobile-history-badge {
+			padding: 4px 10px;
+			border-radius: 4px;
+			font-size: 12px;
+			font-weight: 600;
+		}
+
+		.badge-call {
+			background: #22C55E;
+			color: #000;
+		}
+
+		.badge-put {
+			background: #ff4444;
+			color: #fff;
+		}
+
+		.mobile-history-volume {
+			font-size: 12px;
+			color: #a09e9e;
+			margin-left: auto;
+		}
+
+		.mobile-history-details {
+			display: grid;
+			grid-template-columns: 1fr 1fr 1fr;
+			gap: 10px;
+		}
+
+		.mobile-history-detail-column {
+			display: flex;
+			flex-direction: column;
+			gap: 4px;
+		}
+
+		.detail-label {
+			font-size: 12px;
+			color: #a09e9e;
+			text-align: left;
+		}
+
+		.detail-value {
+			font-size: 14px;
+			font-weight: 500;
+			color: #f0f0f0;
+			text-align: left;
+		}
+
+		.detail-value.result-positive {
+			color: #22C55E;
+		}
+
+		.detail-value.result-negative {
+			color: #ff4444;
+		}
+
+		.desktop-history-table {
+			display: none !important;
+		}
 
 	.chart-settings {
 		width: 100%;
@@ -1309,6 +1601,156 @@
 		display: none;
 	}
 
-	
+	/* Performance cards mobile */
+	.mobile-performance-cards {
+		display: none;
+	}
+
+	.mobile-pause-agent-btn {
+		display: none;
+	}
+
+	.mobile-period-select {
+		display: none;
+	}
+
+	/* Desktop: esconder todos os elementos mobile */
+	@media (min-width: 769px) {
+		.mobile-history-header,
+		.mobile-history-cards,
+		.mobile-history-card,
+		.mobile-history-card-header,
+		.mobile-history-time,
+		.mobile-history-badge,
+		.mobile-history-volume,
+		.mobile-history-details,
+		.mobile-history-detail-column,
+		.mobile-performance-cards,
+		.mobile-performance-card,
+		.mobile-performance-label,
+		.mobile-performance-value,
+		.mobile-pause-agent-btn,
+		.mobile-pause-icon,
+		.mobile-period-select {
+			display: none !important;
+		}
+	}
+
+	/* Estilos para os cards de performance no mobile */
+	@media (max-width: 768px) {
+		.performance-header {
+			flex-direction: row;
+			justify-content: space-between;
+			align-items: flex-start;
+			width: 100%;
+			gap: 10px;
+		}
+
+		.performance-title-wrapper {
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			gap: 5px;
+			flex: 1;
+		}
+
+		.performance-title {
+			font-size: 1rem;
+			font-weight: 600;
+			color: #f0f0f0;
+		}
+
+		.update-info {
+			font-size: 0.75rem;
+			color: #a09e9e;
+			margin-left: 0;
+			margin-right: 0;
+		}
+
+		.mobile-period-select {
+			display: block;
+			background-color: #0a0a0a;
+			color: #f0f0f0;
+			border: 1px solid #1a1a1a;
+			border-radius: 6px;
+			padding: 8px 12px;
+			font-size: 13px;
+			cursor: pointer;
+			-webkit-appearance: none;
+			-moz-appearance: none;
+			appearance: none;
+			height: 36px;
+			width: fit-content;
+			margin-left: auto;
+		}
+
+		.desktop-chart-settings {
+			display: none;
+		}
+
+		.mobile-performance-cards {
+			display: grid;
+			grid-template-columns: 1fr 1fr;
+			gap: 15px;
+			margin-top: 20px;
+			margin-bottom: 20px;
+		}
+
+		.mobile-performance-card {
+			background: #0e0f0f;
+			border: 1px solid #1a1a1a;
+			border-radius: 8px;
+			padding: 15px;
+			display: flex;
+			flex-direction: column;
+			gap: 8px;
+		}
+
+		.mobile-performance-label {
+			font-size: 12px;
+			color: #a09e9e;
+			text-transform: uppercase;
+		}
+
+		.mobile-performance-value {
+			font-size: 18px;
+			font-weight: 700;
+		}
+
+		.mobile-performance-value.positive {
+			color: #22C55E;
+		}
+
+		.mobile-performance-value.negative {
+			color: #ff4444;
+		}
+
+		.mobile-pause-agent-btn {
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 10px;
+			width: 100%;
+			background: #FFD700;
+			color: #000;
+			border: none;
+			padding: 16px 20px;
+			border-radius: 8px;
+			font-size: 16px;
+			font-weight: 700;
+			cursor: pointer;
+			transition: background 0.2s;
+			margin-top: 20px;
+		}
+
+		.mobile-pause-agent-btn:hover {
+			background: #FFC700;
+		}
+
+		.mobile-pause-icon {
+			font-size: 18px;
+			font-weight: bold;
+		}
+	}
 }
 </style>

@@ -972,7 +972,28 @@
     .container-componentes {
       padding: 0 1rem 20px 1rem;
       margin-top: 50px;
-      background: radial-gradient(ellipse 120% 60% at 50% 0%, rgba(34, 197, 94, 0.15) 0%, rgba(34, 197, 94, 0.08) 25%, rgba(34, 197, 94, 0.03) 50%, transparent 80%); 
+      background: linear-gradient(135deg, rgba(19, 29, 19, 0.95) 0%, rgba(10, 20, 10, 0.98) 50%, rgba(5, 10, 5, 0.95) 100%);
+      background-blend-mode: normal;
+      position: relative;
+      min-height: calc(100vh - 50px);
+    }
+
+    .container-componentes::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(8, 36, 18, 0.05) 50%, transparent 80%);
+      border-radius: 1rem;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container-componentes > * {
+      position: relative;
+      z-index: 1;
     }
     .header-content {
       padding: 1rem 15px 1rem 70px; /* Espaço para o hambúrguer */
