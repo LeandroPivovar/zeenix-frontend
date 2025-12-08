@@ -13,26 +13,18 @@
   
       <div class="box" style="margin-top: 60px;">
         <div class="header">
-          <h1 v-if="hasActiveSession">Copy Trading — Acompanhar & Performance</h1>
+          <h1 v-if="hasActiveSession">Copy Trading - Performance</h1>
           <h1 v-else>Copy Trading — Configuração Inicial</h1>
-          <p v-if="hasActiveSession">Acompanhe suas operações e performance em tempo real.</p>
+          <p v-if="hasActiveSession">Acompanhe a perfomance do seu copy em tempo real</p>
           <p v-else>Configure risco, alocação e proteção antes de iniciar o Copy automático.</p>
         </div>
       
-        <div class="tabs" v-if="hasActiveSession || !loading || activeTab === 'monitor'">
+        <div class="tabs" v-if="!hasActiveSession && activeTab === 'config'">
           <button 
             :class="['tab', { active: activeTab === 'config' }]" 
             @click="switchToConfig"
-            v-if="!hasActiveSession && activeTab !== 'monitor'"
           >
             Configurar
-          </button>
-          <button 
-            :class="['tab', { active: activeTab === 'monitor' }]" 
-            @click="switchToMonitor"
-            v-if="hasActiveSession || activeTab === 'monitor'"
-          >
-            Acompanhar & Performance
           </button>
         </div>
       
