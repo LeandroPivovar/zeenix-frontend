@@ -5,20 +5,24 @@
       
       <!-- Left Column - Login Card -->
       <div id="login-section" class="w-[480px]">
-        <div class="bg-white border border-zenix-card-border rounded-2xl p-10 login-card-shadow">
+        <div class="bg-white border border-zenix-card-border rounded-2xl p-10 login-card-shadow login-card">
           
           <!-- Logo -->
-          <div class="mb-8 flex justify-center login-logo">                                                                                                                                                                          
-            <div class="flex items-center space-x-2">
-              <div class="text-3xl font-bold text-zenix-text-dark">ZENI</div>
-              <div class="text-3xl font-bold text-zenix-green">X</div>
+          <div class="mb-12 flex justify-center login-logo">                                                                                                                                                                          
+            <div class="flex items-center space-x-2 logo-animation">
+              <div class="text-3xl font-bold text-zenix-text-dark">
+                <span v-if="isMobile" v-html="typedLogoTitle" class="logo-text"></span>
+                <template v-else>
+                  <span class="text-zenix-text-dark">ZENI</span><span class="text-zenix-green">X</span>
+                </template>
+              </div>
             </div>
           </div>
 
           <!-- Header -->
-          <div class="mb-8">
-            <h1 class="text-2xl font-semibold text-zenix-text-dark mb-3">Acesse sua conta</h1>
-            <p class="text-sm text-zenix-gray leading-relaxed forgot-text">Se você já possui uma conta, preencha seus dados para acessar a plataforma.</p>
+          <div class="mb-8 header-section">
+            <h1 class="text-3xl font-semibold text-zenix-text-dark mb-3 header-title">Acesse sua conta</h1>
+            <p class="text-sm text-zenix-gray leading-relaxed forgot-text header-subtitle">Se você já possui uma conta, preencha seus dados para acessar a plataforma.</p>
           </div>
 
           <!-- Login Form -->
@@ -26,25 +30,34 @@
             <!-- Email Input -->
             <div>
               <label class="block text-sm font-medium text-zenix-text-dark mb-2">E-mail</label>
-              <input 
-                type="email" 
-                v-model="email"
-                placeholder="Digite seu e-mail" 
-                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
-                required
-              >
+              <div class="relative">
+                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 4L8 8L14 4M2 4H14V12H2V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <input 
+                  type="email" 
+                  v-model="email"
+                  placeholder="seu@email.com" 
+                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors input-email"
+                  required
+                >
+              </div>
             </div>
 
             <!-- Password Input -->
             <div>
               <label class="block text-sm font-medium text-zenix-text-dark mb-2">Senha</label>
               <div class="relative">
+                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 6H11V4C11 2.89543 10.1046 2 9 2H7C5.89543 2 5 2.89543 5 4V6H4C3.44772 6 3 6.44772 3 7V13C3 13.5523 3.44772 14 4 14H12C12.5523 14 13 13.5523 13 13V7C13 6.44772 12.5523 6 12 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M6 4C6 3.44772 6.44772 3 7 3H9C9.55228 3 10 3.44772 10 4V6H6V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
                 <input 
                   :type="showPassword ? 'text' : 'password'" 
                   id="password-input" 
                   v-model="password"
-                  placeholder="Digite sua senha" 
-                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-4 pr-12 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                  placeholder="••••••••" 
+                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-12 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors input-password"
                   required
                 >
                 <button 
@@ -52,8 +65,24 @@
                   @click="togglePassword" 
                   class="absolute right-4 top-1/2 transform -translate-y-1/2 text-zenix-gray password-toggle transition-colors"
                 >
-                  <i class="fa-regular" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'" id="eye-icon"></i>
+                  <!-- Eye SVG -->
+                  <svg v-if="!showPassword" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 8C1 8 3.5 4 8 4C12.5 4 15 8 15 8C15 8 12.5 12 8 12C3.5 12 1 8 1 8Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="8" cy="8" r="2" stroke="currentColor" stroke-width="1.5"/>
+                  </svg>
+                  <!-- Eye-slash SVG -->
+                  <svg v-else width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M9.5 4.5C11.5 5 13 6.5 14 8M6.5 11.5C4.5 11 3 9.5 2 8M2 4L14 12M14 4L2 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
                 </button>
+              </div>
+              <!-- Security Message -->
+              <div class="mt-2 security-message">
+                <svg class="text-xs mr-1 security-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M12 6H11V4C11 2.89543 10.1046 2 9 2H7C5.89543 2 5 2.89543 5 4V6H4C3.44772 6 3 6.44772 3 7V13C3 13.5523 3.44772 14 4 14H12C12.5523 14 13 13.5523 13 13V7C13 6.44772 12.5523 6 12 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <path d="M6 4C6 3.44772 6.44772 3 7 3H9C9.55228 3 10 3.44772 10 4V6H6V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <span class="text-xs security-text">Seus dados estão protegidos com criptografia avançada</span>
               </div>
             </div>
 
@@ -70,14 +99,14 @@
           </form>
 
           <!-- Links -->
-          <div class="mt-8 space-y-4 text-center">
-            <router-link to="/forgot-password" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors">Esqueceu sua senha?</router-link>
-            <router-link to="/register" class="block text-sm text-zenix-green hover:text-zenix-green-hover font-medium transition-colors">Criar uma nova conta</router-link>
+          <div class="mt-8 links-section">
+            <router-link to="/forgot-password" class="text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors link-left">Esqueceu a senha?</router-link>
+            <router-link to="/register" class="text-sm text-zenix-green hover:text-zenix-green-hover font-medium transition-colors link-right">Criar conta agora</router-link>
           </div>
 
           <!-- Footer -->
           <div class="mt-10 pt-6 border-t border-zenix-input-border footer-login">
-            <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao acessar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
+            <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao continuar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
           </div>
         </div>
       </div>
@@ -142,6 +171,11 @@
         </div>
       </div>
     </div>
+    
+    <!-- Disclaimer apenas no mobile -->
+    <div class="mobile-disclaimer">
+      <p class="disclaimer-text">Deriv offers complex derivatives, such as options and contracts for difference ("CFDs"). These products may not be suitable for all clients, and trading them puts you at risk. Please make sure that you understand the following risks before trading Deriv products: a) you may lose some or all of the money you invest in the trade, b) if your trade involves currency conversion, exchange rates will affect your profit and loss. You should never trade with borrowed money or with money that you cannot afford to lose.</p>
+    </div>
   </main>
 </template>
 
@@ -158,6 +192,10 @@ export default {
       fullSubtitle: 'A única tecnologia criada para operar com a precisão que o mercado exige.',
       typedTitle: '',
       typedSubtitle: '',
+      fullLogoTitle: 'ZENIX',
+      typedLogoTitle: '',
+      isMobile: false,
+      logoAnimationStarted: false,
       showBenefit1: false,
       showBenefit2: false,
       showBenefit3: false,
@@ -165,6 +203,7 @@ export default {
     }
   },
   mounted() {
+    this.isMobile = window.innerWidth <= 640;
     this.loadFontAwesome();
     this.startAnimations();
   },
@@ -180,8 +219,37 @@ export default {
       }
     },
     startAnimations() {
-      // 1. Primeiro o Zenix aparece letra por letra
-      this.typeTitle();
+      // 1. Primeiro o logo ZENIX aparece letra por letra (apenas no mobile)
+      if (window.innerWidth <= 640 && !this.logoAnimationStarted) {
+        this.logoAnimationStarted = true;
+        this.typeLogoTitle();
+      }
+      // 2. Depois o Zenix do hero aparece letra por letra
+      setTimeout(() => {
+        this.typeTitle();
+      }, 500);
+    },
+    typeLogoTitle() {
+      // Reset do título antes de começar
+      this.typedLogoTitle = '';
+      let index = 0;
+      const typingSpeed = 100; // velocidade de digitação em ms
+      
+      const typeChar = () => {
+        if (index < this.fullLogoTitle.length) {
+          const char = this.fullLogoTitle.charAt(index);
+          if (char === 'X') {
+            this.typedLogoTitle += '<span class="text-zenix-green">X</span>';
+          } else {
+            this.typedLogoTitle += `<span class="text-zenix-text-dark">${char}</span>`;
+          }
+          index++;
+          setTimeout(typeChar, typingSpeed);
+        }
+      };
+      
+      // Inicia após um pequeno delay
+      setTimeout(typeChar, 200);
     },
     typeTitle() {
       let index = 0;
@@ -373,6 +441,33 @@ button.bg-zenix-green:disabled {
 /* Efeito de digitação */
 .typing-text {
   min-height: 1.75rem;
+}
+
+/* Animação de opacidade do logo da esquerda para direita (desktop) */
+.logo-animation {
+  overflow: hidden;
+}
+
+.logo-letter {
+  opacity: 0;
+  animation: fadeInLeft 0.8s ease-out forwards;
+}
+
+.logo-letter:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.logo-letter:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Animação dos benefícios da esquerda para direita */
@@ -603,9 +698,15 @@ button.bg-zenix-green:disabled {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
     padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
+    padding-bottom: 0;
     display: flex !important;
-    background: radial-gradient(circle at top, #0b0d0c 0%, #0d2520 100%);
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 100vh;
+    background: transparent;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
   }
   
   .w-\[480px\] {
@@ -699,10 +800,17 @@ button.bg-zenix-green:disabled {
     padding-top: 4rem !important;
   }
 
+  /* Remover fundo do card apenas no mobile */
+  #login-section .login-card {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+
   /* Ajuste de cores apenas no mobile para ficar igual ao layout */
   #login-section .bg-white {
-    background-color: #050B0B !important;
-    border-color: #111827 !important;
+    background-color: transparent !important;
+    border-color: transparent !important;
   }
 
   #login-section .bg-zenix-input-bg {
@@ -715,8 +823,7 @@ button.bg-zenix-green:disabled {
   }
 
   #login-section .text-zenix-text-dark {
-    color: #F9FAFB !important;
-    
+    color: #FFFFFF !important;
   }
 
   #login-section .text-zenix-gray {
@@ -727,31 +834,289 @@ button.bg-zenix-green:disabled {
     color: #6B7280 !important;
   }
 
-  #login-section h1 {
-    font-size: 1.65rem !important;
+  /* Ajustes de espaçamento e fonte para corresponder à imagem */
+  .header-section {
+    margin-bottom: 2.5rem !important;
+    margin-top: 1.5rem !important;
+    text-align: center !important;
   }
 
+  .header-title {
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.75rem !important;
+    margin-top: 0 !important;
+    color: #FFFFFF !important;
+    text-align: center !important;
+  }
 
-  /* Logo fora visualmente do card apenas no mobile
-     - Altura da tela > 600px  -> top: 4rem
-     - Altura da tela <= 600px -> top: 1rem (ajuste automático abaixo) */
+  .header-subtitle {
+    font-size: 0.8125rem !important;
+    line-height: 1.5 !important;
+    color: #9CA3AF !important;
+    text-align: center !important;
+    margin-bottom: 0 !important;
+  }
+
+  #login-section h1 {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+  }
+
+  /* Links lado a lado no mobile */
+  .links-section {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-top: 1.5rem !important;
+    gap: 1rem;
+  }
+
+  .link-left,
+  .link-right {
+    display: inline-block !important;
+    font-size: 0.8125rem !important;
+    color: #22C55E !important;
+  }
+
+  .link-left {
+    color: #9CA3AF !important;
+  }
+
+  /* Footer ajustes */
+  .footer-login {
+    margin-top: 1.5rem !important;
+    padding-top: 1.25rem !important;
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .footer-text {
+    font-size: 0.6875rem !important;
+    line-height: 1.5 !important;
+    color: #9CA3AF !important;
+  }
+
+  .footer-text a {
+    color: #22C55E !important;
+    text-decoration: underline !important;
+  }
+
+  /* Logo fora visualmente do card apenas no mobile */
   .login-logo {
     position: absolute;
-    top: 4rem;
+    top: 1.5rem;
     left: 50%;
     transform: translateX(-50%);
     z-index: 20;
   }
 
-  .login-logo .text-zenix-text-dark,
-  .login-logo .text-zenix-green {
-    font-size: 2.5rem !important;
-    line-height: 1;
-    margin: 0;
+  /* Animação do logo letra por letra (mobile) */
+  .login-logo .logo-animation {
+    overflow: hidden;
   }
 
-  .leading-relaxed{
-    font-size: 0.675rem !important;
+  .login-logo .logo-text {
+    display: inline-block;
+  }
+
+  .login-logo .logo-text span {
+    display: inline-block;
+  }
+
+  .login-logo .text-zenix-text-dark,
+  .login-logo .logo-text span.text-zenix-text-dark {
+    font-size: 1.75rem !important;
+    line-height: 1;
+    margin: 0;
+    font-weight: 700 !important;
+    color: #FFFFFF !important;
+  }
+
+  .login-logo .text-zenix-green,
+  .login-logo .logo-text span.text-zenix-green {
+    font-size: 1.75rem !important;
+    line-height: 1;
+    margin: 0;
+    font-weight: 700 !important;
+    color: #22C55E !important;
+  }
+
+  /* Remover espaçamento entre letras no mobile */
+  .login-logo .logo-animation {
+    gap: 0 !important;
+  }
+
+  .login-logo .logo-animation > * {
+    margin: 0 !important;
+  }
+
+  /* Espaçamento do card após o logo */
+  #login-section {
+    padding-top: 7rem !important;
+  }
+
+  /* Ajuste de padding interno do card */
+  #login-section .login-card {
+    padding: 0 !important;
+  }
+
+  /* Ajustes nos inputs */
+  #login-section input {
+    padding: 0.875rem 1rem !important;
+    font-size: 0.875rem !important;
+    background-color: #1F2937 !important;
+    border-color: #374151 !important;
+    color: #FFFFFF !important;
+  }
+
+  /* Input de email com ícone */
+  #login-section input.input-email {
+    padding-left: 2.5rem !important;
+  }
+
+  /* Input de senha com ícone */
+  #login-section input.input-password {
+    padding-left: 2.5rem !important;
+  }
+
+  /* Garantir que o texto digitado seja sempre branco */
+  #login-section input:-webkit-autofill,
+  #login-section input:-webkit-autofill:hover,
+  #login-section input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #FFFFFF !important;
+    -webkit-box-shadow: 0 0 0px 1000px #1F2937 inset !important;
+  }
+
+  /* Campo de senha - quando preenchido, mostrar pontos em branco */
+  #login-section input.input-password {
+    color: #FFFFFF !important;
+    font-family: 'Inter', sans-serif;
+    letter-spacing: 0.1em;
+  }
+
+  /* Campo de email */
+  #login-section input.input-email {
+    color: #FFFFFF !important;
+  }
+
+  #login-section input::placeholder {
+    color: #6B7280 !important;
+  }
+
+  /* Texto digitado nos inputs deve ser branco */
+  #login-section input[type="text"],
+  #login-section input[type="email"],
+  #login-section input[type="password"] {
+    color: #FFFFFF !important;
+  }
+
+  /* Quando o campo de senha tem valor, o texto deve ser branco */
+  #login-section input[type="password"]:not(:placeholder-shown) {
+    color: #FFFFFF !important;
+  }
+
+  #login-section label {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.5rem !important;
+    color: #FFFFFF !important;
+  }
+
+  /* Ícones dos inputs (SVG) */
+  .input-icon {
+    color: #9CA3AF !important;
+    width: 16px !important;
+    height: 16px !important;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* Ícone do olho no campo de senha */
+  #login-section .password-toggle {
+    color: #9CA3AF !important;
+  }
+
+  /* Mensagem de segurança */
+  .security-message {
+    display: flex !important;
+    align-items: center !important;
+    margin-top: 0.625rem !important;
+  }
+
+  .security-message svg,
+  .security-message .security-icon {
+    width: 12px !important;
+    height: 12px !important;
+    margin-right: 0.375rem !important;
+    color: #9CA3AF !important;
+    flex-shrink: 0;
+  }
+
+  .security-message svg path {
+    stroke: #9CA3AF !important;
+  }
+
+  .security-text {
+    font-size: 0.75rem !important;
+    color: #9CA3AF !important;
+  }
+
+  /* Botão ajustes */
+  #login-section button.bg-zenix-green {
+    padding: 0.875rem 1.5rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 0.5rem !important;
+    font-weight: 600 !important;
+    margin-top: 0.5rem !important;
+    background-color: #22C55E !important;
+    color: #FFFFFF !important;
+  }
+
+  #login-section button.bg-zenix-green i {
+    color: #FFFFFF !important;
+  }
+
+  /* Espaçamento entre campos do formulário */
+  #login-form > div {
+    margin-bottom: 1.25rem !important;
+  }
+
+  #login-form > div:last-of-type {
+    margin-bottom: 0 !important;
+  }
+
+  /* Espaçamento após o campo de senha (antes do botão) */
+  #login-form > div:nth-of-type(2) {
+    margin-bottom: 1.5rem !important;
+  }
+
+  /* Espaçamento após o botão */
+  #login-form {
+    margin-bottom: 0 !important;
+  }
+
+  /* Disclaimer no final da página apenas no mobile */
+  .mobile-disclaimer {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: auto auto 1rem;
+    padding: 0 1rem;
+    padding-bottom: 1.5rem;
+    margin-top: 4.5rem;
+  }
+
+  .disclaimer-text {
+    font-size: 0.625rem;
+    line-height: 1.6;
+    color: #9CA3AF;
+    text-align: center;
+  }
+}
+
+/* Ocultar disclaimer no desktop */
+@media (min-width: 641px) {
+  .mobile-disclaimer {
+    display: none !important;
   }
 }
 

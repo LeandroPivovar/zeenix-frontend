@@ -43,7 +43,9 @@
           <div class="text-red-500">{{ error }}</div>
         </div>
 
-        <div v-else class="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <template v-else>
+        <!-- Desktop Layout -->
+        <div class="max-w-7xl mx-auto hidden lg:grid grid-cols-1 lg:grid-cols-3 gap-8">
           <!-- Column 1 -->
           <div class="space-y-8">
             <!-- Profile Card -->
@@ -210,7 +212,7 @@
             <div id="history-card" class="bg-zenix-card border border-zenix-border rounded-2xl p-6 lg:p-8 premium-card h-full">
               <h3 class="text-lg font-bold text-white mb-6">Histórico de Alterações</h3>
               
-              <div class="space-y-0">
+              <div class="space-y-0 desktop-history-scroll">
                 <template v-for="(log, index) in activityLogs" :key="log.id">
                   <div class="activity-item p-4 border-l-2 border-transparent transition-all">
                     <div class="flex items-center justify-between mb-1">
@@ -227,6 +229,152 @@
             </div>
           </div>
         </div>
+
+        <!-- Mobile Layout -->
+        <div class="max-w-7xl mx-auto lg:hidden space-y-6 px-4 mobile-settings-container">
+          <!-- Profile Section -->
+          <div class="bg-zenix-card border border-zenix-border rounded-2xl p-6 premium-card mobile-card-gradient">
+            <div class="text-center mb-6">
+              <div class="w-24 h-24 mx-auto mb-4 rounded-full overflow-hidden bg-zenix-card flex items-center justify-center">
+                <img v-if="profilePictureFullUrl" :src="profilePictureFullUrl" alt="Profile" class="w-full h-full rounded-full object-cover">
+                <i v-else class="fas fa-user text-4xl text-zenix-secondary"></i>
+              </div>
+              <h2 class="text-lg font-bold text-white mb-1 text-center">{{ settings.name || 'Usuário' }}</h2>
+              <p class="text-zenix-secondary text-xs text-center">{{ settings.email }}</p>
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <button @click="openEditNameModal" class="bg-zenix-bg/70 hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-2.5 rounded-xl transition-all text-xs">
+                Editar Nome
+              </button>
+              <button @click="openChangePhotoModal" class="bg-zenix-bg/70 hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-2.5 rounded-xl transition-all text-xs">
+                Trocar Foto
+              </button>
+            </div>
+          </div>
+
+          <!-- Segurança da Conta -->
+          <div class="bg-zenix-card border border-zenix-border rounded-2xl p-6 premium-card mobile-card-gradient">
+            <h3 class="text-base font-bold text-white mb-5">Segurança da Conta</h3>
+            <div class="grid grid-cols-2 gap-4">
+              <button @click="openEditEmailModal" class="bg-zenix-bg/70 hover:bg-zenix-green/10 border border-zenix-border hover:border-zenix-green/40 rounded-xl p-3 transition-all flex flex-col items-center justify-center space-y-2">
+                <i class="fas fa-envelope text-zenix-green text-xl"></i>
+                <span class="text-white text-xs">Alterar E-mail</span>
+              </button>
+              <button @click="openChangePasswordModal" class="bg-zenix-bg/70 hover:bg-zenix-green/10 border border-zenix-border hover:border-zenix-green/40 rounded-xl p-3 transition-all flex flex-col items-center justify-center space-y-2">
+                <i class="fas fa-lock text-zenix-green text-xl"></i>
+                <span class="text-white text-xs">Alterar Senha</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Atividade Recente -->
+          <div class="bg-zenix-card border border-zenix-border rounded-2xl p-6 premium-card mobile-card-gradient">
+            <h3 class="text-base font-bold text-white mb-5">Atividade Recente</h3>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-zenix-secondary">Último login</span>
+                <span class="text-xs text-white">{{ lastLogin ? formatLastLogin(lastLogin.date || lastLogin) : 'N/A' }}</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-zenix-secondary">Status</span>
+                <span class="text-xs text-zenix-green font-semibold">Ativo</span>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs text-zenix-secondary">Sessões ativas</span>
+                <span class="text-xs text-white font-semibold">{{ activeSessions }}</span>
+              </div>
+              <button @click="endAllSessions" class="w-full bg-transparent border border-zenix-red text-zenix-red hover:bg-zenix-red/10 py-2.5 rounded-xl transition-all text-xs font-semibold mt-4">
+                Encerrar todas as sessões
+              </button>
+            </div>
+          </div>
+
+          <!-- Configurações Gerais -->
+          <div class="bg-zenix-card border border-zenix-border rounded-2xl p-6 premium-card mobile-card-gradient">
+            <h3 class="text-base font-bold text-white mb-5">Configurações Gerais</h3>
+            <div class="space-y-4">
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-medium text-white">Idioma</label>
+                <select v-model="settings.language" class="bg-zenix-bg border border-zenix-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zenix-green transition-all appearance-none mobile-select">
+                  <option value="pt-BR">Português (BR)</option>
+                  <option value="en-US">English (US)</option>
+                  <option value="es-ES">Español</option>
+                </select>
+              </div>
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-medium text-white">Fuso Horário</label>
+                <select v-model="settings.timezone" class="bg-zenix-bg border border-zenix-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zenix-green transition-all appearance-none mobile-select">
+                  <option value="America/Sao_Paulo">GMT-3 (Brasília)</option>
+                  <option value="America/New_York">GMT-5 (New York)</option>
+                  <option value="Europe/London">GMT+0 (Londres)</option>
+                  <option value="Asia/Tokyo">GMT+9 (Tóquio)</option>
+                </select>
+              </div>
+              <div class="flex items-center justify-between">
+                <label class="text-xs font-medium text-white">Moeda padrão</label>
+                <select v-model="settings.tradeCurrency" class="bg-zenix-bg border border-zenix-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zenix-green transition-all appearance-none mobile-select">
+                  <option value="USD">USD ($)</option>
+                  <option value="BTC">BTC</option>
+                  <option value="DEMO">DEMO (Conta virtual)</option>
+                </select>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-white">Notificações por e-mail</span>
+                <label class="switch">
+                  <input type="checkbox" v-model="settings.emailNotifications">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-medium text-white">Notificações push</span>
+                <label class="switch">
+                  <input type="checkbox" v-model="settings.pushNotifications">
+                  <span class="slider"></span>
+                </label>
+              </div>
+              <div class="pt-4 border-t border-zenix-border">
+                <a href="#" class="text-blue-500 hover:text-blue-400 text-xs transition-all">
+                  Gerenciar minhas permissões
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <!-- Conta & Privacidade -->
+          <div class="bg-zenix-card border border-zenix-border rounded-2xl p-6 premium-card mobile-card-gradient">
+            <h3 class="text-base font-bold text-white mb-5">Conta & Privacidade</h3>
+            <div class="space-y-4">
+              <button @click.prevent="downloadPersonalData" class="w-full bg-transparent border-2 border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 py-2.5 rounded-xl transition-all text-xs text-left px-4">
+                Baixar meus dados
+              </button>
+              <button class="w-full bg-transparent border-2 border-zenix-border hover:border-zenix-green/40 text-white py-2.5 rounded-xl transition-all text-xs text-left px-4">
+                Termos de uso e privacidade
+              </button>
+              <button @click="openDeleteAccountModal" class="w-full bg-transparent border-2 border-zenix-red text-zenix-red hover:bg-zenix-red/10 py-2.5 rounded-xl transition-all text-xs font-semibold">
+                Excluir Conta
+              </button>
+            </div>
+          </div>
+
+          <!-- Histórico de Alterações -->
+          <div class="bg-zenix-card border border-zenix-border rounded-2xl p-6 premium-card mobile-card-gradient">
+            <h3 class="text-base font-bold text-white mb-5">Histórico de Alterações</h3>
+            <div class="space-y-4 mobile-history-scroll">
+              <template v-for="(log, index) in activityLogs" :key="log.id">
+                <div class="pb-3 text-left" :class="{ 'border-b border-zenix-border': index < activityLogs.length - 1 }">
+                  <div class="mb-1">
+                    <span class="text-xs text-white">{{ log.description }}</span>
+                  </div>
+                  <span class="text-xs text-zenix-secondary">{{ formatLogDate(log.createdAt) }}</span>
+                </div>
+              </template>
+              <div v-if="activityLogs.length === 0" class="text-center py-8 text-zenix-secondary text-xs">
+                Nenhuma alteração registrada ainda.
+              </div>
+            </div>
+          </div>
+        </div>
+        </template>
       </main>
 
       <footer id="footer" class="border-t border-zenix-border bg-zenix-card/50 mt-16">
@@ -610,6 +758,34 @@ export default {
       const minutes = String(d.getMinutes()).padStart(2, '0')
       return `${day}/${month}/${year} ${hours}:${minutes}`
     },
+    formatLastLogin(date) {
+      if (!date) return 'N/A'
+      const d = new Date(date)
+      const now = new Date()
+      const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+      const loginDate = new Date(d.getFullYear(), d.getMonth(), d.getDate())
+      
+      if (loginDate.getTime() === today.getTime()) {
+        const hours = String(d.getHours()).padStart(2, '0')
+        const minutes = String(d.getMinutes()).padStart(2, '0')
+        return `Hoje às ${hours}:${minutes}`
+      }
+      
+      const yesterday = new Date(today)
+      yesterday.setDate(yesterday.getDate() - 1)
+      
+      if (loginDate.getTime() === yesterday.getTime()) {
+        const hours = String(d.getHours()).padStart(2, '0')
+        const minutes = String(d.getMinutes()).padStart(2, '0')
+        return `Ontem às ${hours}:${minutes}`
+      }
+      
+      const day = String(d.getDate()).padStart(2, '0')
+      const month = String(d.getMonth() + 1).padStart(2, '0')
+      const hours = String(d.getHours()).padStart(2, '0')
+      const minutes = String(d.getMinutes()).padStart(2, '0')
+      return `${day}/${month}/${d.getFullYear()} às ${hours}:${minutes}`
+    },
     toggleSidebar() {
       this.sidebarIsOpen = !this.sidebarIsOpen;
     },
@@ -631,5 +807,97 @@ main {
   justify-content: flex-start !important;
   align-items: flex-start !important;
   z-index: 1;
+}
+
+/* Desktop History Scroll */
+.desktop-history-scroll {
+  max-height: 900px;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+.desktop-history-scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.desktop-history-scroll::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 10px;
+}
+
+.desktop-history-scroll::-webkit-scrollbar-thumb {
+  background: rgba(34, 197, 94, 0.3);
+  border-radius: 10px;
+}
+
+.desktop-history-scroll::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 197, 94, 0.5);
+}
+
+/* Mobile Styles */
+@media screen and (max-width: 768px) {
+  .mobile-settings-container {
+    background: linear-gradient(135deg, rgba(10, 20, 10, 0.95) 0%, rgba(5, 10, 5, 0.98) 50%, rgba(0, 0, 0, 1) 100%);
+    padding: 1rem;
+    min-height: calc(100vh - 80px);
+  }
+
+  .mobile-card-gradient {
+    background: linear-gradient(135deg, rgba(19, 29, 19, 0.95) 0%, rgba(10, 20, 10, 0.98) 50%, rgba(5, 10, 5, 0.95) 100%);
+    background-blend-mode: normal;
+    position: relative;
+  }
+
+  .mobile-card-gradient::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(8, 36, 18, 0.05) 50%, transparent 80%);
+    border-radius: 1rem;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .mobile-card-gradient > * {
+    position: relative;
+    z-index: 1;
+  }
+
+  .mobile-history-scroll {
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 8px;
+  }
+
+  .mobile-history-scroll::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .mobile-history-scroll::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+  }
+
+  .mobile-history-scroll::-webkit-scrollbar-thumb {
+    background: rgba(34, 197, 94, 0.3);
+    border-radius: 10px;
+  }
+
+  .mobile-history-scroll::-webkit-scrollbar-thumb:hover {
+    background: rgba(34, 197, 94, 0.5);
+  }
+
+  .mobile-select {
+    min-width: 130px;
+    text-align: right;
+    padding-right: 1.75rem;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.5rem center;
+    background-size: 10px;
+  }
 }
 </style>

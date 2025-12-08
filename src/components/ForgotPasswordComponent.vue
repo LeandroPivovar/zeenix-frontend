@@ -5,20 +5,24 @@
       
       <!-- Left Column - Forgot Password Card -->
       <div id="forgot-section" class="w-[480px]">
-        <div class="bg-white border border-zenix-card-border rounded-2xl p-10 login-card-shadow">
+        <div class="bg-white border border-zenix-card-border rounded-2xl p-10 login-card-shadow forgot-card">
           
           <!-- Logo -->
-          <div class="mb-8 flex justify-center forgot-logo">
-            <div class="flex items-center space-x-2">
-              <div class="text-3xl font-bold text-zenix-text-dark">ZENI</div>
-              <div class="text-3xl font-bold text-zenix-green">X</div>
+          <div class="mb-12 flex justify-center forgot-logo">
+            <div class="flex items-center space-x-2 logo-animation">
+              <div class="text-3xl font-bold text-zenix-text-dark">
+                <span v-if="isMobile" v-html="typedLogoTitle" class="logo-text"></span>
+                <template v-else>
+                  <span class="text-zenix-text-dark">ZENI</span><span class="text-zenix-green">X</span>
+                </template>
+              </div>
             </div>
           </div>
 
           <!-- Header -->
-          <div class="mb-8">
-            <h1 class="text-2xl font-semibold text-zenix-text-dark mb-3">Acesse sua conta</h1>
-            <p class="text-sm text-zenix-gray leading-relaxed forgot-text">Se você já possui uma conta, preencha seus dados para acessar a plataforma.</p>
+          <div class="mb-8 header-section">
+            <h1 class="text-3xl font-semibold text-zenix-text-dark mb-3 header-title">Acesse sua conta</h1>
+            <p class="text-sm text-zenix-gray leading-relaxed forgot-text header-subtitle">Se você já possui uma conta, preencha seus dados para acessar a plataforma.</p>
           </div>
 
           <!-- Forgot Password Form -->
@@ -26,13 +30,18 @@
             <!-- Email Input -->
             <div>
               <label class="block text-sm font-medium text-zenix-text-dark mb-2">E-mail</label>
-              <input 
-                type="email" 
-                v-model="email"
-                placeholder="Digite seu e-mail" 
-                class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl px-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
-                required
-              >
+              <div class="relative">
+                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M2 4L8 8L14 4M2 4H14V12H2V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                <input 
+                  type="email" 
+                  v-model="email"
+                  placeholder="Digite seu e-mail" 
+                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                  required
+                >
+              </div>
             </div>
 
             <!-- Submit Button -->
@@ -54,7 +63,7 @@
 
           <!-- Footer -->
           <div class="mt-10 pt-6 border-t border-zenix-input-border footer-login">
-            <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao acessar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
+            <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao continuar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
           </div>
         </div>
       </div>
@@ -119,6 +128,11 @@
         </div>
       </div>
     </div>
+    
+    <!-- Disclaimer apenas no mobile -->
+    <div class="mobile-disclaimer">
+      <p class="disclaimer-text">Deriv offers complex derivatives, such as options and contracts for difference ("CFDs"). These products may not be suitable for all clients, and trading them puts you at risk. Please make sure that you understand the following risks before trading Deriv products: a) you may lose some or all of the money you invest in the trade, b) if your trade involves currency conversion, exchange rates will affect your profit and loss. You should never trade with borrowed money or with money that you cannot afford to lose.</p>
+    </div>
   </main>
 </template>
 
@@ -133,6 +147,10 @@ export default {
       fullSubtitle: 'A única tecnologia criada para operar com a precisão que o mercado exige.',
       typedTitle: '',
       typedSubtitle: '',
+      fullLogoTitle: 'ZENIX',
+      typedLogoTitle: '',
+      isMobile: false,
+      logoAnimationStarted: false,
       showBenefit1: false,
       showBenefit2: false,
       showBenefit3: false,
@@ -140,6 +158,7 @@ export default {
     }
   },
   mounted() {
+    this.isMobile = window.innerWidth <= 640;
     this.loadFontAwesome();
     this.startAnimations();
   },
@@ -155,8 +174,37 @@ export default {
       }
     },
     startAnimations() {
-      // 1. Primeiro o Zenix aparece letra por letra
-      this.typeTitle();
+      // 1. Primeiro o logo ZENIX aparece letra por letra (apenas no mobile)
+      if (window.innerWidth <= 640 && !this.logoAnimationStarted) {
+        this.logoAnimationStarted = true;
+        this.typeLogoTitle();
+      }
+      // 2. Depois o Zenix do hero aparece letra por letra
+      setTimeout(() => {
+        this.typeTitle();
+      }, 500);
+    },
+    typeLogoTitle() {
+      // Reset do título antes de começar
+      this.typedLogoTitle = '';
+      let index = 0;
+      const typingSpeed = 100; // velocidade de digitação em ms
+      
+      const typeChar = () => {
+        if (index < this.fullLogoTitle.length) {
+          const char = this.fullLogoTitle.charAt(index);
+          if (char === 'X') {
+            this.typedLogoTitle += '<span class="text-zenix-green">X</span>';
+          } else {
+            this.typedLogoTitle += `<span class="text-zenix-text-dark">${char}</span>`;
+          }
+          index++;
+          setTimeout(typeChar, typingSpeed);
+        }
+      };
+      
+      // Inicia após um pequeno delay
+      setTimeout(typeChar, 200);
     },
     typeTitle() {
       let index = 0;
@@ -344,9 +392,49 @@ button.bg-zenix-green:disabled {
   to { transform: rotate(360deg); }
 }
 
+/* Animação de gradiente para forgot-password no mobile */
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
 /* Efeito de digitação */
 .typing-text {
   min-height: 1.75rem;
+}
+
+/* Animação de opacidade do logo da esquerda para direita (desktop) */
+.logo-animation {
+  overflow: hidden;
+}
+
+.logo-letter {
+  opacity: 0;
+  animation: fadeInLeft 0.8s ease-out forwards;
+}
+
+.logo-letter:nth-child(1) {
+  animation-delay: 0.1s;
+}
+
+.logo-letter:nth-child(2) {
+  animation-delay: 0.3s;
+}
+
+@keyframes fadeInLeft {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 /* Animação dos benefícios da esquerda para direita */
@@ -491,7 +579,7 @@ button.bg-zenix-green:disabled {
     display: none !important;
   }
 
-  main{
+  #forgot-main {
     background: #0B0B0B;
   }
 }
@@ -577,9 +665,51 @@ button.bg-zenix-green:disabled {
     padding-left: 0.75rem;
     padding-right: 0.75rem;
     padding-top: 1.5rem;
-    padding-bottom: 1.5rem;
+    padding-bottom: 0;
     display: flex !important;
-    background: radial-gradient(circle at top, #0b0d0c 0%, #0d2520 100%);
+    flex-direction: column;
+    justify-content: flex-start;
+    min-height: 100vh;
+    background: none !important;
+    background-color: transparent !important;
+    position: relative;
+    z-index: 1;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Aplicar gradiente no elemento pai (body ou wrapper) via pseudo-elemento */
+  #forgot-main::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, #0B0B0B 0%, #0d2520 25%, #0a1a16 50%, #0d2520 75%, #0B0B0B 100%);
+    background-size: 400% 400%;
+    animation: gradient-animation 15s ease infinite;
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  /* Garantir que o wrapper e container sejam transparentes */
+  .login-container-wrapper {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+
+  /* Garantir que todos os elementos filhos diretos sejam transparentes */
+  #forgot-main > * {
+    background: transparent !important;
+    background-color: transparent !important;
+  }
+
+  /* Garantir que o card seja transparente */
+  #forgot-section {
+    background: transparent !important;
+    background-color: transparent !important;
   }
   
   .w-\[480px\] {
@@ -671,12 +801,28 @@ button.bg-zenix-green:disabled {
     margin: 0 auto !important;
     padding: 0;
     padding-top: 4rem !important;
+    background: transparent !important;
+  }
+
+  /* Remover fundo do card apenas no mobile */
+  #forgot-section .forgot-card {
+    background-color: transparent !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
   }
 
   /* Ajuste de cores apenas no mobile para ficar igual ao layout */
   #forgot-section .bg-white {
-    background-color: #050B0B !important;
-    border-color: #111827 !important;
+    background-color: transparent !important;
+    background: transparent !important;
+    border-color: transparent !important;
+  }
+
+  /* Garantir que o container wrapper também seja transparente */
+  .login-container-wrapper {
+    background: transparent !important;
   }
 
   #forgot-section .bg-zenix-input-bg {
@@ -700,56 +846,214 @@ button.bg-zenix-green:disabled {
     color: #6B7280 !important;
   }
 
+  /* Ajustes de espaçamento e fonte para corresponder à imagem */
+  .header-section {
+    margin-bottom: 2.5rem !important;
+    margin-top: 1.5rem !important;
+    text-align: center !important;
+  }
+
+  .header-title {
+    font-size: 1.75rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.75rem !important;
+    margin-top: 0 !important;
+    color: #FFFFFF !important;
+    text-align: center !important;
+  }
+
+  .header-subtitle {
+    font-size: 0.8125rem !important;
+    line-height: 1.5 !important;
+    color: #9CA3AF !important;
+    text-align: center !important;
+    margin-bottom: 0 !important;
+  }
+
   #forgot-section h1 {
-    font-size: 1.65rem !important;
-  }
-
-
-  /* Logo fora visualmente do card apenas no mobile */
-  .login-logo {
-    position: absolute;
-    top: 4rem;
-    left: 50%;
-    transform: translateX(-50%);
-    z-index: 20;
-  }
-
-  .login-logo .text-zenix-text-dark,
-  .login-logo .text-zenix-green {
-    font-size: 2.5rem !important;
-    line-height: 1;
-    margin: 0;
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
   }
 
   #hero-section {
     display: none !important;
   }
 
+  /* Ajustes nos inputs */
+  #forgot-section input {
+    padding: 0.875rem 1rem !important;
+    font-size: 0.875rem !important;
+    background-color: #1F2937 !important;
+    border-color: #374151 !important;
+    color: #FFFFFF !important;
+  }
+
+  #forgot-section input::placeholder {
+    color: #6B7280 !important;
+  }
+
+  #forgot-section label {
+    font-size: 0.875rem !important;
+    margin-bottom: 0.5rem !important;
+    color: #FFFFFF !important;
+  }
+
+  /* Ícones dos inputs (SVG) */
+  .input-icon {
+    color: #9CA3AF !important;
+    width: 16px !important;
+    height: 16px !important;
+    z-index: 10;
+    pointer-events: none;
+  }
+
+  /* Input de email com ícone */
+  #forgot-section input[type="email"] {
+    padding-left: 2.5rem !important;
+  }
+
+  /* Garantir que o texto digitado seja sempre branco */
+  #forgot-section input:-webkit-autofill,
+  #forgot-section input:-webkit-autofill:hover,
+  #forgot-section input:-webkit-autofill:focus {
+    -webkit-text-fill-color: #FFFFFF !important;
+    -webkit-box-shadow: 0 0 0px 1000px #1F2937 inset !important;
+  }
+
+  /* Campo de email */
+  #forgot-section input[type="email"] {
+    color: #FFFFFF !important;
+  }
+
+  #forgot-section input[type="text"],
+  #forgot-section input[type="email"],
+  #forgot-section input[type="password"] {
+    color: #FFFFFF !important;
+  }
+
+  /* Botão ajustes */
+  #forgot-section button.bg-zenix-green {
+    padding: 0.875rem 1.5rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 0.5rem !important;
+    font-weight: 600 !important;
+    background-color: #22C55E !important;
+    color: #FFFFFF !important;
+  }
+
+  #forgot-section button.bg-zenix-green i {
+    color: #FFFFFF !important;
+  }
+
+  /* Links */
+  #forgot-section a {
+    color: #9CA3AF !important;
+  }
+
+  #forgot-section a.text-zenix-green {
+    color: #22C55E !important;
+  }
+
+  /* Footer ajustes */
+  .footer-login {
+    margin-top: 1.5rem !important;
+    padding-top: 1.25rem !important;
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .footer-text {
+    font-size: 0.6875rem !important;
+    line-height: 1.5 !important;
+    color: #9CA3AF !important;
+  }
+
+  .footer-text a {
+    color: #22C55E !important;
+    text-decoration: underline !important;
+  }
+
   .forgot-logo {
     position: absolute;
-    top: 5rem;
+    top: 1.5rem;
     left: 50%;
     transform: translateX(-50%);
     z-index: 20;
   }
 
-  .forgot-logo .text-zenix-text-dark, 
-  .forgot-logo .text-zenix-green {
-    font-size: 2.5rem !important;
+  /* Animação do logo letra por letra (mobile) */
+  .forgot-logo .logo-animation {
+    overflow: hidden;
+  }
+
+  .forgot-logo .logo-text {
+    display: inline-block;
+  }
+
+  .forgot-logo .logo-text span {
+    display: inline-block;
+  }
+
+  .forgot-logo .text-zenix-text-dark,
+  .forgot-logo .logo-text span.text-zenix-text-dark {
+    font-size: 2rem !important;
     line-height: 1;
     margin: 0;
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
   }
 
-  .forgot-text{
-    font-size: 1rem !important;
+  .forgot-logo .text-zenix-green,
+  .forgot-logo .logo-text span.text-zenix-green {
+    font-size: 2rem !important;
+    line-height: 1;
+    margin: 0;
+    color: #22C55E !important;
+    font-weight: 700 !important;
   }
 
-  .footer-text{
-    font-size: 0.8rem !important;
+  /* Remover espaçamento entre letras no mobile */
+  .forgot-logo .logo-animation {
+    gap: 0 !important;
   }
 
+  .forgot-logo .logo-animation > * {
+    margin: 0 !important;
+  }
 
-  
+  /* Espaçamento do card após o logo */
+  #forgot-section {
+    padding-top: 7rem !important;
+  }
+
+  /* Ajuste de padding interno do card */
+  #forgot-section .forgot-card {
+    padding: 0 !important;
+  }
+
+  /* Disclaimer no final da página apenas no mobile */
+  .mobile-disclaimer {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: auto auto 1rem;
+    padding: 0 1rem;
+    padding-bottom: 1.5rem;
+    margin-top: 4.5rem;
+  }
+
+  .disclaimer-text {
+    font-size: 0.625rem;
+    line-height: 1.6;
+    color: #9CA3AF;
+    text-align: center;
+  }
+}
+
+/* Ocultar disclaimer no desktop */
+@media (min-width: 641px) {
+  .mobile-disclaimer {
+    display: none !important;
+  }
 }
 
 @media (max-width: 375px){

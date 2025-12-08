@@ -19,6 +19,14 @@ html, body {
   overflow-x: hidden;
 }
 
+@media (max-width: 640px) {
+  html, body {
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+  }
+}
+
 html, body, #app {
   font-family: var(--font-default);
 }
