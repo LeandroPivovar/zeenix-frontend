@@ -2031,44 +2031,38 @@ export default {
           datasetExists: !!dataset
         });
         
-        // Criar arrays completamente novos usando JSON para garantir que são primitivos
-        // Isso remove qualquer conexão com proxies Vue
-        const serializedData = JSON.stringify(validData);
-        const serializedLabels = JSON.stringify(validLabels);
-        const newDataArray = JSON.parse(serializedData);
-        const newLabelsArray = JSON.parse(serializedLabels);
-        
-        // Substituir completamente os arrays
-        dataset.data = newDataArray;
-        this.chart.data.labels = newLabelsArray;
+        // Usar splice para modificar arrays existentes em vez de substituí-los
+        // Isso mantém as referências e evita que Chart.js tente observar novos objetos
+        dataset.data.splice(0, dataset.data.length, ...validData);
+        this.chart.data.labels.splice(0, this.chart.data.labels.length, ...validLabels);
 
-        console.log('[Chart] Dados atribuídos ao dataset:', {
+        console.log('[Chart] Dados atualizados no dataset:', {
           dataLength: dataset.data.length,
           labelsLength: this.chart.data.labels.length,
           firstDataPoint: dataset.data[0],
           lastDataPoint: dataset.data[dataset.data.length - 1]
         });
 
-        // Usar double requestAnimationFrame para garantir que está completamente fora do ciclo Vue
-        requestAnimationFrame(() => {
-          requestAnimationFrame(() => {
-            try {
-              if (this.chart && this.chart.data && this.chart.data.datasets && this.chart.data.datasets[0]) {
-                // Verificar novamente antes de atualizar
-                if (this.chart.chartArea && this.chart.chartArea.width > 0) {
-                  this.chart.update('none');
-                  console.log('[Chart] ✓ Gráfico atualizado com sucesso,', validData.length, 'pontos');
-                } else {
-                  console.warn('[Chart] Gráfico não tem chartArea válido no RAF');
-                }
+        // Usar setTimeout com delay maior para garantir que está fora do ciclo Vue
+        // Não usar requestAnimationFrame duplo pois pode causar problemas
+        setTimeout(() => {
+          try {
+            if (this.chart && this.chart.data && this.chart.data.datasets && this.chart.data.datasets[0]) {
+              // Verificar se o gráfico ainda está válido
+              if (this.chart.chartArea && this.chart.chartArea.width > 0 && this.chart.chartArea.height > 0) {
+                // Usar 'none' para atualização sem animação
+                this.chart.update('none');
+                console.log('[Chart] ✓ Gráfico atualizado com sucesso,', validData.length, 'pontos');
+              } else {
+                console.warn('[Chart] Gráfico não tem chartArea válido, pulando update');
               }
-            } catch (updateError) {
-              console.error('[Chart] Erro ao chamar update:', updateError.message);
-              // NÃO recriar o gráfico - apenas parar para evitar loops infinitos
-              this.chartReady = false;
             }
-          });
-        });
+          } catch (updateError) {
+            console.error('[Chart] Erro ao chamar update:', updateError.message);
+            // NÃO recriar o gráfico - apenas parar para evitar loops infinitos
+            this.chartReady = false;
+          }
+        }, 50);
       } catch (error) {
         console.error('[Chart] Erro ao atualizar:', error);
         // NÃO recriar o gráfico automaticamente - isso causa loops infinitos
