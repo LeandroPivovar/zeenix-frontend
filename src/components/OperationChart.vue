@@ -569,9 +569,17 @@ export default {
             }
           });
 
+          console.log('[Chart] Gráfico Chart.js criado com sucesso', {
+            hasChart: !!this.chart,
+            ticksCount: this.ticks.length,
+            canvasWidth: canvas.width,
+            canvasHeight: canvas.height
+          });
+
           window.addEventListener('resize', this.handleResize);
           
           if (this.ticks.length > 0) {
+            console.log('[Chart] Atualizando gráfico com ticks existentes...');
             this.updateChart();
           }
         } catch (error) {
@@ -1781,8 +1789,10 @@ export default {
       console.log('[OperationChart] ✅ Active symbols:', Object.keys(this.activeSymbolsCache).length);
     },
     processHistory(msg) {
+      console.log('[Chart] processHistory - Recebendo histórico');
       const history = msg.history;
       if (!history || !history.prices) {
+        console.warn('[Chart] Histórico inválido');
         return;
       }
       
@@ -1800,11 +1810,24 @@ export default {
         })
         .filter(tick => tick !== null);
       
+      console.log('[Chart] Histórico processado:', {
+        ticksCount: this.ticks.length,
+        firstTick: this.ticks[0],
+        lastTick: this.ticks[this.ticks.length - 1]
+      });
+      
       if (msg.subscription?.id) {
         this.tickSubscriptionId = msg.subscription.id;
       }
       
       this.isLoadingSymbol = false;
+      
+      // Garantir que o gráfico existe antes de atualizar
+      if (!this.chart) {
+        console.log('[Chart] Gráfico não existe, criando...');
+        this.initChart();
+      }
+      
       this.$nextTick(() => {
         this.updateChart();
       });
