@@ -205,8 +205,9 @@
                 v-if="!activeContract"
                 @click="executeBuy" 
                 id="buyButton"
-                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 :disabled="isTrading || !isAuthorized || !canUseCallPut"
+                @mouseenter="debugButtonState"
               >
                 <i class="fas fa-arrow-up"></i>
                 {{ isTrading ? 'Aguardando confirmação...' : (currentProposalId ? 'Executar Ordem' : 'Aguardando proposta...') }}
@@ -397,6 +398,7 @@ export default {
       aiRecommendation: null,
       aiCardTimeout: null,
       audioContext: null,
+      _lastCanUseCallPut: null, // Para rastrear mudanças em canUseCallPut
       retryCount: 0,
       retryTimeout: null,
       maxRetries: Infinity, // Tentar infinitamente
@@ -418,7 +420,31 @@ export default {
       return grouped;
     },
     canUseCallPut() {
-      return this.supportsCallPut(this.symbol);
+      const result = this.supportsCallPut(this.symbol);
+      // Log apenas quando mudar para evitar spam
+      if (this._lastCanUseCallPut !== result) {
+        console.log('[OperationChart] canUseCallPut mudou:', {
+          symbol: this.symbol,
+          canUseCallPut: result,
+          contractsData: this.contractsData[this.symbol]
+        });
+        this._lastCanUseCallPut = result;
+      }
+      return result;
+    },
+    debugButtonState() {
+      console.log('[OperationChart] 🔍 Estado do botão de compra:', {
+        isTrading: this.isTrading,
+        isAuthorized: this.isAuthorized,
+        canUseCallPut: this.canUseCallPut,
+        currentProposalId: this.currentProposalId,
+        currentProposalPrice: this.currentProposalPrice,
+        activeContract: this.activeContract,
+        symbol: this.symbol,
+        supportsCallPut: this.supportsCallPut(this.symbol),
+        contractsData: this.contractsData[this.symbol],
+        wsReady: this.ws ? this.ws.readyState === WebSocket.OPEN : false
+      });
     },
     canUseMinutes() {
       if (!this.canUseCallPut) return false;
@@ -2395,43 +2421,32 @@ export default {
             }
             
             // Verificar se o canvas existe e está visível - usar múltiplas tentativas
+            // Reduzir tentativas para evitar spam de logs e melhorar performance
             const checkCanvas = (attempt = 0) => {
               if (!this.chart || !container) return;
               
               const canvas = container.querySelector('canvas');
               if (canvas) {
                 this.ensureChartVisible(canvas, container);
-              } else if (attempt < 5) {
-                // Tentar novamente após um pequeno delay
+              } else if (attempt < 3) {
+                // Reduzir tentativas de 5 para 3 e aumentar delay
                 setTimeout(() => {
                   checkCanvas(attempt + 1);
-                }, 100 * (attempt + 1));
+                }, 200 * (attempt + 1));
               } else {
-                console.warn('[OperationChart] ⚠ Canvas não encontrado após múltiplas tentativas - forçando renderização...');
-                // Forçar resize do gráfico para garantir que o canvas seja criado
-                const rect = container.getBoundingClientRect();
-                if (rect.width > 0 && rect.height > 0 && this.chart) {
-                  this.chart.applyOptions({
-                    width: rect.width,
-                    height: rect.height
-                  });
-                  this.chart.timeScale().fitContent();
-                  
-                  // Tentar encontrar canvas novamente após resize
-                  setTimeout(() => {
-                    const canvasAfterResize = container.querySelector('canvas');
-                    if (canvasAfterResize) {
-                      this.ensureChartVisible(canvasAfterResize, container);
-                    }
-                  }, 200);
+                // Apenas logar aviso, não forçar renderização excessiva
+                // O canvas será criado naturalmente pelo lightweight-charts
+                if (attempt === 3) {
+                  console.warn('[OperationChart] ⚠ Canvas não encontrado após tentativas - o gráfico pode estar renderizando');
                 }
               }
             };
             
             // Iniciar verificação após um pequeno delay para dar tempo ao gráfico renderizar
-            requestAnimationFrame(() => {
+            // Usar setTimeout ao invés de requestAnimationFrame para dar mais tempo
+            setTimeout(() => {
               checkCanvas(0);
-            });
+            }, 300);
         }
         }
         
@@ -3516,17 +3531,34 @@ export default {
       }, 500);
     },
     executeBuy() {
+      console.log('[OperationChart] ========== EXECUTAR COMPRA CHAMADO ==========');
+      console.log('[OperationChart] Estado atual:', {
+        isAuthorized: this.isAuthorized,
+        currentProposalId: this.currentProposalId,
+        currentProposalPrice: this.currentProposalPrice,
+        isTrading: this.isTrading,
+        canUseCallPut: this.canUseCallPut,
+        activeContract: this.activeContract,
+        wsReady: this.ws ? this.ws.readyState === WebSocket.OPEN : false
+      });
+      
       if (!this.isAuthorized) {
+        console.error('[OperationChart] ERRO: Não autorizado');
         this.tradeError = 'Conecte-se à Deriv antes de operar.';
         return;
       }
       
       if (!this.currentProposalId || !this.currentProposalPrice) {
+        console.error('[OperationChart] ERRO: Proposta não disponível', {
+          currentProposalId: this.currentProposalId,
+          currentProposalPrice: this.currentProposalPrice
+        });
         this.tradeError = 'Aguarde a proposta ser carregada.';
         return;
       }
       
       if (this.isTrading) {
+        console.warn('[OperationChart] Operação já em andamento');
         return;
       }
       
@@ -4010,6 +4042,18 @@ export default {
         proposalPrice: this.currentProposalPrice,
         subscriptionId: this.proposalSubscriptionId
       });
+      
+      // Verificar estado do botão após receber proposta
+      this.$nextTick(() => {
+        console.log('[OperationChart] Estado após receber proposta:', {
+          canExecuteBuy: !this.isTrading && this.isAuthorized && this.canUseCallPut && !!this.currentProposalId,
+          isTrading: this.isTrading,
+          isAuthorized: this.isAuthorized,
+          canUseCallPut: this.canUseCallPut,
+          currentProposalId: this.currentProposalId,
+          activeContract: this.activeContract
+        });
+      });
     },
     processBuy(msg) {
       console.log('[OperationChart] ========== COMPRA CONFIRMADA ==========');
@@ -4312,6 +4356,19 @@ export default {
           this.playAiCardSound();
             });
         }
+    },
+    // Monitorar condições do botão de compra
+    currentProposalId(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        console.log('[OperationChart] currentProposalId mudou:', { oldVal, newVal });
+        this.debugButtonState();
+      }
+    },
+    canUseCallPut(newVal, oldVal) {
+      if (newVal !== oldVal) {
+        console.log('[OperationChart] canUseCallPut mudou:', { oldVal, newVal, symbol: this.symbol });
+        this.debugButtonState();
+      }
     },
     isAuthorized(newVal) {
       if (newVal && this.ticks.length >= 10) {
