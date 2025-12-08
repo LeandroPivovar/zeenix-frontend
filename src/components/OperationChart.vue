@@ -15,7 +15,9 @@
             <h3 class="text-base font-semibold text-zenix-text">Gráfico</h3>
           </div>
 
-          <div id="candlestickChart" class="w-full chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative; flex: 1; min-height: 0; height: 100%;"></div>
+          <div id="candlestickChart" class="w-full chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative; flex: 1; min-height: 0; height: 100%;">
+            <canvas></canvas>
+          </div>
           <div v-if="!ticks.length" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
             <p class="text-zenix-secondary">{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
           </div>
@@ -220,7 +222,8 @@
 </template>
 
 <script>
-import { createChart, ColorType } from 'lightweight-charts';
+import { Chart, registerables } from 'chart.js';
+Chart.register(...registerables);
 import TradeResultModal from './TradeResultModal.vue';
 
 const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
@@ -314,7 +317,6 @@ export default {
       latestTick: null,
       lastUpdate: null,
       chart: null,
-      lineSeries: null,
       timeScaleMarkers: [],
             localOrderConfig: {
         type: 'CALL',
@@ -488,101 +490,103 @@ export default {
     methods: {
     initChart() {
       if (this.chart) {
-        console.log('[Chart] Gráfico já existe');
         return;
       }
 
       const container = this.$refs.chartContainer;
       if (!container) {
-        console.warn('[Chart] Container não encontrado');
         return;
       }
 
-      console.log('[Chart] Inicializando gráfico...');
-
       this.$nextTick(() => {
-        const rect = container.getBoundingClientRect();
-        console.log('[Chart] Dimensões do container:', {
-          width: rect.width,
-          height: rect.height,
-          clientWidth: container.clientWidth,
-          clientHeight: container.clientHeight
-        });
+        const canvas = container.querySelector('canvas');
+        if (!canvas) {
+          // Criar canvas se não existir
+          const newCanvas = document.createElement('canvas');
+          container.appendChild(newCanvas);
+          this.initChart();
+          return;
+        }
 
+        const rect = container.getBoundingClientRect();
         if (rect.width <= 0 || rect.height <= 0) {
-          console.log('[Chart] Container sem dimensões, tentando novamente...');
           setTimeout(() => this.initChart(), 100);
           return;
         }
 
         try {
-          this.chart = createChart(container, {
-            width: rect.width,
-            height: rect.height,
-            layout: {
-              background: { type: ColorType.Solid, color: '#0B0B0B' },
-              textColor: '#DFDFDF',
-            },
-            rightPriceScale: {
-              borderVisible: false,
-            },
-            leftPriceScale: {
-              visible: false,
-            },
-            timeScale: {
-              borderVisible: false,
-            },
-            grid: {
-              vertLines: { color: 'rgba(28, 28, 28, 0.5)' },
-              horzLines: { color: 'rgba(28, 28, 28, 0.5)' },
-            },
-          });
-
-          this.lineSeries = this.chart.addAreaSeries({
-            lineColor: '#22C55E',
-            topColor: 'rgba(34, 197, 94, 0.3)',
-            bottomColor: 'rgba(34, 197, 94, 0.05)',
-            lineWidth: 2,
-          });
-
-          // Verificar se o canvas foi criado
-          const canvas = container.querySelector('canvas');
-          if (canvas) {
-            console.log('[Chart] Canvas encontrado:', {
-              width: canvas.width,
-              height: canvas.height,
-              display: window.getComputedStyle(canvas).display,
-              visibility: window.getComputedStyle(canvas).visibility,
-              opacity: window.getComputedStyle(canvas).opacity
-            });
-            // Forçar estilos no canvas
-            canvas.style.display = 'block';
-            canvas.style.visibility = 'visible';
-            canvas.style.opacity = '1';
-            canvas.style.position = 'absolute';
-            canvas.style.top = '0';
-            canvas.style.left = '0';
-            canvas.style.zIndex = '10';
-          } else {
-            console.warn('[Chart] Canvas não encontrado após criar gráfico');
+          // Destruir gráfico anterior se existir
+          if (this.chart) {
+            this.chart.destroy();
           }
 
-          console.log('[Chart] Gráfico criado com sucesso', {
-            hasChart: !!this.chart,
-            hasLineSeries: !!this.lineSeries,
-            ticksCount: this.ticks.length,
-            hasCanvas: !!canvas
+          const ctx = canvas.getContext('2d');
+          if (!ctx) {
+            console.error('[Chart] Não foi possível obter contexto 2D');
+            return;
+          }
+
+          this.chart = new Chart(ctx, {
+            type: 'line',
+            data: {
+              labels: [],
+              datasets: [{
+                label: 'Preço',
+                data: [],
+                borderColor: '#22C55E',
+                backgroundColor: 'rgba(34, 197, 94, 0.1)',
+                borderWidth: 2,
+                fill: true,
+                tension: 0.4,
+                pointRadius: 0,
+                pointHoverRadius: 0
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: {
+                  display: false
+                },
+                tooltip: {
+                  enabled: true
+                }
+              },
+              scales: {
+                x: {
+                  display: true,
+                  grid: {
+                    color: 'rgba(28, 28, 28, 0.5)'
+                  },
+                  ticks: {
+                    color: '#DFDFDF'
+                  }
+                },
+                y: {
+                  display: true,
+                  grid: {
+                    color: 'rgba(28, 28, 28, 0.5)'
+                  },
+                  ticks: {
+                    color: '#DFDFDF'
+                  }
+                }
+              },
+              interaction: {
+                intersect: false,
+                mode: 'index'
+              }
+            }
           });
 
           window.addEventListener('resize', this.handleResize);
           
           if (this.ticks.length > 0) {
-            console.log('[Chart] Atualizando gráfico com ticks existentes...');
             this.updateChart();
           }
         } catch (error) {
           console.error('[Chart] Erro ao criar:', error);
-          console.error('[Chart] Stack:', error.stack);
         }
       });
     },
@@ -660,31 +664,8 @@ export default {
       }
     },
     handleResize() {
-      if (!this.chart || !this.$refs.chartContainer) return;
-      const container = this.$refs.chartContainer;
-      const containerRect = container.getBoundingClientRect();
-      const containerWidth = containerRect.width || container.clientWidth;
-      const containerHeight = containerRect.height || container.clientHeight;
-      
-      if (containerWidth > 0 && containerHeight > 0) {
-        this.chart.applyOptions({ 
-          width: containerWidth,
-          height: containerHeight,
-          timeScale: {
-            rightOffset: Math.floor(containerWidth * 0.15), // 15% de espaço à direita
-          }
-        });
-        // Forçar repaint após redimensionamento
-        this.$nextTick(() => {
-          if (this.chart) {
-            this.chart.timeScale().fitContent();
-          }
-        });
-        console.log('[OperationChart] Gráfico redimensionado:', {
-          width: containerWidth,
-          height: containerHeight,
-          rightOffset: Math.floor(containerWidth * 0.15)
-        });
+      if (this.chart) {
+        this.chart.resize();
       }
     },
     initConnection() {
@@ -1903,15 +1884,7 @@ export default {
         console.log('[OperationChart] Tick adicionado. Total de ticks:', this.ticks.length);
         this.updateChart();
         
-        // Atualizar linha de entrada se existir
-        if (this.updateEntrySpotLine) {
-          try {
-            this.updateEntrySpotLine();
-          } catch (lineError) {
-            console.error('[OperationChart] Erro ao atualizar linha de entrada:', lineError);
-            // Não interromper o fluxo por erro na linha
-          }
-        }
+        // Linha de entrada será implementada depois com Chart.js
       } catch (error) {
         console.error('[OperationChart] ERRO CRÍTICO em processTick:', error);
         console.error('[OperationChart] Stack trace:', error.stack);
@@ -1920,56 +1893,37 @@ export default {
       }
     },
     updateChart() {
-      console.log('[Chart] updateChart chamado', {
-        ticksCount: this.ticks.length,
-        hasChart: !!this.chart,
-        hasLineSeries: !!this.lineSeries
-      });
-
       if (!this.ticks.length) {
-        console.log('[Chart] Sem ticks para plotar');
         return;
       }
 
-      if (!this.chart || !this.lineSeries) {
-        console.log('[Chart] Gráfico não existe, criando...');
-        if (!this.chart) {
-          this.initChart();
-        }
+      if (!this.chart) {
+        this.initChart();
         return;
       }
 
       const data = this.ticks
         .map(tick => {
-          const time = Math.floor(Number(tick.epoch));
+          const time = Number(tick.epoch) * 1000; // Converter para milissegundos
           const value = Number(tick.value);
           if (isNaN(time) || isNaN(value) || time <= 0 || value <= 0) {
             return null;
           }
-          return { time, value };
+          return { x: time, y: value };
         })
         .filter(item => item !== null)
-        .sort((a, b) => a.time - b.time);
-
-      console.log('[Chart] Dados processados:', {
-        total: data.length,
-        first: data[0],
-        last: data[data.length - 1]
-      });
+        .sort((a, b) => a.x - b.x);
 
       if (data.length === 0) {
-        console.warn('[Chart] Nenhum dado válido após processamento');
         return;
       }
 
       try {
-        console.log('[Chart] Atualizando gráfico com', data.length, 'pontos');
-        this.lineSeries.setData(data);
-        this.chart.timeScale().fitContent();
-        console.log('[Chart] Gráfico atualizado com sucesso');
+        this.chart.data.labels = data.map((_, i) => i);
+        this.chart.data.datasets[0].data = data.map(d => d.y);
+        this.chart.update('none'); // 'none' para atualização sem animação
       } catch (error) {
         console.error('[Chart] Erro ao atualizar:', error);
-        console.error('[Chart] Stack:', error.stack);
       }
     },
     supportsCallPut(symbol) {
@@ -4115,6 +4069,15 @@ export default {
     console.log('[OperationChart] ========== COMPONENTE SENDO DESMONTADO ==========');
     this.isDestroying = true;
     
+    // Destruir gráfico
+    if (this.chart) {
+      this.chart.destroy();
+      this.chart = null;
+    }
+    
+    // Remover listener de resize
+    window.removeEventListener('resize', this.handleResize);
+    
     // Limpar retry se existir
     if (this.retryTimeout) {
       clearTimeout(this.retryTimeout);
@@ -4144,7 +4107,6 @@ export default {
         console.warn('[OperationChart] Erro ao remover gráfico:', error);
       }
       this.chart = null;
-      this.lineSeries = null;
     }
     if (this.expirationInterval) {
       clearInterval(this.expirationInterval);
