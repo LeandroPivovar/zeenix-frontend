@@ -1920,10 +1920,14 @@ export default {
       
       // Verificar se já estamos atualizando para evitar múltiplas chamadas simultâneas
       if (this.isUpdatingChart) {
+        console.log('[Chart] scheduleChartUpdate - Já está atualizando, ignorando');
         return;
       }
       
+      console.log('[Chart] scheduleChartUpdate - Agendando atualização em 100ms');
+      
       this.updateChartTimeout = setTimeout(() => {
+        console.log('[Chart] scheduleChartUpdate - Executando atualização agendada');
         this.isUpdatingChart = true;
         try {
           this.updateChartData();
