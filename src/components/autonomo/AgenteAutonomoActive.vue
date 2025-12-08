@@ -120,9 +120,10 @@
 					</span>
 				</div>
 				<div class="performance">
-					<div class="performance-header" v-if="abaAtiva === 'grafico'">
+					<!-- Header mobile apenas -->
+					<div class="performance-header mobile-performance-header" v-if="abaAtiva === 'grafico'">
 						<div class="performance-title-wrapper">
-							<span class="performance-title">Performance do Agente</span>
+							<span class="performance-title">Gráfico em tempo real</span>
 							<span class="update-info">Última atualização: <span class="update-time">{{ ultimaAtualizacao }}</span></span>
 						</div>
 						<!-- Select simples apenas no mobile -->
@@ -134,9 +135,15 @@
 						</select>
 					</div>
 					<!-- Header desktop sempre visível -->
-					<div class="performance-header desktop-performance-header">
+					<div class="performance-header desktop-performance-header" v-if="abaAtiva === 'grafico'">
 						<div class="performance-title-wrapper">
-							<span class="performance-title">Performance do Agente</span>
+							<span class="performance-title">Gráfico em tempo real</span>
+							<span class="update-info">Última atualização: <span class="update-time">{{ ultimaAtualizacao }}</span></span>
+						</div>
+					</div>
+					<div class="performance-header desktop-performance-header" v-else-if="abaAtiva === 'historico'">
+						<div class="performance-title-wrapper">
+							<span class="performance-title">Histórico de Operações</span>
 							<span class="update-info">Última atualização: <span class="update-time">{{ ultimaAtualizacao }}</span></span>
 						</div>
 					</div>
@@ -245,6 +252,7 @@
 									<th>Tipo</th>
 									<th>Entrada</th>
 									<th>Saída</th>
+									<th>Investimento</th>
 									<th>Resultado</th>
 								</tr>
 							</thead>
@@ -255,6 +263,7 @@
 									<td>{{ op.tipo }}</td>
 									<td>${{ op.entrada }}</td>
 									<td>${{ op.saida }}</td>
+									<td>${{ op.volume }}</td>
 									<td :class="op.resultado.startsWith('+') ? 'result-positive' : 'result-negative'">
 										{{ op.resultado }}
 									</td>
@@ -577,10 +586,12 @@
 		gap: 3px;
 		flex-grow: 1;
 		background: #0e0f0f;
-		padding: 5px;
+		padding: 10px 10px;
 		margin-right: 20px;
 		border-radius: 8px;
 		border: 1px solid #1a1a1a;
+		min-height: 55px;
+		justify-content: center;
 	}
 
 	.agent-title h2 {
@@ -621,8 +632,8 @@
 	}
 
 	.top-pause-btn {
-		background: #451312;
-		color: white;
+		background: #FFD700;
+		color: #000;
 		border: none;
 		padding: 10px 20px;
 		border-radius: 12px;
@@ -637,7 +648,7 @@
 	}
 
 	.top-pause-btn:hover {
-		background: #a00000;
+		background: #FFC700;
 	}
 
 	.pause-icon {
@@ -657,7 +668,7 @@
 		align-items: flex-start;
 		flex-direction: column;
 		text-align: left;
-		gap: 8px;
+		gap: 0;
 		font-size: 12px;
 		color: #666;
 	}
@@ -875,11 +886,19 @@
 		display: none;
 	}
 
+	.mobile-performance-header {
+		display: none;
+	}
+
 	.desktop-performance-header {
 		display: flex;
 	}
 
 	@media (max-width: 768px) {
+		.mobile-performance-header {
+			display: flex;
+		}
+		
 		.desktop-performance-header {
 			display: none !important;
 		}
@@ -1036,10 +1055,10 @@
 	.operations-table th {
 		text-align: left;
 		padding: 12px;
-		font-size: 11px;
+		font-size: 14px;
 		color: #666;
 		border-bottom: 1px solid #1a1a1a;
-		font-weight: 500;
+		font-weight: 700;
 		text-transform: uppercase;
 		background-color: #0e0f0f;
 		position: sticky;
@@ -1048,6 +1067,7 @@
 	}
 
 	.operations-table td {
+		text-align: left;
 		padding: 12px;
 		font-size: 13px;
 		border-bottom: 1px solid #1a1a1a;
