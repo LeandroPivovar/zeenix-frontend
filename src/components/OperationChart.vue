@@ -203,7 +203,7 @@
             <div class="space-y-3 pt-3">
               <button 
                 v-if="!activeContract"
-                @click="executeBuy" 
+                @click="handleBuyClick" 
                 id="buyButton"
                 class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 :disabled="isTrading || !isAuthorized || !canUseCallPut"
@@ -706,6 +706,25 @@ export default {
           // Garantir que o gráfico seja renderizado corretamente
           this.$nextTick(() => {
             if (this.chart) {
+              // Forçar atualização visual e garantir que o canvas está visível
+              const canvas = container.querySelector('canvas');
+              if (canvas) {
+                canvas.style.display = 'block';
+                canvas.style.visibility = 'visible';
+                canvas.style.opacity = '1';
+                canvas.style.position = 'relative';
+                canvas.style.zIndex = '1';
+                console.log('[OperationChart] Canvas garantido como visível após criação do gráfico');
+              }
+              
+              // Se já temos dados, plotar imediatamente
+              if (this.ticks.length > 0) {
+                console.log('[OperationChart] Dados disponíveis após criação, plotando...');
+                setTimeout(() => {
+                  this.updateChartFromTicks();
+                }, 100);
+              }
+              
               // Forçar atualização visual
               this.chart.timeScale().fitContent();
               // Verificar se o container está visível
@@ -2323,6 +2342,21 @@ export default {
           const lastPoint = validData[validData.length - 1];
           console.log('[OperationChart] Atualizando gráfico com novo ponto incremental:', lastPoint);
           this.lineSeries.update(lastPoint);
+          
+          // Forçar repaint após update incremental
+          if (this.chart && container) {
+            requestAnimationFrame(() => {
+              if (this.chart) {
+                const canvas = container.querySelector('canvas');
+                if (canvas) {
+                  // Garantir que o canvas está visível
+                  canvas.style.display = 'block';
+                  canvas.style.visibility = 'visible';
+                  canvas.style.opacity = '1';
+                }
+              }
+            });
+          }
           // Não fazer scroll automático - deixar o usuário controlar o zoom
         } else {
           // Primeira vez ou muitos dados novos, usar setData completo
@@ -2360,41 +2394,78 @@ export default {
           }
           
           // Forçar atualização visual do gráfico imediatamente após setData
-          if (this.chart) {
+          if (this.chart && container) {
             try {
-              // Ajustar escala de tempo
-              this.chart.timeScale().fitContent();
-              console.log('[OperationChart] fitContent chamado imediatamente após setData');
-              
-              // Forçar resize para garantir renderização
+              // Forçar resize ANTES de fitContent para garantir que o canvas tenha dimensões corretas
               const currentRect = container.getBoundingClientRect();
               if (currentRect.width > 0 && currentRect.height > 0) {
                 this.chart.applyOptions({
                   width: currentRect.width,
                   height: currentRect.height
                 });
+                console.log('[OperationChart] Gráfico redimensionado para:', { width: currentRect.width, height: currentRect.height });
               }
+              
+              // Ajustar escala de tempo
+              this.chart.timeScale().fitContent();
+              console.log('[OperationChart] fitContent chamado imediatamente após setData');
+              
+              // Forçar repaint do gráfico
+              this.chart.timeScale().scrollToPosition(0, false);
+              
             } catch (error) {
               console.error('[OperationChart] ERRO ao chamar fitContent:', error);
             }
             
-            // Forçar resize novamente após setData para garantir renderização
-            if (container) {
-              const rect = container.getBoundingClientRect();
-              if (rect.width > 0 && rect.height > 0) {
-                // Usar requestAnimationFrame para garantir que o resize aconteça após o setData
-                requestAnimationFrame(() => {
-                  if (this.chart) {
-                    this.chart.applyOptions({
-                      width: rect.width,
-                      height: rect.height
-                    });
-                    this.chart.timeScale().fitContent();
-                    console.log('[OperationChart] Gráfico redimensionado e fitContent chamado via requestAnimationFrame');
+            // Forçar resize e repaint novamente após setData para garantir renderização
+            setTimeout(() => {
+              if (this.chart && container) {
+                const rect = container.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
+                  // Forçar resize
+                  this.chart.applyOptions({
+                    width: rect.width,
+                    height: rect.height
+                  });
+                  
+                  // Forçar fitContent novamente
+                  this.chart.timeScale().fitContent();
+                  
+                  // Garantir que o canvas está visível
+                  const canvas = container.querySelector('canvas');
+                  if (canvas) {
+                    this.ensureChartVisible(canvas, container);
                   }
-                });
+                  
+                  console.log('[OperationChart] Gráfico redimensionado e fitContent chamado após delay');
+                }
               }
-            }
+            }, 100);
+            
+            // Usar requestAnimationFrame para garantir renderização
+            requestAnimationFrame(() => {
+              if (this.chart && container) {
+                const rect = container.getBoundingClientRect();
+                if (rect.width > 0 && rect.height > 0) {
+                  this.chart.applyOptions({
+                    width: rect.width,
+                    height: rect.height
+                  });
+                  this.chart.timeScale().fitContent();
+                  
+                  // Forçar repaint
+                  const canvas = container.querySelector('canvas');
+                  if (canvas) {
+                    canvas.style.display = 'block';
+                    canvas.style.visibility = 'visible';
+                    canvas.style.opacity = '1';
+                  }
+                  
+                  console.log('[OperationChart] Gráfico redimensionado e fitContent chamado via requestAnimationFrame');
+                }
+              }
+            });
+          }
             
             // Verificar se o canvas existe e está visível - usar múltiplas tentativas
             // Reduzir tentativas para evitar spam de logs e melhorar performance
@@ -2404,25 +2475,45 @@ export default {
               const canvas = container.querySelector('canvas');
               if (canvas) {
                 this.ensureChartVisible(canvas, container);
-              } else if (attempt < 3) {
-                // Reduzir tentativas de 5 para 3 e aumentar delay
+                
+                // Forçar repaint adicional
+                requestAnimationFrame(() => {
+                  if (this.chart) {
+                    this.chart.timeScale().fitContent();
+                    const rect = container.getBoundingClientRect();
+                    if (rect.width > 0 && rect.height > 0) {
+                      this.chart.applyOptions({
+                        width: rect.width,
+                        height: rect.height
+                      });
+                    }
+                  }
+                });
+              } else if (attempt < 5) {
+                // Aumentar tentativas para garantir que encontramos o canvas
                 setTimeout(() => {
                   checkCanvas(attempt + 1);
-                }, 200 * (attempt + 1));
+                }, 150 * (attempt + 1));
               } else {
-                // Apenas logar aviso, não forçar renderização excessiva
-                // O canvas será criado naturalmente pelo lightweight-charts
-                if (attempt === 3) {
-                  console.warn('[OperationChart] ⚠ Canvas não encontrado após tentativas - o gráfico pode estar renderizando');
+                // Tentar forçar criação do canvas
+                if (attempt === 5) {
+                  console.warn('[OperationChart] ⚠ Canvas não encontrado após tentativas - forçando resize...');
+                  const rect = container.getBoundingClientRect();
+                  if (rect.width > 0 && rect.height > 0 && this.chart) {
+                    this.chart.applyOptions({
+                      width: rect.width,
+                      height: rect.height
+                    });
+                    this.chart.timeScale().fitContent();
+                  }
                 }
               }
             };
             
             // Iniciar verificação após um pequeno delay para dar tempo ao gráfico renderizar
-            // Usar setTimeout ao invés de requestAnimationFrame para dar mais tempo
             setTimeout(() => {
               checkCanvas(0);
-            }, 300);
+            }, 200);
         }
         }
         
@@ -2431,6 +2522,34 @@ export default {
         
         this.chartInitialized = true;
         console.log('[OperationChart] ✓ Gráfico atualizado com sucesso');
+        
+        // Forçar renderização final após atualização
+        this.$nextTick(() => {
+          if (this.chart && container) {
+            // Garantir que o canvas está visível e renderizado
+            const canvas = container.querySelector('canvas');
+            if (canvas) {
+              canvas.style.display = 'block';
+              canvas.style.visibility = 'visible';
+              canvas.style.opacity = '1';
+              
+              // Forçar repaint
+              requestAnimationFrame(() => {
+                if (this.chart) {
+                  this.chart.timeScale().fitContent();
+                  const rect = container.getBoundingClientRect();
+                  if (rect.width > 0 && rect.height > 0) {
+                    this.chart.applyOptions({
+                      width: rect.width,
+                      height: rect.height
+                    });
+                  }
+                  console.log('[OperationChart] Renderização final forçada');
+                }
+              });
+            }
+          }
+        });
       } catch (error) {
         console.error('[OperationChart] ERRO ao atualizar gráfico:', error);
         console.error('[OperationChart] Stack trace:', error.stack);
@@ -3517,8 +3636,37 @@ export default {
         symbol: this.symbol,
         supportsCallPut: this.supportsCallPut(this.symbol),
         contractsData: this.contractsData[this.symbol],
-        wsReady: this.ws ? this.ws.readyState === WebSocket.OPEN : false
+        wsReady: this.ws ? this.ws.readyState === WebSocket.OPEN : false,
+        buttonDisabled: this.isTrading || !this.isAuthorized || !this.canUseCallPut
       });
+    },
+    handleBuyClick(event) {
+      console.log('[OperationChart] 🖱️ CLIQUE NO BOTÃO DE COMPRA DETECTADO');
+      console.log('[OperationChart] Evento:', event);
+      console.log('[OperationChart] Estado do botão no momento do clique:', {
+        isTrading: this.isTrading,
+        isAuthorized: this.isAuthorized,
+        canUseCallPut: this.canUseCallPut,
+        currentProposalId: this.currentProposalId,
+        currentProposalPrice: this.currentProposalPrice,
+        activeContract: this.activeContract,
+        buttonDisabled: this.isTrading || !this.isAuthorized || !this.canUseCallPut
+      });
+      
+      // Verificar se o botão está realmente desabilitado
+      const button = event.currentTarget || event.target;
+      if (button && button.disabled) {
+        console.warn('[OperationChart] ⚠️ Botão está desabilitado no DOM!');
+        console.warn('[OperationChart] Razões possíveis:', {
+          isTrading: this.isTrading,
+          isAuthorized: this.isAuthorized,
+          canUseCallPut: this.canUseCallPut
+        });
+        return;
+      }
+      
+      // Chamar executeBuy se o botão não estiver desabilitado
+      this.executeBuy();
     },
     executeBuy() {
       console.log('[OperationChart] ========== EXECUTAR COMPRA CHAMADO ==========');
@@ -5262,6 +5410,7 @@ export default {
   opacity: 1 !important;
   visibility: visible !important;
   pointer-events: auto !important;
+  background-color: #0B0B0B !important;
 }
 
 #candlestickChart canvas {
@@ -5270,6 +5419,24 @@ export default {
   height: 100% !important;
   position: relative !important;
   z-index: 1 !important;
+  background-color: #0B0B0B !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+}
+
+/* Garantir que o container do gráfico está visível */
+.chart-wrapper,
+#candlestickChart {
+  position: relative !important;
+  overflow: visible !important;
+  background-color: #0B0B0B !important;
+}
+
+.chart-wrapper > div,
+#candlestickChart > div {
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
 }
 
 .col-chart {
