@@ -1957,15 +1957,25 @@ export default {
           !this.chart.data.datasets || 
           !this.chart.data.datasets[0] ||
           !this.chart.ctx) {
+        console.warn('[Chart] Gráfico não está válido, faltando componentes:', {
+          canvas: !!this.chart.canvas,
+          parentNode: !!this.chart.canvas?.parentNode,
+          data: !!this.chart.data,
+          datasets: !!this.chart.data?.datasets,
+          dataset0: !!this.chart.data?.datasets?.[0],
+          ctx: !!this.chart.ctx
+        });
         return;
       }
 
       // Verificar se o gráfico está completamente inicializado
       try {
         if (!this.chart.chartArea || !this.chart.chartArea.width || !this.chart.chartArea.height) {
+          console.warn('[Chart] chartArea não está válido ainda');
           return;
         }
       } catch (e) {
+        console.warn('[Chart] Erro ao verificar chartArea:', e);
         return;
       }
 
@@ -1974,6 +1984,8 @@ export default {
         const ticksLength = this.ticks.length;
         const validData = [];
         const validLabels = [];
+        
+        console.log('[Chart] Processando', ticksLength, 'ticks...');
         
         // Extrair valores de forma não-reativa
         for (let i = 0; i < ticksLength; i++) {
@@ -1994,12 +2006,26 @@ export default {
           }
         }
 
+        console.log('[Chart] Dados extraídos:', {
+          totalTicks: ticksLength,
+          validDataCount: validData.length,
+          firstValue: validData[0],
+          lastValue: validData[validData.length - 1]
+        });
+
         if (validData.length === 0) {
+          console.warn('[Chart] Nenhum dado válido extraído dos ticks');
           return;
         }
 
         // Atualizar dados do gráfico
         const dataset = this.chart.data.datasets[0];
+        
+        console.log('[Chart] Atualizando dataset, dados atuais:', {
+          currentDataLength: dataset.data.length,
+          newDataLength: validData.length,
+          datasetExists: !!dataset
+        });
         
         // Substituir arrays completamente para evitar reatividade
         dataset.data.length = 0;
@@ -2010,6 +2036,13 @@ export default {
           dataset.data.push(validData[i]);
           this.chart.data.labels.push(validLabels[i]);
         }
+
+        console.log('[Chart] Dados adicionados ao dataset:', {
+          dataLength: dataset.data.length,
+          labelsLength: this.chart.data.labels.length,
+          firstDataPoint: dataset.data[0],
+          lastDataPoint: dataset.data[dataset.data.length - 1]
+        });
 
         // Atualizar gráfico sem animação
         this.chart.update('none');
