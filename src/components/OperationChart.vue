@@ -46,7 +46,7 @@
           </div>
 
           <div id="candlestickChart" class="flex-1 w-full chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative; z-index: 1; min-height: 400px; height: 100%;"></div>
-          <div v-if="!chartInitialized && !ticks.length" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
+          <div v-if="!ticks.length" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
             <p class="text-zenix-secondary">{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
           </div>
         </div>
@@ -340,10 +340,7 @@ export default {
         { value: 'frxXPDUSD', label: 'XPD/USD (Paládio / Dólar)', category: 'Metais' },
       ],
       ticks: [],
-      chartInitialized: false,
-      previousDataCount: 0,
       isDestroying: false,
-      isInitializingChart: false,
       latestTick: null,
       lastUpdate: null,
       chart: null,
@@ -520,47 +517,38 @@ export default {
     },
     methods: {
     initChart() {
-      // Se já existe, não criar novamente
       if (this.chart) {
         return;
       }
 
       const container = this.$refs.chartContainer;
       if (!container) {
-        console.warn('[Chart] Container não encontrado');
         return;
       }
 
-      // Aguardar DOM estar pronto
       this.$nextTick(() => {
         const rect = container.getBoundingClientRect();
-        const width = rect.width || container.clientWidth || 800;
-        const height = rect.height || container.clientHeight || 400;
-
-        if (width <= 0 || height <= 0) {
+        if (rect.width <= 0 || rect.height <= 0) {
           setTimeout(() => this.initChart(), 100);
           return;
         }
 
         try {
-          // Criar gráfico
           this.chart = createChart(container, {
-            width: width,
-            height: height,
+            width: rect.width,
+            height: rect.height,
             layout: {
               background: { type: ColorType.Solid, color: '#0B0B0B' },
               textColor: '#DFDFDF',
             },
             rightPriceScale: {
               borderVisible: false,
-              textColor: '#DFDFDF',
             },
             leftPriceScale: {
               visible: false,
             },
             timeScale: {
               borderVisible: false,
-              timeVisible: true,
             },
             grid: {
               vertLines: { color: 'rgba(28, 28, 28, 0.5)' },
@@ -568,7 +556,6 @@ export default {
             },
           });
 
-          // Criar série de área
           this.lineSeries = this.chart.addAreaSeries({
             lineColor: '#22C55E',
             topColor: 'rgba(34, 197, 94, 0.3)',
@@ -576,18 +563,13 @@ export default {
             lineWidth: 2,
           });
 
-          this.chartInitialized = true;
-          console.log('[Chart] Gráfico criado com sucesso');
-
-          // Se já temos dados, plotar
-          if (this.ticks.length > 0) {
-            this.updateChartFromTicks();
-          }
-
-          // Listener de resize
           window.addEventListener('resize', this.handleResize);
+          
+          if (this.ticks.length > 0) {
+            this.updateChart();
+          }
         } catch (error) {
-          console.error('[Chart] Erro ao criar gráfico:', error);
+          console.error('[Chart] Erro:', error);
         }
       });
     },
@@ -737,13 +719,11 @@ export default {
       if (this.isReconnecting) {
         console.log('[OperationChart] Em reconexão, preservando dados do gráfico');
         this.isLoadingSymbol = true;
-        // Não resetar previousDataCount para manter contagem correta
       } else {
         // Primeira conexão ou conexão perdida - limpar dados
         this.ticks = [];
         this.latestTick = null;
         this.isLoadingSymbol = true;
-        this.previousDataCount = 0;
       }
       
       // Garantir que o gráfico existe e está pronto
@@ -756,7 +736,7 @@ export default {
         this.$nextTick(() => {
           if (this.chart && this.ticks.length > 0) {
             // Se já temos dados, atualizar o gráfico
-            this.updateChartFromTicks();
+            this.updateChart();
           }
         });
       }
@@ -1003,7 +983,7 @@ export default {
             console.log('[OperationChart] Reconexão concluída, garantindo que gráfico será atualizado');
             this.$nextTick(() => {
               if (this.chart && this.lineSeries && this.ticks.length > 0) {
-                this.updateChartFromTicks();
+                this.updateChart();
               }
             });
           }
@@ -1818,141 +1798,31 @@ export default {
       console.log('[OperationChart] ✅ Active symbols:', Object.keys(this.activeSymbolsCache).length);
     },
     processHistory(msg) {
-      console.log('[OperationChart] processHistory - Processando histórico de ticks');
       const history = msg.history;
       if (!history || !history.prices) {
-        console.warn('[OperationChart] Histórico inválido ou sem preços:', msg);
         return;
       }
       
       const prices = history.prices.map(price => Number(price));
-      const times = history.times?.map(time => Number(time)) || [];
+      const times = history.times?.map(time => Math.floor(Number(time))) || [];
       
-      // Criar ticks com validação rigorosa
-      const newTicks = prices
+      this.ticks = prices
         .map((price, index) => {
           const value = Number(price);
-          const epoch = times[index] ? Math.floor(Number(times[index])) : null;
-          
-          // Validar valores
-          if (isNaN(value) || !isFinite(value) || value <= 0) {
+          const epoch = times[index] || Math.floor(Date.now() / 1000) - (prices.length - index);
+          if (isNaN(value) || isNaN(epoch) || value <= 0 || epoch <= 0) {
             return null;
           }
-          
-          // Se não tem epoch válido, usar o timestamp atual menos o offset
-          const validEpoch = epoch && !isNaN(epoch) && epoch > 0 
-            ? epoch 
-            : Math.floor(Date.now() / 1000) - (prices.length - index);
-          
-          return { value, epoch: validEpoch };
+          return { value, epoch };
         })
-        .filter(tick => tick !== null && tick.value > 0 && tick.epoch > 0);
-      
-      // Se está em reconexão e já temos ticks, preservar os dados existentes
-      // Apenas substituir se for uma nova conexão ou se os dados são mais recentes
-      if (this.isReconnecting && this.ticks.length > 0) {
-        console.log('[OperationChart] Em reconexão, preservando dados existentes do gráfico');
-        // Não substituir os ticks durante reconexão - manter os dados visíveis
-        // Os novos ticks serão adicionados incrementalmente via processTick
-        this.isLoadingSymbol = false;
-        return; // Não atualizar o gráfico com dados antigos durante reconexão
-      }
-      
-      // Substituir ticks apenas se não estiver em reconexão
-      this.ticks = newTicks;
-      this.previousDataCount = 0; // Resetar contador para forçar setData completo
-      
-      console.log('[OperationChart] Histórico processado:', {
-        ticksCount: this.ticks.length,
-        firstTick: this.ticks[0],
-        lastTick: this.ticks[this.ticks.length - 1]
-      });
+        .filter(tick => tick !== null);
       
       if (msg.subscription?.id) {
         this.tickSubscriptionId = msg.subscription.id;
-        console.log('[OperationChart] Subscription ID do histórico:', this.tickSubscriptionId);
       }
       
       this.isLoadingSymbol = false;
-      
-      // Atualizar gráfico com histórico
-      this.updateChartFromTicks();
-      
-      // Garantir que o gráfico existe antes de atualizar (fallback)
-      if (!this.chart) {
-        console.log('[OperationChart] Gráfico não existe ainda, criando...');
-        this.initChart();
-        // Aguardar um pouco para garantir que o gráfico foi criado
-        setTimeout(() => {
-          if (this.chart && this.lineSeries && this.ticks.length > 0) {
-            console.log('[OperationChart] Gráfico criado, atualizando com histórico...');
-            this.updateChartFromTicks();
-          } else {
-            console.warn('[OperationChart] Gráfico não disponível após criação, tentando novamente...');
-            // Tentar novamente após mais um delay
-            setTimeout(() => {
-              if (this.ticks.length > 0) {
-                this.updateChartFromTicks();
-          }
-        }, 300);
-          }
-        }, 250);
-      } else {
-        // Gráfico já existe, atualizar diretamente
-        // Forçar atualização mesmo durante reconexão
-        console.log('[OperationChart] Gráfico já existe, atualizando com histórico...');
-        // Forçar resize antes de atualizar
-        const container = this.$refs.chartContainer;
-        if (container) {
-          const rect = container.getBoundingClientRect();
-          console.log('[OperationChart] Dimensões do container ao atualizar:', {
-            width: rect.width,
-            height: rect.height,
-            clientWidth: container.clientWidth,
-            clientHeight: container.clientHeight
-          });
-          if (rect.width > 0 && rect.height > 0) {
-            this.chart.applyOptions({
-              width: rect.width,
-              height: rect.height
-            });
-          } else {
-            console.warn('[OperationChart] Container tem dimensões inválidas, aguardando...');
-            setTimeout(() => {
-              if (this.chart && this.lineSeries && this.ticks.length > 0) {
-                const newRect = container.getBoundingClientRect();
-                if (newRect.width > 0 && newRect.height > 0) {
-                  this.chart.applyOptions({
-                    width: newRect.width,
-                    height: newRect.height
-                  });
-                  this.updateChartFromTicks();
-                }
-              }
-            }, 200);
-            return;
-          }
-        }
-        this.$nextTick(() => {
-          if (this.chart && this.lineSeries && this.ticks.length > 0) {
-            // Aguardar um pouco mais para garantir que o gráfico está totalmente renderizado
-            setTimeout(() => {
-              // Forçar resize antes de atualizar
-              const container = this.$refs.chartContainer;
-              if (container && this.chart) {
-                const rect = container.getBoundingClientRect();
-                if (rect.width > 0 && rect.height > 0) {
-                  this.chart.applyOptions({
-                    width: rect.width,
-                    height: rect.height
-                  });
-                }
-              }
-              this.updateChartFromTicks();
-            }, 150);
-          }
-        });
-      }
+      this.updateChart();
     },
     processCandles(msg) {
       const candles = msg.candles || [];
@@ -1963,7 +1833,7 @@ export default {
         this.tickSubscriptionId = msg.subscription.id;
       }
       this.isLoadingSymbol = false;
-      this.updateChartFromTicks();
+      this.updateChart();
     },
     processTick(msg) {
       try {
@@ -2018,7 +1888,7 @@ export default {
         console.log('[OperationChart] Últimos 10 ticks:', last10Ticks);
         
         console.log('[OperationChart] Tick adicionado. Total de ticks:', this.ticks.length);
-        this.updateChartFromTicks();
+        this.updateChart();
         
         // Atualizar linha de entrada se existir
         if (this.updateEntrySpotLine) {
@@ -2036,77 +1906,35 @@ export default {
         // Não interromper o fluxo - continuar processando próximos ticks
       }
     },
-    updateChartFromTicks() {
-      // Se não há ticks, não fazer nada
-      if (!this.ticks.length) {
+    updateChart() {
+      if (!this.ticks.length || !this.chart || !this.lineSeries) {
+        if (!this.chart) {
+          this.initChart();
+        }
         return;
       }
 
-      // Se o gráfico não existe, criar
-      if (!this.chart || !this.lineSeries) {
-        this.initChart();
-        setTimeout(() => this.updateChartFromTicks(), 200);
-        return;
-      }
-
-      // Converter ticks para formato do gráfico com validação rigorosa
       const data = this.ticks
         .map(tick => {
-          if (!tick || tick.epoch === null || tick.epoch === undefined || tick.value === null || tick.value === undefined) {
-            return null;
-          }
-          
           const time = Math.floor(Number(tick.epoch));
           const value = Number(tick.value);
-          
-          // Validação rigorosa
-          if (isNaN(time) || isNaN(value) || time <= 0 || value <= 0 || !isFinite(time) || !isFinite(value)) {
+          if (isNaN(time) || isNaN(value) || time <= 0 || value <= 0) {
             return null;
           }
-          
           return { time, value };
         })
-        .filter(item => item !== null && item.time !== null && item.value !== null)
+        .filter(item => item !== null)
         .sort((a, b) => a.time - b.time);
 
       if (data.length === 0) {
-        console.warn('[Chart] Nenhum dado válido após filtragem');
         return;
       }
 
       try {
-        // Verificar se é atualização incremental
-        const previousCount = this.previousDataCount || 0;
-        const isIncremental = data.length === previousCount + 1 && previousCount > 0;
-
-        if (isIncremental && previousCount > 0) {
-          // Atualizar apenas o último ponto - garantir que é válido
-          const lastPoint = data[data.length - 1];
-          if (lastPoint && lastPoint.time && lastPoint.value && !isNaN(lastPoint.value) && !isNaN(lastPoint.time)) {
-            this.lineSeries.update(lastPoint);
-          }
-        } else {
-          // Atualizar todos os dados
-          this.lineSeries.setData(data);
-          this.chart.timeScale().fitContent();
-        }
-
-        this.previousDataCount = data.length;
-        this.chartInitialized = true;
+        this.lineSeries.setData(data);
+        this.chart.timeScale().fitContent();
       } catch (error) {
         console.error('[Chart] Erro ao atualizar:', error);
-        // Em caso de erro, tentar recriar o gráfico
-        if (error.message && error.message.includes('null')) {
-          console.warn('[Chart] Erro de valor null detectado, recriando gráfico...');
-          this.chart = null;
-          this.lineSeries = null;
-          this.chartInitialized = false;
-          this.previousDataCount = 0;
-          setTimeout(() => {
-            this.initChart();
-            setTimeout(() => this.updateChartFromTicks(), 300);
-          }, 100);
-        }
       }
     },
     supportsCallPut(symbol) {
@@ -2323,8 +2151,6 @@ export default {
         }
       }
       this.ticks = [];
-      this.previousDataCount = 0;
-      
       // Inscrever no novo símbolo
       this.subscribeToSymbol();
       
@@ -3796,7 +3622,6 @@ export default {
         purchaseTime: buy.purchase_time,
         latestTick: this.latestTick,
         ticksCount: this.ticks.length,
-        chartInitialized: this.chartInitialized
       });
       
       // Aguardar um pouco para garantir que o gráfico está atualizado
@@ -4058,7 +3883,7 @@ export default {
       handler(newTicks) {
         // Atualizar gráfico quando receber novos ticks
         if (newTicks.length > 0) {
-          this.updateChartFromTicks();
+          this.updateChart();
         }
         
         if (newTicks.length >= 10 && this.isAuthorized && !this.aiRecommendationInterval) {
