@@ -1949,7 +1949,7 @@ export default {
           // Extrair valor sem usar proxies Vue
           if (tick && typeof tick === 'object') {
             // Acessar propriedade diretamente sem getter reativo
-            value = tick.hasOwnProperty('value') ? tick.value : (tick.hasOwnProperty('quote') ? tick.quote : null);
+            value = Object.prototype.hasOwnProperty.call(tick, 'value') ? tick.value : (Object.prototype.hasOwnProperty.call(tick, 'quote') ? tick.quote : null);
           } else {
             value = tick;
           }
