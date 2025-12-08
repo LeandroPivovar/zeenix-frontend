@@ -592,13 +592,34 @@ export default {
                   const container = this.$refs.chartContainer;
                   if (container) {
                     const rect = container.getBoundingClientRect();
+                    console.log('[Chart] Dimensões do container:', rect);
                     if (rect.width > 0 && rect.height > 0) {
                       // Forçar resize com dimensões corretas
                       setTimeout(() => {
                         if (this.chart && this.chart.canvas) {
+                          console.log('[Chart] Forçando resize do gráfico...');
                           this.chart.resize();
+                          // Se temos ticks, atualizar o gráfico após o resize
+                          if (this.ticks.length > 0) {
+                            console.log('[Chart] Atualizando gráfico após resize...');
+                            this.updateChart();
+                          }
                         }
-                      }, 100);
+                      }, 200);
+                    } else {
+                      console.warn('[Chart] Container também tem dimensões inválidas, aguardando...');
+                      // Tentar novamente após um tempo
+                      setTimeout(() => {
+                        if (this.chart && this.chart.canvas) {
+                          const newRect = container.getBoundingClientRect();
+                          if (newRect.width > 0 && newRect.height > 0) {
+                            this.chart.resize();
+                            if (this.ticks.length > 0) {
+                              this.updateChart();
+                            }
+                          }
+                        }
+                      }, 500);
                     }
                   }
                 }
@@ -1859,6 +1880,12 @@ export default {
       
       this.isLoadingSymbol = false;
       
+      console.log('[Chart] Estado antes de atualizar:', {
+        hasChart: !!this.chart,
+        ticksCount: this.ticks.length,
+        isUpdatingChart: this.isUpdatingChart
+      });
+      
       // Garantir que o gráfico existe antes de atualizar
       if (!this.chart) {
         console.log('[Chart] Gráfico não existe, criando...');
@@ -1869,11 +1896,34 @@ export default {
           this.updateChart();
         }, 300);
       } else {
-        console.log('[Chart] Gráfico existe, chamando updateChart...');
-        this.$nextTick(() => {
-          console.log('[Chart] Dentro do nextTick, chamando updateChart...');
-          this.updateChart();
-        });
+        console.log('[Chart] Gráfico existe, chamando updateChart imediatamente...');
+        // Verificar se o gráfico tem dimensões válidas antes de atualizar
+        const container = this.$refs.chartContainer;
+        if (container) {
+          const rect = container.getBoundingClientRect();
+          console.log('[Chart] Dimensões do container:', rect);
+          if (rect.width > 0 && rect.height > 0) {
+            // Chamar diretamente sem nextTick para garantir que seja executado
+            setTimeout(() => {
+              console.log('[Chart] Executando updateChart após timeout...');
+              this.updateChart();
+            }, 50);
+          } else {
+            console.warn('[Chart] Container tem dimensões inválidas, aguardando...');
+            // Aguardar um pouco mais e tentar novamente
+            setTimeout(() => {
+              const newRect = container.getBoundingClientRect();
+              if (newRect.width > 0 && newRect.height > 0) {
+                console.log('[Chart] Dimensões válidas agora, chamando updateChart...');
+                this.updateChart();
+              } else {
+                console.error('[Chart] Container ainda tem dimensões inválidas após espera');
+              }
+            }, 200);
+          }
+        } else {
+          console.error('[Chart] Container não encontrado!');
+        }
       }
     },
     processCandles(msg) {
