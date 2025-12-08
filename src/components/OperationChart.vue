@@ -2240,7 +2240,8 @@ export default {
       }
       
       // Garantir que o chartContainer está disponível
-      if (!this.$refs.chartContainer) {
+      const container = this.$refs.chartContainer;
+      if (!container) {
         console.warn('[OperationChart] chartContainer não está disponível no DOM');
         // Tentar novamente no próximo tick
         return;
@@ -2363,7 +2364,6 @@ export default {
           console.log('[OperationChart] Chamando lineSeries.setData com', validData.length, 'pontos...');
           
           // Forçar resize ANTES de setData para garantir que o canvas tenha dimensões corretas
-        const container = this.$refs.chartContainer;
           if (container && this.chart) {
           const rect = container.getBoundingClientRect();
             console.log('[OperationChart] Dimensões do container antes de setData:', {
