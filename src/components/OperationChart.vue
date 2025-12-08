@@ -520,14 +520,19 @@ export default {
             return;
           }
 
+          // Criar arrays não-reativos para o Chart.js
+          // Usar Object.create(null) para criar objetos completamente sem protótipo
+          const chartLabels = [];
+          const chartData = [];
+          
           // Criar gráfico Chart.js
           this.chart = new Chart(ctx, {
             type: 'line',
             data: {
-              labels: [],
+              labels: chartLabels,
               datasets: [{
                 label: 'Preço',
-                data: [],
+                data: chartData,
                 borderColor: '#22C55E',
                 backgroundColor: 'rgba(34, 197, 94, 0.1)',
                 borderWidth: 2,
@@ -2031,10 +2036,24 @@ export default {
           datasetExists: !!dataset
         });
         
-        // Usar splice para modificar arrays existentes em vez de substituí-los
-        // Isso mantém as referências e evita que Chart.js tente observar novos objetos
-        dataset.data.splice(0, dataset.data.length, ...validData);
-        this.chart.data.labels.splice(0, this.chart.data.labels.length, ...validLabels);
+        // Limpar arrays existentes e adicionar novos valores
+        // Fazer isso de forma que não dispare observadores Vue
+        dataset.data.length = 0;
+        this.chart.data.labels.length = 0;
+        
+        // Adicionar valores diretamente (método mais seguro)
+        for (let i = 0; i < validData.length; i++) {
+          dataset.data[i] = validData[i];
+          this.chart.data.labels[i] = validLabels[i];
+        }
+        
+        // Ajustar tamanho se necessário
+        if (dataset.data.length !== validData.length) {
+          dataset.data.length = validData.length;
+        }
+        if (this.chart.data.labels.length !== validLabels.length) {
+          this.chart.data.labels.length = validLabels.length;
+        }
 
         console.log('[Chart] Dados atualizados no dataset:', {
           dataLength: dataset.data.length,
@@ -2043,26 +2062,39 @@ export default {
           lastDataPoint: dataset.data[dataset.data.length - 1]
         });
 
-        // Usar setTimeout com delay maior para garantir que está fora do ciclo Vue
-        // Não usar requestAnimationFrame duplo pois pode causar problemas
-        setTimeout(() => {
+        // Tentar atualizar o gráfico - se falhar, não tentar novamente
+        // Usar um único setTimeout para dar tempo ao Chart.js processar
+        const updateChart = () => {
           try {
-            if (this.chart && this.chart.data && this.chart.data.datasets && this.chart.data.datasets[0]) {
-              // Verificar se o gráfico ainda está válido
-              if (this.chart.chartArea && this.chart.chartArea.width > 0 && this.chart.chartArea.height > 0) {
-                // Usar 'none' para atualização sem animação
-                this.chart.update('none');
-                console.log('[Chart] ✓ Gráfico atualizado com sucesso,', validData.length, 'pontos');
-              } else {
-                console.warn('[Chart] Gráfico não tem chartArea válido, pulando update');
-              }
+            if (!this.chart || !this.chartReady) {
+              return;
             }
+            
+            if (!this.chart.data || !this.chart.data.datasets || !this.chart.data.datasets[0]) {
+              return;
+            }
+            
+            // Verificar se o gráfico tem área válida
+            if (!this.chart.chartArea || this.chart.chartArea.width <= 0 || this.chart.chartArea.height <= 0) {
+              return;
+            }
+            
+            // Tentar atualizar - usar try/catch interno para capturar erro específico
+            this.chart.update('none');
+            console.log('[Chart] ✓ Gráfico atualizado com sucesso,', validData.length, 'pontos');
           } catch (updateError) {
             console.error('[Chart] Erro ao chamar update:', updateError.message);
-            // NÃO recriar o gráfico - apenas parar para evitar loops infinitos
-            this.chartReady = false;
+            // Se for erro de stack overflow, marcar como não pronto permanentemente
+            // para evitar tentativas futuras
+            if (updateError.message && updateError.message.includes('Maximum call stack')) {
+              console.error('[Chart] Erro crítico de stack overflow - gráfico será desabilitado');
+              this.chartReady = false;
+            }
           }
-        }, 50);
+        };
+        
+        // Usar setTimeout para garantir que está fora do ciclo atual
+        setTimeout(updateChart, 100);
       } catch (error) {
         console.error('[Chart] Erro ao atualizar:', error);
         // NÃO recriar o gráfico automaticamente - isso causa loops infinitos
