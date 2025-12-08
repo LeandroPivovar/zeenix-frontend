@@ -567,29 +567,38 @@ export default {
             }
           });
 
+          console.log('[Chart] Gráfico criado, aguardando inicialização completa...');
+          
           // Marcar gráfico como pronto após renderização completa
           // Aguardar Chart.js inicializar completamente
           setTimeout(() => {
             try {
               if (this.chart && this.chart.chartArea && this.chart.chartArea.width > 0) {
                 this.chartReady = true;
+                console.log('[Chart] ✓ Gráfico pronto e inicializado');
                 // Atualizar com dados existentes se houver
                 if (this.ticks.length > 0) {
+                  console.log('[Chart] Atualizando com', this.ticks.length, 'ticks existentes');
                   this.updateChartData();
                 }
               } else {
+                console.warn('[Chart] Gráfico ainda não tem chartArea válido, tentando novamente...');
                 // Tentar novamente se ainda não estiver pronto
                 setTimeout(() => {
-                  if (this.chart && this.chart.chartArea) {
+                  if (this.chart && this.chart.chartArea && this.chart.chartArea.width > 0) {
                     this.chartReady = true;
+                    console.log('[Chart] ✓ Gráfico pronto após segunda tentativa');
                     if (this.ticks.length > 0) {
+                      console.log('[Chart] Atualizando com', this.ticks.length, 'ticks existentes');
                       this.updateChartData();
                     }
+                  } else {
+                    console.warn('[Chart] Gráfico ainda não está pronto após segunda tentativa');
                   }
                 }, 200);
               }
             } catch (e) {
-              console.warn('[Chart] Erro ao verificar se gráfico está pronto:', e);
+              console.error('[Chart] Erro ao verificar se gráfico está pronto:', e);
             }
           }, 300);
 
@@ -1812,6 +1821,7 @@ export default {
     processHistory(msg) {
       const history = msg.history;
       if (!history || !history.prices) {
+        console.warn('[Chart] Histórico inválido recebido');
         return;
       }
       
@@ -1828,6 +1838,8 @@ export default {
         }
       }
       
+      console.log('[Chart] processHistory - Processados', newTicks.length, 'ticks do histórico');
+      
       // Substituir array completamente
       this.ticks = newTicks;
       
@@ -1839,11 +1851,15 @@ export default {
       
       // Garantir que o gráfico existe e atualizar
       if (!this.chart) {
+        console.log('[Chart] Gráfico não existe, criando...');
         this.chartReady = false;
         this.initChart();
       } else if (this.chartReady) {
+        console.log('[Chart] Gráfico existe e está pronto, agendando atualização...');
         // Usar scheduleChartUpdate para evitar problemas de reatividade
         this.scheduleChartUpdate();
+      } else {
+        console.log('[Chart] Gráfico existe mas ainda não está pronto, aguardando...');
       }
     },
     processCandles(msg) {
@@ -1922,8 +1938,17 @@ export default {
     updateChartData() {
       // Verificar se gráfico está pronto
       if (!this.chartReady || !this.chart || !this.ticks || !this.ticks.length) {
+        if (!this.chartReady) {
+          console.log('[Chart] updateChartData - Gráfico não está pronto ainda');
+        } else if (!this.chart) {
+          console.log('[Chart] updateChartData - Gráfico não existe');
+        } else if (!this.ticks || !this.ticks.length) {
+          console.log('[Chart] updateChartData - Sem ticks para atualizar');
+        }
         return;
       }
+
+      console.log('[Chart] updateChartData - Atualizando gráfico com', this.ticks.length, 'ticks');
 
       // Verificações de segurança
       if (!this.chart.canvas || 
@@ -1988,6 +2013,7 @@ export default {
 
         // Atualizar gráfico sem animação
         this.chart.update('none');
+        console.log('[Chart] ✓ Gráfico atualizado com sucesso,', validData.length, 'pontos');
       } catch (error) {
         console.error('[Chart] Erro ao atualizar:', error);
         // Se erro persistir, marcar gráfico como não pronto e tentar recriar
