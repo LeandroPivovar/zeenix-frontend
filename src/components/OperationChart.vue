@@ -563,9 +563,11 @@ export default {
             }
           });
 
-          // Atualizar com dados existentes
+          // Atualizar com dados existentes após um pequeno delay
           if (this.ticks.length > 0) {
-            this.updateChartData();
+            setTimeout(() => {
+              this.updateChartData();
+            }, 100);
           }
 
           // Adicionar listener de resize
@@ -720,10 +722,10 @@ export default {
       } else if (this.chart && this.$refs.chartContainer) {
         console.log('[OperationChart] Gráfico existe, preservando durante reconexão');
         // Garantir que o gráfico está visível
-        this.$nextTick(() => {
+          this.$nextTick(() => {
           if (this.chart && this.ticks.length > 0) {
-            // Se já temos dados, atualizar o gráfico
-            this.updateChart();
+            // Se já temos dados, atualizar o gráfico com debounce
+            this.scheduleChartUpdate();
           }
         });
       }
@@ -1793,15 +1795,18 @@ export default {
       const prices = history.prices.map(price => Number(price));
       const times = history.times?.map(time => Math.floor(Number(time))) || [];
       
-      // Limpar e processar histórico
-      this.ticks = [];
+      // Limpar e processar histórico - criar novo array para evitar reatividade
+      const newTicks = [];
       for (let i = 0; i < prices.length; i++) {
         const value = Number(prices[i]);
         const epoch = times[i] || Math.floor(Date.now() / 1000) - (prices.length - i);
         if (!isNaN(value) && !isNaN(epoch) && value > 0 && epoch > 0) {
-          this.ticks.push({ value, epoch });
+          newTicks.push({ value, epoch });
         }
       }
+      
+      // Substituir array completamente
+      this.ticks = newTicks;
       
       if (msg.subscription?.id) {
         this.tickSubscriptionId = msg.subscription.id;
@@ -1809,18 +1814,27 @@ export default {
       
       this.isLoadingSymbol = false;
       
-      // Garantir que o gráfico existe e atualizar
+      // Garantir que o gráfico existe e atualizar após um pequeno delay
       if (!this.chart) {
         this.initChart();
+        // Aguardar gráfico ser criado
+        setTimeout(() => {
+          this.updateChartData();
+        }, 300);
       } else {
-        this.updateChartData();
+        // Usar scheduleChartUpdate para evitar problemas de reatividade
+        this.scheduleChartUpdate();
       }
     },
     processCandles(msg) {
       const candles = msg.candles || [];
       const prices = candles.map(candle => Number(candle.close));
       const epochs = candles.map(candle => Number(candle.epoch));
-      this.ticks = prices.map((value, index) => ({ value, epoch: epochs[index] || index }));
+      
+      // Criar novo array para evitar reatividade
+      const newTicks = prices.map((value, index) => ({ value, epoch: epochs[index] || index }));
+      this.ticks = newTicks;
+      
       if (msg.subscription?.id) {
         this.tickSubscriptionId = msg.subscription.id;
       }
@@ -1828,8 +1842,11 @@ export default {
       
       if (!this.chart) {
         this.initChart();
+        setTimeout(() => {
+          this.updateChartData();
+        }, 300);
       } else {
-        this.updateChartData();
+        this.scheduleChartUpdate();
       }
     },
     processTick(msg) {
@@ -1866,45 +1883,114 @@ export default {
       if (this.updateChartTimeout) {
         clearTimeout(this.updateChartTimeout);
       }
+      
+      // Verificar se já estamos atualizando para evitar múltiplas chamadas simultâneas
+      if (this.isUpdatingChart) {
+        return;
+      }
+      
       this.updateChartTimeout = setTimeout(() => {
-        this.updateChartData();
-        this.updateChartTimeout = null;
+        this.isUpdatingChart = true;
+        try {
+          this.updateChartData();
+        } finally {
+          this.isUpdatingChart = false;
+          this.updateChartTimeout = null;
+        }
       }, 100);
     },
 
     // Atualizar dados do gráfico
     updateChartData() {
-      if (!this.chart || !this.ticks.length) {
+      if (!this.chart || !this.ticks || !this.ticks.length) {
         return;
       }
 
-      if (!this.chart.canvas || !this.chart.canvas.parentNode) {
+      // Verificações de segurança extensivas
+      if (!this.chart.canvas || 
+          !this.chart.canvas.parentNode || 
+          !this.chart.data || 
+          !this.chart.data.datasets || 
+          !this.chart.data.datasets[0] ||
+          !this.chart.ctx) {
+        return;
+      }
+
+      // Verificar se o gráfico está completamente inicializado
+      // chartArea pode não existir imediatamente após criação
+      try {
+        if (!this.chart.chartArea || this.chart.chartArea.width === 0 || this.chart.chartArea.height === 0) {
+          // Aguardar um pouco se o gráfico ainda não está pronto
+          // Usar scheduleChartUpdate para evitar múltiplas chamadas
+          if (!this.updateChartTimeout) {
+            this.scheduleChartUpdate();
+          }
+          return;
+        }
+      } catch (e) {
+        // Se não conseguir acessar chartArea, aguardar
+        if (!this.updateChartTimeout) {
+          this.scheduleChartUpdate();
+        }
         return;
       }
 
       try {
-        // Extrair valores dos ticks
-        const data = [];
-        for (let i = 0; i < this.ticks.length; i++) {
+        // Criar arrays completamente novos e não-reativos
+        const ticksLength = this.ticks.length;
+        const validData = [];
+        const validLabels = [];
+        
+        // Extrair valores de forma não-reativa - usar índice direto
+        for (let i = 0; i < ticksLength; i++) {
           const tick = this.ticks[i];
-          const value = tick && typeof tick === 'object' ? tick.value : Number(tick);
-          if (typeof value === 'number' && !isNaN(value) && isFinite(value) && value > 0) {
-            data.push(value);
+          let value;
+          
+          // Extrair valor sem usar proxies Vue
+          if (tick && typeof tick === 'object') {
+            // Acessar propriedade diretamente sem getter reativo
+            value = tick.hasOwnProperty('value') ? tick.value : (tick.hasOwnProperty('quote') ? tick.quote : null);
+          } else {
+            value = tick;
+          }
+          
+          // Converter para número primitivo
+          const numValue = Number(value);
+          
+          if (typeof numValue === 'number' && !isNaN(numValue) && isFinite(numValue) && numValue > 0) {
+            validData.push(numValue);
+            validLabels.push(i);
           }
         }
 
-        if (data.length === 0) {
+        if (validData.length === 0) {
           return;
         }
 
-        // Atualizar dados
-        if (this.chart.data && this.chart.data.datasets && this.chart.data.datasets[0]) {
-          this.chart.data.labels = data.map((_, i) => i);
-          this.chart.data.datasets[0].data = data;
+        // Atualizar dados do gráfico - substituir completamente os arrays
+        const dataset = this.chart.data.datasets[0];
+        
+        // Criar novos arrays para evitar problemas de reatividade
+        dataset.data = [];
+        this.chart.data.labels = [];
+        
+        // Adicionar novos valores diretamente (primitivos)
+        for (let i = 0; i < validData.length; i++) {
+          dataset.data.push(validData[i]);
+          this.chart.data.labels.push(validLabels[i]);
+        }
+
+        // Atualizar gráfico sem animação - usar try/catch específico
+        try {
           this.chart.update('none');
+        } catch (updateError) {
+          // Se houver erro no update, pode ser que o gráfico não esteja pronto
+          // Não tentar novamente imediatamente para evitar loops
+          console.warn('[Chart] Erro ao chamar update(), gráfico pode não estar pronto:', updateError.message);
         }
       } catch (error) {
-        console.error('[Chart] Erro ao atualizar:', error);
+        console.error('[Chart] Erro ao atualizar dados:', error);
+        // Não tentar novamente para evitar loops infinitos
       }
     },
 
