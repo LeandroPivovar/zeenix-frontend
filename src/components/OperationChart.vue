@@ -2091,12 +2091,67 @@ export default {
             }
             
             // Verificar se o canvas tem dimensões válidas
+            // Usar múltiplas verificações para garantir que o canvas está pronto
             const canvas = this.chart.canvas;
-            const rect = canvas.getBoundingClientRect();
-            if (rect.width === 0 || rect.height === 0) {
-              console.warn('[Chart] Canvas tem dimensões inválidas, pulando atualização');
+            if (!canvas) {
+              console.warn('[Chart] Canvas não encontrado, pulando atualização');
               this.isUpdatingChart = false;
               this.updateChartTimeout = null;
+              return;
+            }
+            
+            // Verificar dimensões do container primeiro (mais confiável)
+            const container = this.$refs.chartContainer;
+            let containerWidth = 0;
+            let containerHeight = 0;
+            
+            if (container) {
+              const containerRect = container.getBoundingClientRect();
+              containerWidth = containerRect.width;
+              containerHeight = containerRect.height;
+            }
+            
+            // Verificar dimensões do canvas usando múltiplas fontes
+            const rect = canvas.getBoundingClientRect();
+            const offsetWidth = canvas.offsetWidth;
+            const offsetHeight = canvas.offsetHeight;
+            
+            // O canvas precisa ter dimensões válidas em pelo menos uma das verificações
+            // Priorizar dimensões do container se disponíveis
+            const hasValidDimensions = (
+              (containerWidth > 0 && containerHeight > 0) ||
+              (rect.width > 0 && rect.height > 0) ||
+              (offsetWidth > 0 && offsetHeight > 0)
+            );
+            
+            if (!hasValidDimensions) {
+              // Se o container tem dimensões válidas mas o canvas não, forçar resize
+              if (containerWidth > 0 && containerHeight > 0) {
+                console.log('[Chart] Container tem dimensões válidas, forçando resize do canvas...');
+                try {
+                  // Forçar resize do gráfico
+                  this.chart.resize();
+                  // Tentar atualizar novamente após resize
+                  this.isUpdatingChart = false;
+                  this.updateChartTimeout = setTimeout(() => {
+                    this.updateChart();
+                  }, 50);
+                  return;
+                } catch (resizeError) {
+                  console.warn('[Chart] Erro ao forçar resize:', resizeError);
+                }
+              }
+              
+              console.warn('[Chart] Canvas tem dimensões inválidas, aguardando renderização...', {
+                container: { width: containerWidth, height: containerHeight },
+                rect: { width: rect.width, height: rect.height },
+                offset: { width: offsetWidth, height: offsetHeight }
+              });
+              // Aguardar um pouco e tentar novamente
+              this.isUpdatingChart = false;
+              this.updateChartTimeout = setTimeout(() => {
+                this.updateChart();
+              }, 100);
               return;
             }
             
