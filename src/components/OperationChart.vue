@@ -319,7 +319,7 @@ export default {
       latestTick: null,
       lastUpdate: null,
       chart: null,
-      _chartReady: false,
+      chartReady: false,
       timeScaleMarkers: [],
             localOrderConfig: {
         type: 'CALL',
@@ -487,7 +487,7 @@ export default {
       }
 
       // Resetar flag de prontidão
-      this._chartReady = false;
+      this.chartReady = false;
 
       this.$nextTick(() => {
         try {
@@ -572,7 +572,7 @@ export default {
           setTimeout(() => {
             try {
               if (this.chart && this.chart.chartArea && this.chart.chartArea.width > 0) {
-                this._chartReady = true;
+                this.chartReady = true;
                 // Atualizar com dados existentes se houver
                 if (this.ticks.length > 0) {
                   this.updateChartData();
@@ -581,7 +581,7 @@ export default {
                 // Tentar novamente se ainda não estiver pronto
                 setTimeout(() => {
                   if (this.chart && this.chart.chartArea) {
-                    this._chartReady = true;
+                    this.chartReady = true;
                     if (this.ticks.length > 0) {
                       this.updateChartData();
                     }
@@ -1839,9 +1839,9 @@ export default {
       
       // Garantir que o gráfico existe e atualizar
       if (!this.chart) {
-        this._chartReady = false;
+        this.chartReady = false;
         this.initChart();
-      } else if (this._chartReady) {
+      } else if (this.chartReady) {
         // Usar scheduleChartUpdate para evitar problemas de reatividade
         this.scheduleChartUpdate();
       }
@@ -1861,9 +1861,9 @@ export default {
       this.isLoadingSymbol = false;
       
       if (!this.chart) {
-        this._chartReady = false;
+        this.chartReady = false;
         this.initChart();
-      } else if (this._chartReady) {
+      } else if (this.chartReady) {
         this.scheduleChartUpdate();
       }
     },
@@ -1921,7 +1921,7 @@ export default {
     // Atualizar dados do gráfico
     updateChartData() {
       // Verificar se gráfico está pronto
-      if (!this._chartReady || !this.chart || !this.ticks || !this.ticks.length) {
+      if (!this.chartReady || !this.chart || !this.ticks || !this.ticks.length) {
         return;
       }
 
@@ -1992,7 +1992,7 @@ export default {
         console.error('[Chart] Erro ao atualizar:', error);
         // Se erro persistir, marcar gráfico como não pronto e tentar recriar
         if (error.message && (error.message.includes('Maximum call stack') || error.message.includes('fullSize'))) {
-          this._chartReady = false;
+          this.chartReady = false;
           setTimeout(() => {
             if (this.chart) {
               try {
@@ -2002,7 +2002,7 @@ export default {
               }
             }
             this.chart = null;
-            this._chartReady = false;
+            this.chartReady = false;
             this.initChart();
           }, 500);
         }
@@ -4161,7 +4161,7 @@ export default {
     if (this.chart) {
       this.chart.destroy();
       this.chart = null;
-      this._chartReady = false;
+      this.chartReady = false;
     }
     
     // Remover listener de resize
@@ -4196,7 +4196,7 @@ export default {
         console.warn('[OperationChart] Erro ao remover gráfico:', error);
       }
       this.chart = null;
-      this._chartReady = false;
+      this.chartReady = false;
     }
     if (this.expirationInterval) {
       clearInterval(this.expirationInterval);
