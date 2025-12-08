@@ -398,7 +398,7 @@ export default {
       aiRecommendation: null,
       aiCardTimeout: null,
       audioContext: null,
-      _lastCanUseCallPut: null, // Para rastrear mudanças em canUseCallPut
+      lastCanUseCallPut: null, // Para rastrear mudanças em canUseCallPut
       retryCount: 0,
       retryTimeout: null,
       maxRetries: Infinity, // Tentar infinitamente
@@ -420,31 +420,7 @@ export default {
       return grouped;
     },
     canUseCallPut() {
-      const result = this.supportsCallPut(this.symbol);
-      // Log apenas quando mudar para evitar spam
-      if (this._lastCanUseCallPut !== result) {
-        console.log('[OperationChart] canUseCallPut mudou:', {
-          symbol: this.symbol,
-          canUseCallPut: result,
-          contractsData: this.contractsData[this.symbol]
-        });
-        this._lastCanUseCallPut = result;
-      }
-      return result;
-    },
-    debugButtonState() {
-      console.log('[OperationChart] 🔍 Estado do botão de compra:', {
-        isTrading: this.isTrading,
-        isAuthorized: this.isAuthorized,
-        canUseCallPut: this.canUseCallPut,
-        currentProposalId: this.currentProposalId,
-        currentProposalPrice: this.currentProposalPrice,
-        activeContract: this.activeContract,
-        symbol: this.symbol,
-        supportsCallPut: this.supportsCallPut(this.symbol),
-        contractsData: this.contractsData[this.symbol],
-        wsReady: this.ws ? this.ws.readyState === WebSocket.OPEN : false
-      });
+      return this.supportsCallPut(this.symbol);
     },
     canUseMinutes() {
       if (!this.canUseCallPut) return false;
@@ -3530,6 +3506,20 @@ export default {
         }
       }, 500);
     },
+    debugButtonState() {
+      console.log('[OperationChart] 🔍 Estado do botão de compra:', {
+        isTrading: this.isTrading,
+        isAuthorized: this.isAuthorized,
+        canUseCallPut: this.canUseCallPut,
+        currentProposalId: this.currentProposalId,
+        currentProposalPrice: this.currentProposalPrice,
+        activeContract: this.activeContract,
+        symbol: this.symbol,
+        supportsCallPut: this.supportsCallPut(this.symbol),
+        contractsData: this.contractsData[this.symbol],
+        wsReady: this.ws ? this.ws.readyState === WebSocket.OPEN : false
+      });
+    },
     executeBuy() {
       console.log('[OperationChart] ========== EXECUTAR COMPRA CHAMADO ==========');
       console.log('[OperationChart] Estado atual:', {
@@ -4364,11 +4354,34 @@ export default {
         this.debugButtonState();
       }
     },
-    canUseCallPut(newVal, oldVal) {
+    symbol(newVal, oldVal) {
       if (newVal !== oldVal) {
-        console.log('[OperationChart] canUseCallPut mudou:', { oldVal, newVal, symbol: this.symbol });
-        this.debugButtonState();
+        const result = this.supportsCallPut(newVal);
+        if (this.lastCanUseCallPut !== result) {
+          console.log('[OperationChart] canUseCallPut mudou (via symbol):', {
+            symbol: newVal,
+            canUseCallPut: result,
+            contractsData: this.contractsData[newVal]
+          });
+          this.lastCanUseCallPut = result;
+          this.debugButtonState();
+        }
       }
+    },
+    'contractsData': {
+      handler() {
+        const result = this.supportsCallPut(this.symbol);
+        if (this.lastCanUseCallPut !== result) {
+          console.log('[OperationChart] canUseCallPut mudou (via contractsData):', {
+            symbol: this.symbol,
+            canUseCallPut: result,
+            contractsData: this.contractsData[this.symbol]
+          });
+          this.lastCanUseCallPut = result;
+          this.debugButtonState();
+        }
+      },
+      deep: true
     },
     isAuthorized(newVal) {
       if (newVal && this.ticks.length >= 10) {
