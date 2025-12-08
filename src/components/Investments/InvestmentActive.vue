@@ -219,6 +219,8 @@
                                             <th class="text-left">Mercado</th>
                                             <th class="text-left">Negociação</th>
                                             <th class="text-left">Investimento</th>
+                                            <th class="text-right">Preço Entrada</th>
+                                            <th class="text-right">Preço Saída</th>
                                             <th class="text-right">Retorno</th>
                                         </tr>
                                     </thead>
@@ -234,6 +236,18 @@
                                             </td>
                                             <td>
                                                 {{ op.investment }}
+                                            </td>
+                                            <td class="text-right">
+                                                <span v-if="op.entryPrice != null && op.entryPrice !== undefined && !isNaN(op.entryPrice) && op.entryPrice > 0">
+                                                    {{ parseFloat(op.entryPrice).toFixed(2) }}
+                                                </span>
+                                                <span v-else>-</span>
+                                            </td>
+                                            <td class="text-right">
+                                                <span v-if="op.exitPrice != null && op.exitPrice !== undefined && !isNaN(op.exitPrice) && op.exitPrice > 0">
+                                                    {{ parseFloat(op.exitPrice).toFixed(2) }}
+                                                </span>
+                                                <span v-else>-</span>
                                             </td>
                                             <td :class="['text-right', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
                                                 {{ op.pnl }}
@@ -517,6 +531,7 @@ export default {
             // Logs em tempo real (ZENIX v2.0)
             realtimeLogs: [],
             logPollingInterval: null,
+            historyPollingInterval: null, // Polling para histórico de operações
             lastLogTimestamp: null, // Timestamp do último log recebido (para detectar novos)
             
             // Estado de desativação
@@ -798,6 +813,8 @@ export default {
                     time = Math.floor(date.getTime() / 1000);
                 }
                 
+                const entryPrice = trade.entryPrice != null ? parseFloat(trade.entryPrice) : null;
+                
                 return {
                     contractId: contractId,
                     id: contractId,
@@ -811,6 +828,9 @@ export default {
                     exitTick: exitPrice != null ? exitPrice.toFixed(2) : null,
                     sellPrice: exitPrice,
                     closePrice: exitPrice,
+                    entryPrice: entryPrice,
+                    exitPrice: exitPrice,
+                    symbol: trade.symbol || 'R_10',
                     status: status,
                     time: time,
                     stakeAmount: stakeAmount,
@@ -1155,6 +1175,39 @@ export default {
             }
         },
         
+        /**
+         * Inicia polling de histórico de operações (a cada 1 minuto)
+         */
+        startHistoryPolling() {
+            // Parar polling anterior se existir
+            this.stopHistoryPolling();
+            
+            console.log('[InvestmentActive] 🚀 Iniciando polling de histórico (a cada 1 minuto)');
+            
+            // Buscar histórico a cada 1 minuto (60000ms)
+            this.historyPollingInterval = setInterval(() => {
+                // Verificar se IA está ativa
+                const isActive = this.sessionConfig.isActive === 1 || this.sessionConfig.isActive === true;
+                if (isActive) {
+                    this.fetchTradeHistory();
+                } else {
+                    console.log('[InvestmentActive] ⏸️ IA não está ativa, parando polling de histórico...');
+                    this.stopHistoryPolling();
+                }
+            }, 60000); // 1 minuto = 60000ms
+            
+            // Buscar histórico imediatamente na primeira vez
+            this.fetchTradeHistory();
+        },
+        
+        stopHistoryPolling() {
+            if (this.historyPollingInterval) {
+                console.log('[InvestmentActive] ⏹️ Parando polling de histórico...');
+                clearInterval(this.historyPollingInterval);
+                this.historyPollingInterval = null;
+            }
+        },
+        
         
         /**
          * Simula log de análise completa (será substituído por dados reais do backend via WebSocket)
@@ -1473,7 +1526,14 @@ export default {
                     
                     // Transformar dados do backend para o formato do frontend
                     const defaultStakeAmount = this.sessionConfig.stakeAmount || this.entryValue || 0;
+                    console.log('[InvestmentActive] 📊 Dados recebidos do backend:', result.data);
                     this.logOperations = result.data.map(trade => {
+                        console.log('[InvestmentActive] 🔍 Trade:', {
+                            id: trade.id,
+                            entryPrice: trade.entryPrice,
+                            exitPrice: trade.exitPrice,
+                            status: trade.status
+                        });
                         // Usar closedAt ou createdAt para o horário (priorizar closedAt)
                         // 🕐 TIMESTAMP NO HORÁRIO DE BRASÍLIA (UTC-3)
                         const tradeDate = new Date(trade.closedAt || trade.createdAt);
@@ -1498,18 +1558,52 @@ export default {
                         const investment = parseFloat(trade.stakeAmount || defaultStakeAmount || 0);
                         const investmentFormatted = `$${investment.toFixed(2)}`;
                         
+                        // ✅ Converter entryPrice e exitPrice corretamente (podem vir como string ou number)
+                        let entryPrice = null;
+                        if (trade.entryPrice != null && trade.entryPrice !== undefined && trade.entryPrice !== '') {
+                            const entryValue = typeof trade.entryPrice === 'string' 
+                                ? parseFloat(trade.entryPrice) 
+                                : Number(trade.entryPrice);
+                            entryPrice = !isNaN(entryValue) && entryValue > 0 ? entryValue : null;
+                        }
+                        
+                        let exitPrice = null;
+                        if (trade.exitPrice != null && trade.exitPrice !== undefined && trade.exitPrice !== '') {
+                            const exitValue = typeof trade.exitPrice === 'string' 
+                                ? parseFloat(trade.exitPrice) 
+                                : Number(trade.exitPrice);
+                            exitPrice = !isNaN(exitValue) && exitValue > 0 ? exitValue : null;
+                        }
+                        
+                        console.log('[InvestmentActive] 🔍 Trade processado:', {
+                            id: trade.id,
+                            entryPrice: entryPrice,
+                            exitPrice: exitPrice,
+                            entryPriceRaw: trade.entryPrice,
+                            exitPriceRaw: trade.exitPrice,
+                            entryPriceType: typeof trade.entryPrice,
+                            exitPriceType: typeof trade.exitPrice
+                        });
+                        
                         return {
                             time: time,
                             timestamp: timestamp,
-                            pair: 'R_10', // Volatility 10 Index
+                            pair: trade.symbol || 'R_10', // Usar symbol do banco
                             direction: direction,
                             investment: investmentFormatted,
                             pnl: pnl,
-                            profit: profit
+                            profit: profit,
+                            entryPrice: entryPrice,
+                            exitPrice: exitPrice
                         };
                     });
                     
                     console.log('[InvestmentActive] ✅ Log formatado:', this.logOperations);
+                    console.log('[InvestmentActive] 📊 Primeira operação:', this.logOperations[0]);
+                    if (this.logOperations.length > 0) {
+                        console.log('[InvestmentActive] 🔍 Primeira operação - entryPrice:', this.logOperations[0].entryPrice, 'exitPrice:', this.logOperations[0].exitPrice);
+                        console.log('[InvestmentActive] 🔍 Primeira operação - entryPrice type:', typeof this.logOperations[0].entryPrice, 'exitPrice type:', typeof this.logOperations[0].exitPrice);
+                    }
                     
                     // Plotar marcadores de entradas no gráfico após um delay para garantir que o gráfico esteja pronto
                     this.$nextTick(() => {
@@ -2238,10 +2332,13 @@ export default {
                     } else {
                         this.startLogPolling();
                     }
+                    // Iniciar polling de histórico também
+                    this.startHistoryPolling();
                 } else if (!isActive && wasActive) {
                     // IA foi desativada - parar polling
                     console.log('[InvestmentActive] ⏸️ IA desativada, parando polling de logs...');
                     this.stopLogPolling();
+                    this.stopHistoryPolling();
                 }
             },
             immediate: false
@@ -2272,6 +2369,9 @@ export default {
         // 📊 Buscar histórico de operações
         this.fetchTradeHistory();
         
+        // 📊 Iniciar polling de histórico (a cada 1 minuto)
+        this.startHistoryPolling();
+        
         this.$nextTick(() => {
             setTimeout(() => {
                 if (this.ticks && this.ticks.length > 0) {
@@ -2287,6 +2387,9 @@ export default {
         
         // Parar polling de logs
         this.stopLogPolling();
+        
+        // Parar polling de histórico
+        this.stopHistoryPolling();
         
         // Cleanup: Remove o widget TradingView quando o componente for desmontado
         if (this.tradingViewWidget) {
