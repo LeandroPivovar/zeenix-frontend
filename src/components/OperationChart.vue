@@ -2036,35 +2036,26 @@ export default {
           datasetExists: !!dataset
         });
         
-        // Limpar arrays existentes e adicionar novos valores
-        // Fazer isso de forma que não dispare observadores Vue
-        dataset.data.length = 0;
-        this.chart.data.labels.length = 0;
+        // Recriar arrays completamente novos - não modificar os existentes
+        // Criar cópias simples usando Array.from para garantir que são arrays JavaScript puros
+        const newDataArray = Array.from(validData);
+        const newLabelsArray = Array.from(validLabels);
         
-        // Adicionar valores diretamente (método mais seguro)
-        for (let i = 0; i < validData.length; i++) {
-          dataset.data[i] = validData[i];
-          this.chart.data.labels[i] = validLabels[i];
-        }
-        
-        // Ajustar tamanho se necessário
-        if (dataset.data.length !== validData.length) {
-          dataset.data.length = validData.length;
-        }
-        if (this.chart.data.labels.length !== validLabels.length) {
-          this.chart.data.labels.length = validLabels.length;
-        }
+        // Substituir completamente os arrays do dataset
+        // Isso cria novas referências que não são observadas pelo Vue
+        dataset.data = newDataArray;
+        this.chart.data.labels = newLabelsArray;
 
-        console.log('[Chart] Dados atualizados no dataset:', {
+        console.log('[Chart] Dados substituídos no dataset:', {
           dataLength: dataset.data.length,
           labelsLength: this.chart.data.labels.length,
           firstDataPoint: dataset.data[0],
           lastDataPoint: dataset.data[dataset.data.length - 1]
         });
 
-        // Tentar atualizar o gráfico - se falhar, não tentar novamente
-        // Usar um único setTimeout para dar tempo ao Chart.js processar
-        const updateChart = () => {
+        // Usar chart.render() em vez de update() para evitar problemas de reatividade
+        // render() força uma renderização completa sem tentar fazer diff
+        const renderChart = () => {
           try {
             if (!this.chart || !this.chartReady) {
               return;
@@ -2079,22 +2070,27 @@ export default {
               return;
             }
             
-            // Tentar atualizar - usar try/catch interno para capturar erro específico
-            this.chart.update('none');
-            console.log('[Chart] ✓ Gráfico atualizado com sucesso,', validData.length, 'pontos');
-          } catch (updateError) {
-            console.error('[Chart] Erro ao chamar update:', updateError.message);
-            // Se for erro de stack overflow, marcar como não pronto permanentemente
-            // para evitar tentativas futuras
-            if (updateError.message && updateError.message.includes('Maximum call stack')) {
-              console.error('[Chart] Erro crítico de stack overflow - gráfico será desabilitado');
-              this.chartReady = false;
+            // Usar render() em vez de update() para evitar loops de reatividade
+            this.chart.render();
+            console.log('[Chart] ✓ Gráfico renderizado com sucesso,', validData.length, 'pontos');
+          } catch (renderError) {
+            console.error('[Chart] Erro ao renderizar:', renderError.message);
+            // Se render() também falhar, tentar update() como fallback
+            try {
+              this.chart.update('none');
+              console.log('[Chart] ✓ Gráfico atualizado com update() após erro no render()');
+            } catch (updateError) {
+              console.error('[Chart] Erro ao chamar update() também:', updateError.message);
+              if (updateError.message && updateError.message.includes('Maximum call stack')) {
+                console.error('[Chart] Erro crítico de stack overflow - gráfico será desabilitado');
+                this.chartReady = false;
+              }
             }
           }
         };
         
         // Usar setTimeout para garantir que está fora do ciclo atual
-        setTimeout(updateChart, 100);
+        setTimeout(renderChart, 100);
       } catch (error) {
         console.error('[Chart] Erro ao atualizar:', error);
         // NÃO recriar o gráfico automaticamente - isso causa loops infinitos
