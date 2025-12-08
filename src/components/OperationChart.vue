@@ -2082,6 +2082,24 @@ export default {
           
           // Atualizar dados do gráfico de forma segura, evitando loops de reatividade
           if (this.chart && this.chart.data && this.chart.data.datasets && this.chart.data.datasets[0]) {
+            // Verificar se o gráfico está em um estado válido antes de atualizar
+            if (!this.chart.canvas || !this.chart.canvas.parentNode) {
+              console.warn('[Chart] Canvas não está no DOM, pulando atualização');
+              this.isUpdatingChart = false;
+              this.updateChartTimeout = null;
+              return;
+            }
+            
+            // Verificar se o canvas tem dimensões válidas
+            const canvas = this.chart.canvas;
+            const rect = canvas.getBoundingClientRect();
+            if (rect.width === 0 || rect.height === 0) {
+              console.warn('[Chart] Canvas tem dimensões inválidas, pulando atualização');
+              this.isUpdatingChart = false;
+              this.updateChartTimeout = null;
+              return;
+            }
+            
             // Verificar se os dados realmente mudaram para evitar atualizações desnecessárias
             const currentDataLength = this.chart.data.datasets[0].data?.length || 0;
             if (currentDataLength === data.length && currentDataLength > 0) {
@@ -2113,20 +2131,68 @@ export default {
             // Atualizar labels
             this.chart.data.labels = labels;
             
-            // Atualizar gráfico de forma síncrona, sem animação
-            // Usar 'none' para evitar animações que podem causar loops
-            this.chart.update('none');
+            // Verificar se o gráfico tem todas as propriedades necessárias antes de atualizar
+            if (this.chart.chartArea && this.chart.ctx) {
+              try {
+                // Atualizar gráfico de forma síncrona, sem animação
+                // Usar 'none' para evitar animações que podem causar loops
+                this.chart.update('none');
+              } catch (updateError) {
+                console.error('[Chart] Erro ao chamar update():', updateError);
+                // Se o erro for relacionado a layout, tentar recriar o gráfico
+                if (updateError.message && updateError.message.includes('fullSize')) {
+                  console.warn('[Chart] Erro de layout detectado, recriando gráfico...');
+                  this.isUpdatingChart = false;
+                  this.updateChartTimeout = null;
+                  // Recriar gráfico na próxima iteração
+                  this.$nextTick(() => {
+                    if (this.chart) {
+                      try {
+                        this.chart.destroy();
+                      } catch (e) {
+                        // Ignorar
+                      }
+                    }
+                    this.chart = null;
+                    this.initChart();
+                  });
+                  return;
+                }
+                throw updateError;
+              }
+            } else {
+              console.warn('[Chart] Gráfico não está completamente inicializado, pulando atualização');
+            }
           }
         } catch (error) {
           console.error('[Chart] Erro ao atualizar:', error);
-          // Não destruir o gráfico imediatamente - pode ser um erro temporário
-          // Apenas marcar como não atualizando e tentar novamente na próxima vez
+          // Tratar diferentes tipos de erros
           if (error.message && error.message.includes('Maximum call stack')) {
             console.warn('[Chart] Loop infinito detectado, resetando flag de atualização');
             // Limpar dados problemáticos
             if (this.chart && this.chart.data && this.chart.data.datasets && this.chart.data.datasets[0]) {
               this.chart.data.datasets[0].data = [];
             }
+          } else if (error.message && (error.message.includes('fullSize') || error.message.includes('Cannot set properties'))) {
+            console.warn('[Chart] Erro de layout do Chart.js detectado, recriando gráfico...');
+            // Recriar gráfico se houver erro de layout
+            this.isUpdatingChart = false;
+            this.updateChartTimeout = null;
+            this.$nextTick(() => {
+              if (this.chart) {
+                try {
+                  this.chart.destroy();
+                } catch (e) {
+                  // Ignorar erros ao destruir
+                }
+              }
+              this.chart = null;
+              // Aguardar um pouco antes de recriar
+              setTimeout(() => {
+                this.initChart();
+              }, 100);
+            });
+            return;
           }
         } finally {
           this.isUpdatingChart = false;
@@ -5011,3 +5077,4 @@ export default {
 }
 
 </style>
+
