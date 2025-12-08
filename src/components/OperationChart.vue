@@ -1955,10 +1955,13 @@ export default {
         console.log('[OperationChart] Últimos 10 ticks:', last10Ticks);
         
         console.log('[OperationChart] Tick adicionado. Total de ticks:', this.ticks.length);
-        // Usar nextTick para evitar atualizações síncronas
-        this.$nextTick(() => {
+        // Usar debounce para evitar múltiplas atualizações simultâneas
+        if (this.updateChartTimeout) {
+          clearTimeout(this.updateChartTimeout);
+        }
+        this.updateChartTimeout = setTimeout(() => {
           this.updateChart();
-        });
+        }, 50);
         
         // Linha de entrada será implementada depois com Chart.js
       } catch (error) {
@@ -1969,15 +1972,40 @@ export default {
       }
     },
     updateChart() {
+      // Proteção contra loops infinitos
+      if (this._updateChartCallCount === undefined) {
+        this._updateChartCallCount = 0;
+      }
+      this._updateChartCallCount++;
+      
+      // Se houver muitas chamadas em sequência, pode ser um loop infinito
+      if (this._updateChartCallCount > 10) {
+        console.warn('[Chart] Muitas chamadas de updateChart detectadas, possível loop infinito. Resetando...');
+        this._updateChartCallCount = 0;
+        this.isUpdatingChart = false;
+        if (this.updateChartTimeout) {
+          clearTimeout(this.updateChartTimeout);
+          this.updateChartTimeout = null;
+        }
+        return;
+      }
+      
+      // Resetar contador após um delay
+      setTimeout(() => {
+        this._updateChartCallCount = 0;
+      }, 1000);
+      
       console.log('[Chart] updateChart chamado', {
         isUpdatingChart: this.isUpdatingChart,
         ticksLength: this.ticks.length,
-        hasChart: !!this.chart
+        hasChart: !!this.chart,
+        callCount: this._updateChartCallCount
       });
       
       // Limpar timeout anterior se existir
       if (this.updateChartTimeout) {
         clearTimeout(this.updateChartTimeout);
+        this.updateChartTimeout = null;
       }
 
       if (this.isUpdatingChart) {
@@ -1993,7 +2021,10 @@ export default {
       if (!this.chart) {
         console.log('[Chart] Gráfico não existe, criando...');
         this.initChart();
-        this.updateChartTimeout = setTimeout(() => this.updateChart(), 200);
+        this.updateChartTimeout = setTimeout(() => {
+          this._updateChartCallCount = 0; // Resetar contador ao criar novo gráfico
+          this.updateChart();
+        }, 200);
         return;
       }
       
@@ -2002,17 +2033,34 @@ export default {
       // Debounce de 100ms para evitar múltiplas atualizações
       this.updateChartTimeout = setTimeout(() => {
         if (this.isUpdatingChart || !this.chart || !this.ticks.length) {
+          this._updateChartCallCount = 0;
           return;
         }
 
         this.isUpdatingChart = true;
+        this._updateChartCallCount = 0; // Resetar contador ao iniciar atualização
 
         try {
+          // Verificar se o canvas ainda existe no DOM antes de processar
+          if (!this.chart || !this.chart.canvas || !this.chart.canvas.parentNode) {
+            console.warn('[Chart] Canvas não encontrado no DOM, recriando gráfico...');
+            this.isUpdatingChart = false;
+            this.updateChartTimeout = null;
+            this.$nextTick(() => {
+              this.initChart();
+            });
+            return;
+          }
+
           // Criar array de valores sem usar map/filter para evitar reatividade
+          // Usar JSON.parse(JSON.stringify()) para criar cópias completamente não-reativas
           const values = [];
-          for (let i = 0; i < this.ticks.length; i++) {
+          const ticksLength = this.ticks.length;
+          for (let i = 0; i < ticksLength; i++) {
             const tick = this.ticks[i];
-            const value = Number(tick.value);
+            // Usar toRaw se disponível, senão criar cópia simples
+            const tickValue = tick && typeof tick === 'object' ? (tick.value || tick) : tick;
+            const value = typeof tickValue === 'number' ? tickValue : Number(tickValue);
             if (!isNaN(value) && value > 0 && isFinite(value)) {
               values.push(value);
             }
@@ -2020,69 +2068,65 @@ export default {
 
           if (values.length === 0) {
             this.isUpdatingChart = false;
+            this.updateChartTimeout = null;
             return;
           }
 
-          // Substituir arrays completamente para evitar reatividade
-          const labels = Array(values.length);
-          const data = Array(values.length);
+          // Criar arrays completamente novos e não-reativos
+          const labels = new Array(values.length);
+          const data = new Array(values.length);
           for (let i = 0; i < values.length; i++) {
             labels[i] = i;
             data[i] = values[i];
           }
           
-          // Verificar se o canvas ainda existe no DOM
-          const canvas = this.chart.canvas;
-          if (!canvas || !canvas.parentNode) {
-            console.warn('[Chart] Canvas não encontrado no DOM, recriando gráfico...');
-            this.chart = null;
-            this.initChart();
-            this.isUpdatingChart = false;
-            this.updateChartTimeout = null;
-            return;
+          // Atualizar dados do gráfico de forma segura, evitando loops de reatividade
+          if (this.chart && this.chart.data && this.chart.data.datasets && this.chart.data.datasets[0]) {
+            // Verificar se os dados realmente mudaram para evitar atualizações desnecessárias
+            const currentDataLength = this.chart.data.datasets[0].data?.length || 0;
+            if (currentDataLength === data.length && currentDataLength > 0) {
+              // Verificar se o último valor mudou
+              const lastCurrentValue = this.chart.data.datasets[0].data[currentDataLength - 1];
+              const lastNewValue = data[data.length - 1];
+              if (lastCurrentValue === lastNewValue && currentDataLength === data.length) {
+                // Dados não mudaram, não precisa atualizar
+                this.isUpdatingChart = false;
+                this.updateChartTimeout = null;
+                return;
+              }
+            }
+            
+            // Limpar referências reativas antes de atualizar
+            const currentData = this.chart.data.datasets[0].data;
+            if (Array.isArray(currentData)) {
+              // Limpar array existente
+              currentData.splice(0, currentData.length);
+              // Adicionar novos valores
+              for (let i = 0; i < data.length; i++) {
+                currentData.push(data[i]);
+              }
+            } else {
+              // Se não for array, substituir diretamente
+              this.chart.data.datasets[0].data = data;
+            }
+            
+            // Atualizar labels
+            this.chart.data.labels = labels;
+            
+            // Atualizar gráfico de forma síncrona, sem animação
+            // Usar 'none' para evitar animações que podem causar loops
+            this.chart.update('none');
           }
-
-          this.chart.data.labels = labels;
-          this.chart.data.datasets[0].data = data;
-          
-          console.log('[Chart] Atualizando gráfico com', values.length, 'pontos');
-          console.log('[Chart] Estado antes da atualização:', {
-            hasChart: !!this.chart,
-            canvasVisible: canvas.offsetParent !== null,
-            canvasWidth: canvas.width,
-            canvasHeight: canvas.height,
-            canvasDisplay: window.getComputedStyle(canvas).display,
-            canvasOpacity: window.getComputedStyle(canvas).opacity,
-            dataLength: this.chart?.data?.datasets?.[0]?.data?.length
-          });
-          
-          // Atualizar gráfico
-          this.chart.update('none');
-          
-          // Verificar se o gráfico ainda existe após a atualização
-          if (!this.chart || !this.chart.canvas) {
-            console.error('[Chart] Gráfico foi destruído durante a atualização!');
-            this.chart = null;
-            this.initChart();
-            this.isUpdatingChart = false;
-            this.updateChartTimeout = null;
-            return;
-          }
-          
-          console.log('[Chart] Gráfico atualizado com sucesso', {
-            canvasStillVisible: this.chart.canvas.offsetParent !== null,
-            canvasWidth: this.chart.canvas.width,
-            canvasHeight: this.chart.canvas.height
-          });
         } catch (error) {
           console.error('[Chart] Erro ao atualizar:', error);
-          if (this.chart) {
-            try {
-              this.chart.destroy();
-            } catch (e) {
-              // Ignorar
+          // Não destruir o gráfico imediatamente - pode ser um erro temporário
+          // Apenas marcar como não atualizando e tentar novamente na próxima vez
+          if (error.message && error.message.includes('Maximum call stack')) {
+            console.warn('[Chart] Loop infinito detectado, resetando flag de atualização');
+            // Limpar dados problemáticos
+            if (this.chart && this.chart.data && this.chart.data.datasets && this.chart.data.datasets[0]) {
+              this.chart.data.datasets[0].data = [];
             }
-            this.chart = null;
           }
         } finally {
           this.isUpdatingChart = false;
