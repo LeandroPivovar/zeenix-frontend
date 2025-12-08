@@ -518,17 +518,29 @@ export default {
     methods: {
     initChart() {
       if (this.chart) {
+        console.log('[Chart] Gráfico já existe');
         return;
       }
 
       const container = this.$refs.chartContainer;
       if (!container) {
+        console.warn('[Chart] Container não encontrado');
         return;
       }
 
+      console.log('[Chart] Inicializando gráfico...');
+
       this.$nextTick(() => {
         const rect = container.getBoundingClientRect();
+        console.log('[Chart] Dimensões do container:', {
+          width: rect.width,
+          height: rect.height,
+          clientWidth: container.clientWidth,
+          clientHeight: container.clientHeight
+        });
+
         if (rect.width <= 0 || rect.height <= 0) {
+          console.log('[Chart] Container sem dimensões, tentando novamente...');
           setTimeout(() => this.initChart(), 100);
           return;
         }
@@ -563,13 +575,21 @@ export default {
             lineWidth: 2,
           });
 
+          console.log('[Chart] Gráfico criado com sucesso', {
+            hasChart: !!this.chart,
+            hasLineSeries: !!this.lineSeries,
+            ticksCount: this.ticks.length
+          });
+
           window.addEventListener('resize', this.handleResize);
           
           if (this.ticks.length > 0) {
+            console.log('[Chart] Atualizando gráfico com ticks existentes...');
             this.updateChart();
           }
         } catch (error) {
-          console.error('[Chart] Erro:', error);
+          console.error('[Chart] Erro ao criar:', error);
+          console.error('[Chart] Stack:', error.stack);
         }
       });
     },
@@ -1907,7 +1927,19 @@ export default {
       }
     },
     updateChart() {
-      if (!this.ticks.length || !this.chart || !this.lineSeries) {
+      console.log('[Chart] updateChart chamado', {
+        ticksCount: this.ticks.length,
+        hasChart: !!this.chart,
+        hasLineSeries: !!this.lineSeries
+      });
+
+      if (!this.ticks.length) {
+        console.log('[Chart] Sem ticks para plotar');
+        return;
+      }
+
+      if (!this.chart || !this.lineSeries) {
+        console.log('[Chart] Gráfico não existe, criando...');
         if (!this.chart) {
           this.initChart();
         }
@@ -1926,15 +1958,25 @@ export default {
         .filter(item => item !== null)
         .sort((a, b) => a.time - b.time);
 
+      console.log('[Chart] Dados processados:', {
+        total: data.length,
+        first: data[0],
+        last: data[data.length - 1]
+      });
+
       if (data.length === 0) {
+        console.warn('[Chart] Nenhum dado válido após processamento');
         return;
       }
 
       try {
+        console.log('[Chart] Atualizando gráfico com', data.length, 'pontos');
         this.lineSeries.setData(data);
         this.chart.timeScale().fitContent();
+        console.log('[Chart] Gráfico atualizado com sucesso');
       } catch (error) {
         console.error('[Chart] Erro ao atualizar:', error);
+        console.error('[Chart] Stack:', error.stack);
       }
     },
     supportsCallPut(symbol) {
