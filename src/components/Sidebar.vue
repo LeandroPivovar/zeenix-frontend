@@ -292,25 +292,19 @@ export default {
                 // Decodificar JWT token
                 const payload = JSON.parse(atob(token.split('.')[1]));
                 
-                // Debug: log do payload para verificar se role está presente
-                console.log('[Sidebar] Token payload:', payload);
-                
                 // Verificar se o usuário tem role de admin
                 // Pode ser 'role', 'roles', 'userRole', 'isAdmin', etc.
                 const role = payload.role || payload.roles || payload.userRole || payload.user_role;
-                const isAdmin = payload.isAdmin || payload.is_admin;
-                
-                console.log('[Sidebar] Role encontrada:', role, 'isAdmin:', isAdmin);
+                const isAdminFlag = payload.isAdmin || payload.is_admin;
                 
                 // Verificar se role contém 'admin' ou se isAdmin é true
-                if (isAdmin === true || isAdmin === 'true') {
+                if (isAdminFlag === true || isAdminFlag === 'true') {
                     return true;
                 }
                 
                 if (role) {
                     const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
                     const result = roleStr.includes('admin') || roleStr === 'admin';
-                    console.log('[Sidebar] Resultado da verificação de role:', result);
                     return result;
                 }
                 
@@ -365,17 +359,8 @@ export default {
         }
     },
     mounted() {
-        // Debug: Verificar automaticamente se usuário é admin
-        console.log('🔍 [Sidebar] Verificando acesso admin...');
-        console.log('🔐 [Sidebar] É admin?', this.isAdmin);
-        
-        if (this.isAdmin) {
-            console.log('✅ [Sidebar] Links admin serão exibidos');
-        } else {
-            console.log('❌ [Sidebar] Links admin NÃO serão exibidos');
-            console.log('💡 [Sidebar] Para verificar sua role, execute no console:');
-            console.log('   const token = localStorage.getItem("token"); console.log(JSON.parse(atob(token.split(".")[1])));');
-        }
+        // Verificação silenciosa de acesso admin (sem logs excessivos)
+        // Os logs de debug foram removidos para reduzir poluição no console
     },
     methods: {
         close() { if (this.isOpen) { this.$emit('close-sidebar') } },

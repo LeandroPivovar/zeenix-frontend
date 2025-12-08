@@ -438,28 +438,13 @@ export default {
       // Usar a moeda preferida do usuário (tradeCurrency) para as operações
       // Esta é a mesma moeda exibida no dashboard
       // Se for DEMO, usar USD (o backend prioriza USD demo quando é DEMO)
-      console.log('[OperationChart] displayCurrency - Calculando moeda a ser usada');
-      console.log('[OperationChart] Valores disponíveis:', {
-        preferredCurrency: this.preferredCurrency,
-        accountCurrency: this.accountCurrency,
-        connectionCurrency: this.connectionCurrency
-      });
-      
       let currency = this.preferredCurrency || this.accountCurrency || this.connectionCurrency || 'USD';
-      const originalCurrency = currency;
       
       if (currency.toUpperCase() === 'DEMO') {
-        console.log('[OperationChart] Moeda preferida é DEMO, convertendo para USD');
         currency = 'USD'; // DEMO não é uma moeda real, usar USD para requisições
       }
       
-      const finalCurrency = currency.toUpperCase();
-      console.log('[OperationChart] Moeda calculada:', {
-        original: originalCurrency,
-        final: finalCurrency
-      });
-      
-      return finalCurrency;
+      return currency.toUpperCase();
     },
     chartResolutionLabel() {
       if (!this.ticks.length) return '--';
@@ -585,44 +570,37 @@ export default {
                 }
               },
               onResize: (chart, size) => {
-                console.log('[Chart] Gráfico redimensionado:', size);
-                // Se o gráfico foi redimensionado para 0x0, tentar corrigir
+                // Ignorar resize se as dimensões forem inválidas (0x0)
                 if (size && (size.width === 0 || size.height === 0)) {
-                  console.warn('[Chart] Gráfico redimensionado para dimensões inválidas, tentando corrigir...');
+                  // Tentar obter dimensões corretas do container
                   const container = this.$refs.chartContainer;
                   if (container) {
                     const rect = container.getBoundingClientRect();
-                    console.log('[Chart] Dimensões do container:', rect);
                     if (rect.width > 0 && rect.height > 0) {
-                      // Forçar resize com dimensões corretas
-                      setTimeout(() => {
-                        if (this.chart && this.chart.canvas) {
-                          console.log('[Chart] Forçando resize do gráfico...');
-                          this.chart.resize();
-                          // Se temos ticks, atualizar o gráfico após o resize
-                          if (this.ticks.length > 0) {
-                            console.log('[Chart] Atualizando gráfico após resize...');
-                            this.updateChart();
-                          }
-                        }
-                      }, 200);
-                    } else {
-                      console.warn('[Chart] Container também tem dimensões inválidas, aguardando...');
-                      // Tentar novamente após um tempo
-                      setTimeout(() => {
-                        if (this.chart && this.chart.canvas) {
-                          const newRect = container.getBoundingClientRect();
-                          if (newRect.width > 0 && newRect.height > 0) {
-                            this.chart.resize();
-                            if (this.ticks.length > 0) {
-                              this.updateChart();
+                      // Forçar resize com dimensões corretas após um pequeno delay
+                      // para garantir que o DOM foi atualizado
+                      this.$nextTick(() => {
+                        setTimeout(() => {
+                          if (this.chart && this.chart.canvas && !this.isDestroying) {
+                            try {
+                              this.chart.resize();
+                              // Se temos ticks, atualizar o gráfico após o resize
+                              if (this.ticks.length > 0) {
+                                this.updateChart();
+                              }
+                            } catch (error) {
+                              console.warn('[Chart] Erro ao redimensionar gráfico:', error);
                             }
                           }
-                        }
-                      }, 500);
+                        }, 50);
+                      });
                     }
                   }
+                  return; // Não processar resize com dimensões inválidas
                 }
+                
+                // Log apenas para dimensões válidas (reduzir poluição no console)
+                // Log removido para reduzir poluição no console
               }
             }
           });
@@ -4186,7 +4164,6 @@ export default {
       
       // Se não está autorizado ou a conexão não está aberta, deixar inicialização normal acontecer
       if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        console.log('[OperationChart] Conexão não está ativa, será inicializada normalmente');
         return; // Deixar a inicialização normal acontecer
       }
       
