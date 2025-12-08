@@ -89,9 +89,9 @@
 // Componentes necessários (crie estes arquivos .vue)
 import AppSidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
-import CopiersDetails from '../components/CopiersDetails.vue'
-import AIInvestment from '../components/InvestmentComponent.vue'
-import AgenteAutonomoView from '../components/AgentAutonomoComponent.vue'
+import CopiersDetails from '../components/masterTrader/CopiersDetails.vue'
+import AIInvestment from '../components/masterTrader/InvestmentComponent.vue'
+import AgenteAutonomoView from '../components/masterTrader/AgentAutonomoComponent.vue'
 import ManualOperation from './OperationView.vue'
 
 export default {
@@ -516,12 +516,13 @@ export default {
 }
 
 .mode-nav-item.active {
-    background-color: transparent;
+    background-color: #0e0f0f;
     color: #22c55e; 
     font-weight: 600;
-    box-shadow: 0px 0px 10px 1px #04310c;
-    border-bottom: 2px solid #22c55e; 
-    border-radius: 12px;
+    box-shadow: none;
+    border: 1px solid #1d1e1f;
+    border-bottom: 2px solid #22c55e;
+    border-radius: 15px;
 }
 
 /* Simulação de Ícone de Informação */
