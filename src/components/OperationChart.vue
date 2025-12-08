@@ -1805,7 +1805,9 @@ export default {
       }
       
       this.isLoadingSymbol = false;
-      this.updateChart();
+      this.$nextTick(() => {
+        this.updateChart();
+      });
     },
     processCandles(msg) {
       const candles = msg.candles || [];
@@ -1816,7 +1818,9 @@ export default {
         this.tickSubscriptionId = msg.subscription.id;
       }
       this.isLoadingSymbol = false;
-      this.updateChart();
+      this.$nextTick(() => {
+        this.updateChart();
+      });
     },
     processTick(msg) {
       try {
@@ -1871,7 +1875,10 @@ export default {
         console.log('[OperationChart] Últimos 10 ticks:', last10Ticks);
         
         console.log('[OperationChart] Tick adicionado. Total de ticks:', this.ticks.length);
-        this.updateChart();
+        // Usar nextTick para evitar atualizações síncronas
+        this.$nextTick(() => {
+          this.updateChart();
+        });
         
         // Linha de entrada será implementada depois com Chart.js
       } catch (error) {
@@ -1898,38 +1905,45 @@ export default {
 
       this.isUpdatingChart = true;
 
-      try {
-        const values = this.ticks
-          .map(tick => {
-            const value = Number(tick.value);
-            if (isNaN(value) || value <= 0) {
-              return null;
-            }
-            return value;
-          })
-          .filter(item => item !== null);
+      // Usar requestAnimationFrame para evitar atualizações síncronas
+      requestAnimationFrame(() => {
+        try {
+          const values = this.ticks
+            .map(tick => {
+              const value = Number(tick.value);
+              if (isNaN(value) || value <= 0) {
+                return null;
+              }
+              return value;
+            })
+            .filter(item => item !== null);
 
-        if (values.length === 0) {
-          this.isUpdatingChart = false;
-          return;
-        }
-
-        this.chart.data.labels = values.map((_, i) => i);
-        this.chart.data.datasets[0].data = values;
-        this.chart.update('none');
-      } catch (error) {
-        console.error('[Chart] Erro ao atualizar:', error);
-        if (this.chart) {
-          try {
-            this.chart.destroy();
-          } catch (e) {
-            // Ignorar erro ao destruir
+          if (values.length === 0) {
+            this.isUpdatingChart = false;
+            return;
           }
-          this.chart = null;
+
+          // Criar novos arrays para evitar reatividade do Vue
+          const newLabels = Array.from({ length: values.length }, (_, i) => i);
+          const newData = Array.from(values);
+          
+          this.chart.data.labels = newLabels;
+          this.chart.data.datasets[0].data = newData;
+          this.chart.update('none');
+        } catch (error) {
+          console.error('[Chart] Erro ao atualizar:', error);
+          if (this.chart) {
+            try {
+              this.chart.destroy();
+            } catch (e) {
+              // Ignorar erro ao destruir
+            }
+            this.chart = null;
+          }
+        } finally {
+          this.isUpdatingChart = false;
         }
-      } finally {
-        this.isUpdatingChart = false;
-      }
+      });
     },
     supportsCallPut(symbol) {
       // Verifica se o símbolo suporta contratos CALL/PUT (Rise/Fall)
@@ -3874,18 +3888,14 @@ export default {
       }
     },
     ticks: {
-      handler(newTicks) {
-        // Atualizar gráfico quando receber novos ticks
-        if (newTicks.length > 0) {
-          this.updateChart();
-        }
-        
+      handler(newTicks, oldTicks) {
+        // Remover atualização automática do gráfico - será feita manualmente no processTick
+        // Apenas verificar se precisa iniciar ciclo de IA
         if (newTicks.length >= 10 && this.isAuthorized && !this.aiRecommendationInterval) {
-          // Iniciar ciclo quando tiver 10 ticks pela primeira vez
           this.startAiRecommendationCycle();
         }
       },
-      deep: true
+      deep: false
     },
     // Reiniciar conexão quando o loginid ou moeda preferida mudarem
     // para garantir que estamos usando o token correto
