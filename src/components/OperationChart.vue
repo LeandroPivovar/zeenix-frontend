@@ -2465,7 +2465,6 @@ export default {
                 }
               }
             });
-          }
             
             // Verificar se o canvas existe e está visível - usar múltiplas tentativas
             // Reduzir tentativas para evitar spam de logs e melhorar performance
@@ -2514,7 +2513,7 @@ export default {
             setTimeout(() => {
               checkCanvas(0);
             }, 200);
-        }
+          }
         }
         
         // Armazenar contagem de dados para próxima verificação
