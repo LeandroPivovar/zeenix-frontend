@@ -315,6 +315,7 @@ export default {
       ticks: [],
       isDestroying: false,
       isUpdatingChart: false,
+      updateChartTimeout: null,
       latestTick: null,
       lastUpdate: null,
       chart: null,
@@ -1912,46 +1913,57 @@ export default {
       }
     },
     updateChart() {
-      if (this.isUpdatingChart) {
-        return;
+      // Limpar timeout anterior se existir
+      if (this.updateChartTimeout) {
+        clearTimeout(this.updateChartTimeout);
       }
 
-      if (!this.ticks.length) {
+      if (this.isUpdatingChart || !this.ticks.length) {
         return;
       }
 
       if (!this.chart) {
         this.initChart();
-        setTimeout(() => this.updateChart(), 200);
+        this.updateChartTimeout = setTimeout(() => this.updateChart(), 200);
         return;
       }
 
-      this.isUpdatingChart = true;
+      // Debounce de 100ms para evitar múltiplas atualizações
+      this.updateChartTimeout = setTimeout(() => {
+        if (this.isUpdatingChart || !this.chart || !this.ticks.length) {
+          return;
+        }
 
-      // Usar requestAnimationFrame para evitar atualizações síncronas
-      requestAnimationFrame(() => {
+        this.isUpdatingChart = true;
+
         try {
-          const values = this.ticks
-            .map(tick => {
-              const value = Number(tick.value);
-              if (isNaN(value) || value <= 0) {
-                return null;
-              }
-              return value;
-            })
-            .filter(item => item !== null);
+          // Criar array de valores sem usar map/filter para evitar reatividade
+          const values = [];
+          for (let i = 0; i < this.ticks.length; i++) {
+            const tick = this.ticks[i];
+            const value = Number(tick.value);
+            if (!isNaN(value) && value > 0 && isFinite(value)) {
+              values.push(value);
+            }
+          }
 
           if (values.length === 0) {
             this.isUpdatingChart = false;
             return;
           }
 
-          // Criar novos arrays para evitar reatividade do Vue
-          const newLabels = Array.from({ length: values.length }, (_, i) => i);
-          const newData = Array.from(values);
+          // Substituir arrays completamente para evitar reatividade
+          const labels = Array(values.length);
+          const data = Array(values.length);
+          for (let i = 0; i < values.length; i++) {
+            labels[i] = i;
+            data[i] = values[i];
+          }
           
-          this.chart.data.labels = newLabels;
-          this.chart.data.datasets[0].data = newData;
+          this.chart.data.labels = labels;
+          this.chart.data.datasets[0].data = data;
+          
+          // Atualizar gráfico
           this.chart.update('none');
         } catch (error) {
           console.error('[Chart] Erro ao atualizar:', error);
@@ -1959,14 +1971,15 @@ export default {
             try {
               this.chart.destroy();
             } catch (e) {
-              // Ignorar erro ao destruir
+              // Ignorar
             }
             this.chart = null;
           }
         } finally {
           this.isUpdatingChart = false;
+          this.updateChartTimeout = null;
         }
-      });
+      }, 100);
     },
     supportsCallPut(symbol) {
       // Verifica se o símbolo suporta contratos CALL/PUT (Rise/Fall)
@@ -4106,6 +4119,12 @@ export default {
     
     console.log('[OperationChart] ========== COMPONENTE SENDO DESMONTADO ==========');
     this.isDestroying = true;
+    
+    // Limpar timeout de atualização
+    if (this.updateChartTimeout) {
+      clearTimeout(this.updateChartTimeout);
+      this.updateChartTimeout = null;
+    }
     
     // Destruir gráfico
     if (this.chart) {
