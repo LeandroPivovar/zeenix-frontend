@@ -570,37 +570,11 @@ export default {
                 }
               },
               onResize: (chart, size) => {
-                // Ignorar resize se as dimensões forem inválidas (0x0)
+                // Ignorar completamente resize se as dimensões forem inválidas (0x0)
+                // Não tentar corrigir, apenas ignorar para evitar problemas
                 if (size && (size.width === 0 || size.height === 0)) {
-                  // Tentar obter dimensões corretas do container
-                  const container = this.$refs.chartContainer;
-                  if (container) {
-                    const rect = container.getBoundingClientRect();
-                    if (rect.width > 0 && rect.height > 0) {
-                      // Forçar resize com dimensões corretas após um pequeno delay
-                      // para garantir que o DOM foi atualizado
-                      this.$nextTick(() => {
-                        setTimeout(() => {
-                          if (this.chart && this.chart.canvas && !this.isDestroying) {
-                            try {
-                              this.chart.resize();
-                              // Se temos ticks, atualizar o gráfico após o resize
-                              if (this.ticks.length > 0) {
-                                this.updateChart();
-                              }
-                            } catch (error) {
-                              console.warn('[Chart] Erro ao redimensionar gráfico:', error);
-                            }
-                          }
-                        }, 50);
-                      });
-                    }
-                  }
-                  return; // Não processar resize com dimensões inválidas
+                  return; // Ignorar completamente resize com dimensões inválidas
                 }
-                
-                // Log apenas para dimensões válidas (reduzir poluição no console)
-                // Log removido para reduzir poluição no console
               }
             }
           });
@@ -697,8 +671,19 @@ export default {
       }
     },
     handleResize() {
-      if (this.chart) {
-        this.chart.resize();
+      if (this.chart && !this.isDestroying) {
+        const container = this.$refs.chartContainer;
+        if (container) {
+          const rect = container.getBoundingClientRect();
+          // Só redimensionar se as dimensões forem válidas
+          if (rect.width > 0 && rect.height > 0) {
+            try {
+              this.chart.resize();
+            } catch (error) {
+              console.warn('[Chart] Erro ao redimensionar gráfico:', error);
+            }
+          }
+        }
       }
     },
     initConnection() {
