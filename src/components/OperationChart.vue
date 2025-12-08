@@ -3888,7 +3888,7 @@ export default {
       }
     },
     ticks: {
-      handler(newTicks, oldTicks) {
+      handler(newTicks) {
         // Remover atualização automática do gráfico - será feita manualmente no processTick
         // Apenas verificar se precisa iniciar ciclo de IA
         if (newTicks.length >= 10 && this.isAuthorized && !this.aiRecommendationInterval) {
