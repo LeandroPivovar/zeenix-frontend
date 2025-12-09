@@ -963,8 +963,6 @@ export default {
           .filter(v => v !== null && v !== undefined && isFinite(v) && v > 0);
         
         if (existingValues.length > 0) {
-          const minExisting = Math.min(...existingValues);
-          const maxExisting = Math.max(...existingValues);
           const medianExisting = [...existingValues].sort((a, b) => a - b)[Math.floor(existingValues.length / 2)];
           
           // Se o novo valor estiver muito fora da faixa (mais de 5x da mediana), ignorar
