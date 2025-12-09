@@ -1612,14 +1612,34 @@ export default {
         // Carregar valores padrão e proposta para o novo símbolo
         setTimeout(async () => {
           await this.loadDefaultValues();
-          // Aguardar que o tipo seja definido antes de carregar proposta
-          if (this.localOrderConfig.type) {
-            setTimeout(() => {
-              this.loadProposal();
-              this.subscribeToProposal();
-            }, 500);
+          // Aguardar um pouco mais para garantir que o tipo foi ajustado
+          await new Promise(resolve => setTimeout(resolve, 300));
+          
+          // Verificar novamente se o tipo está definido e disponível
+          if (this.localOrderConfig.type && this.availableContracts && this.availableContracts.length > 0) {
+            const isTypeAvailable = this.availableContracts.some(c => {
+              const contractType = typeof c === 'string' ? c : (c.contract_type || c.type || c.name);
+              return contractType && contractType.toUpperCase() === this.localOrderConfig.type.toUpperCase();
+            });
+            
+            if (isTypeAvailable) {
+              setTimeout(() => {
+                this.loadProposal();
+                this.subscribeToProposal();
+              }, 500);
+            } else {
+              console.warn('[Chart] Tipo de contrato não está disponível para o símbolo:', this.symbol, 'Tipo:', this.localOrderConfig.type);
+              // Tentar novamente após ajustar o tipo
+              await this.loadDefaultValues();
+              if (this.localOrderConfig.type) {
+                setTimeout(() => {
+                  this.loadProposal();
+                  this.subscribeToProposal();
+                }, 500);
+              }
+            }
           } else {
-            console.warn('[Chart] Tipo de contrato não definido após carregar valores padrão');
+            console.warn('[Chart] Tipo de contrato não definido após carregar valores padrão. Símbolo:', this.symbol);
           }
         }, 2000);
       } catch (error) {
@@ -2113,16 +2133,46 @@ export default {
             if (typeof c === 'string') return c;
             return c.contract_type || c.type || c.name || c;
           }).filter(t => t);
+          
+          // Verificar se o tipo atual está disponível
           const currentTypeAvailable = contractTypes.some(
             type => {
               const typeStr = typeof type === 'string' ? type : (type.contract_type || type.type || type.name || type);
-              return typeStr === this.localOrderConfig.type;
+              return typeStr && typeStr.toUpperCase() === (this.localOrderConfig.type || '').toUpperCase();
             }
           );
-          if (!currentTypeAvailable && contractTypes.length > 0) {
-            const firstType = contractTypes[0];
-            this.localOrderConfig.type = typeof firstType === 'string' ? firstType : (firstType.contract_type || firstType.type || firstType.name || 'CALL');
-            console.log('[Chart] Tipo de contrato alterado para:', this.localOrderConfig.type);
+          
+          // Se o tipo atual não estiver disponível OU não estiver definido, selecionar o primeiro disponível
+          if ((!this.localOrderConfig.type || !currentTypeAvailable) && contractTypes.length > 0) {
+            // Priorizar CALL ou PUT se disponíveis, senão usar o primeiro
+            const preferredTypes = ['CALL', 'PUT', 'MULTUP', 'MULTDOWN'];
+            let selectedType = null;
+            
+            // Tentar encontrar um tipo preferido
+            for (const preferred of preferredTypes) {
+              const found = contractTypes.find(type => {
+                const typeStr = typeof type === 'string' ? type : (type.contract_type || type.type || type.name || type);
+                return typeStr && typeStr.toUpperCase() === preferred.toUpperCase();
+              });
+              if (found) {
+                selectedType = found;
+                break;
+              }
+            }
+            
+            // Se não encontrou um preferido, usar o primeiro disponível
+            if (!selectedType) {
+              selectedType = contractTypes[0];
+            }
+            
+            const newType = typeof selectedType === 'string' 
+              ? selectedType 
+              : (selectedType.contract_type || selectedType.type || selectedType.name || 'CALL');
+            
+            this.localOrderConfig.type = newType;
+            console.log('[Chart] Tipo de contrato alterado para:', this.localOrderConfig.type, '(disponível para', this.symbol, ')');
+          } else if (this.localOrderConfig.type && currentTypeAvailable) {
+            console.log('[Chart] Tipo de contrato mantido:', this.localOrderConfig.type, '(disponível para', this.symbol, ')');
           }
           
           // Ajustar duração baseada nos contratos disponíveis
@@ -2210,6 +2260,28 @@ export default {
       if (!this.localOrderConfig.type) {
         console.warn('[Chart] Tipo de contrato não definido, não inscrevendo em proposta');
         return;
+      }
+      
+      // Verificar se o tipo está disponível para o símbolo atual
+      if (this.availableContracts && this.availableContracts.length > 0) {
+        const isTypeAvailable = this.availableContracts.some(c => {
+          const contractType = typeof c === 'string' ? c : (c.contract_type || c.type || c.name);
+          return contractType && contractType.toUpperCase() === this.localOrderConfig.type.toUpperCase();
+        });
+        
+        if (!isTypeAvailable) {
+          console.warn('[Chart] Tipo de contrato não está disponível para o símbolo:', this.symbol, 'Tipo:', this.localOrderConfig.type);
+          console.warn('[Chart] Contratos disponíveis:', this.availableContracts.map(c => {
+            const type = typeof c === 'string' ? c : (c.contract_type || c.type || c.name);
+            return type;
+          }));
+          // Tentar recarregar valores padrão para ajustar o tipo
+          await this.loadDefaultValues();
+          if (!this.localOrderConfig.type) {
+            console.error('[Chart] Não foi possível definir um tipo de contrato válido');
+            return;
+          }
+        }
       }
       
       try {
