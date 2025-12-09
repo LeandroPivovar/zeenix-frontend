@@ -646,9 +646,68 @@ export default {
         // Ordenar por tempo (TradingView requer dados ordenados)
         chartData.sort((a, b) => a.time - b.time);
         
+        // Validação final: verificar se há algum valor null ou inválido
+        const invalidPoints = chartData.filter(p => 
+          p.value == null || 
+          !isFinite(p.value) || 
+          p.value <= 0 || 
+          isNaN(p.value) ||
+          p.time == null ||
+          !isFinite(p.time) ||
+          p.time <= 0 ||
+          isNaN(p.time)
+        );
+        
+        if (invalidPoints.length > 0) {
+          console.error('[Chart] ❌ Pontos inválidos encontrados:', invalidPoints);
+          // Remover pontos inválidos
+          chartData = chartData.filter(p => 
+            p.value != null && 
+            isFinite(p.value) && 
+            p.value > 0 && 
+            !isNaN(p.value) &&
+            p.time != null &&
+            isFinite(p.time) &&
+            p.time > 0 &&
+            !isNaN(p.time)
+          );
+          console.log('[Chart] Pontos válidos após limpeza:', chartData.length);
+        }
+        
+        if (chartData.length === 0) {
+          console.warn('[Chart] Nenhum dado válido após validação final');
+          return;
+        }
+        
         console.log('[Chart] Atualizando gráfico com', chartData.length, 'pontos');
         console.log('[Chart] Primeiro ponto:', chartData[0]);
         console.log('[Chart] Último ponto:', chartData[chartData.length - 1]);
+        
+        // Verificação final antes de passar para o gráfico
+        const finalValidation = chartData.every(p => 
+          p.value != null && 
+          typeof p.value === 'number' &&
+          isFinite(p.value) && 
+          p.value > 0 && 
+          !isNaN(p.value) &&
+          p.time != null &&
+          typeof p.time === 'number' &&
+          isFinite(p.time) &&
+          p.time > 0 &&
+          !isNaN(p.time)
+        );
+        
+        if (!finalValidation) {
+          console.error('[Chart] ❌ Validação final falhou! Verificando cada ponto...');
+          chartData.forEach((p, idx) => {
+            if (p.value == null || !isFinite(p.value) || p.value <= 0 || isNaN(p.value) ||
+                p.time == null || !isFinite(p.time) || p.time <= 0 || isNaN(p.time)) {
+              console.error(`[Chart] Ponto inválido no índice ${idx}:`, p);
+            }
+          });
+          return;
+        }
+        
         console.log('[Chart] Estado do gráfico:', {
           chartExists: !!this.chart,
           chartSeriesExists: !!this.chartSeries,
