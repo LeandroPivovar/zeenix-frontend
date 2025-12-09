@@ -610,13 +610,33 @@ export default {
         // Ordenar por tempo (TradingView requer dados ordenados)
         chartData.sort((a, b) => a.time - b.time);
         
-        console.log('[Chart] Atualizando gráfico com', chartData.length, 'pontos. Primeiro:', chartData[0], 'Último:', chartData[chartData.length - 1]);
+        console.log('[Chart] Atualizando gráfico com', chartData.length, 'pontos');
+        console.log('[Chart] Primeiro ponto:', chartData[0]);
+        console.log('[Chart] Último ponto:', chartData[chartData.length - 1]);
+        console.log('[Chart] Estado do gráfico:', {
+          chartExists: !!this.chart,
+          chartSeriesExists: !!this.chartSeries,
+          chartReady: this.chartReady,
+          containerExists: !!this.$refs.chartContainer
+        });
 
         // Atualizar série do gráfico
-        this.chartSeries.setData(chartData);
-        
-        // Ajustar viewport para mostrar os dados mais recentes
-        this.chart.timeScale().fitContent();
+        try {
+          this.chartSeries.setData(chartData);
+          console.log('[Chart] ✅ Dados setados na série');
+          
+          // Ajustar viewport para mostrar os dados mais recentes
+          setTimeout(() => {
+            try {
+              this.chart.timeScale().fitContent();
+              console.log('[Chart] ✅ Viewport ajustado');
+            } catch (error) {
+              console.warn('[Chart] Erro ao ajustar viewport:', error);
+            }
+          }, 100);
+        } catch (error) {
+          console.error('[Chart] ❌ Erro ao setar dados:', error);
+        }
       } catch (error) {
         console.error('[Chart] Erro ao atualizar:', error);
       }
