@@ -591,7 +591,7 @@ export default {
         const ticksToUse = this.ticks.slice(-maxTicks);
         
         // Converter ticks para formato TradingView (time, value)
-        const chartData = [];
+        let chartData = [];
         
         for (const tick of ticksToUse) {
           if (!tick || typeof tick !== 'object') continue;
