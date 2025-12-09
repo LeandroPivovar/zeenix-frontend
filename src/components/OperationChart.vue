@@ -13,7 +13,7 @@
       <!-- Chart Column -->
       <div class="col-chart flex-1 flex flex-col gap-5">
         <!-- Chart Container -->
-        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full" style="height: 700px;">
+        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card" style="flex: 1; min-height: 0;">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A] flex-shrink-0">
             <h3 class="text-base font-semibold text-zenix-text">Gráfico</h3>
           </div>
@@ -47,7 +47,7 @@
       </div>
 
       <!-- Sidebar Panel -->
-      <div class="max-w-[420px] w-[420px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto">
+      <div class="max-w-[420px] w-[420px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto sidebar-panel">
         <div class="pb-3 border-b border-zenix-border mb-5">
           <h3 class="text-base font-semibold text-zenix-text">Painel de Negociação Manual</h3>
         </div>
@@ -418,6 +418,21 @@ export default {
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
+  align-items: stretch;
+}
+
+.chart-card {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-panel {
+  display: flex;
+  flex-direction: column;
+  align-self: stretch;
+  height: 100%;
 }
 
 .col-chart {
@@ -426,6 +441,7 @@ export default {
   gap: 1.25rem;
   height: 100%;
   min-height: 0;
+  align-self: stretch;
 }
 
 .chart-container {
