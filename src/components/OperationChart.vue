@@ -581,7 +581,20 @@ export default {
           if (!isFinite(numValue) || numValue <= 0) continue;
           
           // Usar epoch como timestamp (em segundos, TradingView espera em segundos)
-          const time = tick.epoch || Math.floor(Date.now() / 1000);
+          // Garantir que seja um número inteiro
+          let time = tick.epoch;
+          if (!time || time <= 0) {
+            time = Math.floor(Date.now() / 1000);
+          } else {
+            time = Math.floor(Number(time));
+          }
+          
+          // Validar que o tempo é válido (não muito antigo nem futuro)
+          const now = Math.floor(Date.now() / 1000);
+          if (time < now - 86400 || time > now + 3600) {
+            // Se o tempo estiver muito fora do esperado, usar timestamp atual
+            time = now;
+          }
           
           chartData.push({
             time: time,
@@ -589,7 +602,15 @@ export default {
           });
         }
 
-        if (chartData.length === 0) return;
+        if (chartData.length === 0) {
+          console.warn('[Chart] Nenhum dado válido para plotar');
+          return;
+        }
+
+        // Ordenar por tempo (TradingView requer dados ordenados)
+        chartData.sort((a, b) => a.time - b.time);
+        
+        console.log('[Chart] Atualizando gráfico com', chartData.length, 'pontos. Primeiro:', chartData[0], 'Último:', chartData[chartData.length - 1]);
 
         // Atualizar série do gráfico
         this.chartSeries.setData(chartData);
@@ -1812,12 +1833,25 @@ export default {
       // Atualizar gráfico TradingView diretamente (mais eficiente)
       if (this.chartReady && this.chartSeries) {
         try {
+          // Garantir que epoch seja um número inteiro válido
+          let validEpoch = Math.floor(Number(epoch));
+          if (!validEpoch || validEpoch <= 0) {
+            validEpoch = Math.floor(Date.now() / 1000);
+          }
+          
+          // Validar que o tempo é válido
+          const now = Math.floor(Date.now() / 1000);
+          if (validEpoch < now - 86400 || validEpoch > now + 3600) {
+            validEpoch = now;
+          }
+          
           // Adicionar apenas o novo tick (atualização incremental)
           this.chartSeries.update({
-            time: epoch,
+            time: validEpoch,
             value: value
           });
         } catch (error) {
+          console.error('[Chart] Erro ao atualizar tick:', error);
           // Se falhar, agendar atualização completa
           this.scheduleUpdate();
         }
