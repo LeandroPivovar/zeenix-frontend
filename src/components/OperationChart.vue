@@ -860,9 +860,12 @@ export default {
           });
           break;
         case 'proposal':
+          // O backend envia proposalData com askPrice (camelCase)
+          // Passar diretamente, o processProposal já aceita ambos os formatos
+          const proposalData = data.data;
           this.processProposal({ 
-            proposal: data.data, 
-            subscription: { id: data.data.id } 
+            proposal: proposalData, 
+            subscription: { id: proposalData.id } 
           });
           break;
         case 'contracts_for':
@@ -2811,7 +2814,7 @@ export default {
         return;
       }
       
-      if (!this.currentProposalId || !this.currentProposalPrice) {
+      if (!this.currentProposalId) {
         console.error('[OperationChart] ERRO: Proposta não disponível', {
           currentProposalId: this.currentProposalId,
           currentProposalPrice: this.currentProposalPrice
@@ -2825,12 +2828,15 @@ export default {
         return;
       }
       
+      // Usar o preço da proposta se disponível, senão usar o valor configurado
+      const priceToUse = this.currentProposalPrice || this.localOrderConfig.amount || 10;
+      
       // Capturar o preço de compra no momento do envio da requisição
       if (this.latestTick && this.latestTick.value) {
         this.purchasePrice = this.latestTick.value;
-      } else if (this.currentProposalPrice) {
-        // Fallback: usar o preço da proposta se não houver tick disponível
-        this.purchasePrice = this.currentProposalPrice;
+      } else {
+        // Fallback: usar o preço da proposta ou valor configurado
+        this.purchasePrice = priceToUse;
       }
       
       this.tradeError = '';
@@ -2838,13 +2844,14 @@ export default {
       this.isTrading = true;
       this.pendingTradeType = this.localOrderConfig.type;
       
-      console.log('[OperationChart] ========== EXECUTANDO COMPRA ==========');
+      console.log('[OperationChart] ========== EXECUTAR COMPRA ==========');
       console.log('[OperationChart] ProposalId:', this.currentProposalId);
-      console.log('[OperationChart] Price:', this.currentProposalPrice);
+      console.log('[OperationChart] Price (original):', this.currentProposalPrice);
+      console.log('[OperationChart] Price (usado):', priceToUse);
       console.log('[OperationChart] Preço de compra capturado:', this.purchasePrice);
       
       try {
-        await derivTradingService.buyContract(this.currentProposalId, this.currentProposalPrice);
+        await derivTradingService.buyContract(this.currentProposalId, priceToUse);
         console.log('[OperationChart] ✅ Compra executada via backend');
         // A resposta chegará via SSE no evento 'buy'
       } catch (error) {
@@ -3280,15 +3287,16 @@ export default {
       
       console.log('[OperationChart] Dados da proposta:', {
         id: proposal.id,
-        askPrice: proposal.ask_price,
+        askPrice: proposal.askPrice || proposal.ask_price,
         payout: proposal.payout,
         spot: proposal.spot,
-        dateStart: proposal.date_start
+        dateStart: proposal.dateStart || proposal.date_start
       });
       
       // Armazenar ID e preço da proposta para exibição e compra
+      // O backend envia askPrice (camelCase), mas pode vir ask_price (snake_case) também
       this.currentProposalId = proposal.id;
-      this.currentProposalPrice = Number(proposal.ask_price);
+      this.currentProposalPrice = Number(proposal.askPrice || proposal.ask_price || 0);
       
       // Limpar timeout de retry já que recebemos a proposta
       if (this.proposalTimeout) {
