@@ -208,15 +208,20 @@
             <div class="text-xs font-medium text-zenix-secondary mb-3">
               <i class="fas fa-calculator text-zenix-green mr-2"></i>Dígitos de Previsão
             </div>
-            <div class="grid grid-cols-2 gap-3 mb-4">
-              <div class="bg-[#0B0B0B] border border-[#1A1A1A] rounded-lg p-3">
-                <div class="text-xs text-zenix-secondary mb-1">Último Dígito</div>
-                <div class="text-2xl font-bold text-zenix-green">{{ lastDigit }}</div>
-              </div>
-              <div class="bg-[#0B0B0B] border border-[#1A1A1A] rounded-lg p-3">
-                <div class="text-xs text-zenix-secondary mb-1">Paridade</div>
-                <div class="text-lg font-semibold" :class="lastDigitParity === 'PAR' ? 'text-zenix-green' : 'text-blue-400'">
-                  {{ lastDigitParity }}
+            
+            <!-- Grid de Dígitos 0-9 com último destacado -->
+            <div class="mb-4">
+              <div class="text-xs text-zenix-secondary mb-2">Último dígito: <span class="text-zenix-green font-bold">{{ lastDigit }}</span> ({{ lastDigitParity }})</div>
+              <div class="grid grid-cols-5 gap-2">
+                <div
+                  v-for="digit in 10"
+                  :key="digit - 1"
+                  :class="[
+                    'digit-display-item',
+                    lastDigit === (digit - 1) ? 'digit-display-item-last' : 'digit-display-item-normal'
+                  ]"
+                >
+                  {{ digit - 1 }}
                 </div>
               </div>
             </div>
@@ -1118,41 +1123,8 @@ export default {
         return;
       }
 
-      // Validação rigorosa para evitar mistura de símbolos em tempo real
-      // Manter apenas ticks do símbolo atual baseado no valor esperado
-      if (this.ticks.length > 0) {
-        const existingValues = this.ticks
-          .map(t => t.value)
-          .filter(v => v !== null && v !== undefined && isFinite(v) && v > 0);
-        
-        if (existingValues.length > 0) {
-          // Calcular mediana e desvio padrão dos valores existentes
-          const sortedValues = [...existingValues].sort((a, b) => a - b);
-          const medianExisting = sortedValues[Math.floor(sortedValues.length / 2)];
-          
-          // Calcular desvio padrão aproximado usando IQR (Interquartile Range)
-          const q1 = sortedValues[Math.floor(sortedValues.length * 0.25)];
-          const q3 = sortedValues[Math.floor(sortedValues.length * 0.75)];
-          const iqr = q3 - q1;
-          const stdDev = iqr > 0 ? iqr / 1.35 : medianExisting * 0.1; // Aproximação do desvio padrão
-          
-          // Usar 3 desvios padrão como limite (mais rigoroso que 5x)
-          const lowerBound = medianExisting - (3 * stdDev);
-          const upperBound = medianExisting + (3 * stdDev);
-          
-          // Se o novo valor estiver muito fora da faixa, ignorar
-          if (numValue < lowerBound || numValue > upperBound) {
-            console.warn('[Chart] ⚠️ Tick em tempo real ignorado - valor muito diferente do símbolo atual:', {
-              novoValor: numValue,
-              medianaExistente: medianExisting,
-              limiteInferior: lowerBound,
-              limiteSuperior: upperBound,
-              desvioPadrao: stdDev
-            });
-            return;
-          }
-        }
-      }
+      // Removido filtro de valores muito diferentes - plotar todos os ticks recebidos
+      // Isso permite que diferentes símbolos sejam plotados se necessário
 
       // Adicionar ao array de ticks
       this.ticks.push({ value: numValue, epoch: brasiliaEpoch });
@@ -1333,50 +1305,8 @@ export default {
         return;
       }
       
-      // Detectar e filtrar valores de símbolos diferentes
-      const minVal = Math.min(...tickValues);
-      const maxVal = Math.max(...tickValues);
-      
-      if (minVal > 0 && (maxVal / minVal) > 10) {
-        console.warn('[Chart] ⚠️ Valores muito diferentes detectados - possível mistura de símbolos:', {
-          min: minVal,
-          max: maxVal,
-          ratio: maxVal / minVal
-        });
-        
-        // Agrupar valores por faixa para identificar o símbolo mais comum
-        const sortedValues = [...tickValues].sort((a, b) => a - b);
-        const median = sortedValues[Math.floor(sortedValues.length / 2)];
-        
-        // Usar apenas valores que estão próximos da mediana (dentro de 2x)
-        // Isso garante que mantemos apenas um símbolo
-        const filteredTicks = ticksToUse.filter(tick => {
-          if (!tick || typeof tick !== 'object') return false;
-          if (tick.value === null || tick.value === undefined) return false;
-          const val = Number(tick.value);
-          if (isNaN(val) || !isFinite(val) || val <= 0) return false;
-          // Manter apenas valores dentro de 2x da mediana (mais rigoroso)
-          return val >= median / 2 && val <= median * 2;
-        });
-        
-        if (filteredTicks.length > 0) {
-          console.log('[Chart] Ticks filtrados:', filteredTicks.length, 'de', ticksToUse.length);
-          ticksToUse = filteredTicks;
-        } else {
-          // Se o filtro removeu tudo, usar apenas valores próximos da mediana
-          const medianTicks = ticksToUse.filter(tick => {
-            if (!tick || typeof tick !== 'object') return false;
-            if (tick.value === null || tick.value === undefined) return false;
-            const val = Number(tick.value);
-            if (isNaN(val) || !isFinite(val) || val <= 0) return false;
-            return Math.abs(val - median) / median < 0.5; // Dentro de 50% da mediana
-          });
-          if (medianTicks.length > 0) {
-            ticksToUse = medianTicks;
-            console.log('[Chart] Usando apenas ticks próximos da mediana:', medianTicks.length);
-          }
-        }
-      }
+      // Removido filtro de valores muito diferentes - plotar todos os ticks válidos
+      // Isso permite que diferentes símbolos sejam plotados se necessário
       
       const chartData = ticksToUse
         .map(tick => {
@@ -3322,6 +3252,36 @@ export default {
 .digit-select-btn:disabled {
   opacity: 0.5;
   cursor: not-allowed;
+}
+
+/* Digit Display Items (visualização dos dígitos 0-9) */
+.digit-display-item {
+  aspect-ratio: 1;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.digit-display-item-normal {
+  background: rgba(11, 11, 11, 0.6);
+  color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.digit-display-item-last {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(34, 197, 94, 0.15));
+  border-color: #22C55E;
+  color: #22C55E;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+  transform: scale(1.1);
+  font-weight: 700;
+  font-size: 16px;
 }
 
 @keyframes fadeIn {
