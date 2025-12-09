@@ -1815,6 +1815,52 @@ export default {
       console.log('[Chart] ========== EXECUTAR COMPRA ==========');
       console.log('[Chart] Configuração:', this.localOrderConfig);
       
+      // Validar saldo antes de comprar
+      const requiredAmount = this.localOrderConfig.amount || 10;
+      try {
+        const authToken = localStorage.getItem('token');
+        if (authToken) {
+          // Buscar saldo da sessão do usuário (saldo configurado)
+          // O endpoint precisa do userId, mas podemos usar um endpoint que pega do token
+          // Vou usar o endpoint de session-stats que retorna o saldo
+          const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+          const apiUrl = apiBaseUrl.endsWith('/api') ? apiBaseUrl : `${apiBaseUrl}/api`;
+          
+          // Tentar buscar do endpoint que retorna sessionBalance
+          const response = await fetch(`${apiUrl}/ai/session-stats/current`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${authToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (response.ok) {
+            const result = await response.json();
+            // O backend retorna { success: true, data: { sessionBalance, ... } }
+            const sessionBalance = result.data?.sessionBalance !== undefined 
+              ? Number(result.data.sessionBalance) 
+              : (result.sessionBalance !== undefined ? Number(result.sessionBalance) : null);
+            
+            console.log('[Chart] Saldo da sessão verificado:', { sessionBalance, requiredAmount });
+            
+            if (sessionBalance !== null && sessionBalance < requiredAmount) {
+              const balanceFormatted = sessionBalance.toFixed(2);
+              const requiredFormatted = requiredAmount.toFixed(2);
+              this.tradeError = `Saldo insuficiente! Você possui $${balanceFormatted} mas precisa de $${requiredFormatted} para esta operação.`;
+              this.isTrading = false;
+              console.warn('[Chart] Saldo insuficiente:', { sessionBalance, requiredAmount });
+              return;
+            }
+          } else {
+            console.warn('[Chart] Não foi possível validar saldo, continuando com a compra');
+          }
+        }
+      } catch (error) {
+        console.warn('[Chart] Erro ao validar saldo, continuando com a compra:', error);
+        // Se não conseguir validar o saldo, continuar com a compra (o backend também validará)
+      }
+      
       try {
         // Preparar configuração de compra
         const buyConfig = {
@@ -1844,7 +1890,14 @@ export default {
         // A resposta chegará via SSE no evento 'buy'
       } catch (error) {
         console.error('[Chart] Erro ao executar compra:', error);
-        this.tradeError = error.message || 'Erro ao executar compra';
+        
+        // Verificar se o erro é de saldo insuficiente
+        if (error.message && (error.message.includes('InsufficientBalance') || error.message.includes('insufficient'))) {
+          this.tradeError = `Saldo insuficiente! Você não possui saldo suficiente para esta operação de $${requiredAmount.toFixed(2)}.`;
+        } else {
+          this.tradeError = error.message || 'Erro ao executar compra';
+        }
+        
         this.isTrading = false;
       }
     },
