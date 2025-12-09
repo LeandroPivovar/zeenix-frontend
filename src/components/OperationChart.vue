@@ -1141,6 +1141,10 @@ export default {
         console.log('[Chart] ========== CONTRATO ATUALIZADO VIA SSE ==========');
         console.log('[Chart] Dados completos do contrato:', JSON.stringify(data.data, null, 2));
         this.processContract(data.data);
+      } else if (data.type === 'error' && data.error) {
+        console.error('[Chart] ========== ERRO RECEBIDO VIA SSE ==========');
+        console.error('[Chart] Erro completo:', JSON.stringify(data.error, null, 2));
+        this.handleTradingError(data.error);
       }
     },
     addTickToChart(tickData) {
@@ -2021,6 +2025,40 @@ export default {
         ticksRemaining: this.contractTicksRemaining,
         timeRemaining: this.contractTimeRemaining
       });
+    },
+    handleTradingError(error) {
+      console.error('[Chart] ========== PROCESSANDO ERRO DE TRADING ==========');
+      console.error('[Chart] Erro recebido:', error);
+      
+      this.isTrading = false;
+      
+      // Verificar tipo de erro
+      if (error && typeof error === 'object') {
+        const errorCode = error.code || error.error?.code;
+        const errorMessage = error.message || error.error?.message || error.error?.msg || 'Erro desconhecido';
+        
+        console.error('[Chart] Código do erro:', errorCode);
+        console.error('[Chart] Mensagem do erro:', errorMessage);
+        
+        // Tratar erros específicos
+        if (errorCode === 'InsufficientBalance' || errorMessage.includes('insufficient') || errorMessage.includes('Insufficient')) {
+          const balance = error.balance || error.error?.balance || 'desconhecido';
+          const required = error.required || error.error?.required || this.localOrderConfig.amount || 10;
+          this.tradeError = `Saldo insuficiente! Saldo disponível: $${balance}. Valor necessário: $${required.toFixed(2)}.`;
+        } else if (errorCode === 'AlreadySubscribed') {
+          // Este erro pode ser ignorado ou tratado silenciosamente
+          console.warn('[Chart] Já inscrito em proposta - ignorando');
+          return;
+        } else {
+          this.tradeError = `Erro: ${errorMessage}`;
+        }
+      } else if (typeof error === 'string') {
+        this.tradeError = error;
+      } else {
+        this.tradeError = 'Erro desconhecido ao processar operação.';
+      }
+      
+      console.error('[Chart] Erro exibido ao usuário:', this.tradeError);
     },
     processSell(sellData) {
       console.log('[Chart] ========== PROCESSANDO VENDA ==========');
