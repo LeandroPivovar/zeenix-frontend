@@ -475,65 +475,50 @@ export default {
     },
     },
     methods: {
-    // ========== LÓGICA DO GRÁFICO - IMPLEMENTAÇÃO NOVA ==========
+    // ========== GRÁFICO SIMPLES - APENAS TICKS (5 MINUTOS) ==========
     initChart() {
-      // Se já existe, não criar novamente
-      if (this.chart) {
-        return;
-      }
+      if (this.chart) return;
 
-      // Aguardar container estar disponível
       const container = this.$refs.chartContainer;
       if (!container) {
         setTimeout(() => this.initChart(), 100);
         return;
       }
 
-      // Aguardar próximo ciclo do Vue
       this.$nextTick(() => {
         try {
-          // Obter canvas
           let canvas = container.querySelector('canvas');
           if (!canvas) {
             canvas = document.createElement('canvas');
             container.appendChild(canvas);
           }
 
-          // Configurar canvas
           canvas.style.display = 'block';
-          canvas.style.visibility = 'visible';
-          canvas.style.opacity = '1';
           canvas.style.width = '100%';
           canvas.style.height = '100%';
 
-          // Verificar dimensões
           const rect = container.getBoundingClientRect();
           if (rect.width <= 0 || rect.height <= 0) {
             setTimeout(() => this.initChart(), 200);
             return;
           }
 
-          // Obter contexto
           const ctx = canvas.getContext('2d');
-          if (!ctx) {
-            return;
-          }
+          if (!ctx) return;
 
-          // Criar gráfico Chart.js - configuração mínima
+          // Criar gráfico com configuração mínima - SEM plugins complexos
           this.chart = new Chart(ctx, {
             type: 'line',
             data: {
               labels: [],
               datasets: [{
-                label: 'Preço',
                 data: [],
                 borderColor: '#22C55E',
                 backgroundColor: 'rgba(34, 197, 94, 0.1)',
                 borderWidth: 2,
                 fill: true,
                 tension: 0.1,
-                pointRadius: 0,
-                pointHoverRadius: 0
+                pointRadius: 0
               }]
             },
             options: {
@@ -556,90 +541,83 @@ export default {
             }
           });
 
-          // Marcar como pronto após um pequeno delay
+          // Marcar como pronto
           setTimeout(() => {
-            if (this.chart && this.chart.chartArea) {
+            if (this.chart) {
               this.chartReady = true;
-              // Se já temos dados, atualizar
               if (this.ticks.length > 0) {
                 this.updateChart();
               }
             }
-          }, 200);
-
-          // Listener de resize
-          if (!this._resizeHandler) {
-            this._resizeHandler = () => {
-              if (this.chart && !this.isDestroying) {
-                this.chart.resize();
-              }
-            };
-            window.addEventListener('resize', this._resizeHandler);
-          }
+          }, 300);
         } catch (error) {
-          console.error('[Chart] Erro ao criar gráfico:', error);
+          console.error('[Chart] Erro:', error);
           this.chart = null;
         }
       });
     },
 
-    // Atualizar gráfico - versão simples e direta
+    // Atualizar gráfico - ULTRA SIMPLIFICADO
     updateChart() {
-      // Verificações básicas
       if (!this.chart || !this.chartReady || !this.ticks || this.ticks.length === 0) {
         return;
       }
 
-      // Verificar se gráfico está válido
-      if (!this.chart.data || !this.chart.data.datasets || !this.chart.data.datasets[0]) {
-        return;
-      }
-
       try {
-        // Extrair dados
+        // Limitar a últimos 5 minutos de ticks (aproximadamente 300 ticks)
+        const maxTicks = 300;
+        const ticksToUse = this.ticks.slice(-maxTicks);
+        
+        // Extrair apenas valores numéricos
         const data = [];
         const labels = [];
         
-        for (let i = 0; i < this.ticks.length; i++) {
-          const tick = this.ticks[i];
+        for (let i = 0; i < ticksToUse.length; i++) {
+          const tick = ticksToUse[i];
           if (!tick) continue;
           
           const value = tick.value ?? tick.quote;
           if (value == null) continue;
           
           const numValue = Number(value);
-          if (!isNaN(numValue) && isFinite(numValue) && numValue > 0) {
+          if (isFinite(numValue) && numValue > 0) {
             data.push(numValue);
             labels.push(i);
           }
         }
 
-        if (data.length === 0) {
-          return;
-        }
+        if (data.length === 0) return;
 
-        // Atualizar dados do gráfico
+        // Atualizar dados - criar novos arrays para evitar reatividade
         const dataset = this.chart.data.datasets[0];
-        dataset.data = data;
-        this.chart.data.labels = labels;
-
-        // Atualizar gráfico
-        this.chart.update('none');
+        if (dataset) {
+          // Substituir completamente os arrays
+          dataset.data = [...data];
+          this.chart.data.labels = [...labels];
+          
+          // Atualizar sem animação
+          this.chart.update('none');
+        }
       } catch (error) {
-        console.error('[Chart] Erro ao atualizar:', error);
+        // Silenciar erros para evitar loops
+        if (error.message && !error.message.includes('Maximum call stack')) {
+          console.error('[Chart] Erro:', error);
+        }
       }
     },
 
-    // Agendar atualização com debounce
+    // Agendar atualização
     scheduleUpdate() {
       if (this.chartUpdateTimer) {
         clearTimeout(this.chartUpdateTimer);
       }
       
       this.chartUpdateTimer = setTimeout(() => {
-        this.updateChart();
+        if (this.chartReady) {
+          this.updateChart();
+        }
         this.chartUpdateTimer = null;
-      }, 100);
+      }, 200);
     },
     initConnection() {
       console.log('[OperationChart] initConnection - Iniciando conexão WebSocket');
@@ -703,7 +681,9 @@ export default {
           this.$nextTick(() => {
           if (this.chart && this.ticks.length > 0) {
             // Se já temos dados, atualizar o gráfico com debounce
-            this.scheduleUpdate();
+            if (this.chartReady) {
+              this.scheduleUpdate();
+            }
           }
         });
       }
@@ -1764,28 +1744,27 @@ export default {
       
       console.log('[OperationChart] ✅ Active symbols:', Object.keys(this.activeSymbolsCache).length);
     },
-    // Processar histórico de ticks
+    // Processar histórico de ticks - SIMPLIFICADO
     processHistory(msg) {
       const history = msg.history;
-      if (!history || !history.prices) {
-        return;
-      }
+      if (!history || !history.prices) return;
       
-      // Processar dados
       const newTicks = [];
       const prices = history.prices || [];
       const times = history.times || [];
       
-      for (let i = 0; i < prices.length; i++) {
+      // Processar apenas os últimos 5 minutos (300 ticks)
+      const startIdx = Math.max(0, prices.length - 300);
+      
+      for (let i = startIdx; i < prices.length; i++) {
         const value = Number(prices[i]);
         const epoch = times[i] ? Math.floor(Number(times[i])) : Math.floor(Date.now() / 1000) - (prices.length - i);
         
-        if (!isNaN(value) && !isNaN(epoch) && value > 0 && epoch > 0) {
+        if (isFinite(value) && isFinite(epoch) && value > 0 && epoch > 0) {
           newTicks.push({ value, epoch });
         }
       }
       
-      // Atualizar ticks
       this.ticks = newTicks;
       
       if (msg.subscription?.id) {
@@ -1794,89 +1773,49 @@ export default {
       
       this.isLoadingSymbol = false;
       
-      // Inicializar gráfico se necessário
+      // Inicializar ou atualizar gráfico
       if (!this.chart) {
         this.chartReady = false;
         this.initChart();
-        // Aguardar inicialização
         setTimeout(() => {
-          if (this.chartReady) {
+          if (this.chartReady && this.ticks.length > 0) {
             this.updateChart();
           }
-        }, 500);
+        }, 600);
       } else if (this.chartReady) {
-        // Atualizar gráfico
         this.scheduleUpdate();
       }
     },
-    // Processar candles (velas)
+    // Processar candles - IGNORADO (focando apenas em ticks)
     processCandles(msg) {
-      const candles = msg.candles || [];
-      if (candles.length === 0) {
-        return;
-      }
-      
-      // Processar candles
-      const newTicks = [];
-      for (const candle of candles) {
-        const value = Number(candle.close);
-        const epoch = Number(candle.epoch);
-        
-        if (!isNaN(value) && !isNaN(epoch) && value > 0 && epoch > 0) {
-          newTicks.push({ value, epoch });
-        }
-      }
-      
-      this.ticks = newTicks;
-      
-      if (msg.subscription?.id) {
-        this.tickSubscriptionId = msg.subscription.id;
-      }
-      
-      this.isLoadingSymbol = false;
-      
-      // Inicializar gráfico se necessário
-      if (!this.chart) {
-        this.chartReady = false;
-        this.initChart();
-        setTimeout(() => {
-          if (this.chartReady) {
-            this.updateChart();
-          }
-        }, 500);
-      } else if (this.chartReady) {
-        this.scheduleUpdate();
-      }
+      // Ignorar candles por enquanto, focar apenas em ticks
+      return;
     },
-    // Processar tick individual
+    // Processar tick individual - SIMPLIFICADO
     processTick(msg) {
       const tick = msg.tick;
-      if (!tick || tick.quote == null || tick.epoch == null) {
-        return;
-      }
+      if (!tick || tick.quote == null || tick.epoch == null) return;
       
       const value = Number(tick.quote);
       const epoch = Number(tick.epoch);
       
-      if (isNaN(value) || !isFinite(value) || isNaN(epoch) || !isFinite(epoch) || epoch <= 0) {
-        return;
-      }
+      if (!isFinite(value) || !isFinite(epoch) || value <= 0 || epoch <= 0) return;
       
       if (tick.id && !this.tickSubscriptionId) {
         this.tickSubscriptionId = tick.id;
       }
       
-      // Adicionar tick
+      // Adicionar tick e manter apenas últimos 300 (5 minutos)
       this.ticks.push({ value, epoch });
-      if (this.ticks.length > 1000) {
+      if (this.ticks.length > 300) {
         this.ticks.shift();
       }
       
       this.latestTick = { value, epoch };
       this.lastUpdate = Date.now();
       
-      // Atualizar gráfico se estiver pronto
-      if (this.chartReady) {
+      // Atualizar gráfico apenas se estiver pronto
+      if (this.chartReady && this.chart) {
         this.scheduleUpdate();
       }
     },
