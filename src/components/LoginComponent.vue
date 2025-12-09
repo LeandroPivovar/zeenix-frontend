@@ -321,25 +321,21 @@ export default {
     },
     async handleLogin() {
       if (this.isLoading) return;
-      if (!this.isMounted) return;
       
-      // Usar setTimeout para garantir que a atualização de estado aconteça
-      // em um momento seguro do ciclo do Vue
-      setTimeout(() => {
-        if (!this.isMounted || !this.$el) return;
-        
-        try {
+      // Usar uma abordagem mais segura: verificar se podemos atualizar o estado
+      // antes de continuar
+      try {
+        if (this.$el && this.$el.parentNode) {
           this.isLoading = true;
-        } catch (e) {
-          console.warn('Erro ao definir isLoading:', e);
+        } else {
+          // Se o componente não está mais no DOM, não podemos atualizar o estado
           return;
         }
-        
-        // Executar login de forma assíncrona
-        this.performLogin();
-      }, 0);
-    },
-    async performLogin() {
+      } catch (e) {
+        // Se houver erro ao atualizar estado, abortar
+        return;
+      }
+      
       try {
         const res = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/auth/login', {
           method: 'POST',
@@ -356,35 +352,23 @@ export default {
         localStorage.removeItem('deriv_connection');
         localStorage.removeItem('deriv_app_id');
         
-        // Para login bem-sucedido, usar window.location.href como alternativa segura
-        // Isso força um reload completo, evitando problemas de desmontagem do componente
-        try {
-          if (this.$router) {
-            this.$router.push('/dashboard').catch(() => {
-              // Se router.push falhar, usar window.location.href como fallback
-              window.location.href = '/dashboard';
-            });
-          } else {
-            window.location.href = '/dashboard';
-          }
-        } catch (navError) {
-          // Se houver qualquer erro, usar window.location.href
-          window.location.href = '/dashboard';
-        }
+        // Para login bem-sucedido, usar window.location.href diretamente
+        // Isso força um reload completo da página, evitando completamente
+        // problemas de desmontagem do componente Vue
+        window.location.href = '/dashboard';
       } catch (e) {
         // Apenas atualizar estado se o componente ainda estiver montado
-        setTimeout(() => {
-          if (this.isMounted && this.$el) {
-            try {
-              this.isLoading = false;
-              if (this.$root && this.$root.$toast) {
-                this.$root.$toast.error(e.message || 'Erro inesperado');
-              }
-            } catch (stateError) {
-              // Ignorar erro silenciosamente
+        // e se conseguirmos acessar o DOM
+        try {
+          if (this.$el && this.$el.parentNode) {
+            this.isLoading = false;
+            if (this.$root && this.$root.$toast) {
+              this.$root.$toast.error(e.message || 'Erro inesperado');
             }
           }
-        }, 0);
+        } catch (stateError) {
+          // Ignorar erro silenciosamente se não conseguirmos atualizar
+        }
       }
     }
   }
