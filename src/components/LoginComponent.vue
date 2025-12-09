@@ -323,12 +323,23 @@ export default {
       if (this.isLoading) return;
       if (!this.isMounted) return;
       
-      // Usar nextTick para garantir que a atualização seja segura
-      await this.$nextTick();
-      if (!this.isMounted) return;
-      
-      this.isLoading = true;
-      
+      // Usar setTimeout para garantir que a atualização de estado aconteça
+      // em um momento seguro do ciclo do Vue
+      setTimeout(() => {
+        if (!this.isMounted || !this.$el) return;
+        
+        try {
+          this.isLoading = true;
+        } catch (e) {
+          console.warn('Erro ao definir isLoading:', e);
+          return;
+        }
+        
+        // Executar login de forma assíncrona
+        this.performLogin();
+      }, 0);
+    },
+    async performLogin() {
       try {
         const res = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/auth/login', {
           method: 'POST',
@@ -345,32 +356,35 @@ export default {
         localStorage.removeItem('deriv_connection');
         localStorage.removeItem('deriv_app_id');
         
-        // Usar requestAnimationFrame para garantir que todas as atualizações DOM sejam concluídas
-        // antes de navegar, evitando conflitos com a desmontagem do componente
-        requestAnimationFrame(() => {
-          if (this.isMounted && this.$router) {
+        // Para login bem-sucedido, usar window.location.href como alternativa segura
+        // Isso força um reload completo, evitando problemas de desmontagem do componente
+        try {
+          if (this.$router) {
             this.$router.push('/dashboard').catch(() => {
-              // Ignorar erro de navegação silenciosamente
+              // Se router.push falhar, usar window.location.href como fallback
+              window.location.href = '/dashboard';
             });
+          } else {
+            window.location.href = '/dashboard';
           }
-        });
-      } catch (e) {
-        // Verificar se o componente ainda está montado antes de atualizar o estado
-        if (this.isMounted) {
-          requestAnimationFrame(() => {
-            if (this.isMounted) {
-              try {
-                this.isLoading = false;
-                if (this.$root && this.$root.$toast) {
-                  this.$root.$toast.error(e.message || 'Erro inesperado');
-                }
-              } catch (stateError) {
-                // Ignorar erro se o componente foi desmontado durante a atualização
-                console.warn('Erro ao atualizar estado:', stateError);
-              }
-            }
-          });
+        } catch (navError) {
+          // Se houver qualquer erro, usar window.location.href
+          window.location.href = '/dashboard';
         }
+      } catch (e) {
+        // Apenas atualizar estado se o componente ainda estiver montado
+        setTimeout(() => {
+          if (this.isMounted && this.$el) {
+            try {
+              this.isLoading = false;
+              if (this.$root && this.$root.$toast) {
+                this.$root.$toast.error(e.message || 'Erro inesperado');
+              }
+            } catch (stateError) {
+              // Ignorar erro silenciosamente
+            }
+          }
+        }, 0);
       }
     }
   }
