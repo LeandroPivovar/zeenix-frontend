@@ -248,15 +248,36 @@ export default {
       isConnected: false,
       derivToken: null,
       loginid: null,
+      _retryCount: 0,
+      _errorRetryCount: 0,
     };
   },
   async mounted() {
+    console.log('[Chart] ========== COMPONENTE MONTADO ==========');
+    
+    // Inicializar gráfico primeiro
     this.initChart();
+    
     // Listener de resize
     window.addEventListener('resize', this.handleResize);
     
-    // Tentar conectar e carregar ticks
-    await this.initializeConnection();
+    // Aguardar gráfico ser inicializado antes de conectar
+    await this.$nextTick();
+    
+    // Aguardar um pouco mais para garantir que o gráfico foi criado
+    setTimeout(async () => {
+      if (!this.chart || !this.chartSeries) {
+        console.warn('[Chart] Gráfico ainda não inicializado, tentando novamente...');
+        this.initChart();
+        await this.$nextTick();
+        setTimeout(() => {
+          this.initializeConnection();
+        }, 500);
+      } else {
+        console.log('[Chart] Gráfico inicializado, conectando...');
+        await this.initializeConnection();
+      }
+    }, 1000);
   },
   watch: {
     symbol(newSymbol, oldSymbol) {
@@ -328,6 +349,9 @@ export default {
             lastValueVisible: true,
           });
 
+          console.log('[Chart] ✅ Gráfico e série criados com sucesso');
+          console.log('[Chart] Dimensões:', { width: rect.width, height: rect.height });
+
           // Não carregar placeholders aqui - será carregado do backend
           // Os dados serão carregados via loadTicksFromBackend()
 
@@ -339,24 +363,30 @@ export default {
             }
           };
         } catch (error) {
-          console.error('[Chart] Erro ao inicializar gráfico:', error);
+          console.error('[Chart] ❌ Erro ao inicializar gráfico:', error);
+          this.showChartPlaceholder = false;
         }
       });
     },
     async initializeConnection() {
       try {
+        console.log('[Chart] ========== INICIANDO CONEXÃO ==========');
+        
         // Buscar token Deriv do localStorage
         // Tentar primeiro deriv_token (token direto)
         this.derivToken = localStorage.getItem('deriv_token');
+        console.log('[Chart] deriv_token encontrado:', !!this.derivToken);
         
         // Se não tiver, tentar deriv_connection (objeto com mais informações)
         if (!this.derivToken) {
           const derivConnection = localStorage.getItem('deriv_connection');
+          console.log('[Chart] deriv_connection encontrado:', !!derivConnection);
           if (derivConnection) {
             try {
               const connection = JSON.parse(derivConnection);
               this.derivToken = connection.token;
               this.loginid = connection.loginid;
+              console.log('[Chart] Token extraído de deriv_connection:', !!this.derivToken);
             } catch (e) {
               console.warn('[Chart] Erro ao parsear deriv_connection:', e);
             }
@@ -366,11 +396,13 @@ export default {
         // Se ainda não tiver, tentar derivInfo
         if (!this.derivToken) {
           const storedDerivInfo = localStorage.getItem('derivInfo');
+          console.log('[Chart] derivInfo encontrado:', !!storedDerivInfo);
           if (storedDerivInfo) {
             try {
               const derivInfo = JSON.parse(storedDerivInfo);
               this.derivToken = derivInfo.token;
               this.loginid = derivInfo.loginid;
+              console.log('[Chart] Token extraído de derivInfo:', !!this.derivToken);
             } catch (e) {
               console.warn('[Chart] Erro ao parsear derivInfo:', e);
             }
@@ -379,6 +411,11 @@ export default {
 
         if (!this.derivToken) {
           console.warn('[Chart] Token Deriv não encontrado no localStorage');
+          console.log('[Chart] Tentando buscar ticks sem conexão...');
+          // Tentar buscar ticks mesmo sem token (pode funcionar se já houver conexão ativa)
+          setTimeout(() => {
+            this.loadTicksFromBackend();
+          }, 1000);
           return;
         }
         
@@ -395,22 +432,32 @@ export default {
           }
         }
 
+        console.log('[Chart] Conectando ao backend...');
         // Conectar ao backend
         await derivTradingService.connect(this.derivToken, this.loginid);
         this.isConnected = true;
+        console.log('[Chart] ✅ Conectado ao backend');
 
         // Iniciar stream SSE
+        console.log('[Chart] Iniciando stream SSE...');
         await derivTradingService.startStream(this.handleSSEMessage.bind(this), this.derivToken);
+        console.log('[Chart] ✅ Stream SSE iniciado');
 
         // Inscrever-se no símbolo (isso vai buscar histórico)
+        console.log('[Chart] Inscrevendo-se no símbolo:', this.symbol);
         await derivTradingService.subscribeSymbol(this.symbol, this.derivToken, this.loginid);
+        console.log('[Chart] ✅ Inscrito no símbolo');
 
         // Aguardar um pouco e então buscar ticks
         setTimeout(() => {
           this.loadTicksFromBackend();
-        }, 1500);
+        }, 2000);
       } catch (error) {
-        console.error('[Chart] Erro ao inicializar conexão:', error);
+        console.error('[Chart] ❌ Erro ao inicializar conexão:', error);
+        // Mesmo com erro, tentar buscar ticks
+        setTimeout(() => {
+          this.loadTicksFromBackend();
+        }, 2000);
       }
     },
     handleSSEMessage(data) {
@@ -424,7 +471,17 @@ export default {
       }
     },
     async loadTicksFromBackend() {
-      if (this.isLoadingTicks || !this.chart || !this.chartSeries) {
+      // Verificar se o gráfico está inicializado
+      if (!this.chart || !this.chartSeries) {
+        console.warn('[Chart] Gráfico não inicializado, aguardando...');
+        setTimeout(() => {
+          this.loadTicksFromBackend();
+        }, 500);
+        return;
+      }
+
+      if (this.isLoadingTicks) {
+        console.log('[Chart] Já está carregando ticks, ignorando...');
         return;
       }
 
@@ -432,13 +489,21 @@ export default {
       this.showChartPlaceholder = true;
 
       try {
-        console.log('[Chart] Buscando ticks do backend para símbolo:', this.symbol);
+        console.log('[Chart] ========== BUSCANDO TICKS ==========');
+        console.log('[Chart] Símbolo:', this.symbol);
+        console.log('[Chart] Gráfico inicializado:', !!this.chart);
+        console.log('[Chart] Série inicializada:', !!this.chartSeries);
         
         const response = await derivTradingService.getTicks(this.symbol);
+        console.log('[Chart] Resposta do backend:', response);
         
         if (!response || !response.ticks || !Array.isArray(response.ticks)) {
           console.warn('[Chart] Resposta inválida do backend:', response);
-          this.showChartPlaceholder = false;
+          // Tentar novamente após 3 segundos
+          setTimeout(() => {
+            this.isLoadingTicks = false;
+            this.loadTicksFromBackend();
+          }, 3000);
           return;
         }
 
@@ -446,25 +511,70 @@ export default {
         console.log('[Chart] Ticks recebidos:', ticks.length);
 
         if (ticks.length === 0) {
-          console.warn('[Chart] Nenhum tick recebido do backend, tentando novamente em 2 segundos...');
-          // Tentar novamente após 2 segundos
-          setTimeout(() => {
-            this.loadTicksFromBackend();
-          }, 2000);
+          console.warn('[Chart] Nenhum tick recebido do backend, tentando novamente em 3 segundos...');
+          // Tentar novamente após 3 segundos (máximo 3 tentativas)
+          if (!this._retryCount) this._retryCount = 0;
+          this._retryCount++;
+          
+          if (this._retryCount < 3) {
+            setTimeout(() => {
+              this.isLoadingTicks = false;
+              this.loadTicksFromBackend();
+            }, 3000);
+          } else {
+            console.error('[Chart] Máximo de tentativas atingido, parando...');
+            this.showChartPlaceholder = false;
+            this.isLoadingTicks = false;
+            this._retryCount = 0;
+          }
           return;
         }
+
+        // Resetar contador de tentativas
+        this._retryCount = 0;
 
         // Plotar os ticks
         this.plotTicks(ticks);
       } catch (error) {
-        console.error('[Chart] Erro ao carregar ticks do backend:', error);
-        this.showChartPlaceholder = false;
+        console.error('[Chart] ❌ Erro ao carregar ticks do backend:', error);
+        console.error('[Chart] Erro completo:', error.message, error.stack);
+        
+        // Tentar novamente após 3 segundos (máximo 2 tentativas)
+        if (!this._errorRetryCount) this._errorRetryCount = 0;
+        this._errorRetryCount++;
+        
+        if (this._errorRetryCount < 2) {
+          setTimeout(() => {
+            this.isLoadingTicks = false;
+            this.loadTicksFromBackend();
+          }, 3000);
+        } else {
+          console.error('[Chart] Máximo de tentativas com erro atingido');
+          this.showChartPlaceholder = false;
+          this.isLoadingTicks = false;
+          this._errorRetryCount = 0;
+        }
       } finally {
-        this.isLoadingTicks = false;
+        // Não resetar isLoadingTicks aqui se ainda estiver tentando
+        if (!this._retryCount && !this._errorRetryCount) {
+          this.isLoadingTicks = false;
+        }
       }
     },
     plotTicks(ticks) {
-      if (!this.chart || !this.chartSeries || !ticks || !Array.isArray(ticks)) {
+      console.log('[Chart] ========== PLOTANDO TICKS ==========');
+      console.log('[Chart] Gráfico existe:', !!this.chart);
+      console.log('[Chart] Série existe:', !!this.chartSeries);
+      console.log('[Chart] Ticks recebidos:', ticks ? ticks.length : 0);
+      
+      if (!this.chart || !this.chartSeries) {
+        console.error('[Chart] ❌ Gráfico ou série não inicializados');
+        return;
+      }
+      
+      if (!ticks || !Array.isArray(ticks)) {
+        console.error('[Chart] ❌ Ticks inválidos:', ticks);
+        this.showChartPlaceholder = false;
         return;
       }
 
@@ -501,27 +611,44 @@ export default {
         })
         .filter(item => item !== null);
 
-      if (chartData.length === 0) {
-        console.warn('[Chart] Nenhum tick válido após validação');
+        if (chartData.length === 0) {
+          console.warn('[Chart] Nenhum tick válido após validação');
+          this.showChartPlaceholder = false;
+          this.isLoadingTicks = false;
+          return;
+        }
+
+        // Ordenar por tempo
+        chartData.sort((a, b) => a.time - b.time);
+
+        console.log('[Chart] Plotando', chartData.length, 'ticks no gráfico');
+        console.log('[Chart] Primeiro tick:', chartData[0]);
+        console.log('[Chart] Último tick:', chartData[chartData.length - 1]);
+
+        // Atualizar gráfico
+        try {
+          this.chartSeries.setData(chartData);
+          console.log('[Chart] ✅ Dados setados na série');
+        } catch (error) {
+          console.error('[Chart] ❌ Erro ao setar dados:', error);
+          this.showChartPlaceholder = false;
+          this.isLoadingTicks = false;
+          return;
+        }
+        
+        // Ajustar viewport para mostrar todos os dados
+        try {
+          this.chart.timeScale().fitContent();
+          console.log('[Chart] ✅ Viewport ajustado');
+        } catch (error) {
+          console.warn('[Chart] Erro ao ajustar viewport:', error);
+        }
+        
+        // Ocultar placeholder
         this.showChartPlaceholder = false;
-        return;
-      }
-
-      // Ordenar por tempo
-      chartData.sort((a, b) => a.time - b.time);
-
-      console.log('[Chart] Plotando', chartData.length, 'ticks no gráfico');
-      console.log('[Chart] Primeiro tick:', chartData[0]);
-      console.log('[Chart] Último tick:', chartData[chartData.length - 1]);
-
-      // Atualizar gráfico
-      this.chartSeries.setData(chartData);
-      
-      // Ajustar viewport para mostrar todos os dados
-      this.chart.timeScale().fitContent();
-      
-      this.showChartPlaceholder = false;
-      console.log('[Chart] ✅ Gráfico atualizado com sucesso');
+        this.isLoadingTicks = false;
+        console.log('[Chart] ✅ Gráfico atualizado com sucesso');
+        console.log('[Chart] Placeholder oculto:', !this.showChartPlaceholder);
     },
     async handleSymbolChange() {
       console.log('[Chart] Mercado alterado para:', this.symbol);
