@@ -715,13 +715,17 @@ export default {
         }
       }
     },
-    'localOrderConfig.type'() {
+    async 'localOrderConfig.type'() {
       // Quando o tipo de contrato mudar, recarregar valores padrão e proposta
       if (this.isConnected) {
-        this.loadDefaultValues();
-        setTimeout(() => {
-          this.loadProposal();
-        }, 500);
+        await this.loadDefaultValues();
+        // Aguardar que a duração seja ajustada antes de carregar proposta
+        if (this.localOrderConfig.type) {
+          setTimeout(() => {
+            this.loadProposal();
+            this.subscribeToProposal();
+          }, 500);
+        }
       }
     },
     'localOrderConfig.duration'() {
@@ -944,12 +948,16 @@ export default {
         }, 2000);
         
         // Carregar valores padrão e proposta após conectar
-        setTimeout(() => {
-          this.loadDefaultValues();
-          setTimeout(() => {
-            this.loadProposal();
-            this.subscribeToProposal();
-          }, 500);
+        setTimeout(async () => {
+          await this.loadDefaultValues();
+          if (this.localOrderConfig.type) {
+            setTimeout(() => {
+              this.loadProposal();
+              this.subscribeToProposal();
+            }, 500);
+          } else {
+            console.warn('[Chart] Tipo de contrato não definido após carregar valores padrão');
+          }
         }, 2500);
       } catch (error) {
         console.error('[Chart] ❌ Erro ao inicializar conexão:', error);
@@ -1602,12 +1610,17 @@ export default {
         }, 1500);
         
         // Carregar valores padrão e proposta para o novo símbolo
-        setTimeout(() => {
-          this.loadDefaultValues();
-          setTimeout(() => {
-            this.loadProposal();
-            this.subscribeToProposal();
-          }, 500);
+        setTimeout(async () => {
+          await this.loadDefaultValues();
+          // Aguardar que o tipo seja definido antes de carregar proposta
+          if (this.localOrderConfig.type) {
+            setTimeout(() => {
+              this.loadProposal();
+              this.subscribeToProposal();
+            }, 500);
+          } else {
+            console.warn('[Chart] Tipo de contrato não definido após carregar valores padrão');
+          }
         }, 2000);
       } catch (error) {
         console.error('[Chart] Erro ao alterar símbolo:', error);
@@ -1883,7 +1896,7 @@ export default {
       this.showTradeResultModal = false;
       // Reiniciar subscription de proposal após fechar o modal
       setTimeout(() => {
-        if (!this.activeContract && !this.isTrading && this.isConnected) {
+        if (!this.activeContract && !this.isTrading && this.isConnected && this.localOrderConfig.type) {
           this.subscribeToProposal();
         }
       }, 500);
@@ -2111,6 +2124,54 @@ export default {
             this.localOrderConfig.type = typeof firstType === 'string' ? firstType : (firstType.contract_type || firstType.type || firstType.name || 'CALL');
             console.log('[Chart] Tipo de contrato alterado para:', this.localOrderConfig.type);
           }
+          
+          // Ajustar duração baseada nos contratos disponíveis
+          if (this.localOrderConfig.type && this.availableContracts.length > 0) {
+            const selectedContract = this.availableContracts.find(c => {
+              const contractType = typeof c === 'string' ? c : (c.contract_type || c.type || c.name);
+              return contractType === this.localOrderConfig.type;
+            });
+            
+            if (selectedContract && typeof selectedContract === 'object') {
+              // Parsear min_contract_duration (ex: "15m", "1d", "5t")
+              const parseDuration = (durationStr) => {
+                if (!durationStr) return null;
+                const match = String(durationStr).match(/^(\d+)([a-z]+)$/i);
+                if (match) {
+                  return {
+                    value: parseInt(match[1]),
+                    unit: match[2].toLowerCase()
+                  };
+                }
+                return null;
+              };
+              
+              const minDur = parseDuration(selectedContract.min_contract_duration);
+              const maxDur = parseDuration(selectedContract.max_contract_duration);
+              
+              if (minDur) {
+                // Se a duração atual for menor que a mínima, ajustar
+                const currentDuration = this.localOrderConfig.duration || 1;
+                const currentUnit = this.localOrderConfig.durationUnit || 'm';
+                
+                // Converter para minutos para comparação
+                const currentInMinutes = currentUnit === 'm' ? currentDuration : (currentUnit === 'h' ? currentDuration * 60 : (currentUnit === 'd' ? currentDuration * 1440 : 0));
+                const minInMinutes = minDur.unit === 'm' ? minDur.value : (minDur.unit === 'h' ? minDur.value * 60 : (minDur.unit === 'd' ? minDur.value * 1440 : (minDur.unit === 't' ? 0 : 0)));
+                
+                if (minDur.unit === 't') {
+                  // Para ticks, usar o valor mínimo diretamente
+                  this.localOrderConfig.duration = minDur.value;
+                  this.localOrderConfig.durationUnit = 't';
+                  console.log('[Chart] Duração ajustada para:', minDur.value, minDur.unit);
+                } else if (currentInMinutes < minInMinutes) {
+                  // Ajustar para a duração mínima
+                  this.localOrderConfig.duration = minDur.value;
+                  this.localOrderConfig.durationUnit = minDur.unit;
+                  console.log('[Chart] Duração ajustada para mínima:', minDur.value, minDur.unit);
+                }
+              }
+            }
+          }
         }
         
         console.log('[Chart] ✅ Valores padrão carregados:', defaultValues);
@@ -2142,7 +2203,13 @@ export default {
       }
     },
     async subscribeToProposal() {
-      if (!this.isConnected || !this.derivToken || !this.localOrderConfig.type) {
+      if (!this.isConnected || !this.derivToken) {
+        console.warn('[Chart] Não conectado ou sem token, não inscrevendo em proposta');
+        return;
+      }
+      
+      if (!this.localOrderConfig.type) {
+        console.warn('[Chart] Tipo de contrato não definido, não inscrevendo em proposta');
         return;
       }
       
