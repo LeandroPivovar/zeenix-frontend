@@ -719,43 +719,54 @@ export default {
         try {
           // Última validação: criar um novo array com apenas valores válidos
           // Isso garante que não há referências a valores null
-          const finalData = chartData
-            .map(p => ({
-              time: Number(p.time),
-              value: Number(p.value)
-            }))
-            .filter(p => 
-              p.value != null && 
-              typeof p.value === 'number' &&
-              isFinite(p.value) && 
-              p.value > 0 && 
-              !isNaN(p.value) &&
-              p.time != null &&
-              typeof p.time === 'number' &&
-              isFinite(p.time) &&
-              p.time > 0 &&
-              !isNaN(p.time)
-            );
+          const finalData = [];
+          
+          for (let i = 0; i < chartData.length; i++) {
+            const p = chartData[i];
+            
+            // Converter para números
+            const time = Number(p.time);
+            const value = Number(p.value);
+            
+            // Validação rigorosa
+            if (
+              value != null && 
+              value !== null &&
+              value !== undefined &&
+              typeof value === 'number' &&
+              isFinite(value) && 
+              value > 0 && 
+              !isNaN(value) &&
+              time != null &&
+              time !== null &&
+              time !== undefined &&
+              typeof time === 'number' &&
+              isFinite(time) &&
+              time > 0 &&
+              !isNaN(time)
+            ) {
+              finalData.push({ time, value });
+            } else {
+              console.warn(`[Chart] Ponto ${i} removido por ser inválido:`, { time, value, original: p });
+            }
+          }
           
           if (finalData.length === 0) {
             console.warn('[Chart] Nenhum dado válido após filtro final');
             return;
           }
           
-          // Verificar se ainda há valores null (não deveria, mas vamos garantir)
-          const hasNull = finalData.some(p => p.value === null || p.value === undefined || p.time === null || p.time === undefined);
-          if (hasNull) {
-            console.error('[Chart] ❌ AINDA HÁ VALORES NULL! Removendo...');
-            const cleanedData = finalData.filter(p => p.value !== null && p.value !== undefined && p.time !== null && p.time !== undefined);
-            if (cleanedData.length === 0) {
-              console.error('[Chart] ❌ Todos os dados foram removidos por terem null');
-              return;
+          // Verificação final: garantir que não há null
+          for (let i = 0; i < finalData.length; i++) {
+            const p = finalData[i];
+            if (p.value === null || p.value === undefined || p.time === null || p.time === undefined) {
+              console.error(`[Chart] ❌ Ponto ${i} ainda tem null após validação:`, p);
+              return; // Não passar dados inválidos
             }
-            this.chartSeries.setData(cleanedData);
-          } else {
-            this.chartSeries.setData(finalData);
           }
-          console.log('[Chart] ✅ Dados setados na série:', finalData.length, 'pontos');
+          
+          console.log('[Chart] ✅ Dados validados:', finalData.length, 'pontos');
+          this.chartSeries.setData(finalData);
           
           // Ajustar viewport para mostrar os dados mais recentes
           setTimeout(() => {
@@ -1895,16 +1906,49 @@ export default {
           }
           
           // Validação final: ambos devem ser válidos
-          if (!isFinite(value) || value <= 0 || !isFinite(validEpoch) || validEpoch <= 0) {
+          if (
+            value == null || 
+            value === null || 
+            value === undefined ||
+            !isFinite(value) || 
+            value <= 0 || 
+            isNaN(value) ||
+            validEpoch == null ||
+            validEpoch === null ||
+            validEpoch === undefined ||
+            !isFinite(validEpoch) || 
+            validEpoch <= 0 ||
+            isNaN(validEpoch)
+          ) {
             console.warn('[Chart] Dados inválidos ignorados no processTick:', { value, epoch: validEpoch });
             return;
           }
           
+          // Garantir que são números válidos antes de atualizar
+          const finalValue = Number(value);
+          const finalTime = Number(validEpoch);
+          
+          if (
+            !isFinite(finalValue) || 
+            finalValue <= 0 || 
+            isNaN(finalValue) ||
+            !isFinite(finalTime) || 
+            finalTime <= 0 ||
+            isNaN(finalTime)
+          ) {
+            console.warn('[Chart] Valores finais inválidos no processTick:', { finalValue, finalTime });
+            return;
+          }
+          
           // Adicionar apenas o novo tick (atualização incremental)
-          this.chartSeries.update({
-            time: validEpoch,
-            value: value
-          });
+          try {
+            this.chartSeries.update({
+              time: finalTime,
+              value: finalValue
+            });
+          } catch (error) {
+            console.error('[Chart] Erro ao atualizar tick incremental:', error, { time: finalTime, value: finalValue });
+          }
         } catch (error) {
           console.error('[Chart] Erro ao atualizar tick:', error);
           // Se falhar, agendar atualização completa
