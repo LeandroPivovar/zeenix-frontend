@@ -250,6 +250,7 @@ export default {
       loginid: null,
       retryCount: 0,
       errorRetryCount: 0,
+      ticks: [], // Armazenar ticks para atualização em tempo real
     };
   },
   async mounted() {
@@ -502,10 +503,65 @@ export default {
       // Processar mensagens SSE
       if (data.type === 'history' && data.data && data.data.ticks) {
         console.log('[Chart] Histórico recebido via SSE:', data.data.ticks.length, 'ticks');
-        this.plotTicks(data.data.ticks);
+        // Converter ticks para horário de Brasília antes de armazenar
+        const ticksWithBrasiliaTime = data.data.ticks.map(tick => ({
+          value: tick.value,
+          epoch: Math.floor(Number(tick.epoch)) - (3 * 60 * 60) // UTC-3
+        }));
+        // Armazenar ticks para atualização em tempo real
+        this.ticks = ticksWithBrasiliaTime;
+        this.plotTicks(ticksWithBrasiliaTime);
       } else if (data.type === 'tick' && data.data) {
-        // Ticks em tempo real - podemos adicionar ao gráfico se necessário
+        // Ticks em tempo real - adicionar ao gráfico
         console.log('[Chart] Tick em tempo real recebido:', data.data);
+        this.addTickToChart(data.data);
+      }
+    },
+    addTickToChart(tickData) {
+      if (!this.chart || !this.chartSeries || !tickData) {
+        return;
+      }
+
+      const value = tickData.value;
+      const epoch = tickData.epoch;
+
+      // Validação rigorosa
+      if (
+        value == null || 
+        !isFinite(Number(value)) || 
+        Number(value) <= 0 || 
+        isNaN(Number(value)) ||
+        epoch == null ||
+        !isFinite(Number(epoch)) ||
+        Number(epoch) <= 0 ||
+        isNaN(Number(epoch))
+      ) {
+        console.warn('[Chart] Tick em tempo real inválido ignorado:', tickData);
+        return;
+      }
+
+      // Converter epoch para horário de Brasília (UTC-3)
+      // O epoch vem em segundos UTC, precisamos subtrair 3 horas (10800 segundos)
+      const brasiliaEpoch = Math.floor(Number(epoch)) - (3 * 60 * 60);
+      const numValue = Number(value);
+
+      // Adicionar ao array de ticks
+      this.ticks.push({ value: numValue, epoch: brasiliaEpoch });
+      
+      // Manter apenas últimos 100 ticks
+      if (this.ticks.length > 100) {
+        this.ticks.shift();
+      }
+
+      // Adicionar ao gráfico usando update() para atualização incremental
+      try {
+        this.chartSeries.update({
+          time: brasiliaEpoch,
+          value: numValue
+        });
+        console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: brasiliaEpoch, value: numValue });
+      } catch (error) {
+        console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', error);
       }
     },
     async loadTicksFromBackend() {
@@ -571,8 +627,17 @@ export default {
         // Resetar contador de tentativas
         this.retryCount = 0;
 
+        // Converter ticks para horário de Brasília antes de armazenar
+        const ticksWithBrasiliaTime = ticks.map(tick => ({
+          value: tick.value,
+          epoch: Math.floor(Number(tick.epoch)) - (3 * 60 * 60) // UTC-3
+        }));
+        
+        // Armazenar ticks para atualização em tempo real
+        this.ticks = ticksWithBrasiliaTime;
+
         // Plotar os ticks
-        this.plotTicks(ticks);
+        this.plotTicks(ticksWithBrasiliaTime);
       } catch (error) {
         console.error('[Chart] ❌ Erro ao carregar ticks do backend:', error);
         console.error('[Chart] Erro completo:', error.message, error.stack);
@@ -642,8 +707,12 @@ export default {
             return null;
           }
           
+          // Converter epoch para horário de Brasília (UTC-3)
+          // O epoch vem em segundos UTC, precisamos subtrair 3 horas (10800 segundos)
+          const brasiliaEpoch = Math.floor(Number(epoch)) - (3 * 60 * 60);
+          
           return {
-            time: Math.floor(Number(epoch)),
+            time: brasiliaEpoch,
             value: Number(value)
           };
         })
