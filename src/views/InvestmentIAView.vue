@@ -182,6 +182,47 @@
                                 </div>
                                 <p id="modeDescription" class="form-help">{{ modeDescription }}</p>
                             </div>
+                            
+                            <!-- Gerenciamento de Risco - Mobile Only -->
+                            <div class="form-group risk-management-mobile">
+                                <label class="form-label">Gerenciamento de Risco</label>
+                                <div class="risk-buttons">
+                                    <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'fixo' }]"
+                                        @click="modoMartingale = 'fixo'"
+                                    >
+                                        Fixo
+                                    </button>
+                                    <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
+                                        @click="modoMartingale = 'conservador'"
+                                    >
+                                        Conservador
+                                    </button>
+                                    <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'moderado' }]"
+                                        @click="modoMartingale = 'moderado'"
+                                    >
+                                        Moderado
+                                    </button>
+                                    <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'agressivo' }]"
+                                        @click="modoMartingale = 'agressivo'"
+                                    >
+                                        Agressivo
+                                    </button>
+                                </div>
+                                <div class="risk-indicator">
+                                    <div class="risk-header">
+                                        <span class="risk-label">Nível de Risco</span>
+                                        <span id="riskLevelTextMobile" class="risk-level-text">{{ riskLevelText }}</span>
+                                    </div>
+                                    <div class="risk-bar-container">
+                                        <div id="riskBarMobile" class="risk-bar" :style="{ width: riskBarWidth }"></div>
+                                    </div>
+                                    <p id="riskDescriptionMobile" class="risk-description">{{ riskDescriptionText }}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -191,37 +232,46 @@
                         <div class="card-content">
                             <div class="form-group">
                                 <label class="form-label">Valor de Entrada (USD)</label>
-                                <input 
-                                    type="number" 
-                                    class="form-input" 
-                                    v-model.number="entryValue"
-                                    min="0.35"
-                                    step="0.01"
-                                >
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">$</span>
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        v-model.number="entryValue"
+                                        min="0.35"
+                                        step="0.01"
+                                    >
+                                </div>
                                 <p class="form-help">{{ entryPercent }}% do saldo</p>
                     </div>
 
                             <div class="form-group">
                                 <label class="form-label">Alvo de Lucro (USD)</label>
-                                <input 
-                                    type="number" 
-                                    class="form-input" 
-                                    v-model.number="profitTarget"
-                                    min="0"
-                                    step="0.01"
-                                >
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">$</span>
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        v-model.number="profitTarget"
+                                        min="0"
+                                        step="0.01"
+                                    >
+                                </div>
                                 <p class="form-help">{{ profitPercent }}% do saldo</p>
                     </div>
 
                             <div class="form-group">
                                 <label class="form-label">Limite de Perda (USD)</label>
-                                <input 
-                                    type="number" 
-                                    class="form-input" 
-                                    v-model.number="lossLimit"
-                                    min="0"
-                                    step="0.01"
-                                >
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">$</span>
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        v-model.number="lossLimit"
+                                        min="0"
+                                        step="0.01"
+                                    >
+                                </div>
                                 <p class="form-help">{{ lossPercent }}% do saldo</p>
                         </div>
                     </div>
@@ -292,7 +342,7 @@
                             <div class="ai-status-control">
                                 <div>
                                     <p class="ai-status-title">Status da IA</p>
-                                    <p class="ai-status-subtitle">Controle de execução automática</p>
+                                    <p class="ai-status-subtitle">{{ isInvestmentActive ? 'Controle de execução automática' : 'Ative para iniciar operações' }}</p>
                                 </div>
                                 <div class="ai-status-toggle-wrapper">
                                     <span id="aiStatusText" class="ai-status-text" :class="{ 'active': isInvestmentActive }">
@@ -308,7 +358,12 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="ai-status-note">
+                            <div class="ai-status-message" v-if="!isInvestmentActive">
+                                <p class="ai-message-text">
+                                    A IA está <span class="ai-status-inactive">desativada</span>. Ative para começar.
+                                </p>
+                            </div>
+                            <div class="ai-status-note" v-if="isInvestmentActive">
                                 <p class="ai-note-text">Desativação manual pelo usuário</p>
                             </div>
                         </div>
@@ -1407,7 +1462,7 @@ export default {
 }
 
 .ai-vision-card {
-    background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1.5rem;
@@ -1419,7 +1474,7 @@ export default {
 
 .premium-card {
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
-    background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
 }
 
 .glow-green {
@@ -1428,7 +1483,7 @@ export default {
 
 /* Tailwind-like utility classes for AI Vision Panel */
 .bg-zenix-card {
-    background-color: #0E0E0E;
+    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
 }
 
 .bg-zenix-bg {
@@ -1470,6 +1525,12 @@ export default {
 .grid-cols-12 {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+@media (max-width: 768px) {
+    .grid-cols-12 {
+        grid-template-columns: 1fr;
+    }
 }
 
 .grid-cols-2 {
@@ -2402,14 +2463,56 @@ export default {
     box-sizing: border-box;
 }
 
+/* Order para desktop - ordem padrão */
+#market-strategy-card {
+    order: 1;
+}
+
+#entry-params-card {
+    order: 2;
+}
+
+#risk-management-card {
+    order: 3;
+}
+
+#ai-control-card {
+    order: 4;
+}
+
+/* Gerenciamento de Risco - Desktop: esconder dentro do card, mostrar card separado */
+.risk-management-mobile {
+    display: none;
+}
+
+#risk-management-card {
+    display: block;
+}
+
+/* Garantir que no desktop (acima de 768px) as regras sejam aplicadas */
+@media (min-width: 769px) {
+    .risk-management-mobile {
+        display: none !important;
+    }
+    
+    #risk-management-card {
+        display: block !important;
+    }
+}
+
 .config-card {
-    background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
     border: 2px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1.25rem;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
     width: 100%;
     box-sizing: border-box;
+}
+
+/* Garantir que todos os cards tenham o mesmo gradiente */
+.config-card.premium-card {
+    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
 }
 
 .card-title {
@@ -2454,6 +2557,21 @@ export default {
     cursor: pointer;
 }
 
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix {
+    position: absolute;
+    left: 0.75rem;
+    color: #DFDFDF;
+    font-size: 0.75rem;
+    z-index: 1;
+    pointer-events: none;
+}
+
 .form-select,
 .form-input {
     width: 100%;
@@ -2465,6 +2583,10 @@ export default {
     color: #DFDFDF;
     outline: none;
     transition: border-color 0.2s;
+}
+
+.form-input {
+    padding-left: 1.5rem;
 }
 
 .form-select:focus,
@@ -2507,9 +2629,12 @@ export default {
 }
 
 .mode-btn.active {
-    background-color: #22C55E;
-    color: white;
+    background-color: #0A1A0A;
+    color: #22C55E;
     border-color: #22C55E;
+    border-width: 1px;
+    font-weight: 500;
+    box-shadow: 0 0 4px rgba(34, 197, 94, 0.3);
 }
 
 /* Risk Buttons */
@@ -2537,9 +2662,12 @@ export default {
 }
 
 .risk-btn.active {
-    background-color: #22C55E;
-    color: white;
+    background-color: #0A1A0A;
+    color: #22C55E;
     border-color: #22C55E;
+    border-width: 1px;
+    font-weight: 500;
+    box-shadow: 0 0 4px rgba(34, 197, 94, 0.3);
 }
 
 /* Risk Indicator */
@@ -2595,7 +2723,7 @@ export default {
     overflow: hidden;
     border: 2px solid rgba(34, 197, 94, 0.2);
     box-shadow: 0 0 24px rgba(34, 197, 94, 0.08), 0 4px 16px rgba(0, 0, 0, 0.3);
-    background: radial-gradient(circle at top left, #0C0C0C 0%, #0A0A0A 100%);
+    background: linear-gradient(to bottom right, #0C0C0C 0%, #0A0A0A 100%);
 }
 
 .ai-control-bg {
@@ -2804,6 +2932,34 @@ export default {
     transform: translateX(calc(4rem - 1.5rem - 6px));
 }
 
+.ai-status-message {
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 1rem;
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .ai-status-message {
+        display: none !important;
+    }
+}
+
+.ai-message-text {
+    font-size: 0.875rem;
+    color: #A1A1A1;
+    line-height: 1.5;
+    margin: 0;
+    text-align: center;
+}
+
+.ai-status-inactive {
+    color: #EF4444;
+    font-weight: 600;
+}
+
 .ai-status-note {
     text-align: center;
 }
@@ -2976,79 +3132,384 @@ export default {
 
 /* Responsive */
 @media (max-width: 1024px) {
-    .main-content-wrapper {
+    .content-wrapper {
         margin-left: 0;
         width: 100%;
     }
     
-    .top-header {
-        left: 0;
+    .content-wrapper.sidebar-collapsed {
+        margin-left: 0;
         width: 100%;
     }
     
     .main-content {
-        padding: 1.5rem 20px;
+        padding: 1rem 15px;
     }
     
     .config-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
-    .ai-vision-grid {
+    .grid.grid-cols-12 {
         grid-template-columns: 1fr;
+    }
+    
+    .col-span-5,
+    .col-span-7 {
+        grid-column: span 1;
+    }
+    
+    .col-span-7 .grid.grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
     }
     
     .footer-grid {
         grid-template-columns: repeat(2, 1fr);
     }
     
-    .ai-vision-card,
-    .config-grid,
-    .chart-section {
+    #ai-vision-panel {
         margin-left: 0;
         margin-right: 0;
-        width: 100%;
+    }
+    
+    .chart-section {
+        margin-left: -15px;
+        margin-right: -15px;
+        width: calc(100% + 30px);
     }
 }
 
 @media (max-width: 768px) {
-    .header-content {
-        padding: 1rem 15px;
-        flex-direction: column;
-        gap: 1rem;
-    }
-    
-    .header-left-content {
+    .content-wrapper {
+        margin-left: 0;
         width: 100%;
     }
     
-    .header-title {
-        font-size: 1.25rem;
-    }
-    
-    .header-subtitle {
-        font-size: 0.8rem;
+    .content-wrapper.sidebar-collapsed {
+        margin-left: 0;
+        width: 100%;
     }
     
     .main-content {
-        margin-top: 100px; /* Margem ajustada para mobile */
+        margin-top: 60px;
         padding: 1rem 15px;
+        background: linear-gradient(135deg, rgba(16, 26, 16, 0.95) 0%, rgba(10, 20, 10, 0.98) 50%, #0B0B0B 100%) !important;
+        background-color: transparent !important;
+        background-blend-mode: normal;
+        position: relative;
+        min-height: calc(100vh - 60px);
     }
     
-    .footer-grid {
+    .main-content::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(1, 5, 2, 0.05) 50%, transparent 80%);
+        border-radius: 1rem;
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    .main-content > * {
+        position: relative;
+        z-index: 1;
+    }
+    
+    
+    #ai-vision-panel {
+        margin-bottom: 1rem;
+    }
+    
+    .grid.grid-cols-12 {
         grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .col-span-5 {
+        grid-column: span 1;
+        height: 180px;
+    }
+    
+    .col-span-7 {
+        grid-column: span 1;
+    }
+    
+    .col-span-7 .grid.grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
+    }
+    
+    .col-span-7 .bg-zenix-bg {
+        padding: 0.875rem;
+    }
+    
+    .col-span-7 .text-\[10px\] {
+        font-size: 9px;
+    }
+    
+    .col-span-7 .text-base {
+        font-size: 0.875rem;
+    }
+    
+    .col-span-7 .text-sm {
+        font-size: 0.8125rem;
+    }
+    
+    .config-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Reorganização da ordem no mobile */
+    #market-strategy-card {
+        order: 1;
+    }
+    
+    #entry-params-card {
+        order: 2;
+    }
+    
+    #ai-control-card {
+        order: 3;
+    }
+    
+    /* Gerenciamento de Risco - Mobile: mostrar dentro do card, esconder card separado */
+    .risk-management-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    /* Remover indicador de risco no mobile */
+    .risk-management-mobile .risk-indicator {
+        display: none !important;
+    }
+    
+    #risk-management-card {
+        display: none !important;
+    }
+    
+    .config-card {
+        padding: 1rem;
+        background: linear-gradient(135deg, rgba(10, 26, 10, 0.95) 0%, rgba(5, 15, 5, 0.98) 50%, #0B0B0B 100%) !important;
+    }
+    
+    .card-content {
+        gap: 0.875rem;
+    }
+    
+    .form-group {
+        gap: 0.375rem;
+    }
+    
+    .card-title {
+        font-size: 0.8125rem;
+        margin-bottom: 0.875rem;
+    }
+    
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: #DFDFDF;
+    }
+    
+    .form-select,
+    .form-input {
+        font-size: 0.875rem;
+        padding: 0.875rem 1rem;
+        background-color: #000000 !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 0.5rem;
+        color: #FFFFFF !important;
+        font-weight: 600;
+    }
+    
+    .form-input {
+        padding-left: 2rem;
+    }
+    
+    .input-prefix {
+        font-size: 0.875rem;
+        left: 1rem;
+        color: #FFFFFF !important;
+        font-weight: 600;
+    }
+    
+    .form-help {
+        font-size: 0.8125rem;
+    }
+    
+    .mode-buttons {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .mode-btn {
+        padding: 0.75rem 0.75rem;
+        font-size: 0.75rem;
     }
     
     .risk-buttons {
         grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
     }
     
-    .ai-vision-card,
-    .config-grid,
+    .risk-btn {
+        padding: 0.75rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    .risk-indicator {
+        padding: 0.875rem;
+    }
+    
+    .risk-label,
+    .risk-level-text {
+        font-size: 0.7rem;
+    }
+    
+    .risk-description {
+        font-size: 0.7rem;
+    }
+    
+    .ai-status-control {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem;
+        background-color: transparent;
+        border: none;
+        margin-bottom: 0;
+    }
+    
+    .ai-status-control > div:first-child {
+        flex: 1;
+    }
+    
+    .ai-status-toggle-wrapper {
+        flex-shrink: 0;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+    
+    .ai-status-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #DFDFDF;
+        margin-bottom: 0.25rem;
+        text-align: left;
+    }
+    
+    .ai-status-subtitle {
+        font-size: 0.875rem;
+        color: #A1A1A1;
+        text-align: left;
+    }
+    
+    .ai-status-text {
+        font-size: 0.8125rem;
+        display: none;
+    }
+    
+    .ai-status-message {
+        display: block;
+        margin-top: 1rem;
+        padding: 0.875rem;
+        background-color: #0B0B0B;
+        border: 1px solid #1C1C1C;
+        border-radius: 0.5rem;
+    }
+    
+    .ai-message-text {
+        font-size: 0.875rem;
+        text-align: center;
+    }
+    
+    .toggle-switch {
+        width: 3.5rem;
+        height: 1.75rem;
+    }
+    
+    .toggle-slider {
+        width: 3.5rem;
+        height: 1.75rem;
+    }
+    
+    .toggle-slider::before {
+        height: 1.25rem;
+        width: 1.25rem;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider::before {
+        transform: translateX(calc(3.5rem - 1.25rem - 6px));
+    }
+    
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
     .chart-section {
-        margin-left: 0;
-        margin-right: 0;
-        width: 100%;
+        margin-left: -15px;
+        margin-right: -15px;
+        width: calc(100% + 30px);
+    }
+    
+    .p-6 {
+        padding: 1rem;
+    }
+    
+    .mb-6 {
+        margin-bottom: 1rem;
+    }
+    
+    .text-xl {
+        font-size: 1.125rem;
+    }
+    
+    .h-\[220px\] {
+        height: 180px;
+    }
+    
+    .w-40 {
+        width: 8rem;
+    }
+    
+    .h-40 {
+        height: 8rem;
+    }
+    
+    .w-32 {
+        width: 6rem;
+    }
+    
+    .h-32 {
+        height: 6rem;
+    }
+    
+    .w-24 {
+        width: 4.5rem;
+    }
+    
+    .h-24 {
+        height: 4.5rem;
+    }
+    
+    .text-5xl {
+        font-size: 2rem;
+    }
+    
+    .ai-brain-glow i {
+        font-size: 2rem !important;
     }
 }
 

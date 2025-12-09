@@ -814,7 +814,7 @@
     .container-componentes {
       padding: 0 1rem 20px 1rem;
       margin-top: 50px;
-      background: linear-gradient(135deg, rgba(19, 29, 19, 0.95) 0%, rgba(10, 20, 10, 0.98) 50%, rgba(5, 10, 5, 0.95) 100%);
+      background: linear-gradient(135deg, rgba(16, 26, 16, 0.95) 0%, rgba(10, 20, 10, 0.98) 50%, #0B0B0B 100%) !important;
       background-blend-mode: normal;
       position: relative;
       min-height: calc(100vh - 50px);
