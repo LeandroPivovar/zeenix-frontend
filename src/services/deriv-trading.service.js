@@ -226,6 +226,73 @@ class DerivTradingService {
   /**
    * Inscreve-se em proposta
    */
+  async getProposal(config) {
+    const authToken = localStorage.getItem('token');
+    if (!authToken) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/proposal`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          symbol: config.symbol,
+          contractType: config.contractType,
+          duration: config.duration,
+          durationUnit: config.durationUnit,
+          amount: config.amount,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao buscar proposta');
+      }
+
+      const data = await response.json();
+      return data.proposal;
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao buscar proposta:', error);
+      throw error;
+    }
+  }
+
+  async getDefaultValues(symbol, contractType) {
+    const authToken = localStorage.getItem('token');
+    if (!authToken) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/default-values`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          symbol,
+          contractType,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao buscar valores padrão');
+      }
+
+      const data = await response.json();
+      return data.defaultValues;
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao buscar valores padrão:', error);
+      throw error;
+    }
+  }
+
   async subscribeProposal(config) {
     const token = this.token || localStorage.getItem('token');
     
@@ -254,7 +321,44 @@ class DerivTradingService {
   /**
    * Executa compra de contrato
    */
-  async buyContract(proposalId, price) {
+  async buyContract(config) {
+    const authToken = localStorage.getItem('token');
+    if (!authToken) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/buy`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          symbol: config.symbol,
+          contractType: config.contractType,
+          duration: config.duration,
+          durationUnit: config.durationUnit,
+          amount: config.amount,
+          proposalId: config.proposalId, // Opcional, se não fornecido o backend busca
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao comprar contrato');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao comprar contrato:', error);
+      throw error;
+    }
+  }
+  
+  // Método antigo mantido para compatibilidade
+  async buyContractOld(proposalId, price) {
     const token = this.token || localStorage.getItem('token');
     
     try {
@@ -282,7 +386,39 @@ class DerivTradingService {
   /**
    * Executa venda de contrato
    */
-  async sellContract(contractId, price) {
+  async sellContract(contractId) {
+    const authToken = localStorage.getItem('token');
+    if (!authToken) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/sell`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contractId,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao vender contrato');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao vender contrato:', error);
+      throw error;
+    }
+  }
+  
+  // Método antigo mantido para compatibilidade
+  async sellContractOld(contractId, price) {
     const token = this.token || localStorage.getItem('token');
     
     try {

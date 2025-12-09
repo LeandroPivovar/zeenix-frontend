@@ -114,10 +114,12 @@
             </label>
             <select 
               id="tradeTypeSelect"
+              v-model="localOrderConfig.type"
+              :disabled="isTrading || activeContract"
               class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
             >
               <option value="">Selecione um mercado primeiro</option>
-              <option value="CALL" selected>Alta (CALL)</option>
+              <option value="CALL">Alta (CALL)</option>
               <option value="PUT">Baixa (PUT)</option>
             </select>
           </div>
@@ -129,16 +131,19 @@
             </label>
             <div class="flex gap-2">
               <select 
+                v-model="localOrderConfig.durationUnit"
+                :disabled="isTrading || activeContract"
                 class="flex-1 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
               >
-                <option value="m" selected>Minutos</option>
+                <option value="m">Minutos</option>
                 <option value="t">Ticks</option>
               </select>
               <input 
                 type="number" 
-                value="1"
+                v-model.number="localOrderConfig.duration"
                 min="1"
                 max="365"
+                :disabled="isTrading || activeContract"
                 class="w-20 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
               />
             </div>
@@ -151,9 +156,12 @@
             </label>
             <input 
               type="number" 
-              value="10.00"
+              v-model.number="localOrderConfig.amount"
               step="0.01" 
+              min="0.35"
+              max="10000"
               placeholder="Ex: 1.00, 2.50..."
+              :disabled="isTrading || activeContract"
               class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text placeholder:text-[#DFDFDF40] focus:outline-none focus:border-zenix-green transition-colors"
             />
             <div class="text-xs text-zenix-secondary mt-1">
@@ -174,24 +182,26 @@
           </div>
           
           <!-- Purchase Price -->
-          <div v-if="showPurchasePrice" class="bg-zenix-bg border border-zenix-border rounded-lg p-3">
+          <div v-if="purchasePrice" class="bg-zenix-bg border border-zenix-border rounded-lg p-3">
             <div class="text-xs text-zenix-secondary mb-1">Preço de Compra:</div>
-            <div class="text-base font-semibold text-zenix-text">USD 10.00</div>
+            <div class="text-base font-semibold text-zenix-text">$ {{ purchasePrice.toFixed(pricePrecision) }}</div>
           </div>
 
           <!-- Real-time P&L -->
-          <div v-if="showRealTimeProfit" class="bg-zenix-bg border rounded-lg p-3" :class="realTimeProfitClass">
+          <div v-if="realTimeProfit !== null && activeContract" class="bg-zenix-bg border rounded-lg p-3" :class="realTimeProfitClass">
             <div class="text-xs text-zenix-secondary mb-1">P&L em Tempo Real:</div>
             <div class="text-base font-semibold" :class="realTimeProfitTextClass">
-              USD +5.50
+              $ {{ realTimeProfit >= 0 ? '+' : '' }}{{ realTimeProfit.toFixed(pricePrecision) }}
             </div>
           </div>
 
           <!-- Action Buttons -->
           <div class="space-y-3 pt-3">
             <button 
-              v-if="!showSellButton"
+              v-if="!activeContract"
               id="buyButton"
+              @click="executeBuy"
+              :disabled="isTrading || !currentProposalId || !localOrderConfig.type"
               class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <i class="fas fa-arrow-up"></i>
@@ -199,13 +209,25 @@
             </button>
             
             <button 
-              v-if="showSellButton"
+              v-if="activeContract && isSellEnabled"
               id="sellButton"
-              class="w-full bg-[#FF4747] hover:bg-[#FF6161] text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2"
+              @click="executeSell"
+              :disabled="isTrading"
+              class="w-full bg-[#FF4747] hover:bg-[#FF6161] text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <i class="fas fa-arrow-down"></i>
               PUT / SELL
             </button>
+          </div>
+          
+          <!-- Error Message -->
+          <div v-if="tradeError" class="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
+            {{ tradeError }}
+          </div>
+          
+          <!-- Success Message -->
+          <div v-if="tradeMessage" class="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded text-green-400 text-xs">
+            {{ tradeMessage }}
           </div>
 
           <!-- Countdown -->
@@ -251,7 +273,36 @@ export default {
       retryCount: 0,
       errorRetryCount: 0,
       ticks: [], // Armazenar ticks para atualização em tempo real
+      // Variáveis de compra/venda
+      activeContract: null,
+      purchasePrice: null,
+      entrySpotLine: null,
+      isTrading: false,
+      currentProposalId: null,
+      currentProposalPrice: null,
+      proposalSubscriptionId: null,
+      isSellEnabled: false,
+      realTimeProfit: null,
+      localOrderConfig: {
+        type: 'CALL',
+        duration: 1,
+        durationUnit: 'm',
+        amount: 10.00,
+        multiplier: null,
+      },
+      tradeError: '',
+      tradeMessage: '',
+      latestTick: null,
+      pricePrecision: 2,
     };
+  },
+  computed: {
+    showPurchasePrice() {
+      return this.purchasePrice !== null;
+    },
+    showRealTimeProfit() {
+      return this.realTimeProfit !== null && this.activeContract;
+    },
   },
   async mounted() {
     console.log('[Chart] ========== COMPONENTE MONTADO ==========');
@@ -289,6 +340,33 @@ export default {
         if (oldSymbol) {
           this.handleSymbolChange();
         }
+      }
+    },
+    'localOrderConfig.type'() {
+      // Quando o tipo de contrato mudar, recarregar valores padrão e proposta
+      if (this.isConnected) {
+        this.loadDefaultValues();
+        setTimeout(() => {
+          this.loadProposal();
+        }, 500);
+      }
+    },
+    'localOrderConfig.duration'() {
+      // Quando a duração mudar, recarregar proposta
+      if (this.isConnected && this.localOrderConfig.type) {
+        this.loadProposal();
+      }
+    },
+    'localOrderConfig.durationUnit'() {
+      // Quando a unidade de duração mudar, recarregar proposta
+      if (this.isConnected && this.localOrderConfig.type) {
+        this.loadProposal();
+      }
+    },
+    'localOrderConfig.amount'() {
+      // Quando o valor mudar, recarregar proposta
+      if (this.isConnected && this.localOrderConfig.type) {
+        this.loadProposal();
       }
     },
   },
@@ -491,6 +569,15 @@ export default {
         setTimeout(() => {
           this.loadTicksFromBackend();
         }, 2000);
+        
+        // Carregar valores padrão e proposta após conectar
+        setTimeout(() => {
+          this.loadDefaultValues();
+          setTimeout(() => {
+            this.loadProposal();
+            this.subscribeToProposal();
+          }, 500);
+        }, 2500);
       } catch (error) {
         console.error('[Chart] ❌ Erro ao inicializar conexão:', error);
         // Mesmo com erro, tentar buscar ticks
@@ -515,6 +602,32 @@ export default {
         // Ticks em tempo real - adicionar ao gráfico
         console.log('[Chart] Tick em tempo real recebido:', data.data);
         this.addTickToChart(data.data);
+        // Atualizar latestTick
+        this.latestTick = {
+          value: Number(data.data.value),
+          epoch: Math.floor(Number(data.data.epoch)) - (3 * 60 * 60)
+        };
+        // Atualizar P&L em tempo real se houver contrato ativo
+        if (this.activeContract && this.purchasePrice) {
+          this.updateRealTimeProfit();
+        }
+        
+        // Atualizar linha de entrada se existir
+        if (this.entrySpotLine) {
+          this.updateEntrySpotLine();
+        }
+      } else if (data.type === 'proposal' && data.data) {
+        console.log('[Chart] Proposta recebida via SSE:', data.data);
+        this.processProposal(data.data);
+      } else if (data.type === 'buy' && data.data) {
+        console.log('[Chart] Compra recebida via SSE:', data.data);
+        this.processBuy(data.data);
+      } else if (data.type === 'sell' && data.data) {
+        console.log('[Chart] Venda recebida via SSE:', data.data);
+        this.processSell(data.data);
+      } else if (data.type === 'contract' && data.data) {
+        console.log('[Chart] Contrato atualizado via SSE:', data.data);
+        this.processContract(data.data);
       }
     },
     addTickToChart(tickData) {
@@ -775,6 +888,15 @@ export default {
         setTimeout(() => {
           this.loadTicksFromBackend();
         }, 1500);
+        
+        // Carregar valores padrão e proposta para o novo símbolo
+        setTimeout(() => {
+          this.loadDefaultValues();
+          setTimeout(() => {
+            this.loadProposal();
+            this.subscribeToProposal();
+          }, 500);
+        }, 2000);
       } catch (error) {
         console.error('[Chart] Erro ao alterar símbolo:', error);
       }
@@ -786,6 +908,394 @@ export default {
         if (newRect.width > 0 && newRect.height > 0) {
           this.chart.resize(newRect.width, newRect.height);
         }
+      }
+    },
+    async executeBuy() {
+      console.log('[Chart] ========== EXECUTAR COMPRA CHAMADO ==========');
+      
+      if (!this.isConnected) {
+        this.tradeError = 'Conecte-se à Deriv antes de operar.';
+        return;
+      }
+      
+      if (this.isTrading || this.activeContract) {
+        console.warn('[Chart] Operação já em andamento');
+        return;
+      }
+      
+      if (!this.localOrderConfig.type) {
+        this.tradeError = 'Selecione o tipo de negociação (CALL ou PUT).';
+        return;
+      }
+      
+      // Capturar o preço de compra no momento do envio da requisição
+      if (this.latestTick && this.latestTick.value) {
+        this.purchasePrice = this.latestTick.value;
+      }
+      
+      this.tradeError = '';
+      this.tradeMessage = '';
+      this.isTrading = true;
+      
+      console.log('[Chart] ========== EXECUTAR COMPRA ==========');
+      console.log('[Chart] Configuração:', this.localOrderConfig);
+      
+      try {
+        // Enviar toda a configuração para o backend processar
+        await derivTradingService.buyContract({
+          symbol: this.symbol,
+          contractType: this.localOrderConfig.type,
+          duration: this.localOrderConfig.duration,
+          durationUnit: this.localOrderConfig.durationUnit,
+          amount: this.localOrderConfig.amount,
+          proposalId: this.currentProposalId, // Opcional, backend busca se não fornecido
+        });
+        console.log('[Chart] ✅ Compra executada via backend');
+        // A resposta chegará via SSE no evento 'buy'
+      } catch (error) {
+        console.error('[Chart] Erro ao executar compra:', error);
+        this.tradeError = error.message || 'Erro ao executar compra';
+        this.isTrading = false;
+      }
+    },
+    async executeSell() {
+      if (!this.activeContract || !this.isSellEnabled) {
+        this.tradeError = 'Venda não disponível no momento.';
+        return;
+      }
+      
+      if (this.isTrading) {
+        return;
+      }
+      
+      this.tradeError = '';
+      this.tradeMessage = '';
+      this.isTrading = true;
+      
+      console.log('[Chart] ========== EXECUTANDO VENDA ==========');
+      console.log('[Chart] ContractId:', this.activeContract.contract_id);
+      
+      try {
+        // Backend determina o preço automaticamente
+        await derivTradingService.sellContract(this.activeContract.contract_id);
+        console.log('[Chart] ✅ Venda executada via backend');
+        // A resposta chegará via SSE no evento 'sell'
+      } catch (error) {
+        console.error('[Chart] Erro ao executar venda:', error);
+        this.tradeError = error.message || 'Erro ao executar venda';
+        this.isTrading = false;
+      }
+    },
+    processProposal(proposalData) {
+      console.log('[Chart] ========== PROCESSANDO PROPOSTA ==========');
+      console.log('[Chart] Dados da proposta:', proposalData);
+      
+      if (!proposalData || !proposalData.id) {
+        console.warn('[Chart] Proposta inválida');
+        return;
+      }
+      
+      // Armazenar ID e preço da proposta
+      this.currentProposalId = proposalData.id;
+      this.currentProposalPrice = Number(proposalData.askPrice || proposalData.ask_price || 0);
+      
+      console.log('[Chart] ✅ Proposta processada:', {
+        proposalId: this.currentProposalId,
+        proposalPrice: this.currentProposalPrice
+      });
+    },
+    processBuy(buyData) {
+      console.log('[Chart] ========== PROCESSANDO COMPRA ==========');
+      console.log('[Chart] Dados da compra:', buyData);
+      
+      if (!buyData || !buyData.contract_id) {
+        console.error('[Chart] Dados de compra inválidos');
+        this.tradeError = 'Erro ao processar compra.';
+        this.isTrading = false;
+        return;
+      }
+      
+      // Criar objeto de contrato ativo
+      this.activeContract = {
+        contract_id: buyData.contract_id,
+        buy_price: buyData.buy_price || this.currentProposalPrice,
+        entry_spot: buyData.entry_spot || this.purchasePrice,
+        entry_time: buyData.entry_time || Date.now() / 1000,
+        contract_type: buyData.contract_type || this.localOrderConfig.type,
+        duration: buyData.duration || this.localOrderConfig.duration,
+        duration_unit: buyData.duration_unit || this.localOrderConfig.durationUnit,
+        symbol: buyData.symbol || this.symbol,
+        sell_price: buyData.sell_price || null,
+        profit: buyData.profit || null,
+      };
+      
+      // Adicionar linha de compra no gráfico
+      if (this.activeContract.entry_spot) {
+        const entryTime = this.activeContract.entry_time || (Date.now() / 1000);
+        this.addEntrySpotLine(this.activeContract.entry_spot, entryTime);
+      }
+      
+      this.isTrading = false;
+      this.tradeMessage = 'Compra executada com sucesso!';
+      this.isSellEnabled = true;
+      
+      console.log('[Chart] ✅ Compra processada com sucesso:', this.activeContract);
+    },
+    processSell(sellData) {
+      console.log('[Chart] ========== PROCESSANDO VENDA ==========');
+      console.log('[Chart] Dados da venda:', sellData);
+      
+      if (!sellData) {
+        console.error('[Chart] Dados de venda inválidos');
+        this.tradeError = 'Erro ao processar venda.';
+        this.isTrading = false;
+        return;
+      }
+      
+      // Atualizar contrato com dados da venda
+      if (this.activeContract) {
+        this.activeContract.sell_price = sellData.sell_price || this.activeContract.sell_price;
+        this.activeContract.profit = sellData.profit || this.activeContract.profit;
+        this.activeContract.exit_spot = sellData.exit_spot || null;
+        this.activeContract.exit_time = sellData.exit_time || Date.now() / 1000;
+      }
+      
+      // Remover linha de compra
+      this.removeEntrySpotLine();
+      
+      // Limpar contrato ativo após um delay
+      setTimeout(() => {
+        this.activeContract = null;
+        this.purchasePrice = null;
+        this.realTimeProfit = null;
+        this.isSellEnabled = false;
+      }, 3000);
+      
+      this.isTrading = false;
+      this.tradeMessage = `Venda executada com sucesso! P&L: $${(sellData.profit || 0).toFixed(this.pricePrecision)}`;
+      
+      console.log('[Chart] ✅ Venda processada com sucesso');
+    },
+    processContract(contractData) {
+      console.log('[Chart] ========== PROCESSANDO ATUALIZAÇÃO DE CONTRATO ==========');
+      console.log('[Chart] Dados do contrato:', contractData);
+      
+      if (!this.activeContract) {
+        return;
+      }
+      
+      // Atualizar dados do contrato ativo
+      if (contractData.sell_price !== undefined) {
+        this.activeContract.sell_price = contractData.sell_price;
+      }
+      if (contractData.profit !== undefined) {
+        this.activeContract.profit = contractData.profit;
+      }
+      if (contractData.is_sold !== undefined) {
+        this.isSellEnabled = !contractData.is_sold;
+      }
+      
+      // Atualizar P&L em tempo real
+      this.updateRealTimeProfit();
+    },
+    addEntrySpotLine(entrySpot, entryTime) {
+      if (!this.chart || !entrySpot) {
+        console.warn('[Chart] Não é possível adicionar linha de entrada: chart ou entrySpot não disponível');
+        return;
+      }
+      
+      try {
+        // Remover linha anterior se existir
+        this.removeEntrySpotLine();
+        
+        const entryColor = '#94a3b8'; // Cinza para linha de referência
+        const entryTimeUnix = Math.floor(Number(entryTime)) - (3 * 60 * 60); // Converter para horário de Brasília
+        
+        console.log('[Chart] Adicionando linha de entrada:', {
+          entrySpot,
+          entryTime: entryTimeUnix,
+          entryTimeDate: new Date(entryTimeUnix * 1000).toISOString()
+        });
+        
+        // Criar linha horizontal no gráfico
+        const lineSeries = this.chart.addLineSeries({
+          color: entryColor,
+          lineWidth: 2,
+          lineStyle: 2, // Linha pontilhada (dashed)
+          axisLabelVisible: true,
+          title: `Preço de Compra: ${entrySpot.toFixed(this.pricePrecision)}`,
+          priceLineVisible: true,
+          lastValueVisible: true,
+        });
+        
+        // Obter o primeiro e último tick para criar uma linha que ocupe 100% da largura
+        const firstTick = this.ticks[0];
+        const lastTick = this.ticks[this.ticks.length - 1];
+        
+        // Usar o primeiro tick disponível como ponto inicial (ou tempo de entrada se não houver ticks)
+        const lineStartTime = firstTick ? Math.floor(Number(firstTick.epoch)) : entryTimeUnix;
+        
+        // Usar o último tick disponível como ponto final (ou tempo atual se não houver ticks)
+        const lineEndTime = lastTick ? Math.floor(Number(lastTick.epoch)) : entryTimeUnix;
+        
+        // Criar dois pontos: um no início do gráfico e outro no final
+        // Isso cria uma linha horizontal pontilhada que ocupa 100% da largura
+        lineSeries.setData([
+          { time: lineStartTime, value: entrySpot },
+          { time: lineEndTime, value: entrySpot }
+        ]);
+        this.entrySpotLine = lineSeries;
+        
+        // Atualizar linha quando novos ticks chegarem
+        this.updateEntrySpotLine();
+        
+        console.log('[Chart] ✅ Linha de entrada adicionada ao gráfico');
+      } catch (error) {
+        console.error('[Chart] Erro ao adicionar linha de entrada:', error);
+      }
+    },
+    removeEntrySpotLine() {
+      if (this.entrySpotLine) {
+        try {
+          this.chart.removeSeries(this.entrySpotLine);
+          this.entrySpotLine = null;
+          console.log('[Chart] ✅ Linha de entrada removida');
+        } catch (error) {
+          console.error('[Chart] Erro ao remover linha de entrada:', error);
+        }
+      }
+    },
+    updateRealTimeProfit() {
+      if (!this.activeContract || !this.purchasePrice || !this.latestTick) {
+        return;
+      }
+      
+      const currentPrice = this.latestTick.value;
+      const entryPrice = this.purchasePrice;
+      
+      // Calcular P&L baseado no tipo de contrato
+      let profit = 0;
+      if (this.activeContract.contract_type === 'CALL') {
+        // CALL: lucro se o preço subir
+        profit = currentPrice - entryPrice;
+      } else if (this.activeContract.contract_type === 'PUT') {
+        // PUT: lucro se o preço descer
+        profit = entryPrice - currentPrice;
+      }
+      
+      // Aplicar multiplicador se houver
+      if (this.localOrderConfig.multiplier) {
+        profit = profit * this.localOrderConfig.multiplier;
+      }
+      
+      this.realTimeProfit = profit;
+      
+      // Atualizar classes CSS baseado no P&L
+      if (profit > 0) {
+        this.realTimeProfitClass = 'border-zenix-green';
+        this.realTimeProfitTextClass = 'text-zenix-green';
+      } else if (profit < 0) {
+        this.realTimeProfitClass = 'border-red-500';
+        this.realTimeProfitTextClass = 'text-red-500';
+      } else {
+        this.realTimeProfitClass = 'border-zenix-border';
+        this.realTimeProfitTextClass = 'text-zenix-text';
+      }
+    },
+    async loadDefaultValues() {
+      if (!this.isConnected || !this.localOrderConfig.type) {
+        return;
+      }
+      
+      try {
+        const defaultValues = await derivTradingService.getDefaultValues(
+          this.symbol,
+          this.localOrderConfig.type
+        );
+        
+        // Atualizar valores padrão se não estiverem configurados
+        if (defaultValues.amount && !this.localOrderConfig.amount) {
+          this.localOrderConfig.amount = defaultValues.amount;
+        }
+        if (defaultValues.duration && !this.localOrderConfig.duration) {
+          this.localOrderConfig.duration = defaultValues.duration;
+        }
+        if (defaultValues.durationUnit && !this.localOrderConfig.durationUnit) {
+          this.localOrderConfig.durationUnit = defaultValues.durationUnit;
+        }
+        
+        console.log('[Chart] ✅ Valores padrão carregados:', defaultValues);
+      } catch (error) {
+        console.error('[Chart] Erro ao carregar valores padrão:', error);
+      }
+    },
+    async loadProposal() {
+      if (!this.isConnected || !this.localOrderConfig.type) {
+        return;
+      }
+      
+      try {
+        const proposal = await derivTradingService.getProposal({
+          symbol: this.symbol,
+          contractType: this.localOrderConfig.type,
+          duration: this.localOrderConfig.duration,
+          durationUnit: this.localOrderConfig.durationUnit,
+          amount: this.localOrderConfig.amount,
+        });
+        
+        // Atualizar proposta atual
+        this.currentProposalId = proposal.id;
+        this.currentProposalPrice = proposal.askPrice;
+        
+        console.log('[Chart] ✅ Proposta carregada:', proposal);
+      } catch (error) {
+        console.error('[Chart] Erro ao carregar proposta:', error);
+      }
+    },
+    async subscribeToProposal() {
+      if (!this.isConnected || !this.derivToken || !this.localOrderConfig.type) {
+        return;
+      }
+      
+      try {
+        const proposalOptions = {
+          proposal: 1,
+          amount: this.localOrderConfig.amount || 10,
+          basis: 'stake',
+          contract_type: this.localOrderConfig.type,
+          currency: 'USD',
+          duration: this.localOrderConfig.duration || 1,
+          duration_unit: this.localOrderConfig.durationUnit || 'm',
+          symbol: this.symbol,
+        };
+        
+        await derivTradingService.subscribeProposal(proposalOptions, this.derivToken);
+        console.log('[Chart] ✅ Inscrito em proposta');
+      } catch (error) {
+        console.error('[Chart] Erro ao inscrever-se em proposta:', error);
+      }
+    },
+    updateEntrySpotLine() {
+      if (!this.entrySpotLine || !this.activeContract || !this.ticks.length) {
+        return;
+      }
+      
+      try {
+        const firstTick = this.ticks[0];
+        const lastTick = this.ticks[this.ticks.length - 1];
+        const entrySpot = this.activeContract.entry_spot || this.purchasePrice;
+        
+        if (firstTick && lastTick && entrySpot) {
+          const lineStartTime = Math.floor(Number(firstTick.epoch));
+          const lineEndTime = Math.floor(Number(lastTick.epoch));
+          
+          this.entrySpotLine.setData([
+            { time: lineStartTime, value: entrySpot },
+            { time: lineEndTime, value: entrySpot }
+          ]);
+        }
+      } catch (error) {
+        console.error('[Chart] Erro ao atualizar linha de entrada:', error);
       }
     },
   },
