@@ -191,8 +191,8 @@
             </div>
           </div>
           
-          <!-- Multiplier -->
-          <div>
+          <!-- Multiplier (apenas para CALL/PUT) -->
+          <div v-if="!isDigitContract">
             <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
               <i class="fas fa-times text-zenix-green mr-2"></i>Multiplicador
             </label>
@@ -201,6 +201,39 @@
               placeholder="Ex: 50, 100, 150..."
               class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text placeholder:text-[#DFDFDF40] focus:outline-none focus:border-zenix-green transition-colors"
             />
+          </div>
+          
+          <!-- Card de Dígitos de Previsão (apenas para contratos de dígitos) -->
+          <div v-if="isDigitContract && latestTick" class="bg-zenix-bg border border-zenix-border rounded-lg p-4">
+            <div class="text-xs font-medium text-zenix-secondary mb-3">
+              <i class="fas fa-calculator text-zenix-green mr-2"></i>Dígitos de Previsão
+            </div>
+            <div class="grid grid-cols-2 gap-3">
+              <div class="bg-[#0B0B0B] border border-[#1A1A1A] rounded-lg p-3">
+                <div class="text-xs text-zenix-secondary mb-1">Último Dígito</div>
+                <div class="text-2xl font-bold text-zenix-green">{{ lastDigit }}</div>
+              </div>
+              <div class="bg-[#0B0B0B] border border-[#1A1A1A] rounded-lg p-3">
+                <div class="text-xs text-zenix-secondary mb-1">Paridade</div>
+                <div class="text-lg font-semibold" :class="lastDigitParity === 'PAR' ? 'text-zenix-green' : 'text-blue-400'">
+                  {{ lastDigitParity }}
+                </div>
+              </div>
+            </div>
+            <div v-if="localOrderConfig.type === 'DIGITMATCH'" class="mt-3 pt-3 border-t border-zenix-border">
+              <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
+                <i class="fas fa-bullseye text-zenix-green mr-2"></i>Dígito para Match
+              </label>
+              <input 
+                type="number" 
+                v-model.number="digitMatchValue"
+                min="0"
+                max="9"
+                placeholder="0-9"
+                :disabled="isTrading || activeContract"
+                class="w-full bg-[#0B0B0B] border border-[#1A1A1A] rounded-lg px-3 py-2.5 text-sm text-zenix-text placeholder:text-[#DFDFDF40] focus:outline-none focus:border-zenix-green transition-colors"
+              />
+            </div>
           </div>
           
           <!-- Purchase Price -->
@@ -463,6 +496,10 @@ export default {
       showTradeResultModal: false,
       // Contratos disponíveis para o mercado atual
       availableContracts: [],
+      // Dados de dígitos para contratos de dígitos
+      lastDigit: null,
+      lastDigitParity: null,
+      digitMatchValue: null,
       // Dados do modal de resultado
       finalTradeProfit: 0,
       finalTradeType: 'CALL',
@@ -532,7 +569,27 @@ export default {
       if (!this.localOrderConfig.type) {
         return 'Selecione o tipo';
       }
-      return this.localOrderConfig.type === 'CALL' ? 'Alta (CALL)' : 'Baixa (PUT)';
+      // Buscar o label do tipo selecionado nos tipos disponíveis
+      const selectedType = this.availableTradeTypes.find(t => t.value === this.localOrderConfig.type);
+      if (selectedType) {
+        return selectedType.label;
+      }
+      // Fallback para tipos conhecidos
+      const typeMap = {
+        'CALL': 'Alta (CALL)',
+        'PUT': 'Baixa (PUT)',
+        'DIGITMATCH': 'Dígito Igual',
+        'DIGITDIFF': 'Dígito Diferente',
+        'DIGITEVEN': 'Dígito Par',
+        'DIGITODD': 'Dígito Ímpar',
+        'DIGITOVER': 'Dígito Acima',
+        'DIGITUNDER': 'Dígito Abaixo',
+      };
+      return typeMap[this.localOrderConfig.type] || this.localOrderConfig.type;
+    },
+    isDigitContract() {
+      const digitTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
+      return digitTypes.includes(this.localOrderConfig.type);
     },
     availableTradeTypes() {
       // Tipos disponíveis baseados nos contratos retornados pelo backend
@@ -946,6 +1003,11 @@ export default {
         // Atualizar latestTick apenas se os valores forem válidos
         const tickValue = Number(data.data.value);
         const tickEpoch = Math.floor(Number(data.data.epoch)) - (3 * 60 * 60);
+        
+        // Calcular último dígito e paridade para contratos de dígitos
+        if (this.isDigitContract && tickValue && isFinite(tickValue) && tickValue > 0) {
+          this.updateDigitInfo(tickValue);
+        }
         
         if (!isNaN(tickValue) && isFinite(tickValue) && tickValue > 0 &&
             !isNaN(tickEpoch) && isFinite(tickEpoch) && tickEpoch > 0) {
@@ -1768,9 +1830,23 @@ export default {
     selectTradeType(type) {
       this.localOrderConfig.type = type;
       this.closeTradeTypeModal();
-      // Recarregar proposta com novo tipo
+      // Recarregar valores padrão e proposta com novo tipo
       if (this.isConnected) {
-        this.loadProposal();
+        this.loadDefaultValues();
+        setTimeout(() => {
+          this.loadProposal();
+        }, 500);
+      }
+    },
+    updateDigitInfo(value) {
+      // Extrair último dígito do valor
+      const valueStr = value.toFixed(5); // Usar 5 casas decimais para garantir precisão
+      const lastChar = valueStr[valueStr.length - 1];
+      const digit = parseInt(lastChar, 10);
+      
+      if (!isNaN(digit) && digit >= 0 && digit <= 9) {
+        this.lastDigit = digit;
+        this.lastDigitParity = digit % 2 === 0 ? 'PAR' : 'IMPAR';
       }
     },
     closeTradeResultModal() {
@@ -1965,9 +2041,26 @@ export default {
         
         // Atualizar contratos disponíveis
         if (defaultValues.availableContracts) {
-          this.availableContracts = defaultValues.availableContracts;
+          // A estrutura pode ser um objeto com {available: [...]} ou um array direto
+          let contractsArray = [];
+          if (Array.isArray(defaultValues.availableContracts)) {
+            contractsArray = defaultValues.availableContracts;
+          } else if (defaultValues.availableContracts.available && Array.isArray(defaultValues.availableContracts.available)) {
+            // Estrutura: {available: [...], non_available: [...], ...}
+            contractsArray = defaultValues.availableContracts.available;
+          } else if (typeof defaultValues.availableContracts === 'object') {
+            // Tentar extrair de outras estruturas
+            const values = Object.values(defaultValues.availableContracts);
+            for (const value of values) {
+              if (Array.isArray(value)) {
+                contractsArray = [...contractsArray, ...value];
+              }
+            }
+          }
+          
+          this.availableContracts = contractsArray;
           console.log('[Chart] ✅ Contratos disponíveis atualizados:', this.availableContracts);
-          console.log('[Chart] Estrutura dos contratos:', Array.isArray(this.availableContracts) ? 'Array' : typeof this.availableContracts);
+          console.log('[Chart] Total de contratos:', this.availableContracts.length);
           if (this.availableContracts.length > 0) {
             console.log('[Chart] Primeiro contrato exemplo:', this.availableContracts[0]);
           }
