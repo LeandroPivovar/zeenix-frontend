@@ -2267,9 +2267,6 @@ export default {
             console.log('[Chart] Buscando resultado final do contrato da API...');
             const authToken = localStorage.getItem('token');
             if (authToken) {
-              const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-              const apiUrl = apiBaseUrl.endsWith('/api') ? apiBaseUrl : `${apiBaseUrl}/api`;
-              
               // Tentar buscar informações do contrato via API do backend
               // O backend pode ter um endpoint para buscar status do contrato
               // Por enquanto, vamos aguardar os dados via SSE que já devem estar chegando
