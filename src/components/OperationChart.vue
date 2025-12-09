@@ -565,6 +565,27 @@ export default {
       }
 
       try {
+        // Limpar ticks inválidos do array antes de processar
+        this.ticks = this.ticks.filter(t => {
+          if (!t || typeof t !== 'object') return false;
+          const val = t.value ?? t.quote;
+          const ep = t.epoch;
+          const isValid = val != null && 
+            isFinite(Number(val)) && 
+            Number(val) > 0 && 
+            !isNaN(Number(val)) &&
+            ep != null && 
+            isFinite(Number(ep)) && 
+            Number(ep) > 0 &&
+            !isNaN(Number(ep));
+          return isValid;
+        });
+        
+        if (this.ticks.length === 0) {
+          console.warn('[Chart] Nenhum tick válido após limpeza');
+          return;
+        }
+        
         // Limitar a últimos 5 minutos de ticks (aproximadamente 300 ticks)
         const maxTicks = 300;
         const ticksToUse = this.ticks.slice(-maxTicks);
@@ -606,12 +627,14 @@ export default {
             time = now;
           }
           
-          // Validação final antes de adicionar: ambos devem ser números válidos
-          if (isFinite(numValue) && numValue > 0 && isFinite(time) && time > 0) {
+          // Validação final antes de adicionar: ambos devem ser números válidos e positivos
+          if (isFinite(numValue) && numValue > 0 && isFinite(time) && time > 0 && !isNaN(numValue) && !isNaN(time)) {
             chartData.push({
               time: time,
               value: numValue
             });
+          } else {
+            console.warn('[Chart] Tick ignorado no updateChart - dados inválidos:', { value: numValue, epoch: time, tick });
           }
         }
 
@@ -1647,15 +1670,46 @@ export default {
       const startIdx = Math.max(0, prices.length - 300);
       
       for (let i = startIdx; i < prices.length; i++) {
-        const value = Number(prices[i]);
-        const epoch = times[i] ? Math.floor(Number(times[i])) : Math.floor(Date.now() / 1000) - (prices.length - i);
+        const rawValue = prices[i];
+        const rawEpoch = times[i];
         
-        if (isFinite(value) && isFinite(epoch) && value > 0 && epoch > 0) {
+        // Validação rigorosa: verificar null, undefined, NaN
+        if (rawValue == null || rawEpoch == null) {
+          continue;
+        }
+        
+        const value = Number(rawValue);
+        const epoch = rawEpoch ? Math.floor(Number(rawEpoch)) : Math.floor(Date.now() / 1000) - (prices.length - i);
+        
+        // Validação dupla: garantir que são números válidos e positivos
+        if (value == null || !isFinite(value) || value <= 0 || isNaN(value)) {
+          continue;
+        }
+        
+        if (epoch == null || !isFinite(epoch) || epoch <= 0 || isNaN(epoch)) {
+          continue;
+        }
+        
+        // Adicionar apenas se ambos são válidos
+        if (isFinite(value) && value > 0 && isFinite(epoch) && epoch > 0) {
           newTicks.push({ value, epoch });
         }
       }
       
-      this.ticks = newTicks;
+      // Limpar array de ticks inválidos antes de atribuir
+      this.ticks = newTicks.filter(t => {
+        const isValid = t && 
+          t.value != null && 
+          isFinite(t.value) && 
+          t.value > 0 && 
+          t.epoch != null && 
+          isFinite(t.epoch) && 
+          t.epoch > 0;
+        if (!isValid) {
+          console.warn('[Chart] Tick inválido removido do histórico:', t);
+        }
+        return isValid;
+      });
       
       if (msg.subscription?.id) {
         this.tickSubscriptionId = msg.subscription.id;
@@ -1689,19 +1743,38 @@ export default {
       const value = Number(tick.quote);
       const epoch = Number(tick.epoch);
       
-      if (!isFinite(value) || !isFinite(epoch) || value <= 0 || epoch <= 0) return;
+      // Validação rigorosa ANTES de adicionar ao array
+      if (value == null || !isFinite(value) || value <= 0 || isNaN(value)) {
+        console.warn('[Chart] Tick ignorado - valor inválido:', value);
+        return;
+      }
+      
+      if (epoch == null || !isFinite(epoch) || epoch <= 0 || isNaN(epoch)) {
+        console.warn('[Chart] Tick ignorado - epoch inválido:', epoch);
+        return;
+      }
+      
+      // Garantir que ambos são números válidos
+      const validValue = Number(value);
+      const validEpoch = Math.floor(Number(epoch));
+      
+      if (!isFinite(validValue) || validValue <= 0 || !isFinite(validEpoch) || validEpoch <= 0) {
+        console.warn('[Chart] Tick ignorado - dados inválidos:', { value: validValue, epoch: validEpoch });
+        return;
+      }
       
       if (tick.id && !this.tickSubscriptionId) {
         this.tickSubscriptionId = tick.id;
       }
       
       // Adicionar tick e manter apenas últimos 300 (5 minutos)
-      this.ticks.push({ value, epoch });
+      // Usar valores validados
+      this.ticks.push({ value: validValue, epoch: validEpoch });
       if (this.ticks.length > 300) {
         this.ticks.shift();
       }
       
-      this.latestTick = { value, epoch };
+      this.latestTick = { value: validValue, epoch: validEpoch };
       this.lastUpdate = Date.now();
       
       // Atualizar gráfico TradingView diretamente (mais eficiente)
