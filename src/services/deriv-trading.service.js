@@ -29,21 +29,27 @@ class DerivTradingService {
   /**
    * Conecta ao backend Deriv via WebSocket gerenciado
    */
-  async connect(token, loginid) {
-    this.token = token || localStorage.getItem('token');
+  async connect(derivToken, loginid) {
+    // derivToken é o token da Deriv API, não o JWT
+    // O JWT de autenticação deve vir do localStorage
+    const authToken = localStorage.getItem('token');
     
-    if (!this.token) {
-      throw new Error('Token não encontrado');
+    if (!authToken) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    if (!derivToken) {
+      throw new Error('Token Deriv não encontrado');
     }
 
     try {
       const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/connect`, {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.token}`,
+          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ token, loginid }),
+        body: JSON.stringify({ token: derivToken, loginid }),
       });
 
       if (!response.ok) {
