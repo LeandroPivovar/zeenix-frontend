@@ -3,7 +3,13 @@
  * Substitui a lógica de WebSocket direto por REST/SSE
  */
 
-const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+// API_BASE_URL já deve incluir /api se necessário
+// Se VUE_APP_API_BASE_URL já tem /api, não adicionar novamente
+let API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+// Remover /api duplicado se existir
+if (API_BASE_URL.endsWith('/api')) {
+  API_BASE_URL = API_BASE_URL.replace(/\/api$/, '');
+}
 
 class DerivTradingService {
   constructor() {
@@ -24,7 +30,7 @@ class DerivTradingService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/connect`, {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/connect`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${this.token}`,
@@ -63,7 +69,7 @@ class DerivTradingService {
     // Obter token temporário para SSE (mais seguro que passar JWT via query)
     let sseToken;
     try {
-      const tokenResponse = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/sse-token`, {
+      const tokenResponse = await fetch(`${API_BASE_URL}/broker/deriv/trading/sse-token`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -83,7 +89,7 @@ class DerivTradingService {
     }
 
     // EventSource não suporta headers, então usamos token temporário via query
-    const url = `${API_BASE_URL}/api/broker/deriv/trading/stream?token=${encodeURIComponent(sseToken)}${derivToken ? `&derivToken=${encodeURIComponent(derivToken)}` : ''}`;
+    const url = `${API_BASE_URL}/broker/deriv/trading/stream?token=${encodeURIComponent(sseToken)}${derivToken ? `&derivToken=${encodeURIComponent(derivToken)}` : ''}`;
     
     this.eventSource = new EventSource(url);
 
@@ -157,7 +163,7 @@ class DerivTradingService {
     const authToken = this.token || localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/subscribe-symbol`, {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/subscribe-symbol`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -185,7 +191,7 @@ class DerivTradingService {
     const token = this.token || localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/ticks?symbol=${encodeURIComponent(symbol)}`, {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/ticks?symbol=${encodeURIComponent(symbol)}`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -211,7 +217,7 @@ class DerivTradingService {
     const token = this.token || localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/subscribe-proposal`, {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/subscribe-proposal`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -239,7 +245,7 @@ class DerivTradingService {
     const token = this.token || localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/buy`, {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/buy`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -267,7 +273,7 @@ class DerivTradingService {
     const token = this.token || localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/sell`, {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/sell`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -295,7 +301,7 @@ class DerivTradingService {
     const token = this.token || localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/get-contracts`, {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/get-contracts`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -323,7 +329,7 @@ class DerivTradingService {
     const token = this.token || localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/cancel-subscription`, {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/cancel-subscription`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -351,7 +357,7 @@ class DerivTradingService {
     const token = this.token || localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/cancel-tick-subscription`, {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/cancel-tick-subscription`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -378,7 +384,7 @@ class DerivTradingService {
     const token = this.token || localStorage.getItem('token');
     
     try {
-      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/cancel-proposal-subscription`, {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/cancel-proposal-subscription`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
