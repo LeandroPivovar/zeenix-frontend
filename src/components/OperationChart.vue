@@ -2147,7 +2147,6 @@ export default {
               };
               
               const minDur = parseDuration(selectedContract.min_contract_duration);
-              const maxDur = parseDuration(selectedContract.max_contract_duration);
               
               if (minDur) {
                 // Se a duração atual for menor que a mínima, ajustar
