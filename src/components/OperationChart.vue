@@ -717,8 +717,45 @@ export default {
 
         // Atualizar série do gráfico
         try {
-          this.chartSeries.setData(chartData);
-          console.log('[Chart] ✅ Dados setados na série');
+          // Última validação: criar um novo array com apenas valores válidos
+          // Isso garante que não há referências a valores null
+          const finalData = chartData
+            .map(p => ({
+              time: Number(p.time),
+              value: Number(p.value)
+            }))
+            .filter(p => 
+              p.value != null && 
+              typeof p.value === 'number' &&
+              isFinite(p.value) && 
+              p.value > 0 && 
+              !isNaN(p.value) &&
+              p.time != null &&
+              typeof p.time === 'number' &&
+              isFinite(p.time) &&
+              p.time > 0 &&
+              !isNaN(p.time)
+            );
+          
+          if (finalData.length === 0) {
+            console.warn('[Chart] Nenhum dado válido após filtro final');
+            return;
+          }
+          
+          // Verificar se ainda há valores null (não deveria, mas vamos garantir)
+          const hasNull = finalData.some(p => p.value === null || p.value === undefined || p.time === null || p.time === undefined);
+          if (hasNull) {
+            console.error('[Chart] ❌ AINDA HÁ VALORES NULL! Removendo...');
+            const cleanedData = finalData.filter(p => p.value !== null && p.value !== undefined && p.time !== null && p.time !== undefined);
+            if (cleanedData.length === 0) {
+              console.error('[Chart] ❌ Todos os dados foram removidos por terem null');
+              return;
+            }
+            this.chartSeries.setData(cleanedData);
+          } else {
+            this.chartSeries.setData(finalData);
+          }
+          console.log('[Chart] ✅ Dados setados na série:', finalData.length, 'pontos');
           
           // Ajustar viewport para mostrar os dados mais recentes
           setTimeout(() => {
