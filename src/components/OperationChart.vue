@@ -573,21 +573,30 @@ export default {
         const chartData = [];
         
         for (const tick of ticksToUse) {
-          if (!tick) continue;
+          if (!tick || typeof tick !== 'object') continue;
           
           const value = tick.value ?? tick.quote;
-          if (value == null) continue;
+          // Validação rigorosa: null, undefined, NaN, strings vazias, zero
+          if (value == null || value === '' || (typeof value === 'number' && (isNaN(value) || !isFinite(value) || value <= 0))) {
+            continue;
+          }
           
           const numValue = Number(value);
-          if (!isFinite(numValue) || numValue <= 0) continue;
+          // Validação dupla: garantir que é um número válido e positivo
+          if (!isFinite(numValue) || numValue <= 0 || isNaN(numValue)) {
+            continue;
+          }
           
           // Usar epoch como timestamp (em segundos, TradingView espera em segundos)
           // Garantir que seja um número inteiro
           let time = tick.epoch;
-          if (!time || time <= 0) {
+          if (time == null || time <= 0 || !isFinite(Number(time))) {
             time = Math.floor(Date.now() / 1000);
           } else {
             time = Math.floor(Number(time));
+            if (!isFinite(time) || time <= 0) {
+              time = Math.floor(Date.now() / 1000);
+            }
           }
           
           // Validar que o tempo é válido (não muito antigo nem futuro)
@@ -597,10 +606,13 @@ export default {
             time = now;
           }
           
-          chartData.push({
-            time: time,
-            value: numValue
-          });
+          // Validação final antes de adicionar: ambos devem ser números válidos
+          if (isFinite(numValue) && numValue > 0 && isFinite(time) && time > 0) {
+            chartData.push({
+              time: time,
+              value: numValue
+            });
+          }
         }
 
         if (chartData.length === 0) {
@@ -1695,9 +1707,15 @@ export default {
       // Atualizar gráfico TradingView diretamente (mais eficiente)
       if (this.chartReady && this.chartSeries) {
         try {
+          // Validação rigorosa do valor antes de tudo
+          if (value == null || !isFinite(value) || value <= 0 || isNaN(value)) {
+            console.warn('[Chart] Valor inválido ignorado no processTick:', value);
+            return;
+          }
+          
           // Garantir que epoch seja um número inteiro válido
           let validEpoch = Math.floor(Number(epoch));
-          if (!validEpoch || validEpoch <= 0) {
+          if (!validEpoch || validEpoch <= 0 || !isFinite(validEpoch)) {
             validEpoch = Math.floor(Date.now() / 1000);
           }
           
@@ -1705,6 +1723,12 @@ export default {
           const now = Math.floor(Date.now() / 1000);
           if (validEpoch < now - 86400 || validEpoch > now + 3600) {
             validEpoch = now;
+          }
+          
+          // Validação final: ambos devem ser válidos
+          if (!isFinite(value) || value <= 0 || !isFinite(validEpoch) || validEpoch <= 0) {
+            console.warn('[Chart] Dados inválidos ignorados no processTick:', { value, epoch: validEpoch });
+            return;
           }
           
           // Adicionar apenas o novo tick (atualização incremental)
