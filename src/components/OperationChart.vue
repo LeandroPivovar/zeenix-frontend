@@ -18,7 +18,7 @@
             <h3 class="text-base font-semibold text-zenix-text">Gráfico</h3>
           </div>
 
-          <div id="tradingviewChart" class="w-full chart-wrapper" style="background-color: #0B0B0B; position: relative; flex: 1; min-height: 0; height: 100%;">
+          <div id="tradingviewChart" ref="chartContainer" class="w-full chart-wrapper" style="background-color: #0B0B0B; position: relative; flex: 1; min-height: 0; height: 100%;">
             <!-- Chart will be rendered here -->
           </div>
           <div v-if="showChartPlaceholder" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
@@ -222,6 +222,8 @@
 </template>
 
 <script>
+import { createChart, ColorType } from 'lightweight-charts';
+
 export default {
   name: 'OperationChart',
   data() {
@@ -236,7 +238,128 @@ export default {
       showErrorMessage: false,
       realTimeProfitClass: 'border-zenix-green',
       realTimeProfitTextClass: 'text-zenix-green',
+      chart: null,
+      chartSeries: null,
     };
+  },
+  mounted() {
+    this.initChart();
+    // Listener de resize
+    window.addEventListener('resize', this.handleResize);
+  },
+  beforeUnmount() {
+    if (this.chart) {
+      this.chart.remove();
+      this.chart = null;
+      this.chartSeries = null;
+    }
+    window.removeEventListener('resize', this.handleResize);
+  },
+  methods: {
+    initChart() {
+      const container = this.$refs.chartContainer;
+      if (!container) {
+        setTimeout(() => this.initChart(), 100);
+        return;
+      }
+
+      this.$nextTick(() => {
+        try {
+          // Limpar container
+          container.innerHTML = '';
+
+          const rect = container.getBoundingClientRect();
+          if (rect.width <= 0 || rect.height <= 0) {
+            setTimeout(() => this.initChart(), 200);
+            return;
+          }
+
+          // Criar gráfico TradingView Lightweight Charts
+          this.chart = createChart(container, {
+            width: rect.width,
+            height: rect.height,
+            layout: {
+              background: { type: ColorType.Solid, color: '#0B0B0B' },
+              textColor: '#DFDFDF',
+            },
+            grid: {
+              vertLines: { color: 'rgba(255, 255, 255, 0.05)' },
+              horzLines: { color: 'rgba(255, 255, 255, 0.05)' },
+            },
+            rightPriceScale: {
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              textColor: '#DFDFDF',
+            },
+            timeScale: {
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              timeVisible: true,
+              secondsVisible: false,
+            },
+          });
+
+          // Criar série de linha
+          this.chartSeries = this.chart.addLineSeries({
+            color: '#22C55E',
+            lineWidth: 2,
+            priceLineVisible: false,
+            lastValueVisible: true,
+          });
+
+          // Gerar dados placeholders (últimas 5 horas, 1 ponto por minuto = 300 pontos)
+          const placeholderData = this.generatePlaceholderData();
+          
+          // Definir dados no gráfico
+          this.chartSeries.setData(placeholderData);
+          
+          // Ajustar viewport para mostrar todos os dados
+          this.chart.timeScale().fitContent();
+
+          // Listener de resize
+          this.handleResize = () => {
+            const newRect = container.getBoundingClientRect();
+            if (this.chart && newRect.width > 0 && newRect.height > 0) {
+              this.chart.resize(newRect.width, newRect.height);
+            }
+          };
+        } catch (error) {
+          console.error('[Chart] Erro ao inicializar gráfico:', error);
+        }
+      });
+    },
+    generatePlaceholderData() {
+      const data = [];
+      const now = Math.floor(Date.now() / 1000);
+      const startTime = now - (5 * 60 * 60); // 5 horas atrás
+      const interval = 60; // 1 minuto entre pontos
+      
+      // Valor inicial simulado
+      let baseValue = 600;
+      
+      for (let i = 0; i < 300; i++) {
+        const time = startTime + (i * interval);
+        // Simular variação de preço com pequenas oscilações
+        const variation = (Math.random() - 0.5) * 20; // Variação de -10 a +10
+        baseValue += variation;
+        // Garantir que o valor não fique negativo ou muito baixo
+        baseValue = Math.max(500, Math.min(700, baseValue));
+        
+        data.push({
+          time: time,
+          value: Number(baseValue.toFixed(2))
+        });
+      }
+      
+      return data;
+    },
+    handleResize() {
+      const container = this.$refs.chartContainer;
+      if (this.chart && container) {
+        const newRect = container.getBoundingClientRect();
+        if (newRect.width > 0 && newRect.height > 0) {
+          this.chart.resize(newRect.width, newRect.height);
+        }
+      }
+    },
   },
 };
 </script>
