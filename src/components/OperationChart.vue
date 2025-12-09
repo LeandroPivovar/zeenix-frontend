@@ -461,6 +461,8 @@ export default {
       showMarketModal: false,
       showTradeTypeModal: false,
       showTradeResultModal: false,
+      // Contratos disponíveis para o mercado atual
+      availableContracts: [],
       // Dados do modal de resultado
       finalTradeProfit: 0,
       finalTradeType: 'CALL',
@@ -533,12 +535,38 @@ export default {
       return this.localOrderConfig.type === 'CALL' ? 'Alta (CALL)' : 'Baixa (PUT)';
     },
     availableTradeTypes() {
-      // Tipos disponíveis baseados no mercado selecionado
-      const types = [
+      // Tipos disponíveis baseados nos contratos retornados pelo backend
+      if (!this.availableContracts || this.availableContracts.length === 0) {
+        // Fallback: tipos padrão se não houver contratos disponíveis
+        return [
+          { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
+          { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço descerá', icon: 'fas fa-arrow-down' },
+        ];
+      }
+      
+      // Mapear contratos disponíveis para tipos de negociação
+      const typeMap = {
+        'CALL': { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
+        'PUT': { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço descerá', icon: 'fas fa-arrow-down' },
+        'DIGITMATCH': { value: 'DIGITMATCH', label: 'Dígito Igual', description: 'Apostar que o último dígito será igual', icon: 'fas fa-equals' },
+        'DIGITDIFF': { value: 'DIGITDIFF', label: 'Dígito Diferente', description: 'Apostar que o último dígito será diferente', icon: 'fas fa-not-equal' },
+        'DIGITEVEN': { value: 'DIGITEVEN', label: 'Dígito Par', description: 'Apostar que o último dígito será par', icon: 'fas fa-divide' },
+        'DIGITODD': { value: 'DIGITODD', label: 'Dígito Ímpar', description: 'Apostar que o último dígito será ímpar', icon: 'fas fa-percent' },
+        'DIGITOVER': { value: 'DIGITOVER', label: 'Dígito Acima', description: 'Apostar que o último dígito será acima de 5', icon: 'fas fa-arrow-up' },
+        'DIGITUNDER': { value: 'DIGITUNDER', label: 'Dígito Abaixo', description: 'Apostar que o último dígito será abaixo de 5', icon: 'fas fa-arrow-down' },
+      };
+      
+      // Filtrar apenas os tipos que estão disponíveis nos contratos
+      const availableTypes = this.availableContracts
+        .map(contract => contract.contract_type)
+        .filter((type, index, self) => self.indexOf(type) === index) // Remover duplicatas
+        .map(type => typeMap[type])
+        .filter(type => type !== undefined); // Remover tipos não mapeados
+      
+      return availableTypes.length > 0 ? availableTypes : [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
         { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço descerá', icon: 'fas fa-arrow-down' },
       ];
-      return types;
     },
     canUseCallPut() {
       // Verificar se o símbolo suporta CALL/PUT
@@ -1438,6 +1466,9 @@ export default {
         return;
       }
 
+      // Limpar contratos disponíveis para forçar recarregamento
+      this.availableContracts = [];
+
       // Cancelar subscription anterior e inscrever-se no novo símbolo
       try {
         await derivTradingService.cancelTickSubscription();
@@ -1668,12 +1699,14 @@ export default {
     closeMarketModal() {
       this.showMarketModal = false;
     },
-    selectMarket(marketValue) {
+    async selectMarket(marketValue) {
       this.symbol = marketValue;
       this.closeMarketModal();
+      // Limpar contratos disponíveis para forçar recarregamento
+      this.availableContracts = [];
       // Disparar mudança de símbolo
       if (this.isConnected) {
-        this.handleSymbolChange();
+        await this.handleSymbolChange();
       }
     },
     openTradeTypeModal() {
@@ -1861,14 +1894,16 @@ export default {
       }
     },
     async loadDefaultValues() {
-      if (!this.isConnected || !this.localOrderConfig.type) {
+      if (!this.isConnected || !this.symbol) {
         return;
       }
       
       try {
+        // Usar o tipo atual ou CALL como padrão para buscar contratos disponíveis
+        const contractType = this.localOrderConfig.type || 'CALL';
         const defaultValues = await derivTradingService.getDefaultValues(
           this.symbol,
-          this.localOrderConfig.type
+          contractType
         );
         
         // Atualizar valores padrão se não estiverem configurados
@@ -1880,6 +1915,21 @@ export default {
         }
         if (defaultValues.durationUnit && !this.localOrderConfig.durationUnit) {
           this.localOrderConfig.durationUnit = defaultValues.durationUnit;
+        }
+        
+        // Atualizar contratos disponíveis
+        if (defaultValues.availableContracts) {
+          this.availableContracts = defaultValues.availableContracts;
+          console.log('[Chart] ✅ Contratos disponíveis atualizados:', this.availableContracts);
+          
+          // Se o tipo atual não estiver disponível, selecionar o primeiro disponível
+          const currentTypeAvailable = this.availableContracts.some(
+            contract => contract.contract_type === this.localOrderConfig.type
+          );
+          if (!currentTypeAvailable && this.availableContracts.length > 0) {
+            this.localOrderConfig.type = this.availableContracts[0].contract_type;
+            console.log('[Chart] Tipo de contrato alterado para:', this.localOrderConfig.type);
+          }
         }
         
         console.log('[Chart] ✅ Valores padrão carregados:', defaultValues);
@@ -2372,7 +2422,8 @@ export default {
 
 .modal-content {
   position: relative;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  background: #0F0F0F;
+  border: 1px solid #1A1A1A;
   border-radius: 24px;
   padding: 0;
   min-width: 480px;
@@ -2380,8 +2431,8 @@ export default {
   width: 100%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
-              0 0 0 1px rgba(255, 255, 255, 0.1);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8),
+              0 0 0 1px rgba(255, 255, 255, 0.05);
   animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -2390,7 +2441,8 @@ export default {
   align-items: center;
   justify-content: space-between;
   padding: 24px 32px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  border-bottom: 1px solid #1A1A1A;
+  background: #0F0F0F;
 }
 
 .modal-title {
@@ -2418,6 +2470,7 @@ export default {
 
 .modal-body {
   padding: 24px 32px;
+  background: #0F0F0F;
 }
 
 /* Market Selection Modal */
@@ -2449,8 +2502,8 @@ export default {
 }
 
 .market-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0B0B0B;
+  border: 1px solid #1A1A1A;
   border-radius: 12px;
   padding: 16px;
   cursor: pointer;
@@ -2461,7 +2514,7 @@ export default {
 }
 
 .market-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: #151515;
   border-color: rgba(34, 197, 94, 0.5);
   transform: translateY(-2px);
 }
@@ -2490,8 +2543,8 @@ export default {
 }
 
 .trade-type-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 2px solid rgba(255, 255, 255, 0.1);
+  background: #0B0B0B;
+  border: 2px solid #1A1A1A;
   border-radius: 16px;
   padding: 24px;
   cursor: pointer;
@@ -2504,7 +2557,7 @@ export default {
 }
 
 .trade-type-item:hover {
-  background: rgba(255, 255, 255, 0.06);
+  background: #151515;
   border-color: rgba(34, 197, 94, 0.5);
   transform: translateY(-2px);
 }
@@ -2539,12 +2592,12 @@ export default {
   position: fixed;
   top: 80px;
   right: 20px;
-  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  background: #0F0F0F;
+  border: 1px solid #1A1A1A;
   border-radius: 16px;
   padding: 20px;
   min-width: 280px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
   z-index: 1000;
 }
 
