@@ -1395,19 +1395,17 @@ export default {
       // Remover linha de compra
       this.removeEntrySpotLine();
       
-      // Emitir evento para atualizar histórico (se houver listener)
-      if (this.$listeners && this.$listeners['trade-result']) {
-        this.$emit('trade-result', {
-          contractId: this.activeContract?.contract_id,
-          buyPrice: this.activeContract?.buy_price || this.purchasePrice,
-          sellPrice: sellData.sell_price ? Number(sellData.sell_price) : null,
-          profit: finalProfit,
-          balanceAfter: sellData.balance_after ? Number(sellData.balance_after) : null,
-          currency: 'USD',
-          direction: this.activeContract?.contract_type,
-          status: 'CLOSED',
-        });
-      }
+      // Emitir evento para atualizar histórico
+      this.$emit('trade-result', {
+        contractId: this.activeContract?.contract_id,
+        buyPrice: this.activeContract?.buy_price || this.purchasePrice,
+        sellPrice: sellData.sell_price ? Number(sellData.sell_price) : null,
+        profit: finalProfit,
+        balanceAfter: sellData.balance_after ? Number(sellData.balance_after) : null,
+        currency: 'USD',
+        direction: this.activeContract?.contract_type,
+        status: 'CLOSED',
+      });
       
       // Limpar contrato ativo após um delay
       setTimeout(() => {
