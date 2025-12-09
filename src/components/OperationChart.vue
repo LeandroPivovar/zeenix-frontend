@@ -908,6 +908,16 @@ export default {
       }
     },
     handleDerivError(error) {
+      const errorCode = error?.code || '';
+      const message = error?.message || 'Erro desconhecido na Deriv';
+      
+      // Tratar "AlreadySubscribed" como sucesso (já está inscrito)
+      if (errorCode === 'AlreadySubscribed') {
+        console.log('[OperationChart] ℹ️ Já está inscrito:', message);
+        // Não tratar como erro, apenas logar
+        return;
+      }
+      
       console.error('[OperationChart] ========== ERRO DA DERIV ==========');
       console.error('[OperationChart] Erro completo:', JSON.stringify(error, null, 2));
       console.error('[OperationChart] Contexto:', {
@@ -918,9 +928,7 @@ export default {
         tokenPreview: this.token ? `${this.token.substring(0, 10)}...` : 'null'
       });
       
-      const errorCode = error?.code || '';
       const errorField = error?.details?.field || '';
-      const message = error?.message || 'Erro desconhecido na Deriv';
       
       // Tratar erros específicos de duração
       if (errorCode === 'OfferingsValidationError' && errorField === 'duration') {
@@ -1003,7 +1011,8 @@ export default {
         
         // Se for erro relacionado à proposta e não for erro de validação, tentar reenviar (com limite)
         // Verificar se não temos proposta atual e estamos autorizados
-        if (!this.currentProposalId && this.isAuthorized && !this.activeContract && this.proposalRetryCount < this.maxProposalRetries) {
+        // Mas não tentar se já está inscrito (AlreadySubscribed)
+        if (errorCode !== 'AlreadySubscribed' && !this.currentProposalId && this.isAuthorized && !this.activeContract && this.proposalRetryCount < this.maxProposalRetries) {
           console.warn('[OperationChart] Erro pode estar relacionado à proposta, tentando reenviar após 2 segundos...');
           setTimeout(() => {
             if (this.isAuthorized && derivTradingService.isConnected && !this.activeContract && this.proposalRetryCount < this.maxProposalRetries) {
