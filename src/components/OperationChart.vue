@@ -729,8 +729,7 @@ export default {
         console.log('[OperationChart] ✅ Conectado ao backend Deriv');
         
         // Iniciar stream SSE
-        const derivToken = this.getTokenForAccount();
-        derivTradingService.startStream((data) => {
+        await derivTradingService.startStream((data) => {
           this.handleSSEMessage(data);
         }, derivToken);
         
