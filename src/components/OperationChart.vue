@@ -255,8 +255,6 @@ export default {
     return {
       showLoading: false,
       showChartPlaceholder: true,
-      showPurchasePrice: false,
-      showRealTimeProfit: false,
       showSellButton: false,
       showCountdown: false,
       showSuccessMessage: false,
