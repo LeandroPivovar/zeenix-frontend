@@ -530,9 +530,13 @@ export default {
           // Marcar como pronto
           this.chartReady = true;
           
-          // Se já temos dados, atualizar
+          // Se já temos dados, atualizar (com delay para garantir que o gráfico está totalmente inicializado)
           if (this.ticks.length > 0) {
-            this.updateChart();
+            setTimeout(() => {
+              if (this.chartReady && this.chartSeries) {
+                this.updateChart();
+              }
+            }, 100);
           }
 
           // Listener de resize
@@ -766,7 +770,71 @@ export default {
           }
           
           console.log('[Chart] ✅ Dados validados:', finalData.length, 'pontos');
-          this.chartSeries.setData(finalData);
+          
+          // Validação final antes de setData: verificar cada ponto individualmente
+          const safeData = [];
+          for (let i = 0; i < finalData.length; i++) {
+            const point = finalData[i];
+            const t = point.time;
+            const v = point.value;
+            
+            // Verificação explícita de null/undefined
+            if (t === null || t === undefined || v === null || v === undefined) {
+              console.error(`[Chart] ❌ Ponto ${i} tem null/undefined:`, point);
+              continue;
+            }
+            
+            // Verificação de tipo
+            if (typeof t !== 'number' || typeof v !== 'number') {
+              console.error(`[Chart] ❌ Ponto ${i} não é número:`, { time: typeof t, value: typeof v, point });
+              continue;
+            }
+            
+            // Verificação de NaN
+            if (isNaN(t) || isNaN(v)) {
+              console.error(`[Chart] ❌ Ponto ${i} é NaN:`, point);
+              continue;
+            }
+            
+            // Verificação de finitude
+            if (!isFinite(t) || !isFinite(v)) {
+              console.error(`[Chart] ❌ Ponto ${i} não é finito:`, point);
+              continue;
+            }
+            
+            // Verificação de valores positivos
+            if (t <= 0 || v <= 0) {
+              console.error(`[Chart] ❌ Ponto ${i} não é positivo:`, point);
+              continue;
+            }
+            
+            safeData.push({ time: t, value: v });
+          }
+          
+          if (safeData.length === 0) {
+            console.error('[Chart] ❌ Nenhum ponto válido após validação final');
+            return;
+          }
+          
+          console.log('[Chart] ✅ Dados seguros para setData:', safeData.length, 'pontos');
+          console.log('[Chart] Primeiro ponto seguro:', safeData[0]);
+          console.log('[Chart] Último ponto seguro:', safeData[safeData.length - 1]);
+          
+          try {
+            this.chartSeries.setData(safeData);
+            console.log('[Chart] ✅ setData executado com sucesso');
+          } catch (error) {
+            console.error('[Chart] ❌ Erro ao executar setData:', error);
+            console.error('[Chart] Dados que causaram erro:', safeData);
+            // Tentar identificar qual ponto está causando o problema
+            for (let i = 0; i < safeData.length; i++) {
+              const p = safeData[i];
+              if (p.time === null || p.value === null || p.time === undefined || p.value === undefined) {
+                console.error(`[Chart] ❌ Ponto ${i} tem null/undefined:`, p);
+              }
+            }
+            return;
+          }
           
           // Ajustar viewport para mostrar os dados mais recentes
           setTimeout(() => {
@@ -1924,30 +1992,45 @@ export default {
             return;
           }
           
-          // Garantir que são números válidos antes de atualizar
-          const finalValue = Number(value);
-          const finalTime = Number(validEpoch);
+          // Usar os valores já validados (validValue e validEpoch)
+          // Validação explícita para null/undefined antes de chamar update
+          if (validValue === null || validValue === undefined || validEpoch === null || validEpoch === undefined) {
+            console.error('[Chart] ❌ processTick recebeu valor ou epoch null/undefined, ignorando update:', { value: validValue, epoch: validEpoch });
+            return;
+          }
           
-          if (
-            !isFinite(finalValue) || 
-            finalValue <= 0 || 
-            isNaN(finalValue) ||
-            !isFinite(finalTime) || 
-            finalTime <= 0 ||
-            isNaN(finalTime)
-          ) {
-            console.warn('[Chart] Valores finais inválidos no processTick:', { finalValue, finalTime });
+          // Verificação de tipo
+          if (typeof validValue !== 'number' || typeof validEpoch !== 'number') {
+            console.error('[Chart] ❌ processTick recebeu valor ou epoch que não é número, ignorando update:', { value: typeof validValue, epoch: typeof validEpoch });
+            return;
+          }
+          
+          // Verificação de NaN
+          if (isNaN(validValue) || isNaN(validEpoch)) {
+            console.error('[Chart] ❌ processTick recebeu valor ou epoch NaN, ignorando update:', { value: validValue, epoch: validEpoch });
+            return;
+          }
+          
+          // Verificação de finitude
+          if (!isFinite(validValue) || !isFinite(validEpoch)) {
+            console.error('[Chart] ❌ processTick recebeu valor ou epoch não finito, ignorando update:', { value: validValue, epoch: validEpoch });
+            return;
+          }
+          
+          // Verificação de valores positivos
+          if (validValue <= 0 || validEpoch <= 0) {
+            console.error('[Chart] ❌ processTick recebeu valor ou epoch não positivo, ignorando update:', { value: validValue, epoch: validEpoch });
             return;
           }
           
           // Adicionar apenas o novo tick (atualização incremental)
           try {
             this.chartSeries.update({
-              time: finalTime,
-              value: finalValue
+              time: validEpoch,
+              value: validValue
             });
           } catch (error) {
-            console.error('[Chart] Erro ao atualizar tick incremental:', error, { time: finalTime, value: finalValue });
+            console.error('[Chart] ❌ Erro ao atualizar tick incremental:', error, { time: validEpoch, value: validValue });
           }
         } catch (error) {
           console.error('[Chart] Erro ao atualizar tick:', error);
