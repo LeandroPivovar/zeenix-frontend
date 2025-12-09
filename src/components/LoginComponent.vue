@@ -321,7 +321,14 @@ export default {
     },
     async handleLogin() {
       if (this.isLoading) return;
+      if (!this.isMounted) return;
+      
+      // Usar nextTick para garantir que a atualização seja segura
+      await this.$nextTick();
+      if (!this.isMounted) return;
+      
       this.isLoading = true;
+      
       try {
         const res = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/auth/login', {
           method: 'POST',
@@ -338,21 +345,31 @@ export default {
         localStorage.removeItem('deriv_connection');
         localStorage.removeItem('deriv_app_id');
         
-        // Resetar loading antes da navegação para evitar erro de desmontagem
-        if (this.isMounted) {
-          this.isLoading = false;
-        }
-        
-        // Usar nextTick para garantir que a atualização do estado seja processada antes da navegação
-        await this.$nextTick();
-        this.$router.push('/dashboard');
+        // Usar requestAnimationFrame para garantir que todas as atualizações DOM sejam concluídas
+        // antes de navegar, evitando conflitos com a desmontagem do componente
+        requestAnimationFrame(() => {
+          if (this.isMounted && this.$router) {
+            this.$router.push('/dashboard').catch(() => {
+              // Ignorar erro de navegação silenciosamente
+            });
+          }
+        });
       } catch (e) {
         // Verificar se o componente ainda está montado antes de atualizar o estado
         if (this.isMounted) {
-          this.isLoading = false;
-          if (this.$root && this.$root.$toast) {
-            this.$root.$toast.error(e.message || 'Erro inesperado');
-          }
+          requestAnimationFrame(() => {
+            if (this.isMounted) {
+              try {
+                this.isLoading = false;
+                if (this.$root && this.$root.$toast) {
+                  this.$root.$toast.error(e.message || 'Erro inesperado');
+                }
+              } catch (stateError) {
+                // Ignorar erro se o componente foi desmontado durante a atualização
+                console.warn('Erro ao atualizar estado:', stateError);
+              }
+            }
+          });
         }
       }
     }
