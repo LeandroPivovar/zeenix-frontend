@@ -483,6 +483,7 @@ export default {
 
       const container = this.$refs.chartContainer;
       if (!container) {
+        setTimeout(() => this.initChart(), 100);
         return;
       }
 
@@ -508,7 +509,15 @@ export default {
             container.appendChild(canvas);
           }
 
-          // Verificar dimensões
+          // Garantir que o canvas está visível e com dimensões corretas
+          canvas.style.display = 'block';
+          canvas.style.visibility = 'visible';
+          canvas.style.opacity = '1';
+          canvas.style.width = '100%';
+          canvas.style.height = '100%';
+          canvas.style.position = 'relative';
+
+          // Verificar dimensões do container
           const rect = container.getBoundingClientRect();
           if (rect.width <= 0 || rect.height <= 0) {
             setTimeout(() => this.initChart(), 200);
@@ -520,8 +529,7 @@ export default {
             return;
           }
 
-          // Criar arrays não-reativos para o Chart.js
-          // Usar Object.create(null) para criar objetos completamente sem protótipo
+          // Criar arrays para o Chart.js
           const chartLabels = [];
           const chartData = [];
           
@@ -546,6 +554,10 @@ export default {
               responsive: true,
               maintainAspectRatio: false,
               animation: false,
+              interaction: {
+                intersect: false,
+                mode: 'index'
+              },
               plugins: {
                 legend: {
                   display: false
@@ -572,40 +584,47 @@ export default {
             }
           });
 
-          console.log('[Chart] Gráfico criado, aguardando inicialização completa...');
+          // Garantir que o canvas está visível
+          if (canvas) {
+            canvas.style.display = 'block';
+            canvas.style.visibility = 'visible';
+            canvas.style.opacity = '1';
+            canvas.style.width = '100%';
+            canvas.style.height = '100%';
+          }
           
-          // Marcar gráfico como pronto após renderização completa
-          // Aguardar Chart.js inicializar completamente
-          setTimeout(() => {
-            try {
-              if (this.chart && this.chart.chartArea && this.chart.chartArea.width > 0) {
-                this.chartReady = true;
-                console.log('[Chart] ✓ Gráfico pronto e inicializado');
-                // Atualizar com dados existentes se houver
-                if (this.ticks.length > 0) {
-                  console.log('[Chart] Atualizando com', this.ticks.length, 'ticks existentes');
-                  this.updateChartData();
-                }
-              } else {
-                console.warn('[Chart] Gráfico ainda não tem chartArea válido, tentando novamente...');
-                // Tentar novamente se ainda não estiver pronto
-                setTimeout(() => {
-                  if (this.chart && this.chart.chartArea && this.chart.chartArea.width > 0) {
+          // Marcar gráfico como pronto após renderização
+          this.$nextTick(() => {
+            setTimeout(() => {
+              if (this.chart) {
+                try {
+                  // Forçar resize para garantir dimensões corretas
+                  this.chart.resize();
+                  
+                  if (this.chart.chartArea && this.chart.chartArea.width > 0) {
                     this.chartReady = true;
-                    console.log('[Chart] ✓ Gráfico pronto após segunda tentativa');
+                    
+                    // Atualizar com dados existentes se houver
                     if (this.ticks.length > 0) {
-                      console.log('[Chart] Atualizando com', this.ticks.length, 'ticks existentes');
                       this.updateChartData();
                     }
                   } else {
-                    console.warn('[Chart] Gráfico ainda não está pronto após segunda tentativa');
+                    // Tentar novamente após mais tempo
+                    setTimeout(() => {
+                      if (this.chart && this.chart.chartArea && this.chart.chartArea.width > 0) {
+                        this.chartReady = true;
+                        if (this.ticks.length > 0) {
+                          this.updateChartData();
+                        }
+                      }
+                    }, 200);
                   }
-                }, 200);
+                } catch (e) {
+                  console.error('[Chart] Erro ao inicializar:', e);
+                }
               }
-            } catch (e) {
-              console.error('[Chart] Erro ao verificar se gráfico está pronto:', e);
-            }
-          }, 300);
+            }, 100);
+          });
 
           // Adicionar listener de resize
           if (!this._resizeHandler) {
@@ -1826,14 +1845,13 @@ export default {
     processHistory(msg) {
       const history = msg.history;
       if (!history || !history.prices) {
-        console.warn('[Chart] Histórico inválido recebido');
         return;
       }
       
       const prices = history.prices.map(price => Number(price));
       const times = history.times?.map(time => Math.floor(Number(time))) || [];
       
-      // Limpar e processar histórico - criar novo array para evitar reatividade
+      // Processar histórico
       const newTicks = [];
       for (let i = 0; i < prices.length; i++) {
         const value = Number(prices[i]);
@@ -1842,8 +1860,6 @@ export default {
           newTicks.push({ value, epoch });
         }
       }
-      
-      console.log('[Chart] processHistory - Processados', newTicks.length, 'ticks do histórico');
       
       // Substituir array completamente
       this.ticks = newTicks;
@@ -1856,15 +1872,10 @@ export default {
       
       // Garantir que o gráfico existe e atualizar
       if (!this.chart) {
-        console.log('[Chart] Gráfico não existe, criando...');
         this.chartReady = false;
         this.initChart();
       } else if (this.chartReady) {
-        console.log('[Chart] Gráfico existe e está pronto, agendando atualização...');
-        // Usar scheduleChartUpdate para evitar problemas de reatividade
         this.scheduleChartUpdate();
-      } else {
-        console.log('[Chart] Gráfico existe mas ainda não está pronto, aguardando...');
       }
     },
     processCandles(msg) {
@@ -1914,8 +1925,10 @@ export default {
       this.latestTick = { value, epoch };
       this.lastUpdate = Date.now();
       
-      // Atualizar gráfico com debounce
-      this.scheduleChartUpdate();
+      // Atualizar gráfico
+      if (this.chartReady) {
+        this.scheduleChartUpdate();
+      }
     },
     // Agendar atualização do gráfico com debounce
     scheduleChartUpdate() {
@@ -1923,16 +1936,11 @@ export default {
         clearTimeout(this.updateChartTimeout);
       }
       
-      // Verificar se já estamos atualizando para evitar múltiplas chamadas simultâneas
       if (this.isUpdatingChart) {
-        console.log('[Chart] scheduleChartUpdate - Já está atualizando, ignorando');
         return;
       }
       
-      console.log('[Chart] scheduleChartUpdate - Agendando atualização em 100ms');
-      
       this.updateChartTimeout = setTimeout(() => {
-        console.log('[Chart] scheduleChartUpdate - Executando atualização agendada');
         this.isUpdatingChart = true;
         try {
           this.updateChartData();
@@ -1940,161 +1948,66 @@ export default {
           this.isUpdatingChart = false;
           this.updateChartTimeout = null;
         }
-      }, 100);
+      }, 50);
     },
 
-    // Atualizar dados do gráfico
+    // Atualizar dados do gráfico - versão simplificada
     updateChartData() {
-      // Verificar se gráfico está pronto
+      // Verificações básicas
       if (!this.chartReady || !this.chart || !this.ticks || !this.ticks.length) {
-        if (!this.chartReady) {
-          console.log('[Chart] updateChartData - Gráfico não está pronto ainda');
-        } else if (!this.chart) {
-          console.log('[Chart] updateChartData - Gráfico não existe');
-        } else if (!this.ticks || !this.ticks.length) {
-          console.log('[Chart] updateChartData - Sem ticks para atualizar');
-        }
         return;
       }
 
-      console.log('[Chart] updateChartData - Atualizando gráfico com', this.ticks.length, 'ticks');
-
-      // Verificações de segurança
-      if (!this.chart.canvas || 
-          !this.chart.canvas.parentNode || 
-          !this.chart.data || 
-          !this.chart.data.datasets || 
-          !this.chart.data.datasets[0] ||
-          !this.chart.ctx) {
-        console.warn('[Chart] Gráfico não está válido, faltando componentes:', {
-          canvas: !!this.chart.canvas,
-          parentNode: !!this.chart.canvas?.parentNode,
-          data: !!this.chart.data,
-          datasets: !!this.chart.data?.datasets,
-          dataset0: !!this.chart.data?.datasets?.[0],
-          ctx: !!this.chart.ctx
-        });
-        return;
-      }
-
-      // Verificar se o gráfico está completamente inicializado
-      try {
-        if (!this.chart.chartArea || !this.chart.chartArea.width || !this.chart.chartArea.height) {
-          console.warn('[Chart] chartArea não está válido ainda');
-          return;
-        }
-      } catch (e) {
-        console.warn('[Chart] Erro ao verificar chartArea:', e);
+      // Verificar se o gráfico está válido
+      if (!this.chart.canvas || !this.chart.data || !this.chart.data.datasets || !this.chart.data.datasets[0]) {
         return;
       }
 
       try {
-        // Criar arrays completamente novos e não-reativos
-        const ticksLength = this.ticks.length;
+        // Garantir que o canvas está visível
+        const canvas = this.chart.canvas;
+        if (canvas) {
+          canvas.style.display = 'block';
+          canvas.style.visibility = 'visible';
+          canvas.style.opacity = '1';
+        }
+
+        // Extrair dados válidos
         const validData = [];
         const validLabels = [];
         
-        console.log('[Chart] Processando', ticksLength, 'ticks...');
-        
-        // Extrair valores de forma não-reativa
-        for (let i = 0; i < ticksLength; i++) {
+        for (let i = 0; i < this.ticks.length; i++) {
           const tick = this.ticks[i];
-          let value;
-          
-          if (tick && typeof tick === 'object') {
-            value = Object.prototype.hasOwnProperty.call(tick, 'value') ? tick.value : (Object.prototype.hasOwnProperty.call(tick, 'quote') ? tick.quote : null);
-          } else {
-            value = tick;
-          }
-          
+          const value = tick?.value ?? tick?.quote ?? null;
           const numValue = Number(value);
           
-          if (typeof numValue === 'number' && !isNaN(numValue) && isFinite(numValue) && numValue > 0) {
+          if (!isNaN(numValue) && isFinite(numValue) && numValue > 0) {
             validData.push(numValue);
             validLabels.push(i);
           }
         }
 
-        console.log('[Chart] Dados extraídos:', {
-          totalTicks: ticksLength,
-          validDataCount: validData.length,
-          firstValue: validData[0],
-          lastValue: validData[validData.length - 1]
-        });
-
         if (validData.length === 0) {
-          console.warn('[Chart] Nenhum dado válido extraído dos ticks');
           return;
         }
 
         // Atualizar dados do gráfico
         const dataset = this.chart.data.datasets[0];
-        
-        console.log('[Chart] Atualizando dataset, dados atuais:', {
-          currentDataLength: dataset.data.length,
-          newDataLength: validData.length,
-          datasetExists: !!dataset
-        });
-        
-        // Recriar arrays completamente novos - não modificar os existentes
-        // Criar cópias simples usando Array.from para garantir que são arrays JavaScript puros
-        const newDataArray = Array.from(validData);
-        const newLabelsArray = Array.from(validLabels);
-        
-        // Substituir completamente os arrays do dataset
-        // Isso cria novas referências que não são observadas pelo Vue
-        dataset.data = newDataArray;
-        this.chart.data.labels = newLabelsArray;
+        dataset.data = [...validData];
+        this.chart.data.labels = [...validLabels];
 
-        console.log('[Chart] Dados substituídos no dataset:', {
-          dataLength: dataset.data.length,
-          labelsLength: this.chart.data.labels.length,
-          firstDataPoint: dataset.data[0],
-          lastDataPoint: dataset.data[dataset.data.length - 1]
-        });
-
-        // Usar chart.render() em vez de update() para evitar problemas de reatividade
-        // render() força uma renderização completa sem tentar fazer diff
-        const renderChart = () => {
-          try {
-            if (!this.chart || !this.chartReady) {
-              return;
-            }
-            
-            if (!this.chart.data || !this.chart.data.datasets || !this.chart.data.datasets[0]) {
-              return;
-            }
-            
-            // Verificar se o gráfico tem área válida
-            if (!this.chart.chartArea || this.chart.chartArea.width <= 0 || this.chart.chartArea.height <= 0) {
-              return;
-            }
-            
-            // Usar render() em vez de update() para evitar loops de reatividade
-            this.chart.render();
-            console.log('[Chart] ✓ Gráfico renderizado com sucesso,', validData.length, 'pontos');
-          } catch (renderError) {
-            console.error('[Chart] Erro ao renderizar:', renderError.message);
-            // Se render() também falhar, tentar update() como fallback
+        // Atualizar gráfico diretamente
+        this.$nextTick(() => {
+          if (this.chart && this.chartReady) {
             try {
               this.chart.update('none');
-              console.log('[Chart] ✓ Gráfico atualizado com update() após erro no render()');
-            } catch (updateError) {
-              console.error('[Chart] Erro ao chamar update() também:', updateError.message);
-              if (updateError.message && updateError.message.includes('Maximum call stack')) {
-                console.error('[Chart] Erro crítico de stack overflow - gráfico será desabilitado');
-                this.chartReady = false;
-              }
+            } catch (e) {
+              console.error('[Chart] Erro ao atualizar:', e);
             }
           }
-        };
-        
-        // Usar setTimeout para garantir que está fora do ciclo atual
-        setTimeout(renderChart, 100);
+        });
       } catch (error) {
-        console.error('[Chart] Erro ao atualizar:', error);
-        // NÃO recriar o gráfico automaticamente - isso causa loops infinitos
-        // Apenas marcar como não pronto
+        console.error('[Chart] Erro ao atualizar dados:', error);
         this.chartReady = false;
       }
     },
