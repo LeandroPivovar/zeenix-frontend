@@ -449,12 +449,12 @@ header{
     }
 
     .box{
-        padding: 20px!important;
+        padding: 0 !important;
         max-width: 420px;
         width: 100%;
         border-radius: 18px;
-        background-color: #0e0f0f;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background-color: transparent;
+        border: none;
         margin-bottom: 30px;
     }
 
@@ -480,7 +480,7 @@ header{
         padding: 12px 24px;
         border-radius: 13px;
     }
-
+    
     .link-button {
         display: inline-flex;
         align-items: center;
@@ -495,6 +495,22 @@ header{
         cursor: pointer;
         text-decoration: none;
         margin-top: 4px;
+    }
+    
+    /* Quando o modal está aberto, botão "Conectar à corretora" fica transparente com borda */
+    .welcome-screen.modal-open .actions .primary {
+        background: transparent !important;
+        color: #FFFFFF !important;
+        border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    }
+    
+    .welcome-screen.modal-open .actions .primary img {
+        filter: brightness(0) invert(1);
+    }
+    
+    /* Quando o modal está aberto, botão "Voltar" fica verde */
+    .welcome-screen.modal-open .actions .link-button {
+        color: #22C55E !important;
     }
 
     .link-button:hover {
@@ -574,8 +590,8 @@ header{
     }
 
     .box{
-        background-color: #0e0f0f;
-        border: 1px solid rgba(255, 255, 255, 0.08);
+        background-color: transparent;
+        border: none;
         padding: 10px;
         border-radius: 20px;
         margin-bottom: 30px;
@@ -589,6 +605,15 @@ header{
         width: 100%;
         max-width: 420px;
         margin-bottom: 15px;
+        margin-top: -10px;
+    }
+    
+    .modal-header-external-wrapper .step2-instruction {
+        color: #8D8D8D;
+        font-size: 14px;
+        margin-top: 8px;
+        margin-bottom: 0;
+        text-align: left;
     }
     
     .modal-header-external-wrapper .modal-header-external {
@@ -598,6 +623,11 @@ header{
         width: 100%;
         padding: 0;
         box-sizing: border-box;
+    }
+
+    .modal-header-external-wrapper[data-v-9ea40744]{
+        margin-top: -20px;
+        margin-bottom: 40px;
     }
     
     .modal-header-external-wrapper .title {
@@ -641,8 +671,8 @@ header{
     
     /* Indicador de Etapa */
     .step-indicator {
-        background: #22C55E;
-        color: #FFFFFF;
+        background: #22C55E !important;
+        color: #FFFFFF !important;
         text-align: center;
         padding: 12px 20px;
         font-weight: 600;

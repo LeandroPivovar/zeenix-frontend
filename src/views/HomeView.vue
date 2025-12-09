@@ -24,7 +24,7 @@
     </template>
 
     <!-- Tela de Conexão (sem sidebar e header) -->
-    <main class="content welcome-screen" v-if="!connectedInfo && !loading">
+    <main class="content welcome-screen" :class="{ 'modal-open': showCreateAccountCard }" v-if="!connectedInfo && !loading">
       <!-- Indicador de Etapa (apenas mobile, todas as etapas) - fora do container para ocupar toda largura -->
       <div v-if="showCreateAccountCard" class="step-indicator">
         PASSO {{ currentAccountStep }}/3
@@ -41,6 +41,7 @@
               <h3 class="title">Criar Conta na Deriv</h3>
               <button class="close-btn" @click="handleCloseAccountCard" :disabled="false">×</button>
             </div>
+            <p v-if="currentAccountStep === 2" class="subtitle step2-instruction">Preencha o código enviado para seu e-mail.</p>
           </div>
           
           <!-- Card de criação de conta (apenas mobile) -->
