@@ -223,6 +223,7 @@
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
 import TradeResultModal from './TradeResultModal.vue';
+import derivTradingService from '../services/deriv-trading.service.js';
 
 const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
 
@@ -245,7 +246,7 @@ export default {
     },
     data() {
         return {
-      ws: null,
+      // ws removido - agora usa derivTradingService
       tickSubscriptionId: null,
       token: null,
       appId: null,
@@ -655,33 +656,20 @@ export default {
         this.chartUpdateTimer = null;
       }, 200);
     },
-    initConnection() {
-      console.log('[OperationChart] initConnection - Iniciando conexão WebSocket');
+    async initConnection() {
+      console.log('[OperationChart] initConnection - Iniciando conexão via backend');
       console.log('[OperationChart] Props recebidas:', {
         accountLoginid: this.accountLoginid,
         preferredCurrency: this.preferredCurrency,
         accountCurrency: this.accountCurrency
       });
       
-      // Se já existe uma conexão ativa e autorizada com o mesmo loginid, não reconectar
-      if (this.ws && this.ws.readyState === WebSocket.OPEN && this.isAuthorized) {
+      // Se já está conectado, não reconectar
+      if (derivTradingService.isConnected && this.isAuthorized) {
         const expectedLoginid = this.accountLoginid || this.currentLoginid;
         if (this.currentLoginid === expectedLoginid && !this.isReconnecting) {
-          console.log('[OperationChart] ✅ Conexão WebSocket já está ativa e autorizada com o loginid correto, cancelando reconexão desnecessária');
+          console.log('[OperationChart] ✅ Conexão já está ativa, cancelando reconexão desnecessária');
           return;
-        } else {
-          console.log('[OperationChart] Loginid mudou ou está em reconexão, reconexão necessária');
-        }
-      }
-      
-      // Se já existe uma conexão ativa e autorizada com o mesmo loginid, não reconectar
-      if (this.ws && this.ws.readyState === WebSocket.OPEN && this.isAuthorized) {
-        const expectedLoginid = this.accountLoginid || this.currentLoginid;
-        if (this.currentLoginid === expectedLoginid && !this.isReconnecting) {
-          console.log('[OperationChart] ✅ Conexão WebSocket já está ativa e autorizada com o loginid correto, cancelando reconexão desnecessária');
-          return;
-        } else {
-          console.log('[OperationChart] Loginid mudou ou está em reconexão, reconexão necessária');
         }
       }
       
@@ -691,7 +679,7 @@ export default {
         this.retryTimeout = null;
       }
       
-      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      if (derivTradingService.isConnected) {
         console.log('[OperationChart] Fechando conexão WebSocket existente');
         this.teardownConnection();
       }
@@ -713,10 +701,8 @@ export default {
         this.initChart();
       } else if (this.chart && this.$refs.chartContainer) {
         console.log('[OperationChart] Gráfico existe, preservando durante reconexão');
-        // Garantir que o gráfico está visível
-          this.$nextTick(() => {
+        this.$nextTick(() => {
           if (this.chart && this.ticks.length > 0) {
-            // Se já temos dados, atualizar o gráfico com debounce
             if (this.chartReady) {
               this.scheduleUpdate();
             }
@@ -727,125 +713,68 @@ export default {
       this.connectionError = '';
       this.isConnecting = true;
       
-      // Timeout de segurança para resetar isReconnecting se a conexão não for estabelecida
-      if (this.reconnectTimeout) {
-        clearTimeout(this.reconnectTimeout);
-      }
-      this.reconnectTimeout = setTimeout(() => {
-        if (this.isReconnecting && !this.isAuthorized) {
-          console.warn('[OperationChart] Timeout de reconexão, resetando flag');
-          this.isReconnecting = false;
-        }
-      }, 30000); // 30 segundos
-      
-      // Determinar qual token usar baseado na moeda preferida e loginid
-      this.token = this.getTokenForAccount();
-      this.appId = localStorage.getItem('deriv_app_id') || APP_ID;
-
-      console.log('[OperationChart] Token selecionado:', {
-        hasToken: !!this.token,
-        tokenLength: this.token ? this.token.length : 0,
-        tokenPreview: this.token ? `${this.token.substring(0, 10)}...` : 'null',
-        appId: this.appId
-      });
-
-      if (!this.token) {
+      // Obter token Deriv
+      const derivToken = this.getTokenForAccount();
+      if (!derivToken) {
         console.error('[OperationChart] ERRO: Nenhum token Deriv encontrado');
-        console.log('[OperationChart] Limpando cache de conexão e redirecionando para a tela de conexão...');
         this.isConnecting = false;
-        // Limpar cache de conexão para forçar a tela de conexão
         localStorage.removeItem('deriv_connection');
-        localStorage.removeItem('deriv_token');
-        localStorage.removeItem('deriv_tokens_by_loginid');
-        // Redirecionar para o dashboard (home) que mostrará a tela de conexão
         this.$router.push('/dashboard');
         return;
       }
 
-      const endpoint = `wss://ws.derivws.com/websockets/v3?app_id=${this.appId}`;
-      console.log('[OperationChart] Conectando ao endpoint:', endpoint);
-      this.ws = new WebSocket(endpoint);
-
-      this.ws.onopen = () => {
-        console.log('[OperationChart] WebSocket aberto, enviando autorização');
-        console.log('[OperationChart] Autorizando com token para loginid:', this.accountLoginid);
-        // Pequeno delay para garantir que o WebSocket está totalmente pronto
-        setTimeout(() => {
-          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
-            this.send({ authorize: this.token });
-          } else {
-            console.warn('[OperationChart] WebSocket não está mais aberto ao tentar autorizar');
-            this.connectionError = 'Erro ao autorizar conexão. Reconectando automaticamente...';
-            this.scheduleRetry();
-          }
-        }, 50);
-      };
-
-      this.ws.onmessage = (event) => {
-        try {
-          const msg = JSON.parse(event.data);
-          console.log('[OperationChart] 📥 Mensagem recebida da Deriv:', {
-            msg_type: msg.msg_type,
-            hasError: !!msg.error,
-            fullMessage: JSON.stringify(msg, null, 2)
-          });
-          this.handleMessage(msg);
-        } catch (error) {
-          console.error('[OperationChart] ERRO ao interpretar mensagem da Deriv:', error);
-          console.error('[OperationChart] Dados recebidos (raw):', event.data);
-        }
-      };
-
-      this.ws.onerror = (error) => {
-        console.error('[OperationChart] ========== ERRO NO WEBSOCKET ==========');
-        console.error('[OperationChart] Erro:', error);
-        console.error('[OperationChart] Contexto:', {
-          accountLoginid: this.accountLoginid,
-          preferredCurrency: this.preferredCurrency,
-          tokenPreview: this.token ? `${this.token.substring(0, 10)}...` : 'null'
+      try {
+        // Conectar via backend
+        await derivTradingService.connect(derivToken, this.accountLoginid);
+        console.log('[OperationChart] ✅ Conectado ao backend Deriv');
+        
+        // Iniciar stream SSE
+        const derivToken = this.getTokenForAccount();
+        derivTradingService.startStream((data) => {
+          this.handleSSEMessage(data);
+        }, derivToken);
+        
+        // Configurar listeners específicos
+        derivTradingService.on('tick', (tickData) => {
+          this.processTick({ tick: { quote: tickData.value, epoch: tickData.epoch } });
         });
-        this.connectionError = 'Erro na conexão com a Deriv. Reconectando automaticamente...';
+        
+        derivTradingService.on('history', (historyData) => {
+          this.processHistory({ history: { prices: historyData.ticks.map(t => t.value), times: historyData.ticks.map(t => t.epoch) }, subscription: { id: historyData.subscriptionId } });
+        });
+        
+        derivTradingService.on('proposal', (proposalData) => {
+          this.processProposal({ proposal: proposalData, subscription: { id: proposalData.id } });
+        });
+        
+        derivTradingService.on('contracts_for', (contractsData) => {
+          this.processContractsFor({ contracts_for: contractsData });
+        });
+        
+        derivTradingService.on('trading_durations', (durationsData) => {
+          this.processTradingDurations({ trading_durations: durationsData });
+        });
+        
+        derivTradingService.on('active_symbols', (symbolsData) => {
+          this.processActiveSymbols({ active_symbols: symbolsData });
+        });
+        
+        this.isAuthorized = true;
+        this.isConnecting = false;
+        this.currentLoginid = this.accountLoginid;
+        
+        // Inscrever-se no símbolo padrão
+        if (this.symbol) {
+          await this.subscribeToSymbol(this.symbol);
+        }
+        
+      } catch (error) {
+        console.error('[OperationChart] Erro ao conectar:', error);
+        this.connectionError = error.message || 'Erro ao conectar com Deriv';
         this.isConnecting = false;
         this.isAuthorized = false;
         this.scheduleRetry();
-      };
-
-      this.ws.onclose = (event) => {
-        console.log('[OperationChart] ========== WEBSOCKET FECHADO ==========');
-        console.log('[OperationChart] Detalhes do fechamento:', {
-          code: event.code,
-          reason: event.reason,
-          wasClean: event.wasClean,
-          isConnecting: this.isConnecting,
-          isReconnecting: this.isReconnecting
-        });
-        
-        // Ignorar fechamentos esperados (durante reconexão ou teardown)
-        if (this.isReconnecting || this.isConnecting) {
-          console.log('[OperationChart] Fechamento esperado durante reconexão/inicialização');
-          this.ws = null;
-          return;
-        }
-        
-        // Código 1005 = No Status Received (fechamento normal do navegador)
-        // Código 1000 = Normal Closure
-        if (event.code === 1005 || event.code === 1000) {
-          console.log('[OperationChart] Fechamento normal do WebSocket');
-          this.ws = null;
-          return;
-        }
-        
-        // Fechamento inesperado - tentar reconectar
-        if (!this.isConnecting && !this.isReconnecting) {
-          console.warn('[OperationChart] Conexão encerrada inesperadamente');
-          this.connectionError = 'Conexão com a Deriv encerrada. Reconectando automaticamente...';
-          this.isAuthorized = false;
-          this.scheduleRetry();
-        }
-        
-        this.isConnecting = false;
-        this.ws = null;
-      };
+      }
     },
     scheduleRetry() {
       // Limpar retry anterior se existir
@@ -868,14 +797,8 @@ export default {
       }, delay);
     },
     teardownConnection() {
-      if (this.ws) {
-        try {
-          this.ws.close();
-        } catch (error) {
-          console.warn('Erro ao encerrar WebSocket', error);
-        }
-      }
-      this.ws = null;
+      derivTradingService.stopStream();
+      derivTradingService.disconnect();
       this.tickSubscriptionId = null;
       this.isAuthorized = false;
       // Não resetar isReconnecting aqui, será resetado quando nova conexão for estabelecida
@@ -917,164 +840,71 @@ export default {
       }
       this.remainingTime = null;
     },
-    handleMessage(msg) {
-      // Log para debug - verificar se contracts_for está chegando
-      if (msg.msg_type === 'contracts_for') {
-        console.log('[OperationChart] 🔍 Mensagem contracts_for recebida:', {
-          hasError: !!msg.error,
-          hasContractsFor: !!msg.contracts_for,
-          msgType: msg.msg_type
-        });
+    handleSSEMessage(data) {
+      // Processar mensagens SSE do backend
+      if (data.error) {
+        this.handleDerivError(data.error);
+        return;
       }
+
+      switch (data.type) {
+        case 'tick':
+          this.processTick({ tick: { quote: data.data.value, epoch: data.data.epoch } });
+          break;
+        case 'history':
+          this.processHistory({ 
+            history: { 
+              prices: data.data.ticks?.map(t => t.value) || [], 
+              times: data.data.ticks?.map(t => t.epoch) || [] 
+            }, 
+            subscription: { id: data.data.subscriptionId } 
+          });
+          break;
+        case 'proposal':
+          this.processProposal({ 
+            proposal: data.data, 
+            subscription: { id: data.data.id } 
+          });
+          break;
+        case 'contracts_for':
+          this.processContractsFor({ contracts_for: data.data });
+          break;
+        case 'trading_durations':
+          this.processTradingDurations({ trading_durations: data.data });
+          break;
+        case 'active_symbols':
+          this.processActiveSymbols({ active_symbols: data.data });
+          break;
+        case 'buy':
+          this.processBuy({ buy: data.data });
+          break;
+        case 'sell':
+          this.processSell({ sell: data.data });
+          break;
+        case 'error':
+          this.handleDerivError(data.error);
+          break;
+      }
+    },
+    
+    handleMessage(msg) {
+      // Método legado - mantido para compatibilidade
+      // A maioria das mensagens agora chega via SSE através de handleSSEMessage
+      // Este método ainda pode ser usado para processar mensagens diretas se necessário
       
       if (msg.error) {
         this.handleDerivError(msg.error);
         return;
       }
 
+      // Processar apenas mensagens que não chegam via SSE
+      // As mensagens principais (tick, history, proposal, buy, sell) são processadas via SSE
       switch (msg.msg_type) {
-        case 'authorize': {
-          console.log('[OperationChart] ✓ Autorização recebida da Deriv');
-          const authorizeData = msg.authorize || {};
-          const isVirtual = authorizeData.is_virtual === 1 || authorizeData.is_virtual === true;
-          const loginid = authorizeData.loginid || '';
-          const isDemoAccount = isVirtual || loginid.startsWith('VRTC') || loginid.startsWith('VRT');
-          
-          // Armazenar se é conta demo para exibição na interface
-          this.isDemoAccount = isDemoAccount;
-          
-          console.log('[OperationChart] Dados de autorização:', {
-            loginid: loginid,
-            currency: authorizeData.currency,
-            email: authorizeData.email,
-            fullname: authorizeData.fullname,
-            is_virtual: authorizeData.is_virtual,
-            isDemoAccount: isDemoAccount,
-            accountType: isDemoAccount ? 'DEMO (Virtual)' : 'REAL'
-          });
-          
-          this.isAuthorized = true;
-          this.isConnecting = false;
-          const wasReconnecting = this.isReconnecting;
-          this.isReconnecting = false; // Resetar flag de reconexão
-          this.currentLoginid = loginid; // Armazenar loginid atual
-          this.connectionError = ''; // Limpar erro ao conectar com sucesso
-          this.retryCount = 0; // Resetar contador de tentativas
-          
-          // Se estava em reconexão e o gráfico existe, garantir que será atualizado
-          if (wasReconnecting && this.chart && this.ticks.length > 0) {
-            console.log('[OperationChart] Reconexão concluída, garantindo que gráfico será atualizado');
-            this.$nextTick(() => {
-              if (this.chart && this.lineSeries && this.ticks.length > 0) {
-                this.updateChart();
-              }
-            });
-          }
-          
-          // Limpar timeout de reconexão
-          if (this.reconnectTimeout) {
-            clearTimeout(this.reconnectTimeout);
-            this.reconnectTimeout = null;
-          }
-          
-          // Para contas demo, a moeda geralmente é USD (mas pode ser outra)
-          // O importante é usar a moeda retornada pela API
-          this.connectionCurrency = authorizeData.currency?.toUpperCase() || this.accountCurrency;
-          
-          console.log('[OperationChart] Informações da conta:');
-          console.log('[OperationChart] - Tipo:', isDemoAccount ? 'DEMO (Virtual)' : 'REAL');
-          console.log('[OperationChart] - LoginID:', loginid);
-          console.log('[OperationChart] - Moeda da conexão:', this.connectionCurrency);
-          console.log('[OperationChart] - Moeda preferida configurada:', this.preferredCurrency);
-          console.log('[OperationChart] - Moeda da conta:', this.accountCurrency);
-          
-          // Verificar se o token usado corresponde à conta autorizada
-          if (this.accountLoginid && loginid && this.accountLoginid !== loginid) {
-            console.warn('[OperationChart] ⚠ AVISO: LoginID do token não corresponde ao autorizado');
-            console.warn('[OperationChart] - LoginID esperado:', this.accountLoginid);
-            console.warn('[OperationChart] - LoginID autorizado:', loginid);
-            console.warn('[OperationChart] - Tentando buscar token correto...');
-            
-            // Tentar buscar token correto para o loginid autorizado
-            try {
-              const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
-              const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-              const correctToken = tokensByLoginId[loginid];
-              
-              if (correctToken) {
-                console.log('[OperationChart] ✓ Token correto encontrado, atualizando...');
-                this.token = correctToken;
-                // Reiniciar conexão com token correto
-                setTimeout(() => {
-                  this.initConnection();
-                }, 1000);
-                return;
-              } else {
-                console.warn('[OperationChart] ⚠ Token correto não encontrado no localStorage');
-              }
-            } catch (error) {
-              console.error('[OperationChart] Erro ao buscar token correto:', error);
-            }
-          }
-          
-          this.subscribeToSymbol();
-          
-          // Buscar trading durations globais (uma única vez)
-          if (!this.tradingDurationsCache && !this.isLoadingTradingDurations) {
-            console.log('[OperationChart] Buscando trading durations globais...');
-            this.fetchTradingDurations();
-          }
-          
-          // Buscar active symbols (informações dos mercados)
-          if (!this.activeSymbolsCache) {
-            console.log('[OperationChart] Buscando active symbols...');
-            this.fetchActiveSymbols();
-          }
-          
-          // Buscar dados de contratos para o símbolo atual após autorização (fallback)
-          setTimeout(() => {
-            if (!this.contractsData[this.symbol]) {
-              this.fetchContractsForSymbol(this.symbol);
-            }
-          }, 300);
-          
-          // Iniciar subscription de proposal após autorização
-          setTimeout(() => {
-            this.subscribeToProposal();
-          }, 500);
-          break;
-        }
-        case 'history':
-          this.processHistory(msg);
-          break;
-        case 'candles':
-          this.processCandles(msg);
-          break;
-        case 'tick':
-          this.processTick(msg);
-          break;
-        case 'proposal':
-          this.processProposal(msg);
-          break;
-        case 'buy':
-          this.processBuy(msg);
-          break;
         case 'proposal_open_contract':
           this.processProposalOpenContract(msg);
           break;
-        case 'sell':
-          this.processSell(msg);
-          break;
-        case 'contracts_for':
-          this.processContractsFor(msg);
-          break;
-        case 'trading_durations':
-          this.processTradingDurations(msg);
-          break;
-        case 'active_symbols':
-          this.processActiveSymbols(msg);
-          break;
         default:
+          // Outras mensagens são processadas via SSE
           break;
       }
     },
@@ -1177,7 +1007,7 @@ export default {
         if (!this.currentProposalId && this.isAuthorized && !this.activeContract && this.proposalRetryCount < this.maxProposalRetries) {
           console.warn('[OperationChart] Erro pode estar relacionado à proposta, tentando reenviar após 2 segundos...');
           setTimeout(() => {
-            if (this.isAuthorized && this.ws && this.ws.readyState === WebSocket.OPEN && !this.activeContract && this.proposalRetryCount < this.maxProposalRetries) {
+            if (this.isAuthorized && derivTradingService.isConnected && !this.activeContract && this.proposalRetryCount < this.maxProposalRetries) {
               this.subscribeToProposal();
             }
           }, 2000);
@@ -1295,18 +1125,20 @@ export default {
         this.subscribeToProposal();
       }, 500);
     },
-    subscribeToSymbol() {
-      console.log('[OperationChart] subscribeToSymbol - Inscrevendo-se no símbolo');
-      console.log('[OperationChart] Estado do WebSocket:', {
-        exists: !!this.ws,
-        readyState: this.ws ? this.ws.readyState : 'null'
-      });
+    async subscribeToSymbol(symbol = null) {
+      const targetSymbol = symbol || this.symbol;
+      console.log('[OperationChart] subscribeToSymbol - Inscrevendo-se no símbolo:', targetSymbol);
       
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        console.warn('[OperationChart] WebSocket não está pronto, não é possível inscrever');
+      if (!this.isAuthorized || !derivTradingService.isConnected) {
+        console.warn('[OperationChart] Não é possível inscrever-se: não autorizado ou não conectado');
         return;
       }
-
+      
+      if (!targetSymbol) {
+        console.warn('[OperationChart] Nenhum símbolo selecionado');
+        return;
+      }
+      
       this.isLoadingSymbol = true;
       this.ticks = [];
       this.latestTick = null;
@@ -1315,30 +1147,26 @@ export default {
 
       if (this.tickSubscriptionId) {
         console.log('[OperationChart] Cancelando inscrição anterior:', this.tickSubscriptionId);
-        this.send({ forget: this.tickSubscriptionId });
+        // TODO: Implementar endpoint de cancelamento no backend
         this.tickSubscriptionId = null;
       }
-
-      const payload = {
-        ticks_history: this.symbol,
-        adjust_start_time: 1,
-        count: 500,
-        end: 'latest',
-        subscribe: 1,
-        style: 'ticks',
-      };
       
-      console.log('[OperationChart] Inscrevendo-se no símbolo:', this.symbol);
-      console.log('[OperationChart] Payload de inscrição:', JSON.stringify(payload, null, 2));
-      this.send(payload);
-      
-      // Buscar dados de contratos para este símbolo se ainda não tiver
-      if (!this.contractsData[this.symbol]) {
-        this.fetchContractsForSymbol(this.symbol);
+      try {
+        const derivToken = this.getTokenForAccount();
+        await derivTradingService.subscribeSymbol(targetSymbol, derivToken, this.accountLoginid);
+        console.log('[OperationChart] ✅ Inscrito no símbolo:', targetSymbol);
+        
+        // Buscar dados de contratos para este símbolo se ainda não tiver
+        if (!this.contractsData[targetSymbol]) {
+          this.fetchContractsForSymbol(targetSymbol);
+        }
+      } catch (error) {
+        console.error('[OperationChart] Erro ao inscrever-se no símbolo:', error);
+        this.isLoadingSymbol = false;
       }
     },
     async fetchContractsForSymbol(symbol) {
-      if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      if (!this.isAuthorized || !derivTradingService.isConnected) {
         console.warn('[OperationChart] Não é possível buscar contratos: não autorizado ou WebSocket não está aberto');
         return;
       }
@@ -1359,13 +1187,14 @@ export default {
         }
       }, 5000); // 5 segundos de timeout
       
-      const payload = {
-        contracts_for: symbol,
-        currency: this.displayCurrency,
-        landing_company: 'svg' // ou 'malta', 'maltainvest', etc - pode ser ajustado
-      };
-      
-      this.send(payload);
+      try {
+        const derivToken = this.getTokenForAccount();
+        await derivTradingService.getContracts(symbol, this.displayCurrency);
+        // Os dados chegarão via SSE no evento 'contracts_for'
+      } catch (error) {
+        console.error('[OperationChart] Erro ao buscar contratos:', error);
+        this.isLoadingContracts = false;
+      }
     },
     processContractsFor(msg) {
       console.log('[OperationChart] processContractsFor - Dados de contratos recebidos');
@@ -1626,7 +1455,7 @@ export default {
       this.isLoadingContracts = false;
     },
     fetchTradingDurations() {
-      if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      if (!this.isAuthorized || !derivTradingService.isConnected) {
         console.warn('[OperationChart] Não é possível buscar trading durations');
         return;
       }
@@ -1636,7 +1465,8 @@ export default {
       console.log('[OperationChart] 🔍 Buscando trading durations globais...');
       this.isLoadingTradingDurations = true;
       
-      this.send({ trading_durations: 1, landing_company_short: 'svg' });
+      // Trading durations serão buscados automaticamente quando necessário
+      // TODO: Implementar endpoint específico se necessário
     },
     processTradingDurations(msg) {
       console.log('[OperationChart] ✅ Trading durations recebidos');
@@ -1762,7 +1592,8 @@ export default {
     fetchActiveSymbols() {
       if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) return;
       console.log('[OperationChart] 🔍 Buscando active symbols...');
-      this.send({ active_symbols: 'brief' });
+      // Active symbols serão buscados automaticamente quando necessário
+      // TODO: Implementar endpoint específico se necessário
     },
     processActiveSymbols(msg) {
       if (msg.error || !msg.active_symbols) return;
@@ -2452,8 +2283,8 @@ export default {
       // Cancelar subscription anterior se existir
       this.unsubscribeFromProposal();
       
-      if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        console.warn('[OperationChart] Não é possível subscrever proposal: não autorizado ou WebSocket não está aberto');
+      if (!this.isAuthorized || !derivTradingService.isConnected) {
+        console.warn('[OperationChart] Não é possível subscrever proposal: não autorizado ou não conectado');
         return;
       }
       
@@ -2529,7 +2360,7 @@ export default {
       // Prosseguir com a proposta
       this.proceedWithProposal();
     },
-    proceedWithProposal() {
+    async proceedWithProposal() {
       // Validar e ajustar duração antes de enviar
       const { duration, unit } = this.validateAndAdjustDuration();
       const displayCurrency = this.displayCurrency;
@@ -2606,7 +2437,20 @@ export default {
       this.currentProposalId = null;
       this.currentProposalPrice = null;
       
-      this.send(payload);
+      const proposalConfig = {
+        symbol: this.symbol,
+        contractType: this.localOrderConfig.type,
+        duration: finalDuration,
+        durationUnit: finalUnit,
+        amount: Number(this.localOrderConfig.value),
+      };
+      
+      try {
+        await derivTradingService.subscribeProposal(proposalConfig);
+        // Os dados chegarão via SSE no evento 'proposal'
+      } catch (error) {
+        console.error('[OperationChart] Erro ao inscrever-se em proposta:', error);
+      }
       
       // Circuit Breaker: Limitar tentativas de re-subscription para evitar loops infinitos
       this.proposalTimeout = setTimeout(() => {
@@ -2614,7 +2458,7 @@ export default {
         this.proposalTimeout = null;
         
         // Verificar se ainda precisamos de uma proposta
-        if (!this.currentProposalId && this.isAuthorized && this.ws && this.ws.readyState === WebSocket.OPEN && !this.activeContract) {
+        if (!this.currentProposalId && this.isAuthorized && derivTradingService.isConnected && !this.activeContract) {
           this.proposalRetryCount++;
           
           if (this.proposalRetryCount <= this.maxProposalRetries) {
@@ -2642,14 +2486,10 @@ export default {
         this.proposalTimeout = null;
       }
       
-      // Enviar forget se tiver subscription ativa
-      if (this.proposalSubscriptionId && this.ws && this.ws.readyState === WebSocket.OPEN) {
+      // Cancelar subscription (backend gerencia automaticamente)
+      if (this.proposalSubscriptionId) {
         console.log('[OperationChart] Unsubscribing from proposal:', this.proposalSubscriptionId);
-        try {
-          this.send({ forget: this.proposalSubscriptionId });
-        } catch (error) {
-          console.warn('[OperationChart] Erro ao enviar forget para proposal:', error);
-        }
+        // TODO: Implementar endpoint de cancelamento no backend se necessário
         this.proposalSubscriptionId = null;
       }
       
@@ -2658,7 +2498,7 @@ export default {
       this.currentProposalPrice = null;
     },
     subscribeToContract(contractId) {
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      if (!derivTradingService.isConnected) {
         console.error('[OperationChart] WebSocket não está pronto para subscrever contrato');
         return;
       }
@@ -2669,13 +2509,13 @@ export default {
         subscribe: 1,
       };
       
-      console.log('[OperationChart] Subscribing to contract:', JSON.stringify(payload, null, 2));
-      this.send(payload);
+      console.log('[OperationChart] Subscribing to contract:', contractId);
+      // TODO: Implementar endpoint de subscription de contrato no backend
     },
     unsubscribeFromContract() {
-      if (this.contractSubscriptionId && this.ws && this.ws.readyState === WebSocket.OPEN) {
+      if (this.contractSubscriptionId && derivTradingService.isConnected) {
         console.log('[OperationChart] Unsubscribing from contract:', this.contractSubscriptionId);
-        this.send({ forget: this.contractSubscriptionId });
+        // TODO: Implementar endpoint de cancelamento no backend
         this.contractSubscriptionId = null;
       }
     },
@@ -2919,7 +2759,7 @@ export default {
         symbol: this.symbol,
         supportsCallPut: this.supportsCallPut(this.symbol),
         contractsData: this.contractsData[this.symbol],
-        wsReady: this.ws ? this.ws.readyState === WebSocket.OPEN : false,
+        wsReady: derivTradingService.isConnected,
         buttonDisabled: this.isTrading || !this.isAuthorized || !this.canUseCallPut
       });
     },
@@ -2951,7 +2791,7 @@ export default {
       // Chamar executeBuy se o botão não estiver desabilitado
       this.executeBuy();
     },
-    executeBuy() {
+    async executeBuy() {
       console.log('[OperationChart] ========== EXECUTAR COMPRA CHAMADO ==========');
       console.log('[OperationChart] Estado atual:', {
         isAuthorized: this.isAuthorized,
@@ -2996,17 +2836,22 @@ export default {
       this.isTrading = true;
       this.pendingTradeType = this.localOrderConfig.type;
       
-      const buyPayload = {
-        buy: this.currentProposalId,
-        price: this.currentProposalPrice,
-      };
-      
       console.log('[OperationChart] ========== EXECUTANDO COMPRA ==========');
-      console.log('[OperationChart] Payload:', JSON.stringify(buyPayload, null, 2));
+      console.log('[OperationChart] ProposalId:', this.currentProposalId);
+      console.log('[OperationChart] Price:', this.currentProposalPrice);
       console.log('[OperationChart] Preço de compra capturado:', this.purchasePrice);
-      this.send(buyPayload);
+      
+      try {
+        await derivTradingService.buyContract(this.currentProposalId, this.currentProposalPrice);
+        console.log('[OperationChart] ✅ Compra executada via backend');
+        // A resposta chegará via SSE no evento 'buy'
+      } catch (error) {
+        console.error('[OperationChart] Erro ao executar compra:', error);
+        this.tradeError = error.message || 'Erro ao executar compra';
+        this.isTrading = false;
+      }
     },
-    executeSell() {
+    async executeSell() {
       if (!this.activeContract || !this.isSellEnabled) {
         this.tradeError = 'Venda não disponível no momento.';
         return;
@@ -3021,14 +2866,20 @@ export default {
       this.isTrading = true;
       
       const sellPrice = this.activeContract.sell_price || this.currentProposalPrice || 0;
-      const sellPayload = {
-        sell: this.activeContract.contract_id,
-        price: sellPrice,
-      };
       
       console.log('[OperationChart] ========== EXECUTANDO VENDA ==========');
-      console.log('[OperationChart] Payload:', JSON.stringify(sellPayload, null, 2));
-      this.send(sellPayload);
+      console.log('[OperationChart] ContractId:', this.activeContract.contract_id);
+      console.log('[OperationChart] Price:', sellPrice);
+      
+      try {
+        await derivTradingService.sellContract(this.activeContract.contract_id, sellPrice);
+        console.log('[OperationChart] ✅ Venda executada via backend');
+        // A resposta chegará via SSE no evento 'sell'
+      } catch (error) {
+        console.error('[OperationChart] Erro ao executar venda:', error);
+        this.tradeError = error.message || 'Erro ao executar venda';
+        this.isTrading = false;
+      }
     },
     addEntrySpotLine(entrySpot, entryTime) {
       if (!this.chart || !entrySpot) {
@@ -3398,11 +3249,9 @@ export default {
       
       console.log('[OperationChart] Payload da requisição proposal:', JSON.stringify(payload, null, 2));
       
-      this.currentProposal = {
-        payload,
-      };
-      console.log('[OperationChart] Enviando requisição proposal...');
-      this.send(payload);
+      // Método antigo - substituído por proceedWithProposal() que usa REST
+      console.warn('[OperationChart] Método antigo chamado - use proceedWithProposal()');
+      this.proceedWithProposal();
     },
     processProposal(msg) {
       console.log('[OperationChart] ========== PROPOSTA RECEBIDA ==========');
@@ -3595,26 +3444,8 @@ export default {
       this.$emit('trade-result', resultPayload);
       console.log('[OperationChart] ========== COMPRA FINALIZADA, INICIANDO MONITORAMENTO ==========');
     },
-    send(payload) {
-      console.log('[OperationChart] 📤 Enviando mensagem para Deriv:', JSON.stringify(payload, null, 2));
-      console.log('[OperationChart] Estado do WebSocket:', {
-        exists: !!this.ws,
-        readyState: this.ws ? this.ws.readyState : 'null',
-        readyStateText: this.ws ? (this.ws.readyState === WebSocket.OPEN ? 'OPEN' : this.ws.readyState === WebSocket.CONNECTING ? 'CONNECTING' : this.ws.readyState === WebSocket.CLOSING ? 'CLOSING' : 'CLOSED') : 'null'
-      });
-      
-      if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
-        console.error('[OperationChart] ERRO: WebSocket não está pronto');
-        this.connectionError = 'Conexão com a Deriv não está pronta.';
-        this.isTrading = false;
-        return;
-      }
-      
-      const payloadStr = JSON.stringify(payload);
-      console.log('[OperationChart] Enviando payload (string):', payloadStr);
-      this.ws.send(payloadStr);
-      console.log('[OperationChart] ✓ Mensagem enviada com sucesso');
-    },
+    // Método send() removido - agora usa derivTradingService
+    // Todas as operações são feitas via REST/SSE
     generateState() {
       if (window.crypto?.getRandomValues) {
         const array = new Uint32Array(4);
@@ -3841,11 +3672,11 @@ export default {
         novo: newVal,
         currentLoginid: this.currentLoginid,
         isAuthorized: this.isAuthorized,
-        wsState: this.ws ? this.ws.readyState : 'no ws'
+        wsState: derivTradingService.isConnected ? 'connected' : 'disconnected'
       });
       
       // Se a conexão já está ativa e autorizada, verificar se precisa realmente reconectar
-      if (this.isAuthorized && this.ws && this.ws.readyState === WebSocket.OPEN) {
+      if (this.isAuthorized && derivTradingService.isConnected) {
         // Se o currentLoginid já corresponde ao novo valor, não reconectar
         if (this.currentLoginid === newVal) {
           console.log('[OperationChart] ✅ Já está conectado e autorizado com este loginid, cancelando reconexão desnecessária');
@@ -3866,7 +3697,7 @@ export default {
       
       // Se não está autorizado ou a conexão não está aberta, apenas atualizar referência
       // A inicialização normal vai acontecer
-      if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      if (!this.isAuthorized || !derivTradingService.isConnected) {
         console.log('[OperationChart] Conexão não está ativa, apenas atualizando referência. Inicialização normal acontecerá');
         this.currentLoginid = newVal;
         return;
@@ -3887,7 +3718,7 @@ export default {
         
         // Aguardar um pouco para evitar race condition
         this.$nextTick(() => {
-          if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+          if (derivTradingService.isConnected) {
             console.log('[OperationChart] Reiniciando conexão devido à mudança de loginid');
             this.teardownConnection();
             setTimeout(() => {
@@ -3926,7 +3757,7 @@ export default {
       });
       
       // Se já está conectado e autorizado, verificar se realmente precisa reconectar
-      if (this.isAuthorized && this.ws && this.ws.readyState === WebSocket.OPEN) {
+      if (this.isAuthorized && derivTradingService.isConnected) {
         // Se a moeda da conexão atual já corresponde à nova moeda final, não reconectar
         if (this.connectionCurrency === newFinalCurrency) {
           console.log('[OperationChart] ✅ Conexão já está usando a moeda correta (' + this.connectionCurrency + '), cancelando reconexão desnecessária');
@@ -3935,7 +3766,7 @@ export default {
       }
       
       // Se não está autorizado ou a conexão não está aberta, deixar inicialização normal acontecer
-      if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+      if (!this.isAuthorized || !derivTradingService.isConnected) {
         return; // Deixar a inicialização normal acontecer
       }
       
@@ -3950,7 +3781,7 @@ export default {
       
       // Aguardar um pouco para evitar race condition
       this.$nextTick(() => {
-        if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        if (derivTradingService.isConnected) {
           console.log('[OperationChart] Reiniciando conexão devido à mudança de moeda preferida');
           this.teardownConnection();
           setTimeout(() => {

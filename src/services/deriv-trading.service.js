@@ -1,0 +1,413 @@
+/**
+ * Serviço para comunicação com backend Deriv Trading
+ * Substitui a lógica de WebSocket direto por REST/SSE
+ */
+
+const API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+
+class DerivTradingService {
+  constructor() {
+    this.eventSource = null;
+    this.listeners = new Map();
+    this.isConnected = false;
+    this.token = null;
+  }
+
+  /**
+   * Conecta ao backend Deriv via WebSocket gerenciado
+   */
+  async connect(token, loginid) {
+    this.token = token || localStorage.getItem('token');
+    
+    if (!this.token) {
+      throw new Error('Token não encontrado');
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/connect`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ token, loginid }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao conectar');
+      }
+
+      const data = await response.json();
+      this.isConnected = true;
+      return data;
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao conectar:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Inicia stream SSE para receber dados em tempo real
+   */
+  async startStream(onMessage, derivToken) {
+    if (this.eventSource) {
+      this.stopStream();
+    }
+
+    const authToken = this.token || localStorage.getItem('token');
+    if (!authToken) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    // Obter token temporário para SSE (mais seguro que passar JWT via query)
+    let sseToken;
+    try {
+      const tokenResponse = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/sse-token`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!tokenResponse.ok) {
+        throw new Error('Erro ao obter token SSE');
+      }
+
+      const tokenData = await tokenResponse.json();
+      sseToken = tokenData.token;
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao obter token SSE:', error);
+      throw new Error('Não foi possível iniciar stream SSE');
+    }
+
+    // EventSource não suporta headers, então usamos token temporário via query
+    const url = `${API_BASE_URL}/api/broker/deriv/trading/stream?token=${encodeURIComponent(sseToken)}${derivToken ? `&derivToken=${encodeURIComponent(derivToken)}` : ''}`;
+    
+    this.eventSource = new EventSource(url);
+
+    this.eventSource.onopen = () => {
+      console.log('[DerivTrading] SSE conectado');
+      this.isConnected = true;
+    };
+
+    this.eventSource.onmessage = (event) => {
+      try {
+        const data = JSON.parse(event.data);
+        if (onMessage) {
+          onMessage(data);
+        }
+        // Notificar listeners específicos por tipo
+        const typeListeners = this.listeners.get(data.type);
+        if (typeListeners) {
+          typeListeners.forEach(listener => listener(data.data || data));
+        }
+      } catch (error) {
+        console.error('[DerivTrading] Erro ao processar mensagem SSE:', error);
+      }
+    };
+
+    this.eventSource.onerror = (error) => {
+      console.error('[DerivTrading] Erro no SSE:', error);
+      this.isConnected = false;
+    };
+
+    return this.eventSource;
+  }
+
+  /**
+   * Para o stream SSE
+   */
+  stopStream() {
+    if (this.eventSource) {
+      this.eventSource.close();
+      this.eventSource = null;
+      this.isConnected = false;
+    }
+  }
+
+  /**
+   * Adiciona listener para eventos específicos
+   */
+  on(eventType, callback) {
+    if (!this.listeners.has(eventType)) {
+      this.listeners.set(eventType, []);
+    }
+    this.listeners.get(eventType).push(callback);
+  }
+
+  /**
+   * Remove listener
+   */
+  off(eventType, callback) {
+    const listeners = this.listeners.get(eventType);
+    if (listeners) {
+      const index = listeners.indexOf(callback);
+      if (index > -1) {
+        listeners.splice(index, 1);
+      }
+    }
+  }
+
+  /**
+   * Inscreve-se em símbolo para receber ticks
+   */
+  async subscribeSymbol(symbol, token, loginid) {
+    const authToken = this.token || localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/subscribe-symbol`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ symbol, token, loginid }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao inscrever-se no símbolo');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao inscrever-se no símbolo:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Obtém ticks atuais (polling)
+   */
+  async getTicks(symbol) {
+    const token = this.token || localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/ticks?symbol=${encodeURIComponent(symbol)}`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao obter ticks');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao obter ticks:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Inscreve-se em proposta
+   */
+  async subscribeProposal(config) {
+    const token = this.token || localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/subscribe-proposal`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(config),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao inscrever-se em proposta');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao inscrever-se em proposta:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Executa compra de contrato
+   */
+  async buyContract(proposalId, price) {
+    const token = this.token || localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/buy`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ proposalId, price }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao comprar contrato');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao comprar contrato:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Executa venda de contrato
+   */
+  async sellContract(contractId, price) {
+    const token = this.token || localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/sell`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ contractId, price }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao vender contrato');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao vender contrato:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Busca contratos disponíveis
+   */
+  async getContracts(symbol, currency = 'USD') {
+    const token = this.token || localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/get-contracts`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ symbol, currency, token }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao buscar contratos');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao buscar contratos:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cancela uma subscription específica
+   */
+  async cancelSubscription(subscriptionId) {
+    const token = this.token || localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/cancel-subscription`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ subscriptionId }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao cancelar subscription');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao cancelar subscription:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cancela subscription de ticks
+   */
+  async cancelTickSubscription() {
+    const token = this.token || localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/cancel-tick-subscription`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao cancelar subscription de ticks');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao cancelar subscription de ticks:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Cancela subscription de proposta
+   */
+  async cancelProposalSubscription() {
+    const token = this.token || localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`${API_BASE_URL}/api/broker/deriv/trading/cancel-proposal-subscription`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao cancelar subscription de proposta');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao cancelar subscription de proposta:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Desconecta tudo
+   */
+  disconnect() {
+    this.stopStream();
+    this.listeners.clear();
+    this.isConnected = false;
+  }
+}
+
+// Exportar instância singleton
+export default new DerivTradingService();
+
