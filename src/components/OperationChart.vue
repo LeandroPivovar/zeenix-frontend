@@ -13,7 +13,7 @@
       <!-- Chart Column -->
       <div class="col-chart flex-1 flex flex-col gap-5">
         <!-- Chart Container -->
-        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card" style="flex: 1; min-height: 0;">
+        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A] flex-shrink-0">
             <h3 class="text-base font-semibold text-zenix-text">Gráfico</h3>
           </div>
@@ -423,7 +423,8 @@ export default {
 
 .chart-card {
   flex: 1;
-  min-height: 0;
+  min-height: calc(100% + 145px) !important;
+  height: calc(100% + 145px) !important;
   display: flex;
   flex-direction: column;
 }
