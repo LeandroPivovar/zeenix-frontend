@@ -245,6 +245,8 @@ class DerivTradingService {
           duration: config.duration,
           durationUnit: config.durationUnit,
           amount: config.amount,
+          barrier: config.barrier,
+          multiplier: config.multiplier,
         }),
       });
 

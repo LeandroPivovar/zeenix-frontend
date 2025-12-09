@@ -1091,22 +1091,36 @@ export default {
         return;
       }
 
-      // Verificar se o valor está dentro de uma faixa razoável dos valores existentes
-      // Isso evita adicionar valores de símbolos diferentes
+      // Validação rigorosa para evitar mistura de símbolos em tempo real
+      // Manter apenas ticks do símbolo atual baseado no valor esperado
       if (this.ticks.length > 0) {
         const existingValues = this.ticks
           .map(t => t.value)
           .filter(v => v !== null && v !== undefined && isFinite(v) && v > 0);
         
         if (existingValues.length > 0) {
-          const medianExisting = [...existingValues].sort((a, b) => a - b)[Math.floor(existingValues.length / 2)];
+          // Calcular mediana e desvio padrão dos valores existentes
+          const sortedValues = [...existingValues].sort((a, b) => a - b);
+          const medianExisting = sortedValues[Math.floor(sortedValues.length / 2)];
           
-          // Se o novo valor estiver muito fora da faixa (mais de 5x da mediana), ignorar
-          if (medianExisting > 0 && (numValue < medianExisting / 5 || numValue > medianExisting * 5)) {
+          // Calcular desvio padrão aproximado usando IQR (Interquartile Range)
+          const q1 = sortedValues[Math.floor(sortedValues.length * 0.25)];
+          const q3 = sortedValues[Math.floor(sortedValues.length * 0.75)];
+          const iqr = q3 - q1;
+          const stdDev = iqr > 0 ? iqr / 1.35 : medianExisting * 0.1; // Aproximação do desvio padrão
+          
+          // Usar 3 desvios padrão como limite (mais rigoroso que 5x)
+          const lowerBound = medianExisting - (3 * stdDev);
+          const upperBound = medianExisting + (3 * stdDev);
+          
+          // Se o novo valor estiver muito fora da faixa, ignorar
+          if (numValue < lowerBound || numValue > upperBound) {
             console.warn('[Chart] ⚠️ Tick em tempo real ignorado - valor muito diferente do símbolo atual:', {
               novoValor: numValue,
               medianaExistente: medianExisting,
-              razao: numValue / medianExisting
+              limiteInferior: lowerBound,
+              limiteSuperior: upperBound,
+              desvioPadrao: stdDev
             });
             return;
           }
@@ -1639,15 +1653,31 @@ export default {
       console.log('[Chart] Configuração:', this.localOrderConfig);
       
       try {
-        // Enviar toda a configuração para o backend processar
-        await derivTradingService.buyContract({
+        // Preparar configuração de compra
+        const buyConfig = {
           symbol: this.symbol,
           contractType: this.localOrderConfig.type,
           duration: this.localOrderConfig.duration,
           durationUnit: this.localOrderConfig.durationUnit,
           amount: this.localOrderConfig.amount,
           proposalId: this.currentProposalId, // Opcional, backend busca se não fornecido
-        });
+        };
+        
+        // Adicionar barrier para contratos de dígitos
+        const digitContracts = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
+        if (digitContracts.includes(this.localOrderConfig.type)) {
+          buyConfig.barrier = this.digitMatchValue !== null && this.digitMatchValue !== undefined 
+            ? this.digitMatchValue 
+            : (this.lastDigit !== null && this.lastDigit !== undefined ? this.lastDigit : 5);
+        }
+        
+        // Adicionar multiplier para contratos MULTUP/MULTDOWN
+        if (this.localOrderConfig.type === 'MULTUP' || this.localOrderConfig.type === 'MULTDOWN') {
+          buyConfig.multiplier = this.localOrderConfig.multiplier || 10;
+        }
+        
+        // Enviar toda a configuração para o backend processar
+        await derivTradingService.buyContract(buyConfig);
         console.log('[Chart] ✅ Compra executada via backend');
         // A resposta chegará via SSE no evento 'buy'
       } catch (error) {
@@ -2127,6 +2157,20 @@ export default {
           duration_unit: this.localOrderConfig.durationUnit || 'm',
           symbol: this.symbol,
         };
+        
+        // Adicionar barrier para contratos de dígitos
+        const digitContracts = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
+        if (digitContracts.includes(this.localOrderConfig.type)) {
+          // Usar digitMatchValue se disponível, senão usar lastDigit, senão usar 5 como padrão
+          proposalOptions.barrier = this.digitMatchValue !== null && this.digitMatchValue !== undefined 
+            ? this.digitMatchValue 
+            : (this.lastDigit !== null && this.lastDigit !== undefined ? this.lastDigit : 5);
+        }
+        
+        // Adicionar multiplier para contratos MULTUP/MULTDOWN
+        if (this.localOrderConfig.type === 'MULTUP' || this.localOrderConfig.type === 'MULTDOWN') {
+          proposalOptions.multiplier = this.localOrderConfig.multiplier || 10;
+        }
         
         await derivTradingService.subscribeProposal(proposalOptions, this.derivToken);
         console.log('[Chart] ✅ Inscrito em proposta');
