@@ -225,7 +225,7 @@ import { createChart, ColorType } from 'lightweight-charts';
 import TradeResultModal from './TradeResultModal.vue';
 import derivTradingService from '../services/deriv-trading.service.js';
 
-const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
+// APP_ID removido - não é mais necessário (backend gerencia)
 
 export default {
     name: 'OperationChart',
@@ -1188,7 +1188,6 @@ export default {
       }, 5000); // 5 segundos de timeout
       
       try {
-        const derivToken = this.getTokenForAccount();
         await derivTradingService.getContracts(symbol, this.displayCurrency);
         // Os dados chegarão via SSE no evento 'contracts_for'
       } catch (error) {
@@ -2503,14 +2502,9 @@ export default {
         return;
       }
       
-      const payload = {
-        proposal_open_contract: 1,
-        contract_id: contractId,
-        subscribe: 1,
-      };
-      
       console.log('[OperationChart] Subscribing to contract:', contractId);
       // TODO: Implementar endpoint de subscription de contrato no backend
+      // Os dados chegarão via SSE automaticamente quando o contrato for criado
     },
     unsubscribeFromContract() {
       if (this.contractSubscriptionId && derivTradingService.isConnected) {
