@@ -859,7 +859,7 @@ export default {
             subscription: { id: data.data.subscriptionId } 
           });
           break;
-        case 'proposal':
+        case 'proposal': {
           // O backend envia proposalData com askPrice (camelCase)
           // Passar diretamente, o processProposal já aceita ambos os formatos
           const proposalData = data.data;
@@ -868,6 +868,7 @@ export default {
             subscription: { id: proposalData.id } 
           });
           break;
+        }
         case 'contracts_for':
           this.processContractsFor({ contracts_for: data.data });
           break;
