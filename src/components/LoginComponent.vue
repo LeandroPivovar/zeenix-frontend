@@ -199,13 +199,18 @@ export default {
       showBenefit1: false,
       showBenefit2: false,
       showBenefit3: false,
-      showBenefit4: false
+      showBenefit4: false,
+      isMounted: false
     }
   },
   mounted() {
+    this.isMounted = true;
     this.isMobile = window.innerWidth <= 640;
     this.loadFontAwesome();
     this.startAnimations();
+  },
+  beforeUnmount() {
+    this.isMounted = false;
   },
   methods: {
     loadFontAwesome() {
@@ -332,11 +337,23 @@ export default {
         localStorage.removeItem('deriv_token');
         localStorage.removeItem('deriv_connection');
         localStorage.removeItem('deriv_app_id');
+        
+        // Resetar loading antes da navegação para evitar erro de desmontagem
+        if (this.isMounted) {
+          this.isLoading = false;
+        }
+        
+        // Usar nextTick para garantir que a atualização do estado seja processada antes da navegação
+        await this.$nextTick();
         this.$router.push('/dashboard');
       } catch (e) {
-        this.$root.$toast.error(e.message || 'Erro inesperado');
-      } finally {
-        this.isLoading = false;
+        // Verificar se o componente ainda está montado antes de atualizar o estado
+        if (this.isMounted) {
+          this.isLoading = false;
+          if (this.$root && this.$root.$toast) {
+            this.$root.$toast.error(e.message || 'Erro inesperado');
+          }
+        }
       }
     }
   }
