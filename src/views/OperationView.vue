@@ -49,6 +49,7 @@
           <component
             :is="currentView"
             :account-balance="accountBalanceFormatted"
+            :account-balance-value="accountBalanceValue"
             :account-currency="accountCurrency"
             :preferred-currency="preferredCurrency"
             :account-loginid="accountLoginId"
