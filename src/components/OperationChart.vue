@@ -71,6 +71,7 @@
               v-model="symbol"
               @change="handleSymbolChange"
               class="hidden"
+              style="display: none !important;"
             >
               <optgroup label="Índices Sintéticos">
                 <option value="R_10">Volatility 10 Index</option>
@@ -134,6 +135,7 @@
               v-model="localOrderConfig.type"
               :disabled="isTrading || activeContract"
               class="hidden"
+              style="display: none !important;"
             >
               <option value="">Selecione um mercado primeiro</option>
               <option value="CALL">Alta (CALL)</option>
@@ -831,22 +833,53 @@ export default {
       if (data.type === 'history' && data.data && data.data.ticks) {
         console.log('[Chart] Histórico recebido via SSE:', data.data.ticks.length, 'ticks');
         // Converter ticks para horário de Brasília antes de armazenar
-        const ticksWithBrasiliaTime = data.data.ticks.map(tick => ({
-          value: tick.value,
-          epoch: Math.floor(Number(tick.epoch)) - (3 * 60 * 60) // UTC-3
-        }));
+        // Filtrar ticks inválidos antes de processar
+        const ticksWithBrasiliaTime = data.data.ticks
+          .filter(tick => {
+            // Validar que tick existe e tem value e epoch válidos
+            if (!tick || typeof tick !== 'object') return false;
+            if (tick.value === null || tick.value === undefined) return false;
+            if (tick.epoch === null || tick.epoch === undefined) return false;
+            
+            const value = Number(tick.value);
+            const epoch = Number(tick.epoch);
+            
+            // Validar valores numéricos
+            if (isNaN(value) || !isFinite(value) || value <= 0) return false;
+            if (isNaN(epoch) || !isFinite(epoch) || epoch <= 0) return false;
+            
+            return true;
+          })
+          .map(tick => ({
+            value: Number(tick.value),
+            epoch: Math.floor(Number(tick.epoch)) - (3 * 60 * 60) // UTC-3
+          }));
         // Armazenar ticks para atualização em tempo real
         this.ticks = ticksWithBrasiliaTime;
         this.plotTicks(ticksWithBrasiliaTime);
       } else if (data.type === 'tick' && data.data) {
+        // Ticks em tempo real - validar antes de processar
+        if (data.data.value === null || data.data.value === undefined || 
+            data.data.epoch === null || data.data.epoch === undefined) {
+          console.warn('[Chart] Tick com valores null/undefined ignorado:', data.data);
+          return;
+        }
+        
         // Ticks em tempo real - adicionar ao gráfico
         console.log('[Chart] Tick em tempo real recebido:', data.data);
         this.addTickToChart(data.data);
-        // Atualizar latestTick
-        this.latestTick = {
-          value: Number(data.data.value),
-          epoch: Math.floor(Number(data.data.epoch)) - (3 * 60 * 60)
-        };
+        
+        // Atualizar latestTick apenas se os valores forem válidos
+        const tickValue = Number(data.data.value);
+        const tickEpoch = Math.floor(Number(data.data.epoch)) - (3 * 60 * 60);
+        
+        if (!isNaN(tickValue) && isFinite(tickValue) && tickValue > 0 &&
+            !isNaN(tickEpoch) && isFinite(tickEpoch) && tickEpoch > 0) {
+          this.latestTick = {
+            value: tickValue,
+            epoch: tickEpoch
+          };
+        }
         // Atualizar P&L em tempo real se houver contrato ativo
         if (this.activeContract && this.purchasePrice) {
           this.updateRealTimeProfit();
@@ -875,16 +908,29 @@ export default {
         return;
       }
 
+      // Validação rigorosa ANTES de qualquer processamento
+      if (tickData.value === null || tickData.value === undefined) {
+        console.warn('[Chart] Tick com value null/undefined ignorado:', tickData);
+        return;
+      }
+      
+      if (tickData.epoch === null || tickData.epoch === undefined) {
+        console.warn('[Chart] Tick com epoch null/undefined ignorado:', tickData);
+        return;
+      }
+
       const value = tickData.value;
       const epoch = tickData.epoch;
 
-      // Validação rigorosa
+      // Validação rigorosa de tipos e valores
       if (
-        value == null || 
+        value === null || 
+        value === undefined ||
         !isFinite(Number(value)) || 
         Number(value) <= 0 || 
         isNaN(Number(value)) ||
-        epoch == null ||
+        epoch === null ||
+        epoch === undefined ||
         !isFinite(Number(epoch)) ||
         Number(epoch) <= 0 ||
         isNaN(Number(epoch))
@@ -897,6 +943,17 @@ export default {
       // O epoch vem em segundos UTC, precisamos subtrair 3 horas (10800 segundos)
       const brasiliaEpoch = Math.floor(Number(epoch)) - (3 * 60 * 60);
       const numValue = Number(value);
+      
+      // Validação final antes de adicionar
+      if (isNaN(brasiliaEpoch) || !isFinite(brasiliaEpoch) || brasiliaEpoch <= 0) {
+        console.warn('[Chart] Epoch convertido inválido:', brasiliaEpoch);
+        return;
+      }
+      
+      if (isNaN(numValue) || !isFinite(numValue) || numValue <= 0) {
+        console.warn('[Chart] Valor convertido inválido:', numValue);
+        return;
+      }
 
       // Adicionar ao array de ticks
       this.ticks.push({ value: numValue, epoch: brasiliaEpoch });
@@ -914,7 +971,7 @@ export default {
         });
         console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: brasiliaEpoch, value: numValue });
       } catch (error) {
-        console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', error);
+        console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', error, { time: brasiliaEpoch, value: numValue });
       }
     },
     async loadTicksFromBackend() {
@@ -1040,19 +1097,32 @@ export default {
       
       const chartData = ticksToUse
         .map(tick => {
-          // Validar dados
-          if (!tick || typeof tick !== 'object') return null;
+          // Validar dados básicos
+          if (!tick || typeof tick !== 'object') {
+            return null;
+          }
+          
+          // Validar null/undefined ANTES de processar
+          if (tick.value === null || tick.value === undefined) {
+            return null;
+          }
+          
+          if (tick.epoch === null || tick.epoch === undefined) {
+            return null;
+          }
           
           const value = tick.value;
           const epoch = tick.epoch;
           
-          // Validação rigorosa
+          // Validação rigorosa de tipos e valores
           if (
-            value == null || 
+            value === null || 
+            value === undefined ||
             !isFinite(Number(value)) || 
             Number(value) <= 0 || 
             isNaN(Number(value)) ||
-            epoch == null ||
+            epoch === null ||
+            epoch === undefined ||
             !isFinite(Number(epoch)) ||
             Number(epoch) <= 0 ||
             isNaN(Number(epoch))
@@ -1063,13 +1133,23 @@ export default {
           // Converter epoch para horário de Brasília (UTC-3)
           // O epoch vem em segundos UTC, precisamos subtrair 3 horas (10800 segundos)
           const brasiliaEpoch = Math.floor(Number(epoch)) - (3 * 60 * 60);
+          const numValue = Number(value);
+          
+          // Validação final após conversão
+          if (isNaN(brasiliaEpoch) || !isFinite(brasiliaEpoch) || brasiliaEpoch <= 0) {
+            return null;
+          }
+          
+          if (isNaN(numValue) || !isFinite(numValue) || numValue <= 0) {
+            return null;
+          }
           
           return {
             time: brasiliaEpoch,
-            value: Number(value)
+            value: numValue
           };
         })
-        .filter(item => item !== null);
+        .filter(item => item !== null && item !== undefined);
 
         if (chartData.length === 0) {
           console.warn('[Chart] Nenhum tick válido após validação');
