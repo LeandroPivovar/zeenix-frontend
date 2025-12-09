@@ -1161,14 +1161,35 @@ export default {
         // Ordenar por tempo
         chartData.sort((a, b) => a.time - b.time);
 
-        console.log('[Chart] Plotando', chartData.length, 'ticks no gráfico');
-        console.log('[Chart] Primeiro tick:', chartData[0]);
-        console.log('[Chart] Último tick:', chartData[chartData.length - 1]);
+        // Validação final antes de setar dados - garantir que não há nulls
+        const finalChartData = chartData.filter(item => {
+          if (!item || item === null || item === undefined) {
+            return false;
+          }
+          if (item.time === null || item.time === undefined || isNaN(item.time) || !isFinite(item.time) || item.time <= 0) {
+            return false;
+          }
+          if (item.value === null || item.value === undefined || isNaN(item.value) || !isFinite(item.value) || item.value <= 0) {
+            return false;
+          }
+          return true;
+        });
+        
+        if (finalChartData.length === 0) {
+          console.warn('[Chart] Nenhum dado válido após validação final');
+          this.showChartPlaceholder = false;
+          this.isLoadingTicks = false;
+          return;
+        }
+        
+        console.log('[Chart] Plotando', finalChartData.length, 'ticks no gráfico');
+        console.log('[Chart] Primeiro tick:', finalChartData[0]);
+        console.log('[Chart] Último tick:', finalChartData[finalChartData.length - 1]);
 
         // Atualizar gráfico
         try {
-          this.chartSeries.setData(chartData);
-          console.log('[Chart] ✅ Dados setados na série');
+          this.chartSeries.setData(finalChartData);
+          console.log('[Chart] ✅ Dados setados na série:', finalChartData.length, 'pontos válidos');
         } catch (error) {
           console.error('[Chart] ❌ Erro ao setar dados:', error);
           this.showChartPlaceholder = false;
@@ -1516,21 +1537,52 @@ export default {
           lastValueVisible: true,
         });
         
+        // Validar entrySpot antes de usar
+        if (entrySpot === null || entrySpot === undefined || isNaN(Number(entrySpot)) || !isFinite(Number(entrySpot)) || Number(entrySpot) <= 0) {
+          console.error('[Chart] EntrySpot inválido para linha de entrada:', entrySpot);
+          return;
+        }
+        
+        const validEntrySpot = Number(entrySpot);
+        
         // Obter o primeiro e último tick para criar uma linha que ocupe 100% da largura
-        const firstTick = this.ticks[0];
-        const lastTick = this.ticks[this.ticks.length - 1];
+        const firstTick = this.ticks && this.ticks.length > 0 ? this.ticks[0] : null;
+        const lastTick = this.ticks && this.ticks.length > 0 ? this.ticks[this.ticks.length - 1] : null;
         
-        // Usar o primeiro tick disponível como ponto inicial (ou tempo de entrada se não houver ticks)
-        const lineStartTime = firstTick ? Math.floor(Number(firstTick.epoch)) : entryTimeUnix;
+        // Validar e calcular tempos
+        let lineStartTime = entryTimeUnix;
+        let lineEndTime = entryTimeUnix;
         
-        // Usar o último tick disponível como ponto final (ou tempo atual se não houver ticks)
-        const lineEndTime = lastTick ? Math.floor(Number(lastTick.epoch)) : entryTimeUnix;
+        if (firstTick && firstTick.epoch !== null && firstTick.epoch !== undefined) {
+          const firstEpoch = Math.floor(Number(firstTick.epoch));
+          if (!isNaN(firstEpoch) && isFinite(firstEpoch) && firstEpoch > 0) {
+            lineStartTime = firstEpoch;
+          }
+        }
+        
+        if (lastTick && lastTick.epoch !== null && lastTick.epoch !== undefined) {
+          const lastEpoch = Math.floor(Number(lastTick.epoch));
+          if (!isNaN(lastEpoch) && isFinite(lastEpoch) && lastEpoch > 0) {
+            lineEndTime = lastEpoch;
+          }
+        }
+        
+        // Validar tempos finais
+        if (isNaN(lineStartTime) || !isFinite(lineStartTime) || lineStartTime <= 0) {
+          console.error('[Chart] LineStartTime inválido:', lineStartTime);
+          return;
+        }
+        
+        if (isNaN(lineEndTime) || !isFinite(lineEndTime) || lineEndTime <= 0) {
+          console.error('[Chart] LineEndTime inválido:', lineEndTime);
+          return;
+        }
         
         // Criar dois pontos: um no início do gráfico e outro no final
         // Isso cria uma linha horizontal pontilhada que ocupa 100% da largura
         lineSeries.setData([
-          { time: lineStartTime, value: entrySpot },
-          { time: lineEndTime, value: entrySpot }
+          { time: lineStartTime, value: validEntrySpot },
+          { time: lineEndTime, value: validEntrySpot }
         ]);
         this.entrySpotLine = lineSeries;
         
@@ -1664,7 +1716,7 @@ export default {
       }
     },
     updateEntrySpotLine() {
-      if (!this.entrySpotLine || !this.activeContract || !this.ticks.length) {
+      if (!this.entrySpotLine || !this.activeContract || !this.ticks || this.ticks.length === 0) {
         return;
       }
       
@@ -1673,15 +1725,42 @@ export default {
         const lastTick = this.ticks[this.ticks.length - 1];
         const entrySpot = this.activeContract.entry_spot || this.purchasePrice;
         
-        if (firstTick && lastTick && entrySpot) {
-          const lineStartTime = Math.floor(Number(firstTick.epoch));
-          const lineEndTime = Math.floor(Number(lastTick.epoch));
-          
-          this.entrySpotLine.setData([
-            { time: lineStartTime, value: entrySpot },
-            { time: lineEndTime, value: entrySpot }
-          ]);
+        // Validar entrySpot
+        if (entrySpot === null || entrySpot === undefined || isNaN(Number(entrySpot)) || !isFinite(Number(entrySpot)) || Number(entrySpot) <= 0) {
+          console.warn('[Chart] EntrySpot inválido ao atualizar linha:', entrySpot);
+          return;
         }
+        
+        const validEntrySpot = Number(entrySpot);
+        
+        // Validar ticks
+        if (!firstTick || !lastTick) {
+          return;
+        }
+        
+        if (firstTick.epoch === null || firstTick.epoch === undefined || 
+            lastTick.epoch === null || lastTick.epoch === undefined) {
+          return;
+        }
+        
+        const lineStartTime = Math.floor(Number(firstTick.epoch));
+        const lineEndTime = Math.floor(Number(lastTick.epoch));
+        
+        // Validar tempos
+        if (isNaN(lineStartTime) || !isFinite(lineStartTime) || lineStartTime <= 0) {
+          console.warn('[Chart] LineStartTime inválido:', lineStartTime);
+          return;
+        }
+        
+        if (isNaN(lineEndTime) || !isFinite(lineEndTime) || lineEndTime <= 0) {
+          console.warn('[Chart] LineEndTime inválido:', lineEndTime);
+          return;
+        }
+        
+        this.entrySpotLine.setData([
+          { time: lineStartTime, value: validEntrySpot },
+          { time: lineEndTime, value: validEntrySpot }
+        ]);
       } catch (error) {
         console.error('[Chart] Erro ao atualizar linha de entrada:', error);
       }
