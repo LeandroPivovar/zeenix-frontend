@@ -443,6 +443,21 @@
               $ {{ realTimeProfit >= 0 ? '+' : '' }}{{ (realTimeProfit || 0).toFixed(pricePrecision) }}
             </span>
           </div>
+          <!-- Contador Visual -->
+          <div v-if="contractTimeRemaining !== null || contractTicksRemaining !== null" class="tracking-item contract-countdown">
+            <span class="tracking-label">
+              <i class="fas fa-clock mr-2"></i>
+              {{ isTickBasedContract ? 'Ticks Restantes:' : 'Tempo Restante:' }}
+            </span>
+            <span class="tracking-value countdown-value" :class="getCountdownClass">
+              <span v-if="isTickBasedContract && contractTicksRemaining !== null" class="countdown-number">
+                {{ contractTicksRemaining }}
+              </span>
+              <span v-else-if="!isTickBasedContract && contractTimeRemaining !== null" class="countdown-number">
+                {{ formatTimeRemaining(contractTimeRemaining) }}
+              </span>
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -522,6 +537,13 @@ export default {
       finalTradeBuyPrice: 0,
       finalTradeSellPrice: null,
       finalTradeBalanceAfter: null,
+      // Contador de contrato
+      contractTimeRemaining: null, // em segundos
+      contractTicksRemaining: null, // em ticks
+      contractStartTime: null, // timestamp de início
+      contractDuration: null, // duração em segundos ou ticks
+      contractCountdownInterval: null, // intervalo do contador
+      contractTickCount: 0, // contador de ticks recebidos após compra
       // Mercados disponíveis
       markets: [
         { value: 'R_10', label: 'Volatility 10 Index', category: 'Índices Contínuos' },
@@ -606,6 +628,23 @@ export default {
     isDigitContract() {
       const digitTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
       return digitTypes.includes(this.localOrderConfig.type);
+    },
+    isTickBasedContract() {
+      // Contratos baseados em ticks (durationUnit === 't')
+      return this.activeContract && this.activeContract.duration_unit === 't';
+    },
+    getCountdownClass() {
+      if (this.isTickBasedContract) {
+        if (this.contractTicksRemaining === null) return '';
+        if (this.contractTicksRemaining <= 5) return 'countdown-warning';
+        if (this.contractTicksRemaining <= 10) return 'countdown-alert';
+        return 'countdown-normal';
+      } else {
+        if (this.contractTimeRemaining === null) return '';
+        if (this.contractTimeRemaining <= 10) return 'countdown-warning';
+        if (this.contractTimeRemaining <= 30) return 'countdown-alert';
+        return 'countdown-normal';
+      }
     },
     availableTradeTypes() {
       // Tipos disponíveis baseados nos contratos retornados pelo backend
@@ -772,6 +811,8 @@ export default {
     },
   },
   beforeUnmount() {
+    // Limpar contador de contrato
+    this.stopContractCountdown();
     if (this.chart) {
       this.chart.remove();
       this.chart = null;
@@ -1048,6 +1089,22 @@ export default {
             epoch: tickEpoch
           };
         }
+        // Atualizar contador de ticks se for contrato baseado em ticks
+        if (this.activeContract && this.activeContract.duration_unit === 't' && this.contractTicksRemaining !== null) {
+          this.contractTickCount++;
+          this.contractTicksRemaining = Math.max(0, (this.activeContract.duration || this.localOrderConfig.duration || 1) - this.contractTickCount);
+          
+          // Se expirou (0 ticks restantes), processar expiração no próximo tick
+          if (this.contractTicksRemaining <= 0 && this.activeContract) {
+            // Aguardar um pouco para garantir que o backend processou
+            setTimeout(() => {
+              if (this.activeContract && this.contractTicksRemaining <= 0) {
+                this.handleContractExpiration({ status: 'expired' });
+              }
+            }, 1000);
+          }
+        }
+        
         // Atualizar P&L em tempo real se houver contrato ativo
         if (this.activeContract && this.purchasePrice) {
           this.updateRealTimeProfit();
@@ -1769,9 +1826,8 @@ export default {
           proposalId: this.currentProposalId, // Opcional, backend busca se não fornecido
         };
         
-        // Adicionar barrier para contratos de dígitos
-        const digitContracts = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
-        if (digitContracts.includes(this.localOrderConfig.type)) {
+        // Adicionar barrier APENAS para DIGITMATCH (único que precisa de barrier)
+        if (this.localOrderConfig.type === 'DIGITMATCH') {
           buyConfig.barrier = this.digitMatchValue !== null && this.digitMatchValue !== undefined 
             ? this.digitMatchValue 
             : (this.lastDigit !== null && this.lastDigit !== undefined ? this.lastDigit : 5);
@@ -1861,7 +1917,11 @@ export default {
         symbol: buyData.symbol || this.symbol,
         sell_price: buyData.sell_price || null,
         profit: buyData.profit || null,
+        expiry_time: buyData.expiry_time || null, // Tempo de expiração se disponível
       };
+      
+      // Inicializar contador
+      this.initializeContractCountdown();
       
       // Adicionar linha de compra no gráfico
       if (this.activeContract.entry_spot) {
@@ -1920,6 +1980,9 @@ export default {
         direction: this.activeContract?.contract_type,
         status: 'CLOSED',
       });
+      
+      // Parar contador
+      this.stopContractCountdown();
       
       // Limpar contrato ativo após um delay
       setTimeout(() => {
@@ -2002,6 +2065,11 @@ export default {
         return;
       }
       
+      // Verificar se o contrato expirou ou foi vendido
+      const isExpired = contractData.status === 'sold' || contractData.status === 'won' || contractData.status === 'lost' || 
+                        contractData.is_sold === true || contractData.is_expired === true ||
+                        contractData.status === 'expired';
+      
       // Atualizar dados do contrato ativo
       if (contractData.sell_price !== undefined) {
         this.activeContract.sell_price = contractData.sell_price;
@@ -2013,8 +2081,272 @@ export default {
         this.isSellEnabled = !contractData.is_sold;
       }
       
+      // Atualizar se venda antecipada está disponível
+      // A maioria dos contratos permite venda antecipada, exceto alguns tipos específicos
+      if (contractData.is_valid_to_sell !== undefined) {
+        this.isSellEnabled = contractData.is_valid_to_sell;
+      } else {
+        // Por padrão, assumir que venda antecipada está disponível se não foi vendido
+        if (contractData.is_sold === undefined || !contractData.is_sold) {
+          // Verificar se o tipo de contrato permite venda antecipada
+          const noEarlySellTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
+          this.isSellEnabled = !noEarlySellTypes.includes(this.activeContract.contract_type);
+        }
+      }
+      
+      // Atualizar tempo de expiração se disponível
+      if (contractData.expiry_time !== undefined && contractData.expiry_time !== null) {
+        this.activeContract.expiry_time = contractData.expiry_time;
+        // Recalcular tempo restante se necessário
+        if (!this.isTickBasedContract && this.contractStartTime) {
+          const now = Date.now() / 1000;
+          const expiry = Number(contractData.expiry_time);
+          this.contractTimeRemaining = Math.max(0, expiry - now);
+        }
+      }
+      
+      // Se o contrato expirou, processar resultado final
+      if (isExpired) {
+        this.handleContractExpiration(contractData);
+        return;
+      }
+      
       // Atualizar P&L em tempo real
       this.updateRealTimeProfit();
+    },
+    initializeContractCountdown() {
+      if (!this.activeContract) return;
+      
+      const duration = this.activeContract.duration || this.localOrderConfig.duration || 1;
+      const durationUnit = this.activeContract.duration_unit || this.localOrderConfig.durationUnit || 'm';
+      const entryTime = this.activeContract.entry_time || Date.now() / 1000;
+      
+      this.contractStartTime = entryTime;
+      this.contractTickCount = 0; // Resetar contador de ticks
+      
+      if (durationUnit === 't') {
+        // Contrato baseado em ticks
+        this.contractTicksRemaining = duration;
+        this.contractTimeRemaining = null;
+      } else {
+        // Contrato baseado em tempo
+        // Converter duração para segundos
+        let durationInSeconds = 0;
+        switch (durationUnit) {
+          case 's':
+            durationInSeconds = duration;
+            break;
+          case 'm':
+            durationInSeconds = duration * 60;
+            break;
+          case 'h':
+            durationInSeconds = duration * 3600;
+            break;
+          case 'd':
+            durationInSeconds = duration * 86400;
+            break;
+          default:
+            durationInSeconds = duration * 60; // Default para minutos
+        }
+        
+        this.contractDuration = durationInSeconds;
+        this.contractTimeRemaining = durationInSeconds;
+        this.contractTicksRemaining = null;
+        
+        // Iniciar contador de tempo
+        this.contractCountdownInterval = setInterval(() => {
+          if (!this.activeContract) {
+            this.stopContractCountdown();
+            return;
+          }
+          
+          const now = Date.now() / 1000;
+          const elapsed = now - this.contractStartTime;
+          const remaining = Math.max(0, this.contractDuration - elapsed);
+          
+          this.contractTimeRemaining = remaining;
+          
+          // Se expirou, processar expiração
+          if (remaining <= 0) {
+            this.stopContractCountdown();
+            this.handleContractExpiration({ status: 'expired' });
+          }
+        }, 1000); // Atualizar a cada segundo
+      }
+    },
+    stopContractCountdown() {
+      if (this.contractCountdownInterval) {
+        clearInterval(this.contractCountdownInterval);
+        this.contractCountdownInterval = null;
+      }
+      this.contractTimeRemaining = null;
+      this.contractTicksRemaining = null;
+      this.contractStartTime = null;
+      this.contractDuration = null;
+      this.contractTickCount = 0;
+    },
+    formatTimeRemaining(seconds) {
+      if (seconds === null || seconds === undefined || seconds < 0) return '00:00';
+      
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    },
+    async handleContractExpiration(contractData) {
+      console.log('[Chart] ========== CONTRATO EXPIRADO ==========');
+      console.log('[Chart] Dados finais:', contractData);
+      
+      // Parar contador
+      this.stopContractCountdown();
+      
+      // Se não temos dados completos, tentar buscar do backend
+      let finalContractData = contractData;
+      if (!contractData.profit && contractData.profit !== 0 && this.activeContract?.contract_id) {
+        try {
+          // Tentar buscar status atualizado do contrato do backend
+          // O backend deve enviar via SSE, mas podemos tentar buscar se necessário
+          console.log('[Chart] Buscando resultado final do contrato...');
+          // Por enquanto, usar os dados que temos
+          // O backend deve enviar via SSE quando o contrato expirar
+        } catch (error) {
+          console.warn('[Chart] Não foi possível buscar resultado do backend:', error);
+        }
+      }
+      
+      // Determinar resultado
+      const profit = finalContractData.profit !== undefined && finalContractData.profit !== null 
+        ? Number(finalContractData.profit) 
+        : (this.realTimeProfit !== null ? this.realTimeProfit : 0);
+      
+      const isWin = profit > 0;
+      const status = finalContractData.status || (isWin ? 'won' : 'lost');
+      
+      // Atualizar contrato com dados finais
+      if (this.activeContract) {
+        this.activeContract.sell_price = finalContractData.sell_price || this.activeContract.sell_price;
+        this.activeContract.profit = profit;
+        this.activeContract.exit_spot = finalContractData.exit_spot || this.latestTick?.value || null;
+        this.activeContract.exit_time = finalContractData.exit_time || Date.now() / 1000;
+        this.activeContract.status = status;
+      }
+      
+      // Preparar dados para o modal
+      this.finalTradeProfit = profit;
+      this.finalTradeType = this.activeContract?.contract_type || 'CALL';
+      this.finalTradeBuyPrice = this.activeContract?.buy_price || this.purchasePrice || 0;
+      this.finalTradeSellPrice = finalContractData.sell_price ? Number(finalContractData.sell_price) : null;
+      this.finalTradeBalanceAfter = finalContractData.balance_after ? Number(finalContractData.balance_after) : null;
+      
+      // Remover linha de compra
+      this.removeEntrySpotLine();
+      
+      // Emitir evento para atualizar histórico
+      this.$emit('trade-result', {
+        contractId: this.activeContract?.contract_id,
+        buyPrice: this.activeContract?.buy_price || this.purchasePrice,
+        sellPrice: finalContractData.sell_price ? Number(finalContractData.sell_price) : null,
+        profit: profit,
+        balanceAfter: finalContractData.balance_after ? Number(finalContractData.balance_after) : null,
+        currency: 'USD',
+        direction: this.activeContract?.contract_type,
+        status: status.toUpperCase(),
+      });
+      
+      // Limpar contrato ativo após um delay
+      setTimeout(() => {
+        this.activeContract = null;
+        this.purchasePrice = null;
+        this.realTimeProfit = null;
+        this.isSellEnabled = false;
+      }, 3000);
+      
+      this.isTrading = false;
+      this.tradeMessage = isWin 
+        ? `🎉 Contrato vencido com lucro! P&L: +$${profit.toFixed(this.pricePrecision)}`
+        : `📉 Contrato vencido com perda. P&L: $${profit.toFixed(this.pricePrecision)}`;
+      
+      // Mostrar modal de resultado
+      this.showTradeResultModal = true;
+      
+      console.log('[Chart] ✅ Expiração processada:', { profit, status, isWin });
+    },
+    async handleContractExpiration(contractData) {
+      console.log('[Chart] ========== CONTRATO EXPIRADO ==========');
+      console.log('[Chart] Dados finais:', contractData);
+      
+      // Parar contador
+      this.stopContractCountdown();
+      
+      // Se não temos dados completos, tentar buscar do backend
+      let finalContractData = contractData;
+      if ((contractData.profit === undefined || contractData.profit === null) && this.activeContract?.contract_id) {
+        try {
+          // Tentar buscar status atualizado do contrato do backend
+          // O backend deve enviar via SSE quando o contrato expirar
+          console.log('[Chart] Aguardando resultado final do contrato via SSE...');
+          // Por enquanto, usar os dados que temos
+          // O backend deve enviar via SSE quando o contrato expirar
+        } catch (error) {
+          console.warn('[Chart] Não foi possível buscar resultado do backend:', error);
+        }
+      }
+      
+      // Determinar resultado
+      const profit = finalContractData.profit !== undefined && finalContractData.profit !== null 
+        ? Number(finalContractData.profit) 
+        : (this.realTimeProfit !== null ? this.realTimeProfit : 0);
+      
+      const isWin = profit > 0;
+      const status = finalContractData.status || (isWin ? 'won' : 'lost');
+      
+      // Atualizar contrato com dados finais
+      if (this.activeContract) {
+        this.activeContract.sell_price = finalContractData.sell_price || this.activeContract.sell_price;
+        this.activeContract.profit = profit;
+        this.activeContract.exit_spot = finalContractData.exit_spot || this.latestTick?.value || null;
+        this.activeContract.exit_time = finalContractData.exit_time || Date.now() / 1000;
+        this.activeContract.status = status;
+      }
+      
+      // Preparar dados para o modal
+      this.finalTradeProfit = profit;
+      this.finalTradeType = this.activeContract?.contract_type || 'CALL';
+      this.finalTradeBuyPrice = this.activeContract?.buy_price || this.purchasePrice || 0;
+      this.finalTradeSellPrice = finalContractData.sell_price ? Number(finalContractData.sell_price) : null;
+      this.finalTradeBalanceAfter = finalContractData.balance_after ? Number(finalContractData.balance_after) : null;
+      
+      // Remover linha de compra
+      this.removeEntrySpotLine();
+      
+      // Emitir evento para atualizar histórico
+      this.$emit('trade-result', {
+        contractId: this.activeContract?.contract_id,
+        buyPrice: this.activeContract?.buy_price || this.purchasePrice,
+        sellPrice: finalContractData.sell_price ? Number(finalContractData.sell_price) : null,
+        profit: profit,
+        balanceAfter: finalContractData.balance_after ? Number(finalContractData.balance_after) : null,
+        currency: 'USD',
+        direction: this.activeContract?.contract_type,
+        status: status.toUpperCase(),
+      });
+      
+      // Limpar contrato ativo após um delay
+      setTimeout(() => {
+        this.activeContract = null;
+        this.purchasePrice = null;
+        this.realTimeProfit = null;
+        this.isSellEnabled = false;
+      }, 3000);
+      
+      this.isTrading = false;
+      this.tradeMessage = isWin 
+        ? `🎉 Contrato vencido com lucro! P&L: +$${profit.toFixed(this.pricePrecision)}`
+        : `📉 Contrato vencido com perda. P&L: $${profit.toFixed(this.pricePrecision)}`;
+      
+      // Mostrar modal de resultado
+      this.showTradeResultModal = true;
+      
+      console.log('[Chart] ✅ Expiração processada:', { profit, status, isWin });
     },
     addEntrySpotLine(entrySpot, entryTime) {
       if (!this.chart || !entrySpot) {
@@ -2369,9 +2701,8 @@ export default {
           symbol: this.symbol,
         };
         
-        // Adicionar barrier para contratos de dígitos
-        const digitContracts = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
-        if (digitContracts.includes(this.localOrderConfig.type)) {
+        // Adicionar barrier APENAS para DIGITMATCH (único que precisa de barrier)
+        if (this.localOrderConfig.type === 'DIGITMATCH') {
           // Usar digitMatchValue se disponível, senão usar lastDigit, senão usar 5 como padrão
           proposalOptions.barrier = this.digitMatchValue !== null && this.digitMatchValue !== undefined 
             ? this.digitMatchValue 
@@ -3073,6 +3404,48 @@ export default {
 
 .tracking-value.loss {
   color: #ef4444;
+}
+
+/* Contador de Contrato */
+.contract-countdown {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.countdown-value {
+  font-size: 18px;
+  font-weight: 700;
+  font-family: 'Courier New', monospace;
+}
+
+.countdown-number {
+  display: inline-block;
+  min-width: 60px;
+  text-align: center;
+}
+
+.countdown-normal {
+  color: #22C55E;
+}
+
+.countdown-alert {
+  color: #fbbf24;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.countdown-warning {
+  color: #ef4444;
+  animation: pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
 }
 
 /* Last Orders Section */
