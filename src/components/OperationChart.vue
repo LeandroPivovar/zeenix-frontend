@@ -208,7 +208,7 @@
             <div class="text-xs font-medium text-zenix-secondary mb-3">
               <i class="fas fa-calculator text-zenix-green mr-2"></i>Dígitos de Previsão
             </div>
-            <div class="grid grid-cols-2 gap-3">
+            <div class="grid grid-cols-2 gap-3 mb-4">
               <div class="bg-[#0B0B0B] border border-[#1A1A1A] rounded-lg p-3">
                 <div class="text-xs text-zenix-secondary mb-1">Último Dígito</div>
                 <div class="text-2xl font-bold text-zenix-green">{{ lastDigit }}</div>
@@ -220,19 +220,30 @@
                 </div>
               </div>
             </div>
+            
+            <!-- Seleção de Dígito (0-9) para DIGITMATCH -->
             <div v-if="localOrderConfig.type === 'DIGITMATCH'" class="mt-3 pt-3 border-t border-zenix-border">
-              <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-                <i class="fas fa-bullseye text-zenix-green mr-2"></i>Dígito para Match
+              <label class="block text-xs font-medium text-[#DFDFDF88] mb-3">
+                <i class="fas fa-bullseye text-zenix-green mr-2"></i>Selecione o Dígito para Match
               </label>
-              <input 
-                type="number" 
-                v-model.number="digitMatchValue"
-                min="0"
-                max="9"
-                placeholder="0-9"
-                :disabled="isTrading || activeContract"
-                class="w-full bg-[#0B0B0B] border border-[#1A1A1A] rounded-lg px-3 py-2.5 text-sm text-zenix-text placeholder:text-[#DFDFDF40] focus:outline-none focus:border-zenix-green transition-colors"
-              />
+              <div class="grid grid-cols-5 gap-2">
+                <button
+                  v-for="digit in 10"
+                  :key="digit - 1"
+                  @click="digitMatchValue = digit - 1"
+                  :disabled="isTrading || activeContract"
+                  :class="[
+                    'digit-select-btn',
+                    digitMatchValue === (digit - 1) ? 'digit-select-btn-active' : 'digit-select-btn-inactive'
+                  ]"
+                >
+                  {{ digit - 1 }}
+                </button>
+              </div>
+              <div v-if="digitMatchValue !== null" class="mt-3 text-center">
+                <span class="text-xs text-zenix-secondary">Dígito selecionado: </span>
+                <span class="text-lg font-bold text-zenix-green">{{ digitMatchValue }}</span>
+              </div>
             </div>
           </div>
           
@@ -718,6 +729,14 @@ export default {
     async 'localOrderConfig.type'() {
       // Quando o tipo de contrato mudar, recarregar valores padrão e proposta
       if (this.isConnected) {
+        // Se mudou para DIGITMATCH e temos um último dígito, inicializar digitMatchValue
+        if (this.localOrderConfig.type === 'DIGITMATCH' && this.lastDigit !== null) {
+          this.digitMatchValue = this.lastDigit;
+        } else if (this.localOrderConfig.type !== 'DIGITMATCH') {
+          // Limpar digitMatchValue se não for DIGITMATCH
+          this.digitMatchValue = null;
+        }
+        
         await this.loadDefaultValues();
         // Aguardar que a duração seja ajustada antes de carregar proposta
         if (this.localOrderConfig.type) {
@@ -3261,6 +3280,48 @@ export default {
 
 .animated-card {
   animation: fadeIn 0.3s ease-in;
+}
+
+/* Digit Selection Buttons */
+.digit-select-btn {
+  aspect-ratio: 1;
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.digit-select-btn-inactive {
+  background: rgba(11, 11, 11, 0.8);
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.digit-select-btn-inactive:hover:not(:disabled) {
+  background: rgba(11, 11, 11, 1);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+
+.digit-select-btn-active {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.15));
+  border-color: #22C55E;
+  color: #22C55E;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+  transform: scale(1.05);
+}
+
+.digit-select-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 @keyframes fadeIn {
