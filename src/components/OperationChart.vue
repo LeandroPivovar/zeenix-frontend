@@ -15,8 +15,7 @@
             <h3 class="text-base font-semibold text-zenix-text">Gráfico</h3>
           </div>
 
-          <div id="candlestickChart" class="w-full chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative; flex: 1; min-height: 0; height: 100%;">
-            <canvas></canvas>
+          <div id="tradingviewChart" class="w-full chart-wrapper" ref="chartContainer" style="background-color: #0B0B0B; position: relative; flex: 1; min-height: 0; height: 100%;">
           </div>
           <div v-if="!ticks.length" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
             <p class="text-zenix-secondary">{{ isAuthorized ? 'Carregando histórico de ticks...' : 'Aguardando autorização da Deriv...' }}</p>
@@ -222,8 +221,7 @@
 </template>
 
 <script>
-import { Chart, registerables } from 'chart.js';
-Chart.register(...registerables);
+import { createChart, ColorType } from 'lightweight-charts';
 import TradeResultModal from './TradeResultModal.vue';
 
 const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
@@ -318,6 +316,7 @@ export default {
       latestTick: null,
       lastUpdate: null,
       chart: null,
+      chartSeries: null,
       chartReady: false,
       timeScaleMarkers: [],
             localOrderConfig: {
@@ -475,7 +474,7 @@ export default {
     },
     },
     methods: {
-    // ========== GRÁFICO SIMPLES - APENAS TICKS (5 MINUTOS) ==========
+    // ========== TRADINGVIEW LIGHTWEIGHT CHARTS ==========
     initChart() {
       if (this.chart) return;
 
@@ -487,15 +486,8 @@ export default {
 
       this.$nextTick(() => {
         try {
-          let canvas = container.querySelector('canvas');
-          if (!canvas) {
-            canvas = document.createElement('canvas');
-            container.appendChild(canvas);
-          }
-
-          canvas.style.display = 'block';
-          canvas.style.width = '100%';
-          canvas.style.height = '100%';
+          // Limpar container
+          container.innerHTML = '';
 
           const rect = container.getBoundingClientRect();
           if (rect.width <= 0 || rect.height <= 0) {
@@ -503,63 +495,71 @@ export default {
             return;
           }
 
-          const ctx = canvas.getContext('2d');
-          if (!ctx) return;
-
-          // Criar gráfico com configuração mínima - SEM plugins complexos
-          this.chart = new Chart(ctx, {
-            type: 'line',
-            data: {
-              labels: [],
-              datasets: [{
-                data: [],
-                borderColor: '#22C55E',
-                backgroundColor: 'rgba(34, 197, 94, 0.1)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.1,
-                pointRadius: 0
-              }]
+          // Criar gráfico TradingView Lightweight Charts
+          this.chart = createChart(container, {
+            width: rect.width,
+            height: rect.height,
+            layout: {
+              background: { type: ColorType.Solid, color: '#0B0B0B' },
+              textColor: '#DFDFDF',
             },
-            options: {
-              responsive: true,
-              maintainAspectRatio: false,
-              animation: false,
-              plugins: {
-                legend: { display: false },
-                tooltip: { enabled: false }
-              },
-              scales: {
-                x: { display: false },
-                y: {
-                  display: true,
-                  position: 'right',
-                  grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                  ticks: { color: '#DFDFDF' }
-                }
-              }
-            }
+            grid: {
+              vertLines: { color: 'rgba(255, 255, 255, 0.05)' },
+              horzLines: { color: 'rgba(255, 255, 255, 0.05)' },
+            },
+            rightPriceScale: {
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              textColor: '#DFDFDF',
+            },
+            timeScale: {
+              borderColor: 'rgba(255, 255, 255, 0.1)',
+              timeVisible: false,
+              secondsVisible: false,
+            },
+          });
+
+          // Criar série de linha
+          this.chartSeries = this.chart.addLineSeries({
+            color: '#22C55E',
+            lineWidth: 2,
+            priceLineVisible: false,
+            lastValueVisible: true,
           });
 
           // Marcar como pronto
-          setTimeout(() => {
-            if (this.chart) {
-              this.chartReady = true;
-              if (this.ticks.length > 0) {
-                this.updateChart();
+          this.chartReady = true;
+          
+          // Se já temos dados, atualizar
+          if (this.ticks.length > 0) {
+            this.updateChart();
+          }
+
+          // Listener de resize
+          if (!this._resizeHandler) {
+            this._resizeHandler = () => {
+              if (this.chart && !this.isDestroying && container) {
+                const newRect = container.getBoundingClientRect();
+                if (newRect.width > 0 && newRect.height > 0) {
+                  this.chart.applyOptions({
+                    width: newRect.width,
+                    height: newRect.height,
+                  });
+                }
               }
-            }
-          }, 300);
+            };
+            window.addEventListener('resize', this._resizeHandler);
+          }
         } catch (error) {
-          console.error('[Chart] Erro:', error);
+          console.error('[Chart] Erro ao criar gráfico TradingView:', error);
           this.chart = null;
+          this.chartSeries = null;
         }
       });
     },
 
-    // Atualizar gráfico - ULTRA SIMPLIFICADO
+    // Atualizar gráfico TradingView
     updateChart() {
-      if (!this.chart || !this.chartReady || !this.ticks || this.ticks.length === 0) {
+      if (!this.chart || !this.chartSeries || !this.chartReady || !this.ticks || this.ticks.length === 0) {
         return;
       }
 
@@ -568,41 +568,36 @@ export default {
         const maxTicks = 300;
         const ticksToUse = this.ticks.slice(-maxTicks);
         
-        // Extrair apenas valores numéricos
-        const data = [];
-        const labels = [];
+        // Converter ticks para formato TradingView (time, value)
+        const chartData = [];
         
-        for (let i = 0; i < ticksToUse.length; i++) {
-          const tick = ticksToUse[i];
+        for (const tick of ticksToUse) {
           if (!tick) continue;
           
           const value = tick.value ?? tick.quote;
           if (value == null) continue;
           
           const numValue = Number(value);
-          if (isFinite(numValue) && numValue > 0) {
-            data.push(numValue);
-            labels.push(i);
-          }
-        }
-
-        if (data.length === 0) return;
-
-        // Atualizar dados - criar novos arrays para evitar reatividade
-        const dataset = this.chart.data.datasets[0];
-        if (dataset) {
-          // Substituir completamente os arrays
-          dataset.data = [...data];
-          this.chart.data.labels = [...labels];
+          if (!isFinite(numValue) || numValue <= 0) continue;
           
-          // Atualizar sem animação
-          this.chart.update('none');
+          // Usar epoch como timestamp (em segundos, TradingView espera em segundos)
+          const time = tick.epoch || Math.floor(Date.now() / 1000);
+          
+          chartData.push({
+            time: time,
+            value: numValue
+          });
         }
+
+        if (chartData.length === 0) return;
+
+        // Atualizar série do gráfico
+        this.chartSeries.setData(chartData);
+        
+        // Ajustar viewport para mostrar os dados mais recentes
+        this.chart.timeScale().fitContent();
       } catch (error) {
-        // Silenciar erros para evitar loops
-        if (error.message && !error.message.includes('Maximum call stack')) {
-          console.error('[Chart] Erro:', error);
-        }
+        console.error('[Chart] Erro ao atualizar:', error);
       }
     },
 
@@ -1814,9 +1809,18 @@ export default {
       this.latestTick = { value, epoch };
       this.lastUpdate = Date.now();
       
-      // Atualizar gráfico apenas se estiver pronto
-      if (this.chartReady && this.chart) {
-        this.scheduleUpdate();
+      // Atualizar gráfico TradingView diretamente (mais eficiente)
+      if (this.chartReady && this.chartSeries) {
+        try {
+          // Adicionar apenas o novo tick (atualização incremental)
+          this.chartSeries.update({
+            time: epoch,
+            value: value
+          });
+        } catch (error) {
+          // Se falhar, agendar atualização completa
+          this.scheduleUpdate();
+        }
       }
     },
     supportsCallPut(symbol) {
@@ -3963,10 +3967,15 @@ export default {
       this.chartUpdateTimer = null;
     }
     
-    // Destruir gráfico
+    // Destruir gráfico TradingView
     if (this.chart) {
-      this.chart.destroy();
+      try {
+        this.chart.remove();
+      } catch (error) {
+        // Ignorar erros
+      }
       this.chart = null;
+      this.chartSeries = null;
       this.chartReady = false;
     }
     
@@ -4004,12 +4013,18 @@ export default {
         clearTimeout(this.chartUpdateTimer);
         this.chartUpdateTimer = null;
       }
-      try {
-        this.chart.destroy();
-      } catch (error) {
-        // Ignorar erros ao destruir
+      
+      // Destruir gráfico TradingView
+      if (this.chart) {
+        try {
+          this.chart.remove();
+        } catch (error) {
+          // Ignorar erros ao destruir
+        }
       }
+      
       this.chart = null;
+      this.chartSeries = null;
       this.chartReady = false;
     }
     if (this.expirationInterval) {
