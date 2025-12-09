@@ -3,12 +3,19 @@
  * Substitui a lógica de WebSocket direto por REST/SSE
  */
 
-// API_BASE_URL já deve incluir /api se necessário
-// Se VUE_APP_API_BASE_URL já tem /api, não adicionar novamente
-let API_BASE_URL = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-// Remover /api duplicado se existir
-if (API_BASE_URL.endsWith('/api')) {
-  API_BASE_URL = API_BASE_URL.replace(/\/api$/, '');
+// API_BASE_URL - garantir que termine com /api
+// O backend usa setGlobalPrefix('api'), então todas as rotas precisam de /api
+const rawApiUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+let API_BASE_URL = rawApiUrl.trim().replace(/\/$/, ''); // Remove trailing slash
+
+// Se não termina com /api, adicionar
+if (!API_BASE_URL.endsWith('/api')) {
+  // Se termina com /api/api, remover duplicado
+  if (API_BASE_URL.endsWith('/api/api')) {
+    API_BASE_URL = API_BASE_URL.replace(/\/api\/api$/, '/api');
+  } else {
+    API_BASE_URL = API_BASE_URL + '/api';
+  }
 }
 
 class DerivTradingService {
