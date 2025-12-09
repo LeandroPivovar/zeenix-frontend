@@ -248,8 +248,8 @@ export default {
       isConnected: false,
       derivToken: null,
       loginid: null,
-      _retryCount: 0,
-      _errorRetryCount: 0,
+      retryCount: 0,
+      errorRetryCount: 0,
     };
   },
   async mounted() {
@@ -411,11 +411,14 @@ export default {
 
         if (!this.derivToken) {
           console.warn('[Chart] Token Deriv não encontrado no localStorage');
-          console.log('[Chart] Tentando buscar ticks sem conexão...');
-          // Tentar buscar ticks mesmo sem token (pode funcionar se já houver conexão ativa)
-          setTimeout(() => {
-            this.loadTicksFromBackend();
-          }, 1000);
+          console.log('[Chart] Redirecionando para tela de conexão...');
+          // Redirecionar para tela de conexão
+          this.$router.push('/dashboard').catch(err => {
+            // Ignorar erro se já estiver na rota
+            if (err.name !== 'NavigationDuplicated') {
+              console.error('[Chart] Erro ao redirecionar:', err);
+            }
+          });
           return;
         }
         
@@ -513,10 +516,10 @@ export default {
         if (ticks.length === 0) {
           console.warn('[Chart] Nenhum tick recebido do backend, tentando novamente em 3 segundos...');
           // Tentar novamente após 3 segundos (máximo 3 tentativas)
-          if (!this._retryCount) this._retryCount = 0;
-          this._retryCount++;
+          if (!this.retryCount) this.retryCount = 0;
+          this.retryCount++;
           
-          if (this._retryCount < 3) {
+          if (this.retryCount < 3) {
             setTimeout(() => {
               this.isLoadingTicks = false;
               this.loadTicksFromBackend();
@@ -525,13 +528,13 @@ export default {
             console.error('[Chart] Máximo de tentativas atingido, parando...');
             this.showChartPlaceholder = false;
             this.isLoadingTicks = false;
-            this._retryCount = 0;
+            this.retryCount = 0;
           }
           return;
         }
 
         // Resetar contador de tentativas
-        this._retryCount = 0;
+        this.retryCount = 0;
 
         // Plotar os ticks
         this.plotTicks(ticks);
@@ -540,10 +543,10 @@ export default {
         console.error('[Chart] Erro completo:', error.message, error.stack);
         
         // Tentar novamente após 3 segundos (máximo 2 tentativas)
-        if (!this._errorRetryCount) this._errorRetryCount = 0;
-        this._errorRetryCount++;
+        if (!this.errorRetryCount) this.errorRetryCount = 0;
+        this.errorRetryCount++;
         
-        if (this._errorRetryCount < 2) {
+        if (this.errorRetryCount < 2) {
           setTimeout(() => {
             this.isLoadingTicks = false;
             this.loadTicksFromBackend();
@@ -552,11 +555,11 @@ export default {
           console.error('[Chart] Máximo de tentativas com erro atingido');
           this.showChartPlaceholder = false;
           this.isLoadingTicks = false;
-          this._errorRetryCount = 0;
+          this.errorRetryCount = 0;
         }
       } finally {
         // Não resetar isLoadingTicks aqui se ainda estiver tentando
-        if (!this._retryCount && !this._errorRetryCount) {
+        if (!this.retryCount && !this.errorRetryCount) {
           this.isLoadingTicks = false;
         }
       }
