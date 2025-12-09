@@ -1,582 +1,546 @@
 <template>
-	<div class="container-copiers">
-		<div class="main-copiers">
-			<section>
-				<h2 class="section-title">Copiadores</h2>
-				<p class="section-subtitle">Gerencie seus copiadores e acompanhe seus resultados</p>
+    <div class="layout-master-trader" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
+        
+        <TopNavbar 
+            :is-sidebar-collapsed="isSidebarCollapsed"
+            :balance="accountBalance"
+            :account-type="isDemo ? 'demo' : 'real'"
+            :currency="accountCurrency"
+            @account-type-changed="handleAccountTypeChange"
+        />
 
-				<div class="box">
-					<div class="search-add-bar">
-						<input
-							type="text"
-							placeholder="Digite o token da conta"
-							class="input-token"
-							v-model="newToken"
-						/>
-						<button class="btn-adicionar" @click="addCopier">Adicionar</button>
-						
-						<div class="search-input-container">
-							<input
-								type="text"
-								placeholder="Pesquisar copiador..."
-								class="input-search"
-								v-model="searchTerm"
-							/>
-							<span class="search-icon">
-                <img src="../../assets/icons/search.svg" alt="Pesquisar" width="20px">
-              </span>
-						</div>
+        <div class="content-wrapper">
+            <section class="master-trader-status-nav">
+                <div class="top-status-bar">
+                    <div class="status-cards-container">
+                        <div class="status-card active-copy-trading">
+                            <i class="status-icon active"></i>
+                            <div class="status-text">
+                                <span class="status-label">Copy Trading</span>
+                                <span class="status-value active-label">Ativo</span>
+                            </div>
+                        </div>
 
-					</div>
+                        <div class="status-card">
+                            <span class="status-label">Copiers</span>
+                            <span class="status-value">25</span>
+                        </div>
 
-          <div class="seperato"></div>
+                        <div class="status-card">
+                            <span class="status-label">Gerenciado</span>
+                            <span class="status-value">$141.76</span>
+                        </div>
 
-					
-					<div class="controls-bar">
-						<label class="switch-control">
-							<input type="checkbox" v-model="activateAllToggle" />
-							<span class="slider-control"></span>
-							Ativar todos
-						</label>
-						<label class="switch-control">
-							<input type="checkbox" v-model="deactivateAllToggle" />
-							<span class="slider-control"></span>
-							Desativar todos
-						</label>
-						<label class="switch-control">
-							<input type="checkbox" v-model="hideEmailsToggle" />
-							<span class="slider-control"></span>
-							Ocultar e-mails
-						</label>
-					</div>
-				</div>
+                        <div class="status-card">
+                            <span class="status-label">Lucro Hoje</span>
+                            <span class="status-value profit">+$18.60</span>
+                        </div>
 
-				<div class="copiadores-list">
-					<div v-for="copier in filteredCopiers" :key="copier.id" class="copiador-item">
-						<div class="copiador-info">
-							<span class="copiador-name">{{ copier.name }}</span>
-							<span class="copiador-email" :style="{ visibility: emailVisibility }">
-								{{ copier.email }}
-							</span>
-							<span class="copiador-tag">{{ copier.tag }}</span>
-						</div>
+                        <div class="status-card">
+                            <span class="status-label">Volume</span>
+                            <span class="status-value">$450</span>
+                        </div>
+                    </div>
+                </div>
+                <nav class="master-trader-mode-nav">
+                    <button 
+                        class="mode-nav-item" 
+                        :class="{ active: activeMode === 'Detalhes Copiadores' }" 
+                        @click="selectMode('Detalhes Copiadores')"
+                    >
+                        <i class="icon-info"></i> Detalhes Copiadores
+                    </button>
+                    
+                    <button 
+                        class="mode-nav-item" 
+                        :class="{ active: activeMode === 'IA de Investimento' }" 
+                        @click="selectMode('IA de Investimento')"
+                    >
+                        <i class="icon-info"></i> IA de Investimento
+                    </button>
+                    
+                    <button 
+                        class="mode-nav-item" 
+                        :class="{ active: activeMode === 'Agente Autônomo' }" 
+                        @click="selectMode('Agente Autônomo')"
+                    >
+                        <i class="icon-info"></i> Agente Autônomo
+                    </button>
+                    
+                    <button 
+                        class="mode-nav-item" 
+                        :class="{ active: activeMode === 'Operação Manual' }" 
+                        @click="selectMode('Operação Manual')"
+                    >
+                        <i class="icon-info"></i> Operação Manual
+                    </button>
+                </nav>
+            </section>
 
-						<div class="copiador-stats">
-							<div class="stat-item">
-								<span class="stat-label">Multiplicador</span>
-								<span class="stat-value">{{ copier.multiplier }}</span>
-							</div>
-							<div class="stat-item">
-								<span class="stat-label">Alvo de Lucro</span>
-								<span class="stat-value">${{ copier.profitTarget }}</span>
-							</div>
-							<div class="stat-item">
-								<span class="stat-label">Limite de perdas</span>
-								<span class="stat-value">${{ copier.lossLimit }}</span>
-							</div>
-							<div class="stat-item">
-								<span class="stat-label">Saldo</span>
-								<span class="stat-value">${{ copier.balance }}</span>
-							</div>
-							<div class="stat-item">
-								<span class="stat-label">Lucro/Perda</span>
-								<span class="stat-value" :class="copier.pnl > 0 ? 'profit-green' : 'profit-red'">
-									{{ copier.pnl > 0 ? '+' : '' }}${{ copier.pnl.toFixed(2) }}
-								</span>
-							</div>
-						</div>
-
-						<div class="copiador-actions">
-							<label class="switch">
-								<input type="checkbox" v-model="copier.isActive" />
-								<span class="slider"></span>
-							</label>
-							<span class="action-icon" @click="deleteCopier(copier.id)">
-								<img src="../../assets/icons/delete.svg" alt="Excluir" width="15px">
-							</span>
-						</div>
-					</div>
-				</div>
-			</section>
-		</div>
-	</div>
+            <main class="master-trader-main-content">
+                <component :is="currentViewComponent" />
+            </main>
+        </div>
+    </div>
 </template>
 
-<script setup>
-import { ref, computed, watch } from 'vue';
+<script>
+// Componentes necessários (crie estes arquivos .vue)
+import AppSidebar from '../components/Sidebar.vue'
+import TopNavbar from '../components/TopNavbar.vue'
+import CopiersDetails from '../components/masterTrader/CopiersDetails.vue'
+import AIInvestment from '../components/masterTrader/InvestmentComponent.vue'
+import AgenteAutonomoView from '../components/masterTrader/AgentAutonomoComponent.vue'
+import ManualOperation from './OperationView.vue'
 
-// Dados reativos
-const newToken = ref('');
-const searchTerm = ref('');
-
-// Novos toggles para os controles globais
-const activateAllToggle = ref(true); // Começa ativo, como no cenário inicial
-const deactivateAllToggle = ref(false);
-const hideEmailsToggle = ref(false);
-
-
-const copiers = ref([
-	{
-		id: 1,
-		name: 'João Santos',
-		email: 'joao.santos@email.com',
-		tag: 'APP',
-		multiplier: '1.5x',
-		profitTarget: 100,
-		lossLimit: 50,
-		balance: 310,
-		pnl: 8.20,
-		isActive: true,
-	},
-	{
-		id: 2,
-		name: 'Maria Oliveira',
-		email: 'maria.oliveira@email.com',
-		tag: 'WEB',
-		multiplier: '1.0x',
-		profitTarget: 50,
-		lossLimit: 25,
-		balance: 550,
-		pnl: -3.50,
-		isActive: true,
-	},
-	{
-		id: 3,
-		name: 'Pedro Costa',
-		email: 'pedro.costa@outro.com',
-		tag: 'APP',
-		multiplier: '2.0x',
-		profitTarget: 200,
-		lossLimit: 100,
-		balance: 1200,
-		pnl: 15.10,
-		isActive: true,
-	},
-]);
-
-// Funções de manipulação
-const addCopier = () => {
-	if (newToken.value.trim() !== '') {
-		console.log('Adicionar copiador com token:', newToken.value);
-		const newId = Math.max(...copiers.value.map(c => c.id)) + 1;
-		copiers.value.push({
-			id: newId,
-			name: 'Novo Copiador',
-			email: `copier_${newId}@email.com`,
-			tag: 'NEW',
-			multiplier: '1.0x',
-			profitTarget: 50,
-			lossLimit: 25,
-			balance: 100,
-			pnl: 0.00,
-			isActive: true,
-		});
-		newToken.value = ''; // Limpa o campo
-	}
-};
-
-const deleteCopier = (id) => {
-	if (confirm('Tem certeza que deseja remover este copiador?')) {
-		copiers.value = copiers.value.filter(copier => copier.id !== id);
-	}
-};
-
-
-// Propriedade computada para a lista filtrada
-const filteredCopiers = computed(() => {
-	const term = searchTerm.value.toLowerCase();
-	if (!term) {
-		return copiers.value;
-	}
-	return copiers.value.filter(copier =>
-		copier.name.toLowerCase().includes(term) ||
-		copier.email.toLowerCase().includes(term)
-	);
-});
-
-// Propriedade computada para a visibilidade do email
-const emailVisibility = computed(() =>
-	hideEmailsToggle.value ? 'hidden' : 'visible'
-);
-
-// Observadores para os toggles de controle
-watch(activateAllToggle, (newValue) => {
-	if (newValue) {
-		copiers.value.forEach(copier => (copier.isActive = true));
-		deactivateAllToggle.value = false; // Desliga o oposto
-	}
-});
-
-watch(deactivateAllToggle, (newValue) => {
-	if (newValue) {
-		copiers.value.forEach(copier => (copier.isActive = false));
-		activateAllToggle.value = false; // Desliga o oposto
-	}
-});
-
-// Watch para garantir que os toggles globais reflitam o estado individual da lista
-watch(copiers, () => {
-	const allActive = copiers.value.every(c => c.isActive);
-	const allInactive = copiers.value.every(c => !c.isActive);
-
-	if (allActive && !activateAllToggle.value) {
-		activateAllToggle.value = true;
-		deactivateAllToggle.value = false;
-	} else if (allInactive && !deactivateAllToggle.value) {
-		deactivateAllToggle.value = true;
-		activateAllToggle.value = false;
-	} else if (!allActive && !allInactive) {
-		// Estado misto
-		activateAllToggle.value = false;
-		deactivateAllToggle.value = false;
-	}
-}, { deep: true });
+export default {
+    name: 'MasterTraderView',
+    components: {
+        AppSidebar,
+        TopNavbar,
+        CopiersDetails,
+        AIInvestment,
+        ManualOperation,
+        AgenteAutonomoView
+    },
+    data() {
+        return {
+            isSidebarOpen: false, 
+            isSidebarCollapsed: false,
+            // Variável de estado para controlar o modo ativo
+            activeMode: 'Detalhes Copiadores',
+            // Dados do header
+            accountBalance: null,
+            accountCurrency: 'USD',
+            accountLoginid: null,
+            isDemo: false,
+            balanceUpdateInterval: null,
+            preferredCurrency: 'USD'
+        }
+    },
+    computed: {
+        // Mapeia o nome do modo para o nome do componente a ser renderizado
+        currentViewComponent() {
+            switch (this.activeMode) {
+                case 'Detalhes Copiadores':
+                    return 'CopiersDetails'
+                case 'IA de Investimento':
+                    return 'AIInvestment'
+                case 'Operação Manual':
+                    return 'ManualOperation'
+                case 'Agente Autônomo':
+                default:
+                    return 'AgenteAutonomoView' 
+            }
+        }
+    },
+    methods: {
+        toggleSidebar() {
+            this.isSidebarOpen = !this.isSidebarOpen
+        },
+        toggleSidebarCollapse() {
+            this.isSidebarCollapsed = !this.isSidebarCollapsed
+        },
+        // Método para trocar o modo
+        selectMode(modeName) {
+            this.activeMode = modeName
+        },
+        handleAccountTypeChange(newAccountType) {
+            this.isDemo = newAccountType === 'demo';
+            console.log('[MasterTrader] Tipo de conta alterado para:', this.isDemo ? 'demo' : 'real');
+        },
+        getPreferredCurrency() {
+            try {
+                const connectionStr = localStorage.getItem('deriv_connection');
+                if (connectionStr) {
+                    const connection = JSON.parse(connectionStr);
+                    if (connection.tradeCurrency) {
+                        const currency = connection.tradeCurrency.toUpperCase();
+                        return currency;
+                    }
+                }
+            } catch (error) {
+                console.error('[MasterTrader] Erro ao parsear deriv_connection:', error);
+            }
+            return 'USD';
+        },
+        getDerivToken() {
+            let accountLoginid = null;
+            let preferredCurrency = null;
+            
+            try {
+                const connectionStr = localStorage.getItem('deriv_connection');
+                if (connectionStr) {
+                    const connection = JSON.parse(connectionStr);
+                    accountLoginid = connection.loginid;
+                    preferredCurrency = connection.tradeCurrency;
+                }
+            } catch (error) {
+                console.error('[MasterTrader] Erro ao parsear deriv_connection:', error);
+            }
+            
+            const isDemoPreferred = preferredCurrency?.toUpperCase() === 'DEMO';
+            if (isDemoPreferred) {
+                try {
+                    const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+                    const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+                    
+                    for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+                        if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
+                            return token;
+                        }
+                    }
+                } catch (error) {
+                    console.error('[MasterTrader] Erro ao buscar token demo:', error);
+                }
+            }
+            
+            if (accountLoginid) {
+                try {
+                    const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+                    const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+                    
+                    const specificToken = tokensByLoginId[accountLoginid];
+                    if (specificToken) {
+                        return specificToken;
+                    }
+                } catch (error) {
+                    console.error('[MasterTrader] Erro ao buscar token específico:', error);
+                }
+            }
+            
+            return localStorage.getItem('deriv_token');
+        },
+        async fetchAccountBalance() {
+            try {
+                const derivToken = this.getDerivToken();
+                if (!derivToken) {
+                    console.warn('[MasterTrader] ❌ Token não disponível para buscar saldo');
+                    return;
+                }
+                
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/deriv-balance`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ derivToken: derivToken }),
+                });
+                
+                const result = await response.json();
+                if (result.success && result.data) {
+                    this.accountBalance = result.data.balance;
+                    this.accountCurrency = result.data.currency;
+                    this.accountLoginid = result.data.loginid;
+                    this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+                    this.preferredCurrency = this.getPreferredCurrency();
+                }
+            } catch (error) {
+                console.error('[MasterTrader] ❌ Erro ao buscar saldo da conta:', error);
+            }
+        },
+        startBalanceUpdates() {
+            this.fetchAccountBalance();
+            this.balanceUpdateInterval = setInterval(() => {
+                this.fetchAccountBalance();
+            }, 30000);
+        },
+        stopBalanceUpdates() {
+            if (this.balanceUpdateInterval) {
+                clearInterval(this.balanceUpdateInterval);
+                this.balanceUpdateInterval = null;
+            }
+        }
+    },
+    mounted() {
+        this.preferredCurrency = this.getPreferredCurrency();
+        this.startBalanceUpdates();
+    },
+    beforeUnmount() {
+        this.stopBalanceUpdates();
+    }
+}
 </script>
+
+<style>
+.header-master-trader,
+.header-content {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    width: 100% !important; 
+}
+
+.main-content {
+    position: static !important;
+    width: 100%;
+}
+
+.layout-master-trader .content-wrapper {
+    overflow-y: auto;
+    position: static; 
+    padding: 0 20px 20px 20px; /* Mantém o padding do scoped CSS */
+    flex-grow: 1;
+}
+
+/* Esconde o header duplicado (que pode estar vindo do componente Agente Autônomo) */
+.layout-master-trader .agente-autonomo-header {
+    display: none !important;
+}
+
+
+
+</style>
 
 <style scoped>
 
-* {
-	margin: 0;
-	padding: 0;
-	box-sizing: border-box;
+.layout-master-trader {
+    display: flex;
+    min-height: 100vh;
+    background-color: #0b0b0a; /* Fundo escuro principal */
+    color: #f0f6fc; /* Texto principal claro */
+    width: calc(100% - 280px);
+    margin-left: 280px;
 }
 
-.container-copiers {
-	width: 100%;
-	padding: 0px;
+.layout-master-trader .agente-autonomo-header {
+  display: none !important; 
 }
 
-
-.box{
-	background-color: #0d0d0c;
-  padding: 30px;
-  margin-bottom: 20px;
-  border-radius: 12px;
-  border: 1px solid #2a2a2a;
+.layout{
+    margin: 0;
 }
 
-/* Section */
-.section-title {
-	font-size: 23px;
-	font-weight: 700;
-	margin-bottom: 8px;
-	color: #ffffff;
+.content-wrapper {
+    flex-grow: 1; 
+    padding: 0 20px 20px 20px;
+    margin-top: 60px;
 }
 
-.section-subtitle {
-	color: #888888;
-	margin-bottom: 30px;
-	text-align: left;
-	font-size: 14px;
+.header-master-trader,
+.header-content,
+.top-fix {
+    position: static !important;
+    top: auto !important;
+    z-index: auto !important;
+    width: 100% !important; 
 }
 
-/* Search and Add Bar */
-.search-add-bar {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-  padding-bottom: 20px;
-  border-bottom: 1px solid #2a2a2a;
-	flex-wrap: wrap;
+/* --------------------
+    Status/Nav (Barra de Status da Imagem)
+    -------------------- */
+.master-trader-status-nav {
+    display: flex;
+    flex-direction: column; 
+    align-items: stretch;
+    background-color: #0d0c0c;
+    border-radius: 8px;
+    padding: 10px 20px;
+    margin-bottom: 0; 
+    border-bottom: 1px solid #30363d;
+    /* Certifica que o Nav também não tente ser fixo */
+    position: sticky; 
+    top: 0;
+    z-index: 10;
+}
+.master-trader-status-nav {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background-color: #0d0c0c;
+    border-radius: 0;
+    margin: 0 -20px 0 -20px; /* Estende para as bordas do content-wrapper */
+    padding: 10px 20px;
+    border-bottom: 1px solid #30363d;
 }
 
-.input-token,
-.input-search {
-	padding: 12px 16px;
-	border: 1px solid #2a2a2a;
-	border-radius: 6px;
-	background-color: #0a0b0a;
-	color: #ffffff;
-	font-size: 14px;
-	outline: none;
-	transition: border-color 0.2s;
+.top-status-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 10px;
 }
 
-.input-token:focus,
-.input-search:focus {
-	border-color: #3a3a3a;
+.status-cards-container {
+    display: flex;
+    gap: 20px;
+    width: 100%;
 }
 
-.input-token {
-	flex: 1;
-	max-width: 500px;
-	min-width: 200px;
-}
-
-/* ESTILO: Container e Ícone de Pesquisa */
-.search-input-container { 
-	flex: 1;
-	min-width: 200px;
-	width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-}
-
-.input-search {
-	width: 100%; 
-	padding-right: 40px; /* Garante que o texto não vá para baixo do ícone */
-}
-
-.search-icon {
-	color: #888888; 
-	font-size: 18px;
-	cursor: default; 
+.status-card {
+    display: flex;
+    flex-direction: column;
+    padding: 10px 15px;
+    min-width: 120px;
+    border-radius: 15px;
+    justify-content: center;
+    background: #0e0f0f;
+    border: 1px solid #1d1e1f;
+    width: 100%;
+    text-align: left;
 }
 
 
-
-/* ... (Restante dos estilos) ... */
-
-
-.btn-adicionar {
-	background-color: #22c55e;
-	color: white;
-	padding: 12px 28px;
-	border: none;
-	border-radius: 6px;
-	cursor: pointer;
-	font-weight: 600;
-	font-size: 14px;
-	transition: background-color 0.2s;
+.status-label {
+    font-size: 0.8rem;
+    color: #8b949e;
+    margin-bottom: 3px;
+    text-align: left;
+    padding-left: 0;
 }
 
-.btn-adicionar:hover {
-	background-color: #00b872;
+.status-value {
+    font-size: 1.25rem;
+    font-weight: bold;
+    color: #f0f6fc;
 }
 
-/* Controls Bar - ESTILO COM SLIDERS */
-.controls-bar {
-	display: flex;
-	gap: 30px;
-	flex-wrap: wrap;
-  padding-top: 20px;
+.status-card.active-copy-trading {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 0 15px;
+    justify-content: flex-start;
 }
 
-.switch-control { /* Estilo do Label/Container */
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	font-size: 14px;
-	color: #ffffff;
-	cursor: pointer;
-	position: relative;
+.status-card.active-copy-trading .status-text {
+    display: flex;
+    flex-direction: column;
+    line-height: 1.2;
 }
 
-.switch-control input[type="checkbox"] {
-	opacity: 0;
-	width: 0;
-	height: 0;
+.active-copy-trading .status-icon {
+    width: 20px;
+    height: 20px;
+    background-color: #23863721;
+    border-radius: 12px;
+    border: 1px solid #238636;
+    position: relative;
+    padding: 18px;
+    margin-left: 0.5rem;
 }
 
-.slider-control { /* O "trilho" do slider */
-	position: relative;
-	display: inline-block;
-	width: 48px; 
-	height: 30px;
-	background-color: #181818; 
-	transition: 0.3s;
-	border-radius: 34px;
+/* Símbolo de Power/Ligar (Unicode) */
+.active-copy-trading .status-icon::before {
+    content: '⏻'; 
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.2rem;
+    color: #238636;
 }
 
-.slider-control:before { /* O "thumb" (círculo) */
-	position: absolute;
-	content: "";
-	height: 22px;
-	width: 22px;
-	left: 3px;
-	bottom: 3px;
-	background-color: #ffffff;
-	transition: 0.3s;
-	border-radius: 50%;
+.active-label {
+    color: #22c55e;
+    font-weight: 600;
 }
 
-.switch-control input:checked + .slider-control {
-	background-color: #00d084; /* Cor ON */
+.profit {
+    color: #22c55e;
+    font-weight: bold;
 }
 
-.switch-control input:checked + .slider-control:before {
-	transform: translateX(18px); /* Move o thumb */
+.status-actions {
+    display: flex;
+    gap: 15px;
+    border-left: 1px solid #30363d;
+    margin-left: 30px;
+    padding-left: 20px;
 }
 
-
-/* Copiadores List */
-.copiadores-list {
-	display: flex;
-	flex-direction: column;
-	gap: 15px;
+.action-icon-btn {
+    background: none;
+    border: none;
+    color: #f0f6fc;
+    font-size: 1.2rem;
+    cursor: pointer;
+    opacity: 0.5;
+    transition: opacity 0.2s;
+    padding: 5px;
 }
 
-.copiador-item {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	background-color: #0d0d0c;
-	padding: 20px 24px;
-	border-radius: 8px;
-	border: 1px solid #222222;
-	transition: border-color 0.2s;
-	gap: 20px;
-	flex-wrap: wrap;
+.action-icon-btn:hover {
+    opacity: 0.8;
 }
 
-.copiador-item:hover {
-	border-color: #2a2a2a;
+.action-icon-btn.active-user {
+    color: #238636;
+    opacity: 1;
 }
 
-/* Copiador Info */
-.copiador-info {
-	display: flex;
-	flex-direction: column;
-	text-align: left;
-	min-width: 240px;
+/* Simulação de Ícones (use Font Awesome/Material Icons no projeto real) */
+.icon-bell::before { content: '🔔'; }
+.icon-user::before { content: '👤'; }
+
+/* --------------------
+    Navegação de Modo/Ações Principais
+    -------------------- */
+.master-trader-mode-nav {
+    display: flex;
+    gap: 15px;
+    justify-content: flex-start;
+    padding: 10px 0;
+    margin: 0;
 }
 
-.copiador-name {
-	font-weight: 700;
-	font-size: 15px;
-	color: #ffffff;
-	margin-bottom: 4px;
+.mode-nav-item {
+    background-color: transparent;
+    color: #8b949e; 
+    border: none; 
+    padding: 12px 25px;
+    border-radius: 0; 
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+    position: relative;
+    width: 100%;
+    text-align: center;
 }
 
-.copiador-email {
-	color: #888888;
-	font-size: 13px;
-	margin-bottom: 6px;
+.mode-nav-item i {
+    display: none; 
 }
 
-.copiador-tag {
-	background-color: #1a4d2e;
-	color: #00d084;
-	padding: 3px 8px;
-	border-radius: 4px;
-	font-size: 11px;
-	font-weight: 600;
-	width: fit-content;
-	letter-spacing: 0.5px;
+.mode-nav-item:hover {
+    color: #f0f6fc;
 }
 
-/* Copiador Stats */
-.copiador-stats {
-	display: flex;
-	gap: 30px;
-	flex-grow: 1;
-	justify-content: flex-start;
-	flex-wrap: wrap;
-	text-align: left;
+.mode-nav-item.active {
+    background-color: transparent;
+    color: #22c55e; 
+    font-weight: 600;
+    box-shadow: 0px 0px 10px 1px rgba(0, 0, 0, 0.267);
+    border-bottom: 2px solid #22c55e; 
+    border-radius: 12px;
 }
 
-.stat-item {
-	display: flex;
-	flex-direction: column;
-	min-width: 90px;
+/* Simulação de Ícone de Informação */
+.icon-info::before { content: 'ⓘ'; }
+
+/* Estilo Básico para a Área Principal */
+.master-trader-main-content {
+    border-radius: 8px;
+    padding: 20px;
+    min-height: 400px; 
 }
 
-.stat-label {
-	font-size: 13px;
-	color: #888888;
-	margin-bottom: 4px;
-}
-
-.stat-value {
-	font-size: 19px;
-	color: #ffffff;
-	font-weight: 600;
-}
-
-.profit-green {
-	color: #00d084;
-}
-
-.profit-red {
-	color: #ff4545; /* Adicionado para perdas */
-}
-
-/* Copiador Actions */
-.copiador-actions {
-	display: flex;
-	align-items: center;
-	gap: 15px;
-}
-
-.action-icon {
-	font-size: 18px;
-	color: #666666;
-	cursor: pointer;
-	transition: color 0.2s;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.action-icon:hover {
-	color: #ffffff;
-}
-
-/* Toggle Switch (Individual) */
-.switch {
-	position: relative;
-	display: inline-block;
-	width: 50px;
-	height: 28px;
-}
-
-.switch input {
-	opacity: 0;
-	width: 0;
-	height: 0;
-}
-
-.slider {
-	position: absolute;
-	cursor: pointer;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-color: #181818;
-	transition: 0.3s;
-	border-radius: 34px;
-}
-
-.slider:before {
-	position: absolute;
-	content: "";
-	height: 20px;
-	width: 20px;
-	left: 4px;
-	bottom: 4px;
-	background-color: #ffffff;
-	transition: 0.3s;
-	border-radius: 50%;
-}
-
-input:checked + .slider {
-	background-color: #00d084;
-}
-
-input:checked + .slider:before {
-	transform: translateX(22px);
-}
-
-/* Responsive */
-@media (max-width: 768px) {
-	body {
-		padding: 20px 15px;
-	}
-
-	.copiador-item {
-		flex-direction: column;
-		align-items: flex-start;
-	}
-
-	.copiador-stats {
-		width: 100%;
-		justify-content: space-between;
-	}
-
-	.stat-item {
-		min-width: auto;
-	}
+/* --------------------
+    Media Queries
+    -------------------- */
+@media (max-width: 1024px) {
+    .layout-master-trader {
+        margin-left: 0;
+        width: 100%;
+    }
 }
 </style>
