@@ -1787,7 +1787,7 @@ export default {
       }
     },
     // Processar candles - IGNORADO (focando apenas em ticks)
-    processCandles(msg) {
+    processCandles() {
       // Ignorar candles por enquanto, focar apenas em ticks
       return;
     },
