@@ -60,6 +60,8 @@
             </label>
             <select 
               id="marketSelectSidebar"
+              v-model="symbol"
+              @change="handleSymbolChange"
               class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
             >
               <optgroup label="Índices Sintéticos">
@@ -223,13 +225,14 @@
 
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
+import derivTradingService from '../services/deriv-trading.service.js';
 
 export default {
   name: 'OperationChart',
   data() {
     return {
       showLoading: false,
-      showChartPlaceholder: false,
+      showChartPlaceholder: true,
       showPurchasePrice: false,
       showRealTimeProfit: false,
       showSellButton: false,
@@ -240,12 +243,32 @@ export default {
       realTimeProfitTextClass: 'text-zenix-green',
       chart: null,
       chartSeries: null,
+      symbol: 'R_100',
+      isLoadingTicks: false,
+      isConnected: false,
+      derivToken: null,
+      loginid: null,
     };
   },
-  mounted() {
+  async mounted() {
     this.initChart();
     // Listener de resize
     window.addEventListener('resize', this.handleResize);
+    
+    // Tentar conectar e carregar ticks
+    await this.initializeConnection();
+  },
+  watch: {
+    symbol(newSymbol, oldSymbol) {
+      if (newSymbol !== oldSymbol && this.chart && this.chartSeries) {
+        console.log('[Chart] Símbolo alterado via watcher:', { oldSymbol, newSymbol });
+        // handleSymbolChange já será chamado pelo @change do select
+        // Mas vamos garantir que seja chamado se mudar programaticamente
+        if (oldSymbol) {
+          this.handleSymbolChange();
+        }
+      }
+    },
   },
   beforeUnmount() {
     if (this.chart) {
@@ -305,14 +328,8 @@ export default {
             lastValueVisible: true,
           });
 
-          // Gerar dados placeholders (últimas 5 horas, 1 ponto por minuto = 300 pontos)
-          const placeholderData = this.generatePlaceholderData();
-          
-          // Definir dados no gráfico
-          this.chartSeries.setData(placeholderData);
-          
-          // Ajustar viewport para mostrar todos os dados
-          this.chart.timeScale().fitContent();
+          // Não carregar placeholders aqui - será carregado do backend
+          // Os dados serão carregados via loadTicksFromBackend()
 
           // Listener de resize
           this.handleResize = () => {
@@ -326,30 +343,207 @@ export default {
         }
       });
     },
-    generatePlaceholderData() {
-      const data = [];
-      const now = Math.floor(Date.now() / 1000);
-      const startTime = now - (5 * 60 * 60); // 5 horas atrás
-      const interval = 60; // 1 minuto entre pontos
-      
-      // Valor inicial simulado
-      let baseValue = 600;
-      
-      for (let i = 0; i < 300; i++) {
-        const time = startTime + (i * interval);
-        // Simular variação de preço com pequenas oscilações
-        const variation = (Math.random() - 0.5) * 20; // Variação de -10 a +10
-        baseValue += variation;
-        // Garantir que o valor não fique negativo ou muito baixo
-        baseValue = Math.max(500, Math.min(700, baseValue));
+    async initializeConnection() {
+      try {
+        // Buscar token Deriv do localStorage
+        // Tentar primeiro deriv_token (token direto)
+        this.derivToken = localStorage.getItem('deriv_token');
         
-        data.push({
-          time: time,
-          value: Number(baseValue.toFixed(2))
-        });
+        // Se não tiver, tentar deriv_connection (objeto com mais informações)
+        if (!this.derivToken) {
+          const derivConnection = localStorage.getItem('deriv_connection');
+          if (derivConnection) {
+            try {
+              const connection = JSON.parse(derivConnection);
+              this.derivToken = connection.token;
+              this.loginid = connection.loginid;
+            } catch (e) {
+              console.warn('[Chart] Erro ao parsear deriv_connection:', e);
+            }
+          }
+        }
+        
+        // Se ainda não tiver, tentar derivInfo
+        if (!this.derivToken) {
+          const storedDerivInfo = localStorage.getItem('derivInfo');
+          if (storedDerivInfo) {
+            try {
+              const derivInfo = JSON.parse(storedDerivInfo);
+              this.derivToken = derivInfo.token;
+              this.loginid = derivInfo.loginid;
+            } catch (e) {
+              console.warn('[Chart] Erro ao parsear derivInfo:', e);
+            }
+          }
+        }
+
+        if (!this.derivToken) {
+          console.warn('[Chart] Token Deriv não encontrado no localStorage');
+          return;
+        }
+        
+        // Se não tiver loginid, tentar buscar do deriv_connection
+        if (!this.loginid) {
+          const derivConnection = localStorage.getItem('deriv_connection');
+          if (derivConnection) {
+            try {
+              const connection = JSON.parse(derivConnection);
+              this.loginid = connection.loginid;
+            } catch (e) {
+              // Ignorar erro
+            }
+          }
+        }
+
+        // Conectar ao backend
+        await derivTradingService.connect(this.derivToken, this.loginid);
+        this.isConnected = true;
+
+        // Iniciar stream SSE
+        await derivTradingService.startStream(this.handleSSEMessage.bind(this), this.derivToken);
+
+        // Inscrever-se no símbolo (isso vai buscar histórico)
+        await derivTradingService.subscribeSymbol(this.symbol, this.derivToken, this.loginid);
+
+        // Aguardar um pouco e então buscar ticks
+        setTimeout(() => {
+          this.loadTicksFromBackend();
+        }, 1500);
+      } catch (error) {
+        console.error('[Chart] Erro ao inicializar conexão:', error);
       }
+    },
+    handleSSEMessage(data) {
+      // Processar mensagens SSE
+      if (data.type === 'history' && data.data && data.data.ticks) {
+        console.log('[Chart] Histórico recebido via SSE:', data.data.ticks.length, 'ticks');
+        this.plotTicks(data.data.ticks);
+      } else if (data.type === 'tick' && data.data) {
+        // Ticks em tempo real - podemos adicionar ao gráfico se necessário
+        console.log('[Chart] Tick em tempo real recebido:', data.data);
+      }
+    },
+    async loadTicksFromBackend() {
+      if (this.isLoadingTicks || !this.chart || !this.chartSeries) {
+        return;
+      }
+
+      this.isLoadingTicks = true;
+      this.showChartPlaceholder = true;
+
+      try {
+        console.log('[Chart] Buscando ticks do backend para símbolo:', this.symbol);
+        
+        const response = await derivTradingService.getTicks(this.symbol);
+        
+        if (!response || !response.ticks || !Array.isArray(response.ticks)) {
+          console.warn('[Chart] Resposta inválida do backend:', response);
+          this.showChartPlaceholder = false;
+          return;
+        }
+
+        const ticks = response.ticks;
+        console.log('[Chart] Ticks recebidos:', ticks.length);
+
+        if (ticks.length === 0) {
+          console.warn('[Chart] Nenhum tick recebido do backend, tentando novamente em 2 segundos...');
+          // Tentar novamente após 2 segundos
+          setTimeout(() => {
+            this.loadTicksFromBackend();
+          }, 2000);
+          return;
+        }
+
+        // Plotar os ticks
+        this.plotTicks(ticks);
+      } catch (error) {
+        console.error('[Chart] Erro ao carregar ticks do backend:', error);
+        this.showChartPlaceholder = false;
+      } finally {
+        this.isLoadingTicks = false;
+      }
+    },
+    plotTicks(ticks) {
+      if (!this.chart || !this.chartSeries || !ticks || !Array.isArray(ticks)) {
+        return;
+      }
+
+      // Converter ticks para formato TradingView
+      // Limitar aos últimos 100 ticks
+      const ticksToUse = ticks.slice(-100);
       
-      return data;
+      const chartData = ticksToUse
+        .map(tick => {
+          // Validar dados
+          if (!tick || typeof tick !== 'object') return null;
+          
+          const value = tick.value;
+          const epoch = tick.epoch;
+          
+          // Validação rigorosa
+          if (
+            value == null || 
+            !isFinite(Number(value)) || 
+            Number(value) <= 0 || 
+            isNaN(Number(value)) ||
+            epoch == null ||
+            !isFinite(Number(epoch)) ||
+            Number(epoch) <= 0 ||
+            isNaN(Number(epoch))
+          ) {
+            return null;
+          }
+          
+          return {
+            time: Math.floor(Number(epoch)),
+            value: Number(value)
+          };
+        })
+        .filter(item => item !== null);
+
+      if (chartData.length === 0) {
+        console.warn('[Chart] Nenhum tick válido após validação');
+        this.showChartPlaceholder = false;
+        return;
+      }
+
+      // Ordenar por tempo
+      chartData.sort((a, b) => a.time - b.time);
+
+      console.log('[Chart] Plotando', chartData.length, 'ticks no gráfico');
+      console.log('[Chart] Primeiro tick:', chartData[0]);
+      console.log('[Chart] Último tick:', chartData[chartData.length - 1]);
+
+      // Atualizar gráfico
+      this.chartSeries.setData(chartData);
+      
+      // Ajustar viewport para mostrar todos os dados
+      this.chart.timeScale().fitContent();
+      
+      this.showChartPlaceholder = false;
+      console.log('[Chart] ✅ Gráfico atualizado com sucesso');
+    },
+    async handleSymbolChange() {
+      console.log('[Chart] Mercado alterado para:', this.symbol);
+      
+      if (!this.isConnected || !this.derivToken) {
+        console.warn('[Chart] Não conectado, tentando conectar...');
+        await this.initializeConnection();
+        return;
+      }
+
+      // Cancelar subscription anterior e inscrever-se no novo símbolo
+      try {
+        await derivTradingService.cancelTickSubscription();
+        await derivTradingService.subscribeSymbol(this.symbol, this.derivToken, this.loginid);
+        
+        // Aguardar um pouco e buscar novos ticks
+        setTimeout(() => {
+          this.loadTicksFromBackend();
+        }, 1500);
+      } catch (error) {
+        console.error('[Chart] Erro ao alterar símbolo:', error);
+      }
     },
     handleResize() {
       const container = this.$refs.chartContainer;
