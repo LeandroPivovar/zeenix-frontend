@@ -372,24 +372,58 @@ export default {
       try {
         console.log('[Chart] ========== INICIANDO CONEXÃO ==========');
         
+        // Primeiro, buscar loginid do deriv_connection
+        const derivConnection = localStorage.getItem('deriv_connection');
+        if (derivConnection) {
+          try {
+            const connection = JSON.parse(derivConnection);
+            this.loginid = connection.loginid;
+            console.log('[Chart] LoginID encontrado:', this.loginid);
+          } catch (e) {
+            console.warn('[Chart] Erro ao parsear deriv_connection:', e);
+          }
+        }
+        
         // Buscar token Deriv do localStorage
         // Tentar primeiro deriv_token (token direto)
         this.derivToken = localStorage.getItem('deriv_token');
         console.log('[Chart] deriv_token encontrado:', !!this.derivToken);
         
-        // Se não tiver, tentar deriv_connection (objeto com mais informações)
+        // Se não tiver, tentar deriv_tokens_by_loginid (mais comum)
         if (!this.derivToken) {
-          const derivConnection = localStorage.getItem('deriv_connection');
-          console.log('[Chart] deriv_connection encontrado:', !!derivConnection);
-          if (derivConnection) {
+          const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
+          console.log('[Chart] deriv_tokens_by_loginid encontrado:', !!tokensByLoginId);
+          if (tokensByLoginId) {
             try {
-              const connection = JSON.parse(derivConnection);
-              this.derivToken = connection.token;
-              this.loginid = connection.loginid;
-              console.log('[Chart] Token extraído de deriv_connection:', !!this.derivToken);
+              const tokens = JSON.parse(tokensByLoginId);
+              // Se tiver loginid, buscar token específico
+              if (this.loginid && tokens[this.loginid]) {
+                this.derivToken = tokens[this.loginid];
+                console.log('[Chart] Token extraído de deriv_tokens_by_loginid para loginid:', this.loginid, 'Token encontrado:', !!this.derivToken);
+              } else if (Object.keys(tokens).length > 0) {
+                // Se não tiver loginid específico, usar o primeiro token disponível
+                const firstLoginId = Object.keys(tokens)[0];
+                this.derivToken = tokens[firstLoginId];
+                this.loginid = firstLoginId;
+                console.log('[Chart] Token extraído de deriv_tokens_by_loginid (primeiro disponível):', firstLoginId, 'Token encontrado:', !!this.derivToken);
+              }
             } catch (e) {
-              console.warn('[Chart] Erro ao parsear deriv_connection:', e);
+              console.warn('[Chart] Erro ao parsear deriv_tokens_by_loginid:', e);
             }
+          }
+        }
+        
+        // Se ainda não tiver, tentar deriv_connection (objeto com mais informações)
+        if (!this.derivToken && derivConnection) {
+          try {
+            const connection = JSON.parse(derivConnection);
+            this.derivToken = connection.token;
+            if (!this.loginid) {
+              this.loginid = connection.loginid;
+            }
+            console.log('[Chart] Token extraído de deriv_connection:', !!this.derivToken);
+          } catch (e) {
+            console.warn('[Chart] Erro ao parsear deriv_connection:', e);
           }
         }
         
@@ -401,7 +435,9 @@ export default {
             try {
               const derivInfo = JSON.parse(storedDerivInfo);
               this.derivToken = derivInfo.token;
-              this.loginid = derivInfo.loginid;
+              if (!this.loginid) {
+                this.loginid = derivInfo.loginid;
+              }
               console.log('[Chart] Token extraído de derivInfo:', !!this.derivToken);
             } catch (e) {
               console.warn('[Chart] Erro ao parsear derivInfo:', e);
@@ -420,19 +456,6 @@ export default {
             }
           });
           return;
-        }
-        
-        // Se não tiver loginid, tentar buscar do deriv_connection
-        if (!this.loginid) {
-          const derivConnection = localStorage.getItem('deriv_connection');
-          if (derivConnection) {
-            try {
-              const connection = JSON.parse(derivConnection);
-              this.loginid = connection.loginid;
-            } catch (e) {
-              // Ignorar erro
-            }
-          }
         }
 
         console.log('[Chart] Conectando ao backend...');
