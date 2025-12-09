@@ -58,11 +58,19 @@
             <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
               <i class="fas fa-chart-line text-zenix-green mr-2"></i>Mercado
             </label>
+            <button
+              @click="openMarketModal"
+              class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors text-left flex items-center justify-between"
+            >
+              <span>{{ selectedMarketLabel }}</span>
+              <i class="fas fa-chevron-down text-xs"></i>
+            </button>
+            <!-- Select antigo mantido para compatibilidade, mas oculto -->
             <select 
               id="marketSelectSidebar"
               v-model="symbol"
               @change="handleSymbolChange"
-              class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
+              class="hidden"
             >
               <optgroup label="Índices Sintéticos">
                 <option value="R_10">Volatility 10 Index</option>
@@ -112,16 +120,28 @@
             <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
               <i class="fas fa-exchange-alt text-zenix-green mr-2"></i>Tipo de Negociação
             </label>
+            <button
+              @click="openTradeTypeModal"
+              :disabled="isTrading || activeContract || !symbol"
+              class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors text-left flex items-center justify-between disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <span>{{ selectedTradeTypeLabel }}</span>
+              <i class="fas fa-chevron-down text-xs"></i>
+            </button>
+            <!-- Select antigo mantido para compatibilidade, mas oculto -->
             <select 
               id="tradeTypeSelect"
               v-model="localOrderConfig.type"
               :disabled="isTrading || activeContract"
-              class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
+              class="hidden"
             >
               <option value="">Selecione um mercado primeiro</option>
               <option value="CALL">Alta (CALL)</option>
               <option value="PUT">Baixa (PUT)</option>
             </select>
+            <div v-if="!canUseCallPut" class="warning-message mt-2 p-2 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
+              ⚠️ Este ativo não suporta contratos CALL/PUT. Use a operação com dígitos para negociar este ativo.
+            </div>
           </div>
           
           <!-- Duration -->
@@ -239,6 +259,139 @@
           <!-- Messages -->
           <p v-if="showSuccessMessage" class="text-sm text-zenix-green">Operação executada com sucesso!</p>
           <p v-if="showErrorMessage" class="text-sm text-red-500">Erro ao executar operação</p>
+          
+          <!-- Last Orders Section -->
+          <div v-if="tradeResults && tradeResults.length > 0" class="last-orders-section">
+            <div class="last-orders-header">
+              <h4 class="last-orders-title">
+                <i class="fas fa-history text-zenix-green mr-2"></i>Últimas Ordens
+              </h4>
+            </div>
+            <div class="orders-list">
+              <div
+                v-for="(order, index) in tradeResults.slice(0, 10)"
+                :key="index"
+                class="order-item"
+              >
+                <div class="order-item-header">
+                  <span class="order-symbol">{{ order.symbol || order.direction || 'N/A' }}</span>
+                  <span class="order-type" :class="order.direction === 'CALL' ? 'call' : 'put'">
+                    {{ order.direction || 'N/A' }}
+                  </span>
+                </div>
+                <div class="order-details">
+                  <span>Compra: ${{ (order.buyPrice || 0).toFixed(2) }}</span>
+                  <span v-if="order.sellPrice">Venda: ${{ order.sellPrice.toFixed(2) }}</span>
+                </div>
+                <div v-if="order.profit !== null && order.profit !== undefined" class="order-profit" :class="order.profit >= 0 ? 'positive' : 'negative'">
+                  P&L: ${{ order.profit >= 0 ? '+' : '' }}{{ order.profit.toFixed(2) }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Trade Result Modal -->
+      <TradeResultModal
+        :visible="showTradeResultModal"
+        :profit="finalTradeProfit"
+        :currency="'USD'"
+        :type="finalTradeType"
+        :buy-price="finalTradeBuyPrice"
+        :sell-price="finalTradeSellPrice"
+        :balance-after="finalTradeBalanceAfter"
+        @close="closeTradeResultModal"
+      />
+      
+      <!-- Market Selection Modal -->
+      <div v-if="showMarketModal" class="modal-overlay" @click.self="closeMarketModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Selecionar Mercado</h3>
+            <button @click="closeMarketModal" class="modal-close-btn">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="market-categories">
+              <div v-for="(markets, category) in marketsByCategory" :key="category" class="market-category">
+                <h4 class="category-title">{{ category }}</h4>
+                <div class="market-grid">
+                  <button
+                    v-for="market in markets"
+                    :key="market.value"
+                    @click="selectMarket(market.value)"
+                    class="market-item"
+                    :class="{ 'active': symbol === market.value }"
+                  >
+                    <span class="market-label">{{ market.label }}</span>
+                    <span class="market-symbol">{{ market.value }}</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Trade Type Selection Modal -->
+      <div v-if="showTradeTypeModal" class="modal-overlay" @click.self="closeTradeTypeModal">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
+            <button @click="closeTradeTypeModal" class="modal-close-btn">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="trade-type-grid">
+              <button
+                v-for="type in availableTradeTypes"
+                :key="type.value"
+                @click="selectTradeType(type.value)"
+                class="trade-type-item"
+                :class="{ 'active': localOrderConfig.type === type.value }"
+              >
+                <i :class="type.icon"></i>
+                <span class="trade-type-label">{{ type.label }}</span>
+                <span class="trade-type-desc">{{ type.description }}</span>
+              </button>
+            </div>
+            <div v-if="!canUseCallPut" class="warning-message mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
+              ⚠️ Este ativo não suporta contratos CALL/PUT. Use a operação com dígitos para negociar este ativo.
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <!-- Contract Tracking Visual Reference -->
+      <div v-if="activeContract" class="contract-tracking-panel">
+        <div class="tracking-header">
+          <h4>Contrato Ativo</h4>
+          <span class="contract-status" :class="activeContract.contract_type === 'CALL' ? 'status-call' : 'status-put'">
+            {{ activeContract.contract_type }}
+          </span>
+        </div>
+        <div class="tracking-details">
+          <div class="tracking-item">
+            <span class="tracking-label">Símbolo:</span>
+            <span class="tracking-value">{{ activeContract.symbol }}</span>
+          </div>
+          <div class="tracking-item">
+            <span class="tracking-label">Preço de Entrada:</span>
+            <span class="tracking-value">$ {{ (activeContract.entry_spot || purchasePrice || 0).toFixed(pricePrecision) }}</span>
+          </div>
+          <div class="tracking-item">
+            <span class="tracking-label">Preço Atual:</span>
+            <span class="tracking-value">$ {{ (latestTick?.value || 0).toFixed(pricePrecision) }}</span>
+          </div>
+          <div class="tracking-item">
+            <span class="tracking-label">P&L:</span>
+            <span class="tracking-value" :class="realTimeProfit >= 0 ? 'profit' : 'loss'">
+              $ {{ realTimeProfit >= 0 ? '+' : '' }}{{ (realTimeProfit || 0).toFixed(pricePrecision) }}
+            </span>
+          </div>
         </div>
       </div>
     </div>
@@ -248,9 +401,19 @@
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
 import derivTradingService from '../services/deriv-trading.service.js';
+import TradeResultModal from './TradeResultModal.vue';
 
 export default {
   name: 'OperationChart',
+  components: {
+    TradeResultModal,
+  },
+  props: {
+    tradeResults: {
+      type: Array,
+      default: () => [],
+    },
+  },
   data() {
     return {
       showLoading: false,
@@ -292,6 +455,51 @@ export default {
       tradeMessage: '',
       latestTick: null,
       pricePrecision: 2,
+      // Modais
+      showMarketModal: false,
+      showTradeTypeModal: false,
+      showTradeResultModal: false,
+      // Dados do modal de resultado
+      finalTradeProfit: 0,
+      finalTradeType: 'CALL',
+      finalTradeBuyPrice: 0,
+      finalTradeSellPrice: null,
+      finalTradeBalanceAfter: null,
+      // Mercados disponíveis
+      markets: [
+        { value: 'R_10', label: 'Volatility 10 Index', category: 'Índices Contínuos' },
+        { value: 'R_25', label: 'Volatility 25 Index', category: 'Índices Contínuos' },
+        { value: 'R_50', label: 'Volatility 50 Index', category: 'Índices Contínuos' },
+        { value: 'R_75', label: 'Volatility 75 Index', category: 'Índices Contínuos' },
+        { value: 'R_100', label: 'Volatility 100 Index', category: 'Índices Contínuos' },
+        { value: '1HZ10V', label: 'Volatility 10 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ25V', label: 'Volatility 25 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ50V', label: 'Volatility 50 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ75V', label: 'Volatility 75 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ100V', label: 'Volatility 100 (1s) Index', category: 'Índices Contínuos' },
+        { value: 'cryBTCUSD', label: 'BTC/USD (Bitcoin)', category: 'Criptomoedas' },
+        { value: 'cryETHUSD', label: 'ETH/USD (Ethereum)', category: 'Criptomoedas' },
+        { value: 'frxEURUSD', label: 'EUR/USD (Euro / Dólar)', category: 'Forex Majors' },
+        { value: 'frxUSDJPY', label: 'USD/JPY (Dólar / Iene)', category: 'Forex Majors' },
+        { value: 'frxGBPUSD', label: 'GBP/USD (Libra / Dólar)', category: 'Forex Majors' },
+        { value: 'frxUSDCHF', label: 'USD/CHF (Dólar / Franco)', category: 'Forex Majors' },
+        { value: 'frxAUDUSD', label: 'AUD/USD (Dólar Australiano)', category: 'Forex Majors' },
+        { value: 'frxUSDCAD', label: 'USD/CAD (Dólar / Dólar Canadense)', category: 'Forex Majors' },
+        { value: 'frxNZDUSD', label: 'NZD/USD (Dólar Neozelandês)', category: 'Forex Majors' },
+        { value: 'frxEURGBP', label: 'EUR/GBP (Euro / Libra)', category: 'Forex Minors' },
+        { value: 'frxEURJPY', label: 'EUR/JPY (Euro / Iene)', category: 'Forex Minors' },
+        { value: 'frxGBPJPY', label: 'GBP/JPY (Libra / Iene)', category: 'Forex Minors' },
+        { value: 'frxAUDCAD', label: 'AUD/CAD (Dólar Australiano / Canadense)', category: 'Forex Minors' },
+        { value: 'frxAUDJPY', label: 'AUD/JPY (Dólar Australiano / Iene)', category: 'Forex Minors' },
+        { value: 'frxCHFJPY', label: 'CHF/JPY (Franco / Iene)', category: 'Forex Minors' },
+        { value: 'frxEURAUD', label: 'EUR/AUD (Euro / Dólar Australiano)', category: 'Forex Minors' },
+        { value: 'frxGBPAUD', label: 'GBP/AUD (Libra / Dólar Australiano)', category: 'Forex Minors' },
+        { value: 'frxUSDMXN', label: 'USD/MXN (Dólar / Peso Mexicano)', category: 'Forex Exotics' },
+        { value: 'frxXAUUSD', label: 'XAU/USD (Ouro / Dólar)', category: 'Metais' },
+        { value: 'frxXAGUSD', label: 'XAG/USD (Prata / Dólar)', category: 'Metais' },
+        { value: 'frxXPTUSD', label: 'XPT/USD (Platina / Dólar)', category: 'Metais' },
+        { value: 'frxXPDUSD', label: 'XPD/USD (Paládio / Dólar)', category: 'Metais' },
+      ],
     };
   },
   computed: {
@@ -300,6 +508,40 @@ export default {
     },
     showRealTimeProfit() {
       return this.realTimeProfit !== null && this.activeContract;
+    },
+    marketsByCategory() {
+      const grouped = {};
+      this.markets.forEach(market => {
+        const category = market.category || 'Outros';
+        if (!grouped[category]) {
+          grouped[category] = [];
+        }
+        grouped[category].push(market);
+      });
+      return grouped;
+    },
+    selectedMarketLabel() {
+      const market = this.markets.find(m => m.value === this.symbol);
+      return market ? market.label : 'Selecione um mercado';
+    },
+    selectedTradeTypeLabel() {
+      if (!this.localOrderConfig.type) {
+        return 'Selecione o tipo';
+      }
+      return this.localOrderConfig.type === 'CALL' ? 'Alta (CALL)' : 'Baixa (PUT)';
+    },
+    availableTradeTypes() {
+      // Tipos disponíveis baseados no mercado selecionado
+      const types = [
+        { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
+        { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço descerá', icon: 'fas fa-arrow-down' },
+      ];
+      return types;
+    },
+    canUseCallPut() {
+      // Verificar se o símbolo suporta CALL/PUT
+      // Por enquanto, assumir que todos os símbolos suportam
+      return true;
     },
   },
   async mounted() {
@@ -1050,16 +1292,42 @@ export default {
         return;
       }
       
+      // Calcular lucro final
+      const finalProfit = sellData.profit !== undefined && sellData.profit !== null 
+        ? Number(sellData.profit) 
+        : (this.realTimeProfit !== null ? this.realTimeProfit : 0);
+      
       // Atualizar contrato com dados da venda
       if (this.activeContract) {
         this.activeContract.sell_price = sellData.sell_price || this.activeContract.sell_price;
-        this.activeContract.profit = sellData.profit || this.activeContract.profit;
+        this.activeContract.profit = finalProfit;
         this.activeContract.exit_spot = sellData.exit_spot || null;
         this.activeContract.exit_time = sellData.exit_time || Date.now() / 1000;
+        
+        // Preparar dados para o modal
+        this.finalTradeProfit = finalProfit;
+        this.finalTradeType = this.activeContract.contract_type || 'CALL';
+        this.finalTradeBuyPrice = this.activeContract.buy_price || this.purchasePrice || 0;
+        this.finalTradeSellPrice = sellData.sell_price ? Number(sellData.sell_price) : null;
+        this.finalTradeBalanceAfter = sellData.balance_after ? Number(sellData.balance_after) : null;
       }
       
       // Remover linha de compra
       this.removeEntrySpotLine();
+      
+      // Emitir evento para atualizar histórico (se houver listener)
+      if (this.$listeners && this.$listeners['trade-result']) {
+        this.$emit('trade-result', {
+          contractId: this.activeContract?.contract_id,
+          buyPrice: this.activeContract?.buy_price || this.purchasePrice,
+          sellPrice: sellData.sell_price ? Number(sellData.sell_price) : null,
+          profit: finalProfit,
+          balanceAfter: sellData.balance_after ? Number(sellData.balance_after) : null,
+          currency: 'USD',
+          direction: this.activeContract?.contract_type,
+          status: 'CLOSED',
+        });
+      }
       
       // Limpar contrato ativo após um delay
       setTimeout(() => {
@@ -1070,9 +1338,53 @@ export default {
       }, 3000);
       
       this.isTrading = false;
-      this.tradeMessage = `Venda executada com sucesso! P&L: $${(sellData.profit || 0).toFixed(this.pricePrecision)}`;
+      this.tradeMessage = `Venda executada com sucesso! P&L: $${finalProfit.toFixed(this.pricePrecision)}`;
+      
+      // Mostrar modal de resultado
+      this.showTradeResultModal = true;
       
       console.log('[Chart] ✅ Venda processada com sucesso');
+    },
+    openMarketModal() {
+      this.showMarketModal = true;
+    },
+    closeMarketModal() {
+      this.showMarketModal = false;
+    },
+    selectMarket(marketValue) {
+      this.symbol = marketValue;
+      this.closeMarketModal();
+      // Disparar mudança de símbolo
+      if (this.isConnected) {
+        this.handleSymbolChange();
+      }
+    },
+    openTradeTypeModal() {
+      if (!this.symbol) {
+        this.tradeError = 'Selecione um mercado primeiro';
+        return;
+      }
+      this.showTradeTypeModal = true;
+    },
+    closeTradeTypeModal() {
+      this.showTradeTypeModal = false;
+    },
+    selectTradeType(type) {
+      this.localOrderConfig.type = type;
+      this.closeTradeTypeModal();
+      // Recarregar proposta com novo tipo
+      if (this.isConnected) {
+        this.loadProposal();
+      }
+    },
+    closeTradeResultModal() {
+      this.showTradeResultModal = false;
+      // Reiniciar subscription de proposal após fechar o modal
+      setTimeout(() => {
+        if (!this.activeContract && !this.isTrading && this.isConnected) {
+          this.subscribeToProposal();
+        }
+      }, 500);
     },
     processContract(contractData) {
       console.log('[Chart] ========== PROCESSANDO ATUALIZAÇÃO DE CONTRATO ==========');
@@ -1668,6 +1980,367 @@ export default {
 
 .text-zenix-green {
   color: #22C55E;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+  padding: 20px;
+}
+
+.modal-content {
+  position: relative;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border-radius: 24px;
+  padding: 0;
+  min-width: 480px;
+  max-width: 600px;
+  width: 100%;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+              0 0 0 1px rgba(255, 255, 255, 0.1);
+  animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 32px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.modal-close-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 20px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  transition: all 0.2s;
+}
+
+.modal-close-btn:hover {
+  color: #f8fafc;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.modal-body {
+  padding: 24px 32px;
+}
+
+/* Market Selection Modal */
+.market-categories {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.market-category {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.category-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.6);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 8px;
+}
+
+.market-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.market-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 16px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.market-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(34, 197, 94, 0.5);
+  transform: translateY(-2px);
+}
+
+.market-item.active {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: #22C55E;
+}
+
+.market-label {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.market-symbol {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Trade Type Selection Modal */
+.trade-type-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.trade-type-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 24px;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.trade-type-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(34, 197, 94, 0.5);
+  transform: translateY(-2px);
+}
+
+.trade-type-item.active {
+  background: rgba(34, 197, 94, 0.1);
+  border-color: #22C55E;
+}
+
+.trade-type-item i {
+  font-size: 32px;
+  color: #22C55E;
+}
+
+.trade-type-item.active i {
+  color: #22C55E;
+}
+
+.trade-type-label {
+  font-size: 18px;
+  font-weight: 700;
+  color: #f8fafc;
+}
+
+.trade-type-desc {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+/* Contract Tracking Panel */
+.contract-tracking-panel {
+  position: fixed;
+  top: 80px;
+  right: 20px;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  padding: 20px;
+  min-width: 280px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+}
+
+.tracking-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.tracking-header h4 {
+  font-size: 16px;
+  font-weight: 700;
+  color: #f8fafc;
+  margin: 0;
+}
+
+.contract-status {
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.status-call {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22C55E;
+  border: 1px solid rgba(34, 197, 94, 0.3);
+}
+
+.status-put {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+  border: 1px solid rgba(239, 68, 68, 0.3);
+}
+
+.tracking-details {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tracking-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 0;
+}
+
+.tracking-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.tracking-value {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.tracking-value.profit {
+  color: #22C55E;
+}
+
+.tracking-value.loss {
+  color: #ef4444;
+}
+
+/* Last Orders Section */
+.last-orders-section {
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.last-orders-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.last-orders-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #f8fafc;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.orders-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.order-item {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.order-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.order-symbol {
+  font-size: 12px;
+  font-weight: 600;
+  color: #f8fafc;
+}
+
+.order-type {
+  padding: 2px 8px;
+  border-radius: 4px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+}
+
+.order-type.call {
+  background: rgba(34, 197, 94, 0.2);
+  color: #22C55E;
+}
+
+.order-type.put {
+  background: rgba(239, 68, 68, 0.2);
+  color: #ef4444;
+}
+
+.order-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.order-profit {
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 4px;
+}
+
+.order-profit.positive {
+  color: #22C55E;
+}
+
+.order-profit.negative {
+  color: #ef4444;
+}
+
+@keyframes modalSlideIn {
+  from {
+    opacity: 0;
+    transform: scale(0.9) translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
 }
 
 .bg-zenix-green {
