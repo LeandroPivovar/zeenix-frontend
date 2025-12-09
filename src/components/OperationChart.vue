@@ -557,11 +557,57 @@ export default {
       };
       
       // Filtrar apenas os tipos que estão disponíveis nos contratos
-      const availableTypes = this.availableContracts
-        .map(contract => contract.contract_type)
-        .filter((type, index, self) => self.indexOf(type) === index) // Remover duplicatas
+      console.log('[Chart] Contratos disponíveis para processar:', this.availableContracts);
+      console.log('[Chart] Tipo de dados:', Array.isArray(this.availableContracts) ? 'Array' : typeof this.availableContracts);
+      
+      // Extrair tipos de contrato - a estrutura pode variar
+      let contractTypes = [];
+      
+      if (Array.isArray(this.availableContracts)) {
+        contractTypes = this.availableContracts
+          .map(contract => {
+            // Pode ser contract.contract_type, contract.type, contract.name, ou o próprio valor
+            if (typeof contract === 'string') {
+              return contract.toUpperCase();
+            }
+            if (contract && typeof contract === 'object') {
+              return (contract.contract_type || contract.type || contract.name || contract.value || '').toString().toUpperCase();
+            }
+            return null;
+          })
+          .filter(type => type && type.length > 0) // Apenas strings válidas
+          .filter((type, index, self) => self.indexOf(type) === index); // Remover duplicatas
+      } else if (this.availableContracts && typeof this.availableContracts === 'object') {
+        // Se for um objeto, tentar extrair tipos de diferentes formas
+        const values = Object.values(this.availableContracts);
+        contractTypes = values
+          .map(item => {
+            if (typeof item === 'string') {
+              return item.toUpperCase();
+            }
+            if (Array.isArray(item)) {
+              return item.map(c => {
+                if (typeof c === 'string') return c.toUpperCase();
+                return (c.contract_type || c.type || c.name || '').toString().toUpperCase();
+              });
+            }
+            if (item && typeof item === 'object') {
+              return (item.contract_type || item.type || item.name || '').toString().toUpperCase();
+            }
+            return null;
+          })
+          .flat()
+          .filter(type => type && type.length > 0)
+          .filter((type, index, self) => self.indexOf(type) === index);
+      }
+      
+      console.log('[Chart] Tipos de contrato extraídos:', contractTypes);
+      
+      const availableTypes = contractTypes
         .map(type => typeMap[type])
         .filter(type => type !== undefined); // Remover tipos não mapeados
+      
+      console.log('[Chart] Tipos mapeados disponíveis:', availableTypes);
       
       return availableTypes.length > 0 ? availableTypes : [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
@@ -1921,13 +1967,25 @@ export default {
         if (defaultValues.availableContracts) {
           this.availableContracts = defaultValues.availableContracts;
           console.log('[Chart] ✅ Contratos disponíveis atualizados:', this.availableContracts);
+          console.log('[Chart] Estrutura dos contratos:', Array.isArray(this.availableContracts) ? 'Array' : typeof this.availableContracts);
+          if (this.availableContracts.length > 0) {
+            console.log('[Chart] Primeiro contrato exemplo:', this.availableContracts[0]);
+          }
           
           // Se o tipo atual não estiver disponível, selecionar o primeiro disponível
-          const currentTypeAvailable = this.availableContracts.some(
-            contract => contract.contract_type === this.localOrderConfig.type
+          const contractTypes = this.availableContracts.map(c => {
+            if (typeof c === 'string') return c;
+            return c.contract_type || c.type || c.name || c;
+          }).filter(t => t);
+          const currentTypeAvailable = contractTypes.some(
+            type => {
+              const typeStr = typeof type === 'string' ? type : (type.contract_type || type.type || type.name || type);
+              return typeStr === this.localOrderConfig.type;
+            }
           );
-          if (!currentTypeAvailable && this.availableContracts.length > 0) {
-            this.localOrderConfig.type = this.availableContracts[0].contract_type;
+          if (!currentTypeAvailable && contractTypes.length > 0) {
+            const firstType = contractTypes[0];
+            this.localOrderConfig.type = typeof firstType === 'string' ? firstType : (firstType.contract_type || firstType.type || firstType.name || 'CALL');
             console.log('[Chart] Tipo de contrato alterado para:', this.localOrderConfig.type);
           }
         }
