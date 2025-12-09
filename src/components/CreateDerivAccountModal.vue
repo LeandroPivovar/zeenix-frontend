@@ -1,13 +1,13 @@
 <template>
   <div v-if="visible" :class="['overlay', { 'inline-mode': inline }]" @click.self="!inline && onClose()">
     <div :class="['modal', { 'card-mode': inline, 'has-absolute-header': !inline && currentStep > 1 }]">
-      <!-- Título e botão X dentro do modal quando não é inline OU quando é inline na etapa 1 -->
+      <!-- Título e botão X dentro do modal quando não é inline (desktop) OU quando é inline no passo 1 -->
       <div v-if="!inline || (inline && currentStep === 1)" :class="['modal-header', { 'absolute-header': !inline && currentStep > 1 }]">
         <h3 class="title">Criar Conta na Deriv</h3>
         <button class="close-btn" @click="onClose" :disabled="loading">×</button>
       </div>
       
-      <p :class="['subtitle', { 'absolute-subtitle': !inline && currentStep > 1 }]">Preencha os dados abaixo para criar sua conta DEMO ($10.000) e REAL (USD)</p>
+      <p v-if="currentStep === 1" class="subtitle">Preencha seu e-mail para criar sua conta DEMO ($10.000) e REAL (USD).</p>
       
       <div class="info-box" v-if="!emailVerified">
         <svg  viewBox="0 0 492 492" fill="none" xmlns="http://www.w3.org/2000/svg">
@@ -42,12 +42,22 @@
       <!-- PASSO 1: Verificar Email -->
       <div v-if="!emailVerified" class="form">
         <div class="form-group">
-          <label>Email <span class="required">*</span></label>
-          <input type="email" v-model="formData.email" placeholder="seu@email.com" required>
+          <label>E-mail <span class="required">*</span></label>
+          <div class="email-input-wrapper">
+            <svg class="envelope-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="email" v-model="formData.email" placeholder="seu@email.com" required class="email-input">
+          </div>
         </div>
         
         <button type="button" @click="verifyEmail" class="submit-btn" :disabled="loading || !formData.email">
-          {{ loading ? 'Enviando código...' : 'Enviar Código de Verificação' }}
+          <span v-if="!loading">Enviar Código de Verificação</span>
+          <span v-else>Enviando código...</span>
+          <svg v-if="!loading" class="arrow-icon-btn" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 12h14M12 5l7 7-7 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
         </button>
       </div>
 
@@ -55,23 +65,43 @@
       <div v-if="emailVerified && !verificationCode" class="form">
         <div class="form-group">
           <label>Código de Verificação <span class="required">*</span></label>
-          <input 
-            type="text" 
-            v-model="codeInput" 
-            placeholder="Digite o código recebido por email" 
-            maxlength="10"
-            @input="codeInput = codeInput.toUpperCase()"
-            required
-          >
-          <small>Verifique sua caixa de entrada e spam</small>
+          <p class="code-instruction">Digite o código recebido por email</p>
+          <div class="code-input-wrapper">
+            <svg class="shield-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input 
+              type="text" 
+              v-model="codeInput" 
+              placeholder="000000" 
+              maxlength="10"
+              @input="codeInput = codeInput.toUpperCase()"
+              required
+              class="code-input"
+            >
+          </div>
+          <small>
+            <svg class="info-icon-small" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2"/>
+              <path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+            Verifique sua caixa de entrada e spam
+          </small>
         </div>
         
         <div class="button-group">
-          <button type="button" @click="backToEmail" class="secondary-btn">
-            Voltar
-          </button>
           <button type="button" @click="confirmCode" class="submit-btn" :disabled="loading || !codeInput">
-            {{ loading ? 'Verificando...' : 'Confirmar Código' }}
+            <span v-if="!loading">Confirmar Código</span>
+            <span v-else>Verificando...</span>
+            <svg v-if="!loading" class="check-icon-btn" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </button>
+          <button type="button" @click="backToEmail" class="secondary-btn">
+            <svg class="back-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M19 12H5M5 12l6-6m-6 6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            Voltar
           </button>
         </div>
       </div>
@@ -452,6 +482,12 @@ export default {
   position: relative;
 }
 
+@media (max-width: 768px) {
+  .modal {
+    padding: 20px;
+  }
+}
+
 .modal.has-absolute-header {
   padding-top: 140px;
 }
@@ -579,6 +615,7 @@ export default {
   color: #8D8D8D;
   margin-bottom: 20px;
   font-size: 14px;
+  text-align: left;
 }
 
 .subtitle.absolute-subtitle {
@@ -590,6 +627,13 @@ export default {
   margin-bottom: 0;
   padding-top: 10px;
   background: #0B0B0B;
+  text-align: left;
+}
+
+.step2-instruction {
+  color: #8D8D8D;
+  margin-bottom: 20px;
+  font-size: 14px;
 }
 
 .info-box {
@@ -631,7 +675,7 @@ export default {
 }
 
 .form-group {
-  margin-bottom: 0;
+  margin-bottom: 20px;
 }
 
 .row {
@@ -646,6 +690,7 @@ label {
   font-weight: 500;
   margin-bottom: 8px;
   font-size: 14px;
+  text-align: left;
 }
 
 .required {
@@ -675,11 +720,88 @@ select:focus {
 }
 
 small {
-  display: block;
+  display: flex;
+  align-items: center;
   color: #8D8D8D;
-  margin-top: 5px;
+  margin-top: 8px;
   margin-bottom: 10px;
   font-size: 12px;
+  text-align: left;
+}
+
+.code-instruction {
+  color: #8D8D8D;
+  font-size: 13px;
+  margin-bottom: 12px;
+  margin-top: 0;
+  text-align: left;
+}
+
+.code-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.shield-icon {
+  position: absolute;
+  left: 15px;
+  width: 20px;
+  height: 20px;
+  color: #8D8D8D;
+  z-index: 1;
+  pointer-events: none;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.code-input {
+  font-size: 18px;
+  letter-spacing: 6px;
+  text-align: center;
+  font-weight: 600;
+  padding: 12px 45px;
+  border-radius: 8px;
+}
+
+.info-icon-small {
+  width: 14px;
+  height: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-right: 6px;
+  color: #8D8D8D;
+  flex-shrink: 0;
+}
+
+.email-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.envelope-icon {
+  position: absolute;
+  left: 15px;
+  width: 20px;
+  height: 20px;
+  color: #8D8D8D;
+  z-index: 1;
+  pointer-events: none;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.email-input {
+  padding-left: 45px !important;
 }
 
 .checkbox-group {
@@ -746,7 +868,23 @@ input[type="checkbox"] {
   font-weight: 600;
   cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.check-icon-btn {
+  width: 20px;
+  height: 20px;
+  stroke: #000;
+}
+
+.arrow-icon-btn {
+  width: 20px;
+  height: 20px;
+  stroke: #000;
 }
 
 .info-box svg{
@@ -773,11 +911,13 @@ input[type="checkbox"] {
 
 .button-group {
   display: flex;
+  flex-direction: column;
   gap: 10px;
+  margin-top: 20px;
 }
 
 .secondary-btn {
-  flex: 1;
+  width: 100%;
   background: #1C1C1C;
   color: #DFDFDF;
   border: 1px solid #2C2C2C;
@@ -786,11 +926,22 @@ input[type="checkbox"] {
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 15px;
+  margin-top: 0;
+}
+
+.back-icon {
+  width: 18px;
+  height: 18px;
 }
 
 
 .submit-btn {
-  flex: 2;
+  width: 100%;
 }
 
 /* Modo inline (card) - apenas mobile */
@@ -802,15 +953,15 @@ input[type="checkbox"] {
   z-index: 1 !important;
 }
 
-.inline-mode .modal {
-  max-width: 100% !important;
-  width: 100% !important;
-  max-height: none !important;
-  padding: 20px !important;
-  background: transparent !important;
-  border: none !important;
-  border-radius: 0 !important;
-}
+  .inline-mode .modal {
+    max-width: 100% !important;
+    width: 100% !important;
+    max-height: none !important;
+    padding: 24px 20px !important;
+    background: #1A1A1A !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 18px !important;
+  }
 
 .card-mode {
   background: transparent !important;
@@ -827,11 +978,50 @@ input[type="checkbox"] {
   }
   
   .inline-mode .modal {
-    padding: 0 !important;
+    padding: 20px !important;
+    background: #1A1A1A !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 18px !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
   }
   
   .inline-mode .modal-header {
-    display: none !important;
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-bottom: 12px !important;
+    padding: 0 !important;
+    width: 100% !important;
+  }
+  
+  .inline-mode .modal-header .title {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #DFDFDF !important;
+    margin: 0 !important;
+  }
+  
+  .inline-mode .modal-header .close-btn {
+    font-size: 28px !important;
+    color: #DFDFDF !important;
+    background: none !important;
+    border: none !important;
+    padding: 0 !important;
+    width: 28px !important;
+    height: 28px !important;
+    cursor: pointer !important;
+  }
+  
+  .inline-mode .subtitle {
+    font-size: 13px !important;
+    margin-bottom: 15px !important;
+    margin-top: 0 !important;
+    color: #8D8D8D !important;
+    padding: 0 !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
   }
   
   .modal-header-external {
@@ -840,11 +1030,6 @@ input[type="checkbox"] {
   
   .modal-header-external .title {
     font-size: 18px;
-  }
-  
-  .inline-mode .subtitle {
-    font-size: 13px;
-    margin-bottom: 15px;
   }
   
   .inline-mode .info-box {
