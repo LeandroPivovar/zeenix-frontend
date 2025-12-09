@@ -1964,13 +1964,21 @@ export default {
         payout: buyData.payout || null, // Payout do contrato
       };
       
-      // Inicializar contador
+      // Inicializar contador (deve ser chamado ANTES de adicionar a linha)
       this.initializeContractCountdown();
+      
+      // Mostrar contador visual
+      this.showCountdown = true;
       
       // Adicionar linha de compra no gráfico
       if (this.activeContract.entry_spot) {
         const entryTime = this.activeContract.entry_time || (Date.now() / 1000);
-        this.addEntrySpotLine(this.activeContract.entry_spot, entryTime);
+        // Aguardar um pouco para garantir que o gráfico está pronto
+        this.$nextTick(() => {
+          setTimeout(() => {
+            this.addEntrySpotLine(this.activeContract.entry_spot, entryTime);
+          }, 100);
+        });
       }
       
       this.isTrading = false;
@@ -1978,6 +1986,13 @@ export default {
       this.isSellEnabled = true;
       
       console.log('[Chart] ✅ Compra processada com sucesso:', this.activeContract);
+      console.log('[Chart] Contador iniciado:', {
+        duration: this.activeContract.duration,
+        durationUnit: this.activeContract.duration_unit,
+        isTickBased: this.activeContract.duration_unit === 't',
+        ticksRemaining: this.contractTicksRemaining,
+        timeRemaining: this.contractTimeRemaining
+      });
     },
     processSell(sellData) {
       console.log('[Chart] ========== PROCESSANDO VENDA ==========');
@@ -2238,22 +2253,48 @@ export default {
     },
     async handleContractExpiration(contractData) {
       console.log('[Chart] ========== CONTRATO EXPIRADO ==========');
-      console.log('[Chart] Dados finais:', contractData);
+      console.log('[Chart] Dados finais recebidos:', contractData);
       
       // Parar contador
       this.stopContractCountdown();
+      this.showCountdown = false;
       
       // Se não temos dados completos, tentar buscar do backend
       let finalContractData = contractData;
-      if (!contractData.profit && contractData.profit !== 0 && this.activeContract?.contract_id) {
-        try {
-          // Tentar buscar status atualizado do contrato do backend
-          // O backend deve enviar via SSE, mas podemos tentar buscar se necessário
-          console.log('[Chart] Buscando resultado final do contrato...');
-          // Por enquanto, usar os dados que temos
-          // O backend deve enviar via SSE quando o contrato expirar
-        } catch (error) {
-          console.warn('[Chart] Não foi possível buscar resultado do backend:', error);
+      if ((!contractData.profit && contractData.profit !== 0) || !contractData.status) {
+        if (this.activeContract?.contract_id) {
+          try {
+            console.log('[Chart] Buscando resultado final do contrato da API...');
+            const authToken = localStorage.getItem('token');
+            if (authToken) {
+              const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+              const apiUrl = apiBaseUrl.endsWith('/api') ? apiBaseUrl : `${apiBaseUrl}/api`;
+              
+              // Tentar buscar informações do contrato via API do backend
+              // O backend pode ter um endpoint para buscar status do contrato
+              // Por enquanto, vamos aguardar os dados via SSE que já devem estar chegando
+              console.log('[Chart] Aguardando dados finais via SSE...');
+              
+              // Aguardar até 3 segundos por dados via SSE
+              await new Promise((resolve) => {
+                const timeout = setTimeout(() => {
+                  console.log('[Chart] Timeout aguardando dados via SSE, usando dados disponíveis');
+                  resolve();
+                }, 3000);
+                
+                // Se receber dados antes do timeout, cancelar
+                const checkInterval = setInterval(() => {
+                  if (contractData.profit !== undefined || contractData.status) {
+                    clearTimeout(timeout);
+                    clearInterval(checkInterval);
+                    resolve();
+                  }
+                }, 100);
+              });
+            }
+          } catch (error) {
+            console.warn('[Chart] Não foi possível buscar resultado do backend:', error);
+          }
         }
       }
       
