@@ -955,6 +955,30 @@ export default {
         return;
       }
 
+      // Verificar se o valor está dentro de uma faixa razoável dos valores existentes
+      // Isso evita adicionar valores de símbolos diferentes
+      if (this.ticks.length > 0) {
+        const existingValues = this.ticks
+          .map(t => t.value)
+          .filter(v => v !== null && v !== undefined && isFinite(v) && v > 0);
+        
+        if (existingValues.length > 0) {
+          const minExisting = Math.min(...existingValues);
+          const maxExisting = Math.max(...existingValues);
+          const medianExisting = [...existingValues].sort((a, b) => a - b)[Math.floor(existingValues.length / 2)];
+          
+          // Se o novo valor estiver muito fora da faixa (mais de 5x da mediana), ignorar
+          if (medianExisting > 0 && (numValue < medianExisting / 5 || numValue > medianExisting * 5)) {
+            console.warn('[Chart] ⚠️ Tick em tempo real ignorado - valor muito diferente do símbolo atual:', {
+              novoValor: numValue,
+              medianaExistente: medianExisting,
+              razao: numValue / medianExisting
+            });
+            return;
+          }
+        }
+      }
+
       // Adicionar ao array de ticks
       this.ticks.push({ value: numValue, epoch: brasiliaEpoch });
       
@@ -965,6 +989,17 @@ export default {
 
       // Adicionar ao gráfico usando update() para atualização incremental
       try {
+        // Validar novamente antes de passar para o gráfico
+        if (brasiliaEpoch === null || brasiliaEpoch === undefined || isNaN(brasiliaEpoch) || !isFinite(brasiliaEpoch) || brasiliaEpoch <= 0) {
+          console.warn('[Chart] Epoch inválido antes de update:', brasiliaEpoch);
+          return;
+        }
+        
+        if (numValue === null || numValue === undefined || isNaN(numValue) || !isFinite(numValue) || numValue <= 0) {
+          console.warn('[Chart] Valor inválido antes de update:', numValue);
+          return;
+        }
+        
         this.chartSeries.update({
           time: brasiliaEpoch,
           value: numValue
@@ -1100,40 +1135,70 @@ export default {
         console.warn('[Chart] Aviso ao limpar dados anteriores:', error);
       }
 
-      // Limpar dados anteriores da série ANTES de processar novos dados
-      try {
-        // Remover todos os dados da série atual
-        this.chartSeries.setData([]);
-        console.log('[Chart] ✅ Dados anteriores limpos');
-      } catch (error) {
-        console.warn('[Chart] Aviso ao limpar dados anteriores:', error);
-      }
-
       // Converter ticks para formato TradingView
       // Limitar aos últimos 100 ticks
       let ticksToUse = ticks.slice(-100);
       
       // Verificar se todos os ticks são do mesmo símbolo (valores similares)
       // Se houver valores muito diferentes, pode ser mistura de símbolos
-      const tickValues = ticksToUse.map(t => Number(t.value)).filter(v => !isNaN(v) && v > 0);
-      if (tickValues.length > 0) {
-        const minVal = Math.min(...tickValues);
-        const maxVal = Math.max(...tickValues);
-        if (minVal > 0 && (maxVal / minVal) > 50) {
-          console.warn('[Chart] ⚠️ Valores muito diferentes detectados - possível mistura de símbolos');
-          // Filtrar apenas valores similares (dentro de uma faixa razoável)
-          const sortedValues = [...tickValues].sort((a, b) => a - b);
-          const median = sortedValues[Math.floor(sortedValues.length / 2)];
-          const ticksToUseFiltered = ticksToUse.filter(tick => {
+      const tickValues = ticksToUse
+        .map(t => {
+          if (!t || typeof t !== 'object') return null;
+          if (t.value === null || t.value === undefined) return null;
+          const val = Number(t.value);
+          if (isNaN(val) || !isFinite(val) || val <= 0) return null;
+          return val;
+        })
+        .filter(v => v !== null);
+      
+      if (tickValues.length === 0) {
+        console.warn('[Chart] Nenhum valor válido encontrado nos ticks');
+        this.showChartPlaceholder = false;
+        this.isLoadingTicks = false;
+        return;
+      }
+      
+      // Detectar e filtrar valores de símbolos diferentes
+      const minVal = Math.min(...tickValues);
+      const maxVal = Math.max(...tickValues);
+      
+      if (minVal > 0 && (maxVal / minVal) > 10) {
+        console.warn('[Chart] ⚠️ Valores muito diferentes detectados - possível mistura de símbolos:', {
+          min: minVal,
+          max: maxVal,
+          ratio: maxVal / minVal
+        });
+        
+        // Agrupar valores por faixa para identificar o símbolo mais comum
+        const sortedValues = [...tickValues].sort((a, b) => a - b);
+        const median = sortedValues[Math.floor(sortedValues.length / 2)];
+        
+        // Usar apenas valores que estão próximos da mediana (dentro de 2x)
+        // Isso garante que mantemos apenas um símbolo
+        const filteredTicks = ticksToUse.filter(tick => {
+          if (!tick || typeof tick !== 'object') return false;
+          if (tick.value === null || tick.value === undefined) return false;
+          const val = Number(tick.value);
+          if (isNaN(val) || !isFinite(val) || val <= 0) return false;
+          // Manter apenas valores dentro de 2x da mediana (mais rigoroso)
+          return val >= median / 2 && val <= median * 2;
+        });
+        
+        if (filteredTicks.length > 0) {
+          console.log('[Chart] Ticks filtrados:', filteredTicks.length, 'de', ticksToUse.length);
+          ticksToUse = filteredTicks;
+        } else {
+          // Se o filtro removeu tudo, usar apenas valores próximos da mediana
+          const medianTicks = ticksToUse.filter(tick => {
+            if (!tick || typeof tick !== 'object') return false;
+            if (tick.value === null || tick.value === undefined) return false;
             const val = Number(tick.value);
-            if (isNaN(val) || val <= 0) return false;
-            // Manter apenas valores dentro de 5x da mediana
-            return val >= median / 5 && val <= median * 5;
+            if (isNaN(val) || !isFinite(val) || val <= 0) return false;
+            return Math.abs(val - median) / median < 0.5; // Dentro de 50% da mediana
           });
-          
-          if (ticksToUseFiltered.length > 0) {
-            console.log('[Chart] Ticks filtrados:', ticksToUseFiltered.length, 'de', ticksToUse.length);
-            ticksToUse = ticksToUseFiltered;
+          if (medianTicks.length > 0) {
+            ticksToUse = medianTicks;
+            console.log('[Chart] Usando apenas ticks próximos da mediana:', medianTicks.length);
           }
         }
       }
@@ -1226,30 +1291,51 @@ export default {
         }
         
         // Verificar se há valores muito diferentes (possível mistura de símbolos)
-        const chartValues = finalChartData.map(d => d.value);
+        const chartValues = finalChartData.map(d => d.value).filter(v => v !== null && v !== undefined && isFinite(v) && v > 0);
+        
+        if (chartValues.length === 0) {
+          console.warn('[Chart] Nenhum valor válido após validação');
+          this.showChartPlaceholder = false;
+          this.isLoadingTicks = false;
+          return;
+        }
+        
         const minValue = Math.min(...chartValues);
         const maxValue = Math.max(...chartValues);
         const avgValue = chartValues.reduce((a, b) => a + b, 0) / chartValues.length;
+        const medianValue = [...chartValues].sort((a, b) => a - b)[Math.floor(chartValues.length / 2)];
         
-        // Se a variação for muito grande (mais de 10x), pode ser mistura de símbolos
-        if (minValue > 0 && avgValue > 0 && (maxValue / minValue) > 10) {
+        // Se a variação for muito grande (mais de 5x), filtrar valores outliers
+        if (minValue > 0 && medianValue > 0 && (maxValue / minValue) > 5) {
           console.warn('[Chart] ⚠️ Valores muito diferentes detectados - possível mistura de símbolos:', {
             min: minValue,
             max: maxValue,
+            median: medianValue,
             ratio: maxValue / minValue
           });
-          // Filtrar valores que estão muito fora da média (mais de 3 desvios padrão)
-          const mean = avgValue;
-          const variance = chartValues.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / chartValues.length;
-          const stdDev = Math.sqrt(variance);
+          
+          // Usar mediana como referência (mais robusta que média)
+          // Manter apenas valores dentro de 2x da mediana
           const filteredData = finalChartData.filter(item => {
-            const zScore = Math.abs((item.value - mean) / stdDev);
-            return zScore <= 3; // Manter apenas valores dentro de 3 desvios padrão
+            if (!item || item.value === null || item.value === undefined) return false;
+            const val = Number(item.value);
+            if (isNaN(val) || !isFinite(val) || val <= 0) return false;
+            // Manter apenas valores dentro de 2x da mediana
+            return val >= medianValue / 2 && val <= medianValue * 2;
           });
           
           if (filteredData.length > 0) {
-            console.log('[Chart] Dados filtrados:', filteredData.length, 'de', finalChartData.length);
+            console.log('[Chart] Dados filtrados por mediana:', filteredData.length, 'de', finalChartData.length);
             finalChartData = filteredData;
+            
+            // Recalcular valores após filtro
+            const newValues = filteredData.map(d => d.value).filter(v => v !== null && v !== undefined && isFinite(v) && v > 0);
+            if (newValues.length > 0) {
+              const newMin = Math.min(...newValues);
+              const newMax = Math.max(...newValues);
+              const newAvg = newValues.reduce((a, b) => a + b, 0) / newValues.length;
+              console.log('[Chart] Após filtro - min:', newMin, 'max:', newMax, 'avg:', newAvg.toFixed(2));
+            }
           }
         }
         
@@ -1258,14 +1344,53 @@ export default {
         console.log('[Chart] Último tick:', finalChartData[finalChartData.length - 1]);
         console.log('[Chart] Range de valores:', { min: minValue, max: maxValue, avg: avgValue.toFixed(2) });
 
+        // Validação final individual de cada item antes de passar para o gráfico
+        const validatedData = finalChartData.filter(item => {
+          // Verificar se o item existe e não é null/undefined
+          if (!item || item === null || item === undefined) {
+            return false;
+          }
+          
+          // Verificar time
+          if (item.time === null || item.time === undefined) {
+            return false;
+          }
+          const timeNum = Number(item.time);
+          if (isNaN(timeNum) || !isFinite(timeNum) || timeNum <= 0) {
+            return false;
+          }
+          
+          // Verificar value
+          if (item.value === null || item.value === undefined) {
+            return false;
+          }
+          const valueNum = Number(item.value);
+          if (isNaN(valueNum) || !isFinite(valueNum) || valueNum <= 0) {
+            return false;
+          }
+          
+          // Garantir que os valores são números válidos
+          item.time = timeNum;
+          item.value = valueNum;
+          
+          return true;
+        });
+        
+        if (validatedData.length === 0) {
+          console.warn('[Chart] Nenhum dado válido após validação individual');
+          this.showChartPlaceholder = false;
+          this.isLoadingTicks = false;
+          return;
+        }
+        
         // Atualizar gráfico com try-catch robusto
         try {
           // Limpar série novamente antes de adicionar novos dados
           this.chartSeries.setData([]);
           
-          // Adicionar novos dados
-          this.chartSeries.setData(finalChartData);
-          console.log('[Chart] ✅ Dados setados na série:', finalChartData.length, 'pontos válidos');
+          // Adicionar novos dados validados
+          this.chartSeries.setData(validatedData);
+          console.log('[Chart] ✅ Dados setados na série:', validatedData.length, 'pontos válidos');
         } catch (error) {
           console.error('[Chart] ❌ Erro ao setar dados:', error);
           console.error('[Chart] Dados que causaram erro:', finalChartData.slice(0, 5));
@@ -1281,7 +1406,7 @@ export default {
               priceLineVisible: false,
               lastValueVisible: true,
             });
-            this.chartSeries.setData(finalChartData);
+            this.chartSeries.setData(validatedData);
             console.log('[Chart] ✅ Série recriada e dados setados');
           } catch (recreateError) {
             console.error('[Chart] ❌ Erro ao recriar série:', recreateError);
