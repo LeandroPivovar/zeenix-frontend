@@ -1898,8 +1898,11 @@ export default {
       console.log('[Chart] ========== PROCESSANDO COMPRA ==========');
       console.log('[Chart] Dados da compra:', buyData);
       
-      if (!buyData || !buyData.contract_id) {
-        console.error('[Chart] Dados de compra inválidos');
+      // O backend pode enviar contractId (camelCase) ou contract_id (snake_case)
+      const contractId = buyData.contractId || buyData.contract_id;
+      
+      if (!buyData || !contractId) {
+        console.error('[Chart] Dados de compra inválidos:', buyData);
         this.tradeError = 'Erro ao processar compra.';
         this.isTrading = false;
         return;
@@ -1907,17 +1910,18 @@ export default {
       
       // Criar objeto de contrato ativo
       this.activeContract = {
-        contract_id: buyData.contract_id,
-        buy_price: buyData.buy_price || this.currentProposalPrice,
-        entry_spot: buyData.entry_spot || this.purchasePrice,
-        entry_time: buyData.entry_time || Date.now() / 1000,
-        contract_type: buyData.contract_type || this.localOrderConfig.type,
+        contract_id: contractId,
+        buy_price: buyData.buyPrice || buyData.buy_price || this.currentProposalPrice,
+        entry_spot: buyData.entrySpot || buyData.entry_spot || this.purchasePrice,
+        entry_time: buyData.entryTime || buyData.entry_time || Date.now() / 1000,
+        contract_type: buyData.contractType || buyData.contract_type || this.localOrderConfig.type,
         duration: buyData.duration || this.localOrderConfig.duration,
-        duration_unit: buyData.duration_unit || this.localOrderConfig.durationUnit,
+        duration_unit: buyData.durationUnit || buyData.duration_unit || this.localOrderConfig.durationUnit,
         symbol: buyData.symbol || this.symbol,
-        sell_price: buyData.sell_price || null,
+        sell_price: buyData.sellPrice || buyData.sell_price || null,
         profit: buyData.profit || null,
-        expiry_time: buyData.expiry_time || null, // Tempo de expiração se disponível
+        expiry_time: buyData.expiryTime || buyData.expiry_time || null, // Tempo de expiração se disponível
+        payout: buyData.payout || null, // Payout do contrato
       };
       
       // Inicializar contador
@@ -2612,15 +2616,13 @@ export default {
       }
       
       try {
+        // O backend espera contractType (camelCase), não contract_type
         const proposalOptions = {
-          proposal: 1,
-          amount: this.localOrderConfig.amount || 10,
-          basis: 'stake',
-          contract_type: this.localOrderConfig.type,
-          currency: 'USD',
-          duration: this.localOrderConfig.duration || 1,
-          duration_unit: this.localOrderConfig.durationUnit || 'm',
           symbol: this.symbol,
+          contractType: this.localOrderConfig.type, // camelCase para o backend
+          duration: this.localOrderConfig.duration || 1,
+          durationUnit: this.localOrderConfig.durationUnit || 'm', // camelCase
+          amount: this.localOrderConfig.amount || 10,
         };
         
         // Adicionar barrier APENAS para DIGITMATCH (único que precisa de barrier)
@@ -2636,7 +2638,8 @@ export default {
           proposalOptions.multiplier = this.localOrderConfig.multiplier || 10;
         }
         
-        await derivTradingService.subscribeProposal(proposalOptions, this.derivToken);
+        console.log('[Chart] Inscrevendo-se em proposta com opções:', proposalOptions);
+        await derivTradingService.subscribeProposal(proposalOptions);
         console.log('[Chart] ✅ Inscrito em proposta');
       } catch (error) {
         console.error('[Chart] Erro ao inscrever-se em proposta:', error);
