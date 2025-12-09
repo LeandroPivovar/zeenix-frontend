@@ -1874,8 +1874,19 @@ export default {
       if (!this.chart) {
         this.chartReady = false;
         this.initChart();
+        // Aguardar gráfico estar pronto antes de atualizar
+        setTimeout(() => {
+          if (this.chartReady && this.ticks.length > 0) {
+            this.scheduleChartUpdate();
+          }
+        }, 500);
       } else if (this.chartReady) {
-        this.scheduleChartUpdate();
+        // Aguardar um pouco para garantir que o gráfico está estável
+        setTimeout(() => {
+          if (this.chartReady && !this.isUpdatingChart) {
+            this.scheduleChartUpdate();
+          }
+        }, 100);
       }
     },
     processCandles(msg) {
@@ -1936,32 +1947,44 @@ export default {
         clearTimeout(this.updateChartTimeout);
       }
       
+      // Não agendar se já está atualizando
       if (this.isUpdatingChart) {
         return;
       }
       
       this.updateChartTimeout = setTimeout(() => {
-        this.isUpdatingChart = true;
-        try {
+        // Verificar novamente antes de executar
+        if (!this.isUpdatingChart && this.chartReady) {
           this.updateChartData();
-        } finally {
-          this.isUpdatingChart = false;
-          this.updateChartTimeout = null;
         }
+        this.updateChartTimeout = null;
       }, 50);
     },
 
-    // Atualizar dados do gráfico - versão simplificada
+    // Atualizar dados do gráfico - versão simplificada e segura
     updateChartData() {
       // Verificações básicas
       if (!this.chartReady || !this.chart || !this.ticks || !this.ticks.length) {
         return;
       }
 
-      // Verificar se o gráfico está válido
-      if (!this.chart.canvas || !this.chart.data || !this.chart.data.datasets || !this.chart.data.datasets[0]) {
+      // Verificar se o gráfico está válido e completamente inicializado
+      if (!this.chart.canvas || 
+          !this.chart.data || 
+          !this.chart.data.datasets || 
+          !this.chart.data.datasets[0] ||
+          !this.chart.chartArea ||
+          !this.chart.chartArea.width ||
+          !this.chart.chartArea.height) {
         return;
       }
+
+      // Prevenir múltiplas atualizações simultâneas
+      if (this.isUpdatingChart) {
+        return;
+      }
+
+      this.isUpdatingChart = true;
 
       try {
         // Garantir que o canvas está visível
@@ -1972,15 +1995,19 @@ export default {
           canvas.style.opacity = '1';
         }
 
-        // Extrair dados válidos
+        // Extrair dados válidos - criar arrays novos para evitar reatividade
         const validData = [];
         const validLabels = [];
         
-        for (let i = 0; i < this.ticks.length; i++) {
+        const ticksLength = this.ticks.length;
+        for (let i = 0; i < ticksLength; i++) {
           const tick = this.ticks[i];
-          const value = tick?.value ?? tick?.quote ?? null;
-          const numValue = Number(value);
+          if (!tick) continue;
           
+          const value = tick.value ?? tick.quote ?? null;
+          if (value == null) continue;
+          
+          const numValue = Number(value);
           if (!isNaN(numValue) && isFinite(numValue) && numValue > 0) {
             validData.push(numValue);
             validLabels.push(i);
@@ -1988,27 +2015,54 @@ export default {
         }
 
         if (validData.length === 0) {
+          this.isUpdatingChart = false;
           return;
         }
 
-        // Atualizar dados do gráfico
+        // Atualizar dados do gráfico - usar Object.assign para evitar reatividade
         const dataset = this.chart.data.datasets[0];
-        dataset.data = [...validData];
-        this.chart.data.labels = [...validLabels];
+        
+        // Limpar arrays existentes e adicionar novos dados
+        dataset.data.length = 0;
+        dataset.data.push(...validData);
+        
+        this.chart.data.labels.length = 0;
+        this.chart.data.labels.push(...validLabels);
 
-        // Atualizar gráfico diretamente
-        this.$nextTick(() => {
-          if (this.chart && this.chartReady) {
+        // Atualizar gráfico usando requestAnimationFrame para evitar loops
+        requestAnimationFrame(() => {
+          if (this.chart && this.chartReady && !this.isDestroying) {
             try {
-              this.chart.update('none');
+              // Verificações completas antes de atualizar
+              if (this.chart.chartArea && 
+                  this.chart.chartArea.width > 0 && 
+                  this.chart.chartArea.height > 0 &&
+                  this.chart.canvas &&
+                  this.chart.data &&
+                  this.chart.data.datasets &&
+                  this.chart.data.datasets[0] &&
+                  this.chart.data.datasets[0].data &&
+                  this.chart.data.datasets[0].data.length > 0) {
+                // Usar update com modo 'none' para evitar animações que podem causar loops
+                this.chart.update('none');
+              }
             } catch (e) {
-              console.error('[Chart] Erro ao atualizar:', e);
+              // Se houver erro, não desabilitar completamente - apenas logar
+              if (e.message && !e.message.includes('Maximum call stack')) {
+                console.error('[Chart] Erro ao atualizar:', e);
+              }
+              // Não desabilitar chartReady imediatamente - pode ser um erro temporário
+            } finally {
+              this.isUpdatingChart = false;
             }
+          } else {
+            this.isUpdatingChart = false;
           }
         });
       } catch (error) {
         console.error('[Chart] Erro ao atualizar dados:', error);
         this.chartReady = false;
+        this.isUpdatingChart = false;
       }
     },
 
