@@ -1045,6 +1045,7 @@ export default {
       }
     },
     handleSSEMessage(data) {
+      console.log('[Chart] 📨 Mensagem SSE recebida:', data.type, data);
       // Processar mensagens SSE
       if (data.type === 'history' && data.data && data.data.ticks) {
         console.log('[Chart] Histórico recebido via SSE:', data.data.ticks.length, 'ticks');
@@ -1130,13 +1131,15 @@ export default {
         console.log('[Chart] Proposta recebida via SSE:', data.data);
         this.processProposal(data.data);
       } else if (data.type === 'buy' && data.data) {
-        console.log('[Chart] Compra recebida via SSE:', data.data);
+        console.log('[Chart] ========== COMPRA RECEBIDA VIA SSE ==========');
+        console.log('[Chart] Dados completos da compra:', JSON.stringify(data.data, null, 2));
         this.processBuy(data.data);
       } else if (data.type === 'sell' && data.data) {
         console.log('[Chart] Venda recebida via SSE:', data.data);
         this.processSell(data.data);
       } else if (data.type === 'contract' && data.data) {
-        console.log('[Chart] Contrato atualizado via SSE:', data.data);
+        console.log('[Chart] ========== CONTRATO ATUALIZADO VIA SSE ==========');
+        console.log('[Chart] Dados completos do contrato:', JSON.stringify(data.data, null, 2));
         this.processContract(data.data);
       }
     },
@@ -1948,12 +1951,16 @@ export default {
         return;
       }
       
+      // Usar o preço atual do tick se entry_spot não estiver disponível
+      const entrySpot = buyData.entrySpot || buyData.entry_spot || this.latestTick?.value || this.purchasePrice || null;
+      const entryTime = buyData.entryTime || buyData.entry_time || (this.latestTick?.epoch ? this.latestTick.epoch + (3 * 60 * 60) : Date.now() / 1000);
+      
       // Criar objeto de contrato ativo
       this.activeContract = {
         contract_id: contractId,
         buy_price: buyData.buyPrice || buyData.buy_price || this.currentProposalPrice,
-        entry_spot: buyData.entrySpot || buyData.entry_spot || this.purchasePrice,
-        entry_time: buyData.entryTime || buyData.entry_time || Date.now() / 1000,
+        entry_spot: entrySpot,
+        entry_time: entryTime,
         contract_type: buyData.contractType || buyData.contract_type || this.localOrderConfig.type,
         duration: buyData.duration || this.localOrderConfig.duration,
         duration_unit: buyData.durationUnit || buyData.duration_unit || this.localOrderConfig.durationUnit,
@@ -1964,6 +1971,14 @@ export default {
         payout: buyData.payout || null, // Payout do contrato
       };
       
+      console.log('[Chart] Contrato ativo criado:', {
+        contract_id: this.activeContract.contract_id,
+        entry_spot: this.activeContract.entry_spot,
+        entry_time: this.activeContract.entry_time,
+        duration: this.activeContract.duration,
+        duration_unit: this.activeContract.duration_unit
+      });
+      
       // Inicializar contador (deve ser chamado ANTES de adicionar a linha)
       this.initializeContractCountdown();
       
@@ -1971,14 +1986,27 @@ export default {
       this.showCountdown = true;
       
       // Adicionar linha de compra no gráfico
+      // Garantir que entry_spot está definido (usar latestTick se necessário)
+      if (!this.activeContract.entry_spot && this.latestTick && this.latestTick.value) {
+        this.activeContract.entry_spot = this.latestTick.value;
+        console.log('[Chart] Entry spot definido a partir do latestTick:', this.activeContract.entry_spot);
+      }
+      
       if (this.activeContract.entry_spot) {
         const entryTime = this.activeContract.entry_time || (Date.now() / 1000);
+        console.log('[Chart] Plotando linha de entrada:', {
+          entry_spot: this.activeContract.entry_spot,
+          entry_time: entryTime,
+          chartExists: !!this.chart
+        });
         // Aguardar um pouco para garantir que o gráfico está pronto
         this.$nextTick(() => {
           setTimeout(() => {
             this.addEntrySpotLine(this.activeContract.entry_spot, entryTime);
           }, 100);
         });
+      } else {
+        console.warn('[Chart] Não foi possível plotar linha de entrada: entry_spot não disponível');
       }
       
       this.isTrading = false;
@@ -2174,11 +2202,21 @@ export default {
       this.updateRealTimeProfit();
     },
     initializeContractCountdown() {
-      if (!this.activeContract) return;
+      if (!this.activeContract) {
+        console.warn('[Chart] ⚠️ Não é possível inicializar countdown: activeContract não existe');
+        return;
+      }
       
       const duration = this.activeContract.duration || this.localOrderConfig.duration || 1;
       const durationUnit = this.activeContract.duration_unit || this.localOrderConfig.durationUnit || 'm';
       const entryTime = this.activeContract.entry_time || Date.now() / 1000;
+      
+      console.log('[Chart] ⏱️ Inicializando countdown:', {
+        duration,
+        durationUnit,
+        entryTime,
+        isTickBased: durationUnit === 't'
+      });
       
       this.contractStartTime = entryTime;
       this.contractTickCount = 0; // Resetar contador de ticks
@@ -2187,6 +2225,7 @@ export default {
         // Contrato baseado em ticks
         this.contractTicksRemaining = duration;
         this.contractTimeRemaining = null;
+        console.log('[Chart] ⏱️ Countdown baseado em ticks:', this.contractTicksRemaining, 'ticks');
       } else {
         // Contrato baseado em tempo
         // Converter duração para segundos
@@ -2211,6 +2250,8 @@ export default {
         this.contractDuration = durationInSeconds;
         this.contractTimeRemaining = durationInSeconds;
         this.contractTicksRemaining = null;
+        
+        console.log('[Chart] ⏱️ Countdown baseado em tempo:', this.formatTimeRemaining(this.contractTimeRemaining));
         
         // Iniciar contador de tempo
         this.contractCountdownInterval = setInterval(() => {
