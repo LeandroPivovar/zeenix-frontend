@@ -1123,8 +1123,38 @@ export default {
         return;
       }
 
-      // Removido filtro de valores muito diferentes - plotar todos os ticks recebidos
-      // Isso permite que diferentes símbolos sejam plotados se necessário
+      // Filtrar ticks por símbolo atual - usar apenas valores compatíveis com o símbolo selecionado
+      // Determinar o símbolo baseado nos valores existentes no gráfico
+      if (this.ticks.length > 0) {
+        const existingValues = this.ticks
+          .map(t => t.value)
+          .filter(v => v !== null && v !== undefined && isFinite(v) && v > 0);
+        
+        if (existingValues.length > 0) {
+          // Calcular mediana dos valores existentes
+          const sortedValues = [...existingValues].sort((a, b) => a - b);
+          const medianExisting = sortedValues[Math.floor(sortedValues.length / 2)];
+          
+          // Determinar faixa esperada baseada no símbolo atual
+          // R_100: ~600-800, R_50: ~300-400, R_75: ~450-600, etc.
+          // Aceitar apenas valores dentro de 50% da mediana (mais tolerante)
+          const tolerance = 0.5; // 50% de tolerância
+          const lowerBound = medianExisting * (1 - tolerance);
+          const upperBound = medianExisting * (1 + tolerance);
+          
+          // Se o novo valor estiver muito fora da faixa, ignorar (é de outro símbolo)
+          if (numValue < lowerBound || numValue > upperBound) {
+            console.log('[Chart] ⚠️ Tick ignorado - valor fora da faixa do símbolo atual:', {
+              novoValor: numValue,
+              medianaExistente: medianExisting,
+              limiteInferior: lowerBound,
+              limiteSuperior: upperBound,
+              simbolo: this.symbol
+            });
+            return;
+          }
+        }
+      }
 
       // Adicionar ao array de ticks
       this.ticks.push({ value: numValue, epoch: brasiliaEpoch });
@@ -1147,11 +1177,20 @@ export default {
           return;
         }
         
+        // Validação final dupla antes de chamar update()
+        const finalTime = Number(brasiliaEpoch);
+        const finalValue = Number(numValue);
+        
+        if (!isFinite(finalTime) || finalTime <= 0 || !isFinite(finalValue) || finalValue <= 0) {
+          console.warn('[Chart] Valores finais inválidos:', { time: finalTime, value: finalValue });
+          return;
+        }
+        
         this.chartSeries.update({
-          time: brasiliaEpoch,
-          value: numValue
+          time: finalTime,
+          value: finalValue
         });
-        console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: brasiliaEpoch, value: numValue });
+        console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: finalTime, value: finalValue });
       } catch (error) {
         console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', error, { time: brasiliaEpoch, value: numValue });
       }
@@ -1305,8 +1344,56 @@ export default {
         return;
       }
       
-      // Removido filtro de valores muito diferentes - plotar todos os ticks válidos
-      // Isso permite que diferentes símbolos sejam plotados se necessário
+      // Filtrar ticks por símbolo atual - usar apenas valores compatíveis
+      // Se já temos dados no gráfico, usar a mediana para determinar o símbolo
+      let filteredTicks = ticksToUse;
+      
+      if (this.ticks.length > 0) {
+        const existingValues = this.ticks
+          .map(t => t.value)
+          .filter(v => v !== null && v !== undefined && isFinite(v) && v > 0);
+        
+        if (existingValues.length > 0) {
+          const sortedValues = [...existingValues].sort((a, b) => a - b);
+          const medianExisting = sortedValues[Math.floor(sortedValues.length / 2)];
+          const tolerance = 0.5; // 50% de tolerância
+          const lowerBound = medianExisting * (1 - tolerance);
+          const upperBound = medianExisting * (1 + tolerance);
+          
+          filteredTicks = ticksToUse.filter(tick => {
+            if (!tick || typeof tick !== 'object') return false;
+            if (tick.value === null || tick.value === undefined) return false;
+            const val = Number(tick.value);
+            if (isNaN(val) || !isFinite(val) || val <= 0) return false;
+            return val >= lowerBound && val <= upperBound;
+          });
+          
+          if (filteredTicks.length > 0) {
+            console.log('[Chart] Ticks filtrados por símbolo:', filteredTicks.length, 'de', ticksToUse.length);
+            ticksToUse = filteredTicks;
+          }
+        }
+      } else {
+        // Se não temos dados ainda, usar a mediana dos ticks recebidos
+        const sortedValues = [...tickValues].sort((a, b) => a - b);
+        const median = sortedValues[Math.floor(sortedValues.length / 2)];
+        const tolerance = 0.5;
+        const lowerBound = median * (1 - tolerance);
+        const upperBound = median * (1 + tolerance);
+        
+        filteredTicks = ticksToUse.filter(tick => {
+          if (!tick || typeof tick !== 'object') return false;
+          if (tick.value === null || tick.value === undefined) return false;
+          const val = Number(tick.value);
+          if (isNaN(val) || !isFinite(val) || val <= 0) return false;
+          return val >= lowerBound && val <= upperBound;
+        });
+        
+        if (filteredTicks.length > 0) {
+          console.log('[Chart] Ticks filtrados por mediana inicial:', filteredTicks.length, 'de', ticksToUse.length);
+          ticksToUse = filteredTicks;
+        }
+      }
       
       const chartData = ticksToUse
         .map(tick => {
@@ -1374,17 +1461,33 @@ export default {
         // Ordenar por tempo
         chartData.sort((a, b) => a.time - b.time);
 
-        // Validação final antes de setar dados - garantir que não há nulls
+        // Validação final EXTREMAMENTE rigorosa antes de setar dados - garantir que não há nulls
         let finalChartData = chartData.filter(item => {
-          if (!item || item === null || item === undefined) {
+          // Validação de objeto
+          if (!item || item === null || item === undefined || typeof item !== 'object') {
             return false;
           }
-          if (item.time === null || item.time === undefined || isNaN(item.time) || !isFinite(item.time) || item.time <= 0) {
+          
+          // Validação de time - múltiplas verificações
+          const time = item.time;
+          if (time === null || time === undefined) {
             return false;
           }
-          if (item.value === null || item.value === undefined || isNaN(item.value) || !isFinite(item.value) || item.value <= 0) {
+          const numTime = Number(time);
+          if (isNaN(numTime) || !isFinite(numTime) || numTime <= 0) {
             return false;
           }
+          
+          // Validação de value - múltiplas verificações
+          const value = item.value;
+          if (value === null || value === undefined) {
+            return false;
+          }
+          const numValue = Number(value);
+          if (isNaN(numValue) || !isFinite(numValue) || numValue <= 0) {
+            return false;
+          }
+          
           return true;
         });
         
@@ -1396,7 +1499,10 @@ export default {
         }
         
         // Verificar se há valores muito diferentes (possível mistura de símbolos)
-        const chartValues = finalChartData.map(d => d.value).filter(v => v !== null && v !== undefined && isFinite(v) && v > 0);
+        const chartValues = finalChartData.map(d => {
+          const val = Number(d.value);
+          return (val !== null && val !== undefined && isFinite(val) && val > 0) ? val : null;
+        }).filter(v => v !== null);
         
         if (chartValues.length === 0) {
           console.warn('[Chart] Nenhum valor válido após validação');
@@ -1407,7 +1513,6 @@ export default {
         
         const minValue = Math.min(...chartValues);
         const maxValue = Math.max(...chartValues);
-        const avgValue = chartValues.reduce((a, b) => a + b, 0) / chartValues.length;
         const medianValue = [...chartValues].sort((a, b) => a - b)[Math.floor(chartValues.length / 2)];
         
         // Se a variação for muito grande (mais de 5x), filtrar valores outliers
@@ -1445,44 +1550,63 @@ export default {
         }
         
         console.log('[Chart] Plotando', finalChartData.length, 'ticks no gráfico');
-        console.log('[Chart] Primeiro tick:', finalChartData[0]);
-        console.log('[Chart] Último tick:', finalChartData[finalChartData.length - 1]);
-        console.log('[Chart] Range de valores:', { min: minValue, max: maxValue, avg: avgValue.toFixed(2) });
+        if (finalChartData.length > 0) {
+          console.log('[Chart] Primeiro tick:', finalChartData[0]);
+          console.log('[Chart] Último tick:', finalChartData[finalChartData.length - 1]);
+        }
+        console.log('[Chart] Range de valores:', { min: minValue, max: maxValue, median: medianValue });
 
-        // Validação final individual de cada item antes de passar para o gráfico
-        const validatedData = finalChartData.filter(item => {
-          // Verificar se o item existe e não é null/undefined
-          if (!item || item === null || item === undefined) {
-            return false;
-          }
-          
-          // Verificar time
-          if (item.time === null || item.time === undefined) {
-            return false;
-          }
-          const timeNum = Number(item.time);
-          if (isNaN(timeNum) || !isFinite(timeNum) || timeNum <= 0) {
-            return false;
-          }
-          
-          // Verificar value
-          if (item.value === null || item.value === undefined) {
-            return false;
-          }
-          const valueNum = Number(item.value);
-          if (isNaN(valueNum) || !isFinite(valueNum) || valueNum <= 0) {
-            return false;
-          }
-          
-          // Garantir que os valores são números válidos
-          item.time = timeNum;
-          item.value = valueNum;
-          
-          return true;
-        });
+        // Validação final EXTREMAMENTE rigorosa individual de cada item antes de passar para o gráfico
+        const validatedData = finalChartData
+          .map(item => {
+            // Verificar se o item existe e não é null/undefined
+            if (!item || item === null || item === undefined || typeof item !== 'object') {
+              return null;
+            }
+            
+            // Verificar time - múltiplas validações
+            if (item.time === null || item.time === undefined) {
+              return null;
+            }
+            const timeNum = Number(item.time);
+            if (isNaN(timeNum) || !isFinite(timeNum) || timeNum <= 0) {
+              return null;
+            }
+            
+            // Verificar value - múltiplas validações
+            if (item.value === null || item.value === undefined) {
+              return null;
+            }
+            const valueNum = Number(item.value);
+            if (isNaN(valueNum) || !isFinite(valueNum) || valueNum <= 0) {
+              return null;
+            }
+            
+            // Retornar objeto com valores validados e convertidos
+            return {
+              time: timeNum,
+              value: valueNum
+            };
+          })
+          .filter(item => item !== null && item !== undefined);
         
         if (validatedData.length === 0) {
-          console.warn('[Chart] Nenhum dado válido após validação individual');
+          console.error('[Chart] ❌ Nenhum dado válido após validação final rigorosa');
+          this.showChartPlaceholder = false;
+          this.isLoadingTicks = false;
+          return;
+        }
+        
+        // Validação final EXTRA antes de setData() - garantir que não há nulls
+        const finalData = validatedData.filter(item => {
+          if (!item || item === null || item === undefined) return false;
+          const time = Number(item.time);
+          const value = Number(item.value);
+          return isFinite(time) && time > 0 && isFinite(value) && value > 0;
+        });
+        
+        if (finalData.length === 0) {
+          console.error('[Chart] ❌ Nenhum dado válido após validação extra');
           this.showChartPlaceholder = false;
           this.isLoadingTicks = false;
           return;
@@ -1494,8 +1618,8 @@ export default {
           this.chartSeries.setData([]);
           
           // Adicionar novos dados validados
-          this.chartSeries.setData(validatedData);
-          console.log('[Chart] ✅ Dados setados na série:', validatedData.length, 'pontos válidos');
+          this.chartSeries.setData(finalData);
+          console.log('[Chart] ✅ Dados setados na série:', finalData.length, 'pontos válidos');
         } catch (error) {
           console.error('[Chart] ❌ Erro ao setar dados:', error);
           console.error('[Chart] Dados que causaram erro:', finalChartData.slice(0, 5));
