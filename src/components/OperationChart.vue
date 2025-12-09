@@ -2042,8 +2042,31 @@ export default {
         
         // Tratar erros específicos
         if (errorCode === 'InsufficientBalance' || errorMessage.includes('insufficient') || errorMessage.includes('Insufficient')) {
-          const balance = error.balance || error.error?.balance || 'desconhecido';
-          const required = error.required || error.error?.required || this.localOrderConfig.amount || 10;
+          // Extrair saldo e valor necessário da mensagem de erro
+          // Formato: "Your account balance (0.09 USD) is insufficient to buy this contract (10.00 USD)."
+          let balance = 'desconhecido';
+          let required = this.localOrderConfig.amount || 10;
+          
+          // Tentar extrair da mensagem
+          const balanceMatch = errorMessage.match(/balance\s*\(([\d.]+)\s*USD\)/i);
+          const requiredMatch = errorMessage.match(/contract\s*\(([\d.]+)\s*USD\)/i);
+          
+          if (balanceMatch && balanceMatch[1]) {
+            balance = parseFloat(balanceMatch[1]).toFixed(2);
+          } else if (error.balance !== undefined) {
+            balance = typeof error.balance === 'number' ? error.balance.toFixed(2) : error.balance;
+          } else if (error.error?.balance !== undefined) {
+            balance = typeof error.error.balance === 'number' ? error.error.balance.toFixed(2) : error.error.balance;
+          }
+          
+          if (requiredMatch && requiredMatch[1]) {
+            required = parseFloat(requiredMatch[1]);
+          } else if (error.required !== undefined) {
+            required = typeof error.required === 'number' ? error.required : parseFloat(error.required);
+          } else if (error.error?.required !== undefined) {
+            required = typeof error.error.required === 'number' ? error.error.required : parseFloat(error.error.required);
+          }
+          
           this.tradeError = `Saldo insuficiente! Saldo disponível: $${balance}. Valor necessário: $${required.toFixed(2)}.`;
         } else if (errorCode === 'AlreadySubscribed') {
           // Este erro pode ser ignorado ou tratado silenciosamente
