@@ -41,14 +41,14 @@
                     {{ order.direction || order.type || 'N/A' }}
                   </span>
                 </td>
-                <td class="order-value">${{ (order.buyPrice || order.entryPrice || order.price || 0).toFixed(2) }}</td>
+                <td class="order-value">${{ formatPrice(order.buyPrice || order.entryPrice || order.price) }}</td>
                 <td class="order-value">
-                  <span v-if="order.sellPrice || order.exitPrice">${{ (order.sellPrice || order.exitPrice || 0).toFixed(2) }}</span>
+                  <span v-if="order.sellPrice || order.exitPrice">${{ formatPrice(order.sellPrice || order.exitPrice) }}</span>
                   <span v-else class="text-muted">-</span>
                 </td>
                 <td>
                   <span v-if="order.profit !== null && order.profit !== undefined" class="order-profit" :class="order.profit >= 0 ? 'profit' : 'loss'">
-                    {{ order.profit >= 0 ? '+' : '' }}${{ order.profit.toFixed(2) }}
+                    {{ order.profit >= 0 ? '+' : '' }}${{ formatPrice(order.profit) }}
                   </span>
                   <span v-else class="text-muted">-</span>
                 </td>
@@ -74,6 +74,18 @@ export default {
     tradeResults: {
       type: Array,
       default: () => []
+    }
+  },
+  methods: {
+    formatPrice(value) {
+      if (value === null || value === undefined || value === '') {
+        return '0.00';
+      }
+      const numValue = typeof value === 'string' ? parseFloat(value) : Number(value);
+      if (isNaN(numValue)) {
+        return '0.00';
+      }
+      return numValue.toFixed(2);
     }
   }
 };
