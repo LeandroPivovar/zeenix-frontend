@@ -457,7 +457,8 @@ export default {
       console.log('[OperationView] Carregando últimas ordens do banco...');
       try {
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-        const res = await fetch(`${apiBaseUrl}/api/broker/deriv/trading/last-orders?limit=50`, {
+        // Seguir o mesmo padrão usado em outros endpoints (sem /api duplicado)
+        const res = await fetch(`${apiBaseUrl}/broker/deriv/trading/last-orders?limit=50`, {
           method: 'GET',
           headers: {
             Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
