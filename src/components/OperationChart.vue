@@ -1958,10 +1958,18 @@ export default {
         }
       });
       
+      // Log para debug
+      console.log('[Chart] EntrySpot recebido:', {
+        entrySpot: buyData.entrySpot,
+        entry_spot: buyData.entry_spot,
+        purchasePrice: this.purchasePrice,
+        finalEntrySpot: buyData.entrySpot || buyData.entry_spot || this.purchasePrice
+      });
+      
       this.activeContract = {
         contract_id: contractId,
         buy_price: buyData.buyPrice || buyData.buy_price || this.currentProposalPrice,
-        entry_spot: buyData.entrySpot || buyData.entry_spot || this.purchasePrice,
+        entry_spot: buyData.entrySpot || buyData.entry_spot || this.purchasePrice || null,
         entry_time: buyData.entryTime || buyData.entry_time || Date.now() / 1000,
         contract_type: buyData.contractType || buyData.contract_type || this.localOrderConfig.type,
         duration: duration,
@@ -2138,6 +2146,9 @@ export default {
       }
       if (contractData.profit !== undefined) {
         this.activeContract.profit = contractData.profit;
+      }
+      if (contractData.exit_spot !== undefined || contractData.exitSpot !== undefined) {
+        this.activeContract.exit_spot = contractData.exit_spot || contractData.exitSpot || null;
       }
       if (contractData.is_sold !== undefined) {
         this.isSellEnabled = !contractData.is_sold;
