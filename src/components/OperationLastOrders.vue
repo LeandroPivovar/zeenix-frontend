@@ -58,8 +58,8 @@
                   <span v-else class="text-muted">-</span>
                 </td>
                 <td style="text-align: center;">
-                  <span v-if="order.status" class="order-status" :class="order.status.toLowerCase()">
-                    {{ order.status }}
+                  <span v-if="order.status" class="order-status" :class="getStatusClass(order.status)">
+                    {{ getStatusDisplay(order.status) }}
                   </span>
                   <span v-else class="text-muted">-</span>
                 </td>
@@ -91,6 +91,19 @@ export default {
         return '0.00';
       }
       return numValue.toFixed(2);
+    },
+    getStatusDisplay(status) {
+      if (!status) return 'PENDING';
+      const statusLower = status.toLowerCase();
+      if (statusLower === 'expired') return 'CLOSED';
+      return status.toUpperCase();
+    },
+    getStatusClass(status) {
+      if (!status) return 'pending';
+      const statusLower = status.toLowerCase();
+      if (statusLower === 'won' || statusLower === 'closed' || statusLower === 'expired') return 'won closed';
+      if (statusLower === 'lost') return 'lost';
+      return 'pending';
     }
   }
 };
