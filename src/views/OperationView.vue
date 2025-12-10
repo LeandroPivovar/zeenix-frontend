@@ -531,7 +531,7 @@ export default {
           exitPrice: order.exitSpot || null, // Preço de saída (spot)
           profit: order.profit != null ? Number(order.profit) : null,
           currency: 'USD',
-          status: order.status || 'EXECUTED',
+          status: this.mapStatus(order.status),
           contractId: order.derivTransactionId || null,
           market: getMarketName(order.symbol),
         }));
@@ -545,6 +545,19 @@ export default {
         console.error('[OperationView] Erro ao carregar últimas ordens:', error);
         this.lastOrders = [];
       }
+    },
+    mapStatus(status) {
+      if (!status) return 'PENDING';
+      const statusLower = status.toLowerCase();
+      // Mapear status do banco para exibição
+      if (statusLower === 'won') return 'WON';
+      if (statusLower === 'lost') return 'LOST';
+      if (statusLower === 'pending') return 'PENDING';
+      if (statusLower === 'expired') return 'CLOSED';
+      if (statusLower === 'closed') return 'CLOSED';
+      if (statusLower === 'sold') return 'CLOSED';
+      // Se for um status em uppercase, manter
+      return status.toUpperCase();
     },
     persistConnectionBalance(balanceValue, currency) {
       const saved = localStorage.getItem('deriv_connection');
