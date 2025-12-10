@@ -960,6 +960,20 @@ input:checked + .slider:before {
         background: #0b0b0b !important;
     }
     
+    /* Botões de alocação no desktop */
+    .allocation-buttons-group button {
+        background: #0a0a0a;
+        border: 1px solid #555;
+        color: #888;
+    }
+    
+    .allocation-buttons-group button.active {
+        background: #16a34a;
+        color: #fff;
+        border: 1px solid #22C55E;
+        box-shadow: none;
+    }
+    
     /* Ocultar status badge mobile no desktop */
     .status-badge-mobile {
         display: none;
