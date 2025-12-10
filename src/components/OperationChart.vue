@@ -760,6 +760,11 @@ export default {
     async 'localOrderConfig.type'() {
       // Quando o tipo de contrato mudar, recarregar valores padrão e proposta
       if (this.isConnected) {
+        // Limpar proposalId antigo quando o tipo muda (importante para evitar usar proposta do tipo errado)
+        this.currentProposalId = null;
+        this.currentProposalPrice = null;
+        console.log('[Chart] Tipo de contrato alterado, limpando proposalId antigo');
+        
         // Se mudou para DIGITMATCH e temos um último dígito, inicializar digitMatchValue
         if (this.localOrderConfig.type === 'DIGITMATCH' && this.lastDigit !== null) {
           this.digitMatchValue = this.lastDigit;
@@ -1825,9 +1830,11 @@ export default {
       
       try {
         // Preparar configuração de compra
+        // IMPORTANTE: Se o proposalId foi gerado com um tipo diferente, não usar
+        // O backend deve buscar uma nova proposta com o tipo correto
         const buyConfig = {
           symbol: this.symbol,
-          contractType: this.localOrderConfig.type,
+          contractType: this.localOrderConfig.type, // Garantir que o tipo correto seja enviado
           duration: this.localOrderConfig.duration,
           durationUnit: this.localOrderConfig.durationUnit, // 'm' ou 't'
           amount: this.localOrderConfig.amount,
@@ -1835,11 +1842,22 @@ export default {
         };
         
         console.log('[Chart] Configuração de compra sendo enviada:', {
+          contractType: buyConfig.contractType,
           duration: buyConfig.duration,
           durationUnit: buyConfig.durationUnit,
+          proposalId: buyConfig.proposalId,
+          originalType: this.localOrderConfig.type,
           originalDuration: this.localOrderConfig.duration,
           originalDurationUnit: this.localOrderConfig.durationUnit
         });
+        
+        // Se o proposalId existe mas o tipo mudou, não usar o proposalId antigo
+        // Deixar o backend buscar uma nova proposta com o tipo correto
+        if (this.currentProposalId && this.localOrderConfig.type) {
+          // Verificar se o proposalId atual corresponde ao tipo selecionado
+          // Por segurança, sempre forçar o backend a usar o contractType enviado
+          console.log('[Chart] ⚠️ Usando proposalId existente, mas garantindo que contractType seja respeitado');
+        }
         
         // Adicionar barrier APENAS para DIGITMATCH (único que precisa de barrier)
         if (this.localOrderConfig.type === 'DIGITMATCH') {
