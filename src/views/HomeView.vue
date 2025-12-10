@@ -42,6 +42,16 @@
               <button class="close-btn" @click="handleCloseAccountCard" :disabled="false">×</button>
             </div>
             <p v-if="currentAccountStep === 2" class="subtitle step2-instruction">Preencha o código enviado para seu e-mail.</p>
+            
+            <!-- Info box DEMO (apenas passo 3, mobile) -->
+            <div v-if="currentAccountStep === 3" class="info-box-demo-external">
+              <svg class="check-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="12" cy="12" r="10" fill="#22C55E" opacity="0.4"/>
+                <circle cx="12" cy="12" r="8" fill="#22C55E"/>
+                <path d="M9 12l2 2 4-4" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+              </svg>
+              <p>Conta <strong>DEMO</strong> liberada automaticamente após cadastro</p>
+            </div>
           </div>
           
           <!-- Card de criação de conta (apenas mobile) -->
@@ -70,7 +80,7 @@
       
 
         <div class="actions">
-          <button class="primary button-primary" @click="startBrokerConnection">
+          <button v-if="!showCreateAccountCard || currentAccountStep !== 3" class="primary button-primary" @click="startBrokerConnection">
             <span>
                 <img src="../assets/icons/Link.svg" alt="Conectar à Corretora" > 
                 Conectar a corretora
@@ -86,7 +96,7 @@
           </button>
 
           <button
-            v-if="showCreateAccountCard"
+            v-if="showCreateAccountCard && currentAccountStep !== 3"
             class="link-button"
             @click="handleCloseAccountCard"
           >
