@@ -2570,24 +2570,55 @@ export default {
               const minDur = parseDuration(selectedContract.min_contract_duration);
               
               if (minDur) {
-                // Se a duração atual for menor que a mínima, ajustar
+                // Preservar a duração atual se ela já foi definida pelo usuário
                 const currentDuration = this.localOrderConfig.duration || 1;
                 const currentUnit = this.localOrderConfig.durationUnit || 'm';
                 
-                // Converter para minutos para comparação
-                const currentInMinutes = currentUnit === 'm' ? currentDuration : (currentUnit === 'h' ? currentDuration * 60 : (currentUnit === 'd' ? currentDuration * 1440 : 0));
-                const minInMinutes = minDur.unit === 'm' ? minDur.value : (minDur.unit === 'h' ? minDur.value * 60 : (minDur.unit === 'd' ? minDur.value * 1440 : (minDur.unit === 't' ? 0 : 0)));
-                
+                // Se a unidade mínima for 't' (ticks) e a atual não for 't', ajustar apenas se necessário
                 if (minDur.unit === 't') {
-                  // Para ticks, usar o valor mínimo diretamente
-                  this.localOrderConfig.duration = minDur.value;
-                  this.localOrderConfig.durationUnit = 't';
-                  console.log('[Chart] Duração ajustada para:', minDur.value, minDur.unit);
-                } else if (currentInMinutes < minInMinutes) {
-                  // Ajustar para a duração mínima
-                  this.localOrderConfig.duration = minDur.value;
-                  this.localOrderConfig.durationUnit = minDur.unit;
-                  console.log('[Chart] Duração ajustada para mínima:', minDur.value, minDur.unit);
+                  // Se a unidade atual não for ticks, ajustar apenas se a duração atual for inválida
+                  if (currentUnit !== 't') {
+                    // Verificar se há uma duração mínima em minutos/horas/dias que seja maior
+                    // Por enquanto, manter a seleção do usuário se já tiver uma duração válida
+                    if (currentDuration >= 1) {
+                      // Manter a duração atual do usuário
+                      console.log('[Chart] Duração do usuário preservada:', currentDuration, currentUnit);
+                    } else {
+                      // Apenas ajustar se a duração for inválida
+                      this.localOrderConfig.duration = minDur.value;
+                      this.localOrderConfig.durationUnit = 't';
+                      console.log('[Chart] Duração ajustada para:', minDur.value, minDur.unit);
+                    }
+                  } else {
+                    // Se já está em ticks, apenas ajustar se for menor que o mínimo
+                    if (currentDuration < minDur.value) {
+                      this.localOrderConfig.duration = minDur.value;
+                      console.log('[Chart] Duração em ticks ajustada para mínima:', minDur.value);
+                    }
+                  }
+                } else {
+                  // Para outras unidades (m, h, d), converter para minutos para comparação
+                  const currentInMinutes = currentUnit === 'm' ? currentDuration : 
+                                          (currentUnit === 'h' ? currentDuration * 60 : 
+                                          (currentUnit === 'd' ? currentDuration * 1440 : 0));
+                  const minInMinutes = minDur.unit === 'm' ? minDur.value : 
+                                      (minDur.unit === 'h' ? minDur.value * 60 : 
+                                      (minDur.unit === 'd' ? minDur.value * 1440 : 0));
+                  
+                  // Apenas ajustar se a duração atual for menor que a mínima E a unidade for compatível
+                  if (currentUnit === minDur.unit && currentDuration < minDur.value) {
+                    // Mesma unidade, apenas ajustar valor se menor
+                    this.localOrderConfig.duration = minDur.value;
+                    console.log('[Chart] Duração ajustada para mínima:', minDur.value, minDur.unit);
+                  } else if (currentUnit !== minDur.unit && currentInMinutes < minInMinutes) {
+                    // Unidades diferentes, converter e ajustar apenas se menor
+                    this.localOrderConfig.duration = minDur.value;
+                    this.localOrderConfig.durationUnit = minDur.unit;
+                    console.log('[Chart] Duração ajustada para mínima (conversão):', minDur.value, minDur.unit);
+                  } else {
+                    // Duração atual é válida, preservar
+                    console.log('[Chart] Duração do usuário preservada:', currentDuration, currentUnit);
+                  }
                 }
               }
             }
