@@ -1,10 +1,33 @@
 <template>
 	<div class="layout">
+		<button
+			class="hamburger-btn"
+			@click="toggleMobileSidebar"
+			:class="{ active: isSidebarOpen }"
+		>
+			<span></span>
+			<span></span>
+			<span></span>
+		</button>
+
+		<div
+			v-if="isSidebarOpen && isMobile"
+			class="sidebar-overlay"
+			@click="closeSidebar"
+		></div>
+
+		<AppSidebar 
+			:is-open="isSidebarOpen" 
+			:is-collapsed="isSidebarCollapsed" 
+			:is-mobile="isMobile"
+			@close-sidebar="closeSidebar" 
+			@toggle-collapse="toggleSidebarCollapse" 
+		/>
+
 		<main class="layout-content">
 			<div class="background-glow"></div>
 			<div class="background-grid"></div>
-			<AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
-			
+
 			<div class="main-header">
 				<div class="main-header-left">
 					<h1>Estatísticas das IAs</h1>
@@ -951,8 +974,9 @@ export default {
 		];
 
 		return {
-			isSidebarOpen: true, 
+			isSidebarOpen: false, 
 			isSidebarCollapsed: false,
+			isMobile: false,
 			
 			filterStartDate: startOfWeek, 
 			filterEndDate: currentDate,  
@@ -1042,9 +1066,6 @@ export default {
 			marketChartActive: null,
 			marketLineSeriesActive: null,
 			marketChartInitializedActive: false,
-			
-			closeSidebar: () => { }, 
-			toggleSidebarCollapse: () => {},
 		};
 	},
 	computed: {
@@ -2606,6 +2627,39 @@ export default {
 		
 		return candles;
 	},
+
+	toggleMobileSidebar() {
+		this.isSidebarOpen = !this.isSidebarOpen;
+	},
+
+	closeSidebar() {
+		this.isSidebarOpen = false;
+	},
+
+	toggleSidebarCollapse() {
+		if (!this.isMobile) {
+			this.isSidebarCollapsed = !this.isSidebarCollapsed;
+		}
+	},
+
+	checkMobile() {
+		const wasMobile = this.isMobile;
+		this.isMobile = window.innerWidth <= 1024;
+		
+		console.log('[StatsIAsView] checkMobile - isMobile:', this.isMobile, 'width:', window.innerWidth);
+		
+		if (this.isMobile) {
+			// No mobile, sidebar começa fechada
+			if (!wasMobile) {
+				// Se acabou de mudar para mobile, fecha o sidebar
+				this.isSidebarOpen = false;
+			}
+			this.isSidebarCollapsed = false;
+		} else {
+			// No desktop, sidebar sempre aberta
+			this.isSidebarOpen = true;
+		}
+	},
 },
 
 async mounted() {
@@ -2650,6 +2704,10 @@ async mounted() {
 	// Alerta visual para confirmar execução
 	console.warn('⚠️ SE VOCÊ VÊ ESTA MENSAGEM, O COMPONENTE ESTÁ CARREGANDO!');
 	
+	// Verificar se é mobile e configurar sidebar
+	this.checkMobile();
+	window.addEventListener('resize', this.checkMobile);
+	
 	// Carregar informações da conta
 	this.loadAccountInfo();
 	
@@ -2682,6 +2740,7 @@ async mounted() {
 },
 
 	beforeUnmount() {
+		window.removeEventListener('resize', this.checkMobile);
 		this.stopPolling();
 		this.stopBackgroundPolling();
 	},
@@ -5047,6 +5106,132 @@ tbody tr:hover {
 	.status-card-right {
 		width: 100%;
 		justify-content: space-between;
+	}
+}
+
+/* Hamburger Button */
+.hamburger-btn {
+	display: none;
+	position: fixed !important;
+	top: 15px !important;
+	left: 15px !important;
+	z-index: 10001 !important;
+	background-color: #1c1c1c !important;
+	border: 1px solid #2c2c2c !important;
+	border-radius: 8px;
+	width: 45px;
+	height: 45px;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
+	gap: 5px;
+	cursor: pointer;
+	transition: all 0.3s ease;
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.hamburger-btn:hover {
+	background-color: #252525;
+	border-color: #3c3c3c;
+}
+
+.hamburger-btn span {
+	display: block;
+	width: 22px;
+	height: 2px;
+	background-color: #dfdfdf;
+	transition: all 0.3s ease;
+	border-radius: 2px;
+}
+
+.hamburger-btn.active span:nth-child(1) {
+	transform: rotate(45deg) translate(5px, 5px);
+}
+
+.hamburger-btn.active span:nth-child(2) {
+	opacity: 0;
+}
+
+.hamburger-btn.active span:nth-child(3) {
+	transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Overlay */
+.sidebar-overlay {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.7);
+	z-index: 998;
+	backdrop-filter: blur(2px);
+}
+
+/* Mobile Styles */
+@media (max-width: 1024px) {
+	.layout {
+		width: 100%;
+		margin-left: 0;
+		padding: 0;
+		position: relative;
+	}
+
+	.hamburger-btn {
+		display: flex !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+	}
+
+	.sidebar-overlay {
+		display: block;
+	}
+
+	/* Sidebar mobile */
+	:deep(.sidebar) {
+		position: fixed;
+		width: 280px !important;
+		height: 100vh;
+		z-index: 1000;
+		transform: translateX(-100%);
+		transition: transform 0.3s ease-out;
+	}
+
+	:deep(.sidebar.is-open) {
+		transform: translateX(0);
+	}
+
+	.main-header {
+		padding-left: 70px;
+	}
+}
+
+@media (max-width: 480px) {
+	.hamburger-btn {
+		width: 40px;
+		height: 40px;
+		top: 12px;
+		left: 12px;
+	}
+
+	.hamburger-btn span {
+		width: 20px;
+	}
+}
+</style>
+
+<style>
+/* Estilos globais para garantir que o hambúrguer apareça no mobile */
+@media (max-width: 1024px) {
+	.hamburger-btn {
+		display: flex !important;
+		visibility: visible !important;
+		opacity: 1 !important;
+		position: fixed !important;
+		top: 15px !important;
+		left: 15px !important;
+		z-index: 10001 !important;
 	}
 }
 </style>
