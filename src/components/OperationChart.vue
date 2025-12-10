@@ -266,6 +266,22 @@
             </div>
           </div>
 
+          <!-- Tempo/Ticks Restantes -->
+          <div v-if="activeContract && (contractTimeRemaining !== null || contractTicksRemaining !== null)" class="bg-zenix-bg border border-zenix-border rounded-lg p-3">
+            <div class="text-xs text-zenix-secondary mb-1">
+              <i class="fas fa-clock mr-2"></i>
+              {{ isTickBasedContract ? 'Ticks Restantes:' : 'Tempo Restante:' }}
+            </div>
+            <div class="text-base font-semibold text-zenix-text" :class="getCountdownClass">
+              <span v-if="isTickBasedContract && contractTicksRemaining !== null">
+                {{ contractTicksRemaining }}
+              </span>
+              <span v-else-if="!isTickBasedContract && contractTimeRemaining !== null">
+                {{ formatTimeRemaining(contractTimeRemaining) }}
+              </span>
+            </div>
+          </div>
+
           <!-- Action Buttons -->
           <div class="space-y-3 pt-3">
             <button 
@@ -280,7 +296,7 @@
             </button>
             
             <button 
-              v-if="activeContract && isSellEnabled"
+              v-if="activeContract && isSellEnabled && !isTickBasedContract"
               id="sellButton"
               @click="executeSell"
               :disabled="isTrading"
@@ -289,6 +305,9 @@
               <i class="fas fa-arrow-down"></i>
               PUT / SELL
             </button>
+            <div v-if="activeContract && isTickBasedContract" class="w-full bg-zenix-bg border border-zenix-border rounded-lg p-3 text-center">
+              <span class="text-xs text-zenix-secondary">Contratos de ticks não podem ser vendidos antes do vencimento</span>
+            </div>
           </div>
           
           <!-- Error Message -->
@@ -416,50 +435,6 @@
         </div>
       </div>
       
-      <!-- Contract Tracking Visual Reference -->
-      <div v-if="activeContract" class="contract-tracking-panel">
-        <div class="tracking-header">
-          <h4>Contrato Ativo</h4>
-          <span class="contract-status" :class="activeContract.contract_type === 'CALL' ? 'status-call' : 'status-put'">
-            {{ activeContract.contract_type }}
-          </span>
-        </div>
-        <div class="tracking-details">
-          <div class="tracking-item">
-            <span class="tracking-label">Símbolo:</span>
-            <span class="tracking-value">{{ activeContract.symbol }}</span>
-          </div>
-          <div class="tracking-item">
-            <span class="tracking-label">Preço de Entrada:</span>
-            <span class="tracking-value">$ {{ (activeContract.entry_spot || purchasePrice || 0).toFixed(pricePrecision) }}</span>
-          </div>
-          <div class="tracking-item">
-            <span class="tracking-label">Preço Atual:</span>
-            <span class="tracking-value">$ {{ (latestTick?.value || 0).toFixed(pricePrecision) }}</span>
-          </div>
-          <div class="tracking-item">
-            <span class="tracking-label">P&L:</span>
-            <span class="tracking-value" :class="realTimeProfit >= 0 ? 'profit' : 'loss'">
-              $ {{ realTimeProfit >= 0 ? '+' : '' }}{{ (realTimeProfit || 0).toFixed(pricePrecision) }}
-            </span>
-          </div>
-          <!-- Contador Visual -->
-          <div v-if="contractTimeRemaining !== null || contractTicksRemaining !== null" class="tracking-item contract-countdown">
-            <span class="tracking-label">
-              <i class="fas fa-clock mr-2"></i>
-              {{ isTickBasedContract ? 'Ticks Restantes:' : 'Tempo Restante:' }}
-            </span>
-            <span class="tracking-value countdown-value" :class="getCountdownClass">
-              <span v-if="isTickBasedContract && contractTicksRemaining !== null" class="countdown-number">
-                {{ contractTicksRemaining }}
-              </span>
-              <span v-else-if="!isTickBasedContract && contractTimeRemaining !== null" class="countdown-number">
-                {{ formatTimeRemaining(contractTimeRemaining) }}
-              </span>
-            </span>
-          </div>
-        </div>
-      </div>
     </div>
   </div>
 </template>
@@ -1854,10 +1829,17 @@ export default {
           symbol: this.symbol,
           contractType: this.localOrderConfig.type,
           duration: this.localOrderConfig.duration,
-          durationUnit: this.localOrderConfig.durationUnit,
+          durationUnit: this.localOrderConfig.durationUnit, // 'm' ou 't'
           amount: this.localOrderConfig.amount,
           proposalId: this.currentProposalId, // Opcional, backend busca se não fornecido
         };
+        
+        console.log('[Chart] Configuração de compra sendo enviada:', {
+          duration: buyConfig.duration,
+          durationUnit: buyConfig.durationUnit,
+          originalDuration: this.localOrderConfig.duration,
+          originalDurationUnit: this.localOrderConfig.durationUnit
+        });
         
         // Adicionar barrier APENAS para DIGITMATCH (único que precisa de barrier)
         if (this.localOrderConfig.type === 'DIGITMATCH') {
@@ -1949,20 +1931,43 @@ export default {
       }
       
       // Criar objeto de contrato ativo
+      // IMPORTANTE: Preservar duration_unit original ('t' para ticks, 'm' para minutos)
+      const durationUnit = buyData.durationUnit || buyData.duration_unit || this.localOrderConfig.durationUnit || 'm';
+      const duration = buyData.duration || this.localOrderConfig.duration || 1;
+      
+      console.log('[Chart] Criando contrato ativo com:', {
+        duration,
+        durationUnit,
+        originalBuyData: {
+          durationUnit: buyData.durationUnit,
+          duration_unit: buyData.duration_unit
+        },
+        localConfig: {
+          duration: this.localOrderConfig.duration,
+          durationUnit: this.localOrderConfig.durationUnit
+        }
+      });
+      
       this.activeContract = {
         contract_id: contractId,
         buy_price: buyData.buyPrice || buyData.buy_price || this.currentProposalPrice,
         entry_spot: buyData.entrySpot || buyData.entry_spot || this.purchasePrice,
         entry_time: buyData.entryTime || buyData.entry_time || Date.now() / 1000,
         contract_type: buyData.contractType || buyData.contract_type || this.localOrderConfig.type,
-        duration: buyData.duration || this.localOrderConfig.duration,
-        duration_unit: buyData.durationUnit || buyData.duration_unit || this.localOrderConfig.durationUnit,
+        duration: duration,
+        duration_unit: durationUnit, // Preservar 't' ou 'm'
         symbol: buyData.symbol || this.symbol,
         sell_price: buyData.sellPrice || buyData.sell_price || null,
         profit: buyData.profit || null,
         expiry_time: buyData.expiryTime || buyData.expiry_time || null, // Tempo de expiração se disponível
         payout: buyData.payout || null, // Payout do contrato
       };
+      
+      // Desabilitar venda para contratos de ticks
+      if (durationUnit === 't') {
+        this.isSellEnabled = false;
+        console.log('[Chart] Contrato de ticks detectado - venda desabilitada');
+      }
       
       // Inicializar contador
       this.initializeContractCountdown();
@@ -1975,7 +1980,10 @@ export default {
       
       this.isTrading = false;
       this.tradeMessage = 'Compra executada com sucesso!';
-      this.isSellEnabled = true;
+      // Só habilitar venda se não for contrato de ticks
+      if (this.activeContract.duration_unit !== 't') {
+        this.isSellEnabled = true;
+      }
       
       console.log('[Chart] ✅ Compra processada com sucesso:', this.activeContract);
     },
