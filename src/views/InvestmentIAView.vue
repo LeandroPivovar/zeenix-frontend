@@ -452,6 +452,7 @@
         </footer>
         </div>
     </div>
+    <DesktopBottomNav />
 </template>
 
 <script>
@@ -459,6 +460,7 @@ import AppSidebar from '../components/Sidebar.vue';
 import TopNavbar from '../components/TopNavbar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
+import DesktopBottomNav from '../components/DesktopBottomNav.vue';
 
 export default {
     name: 'InvestmentIAView',
@@ -467,7 +469,7 @@ export default {
         TopNavbar,
         InvestmentActive,
         TooltipsCopyTraders,
-
+        DesktopBottomNav
     },
     data() {
         return {

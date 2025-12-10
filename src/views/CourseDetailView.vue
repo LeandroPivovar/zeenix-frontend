@@ -232,15 +232,17 @@
             <button class="btn-action" @click="fetchCourseDetails">Tentar novamente</button>
         </div>
     </div>
+    <DesktopBottomNav />
   </div>
 </template>
 
 <script>
 import AppSidebar from '../components/Sidebar.vue'
+import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 
 export default {
   name: 'CourseDetailView',
-  components: { AppSidebar },
+  components: { AppSidebar, DesktopBottomNav },
   data() {
     return {
       course: null,

@@ -542,16 +542,19 @@
         </div>
       </div>
     </footer>
+    <DesktopBottomNav />
   </div>
 </template>
 
 <script>
 import TopNavbar from '../components/TopNavbar.vue'
+import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 
 export default {
   name: 'DashboardConnected',
   components: {
-    TopNavbar
+    TopNavbar,
+    DesktopBottomNav
   },
   props: { 
     info: { 

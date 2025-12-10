@@ -44,7 +44,8 @@
             @iniciar-agente="toggleAgenteStatus('componenteInativo')"
           />
         </div>
-  
+
+        <DesktopBottomNav />
       </div>
     </div>
   </template>
@@ -54,7 +55,8 @@
   import TopNavbar from "../components/TopNavbar.vue";
   import AgenteAutonomoActive from "../components/autonomo/AgenteAutonomoActive.vue";
   import AgenteAutonomoInactive from "../components/autonomo/AgenteAutonomoInactive.vue";
-  
+  import DesktopBottomNav from "../components/DesktopBottomNav.vue";
+
   export default {
     name: "AgenteAutonomoView",
     components: {
@@ -62,6 +64,7 @@
       AgenteAutonomoInactive,
       AppSidebar,
       TopNavbar,
+      DesktopBottomNav,
     },
     data() {
       return {
@@ -527,9 +530,15 @@
     background-color: #0a0b0a;
     min-height: 100vh;
     transition: margin-left 0.3s ease;
-    padding-bottom: 40px;
+    padding-bottom: 80px;
     width: calc(100% - 280px);
     margin-left: 280px;
+  }
+
+  @media (min-width: 1025px) {
+    .layout-agente-autnomo {
+      padding-bottom: 40px;
+    }
   }
   
   .layout-agente-autnomo.sidebar-collapsed {
@@ -811,6 +820,10 @@
   
   /* Responsividade Mobile */
   @media screen and (max-width: 768px) {
+    .layout-agente-autnomo {
+      padding-bottom: 100px !important;
+    }
+
     .container-componentes {
       padding: 0 1rem 20px 1rem;
       margin-top: 50px;
@@ -818,6 +831,7 @@
       background-blend-mode: normal;
       position: relative;
       min-height: calc(100vh - 50px);
+      padding-bottom: 100px;
     }
 
     .container-componentes::before {

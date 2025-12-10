@@ -43,6 +43,7 @@
           @pause-copy="handlePauseCopy"
         />
       </div>
+      <DesktopBottomNav />
     </div>
   </template>
   
@@ -51,6 +52,7 @@
   import TopNavbar from '../components/TopNavbar.vue';
   import CopyTradingConfig from '../components/copy-traders/CopyTradingConfig.vue';
   import CopyTradingMonitor from '../components/copy-traders/CopyTradingMonitor.vue';
+  import DesktopBottomNav from '../components/DesktopBottomNav.vue';
   
   export default {
     name: 'CopyTrading',
@@ -59,6 +61,7 @@
       TopNavbar,
       CopyTradingConfig,
       CopyTradingMonitor,
+      DesktopBottomNav
     },
     data() {
       return {

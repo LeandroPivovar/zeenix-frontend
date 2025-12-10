@@ -396,7 +396,7 @@
     <EditEmailModal :visible="showEditEmailModal" :currentEmail="settings.email" @close="closeEditEmailModal" @save="handleSaveEmail" />
     <ChangePasswordModal :visible="showChangePasswordModal" @close="closeChangePasswordModal" @save="handleSavePassword" />
     <ChangePhotoModal :visible="showChangePhotoModal" @close="closeChangePhotoModal" @save="handleSavePhoto" />
-
+    <DesktopBottomNav />
   </div>
 </template>
 
@@ -406,6 +406,7 @@ import EditNameModal from '../components/modals/EditNameModal.vue'
 import EditEmailModal from '../components/modals/EditEmailModal.vue'
 import ChangePasswordModal from '../components/modals/ChangePasswordModal.vue'
 import ChangePhotoModal from '../components/modals/ChangePhotoModal.vue'
+import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 
 export default {
   name: 'SettingsView',
@@ -414,7 +415,8 @@ export default {
     EditNameModal,
     EditEmailModal,
     ChangePasswordModal,
-    ChangePhotoModal
+    ChangePhotoModal,
+    DesktopBottomNav
   },
   data() {
     return {

@@ -82,6 +82,7 @@
                 <component :is="currentViewComponent" />
             </main>
         </div>
+        <DesktopBottomNav />
     </div>
 </template>
 
@@ -89,6 +90,7 @@
 // Componentes necessários (crie estes arquivos .vue)
 import AppSidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
+import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import CopiersDetails from '../components/masterTrader/CopiersDetails.vue'
 import AIInvestment from '../components/masterTrader/InvestmentComponent.vue'
 import AgenteAutonomoView from '../components/masterTrader/AgentAutonomoComponent.vue'
@@ -102,7 +104,8 @@ export default {
         CopiersDetails,
         AIInvestment,
         ManualOperation,
-        AgenteAutonomoView
+        AgenteAutonomoView,
+        DesktopBottomNav
     },
     data() {
         return {

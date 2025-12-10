@@ -143,16 +143,18 @@
                 </div>
             </footer>
         </div>
+        <DesktopBottomNav />
     </div>
 </template>
 
 <script>
 import AppSidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
+import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 
 export default {
     name: 'PlansView',
-    components: { AppSidebar, TopNavbar },
+    components: { AppSidebar, TopNavbar, DesktopBottomNav },
     data() {
         return {
             plans: [],

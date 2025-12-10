@@ -124,6 +124,7 @@
         </div>
       </footer>
     </div>
+    <DesktopBottomNav />
   </div>
 </template>
 
@@ -134,6 +135,7 @@ import OperationChart from '../components/OperationChart.vue';
 import OperationDigits from '../components/OperationDigits.vue';
 import OperationLogs from '../components/OperationLogs.vue';
 import OperationLastOrders from '../components/OperationLastOrders.vue';
+import DesktopBottomNav from '../components/DesktopBottomNav.vue';
 
 export default {
   name: 'OperationView',
@@ -143,7 +145,8 @@ export default {
     OperationChart,
     OperationDigits,
     OperationLogs,
-    OperationLastOrders
+    OperationLastOrders,
+    DesktopBottomNav
   },
   data() {
     return {
