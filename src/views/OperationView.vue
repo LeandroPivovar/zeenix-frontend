@@ -450,6 +450,51 @@ export default {
       console.log('[OperationView] Total de ordens no histórico:', this.lastOrders.length);
       console.log('[OperationView] ========== RESULTADO PROCESSADO ==========');
     },
+    async loadLastOrders() {
+      console.log('[OperationView] Carregando últimas ordens do banco...');
+      try {
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBaseUrl}/api/broker/deriv/trading/last-orders?limit=10`, {
+          method: 'GET',
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token') || ''}`,
+            'Content-Type': 'application/json',
+          },
+        });
+
+        if (!res.ok) {
+          console.warn('[OperationView] Erro ao buscar últimas ordens:', res.statusText);
+          return;
+        }
+
+        const orders = await res.json();
+        console.log('[OperationView] Últimas ordens recebidas do backend:', orders);
+        
+        // Converter para o formato esperado pelo componente
+        this.lastOrders = orders.map(order => ({
+          time: order.time ? new Date(order.time).toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          }) : new Date(order.createdAt).toLocaleTimeString('pt-BR', {
+            hour: '2-digit',
+            minute: '2-digit',
+            second: '2-digit',
+          }),
+          type: order.direction || order.symbol || 'CALL',
+          price: order.buyPrice || null,
+          sellPrice: order.sellPrice || null,
+          profit: order.profit != null ? Number(order.profit) : null,
+          currency: order.currency || 'USD',
+          status: order.status || 'EXECUTED',
+          contractId: order.contractId || null,
+        }));
+        
+        console.log('[OperationView] Últimas ordens formatadas:', this.lastOrders);
+      } catch (error) {
+        console.error('[OperationView] Erro ao carregar últimas ordens:', error);
+      }
+    },
     persistConnectionBalance(balanceValue, currency) {
       const saved = localStorage.getItem('deriv_connection');
       if (!saved) return;
@@ -468,6 +513,7 @@ export default {
   },
   async mounted() {
     await this.checkConnection(true);
+    await this.loadLastOrders();
   },
   watch: {
     '$route'(to) {
