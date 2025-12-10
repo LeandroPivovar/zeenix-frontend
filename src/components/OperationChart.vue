@@ -457,6 +457,7 @@ export default {
       loginid: null,
       retryCount: 0,
       errorRetryCount: 0,
+      loadTicksAttempts: 0, // Contador de tentativas para inicializar gráfico
       ticks: [], // Armazenar ticks para atualização em tempo real
       // Variáveis de compra/venda
       activeContract: null,
@@ -1218,12 +1219,27 @@ export default {
     async loadTicksFromBackend() {
       // Verificar se o gráfico está inicializado
       if (!this.chart || !this.chartSeries) {
-        console.warn('[Chart] Gráfico não inicializado, aguardando...');
+        // Limitar tentativas para evitar loop infinito
+        if (!this.loadTicksAttempts) {
+          this.loadTicksAttempts = 0;
+        }
+        this.loadTicksAttempts++;
+        
+        if (this.loadTicksAttempts > 20) { // Máximo de 20 tentativas (10 segundos)
+          console.error('[Chart] ❌ Máximo de tentativas para inicializar gráfico atingido. Parando...');
+          this.loadTicksAttempts = 0;
+          return;
+        }
+        
+        console.warn(`[Chart] Gráfico não inicializado, aguardando... (tentativa ${this.loadTicksAttempts}/20)`);
         setTimeout(() => {
           this.loadTicksFromBackend();
         }, 500);
         return;
       }
+      
+      // Resetar contador quando gráfico estiver pronto
+      this.loadTicksAttempts = 0;
 
       if (this.isLoadingTicks) {
         console.log('[Chart] Já está carregando ticks, ignorando...');
