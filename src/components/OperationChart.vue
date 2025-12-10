@@ -2801,6 +2801,7 @@ export default {
 .operation-chart-wrapper {
   width: 100%;
   height: 100%;
+  min-height: 600px;
   padding: 1.5rem;
   box-sizing: border-box;
 }
@@ -2847,6 +2848,7 @@ export default {
   display: flex;
   gap: 1.5rem;
   height: 100%;
+  min-height: 600px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -2855,10 +2857,11 @@ export default {
 
 .chart-card {
   flex: 1;
-  min-height: calc(100% + 145px) !important;
-  height: calc(100% + 145px) !important;
+  height: 100%;
+  min-height: 600px;
   display: flex;
   flex-direction: column;
+  align-self: stretch;
 }
 
 .sidebar-panel {
@@ -2866,6 +2869,7 @@ export default {
   flex-direction: column;
   align-self: stretch;
   height: 100%;
+  min-height: 600px;
 }
 
 .col-chart {
@@ -2875,6 +2879,7 @@ export default {
   height: 100%;
   min-height: 0;
   align-self: stretch;
+  flex: 1;
 }
 
 .chart-container {
@@ -2895,6 +2900,7 @@ export default {
   overflow: visible !important;
   width: 100% !important;
   height: 100% !important;
+  flex: 1;
 }
 
 .chart-placeholder {
