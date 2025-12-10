@@ -669,6 +669,36 @@ header{
         overflow: visible !important;
     }
     
+    /* Info box DEMO externo (passo 3) */
+    .info-box-demo-external {
+        background: #101c18 !important;
+        border: 2px solid #143c26 !important;
+        border-radius: 12px;
+        padding: 12px 15px;
+        margin-top: 15px;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 12px;
+        color: rgb(209, 209, 209) !important;
+    }
+    
+    .info-box-demo-external .check-icon-svg {
+        width: 20px !important;
+        height: 20px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .info-box-demo-external p {
+        width: 100% !important;
+        margin: 0 !important;
+    }
+    
+    .info-box-demo-external strong {
+        color: #22C55E !important;
+    }
+    
     /* Indicador de Etapa */
     .step-indicator {
         background: #22C55E !important;
