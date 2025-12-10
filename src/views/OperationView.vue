@@ -480,7 +480,7 @@ export default {
           type: order.contractType || 'CALL',
           direction: order.contractType || 'CALL',
           buyPrice: order.entryValue || null,
-          sellPrice: order.exitValue || null,
+          sellPrice: null, // exitValue não existe na entidade TradeEntity
           profit: order.profit != null ? Number(order.profit) : null,
           currency: 'USD',
           status: order.status || 'EXECUTED',
