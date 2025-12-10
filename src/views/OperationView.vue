@@ -173,10 +173,13 @@ export default {
       return this.formatCurrency(this.accountBalanceValue, this.accountCurrency);
     },
     lastOrdersFormatted() {
+      if (!this.lastOrders || !Array.isArray(this.lastOrders)) {
+        return [];
+      }
       return this.lastOrders.map(order => {
         const displayValue =
-          order.price != null
-            ? this.formatCurrency(order.price, order.currency || this.accountCurrency)
+          order.buyPrice != null || order.entryPrice != null || order.price != null
+            ? this.formatCurrency(order.buyPrice || order.entryPrice || order.price, order.currency || this.accountCurrency)
             : '--';
         const displayProfit =
           order.profit != null
@@ -463,12 +466,14 @@ export default {
         });
 
         if (!res.ok) {
-          console.warn('[OperationView] Erro ao buscar últimas ordens:', res.statusText);
+          const errorText = await res.text();
+          console.error('[OperationView] Erro ao buscar últimas ordens:', res.status, res.statusText, errorText);
           return;
         }
 
         const orders = await res.json();
         console.log('[OperationView] Últimas ordens recebidas do backend:', orders);
+        console.log('[OperationView] Número de ordens recebidas:', orders?.length || 0);
         
         // Função para mapear símbolo para nome de mercado
         const getMarketName = (symbol) => {
@@ -529,10 +534,15 @@ export default {
           contractId: order.derivTransactionId || null,
           market: getMarketName(order.symbol),
         }));
-        
+
         console.log('[OperationView] Últimas ordens formatadas:', this.lastOrders);
+        console.log('[OperationView] Total de ordens formatadas:', this.lastOrders.length);
+        
+        // Forçar atualização reativa
+        this.$forceUpdate();
       } catch (error) {
         console.error('[OperationView] Erro ao carregar últimas ordens:', error);
+        this.lastOrders = [];
       }
     },
     persistConnectionBalance(balanceValue, currency) {
