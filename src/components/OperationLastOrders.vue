@@ -20,9 +20,10 @@
             <thead>
               <tr>
                 <th>Horário</th>
+                <th>Mercado</th>
                 <th>Tipo</th>
-                <th>Preço Compra</th>
-                <th>Preço Venda</th>
+                <th>Preço Entrada</th>
+                <th>Preço Saída</th>
                 <th>P&L</th>
                 <th>Status</th>
               </tr>
@@ -34,14 +35,15 @@
                 class="order-row"
               >
                 <td class="order-time">{{ order.time || 'N/A' }}</td>
+                <td class="order-market">{{ order.market || 'N/A' }}</td>
                 <td>
                   <span class="order-type" :class="order.direction === 'CALL' || order.type === 'CALL' ? 'call' : 'put'">
                     {{ order.direction || order.type || 'N/A' }}
                   </span>
                 </td>
-                <td class="order-value">${{ (order.buyPrice || order.price || 0).toFixed(2) }}</td>
+                <td class="order-value">${{ (order.buyPrice || order.entryPrice || order.price || 0).toFixed(2) }}</td>
                 <td class="order-value">
-                  <span v-if="order.sellPrice">${{ order.sellPrice.toFixed(2) }}</span>
+                  <span v-if="order.sellPrice || order.exitPrice">${{ (order.sellPrice || order.exitPrice || 0).toFixed(2) }}</span>
                   <span v-else class="text-muted">-</span>
                 </td>
                 <td>
@@ -210,6 +212,13 @@ export default {
 .order-time {
   font-size: 0.875rem;
   color: #7A7A7A;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.order-market {
+  font-size: 0.875rem;
+  color: #DFDFDF;
   font-weight: 500;
   white-space: nowrap;
 }

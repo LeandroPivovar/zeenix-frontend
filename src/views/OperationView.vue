@@ -470,6 +470,46 @@ export default {
         const orders = await res.json();
         console.log('[OperationView] Últimas ordens recebidas do backend:', orders);
         
+        // Função para mapear símbolo para nome de mercado
+        const getMarketName = (symbol) => {
+          if (!symbol) return 'N/A';
+          const marketMap = {
+            'R_10': 'Volatility 10 Index',
+            'R_25': 'Volatility 25 Index',
+            'R_50': 'Volatility 50 Index',
+            'R_75': 'Volatility 75 Index',
+            'R_100': 'Volatility 100 Index',
+            '1HZ10V': 'Volatility 10 (1s) Index',
+            '1HZ25V': 'Volatility 25 (1s) Index',
+            '1HZ50V': 'Volatility 50 (1s) Index',
+            '1HZ75V': 'Volatility 75 (1s) Index',
+            '1HZ100V': 'Volatility 100 (1s) Index',
+            'cryBTCUSD': 'BTC/USD',
+            'cryETHUSD': 'ETH/USD',
+            'frxEURUSD': 'EUR/USD',
+            'frxUSDJPY': 'USD/JPY',
+            'frxGBPUSD': 'GBP/USD',
+            'frxUSDCHF': 'USD/CHF',
+            'frxAUDUSD': 'AUD/USD',
+            'frxUSDCAD': 'USD/CAD',
+            'frxNZDUSD': 'NZD/USD',
+            'frxEURGBP': 'EUR/GBP',
+            'frxEURJPY': 'EUR/JPY',
+            'frxGBPJPY': 'GBP/JPY',
+            'frxAUDCAD': 'AUD/CAD',
+            'frxAUDJPY': 'AUD/JPY',
+            'frxCHFJPY': 'CHF/JPY',
+            'frxEURAUD': 'EUR/AUD',
+            'frxGBPAUD': 'GBP/AUD',
+            'frxUSDMXN': 'USD/MXN',
+            'frxXAUUSD': 'XAU/USD',
+            'frxXAGUSD': 'XAG/USD',
+            'frxXPTUSD': 'XPT/USD',
+            'frxXPDUSD': 'XPD/USD',
+          };
+          return marketMap[symbol] || symbol;
+        };
+
         // Converter para o formato esperado pelo componente
         this.lastOrders = orders.map(order => ({
           time: new Date(order.createdAt).toLocaleTimeString('pt-BR', {
@@ -480,11 +520,14 @@ export default {
           type: order.contractType || 'CALL',
           direction: order.contractType || 'CALL',
           buyPrice: order.entryValue || null,
-          sellPrice: null, // exitValue não existe na entidade TradeEntity
+          entryPrice: order.entryValue || null,
+          sellPrice: order.exitValue || null,
+          exitPrice: order.exitValue || null,
           profit: order.profit != null ? Number(order.profit) : null,
           currency: 'USD',
           status: order.status || 'EXECUTED',
           contractId: order.derivTransactionId || null,
+          market: getMarketName(order.symbol),
         }));
         
         console.log('[OperationView] Últimas ordens formatadas:', this.lastOrders);

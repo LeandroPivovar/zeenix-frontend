@@ -2772,7 +2772,7 @@ export default {
 .operation-chart-wrapper {
   width: 100%;
   height: 100%;
-  min-height: 600px;
+  min-height: 800px;
   padding: 1.5rem;
   box-sizing: border-box;
 }
@@ -2819,7 +2819,7 @@ export default {
   display: flex;
   gap: 1.5rem;
   height: 100%;
-  min-height: 600px;
+  min-height: 800px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -2829,7 +2829,7 @@ export default {
 .chart-card {
   flex: 1;
   height: 100%;
-  min-height: 600px;
+  min-height: 800px;
   display: flex;
   flex-direction: column;
   align-self: stretch;
@@ -2840,7 +2840,7 @@ export default {
   flex-direction: column;
   align-self: stretch;
   height: 100%;
-  min-height: 600px;
+  min-height: 800px;
 }
 
 .col-chart {
