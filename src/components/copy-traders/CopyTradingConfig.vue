@@ -906,4 +906,71 @@ input:checked + .slider:before {
     z-index: 9999;
 
 }
+
+/* Responsividade - Desktop mantém layout grid de 3 colunas */
+@media (min-width: 1025px) {
+    .copy-trading-config {
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 20px;
+    }
+}
+
+/* Tablet */
+@media (max-width: 1200px) and (min-width: 769px) {
+    .copy-trading-config {
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    
+    .card-right {
+        grid-column: 1 / -1;
+    }
+}
+
+/* Mobile - Layout Vertical como na imagem */
+@media (max-width: 768px) {
+    .copy-trading-config {
+        display: flex;
+        flex-direction: column;
+        gap: 16px;
+    }
+    
+    .card {
+        width: 100%;
+        padding: 20px;
+    }
+    
+    .card-title {
+        font-size: 15px;
+        margin-bottom: 16px;
+    }
+    
+    .allocation-buttons-group {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .allocation-buttons-group button {
+        flex: 1;
+    }
+    
+    .toggle-wrapper {
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+    
+    .toggle-wrapper .toggle {
+        flex-shrink: 0;
+    }
+
+    .select-wrapper,
+    .trader-select,
+    select,
+    input[type="text"],
+    input[type="number"] {
+        width: 100%;
+    }
+}
 </style>

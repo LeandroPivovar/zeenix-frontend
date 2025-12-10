@@ -1,9 +1,26 @@
-<template>
+  <template>
     <div class="layout-copy-traders">
+      <button
+        class="hamburger-btn"
+        @click="toggleMobileSidebar"
+        :class="{ active: isSidebarOpen }"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <div
+        v-if="isSidebarOpen && isMobile"
+        class="sidebar-overlay"
+        @click="closeSidebar"
+      ></div>
+
       <AppSidebar 
         :is-open="isSidebarOpen" 
-        :is-collapsed="isSidebarCollapsed" 
-        @toggle-collapse="toggleSidebarCollapse" 
+        :is-collapsed="isSidebarCollapsed"
+        @toggle-collapse="toggleSidebarCollapse"
+        @close-sidebar="closeSidebar"
       />
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
@@ -68,14 +85,34 @@
         activeTab: 'config',
         isSidebarOpen: true,
         isSidebarCollapsed: false,
+        isMobile: false,
         loading: true,
         hasActiveSession: false,
         activeSession: null,
       };
     },
     methods: {
+      toggleMobileSidebar() {
+        this.isSidebarOpen = !this.isSidebarOpen;
+      },
+      closeSidebar() {
+        if (this.isMobile) {
+          this.isSidebarOpen = false;
+        }
+      },
       toggleSidebarCollapse() {
-        this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        if (!this.isMobile) {
+          this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        }
+      },
+      checkMobile() {
+        this.isMobile = window.innerWidth <= 1024;
+        if (this.isMobile) {
+          this.isSidebarOpen = false;
+          this.isSidebarCollapsed = false;
+        } else {
+          this.isSidebarOpen = true;
+        }
       },
       async checkActiveSession() {
         this.loading = true;
@@ -169,6 +206,11 @@
     },
     async mounted() {
       await this.checkActiveSession();
+      this.checkMobile();
+      window.addEventListener('resize', this.checkMobile);
+    },
+    beforeUnmount() {
+      window.removeEventListener('resize', this.checkMobile);
     },
   };
   </script>
@@ -185,6 +227,66 @@
     width: calc(100% - 280px);
     margin-left: 280px;
     position: relative;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+  }
+
+  /* Botão Hambúrguer */
+  .hamburger-btn {
+    display: none;
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1001;
+    background-color: #1c1c1c;
+    border: 1px solid #2c2c2c;
+    border-radius: 8px;
+    width: 45px;
+    height: 45px;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .hamburger-btn:hover {
+    background-color: #252525;
+    border-color: #3c3c3c;
+  }
+
+  .hamburger-btn span {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background-color: #dfdfdf;
+    transition: all 0.3s ease;
+    border-radius: 2px;
+  }
+
+  .hamburger-btn.active span:nth-child(1) {
+    transform: rotate(45deg) translate(5px, 5px);
+  }
+
+  .hamburger-btn.active span:nth-child(2) {
+    opacity: 0;
+  }
+
+  .hamburger-btn.active span:nth-child(3) {
+    transform: rotate(-45deg) translate(6px, -6px);
+  }
+
+  /* Overlay */
+  .sidebar-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 998;
+    backdrop-filter: blur(2px);
   }
   
   .box {
@@ -261,25 +363,74 @@
     to { transform: rotate(360deg); }
   }
 
-  @media (max-width: 900px) {
+  @media (max-width: 1024px) {
     .layout-copy-traders {
-      width: 100%;
-      margin-left: 0;
-      padding: 15px;
+      width: 100% !important;
+      margin-left: 0 !important;
+      padding: 0;
     }
-  
+
+    .hamburger-btn {
+      display: flex;
+    }
+
+    .sidebar-overlay {
+      display: block;
+    }
+
+    /* Sidebar no mobile */
+    :deep(.sidebar) {
+      position: fixed;
+      width: 280px !important;
+      height: 100vh;
+      z-index: 1000;
+      transform: translateX(-100%);
+      transition: transform 0.3s ease-out;
+    }
+
+    :deep(.sidebar.is-open) {
+      transform: translateX(0);
+    }
+  }
+
+  @media (max-width: 768px) {
+    .box {
+      padding: 15px;
+      margin-top: 60px;
+    }
+
+    .header {
+      margin-bottom: 20px;
+    }
+
     .header h1 {
       font-size: 20px;
     }
-  
+
+    .header p {
+      font-size: 13px;
+    }
+
     .tabs {
       overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
     }
-  
+
     .tab {
       padding: 10px 16px;
       font-size: 14px;
       white-space: nowrap;
+    }
+
+    .hamburger-btn {
+      width: 40px;
+      height: 40px;
+      top: 12px;
+      left: 12px;
+    }
+
+    .hamburger-btn span {
+      width: 20px;
     }
   }
   </style>

@@ -649,12 +649,20 @@ span.icon-sumary-risk{
 }
 
 /* 4. Parâmetros Diários */
+.daily-params-section {
+	width: 100%;
+	max-width: 600px;
+	flex-shrink: 0;
+	display: flex;
+	flex-direction: column;
+	padding: 25px;
+}
+
 .daily-params-grid {
 	display: flex;
 	flex-direction: column;
 	gap: 20px;
-	max-width: 700px;
-	min-width: 400px;
+	width: 100%;
 }
 
 /* Ajustes para telas menores que 1400px */
@@ -668,9 +676,11 @@ span.icon-sumary-risk{
 		margin: 8px;
 	}
 
+	.daily-params-section {
+		max-width: 500px;
+	}
+
 	.daily-params-grid {
-		max-width: 600px;
-		min-width: 350px;
 		gap: 15px;
 	}
 
@@ -678,9 +688,13 @@ span.icon-sumary-risk{
 		padding: 15px;
 	}
 
+	.daily-params-section {
+		padding: 20px;
+	}
+
 	.summary-section {
 		padding: 20px;
-		max-width: 600px;
+		max-width: 800px;
 	}
 
 	.config-section h2 {
@@ -743,10 +757,13 @@ span.icon-sumary-risk{
 }
 
 @media (min-width: 1600px){
-	.daily-params-grid {
-		max-width: 700px;
-		min-width: 700px;
+	.daily-params-section {
+		max-width: 600px;
+		min-width: 600px;
+	}
 
+	.summary-section {
+		max-width: 900px;
 	}
 
 	.footer-text{
@@ -798,12 +815,11 @@ span.icon-sumary-risk{
 /* 5. Resumo da Configuração */
 .summary-section {
 	padding: 25px;
-	margin: auto;
+	margin: 0;
 	display: flex;
 	flex-direction: column;
-	margin: 0;
-	max-width: 700px;
-
+	max-width: 800px;
+	width: 100%;
 }
 
 .summary-grid {
@@ -879,7 +895,21 @@ span.icon-sumary-risk{
 .footer-section{
 	display: flex;
 	width: 100%;
-	gap: 100px;
+	gap: 60px;
+	align-items: flex-start;
+	justify-content: flex-start;
+}
+
+@media (min-width: 1400px) {
+	.footer-section {
+		gap: 80px;
+	}
+}
+
+@media (min-width: 1600px) {
+	.footer-section {
+		gap: 100px;
+	}
 }
 
 /* 6. Botão */

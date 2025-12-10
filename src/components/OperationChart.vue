@@ -1045,7 +1045,6 @@ export default {
       }
     },
     handleSSEMessage(data) {
-      console.log('[Chart] 📨 Mensagem SSE recebida:', data.type, data);
       // Processar mensagens SSE
       if (data.type === 'history' && data.data && data.data.ticks) {
         console.log('[Chart] Histórico recebido via SSE:', data.data.ticks.length, 'ticks');
@@ -1131,20 +1130,14 @@ export default {
         console.log('[Chart] Proposta recebida via SSE:', data.data);
         this.processProposal(data.data);
       } else if (data.type === 'buy' && data.data) {
-        console.log('[Chart] ========== COMPRA RECEBIDA VIA SSE ==========');
-        console.log('[Chart] Dados completos da compra:', JSON.stringify(data.data, null, 2));
+        console.log('[Chart] Compra recebida via SSE:', data.data);
         this.processBuy(data.data);
       } else if (data.type === 'sell' && data.data) {
         console.log('[Chart] Venda recebida via SSE:', data.data);
         this.processSell(data.data);
       } else if (data.type === 'contract' && data.data) {
-        console.log('[Chart] ========== CONTRATO ATUALIZADO VIA SSE ==========');
-        console.log('[Chart] Dados completos do contrato:', JSON.stringify(data.data, null, 2));
+        console.log('[Chart] Contrato atualizado via SSE:', data.data);
         this.processContract(data.data);
-      } else if (data.type === 'error' && data.error) {
-        console.error('[Chart] ========== ERRO RECEBIDO VIA SSE ==========');
-        console.error('[Chart] Erro completo:', JSON.stringify(data.error, null, 2));
-        this.handleTradingError(data.error);
       }
     },
     addTickToChart(tickData) {
@@ -1955,16 +1948,12 @@ export default {
         return;
       }
       
-      // Usar o preço atual do tick se entry_spot não estiver disponível
-      const entrySpot = buyData.entrySpot || buyData.entry_spot || this.latestTick?.value || this.purchasePrice || null;
-      const entryTime = buyData.entryTime || buyData.entry_time || (this.latestTick?.epoch ? this.latestTick.epoch + (3 * 60 * 60) : Date.now() / 1000);
-      
       // Criar objeto de contrato ativo
       this.activeContract = {
         contract_id: contractId,
         buy_price: buyData.buyPrice || buyData.buy_price || this.currentProposalPrice,
-        entry_spot: entrySpot,
-        entry_time: entryTime,
+        entry_spot: buyData.entrySpot || buyData.entry_spot || this.purchasePrice,
+        entry_time: buyData.entryTime || buyData.entry_time || Date.now() / 1000,
         contract_type: buyData.contractType || buyData.contract_type || this.localOrderConfig.type,
         duration: buyData.duration || this.localOrderConfig.duration,
         duration_unit: buyData.durationUnit || buyData.duration_unit || this.localOrderConfig.durationUnit,
@@ -1975,42 +1964,13 @@ export default {
         payout: buyData.payout || null, // Payout do contrato
       };
       
-      console.log('[Chart] Contrato ativo criado:', {
-        contract_id: this.activeContract.contract_id,
-        entry_spot: this.activeContract.entry_spot,
-        entry_time: this.activeContract.entry_time,
-        duration: this.activeContract.duration,
-        duration_unit: this.activeContract.duration_unit
-      });
-      
-      // Inicializar contador (deve ser chamado ANTES de adicionar a linha)
+      // Inicializar contador
       this.initializeContractCountdown();
       
-      // Mostrar contador visual
-      this.showCountdown = true;
-      
       // Adicionar linha de compra no gráfico
-      // Garantir que entry_spot está definido (usar latestTick se necessário)
-      if (!this.activeContract.entry_spot && this.latestTick && this.latestTick.value) {
-        this.activeContract.entry_spot = this.latestTick.value;
-        console.log('[Chart] Entry spot definido a partir do latestTick:', this.activeContract.entry_spot);
-      }
-      
       if (this.activeContract.entry_spot) {
         const entryTime = this.activeContract.entry_time || (Date.now() / 1000);
-        console.log('[Chart] Plotando linha de entrada:', {
-          entry_spot: this.activeContract.entry_spot,
-          entry_time: entryTime,
-          chartExists: !!this.chart
-        });
-        // Aguardar um pouco para garantir que o gráfico está pronto
-        this.$nextTick(() => {
-          setTimeout(() => {
-            this.addEntrySpotLine(this.activeContract.entry_spot, entryTime);
-          }, 100);
-        });
-      } else {
-        console.warn('[Chart] Não foi possível plotar linha de entrada: entry_spot não disponível');
+        this.addEntrySpotLine(this.activeContract.entry_spot, entryTime);
       }
       
       this.isTrading = false;
@@ -2018,70 +1978,6 @@ export default {
       this.isSellEnabled = true;
       
       console.log('[Chart] ✅ Compra processada com sucesso:', this.activeContract);
-      console.log('[Chart] Contador iniciado:', {
-        duration: this.activeContract.duration,
-        durationUnit: this.activeContract.duration_unit,
-        isTickBased: this.activeContract.duration_unit === 't',
-        ticksRemaining: this.contractTicksRemaining,
-        timeRemaining: this.contractTimeRemaining
-      });
-    },
-    handleTradingError(error) {
-      console.error('[Chart] ========== PROCESSANDO ERRO DE TRADING ==========');
-      console.error('[Chart] Erro recebido:', error);
-      
-      this.isTrading = false;
-      
-      // Verificar tipo de erro
-      if (error && typeof error === 'object') {
-        const errorCode = error.code || error.error?.code;
-        const errorMessage = error.message || error.error?.message || error.error?.msg || 'Erro desconhecido';
-        
-        console.error('[Chart] Código do erro:', errorCode);
-        console.error('[Chart] Mensagem do erro:', errorMessage);
-        
-        // Tratar erros específicos
-        if (errorCode === 'InsufficientBalance' || errorMessage.includes('insufficient') || errorMessage.includes('Insufficient')) {
-          // Extrair saldo e valor necessário da mensagem de erro
-          // Formato: "Your account balance (0.09 USD) is insufficient to buy this contract (10.00 USD)."
-          let balance = 'desconhecido';
-          let required = this.localOrderConfig.amount || 10;
-          
-          // Tentar extrair da mensagem
-          const balanceMatch = errorMessage.match(/balance\s*\(([\d.]+)\s*USD\)/i);
-          const requiredMatch = errorMessage.match(/contract\s*\(([\d.]+)\s*USD\)/i);
-          
-          if (balanceMatch && balanceMatch[1]) {
-            balance = parseFloat(balanceMatch[1]).toFixed(2);
-          } else if (error.balance !== undefined) {
-            balance = typeof error.balance === 'number' ? error.balance.toFixed(2) : error.balance;
-          } else if (error.error?.balance !== undefined) {
-            balance = typeof error.error.balance === 'number' ? error.error.balance.toFixed(2) : error.error.balance;
-          }
-          
-          if (requiredMatch && requiredMatch[1]) {
-            required = parseFloat(requiredMatch[1]);
-          } else if (error.required !== undefined) {
-            required = typeof error.required === 'number' ? error.required : parseFloat(error.required);
-          } else if (error.error?.required !== undefined) {
-            required = typeof error.error.required === 'number' ? error.error.required : parseFloat(error.error.required);
-          }
-          
-          this.tradeError = `Saldo insuficiente! Saldo disponível: $${balance}. Valor necessário: $${required.toFixed(2)}.`;
-        } else if (errorCode === 'AlreadySubscribed') {
-          // Este erro pode ser ignorado ou tratado silenciosamente
-          console.warn('[Chart] Já inscrito em proposta - ignorando');
-          return;
-        } else {
-          this.tradeError = `Erro: ${errorMessage}`;
-        }
-      } else if (typeof error === 'string') {
-        this.tradeError = error;
-      } else {
-        this.tradeError = 'Erro desconhecido ao processar operação.';
-      }
-      
-      console.error('[Chart] Erro exibido ao usuário:', this.tradeError);
     },
     processSell(sellData) {
       console.log('[Chart] ========== PROCESSANDO VENDA ==========');
@@ -2263,21 +2159,11 @@ export default {
       this.updateRealTimeProfit();
     },
     initializeContractCountdown() {
-      if (!this.activeContract) {
-        console.warn('[Chart] ⚠️ Não é possível inicializar countdown: activeContract não existe');
-        return;
-      }
+      if (!this.activeContract) return;
       
       const duration = this.activeContract.duration || this.localOrderConfig.duration || 1;
       const durationUnit = this.activeContract.duration_unit || this.localOrderConfig.durationUnit || 'm';
       const entryTime = this.activeContract.entry_time || Date.now() / 1000;
-      
-      console.log('[Chart] ⏱️ Inicializando countdown:', {
-        duration,
-        durationUnit,
-        entryTime,
-        isTickBased: durationUnit === 't'
-      });
       
       this.contractStartTime = entryTime;
       this.contractTickCount = 0; // Resetar contador de ticks
@@ -2286,7 +2172,6 @@ export default {
         // Contrato baseado em ticks
         this.contractTicksRemaining = duration;
         this.contractTimeRemaining = null;
-        console.log('[Chart] ⏱️ Countdown baseado em ticks:', this.contractTicksRemaining, 'ticks');
       } else {
         // Contrato baseado em tempo
         // Converter duração para segundos
@@ -2311,8 +2196,6 @@ export default {
         this.contractDuration = durationInSeconds;
         this.contractTimeRemaining = durationInSeconds;
         this.contractTicksRemaining = null;
-        
-        console.log('[Chart] ⏱️ Countdown baseado em tempo:', this.formatTimeRemaining(this.contractTimeRemaining));
         
         // Iniciar contador de tempo
         this.contractCountdownInterval = setInterval(() => {
@@ -2355,45 +2238,22 @@ export default {
     },
     async handleContractExpiration(contractData) {
       console.log('[Chart] ========== CONTRATO EXPIRADO ==========');
-      console.log('[Chart] Dados finais recebidos:', contractData);
+      console.log('[Chart] Dados finais:', contractData);
       
       // Parar contador
       this.stopContractCountdown();
-      this.showCountdown = false;
       
       // Se não temos dados completos, tentar buscar do backend
       let finalContractData = contractData;
-      if ((!contractData.profit && contractData.profit !== 0) || !contractData.status) {
-        if (this.activeContract?.contract_id) {
-          try {
-            console.log('[Chart] Buscando resultado final do contrato da API...');
-            const authToken = localStorage.getItem('token');
-            if (authToken) {
-              // Tentar buscar informações do contrato via API do backend
-              // O backend pode ter um endpoint para buscar status do contrato
-              // Por enquanto, vamos aguardar os dados via SSE que já devem estar chegando
-              console.log('[Chart] Aguardando dados finais via SSE...');
-              
-              // Aguardar até 3 segundos por dados via SSE
-              await new Promise((resolve) => {
-                const timeout = setTimeout(() => {
-                  console.log('[Chart] Timeout aguardando dados via SSE, usando dados disponíveis');
-                  resolve();
-                }, 3000);
-                
-                // Se receber dados antes do timeout, cancelar
-                const checkInterval = setInterval(() => {
-                  if (contractData.profit !== undefined || contractData.status) {
-                    clearTimeout(timeout);
-                    clearInterval(checkInterval);
-                    resolve();
-                  }
-                }, 100);
-              });
-            }
-          } catch (error) {
-            console.warn('[Chart] Não foi possível buscar resultado do backend:', error);
-          }
+      if (!contractData.profit && contractData.profit !== 0 && this.activeContract?.contract_id) {
+        try {
+          // Tentar buscar status atualizado do contrato do backend
+          // O backend deve enviar via SSE, mas podemos tentar buscar se necessário
+          console.log('[Chart] Buscando resultado final do contrato...');
+          // Por enquanto, usar os dados que temos
+          // O backend deve enviar via SSE quando o contrato expirar
+        } catch (error) {
+          console.warn('[Chart] Não foi possível buscar resultado do backend:', error);
         }
       }
       
