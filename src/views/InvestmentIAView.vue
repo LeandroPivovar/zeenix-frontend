@@ -1331,7 +1331,7 @@ export default {
 
 .zenix-layout {
     min-height: 100vh;
-    background-color: #0B0B0B;
+    background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
     color: #DFDFDF;
 }
 
@@ -1508,7 +1508,7 @@ export default {
 }
 
 .ai-vision-card {
-    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1.5rem;
@@ -1520,7 +1520,7 @@ export default {
 
 .premium-card {
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
-    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 }
 
 .glow-green {
@@ -1529,7 +1529,7 @@ export default {
 
 /* Tailwind-like utility classes for AI Vision Panel */
 .bg-zenix-card {
-    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 }
 
 .bg-zenix-bg {
@@ -2462,7 +2462,7 @@ export default {
 }
 
 .status-info-card {
-    background-color: #0B0B0B;
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1rem;
@@ -2547,7 +2547,7 @@ export default {
 }
 
 .config-card {
-    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     border: 2px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1.25rem;
@@ -2558,7 +2558,7 @@ export default {
 
 /* Garantir que todos os cards tenham o mesmo gradiente */
 .config-card.premium-card {
-    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 }
 
 .card-title {
@@ -3228,7 +3228,7 @@ export default {
 
 @media (max-width: 768px) {
     .zenix-layout {
-        background: linear-gradient(to bottom, #0f2019 0%, #000100 100%) !important;
+        background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%) !important;
         background-color: transparent !important;
         position: relative;
     }
@@ -3272,7 +3272,7 @@ export default {
     
     /* Gradiente nos cards de configuração - apenas mobile */
     .config-card {
-        background: linear-gradient(to bottom, rgba(15, 32, 25, 0.6) 0%, rgba(0, 1, 0, 0.8) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
         background-color: transparent !important;
     }
     
@@ -3356,7 +3356,7 @@ export default {
     /* Gradiente nos cards de configuração - apenas mobile */
     .config-card {
         padding: 1rem;
-        background: linear-gradient(135deg, rgba(10, 26, 10, 0.95) 0%, rgba(5, 15, 5, 0.98) 50%, #0B0B0B 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     }
     
     .card-content {
@@ -3709,7 +3709,7 @@ export default {
     }
     
     #ai-vision-panel .status-card-mobile {
-        background: linear-gradient(to bottom, rgba(15, 32, 25, 0.6) 0%, rgba(0, 1, 0, 0.8) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
         background-color: transparent !important;
         border: 1px solid rgba(28, 28, 28, 0.8) !important;
         border-radius: 0.75rem;
