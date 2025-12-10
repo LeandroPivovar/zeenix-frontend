@@ -7,11 +7,6 @@
       @click="closeSidebar"
     ></div>
 
-    <!-- Botão Hambúrguer para Mobile -->
-    <button class="mobile-hamburger-btn" @click="toggleSidebar" aria-label="Menu">
-      <i class="fas fa-bars"></i>
-    </button>
-
     <AppSidebar 
       class="app-sidebar"
       :class="{ 'mobile-open': isSidebarOpen }"

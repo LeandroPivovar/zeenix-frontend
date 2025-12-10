@@ -1,10 +1,11 @@
 <template>
   <nav 
     id="top-navbar" 
-    class="fixed top-0 left-0 right-0 h-[60px] bg-[#0B0B0B] z-40" 
+    class="fixed top-0 left-0 right-0 h-[60px] bg-[#0B0B0B] z-40 mobile-header" 
     :style="{ left: isSidebarCollapsed ? '72px' : '280px', width: isSidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 280px)' }"
   >
-    <div class="h-full px-6 flex items-center justify-between">
+    <!-- Desktop Layout -->
+    <div class="h-full px-6 flex items-center justify-between desktop-nav">
       <div class="flex items-center space-x-8">
       </div>
       <div class="flex items-center space-x-6">
@@ -76,6 +77,133 @@
                 Sair da Corretora
               </a>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Layout -->
+    <div class="h-full px-4 flex items-center justify-between mobile-nav">
+      <!-- Menu Hambúrguer -->
+      <button 
+        @click="toggleMobileSidebar"
+        class="mobile-menu-btn"
+        type="button"
+      >
+        <i class="fas fa-bars text-[#22C55E] text-xl"></i>
+      </button>
+      
+      <!-- Logo ZENIX -->
+      <div class="mobile-logo">
+        <span class="text-white font-bold text-xl">ZEN</span>
+        <span class="text-[#22C55E] font-bold text-xl">IX</span>
+      </div>
+      
+      <!-- Perfil -->
+      <div class="relative">
+        <button 
+          @click="toggleProfileModal" 
+          class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 overflow-hidden"
+        >
+          <img 
+            v-if="userProfilePicture" 
+            :src="userProfilePicture" 
+            :alt="userName"
+            class="w-full h-full object-cover rounded-full"
+          />
+          <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Modal do Perfil Mobile -->
+    <div 
+      v-if="showProfileModal" 
+      class="profile-modal-overlay"
+      @click.self="closeProfileModal"
+    >
+      <div class="profile-modal-container">
+        <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-[#DFDFDF]">Perfil</h2>
+          <button 
+            @click="closeProfileModal"
+            class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
+          >
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+        
+        <div class="p-6 space-y-6">
+          <!-- Informações do Usuário -->
+          <div class="flex items-center space-x-4 pb-4 border-b border-[#1C1C1C]">
+            <div class="w-16 h-16 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center overflow-hidden">
+              <img 
+                v-if="userProfilePicture" 
+                :src="userProfilePicture" 
+                :alt="userName"
+                class="w-full h-full object-cover rounded-full"
+              />
+              <span v-else class="text-white font-semibold text-lg">{{ userInitials }}</span>
+            </div>
+            <div>
+              <p class="text-base font-semibold text-[#DFDFDF]">{{ userName }}</p>
+              <p class="text-sm text-[#7A7A7A]">{{ userEmail }}</p>
+            </div>
+          </div>
+
+          <!-- Saldo -->
+          <div class="bg-[#0E0E0E] border border-[#1C1C1C] rounded-lg p-4">
+            <div class="flex items-center justify-between mb-2">
+              <p class="text-sm text-[#7A7A7A]">Saldo</p>
+              <button 
+                @click="toggleBalance" 
+                class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
+                type="button"
+              >
+                <i v-if="balanceHidden" class="fas fa-eye-slash text-sm"></i>
+                <i v-else class="fas fa-eye text-sm"></i>
+              </button>
+            </div>
+            <p class="text-2xl font-bold text-[#DFDFDF]">
+              {{ balanceHidden ? '••••••' : formattedBalance }}
+            </p>
+          </div>
+
+          <!-- Botão Depositar -->
+          <button 
+            @click="openDepositFlowFromModal" 
+            class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold px-5 py-3 rounded-lg text-base inline-flex items-center justify-center space-x-2 transition-all duration-200 shadow-[0_2px_8px_rgba(34,197,94,0.2)] hover:shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
+          >
+            <i class="fas fa-plus text-sm"></i>
+            <span>Depositar</span>
+          </button>
+
+          <!-- Outras opções -->
+          <div class="pt-4 border-t border-[#1C1C1C] space-y-2">
+            <a 
+              href="#" 
+              @click.prevent="switchAccountFromModal"
+              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg"
+            >
+              <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
+              Trocar de Conta
+            </a>
+            <a 
+              href="#" 
+              @click.prevent="goToSettings"
+              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg"
+            >
+              <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
+              Configurações
+            </a>
+            <a 
+              href="#" 
+              @click.prevent="disconnectAccountFromModal" 
+              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg"
+            >
+              <i class="fas fa-plug text-xs mr-3 text-[#7A7A7A]"></i>
+              Sair da Corretora
+            </a>
           </div>
         </div>
       </div>
@@ -189,6 +317,7 @@ export default {
     return {
       balanceHidden: false,
       showProfileDropdown: false,
+      showProfileModal: false,
       userProfilePictureUrl: null,
       showAccountModal: false,
       loadingAccounts: false,
@@ -304,6 +433,31 @@ export default {
     },
     toggleProfileDropdown() {
       this.showProfileDropdown = !this.showProfileDropdown;
+    },
+    toggleProfileModal() {
+      this.showProfileModal = !this.showProfileModal;
+    },
+    closeProfileModal() {
+      this.showProfileModal = false;
+    },
+    toggleMobileSidebar() {
+      this.$emit('toggle-sidebar');
+    },
+    openDepositFlowFromModal() {
+      this.closeProfileModal();
+      this.openDepositFlow();
+    },
+    switchAccountFromModal() {
+      this.closeProfileModal();
+      this.switchAccount();
+    },
+    goToSettings() {
+      this.closeProfileModal();
+      this.$router.push('/settings');
+    },
+    disconnectAccountFromModal() {
+      this.closeProfileModal();
+      this.disconnectAccount();
     },
     handleClickOutside(event) {
       const dropdown = document.getElementById('profileDropdown');
@@ -637,6 +791,74 @@ export default {
   border-bottom: none;
 }
 
+/* Mobile Header - Borda roxa no topo */
+.mobile-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #9333EA;
+  z-index: 1;
+}
+
+/* Desktop e Mobile Layouts */
+.desktop-nav {
+  display: flex;
+}
+
+.mobile-nav {
+  display: none;
+}
+
+.mobile-menu-btn {
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-logo {
+  display: flex;
+  align-items: center;
+  font-family: sans-serif;
+  font-weight: bold;
+}
+
+/* Modal do Perfil Mobile */
+.profile-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.6);
+  backdrop-filter: blur(4px);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.profile-modal-container {
+  background: #0E0E0E;
+  border: 1px solid #1C1C1C;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+  width: 100%;
+  max-width: 28rem;
+  max-height: 90vh;
+  overflow-y: auto;
+  animation: slideUp 0.3s ease-out;
+  margin: auto;
+}
+
 /* Modal de Seleção de Contas */
 .account-modal-overlay {
   position: fixed;
@@ -693,6 +915,14 @@ export default {
   #top-navbar {
     left: 0 !important;
     width: 100% !important;
+  }
+
+  .desktop-nav {
+    display: none;
+  }
+
+  .mobile-nav {
+    display: flex;
   }
 }
 

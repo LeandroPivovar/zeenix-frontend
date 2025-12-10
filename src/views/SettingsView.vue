@@ -12,15 +12,16 @@
 
     <!-- Main Content -->
     <div class="lg:ml-[240px] min-h-screen flex flex-col transition-all duration-300">
+      <TopNavbar 
+        :is-sidebar-collapsed="false"
+        :balance="0"
+        account-type="real"
+        @toggle-sidebar="toggleSidebar"
+      />
       <!-- Header -->
-      <header id="header" class="sticky top-0 z-30 glass-effect border-b border-zenix-border">
+      <header id="header" class="sticky top-0 z-30 glass-effect border-b border-zenix-border" style="margin-top: 60px;">
         <div class="px-4 lg:px-8 py-4 flex items-center justify-between">
           <div class="flex items-center space-x-4 lg:space-x-6">
-            <!-- Mobile Toggle -->
-            <button class="lg:hidden text-zenix-secondary hover:text-white" @click="toggleSidebar">
-              <i class="fas fa-bars text-lg"></i>
-            </button>
-            
           </div>
           <button 
             @click="saveAll" 
@@ -402,6 +403,7 @@
 
 <script>
 import AppSidebar from '../components/Sidebar.vue'
+import TopNavbar from '../components/TopNavbar.vue'
 import EditNameModal from '../components/modals/EditNameModal.vue'
 import EditEmailModal from '../components/modals/EditEmailModal.vue'
 import ChangePasswordModal from '../components/modals/ChangePasswordModal.vue'
@@ -412,6 +414,7 @@ export default {
   name: 'SettingsView',
   components: {
     AppSidebar,
+    TopNavbar,
     EditNameModal,
     EditEmailModal,
     ChangePasswordModal,

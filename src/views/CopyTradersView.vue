@@ -1,15 +1,5 @@
   <template>
     <div class="layout-copy-traders">
-      <button
-        class="hamburger-btn"
-        @click="toggleMobileSidebar"
-        :class="{ active: isSidebarOpen }"
-      >
-        <span></span>
-        <span></span>
-        <span></span>
-      </button>
-
       <div
         v-if="isSidebarOpen && isMobile"
         class="sidebar-overlay"
@@ -26,6 +16,7 @@
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="0"
         account-type="real"
+        @toggle-sidebar="toggleMobileSidebar"
       />
   
       <div class="box" style="margin-top: 60px;">
@@ -230,52 +221,6 @@
     transition: margin-left 0.3s ease, width 0.3s ease;
   }
 
-  /* Botão Hambúrguer */
-  .hamburger-btn {
-    display: none;
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1001;
-    background-color: #1c1c1c;
-    border: 1px solid #2c2c2c;
-    border-radius: 8px;
-    width: 45px;
-    height: 45px;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-
-  .hamburger-btn:hover {
-    background-color: #252525;
-    border-color: #3c3c3c;
-  }
-
-  .hamburger-btn span {
-    display: block;
-    width: 22px;
-    height: 2px;
-    background-color: #dfdfdf;
-    transition: all 0.3s ease;
-    border-radius: 2px;
-  }
-
-  .hamburger-btn.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-  }
-
-  .hamburger-btn.active span:nth-child(2) {
-    opacity: 0;
-  }
-
-  .hamburger-btn.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(6px, -6px);
-  }
-
   /* Overlay */
   .sidebar-overlay {
     display: none;
@@ -370,9 +315,6 @@
       padding: 0;
     }
 
-    .hamburger-btn {
-      display: flex;
-    }
 
     .sidebar-overlay {
       display: block;
@@ -422,15 +364,5 @@
       white-space: nowrap;
     }
 
-    .hamburger-btn {
-      width: 40px;
-      height: 40px;
-      top: 12px;
-      left: 12px;
-    }
-
-    .hamburger-btn span {
-      width: 20px;
-    }
   }
   </style>

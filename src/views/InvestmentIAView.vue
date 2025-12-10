@@ -5,7 +5,19 @@
             <div class="loader-spinner"></div>
         </div>
         
-        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
+        <!-- Overlay para fechar sidebar ao clicar fora (mobile) -->
+        <div 
+            v-if="isSidebarOpen" 
+            class="sidebar-overlay" 
+            @click="closeSidebar"
+        ></div>
+        
+        <AppSidebar 
+            :is-open="isSidebarOpen" 
+            :is-collapsed="isSidebarCollapsed" 
+            @toggle-collapse="toggleSidebarCollapse"
+            @close-sidebar="closeSidebar"
+        />
 
         <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
@@ -14,28 +26,42 @@
                 :account-type="isDemo ? 'demo' : 'real'"
                 :currency="accountCurrency"
                 @account-type-changed="handleAccountTypeChangeFromNavbar"
+                @toggle-sidebar="toggleSidebar"
             />
 
             <main class="main-content" style="margin-top: 60px;">
                 <!-- AI Vision Panel - Only show when IA is inactive -->
                 <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
-                    <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green">
-                        <div class="mb-6">
+                    <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
+                        <!-- Header Desktop -->
+                        <div class="mb-6 ai-vision-header-desktop">
                             <div class="text-left">
                                 <h1 class="text-xl font-bold text-zenix-text mb-1">Visão da IA | {{ selectedStrategyName }}</h1>
                                 <p class="text-sm text-zenix-secondary">Configure esta IA para iniciar operações</p>
                             </div>
                         </div>
+                        <!-- Header Mobile -->
+                        <div class="mb-6 ai-vision-header-mobile">
+                            <div class="flex items-center justify-between">
+                                <div class="text-left">
+                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Visão da IA</h1>
+                                    <p class="text-sm text-zenix-secondary">Configure esta IA para iniciar operações</p>
+                                </div>
+                                <div class="ai-chip-icon-mobile">
+                                    <i class="fas fa-microchip text-[#22C55E] text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
                         <div class="grid grid-cols-12 gap-5">
                             <!-- AI Visualization Area -->
-                            <div class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border-2 border-zenix-green/30 flex items-center justify-center relative">
+                            <div class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border-2 border-zenix-green/30 flex items-center justify-center relative ai-visualization-area">
                                 <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/5 via-transparent to-zenix-green/10"></div>
                                 <!-- Animated Grid Background -->
                                 <div class="absolute inset-0 opacity-20">
                                     <div id="i9dlnn" class="absolute inset-0"></div>
                                 </div>
                                 <!-- Central AI Core -->
-                                <div class="relative z-10 flex items-center justify-center" style="width: 100%; height: 100%;">
+                                <div class="relative z-10 flex items-center justify-center ai-core-mobile" style="width: 100%; height: 100%;">
                                     <!-- Outer Rotating Ring -->
                                     <div id="irazem" class="absolute w-40 h-40 border-2 border-zenix-green/30 rounded-full ai-glow-ring" style="opacity: 1;"></div>
                                     <!-- Middle Rotating Ring -->
@@ -66,29 +92,42 @@
                                 </div>
                             </div>
                             <!-- Status Cards -->
-                            <div class="col-span-7 grid grid-cols-2 gap-4">
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
-                                    <p class="text-[10px] text-zenix-secondary mb-2">Status</p>
-                                    <p class="text-base font-bold text-zenix-secondary">Aguardando configuração</p>
-                                    <p class="text-[10px] text-zenix-label mt-1">Configure para ativar esta IA</p>
-                                </div>
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
+                            <div class="col-span-7 grid grid-cols-2 gap-4 status-cards-container">
+                                <!-- Card 1: STATUS -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <img src="@/assets/icons/target-IA.svg" alt="Ativo da IA" class="asset-icon" style="width: 16px !important; height: 16px !important; display: block !important; opacity: 0.6 !important; visibility: visible !important;">
-                                        <p class="text-[10px] text-zenix-secondary">Ativo da IA</p>
+                                        <i class="fas fa-check-circle text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">STATUS</p>
                                     </div>
-                                    <p class="text-sm font-semibold text-zenix-secondary">Será exibido após configuração</p>
-                                    <p class="text-[10px] text-zenix-label mt-1">Defina os parâmetros para revelar</p>
+                                    <p class="text-base font-bold text-white status-value">Configurando</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Configure para ativar esta IA</p>
                                 </div>
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
-                                    <p class="text-[10px] text-zenix-secondary mb-2">Parâmetros</p>
-                                    <p class="text-base font-bold text-zenix-secondary">Não definidos</p>
-                                    <p class="text-[10px] text-zenix-label mt-1">Configure risco e entradas</p>
+                                <!-- Card 2: ALVO DA IA -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <img src="@/assets/icons/target-IA.svg" alt="Alvo da IA" class="asset-icon" style="width: 18px !important; height: 18px !important; display: block !important;">
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">ALVO DA IA</p>
+                                    </div>
+                                    <p class="text-base font-bold text-white status-value">Não definido</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Defina os parâmetros para revelar</p>
                                 </div>
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
-                                    <p class="text-[10px] text-zenix-secondary mb-2">Execução</p>
-                                    <p class="text-base font-bold text-zenix-secondary">IA Inativa</p>
-                                    <p class="text-[10px] text-zenix-label mt-1">Ativada após configuração</p>
+                                <!-- Card 3: PARÂMETROS -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-eye text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">PARÂMETROS</p>
+                                    </div>
+                                    <p class="text-base font-bold text-white status-value">Não definido</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Configure risco e entradas</p>
+                                </div>
+                                <!-- Card 4: EXECUÇÃO -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-bolt text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">EXECUÇÃO</p>
+                                    </div>
+                                    <p class="text-base font-bold text-white status-value">Automática</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Ativada após configuração</p>
                                 </div>
                             </div>
                         </div>
@@ -1049,6 +1088,10 @@ export default {
             this.isSidebarOpen = !this.isSidebarOpen;
         },
         
+        closeSidebar() {
+            this.isSidebarOpen = false;
+        },
+        
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         },
@@ -1288,7 +1331,7 @@ export default {
 
 .zenix-layout {
     min-height: 100vh;
-    background-color: #0B0B0B;
+    background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
     color: #DFDFDF;
 }
 
@@ -1445,13 +1488,14 @@ export default {
     color: #DFDFDF;
 }
 
-/* Main Content */
+/* Main Content - Desktop (sem gradiente) */
 .main-content {
     margin-top: 90px; /* Margem pequena entre conteúdo e header */
     padding: 1rem 20px; /* Padding reduzido */
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
+    background-color: transparent;
 }
 
 /* AI Vision Panel */
@@ -1464,7 +1508,7 @@ export default {
 }
 
 .ai-vision-card {
-    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1.5rem;
@@ -1476,7 +1520,7 @@ export default {
 
 .premium-card {
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
-    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 }
 
 .glow-green {
@@ -1485,7 +1529,7 @@ export default {
 
 /* Tailwind-like utility classes for AI Vision Panel */
 .bg-zenix-card {
-    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 }
 
 .bg-zenix-bg {
@@ -2418,7 +2462,7 @@ export default {
 }
 
 .status-info-card {
-    background-color: #0B0B0B;
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1rem;
@@ -2503,7 +2547,7 @@ export default {
 }
 
 .config-card {
-    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     border: 2px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1.25rem;
@@ -2514,7 +2558,7 @@ export default {
 
 /* Garantir que todos os cards tenham o mesmo gradiente */
 .config-card.premium-card {
-    background: linear-gradient(to bottom right, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 }
 
 .card-title {
@@ -3183,27 +3227,13 @@ export default {
 }
 
 @media (max-width: 768px) {
-    .content-wrapper {
-        margin-left: 0;
-        width: 100%;
-    }
-    
-    .content-wrapper.sidebar-collapsed {
-        margin-left: 0;
-        width: 100%;
-    }
-    
-    .main-content {
-        margin-top: 60px;
-        padding: 1rem 15px;
-        background: linear-gradient(135deg, rgba(16, 26, 16, 0.95) 0%, rgba(10, 20, 10, 0.98) 50%, #0B0B0B 100%) !important;
+    .zenix-layout {
+        background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%) !important;
         background-color: transparent !important;
-        background-blend-mode: normal;
         position: relative;
-        min-height: calc(100vh - 60px);
     }
     
-    .main-content::before {
+    .zenix-layout::before {
         content: '';
         position: absolute;
         top: 0;
@@ -3211,14 +3241,39 @@ export default {
         right: 0;
         bottom: 0;
         background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(1, 5, 2, 0.05) 50%, transparent 80%);
-        border-radius: 1rem;
         pointer-events: none;
         z-index: 0;
     }
     
-    .main-content > * {
+    .zenix-layout > * {
         position: relative;
         z-index: 1;
+    }
+    
+    .content-wrapper {
+        margin-left: 0;
+        width: 100%;
+        background: transparent !important;
+    }
+    
+    .content-wrapper.sidebar-collapsed {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    /* Gradiente no fundo da página - apenas mobile */
+    .main-content {
+        margin-top: 60px;
+        padding: 1rem 15px;
+        background: transparent !important;
+        position: relative;
+        min-height: calc(100vh - 60px);
+    }
+    
+    /* Gradiente nos cards de configuração - apenas mobile */
+    .config-card {
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
     }
     
     
@@ -3298,9 +3353,10 @@ export default {
         display: none !important;
     }
     
+    /* Gradiente nos cards de configuração - apenas mobile */
     .config-card {
         padding: 1rem;
-        background: linear-gradient(135deg, rgba(10, 26, 10, 0.95) 0%, rgba(5, 15, 5, 0.98) 50%, #0B0B0B 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     }
     
     .card-content {
@@ -3538,6 +3594,184 @@ export default {
 @keyframes spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+/* Sidebar Overlay - Fecha ao clicar fora */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(2px);
+    z-index: 998;
+    cursor: pointer;
+}
+
+/* Ajustes para mobile */
+@media (max-width: 1024px) {
+    .content-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    .content-wrapper.sidebar-collapsed {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    /* Sidebar como drawer no mobile */
+    :deep(.sidebar) {
+        position: fixed;
+        width: 280px !important;
+        height: 100vh;
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-out;
+    }
+    
+    :deep(.sidebar.is-open) {
+        transform: translateX(0);
+    }
+}
+
+/* Header Mobile - Escondido no desktop */
+#ai-vision-panel .ai-vision-header-mobile {
+    display: none;
+}
+
+/* Estilos específicos para Visão da IA no Mobile */
+@media (max-width: 768px) {
+    /* Remove o fundo do container principal da Visão da IA */
+    #ai-vision-panel .ai-vision-container {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+    
+    /* Esconde header desktop, mostra mobile */
+    #ai-vision-panel .ai-vision-header-desktop {
+        display: none !important;
+    }
+    
+    #ai-vision-panel .ai-vision-header-mobile {
+        display: block !important;
+        margin-bottom: 1.5rem;
+        background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, 0.3) 0%, rgba(0, 1, 0, 0.1) 70%, transparent 100%);
+        border-radius: 0.75rem;
+        padding: 1rem;
+    }
+    
+    #ai-vision-panel .ai-vision-header-mobile h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #DFDFDF;
+        margin-bottom: 0.25rem;
+    }
+    
+    #ai-vision-panel .ai-vision-header-mobile p {
+        font-size: 0.875rem;
+        color: #A1A1A1;
+    }
+    
+    #ai-vision-panel .ai-chip-icon-mobile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(34, 197, 94, 0.15);
+        padding: 15px;
+        border-radius: 50%;
+        width: auto;
+        height: auto;
+    }
+    
+    /* Esconde a área de visualização AI completa no mobile */
+    #ai-vision-panel .ai-visualization-area {
+        display: none !important;
+    }
+    
+    /* Ajusta o grid para ocupar toda a largura no mobile */
+    #ai-vision-panel .grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    #ai-vision-panel .col-span-7 {
+        grid-column: span 1 !important;
+    }
+    
+    /* Modifica os cards de status para mobile */
+    #ai-vision-panel .status-cards-container {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.75rem;
+    }
+    
+    #ai-vision-panel .status-card-mobile {
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
+        border: 1px solid rgba(28, 28, 28, 0.8) !important;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: left !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+    
+    /* Remove textos descritivos (status-description) no mobile */
+    #ai-vision-panel .status-description {
+        display: none !important;
+    }
+    
+    /* Alinha labels e valores à esquerda */
+    #ai-vision-panel .status-label {
+        text-align: left !important;
+        margin: 0 !important;
+        color: #FFFFFF !important;
+        font-size: 0.625rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    #ai-vision-panel .status-value {
+        text-align: left !important;
+        color: #FFFFFF !important;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+    }
+    
+    /* Ajusta os ícones nos cards */
+    #ai-vision-panel .status-card-mobile .flex.items-center {
+        justify-content: flex-start !important;
+        margin-bottom: 0.5rem;
+        align-items: center;
+    }
+    
+    #ai-vision-panel .status-card-mobile .flex.items-center i {
+        color: #22C55E !important;
+        font-size: 1.125rem;
+    }
+    
+    #ai-vision-panel .status-card-mobile .asset-icon {
+        opacity: 1 !important;
+        width: 18px !important;
+        height: 18px !important;
+        filter: brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(96%) contrast(88%);
+    }
+    
+    /* Esconde o Central AI Core no mobile */
+    #ai-vision-panel .ai-core-mobile {
+        display: none !important;
+    }
+    
+    /* Remove gap do grid no mobile */
+    #ai-vision-panel .grid.gap-5 {
+        gap: 0 !important;
     }
 }
 </style>
