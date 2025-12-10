@@ -475,7 +475,7 @@ export default {
 .container-sections{
 	padding: 0px;
 	margin-top: 0;
-	background: #0e0f0f;
+	background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	border-radius: 12px;
 	border: 1px solid #1C1C1C;
 }
@@ -604,7 +604,7 @@ span.icon-sumary-risk{
 	gap: 12px;
 }
 .option-card {
-	background-color: #0d0c0c;
+	background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	border: 1px solid #333;
 	padding: 15px 15px;
 	border-radius: 6px;
@@ -618,12 +618,12 @@ span.icon-sumary-risk{
 /* Estilo Hover */
 .option-card:hover:not(.selected) {
 	border-color: #555;
-	background-color: #1a1a1a;
+	background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 }
 /* Estilo Selecionado: Fundo preto e borda verde */
 .option-card.selected {
 	border: 1px solid #00ff66; 
-	background-color: #19723b25;
+	background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 }
 .option-card h3 {
 	font-size: 0.95em;
@@ -968,7 +968,7 @@ span.icon-sumary-risk{
 }
 
 .status-card {
-	background-color: #1a1a1a;
+	background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	border: 1px solid #2a2a2a;
 	border-radius: 8px;
 	padding: 20px;
@@ -1166,7 +1166,7 @@ span.icon-sumary-risk{
 	}
 
 	.option-card.selected{
-		background: linear-gradient(to bottom, #000602 0%, #081a0a 100%);
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	}
 
 	.option-card.selected h3{
@@ -1280,7 +1280,7 @@ span.icon-sumary-risk{
 	}
 
 	.container-sections{
-		background: linear-gradient(135deg, #0c150f 0%, #0f1311 50%, #0b0e0b 100%)!important;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	}	
 
 	.container-sections{

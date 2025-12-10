@@ -535,7 +535,7 @@
 
 	.metric-card,
 	.chart-section {
-		background: #0f0f0e;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
 		padding: 20px;
@@ -544,7 +544,7 @@
 
 	.history-section,
 	.actions-section {
-		background: #0f0f0e;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
 		padding: 20px;
@@ -552,7 +552,7 @@
 	}
 
 	.progress-card {
-		background: #0f0f0e;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
 		padding: 20px;
@@ -560,7 +560,7 @@
 	}
 
 	.agent-top {
-		background: #0f0f0e;
+		background: transparent;
 		padding: 30px;
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
@@ -700,7 +700,7 @@
 	}
 
 	.metric-card {
-		background: #0a0a0a;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 		border: 1px solid #1a1a1a;
 		border-radius: 6px;
 		padding: 20px;
@@ -1180,13 +1180,13 @@
 
 	.progress-card,
 	.chart-section {
-		background: #0f0f0e;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	}
 
 	.history-section,
 	.actions-section,
 	.metric-card {
-		background: #0f0f0e;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	}
 	@media (min-width: 1024px) {
 		.agent-title-mobile{
@@ -1344,7 +1344,7 @@
 		}
 
 		.mobile-history-card {
-			background: #0e0f0f;
+			background: #0b0b0b !important;
 			border: none;
 			border-radius: 8px;
 			
@@ -1572,7 +1572,7 @@
 		gap: 0;
 		border: 1px solid #333;
 		border-radius: 12px;
-		background: linear-gradient(135deg, #0c150f 0%, #0f1311 50%, #0b0e0b 100%)!important;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	}
 
 	.metric-card{
@@ -1717,7 +1717,7 @@
 		}
 
 		.mobile-performance-card {
-			background: #0e0f0f;
+			background: #0b0b0b !important;
 			border: 1px solid #1a1a1a;
 			border-radius: 8px;
 			padding: 15px;
