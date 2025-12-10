@@ -473,8 +473,19 @@ export default {
         }
 
         const orders = await res.json();
-        console.log('[OperationView] Últimas ordens recebidas do backend:', orders);
-        console.log('[OperationView] Número de ordens recebidas:', orders?.length || 0);
+                console.log('[OperationView] Últimas ordens recebidas do backend:', orders);
+                console.log('[OperationView] Número de ordens recebidas:', orders?.length || 0);
+                if (orders && orders.length > 0) {
+                  console.log('[OperationView] Primeira ordem exemplo:', {
+                    id: orders[0].id,
+                    entrySpot: orders[0].entrySpot,
+                    exitSpot: orders[0].exitSpot,
+                    entryValue: orders[0].entryValue,
+                    exitValue: orders[0].exitValue,
+                    symbol: orders[0].symbol,
+                    status: orders[0].status
+                  });
+                }
         
         // Função para mapear símbolo para nome de mercado
         const getMarketName = (symbol) => {
@@ -538,6 +549,17 @@ export default {
 
         console.log('[OperationView] Últimas ordens formatadas:', this.lastOrders);
         console.log('[OperationView] Total de ordens formatadas:', this.lastOrders.length);
+        if (this.lastOrders && this.lastOrders.length > 0) {
+          console.log('[OperationView] Primeira ordem formatada exemplo:', {
+            time: this.lastOrders[0].time,
+            buyPrice: this.lastOrders[0].buyPrice,
+            entryPrice: this.lastOrders[0].entryPrice,
+            exitPrice: this.lastOrders[0].exitPrice,
+            sellPrice: this.lastOrders[0].sellPrice,
+            market: this.lastOrders[0].market,
+            status: this.lastOrders[0].status
+          });
+        }
         
         // Forçar atualização reativa
         this.$forceUpdate();
