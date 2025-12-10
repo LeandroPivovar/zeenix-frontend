@@ -18,27 +18,13 @@
       </div>
       
       <div class="info-box success" v-if="emailVerified && !verificationCode">
-        <svg class="check-icon-svg" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <defs>
-            <filter id="glow-check">
-              <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
-              <feMerge>
-                <feMergeNode in="coloredBlur"/>
-                <feMergeNode in="SourceGraphic"/>
-              </feMerge>
-            </filter>
-          </defs>
-          <circle cx="12" cy="12" r="10" fill="#22C55E" opacity="0.4" filter="url(#glow-check)"/>
-          <circle cx="12" cy="12" r="8" fill="#22C55E" filter="url(#glow-check)"/>
-          <path d="M9 12l2 2 4-4" stroke="#FFFFFF" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none" filter="url(#glow-check)"/>
+        <svg class="check-icon-svg" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="14" fill="#1A3A1A"/>
+          <path d="M12 16l3 3 6-6" stroke="#22C55E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
         </svg>
         <p><strong>Email verificado!</strong> Verifique sua caixa de entrada e digite o código recebido.</p>
       </div>
       
-      <div class="info-box" v-if="emailVerified && verificationCode">
-        <p><strong>Conta DEMO liberada na hora!</strong> Você poderá operar imediatamente com $10.000 virtuais.</p>
-      </div>
-
       <!-- PASSO 1: Verificar Email -->
       <div v-if="!emailVerified" class="form">
         <div class="form-group">
@@ -107,67 +93,129 @@
       </div>
 
       <!-- PASSO 3: Preencher Dados e Criar Conta -->
-      <form v-if="emailVerified && verificationCode" @submit.prevent="handleSubmit" class="form">
+      <form v-if="emailVerified && verificationCode" @submit.prevent="handleSubmit" class="form form-step-3">
         <!-- DADOS PESSOAIS -->
         <h4 class="section-title">Dados Pessoais</h4>
         
-        <div class="row">
-          <div class="form-group">
-            <label>Nome <span class="required">*</span></label>
-            <input type="text" v-model="formData.nome" placeholder="João" required>
-          </div>
-          
-          <div class="form-group">
-            <label>Sobrenome <span class="required">*</span></label>
-            <input type="text" v-model="formData.sobrenome" placeholder="Silva" required>
+        <div class="form-group">
+          <label>Nome <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="text" v-model="formData.nome" placeholder="Seu nome" required>
           </div>
         </div>
         
         <div class="form-group">
-          <label>Email <span class="required">*</span></label>
-          <input type="email" v-model="formData.email" placeholder="seu@email.com" required>
+          <label>Sobrenome <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="7" r="4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="text" v-model="formData.sobrenome" placeholder="Seu sobrenome" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>E-mail <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <polyline points="22,6 12,13 2,6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="email" v-model="formData.email" placeholder="seu@email.com" required>
+          </div>
         </div>
         
         <div class="form-group">
           <label>WhatsApp/Telefone <span class="required">*</span></label>
-          <input type="tel" v-model="formData.telefone" placeholder="+55 11 99999-9999" @input="formatPhone" required>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="tel" v-model="formData.telefone" placeholder="+55 (11) 99999-9999" @input="formatPhone" required>
+          </div>
         </div>
         
         <div class="form-group">
           <label>Data de Nascimento <span class="required">*</span></label>
-          <input type="date" v-model="formData.dataNascimento" @change="validateAge" required>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="16" y1="2" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="date" v-model="formData.dataNascimento" @change="validateAge" required>
+          </div>
         </div>
+        
+        <div class="section-separator"></div>
         
         <!-- ENDEREÇO -->
         <h4 class="section-title">Endereço</h4>
         
         <div class="form-group">
           <label>Endereço Completo <span class="required">*</span></label>
-          <input type="text" v-model="formData.endereco" placeholder="Rua das Flores, 123, Apto 45" required>
-        </div>
-        
-        <div class="row">
-          <div class="form-group">
-            <label>Cidade <span class="required">*</span></label>
-            <input type="text" v-model="formData.cidade" placeholder="São Paulo" required>
-          </div>
-          
-          <div class="form-group">
-            <label>Estado <span class="required">*</span></label>
-            <input type="text" v-model="formData.estado" placeholder="SP" maxlength="2" @input="formData.estado = formData.estado.toUpperCase()" required>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <circle cx="12" cy="10" r="3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="text" v-model="formData.endereco" placeholder="Rua, número, complemento" required>
           </div>
         </div>
         
-        <div class="row">
-          <div class="form-group">
-            <label>CEP <span class="required">*</span></label>
-            <input type="text" v-model="formData.cep" placeholder="01000-000" maxlength="9" @input="formatCEP" required>
+        <div class="form-group">
+          <label>Cidade <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M3 21h18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M5 21V7l8-4v18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M19 21V11l-6-4" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="text" v-model="formData.cidade" placeholder="Sua cidade" required>
           </div>
-          
-          <div class="form-group">
-            <label>País <span class="required">*</span></label>
+        </div>
+        
+        <div class="form-group">
+          <label>Estado <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="8" y1="2" x2="8" y2="18" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="16" y1="6" x2="16" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="text" v-model="formData.estado" placeholder="Selecione" maxlength="2" @input="formData.estado = formData.estado.toUpperCase()" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>CEP <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <line x1="4" y1="9" x2="20" y2="9" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="4" y1="15" x2="20" y2="15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="10" y1="3" x2="8" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="16" y1="3" x2="14" y2="21" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+            <input type="text" v-model="formData.cep" placeholder="00000-000" maxlength="9" @input="formatCEP" required>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label>País <span class="required">*</span></label>
+          <div class="input-wrapper">
+            <svg class="input-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+              <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
             <select v-model="formData.pais" required>
-              <option value="">Selecione...</option>
+              <option value="">Selecione</option>
               <option value="br" selected>Brasil</option>
               <option value="pt">Portugal</option>
               <option value="ao">Angola</option>
@@ -175,6 +223,8 @@
             </select>
           </div>
         </div>
+        
+        <div class="section-separator"></div>
         
         <!-- DECLARAÇÕES -->
         <h4 class="section-title">Declarações</h4>
@@ -205,10 +255,11 @@
         <div v-if="error" class="error-box">{{ error }}</div>
         
         <button type="submit" class="submit-btn" :disabled="loading">
+          <svg class="shield-icon-btn" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L4 5v6c0 5.55 3.84 10.74 8 12 4.16-1.26 8-6.45 8-12V5l-8-3z" fill="currentColor" fill-opacity="0.2" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
           {{ loading ? 'Criando contas...' : 'Criar Conta DEMO + REAL' }}
         </button>
-        
-        <p class="info-text">Leva apenas 2 minutos</p>
       </form>
     </div>
   </div>
@@ -650,14 +701,22 @@ export default {
 }
 
 .info-box.success {
-  background: rgba(34, 197, 94, 0.3);
-  border-left: 4px solid #22C55E;
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.3);
+  border-radius: 8px;
+  text-align: left;
 }
 
-.info-icon-svg,
-.check-icon-svg {
+.info-icon-svg {
   width: 24px;
   height: 24px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.check-icon-svg {
+  width: 40px;
+  height: 40px;
   flex-shrink: 0;
   margin-top: 2px;
 }
@@ -672,6 +731,13 @@ export default {
   font-size: 16px;
   font-weight: 600;
   margin: 25px 0 15px 0;
+  text-align: left;
+}
+
+@media (max-width: 768px) {
+  .inline-mode .form-step-3 .section-title {
+    color: #FFFFFF !important;
+  }
 }
 
 .form-group {
@@ -804,6 +870,53 @@ small {
   padding-left: 45px !important;
 }
 
+/* Input wrapper para passo 3 */
+.input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.input-icon {
+  position: absolute;
+  left: 15px;
+  width: 18px;
+  height: 18px;
+  color: #8D8D8D;
+  z-index: 1;
+  pointer-events: none;
+  top: 50%;
+  transform: translateY(-50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.input-wrapper input,
+.input-wrapper select {
+  padding-left: 45px !important;
+  width: 100%;
+}
+
+.section-separator {
+  height: 2px;
+  background: #1C1C1C;
+  margin: 20px 0;
+  width: 100%;
+}
+
+.shield-icon-btn {
+  width: 20px;
+  height: 20px;
+  stroke: #000;
+}
+
+.info-box-external {
+  margin-top: 15px;
+  margin-bottom: 0;
+  display: none;
+}
+
 .checkbox-group {
   background: #0E0E0E;
   padding: 15px;
@@ -828,7 +941,32 @@ input[type="checkbox"] {
   width: 18px;
   height: 18px;
   cursor: pointer;
-  accent-color: #22C55E;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  background-color: #2C2C2C;
+  border: 1px solid #FFFFFF;
+  border-radius: 3px;
+  position: relative;
+  flex-shrink: 0;
+}
+
+input[type="checkbox"]:checked {
+  background-color: #22C55E;
+  border-color: #22C55E;
+}
+
+input[type="checkbox"]:checked::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 4px;
+  height: 8px;
+  border: solid #FFFFFF;
+  border-width: 0 2px 2px 0;
+  transform: translate(-50%, -60%) rotate(45deg);
 }
 
 .checkbox-item label {
@@ -836,6 +974,7 @@ input[type="checkbox"] {
   font-weight: 400;
   font-size: 13px;
   cursor: pointer;
+  color: #DFDFDF;
 }
 
 .checkbox-item label a {
@@ -1038,6 +1177,116 @@ input[type="checkbox"] {
     margin-bottom: 15px;
   }
   
+  /* Estilos específicos para passo 3 no mobile */
+  .inline-mode .form-step-3 .form-group {
+    margin-bottom: 10px !important;
+  }
+  
+  .inline-mode .form-step-3 .section-title {
+    margin: 20px 0 12px 0 !important;
+    font-size: 15px !important;
+  }
+  
+  .inline-mode .form-step-3 .input-wrapper input[type="text"],
+  .inline-mode .form-step-3 .input-wrapper input[type="email"],
+  .inline-mode .form-step-3 .input-wrapper input[type="tel"],
+  .inline-mode .form-step-3 .input-wrapper input[type="date"],
+  .inline-mode .form-step-3 .input-wrapper select {
+    padding: 15px 12px 15px 40px !important;
+    font-size: 13px !important;
+    margin-bottom: 0 !important;
+  }
+  
+  .inline-mode .form-step-3 .input-icon {
+    left: 12px !important;
+    width: 16px !important;
+    height: 16px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+  }
+  
+  .inline-mode .form-step-3 .section-separator {
+    margin: 20px 0 !important;
+    height: 2px !important;
+    background: #272727 !important;
+  }
+  
+  .inline-mode .form-step-3 .form-group {
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+  
+  .inline-mode .form-step-3 .checkbox-group {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+    margin-bottom: 20px !important;
+  }
+  
+  .inline-mode .form-step-3 .checkbox-item {
+    margin-bottom: 16px !important;
+  }
+  
+  .inline-mode .form-step-3 .checkbox-item:last-child {
+    margin-bottom: 0 !important;
+  }
+  
+  .inline-mode .form-step-3 input[type="checkbox"] {
+    width: 20px !important;
+    height: 20px !important;
+    margin-right: 12px !important;
+    margin-top: 2px !important;
+    appearance: none !important;
+    -webkit-appearance: none !important;
+    -moz-appearance: none !important;
+    background-color: #2C2C2C !important;
+    border: 1px solid #FFFFFF !important;
+    border-radius: 3px !important;
+    position: relative !important;
+  }
+
+  .inline-mode .form-step-3 input[type="checkbox"]:checked {
+    background-color: #22C55E !important;
+    border-color: #22C55E !important;
+  }
+
+  .inline-mode .form-step-3 input[type="checkbox"]:checked::after {
+    content: '' !important;
+    position: absolute !important;
+    left: 50% !important;
+    top: 50% !important;
+    width: 4px !important;
+    height: 8px !important;
+    border: solid #FFFFFF !important;
+    border-width: 0 2px 2px 0 !important;
+    transform: translate(-50%, -60%) rotate(45deg) !important;
+  }
+  
+  .inline-mode .form-step-3 .checkbox-item label {
+    font-size: 14px !important;
+    line-height: 1.5 !important;
+    color: #DFDFDF !important;
+  }
+  
+  
+  .inline-mode .form-step-3 .checkbox-item label a {
+    color: #22C55E !important;
+    text-decoration: none !important;
+  }
+  
+  .inline-mode .form-step-3 .checkbox-group {
+    margin-bottom: 15px !important;
+    padding: 12px !important;
+  }
+  
+  .inline-mode .form-step-3 .submit-btn {
+    padding: 12px;
+    font-size: 14px;
+    border-radius: 12px;
+    margin: 0;
+    color: white;
+  }
+  
   .inline-mode .form-group {
     margin-bottom: 12px;
   }
@@ -1065,12 +1314,51 @@ input[type="checkbox"] {
     margin-bottom: 15px;
     border: 2px solid #143c26!important;
     background: #101c18!important;
-
     text-align: left;
     color: rgb(209, 209, 209)!important;
     border-radius: 12px;
   }
 
+  .info-box.success {
+    background: rgba(34, 197, 94, 0.15) !important;
+    border: 1px solid rgba(34, 197, 94, 0.3) !important;
+    border-radius: 8px !important;
+    text-align: left !important;
+  }
+  
+  .info-box-external {
+    margin-top: 0 !important;
+    margin-bottom: 15px !important;
+    padding: 12px 15px !important;
+    border-radius: 12px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+  
+  .inline-mode .info-box-external {
+    display: flex !important;
+  }
+  
+  .inline-mode .form-step-3 .section-title {
+    text-align: left !important;
+  }
+  
+  .info-box-external .check-icon-svg {
+    width: 20px !important;
+    height: 20px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .info-box-external p {
+    width: 100% !important;
+    margin: 0 !important;
+  }
+  
+  .info-box-external strong {
+    color: #22C55E !important;
+  }
+  
   .info-box strong{
     color: white!important;
   }
@@ -1079,7 +1367,12 @@ input[type="checkbox"] {
     width: 80%;
   }
   
-
+  /* Centralizar SVGs nos passos 1 e 2 */
+  .inline-mode .envelope-icon,
+  .inline-mode .shield-icon {
+    top: 50% !important;
+    transform: translateY(-70%) !important;
+  }
   
 }
 </style>
