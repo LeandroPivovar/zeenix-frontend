@@ -330,35 +330,6 @@
           <p v-if="showSuccessMessage" class="text-sm text-zenix-green">Operação executada com sucesso!</p>
           <p v-if="showErrorMessage" class="text-sm text-red-500">Erro ao executar operação</p>
           
-          <!-- Last Orders Section -->
-          <div v-if="tradeResults && tradeResults.length > 0" class="last-orders-section">
-            <div class="last-orders-header">
-              <h4 class="last-orders-title">
-                <i class="fas fa-history text-zenix-green mr-2"></i>Últimas Ordens
-              </h4>
-            </div>
-            <div class="orders-list">
-              <div
-                v-for="(order, index) in tradeResults.slice(0, 10)"
-                :key="index"
-                class="order-item"
-              >
-                <div class="order-item-header">
-                  <span class="order-symbol">{{ order.symbol || order.direction || 'N/A' }}</span>
-                  <span class="order-type" :class="order.direction === 'CALL' ? 'call' : 'put'">
-                    {{ order.direction || 'N/A' }}
-                  </span>
-                </div>
-                <div class="order-details">
-                  <span>Compra: ${{ (order.buyPrice || 0).toFixed(2) }}</span>
-                  <span v-if="order.sellPrice">Venda: ${{ order.sellPrice.toFixed(2) }}</span>
-                </div>
-                <div v-if="order.profit !== null && order.profit !== undefined" class="order-profit" :class="order.profit >= 0 ? 'positive' : 'negative'">
-                  P&L: ${{ order.profit >= 0 ? '+' : '' }}{{ order.profit.toFixed(2) }}
-                </div>
-              </div>
-            </div>
-          </div>
         </div>
       </div>
       
@@ -3476,27 +3447,6 @@ export default {
   }
 }
 
-/* Last Orders Section */
-.last-orders-section {
-  margin-top: 20px;
-  padding-top: 20px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
-}
-
-.last-orders-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 16px;
-}
-
-.last-orders-title {
-  font-size: 14px;
-  font-weight: 600;
-  color: #f8fafc;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
 
 .orders-list {
   display: flex;
@@ -3506,66 +3456,6 @@ export default {
   overflow-y: auto;
 }
 
-.order-item {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  padding: 12px;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.order-item-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.order-symbol {
-  font-size: 12px;
-  font-weight: 600;
-  color: #f8fafc;
-}
-
-.order-type {
-  padding: 2px 8px;
-  border-radius: 4px;
-  font-size: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-}
-
-.order-type.call {
-  background: rgba(34, 197, 94, 0.2);
-  color: #22C55E;
-}
-
-.order-type.put {
-  background: rgba(239, 68, 68, 0.2);
-  color: #ef4444;
-}
-
-.order-details {
-  display: flex;
-  justify-content: space-between;
-  font-size: 11px;
-  color: rgba(255, 255, 255, 0.6);
-}
-
-.order-profit {
-  font-size: 12px;
-  font-weight: 600;
-  margin-top: 4px;
-}
-
-.order-profit.positive {
-  color: #22C55E;
-}
-
-.order-profit.negative {
-  color: #ef4444;
-}
 
 @keyframes modalSlideIn {
   from {

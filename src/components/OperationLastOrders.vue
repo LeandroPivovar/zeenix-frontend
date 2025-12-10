@@ -7,7 +7,7 @@
         <p class="empty-submessage">Suas operações aparecerão aqui após serem executadas</p>
       </div>
       
-      <div v-else class="orders-list-container">
+      <div v-else class="orders-table-container">
         <div class="orders-header">
           <h3 class="orders-title">
             <i class="fas fa-history mr-2" style="color: #22C55E;"></i>Últimas Ordens
@@ -15,38 +15,50 @@
           <span class="orders-count">{{ tradeResults.length }} {{ tradeResults.length === 1 ? 'operação' : 'operações' }}</span>
         </div>
         
-        <div class="orders-list">
-          <div
-            v-for="(order, index) in tradeResults"
-            :key="index"
-            class="order-item"
-          >
-            <div class="order-item-header">
-              <span class="order-time">{{ order.time || 'N/A' }}</span>
-              <span class="order-type" :class="order.direction === 'CALL' || order.type === 'CALL' ? 'call' : 'put'">
-                {{ order.direction || order.type || 'N/A' }}
-              </span>
-            </div>
-            <div class="order-item-details">
-              <div class="order-detail-row">
-                <span class="order-label">Preço de Compra:</span>
-                <span class="order-value">${{ (order.buyPrice || order.price || 0).toFixed(2) }}</span>
-              </div>
-              <div v-if="order.sellPrice" class="order-detail-row">
-                <span class="order-label">Preço de Venda:</span>
-                <span class="order-value">${{ order.sellPrice.toFixed(2) }}</span>
-              </div>
-              <div v-if="order.profit !== null && order.profit !== undefined" class="order-detail-row">
-                <span class="order-label">P&L:</span>
-                <span class="order-value" :class="order.profit >= 0 ? 'profit' : 'loss'">
-                  {{ order.profit >= 0 ? '+' : '' }}${{ order.profit.toFixed(2) }}
-                </span>
-              </div>
-            </div>
-            <div v-if="order.status" class="order-status" :class="order.status.toLowerCase()">
-              {{ order.status }}
-            </div>
-          </div>
+        <div class="table-wrapper">
+          <table class="orders-table">
+            <thead>
+              <tr>
+                <th>Horário</th>
+                <th>Tipo</th>
+                <th>Preço Compra</th>
+                <th>Preço Venda</th>
+                <th>P&L</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                v-for="(order, index) in tradeResults"
+                :key="index"
+                class="order-row"
+              >
+                <td class="order-time">{{ order.time || 'N/A' }}</td>
+                <td>
+                  <span class="order-type" :class="order.direction === 'CALL' || order.type === 'CALL' ? 'call' : 'put'">
+                    {{ order.direction || order.type || 'N/A' }}
+                  </span>
+                </td>
+                <td class="order-value">${{ (order.buyPrice || order.price || 0).toFixed(2) }}</td>
+                <td class="order-value">
+                  <span v-if="order.sellPrice">${{ order.sellPrice.toFixed(2) }}</span>
+                  <span v-else class="text-muted">-</span>
+                </td>
+                <td>
+                  <span v-if="order.profit !== null && order.profit !== undefined" class="order-profit" :class="order.profit >= 0 ? 'profit' : 'loss'">
+                    {{ order.profit >= 0 ? '+' : '' }}${{ order.profit.toFixed(2) }}
+                  </span>
+                  <span v-else class="text-muted">-</span>
+                </td>
+                <td>
+                  <span v-if="order.status" class="order-status" :class="order.status.toLowerCase()">
+                    {{ order.status }}
+                  </span>
+                  <span v-else class="text-muted">-</span>
+                </td>
+              </tr>
+            </tbody>
+          </table>
         </div>
       </div>
     </div>
@@ -116,7 +128,7 @@ export default {
   line-height: 1.5;
 }
 
-.orders-list-container {
+.orders-table-container {
   width: 100%;
   height: 100%;
   display: flex;
@@ -151,38 +163,55 @@ export default {
   font-weight: 500;
 }
 
-.orders-list {
+.table-wrapper {
   flex: 1;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
-  gap: 1rem;
+  overflow-x: auto;
 }
 
-.order-item {
+.orders-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.875rem;
+}
+
+.orders-table thead {
+  position: sticky;
+  top: 0;
+  background: #0E0E0E;
+  z-index: 10;
+}
+
+.orders-table th {
+  padding: 0.75rem 1rem;
+  text-align: left;
+  font-weight: 600;
+  color: #7A7A7A;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.orders-table td {
+  padding: 0.875rem 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  color: #DFDFDF;
+}
+
+.order-row {
+  transition: background-color 0.2s;
+}
+
+.order-row:hover {
   background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 0.5rem;
-  padding: 1rem;
-  transition: all 0.2s;
-}
-
-.order-item:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(34, 197, 94, 0.3);
-}
-
-.order-item-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 0.75rem;
 }
 
 .order-time {
   font-size: 0.875rem;
   color: #7A7A7A;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .order-type {
@@ -192,6 +221,7 @@ export default {
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  display: inline-block;
 }
 
 .order-type.call {
@@ -206,36 +236,28 @@ export default {
   border: 1px solid rgba(239, 68, 68, 0.3);
 }
 
-.order-item-details {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
-}
-
-.order-detail-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.order-label {
-  font-size: 0.8125rem;
-  color: #7A7A7A;
-}
-
 .order-value {
   font-size: 0.875rem;
   font-weight: 600;
   color: #DFDFDF;
 }
 
-.order-value.profit {
+.order-profit {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.order-profit.profit {
   color: #22C55E;
 }
 
-.order-value.loss {
+.order-profit.loss {
   color: #ef4444;
+}
+
+.text-muted {
+  color: #7A7A7A;
+  font-style: italic;
 }
 
 .order-status {
@@ -245,7 +267,6 @@ export default {
   font-weight: 600;
   text-transform: uppercase;
   display: inline-block;
-  width: fit-content;
 }
 
 .order-status.won,
