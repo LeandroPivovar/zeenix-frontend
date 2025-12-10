@@ -525,10 +525,10 @@ export default {
           }),
           type: order.contractType || 'CALL',
           direction: order.contractType || 'CALL',
-          buyPrice: order.entryValue || null,
-          entryPrice: order.entryValue || null,
-          sellPrice: order.exitValue || null,
-          exitPrice: order.exitValue || null,
+          buyPrice: order.entryValue || null, // Valor investido (stake)
+          entryPrice: order.entrySpot || null, // Preço de entrada (spot)
+          sellPrice: order.exitValue || null, // Valor recebido na venda
+          exitPrice: order.exitSpot || null, // Preço de saída (spot)
           profit: order.profit != null ? Number(order.profit) : null,
           currency: 'USD',
           status: order.status || 'EXECUTED',

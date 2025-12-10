@@ -19,13 +19,14 @@
           <table class="orders-table">
             <thead>
               <tr>
-                <th>Horário</th>
-                <th>Mercado</th>
-                <th>Tipo</th>
-                <th>Preço Entrada</th>
-                <th>Preço Saída</th>
-                <th>P&L</th>
-                <th>Status</th>
+                <th style="text-align: left;">Horário</th>
+                <th style="text-align: left;">Mercado</th>
+                <th style="text-align: center;">Tipo</th>
+                <th style="text-align: right;">Valor Entrada</th>
+                <th style="text-align: right;">Preço Entrada</th>
+                <th style="text-align: right;">Preço Saída</th>
+                <th style="text-align: right;">P&L</th>
+                <th style="text-align: center;">Status</th>
               </tr>
             </thead>
             <tbody>
@@ -34,25 +35,29 @@
                 :key="index"
                 class="order-row"
               >
-                <td class="order-time">{{ order.time || 'N/A' }}</td>
-                <td class="order-market">{{ order.market || 'N/A' }}</td>
-                <td>
+                <td class="order-time" style="text-align: left;">{{ order.time || 'N/A' }}</td>
+                <td class="order-market" style="text-align: left;">{{ order.market || 'N/A' }}</td>
+                <td style="text-align: center;">
                   <span class="order-type" :class="order.direction === 'CALL' || order.type === 'CALL' ? 'call' : 'put'">
                     {{ order.direction || order.type || 'N/A' }}
                   </span>
                 </td>
-                <td class="order-value">${{ formatPrice(order.buyPrice || order.entryPrice || order.price) }}</td>
-                <td class="order-value">
-                  <span v-if="order.sellPrice || order.exitPrice">${{ formatPrice(order.sellPrice || order.exitPrice) }}</span>
+                <td class="order-value" style="text-align: right;">${{ formatPrice(order.buyPrice || order.price) }}</td>
+                <td class="order-value" style="text-align: right;">
+                  <span v-if="order.entryPrice">${{ formatPrice(order.entryPrice) }}</span>
                   <span v-else class="text-muted">-</span>
                 </td>
-                <td>
+                <td class="order-value" style="text-align: right;">
+                  <span v-if="order.exitPrice">${{ formatPrice(order.exitPrice) }}</span>
+                  <span v-else class="text-muted">-</span>
+                </td>
+                <td style="text-align: right;">
                   <span v-if="order.profit !== null && order.profit !== undefined" class="order-profit" :class="order.profit >= 0 ? 'profit' : 'loss'">
                     {{ order.profit >= 0 ? '+' : '' }}${{ formatPrice(order.profit) }}
                   </span>
                   <span v-else class="text-muted">-</span>
                 </td>
-                <td>
+                <td style="text-align: center;">
                   <span v-if="order.status" class="order-status" :class="order.status.toLowerCase()">
                     {{ order.status }}
                   </span>
@@ -198,7 +203,6 @@ export default {
 
 .orders-table th {
   padding: 0.75rem 1rem;
-  text-align: left;
   font-weight: 600;
   color: #7A7A7A;
   font-size: 0.75rem;

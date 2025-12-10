@@ -1212,6 +1212,11 @@ export default {
           value: finalValue
         });
         console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: finalTime, value: finalValue });
+        
+        // Atualizar linha de entrada para terminar no último tick
+        if (this.entrySpotLine && this.activeContract) {
+          this.updateEntrySpotLine();
+        }
       } catch (error) {
         console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', error, { time: brasiliaEpoch, value: numValue });
       }
@@ -2337,7 +2342,7 @@ export default {
         // Remover linha anterior se existir
         this.removeEntrySpotLine();
         
-        const entryColor = '#94a3b8'; // Cinza para linha de referência
+        const entryColor = '#ef4444'; // Vermelho para linha de entrada
         const entryTimeUnix = Math.floor(Number(entryTime)) - (3 * 60 * 60); // Converter para horário de Brasília
         
         console.log('[Chart] Adicionando linha de entrada:', {
