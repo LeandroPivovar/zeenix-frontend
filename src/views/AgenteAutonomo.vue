@@ -4,16 +4,6 @@
         class="layout-agente-autnomo"
         :class="{ 'sidebar-collapsed': isSidebarCollapsed }"
       >
-        <button
-          class="hamburger-btn"
-          @click="toggleMobileSidebar"
-          :class="{ active: isSidebarOpen }"
-        >
-          <span></span>
-          <span></span>
-          <span></span>
-        </button>
-  
         <div
           v-if="isSidebarOpen && isMobile"
           class="sidebar-overlay"
@@ -34,6 +24,7 @@
           :account-type="isDemo ? 'demo' : 'real'"
           :currency="accountCurrency"
           @account-type-changed="handleAccountTypeChange"
+          @toggle-sidebar="toggleMobileSidebar"
         />
   
         <div class="container-componentes">
@@ -527,7 +518,7 @@
   <style scoped>
   /* Layout Principal */
   .layout-agente-autnomo {
-    background-color: #0a0b0a;
+    background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
     min-height: 100vh;
     transition: margin-left 0.3s ease;
     padding-bottom: 80px;
@@ -556,52 +547,6 @@
     padding-right: 60px;
     padding-bottom: 20px;
     margin-top: 60px;
-  }
-  
-  /* Botão Hambúrguer */
-  .hamburger-btn {
-    display: none;
-    position: fixed;
-    top: 15px;
-    left: 15px;
-    z-index: 1001; /* Z-index MAIOR que o da sidebar (1000) */
-    background-color: #1c1c1c;
-    border: 1px solid #2c2c2c;
-    border-radius: 8px;
-    width: 45px;
-    height: 45px;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    gap: 5px;
-    cursor: pointer;
-    transition: all 0.3s ease;
-  }
-  
-  .hamburger-btn:hover {
-    background-color: #252525;
-    border-color: #3c3c3c;
-  }
-  
-  .hamburger-btn span {
-    display: block;
-    width: 22px;
-    height: 2px;
-    background-color: #dfdfdf;
-    transition: all 0.3s ease;
-    border-radius: 2px;
-  }
-  
-  .hamburger-btn.active span:nth-child(1) {
-    transform: rotate(45deg) translate(5px, 5px);
-  }
-  
-  .hamburger-btn.active span:nth-child(2) {
-    opacity: 0;
-  }
-  
-  .hamburger-btn.active span:nth-child(3) {
-    transform: rotate(-45deg) translate(6px, -6px);
   }
   
   /* Overlay */
@@ -790,9 +735,6 @@
       width: 100% !important;
     }
   
-    .hamburger-btn {
-      display: flex; /* Mostra o botão hambúrguer */
-    }
   
     .sidebar-overlay {
       display: block; /* Permite que o overlay apareça (o v-if controla) */
@@ -827,7 +769,7 @@
     .container-componentes {
       padding: 0 1rem 20px 1rem;
       margin-top: 50px;
-      background: linear-gradient(135deg, rgba(16, 26, 16, 0.95) 0%, rgba(10, 20, 10, 0.98) 50%, #0B0B0B 100%) !important;
+      background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%) !important;
       background-blend-mode: normal;
       position: relative;
       min-height: calc(100vh - 50px);
@@ -887,16 +829,6 @@
   
   /* Responsividade Mobile Pequeno */
   @media screen and (max-width: 480px) {
-    .hamburger-btn {
-      width: 40px;
-      height: 40px;
-      top: 12px;
-      left: 12px;
-    }
-  
-    .hamburger-btn span {
-      width: 20px;
-    }
   
     .header-content {
       padding: 0.75rem 12px 0.75rem 60px;
@@ -915,7 +847,7 @@
     }
   
     .layout-agente-autnomo {
-        background: #0b0b0b;
+        background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
     }
   }
   </style>

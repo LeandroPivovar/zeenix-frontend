@@ -6,10 +6,6 @@
             @click="isMobileMenuOpen = false"
         ></div>
 
-        <button class="mobile-hamburger-btn" @click="toggleMobileMenu">
-            <i class="fas fa-bars"></i>
-        </button>
-
         <AppSidebar 
             class="app-sidebar"
             :class="{ 'mobile-open': isMobileMenuOpen }"
@@ -26,6 +22,7 @@
                 :account-type="isDemo ? 'demo' : 'real'"
                 :currency="accountCurrency"
                 @account-type-changed="handleAccountTypeChange"
+                @toggle-sidebar="toggleMobileMenu"
             />
 
             <main class="plans-content" style="margin-top: 60px;">

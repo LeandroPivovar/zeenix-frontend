@@ -7,11 +7,6 @@
       @click="closeMobileMenu"
     ></div>
 
-    <!-- Botão Hambúrguer para Mobile -->
-    <button class="mobile-hamburger-btn" @click="toggleMobileMenu" aria-label="Menu">
-      <i class="fas fa-bars"></i>
-    </button>
-
     <!-- Sidebar -->
     <AppSidebar 
       :class="{ 'mobile-open': isMobileMenuOpen && isMobile }"
@@ -28,6 +23,7 @@
         :account-type="isDemo ? 'demo' : 'real'"
         :currency="accountCurrency"
         @account-type-changed="handleAccountTypeChange"
+        @toggle-sidebar="toggleMobileMenu"
       />
       <main class="main-content" style="margin-top: 60px;">
         <!-- Immediate Support Section -->
@@ -992,29 +988,6 @@ export default {
 
 /* MOBILE MENU & RESPONSIVIDADE */
 /* Botão Hambúrguer (Mobile Only) */
-.mobile-hamburger-btn {
-  display: none;
-  position: fixed;
-  top: 12px;
-  left: 15px;
-  z-index: 60;
-  background-color: #0E0E0E;
-  border: 1px solid #1C1C1C;
-  color: #DFDFDF;
-  width: 40px;
-  height: 40px;
-  border-radius: 8px;
-  cursor: pointer;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
-  transition: all 0.3s ease;
-}
-
-.mobile-hamburger-btn:hover {
-  border-color: #22C55E;
-  color: #22C55E;
-}
 
 /* Overlay Escuro */
 .sidebar-overlay {
@@ -1035,9 +1008,6 @@ export default {
 
 @media (max-width: 768px) {
   /* Mostra hambúrguer */
-  .mobile-hamburger-btn {
-    display: flex;
-  }
 
   /* Conteúdo Principal expande 100% */
   .main-content-wrapper,
@@ -1208,9 +1178,6 @@ export default {
     transform: none !important;
   }
   
-  .mobile-hamburger-btn {
-    display: none !important;
-  }
   
   .sidebar-overlay {
     display: none !important;
