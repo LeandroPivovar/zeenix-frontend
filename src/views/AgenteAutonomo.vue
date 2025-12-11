@@ -93,6 +93,7 @@
         },
         apiTradeHistory: [],
         pollingInterval: null,
+        timeUpdateInterval: null,
   
         // Dados de simulação para o gráfico
         realTimeOperations: [
@@ -136,37 +137,46 @@
       },
   
       agenteData() {
-        // Calcular tempo ativo diretamente aqui
+        // Calcular tempo ativo baseado na data da sessão atual (sessionDate)
+        // Se não houver sessionDate, usar createdAt como fallback
         let tempoAtivo = "0h 0m";
-        if (this.agentConfig) {
-          const startDate = this.agentConfig.createdAt || this.agentConfig.lastTradeAt;
+        if (this.agentConfig && this.agenteEstaAtivo) {
+          const startDate = this.agentConfig.sessionDate || this.agentConfig.createdAt;
           if (startDate) {
             try {
               const startTime = new Date(startDate);
               const now = new Date();
               const diffMs = now - startTime;
-              const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-              const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-              tempoAtivo = `${diffHours}h ${diffMinutes}m`;
+              if (diffMs > 0) {
+                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                tempoAtivo = `${diffHours}h ${diffMinutes}m`;
+              }
             } catch (error) {
+              console.error('[AgenteAutonomo] Erro ao calcular tempo ativo:', error);
               tempoAtivo = "0h 0m";
             }
           }
         }
         
+        // Usar dados do backend quando disponíveis
+        const operacoesHoje = this.agentConfig?.totalTrades || this.operacoesHoje || 0;
+        const dailyProfit = this.agentConfig?.dailyProfit || this.dailyProfit || 0;
+        const dailyLoss = this.agentConfig?.dailyLoss || 0;
+        
         return {
-          estrategia: this.estrategia,
-          mercado: this.mercado,
-          risco: this.risco,
+          estrategia: this.agentConfig?.strategy ? this.getStrategyTitle(this.agentConfig.strategy) : this.estrategia,
+          mercado: this.agentConfig?.symbol ? this.getMarketTitle(this.agentConfig.symbol) : this.mercado,
+          risco: this.agentConfig?.riskLevel ? this.getRiskTitle(this.agentConfig.riskLevel) : this.risco,
           goalValue: this.goalValue,
           stopValue: this.stopValue,
-          dailyProfit: this.dailyProfit,
-          dailyChange: this.dailyChange,
-          accumulatedLoss: this.sessionStats?.totalLoss || 0,
-          accumulatedChange: this.accumulatedChange,
+          dailyProfit: dailyProfit,
+          dailyChange: this.goalValue > 0 ? (dailyProfit / this.goalValue) * 100 : 0,
+          accumulatedLoss: dailyLoss,
+          accumulatedChange: this.stopValue > 0 ? (dailyLoss / this.stopValue) * 100 : 0,
           lastExecutionTime: this.lastExecutionTime,
           tempoAtivo: tempoAtivo,
-          operacoesHoje: this.operacoesHoje,
+          operacoesHoje: operacoesHoje,
           realTimeOperations: this.realTimeOperations,
           operationHistory: this.operationHistory,
           agentActions: this.agentActions,
@@ -396,11 +406,19 @@
             if (result.data.dailyLossLimit) {
               this.stopValue = result.data.dailyLossLimit;
             }
+            // Atualizar dados de operações e lucro/perda do backend
+            if (result.data.totalTrades !== undefined) {
+              this.operacoesHoje = parseInt(result.data.totalTrades) || 0;
+            }
             if (result.data.dailyProfit !== undefined) {
               this.dailyProfit = parseFloat(result.data.dailyProfit) || 0;
             }
-            if (result.data.totalTrades !== undefined) {
-              this.operacoesHoje = parseInt(result.data.totalTrades) || 0;
+            if (result.data.dailyLoss !== undefined) {
+              // Armazenar perda acumulada para uso no agenteData
+              if (!this.sessionStats) {
+                this.sessionStats = {};
+              }
+              this.sessionStats.totalLoss = parseFloat(result.data.dailyLoss) || 0;
             }
           }
         } catch (error) {
@@ -540,12 +558,24 @@
             this.loadAgentLogs();
           }
         }, 5000);
+        
+        // Atualizar tempo ativo a cada minuto (força re-render do computed)
+        this.timeUpdateInterval = setInterval(() => {
+          if (this.agenteEstaAtivo && this.agentConfig) {
+            // Força atualização do computed agenteData
+            this.$forceUpdate();
+          }
+        }, 60000); // A cada 1 minuto
       },
       
       stopPolling() {
         if (this.pollingInterval) {
           clearInterval(this.pollingInterval);
           this.pollingInterval = null;
+        }
+        if (this.timeUpdateInterval) {
+          clearInterval(this.timeUpdateInterval);
+          this.timeUpdateInterval = null;
         }
       },
       
@@ -869,6 +899,47 @@
         }
       },
   
+      getMarketTitle(symbolOrId) {
+        // Se for símbolo (R_10, R_75, etc), mapear para título
+        const symbolMap = {
+          'R_10': 'Volatility 10 Index',
+          'R_25': 'Volatility 25 Index',
+          'R_50': 'Volatility 50 Index',
+          'R_75': 'Volatility 75 Index',
+          'R_100': 'Volatility 100 Index'
+        };
+        
+        // Se for ID de mercado (volatility_10, etc)
+        const idMap = {
+          'volatility_10': 'Volatility 10 Index',
+          'volatility_25': 'Volatility 25 Index',
+          'volatility_50': 'Volatility 50 Index',
+          'volatility_75': 'Volatility 75 Index',
+          'volatility_100': 'Volatility 100 Index'
+        };
+        
+        return symbolMap[symbolOrId] || idMap[symbolOrId] || symbolOrId;
+      },
+      
+      getStrategyTitle(id) {
+        const map = {
+          'arion': 'Arion',
+          'cryptomax': 'CryptoMax',
+          'orion_ultra': 'Orion Ultra',
+          'metaflow': 'MetaFlow'
+        };
+        return map[id] || id;
+      },
+      
+      getRiskTitle(id) {
+        const map = {
+          'conservative': 'Conservador',
+          'balanced': 'Equilibrado',
+          'aggressive': 'Agressivo'
+        };
+        return map[id] || id;
+      },
+      
       getCurrencyPrefix(currency) {
         switch ((currency || "").toUpperCase()) {
           case "USD":
