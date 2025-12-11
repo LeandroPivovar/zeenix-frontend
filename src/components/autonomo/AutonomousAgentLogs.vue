@@ -51,7 +51,8 @@ export default {
   props: {
     userId: {
       type: String,
-      required: true
+      required: false,
+      default: null
     },
     isActive: {
       type: Boolean,
@@ -72,6 +73,13 @@ export default {
       } else {
         this.stopLogPolling();
       }
+    },
+    userId(newVal) {
+      // Quando userId mudar, reiniciar polling se estiver ativo
+      if (newVal && this.isActive) {
+        this.stopLogPolling();
+        this.startLogPolling();
+      }
     }
   },
   mounted() {
@@ -85,13 +93,27 @@ export default {
   methods: {
     async fetchRealtimeLogs() {
       try {
-        if (!this.userId) {
+        // Tentar obter userId da prop ou do localStorage
+        let userId = this.userId;
+        if (!userId) {
+          const userStr = localStorage.getItem("user");
+          if (userStr) {
+            try {
+              const user = JSON.parse(userStr);
+              userId = user.id || user.userId;
+            } catch (error) {
+              console.error('[AutonomousAgentLogs] Erro ao parsear user:', error);
+            }
+          }
+        }
+        
+        if (!userId) {
           console.warn('[AutonomousAgentLogs] ⚠️ UserId não disponível');
           return;
         }
         
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-        const url = `${apiBase}/autonomous-agent/logs/${this.userId}?limit=2000`;
+        const url = `${apiBase}/autonomous-agent/logs/${userId}?limit=2000`;
         
         const response = await fetch(url, {
           method: 'GET',

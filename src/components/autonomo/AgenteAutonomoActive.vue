@@ -276,7 +276,7 @@
 					</div>
 				</div>
 				<div id="contentRegistro" :class="['register-content', { hidden: abaAtiva !== 'registro' }]">
-					<AutonomousAgentLogs :user-id="getUserId()" :is-active="true" />
+					<AutonomousAgentLogs :user-id="userIdComputed" :is-active="true" />
 				</div>
 			</div>
 			<!-- Cards Maior Ganho e Maior Perda - apenas mobile e apenas na aba gráfico -->
@@ -439,9 +439,14 @@
 				// Se não houver tradeHistory, usar operationHistory do agenteData
 				return this.agenteData?.operationHistory || [];
 			},
+			userIdComputed() {
+				// Garantir que o userId seja sempre atualizado
+				return this.getUserId();
+			},
 			tempoAtivoDisplay() {
 				// Garantir que o tempo ativo seja sempre atualizado
-				return this.agenteData?.tempoAtivo || '0h 0m 0s';
+				const tempo = this.agenteData?.tempoAtivo || '0h 0m 0s';
+				return tempo;
 			},
 			acoesAgenteComputed() {
 				// Usar agentActions do agenteData se disponível
