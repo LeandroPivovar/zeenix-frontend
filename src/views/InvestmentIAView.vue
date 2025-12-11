@@ -1335,6 +1335,33 @@ export default {
     color: #DFDFDF;
 }
 
+/* Desktop: remover gradiente e aplicar #0e0e0e nos cards */
+@media (min-width: 1025px) {
+    .zenix-layout {
+        background: #0b0b0b;
+    }
+
+    .bg-zenix-card {
+        background: #0e0e0e !important;
+    }
+
+    .bg-zenix-bg {
+        background-color: #0e0e0e !important;
+    }
+
+    .ai-vision-card {
+        background: #0e0e0e !important;
+    }
+
+    .config-card {
+        background: #0e0e0e !important;
+    }
+
+    .ai-control-card {
+        background: #0e0e0e !important;
+    }
+}
+
 .content-wrapper {
     margin-left: 280px;
     min-height: 100vh;
