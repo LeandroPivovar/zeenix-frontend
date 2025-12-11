@@ -727,6 +727,11 @@
 			},
 			
 			connectToDerivWebSocket() {
+				// Tentar primeiro com o App ID padrão do agente autônomo (1089)
+				this.connectToDerivWebSocketWithAppId('1089');
+			},
+			
+			connectToDerivWebSocketWithAppId(appId) {
 				try {
 					this.derivToken = this.getDerivToken();
 					if (!this.derivToken) {
@@ -734,10 +739,14 @@
 						return;
 					}
 					
-					const appId = '1089'; // App ID da Deriv
 					const wsUrl = `wss://ws.derivws.com/websockets/v3?app_id=${appId}`;
 					
-					console.log('[AgenteAutonomoActive] Conectando ao WebSocket da Deriv...');
+					console.log('[AgenteAutonomoActive] Conectando ao WebSocket da Deriv com App ID:', appId);
+					
+					// Fechar conexão anterior se existir
+					if (this.derivWebSocket) {
+						this.derivWebSocket.close();
+					}
 					
 					this.derivWebSocket = new WebSocket(wsUrl);
 					
@@ -755,6 +764,21 @@
 							
 							if (message.error) {
 								console.error('[AgenteAutonomoActive] Erro do WebSocket:', message.error);
+								
+								// Se o erro for de token inválido, tentar com outro App ID
+								if (message.error.code === 'InvalidToken') {
+									const currentAppId = this.derivWebSocket?.url?.match(/app_id=(\d+)/)?.[1] || '1089';
+									if (currentAppId === '1089') {
+										console.warn('[AgenteAutonomoActive] Token inválido para App ID 1089, tentando 111346...');
+										this.disconnectDerivWebSocket();
+										setTimeout(() => {
+											// Tentar com App ID alternativo
+											this.connectToDerivWebSocketWithAppId('111346');
+										}, 1000);
+									} else {
+										console.error('[AgenteAutonomoActive] Token inválido para ambos os App IDs. Verifique o token.');
+									}
+								}
 								return;
 							}
 							
