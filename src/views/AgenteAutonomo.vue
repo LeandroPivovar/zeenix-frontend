@@ -410,15 +410,36 @@
       },
       
       getUserId() {
+        // Tentar obter do localStorage primeiro
         const userStr = localStorage.getItem("user");
         if (userStr) {
           try {
             const user = JSON.parse(userStr);
-            return user.id || user.userId;
+            if (user.id || user.userId) {
+              return user.id || user.userId;
+            }
           } catch (error) {
             console.error("[AgenteAutonomo] Erro ao parsear user:", error);
           }
         }
+
+        // Fallback: tentar decodificar do token JWT
+        const token = localStorage.getItem("token");
+        if (token) {
+          try {
+            const payload = JSON.parse(atob(token.split('.')[1]));
+            // Tentar diferentes campos comuns do payload JWT
+            if (payload.userId || payload.sub || payload.id) {
+              const userId = payload.userId || payload.sub || payload.id;
+              console.log("[AgenteAutonomo] userId obtido do token JWT:", userId);
+              return userId;
+            }
+          } catch (error) {
+            console.error("[AgenteAutonomo] Erro ao decodificar token JWT:", error);
+          }
+        }
+
+        console.error("[AgenteAutonomo] Não foi possível obter userId");
         return null;
       },
   
