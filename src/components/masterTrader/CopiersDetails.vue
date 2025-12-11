@@ -35,22 +35,22 @@
 						<div class="switch-card">
 							<label class="switch-control">
 								<input type="checkbox" v-model="activateAllToggle" />
-								<span class="switch-label-text">Ativar todos</span>
 								<span class="slider-control" :class="{ 'slider-active': activateAllToggle }"></span>
+								<span class="switch-label-text">Ativar todos</span>
 							</label>
 						</div>
 						<div class="switch-card">
 							<label class="switch-control">
 								<input type="checkbox" v-model="deactivateAllToggle" />
-								<span class="switch-label-text">Desativar todos</span>
 								<span class="slider-control" :class="{ 'slider-active': deactivateAllToggle }"></span>
+								<span class="switch-label-text">Desativar todos</span>
 							</label>
 						</div>
 						<div class="switch-card switch-card-full">
 							<label class="switch-control">
 								<input type="checkbox" v-model="hideEmailsToggle" />
-								<span class="switch-label-text">Ocultar e-mails</span>
 								<span class="slider-control" :class="{ 'slider-active': hideEmailsToggle }"></span>
+								<span class="switch-label-text">Ocultar e-mails</span>
 							</label>
 						</div>
 					</div>
@@ -606,29 +606,31 @@ watch(copiers, () => {
 
 /* Controls Bar - ESTILO COM SLIDERS */
 .controls-bar {
-	display: grid;
-	grid-template-columns: 1fr 1fr;
+	display: flex;
 	gap: 12px;
 	padding-top: 20px;
+	flex-wrap: wrap;
 }
 
 .switch-card {
-	background-color: #0a0b0a;
-	border-radius: 20px;
-	padding: 12px 16px;
+	background-color: transparent;
+	border-radius: 0;
+	padding: 0;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	width: fit-content;
+	flex-shrink: 0;
 }
 
 .switch-card-full {
-	grid-column: 1 / -1;
+	width: fit-content;
 }
 
 .switch-control { /* Estilo do Label/Container */
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	justify-content: flex-start;
 	width: 100%;
 	gap: 12px;
 	font-size: 14px;
@@ -638,8 +640,8 @@ watch(copiers, () => {
 }
 
 .switch-label-text {
-	flex: 1;
 	text-align: left;
+	white-space: nowrap;
 }
 
 .switch-control input[type="checkbox"] {
@@ -1003,8 +1005,48 @@ input:checked + .slider:before {
 	}
 
 	.controls-bar {
-		flex-direction: column;
-		gap: 15px;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 12px;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.switch-card {
+		background-color: #0a0b0a;
+		border-radius: 20px;
+		padding: 12px 16px;
+		min-width: 0;
+		width: 100%;
+		box-sizing: border-box;
+		overflow: hidden;
+	}
+
+	.switch-card-full {
+		grid-column: 1 / -1;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.switch-control {
+		justify-content: space-between;
+		min-width: 0;
+		width: 100%;
+		box-sizing: border-box;
+	}
+
+	.switch-control .slider-control {
+		order: 2;
+		flex-shrink: 0;
+	}
+
+	.switch-control .switch-label-text {
+		order: 1;
+		min-width: 0;
+		flex: 1;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	.copiador-item {

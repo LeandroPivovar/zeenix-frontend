@@ -1834,6 +1834,21 @@
 			display: none;
 		}
 	}
+
+	/* Desktop: garantir que todos os cards tenham #0e0e0e */
+	@media (min-width: 1025px) {
+		.metric-card,
+		.chart-section,
+		.history-section,
+		.actions-section,
+		.progress-card {
+			background: #0e0e0e !important;
+		}
+
+		.agent-title {
+			background: #0e0e0e !important;
+		}
+	}
 	@media (max-width: 768px) {
 	.layout-content-agent-autonomo {
 		padding: 10px;
