@@ -18,7 +18,8 @@ export default {
   },
   data() {
     return {
-      chart: null
+      chart: null,
+      isRendering: false // Flag para evitar múltiplas renderizações simultâneas
     }
   },
   mounted() {
@@ -41,34 +42,47 @@ export default {
   watch: {
     data: {
       deep: true,
-      handler(newData) {
-        // Só atualizar se houver dados
+      handler(newData, oldData) {
+        // Só atualizar se houver dados E se os dados mudaram
         if (newData && newData.length > 0) {
-          this.updateChart();
+          // Comparar se os dados realmente mudaram para evitar loops infinitos
+          if (!oldData || JSON.stringify(newData) !== JSON.stringify(oldData)) {
+            this.updateChart();
+          }
         }
       }
     }
   },
   methods: {
     renderChart() {
+      // Verificar se já está renderizando para evitar múltiplas chamadas simultâneas
+      if (this.isRendering) {
+        return;
+      }
+      
+      this.isRendering = true;
+      
       const ctx = document.getElementById(this.chartId);
       if (!ctx) {
-        console.warn(`Canvas element for chart ${this.chartId} not found.`);
+        console.warn(`[LineChart] Canvas element for chart ${this.chartId} not found.`);
+        this.isRendering = false;
         return;
       }
       
       const context2d = ctx.getContext('2d');
       if (!context2d) {
-        console.warn(`Canvas 2D context for chart ${this.chartId} not available.`);
+        console.warn(`[LineChart] Canvas 2D context for chart ${this.chartId} not available.`);
+        this.isRendering = false;
         return;
       }
       
       // Verificar se o canvas tem dimensões válidas
       if (ctx.offsetWidth === 0 || ctx.offsetHeight === 0) {
-        console.warn(`Canvas ${this.chartId} has zero dimensions. Retrying...`);
+        console.warn(`[LineChart] Canvas ${this.chartId} has zero dimensions. Retrying...`);
+        this.isRendering = false;
         setTimeout(() => {
           this.renderChart();
-        }, 100);
+        }, 200);
         return;
       }
       
@@ -77,37 +91,55 @@ export default {
         try {
           this.chart.destroy();
         } catch (error) {
-          console.warn('Error destroying previous chart:', error);
+          console.warn('[LineChart] Error destroying previous chart:', error);
         }
         this.chart = null;
       }
       
+      // Validar dados antes de criar o gráfico
+      if (!this.data || this.data.length === 0) {
+        console.warn(`[LineChart] No data to render for chart ${this.chartId}`);
+        this.isRendering = false;
+        return;
+      }
+      
       try {
         this.chart = new Chart(ctx, {
-        type: 'line',
-        data: {
-          labels: this.data.map((_, i) => i),
-          datasets: [{
-            data: this.data,
-            borderColor: this.color,
-            backgroundColor: this.createGradient(ctx, this.color),
-            borderWidth: 2,
-            fill: true,
-            tension: 0.4, 
-            pointRadius: 0, 
-            pointHoverRadius: 0 
-          }]
-        },
-        options: {
-          responsive: true, maintainAspectRatio: false,
-          plugins: { legend: { display: false }, tooltip: { enabled: false } },
-          scales: { x: { display: false }, y: { display: false } },
-          interaction: { intersect: false, mode: 'index' }
-        }
+          type: 'line',
+          data: {
+            labels: this.data.map((_, i) => i),
+            datasets: [{
+              data: [...this.data], // Criar cópia para evitar referência
+              borderColor: this.color,
+              backgroundColor: this.createGradient(ctx, this.color),
+              borderWidth: 2,
+              fill: true,
+              tension: 0.4, 
+              pointRadius: 0, 
+              pointHoverRadius: 0 
+            }]
+          },
+          options: {
+            responsive: true, 
+            maintainAspectRatio: false,
+            animation: false, // Desabilitar animação para evitar problemas
+            plugins: { 
+              legend: { display: false }, 
+              tooltip: { enabled: false } 
+            },
+            scales: { 
+              x: { display: false }, 
+              y: { display: false } 
+            },
+            interaction: { intersect: false, mode: 'index' }
+          }
         });
+        
+        this.isRendering = false;
       } catch (error) {
-        console.error(`Error creating chart ${this.chartId}:`, error);
+        console.error(`[LineChart] Error creating chart ${this.chartId}:`, error);
         this.chart = null;
+        this.isRendering = false;
       }
     },
     
@@ -134,6 +166,7 @@ export default {
       }
       
       if (!this.chart) {
+        // Se não há gráfico, renderizar pela primeira vez
         this.$nextTick(() => {
           setTimeout(() => {
             this.renderChart();
@@ -145,23 +178,49 @@ export default {
       try {
         const ctx = document.getElementById(this.chartId);
         if (!ctx) {
-          // Canvas ainda não está no DOM, tentar novamente depois
-          setTimeout(() => {
-            this.updateChart();
-          }, 100);
+          // Canvas ainda não está no DOM, não tentar atualizar
+          console.warn(`[LineChart] Canvas ${this.chartId} não encontrado para atualização`);
           return;
         }
         
-        this.chart.data.labels = this.data.map((_, i) => i);
-        this.chart.data.datasets[0].data = this.data;
-        this.chart.update('none');
+        // Verificar se o gráfico ainda existe e está válido
+        if (!this.chart.data || !this.chart.data.datasets || !this.chart.data.datasets[0]) {
+          // Recriar o gráfico se estiver inválido
+          this.$nextTick(() => {
+            setTimeout(() => {
+              this.renderChart();
+            }, 100);
+          });
+          return;
+        }
+        
+        // Atualizar apenas os dados, sem recalcular tudo
+        const newLabels = this.data.map((_, i) => i);
+        const newData = [...this.data];
+        
+        // Só atualizar se os dados realmente mudaram
+        const currentData = this.chart.data.datasets[0].data;
+        if (JSON.stringify(currentData) !== JSON.stringify(newData)) {
+          this.chart.data.labels = newLabels;
+          this.chart.data.datasets[0].data = newData;
+          this.chart.update('none'); // 'none' evita animações e recálculos desnecessários
+        }
       } catch (error) {
-        console.warn('Error updating chart:', error);
-        // Tentar recriar o gráfico se houver erro
+        console.warn('[LineChart] Error updating chart:', error);
+        // Se houver erro, destruir e recriar
+        if (this.chart) {
+          try {
+            this.chart.destroy();
+          } catch (e) {
+            // Ignorar erros ao destruir
+          }
+          this.chart = null;
+        }
+        // Tentar recriar o gráfico após um delay
         this.$nextTick(() => {
           setTimeout(() => {
             this.renderChart();
-          }, 100);
+          }, 200);
         });
       }
     }

@@ -740,6 +740,9 @@
 			},
 			
 			updateProfitLossCharts() {
+				let profitChanged = false;
+				let lossChanged = false;
+				
 				// Atualizar gráfico de lucro
 				if (this.sessionStats && this.sessionStats.netProfit !== undefined) {
 					const currentProfit = parseFloat(this.sessionStats.netProfit) || 0;
@@ -749,8 +752,8 @@
 						if (this.profitHistory.length > 50) {
 							this.profitHistory.shift();
 						}
+						profitChanged = true;
 					}
-					this.profitChartData = [...this.profitHistory];
 				}
 				
 				// Atualizar gráfico de perda
@@ -758,11 +761,20 @@
 					const currentLoss = parseFloat(this.sessionStats.totalLoss) || 0;
 					// Adicionar apenas se mudou
 					if (this.lossHistory.length === 0 || this.lossHistory[this.lossHistory.length - 1] !== currentLoss) {
-						this.lossHistory.push(currentLoss);
+						this.lossHistory.push(Math.abs(currentLoss));
 						if (this.lossHistory.length > 50) {
 							this.lossHistory.shift();
 						}
+						lossChanged = true;
 					}
+				}
+				
+				// Só atualizar os arrays de dados do gráfico se realmente mudaram
+				// Isso evita loops infinitos no watcher do LineChart
+				if (profitChanged) {
+					this.profitChartData = [...this.profitHistory];
+				}
+				if (lossChanged) {
 					this.lossChartData = [...this.lossHistory];
 				}
 			},
