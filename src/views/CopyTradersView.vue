@@ -19,22 +19,14 @@
         @toggle-sidebar="toggleMobileSidebar"
       />
   
-      <div class="box" style="margin-top: 60px;">
+      <div class="box">
         <div class="header">
-          <h1 v-if="hasActiveSession">Copy Trading - Performance</h1>
-          <h1 v-else>Copy Trading — Configuração Inicial</h1>
+          <h1 v-if="hasActiveSession">Copy Trading — Performance</h1>
+          <h1 v-else>Copy Trading — Configuração</h1>
           <p v-if="hasActiveSession">Acompanhe a perfomance do seu copy em tempo real</p>
           <p v-else>Configure risco, alocação e proteção antes de iniciar o Copy automático.</p>
         </div>
       
-        <div class="tabs" v-if="!hasActiveSession && activeTab === 'config'">
-          <button 
-            :class="['tab', { active: activeTab === 'config' }]" 
-            @click="switchToConfig"
-          >
-            Configurar
-          </button>
-        </div>
       
         <div v-if="loading" class="loading-container">
           <div class="loading-spinner"></div>
@@ -236,7 +228,17 @@
   
   .box {
     width: 100%;
-    padding: 20px;
+    padding: 70px 20px 10px 20px;
+    margin: 0;
+  }
+  
+  /* DesktopBottomNav fixed no copy trading */
+  :deep(.desktop-bottom-nav) {
+    position: fixed !important;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
   }
   
   /* --- Header --- */
@@ -313,6 +315,25 @@
       width: 100% !important;
       margin-left: 0 !important;
       padding: 0;
+      background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
+      position: relative;
+    }
+    
+    .layout-copy-traders::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(8, 36, 18, 0.05) 50%, transparent 80%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .layout-copy-traders > * {
+      position: relative;
+      z-index: 1;
     }
 
 
@@ -337,8 +358,8 @@
 
   @media (max-width: 768px) {
     .box {
-      padding: 15px;
-      margin-top: 60px;
+      padding: 70px 20px 10px 20px;
+      margin: 0;
     }
 
     .header {

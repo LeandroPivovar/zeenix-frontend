@@ -77,10 +77,10 @@
 				<div class="metric-box">
 					<div class="metric-label">Perda acumulada</div>
 					<div class="metric-value negative">
-						-${{ (sessionStats.totalLoss || 0).toFixed(2) }}
+						-${{ (sessionStats?.totalLoss || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change negative">
-						{{ progressoMeta.stop > 0 ? ((sessionStats.totalLoss || 0) / progressoMeta.stop * 100).toFixed(2) : '0.00' }}%
+						{{ progressoMeta.stop > 0 ? ((sessionStats?.totalLoss || 0) / progressoMeta.stop * 100).toFixed(2) : '0.00' }}%
 					</div>
 				</div>
 			</div>
@@ -330,21 +330,21 @@
 			<div class="actions-header">
 				<h3>Ações do Agente</h3>
 					<div class="actions-list">
-						<div v-for="(acao, index) in acoesAgente" :key="index" class="action-item">
-							<div :class="['action-icon', acao.status || acao.classe || 'info']"></div>
-							<div class="action-content">
-								<div class="action-title">{{ acao.title || acao.titulo }}</div>
-								<div class="action-description">{{ acao.description || acao.descricao }}</div>
-							</div>
-						</div>
-						<div v-if="acoesAgente.length === 0" class="action-item">
-							<div class="action-icon info"></div>
-							<div class="action-content">
-								<div class="action-title">Nenhuma ação registrada</div>
-								<div class="action-description">Aguardando operações do agente...</div>
-							</div>
+						<div v-for="(acao, index) in acoesAgenteComputed" :key="index" class="action-item">
+						<div :class="['action-icon', acao.status || acao.classe || 'info']"></div>
+						<div class="action-content">
+							<div class="action-title">{{ acao.title || acao.titulo }}</div>
+							<div class="action-description">{{ acao.description || acao.descricao }}</div>
 						</div>
 					</div>
+						<div v-if="acoesAgenteComputed.length === 0" class="action-item">
+						<div class="action-icon info"></div>
+						<div class="action-content">
+							<div class="action-title">Nenhuma ação registrada</div>
+							<div class="action-description">Aguardando operações do agente...</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</div>
 	</div>
@@ -352,11 +352,13 @@
 
 <script>
 	import OperationLogs from '../OperationLogs.vue';
+	import LineChart from '../LineChart.vue';
 
 	export default {
 		name: 'AgenteAutonomoPanel',
 		components: {
-			OperationLogs
+			OperationLogs,
+			LineChart
 		},
 		props: {
 			agenteData: {
@@ -402,9 +404,6 @@
 		data() {
 			return {
 				abaAtiva: 'grafico',
-				unidadeTimeframeSelecionada: 'minutos',
-				valorTimeframeSelecionado: 5,
-				tipoGraficoSelecionado: 'Gráfico de Linhas',
 				ultimaAtualizacao: new Date().toLocaleTimeString('pt-BR'),
 				filtroDataSelecionado: 'hoje',
 				dataInicio: new Date().toISOString().split('T')[0],
@@ -462,11 +461,12 @@
 					});
 				}
 				// Se não houver tradeHistory, usar operationHistory do agenteData
-				return this.agenteData.operationHistory || [];
+				return this.agenteData?.operationHistory || [];
 			},
-			acoesAgente() {
+			acoesAgenteComputed() {
 				// Usar agentActions do agenteData se disponível
-				return this.agenteData.agentActions || [];
+				const actions = this.agenteData?.agentActions || this.acoesAgente || [];
+				return actions;
 			},
 			progressoPorcentagem() {
 				const percentage = (this.progressoMeta.atual / this.progressoMeta.meta) * 100;
@@ -645,8 +645,20 @@
 				this.ultimaAtualizacao = new Date().toLocaleTimeString('pt-BR');
 			}, 1000);
 			
+			// Carregar histórico de preços e iniciar atualização
+			this.loadPriceHistory();
+			this.startPriceHistoryUpdates();
+			
+			// Inicializar histórico de lucro/perda
+			this.initializeProfitLossHistory();
+			
 			// Rolagem instantânea para o topo
 			window.scrollTo({ top: 0, behavior: 'auto' });
+		},
+		beforeUnmount() {
+			if (this.priceHistoryInterval) {
+				clearInterval(this.priceHistoryInterval);
+			}
 		},
 		methods: {
 			trocarAba(aba) {
@@ -753,7 +765,7 @@
 
 	.metric-card,
 	.chart-section {
-		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+		background: #0e0e0e;
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
 		padding: 20px;
@@ -762,7 +774,7 @@
 
 	.history-section,
 	.actions-section {
-		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+		background: #0e0e0e;
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
 		padding: 20px;
@@ -770,7 +782,7 @@
 	}
 
 	.progress-card {
-		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+		background: #0e0e0e;
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
 		padding: 20px;
@@ -918,7 +930,7 @@
 	}
 
 	.metric-card {
-		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+		background: #0e0e0e;
 		border: 1px solid #1a1a1a;
 		border-radius: 6px;
 		padding: 20px;
@@ -1022,7 +1034,7 @@
 	.chart-section {
 		padding: 20px;
 		margin-top: 1.5rem;
-		background: linear-gradient(135deg, rgba(14, 14, 14, 0.95) 0%, rgba(10, 10, 10, 0.98) 50%, rgba(5, 5, 5, 0.95) 100%);
+		background: #0e0e0e;
 	}
 
 	.chart-controls {
@@ -1442,13 +1454,13 @@
 
 	.progress-card,
 	.chart-section {
-		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+		background: #0e0e0e;
 	}
 
 	.history-section,
 	.actions-section,
 	.metric-card {
-		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+		background: #0e0e0e;
 	}
 	@media (min-width: 1024px) {
 		.agent-title-mobile{
@@ -1606,7 +1618,7 @@
 		}
 
 		.mobile-history-card {
-			background: #0b0b0b !important;
+			background: #0e0e0e !important;
 			border: none;
 			border-radius: 8px;
 			
@@ -1834,7 +1846,7 @@
 		gap: 0;
 		border: 1px solid #333;
 		border-radius: 12px;
-		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+		background: #0e0e0e;
 	}
 
 	.metric-card{
@@ -1979,7 +1991,7 @@
 		}
 
 		.mobile-performance-card {
-			background: #0b0b0b !important;
+			background: #0e0e0e !important;
 			border: 1px solid #1a1a1a;
 			border-radius: 8px;
 			padding: 15px;

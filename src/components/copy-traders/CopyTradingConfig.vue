@@ -106,29 +106,31 @@
                 </select>
             </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    Stop Loss
-                    <TooltipsCopyTraders position="center">
-                        <h4>Stop Loss</h4>
-                        <p>Limite máximo de perda permitido dentro do Copy.</p>
-                        <p>Ao atingir esse valor, o Copy pausa automaticamente para proteger o saldo.</p>
-                        <p class="highlight-green">Recomendado: manter sempre configurado.</p>
-                    </TooltipsCopyTraders>
-                </label>
-                <input type="number" v-model.number="stopLoss" step="0.01" min="0" placeholder="250">
-            </div>
+            <div class="profit-loss-group">
+                <div class="form-group">
+                    <label class="form-label">
+                        Stop Loss
+                        <TooltipsCopyTraders position="center">
+                            <h4>Stop Loss</h4>
+                            <p>Limite máximo de perda permitido dentro do Copy.</p>
+                            <p>Ao atingir esse valor, o Copy pausa automaticamente para proteger o saldo.</p>
+                            <p class="highlight-green">Recomendado: manter sempre configurado.</p>
+                        </TooltipsCopyTraders>
+                    </label>
+                    <input type="number" v-model.number="stopLoss" step="0.01" min="0" placeholder="250">
+                </div>
 
-            <div class="form-group">
-                <label class="form-label">
-                    Take Profit
-                    <TooltipsCopyTraders>
-                        <h4>Take Profit</h4>
-                        <p>Meta de lucro para encerrar o Copy automaticamente.</p>
-                        <p>Quando este valor é alcançado, o sistema pausa as operações para preservar o ganho do dia.</p>
-                    </TooltipsCopyTraders>
-                </label>
-                <input type="number" v-model.number="takeProfit" step="0.01" min="0" placeholder="500">
+                <div class="form-group">
+                    <label class="form-label">
+                        Take Profit
+                        <TooltipsCopyTraders>
+                            <h4>Take Profit</h4>
+                            <p>Meta de lucro para encerrar o Copy automaticamente.</p>
+                            <p>Quando este valor é alcançado, o sistema pausa as operações para preservar o ganho do dia.</p>
+                        </TooltipsCopyTraders>
+                    </label>
+                    <input type="number" v-model.number="takeProfit" step="0.01" min="0" placeholder="500">
+                </div>
             </div>
 
             <div class="toggle-wrapper">
@@ -239,7 +241,7 @@
                 </span>
             </div>
 
-            <div class="status-badge">
+            <div class="status-badge status-badge-inside">
                 <span class="status-dot"></span>
                 <div class="status-text">
                     <div class="status-title">
@@ -260,6 +262,26 @@
              O Copy está configurado para operar com 
             risco controlado. Verifique as configurações antes de ativar.
             </p>
+        </div>
+        
+        <!-- Status badge separado no mobile -->
+        <div class="card status-badge-mobile">
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <div class="status-text">
+                    <div class="status-title">
+						<strong>Aguardando Ativação</strong> 
+						<TooltipsCopyTraders position="right">
+							<p>O Copy será iniciado após você confirmar</p>
+						</TooltipsCopyTraders>
+					</div>
+                    <small>O Copy será iniciado após você confirmar</small>
+                </div>
+            </div>
+            
+            <button class="activate-btn activate-btn-mobile" @click="activateCopy" :disabled="activating">
+                {{ activating ? 'Ativando...' : 'ATIVAR COPY' }}
+            </button>
         </div>
     </div>
 </template>
@@ -485,7 +507,7 @@ export default {
 
 /* --- Card --- */
 .card {
-    background: #111;
+    background: #0b0b0b;
     border: 1px solid #222;
     border-radius: 8px;
     padding: 24px;
@@ -616,8 +638,8 @@ select:focus, input[type="text"]:focus, input[type="number"]:focus {
 
 .allocation-buttons-group button {
     flex: 1; /* Divide o espaço igualmente */
-    background: #1a1a1a;
-    border: 1px solid #222; /* Borda independente */
+    background: #0a0a0a;
+    border: none;
     border-radius: 6px; /* Borda arredondada */
     color: #888;
     padding: 12px;
@@ -627,19 +649,26 @@ select:focus, input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .allocation-buttons-group button.active {
-    background: #16a34a18;
+    background: transparent;
     color: #22C55E;
-    border-color: #22C55E;
+    border: 1px solid #22C55E;
+    box-shadow: inset 0 0 10px rgba(34, 197, 94, 0.2);
 }
 
 .allocation-buttons-group button:hover:not(.active) {
-    background: #252525;
+    background: #1a1a1a;
 }
 /* FIM NOVO ESTILO */
 
 
 .form-group input{
     margin: 0;
+}
+
+.profit-loss-group {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
 }
 /* Estilo para a mensagem de alocação padrão (REMOVIDA) */
 /* .allocation-info-message {
@@ -663,7 +692,7 @@ select:focus, input[type="text"]:focus, input[type="number"]:focus {
     background: #0a0a0a;
     border: 1px dashed #333;
     border-radius: 8px;
-    padding: 0px 20px;
+    padding: 10px 20px;
     text-align: center;
 }
 
@@ -786,10 +815,17 @@ input:checked + .slider:before {
     border-bottom: none;
 }
 
-/* Força a borda no último item de resumo ANTES do badge de status */
-.card-right .summary-item:nth-last-child(2) {
+/* Borda abaixo do Stop Loss */
+.card-right .form-group .summary-item {
     border-bottom: 1px solid #222;
+    padding-bottom: 12px;
 }
+
+/* Remover borda abaixo de Proteção */
+.card-right .summary-item:last-of-type {
+    border-bottom: none !important;
+}
+
 
 
 .summary-item .label {
@@ -820,6 +856,11 @@ input:checked + .slider:before {
     border-radius: 6px;
     padding: 16px;
     margin: 20px 0;
+}
+
+/* Status badge mobile - oculto por padrão (desktop) */
+.status-badge-mobile {
+    display: none;
 }
 
 .status-dot {
@@ -913,6 +954,43 @@ input:checked + .slider:before {
         grid-template-columns: 1fr 1fr 1fr;
         gap: 20px;
     }
+    
+    /* Cor dos cards no desktop */
+    .card {
+        background: #0b0b0b !important;
+    }
+    
+    /* Botões de alocação no desktop */
+    .allocation-buttons-group button {
+        background: #0a0a0a;
+        border: 1px solid #555;
+        color: #888;
+    }
+    
+    .allocation-buttons-group button.active {
+        background: #16a34a;
+        color: #fff;
+        border: 1px solid #22C55E;
+        box-shadow: none;
+    }
+    
+    /* Ocultar status badge mobile no desktop */
+    .status-badge-mobile {
+        display: none;
+    }
+    
+    /* Mostrar status badge e botão dentro do resumo no desktop */
+    .card-right .status-badge-inside {
+        display: flex;
+    }
+    
+    .card-right .activate-btn {
+        display: block;
+    }
+    
+    .activate-btn-mobile {
+        display: none;
+    }
 }
 
 /* Tablet */
@@ -933,11 +1011,54 @@ input:checked + .slider:before {
         display: flex;
         flex-direction: column;
         gap: 16px;
+        padding-bottom: 90px;
     }
     
     .card {
         width: 100%;
         padding: 20px;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C;
+        border-radius: 8px;
+    }
+    
+    /* Ocultar status-badge e botão dentro do resumo no mobile */
+    .card-right .status-badge-inside {
+        display: none;
+    }
+    
+    .card-right .activate-btn {
+        display: none;
+    }
+    
+    /* Mostrar status-badge como card separado no mobile */
+    .status-badge-mobile {
+        display: block;
+    }
+    
+    /* Ajustar resumo no mobile */
+    .card-right .summary-item:last-of-type {
+        border-bottom: none;
+        margin-bottom: 0;
+        padding-bottom: 0;
+    }
+    
+    .card-right .warning-text {
+        display: none;
+    }
+    
+    /* Status badge mobile como card separado */
+    .status-badge-mobile .status-badge {
+        margin: 0 0 20px 0;
+        border: none;
+        background: transparent;
+        padding: 0;
+    }
+    
+    /* Botão dentro do card status-badge-mobile */
+    .status-badge-mobile .activate-btn-mobile {
+        display: block;
+        margin-top: 0;
     }
     
     .card-title {
@@ -952,6 +1073,22 @@ input:checked + .slider:before {
     
     .allocation-buttons-group button {
         flex: 1;
+        background: #0a0a0a;
+        border: none;
+        color: #888;
+    }
+    
+    .allocation-buttons-group button.active {
+        background: transparent;
+        color: #22C55E;
+        border: 1px solid #22C55E;
+        box-shadow: inset 0 0 10px rgba(34, 197, 94, 0.2);
+    }
+    
+    .profit-loss-group {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
     }
     
     .toggle-wrapper {
