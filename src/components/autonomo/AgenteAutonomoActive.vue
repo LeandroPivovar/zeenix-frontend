@@ -65,10 +65,10 @@
 				<div class="metric-box">
 					<div class="metric-label">Lucro do dia</div>
 					<div class="metric-value positive">
-						+${{ progressoMeta.atual.toFixed(2) }}
+						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change positive">
-						{{ progressoMeta.meta > 0 ? ((progressoMeta.atual / progressoMeta.meta) * 100).toFixed(2) : '0.00' }}%
+						{{ progressoMeta.meta > 0 ? (((sessionStats?.netProfit || 0) / progressoMeta.meta) * 100).toFixed(2) : '0.00' }}%
 					</div>
 				</div>
 			</div>
@@ -77,10 +77,10 @@
 				<div class="metric-box">
 					<div class="metric-label">Perda acumulada</div>
 					<div class="metric-value negative">
-						-${{ (sessionStats?.totalLoss || 0).toFixed(2) }}
+						-${{ Math.abs(sessionStats?.totalLoss || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change negative">
-						{{ progressoMeta.stop > 0 ? ((sessionStats?.totalLoss || 0) / progressoMeta.stop * 100).toFixed(2) : '0.00' }}%
+						{{ progressoMeta.stop > 0 ? ((Math.abs(sessionStats?.totalLoss || 0) / progressoMeta.stop) * 100).toFixed(2) : '0.00' }}%
 					</div>
 				</div>
 			</div>
@@ -469,8 +469,9 @@
 				return actions;
 			},
 			progressoPorcentagem() {
-				const percentage = (this.progressoMeta.atual / this.progressoMeta.meta) * 100;
-				return `${Math.min(100, percentage).toFixed(0)}%`;
+				const current = this.sessionStats?.netProfit || this.progressoMeta.atual || 0;
+				const percentage = (current / this.progressoMeta.meta) * 100;
+				return `${Math.min(100, Math.max(0, percentage)).toFixed(0)}%`;
 			},
 			tempoOptions() {
 				return this.timeframeOptions[this.unidadeTimeframeSelecionada] || [];
@@ -575,8 +576,18 @@
 		watch: {
 			'agenteData.dailyProfit'(newVal) {
 				if (newVal !== undefined) {
-					this.progressoMeta.atual = newVal || 0;
+					this.progressoMeta.atual = parseFloat(newVal) || 0;
 				}
+			},
+			sessionStats: {
+				handler(newStats) {
+					if (newStats && newStats.netProfit !== undefined) {
+						this.progressoMeta.atual = parseFloat(newStats.netProfit) || 0;
+						this.updateProfitLossCharts();
+					}
+				},
+				deep: true,
+				immediate: true,
 			},
 			'agenteData.goalValue'(newVal) {
 				if (newVal !== undefined) {
@@ -682,8 +693,25 @@
 					});
 
 					const result = await response.json();
-					if (result.success && result.data && Array.isArray(result.data)) {
-						this.indexChartData = result.data.map(tick => parseFloat(tick.value) || 0);
+					if (result.success && result.data) {
+						// Se result.data é um objeto com prices
+						if (result.data.prices && Array.isArray(result.data.prices)) {
+							this.indexChartData = result.data.prices.map(tick => {
+								if (typeof tick === 'object' && tick.value !== undefined) {
+									return parseFloat(tick.value) || 0;
+								}
+								return parseFloat(tick) || 0;
+							});
+						}
+						// Se result.data é um array direto
+						else if (Array.isArray(result.data)) {
+							this.indexChartData = result.data.map(tick => {
+								if (typeof tick === 'object' && tick.value !== undefined) {
+									return parseFloat(tick.value) || 0;
+								}
+								return parseFloat(tick) || 0;
+							});
+						}
 					}
 				} catch (error) {
 					console.error("[AgenteAutonomoActive] Erro ao carregar histórico de preços:", error);
@@ -700,29 +728,38 @@
 			initializeProfitLossHistory() {
 				// Inicializar com dados atuais
 				if (this.sessionStats) {
-					this.profitHistory = [this.sessionStats.netProfit || 0];
-					this.lossHistory = [this.sessionStats.totalLoss || 0];
-					this.updateProfitLossCharts();
+					this.profitHistory = [parseFloat(this.sessionStats.netProfit) || 0];
+					this.lossHistory = [parseFloat(this.sessionStats.totalLoss) || 0];
+					this.profitChartData = [...this.profitHistory];
+					this.lossChartData = [...this.lossHistory];
 				}
 			},
 			
 			updateProfitLossCharts() {
 				// Atualizar gráfico de lucro
 				if (this.sessionStats && this.sessionStats.netProfit !== undefined) {
-					this.profitHistory.push(this.sessionStats.netProfit);
-					if (this.profitHistory.length > 50) {
-						this.profitHistory.shift();
+					const currentProfit = parseFloat(this.sessionStats.netProfit) || 0;
+					// Adicionar apenas se mudou
+					if (this.profitHistory.length === 0 || this.profitHistory[this.profitHistory.length - 1] !== currentProfit) {
+						this.profitHistory.push(currentProfit);
+						if (this.profitHistory.length > 50) {
+							this.profitHistory.shift();
+						}
 					}
-					this.profitChartData = this.profitHistory;
+					this.profitChartData = [...this.profitHistory];
 				}
 				
 				// Atualizar gráfico de perda
 				if (this.sessionStats && this.sessionStats.totalLoss !== undefined) {
-					this.lossHistory.push(this.sessionStats.totalLoss);
-					if (this.lossHistory.length > 50) {
-						this.lossHistory.shift();
+					const currentLoss = parseFloat(this.sessionStats.totalLoss) || 0;
+					// Adicionar apenas se mudou
+					if (this.lossHistory.length === 0 || this.lossHistory[this.lossHistory.length - 1] !== currentLoss) {
+						this.lossHistory.push(currentLoss);
+						if (this.lossHistory.length > 50) {
+							this.lossHistory.shift();
+						}
 					}
-					this.lossChartData = this.lossHistory;
+					this.lossChartData = [...this.lossHistory];
 				}
 			},
 			

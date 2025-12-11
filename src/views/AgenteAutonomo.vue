@@ -144,10 +144,10 @@
           stopValue: this.stopValue,
           dailyProfit: this.dailyProfit,
           dailyChange: this.dailyChange,
-          accumulatedLoss: this.accumulatedLoss,
+          accumulatedLoss: this.sessionStats?.totalLoss || 0,
           accumulatedChange: this.accumulatedChange,
           lastExecutionTime: this.lastExecutionTime,
-          tempoAtivo: this.tempoAtivo,
+          tempoAtivo: this.calculateTempoAtivo(),
           operacoesHoje: this.operacoesHoje,
           realTimeOperations: this.realTimeOperations,
           operationHistory: this.operationHistory,
@@ -155,6 +155,20 @@
           agentStatus: this.agenteEstaAtivo ? "ATIVO" : "PAUSADO",
           accountBalance: this.accountBalance,
         };
+      },
+      
+      calculateTempoAtivo() {
+        if (!this.agentConfig || !this.agentConfig.lastTradeAt) {
+          return "0h 0m";
+        }
+        
+        const startTime = new Date(this.agentConfig.createdAt || this.agentConfig.lastTradeAt);
+        const now = new Date();
+        const diffMs = now - startTime;
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        
+        return `${diffHours}h ${diffMinutes}m`;
       },
       
       tradeHistoryData() {
@@ -174,6 +188,29 @@
   
       currencyPrefix() {
         return this.getCurrencyPrefix(this.preferredCurrency);
+      },
+      
+      calculateTempoAtivo() {
+        if (!this.agentConfig || !this.agentConfig.createdAt) {
+          // Tentar usar lastTradeAt como fallback
+          if (this.agentConfig?.lastTradeAt) {
+            const startTime = new Date(this.agentConfig.lastTradeAt);
+            const now = new Date();
+            const diffMs = now - startTime;
+            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+            return `${diffHours}h ${diffMinutes}m`;
+          }
+          return "0h 0m";
+        }
+        
+        const startTime = new Date(this.agentConfig.createdAt);
+        const now = new Date();
+        const diffMs = now - startTime;
+        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+        
+        return `${diffHours}h ${diffMinutes}m`;
       },
     },
     methods: {
@@ -320,10 +357,10 @@
               this.stopValue = result.data.dailyLossLimit;
             }
             if (result.data.dailyProfit !== undefined) {
-              this.dailyProfit = result.data.dailyProfit || 0;
+              this.dailyProfit = parseFloat(result.data.dailyProfit) || 0;
             }
             if (result.data.totalTrades !== undefined) {
-              this.operacoesHoje = result.data.totalTrades || 0;
+              this.operacoesHoje = parseInt(result.data.totalTrades) || 0;
             }
           }
         } catch (error) {
@@ -345,9 +382,17 @@
 
           const result = await response.json();
           if (result.success && result.data) {
-            this.sessionStats = result.data;
-            this.operacoesHoje = result.data.totalTrades || 0;
-            this.dailyProfit = result.data.netProfit || 0;
+            this.sessionStats = {
+              totalTrades: parseInt(result.data.totalTrades) || 0,
+              wins: parseInt(result.data.wins) || 0,
+              losses: parseInt(result.data.losses) || 0,
+              winRate: parseFloat(result.data.winRate) || 0,
+              totalProfit: parseFloat(result.data.totalProfit) || 0,
+              totalLoss: parseFloat(result.data.totalLoss) || 0,
+              netProfit: parseFloat(result.data.netProfit) || 0,
+            };
+            this.operacoesHoje = this.sessionStats.totalTrades;
+            this.dailyProfit = this.sessionStats.netProfit || 0;
           }
         } catch (error) {
           console.error("[AgenteAutonomo] Erro ao carregar estatísticas:", error);
@@ -745,26 +790,26 @@
       },
     },
     async mounted() {
-      this.addSystemAction(
-        "Sistema carregado",
-        "Aguardando o início do agente..."
-      );
-      this.preferredCurrency = this.getPreferredCurrency();
-      this.startBalanceUpdates();
-      this.checkMobile();
-  
-      window.addEventListener("resize", this.checkMobile);
-  
-      // Carregar configuração do agente ao montar
-      await this.loadAgentConfig();
-      
-      if (this.agenteEstaAtivo) {
-        this.startPolling();
-        this.startSimulations();
-      } else {
-        this.timeAndMetricsInterval = setInterval(this.updateTimeAndMetrics, 1000);
-      }
-    },
+        this.preferredCurrency = this.getPreferredCurrency();
+        this.startBalanceUpdates();
+        this.checkMobile();
+
+        window.addEventListener("resize", this.checkMobile);
+
+        // Carregar configuração do agente ao montar
+        await this.loadAgentConfig();
+        await this.loadSessionStats();
+        
+        if (this.agenteEstaAtivo) {
+          this.startPolling();
+          // Usar dados reais da API, não simulações
+        } else {
+          // Atualizar última execução periodicamente
+          this.timeAndMetricsInterval = setInterval(() => {
+            this.lastExecutionTime = new Date().toLocaleTimeString('pt-BR');
+          }, 1000);
+        }
+      },
     beforeUnmount() {
       this.stopSimulations();
       this.stopPolling();
