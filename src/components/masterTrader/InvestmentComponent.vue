@@ -1,41 +1,43 @@
 <template>
-    <div class="zenix-layout">
+    <div class="investment-container">
         <!-- Full Screen Loader -->
         <div v-if="isActivating" class="fullscreen-loader">
             <div class="loader-spinner"></div>
         </div>
-        
-        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
 
-        <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-            <TopNavbar 
-                :is-sidebar-collapsed="isSidebarCollapsed"
-                :balance="accountBalance"
-                :account-type="isDemo ? 'demo' : 'real'"
-                :currency="accountCurrency"
-                @account-type-changed="handleAccountTypeChangeFromNavbar"
-            />
-
-            <main class="main-content" style="margin-top: 60px;">
+        <main class="main-content">
                 <!-- AI Vision Panel - Only show when IA is inactive -->
                 <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
-                    <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green">
-                        <div class="mb-6">
+                    <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
+                        <!-- Header Desktop -->
+                        <div class="mb-6 ai-vision-header-desktop">
                             <div class="text-left">
                                 <h1 class="text-xl font-bold text-zenix-text mb-1">Visão da IA | {{ selectedStrategyName }}</h1>
                                 <p class="text-sm text-zenix-secondary">Configure esta IA para iniciar operações</p>
                             </div>
                         </div>
+                        <!-- Header Mobile -->
+                        <div class="mb-6 ai-vision-header-mobile">
+                            <div class="flex items-center justify-between">
+                                <div class="text-left">
+                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Visão da IA</h1>
+                                    <p class="text-sm text-zenix-secondary">Configure esta IA para iniciar operações</p>
+                                </div>
+                                <div class="ai-chip-icon-mobile">
+                                    <i class="fas fa-microchip text-[#22C55E] text-2xl"></i>
+                                </div>
+                            </div>
+                        </div>
                         <div class="grid grid-cols-12 gap-5">
                             <!-- AI Visualization Area -->
-                            <div class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border-2 border-zenix-green/30 flex items-center justify-center relative">
+                            <div class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border-2 border-zenix-green/30 flex items-center justify-center relative ai-visualization-area">
                                 <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/5 via-transparent to-zenix-green/10"></div>
                                 <!-- Animated Grid Background -->
                                 <div class="absolute inset-0 opacity-20">
                                     <div id="i9dlnn" class="absolute inset-0"></div>
                                 </div>
                                 <!-- Central AI Core -->
-                                <div class="relative z-10 flex items-center justify-center" style="width: 100%; height: 100%;">
+                                <div class="relative z-10 flex items-center justify-center ai-core-mobile" style="width: 100%; height: 100%;">
                                     <!-- Outer Rotating Ring -->
                                     <div id="irazem" class="absolute w-40 h-40 border-2 border-zenix-green/30 rounded-full ai-glow-ring" style="opacity: 1;"></div>
                                     <!-- Middle Rotating Ring -->
@@ -66,29 +68,42 @@
                                 </div>
                             </div>
                             <!-- Status Cards -->
-                            <div class="col-span-7 grid grid-cols-2 gap-4">
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
-                                    <p class="text-[10px] text-zenix-secondary mb-2">Status</p>
-                                    <p class="text-base font-bold text-zenix-secondary">Aguardando configuração</p>
-                                    <p class="text-[10px] text-zenix-label mt-1">Configure para ativar esta IA</p>
-                                </div>
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
+                            <div class="col-span-7 grid grid-cols-2 gap-4 status-cards-container">
+                                <!-- Card 1: STATUS -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <img src="@/assets/icons/target-IA.svg" alt="Ativo da IA" class="asset-icon" style="width: 16px !important; height: 16px !important; display: block !important; opacity: 0.6 !important; visibility: visible !important;">
-                                        <p class="text-[10px] text-zenix-secondary">Ativo da IA</p>
+                                        <i class="fas fa-check-circle text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">STATUS</p>
                                     </div>
-                                    <p class="text-sm font-semibold text-zenix-secondary">Será exibido após configuração</p>
-                                    <p class="text-[10px] text-zenix-label mt-1">Defina os parâmetros para revelar</p>
+                                    <p class="text-base font-bold text-white status-value">Configurando</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Configure para ativar esta IA</p>
                                 </div>
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
-                                    <p class="text-[10px] text-zenix-secondary mb-2">Parâmetros</p>
-                                    <p class="text-base font-bold text-zenix-secondary">Não definidos</p>
-                                    <p class="text-[10px] text-zenix-label mt-1">Configure risco e entradas</p>
+                                <!-- Card 2: ALVO DA IA -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <img src="@/assets/icons/target-IA.svg" alt="Alvo da IA" class="asset-icon" style="width: 18px !important; height: 18px !important; display: block !important;">
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">ALVO DA IA</p>
+                                    </div>
+                                    <p class="text-base font-bold text-white status-value">Não definido</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Defina os parâmetros para revelar</p>
                                 </div>
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift">
-                                    <p class="text-[10px] text-zenix-secondary mb-2">Execução</p>
-                                    <p class="text-base font-bold text-zenix-secondary">IA Inativa</p>
-                                    <p class="text-[10px] text-zenix-label mt-1">Ativada após configuração</p>
+                                <!-- Card 3: PARÂMETROS -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-eye text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">PARÂMETROS</p>
+                                    </div>
+                                    <p class="text-base font-bold text-white status-value">Não definido</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Configure risco e entradas</p>
+                                </div>
+                                <!-- Card 4: EXECUÇÃO -->
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
+                                    <div class="flex items-center gap-2 mb-2">
+                                        <i class="fas fa-bolt text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">EXECUÇÃO</p>
+                                    </div>
+                                    <p class="text-base font-bold text-white status-value">Automática</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Ativada após configuração</p>
                                 </div>
                             </div>
                         </div>
@@ -182,6 +197,47 @@
                                 </div>
                                 <p id="modeDescription" class="form-help">{{ modeDescription }}</p>
                             </div>
+                            
+                            <!-- Gerenciamento de Risco - Mobile Only -->
+                            <div class="form-group risk-management-mobile">
+                                <label class="form-label">Gerenciamento de Risco</label>
+                                <div class="risk-buttons">
+                                    <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'fixo' }]"
+                                        @click="modoMartingale = 'fixo'"
+                                    >
+                                        Fixo
+                                    </button>
+                                    <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
+                                        @click="modoMartingale = 'conservador'"
+                                    >
+                                        Conservador
+                                    </button>
+                                    <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'moderado' }]"
+                                        @click="modoMartingale = 'moderado'"
+                                    >
+                                        Moderado
+                                    </button>
+                                    <button 
+                                        :class="['risk-btn', { 'active': modoMartingale === 'agressivo' }]"
+                                        @click="modoMartingale = 'agressivo'"
+                                    >
+                                        Agressivo
+                                    </button>
+                                </div>
+                                <div class="risk-indicator">
+                                    <div class="risk-header">
+                                        <span class="risk-label">Nível de Risco</span>
+                                        <span id="riskLevelTextMobile" class="risk-level-text">{{ riskLevelText }}</span>
+                                    </div>
+                                    <div class="risk-bar-container">
+                                        <div id="riskBarMobile" class="risk-bar" :style="{ width: riskBarWidth }"></div>
+                                    </div>
+                                    <p id="riskDescriptionMobile" class="risk-description">{{ riskDescriptionText }}</p>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -191,37 +247,46 @@
                         <div class="card-content">
                             <div class="form-group">
                                 <label class="form-label">Valor de Entrada (USD)</label>
-                                <input 
-                                    type="number" 
-                                    class="form-input" 
-                                    v-model.number="entryValue"
-                                    min="0.35"
-                                    step="0.01"
-                                >
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">$</span>
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        v-model.number="entryValue"
+                                        min="0.35"
+                                        step="0.01"
+                                    >
+                                </div>
                                 <p class="form-help">{{ entryPercent }}% do saldo</p>
                     </div>
 
                             <div class="form-group">
                                 <label class="form-label">Alvo de Lucro (USD)</label>
-                                <input 
-                                    type="number" 
-                                    class="form-input" 
-                                    v-model.number="profitTarget"
-                                    min="0"
-                                    step="0.01"
-                                >
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">$</span>
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        v-model.number="profitTarget"
+                                        min="0"
+                                        step="0.01"
+                                    >
+                                </div>
                                 <p class="form-help">{{ profitPercent }}% do saldo</p>
                     </div>
 
                             <div class="form-group">
                                 <label class="form-label">Limite de Perda (USD)</label>
-                                <input 
-                                    type="number" 
-                                    class="form-input" 
-                                    v-model.number="lossLimit"
-                                    min="0"
-                                    step="0.01"
-                                >
+                                <div class="input-wrapper">
+                                    <span class="input-prefix">$</span>
+                                    <input 
+                                        type="number" 
+                                        class="form-input" 
+                                        v-model.number="lossLimit"
+                                        min="0"
+                                        step="0.01"
+                                    >
+                                </div>
                                 <p class="form-help">{{ lossPercent }}% do saldo</p>
                         </div>
                     </div>
@@ -292,7 +357,7 @@
                             <div class="ai-status-control">
                                 <div>
                                     <p class="ai-status-title">Status da IA</p>
-                                    <p class="ai-status-subtitle">Controle de execução automática</p>
+                                    <p class="ai-status-subtitle">{{ isInvestmentActive ? 'Controle de execução automática' : 'Ative para iniciar operações' }}</p>
                                 </div>
                                 <div class="ai-status-toggle-wrapper">
                                     <span id="aiStatusText" class="ai-status-text" :class="{ 'active': isInvestmentActive }">
@@ -308,7 +373,12 @@
                                     </label>
                                 </div>
                             </div>
-                            <div class="ai-status-note">
+                            <div class="ai-status-message" v-if="!isInvestmentActive">
+                                <p class="ai-message-text">
+                                    A IA está <span class="ai-status-inactive">desativada</span>. Ative para começar.
+                                </p>
+                            </div>
+                            <div class="ai-status-note" v-if="isInvestmentActive">
                                 <p class="ai-note-text">Desativação manual pelo usuário</p>
                             </div>
                         </div>
@@ -331,93 +401,21 @@
                 </section>
 
         </main>
-
-            <!-- Footer -->
-            <footer id="footer" class="zenix-footer">
-                <div class="footer-content">
-                <div class="footer-grid">
-                        <div class="footer-brand">
-                            <div class="footer-logo">
-                                <span class="footer-logo-main">ZENIX</span>
-                                <span class="footer-logo-sub">PRO</span>
-                        </div>
-                        <p class="footer-description">
-                                Plataforma inteligente de investimentos com IA, copy trading e automação.
-                            </p>
-                            <div class="footer-social">
-                                <a href="#" class="social-icon"><i class="fa-brands fa-twitter"></i></a>
-                                <a href="#" class="social-icon"><i class="fa-brands fa-linkedin"></i></a>
-                                <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                                <a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-                        </div>
-                    </div>
-
-                        <div class="footer-column">
-                            <h3 class="footer-column-title">Produto</h3>
-                            <ul class="footer-links">
-                                <li><a href="#">IA de Investimento</a></li>
-                                <li><a href="#">Copy Trading</a></li>
-                                <li><a href="#">Agente Autônomo</a></li>
-                                <li><a href="#">Zenix Academy</a></li>
-                        </ul>
-                    </div>
-                        
-                        <div class="footer-column">
-                            <h3 class="footer-column-title">Empresa</h3>
-                            <ul class="footer-links">
-                                <li><a href="#">Sobre Nós</a></li>
-                                <li><a href="#">Planos</a></li>
-                                <li><a href="#">Blog</a></li>
-                                <li><a href="#">Carreiras</a></li>
-                            </ul>
-                </div>
-
-                        <div class="footer-column">
-                            <h3 class="footer-column-title">Suporte</h3>
-                            <ul class="footer-links">
-                                <li><a href="#">Central de Ajuda</a></li>
-                                <li><a href="#">Documentação</a></li>
-                                <li><a href="#">Status do Sistema</a></li>
-                                <li><a href="#">Contato</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div class="footer-bottom">
-                        <p class="footer-copyright">© 2025 Zenix Pro. Todos os direitos reservados.</p>
-                        <div class="footer-legal">
-                            <a href="#">Política de Privacidade</a>
-                            <span class="footer-separator">|</span>
-                            <a href="#">Termos de Uso</a>
-                            <span class="footer-separator">|</span>
-                            <a href="#">Cookies</a>
-                    </div>
-                </div>
-            </div>
-        </footer>
-        </div>
     </div>
 </template>
 
 <script>
-import AppSidebar from '../Sidebar.vue';
-import TopNavbar from '../TopNavbar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
-import TooltipsCopyTraders from '../TooltipsCopyTraders.vue';
+import TooltipsCopyTraders from '@/components/TooltipsCopyTraders.vue';
 
 export default {
     name: 'InvestmentIAView',
     components: {
-        AppSidebar,
-        TopNavbar,
         InvestmentActive,
-        TooltipsCopyTraders,
-
+        TooltipsCopyTraders
     },
     data() {
         return {
-            isSidebarOpen: false,
-            isSidebarCollapsed: false,
             isInvestmentActive: false,
             isActivating: false, 
 
@@ -988,20 +986,8 @@ export default {
             }
         },
 
-        toggleSidebar() {
-            this.isSidebarOpen = !this.isSidebarOpen;
-        },
-        
-        toggleSidebarCollapse() {
-            this.isSidebarCollapsed = !this.isSidebarCollapsed;
-        },
-        
         toggleAccountType(type) {
             this.isDemo = type === 'demo';
-        },
-        handleAccountTypeChangeFromNavbar(newAccountType) {
-            // Alterna entre demo e real quando chamado do navbar
-            this.toggleAccountType(newAccountType);
         },
         
         async startDataLoading() {
@@ -1229,82 +1215,10 @@ export default {
     box-sizing: border-box;
 }
 
-.zenix-layout {
-    min-height: 100vh;
-    background-color: #0B0B0B;
-    color: #DFDFDF;
-}
-
-.content-wrapper {
-    min-height: 100vh;
-    transition: margin-left 0.3s ease;
-    box-sizing: border-box;
-    padding: 0!important;
-    margin: 0!important;
-}
-
-.main-content {
-    margin-top: 0!important;
-    padding: 0!important;
-    margin: 0!important;
-}
-
-.content-wrapper.sidebar-collapsed {
-    margin-left: 72px;
-    width: calc(100% - 72px);
-}
-
-/* Top Header */
-.top-header {
-    position: fixed;
-    top: 0;
-    right: 0;
-    z-index: 40;
-    background-color: #0E0E0E;
-    border-bottom: 1px solid #1C1C1C;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
-    transition: left 0.3s ease;
-    box-sizing: border-box;
-}
-
-.content-wrapper.sidebar-collapsed .top-header {
-    left: 72px;
-    width: calc(100% - 72px);
-}
-
-.header-content {
-    padding: 1rem 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.5rem;
-    max-width: 100%;
+.investment-container {
     width: 100%;
-    box-sizing: border-box;
-}
-
-.header-left-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    justify-content: center;
-    align-items: flex-start;
-}
-
-.header-title {
-    font-size: 1.5rem;
-    font-weight: 700;
     color: #DFDFDF;
-    margin: 0;
-    line-height: 1.2;
-}
-
-.header-subtitle {
-    font-size: 0.875rem;
-    color: #A1A1A1;
-    margin: 0;
-    line-height: 1.4;
+    font-family: 'Inter', sans-serif;
 }
 
 .balance-display-card {
@@ -1394,11 +1308,12 @@ export default {
 
 /* Main Content */
 .main-content {
-    margin-top: 90px; /* Margem pequena entre conteúdo e header */
-    padding: 1rem 20px; /* Padding reduzido */
+    margin-top: 0;
+    padding: 1rem 20px;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
+    background-color: transparent;
 }
 
 /* AI Vision Panel */
@@ -1411,7 +1326,7 @@ export default {
 }
 
 .ai-vision-card {
-    background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1.5rem;
@@ -1423,7 +1338,7 @@ export default {
 
 .premium-card {
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
-    background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 }
 
 .glow-green {
@@ -1432,7 +1347,7 @@ export default {
 
 /* Tailwind-like utility classes for AI Vision Panel */
 .bg-zenix-card {
-    background-color: #0E0E0E;
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 }
 
 .bg-zenix-bg {
@@ -1474,6 +1389,12 @@ export default {
 .grid-cols-12 {
     display: grid;
     grid-template-columns: repeat(12, minmax(0, 1fr));
+}
+
+@media (max-width: 768px) {
+    .grid-cols-12 {
+        grid-template-columns: 1fr;
+    }
 }
 
 .grid-cols-2 {
@@ -1870,67 +1791,6 @@ export default {
     color: #A1A1A1;
 }
 
-.balance-card-header {
-    background-color: #0B0B0B;
-    border: 1px solid #1C1C1C;
-    border-radius: 0.75rem;
-    padding: 0.75rem;
-}
-
-.balance-header-content {
-    display: flex;
-    align-items: center;
-    gap: 0.625rem;
-}
-
-.balance-info-header {
-    display: flex;
-    flex-direction: column;
-}
-
-.balance-label-header {
-    font-size: 0.625rem;
-    color: #7A7A7A;
-    font-weight: 500;
-}
-
-.balance-value-row-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    margin-top: 0.125rem;
-}
-
-.balance-value-header {
-    font-size: 1rem;
-    font-weight: bold;
-    color: #DFDFDF;
-}
-
-.account-type-btn-header {
-    padding: 0.125rem 0.5rem;
-    border-radius: 0.25rem;
-    font-size: 0.625rem;
-    font-weight: 600;
-    border: none;
-}
-
-.real-btn-header {
-    background-color: #22C55E;
-    color: #000;
-}
-
-.demo-btn-header {
-    background-color: #333;
-    color: #A1A1A1;
-}
-
-.eye-toggle-btn-header {
-    background: none;
-    border: none;
-    color: #A1A1A1;
-    cursor: pointer;
-}
 
 /* AI Vision Grid */
 .ai-vision-grid {
@@ -2359,7 +2219,7 @@ export default {
 }
 
 .status-info-card {
-    background-color: #0B0B0B;
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1rem;
@@ -2406,14 +2266,56 @@ export default {
     box-sizing: border-box;
 }
 
+/* Order para desktop - ordem padrão */
+#market-strategy-card {
+    order: 1;
+}
+
+#entry-params-card {
+    order: 2;
+}
+
+#risk-management-card {
+    order: 3;
+}
+
+#ai-control-card {
+    order: 4;
+}
+
+/* Gerenciamento de Risco - Desktop: esconder dentro do card, mostrar card separado */
+.risk-management-mobile {
+    display: none;
+}
+
+#risk-management-card {
+    display: block;
+}
+
+/* Garantir que no desktop (acima de 768px) as regras sejam aplicadas */
+@media (min-width: 769px) {
+    .risk-management-mobile {
+        display: none !important;
+    }
+    
+    #risk-management-card {
+        display: block !important;
+    }
+}
+
 .config-card {
-    background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     border: 2px solid #1C1C1C;
     border-radius: 0.75rem;
     padding: 1.25rem;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
     width: 100%;
     box-sizing: border-box;
+}
+
+/* Garantir que todos os cards tenham o mesmo gradiente */
+.config-card.premium-card {
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 }
 
 .card-title {
@@ -2458,6 +2360,21 @@ export default {
     cursor: pointer;
 }
 
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-prefix {
+    position: absolute;
+    left: 0.75rem;
+    color: #DFDFDF;
+    font-size: 0.75rem;
+    z-index: 1;
+    pointer-events: none;
+}
+
 .form-select,
 .form-input {
     width: 100%;
@@ -2469,6 +2386,10 @@ export default {
     color: #DFDFDF;
     outline: none;
     transition: border-color 0.2s;
+}
+
+.form-input {
+    padding-left: 1.5rem;
 }
 
 .form-select:focus,
@@ -2511,9 +2432,12 @@ export default {
 }
 
 .mode-btn.active {
-    background-color: #22C55E;
-    color: white;
+    background-color: #0A1A0A;
+    color: #22C55E;
     border-color: #22C55E;
+    border-width: 1px;
+    font-weight: 500;
+    box-shadow: 0 0 4px rgba(34, 197, 94, 0.3);
 }
 
 /* Risk Buttons */
@@ -2541,9 +2465,12 @@ export default {
 }
 
 .risk-btn.active {
-    background-color: #22C55E;
-    color: white;
+    background-color: #0A1A0A;
+    color: #22C55E;
     border-color: #22C55E;
+    border-width: 1px;
+    font-weight: 500;
+    box-shadow: 0 0 4px rgba(34, 197, 94, 0.3);
 }
 
 /* Risk Indicator */
@@ -2599,7 +2526,7 @@ export default {
     overflow: hidden;
     border: 2px solid rgba(34, 197, 94, 0.2);
     box-shadow: 0 0 24px rgba(34, 197, 94, 0.08), 0 4px 16px rgba(0, 0, 0, 0.3);
-    background: radial-gradient(circle at top left, #0C0C0C 0%, #0A0A0A 100%);
+    background: linear-gradient(to bottom right, #0C0C0C 0%, #0A0A0A 100%);
 }
 
 .ai-control-bg {
@@ -2808,6 +2735,34 @@ export default {
     transform: translateX(calc(4rem - 1.5rem - 6px));
 }
 
+.ai-status-message {
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    padding: 1rem;
+    margin-top: 1rem;
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .ai-status-message {
+        display: none !important;
+    }
+}
+
+.ai-message-text {
+    font-size: 0.875rem;
+    color: #A1A1A1;
+    line-height: 1.5;
+    margin: 0;
+    text-align: center;
+}
+
+.ai-status-inactive {
+    color: #EF4444;
+    font-weight: 600;
+}
+
 .ai-status-note {
     text-align: center;
 }
@@ -2838,221 +2793,343 @@ export default {
     box-sizing: border-box;
 }
 
-/* Footer */
-.zenix-footer {
-    background-color: #0B0B0B;
-    border-top: 1px solid #1C1C1C;
-    margin-top: 3rem;
-    width: 100%;
-}
-
-.footer-content {
-    max-width: 100%;
-    width: 100%;
-    margin: 0 auto;
-    padding: 3rem 20px;
-    box-sizing: border-box;
-}
-
-.footer-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 3rem;
-    margin-bottom: 2rem;
-}
-
-.footer-brand {
-    grid-column: span 1;
-}
-
-.footer-logo {
-    display: flex;
-    align-items: baseline;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.footer-logo-main {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #DFDFDF;
-}
-
-.footer-logo-sub {
-    font-size: 0.75rem;
-    color: #A1A1A1;
-}
-
-.footer-description {
-    color: #A1A1A1;
-    font-size: 0.75rem;
-    line-height: 1.6;
-    margin-bottom: 1.5rem;
-    opacity: 0.6;
-}
-
-.footer-social {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-
-.social-icon {
-    color: #A1A1A1;
-    transition: color 0.2s;
-    opacity: 0.5;
-}
-
-.social-icon:hover {
-    color: #DFDFDF;
-}
-
-.footer-column-title {
-    color: #DFDFDF;
-    font-weight: 500;
-    font-size: 0.75rem;
-    margin-bottom: 1rem;
-}
-
-.footer-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 0.625rem;
-}
-
-.footer-links a {
-    color: #A1A1A1;
-    font-size: 0.75rem;
-    text-decoration: none;
-    transition: color 0.2s;
-    opacity: 0.6;
-}
-
-.footer-links a:hover {
-    color: #DFDFDF;
-}
-
-.footer-bottom {
-    border-top: 1px solid #1A1A1A;
-    padding-top: 2rem;
-    opacity: 0.4;
-    display: flex;
-    flex-direction: column;
-    gap: 0.75rem;
-}
-
-@media (min-width: 768px) {
-    .footer-bottom {
-        flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-    }
-}
-
-.footer-copyright {
-    color: #A1A1A1;
-    font-size: 0.75rem;
-}
-
-.footer-legal {
-    display: flex;
-    align-items: center;
-    gap: 1.5rem;
-    font-size: 0.75rem;
-}
-
-.footer-legal a {
-    color: #A1A1A1;
-    text-decoration: none;
-    transition: color 0.2s;
-}
-
-.footer-legal a:hover {
-    color: #DFDFDF;
-}
-
-.footer-separator {
-    color: #1C1C1C;
-}
-
 /* Responsive */
 @media (max-width: 1024px) {
-    .main-content-wrapper {
-        margin-left: 0;
-        width: 100%;
-    }
-    
-    .top-header {
-        left: 0;
-        width: 100%;
-    }
-    
     .main-content {
-        padding: 1.5rem 20px;
+        padding: 1rem 15px;
     }
     
     .config-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
     }
     
-    .ai-vision-grid {
+    .grid.grid-cols-12 {
         grid-template-columns: 1fr;
     }
     
-    .footer-grid {
+    .col-span-5,
+    .col-span-7 {
+        grid-column: span 1;
+    }
+    
+    .col-span-7 .grid.grid-cols-2 {
         grid-template-columns: repeat(2, 1fr);
     }
     
-    .ai-vision-card,
-    .config-grid,
-    .chart-section {
+    #ai-vision-panel {
         margin-left: 0;
         margin-right: 0;
-        width: 100%;
+    }
+    
+    .chart-section {
+        margin-left: -15px;
+        margin-right: -15px;
+        width: calc(100% + 30px);
     }
 }
 
 @media (max-width: 768px) {
-    .header-content {
-        padding: 1rem 15px;
-        flex-direction: column;
+    /* Gradiente no fundo da página - apenas mobile */
+    .main-content {
+        margin-top: 0;
+        background: transparent !important;
+        position: relative;
+    }
+    
+    /* Gradiente nos cards de configuração - apenas mobile */
+    .config-card {
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
+    }
+    
+    
+    #ai-vision-panel {
+        margin-bottom: 1rem;
+    }
+    
+    .grid.grid-cols-12 {
+        grid-template-columns: 1fr;
         gap: 1rem;
     }
     
-    .header-left-content {
-        width: 100%;
+    .col-span-5 {
+        grid-column: span 1;
+        height: 180px;
     }
     
-    .header-title {
-        font-size: 1.25rem;
+    .col-span-7 {
+        grid-column: span 1;
     }
     
-    .header-subtitle {
-        font-size: 0.8rem;
+    .col-span-7 .grid.grid-cols-2 {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 0.75rem;
     }
     
-    .main-content {
-        margin-top: 100px; /* Margem ajustada para mobile */
-        padding: 1rem 15px;
+    .col-span-7 .bg-zenix-bg {
+        padding: 0.875rem;
     }
     
-    .footer-grid {
+    .col-span-7 .text-\[10px\] {
+        font-size: 9px;
+    }
+    
+    .col-span-7 .text-base {
+        font-size: 0.875rem;
+    }
+    
+    .col-span-7 .text-sm {
+        font-size: 0.8125rem;
+    }
+    
+    .config-grid {
         grid-template-columns: 1fr;
+        gap: 1rem;
+        margin-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Reorganização da ordem no mobile */
+    #market-strategy-card {
+        order: 1;
+    }
+    
+    #entry-params-card {
+        order: 2;
+    }
+    
+    #ai-control-card {
+        order: 3;
+    }
+    
+    /* Gerenciamento de Risco - Mobile: mostrar dentro do card, esconder card separado */
+    .risk-management-mobile {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    /* Remover indicador de risco no mobile */
+    .risk-management-mobile .risk-indicator {
+        display: none !important;
+    }
+    
+    #risk-management-card {
+        display: none !important;
+    }
+    
+    /* Gradiente nos cards de configuração - apenas mobile */
+    .config-card {
+        padding: 1rem;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+    }
+    
+    .card-content {
+        gap: 0.875rem;
+    }
+    
+    .form-group {
+        gap: 0.375rem;
+    }
+    
+    .card-title {
+        font-size: 0.8125rem;
+        margin-bottom: 0.875rem;
+    }
+    
+    .form-label {
+        font-size: 0.875rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        color: #DFDFDF;
+    }
+    
+    .form-select,
+    .form-input {
+        font-size: 0.875rem;
+        padding: 0.875rem 1rem;
+        background-color: #000000 !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 0.5rem;
+        color: #FFFFFF !important;
+        font-weight: 600;
+    }
+    
+    .form-input {
+        padding-left: 2rem;
+    }
+    
+    .input-prefix {
+        font-size: 0.875rem;
+        left: 1rem;
+        color: #FFFFFF !important;
+        font-weight: 600;
+    }
+    
+    .form-help {
+        font-size: 0.8125rem;
+    }
+    
+    .mode-buttons {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 0.5rem;
+    }
+    
+    .mode-btn {
+        padding: 0.75rem 0.75rem;
+        font-size: 0.75rem;
     }
     
     .risk-buttons {
         grid-template-columns: repeat(2, 1fr);
+        gap: 0.5rem;
     }
     
-    .ai-vision-card,
-    .config-grid,
+    .risk-btn {
+        padding: 0.75rem 0.75rem;
+        font-size: 0.75rem;
+    }
+    
+    .risk-indicator {
+        padding: 0.875rem;
+    }
+    
+    .risk-label,
+    .risk-level-text {
+        font-size: 0.7rem;
+    }
+    
+    .risk-description {
+        font-size: 0.7rem;
+    }
+    
+    .ai-status-control {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 1rem;
+        background-color: transparent;
+        border: none;
+        margin-bottom: 0;
+    }
+    
+    .ai-status-control > div:first-child {
+        flex: 1;
+    }
+    
+    .ai-status-toggle-wrapper {
+        flex-shrink: 0;
+        justify-content: flex-end;
+        gap: 0.75rem;
+    }
+    
+    .ai-status-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #DFDFDF;
+        margin-bottom: 0.25rem;
+        text-align: left;
+    }
+    
+    .ai-status-subtitle {
+        font-size: 0.875rem;
+        color: #A1A1A1;
+        text-align: left;
+    }
+    
+    .ai-status-text {
+        font-size: 0.8125rem;
+        display: none;
+    }
+    
+    .ai-status-message {
+        display: block;
+        margin-top: 1rem;
+        padding: 0.875rem;
+        background-color: #0B0B0B;
+        border: 1px solid #1C1C1C;
+        border-radius: 0.5rem;
+    }
+    
+    .ai-message-text {
+        font-size: 0.875rem;
+        text-align: center;
+    }
+    
+    .toggle-switch {
+        width: 3.5rem;
+        height: 1.75rem;
+    }
+    
+    .toggle-slider {
+        width: 3.5rem;
+        height: 1.75rem;
+    }
+    
+    .toggle-slider::before {
+        height: 1.25rem;
+        width: 1.25rem;
+    }
+    
+    .toggle-switch input:checked + .toggle-slider::before {
+        transform: translateX(calc(3.5rem - 1.25rem - 6px));
+    }
+    
     .chart-section {
-        margin-left: 0;
-        margin-right: 0;
-        width: 100%;
+        margin-left: -15px;
+        margin-right: -15px;
+        width: calc(100% + 30px);
+    }
+    
+    .p-6 {
+        padding: 1rem;
+    }
+    
+    .mb-6 {
+        margin-bottom: 1rem;
+    }
+    
+    .text-xl {
+        font-size: 1.125rem;
+    }
+    
+    .h-\[220px\] {
+        height: 180px;
+    }
+    
+    .w-40 {
+        width: 8rem;
+    }
+    
+    .h-40 {
+        height: 8rem;
+    }
+    
+    .w-32 {
+        width: 6rem;
+    }
+    
+    .h-32 {
+        height: 6rem;
+    }
+    
+    .w-24 {
+        width: 4.5rem;
+    }
+    
+    .h-24 {
+        height: 4.5rem;
+    }
+    
+    .text-5xl {
+        font-size: 2rem;
+    }
+    
+    .ai-brain-glow i {
+        font-size: 2rem !important;
     }
 }
 
@@ -3079,6 +3156,145 @@ export default {
 @keyframes spin {
     to {
         transform: rotate(360deg);
+    }
+}
+
+
+/* Header Mobile - Escondido no desktop */
+#ai-vision-panel .ai-vision-header-mobile {
+    display: none;
+}
+
+/* Estilos específicos para Visão da IA no Mobile */
+@media (max-width: 768px) {
+    /* Remove o fundo do container principal da Visão da IA */
+    #ai-vision-panel .ai-vision-container {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        padding: 0 !important;
+    }
+    
+    /* Esconde header desktop, mostra mobile */
+    #ai-vision-panel .ai-vision-header-desktop {
+        display: none !important;
+    }
+    
+    #ai-vision-panel .ai-vision-header-mobile {
+        display: block !important;
+        margin-bottom: 1.5rem;
+        background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, 0.3) 0%, rgba(0, 1, 0, 0.1) 70%, transparent 100%);
+        border-radius: 0.75rem;
+        padding: 1rem;
+    }
+    
+    #ai-vision-panel .ai-vision-header-mobile h1 {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: #DFDFDF;
+        margin-bottom: 0.25rem;
+    }
+    
+    #ai-vision-panel .ai-vision-header-mobile p {
+        font-size: 0.875rem;
+        color: #A1A1A1;
+    }
+    
+    #ai-vision-panel .ai-chip-icon-mobile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(34, 197, 94, 0.15);
+        padding: 15px;
+        border-radius: 50%;
+        width: auto;
+        height: auto;
+    }
+    
+    /* Esconde a área de visualização AI completa no mobile */
+    #ai-vision-panel .ai-visualization-area {
+        display: none !important;
+    }
+    
+    /* Ajusta o grid para ocupar toda a largura no mobile */
+    #ai-vision-panel .grid {
+        grid-template-columns: 1fr !important;
+    }
+    
+    #ai-vision-panel .col-span-7 {
+        grid-column: span 1 !important;
+    }
+    
+    /* Modifica os cards de status para mobile */
+    #ai-vision-panel .status-cards-container {
+        grid-template-columns: 1fr 1fr !important;
+        gap: 0.75rem;
+    }
+    
+    #ai-vision-panel .status-card-mobile {
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
+        border: 1px solid rgba(28, 28, 28, 0.8) !important;
+        border-radius: 0.75rem;
+        padding: 1rem;
+        text-align: left !important;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+    }
+    
+    /* Remove textos descritivos (status-description) no mobile */
+    #ai-vision-panel .status-description {
+        display: none !important;
+    }
+    
+    /* Alinha labels e valores à esquerda */
+    #ai-vision-panel .status-label {
+        text-align: left !important;
+        margin: 0 !important;
+        color: #FFFFFF !important;
+        font-size: 0.625rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    #ai-vision-panel .status-value {
+        text-align: left !important;
+        color: #FFFFFF !important;
+        font-weight: 700;
+        font-size: 1rem;
+        margin-top: 0.5rem;
+        margin-bottom: 0;
+    }
+    
+    /* Ajusta os ícones nos cards */
+    #ai-vision-panel .status-card-mobile .flex.items-center {
+        justify-content: flex-start !important;
+        margin-bottom: 0.5rem;
+        align-items: center;
+    }
+    
+    #ai-vision-panel .status-card-mobile .flex.items-center i {
+        color: #22C55E !important;
+        font-size: 1.125rem;
+    }
+    
+    #ai-vision-panel .status-card-mobile .asset-icon {
+        opacity: 1 !important;
+        width: 18px !important;
+        height: 18px !important;
+        filter: brightness(0) saturate(100%) invert(67%) sepia(93%) saturate(1352%) hue-rotate(87deg) brightness(96%) contrast(88%);
+    }
+    
+    /* Esconde o Central AI Core no mobile */
+    #ai-vision-panel .ai-core-mobile {
+        display: none !important;
+    }
+    
+    /* Remove gap do grid no mobile */
+    #ai-vision-panel .grid.gap-5 {
+        gap: 0 !important;
     }
 }
 </style>
