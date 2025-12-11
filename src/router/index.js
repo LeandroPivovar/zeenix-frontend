@@ -22,6 +22,7 @@ import AgenteAutonomoView from '@/views/AgenteAutonomo.vue'
 import CopyTraders from '@/views/CopyTradersView.vue';
 import SupportItemsManagementView from '@/views/Admin/SupportItemsManagementView.vue';
 import PlansManagementView from '@/views/Admin/PlansManagementView.vue';
+import AutonomousAgentLogsView from '@/views/AutonomousAgentLogsView.vue';
 
 const routes = [
   {
@@ -174,6 +175,12 @@ const routes = [
     path: '/agente-autonomo',
     name: 'AgenteAutonomoView',
     component: AgenteAutonomoView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/agente-autonomo/logs',
+    name: 'AutonomousAgentLogsView',
+    component: AutonomousAgentLogsView,
     meta: { requiresAuth: true }
   },
   {
