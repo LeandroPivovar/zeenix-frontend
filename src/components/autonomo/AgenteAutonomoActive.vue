@@ -395,6 +395,10 @@
 				unidadeTimeframeSelecionada: 'minutos',
 				valorTimeframeSelecionado: 1,
 				tipoGraficoSelecionado: 'Gráfico de Linhas',
+				// WebSocket para ticks em tempo real
+				derivWebSocket: null,
+				derivToken: null,
+				symbol: 'R_75', // Índice do agente autônomo
 				timeframeOptions: {
 					minutos: [1, 2, 3, 5, 10, 15, 30],
 					horas: [1, 2, 4, 8],
@@ -563,6 +567,11 @@
 			abaAtiva(newAba) {
 				// Quando a aba 'grafico' for selecionada, garantir que o gráfico seja inicializado
 				if (newAba === 'grafico') {
+					// Conectar WebSocket se não estiver conectado
+					if (!this.derivWebSocket || this.derivWebSocket.readyState !== WebSocket.OPEN) {
+						this.connectToDerivWebSocket();
+					}
+					
 					this.$nextTick(() => {
 						setTimeout(() => {
 							if (this.$refs.indexChartContainer) {
@@ -575,6 +584,9 @@
 							}
 						}, 200);
 					});
+				} else {
+					// Desconectar WebSocket quando sair da aba gráfico (opcional - pode manter conectado)
+					// this.disconnectDerivWebSocket();
 				}
 			},
 			'agenteData.goalValue'(newVal) {
@@ -646,9 +658,8 @@
 				this.ultimaAtualizacao = new Date().toLocaleTimeString('pt-BR');
 			}, 1000);
 			
-			// Carregar histórico de preços e iniciar atualização
-			this.loadPriceHistory();
-			this.startPriceHistoryUpdates();
+			// Conectar ao WebSocket da Deriv para receber ticks em tempo real
+			this.connectToDerivWebSocket();
 			
 			// Inicializar gráfico após um pequeno delay para garantir que o ref esteja pronto
 			this.$nextTick(() => {
@@ -656,7 +667,7 @@
 					if (this.$refs.indexChartContainer) {
 						this.initIndexChart();
 					}
-				}, 300);
+				}, 500);
 			});
 			
 			// Rolagem instantânea para o topo
@@ -666,6 +677,9 @@
 			if (this.priceHistoryInterval) {
 				clearInterval(this.priceHistoryInterval);
 			}
+			
+			// Desconectar WebSocket
+			this.disconnectDerivWebSocket();
 			
 			// Destruir gráfico
 			if (this.indexChart) {
@@ -682,83 +696,168 @@
 				console.log(`Exportando histórico. Filtro: ${this.filtroDataSelecionado}. Total de operações: ${this.historicoOperacoesFiltradas.length}`);
 				// Aqui seria a lógica real para gerar e baixar um arquivo CSV/Excel/PDF
 			},
-			async loadPriceHistory() {
+			getDerivToken() {
+				// Buscar token Deriv do localStorage
 				try {
-					const userId = this.getUserId();
-					if (!userId) return;
-
-					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
-					const response = await fetch(`${apiBase}/autonomous-agent/price-history/${userId}?limit=100`, {
-						headers: {
-							Authorization: `Bearer ${localStorage.getItem("token")}`,
-						},
-					});
-
-					const result = await response.json();
-					console.log('[AgenteAutonomoActive] Dados do histórico recebidos:', result);
-					if (result.success && result.data) {
-						// result.data é um array de PriceTick: [{value, epoch, timestamp}, ...]
-						if (Array.isArray(result.data)) {
-							this.priceTicks = result.data
-								.filter(tick => tick && (tick.value !== undefined || tick !== null))
-								.map(tick => {
-									let value = 0;
-									let epoch = 0;
-									let timestamp = '';
-									
-									if (typeof tick === 'object') {
-										value = tick.value !== undefined ? parseFloat(tick.value) : 0;
-										epoch = tick.epoch ? (typeof tick.epoch === 'number' ? tick.epoch : parseInt(tick.epoch)) : 0;
-										timestamp = tick.timestamp || new Date().toISOString();
-										
-										// Se não tiver epoch mas tiver timestamp, converter
-										if (!epoch && timestamp) {
-											epoch = Math.floor(new Date(timestamp).getTime() / 1000);
-										}
-										
-										// Se não tiver timestamp mas tiver epoch, converter
-										if (!timestamp && epoch) {
-											timestamp = new Date(epoch * 1000).toISOString();
-										}
-									} else {
-										// Se for um número simples, usar como value
-										value = parseFloat(tick) || 0;
-										epoch = Math.floor(Date.now() / 1000);
-										timestamp = new Date().toISOString();
-									}
-									
-									return {
-										value: isNaN(value) ? 0 : value,
-										epoch: epoch || Math.floor(Date.now() / 1000),
-										timestamp: timestamp || new Date().toISOString()
-									};
-								})
-								.filter(tick => tick.value > 0 && tick.epoch > 0); // Filtrar valores inválidos
-							
-							console.log('[AgenteAutonomoActive] Processados', this.priceTicks.length, 'ticks válidos de', result.data.length, 'recebidos');
-							
-							if (this.priceTicks.length > 0) {
-								console.log('[AgenteAutonomoActive] Primeiro tick:', this.priceTicks[0], 'Último tick:', this.priceTicks[this.priceTicks.length - 1]);
-								this.updateIndexChart();
-							} else {
-								console.warn('[AgenteAutonomoActive] Nenhum tick válido encontrado nos dados após processamento');
-							}
-						} else {
-							console.warn('[AgenteAutonomoActive] Formato de dados inesperado:', typeof result.data, result.data);
-						}
-					} else {
-						console.warn('[AgenteAutonomoActive] Resposta sem sucesso ou sem dados:', result);
+					// Tentar deriv_token direto
+					let token = localStorage.getItem('deriv_token');
+					if (token) return token;
+					
+					// Tentar deriv_tokens_by_loginid
+					const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
+					if (tokensByLoginId) {
+						const tokens = JSON.parse(tokensByLoginId);
+						const firstToken = Object.values(tokens)[0];
+						if (firstToken) return firstToken;
 					}
+					
+					// Tentar deriv_connection
+					const connection = localStorage.getItem('deriv_connection');
+					if (connection) {
+						const conn = JSON.parse(connection);
+						if (conn.token) return conn.token;
+					}
+					
+					console.warn('[AgenteAutonomoActive] Token Deriv não encontrado');
+					return null;
 				} catch (error) {
-					console.error("[AgenteAutonomoActive] Erro ao carregar histórico de preços:", error);
+					console.error('[AgenteAutonomoActive] Erro ao buscar token Deriv:', error);
+					return null;
 				}
 			},
 			
-			startPriceHistoryUpdates() {
-				// Atualizar histórico de preços a cada 2 segundos para receber ticks em tempo real
-				this.priceHistoryInterval = setInterval(async () => {
-					await this.loadPriceHistory();
-				}, 2000);
+			connectToDerivWebSocket() {
+				try {
+					this.derivToken = this.getDerivToken();
+					if (!this.derivToken) {
+						console.warn('[AgenteAutonomoActive] Não é possível conectar: token Deriv não encontrado');
+						return;
+					}
+					
+					const appId = '1089'; // App ID da Deriv
+					const wsUrl = `wss://ws.derivws.com/websockets/v3?app_id=${appId}`;
+					
+					console.log('[AgenteAutonomoActive] Conectando ao WebSocket da Deriv...');
+					
+					this.derivWebSocket = new WebSocket(wsUrl);
+					
+					this.derivWebSocket.onopen = () => {
+						console.log('[AgenteAutonomoActive] ✅ WebSocket conectado');
+						// Autorizar
+						this.derivWebSocket.send(JSON.stringify({
+							authorize: this.derivToken
+						}));
+					};
+					
+					this.derivWebSocket.onmessage = (event) => {
+						try {
+							const message = JSON.parse(event.data);
+							
+							if (message.error) {
+								console.error('[AgenteAutonomoActive] Erro do WebSocket:', message.error);
+								return;
+							}
+							
+							if (message.msg_type === 'authorize') {
+								console.log('[AgenteAutonomoActive] ✅ Autorizado na Deriv');
+								// Buscar histórico inicial
+								this.derivWebSocket.send(JSON.stringify({
+									ticks_history: this.symbol,
+									adjust_start_time: 1,
+									count: 100,
+									end: 'latest',
+									subscribe: 1,
+									style: 'ticks'
+								}));
+							}
+							
+							if (message.msg_type === 'history') {
+								const history = message.history;
+								if (history && history.prices && Array.isArray(history.prices)) {
+									console.log('[AgenteAutonomoActive] 📊 Histórico recebido:', history.prices.length, 'ticks');
+									
+									const ticks = history.prices.map((price, index) => {
+										const epoch = history.times && history.times[index] 
+											? history.times[index] 
+											: Math.floor(Date.now() / 1000) - (history.prices.length - index);
+										
+										return {
+											value: parseFloat(price) || 0,
+											epoch: epoch,
+											timestamp: new Date(epoch * 1000).toISOString()
+										};
+									}).filter(tick => tick.value > 0 && tick.epoch > 0);
+									
+									this.priceTicks = ticks;
+									console.log('[AgenteAutonomoActive] ✅', ticks.length, 'ticks processados');
+									
+									if (this.indexChartInitialized) {
+										this.updateIndexChart();
+									}
+								}
+							}
+							
+							if (message.msg_type === 'tick') {
+								const tick = message.tick;
+								if (tick && tick.quote !== undefined) {
+									const epoch = tick.epoch || Math.floor(Date.now() / 1000);
+									const value = parseFloat(tick.quote);
+									
+									if (!isNaN(value) && value > 0 && epoch > 0) {
+										const newTick = {
+											value: value,
+											epoch: epoch,
+											timestamp: new Date(epoch * 1000).toISOString()
+										};
+										
+										// Adicionar ao array (manter últimos 500 ticks)
+										this.priceTicks.push(newTick);
+										if (this.priceTicks.length > 500) {
+											this.priceTicks.shift();
+										}
+										
+										// Atualizar gráfico
+										if (this.indexChartInitialized && this.indexChartSeries) {
+											try {
+												this.indexChartSeries.update({
+													time: Math.floor(epoch),
+													value: value
+												});
+											} catch (error) {
+												console.warn('[AgenteAutonomoActive] Erro ao atualizar tick:', error);
+											}
+										}
+									}
+								}
+							}
+						} catch (error) {
+							console.error('[AgenteAutonomoActive] Erro ao processar mensagem WebSocket:', error);
+						}
+					};
+					
+					this.derivWebSocket.onerror = (error) => {
+						console.error('[AgenteAutonomoActive] ❌ Erro no WebSocket:', error);
+					};
+					
+					this.derivWebSocket.onclose = () => {
+						console.warn('[AgenteAutonomoActive] 🔌 WebSocket fechado. Tentando reconectar...');
+						// Tentar reconectar após 5 segundos
+						setTimeout(() => {
+							if (this.abaAtiva === 'grafico') {
+								this.connectToDerivWebSocket();
+							}
+						}, 5000);
+					};
+				} catch (error) {
+					console.error('[AgenteAutonomoActive] Erro ao conectar WebSocket:', error);
+				}
+			},
+			
+			disconnectDerivWebSocket() {
+				if (this.derivWebSocket) {
+					this.derivWebSocket.close();
+					this.derivWebSocket = null;
+				}
 			},
 			
 			// ============================================

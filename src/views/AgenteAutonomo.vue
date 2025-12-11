@@ -228,7 +228,13 @@
           }
 
           const connectionStr = localStorage.getItem("deriv_connection");
-          const connection = connectionStr ? JSON.parse(connectionStr) : {};
+          let connection = {};
+          try {
+            connection = connectionStr ? JSON.parse(connectionStr) : {};
+          } catch (error) {
+            console.error('[AgenteAutonomo] Erro ao parsear deriv_connection:', error);
+            connection = {};
+          }
           const currency = connection.tradeCurrency || 'USD';
 
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
