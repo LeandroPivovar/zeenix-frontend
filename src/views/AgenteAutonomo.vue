@@ -77,7 +77,7 @@
         accumulatedLoss: 0.0,
         accumulatedChange: 0.0,
         lastExecutionTime: "00:00:00",
-        tempoAtivo: "0h 0m",
+        tempoAtivo: "0h 0m 0s",
         operacoesHoje: 0,
         
         // Dados da API
@@ -139,35 +139,59 @@
       agenteData() {
         // Calcular tempo ativo baseado na data da sessão atual (sessionDate)
         // Se não houver sessionDate, usar createdAt como fallback
-        let tempoAtivo = "0h 0m";
+        let tempoAtivo = "0h 0m 0s";
         if (this.agentConfig && this.agenteEstaAtivo) {
+          // Tentar sessionDate primeiro, depois createdAt
           const startDate = this.agentConfig.sessionDate || this.agentConfig.createdAt;
+          
           if (startDate) {
             try {
-              const startTime = new Date(startDate);
-              const now = new Date();
-              
-              // Usar getTime() para garantir cálculo correto
-              const diffMs = now.getTime() - startTime.getTime();
-              
-              if (diffMs > 0) {
-                const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-                const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-                tempoAtivo = `${diffHours}h ${diffMinutes}m`;
+              // Garantir que a data seja parseada corretamente
+              let startTime;
+              if (startDate instanceof Date) {
+                startTime = startDate.getTime();
+              } else if (typeof startDate === 'string') {
+                startTime = new Date(startDate).getTime();
               } else {
-                // Se a diferença for negativa ou zero, mostrar 0h 0m
-                tempoAtivo = "0h 0m";
+                // Se for um timestamp ou outro formato
+                startTime = new Date(startDate).getTime();
+              }
+              
+              const now = new Date().getTime();
+              
+              // Verificar se a data é válida
+              if (isNaN(startTime)) {
+                console.warn('[AgenteAutonomo] Data inválida:', startDate);
+                tempoAtivo = "0h 0m 0s";
+              } else {
+                // Usar getTime() para garantir cálculo correto em milissegundos
+                const diffMs = now - startTime;
+                
+                if (diffMs > 0) {
+                  const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+                  const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+                  const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+                  tempoAtivo = `${diffHours}h ${diffMinutes}m ${diffSeconds}s`;
+                } else {
+                  // Se a diferença for negativa ou zero, mostrar 0h 0m 0s
+                  tempoAtivo = "0h 0m 0s";
+                }
               }
             } catch (error) {
               console.error('[AgenteAutonomo] Erro ao calcular tempo ativo:', error, 'startDate:', startDate);
-              tempoAtivo = "0h 0m";
+              tempoAtivo = "0h 0m 0s";
             }
           } else {
-            console.warn('[AgenteAutonomo] sessionDate ou createdAt não disponível:', {
-              sessionDate: this.agentConfig.sessionDate,
-              createdAt: this.agentConfig.createdAt,
-              agentConfig: this.agentConfig
-            });
+            // Debug: logar quando não há data disponível
+            if (this.agentConfig) {
+              console.warn('[AgenteAutonomo] sessionDate ou createdAt não disponível:', {
+                sessionDate: this.agentConfig.sessionDate,
+                createdAt: this.agentConfig.createdAt,
+                isActive: this.agenteEstaAtivo,
+                agentConfigKeys: Object.keys(this.agentConfig)
+              });
+            }
+            tempoAtivo = "0h 0m 0s";
           }
         }
         
@@ -373,6 +397,14 @@
             this.agentConfig = result.data;
             this.agenteEstaAtivo = result.data.isActive || false;
             
+            // Debug: logar dados recebidos
+            console.log('[AgenteAutonomo] Config carregado:', {
+              isActive: result.data.isActive,
+              sessionDate: result.data.sessionDate,
+              createdAt: result.data.createdAt,
+              sessionStatus: result.data.sessionStatus
+            });
+            
             // Atualizar dados locais
             if (result.data.dailyProfitTarget) {
               this.goalValue = result.data.dailyProfitTarget;
@@ -571,21 +603,13 @@
           }
         }, 5000);
         
-        // Atualizar tempo ativo a cada minuto (força re-render do computed)
+        // Atualizar tempo ativo a cada segundo para mostrar tempo preciso com segundos
         this.timeUpdateInterval = setInterval(() => {
           if (this.agenteEstaAtivo && this.agentConfig) {
             // Força atualização do computed agenteData para recalcular tempo ativo
             this.$forceUpdate();
           }
-        }, 60000); // A cada 1 minuto
-        
-        // Também atualizar a cada segundo para mostrar tempo mais preciso
-        setInterval(() => {
-          if (this.agenteEstaAtivo && this.agentConfig) {
-            // Força atualização do computed agenteData
-            this.$forceUpdate();
-          }
-        }, 1000); // A cada 1 segundo para atualização mais fluida
+        }, 1000); // A cada 1 segundo para atualizar segundos para atualização mais fluida
       },
       
       stopPolling() {
