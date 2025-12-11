@@ -48,7 +48,7 @@
 					<span class="icon-bullet" style="color: #666;"><img src="../../assets/icons/clock.svg" alt="" width="15px">
 						Tempo ativo
 					</span>
-					<div class="data-label">{{ agenteData.tempoAtivo }}</div>
+					<div class="data-label">{{ tempoAtivoDisplay }}</div>
 				</div>
 				<div class="data-item">
 					<span class="icon-bullet" style="color: #666;">
@@ -439,6 +439,10 @@
 				// Se não houver tradeHistory, usar operationHistory do agenteData
 				return this.agenteData?.operationHistory || [];
 			},
+			tempoAtivoDisplay() {
+				// Garantir que o tempo ativo seja sempre atualizado
+				return this.agenteData?.tempoAtivo || '0h 0m 0s';
+			},
 			acoesAgenteComputed() {
 				// Usar agentActions do agenteData se disponível
 				const actions = this.agenteData?.agentActions || this.acoesAgente || [];
@@ -602,6 +606,12 @@
 			'agenteData.lastExecutionTime'(newVal) {
 				if (newVal) {
 					this.ultimaAtualizacao = newVal;
+				}
+			},
+			'agenteData.tempoAtivo'(newVal) {
+				// Forçar atualização quando tempoAtivo mudar
+				if (newVal) {
+					this.$forceUpdate();
 				}
 			},
 			tradeHistory: {

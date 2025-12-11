@@ -142,7 +142,7 @@
         let tempoAtivo = "0h 0m 0s";
         
         if (this.agentConfig && this.agenteEstaAtivo) {
-          // SEMPRE usar createdAt se sessionDate for meia-noite ou não existir
+          // SEMPRE usar sessionDate se tiver hora completa, senão usar createdAt
           let startDate = this.agentConfig.sessionDate;
           
           // Verificar se sessionDate é meia-noite (00:00:00) - se for, usar createdAt
@@ -180,15 +180,7 @@
           }
         }
         
-        // Log temporário para debug
-        if (this.agentConfig && this.agenteEstaAtivo) {
-          console.log('[AgenteAutonomo] agenteData computed executado:', {
-            tempoAtivo,
-            sessionDate: this.agentConfig.sessionDate,
-            createdAt: this.agentConfig.createdAt,
-            agenteEstaAtivo: this.agenteEstaAtivo
-          });
-        }
+        // Retornar objeto reativo com todas as propriedades
         
         // Usar dados do backend quando disponíveis
         const operacoesHoje = this.agentConfig?.totalTrades || this.operacoesHoje || 0;
