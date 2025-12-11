@@ -583,8 +583,8 @@
 				handler(newStats) {
 					if (newStats && newStats.netProfit !== undefined) {
 						this.progressoMeta.atual = parseFloat(newStats.netProfit) || 0;
-						this.updateProfitLossCharts();
 					}
+					this.updateProfitLossCharts();
 				},
 				deep: true,
 				immediate: true,
@@ -603,12 +603,6 @@
 				if (newVal) {
 					this.ultimaAtualizacao = newVal;
 				}
-			},
-			sessionStats: {
-				handler() {
-					this.updateProfitLossCharts();
-				},
-				deep: true,
 			},
 			tradeHistory: {
 				handler(newHistory) {

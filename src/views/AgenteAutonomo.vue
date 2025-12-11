@@ -157,20 +157,6 @@
         };
       },
       
-      calculateTempoAtivo() {
-        if (!this.agentConfig || !this.agentConfig.lastTradeAt) {
-          return "0h 0m";
-        }
-        
-        const startTime = new Date(this.agentConfig.createdAt || this.agentConfig.lastTradeAt);
-        const now = new Date();
-        const diffMs = now - startTime;
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        
-        return `${diffHours}h ${diffMinutes}m`;
-      },
-      
       tradeHistoryData() {
         // Retornar histórico completo da API
         return this.apiTradeHistory || [];
@@ -191,20 +177,17 @@
       },
       
       calculateTempoAtivo() {
-        if (!this.agentConfig || !this.agentConfig.createdAt) {
-          // Tentar usar lastTradeAt como fallback
-          if (this.agentConfig?.lastTradeAt) {
-            const startTime = new Date(this.agentConfig.lastTradeAt);
-            const now = new Date();
-            const diffMs = now - startTime;
-            const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-            const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-            return `${diffHours}h ${diffMinutes}m`;
-          }
+        if (!this.agentConfig) {
           return "0h 0m";
         }
         
-        const startTime = new Date(this.agentConfig.createdAt);
+        // Priorizar createdAt, mas usar lastTradeAt como fallback
+        const startDate = this.agentConfig.createdAt || this.agentConfig.lastTradeAt;
+        if (!startDate) {
+          return "0h 0m";
+        }
+        
+        const startTime = new Date(startDate);
         const now = new Date();
         const diffMs = now - startTime;
         const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
