@@ -205,7 +205,6 @@
 				<div id="contentGrafico" :class="['chart-canvas', { hidden: abaAtiva !== 'grafico' }]">
 					<!-- Gráfico do Índice R_75 -->
 					<div class="index-chart-container" v-if="abaAtiva === 'grafico'">
-						<h4 class="chart-title">Índice R_75 (Volatility 75)</h4>
 						<div ref="indexChartContainer" class="market-chart-wrapper"></div>
 					</div>
 				</div>
@@ -712,10 +711,10 @@
 			},
 			
 			startPriceHistoryUpdates() {
-				// Atualizar histórico de preços a cada 5 segundos
+				// Atualizar histórico de preços a cada 2 segundos para receber ticks em tempo real
 				this.priceHistoryInterval = setInterval(async () => {
 					await this.loadPriceHistory();
-				}, 5000);
+				}, 2000);
 			},
 			
 			// ============================================
@@ -729,11 +728,12 @@
 				try {
 					const container = this.$refs.indexChartContainer;
 					const containerWidth = container.offsetWidth || 800;
-					const containerHeight = 200;
+					const containerHeight = container.offsetHeight || 400;
 					
 					this.indexChart = createChart(container, {
 						width: containerWidth,
 						height: containerHeight,
+						autoSize: true,
 						localization: { 
 							locale: 'pt-BR',
 							timeFormatter: (time) => {
@@ -1352,12 +1352,17 @@
 		background: #0b0b0b;
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
-		padding: 15px;
+		padding: 0;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+		min-height: 400px;
 	}
 	
 	.market-chart-wrapper {
 		width: 100%;
-		height: 200px;
+		flex: 1;
+		min-height: 400px;
 		position: relative;
 	}
 	
