@@ -21,8 +21,8 @@
   
       <div class="box">
         <div class="header">
-          <h1 v-if="hasActiveSession">Copy Trading - Performance</h1>
-          <h1 v-else>Copy Trading — Configuração Inicial</h1>
+          <h1 v-if="hasActiveSession">Copy Trading — Performance</h1>
+          <h1 v-else>Copy Trading — Configuração</h1>
           <p v-if="hasActiveSession">Acompanhe a perfomance do seu copy em tempo real</p>
           <p v-else>Configure risco, alocação e proteção antes de iniciar o Copy automático.</p>
         </div>
@@ -228,7 +228,7 @@
   
   .box {
     width: 100%;
-    padding: 10px 20px;
+    padding: 70px 20px 10px 20px;
     margin: 0;
   }
   
@@ -358,7 +358,7 @@
 
   @media (max-width: 768px) {
     .box {
-      padding: 10px 20px;
+      padding: 70px 20px 10px 20px;
       margin: 0;
     }
 

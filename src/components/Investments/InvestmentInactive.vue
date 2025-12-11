@@ -875,7 +875,7 @@ export default {
 
 /* Container principal da seção de métricas */
 .metric-section {
-	background: #0e0f0e;
+	background: #0b0b0b;
 	box-shadow: 0px 2px 10px #011401;
 	padding: 30px ;
 	border-radius: 8px;
@@ -888,12 +888,12 @@ export default {
 	grid-template-columns: 2fr repeat(3, 1fr);
 	grid-template-rows: repeat(2, 1fr);
 	gap: 15px;
-	background: #0e0f0e;
+	background: #0b0b0b;
 	margin-top: 15px;
 }
 
 .metric-card {
-	background-color: #0a0b0a;
+	background-color: #0e0e0e;
 	padding: 30px; /* Mantido para métricas */
 	border-radius: 8px;
 	display: flex;
@@ -1014,7 +1014,7 @@ export default {
 
 /* ESTILO DOS BLOCOS - PADRONIZADO E REDUZIDO PARA COPIAR A IMAGEM */
 .section {
-	background-color:#0e0f0e;
+	background-color:#0e0e0e;
 	padding: 20px; /* Reduzido para caber melhor no layout */
 	border-radius: 8px;
 }
@@ -1042,7 +1042,7 @@ p{
 	width: 100%;
 	padding: 10px;
 	margin-top: 5px;
-	background-color: #0a0b0a;
+	background-color: #0e0e0e;
 	border: 2px solid #242323;
 	border-radius: 4px;
 	color: var(--color-text-light);
@@ -1110,7 +1110,7 @@ p{
 
 /* Gerenciamento de Risco - Barra de progresso */
 .risk-slider-container {	
-	background-color: #0a0b0a;
+	background-color: #0e0e0e;
     border: 1px solid #242323;
 	padding: 25px 15px;
 	border-radius: 8px;
@@ -1408,7 +1408,7 @@ input:checked + .slider:before {
 }
 
 .market-chart-section {
-	background-color: var(--color-bg-card);
+	background-color: #0e0e0e;
 	padding: 20px;
 	border-radius: 8px;
 	margin-bottom: 20px;

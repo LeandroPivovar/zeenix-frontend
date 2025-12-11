@@ -518,7 +518,7 @@
   <style scoped>
   /* Layout Principal */
   .layout-agente-autnomo {
-    background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
+    background: #0b0b0b;
     min-height: 100vh;
     transition: margin-left 0.3s ease;
     padding-bottom: 80px;
