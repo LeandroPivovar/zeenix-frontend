@@ -870,12 +870,16 @@
 								
 								// Também se inscrever para ticks em tempo real separadamente
 								setTimeout(() => {
-									this.derivWebSocket.send(JSON.stringify({
-										ticks: this.symbol,
-										subscribe: 1
-									}));
-									console.log('[AgenteAutonomoActive] 📡 Inscrito para ticks em tempo real:', this.symbol);
-								}, 500);
+									if (this.derivWebSocket && this.derivWebSocket.readyState === WebSocket.OPEN) {
+										this.derivWebSocket.send(JSON.stringify({
+											ticks: this.symbol,
+											subscribe: 1
+										}));
+										console.log('[AgenteAutonomoActive] 📡 Inscrito para ticks em tempo real:', this.symbol);
+									} else {
+										console.warn('[AgenteAutonomoActive] WebSocket não está pronto para inscrição de ticks');
+									}
+								}, 1000);
 							}
 							
 							if (message.msg_type === 'history') {
