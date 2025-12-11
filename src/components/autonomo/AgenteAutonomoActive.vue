@@ -565,8 +565,13 @@
 				if (newAba === 'grafico') {
 					this.$nextTick(() => {
 						setTimeout(() => {
-							if (this.$refs.indexChartContainer && !this.indexChartInitialized) {
-								this.initIndexChart();
+							if (this.$refs.indexChartContainer) {
+								if (!this.indexChartInitialized) {
+									this.initIndexChart();
+								} else if (this.priceTicks.length > 0) {
+									// Se já estiver inicializado, atualizar com dados
+									this.updateIndexChart();
+								}
 							}
 						}, 200);
 					});
@@ -694,20 +699,52 @@
 					if (result.success && result.data) {
 						// result.data é um array de PriceTick: [{value, epoch, timestamp}, ...]
 						if (Array.isArray(result.data)) {
-							this.priceTicks = result.data.map(tick => ({
-								value: typeof tick === 'object' && tick.value !== undefined ? parseFloat(tick.value) : parseFloat(tick) || 0,
-								epoch: typeof tick === 'object' && tick.epoch ? tick.epoch : (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : Date.now() / 1000),
-								timestamp: typeof tick === 'object' && tick.timestamp ? tick.timestamp : new Date().toISOString()
-							}));
+							this.priceTicks = result.data
+								.filter(tick => tick && (tick.value !== undefined || tick !== null))
+								.map(tick => {
+									let value = 0;
+									let epoch = 0;
+									let timestamp = '';
+									
+									if (typeof tick === 'object') {
+										value = tick.value !== undefined ? parseFloat(tick.value) : 0;
+										epoch = tick.epoch ? (typeof tick.epoch === 'number' ? tick.epoch : parseInt(tick.epoch)) : 0;
+										timestamp = tick.timestamp || new Date().toISOString();
+										
+										// Se não tiver epoch mas tiver timestamp, converter
+										if (!epoch && timestamp) {
+											epoch = Math.floor(new Date(timestamp).getTime() / 1000);
+										}
+										
+										// Se não tiver timestamp mas tiver epoch, converter
+										if (!timestamp && epoch) {
+											timestamp = new Date(epoch * 1000).toISOString();
+										}
+									} else {
+										// Se for um número simples, usar como value
+										value = parseFloat(tick) || 0;
+										epoch = Math.floor(Date.now() / 1000);
+										timestamp = new Date().toISOString();
+									}
+									
+									return {
+										value: isNaN(value) ? 0 : value,
+										epoch: epoch || Math.floor(Date.now() / 1000),
+										timestamp: timestamp || new Date().toISOString()
+									};
+								})
+								.filter(tick => tick.value > 0 && tick.epoch > 0); // Filtrar valores inválidos
+							
+							console.log('[AgenteAutonomoActive] Processados', this.priceTicks.length, 'ticks válidos de', result.data.length, 'recebidos');
 							
 							if (this.priceTicks.length > 0) {
-								console.log('[AgenteAutonomoActive] Gráfico atualizado com', this.priceTicks.length, 'ticks');
+								console.log('[AgenteAutonomoActive] Primeiro tick:', this.priceTicks[0], 'Último tick:', this.priceTicks[this.priceTicks.length - 1]);
 								this.updateIndexChart();
 							} else {
-								console.warn('[AgenteAutonomoActive] Nenhum tick válido encontrado nos dados');
+								console.warn('[AgenteAutonomoActive] Nenhum tick válido encontrado nos dados após processamento');
 							}
 						} else {
-							console.warn('[AgenteAutonomoActive] Formato de dados inesperado:', typeof result.data);
+							console.warn('[AgenteAutonomoActive] Formato de dados inesperado:', typeof result.data, result.data);
 						}
 					} else {
 						console.warn('[AgenteAutonomoActive] Resposta sem sucesso ou sem dados:', result);
@@ -734,8 +771,18 @@
 				
 				try {
 					const container = this.$refs.indexChartContainer;
+					
+					// Verificar se o container tem dimensões válidas
+					if (container.offsetWidth === 0 || container.offsetHeight === 0) {
+						console.warn('[AgenteAutonomoActive] Container sem dimensões, tentando novamente...');
+						setTimeout(() => this.initIndexChart(), 500);
+						return;
+					}
+					
 					const containerWidth = container.offsetWidth || 800;
 					const containerHeight = container.offsetHeight || 400;
+					
+					console.log('[AgenteAutonomoActive] Inicializando gráfico com dimensões:', containerWidth, 'x', containerHeight);
 					
 					this.indexChart = createChart(container, {
 						width: containerWidth,
@@ -782,26 +829,47 @@
 					});
 					
 					this.indexChartInitialized = true;
+					console.log('[AgenteAutonomoActive] Gráfico inicializado. Ticks disponíveis:', this.priceTicks.length);
 					
 					if (this.priceTicks.length > 0) {
 						this.updateIndexChart();
+					} else {
+						console.warn('[AgenteAutonomoActive] Nenhum tick disponível para plotar');
 					}
 				} catch (error) {
 					console.error('[AgenteAutonomoActive] Erro ao inicializar gráfico de índice:', error);
+					this.indexChartInitialized = false;
 				}
 			},
 			
 			updateIndexChart() {
-				if (!this.indexChartInitialized || !this.indexChartSeries || this.priceTicks.length === 0) {
+				if (!this.indexChartInitialized || !this.indexChartSeries) {
+					console.warn('[AgenteAutonomoActive] Gráfico não inicializado ou série não disponível');
+					return;
+				}
+				
+				if (this.priceTicks.length === 0) {
+					console.warn('[AgenteAutonomoActive] Nenhum tick disponível para atualizar gráfico');
 					return;
 				}
 				
 				try {
-					const data = this.priceTicks.map(tick => ({
+					// Filtrar e ordenar ticks por epoch
+					const sortedTicks = [...this.priceTicks]
+						.filter(tick => tick.epoch && tick.value && !isNaN(tick.value))
+						.sort((a, b) => a.epoch - b.epoch);
+					
+					if (sortedTicks.length === 0) {
+						console.warn('[AgenteAutonomoActive] Nenhum tick válido após filtragem');
+						return;
+					}
+					
+					const data = sortedTicks.map(tick => ({
 						time: Math.floor(tick.epoch),
-						value: tick.value
+						value: parseFloat(tick.value)
 					}));
 					
+					console.log('[AgenteAutonomoActive] Atualizando gráfico com', data.length, 'pontos');
 					this.indexChartSeries.setData(data);
 					this.indexChart.timeScale().fitContent();
 				} catch (error) {
