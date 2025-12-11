@@ -31,6 +31,7 @@
           <component
             :is="componenteAtual"
             v-bind="agenteData"
+            :tempo-ativo="agenteData.tempoAtivo"
             :session-stats="sessionStats"
             :trade-history="tradeHistoryData"
             @pausar-agente="toggleAgenteStatus('componenteAtivo')"
@@ -187,7 +188,7 @@
         const dailyProfit = this.agentConfig?.dailyProfit || this.dailyProfit || 0;
         const dailyLoss = this.agentConfig?.dailyLoss || 0;
         
-        const result = {
+        return {
           estrategia: this.agentConfig?.strategy ? this.getStrategyTitle(this.agentConfig.strategy) : this.estrategia,
           mercado: this.agentConfig?.symbol ? this.getMarketTitle(this.agentConfig.symbol) : this.mercado,
           risco: this.agentConfig?.riskLevel ? this.getRiskTitle(this.agentConfig.riskLevel) : this.risco,
@@ -206,18 +207,6 @@
           agentStatus: this.agenteEstaAtivo ? "ATIVO" : "PAUSADO",
           accountBalance: this.accountBalance,
         };
-        
-        // Log temporário para debug
-        if (this.agenteEstaAtivo && this.agentConfig) {
-          console.log('[AgenteAutonomo] agenteData computed:', {
-            tempoAtivo: result.tempoAtivo,
-            sessionDate: this.agentConfig.sessionDate,
-            createdAt: this.agentConfig.createdAt,
-            agenteEstaAtivo: this.agenteEstaAtivo
-          });
-        }
-        
-        return result;
       },
       
       tradeHistoryData() {

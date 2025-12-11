@@ -343,7 +343,7 @@
 					accumulatedLoss: 0.0,
 					accumulatedChange: 0.0,
 					lastExecutionTime: '00:00:00',
-					tempoAtivo: '0h 0m',
+					tempoAtivo: '0h 0m 0s',
 					operacoesHoje: 0,
 					realTimeOperations: [],
 					operationHistory: [],
@@ -351,6 +351,10 @@
 					agentStatus: 'PAUSADO',
 					accountBalance: null,
 				})
+			},
+			tempoAtivo: {
+				type: String,
+				default: '0h 0m 0s'
 			},
 			sessionStats: {
 				type: Object,
@@ -444,17 +448,14 @@
 				return this.getUserId();
 			},
 			tempoAtivoDisplay() {
-				// Garantir que o tempo ativo seja sempre atualizado
-				const tempo = this.agenteData?.tempoAtivo || '0h 0m 0s';
-				// Log temporário para debug
-				if (this.agenteData) {
-					console.log('[AgenteAutonomoActive] tempoAtivoDisplay:', {
-						tempo,
-						agenteDataTempoAtivo: this.agenteData.tempoAtivo,
-						agenteDataKeys: Object.keys(this.agenteData || {})
-					});
+				// Priorizar prop tempoAtivo, depois agenteData.tempoAtivo
+				if (this.tempoAtivo && this.tempoAtivo !== '0h 0m 0s') {
+					return this.tempoAtivo;
 				}
-				return tempo;
+				if (this.agenteData && this.agenteData.tempoAtivo) {
+					return this.agenteData.tempoAtivo;
+				}
+				return '0h 0m 0s';
 			},
 			acoesAgenteComputed() {
 				// Usar agentActions do agenteData se disponível
@@ -629,14 +630,18 @@
 				}
 			},
 			agenteData: {
-				handler(newVal) {
+				handler(newVal, oldVal) {
 					// Forçar atualização quando agenteData mudar
 					if (newVal && newVal.tempoAtivo) {
+						console.log('[AgenteAutonomoActive] agenteData mudou:', {
+							newTempoAtivo: newVal.tempoAtivo,
+							oldTempoAtivo: oldVal?.tempoAtivo
+						});
 						this.$forceUpdate();
 					}
 				},
 				deep: true,
-				immediate: true
+				immediate: false
 			},
 			tradeHistory: {
 				handler(newHistory) {
