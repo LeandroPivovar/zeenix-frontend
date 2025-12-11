@@ -107,8 +107,26 @@ export default {
           }
         }
         
+        // Tentar obter do token JWT se ainda não tiver
         if (!userId) {
-          console.warn('[AutonomousAgentLogs] ⚠️ UserId não disponível');
+          try {
+            const token = localStorage.getItem('token') || localStorage.getItem('authToken');
+            if (token) {
+              // Decodificar JWT (base64)
+              const payload = JSON.parse(atob(token.split('.')[1]));
+              userId = payload.userId || payload.id || payload.sub;
+            }
+          } catch (error) {
+            console.error('[AutonomousAgentLogs] Erro ao decodificar token:', error);
+          }
+        }
+        
+        if (!userId) {
+          console.warn('[AutonomousAgentLogs] ⚠️ UserId não disponível', {
+            propUserId: this.userId,
+            hasUserInLocalStorage: !!localStorage.getItem("user"),
+            hasToken: !!(localStorage.getItem('token') || localStorage.getItem('authToken'))
+          });
           return;
         }
         

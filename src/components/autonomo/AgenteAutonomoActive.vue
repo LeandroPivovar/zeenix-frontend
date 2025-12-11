@@ -446,6 +446,14 @@
 			tempoAtivoDisplay() {
 				// Garantir que o tempo ativo seja sempre atualizado
 				const tempo = this.agenteData?.tempoAtivo || '0h 0m 0s';
+				// Log temporário para debug
+				if (this.agenteData) {
+					console.log('[AgenteAutonomoActive] tempoAtivoDisplay:', {
+						tempo,
+						agenteDataTempoAtivo: this.agenteData.tempoAtivo,
+						agenteDataKeys: Object.keys(this.agenteData || {})
+					});
+				}
 				return tempo;
 			},
 			acoesAgenteComputed() {
@@ -613,11 +621,22 @@
 					this.ultimaAtualizacao = newVal;
 				}
 			},
-			'agenteData.tempoAtivo'(newVal) {
+			'agenteData.tempoAtivo'(newVal, oldVal) {
 				// Forçar atualização quando tempoAtivo mudar
-				if (newVal) {
+				if (newVal && newVal !== oldVal) {
+					console.log('[AgenteAutonomoActive] tempoAtivo mudou:', { newVal, oldVal });
 					this.$forceUpdate();
 				}
+			},
+			agenteData: {
+				handler(newVal) {
+					// Forçar atualização quando agenteData mudar
+					if (newVal && newVal.tempoAtivo) {
+						this.$forceUpdate();
+					}
+				},
+				deep: true,
+				immediate: true
 			},
 			tradeHistory: {
 				handler(newHistory) {
