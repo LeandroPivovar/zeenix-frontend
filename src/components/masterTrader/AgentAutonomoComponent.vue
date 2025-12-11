@@ -806,7 +806,36 @@ export default {
 @media (min-width: 1025px) {
   .layout-agente-autnomo {
     padding-bottom: 40px;
-    background: transparent !important;
+    background: #0b0b0b !important;
+  }
+
+  /* Cards com background #0e0e0e no desktop */
+  :deep(.option-card) {
+    background: #0e0e0e !important;
+  }
+
+  :deep(.option-card:hover:not(.selected)) {
+    background: #0e0e0e !important;
+  }
+
+  :deep(.option-card.selected) {
+    background: #0e0e0e !important;
+  }
+
+  :deep(.status-card) {
+    background: #0e0e0e !important;
+  }
+
+  :deep(.container-sections) {
+    background: #0e0e0e !important;
+  }
+
+  :deep(.metric-card),
+  :deep(.chart-section),
+  :deep(.history-section),
+  :deep(.actions-section),
+  :deep(.progress-card) {
+    background: #0e0e0e !important;
   }
 }
 
