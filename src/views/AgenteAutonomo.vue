@@ -138,11 +138,30 @@
   
       agenteData() {
         // Calcular tempo ativo baseado na data da sessão atual (sessionDate)
-        // Se não houver sessionDate, usar createdAt como fallback
+        // Se não houver sessionDate ou se for meia-noite (apenas data), usar createdAt como fallback
         let tempoAtivo = "0h 0m 0s";
         if (this.agentConfig && this.agenteEstaAtivo) {
-          // Tentar sessionDate primeiro, depois createdAt
-          const startDate = this.agentConfig.sessionDate || this.agentConfig.createdAt;
+          // Verificar se sessionDate é válido e não é meia-noite (apenas data)
+          let startDate = this.agentConfig.sessionDate;
+          
+          // Se sessionDate for meia-noite (00:00:00), usar createdAt como fallback
+          if (startDate) {
+            const sessionDateObj = new Date(startDate);
+            const sessionDateHours = sessionDateObj.getUTCHours();
+            const sessionDateMinutes = sessionDateObj.getUTCMinutes();
+            const sessionDateSeconds = sessionDateObj.getUTCSeconds();
+            
+            // Se for exatamente meia-noite (00:00:00), provavelmente é apenas data sem hora
+            if (sessionDateHours === 0 && sessionDateMinutes === 0 && sessionDateSeconds === 0) {
+              console.warn('[AgenteAutonomo] sessionDate é meia-noite, usando createdAt como fallback');
+              startDate = this.agentConfig.createdAt;
+            }
+          }
+          
+          // Se ainda não tiver startDate, usar createdAt
+          if (!startDate && this.agentConfig.createdAt) {
+            startDate = this.agentConfig.createdAt;
+          }
           
           if (startDate) {
             try {
