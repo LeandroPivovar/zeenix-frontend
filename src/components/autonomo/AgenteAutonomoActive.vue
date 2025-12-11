@@ -276,7 +276,7 @@
 					</div>
 				</div>
 				<div id="contentRegistro" :class="['register-content', { hidden: abaAtiva !== 'registro' }]">
-					<OperationLogs :trade-results="formattedTradeResults" />
+					<AutonomousAgentLogs :user-id="getUserId()" :is-active="true" />
 				</div>
 			</div>
 			<!-- Cards Maior Ganho e Maior Perda - apenas mobile e apenas na aba gráfico -->
@@ -321,13 +321,13 @@
 </template>
 
 <script>
-	import OperationLogs from '../OperationLogs.vue';
+	import AutonomousAgentLogs from './AutonomousAgentLogs.vue';
 	import { createChart, ColorType } from 'lightweight-charts';
 
 	export default {
 		name: 'AgenteAutonomoPanel',
 		components: {
-			OperationLogs
+			AutonomousAgentLogs
 		},
 		props: {
 			agenteData: {

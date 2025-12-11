@@ -146,16 +146,28 @@
             try {
               const startTime = new Date(startDate);
               const now = new Date();
-              const diffMs = now - startTime;
+              
+              // Usar getTime() para garantir cálculo correto
+              const diffMs = now.getTime() - startTime.getTime();
+              
               if (diffMs > 0) {
                 const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
                 const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
                 tempoAtivo = `${diffHours}h ${diffMinutes}m`;
+              } else {
+                // Se a diferença for negativa ou zero, mostrar 0h 0m
+                tempoAtivo = "0h 0m";
               }
             } catch (error) {
-              console.error('[AgenteAutonomo] Erro ao calcular tempo ativo:', error);
+              console.error('[AgenteAutonomo] Erro ao calcular tempo ativo:', error, 'startDate:', startDate);
               tempoAtivo = "0h 0m";
             }
+          } else {
+            console.warn('[AgenteAutonomo] sessionDate ou createdAt não disponível:', {
+              sessionDate: this.agentConfig.sessionDate,
+              createdAt: this.agentConfig.createdAt,
+              agentConfig: this.agentConfig
+            });
           }
         }
         
@@ -562,10 +574,18 @@
         // Atualizar tempo ativo a cada minuto (força re-render do computed)
         this.timeUpdateInterval = setInterval(() => {
           if (this.agenteEstaAtivo && this.agentConfig) {
-            // Força atualização do computed agenteData
+            // Força atualização do computed agenteData para recalcular tempo ativo
             this.$forceUpdate();
           }
         }, 60000); // A cada 1 minuto
+        
+        // Também atualizar a cada segundo para mostrar tempo mais preciso
+        setInterval(() => {
+          if (this.agenteEstaAtivo && this.agentConfig) {
+            // Força atualização do computed agenteData
+            this.$forceUpdate();
+          }
+        }, 1000); // A cada 1 segundo para atualização mais fluida
       },
       
       stopPolling() {
