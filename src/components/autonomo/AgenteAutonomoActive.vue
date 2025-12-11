@@ -388,6 +388,13 @@
 				// Dados para gráficos
 				indexChartData: [],
 				priceHistoryInterval: null,
+				priceTicks: [],
+				indexChart: null,
+				indexChartSeries: null,
+				indexChartInitialized: false,
+				unidadeTimeframeSelecionada: 'minutos',
+				valorTimeframeSelecionado: 1,
+				tipoGraficoSelecionado: 'Gráfico de Linhas',
 				timeframeOptions: {
 					minutos: [1, 2, 3, 5, 10, 15, 30],
 					horas: [1, 2, 4, 8],
@@ -1310,6 +1317,9 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+		width: 100%;
+		padding: 0;
+		margin: 0;
 	}
 
 	.register-content {
@@ -1357,13 +1367,16 @@
 		flex-direction: column;
 		height: 100%;
 		min-height: 400px;
+		width: 100%;
 	}
 	
 	.market-chart-wrapper {
-		width: 100%;
+		width: 100% !important;
 		flex: 1;
 		min-height: 400px;
 		position: relative;
+		padding: 0;
+		margin: 0;
 	}
 	
 	.chart-title {

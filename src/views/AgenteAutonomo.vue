@@ -395,7 +395,7 @@
             this.operationHistory = result.data.map(trade => ({
               time: new Date(trade.createdAt).toLocaleTimeString('pt-BR'),
               asset: trade.symbol || 'R_75',
-              type: trade.signalDirection === 'RISE' ? 'CALL' : 'PUT',
+              type: trade.contractType === 'RISE' || trade.contractType === 'HIGHER' ? 'CALL' : 'PUT',
               entry: parseFloat(trade.entryPrice) || 0,
               exit: parseFloat(trade.exitPrice) || 0,
               result: trade.profitLoss || 0,
@@ -406,11 +406,65 @@
         }
       },
       
+      async loadAgentLogs() {
+        try {
+          const userId = this.getUserId();
+          if (!userId) return;
+
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const response = await fetch(`${apiBase}/autonomous-agent/logs/${userId}?limit=100`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+
+          const result = await response.json();
+          if (result.success && result.data && Array.isArray(result.data)) {
+            // Converter logs do banco para o formato esperado pelo OperationLogs
+            const logEntries = result.data.map(log => {
+              // Determinar tipo de log baseado no módulo e nível
+              let logType = 'info';
+              if (log.module === 'TRADER') {
+                if (log.level === 'ERROR' || log.message.includes('loss') || log.message.includes('LOST')) {
+                  logType = 'loss';
+                } else if (log.message.includes('profit') || log.message.includes('WON')) {
+                  logType = 'gain';
+                } else if (log.message.includes('Buy') || log.message.includes('Proposal')) {
+                  logType = 'purchase';
+                }
+              } else if (log.module === 'RISK') {
+                logType = 'strategy';
+              }
+              
+              return {
+                id: log.id,
+                timestamp: new Date(log.timestamp).toLocaleString('pt-BR'),
+                type: logType,
+                message: log.message,
+                module: log.module,
+                level: log.level,
+              };
+            });
+            
+            // Adicionar aos agentActions para exibição
+            this.agentActions = logEntries.slice(0, 20).map(log => ({
+              status: log.level === 'ERROR' ? 'error' : (log.level === 'WARN' ? 'warning' : (log.type === 'gain' ? 'success' : 'info')),
+              title: log.message.split('.')[0] || log.message,
+              description: log.message,
+              timestamp: log.timestamp,
+            }));
+          }
+        } catch (error) {
+          console.error("[AgenteAutonomo] Erro ao carregar logs:", error);
+        }
+      },
+      
       startPolling() {
         // Carregar dados imediatamente
         this.loadAgentConfig();
         this.loadSessionStats();
         this.loadTradeHistory();
+        this.loadAgentLogs();
 
         // Polling a cada 5 segundos se o agente estiver ativo
         this.pollingInterval = setInterval(() => {
@@ -418,6 +472,7 @@
             this.loadAgentConfig();
             this.loadSessionStats();
             this.loadTradeHistory();
+            this.loadAgentLogs();
           }
         }, 5000);
       },
