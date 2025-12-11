@@ -34,7 +34,7 @@
             :session-stats="sessionStats"
             :trade-history="tradeHistoryData"
             @pausar-agente="toggleAgenteStatus('componenteAtivo')"
-            @iniciar-agente="toggleAgenteStatus('componenteInativo')"
+            @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
           />
         </div>
 
@@ -203,17 +203,17 @@
         );
       },
   
-      async toggleAgenteStatus(source) {
+      async       toggleAgenteStatus(source, configData = null) {
         if (source === 'componenteInativo') {
-          // Iniciar agente
-          await this.activateAgent();
+          // Iniciar agente com dados de configuração
+          this.activateAgent(configData);
         } else if (source === 'componenteAtivo') {
           // Pausar agente
-          await this.deactivateAgent();
+          this.deactivateAgent();
         }
       },
       
-      async activateAgent() {
+      async activateAgent(configData = null) {
         try {
           const userId = this.getUserId();
           if (!userId) {
@@ -237,6 +237,24 @@
           }
           const currency = connection.tradeCurrency || 'USD';
 
+          // Mapear mercado para símbolo
+          const marketToSymbol = {
+            'volatility_10': 'R_10',
+            'volatility_25': 'R_25',
+            'volatility_50': 'R_50',
+            'volatility_75': 'R_75',
+            'volatility_100': 'R_100'
+          };
+
+          // Usar dados do configData se disponível, senão usar valores padrão
+          const initialStake = configData?.initialStake || this.goalValue || 10.0;
+          const dailyProfitTarget = configData?.goalValue || this.goalValue || 200.0;
+          const dailyLossLimit = configData?.stopValue || this.stopValue || 240.0;
+          const market = configData?.mercado || 'volatility_75';
+          const strategy = configData?.estrategia || 'arion';
+          const riskLevel = configData?.risco || 'balanced';
+          const symbol = marketToSymbol[market] || 'R_75';
+
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
           const response = await fetch(`${apiBase}/autonomous-agent/activate`, {
             method: "POST",
@@ -246,11 +264,14 @@
             },
             body: JSON.stringify({
               userId,
-              initialStake: this.goalValue || 10.0,
-              dailyProfitTarget: this.goalValue || 200.0,
-              dailyLossLimit: this.stopValue || 240.0,
+              initialStake,
+              dailyProfitTarget,
+              dailyLossLimit,
               derivToken,
               currency,
+              symbol,
+              strategy,
+              riskLevel,
             }),
           });
 
@@ -333,6 +354,44 @@
             // Atualizar dados locais
             if (result.data.dailyProfitTarget) {
               this.goalValue = result.data.dailyProfitTarget;
+            }
+            if (result.data.dailyLossLimit) {
+              this.stopValue = result.data.dailyLossLimit;
+            }
+            
+            // Mapear símbolo para mercado
+            const symbolToMarket = {
+              'R_10': 'Volatility 10 Index',
+              'R_25': 'Volatility 25 Index',
+              'R_50': 'Volatility 50 Index',
+              'R_75': 'Volatility 75 Index',
+              'R_100': 'Volatility 100 Index'
+            };
+            
+            // Mapear estratégia
+            const strategyMap = {
+              'arion': 'Arion',
+              'cryptomax': 'CryptoMax',
+              'orion_ultra': 'Orion Ultra',
+              'metaflow': 'MetaFlow'
+            };
+            
+            // Mapear nível de risco
+            const riskMap = {
+              'conservative': 'Conservador',
+              'balanced': 'Equilibrado',
+              'aggressive': 'Agressivo'
+            };
+            
+            // Atualizar dados do agente
+            if (result.data.symbol) {
+              this.mercado = symbolToMarket[result.data.symbol] || 'Volatility 75 Index';
+            }
+            if (result.data.strategy) {
+              this.estrategia = strategyMap[result.data.strategy] || 'Arion';
+            }
+            if (result.data.riskLevel) {
+              this.risco = riskMap[result.data.riskLevel] || 'Equilibrado';
             }
             if (result.data.dailyLossLimit) {
               this.stopValue = result.data.dailyLossLimit;

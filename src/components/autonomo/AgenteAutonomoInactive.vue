@@ -306,7 +306,7 @@ export default {
 	data() {
 		return {
 			// Estado de seleção inicial (Baseado na imagem)
-			selectedMarket: 'volatility_10', 
+			selectedMarket: 'volatility_75', 
 			selectedStrategy: 'arion',
 			selectedRisk: 'balanced',
 
@@ -316,7 +316,65 @@ export default {
 			limitePerda: 50.00,
 		};
 	},
+	async mounted() {
+		// Carregar configurações salvas do backend
+		await this.loadSavedConfig();
+	},
 	methods: {
+		async loadSavedConfig() {
+			try {
+				// Obter userId do token JWT
+				const token = localStorage.getItem('token');
+				if (!token) return;
+				
+				const payload = JSON.parse(atob(token.split('.')[1]));
+				const userId = payload.userId || payload.sub || payload.id;
+				if (!userId) return;
+
+				const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+				const response = await fetch(`${apiBase}/autonomous-agent/config/${userId}`, {
+					headers: {
+						Authorization: `Bearer ${token}`,
+					},
+				});
+
+				const result = await response.json();
+				if (result.success && result.data) {
+					const config = result.data;
+					
+					// Mapear símbolo para mercado
+					const symbolToMarket = {
+						'R_10': 'volatility_10',
+						'R_25': 'volatility_25',
+						'R_50': 'volatility_50',
+						'R_75': 'volatility_75',
+						'R_100': 'volatility_100'
+					};
+					
+					// Atualizar valores se existirem
+					if (config.symbol) {
+						this.selectedMarket = symbolToMarket[config.symbol] || 'volatility_75';
+					}
+					if (config.strategy) {
+						this.selectedStrategy = config.strategy;
+					}
+					if (config.riskLevel) {
+						this.selectedRisk = config.riskLevel;
+					}
+					if (config.initialStake) {
+						this.valorOperacao = parseFloat(config.initialStake);
+					}
+					if (config.dailyProfitTarget) {
+						this.metaLucro = parseFloat(config.dailyProfitTarget);
+					}
+					if (config.dailyLossLimit) {
+						this.limitePerda = parseFloat(config.dailyLossLimit);
+					}
+				}
+			} catch (error) {
+				console.error('[AgenteAutonomoInactive] Erro ao carregar configuração salva:', error);
+			}
+		},
 		handleToggleChange(event) {
 			if (event.target.checked) {
 				// Quando o toggle é ativado, aguarda delay antes de iniciar o agente
@@ -330,9 +388,9 @@ export default {
 			// 1. Coleta os dados configurados
 			const configData = {
 				// Usa os nomes de prop que o PAI espera
-				estrategia: this.getStrategyTitle(this.selectedStrategy),
-				mercado: this.getMarketTitle(this.selectedMarket),
-				risco: this.getRiskTitle(this.selectedRisk),
+				estrategia: this.selectedStrategy, // Enviar o ID, não o título
+				mercado: this.selectedMarket, // Enviar o ID, não o título
+				risco: this.selectedRisk, // Enviar o ID, não o título
 				goalValue: this.metaLucroNumero,
 				stopValue: this.limitePerdaNumero,
 				initialStake: this.valorOperacaoNumero,

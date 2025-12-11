@@ -398,7 +398,7 @@
 				// WebSocket para ticks em tempo real
 				derivWebSocket: null,
 				derivToken: null,
-				symbol: 'R_75', // Índice do agente autônomo
+				symbol: 'R_75', // Índice do agente autônomo (será atualizado do backend)
 				timeframeOptions: {
 					minutos: [1, 2, 3, 5, 10, 15, 30],
 					horas: [1, 2, 4, 8],
@@ -642,6 +642,29 @@
 					}
 				},
 				deep: true
+			},
+			'agenteData.mercado'(newMarket) {
+				// Atualizar símbolo quando o mercado mudar
+				if (newMarket) {
+					const marketToSymbol = {
+						'Volatility 10 Index': 'R_10',
+						'Volatility 25 Index': 'R_25',
+						'Volatility 50 Index': 'R_50',
+						'Volatility 75 Index': 'R_75',
+						'Volatility 100 Index': 'R_100'
+					};
+					const newSymbol = marketToSymbol[newMarket] || 'R_75';
+					if (this.symbol !== newSymbol) {
+						this.symbol = newSymbol;
+						// Reconectar WebSocket com novo símbolo
+						if (this.derivWebSocket) {
+							this.disconnectDerivWebSocket();
+							setTimeout(() => {
+								this.connectToDerivWebSocket();
+							}, 1000);
+						}
+					}
+				}
 			}
 		},
 		mounted() {
@@ -651,6 +674,18 @@
 				this.progressoMeta.meta = this.agenteData.goalValue || 50;
 				this.progressoMeta.stop = this.agenteData.stopValue || 25;
 				this.ultimaAtualizacao = this.agenteData.lastExecutionTime || new Date().toLocaleTimeString('pt-BR');
+				
+				// Atualizar símbolo baseado no mercado do agenteData
+				if (this.agenteData.mercado) {
+					const marketToSymbol = {
+						'Volatility 10 Index': 'R_10',
+						'Volatility 25 Index': 'R_25',
+						'Volatility 50 Index': 'R_50',
+						'Volatility 75 Index': 'R_75',
+						'Volatility 100 Index': 'R_100'
+					};
+					this.symbol = marketToSymbol[this.agenteData.mercado] || 'R_75';
+				}
 			}
 			
 			// Atualizar última atualização a cada segundo
