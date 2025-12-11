@@ -642,24 +642,6 @@
 					}
 				},
 				deep: true
-			},
-			abaAtiva(newAba) {
-				// Quando a aba 'grafico' for selecionada, garantir que os gráficos sejam inicializados
-				if (newAba === 'grafico') {
-					this.$nextTick(() => {
-						setTimeout(() => {
-							if (this.$refs.indexChartContainer && !this.indexChartInitialized) {
-								this.initIndexChart();
-							}
-							if (this.$refs.profitChartContainer && !this.profitChartInitialized) {
-								this.initProfitChart();
-							}
-							if (this.$refs.lossChartContainer && !this.lossChartInitialized) {
-								this.initLossChart();
-							}
-						}, 200);
-					});
-				}
 			}
 		},
 		mounted() {
