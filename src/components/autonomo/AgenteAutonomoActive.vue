@@ -208,18 +208,6 @@
 						<h4 class="chart-title">Índice R_75 (Volatility 75)</h4>
 						<div ref="indexChartContainer" class="market-chart-wrapper"></div>
 					</div>
-					
-					<!-- Gráficos de Performance -->
-					<div class="performance-charts-container" v-if="abaAtiva === 'grafico'">
-						<div class="performance-chart-item">
-							<h4 class="chart-title">Lucro do Dia</h4>
-							<div ref="profitChartContainer" class="performance-chart-wrapper"></div>
-						</div>
-						<div class="performance-chart-item">
-							<h4 class="chart-title">Perda Acumulada</h4>
-							<div ref="lossChartContainer" class="performance-chart-wrapper"></div>
-						</div>
-					</div>
 				</div>
 				<div id="contentHistorico" :class="['history-content', { hidden: abaAtiva !== 'historico' }]">
 					<div class="history-header">
@@ -400,11 +388,7 @@
 				},
 				// Dados para gráficos
 				indexChartData: [],
-				profitChartData: [0], // Inicializar com valor zero
-				lossChartData: [0], // Inicializar com valor zero
 				priceHistoryInterval: null,
-				profitHistory: [],
-				lossHistory: [],
 				timeframeOptions: {
 					minutos: [1, 2, 3, 5, 10, 15, 30],
 					horas: [1, 2, 4, 8],
@@ -566,24 +550,17 @@
 					if (newStats && newStats.netProfit !== undefined) {
 						this.progressoMeta.atual = parseFloat(newStats.netProfit) || 0;
 					}
-					this.updateProfitLossCharts();
 				},
 				deep: true,
 				immediate: true,
 			},
 			abaAtiva(newAba) {
-				// Quando a aba 'grafico' for selecionada, garantir que os gráficos sejam inicializados
+				// Quando a aba 'grafico' for selecionada, garantir que o gráfico seja inicializado
 				if (newAba === 'grafico') {
 					this.$nextTick(() => {
 						setTimeout(() => {
 							if (this.$refs.indexChartContainer && !this.indexChartInitialized) {
 								this.initIndexChart();
-							}
-							if (this.$refs.profitChartContainer && !this.profitChartInitialized) {
-								this.initProfitChart();
-							}
-							if (this.$refs.lossChartContainer && !this.lossChartInitialized) {
-								this.initLossChart();
 							}
 						}, 200);
 					});
@@ -662,23 +639,14 @@
 			this.loadPriceHistory();
 			this.startPriceHistoryUpdates();
 			
-			// Inicializar gráficos após um pequeno delay para garantir que os refs estejam prontos
+			// Inicializar gráfico após um pequeno delay para garantir que o ref esteja pronto
 			this.$nextTick(() => {
 				setTimeout(() => {
 					if (this.$refs.indexChartContainer) {
 						this.initIndexChart();
 					}
-					if (this.$refs.profitChartContainer) {
-						this.initProfitChart();
-					}
-					if (this.$refs.lossChartContainer) {
-						this.initLossChart();
-					}
 				}, 300);
 			});
-			
-			// Inicializar histórico de lucro/perda
-			this.initializeProfitLossHistory();
 			
 			// Rolagem instantânea para o topo
 			window.scrollTo({ top: 0, behavior: 'auto' });
@@ -688,18 +656,10 @@
 				clearInterval(this.priceHistoryInterval);
 			}
 			
-			// Destruir gráficos
+			// Destruir gráfico
 			if (this.indexChart) {
 				this.indexChart.remove();
 				this.indexChart = null;
-			}
-			if (this.profitChart) {
-				this.profitChart.remove();
-				this.profitChart = null;
-			}
-			if (this.lossChart) {
-				this.lossChart.remove();
-				this.lossChart = null;
 			}
 		},
 		methods: {
@@ -756,60 +716,6 @@
 				this.priceHistoryInterval = setInterval(async () => {
 					await this.loadPriceHistory();
 				}, 5000);
-			},
-			
-			initializeProfitLossHistory() {
-				// Inicializar com dados atuais
-				if (this.sessionStats) {
-					this.profitHistory = [parseFloat(this.sessionStats.netProfit) || 0];
-					this.lossHistory = [Math.abs(parseFloat(this.sessionStats.totalLoss) || 0)];
-					// Os gráficos serão atualizados quando os gráficos forem inicializados
-					if (this.profitChartInitialized) {
-						this.updateProfitChart();
-					}
-					if (this.lossChartInitialized) {
-						this.updateLossChart();
-					}
-				}
-			},
-			
-			updateProfitLossCharts() {
-				let profitChanged = false;
-				let lossChanged = false;
-				
-				// Atualizar gráfico de lucro
-				if (this.sessionStats && this.sessionStats.netProfit !== undefined) {
-					const currentProfit = parseFloat(this.sessionStats.netProfit) || 0;
-					// Adicionar apenas se mudou
-					if (this.profitHistory.length === 0 || this.profitHistory[this.profitHistory.length - 1] !== currentProfit) {
-						this.profitHistory.push(currentProfit);
-						if (this.profitHistory.length > 50) {
-							this.profitHistory.shift();
-						}
-						profitChanged = true;
-					}
-				}
-				
-				// Atualizar gráfico de perda
-				if (this.sessionStats && this.sessionStats.totalLoss !== undefined) {
-					const currentLoss = parseFloat(this.sessionStats.totalLoss) || 0;
-					// Adicionar apenas se mudou
-					if (this.lossHistory.length === 0 || this.lossHistory[this.lossHistory.length - 1] !== currentLoss) {
-						this.lossHistory.push(Math.abs(currentLoss));
-						if (this.lossHistory.length > 50) {
-							this.lossHistory.shift();
-						}
-						lossChanged = true;
-					}
-				}
-				
-				// Atualizar gráficos lightweight-charts
-				if (profitChanged) {
-					this.updateProfitChart();
-				}
-				if (lossChanged) {
-					this.updateLossChart();
-				}
 			},
 			
 			// ============================================
@@ -895,141 +801,6 @@
 					console.error('[AgenteAutonomoActive] Erro ao atualizar gráfico de índice:', error);
 				}
 			},
-			
-			// ============================================
-			// GRÁFICO DE LUCRO
-			// ============================================
-			initProfitChart() {
-				if (this.profitChartInitialized || !this.$refs.profitChartContainer) {
-					return;
-				}
-				
-				try {
-					const container = this.$refs.profitChartContainer;
-					const containerWidth = container.offsetWidth || 400;
-					const containerHeight = 150;
-					
-					this.profitChart = createChart(container, {
-						width: containerWidth,
-						height: containerHeight,
-						layout: {
-							background: { type: ColorType.Solid, color: '#0B0B0B' },
-							textColor: '#DFDFDF',
-						},
-						rightPriceScale: {
-							borderColor: '#1C1C1C',
-						},
-						leftPriceScale: {
-							visible: false,
-						},
-						timeScale: {
-							borderColor: '#1C1C1C',
-							visible: false,
-						},
-						grid: {
-							vertLines: { visible: false },
-							horzLines: { visible: false },
-						},
-					});
-					
-					this.profitChartSeries = this.profitChart.addLineSeries({
-						color: '#22C55E',
-						lineWidth: 2,
-					});
-					
-					this.profitChartInitialized = true;
-					this.updateProfitChart();
-				} catch (error) {
-					console.error('[AgenteAutonomoActive] Erro ao inicializar gráfico de lucro:', error);
-				}
-			},
-			
-			updateProfitChart() {
-				if (!this.profitChartInitialized || !this.profitChartSeries || !this.profitHistory || this.profitHistory.length === 0) {
-					return;
-				}
-				
-				try {
-					const now = Math.floor(Date.now() / 1000);
-					const data = this.profitHistory.map((value, index) => ({
-						time: now - (this.profitHistory.length - index),
-						value: value
-					}));
-					
-					this.profitChartSeries.setData(data);
-					this.profitChart.timeScale().fitContent();
-				} catch (error) {
-					console.error('[AgenteAutonomoActive] Erro ao atualizar gráfico de lucro:', error);
-				}
-			},
-			
-			// ============================================
-			// GRÁFICO DE PERDA
-			// ============================================
-			initLossChart() {
-				if (this.lossChartInitialized || !this.$refs.lossChartContainer) {
-					return;
-				}
-				
-				try {
-					const container = this.$refs.lossChartContainer;
-					const containerWidth = container.offsetWidth || 400;
-					const containerHeight = 150;
-					
-					this.lossChart = createChart(container, {
-						width: containerWidth,
-						height: containerHeight,
-						layout: {
-							background: { type: ColorType.Solid, color: '#0B0B0B' },
-							textColor: '#DFDFDF',
-						},
-						rightPriceScale: {
-							borderColor: '#1C1C1C',
-						},
-						leftPriceScale: {
-							visible: false,
-						},
-						timeScale: {
-							borderColor: '#1C1C1C',
-							visible: false,
-						},
-						grid: {
-							vertLines: { visible: false },
-							horzLines: { visible: false },
-						},
-					});
-					
-					this.lossChartSeries = this.lossChart.addLineSeries({
-						color: '#ef4444',
-						lineWidth: 2,
-					});
-					
-					this.lossChartInitialized = true;
-					this.updateLossChart();
-				} catch (error) {
-					console.error('[AgenteAutonomoActive] Erro ao inicializar gráfico de perda:', error);
-				}
-			},
-			
-			updateLossChart() {
-				if (!this.lossChartInitialized || !this.lossChartSeries || !this.lossHistory || this.lossHistory.length === 0) {
-					return;
-				}
-				
-				try {
-					const now = Math.floor(Date.now() / 1000);
-					const data = this.lossHistory.map((value, index) => ({
-						time: now - (this.lossHistory.length - index),
-						value: value
-					}));
-					
-					this.lossChartSeries.setData(data);
-					this.lossChart.timeScale().fitContent();
-				} catch (error) {
-					console.error('[AgenteAutonomoActive] Erro ao atualizar gráfico de perda:', error);
-				}
-			},
-			
 			getUserId() {
 				const userStr = localStorage.getItem("user");
 				if (userStr) {
@@ -1590,12 +1361,6 @@
 		position: relative;
 	}
 	
-	.performance-chart-wrapper {
-		width: 100%;
-		height: 150px;
-		position: relative;
-	}
-	
 	.chart-title {
 		font-size: 14px;
 		font-weight: 600;
@@ -1604,30 +1369,8 @@
 		text-align: left;
 	}
 	
-	.performance-charts-container {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 20px;
-		margin-top: 30px;
-	}
-	
-	.performance-chart-item {
-		display: flex;
-		flex-direction: column;
-		background: #0b0b0b;
-		border: 1px solid #1a1a1a;
-		border-radius: 8px;
-		padding: 15px;
-	}
-	
 	@media (max-width: 768px) {
-		.performance-charts-container {
-			grid-template-columns: 1fr;
-			gap: 20px;
-		}
-		
-		.index-chart-container,
-		.performance-chart-item {
+		.index-chart-container {
 			padding: 10px;
 		}
 	}
