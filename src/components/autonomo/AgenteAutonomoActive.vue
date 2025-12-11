@@ -858,7 +858,7 @@
 							
 							if (message.msg_type === 'authorize') {
 								console.log('[AgenteAutonomoActive] ✅ Autorizado na Deriv');
-								// Buscar histórico inicial
+								// Buscar histórico inicial e se inscrever para ticks em tempo real
 								this.derivWebSocket.send(JSON.stringify({
 									ticks_history: this.symbol,
 									adjust_start_time: 1,
@@ -867,6 +867,15 @@
 									subscribe: 1,
 									style: 'ticks'
 								}));
+								
+								// Também se inscrever para ticks em tempo real separadamente
+								setTimeout(() => {
+									this.derivWebSocket.send(JSON.stringify({
+										ticks: this.symbol,
+										subscribe: 1
+									}));
+									console.log('[AgenteAutonomoActive] 📡 Inscrito para ticks em tempo real:', this.symbol);
+								}, 500);
 							}
 							
 							if (message.msg_type === 'history') {
@@ -914,6 +923,14 @@
 											this.priceTicks.shift();
 										}
 										
+										console.log('[AgenteAutonomoActive] 📈 Novo tick recebido:', {
+											value: value,
+											epoch: epoch,
+											totalTicks: this.priceTicks.length,
+											chartInitialized: this.indexChartInitialized,
+											hasSeries: !!this.indexChartSeries
+										});
+										
 										// Atualizar gráfico
 										if (this.indexChartInitialized && this.indexChartSeries) {
 											try {
@@ -921,9 +938,13 @@
 													time: Math.floor(epoch),
 													value: value
 												});
+												// Ajustar escala para mostrar o último tick
+												this.indexChart.timeScale().scrollToPosition(-1, false);
 											} catch (error) {
-												console.warn('[AgenteAutonomoActive] Erro ao atualizar tick:', error);
+												console.error('[AgenteAutonomoActive] Erro ao atualizar tick:', error);
 											}
+										} else {
+											console.warn('[AgenteAutonomoActive] Gráfico não inicializado, não é possível atualizar');
 										}
 									}
 								}
