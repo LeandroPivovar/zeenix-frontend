@@ -11,7 +11,8 @@
         />
 
         <div class="content-wrapper">
-            <section class="master-trader-status-nav">
+            <!-- Layout Desktop -->
+            <section class="master-trader-status-nav desktop-layout">
                 <div class="top-status-bar">
                     <div class="status-cards-container">
                         <div class="status-card active-copy-trading">
@@ -78,6 +79,123 @@
                 </nav>
             </section>
 
+            <!-- Layout Mobile -->
+            <div class="mobile-layout">
+                <!-- Card combinado: Header + Métricas -->
+                <div class="mobile-header-metrics-card">
+                    <!-- Título e Descrição -->
+                    <div class="mobile-header-section">
+                        <h1 class="mobile-main-title">Copy Trading Mestre</h1>
+                        <p class="mobile-description">Execute suas operações e gerencie os copiadores conectados à sua conta.</p>
+                    </div>
+
+                    <!-- Seção Superior: Métricas em Grid 2x2 -->
+                    <div class="mobile-metrics-grid">
+                        <div class="mobile-metric-card">
+                            <span class="mobile-metric-label">Copiers</span>
+                            <span class="mobile-metric-value">25</span>
+                        </div>
+                        <div class="mobile-metric-card">
+                            <span class="mobile-metric-label">Gerenciado</span>
+                            <span class="mobile-metric-value">$141.76</span>
+                        </div>
+                        <div class="mobile-metric-card">
+                            <span class="mobile-metric-label">Lucro Hoje</span>
+                            <span class="mobile-metric-value profit">+$18.60</span>
+                        </div>
+                        <div class="mobile-metric-card">
+                            <span class="mobile-metric-label">Volume</span>
+                            <span class="mobile-metric-value">$450</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Seção Inferior: Opções de Navegação em Grid 2x2 -->
+                <div class="mobile-options-grid">
+                    <button 
+                        class="mobile-option-card"
+                        :class="{ active: activeMode === 'Detalhes Copiadores' }"
+                        @click="selectMode('Detalhes Copiadores')"
+                    >
+                        <div class="mobile-option-icon-wrapper">
+                            <svg class="mobile-option-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <circle cx="9" cy="7" r="2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="15" cy="7" r="2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <path d="M21 21v-2a4 4 0 0 0-4-4h-2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="mobile-option-content">
+                            <span class="mobile-option-title">Copiadores</span>
+                            <span class="mobile-option-subtitle">Gerenciar</span>
+                        </div>
+                        <span class="mobile-option-arrow">></span>
+                    </button>
+
+                    <button 
+                        class="mobile-option-card"
+                        :class="{ active: activeMode === 'IA de Investimento' }"
+                        @click="selectMode('IA de Investimento')"
+                    >
+                        <div class="mobile-option-icon-wrapper">
+                            <svg class="mobile-option-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="7" y="13" width="10" height="8" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <circle cx="10" cy="17" r="1" fill="currentColor"/>
+                                <circle cx="14" cy="17" r="1" fill="currentColor"/>
+                                <circle cx="12" cy="7" r="2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="12" y1="4.5" x2="12" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="12" y1="9.5" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <circle cx="12" cy="4.5" r="0.5" fill="currentColor"/>
+                            </svg>
+                        </div>
+                        <div class="mobile-option-content">
+                            <span class="mobile-option-title">IA's</span>
+                            <span class="mobile-option-subtitle">Operar</span>
+                        </div>
+                        <span class="mobile-option-arrow">></span>
+                    </button>
+
+                    <button 
+                        class="mobile-option-card"
+                        :class="{ active: activeMode === 'Agente Autônomo' }"
+                        @click="selectMode('Agente Autônomo')"
+                    >
+                        <div class="mobile-option-icon-wrapper">
+                            <svg class="mobile-option-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <rect x="4" y="4" width="16" height="16" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <rect x="8" y="8" width="8" height="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                <line x1="4" y1="12" x2="2" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="20" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="12" y1="4" x2="12" y2="2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                                <line x1="12" y1="20" x2="12" y2="22" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                            </svg>
+                        </div>
+                        <div class="mobile-option-content">
+                            <span class="mobile-option-title">Agente</span>
+                            <span class="mobile-option-subtitle">Configurar</span>
+                        </div>
+                        <span class="mobile-option-arrow">></span>
+                    </button>
+
+                    <button 
+                        class="mobile-option-card"
+                        :class="{ active: activeMode === 'Operação Manual' }"
+                        @click="selectMode('Operação Manual')"
+                    >
+                        <div class="mobile-option-icon-wrapper">
+                            <svg class="mobile-option-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <polyline points="2 12 4 12 6 8 8 16 10 4 12 20 14 8 16 16 18 12 20 12 22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                        </div>
+                        <div class="mobile-option-content">
+                            <span class="mobile-option-title">Manual</span>
+                            <span class="mobile-option-subtitle">Operar</span>
+                        </div>
+                        <span class="mobile-option-arrow">></span>
+                    </button>
+                </div>
+            </div>
+
             <main class="master-trader-main-content">
                 <component :is="currentViewComponent" />
             </main>
@@ -94,7 +212,7 @@ import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import CopiersDetails from '../components/masterTrader/CopiersDetails.vue'
 import AIInvestment from '../components/masterTrader/InvestmentComponent.vue'
 import AgenteAutonomoView from '../components/masterTrader/AgentAutonomoComponent.vue'
-import ManualOperation from './OperationView.vue'
+import ManualOperation from '../components/masterTrader/ManualOperationComponent.vue'
 
 export default {
     name: 'MasterTraderView',
@@ -303,7 +421,7 @@ export default {
 .layout-master-trader {
     display: flex;
     min-height: 100vh;
-    background-color: #0b0b0a; /* Fundo escuro principal */
+    background: #0b0b0b;
     color: #f0f6fc; /* Texto principal claro */
     width: calc(100% - 280px);
     margin-left: 280px;
@@ -533,8 +651,161 @@ export default {
 /* Estilo Básico para a Área Principal */
 .master-trader-main-content {
     border-radius: 8px;
-    padding: 20px;
+    padding: 0;
     min-height: 400px; 
+}
+
+/* --------------------
+    Layout Mobile
+    -------------------- */
+.mobile-layout {
+    display: none;
+}
+
+/* Card combinado: Header + Métricas */
+.mobile-header-metrics-card {
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%);
+    border: 1px solid #1C1C1C;
+    position: relative;
+    border-radius: 12px;
+    padding: 20px;
+    margin-top: 15px;
+    margin-bottom: 16px;
+    overflow: hidden;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
+}
+
+.mobile-header-metrics-card > * {
+    position: relative;
+    z-index: 1;
+}
+
+/* Header Section Mobile */
+.mobile-header-section {
+    margin-bottom: 20px;
+}
+
+.mobile-main-title {
+    font-size: 1.75rem;
+    font-weight: 700;
+    color: #f0f6fc;
+    margin: 0 0 8px 0;
+    text-align: left;
+}
+
+.mobile-description {
+    font-size: 0.9rem;
+    color: #f0f6fc;
+    margin: 0;
+    text-align: left;
+    line-height: 1.5;
+}
+
+/* Grid de Métricas Mobile */
+.mobile-metrics-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 0;
+}
+
+.mobile-metric-card {
+    display: flex;
+    flex-direction: column;
+    padding: 12px 15px;
+    border-radius: 12px;
+    background: rgba(14, 15, 15, 0.6);
+    border: 1px solid rgba(29, 30, 31, 0.5);
+    text-align: left;
+    backdrop-filter: blur(10px);
+}
+
+.mobile-metric-label {
+    font-size: 0.75rem;
+    color: #8b949e;
+    margin-bottom: 4px;
+}
+
+.mobile-metric-value {
+    font-size: 1.1rem;
+    font-weight: bold;
+    color: #f0f6fc;
+}
+
+.mobile-metric-value.profit {
+    color: #22c55e;
+}
+
+/* Grid de Opções Mobile */
+.mobile-options-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.mobile-option-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 16px;
+    border-radius: 12px;
+    background: #0e0f0f;
+    border: none;
+    border-top: 2px solid transparent;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-align: left;
+}
+
+.mobile-option-card:hover {
+    background: rgba(34, 197, 94, 0.05);
+}
+
+.mobile-option-card.active {
+    border-top: 2px solid #22c55e;
+}
+
+.mobile-option-icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    border-radius: 50%;
+    background: rgba(34, 197, 94, 0.15);
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.mobile-option-icon {
+    width: 24px;
+    height: 24px;
+    stroke: #22c55e;
+    fill: none;
+    transition: stroke 0.2s ease;
+}
+
+.mobile-option-content {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    gap: 2px;
+}
+
+.mobile-option-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #f0f6fc;
+}
+
+.mobile-option-subtitle {
+    font-size: 0.8rem;
+    color: #8b949e;
+}
+
+.mobile-option-arrow {
+    font-size: 1.2rem;
+    color: #8b949e;
+    flex-shrink: 0;
 }
 
 /* --------------------
@@ -544,6 +815,42 @@ export default {
     .layout-master-trader {
         margin-left: 0;
         width: 100%;
+    }
+
+    /* Esconde layout desktop no mobile */
+    .desktop-layout {
+        display: none !important;
+    }
+
+    /* Mostra layout mobile */
+    .mobile-layout {
+        display: block;
+    }
+
+    .content-wrapper {
+        padding: 0 16px 20px 16px;
+    }
+}
+
+@media (max-width: 768px) {
+    .layout-master-trader {
+        background: linear-gradient(to bottom, #0f1e14 0%, #060706 50%, #050504 100%);
+    }
+
+    .master-trader-main-content {
+        padding-bottom: 80px;
+    }
+}
+
+@media (min-width: 1025px) {
+    /* Esconde layout mobile no desktop */
+    .mobile-layout {
+        display: none !important;
+    }
+
+    /* Mostra layout desktop */
+    .desktop-layout {
+        display: flex;
     }
 }
 </style>
