@@ -206,44 +206,20 @@
 					<!-- Gráfico do Índice R_75 -->
 					<div class="index-chart-container" v-if="abaAtiva === 'grafico'">
 						<h4 class="chart-title">Índice R_75 (Volatility 75)</h4>
-						<LineChart 
-							v-if="indexChartData && indexChartData.length > 0"
-							:key="`r75-chart-${indexChartData.length}`"
-							:chart-id="'r75-index-chart'"
-							:data="indexChartData"
-							:color="'#22C55E'"
-							:height="200"
-						/>
-						<p v-else class="chart-placeholder">Aguardando dados do índice... ({{ indexChartData ? indexChartData.length : 0 }} pontos)</p>
+						<div ref="indexChartContainer" class="market-chart-wrapper"></div>
 					</div>
 					
 					<!-- Gráficos de Performance -->
 					<div class="performance-charts-container" v-if="abaAtiva === 'grafico'">
 						<div class="performance-chart-item">
 							<h4 class="chart-title">Lucro do Dia</h4>
-							<LineChart 
-								v-if="profitChartData && profitChartData.length > 0"
-								:chart-id="'profit-chart'"
-								:data="profitChartData"
-								:color="'#22C55E'"
-								:height="150"
-							/>
-							<p v-else class="chart-placeholder">Aguardando dados...</p>
+							<div ref="profitChartContainer" class="performance-chart-wrapper"></div>
 						</div>
 						<div class="performance-chart-item">
 							<h4 class="chart-title">Perda Acumulada</h4>
-							<LineChart 
-								v-if="lossChartData && lossChartData.length > 0"
-								:chart-id="'loss-chart'"
-								:data="lossChartData"
-								:color="'#ef4444'"
-								:height="150"
-							/>
-							<p v-else class="chart-placeholder">Aguardando dados...</p>
+							<div ref="lossChartContainer" class="performance-chart-wrapper"></div>
 						</div>
 					</div>
-					
-					<p class="chart-placeholder" v-if="abaAtiva === 'grafico' && (!indexChartData || indexChartData.length === 0)">{{ graficoPlaceholder }}</p>
 				</div>
 				<div id="contentHistorico" :class="['history-content', { hidden: abaAtiva !== 'historico' }]">
 					<div class="history-header">
@@ -359,13 +335,12 @@
 
 <script>
 	import OperationLogs from '../OperationLogs.vue';
-	import LineChart from '../LineChart.vue';
+	import { createChart, ColorType } from 'lightweight-charts';
 
 	export default {
 		name: 'AgenteAutonomoPanel',
 		components: {
-			OperationLogs,
-			LineChart
+			OperationLogs
 		},
 		props: {
 			agenteData: {
@@ -596,6 +571,24 @@
 				deep: true,
 				immediate: true,
 			},
+			abaAtiva(newAba) {
+				// Quando a aba 'grafico' for selecionada, garantir que os gráficos sejam inicializados
+				if (newAba === 'grafico') {
+					this.$nextTick(() => {
+						setTimeout(() => {
+							if (this.$refs.indexChartContainer && !this.indexChartInitialized) {
+								this.initIndexChart();
+							}
+							if (this.$refs.profitChartContainer && !this.profitChartInitialized) {
+								this.initProfitChart();
+							}
+							if (this.$refs.lossChartContainer && !this.lossChartInitialized) {
+								this.initLossChart();
+							}
+						}, 200);
+					});
+				}
+			},
 			'agenteData.goalValue'(newVal) {
 				if (newVal !== undefined) {
 					this.progressoMeta.meta = newVal || 50;
@@ -641,6 +634,32 @@
 					this.dataInicio = hoje;
 					this.dataFim = hoje;
 				}
+			},
+			priceTicks: {
+				handler() {
+					if (this.indexChartInitialized && this.abaAtiva === 'grafico') {
+						this.updateIndexChart();
+					}
+				},
+				deep: true
+			},
+			abaAtiva(newAba) {
+				// Quando a aba 'grafico' for selecionada, garantir que os gráficos sejam inicializados
+				if (newAba === 'grafico') {
+					this.$nextTick(() => {
+						setTimeout(() => {
+							if (this.$refs.indexChartContainer && !this.indexChartInitialized) {
+								this.initIndexChart();
+							}
+							if (this.$refs.profitChartContainer && !this.profitChartInitialized) {
+								this.initProfitChart();
+							}
+							if (this.$refs.lossChartContainer && !this.lossChartInitialized) {
+								this.initLossChart();
+							}
+						}, 200);
+					});
+				}
 			}
 		},
 		mounted() {
@@ -661,6 +680,21 @@
 			this.loadPriceHistory();
 			this.startPriceHistoryUpdates();
 			
+			// Inicializar gráficos após um pequeno delay para garantir que os refs estejam prontos
+			this.$nextTick(() => {
+				setTimeout(() => {
+					if (this.$refs.indexChartContainer) {
+						this.initIndexChart();
+					}
+					if (this.$refs.profitChartContainer) {
+						this.initProfitChart();
+					}
+					if (this.$refs.lossChartContainer) {
+						this.initLossChart();
+					}
+				}, 300);
+			});
+			
 			// Inicializar histórico de lucro/perda
 			this.initializeProfitLossHistory();
 			
@@ -670,6 +704,20 @@
 		beforeUnmount() {
 			if (this.priceHistoryInterval) {
 				clearInterval(this.priceHistoryInterval);
+			}
+			
+			// Destruir gráficos
+			if (this.indexChart) {
+				this.indexChart.remove();
+				this.indexChart = null;
+			}
+			if (this.profitChart) {
+				this.profitChart.remove();
+				this.profitChart = null;
+			}
+			if (this.lossChart) {
+				this.lossChart.remove();
+				this.lossChart = null;
 			}
 		},
 		methods: {
@@ -698,18 +746,17 @@
 					if (result.success && result.data) {
 						// result.data é um array de PriceTick: [{value, epoch, timestamp}, ...]
 						if (Array.isArray(result.data)) {
-							const prices = result.data.map(tick => {
-								if (typeof tick === 'object' && tick.value !== undefined) {
-									return parseFloat(tick.value) || 0;
-								}
-								return parseFloat(tick) || 0;
-							});
+							this.priceTicks = result.data.map(tick => ({
+								value: typeof tick === 'object' && tick.value !== undefined ? parseFloat(tick.value) : parseFloat(tick) || 0,
+								epoch: typeof tick === 'object' && tick.epoch ? tick.epoch : (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : Date.now() / 1000),
+								timestamp: typeof tick === 'object' && tick.timestamp ? tick.timestamp : new Date().toISOString()
+							}));
 							
-							if (prices.length > 0) {
-								this.indexChartData = prices;
-								console.log('[AgenteAutonomoActive] Gráfico atualizado com', prices.length, 'pontos');
+							if (this.priceTicks.length > 0) {
+								console.log('[AgenteAutonomoActive] Gráfico atualizado com', this.priceTicks.length, 'ticks');
+								this.updateIndexChart();
 							} else {
-								console.warn('[AgenteAutonomoActive] Nenhum preço válido encontrado nos dados');
+								console.warn('[AgenteAutonomoActive] Nenhum tick válido encontrado nos dados');
 							}
 						} else {
 							console.warn('[AgenteAutonomoActive] Formato de dados inesperado:', typeof result.data);
@@ -733,9 +780,14 @@
 				// Inicializar com dados atuais
 				if (this.sessionStats) {
 					this.profitHistory = [parseFloat(this.sessionStats.netProfit) || 0];
-					this.lossHistory = [parseFloat(this.sessionStats.totalLoss) || 0];
-					this.profitChartData = [...this.profitHistory];
-					this.lossChartData = [...this.lossHistory];
+					this.lossHistory = [Math.abs(parseFloat(this.sessionStats.totalLoss) || 0)];
+					// Os gráficos serão atualizados quando os gráficos forem inicializados
+					if (this.profitChartInitialized) {
+						this.updateProfitChart();
+					}
+					if (this.lossChartInitialized) {
+						this.updateLossChart();
+					}
 				}
 			},
 			
@@ -769,13 +821,230 @@
 					}
 				}
 				
-				// Só atualizar os arrays de dados do gráfico se realmente mudaram
-				// Isso evita loops infinitos no watcher do LineChart
+				// Atualizar gráficos lightweight-charts
 				if (profitChanged) {
-					this.profitChartData = [...this.profitHistory];
+					this.updateProfitChart();
 				}
 				if (lossChanged) {
-					this.lossChartData = [...this.lossHistory];
+					this.updateLossChart();
+				}
+			},
+			
+			// ============================================
+			// GRÁFICO DO ÍNDICE R_75
+			// ============================================
+			initIndexChart() {
+				if (this.indexChartInitialized || !this.$refs.indexChartContainer) {
+					return;
+				}
+				
+				try {
+					const container = this.$refs.indexChartContainer;
+					const containerWidth = container.offsetWidth || 800;
+					const containerHeight = 200;
+					
+					this.indexChart = createChart(container, {
+						width: containerWidth,
+						height: containerHeight,
+						localization: { 
+							locale: 'pt-BR',
+							timeFormatter: (time) => {
+								const date = new Date(time * 1000);
+								const hours = String(date.getHours()).padStart(2, '0');
+								const minutes = String(date.getMinutes()).padStart(2, '0');
+								return `${hours}:${minutes}`;
+							}
+						},
+						layout: {
+							background: { type: ColorType.Solid, color: '#0B0B0B' },
+							textColor: '#DFDFDF',
+						},
+						rightPriceScale: {
+							borderColor: '#1C1C1C',
+						},
+						leftPriceScale: {
+							visible: false,
+						},
+						timeScale: {
+							borderColor: '#1C1C1C',
+							timeVisible: true,
+							secondsVisible: false,
+						},
+						grid: {
+							vertLines: { color: 'rgba(148, 163, 184, 0.1)', visible: true },
+							horzLines: { color: 'rgba(148, 163, 184, 0.1)', visible: true },
+						},
+					});
+					
+					this.indexChartSeries = this.indexChart.addLineSeries({
+						color: '#22C55E',
+						lineWidth: 2,
+						priceFormat: {
+							type: 'price',
+							precision: 1,
+							minMove: 0.1,
+						},
+					});
+					
+					this.indexChartInitialized = true;
+					
+					if (this.priceTicks.length > 0) {
+						this.updateIndexChart();
+					}
+				} catch (error) {
+					console.error('[AgenteAutonomoActive] Erro ao inicializar gráfico de índice:', error);
+				}
+			},
+			
+			updateIndexChart() {
+				if (!this.indexChartInitialized || !this.indexChartSeries || this.priceTicks.length === 0) {
+					return;
+				}
+				
+				try {
+					const data = this.priceTicks.map(tick => ({
+						time: Math.floor(tick.epoch),
+						value: tick.value
+					}));
+					
+					this.indexChartSeries.setData(data);
+					this.indexChart.timeScale().fitContent();
+				} catch (error) {
+					console.error('[AgenteAutonomoActive] Erro ao atualizar gráfico de índice:', error);
+				}
+			},
+			
+			// ============================================
+			// GRÁFICO DE LUCRO
+			// ============================================
+			initProfitChart() {
+				if (this.profitChartInitialized || !this.$refs.profitChartContainer) {
+					return;
+				}
+				
+				try {
+					const container = this.$refs.profitChartContainer;
+					const containerWidth = container.offsetWidth || 400;
+					const containerHeight = 150;
+					
+					this.profitChart = createChart(container, {
+						width: containerWidth,
+						height: containerHeight,
+						layout: {
+							background: { type: ColorType.Solid, color: '#0B0B0B' },
+							textColor: '#DFDFDF',
+						},
+						rightPriceScale: {
+							borderColor: '#1C1C1C',
+						},
+						leftPriceScale: {
+							visible: false,
+						},
+						timeScale: {
+							borderColor: '#1C1C1C',
+							visible: false,
+						},
+						grid: {
+							vertLines: { visible: false },
+							horzLines: { visible: false },
+						},
+					});
+					
+					this.profitChartSeries = this.profitChart.addLineSeries({
+						color: '#22C55E',
+						lineWidth: 2,
+					});
+					
+					this.profitChartInitialized = true;
+					this.updateProfitChart();
+				} catch (error) {
+					console.error('[AgenteAutonomoActive] Erro ao inicializar gráfico de lucro:', error);
+				}
+			},
+			
+			updateProfitChart() {
+				if (!this.profitChartInitialized || !this.profitChartSeries || !this.profitHistory || this.profitHistory.length === 0) {
+					return;
+				}
+				
+				try {
+					const now = Math.floor(Date.now() / 1000);
+					const data = this.profitHistory.map((value, index) => ({
+						time: now - (this.profitHistory.length - index),
+						value: value
+					}));
+					
+					this.profitChartSeries.setData(data);
+					this.profitChart.timeScale().fitContent();
+				} catch (error) {
+					console.error('[AgenteAutonomoActive] Erro ao atualizar gráfico de lucro:', error);
+				}
+			},
+			
+			// ============================================
+			// GRÁFICO DE PERDA
+			// ============================================
+			initLossChart() {
+				if (this.lossChartInitialized || !this.$refs.lossChartContainer) {
+					return;
+				}
+				
+				try {
+					const container = this.$refs.lossChartContainer;
+					const containerWidth = container.offsetWidth || 400;
+					const containerHeight = 150;
+					
+					this.lossChart = createChart(container, {
+						width: containerWidth,
+						height: containerHeight,
+						layout: {
+							background: { type: ColorType.Solid, color: '#0B0B0B' },
+							textColor: '#DFDFDF',
+						},
+						rightPriceScale: {
+							borderColor: '#1C1C1C',
+						},
+						leftPriceScale: {
+							visible: false,
+						},
+						timeScale: {
+							borderColor: '#1C1C1C',
+							visible: false,
+						},
+						grid: {
+							vertLines: { visible: false },
+							horzLines: { visible: false },
+						},
+					});
+					
+					this.lossChartSeries = this.lossChart.addLineSeries({
+						color: '#ef4444',
+						lineWidth: 2,
+					});
+					
+					this.lossChartInitialized = true;
+					this.updateLossChart();
+				} catch (error) {
+					console.error('[AgenteAutonomoActive] Erro ao inicializar gráfico de perda:', error);
+				}
+			},
+			
+			updateLossChart() {
+				if (!this.lossChartInitialized || !this.lossChartSeries || !this.lossHistory || this.lossHistory.length === 0) {
+					return;
+				}
+				
+				try {
+					const now = Math.floor(Date.now() / 1000);
+					const data = this.lossHistory.map((value, index) => ({
+						time: now - (this.lossHistory.length - index),
+						value: value
+					}));
+					
+					this.lossChartSeries.setData(data);
+					this.lossChart.timeScale().fitContent();
+				} catch (error) {
+					console.error('[AgenteAutonomoActive] Erro ao atualizar gráfico de perda:', error);
 				}
 			},
 			
@@ -1331,6 +1600,18 @@
 		border: 1px solid #1a1a1a;
 		border-radius: 8px;
 		padding: 15px;
+	}
+	
+	.market-chart-wrapper {
+		width: 100%;
+		height: 200px;
+		position: relative;
+	}
+	
+	.performance-chart-wrapper {
+		width: 100%;
+		height: 150px;
+		position: relative;
 	}
 	
 	.chart-title {
