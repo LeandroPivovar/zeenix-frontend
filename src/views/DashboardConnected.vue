@@ -1,18 +1,35 @@
 <template>
-  <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-    <!-- Top Navbar -->
-    <TopNavbar 
-      :is-sidebar-collapsed="isSidebarCollapsed"
-      :balance="info?.balance"
-      :account-type="accountType"
-      @account-type-changed="switchAccount"
-      :balances-by-currency-real="balancesByCurrencyReal"
-      :balances-by-currency-demo="balancesByCurrencyDemo"
-      :currency-prefix="preferredCurrencyPrefix"
+  <div class="dashboard-layout">
+    <div
+      v-if="isSidebarOpen && isMobile"
+      class="sidebar-overlay"
+      @click="closeSidebar"
+    ></div>
+
+    <!-- Sidebar -->
+    <AppSidebar 
+      :is-open="isSidebarOpen" 
+      :is-collapsed="localSidebarCollapsed"
+      :is-mobile="isMobile"
+      @close-sidebar="closeSidebar" 
+      @toggle-collapse="toggleSidebarCollapse" 
     />
     
+    <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
+      <!-- Top Navbar -->
+      <TopNavbar 
+        :is-sidebar-collapsed="localSidebarCollapsed"
+        :balance="info?.balance"
+        :account-type="accountType"
+        @account-type-changed="switchAccount"
+        :balances-by-currency-real="balancesByCurrencyReal"
+        :balances-by-currency-demo="balancesByCurrencyDemo"
+        :currency-prefix="preferredCurrencyPrefix"
+        @toggle-sidebar="toggleMobileSidebar"
+      />
+    
     <!-- Main Content -->
-    <main class="main-content bg-zenix-bg noise-bg font-inter overflow-y-auto w-full">
+    <main class="main-content bg-zenix-bg noise-bg font-inter overflow-y-auto w-full" style="overflow-x: hidden;">
       <!-- Hero Onboarding Section -->
       <section id="hero-section" class="w-full mt-16 py-12 px-8 relative overflow-hidden group h-[560px]">
       <div class="absolute inset-0 z-0 bg-[#0B0B0B]">
@@ -325,18 +342,86 @@
       </section>
       
       <div class="px-8 py-5 w-full">
-      <!-- Best IAs Section -->
-      <section id="best-ai-section" class="px-12 pt-20 pb-20 relative w-full">
-        <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
-        <div class="relative z-10 w-full">
-          <div class="text-left mb-8 space-y-2">
-            <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Melhores IA's Agora</h2>
-            <p class="text-[17px] text-[#9B9B9B] max-w-3xl leading-[1.75]">
-              Escolha entre as inteligências artificiais mais avançadas do mercado. Cada IA foi otimizada para diferentes estratégias e perfis de risco, garantindo máxima performance em suas operações.
-            </p>
+        <!-- Mobile Account Summary -->
+        <section class="mobile-account-summary">
+          <div class="mobile-account-user">
+            <div class="mobile-account-profile-wrapper">
+              <img 
+                v-if="userProfilePicture"
+                :src="userProfilePicture"
+                :alt="userName"
+                class="mobile-account-avatar"
+              />
+              <div 
+                v-else
+                class="mobile-account-avatar mobile-account-avatar-placeholder"
+              >
+                <span class="mobile-account-avatar-initials">{{ userInitials }}</span>
+              </div>
+              <div class="mobile-account-info">
+                <div class="mobile-account-name-wrapper">
+                  <div class="mobile-account-name">{{ userName }}</div>
+                  <svg class="mobile-notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#9B9B9B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#9B9B9B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="18" cy="6" r="4" fill="#22C55E"/>
+                  </svg>
+                </div>
+                <div class="mobile-account-status">Conta Ativa</div>
+              </div>
+            </div>
           </div>
-          <div class="w-full h-[1px] bg-[#1C1C1C] opacity-35 mb-12"></div>
-          <div class="grid grid-cols-4 gap-6 mb-20">
+          <div class="mobile-account-header">
+            <h3 class="mobile-account-title">Seu total em conta</h3>
+            <button class="mobile-account-eye" @click="toggleBalanceVisibility">
+              <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
+            </button>
+          </div>
+          <div class="mobile-account-balance">
+            {{ balanceVisible ? formattedBalance : '••••••' }}
+          </div>
+          <div class="mobile-account-performance">
+            <span class="mobile-account-percentage">+0%</span>
+            <span class="mobile-account-period">esta semana</span>
+          </div>
+          <div class="mobile-account-actions">
+            <button class="mobile-action-btn" @click="openDepositFlow">
+              <i class="fas fa-wallet"></i>
+              <span>Depositar</span>
+            </button>
+            <button class="mobile-action-btn">
+              <i class="fas fa-chart-line"></i>
+              <span>Operar</span>
+            </button>
+          </div>
+        </section>
+        
+        <!-- Best IAs Section -->
+        <section id="best-ai-section" class="px-12 pt-20 pb-20 relative w-full">
+          <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
+          <div class="relative z-10 w-full">
+            <!-- Desktop Header -->
+            <div class="text-left mb-8 space-y-2 desktop-ias-header">
+              <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Melhores IA's Agora</h2>
+              <p class="desktop-description-text text-[17px] text-[#9B9B9B] max-w-3xl leading-[1.75]">
+                Escolha entre as inteligências artificiais mais avançadas do mercado. Cada IA foi otimizada para diferentes estratégias e perfis de risco, garantindo máxima performance em suas operações.
+              </p>
+            </div>
+            
+            <!-- Mobile Header -->
+            <div class="mobile-ias-header">
+              <div class="flex justify-between items-center mb-4">
+                <h2 class="text-[20px] font-bold text-[#E6E6E6]">Melhores IAs</h2>
+                <button class="see-all-btn-mobile" @click="openIAsModal">
+                  Ver todas >
+                </button>
+              </div>
+            </div>
+            
+            <div class="w-full h-[1px] bg-[#1C1C1C] opacity-35 mb-12"></div>
+            
+            <!-- Desktop Grid -->
+            <div class="grid grid-cols-4 gap-6 mb-20 desktop-grid-ias">
             <div 
               v-for="(ia, index) in bestIAs" 
               :key="index"
@@ -367,6 +452,36 @@
               </div>
             </div>
           </div>
+          
+          <!-- Mobile Grid - Lista vertical de 4 IAs -->
+          <div class="mobile-grid-ias">
+            <div 
+              v-for="(ia, index) in displayedIAs" 
+              :key="index"
+              class="ia-card-mobile"
+            >
+              <div class="ia-icon-mobile">
+                <img :src="ia.image" :alt="ia.name" />
+              </div>
+              <div class="ia-info-mobile">
+                <h3 class="ia-name-mobile">{{ ia.name }}</h3>
+                <p class="ia-category-mobile">{{ ia.category || 'IA de Alta Frequência' }}</p>
+              </div>
+              <div class="ia-performance-mobile">
+                <div class="ia-chart-mobile">
+                  <svg viewBox="0 0 100 30" class="sparkline-mobile">
+                    <polyline 
+                      :points="generateSparklinePoints(ia.sparklineData || [])" 
+                      fill="none" 
+                      stroke="#22C55E" 
+                      stroke-width="2"
+                    />
+                  </svg>
+                </div>
+                <span class="ia-percentage-mobile">+{{ getIAPerformance(ia.id) }}%</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
       
@@ -387,14 +502,20 @@
         <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
         <div class="w-full h-[1px] bg-[#1C1C1C] opacity-35 mb-12"></div>
         <div class="relative z-10 w-full">
-          <div class="text-left mb-8 space-y-2">
+          <!-- Desktop Header -->
+          <div class="text-left mb-8 space-y-2 desktop-performance-header">
             <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Desempenho Geral</h2>
             <p class="text-[17px] text-[#9B9B9B] max-w-3xl leading-[1.75]">
               Ative agora os recursos que podem aumentar seus resultados automaticamente.<br>
               Cada ferramenta desligada é lucro não realizado.
             </p>
           </div>
-          <div class="grid grid-cols-4 gap-4 justify-items-center">
+          
+          <!-- Mobile Header -->
+          <div class="mobile-performance-header-title">
+            <h2 class="text-[20px] font-bold text-[#E6E6E6]">Desempenho Geral</h2>
+          </div>
+          <div class="grid grid-cols-4 gap-4 justify-items-center desktop-performance-grid">
             <div 
               v-for="(perf, index) in performanceData" 
               :key="index"
@@ -466,6 +587,34 @@
                   <i class="fas fa-arrow-right text-xs transition-transform duration-200 group-hover/btn:translate-x-[3px]"></i>
                 </button>
               </div>
+            </div>
+          </div>
+          
+          <!-- Mobile Performance Grid -->
+          <div class="mobile-performance-grid">
+            <div 
+              v-for="(perf, index) in performanceData" 
+              :key="index"
+              class="mobile-performance-card"
+            >
+              <div class="mobile-performance-header">
+                <div class="mobile-performance-icon">
+                  <i :class="[perf.icon, 'text-[#22C55E]']"></i>
+                </div>
+                <h3 class="mobile-performance-title">{{ perf.title }}</h3>
+              </div>
+              <div class="mobile-performance-percentage">{{ perf.percentage }}</div>
+              <div class="mobile-performance-chart">
+                <svg viewBox="0 0 200 60" preserveAspectRatio="none" class="w-full h-full">
+                  <path :d="perf.chartPathFull || perf.chartPath" fill="none" stroke="#22C55E" stroke-width="2"></path>
+                </svg>
+              </div>
+              <button 
+                @click="handlePerformanceAction(perf)"
+                class="mobile-performance-btn"
+              >
+                ATIVAR
+              </button>
             </div>
           </div>
         </div>
@@ -544,17 +693,59 @@
     </footer>
     <DesktopBottomNav />
   </div>
+</div>
+
+<!-- Modal de Melhores IAs -->
+  <div v-if="showIAsModal" class="ias-modal-overlay" @click="closeIAsModal">
+    <div class="ias-modal-content" @click.stop>
+      <div class="ias-modal-header">
+        <h2 class="ias-modal-title">Melhores IAs</h2>
+        <button class="ias-modal-close" @click="closeIAsModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="ias-modal-body">
+        <div class="ias-modal-grid">
+          <div 
+            v-for="(ia, index) in bestIAs" 
+            :key="index"
+            class="ia-card-modal"
+          >
+            <div class="ia-image-modal">
+              <img :src="ia.image" :alt="ia.name" />
+            </div>
+            <div class="ia-content-modal">
+              <h3 class="ia-name-modal">{{ ia.name }}</h3>
+              <p class="ia-description-modal">{{ ia.description || ia.category }}</p>
+              <div class="ia-performance-modal">
+                <span class="ia-percentage-modal">+{{ getIAPerformance(ia.id) }}%</span>
+              </div>
+              <button 
+                @click="activateIA()"
+                class="ia-activate-btn-modal"
+              >
+                Ativar IA
+                <i class="fas fa-arrow-right"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 import TopNavbar from '../components/TopNavbar.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
+import AppSidebar from '../components/Sidebar.vue'
 
 export default {
   name: 'DashboardConnected',
   components: {
     TopNavbar,
-    DesktopBottomNav
+    DesktopBottomNav,
+    AppSidebar
   },
   props: { 
     info: { 
@@ -568,7 +759,12 @@ export default {
   },
   data() {
     return {
+      isSidebarOpen: true,
+      isMobile: false,
+      localSidebarCollapsed: this.isSidebarCollapsed || false,
       accountType: 'real',
+      showIAsModal: false,
+      userProfilePictureUrl: null,
       quickTools: [
         {
           icon: 'fas fa-brain',
@@ -701,7 +897,8 @@ export default {
       },
       todayProfit: 0,
       todayProfitPercent: 0,
-      loadingTodayProfit: true
+      loadingTodayProfit: true,
+      balanceVisible: true
     }
   },
   computed: {
@@ -717,6 +914,7 @@ export default {
       return this.info?.preferredCurrencyPrefix || this.currencyPrefix;
     },
     balanceNumeric() {
+      // Mesma lógica do TopNavbar
       const usdReal = this.balancesByCurrencyReal['USD'];
       if (usdReal !== undefined && usdReal !== null && usdReal > 0) {
         return usdReal;
@@ -730,6 +928,17 @@ export default {
       const val = raw?.value ?? raw?.balance ?? 0;
       const num = Number(val);
       return isNaN(num) ? 0 : num;
+    },
+    formattedBalance() {
+      // Mesma lógica do TopNavbar
+      if (this.accountType === 'demo') {
+        const demo = this.balancesByCurrencyDemo['USD'] || this.balanceNumeric || 0;
+        const prefix = this.preferredCurrencyPrefix || this.getCurrencyPrefix(this.info?.currency);
+        return `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+      const value = this.balanceNumeric;
+      const prefix = this.preferredCurrencyPrefix || this.getCurrencyPrefix(this.info?.currency);
+      return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     },
     balancesByCurrency() {
       return this.info?.balancesByCurrency || {};
@@ -765,6 +974,49 @@ export default {
       }
       return 'Usuário';
     },
+    displayedIAs() {
+      // Mobile: mostra apenas as primeiras 4 IAs
+      return this.bestIAs.slice(0, 4);
+    },
+    userProfilePicture() {
+      if (!this.userProfilePictureUrl) return null;
+      
+      // Se já é uma URL completa, retornar como está
+      if (this.userProfilePictureUrl.startsWith('http://') || 
+          this.userProfilePictureUrl.startsWith('https://')) {
+        return this.userProfilePictureUrl;
+      }
+      
+      // Se começa com /api/uploads, construir URL relativa ao domínio
+      if (this.userProfilePictureUrl.startsWith('/api/uploads')) {
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = apiBaseUrl.replace(/\/api$/, '');
+        return `${baseUrl}${this.userProfilePictureUrl}`;
+      }
+      
+      // Fallback para caminhos antigos /uploads/...
+      const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = apiBaseUrl.replace(/\/api$/, '');
+      return `${baseUrl}${this.userProfilePictureUrl}`;
+    },
+    userInitials() {
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          if (user.name) {
+            const names = user.name.split(' ');
+            if (names.length >= 2) {
+              return (names[0][0] + names[names.length - 1][0]).toUpperCase();
+            }
+            return names[0][0].toUpperCase();
+          }
+        } catch (e) {
+          // Ignorar erro de parsing
+        }
+      }
+      return 'U';
+    },
   },
   watch: {
     accountType() {
@@ -776,11 +1028,39 @@ export default {
       this.recalculateProfitPercent();
     }
   },
+  created() {
+    this.checkMobile();
+    window.addEventListener('resize', this.checkMobile);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.checkMobile);
+  },
   async mounted() {
     this.initSparklines();
     await this.loadTodayProfitLoss();
+    this.loadUserProfilePicture();
   },
   methods: {
+    toggleMobileSidebar() {
+      this.isSidebarOpen = !this.isSidebarOpen;
+    },
+    closeSidebar() {
+      this.isSidebarOpen = false;
+    },
+    toggleSidebarCollapse() {
+      if (!this.isMobile) {
+        this.localSidebarCollapsed = !this.localSidebarCollapsed;
+      }
+    },
+    checkMobile() {
+      this.isMobile = window.innerWidth <= 1024;
+      if (this.isMobile) {
+        this.isSidebarOpen = false;
+        this.localSidebarCollapsed = false;
+      } else {
+        this.isSidebarOpen = true;
+      }
+    },
     switchAccount(type) {
       this.accountType = type;
     },
@@ -790,8 +1070,39 @@ export default {
       }
     },
     activateIA() {
+      // Fechar modal se estiver aberto
+      if (this.showIAsModal) {
+        this.closeIAsModal();
+      }
       // Navega para a página de IAs
       this.$router.push('/InvestmentIA');
+    },
+    openIAsModal() {
+      this.showIAsModal = true;
+    },
+    closeIAsModal() {
+      this.showIAsModal = false;
+    },
+    getIAPerformance(iaId) {
+      // Retorna performance baseada no ID da IA
+      const performances = {
+        'orion': '12.4',
+        'vega': '18.7',
+        'pulse': '15.2',
+        'titan': '15.2'
+      };
+      return performances[iaId] || '0.0';
+    },
+    generateSparklinePoints(data) {
+      if (!data || data.length === 0) return '';
+      const max = Math.max(...data);
+      const min = Math.min(...data);
+      const range = max - min || 1;
+      return data.map((value, index) => {
+        const x = (index / (data.length - 1)) * 100;
+        const y = 30 - ((value - min) / range) * 25;
+        return `${x},${y}`;
+      }).join(' ');
     },
     handlePerformanceAction(perf) {
       if (perf.title.includes('IA')) {
@@ -937,6 +1248,68 @@ export default {
     },
     openDepositFlow() {
       this.$router.push('/settings?tab=deposit');
+    },
+    toggleBalanceVisibility() {
+      this.balanceVisible = !this.balanceVisible;
+    },
+    formatBalance(value) {
+      if (!value && value !== 0) return '$0,00';
+      const formatted = value.toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      return `$${formatted}`;
+    },
+    async loadUserProfilePicture() {
+      try {
+        // Primeiro tenta buscar do localStorage (pode ter sido atualizado recentemente)
+        const userInfo = localStorage.getItem('user');
+        if (userInfo) {
+          try {
+            const user = JSON.parse(userInfo);
+            if (user.profilePictureUrl) {
+              this.userProfilePictureUrl = user.profilePictureUrl;
+              return;
+            }
+          } catch (e) {
+            // Ignorar erro de parsing
+          }
+        }
+
+        // Se não encontrou no localStorage, busca da API
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBaseUrl}/settings`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.profilePictureUrl) {
+            this.userProfilePictureUrl = data.profilePictureUrl;
+            
+            // Atualiza o localStorage para uso futuro
+            const userInfo = localStorage.getItem('user');
+            if (userInfo) {
+              try {
+                const user = JSON.parse(userInfo);
+                user.profilePictureUrl = data.profilePictureUrl;
+                localStorage.setItem('user', JSON.stringify(user));
+              } catch (e) {
+                // Ignorar erro de parsing
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[DashboardConnected] Erro ao carregar foto do perfil:', error);
+      }
     }
   }
 }
@@ -951,6 +1324,31 @@ export default {
 }
 
 /* Dashboard Content Wrapper - Respeita a Sidebar */
+.dashboard-layout {
+  display: flex;
+  min-height: 100vh;
+  position: relative;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.7);
+  z-index: 998;
+  backdrop-filter: blur(2px);
+}
+
+@media (max-width: 1024px) {
+  .sidebar-overlay {
+    display: block;
+  }
+}
+
 .dashboard-content-wrapper {
   margin-left: 280px;
   min-height: 100vh;
@@ -959,6 +1357,7 @@ export default {
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
+  overflow-x: hidden;
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
@@ -967,14 +1366,20 @@ export default {
 }
 
 @media (max-width: 1024px) {
+  .dashboard-layout {
+    flex-direction: column;
+  }
+
   .dashboard-content-wrapper {
-    margin-left: 0;
-    width: 100%;
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100vw;
+    overflow-x: hidden;
   }
   
   .dashboard-content-wrapper.sidebar-collapsed {
-    margin-left: 0;
-    width: 100%;
+    margin-left: 0 !important;
+    width: 100% !important;
   }
 }
 
@@ -1144,6 +1549,15 @@ export default {
   max-width: 100%;
   width: 100%;
   box-sizing: border-box;
+  overflow-x: hidden;
+}
+
+@media (max-width: 1024px) {
+  .main-content {
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+  }
 }
 
 /* Top Navbar Styles */
@@ -2005,7 +2419,8 @@ export default {
     grid-template-columns: 1fr;
   }
   
-  .grid.grid-cols-4 {
+  /* Apenas grids gerais, não o desktop-grid-ias */
+  .grid.grid-cols-4:not(.desktop-grid-ias) {
     grid-template-columns: repeat(2, 1fr);
   }
 }
@@ -2014,14 +2429,598 @@ export default {
   .grid.grid-cols-4 {
     grid-template-columns: 1fr;
   }
-  
-  #best-ai-section .grid.grid-cols-4 {
+
+  /* Padding lateral da página no mobile */
+  .px-8,
+  .px-12 {
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+  }
+
+  /* Padding das sections no mobile */
+  #best-ai-section {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-top: 30px !important;
+    padding-bottom: 0 !important;
+  }
+
+  #performance-section {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Apenas grids gerais, não o desktop-grid-ias */
+  .grid.grid-cols-4:not(.desktop-grid-ias) {
     grid-template-columns: 1fr;
   }
   
   #performance-section .grid.grid-cols-4 {
     grid-template-columns: 1fr;
   }
+
+  /* Mobile IAs Section */
+  .desktop-ias-header,
+  .desktop-grid-ias {
+    display: none !important;
+  }
+
+  .mobile-ias-header {
+    display: block !important;
+    margin-bottom: 8px;
+  }
+
+  .mobile-ias-header + div.w-full.h-\[1px\] {
+    margin-bottom: 8px !important;
+  }
+
+  /* Mobile Performance Section Header */
+  .desktop-performance-header {
+    display: none !important;
+  }
+
+  .mobile-performance-header-title {
+    display: block !important;
+    margin-bottom: 16px;
+  }
+
+  .mobile-grid-ias {
+    display: grid !important;
+    grid-template-columns: repeat(1, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin-bottom: 20px !important;
+    margin-top: 8px !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  /* Ocultar texto descritivo no mobile */
+  .desktop-description-text {
+    display: none;
+  }
+
+  .see-all-btn-mobile {
+    background: none;
+    border: none;
+    color: #22C55E;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 8px;
+    transition: opacity 0.3s;
+  }
+
+  .see-all-btn-mobile:active {
+    opacity: 0.7;
+  }
+
+  .ia-card-mobile {
+    background: #0B0B0B;
+    border-radius: 16px;
+    padding: 16px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+    border: 1px solid rgba(34, 197, 94, 0.1);
+    transition: all 0.3s;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(34, 197, 94, 0.1), 0 0 30px rgba(34, 197, 94, 0.15) !important;
+  }
+
+  .ia-card-mobile:active {
+    transform: scale(0.98);
+    border-color: rgba(34, 197, 94, 0.3);
+  }
+
+  .ia-icon-mobile {
+    width: 60px;
+    height: 60px;
+    border-radius: 12px;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+
+  .ia-icon-mobile img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .ia-info-mobile {
+    flex: 1;
+    min-width: 0;
+    text-align: left;
+  }
+
+  .ia-name-mobile {
+    font-size: 16px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0 0 4px 0;
+  }
+
+  .ia-category-mobile {
+    font-size: 12px;
+    color: #9B9B9B;
+    margin: 0;
+    display: block !important;
+  }
+
+  .ia-performance-mobile {
+    display: flex !important;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    flex-shrink: 0;
+  }
+
+  .ia-chart-mobile {
+    width: 80px;
+    height: 30px;
+  }
+
+  .sparkline-mobile {
+    width: 100%;
+    height: 100%;
+  }
+
+  .ia-percentage-mobile {
+    font-size: 14px;
+    font-weight: 600;
+    color: #22C55E;
+  }
+
+  /* Mobile Performance Section */
+  .desktop-performance-grid {
+    display: none !important;
+  }
+
+  .mobile-performance-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+
+  .mobile-performance-card {
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+    border-radius: 20px;
+    padding: 16px 16px 0 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    border: 1px solid rgba(34, 197, 94, 0.1);
+    position: relative;
+    min-height: 180px;
+    overflow: hidden;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(34, 197, 94, 0.1), 0 0 30px rgba(34, 197, 94, 0.15) !important;
+  }
+
+  .mobile-performance-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 4px;
+  }
+
+  .mobile-performance-icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+
+  .mobile-performance-title {
+    font-size: 11px;
+    font-weight: 600;
+    color: #fff;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin: 0;
+    line-height: 1.2;
+    text-align: left;
+  }
+
+  .mobile-performance-percentage {
+    font-size: 40px !important;
+    font-weight: 700;
+    color: #22C55E;
+    margin: 8px 0 4px 0;
+    text-align: left;
+  }
+
+  .mobile-performance-chart {
+    width: 100%;
+    height: 35px;
+    margin: 8px 0;
+  }
+
+  .mobile-performance-btn {
+    width: calc(100% + 32px) !important;
+    max-width: calc(100% + 32px) !important;
+    margin-left: -16px !important;
+    margin-right: -16px !important;
+    margin-top: auto !important;
+    margin-bottom: 0 !important;
+    height: 44px;
+    background: #22C55E;
+    border: none;
+    border-radius: 0 0 20px 20px;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    cursor: pointer;
+    transition: all 0.3s;
+    flex-shrink: 0;
+    box-sizing: border-box !important;
+  }
+
+  .mobile-performance-btn:active {
+    transform: scale(0.98);
+    background: #16A34A;
+  }
+
+  /* Mobile Account Summary */
+  .mobile-account-summary {
+    display: block !important;
+    background: transparent !important;
+    border-radius: 0 !important;
+    padding: 20px;
+    margin-bottom: 24px;
+    border: none !important;
+  }
+
+  /* Remove backgrounds das sections no mobile */
+  #best-ai-section .absolute.inset-0.bg-gradient-to-b,
+  #performance-section .absolute.inset-0.bg-gradient-to-b {
+    display: none !important;
+  }
+
+  .mobile-account-user {
+    margin-bottom: 20px;
+  }
+
+  .mobile-account-profile-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .mobile-account-avatar {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    object-fit: cover;
+    flex-shrink: 0;
+  }
+
+  .mobile-account-avatar-placeholder {
+    background: #22C55E;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .mobile-account-avatar-initials {
+    color: #fff;
+    font-size: 18px;
+    font-weight: 600;
+  }
+
+  .mobile-account-info {
+    flex: 1;
+  }
+
+  .mobile-account-name-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+
+  .mobile-account-name {
+    font-size: 22px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+    text-align: left;
+  }
+
+  .mobile-notification-icon {
+    flex-shrink: 0;
+  }
+
+  .mobile-account-status {
+    font-size: 12px;
+    color: #9B9B9B;
+    text-align: left;
+  }
+
+  .mobile-account-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+  }
+
+  .mobile-account-title {
+    font-size: 14px;
+    color: #9B9B9B;
+    font-weight: 500;
+    margin: 0;
+  }
+
+  .mobile-account-eye {
+    background: none;
+    border: none;
+    color: #9B9B9B;
+    font-size: 16px;
+    cursor: pointer;
+    padding: 4px;
+  }
+
+  .mobile-account-balance {
+    font-size: 40px;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 8px;
+    text-align: left;
+  }
+
+  .mobile-account-performance {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+
+  .mobile-account-percentage {
+    font-size: 16px !important;
+    font-weight: 600;
+    color: #22C55E;
+  }
+
+
+  .mobile-account-period {
+    font-size: 14px;
+    color: #9B9B9B;
+  }
+
+  .mobile-account-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .mobile-action-btn {
+    flex: 1;
+    height: 48px;
+    background: #22C55E;
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: all 0.3s;
+  }
+
+  .mobile-action-btn:active {
+    transform: scale(0.98);
+    background: #16A34A;
+  }
+
+  .mobile-action-btn i {
+    font-size: 16px;
+  }
+}
+
+/* Desktop - oculta mobile e garante que desktop aparece */
+@media (min-width: 769px) {
+  .mobile-account-summary,
+  .mobile-ias-header,
+  .mobile-grid-ias,
+  .mobile-performance-grid,
+  .mobile-performance-header-title {
+    display: none !important;
+  }
+
+  .desktop-ias-header,
+  .desktop-grid-ias,
+  .desktop-performance-grid,
+  .desktop-performance-header {
+    display: block !important;
+  }
+
+  /* Desktop Grid IAs - sempre 4 colunas lado a lado */
+  .desktop-grid-ias {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 24px !important;
+  }
+
+  .desktop-performance-grid {
+    grid-template-columns: repeat(4, 1fr) !important;
+  }
+}
+
+/* ===== MODAL DE IAs ===== */
+.ias-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  backdrop-filter: blur(4px);
+}
+
+.ias-modal-content {
+  background: #0B0B0B;
+  border-radius: 20px;
+  width: 100%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.ias-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid rgba(34, 197, 94, 0.1);
+}
+
+.ias-modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.ias-modal-close {
+  background: none;
+  border: none;
+  color: #9B9B9B;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.3s;
+}
+
+.ias-modal-close:hover {
+  color: #fff;
+}
+
+.ias-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.ias-modal-grid {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.ia-card-modal {
+  background: #0E0E0E;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(34, 197, 94, 0.1);
+  transition: all 0.3s;
+}
+
+.ia-card-modal:active {
+  transform: scale(0.98);
+}
+
+.ia-image-modal {
+  width: 100%;
+  height: 150px;
+  overflow: hidden;
+}
+
+.ia-image-modal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.ia-content-modal {
+  padding: 16px;
+}
+
+.ia-name-modal {
+  font-size: 18px;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px 0;
+}
+
+.ia-description-modal {
+  font-size: 14px;
+  color: #9B9B9B;
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.ia-performance-modal {
+  margin-bottom: 16px;
+}
+
+.ia-percentage-modal {
+  font-size: 16px;
+  font-weight: 600;
+  color: #22C55E;
+}
+
+.ia-activate-btn-modal {
+  width: 100%;
+  height: 44px;
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+  border: none;
+  border-radius: 12px;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: all 0.3s;
+}
+
+.ia-activate-btn-modal:active {
+  transform: scale(0.98);
 }
 
 </style>
