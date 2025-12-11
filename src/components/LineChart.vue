@@ -26,8 +26,10 @@ export default {
       // Delay para garantir que o canvas esteja totalmente renderizado e visível
       // Especialmente importante quando há animações CSS que começam com opacity: 0
       setTimeout(() => {
-        this.renderChart();
-      }, 200);
+        if (this.data && this.data.length > 0) {
+          this.renderChart();
+        }
+      }, 300);
     });
   },
   beforeUnmount() {
@@ -39,8 +41,11 @@ export default {
   watch: {
     data: {
       deep: true,
-      handler() {
-        this.updateChart();
+      handler(newData) {
+        // Só atualizar se houver dados
+        if (newData && newData.length > 0) {
+          this.updateChart();
+        }
       }
     }
   },
@@ -124,14 +129,29 @@ export default {
     },
     
     updateChart() {
+      if (!this.data || this.data.length === 0) {
+        return;
+      }
+      
       if (!this.chart) {
         this.$nextTick(() => {
-          this.renderChart();
+          setTimeout(() => {
+            this.renderChart();
+          }, 100);
         });
         return;
       }
       
       try {
+        const ctx = document.getElementById(this.chartId);
+        if (!ctx) {
+          // Canvas ainda não está no DOM, tentar novamente depois
+          setTimeout(() => {
+            this.updateChart();
+          }, 100);
+          return;
+        }
+        
         this.chart.data.labels = this.data.map((_, i) => i);
         this.chart.data.datasets[0].data = this.data;
         this.chart.update('none');
@@ -139,7 +159,9 @@ export default {
         console.warn('Error updating chart:', error);
         // Tentar recriar o gráfico se houver erro
         this.$nextTick(() => {
-          this.renderChart();
+          setTimeout(() => {
+            this.renderChart();
+          }, 100);
         });
       }
     }

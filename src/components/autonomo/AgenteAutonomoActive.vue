@@ -207,11 +207,13 @@
 					<div class="index-chart-container" v-if="abaAtiva === 'grafico'">
 						<h4 class="chart-title">Índice R_75 (Volatility 75)</h4>
 						<LineChart 
+							v-if="indexChartData && indexChartData.length > 0"
 							:chart-id="'r75-index-chart'"
 							:data="indexChartData"
 							:color="'#22C55E'"
 							:height="200"
 						/>
+						<p v-else class="chart-placeholder">Aguardando dados do índice...</p>
 					</div>
 					
 					<!-- Gráficos de Performance -->
@@ -219,24 +221,28 @@
 						<div class="performance-chart-item">
 							<h4 class="chart-title">Lucro do Dia</h4>
 							<LineChart 
+								v-if="profitChartData && profitChartData.length > 0"
 								:chart-id="'profit-chart'"
 								:data="profitChartData"
 								:color="'#22C55E'"
 								:height="150"
 							/>
+							<p v-else class="chart-placeholder">Aguardando dados...</p>
 						</div>
 						<div class="performance-chart-item">
 							<h4 class="chart-title">Perda Acumulada</h4>
 							<LineChart 
+								v-if="lossChartData && lossChartData.length > 0"
 								:chart-id="'loss-chart'"
 								:data="lossChartData"
 								:color="'#ef4444'"
 								:height="150"
 							/>
+							<p v-else class="chart-placeholder">Aguardando dados...</p>
 						</div>
 					</div>
 					
-					<p class="chart-placeholder" v-if="abaAtiva === 'grafico' && indexChartData.length === 0">{{ graficoPlaceholder }}</p>
+					<p class="chart-placeholder" v-if="abaAtiva === 'grafico' && (!indexChartData || indexChartData.length === 0)">{{ graficoPlaceholder }}</p>
 				</div>
 				<div id="contentHistorico" :class="['history-content', { hidden: abaAtiva !== 'historico' }]">
 					<div class="history-header">
@@ -418,8 +424,8 @@
 				},
 				// Dados para gráficos
 				indexChartData: [],
-				profitChartData: [],
-				lossChartData: [],
+				profitChartData: [0], // Inicializar com valor zero
+				lossChartData: [0], // Inicializar com valor zero
 				priceHistoryInterval: null,
 				profitHistory: [],
 				lossHistory: [],

@@ -136,6 +136,24 @@
       },
   
       agenteData() {
+        // Calcular tempo ativo diretamente aqui
+        let tempoAtivo = "0h 0m";
+        if (this.agentConfig) {
+          const startDate = this.agentConfig.createdAt || this.agentConfig.lastTradeAt;
+          if (startDate) {
+            try {
+              const startTime = new Date(startDate);
+              const now = new Date();
+              const diffMs = now - startTime;
+              const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
+              const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+              tempoAtivo = `${diffHours}h ${diffMinutes}m`;
+            } catch (error) {
+              tempoAtivo = "0h 0m";
+            }
+          }
+        }
+        
         return {
           estrategia: this.estrategia,
           mercado: this.mercado,
@@ -147,7 +165,7 @@
           accumulatedLoss: this.sessionStats?.totalLoss || 0,
           accumulatedChange: this.accumulatedChange,
           lastExecutionTime: this.lastExecutionTime,
-          tempoAtivo: this.calculateTempoAtivo(),
+          tempoAtivo: tempoAtivo,
           operacoesHoje: this.operacoesHoje,
           realTimeOperations: this.realTimeOperations,
           operationHistory: this.operationHistory,
@@ -175,26 +193,6 @@
       currencyPrefix() {
         return this.getCurrencyPrefix(this.preferredCurrency);
       },
-      
-      calculateTempoAtivo() {
-        if (!this.agentConfig) {
-          return "0h 0m";
-        }
-        
-        // Priorizar createdAt, mas usar lastTradeAt como fallback
-        const startDate = this.agentConfig.createdAt || this.agentConfig.lastTradeAt;
-        if (!startDate) {
-          return "0h 0m";
-        }
-        
-        const startTime = new Date(startDate);
-        const now = new Date();
-        const diffMs = now - startTime;
-        const diffHours = Math.floor(diffMs / (1000 * 60 * 60));
-        const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-        
-        return `${diffHours}h ${diffMinutes}m`;
-      },
     },
     methods: {
       handleAccountTypeChange(newAccountType) {
@@ -219,13 +217,13 @@
         try {
           const userId = this.getUserId();
           if (!userId) {
-            alert('Erro: Usuário não encontrado');
+            console.error('[AgenteAutonomo] Erro: Usuário não encontrado');
             return;
           }
 
           const derivToken = this.getDerivToken();
           if (!derivToken) {
-            alert('Erro: Token Deriv não encontrado');
+            console.error('[AgenteAutonomo] Erro: Token Deriv não encontrado');
             return;
           }
 
@@ -265,23 +263,18 @@
               window.scrollTo({ top: 0, behavior: "smooth" });
             });
           } else {
-            alert(`Erro: ${result.message || 'Falha ao ativar agente'}`);
+            console.error(`[AgenteAutonomo] Erro: ${result.message || 'Falha ao ativar agente'}`);
           }
         } catch (error) {
           console.error("[AgenteAutonomo] Erro ao ativar agente:", error);
-          alert("Erro ao ativar agente autônomo");
         }
       },
       
       async deactivateAgent() {
         try {
-          if (!confirm('Tem certeza que deseja desativar o agente autônomo?')) {
-            return;
-          }
-
           const userId = this.getUserId();
           if (!userId) {
-            alert('Erro: Usuário não encontrado');
+            console.error('[AgenteAutonomo] Erro: Usuário não encontrado');
             return;
           }
 
@@ -307,11 +300,10 @@
             );
             this.agentConfig = null;
           } else {
-            alert(`Erro: ${result.message || 'Falha ao desativar agente'}`);
+            console.error(`[AgenteAutonomo] Erro: ${result.message || 'Falha ao desativar agente'}`);
           }
         } catch (error) {
           console.error("[AgenteAutonomo] Erro ao desativar agente:", error);
-          alert("Erro ao desativar agente autônomo");
         }
       },
       
