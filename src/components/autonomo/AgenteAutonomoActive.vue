@@ -208,12 +208,13 @@
 						<h4 class="chart-title">Índice R_75 (Volatility 75)</h4>
 						<LineChart 
 							v-if="indexChartData && indexChartData.length > 0"
+							:key="`r75-chart-${indexChartData.length}`"
 							:chart-id="'r75-index-chart'"
 							:data="indexChartData"
 							:color="'#22C55E'"
 							:height="200"
 						/>
-						<p v-else class="chart-placeholder">Aguardando dados do índice...</p>
+						<p v-else class="chart-placeholder">Aguardando dados do índice... ({{ indexChartData ? indexChartData.length : 0 }} pontos)</p>
 					</div>
 					
 					<!-- Gráficos de Performance -->
@@ -693,25 +694,28 @@
 					});
 
 					const result = await response.json();
+					console.log('[AgenteAutonomoActive] Dados do histórico recebidos:', result);
 					if (result.success && result.data) {
-						// Se result.data é um objeto com prices
-						if (result.data.prices && Array.isArray(result.data.prices)) {
-							this.indexChartData = result.data.prices.map(tick => {
+						// result.data é um array de PriceTick: [{value, epoch, timestamp}, ...]
+						if (Array.isArray(result.data)) {
+							const prices = result.data.map(tick => {
 								if (typeof tick === 'object' && tick.value !== undefined) {
 									return parseFloat(tick.value) || 0;
 								}
 								return parseFloat(tick) || 0;
 							});
+							
+							if (prices.length > 0) {
+								this.indexChartData = prices;
+								console.log('[AgenteAutonomoActive] Gráfico atualizado com', prices.length, 'pontos');
+							} else {
+								console.warn('[AgenteAutonomoActive] Nenhum preço válido encontrado nos dados');
+							}
+						} else {
+							console.warn('[AgenteAutonomoActive] Formato de dados inesperado:', typeof result.data);
 						}
-						// Se result.data é um array direto
-						else if (Array.isArray(result.data)) {
-							this.indexChartData = result.data.map(tick => {
-								if (typeof tick === 'object' && tick.value !== undefined) {
-									return parseFloat(tick.value) || 0;
-								}
-								return parseFloat(tick) || 0;
-							});
-						}
+					} else {
+						console.warn('[AgenteAutonomoActive] Resposta sem sucesso ou sem dados:', result);
 					}
 				} catch (error) {
 					console.error("[AgenteAutonomoActive] Erro ao carregar histórico de preços:", error);
