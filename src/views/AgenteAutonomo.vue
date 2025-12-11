@@ -31,6 +31,8 @@
           <component
             :is="componenteAtual"
             v-bind="agenteData"
+            :session-stats="sessionStats"
+            :trade-history="tradeHistoryData"
             @pausar-agente="toggleAgenteStatus('componenteAtivo')"
             @iniciar-agente="toggleAgenteStatus('componenteInativo')"
           />
@@ -63,9 +65,9 @@
         agenteEstaAtivo: false,
   
         // Dados de Configuração Estáticos
-        estrategia: "Arkon",
-        mercado: "Índices Sintéticos",
-        risco: "Equilibrado",
+        estrategia: "IA SENTINEL",
+        mercado: "Volatility 75 Index",
+        risco: "Conservador-Adaptativo",
         goalValue: 50.0,
         stopValue: 25.0,
   
@@ -77,6 +79,20 @@
         lastExecutionTime: "00:00:00",
         tempoAtivo: "0h 0m",
         operacoesHoje: 0,
+        
+        // Dados da API
+        agentConfig: null,
+        sessionStats: {
+          totalTrades: 0,
+          wins: 0,
+          losses: 0,
+          winRate: 0,
+          totalProfit: 0,
+          totalLoss: 0,
+          netProfit: 0,
+        },
+        apiTradeHistory: [],
+        pollingInterval: null,
   
         // Dados de simulação para o gráfico
         realTimeOperations: [
@@ -140,6 +156,11 @@
           accountBalance: this.accountBalance,
         };
       },
+      
+      tradeHistoryData() {
+        // Retornar histórico completo da API
+        return this.apiTradeHistory || [];
+      },
   
       formattedBalance() {
         if (this.accountBalance === null || this.accountBalance === undefined)
@@ -164,27 +185,241 @@
         );
       },
   
-      toggleAgenteStatus(source) {
-        this.agenteEstaAtivo = !this.agenteEstaAtivo;
-        if (this.agenteEstaAtivo) {
-          this.startSimulations();
-          this.addSystemAction(
-            "Agente Autônomo Iniciado",
-            "Aguardando padrões de mercado..."
-          );
-          this.$nextTick(() => {
-            window.scrollTo({ top: 0, behavior: "smooth" });
-          });
-        } else {
-          this.stopSimulations();
-          this.addSystemAction(
-            "Agente Autônomo Pausado",
-            "O sistema parou de analisar e operar."
-          );
+      async toggleAgenteStatus(source) {
+        if (source === 'componenteInativo') {
+          // Iniciar agente
+          await this.activateAgent();
+        } else if (source === 'componenteAtivo') {
+          // Pausar agente
+          await this.deactivateAgent();
         }
-        console.log(
-          `[AgenteAutonomo] Status do Agente alterado. Acionado por: ${source}`
-        );
+      },
+      
+      async activateAgent() {
+        try {
+          const userId = this.getUserId();
+          if (!userId) {
+            alert('Erro: Usuário não encontrado');
+            return;
+          }
+
+          const derivToken = this.getDerivToken();
+          if (!derivToken) {
+            alert('Erro: Token Deriv não encontrado');
+            return;
+          }
+
+          const connectionStr = localStorage.getItem("deriv_connection");
+          const connection = connectionStr ? JSON.parse(connectionStr) : {};
+          const currency = connection.tradeCurrency || 'USD';
+
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const response = await fetch(`${apiBase}/autonomous-agent/activate`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({
+              userId,
+              initialStake: this.goalValue || 10.0,
+              dailyProfitTarget: this.goalValue || 200.0,
+              dailyLossLimit: this.stopValue || 240.0,
+              derivToken,
+              currency,
+            }),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            this.agenteEstaAtivo = true;
+            this.startSimulations();
+            this.startPolling();
+            this.addSystemAction(
+              "Agente Autônomo Iniciado",
+              "Aguardando padrões de mercado...",
+              "success"
+            );
+            await this.loadAgentConfig();
+            this.$nextTick(() => {
+              window.scrollTo({ top: 0, behavior: "smooth" });
+            });
+          } else {
+            alert(`Erro: ${result.message || 'Falha ao ativar agente'}`);
+          }
+        } catch (error) {
+          console.error("[AgenteAutonomo] Erro ao ativar agente:", error);
+          alert("Erro ao ativar agente autônomo");
+        }
+      },
+      
+      async deactivateAgent() {
+        try {
+          if (!confirm('Tem certeza que deseja desativar o agente autônomo?')) {
+            return;
+          }
+
+          const userId = this.getUserId();
+          if (!userId) {
+            alert('Erro: Usuário não encontrado');
+            return;
+          }
+
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const response = await fetch(`${apiBase}/autonomous-agent/deactivate`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ userId }),
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            this.agenteEstaAtivo = false;
+            this.stopSimulations();
+            this.stopPolling();
+            this.addSystemAction(
+              "Agente Autônomo Pausado",
+              "O sistema parou de analisar e operar.",
+              "warning"
+            );
+            this.agentConfig = null;
+          } else {
+            alert(`Erro: ${result.message || 'Falha ao desativar agente'}`);
+          }
+        } catch (error) {
+          console.error("[AgenteAutonomo] Erro ao desativar agente:", error);
+          alert("Erro ao desativar agente autônomo");
+        }
+      },
+      
+      async loadAgentConfig() {
+        try {
+          const userId = this.getUserId();
+          if (!userId) return;
+
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const response = await fetch(`${apiBase}/autonomous-agent/config/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+
+          const result = await response.json();
+          if (result.success && result.data) {
+            this.agentConfig = result.data;
+            this.agenteEstaAtivo = result.data.isActive || false;
+            
+            // Atualizar dados locais
+            if (result.data.dailyProfitTarget) {
+              this.goalValue = result.data.dailyProfitTarget;
+            }
+            if (result.data.dailyLossLimit) {
+              this.stopValue = result.data.dailyLossLimit;
+            }
+            if (result.data.dailyProfit !== undefined) {
+              this.dailyProfit = result.data.dailyProfit || 0;
+            }
+            if (result.data.totalTrades !== undefined) {
+              this.operacoesHoje = result.data.totalTrades || 0;
+            }
+          }
+        } catch (error) {
+          console.error("[AgenteAutonomo] Erro ao carregar configuração:", error);
+        }
+      },
+      
+      async loadSessionStats() {
+        try {
+          const userId = this.getUserId();
+          if (!userId) return;
+
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const response = await fetch(`${apiBase}/autonomous-agent/session-stats/${userId}`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+
+          const result = await response.json();
+          if (result.success && result.data) {
+            this.sessionStats = result.data;
+            this.operacoesHoje = result.data.totalTrades || 0;
+            this.dailyProfit = result.data.netProfit || 0;
+          }
+        } catch (error) {
+          console.error("[AgenteAutonomo] Erro ao carregar estatísticas:", error);
+        }
+      },
+      
+      async loadTradeHistory() {
+        try {
+          const userId = this.getUserId();
+          if (!userId) return;
+
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const response = await fetch(`${apiBase}/autonomous-agent/trade-history/${userId}?limit=50`, {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+
+          const result = await response.json();
+          if (result.success && result.data && Array.isArray(result.data)) {
+            // Armazenar histórico completo da API
+            this.apiTradeHistory = result.data;
+            
+            // Converter histórico da API para o formato esperado pelo componente
+            this.operationHistory = result.data.map(trade => ({
+              time: new Date(trade.createdAt).toLocaleTimeString('pt-BR'),
+              asset: trade.symbol || 'R_75',
+              type: trade.signalDirection === 'RISE' ? 'CALL' : 'PUT',
+              entry: parseFloat(trade.entryPrice) || 0,
+              exit: parseFloat(trade.exitPrice) || 0,
+              result: trade.profitLoss || 0,
+            }));
+          }
+        } catch (error) {
+          console.error("[AgenteAutonomo] Erro ao carregar histórico:", error);
+        }
+      },
+      
+      startPolling() {
+        // Carregar dados imediatamente
+        this.loadAgentConfig();
+        this.loadSessionStats();
+        this.loadTradeHistory();
+
+        // Polling a cada 5 segundos se o agente estiver ativo
+        this.pollingInterval = setInterval(() => {
+          if (this.agenteEstaAtivo) {
+            this.loadAgentConfig();
+            this.loadSessionStats();
+            this.loadTradeHistory();
+          }
+        }, 5000);
+      },
+      
+      stopPolling() {
+        if (this.pollingInterval) {
+          clearInterval(this.pollingInterval);
+          this.pollingInterval = null;
+        }
+      },
+      
+      getUserId() {
+        const userStr = localStorage.getItem("user");
+        if (userStr) {
+          try {
+            const user = JSON.parse(userStr);
+            return user.id || user.userId;
+          } catch (error) {
+            console.error("[AgenteAutonomo] Erro ao parsear user:", error);
+          }
+        }
+        return null;
       },
   
       iniciarAgente() {
@@ -488,7 +723,7 @@
         }
       },
     },
-    mounted() {
+    async mounted() {
       this.addSystemAction(
         "Sistema carregado",
         "Aguardando o início do agente..."
@@ -499,12 +734,19 @@
   
       window.addEventListener("resize", this.checkMobile);
   
-      if (!this.agenteEstaAtivo) {
+      // Carregar configuração do agente ao montar
+      await this.loadAgentConfig();
+      
+      if (this.agenteEstaAtivo) {
+        this.startPolling();
+        this.startSimulations();
+      } else {
         this.timeAndMetricsInterval = setInterval(this.updateTimeAndMetrics, 1000);
       }
     },
     beforeUnmount() {
       this.stopSimulations();
+      this.stopPolling();
       this.stopBalanceUpdates();
       window.removeEventListener("resize", this.checkMobile);
   

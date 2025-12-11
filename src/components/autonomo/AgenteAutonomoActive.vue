@@ -68,7 +68,7 @@
 						+${{ progressoMeta.atual.toFixed(2) }}
 					</div>
 					<div class="metric-change positive">
-						+2.14%
+						{{ progressoMeta.meta > 0 ? ((progressoMeta.atual / progressoMeta.meta) * 100).toFixed(2) : '0.00' }}%
 					</div>
 				</div>
 			</div>
@@ -77,10 +77,10 @@
 				<div class="metric-box">
 					<div class="metric-label">Perda acumulada</div>
 					<div class="metric-value negative">
-						-${{ (5.20).toFixed(2) }}
+						-${{ (sessionStats.totalLoss || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change negative">
-						-0.34%
+						{{ progressoMeta.stop > 0 ? ((sessionStats.totalLoss || 0) / progressoMeta.stop * 100).toFixed(2) : '0.00' }}%
 					</div>
 				</div>
 			</div>
@@ -203,7 +203,40 @@
 			</div>
 			<div class="chart-content">
 				<div id="contentGrafico" :class="['chart-canvas', { hidden: abaAtiva !== 'grafico' }]">
-					<p class="chart-placeholder" v-if="abaAtiva === 'grafico'">{{ graficoPlaceholder }}</p>
+					<!-- Gráfico do Índice R_75 -->
+					<div class="index-chart-container" v-if="abaAtiva === 'grafico'">
+						<h4 class="chart-title">Índice R_75 (Volatility 75)</h4>
+						<LineChart 
+							:chart-id="'r75-index-chart'"
+							:data="indexChartData"
+							:color="'#22C55E'"
+							:height="200"
+						/>
+					</div>
+					
+					<!-- Gráficos de Performance -->
+					<div class="performance-charts-container" v-if="abaAtiva === 'grafico'">
+						<div class="performance-chart-item">
+							<h4 class="chart-title">Lucro do Dia</h4>
+							<LineChart 
+								:chart-id="'profit-chart'"
+								:data="profitChartData"
+								:color="'#22C55E'"
+								:height="150"
+							/>
+						</div>
+						<div class="performance-chart-item">
+							<h4 class="chart-title">Perda Acumulada</h4>
+							<LineChart 
+								:chart-id="'loss-chart'"
+								:data="lossChartData"
+								:color="'#ef4444'"
+								:height="150"
+							/>
+						</div>
+					</div>
+					
+					<p class="chart-placeholder" v-if="abaAtiva === 'grafico' && indexChartData.length === 0">{{ graficoPlaceholder }}</p>
 				</div>
 				<div id="contentHistorico" :class="['history-content', { hidden: abaAtiva !== 'historico' }]">
 					<div class="history-header">
@@ -296,15 +329,22 @@
 		<div class="actions-section">
 			<div class="actions-header">
 				<h3>Ações do Agente</h3>
-				<div class="actions-list">
-					<div v-for="acao in acoesAgente" :key="acao.hora" class="action-item">
-						<div :class="['action-icon', acao.classe]"></div>
-						<div class="action-content">
-							<div class="action-title">{{ acao.titulo }}</div>
-							<div class="action-description">{{ acao.descricao }}</div>
+					<div class="actions-list">
+						<div v-for="(acao, index) in acoesAgente" :key="index" class="action-item">
+							<div :class="['action-icon', acao.status || acao.classe || 'info']"></div>
+							<div class="action-content">
+								<div class="action-title">{{ acao.title || acao.titulo }}</div>
+								<div class="action-description">{{ acao.description || acao.descricao }}</div>
+							</div>
+						</div>
+						<div v-if="acoesAgente.length === 0" class="action-item">
+							<div class="action-icon info"></div>
+							<div class="action-content">
+								<div class="action-title">Nenhuma ação registrada</div>
+								<div class="action-description">Aguardando operações do agente...</div>
+							</div>
 						</div>
 					</div>
-				</div>
 			</div>
 		</div>
 	</div>
@@ -318,6 +358,46 @@
 		components: {
 			OperationLogs
 		},
+		props: {
+			agenteData: {
+				type: Object,
+				default: () => ({
+					estrategia: 'IA SENTINEL',
+					mercado: 'Volatility 75 Index',
+					risco: 'Conservador-Adaptativo',
+					goalValue: 50.0,
+					stopValue: 25.0,
+					dailyProfit: 0.0,
+					dailyChange: 0.0,
+					accumulatedLoss: 0.0,
+					accumulatedChange: 0.0,
+					lastExecutionTime: '00:00:00',
+					tempoAtivo: '0h 0m',
+					operacoesHoje: 0,
+					realTimeOperations: [],
+					operationHistory: [],
+					agentActions: [],
+					agentStatus: 'PAUSADO',
+					accountBalance: null,
+				})
+			},
+			sessionStats: {
+				type: Object,
+				default: () => ({
+					totalTrades: 0,
+					wins: 0,
+					losses: 0,
+					winRate: 0,
+					totalProfit: 0,
+					totalLoss: 0,
+					netProfit: 0,
+				})
+			},
+			tradeHistory: {
+				type: Array,
+				default: () => []
+			}
+		},
 		emits: ['pausarAgente'],
 		data() {
 			return {
@@ -325,24 +405,25 @@
 				unidadeTimeframeSelecionada: 'minutos',
 				valorTimeframeSelecionado: 5,
 				tipoGraficoSelecionado: 'Gráfico de Linhas',
-				ultimaAtualizacao: '14:32:15',
+				ultimaAtualizacao: new Date().toLocaleTimeString('pt-BR'),
 				filtroDataSelecionado: 'hoje',
-				dataInicio: '2025-11-25',
-				dataFim: '2025-11-25',
+				dataInicio: new Date().toISOString().split('T')[0],
+				dataFim: new Date().toISOString().split('T')[0],
 				periodoMobile: 'hoje',
-				maiorGanho: 8.50,
-				maiorPerda: 2.30,
-				agenteData: {
-					estrategia: 'Arion',
-					mercado: 'Índices Sintéticos',
-					tempoAtivo: '2h 15m',
-					operacoesHoje: 12,
-				},
+				maiorGanho: 0,
+				maiorPerda: 0,
 				progressoMeta: {
-					atual: 42.50,
+					atual: 0,
 					meta: 50,
 					stop: 25,
 				},
+				// Dados para gráficos
+				indexChartData: [],
+				profitChartData: [],
+				lossChartData: [],
+				priceHistoryInterval: null,
+				profitHistory: [],
+				lossHistory: [],
 				timeframeOptions: {
 					minutos: [1, 2, 3, 5, 10, 15, 30],
 					horas: [1, 2, 4, 8],
@@ -355,28 +436,38 @@
 					{ hora: '14:31:45', classe: 'warning', titulo: 'Volume detectado', descricao: '14:31:45 - Confirmação de padrão' },
 					{ hora: '14:30:00', classe: 'info', titulo: 'Aguardando padrão da estratégia', descricao: '14:30:00 - Análise em andamento' },
 				],
-				historicoOperacoes: [
-					{ data: '2025-11-25', hora: '14:32:16', ativo: 'CALL1', tipo: 'Call', entrada: '83.80', saida: '85.20', resultado: '+$7.50', volume: '75' },
-					{ data: '2025-11-25', hora: '14:22:18', ativo: 'Volatility 75', tipo: 'Call', entrada: '2.00', saida: '3.85', resultado: '+$1.85', volume: '75' },
-					{ data: '2025-11-25', hora: '14:18:42', ativo: 'Volatility 75', tipo: 'Put', entrada: '2.00', saida: '0.00', resultado: '-$2.00', volume: '50' },
-					{ data: '2025-11-25', hora: '14:15:33', ativo: 'Volatility 75', tipo: 'Call', entrada: '3.00', saida: '5.70', resultado: '+$2.70', volume: '100' },
-					{ data: '2025-11-25', hora: '14:12:08', ativo: 'Volatility 75', tipo: 'Call', entrada: '1.50', saida: '2.92', resultado: '+$1.42', volume: '25' },
-					{ data: '2025-11-25', hora: '14:18:02', ativo: 'CALL1', tipo: 'Call', entrada: '82.60', saida: '81.30', resultado: '-$3.20', volume: '75' },
-					{ data: '2025-11-25', hora: '14:01:45', ativo: 'Volatility 75', tipo: 'Put', entrada: '156.40', saida: '158.90', resultado: '+$12.30', volume: '75' },
-					{ data: '2025-11-25', hora: '13:45:22', ativo: 'CALL1', tipo: 'Call', entrada: '84.15', saida: '83.50', resultado: '-$2.10', volume: '75' },
-					{ data: '2025-11-25', hora: '13:30:08', ativo: 'Volatility 75', tipo: 'Call', entrada: '155.20', saida: '157.80', resultado: '+$8.90', volume: '75' },
-					{ data: '2025-11-24', hora: '13:15:00', ativo: 'CALL1', tipo: 'Put', entrada: '88.00', saida: '87.00', resultado: '-$1.50', volume: '75' },
-					{ data: '2025-11-24', hora: '13:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '160.00', saida: '162.00', resultado: '+$10.00', volume: '75' },
-					{ data: '2025-11-23', hora: '12:45:00', ativo: 'CALL1', tipo: 'Put', entrada: '81.00', saida: '80.00', resultado: '-$1.00', volume: '75' },
-					{ data: '2025-11-22', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+$9.00', volume: '75' },
-					{ data: '2025-11-21', hora: '12:30:00', ativo: 'CALL1', tipo: 'Put', entrada: '85.00', saida: '84.00', resultado: '-$1.00', volume: '75' },
-					{ data: '2025-11-20', hora: '12:30:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '150.00', saida: '152.00', resultado: '+$9.00', volume: '75' },
-					{ data: '2025-11-01', hora: '10:00:00', ativo: 'CALL1', tipo: 'Put', entrada: '80.00', saida: '81.00', resultado: '+$2.00', volume: '75' },
-					{ data: '2025-10-31', hora: '11:00:00', ativo: 'Volatility 75', tipo: 'Call', entrada: '140.00', saida: '141.00', resultado: '+$1.00', volume: '75' },
-				],
 			};
 		},
 		computed: {
+			historicoOperacoes() {
+				// Converter tradeHistory da API para o formato esperado
+				if (this.tradeHistory && this.tradeHistory.length > 0) {
+					return this.tradeHistory.map(trade => {
+						const date = new Date(trade.createdAt);
+						const dataStr = date.toISOString().split('T')[0];
+						const horaStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+						const profitLoss = trade.profitLoss || 0;
+						const resultadoStr = profitLoss >= 0 ? `+$${profitLoss.toFixed(2)}` : `-$${Math.abs(profitLoss).toFixed(2)}`;
+						
+						return {
+							data: dataStr,
+							hora: horaStr,
+							ativo: trade.symbol || 'R_75',
+							tipo: trade.signalDirection === 'RISE' ? 'Call' : 'Put',
+							entrada: parseFloat(trade.entryPrice || 0).toFixed(2),
+							saida: trade.exitPrice ? parseFloat(trade.exitPrice).toFixed(2) : '0.00',
+							resultado: resultadoStr,
+							volume: parseFloat(trade.stakeAmount || 0).toFixed(2),
+						};
+					});
+				}
+				// Se não houver tradeHistory, usar operationHistory do agenteData
+				return this.agenteData.operationHistory || [];
+			},
+			acoesAgente() {
+				// Usar agentActions do agenteData se disponível
+				return this.agenteData.agentActions || [];
+			},
 			progressoPorcentagem() {
 				const percentage = (this.progressoMeta.atual / this.progressoMeta.meta) * 100;
 				return `${Math.min(100, percentage).toFixed(0)}%`;
@@ -398,17 +489,18 @@
 			historicoOperacoesFiltradas() {
 				const { filtroDataSelecionado, dataInicio, dataFim, historicoOperacoes } = this;
 				const getDateNDaysAgo = (n) => {
-					const date = new Date('2025-11-25');
+					const date = new Date();
 					date.setDate(date.getDate() - n + 1);
 					return date.toISOString().split('T')[0];
 				};
+				const hoje = new Date().toISOString().split('T')[0];
 				let startDate;
 				switch (filtroDataSelecionado) {
 					case 'hoje':
-						startDate = '2025-11-25';
+						startDate = hoje;
 						return historicoOperacoes.filter(op => op.data === startDate);
 					case 'ontem':
-						startDate = '2025-11-24';
+						startDate = getDateNDaysAgo(1);
 						return historicoOperacoes.filter(op => op.data === startDate);
 					case 'personalizado':
 						if (dataInicio && dataFim) {
@@ -481,6 +573,50 @@
 			}
 		},
 		watch: {
+			'agenteData.dailyProfit'(newVal) {
+				if (newVal !== undefined) {
+					this.progressoMeta.atual = newVal || 0;
+				}
+			},
+			'agenteData.goalValue'(newVal) {
+				if (newVal !== undefined) {
+					this.progressoMeta.meta = newVal || 50;
+				}
+			},
+			'agenteData.stopValue'(newVal) {
+				if (newVal !== undefined) {
+					this.progressoMeta.stop = newVal || 25;
+				}
+			},
+			'agenteData.lastExecutionTime'(newVal) {
+				if (newVal) {
+					this.ultimaAtualizacao = newVal;
+				}
+			},
+			sessionStats: {
+				handler() {
+					this.updateProfitLossCharts();
+				},
+				deep: true,
+			},
+			tradeHistory: {
+				handler(newHistory) {
+					if (newHistory && newHistory.length > 0) {
+						// Calcular maior ganho e maior perda
+						const profits = newHistory
+							.filter(t => t.profitLoss !== null && t.profitLoss > 0)
+							.map(t => t.profitLoss);
+						const losses = newHistory
+							.filter(t => t.profitLoss !== null && t.profitLoss < 0)
+							.map(t => Math.abs(t.profitLoss));
+						
+						this.maiorGanho = profits.length > 0 ? Math.max(...profits) : 0;
+						this.maiorPerda = losses.length > 0 ? Math.max(...losses) : 0;
+					}
+				},
+				deep: true,
+				immediate: true
+			},
 			unidadeTimeframeSelecionada(novaUnidade) {
 				const primeiroValor = this.timeframeOptions[novaUnidade][0];
 				if (this.valorTimeframeSelecionado !== primeiroValor) {
@@ -489,17 +625,29 @@
 			},
 			filtroDataSelecionado(novoFiltro) {
 				if (novoFiltro !== 'personalizado') {
-					this.dataInicio = '2025-11-25';
-					this.dataFim = '2025-11-25';
+					const hoje = new Date().toISOString().split('T')[0];
+					this.dataInicio = hoje;
+					this.dataFim = hoje;
 				}
 			}
 		},
 		mounted() {
-  // Rolagem instantânea para o topo
-  window.scrollTo({ top: 0, behavior: 'auto' });
-  // Ou simplesmente:
-  // window.scrollTo(0, 0);
-},
+			// Inicializar dados do agente
+			if (this.agenteData) {
+				this.progressoMeta.atual = this.agenteData.dailyProfit || 0;
+				this.progressoMeta.meta = this.agenteData.goalValue || 50;
+				this.progressoMeta.stop = this.agenteData.stopValue || 25;
+				this.ultimaAtualizacao = this.agenteData.lastExecutionTime || new Date().toLocaleTimeString('pt-BR');
+			}
+			
+			// Atualizar última atualização a cada segundo
+			setInterval(() => {
+				this.ultimaAtualizacao = new Date().toLocaleTimeString('pt-BR');
+			}, 1000);
+			
+			// Rolagem instantânea para o topo
+			window.scrollTo({ top: 0, behavior: 'auto' });
+		},
 		methods: {
 			trocarAba(aba) {
 				this.abaAtiva = aba;
@@ -509,6 +657,76 @@
 				console.log(`Exportando histórico. Filtro: ${this.filtroDataSelecionado}. Total de operações: ${this.historicoOperacoesFiltradas.length}`);
 				// Aqui seria a lógica real para gerar e baixar um arquivo CSV/Excel/PDF
 			},
+			async loadPriceHistory() {
+				try {
+					const userId = this.getUserId();
+					if (!userId) return;
+
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					const response = await fetch(`${apiBase}/autonomous-agent/price-history/${userId}?limit=100`, {
+						headers: {
+							Authorization: `Bearer ${localStorage.getItem("token")}`,
+						},
+					});
+
+					const result = await response.json();
+					if (result.success && result.data && Array.isArray(result.data)) {
+						this.indexChartData = result.data.map(tick => parseFloat(tick.value) || 0);
+					}
+				} catch (error) {
+					console.error("[AgenteAutonomoActive] Erro ao carregar histórico de preços:", error);
+				}
+			},
+			
+			startPriceHistoryUpdates() {
+				// Atualizar histórico de preços a cada 5 segundos
+				this.priceHistoryInterval = setInterval(async () => {
+					await this.loadPriceHistory();
+				}, 5000);
+			},
+			
+			initializeProfitLossHistory() {
+				// Inicializar com dados atuais
+				if (this.sessionStats) {
+					this.profitHistory = [this.sessionStats.netProfit || 0];
+					this.lossHistory = [this.sessionStats.totalLoss || 0];
+					this.updateProfitLossCharts();
+				}
+			},
+			
+			updateProfitLossCharts() {
+				// Atualizar gráfico de lucro
+				if (this.sessionStats && this.sessionStats.netProfit !== undefined) {
+					this.profitHistory.push(this.sessionStats.netProfit);
+					if (this.profitHistory.length > 50) {
+						this.profitHistory.shift();
+					}
+					this.profitChartData = this.profitHistory;
+				}
+				
+				// Atualizar gráfico de perda
+				if (this.sessionStats && this.sessionStats.totalLoss !== undefined) {
+					this.lossHistory.push(this.sessionStats.totalLoss);
+					if (this.lossHistory.length > 50) {
+						this.lossHistory.shift();
+					}
+					this.lossChartData = this.lossHistory;
+				}
+			},
+			
+			getUserId() {
+				const userStr = localStorage.getItem("user");
+				if (userStr) {
+					try {
+						const user = JSON.parse(userStr);
+						return user.id || user.userId;
+					} catch (error) {
+						console.error("[AgenteAutonomoActive] Erro ao parsear user:", error);
+					}
+				}
+				return null;
+			},
+			
 			pausarAgenteEIrParaTopo() {
 				this.$emit('pausarAgente'); // Emite o evento original para o pai
 				this.$nextTick(() => {
@@ -1040,6 +1258,50 @@
 		display: flex;
 		justify-content: center;
 		align-items: center;
+	}
+	
+	.index-chart-container {
+		margin-bottom: 30px;
+		background: #0b0b0b;
+		border: 1px solid #1a1a1a;
+		border-radius: 8px;
+		padding: 15px;
+	}
+	
+	.chart-title {
+		font-size: 14px;
+		font-weight: 600;
+		color: #e7e7e7;
+		margin-bottom: 10px;
+		text-align: left;
+	}
+	
+	.performance-charts-container {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 20px;
+		margin-top: 30px;
+	}
+	
+	.performance-chart-item {
+		display: flex;
+		flex-direction: column;
+		background: #0b0b0b;
+		border: 1px solid #1a1a1a;
+		border-radius: 8px;
+		padding: 15px;
+	}
+	
+	@media (max-width: 768px) {
+		.performance-charts-container {
+			grid-template-columns: 1fr;
+			gap: 20px;
+		}
+		
+		.index-chart-container,
+		.performance-chart-item {
+			padding: 10px;
+		}
 	}
 
 	.table-scroll-wrapper {

@@ -335,11 +335,18 @@ export default {
 				risco: this.getRiskTitle(this.selectedRisk),
 				goalValue: this.metaLucroNumero,
 				stopValue: this.limitePerdaNumero,
-				// NOTA: 'valorOperacao' não está no 'agenteData' do pai,
-				// então não estamos enviando por enquanto.
+				initialStake: this.valorOperacaoNumero,
 			};
 
-			// 2. Emite o evento 'iniciar-agente' COM o objeto de dados (o payload)
+			// 2. Atualiza os valores no componente pai antes de iniciar
+			if (this.$parent.goalValue !== undefined) {
+				this.$parent.goalValue = this.metaLucroNumero;
+			}
+			if (this.$parent.stopValue !== undefined) {
+				this.$parent.stopValue = this.limitePerdaNumero;
+			}
+
+			// 3. Emite o evento 'iniciar-agente' COM o objeto de dados (o payload)
 			this.$emit('iniciar-agente', configData);
 
 			// 🟢 ADICIONE ESTAS LINHAS AQUI para rolar para o topo quando o botão é clicado 🟢
