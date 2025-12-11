@@ -140,20 +140,16 @@
         // Calcular tempo ativo baseado na data da sessão atual (sessionDate)
         // Se não houver sessionDate ou se for meia-noite (apenas data), usar createdAt como fallback
         let tempoAtivo = "0h 0m 0s";
+        
         if (this.agentConfig && this.agenteEstaAtivo) {
-          // Verificar se sessionDate é válido e não é meia-noite (apenas data)
+          // SEMPRE usar createdAt se sessionDate for meia-noite ou não existir
           let startDate = this.agentConfig.sessionDate;
           
-          // Se sessionDate for meia-noite (00:00:00), usar createdAt como fallback
+          // Verificar se sessionDate é meia-noite (00:00:00) - se for, usar createdAt
           if (startDate) {
-            const sessionDateObj = new Date(startDate);
-            const sessionDateHours = sessionDateObj.getUTCHours();
-            const sessionDateMinutes = sessionDateObj.getUTCMinutes();
-            const sessionDateSeconds = sessionDateObj.getUTCSeconds();
-            
-            // Se for exatamente meia-noite (00:00:00), provavelmente é apenas data sem hora
-            if (sessionDateHours === 0 && sessionDateMinutes === 0 && sessionDateSeconds === 0) {
-              console.warn('[AgenteAutonomo] sessionDate é meia-noite, usando createdAt como fallback');
+            const sessionDateStr = String(startDate);
+            // Se contém T00:00:00, é meia-noite - usar createdAt
+            if (sessionDateStr.includes('T00:00:00')) {
               startDate = this.agentConfig.createdAt;
             }
           }
@@ -165,25 +161,10 @@
           
           if (startDate) {
             try {
-              // Garantir que a data seja parseada corretamente
-              let startTime;
-              if (startDate instanceof Date) {
-                startTime = startDate.getTime();
-              } else if (typeof startDate === 'string') {
-                startTime = new Date(startDate).getTime();
-              } else {
-                // Se for um timestamp ou outro formato
-                startTime = new Date(startDate).getTime();
-              }
-              
+              const startTime = new Date(startDate).getTime();
               const now = new Date().getTime();
               
-              // Verificar se a data é válida
-              if (isNaN(startTime)) {
-                console.warn('[AgenteAutonomo] Data inválida:', startDate);
-                tempoAtivo = "0h 0m 0s";
-              } else {
-                // Usar getTime() para garantir cálculo correto em milissegundos
+              if (!isNaN(startTime) && !isNaN(now)) {
                 const diffMs = now - startTime;
                 
                 if (diffMs > 0) {
@@ -191,27 +172,22 @@
                   const diffMinutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
                   const diffSeconds = Math.floor((diffMs % (1000 * 60)) / 1000);
                   tempoAtivo = `${diffHours}h ${diffMinutes}m ${diffSeconds}s`;
-                } else {
-                  // Se a diferença for negativa ou zero, mostrar 0h 0m 0s
-                  tempoAtivo = "0h 0m 0s";
                 }
               }
             } catch (error) {
-              console.error('[AgenteAutonomo] Erro ao calcular tempo ativo:', error, 'startDate:', startDate);
-              tempoAtivo = "0h 0m 0s";
+              console.error('[AgenteAutonomo] Erro ao calcular tempo ativo:', error);
             }
-          } else {
-            // Debug: logar quando não há data disponível
-            if (this.agentConfig) {
-              console.warn('[AgenteAutonomo] sessionDate ou createdAt não disponível:', {
-                sessionDate: this.agentConfig.sessionDate,
-                createdAt: this.agentConfig.createdAt,
-                isActive: this.agenteEstaAtivo,
-                agentConfigKeys: Object.keys(this.agentConfig)
-              });
-            }
-            tempoAtivo = "0h 0m 0s";
           }
+        }
+        
+        // Log temporário para debug
+        if (this.agentConfig && this.agenteEstaAtivo) {
+          console.log('[AgenteAutonomo] agenteData computed executado:', {
+            tempoAtivo,
+            sessionDate: this.agentConfig.sessionDate,
+            createdAt: this.agentConfig.createdAt,
+            agenteEstaAtivo: this.agenteEstaAtivo
+          });
         }
         
         // Usar dados do backend quando disponíveis
