@@ -83,7 +83,7 @@
 
             <!-- WhatsApp Input -->
             <div>
-              <label class="block text-sm font-medium text-zenix-text-dark mb-2">WhatsApp</label>
+              <label class="block text-sm font-medium text-zenix-text-dark mb-2">WhatsApp <span class="text-red-500">*</span></label>
               <div class="relative">
                 <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M3.5 1.5C2.67157 1.5 2 2.17157 2 3V13C2 13.8284 2.67157 14.5 3.5 14.5H5.5L6.5 16.5H9.5L10.5 14.5H12.5C13.3284 14.5 14 13.8284 14 13V3C14 2.17157 13.3284 1.5 12.5 1.5H3.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -93,10 +93,23 @@
                   type="text" 
                   v-model="whatsapp"
                   @input="formatPhone"
+                  @blur="validatePhone"
                   placeholder="(41) 99999-9999" 
                   maxlength="15"
-                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                  required
+                  :class="[
+                    'w-full bg-zenix-input-bg border rounded-xl pl-10 pr-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:outline-none transition-colors',
+                    phoneError ? 'border-red-500' : 'border-zenix-input-border focus:border-zenix-green'
+                  ]"
                 >
+              </div>
+              <div v-if="phoneError" class="mt-1 text-xs text-red-500 flex items-center">
+                <i class="fa-solid fa-times mr-2"></i>
+                {{ phoneError }}
+              </div>
+              <div v-else-if="whatsapp && !phoneError && isValidPhone" class="mt-1 text-xs text-zenix-green flex items-center">
+                <i class="fa-solid fa-check mr-2"></i>
+                Telefone válido
               </div>
             </div>
 
@@ -221,7 +234,7 @@
             <button 
               type="submit" 
               class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3 rounded-full transition-colors flex items-center justify-center space-x-2"
-              :disabled="isLoading || password !== confirmPassword"
+              :disabled="isLoading || password !== confirmPassword || !isValidPhone || !whatsapp"
             >
               <span v-if="isLoading" class="spinner"></span>
               <span>{{ isLoading ? 'Criando conta...' : 'Criar conta' }}</span>
@@ -328,6 +341,8 @@ export default {
       strengthLabel: '',
       strengthColor: '#e5e7eb',
       isLoading: false,
+      phoneError: '',
+      isValidPhone: false,
       fullTitle: 'ZENIX',
       fullSubtitle: 'A única tecnologia criada para operar com a precisão que o mercado exige.',
       typedTitle: '',
@@ -496,19 +511,65 @@ export default {
       value = value.replace(/(\d{2})(\d)/, '($1) $2');
       value = value.replace(/(\d{5})(\d)/, '$1-$2');
       this.whatsapp = value;
+      this.validatePhone();
+    },
+    validatePhone() {
+      this.phoneError = '';
+      this.isValidPhone = false;
+      
+      if (!this.whatsapp) {
+        this.phoneError = 'Telefone é obrigatório';
+        return false;
+      }
+
+      // Remover formatação para validação
+      const phoneDigits = this.whatsapp.replace(/\D/g, '');
+      
+      // Validar formato brasileiro (10 ou 11 dígitos: DDD + número)
+      if (phoneDigits.length < 10 || phoneDigits.length > 11) {
+        this.phoneError = 'Telefone inválido. Use o formato: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX';
+        return false;
+      }
+
+      // Validar DDD (deve estar entre 11 e 99)
+      const ddd = parseInt(phoneDigits.substring(0, 2));
+      if (ddd < 11 || ddd > 99) {
+        this.phoneError = 'DDD inválido';
+        return false;
+      }
+
+      this.isValidPhone = true;
+      return true;
     },
     async handleRegister() {
       if (this.isLoading) return;
+      
+      // Validar senhas
       if (this.password !== this.confirmPassword) {
         this.$root.$toast.error('As senhas não correspondem!');
         return;
       }
+
+      // Validar telefone
+      if (!this.validatePhone()) {
+        this.$root.$toast.error(this.phoneError || 'Por favor, verifique o número de telefone');
+        return;
+      }
+
       this.isLoading = true;
       try {
+        // Remover formatação do telefone antes de enviar
+        const phoneDigits = this.whatsapp.replace(/\D/g, '');
+        
         const res = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/auth/register', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ name: this.name, email: this.email, password: this.password })
+          body: JSON.stringify({ 
+            name: this.name, 
+            email: this.email, 
+            password: this.password,
+            phone: phoneDigits
+          })
         });
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
