@@ -1035,6 +1035,28 @@
   @media (min-width: 1025px) {
     .layout-agente-autnomo {
       padding-bottom: 40px;
+      background: #0b0b0b;
+    }
+
+    /* Cards com background #0e0e0e no desktop */
+    :deep(.option-card) {
+      background: #0e0e0e !important;
+    }
+
+    :deep(.option-card:hover:not(.selected)) {
+      background: #0e0e0e !important;
+    }
+
+    :deep(.option-card.selected) {
+      background: #0e0e0e !important;
+    }
+
+    :deep(.status-card) {
+      background: #0e0e0e !important;
+    }
+
+    :deep(.container-sections) {
+      background: #0e0e0e !important;
     }
   }
   
