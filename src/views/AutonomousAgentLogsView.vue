@@ -149,42 +149,44 @@
 				class="logs-list"
 			>
 				<!-- Logs do Banco de Dados -->
-				<div 
-					v-if="activeTab === 'database'"
-					v-for="log in filteredLogs" 
-					:key="log.id"
-					:class="['log-item', `log-${log.type}`]"
-				>
-					<div class="log-header">
-						<span class="log-icon">{{ log.icon }}</span>
-						<span class="log-timestamp">{{ log.timestamp }}</span>
-						<span :class="['log-level', `level-${log.level}`]">[{{ log.level }}]</span>
-						<span :class="['log-module', `module-${log.module}`]">[{{ log.module }}]</span>
+				<template v-if="activeTab === 'database'">
+					<div 
+						v-for="log in filteredLogs" 
+						:key="log.id"
+						:class="['log-item', `log-${log.type}`]"
+					>
+						<div class="log-header">
+							<span class="log-icon">{{ log.icon }}</span>
+							<span class="log-timestamp">{{ log.timestamp }}</span>
+							<span :class="['log-level', `level-${log.level}`]">[{{ log.level }}]</span>
+							<span :class="['log-module', `module-${log.module}`]">[{{ log.module }}]</span>
+						</div>
+						<div class="log-message">{{ log.message }}</div>
+						<div v-if="log.details" class="log-details">
+							<pre>{{ JSON.stringify(log.details, null, 2) }}</pre>
+						</div>
 					</div>
-					<div class="log-message">{{ log.message }}</div>
-					<div v-if="log.details" class="log-details">
-						<pre>{{ JSON.stringify(log.details, null, 2) }}</pre>
-					</div>
-				</div>
+				</template>
 
 				<!-- Logs do Console -->
-				<div 
-					v-if="activeTab === 'console'"
-					v-for="log in filteredLogs" 
-					:key="log.id"
-					:class="['log-item', `log-${log.level}`]"
-				>
-					<div class="log-header">
-						<span class="log-icon">{{ getConsoleLogIcon(log.level) }}</span>
-						<span class="log-timestamp">{{ formatConsoleTimestamp(log.timestamp) }}</span>
-						<span :class="['log-level', `level-${log.level.toUpperCase()}`]">[{{ log.level.toUpperCase() }}]</span>
-						<span class="log-module">[{{ log.context }}]</span>
+				<template v-if="activeTab === 'console'">
+					<div 
+						v-for="log in filteredLogs" 
+						:key="log.id"
+						:class="['log-item', `log-${log.level}`]"
+					>
+						<div class="log-header">
+							<span class="log-icon">{{ getConsoleLogIcon(log.level) }}</span>
+							<span class="log-timestamp">{{ formatConsoleTimestamp(log.timestamp) }}</span>
+							<span :class="['log-level', `level-${log.level.toUpperCase()}`]">[{{ log.level.toUpperCase() }}]</span>
+							<span class="log-module">[{{ log.context }}]</span>
+						</div>
+						<div class="log-message">{{ log.message }}</div>
+						<div v-if="log.data && log.data.length > 0" class="log-details">
+							<pre>{{ JSON.stringify(log.data, null, 2) }}</pre>
+						</div>
 					</div>
-					<div class="log-message">{{ log.message }}</div>
-					<div v-if="log.data && log.data.length > 0" class="log-details">
-						<pre>{{ JSON.stringify(log.data, null, 2) }}</pre>
-					</div>
-				</div>
+				</template>
 			</div>
 		</div>
 	</div>
