@@ -325,6 +325,8 @@
 </template>
 
 <script>
+import { validateBrazilianPhone, formatBrazilianPhone } from '../utils/phoneValidator';
+
 export default {
   name: "RegisterComponent",
   data() {
@@ -508,9 +510,12 @@ export default {
     },
     formatPhone(event) {
       let value = event.target.value.replace(/\D/g, '');
-      value = value.replace(/(\d{2})(\d)/, '($1) $2');
-      value = value.replace(/(\d{5})(\d)/, '$1-$2');
-      this.whatsapp = value;
+      // Limitar a 11 dígitos (DDD + 9 dígitos para celular)
+      if (value.length > 11) {
+        value = value.substring(0, 11);
+      }
+      // Formatar usando a função utilitária
+      this.whatsapp = formatBrazilianPhone(value);
       this.validatePhone();
     },
     validatePhone() {
@@ -522,23 +527,17 @@ export default {
         return false;
       }
 
-      // Remover formatação para validação
-      const phoneDigits = this.whatsapp.replace(/\D/g, '');
+      // Validar usando libphonenumber-js
+      const validation = validateBrazilianPhone(this.whatsapp);
       
-      // Validar formato brasileiro (10 ou 11 dígitos: DDD + número)
-      if (phoneDigits.length < 10 || phoneDigits.length > 11) {
-        this.phoneError = 'Telefone inválido. Use o formato: (XX) XXXXX-XXXX ou (XX) XXXX-XXXX';
-        return false;
-      }
-
-      // Validar DDD (deve estar entre 11 e 99)
-      const ddd = parseInt(phoneDigits.substring(0, 2));
-      if (ddd < 11 || ddd > 99) {
-        this.phoneError = 'DDD inválido';
+      if (!validation.isValid) {
+        this.phoneError = validation.error || 'Telefone inválido';
+        this.isValidPhone = false;
         return false;
       }
 
       this.isValidPhone = true;
+      this.phoneError = '';
       return true;
     },
     async handleRegister() {
@@ -558,8 +557,12 @@ export default {
 
       this.isLoading = true;
       try {
-        // Remover formatação do telefone antes de enviar
-        const phoneDigits = this.whatsapp.replace(/\D/g, '');
+        // Validar e obter dígitos usando a biblioteca
+        const validation = validateBrazilianPhone(this.whatsapp);
+        
+        if (!validation.isValid || !validation.phoneDigits) {
+          throw new Error(validation.error || 'Telefone inválido');
+        }
         
         const res = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/auth/register', {
           method: 'POST',
@@ -568,7 +571,7 @@ export default {
             name: this.name, 
             email: this.email, 
             password: this.password,
-            phone: phoneDigits
+            phone: validation.phoneDigits
           })
         });
         if (!res.ok) {

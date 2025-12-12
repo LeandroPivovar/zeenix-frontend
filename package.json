@@ -13,6 +13,7 @@
     "axios": "^1.6.8",
     "chart.js": "^4.5.1",
     "core-js": "^3.34.0",
+    "libphonenumber-js": "^1.12.31",
     "lightweight-charts": "^4.2.1",
     "normalize.css": "^8.0.1",
     "uuid": "^9.0.1",
