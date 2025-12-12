@@ -26,7 +26,13 @@
             <div class="trader-info-area">
                 <div v-if="!selectedTrader" class="empty-state">
                     <div class="empty-icon">
-                        <img src="../../assets/icons/add-people.svg" alt="" width="50px" height="50px">
+                        <img src="../../assets/icons/add-people.svg" alt="" width="50px" height="50px" class="desktop-icon">
+                        <svg class="mobile-icon" width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="25" cy="25" r="24" fill="#1d1c1d" stroke="rgba(255, 255, 255, 0.1)" stroke-width="1"/>
+                            <path d="M18 20C18 17.7909 19.7909 16 22 16C24.2091 16 26 17.7909 26 20C26 22.2091 24.2091 24 22 24C19.7909 24 18 22.2091 18 20Z" fill="#22C55E"/>
+                            <path d="M15 32C15 28.6863 17.6863 26 21 26H23C26.3137 26 29 28.6863 29 32V33H15V32Z" fill="#22C55E"/>
+                            <path d="M30 20H28V22H30V24H32V22H34V20H32V18H30V20Z" fill="#22C55E"/>
+                        </svg>
                     </div>
                     <p>Nenhum trader selecionado</p>
                     <small>Clique no campo acima para escolher</small>
@@ -217,7 +223,7 @@
                 </div>
             </div>
 
-            <div class="summary-item">
+            <div class="summary-item summary-item-take-profit">
                 <span class="label">
                     Take Profit
                     <TooltipsCopyTraders position="left">
@@ -708,6 +714,14 @@ select:focus, input[type="text"]:focus, input[type="number"]:focus {
     color: #333;
 }
 
+.desktop-icon {
+    display: block;
+}
+
+.mobile-icon {
+    display: none;
+}
+
 .empty-state p {
     color: #fff;
     margin-bottom: 4px;
@@ -817,11 +831,17 @@ input:checked + .slider:before {
 
 /* Borda abaixo do Stop Loss */
 .card-right .form-group .summary-item {
-    border-bottom: 1px solid #222;
-    padding-bottom: 12px;
+    border-bottom: 1px solid #222 !important;
+    padding-bottom: 12px !important;
 }
 
-/* Remover borda abaixo de Proteção */
+/* Garantir que Take Profit tenha borda top e bottom (separando de Stop Loss e Proteção) */
+.card-right .summary-item-take-profit {
+    border-top: 1px solid #222 !important;
+    border-bottom: 1px solid #222 !important;
+}
+
+/* Remover borda abaixo de Proteção (último item) */
 .card-right .summary-item:last-of-type {
     border-bottom: none !important;
 }
@@ -1108,6 +1128,15 @@ input:checked + .slider:before {
     input[type="text"],
     input[type="number"] {
         width: 100%;
+    }
+
+    /* Mostrar SVG e esconder img no mobile */
+    .desktop-icon {
+        display: none;
+    }
+
+    .mobile-icon {
+        display: block;
     }
 }
 </style>
