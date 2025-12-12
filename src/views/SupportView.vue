@@ -1040,6 +1040,29 @@ export default {
     padding: 1rem 15px !important;
     margin-top: 60px !important;
     padding-top: 1rem !important;
+    background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%) !important;
+    background-blend-mode: normal;
+    position: relative;
+    min-height: calc(100vh - 60px);
+    padding-bottom: 100px;
+  }
+
+  .main-content::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(8, 36, 18, 0.05) 50%, transparent 80%);
+    border-radius: 1rem;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .main-content > * {
+    position: relative;
+    z-index: 1;
   }
 
   /* Garantir que os cards fiquem empilhados no mobile */
@@ -1116,29 +1139,10 @@ export default {
     font-size: 1.5rem !important; /* 24px - um pouco maior que text-2xl (20px) */
   }
 
-  /* Gradiente nos cards no mobile (igual ao Settings) */
+  /* Gradiente nos cards no mobile (igual ao AgenteAutonomo) */
   .mobile-card-gradient {
-    background: linear-gradient(135deg, rgba(19, 29, 19, 0.95) 0%, rgba(10, 20, 10, 0.98) 50%, rgba(5, 10, 5, 0.95) 100%);
-    background-blend-mode: normal;
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     position: relative;
-  }
-
-  .mobile-card-gradient::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(8, 36, 18, 0.05) 50%, transparent 80%);
-    border-radius: 1rem;
-    pointer-events: none;
-    z-index: 0;
-  }
-
-  .mobile-card-gradient > * {
-    position: relative;
-    z-index: 1;
   }
 
   /* Botão Iniciar Atendimento verde com texto preto no mobile */

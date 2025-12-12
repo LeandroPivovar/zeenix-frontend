@@ -64,15 +64,15 @@
               </div>
 
               <div class="space-y-3">
-                <button @click="openEditNameModal" class="w-full bg-zenix-bg/70 hover:bg-zenix-green/10 text-zenix-text hover:text-zenix-green border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all flex items-center justify-center text-sm">
+                <button @click="openEditNameModal" class="w-full hover:bg-zenix-green/10 text-zenix-text hover:text-zenix-green border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all flex items-center justify-center text-sm" style="background-color: #1d1c1d;">
                   <i class="fas fa-edit mr-2"></i>
                   Editar Nome
                 </button>
-                <button @click="openEditEmailModal" class="w-full bg-zenix-bg/70 hover:bg-zenix-green/10 text-zenix-text hover:text-zenix-green border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all flex items-center justify-center text-sm">
+                <button @click="openEditEmailModal" class="w-full hover:bg-zenix-green/10 text-zenix-text hover:text-zenix-green border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all flex items-center justify-center text-sm" style="background-color: #1d1c1d;">
                   <i class="fas fa-envelope mr-2"></i>
                   Alterar E-mail
                 </button>
-                <button @click="openChangePhotoModal" class="w-full bg-zenix-bg/70 hover:bg-zenix-green/10 text-zenix-text hover:text-zenix-green border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all flex items-center justify-center text-sm">
+                <button @click="openChangePhotoModal" class="w-full hover:bg-zenix-green/10 text-zenix-text hover:text-zenix-green border border-zenix-border hover:border-zenix-green/40 py-3 rounded-xl transition-all flex items-center justify-center text-sm" style="background-color: #1d1c1d;">
                   <i class="fas fa-image mr-2"></i>
                   Trocar Foto
                 </button>
@@ -86,7 +86,7 @@
               <div class="space-y-6">
                 <div>
                   <label class="block text-sm font-medium text-zenix-text mb-2">Idioma</label>
-                  <select v-model="settings.language" class="w-full bg-zenix-bg border border-zenix-border rounded-xl px-4 py-3 text-zenix-text focus:outline-none focus:border-zenix-green transition-all appearance-none">
+                  <select v-model="settings.language" class="w-full border border-zenix-border rounded-xl px-4 py-3 text-zenix-text focus:outline-none focus:border-zenix-green transition-all appearance-none" style="background-color: #1d1c1d;">
                     <option value="pt-BR">Português (BR)</option>
                     <option value="en-US">English (US)</option>
                     <option value="es-ES">Español</option>
@@ -95,7 +95,7 @@
 
                 <div>
                   <label class="block text-sm font-medium text-zenix-text mb-2">Fuso Horário</label>
-                  <select v-model="settings.timezone" class="w-full bg-zenix-bg border border-zenix-border rounded-xl px-4 py-3 text-zenix-text focus:outline-none focus:border-zenix-green transition-all appearance-none">
+                  <select v-model="settings.timezone" class="w-full border border-zenix-border rounded-xl px-4 py-3 text-zenix-text focus:outline-none focus:border-zenix-green transition-all appearance-none" style="background-color: #1d1c1d;">
                     <option value="America/Sao_Paulo">GMT-3 (São Paulo)</option>
                     <option value="America/New_York">GMT-5 (New York)</option>
                     <option value="Europe/London">GMT+0 (Londres)</option>
@@ -105,7 +105,7 @@
 
                 <div>
                   <label class="block text-sm font-medium text-zenix-text mb-2">Moeda padrão</label>
-                  <select v-model="settings.tradeCurrency" class="w-full bg-zenix-bg border border-zenix-border rounded-xl px-4 py-3 text-zenix-text focus:outline-none focus:border-zenix-green transition-all appearance-none">
+                  <select v-model="settings.tradeCurrency" class="w-full border border-zenix-border rounded-xl px-4 py-3 text-zenix-text focus:outline-none focus:border-zenix-green transition-all appearance-none" style="background-color: #1d1c1d;">
                     <option value="USD">USD</option>
                     <option value="BTC">BTC</option>
                     <option value="DEMO">DEMO (Conta virtual)</option>
@@ -175,7 +175,7 @@
                   <span class="text-sm text-zenix-text font-semibold">{{ activeSessions }}</span>
                 </div>
 
-                <button @click="endAllSessions" class="w-full bg-transparent border border-zenix-border hover:border-zenix-red text-zenix-text hover:text-zenix-red py-3 rounded-xl transition-all text-sm">
+                <button @click="endAllSessions" class="w-full text-zenix-text hover:text-zenix-red py-3 rounded-xl transition-all text-sm" style="background-color: #1d1c1d;">
                   Encerrar todas as sessões
                 </button>
               </div>
@@ -244,10 +244,10 @@
               <p class="text-zenix-secondary text-xs text-center">{{ settings.email }}</p>
             </div>
             <div class="grid grid-cols-2 gap-3">
-              <button @click="openEditNameModal" class="bg-zenix-bg/70 hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-2.5 rounded-xl transition-all text-xs">
+              <button @click="openEditNameModal" class="hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-2.5 rounded-xl transition-all text-xs" style="background-color: #1d1c1d;">
                 Editar Nome
               </button>
-              <button @click="openChangePhotoModal" class="bg-zenix-bg/70 hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-2.5 rounded-xl transition-all text-xs">
+              <button @click="openChangePhotoModal" class="hover:bg-zenix-green/10 text-white border border-zenix-border hover:border-zenix-green/40 py-2.5 rounded-xl transition-all text-xs" style="background-color: #1d1c1d;">
                 Trocar Foto
               </button>
             </div>
@@ -284,7 +284,7 @@
                 <span class="text-xs text-zenix-secondary">Sessões ativas</span>
                 <span class="text-xs text-white font-semibold">{{ activeSessions }}</span>
               </div>
-              <button @click="endAllSessions" class="w-full bg-transparent border border-zenix-red text-zenix-red hover:bg-zenix-red/10 py-2.5 rounded-xl transition-all text-xs font-semibold mt-4">
+              <button @click="endAllSessions" class="w-full text-zenix-red hover:bg-zenix-red/10 py-2.5 rounded-xl transition-all text-xs font-semibold mt-4" style="background-color: #1d1c1d;">
                 Encerrar todas as sessões
               </button>
             </div>
@@ -296,7 +296,7 @@
             <div class="space-y-4">
               <div class="flex items-center justify-between">
                 <label class="text-xs font-medium text-white">Idioma</label>
-                <select v-model="settings.language" class="bg-zenix-bg border border-zenix-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zenix-green transition-all appearance-none mobile-select">
+                <select v-model="settings.language" class="border border-zenix-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zenix-green transition-all appearance-none mobile-select" style="background-color: #1d1c1d;">
                   <option value="pt-BR">Português (BR)</option>
                   <option value="en-US">English (US)</option>
                   <option value="es-ES">Español</option>
@@ -304,7 +304,7 @@
               </div>
               <div class="flex items-center justify-between">
                 <label class="text-xs font-medium text-white">Fuso Horário</label>
-                <select v-model="settings.timezone" class="bg-zenix-bg border border-zenix-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zenix-green transition-all appearance-none mobile-select">
+                <select v-model="settings.timezone" class="border border-zenix-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zenix-green transition-all appearance-none mobile-select" style="background-color: #1d1c1d;">
                   <option value="America/Sao_Paulo">GMT-3 (Brasília)</option>
                   <option value="America/New_York">GMT-5 (New York)</option>
                   <option value="Europe/London">GMT+0 (Londres)</option>
@@ -313,7 +313,7 @@
               </div>
               <div class="flex items-center justify-between">
                 <label class="text-xs font-medium text-white">Moeda padrão</label>
-                <select v-model="settings.tradeCurrency" class="bg-zenix-bg border border-zenix-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zenix-green transition-all appearance-none mobile-select">
+                <select v-model="settings.tradeCurrency" class="border border-zenix-border rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-zenix-green transition-all appearance-none mobile-select" style="background-color: #1d1c1d;">
                   <option value="USD">USD ($)</option>
                   <option value="BTC">BTC</option>
                   <option value="DEMO">DEMO (Conta virtual)</option>
@@ -345,13 +345,13 @@
           <div class="bg-zenix-card border border-zenix-border rounded-2xl p-6 premium-card mobile-card-gradient">
             <h3 class="text-base font-bold text-white mb-5">Conta & Privacidade</h3>
             <div class="space-y-4">
-              <button @click.prevent="downloadPersonalData" class="w-full bg-transparent border-2 border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 py-2.5 rounded-xl transition-all text-xs text-left px-4">
+              <button @click.prevent="downloadPersonalData" class="w-full bg-transparent border-2 border-yellow-500/50 text-yellow-500 hover:bg-yellow-500/10 py-2.5 rounded-xl transition-all text-xs text-left px-4 mobile-privacy-btn-center">
                 Baixar meus dados
               </button>
-              <button class="w-full bg-transparent border-2 border-zenix-border hover:border-zenix-green/40 text-white py-2.5 rounded-xl transition-all text-xs text-left px-4">
+              <button class="w-full bg-transparent border-2 border-zenix-border hover:border-zenix-green/40 text-white py-2.5 rounded-xl transition-all text-xs text-left px-4 mobile-privacy-btn-center">
                 Termos de uso e privacidade
               </button>
-              <button @click="openDeleteAccountModal" class="w-full bg-transparent border-2 border-zenix-red text-zenix-red hover:bg-zenix-red/10 py-2.5 rounded-xl transition-all text-xs font-semibold">
+              <button @click="openDeleteAccountModal" class="w-full bg-transparent border-2 border-zenix-red text-zenix-red hover:bg-zenix-red/10 py-2.5 rounded-xl transition-all text-xs font-semibold mobile-privacy-btn-center">
                 Excluir Conta
               </button>
             </div>
@@ -842,18 +842,14 @@ main {
 /* Mobile Styles */
 @media screen and (max-width: 768px) {
   .mobile-settings-container {
-    background: linear-gradient(135deg, rgba(10, 20, 10, 0.95) 0%, rgba(5, 10, 5, 0.98) 50%, rgba(0, 0, 0, 1) 100%);
+    background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
+    background-blend-mode: normal;
+    position: relative;
     padding: 1rem;
     min-height: calc(100vh - 80px);
   }
 
-  .mobile-card-gradient {
-    background: linear-gradient(135deg, rgba(19, 29, 19, 0.95) 0%, rgba(10, 20, 10, 0.98) 50%, rgba(5, 10, 5, 0.95) 100%);
-    background-blend-mode: normal;
-    position: relative;
-  }
-
-  .mobile-card-gradient::before {
+  .mobile-settings-container::before {
     content: '';
     position: absolute;
     top: 0;
@@ -861,14 +857,18 @@ main {
     right: 0;
     bottom: 0;
     background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(8, 36, 18, 0.05) 50%, transparent 80%);
-    border-radius: 1rem;
     pointer-events: none;
     z-index: 0;
   }
 
-  .mobile-card-gradient > * {
+  .mobile-settings-container > * {
     position: relative;
     z-index: 1;
+  }
+
+  .mobile-card-gradient {
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%);
+    position: relative;
   }
 
   .mobile-history-scroll {
@@ -903,6 +903,10 @@ main {
     background-repeat: no-repeat;
     background-position: right 0.5rem center;
     background-size: 10px;
+  }
+
+  .mobile-privacy-btn-center {
+    text-align: center !important;
   }
 }
 </style>
