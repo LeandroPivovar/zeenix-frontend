@@ -26,6 +26,7 @@
         :balances-by-currency-demo="balancesByCurrencyDemo"
         :currency-prefix="preferredCurrencyPrefix"
         @toggle-sidebar="toggleMobileSidebar"
+        @toggle-sidebar-collapse="toggleSidebarCollapse"
       />
     
     <!-- Main Content -->
@@ -1359,7 +1360,7 @@ export default {
 .dashboard-content-wrapper {
   margin-left: 280px;
   min-height: 100vh;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s ease, width 0.3s ease;
   width: calc(100% - 280px);
   box-sizing: border-box;
   display: flex;
@@ -1368,8 +1369,8 @@ export default {
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
-  margin-left: 72px;
-  width: calc(100% - 72px);
+  margin-left: 0;
+  width: 100%;
 }
 
 @media (max-width: 1024px) {
@@ -1401,13 +1402,13 @@ export default {
   border-bottom: 1px solid #1C1C1C;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   transition: left 0.3s ease;
-  width: calc(100% - 280px);
+  width: 100%;
   box-sizing: border-box;
 }
 
 .dashboard-content-wrapper.sidebar-collapsed .top-header {
-  left: 72px;
-  width: calc(100% - 72px);
+  left: 0;
+  width: 100%;
 }
 
 @media (max-width: 1024px) {

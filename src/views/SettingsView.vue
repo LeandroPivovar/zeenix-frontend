@@ -8,15 +8,21 @@
     ></div>
 
     <!-- Sidebar (using existing AppSidebar component but wrapped or positioned if needed) -->
-    <AppSidebar :is-open="sidebarIsOpen" @close-sidebar="closeSidebar" />
+    <AppSidebar 
+      :is-open="sidebarIsOpen" 
+      :is-collapsed="isSidebarCollapsed"
+      @close-sidebar="closeSidebar" 
+      @toggle-collapse="toggleSidebarCollapse"
+    />
 
     <!-- Main Content -->
-    <div class="lg:ml-[240px] min-h-screen flex flex-col transition-all duration-300">
+    <div class="min-h-screen flex flex-col transition-all duration-300" :style="{ marginLeft: isMobile ? '0' : (isSidebarCollapsed ? '0' : '280px') }">
       <TopNavbar 
-        :is-sidebar-collapsed="false"
+        :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="0"
         account-type="real"
         @toggle-sidebar="toggleSidebar"
+        @toggle-sidebar-collapse="toggleSidebarCollapse"
       />
       <!-- Header -->
       <header id="header" class="sticky top-0 z-30 glass-effect border-b border-zenix-border" style="margin-top: 60px;">
@@ -446,7 +452,8 @@ export default {
       showChangePasswordModal: false,
       showChangePhotoModal: false,
       sidebarIsOpen: false,
-      isMobile: false
+      isMobile: false,
+      isSidebarCollapsed: false
     }
   },
   computed: {
@@ -796,6 +803,9 @@ export default {
     },
     closeSidebar() {
       this.sidebarIsOpen = false;
+    },
+    toggleSidebarCollapse() {
+      this.isSidebarCollapsed = !this.isSidebarCollapsed;
     }
   }
 }

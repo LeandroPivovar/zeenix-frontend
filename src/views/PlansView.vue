@@ -23,6 +23,7 @@
                 :currency="accountCurrency"
                 @account-type-changed="handleAccountTypeChange"
                 @toggle-sidebar="toggleMobileMenu"
+                @toggle-sidebar-collapse="toggleSidebarCollapse"
             />
 
             <main class="plans-content" style="margin-top: 60px;">

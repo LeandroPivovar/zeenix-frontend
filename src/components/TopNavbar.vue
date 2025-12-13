@@ -1,15 +1,40 @@
 <template>
   <nav 
     id="top-navbar" 
-    class="fixed top-0 left-0 right-0 h-[60px] z-50 mobile-header" 
+    class="fixed top-0 left-0 right-0 h-[60px] z-[1000] mobile-header" 
     :class="{ 'bg-[#0B0B0B]': !isMobile, 'bg-transparent': isMobile }"
-    :style="{ left: isSidebarCollapsed ? '40px' : '280px', width: isSidebarCollapsed ? 'calc(100% - 40px)' : 'calc(100% - 280px)' }"
+    style="width: 100%;"
   >
     <!-- Desktop Layout -->
-    <div class="h-full px-6 flex items-center justify-between desktop-nav">
-      <div class="flex items-center space-x-8">
+    <div class="h-full flex items-center justify-between desktop-nav">
+      <div class="flex items-center space-x-4 mr-10">
+        <!-- Botão de toggle do menu (apenas desktop, sempre visível) -->
+        <button 
+          v-if="!isMobile"
+          @click="toggleSidebarCollapse"
+          class="toggle-menu-btn-header p-[6px]"
+          :title="isSidebarCollapsed ? 'Expandir menu' : 'Recolher menu'"
+        >
+          <i class="fas fa-bars text-[#DFDFDF]"></i>
+        </button>
+        
+        <!-- Título ZENIX (apenas desktop, sempre visível) -->
+        <div v-if="!isMobile" class="header-brand-text">
+          <span class="text-white font-bold text-xl">ZEN</span>
+          <span class="text-[#22C55E] font-bold text-xl">IX</span>
+        </div>
+        
+        <!-- Botão Grupo de Alunos (apenas desktop, sempre visível) -->
+        <a 
+          v-if="!isMobile"
+          href="#" 
+          class="header-whatsapp-button bg-transparent hover:bg-[#0E0E0E] text-[#A1A1A1] hover:text-[#25D366] font-medium px-3 py-1.5 rounded-lg text-xs inline-flex items-center space-x-2 transition-all duration-200 border border-[#1C1C1C] hover:border-[#25D366]/30"
+        >
+          <i class="fa-brands fa-whatsapp text-xs"></i>
+          <span>Grupo de Alunos</span>
+        </a>
       </div>
-      <div class="flex items-center space-x-6">
+      <div class="flex items-center space-x-6 pr-6">
         <button 
           @click="openDepositFlow" 
           class="bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold px-5 py-2 rounded-lg text-sm inline-flex items-center space-x-2 transition-all duration-200 shadow-[0_2px_8px_rgba(34,197,94,0.2)] hover:shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
@@ -284,6 +309,7 @@
 <script>
 export default {
   name: 'TopNavbar',
+  emits: ['toggle-sidebar', 'toggle-sidebar-collapse'],
   props: {
     isSidebarCollapsed: {
       type: Boolean,
@@ -322,7 +348,8 @@ export default {
       userProfilePictureUrl: null,
       showAccountModal: false,
       loadingAccounts: false,
-      availableAccounts: []
+      availableAccounts: [],
+      isMobile: false
     }
   },
   computed: {
@@ -421,16 +448,22 @@ export default {
     document.addEventListener('click', this.handleClickOutside);
     window.addEventListener('storage', this.handleStorageChange);
     window.addEventListener('userProfileUpdated', this.handleProfileUpdate);
+    window.addEventListener('resize', this.checkMobile);
+    this.checkMobile();
     this.loadUserProfilePicture();
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
     window.removeEventListener('storage', this.handleStorageChange);
     window.removeEventListener('userProfileUpdated', this.handleProfileUpdate);
+    window.removeEventListener('resize', this.checkMobile);
   },
   methods: {
     checkMobile() {
       this.isMobile = window.innerWidth <= 1024;
+    },
+    toggleSidebarCollapse() {
+      this.$emit('toggle-sidebar-collapse');
     },
     toggleBalance() {
       this.balanceHidden = !this.balanceHidden;
@@ -944,6 +977,7 @@ export default {
     left: 0 !important;
     width: 100% !important;
     background: transparent !important;
+    z-index: 1000 !important;
   }
 
   .desktop-nav {
@@ -953,6 +987,12 @@ export default {
   .mobile-nav {
     display: flex;
     gap: 16px;
+  }
+  
+  .toggle-menu-btn-header,
+  .header-brand-text,
+  .header-whatsapp-button {
+    display: none !important;
   }
 
   .mobile-menu-btn,
@@ -991,6 +1031,45 @@ export default {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Estilos para elementos do header quando sidebar está colapsada */
+.toggle-menu-btn-header {
+  background: transparent;
+  border: none;
+  color: #DFDFDF;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  width: 32px;
+  height: 32px;
+}
+
+.toggle-menu-btn-header:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #22C55E;
+}
+
+.toggle-menu-btn-header i {
+  font-size: 16px;
+}
+
+.header-brand-text {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+  line-height: 1.2;
+}
+
+.header-whatsapp-button {
+  text-decoration: none;
+  white-space: nowrap;
 }
 </style>
 

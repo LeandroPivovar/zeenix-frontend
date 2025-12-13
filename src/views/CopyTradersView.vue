@@ -1,5 +1,5 @@
   <template>
-    <div class="layout-copy-traders">
+    <div class="layout-copy-traders" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <div
         v-if="isSidebarOpen && isMobile"
         class="sidebar-overlay"
@@ -17,9 +17,10 @@
         :balance="0"
         account-type="real"
         @toggle-sidebar="toggleMobileSidebar"
+        @toggle-sidebar-collapse="toggleSidebarCollapse"
       />
   
-      <div class="box">
+      <div class="box" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
         <div class="header">
           <h1 v-if="hasActiveSession">Copy Trading — Performance</h1>
           <h1 v-else>Copy Trading — Configuração</h1>
@@ -211,6 +212,11 @@
     margin-left: 280px;
     position: relative;
     transition: margin-left 0.3s ease, width 0.3s ease;
+  }
+
+  .layout-copy-traders.sidebar-collapsed {
+    margin-left: 0;
+    width: 100%;
   }
 
   /* Overlay */

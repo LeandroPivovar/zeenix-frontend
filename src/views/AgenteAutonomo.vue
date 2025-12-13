@@ -25,6 +25,7 @@
           :currency="accountCurrency"
           @account-type-changed="handleAccountTypeChange"
           @toggle-sidebar="toggleMobileSidebar"
+          @toggle-sidebar-collapse="toggleSidebarCollapse"
         />
   
         <div class="container-componentes">
@@ -1026,7 +1027,7 @@
   .layout-agente-autnomo {
     background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
     min-height: 100vh;
-    transition: margin-left 0.3s ease;
+    transition: margin-left 0.3s ease, width 0.3s ease;
     padding-bottom: 80px;
     width: calc(100% - 280px);
     margin-left: 280px;

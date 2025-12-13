@@ -9,6 +9,7 @@
         :account-type="accountType"
         @account-type-changed="handleAccountTypeChange"
         :currency="accountCurrency"
+        @toggle-sidebar-collapse="toggleSidebarCollapse"
       />
 
       <main class="main-content" style="margin-top: 60px;">
@@ -630,14 +631,14 @@ export default {
   margin-left: 280px;
   padding: 0;
   min-height: 100vh;
-  transition: margin-left 0.3s ease;
+  transition: margin-left 0.3s ease, width 0.3s ease;
   width: calc(100% - 280px);
   box-sizing: border-box;
 }
 
 .content-wrapper.sidebar-collapsed {
-  margin-left: 72px;
-  width: calc(100% - 72px);
+  margin-left: 0;
+  width: 100%;
 }
 
 /* Top Header */
@@ -651,7 +652,7 @@ export default {
   border-bottom: 1px solid #1C1C1C;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   transition: left 0.3s ease;
-  width: calc(100% - 280px);
+  width: 100%;
   box-sizing: border-box;
 }
 

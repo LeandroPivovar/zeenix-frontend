@@ -168,14 +168,16 @@ export default {
 .copy-trading-content {
     flex: 1;
     padding: 20px;
-    margin-left: 0;
-    transition: margin-left 0.3s ease;
+    margin-left: 280px;
+    width: calc(100% - 280px);
+    transition: margin-left 0.3s ease, width 0.3s ease;
     position: relative;
     overflow: hidden;
 }
 
 .copy-trading-content.sidebar-collapsed {
     margin-left: 0;
+    width: 100%;
 }
 
 .loading-content {
@@ -207,11 +209,9 @@ export default {
 }
 
 @media (min-width: 769px) {
-    .copy-trading-content {
-    }
-    
     .copy-trading-content.sidebar-collapsed {
-        margin-left: 80px;
+        margin-left: 0;
+        width: 100%;
     }
 }
 

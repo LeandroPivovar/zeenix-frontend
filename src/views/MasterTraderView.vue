@@ -8,6 +8,7 @@
             :account-type="isDemo ? 'demo' : 'real'"
             :currency="accountCurrency"
             @account-type-changed="handleAccountTypeChange"
+            @toggle-sidebar-collapse="toggleSidebarCollapse"
         />
 
         <div class="content-wrapper">
@@ -425,6 +426,7 @@ export default {
     color: #f0f6fc; /* Texto principal claro */
     width: calc(100% - 280px);
     margin-left: 280px;
+    transition: margin-left 0.3s ease, width 0.3s ease;
 }
 
 .layout-master-trader .agente-autonomo-header {

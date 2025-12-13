@@ -22,6 +22,7 @@
           :balance="balance"
           account-type="real"
           @toggle-sidebar="toggleSidebar"
+          @toggle-sidebar-collapse="toggleSidebarCollapse"
         />
 
         <main class="main-content academy-content">

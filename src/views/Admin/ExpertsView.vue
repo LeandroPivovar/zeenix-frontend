@@ -797,8 +797,8 @@ body {
 }
 
 .layout-collapsed {
-    margin-left: 80px; 
-    width: calc(100% - 80px);
+    margin-left: 0; 
+    width: 100%;
 }
 
 .layout-content {
