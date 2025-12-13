@@ -69,6 +69,8 @@
 }
 
 .operation-main.sidebar-collapsed {
+    margin-left: 0 !important;
+    width: 100% !important;
     margin-left: 0;
 }
 

@@ -14,9 +14,9 @@ aside.sidebar,
 	flex-direction: column;
 	position: fixed;
 	left: 0;
-	top: 0;
-	height: 100vh;
-	z-index: 999;
+	top: 60px;
+	height: calc(100vh - 60px);
+	z-index: 100;
 	box-sizing: border-box;
 	transition: width 0.3s ease-in-out, left 0.3s ease-in-out;
 	font-family: 'Inter', sans-serif;
@@ -27,7 +27,7 @@ aside.sidebar,
 .sidebar::after {
 	content: '';
 	position: absolute;
-	top: 60px;
+	top: 0;
 	left: 0;
 	right: 0;
 	height: 1px;
@@ -37,31 +37,32 @@ aside.sidebar,
 /* --- Estado Colapsado (.collapsed) --- */
 
 .sidebar.collapsed {
-	width: 72px;
-	min-width: 72px;
-	padding: 16px 8px;
+	width: 0 !important;
+	min-width: 0 !important;
+	max-width: 0 !important;
+	padding: 0 !important;
 	overflow: hidden;
 	border-right: none !important;
 	border-left: none !important;
 	border: none;
+	opacity: 0;
+	pointer-events: none;
+	left: -280px !important;
 }
 
-/* Esconde textos principais e ajusta transição */
+/* Esconde o texto ZENIX quando colapsado (vai para o header) */
 .sidebar.collapsed .brand-text {
-	opacity: 0;
-	width: 0;
-	overflow: hidden;
+	opacity: 0 !important;
+	width: 0 !important;
+	overflow: hidden !important;
 	white-space: nowrap;
 	transition: opacity 0.2s ease, width 0.2s ease;
+	display: none !important;
 }
 
-/* Ajusta o item de menu recolhido */
-.sidebar.collapsed .menu-item {
-	position: relative;
-	justify-content: center;
-	padding: 12px 0;
-	color: transparent;
-	font-size: 0;
+/* Esconde o menu de navegação quando colapsado */
+.sidebar.collapsed .menu {
+	display: none;
 }
 
 /* Adiciona o ícone FontAwesome ao layout centralizado no modo colapsado */
@@ -104,15 +105,9 @@ aside.sidebar,
 	opacity: 1;
 }
 
-/* Oculta informações do status/usuário */
-.sidebar.collapsed .user-info,
-.sidebar.collapsed .footer-row .online-text,
-.sidebar.collapsed .version {
-	opacity: 0;
-	width: 0;
-	overflow: hidden;
-	white-space: nowrap;
-	transition: opacity 0.2s ease, width 0.2s ease;
+/* Esconde o rodapé quando colapsado */
+.sidebar.collapsed .status {
+	display: none;
 }
 
 /* Centraliza containers no modo colapsado */
@@ -146,7 +141,46 @@ aside.sidebar,
 	justify-content: flex-start;
 	width: 100%;
 	position: relative;
-	gap: 0;
+	gap: 12px;
+}
+
+/* Botão de toggle do menu - esconde quando colapsado (vai para o header) */
+.toggle-menu-btn {
+	background: transparent;
+	border: none;
+	color: #DFDFDF;
+	cursor: pointer;
+	padding: 8px;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	flex-shrink: 0;
+	width: 32px;
+	height: 32px;
+	margin-left: 0;
+}
+
+/* Esconde o botão de toggle quando colapsado */
+.sidebar.collapsed .toggle-menu-btn {
+	display: none !important;
+}
+
+.toggle-menu-btn:hover {
+	background: rgba(255, 255, 255, 0.05);
+	color: #22C55E;
+}
+
+.toggle-menu-btn i {
+	font-size: 16px;
+}
+
+/* Esconde o botão de toggle no mobile */
+@media (max-width: 1024px) {
+	.toggle-menu-btn {
+		display: none;
+	}
 }
 
 .brand-text {
@@ -155,7 +189,7 @@ aside.sidebar,
 	color: #DFDFDF;
 	letter-spacing: -0.025em;
 	position: relative;
-	left: 16px;
+	left: 0;
 	transform: none;
 	white-space: nowrap;
 	line-height: 1.2;
@@ -174,23 +208,25 @@ aside.sidebar,
 	transform: none;
 	z-index: 1000;
 	white-space: nowrap;
-	margin-left: 40px;
+	margin-left: auto;
 }
 
 .whatsapp-text {
 	font-size: 0.75rem;
 }
 
-/* Modo colapsado - oculta textos */
+/* Modo colapsado - mantém layout horizontal */
 .sidebar.collapsed .brand-content {
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-start;
+	gap: 12px;
 }
 
+/* Mantém o texto ZENIX visível quando colapsado (sobrescreve regra anterior) */
 .sidebar.collapsed .brand-text {
-	opacity: 0;
-	width: 0;
-	overflow: hidden;
+	opacity: 1 !important;
+	width: auto !important;
+	overflow: visible !important;
 	white-space: nowrap;
 	transition: opacity 0.2s ease, width 0.2s ease;
 	position: static;
@@ -198,24 +234,17 @@ aside.sidebar,
 	left: auto;
 }
 
+/* Esconde o botão WhatsApp quando colapsado (vai para o header) */
 .sidebar.collapsed .whatsapp-text {
-	opacity: 0;
-	width: 0;
-	overflow: hidden;
+	opacity: 0 !important;
+	width: 0 !important;
+	overflow: hidden !important;
 	white-space: nowrap;
 	transition: opacity 0.2s ease, width 0.2s ease;
 }
 
 .sidebar.collapsed .whatsapp-button {
-	width: auto;
-	padding: 8px;
-	justify-content: center;
-	position: absolute;
-	right: 8px;
-}
-
-.sidebar.collapsed .whatsapp-button i {
-	margin: 0;
+	display: none !important;
 }
 
 /* --- Menu de Navegação --- */
@@ -314,6 +343,8 @@ aside.sidebar,
 @media (max-width: 768px) {
 	.sidebar {
 		left: -300px;
+		top: 0;
+		height: 100vh;
 		box-shadow: 5px 0 15px rgba(0, 0, 0, 0.7);
 	}
 

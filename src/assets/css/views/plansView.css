@@ -30,7 +30,7 @@
 .main-content-wrapper {
     margin-left: 280px;
     min-height: 100vh;
-    transition: margin-left 0.3s ease;
+    transition: margin-left 0.3s ease, width 0.3s ease;
     width: calc(100% - 280px);
     box-sizing: border-box;
     display: flex;
@@ -38,8 +38,8 @@
 }
 
 .main-content-wrapper.sidebar-collapsed {
-    margin-left: 72px;
-    width: calc(100% - 72px);
+    margin-left: 0;
+    width: 100%;
 }
 
 /* --- Conteúdo Principal (Plans) --- */
