@@ -10,7 +10,7 @@
           <!-- Logo -->
           <div class="mb-12 flex justify-center login-logo">                                                                                                                                                                          
             <div class="flex items-center space-x-2 logo-animation">
-              <div class="text-3xl font-bold text-zenix-text-dark">
+              <div class="text-3xl font-bold text-zenix-text-dark zenix-logo-title">
                 <span v-if="isMobile" v-html="typedLogoTitle" class="logo-text"></span>
                 <template v-else>
                   <span class="text-zenix-text-dark">ZENI</span><span class="text-zenix-green">X</span>
@@ -238,7 +238,7 @@ export default {
       // Reset do título antes de começar
       this.typedLogoTitle = '';
       let index = 0;
-      const typingSpeed = 100; // velocidade de digitação em ms
+      const typingSpeed = 180; // velocidade de digitação em ms (mais lenta)
       
       const typeChar = () => {
         if (index < this.fullLogoTitle.length) {
@@ -473,6 +473,47 @@ button.bg-zenix-green:disabled {
 /* Efeito de digitação */
 .typing-text {
   min-height: 1.75rem;
+}
+
+/* Estilo do título ZENIX - apenas no mobile */
+@media (max-width: 640px) {
+  .zenix-logo-title {
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 50px !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    line-height: 1;
+  }
+
+  .zenix-logo-title .text-zenix-text-dark {
+    color: #FFFFFF !important;
+    font-weight: 700 !important;
+    font-size: 50px !important;
+  }
+
+  .zenix-logo-title .text-zenix-green {
+    color: #22C55E !important;
+    font-weight: 700 !important;
+    font-size: 50px !important;
+  }
+}
+
+/* Desktop - manter estilo original do título */
+@media (min-width: 641px) {
+  .login-logo {
+    position: relative !important;
+    margin-bottom: 3rem !important;
+  }
+  
+  .zenix-logo-title {
+    font-size: 1.875rem !important;
+  }
+  
+  .zenix-logo-title .text-zenix-text-dark,
+  .zenix-logo-title .text-zenix-green {
+    font-size: 1.875rem !important;
+  }
 }
 
 /* Animação de opacidade do logo da esquerda para direita (desktop) */
@@ -936,10 +977,11 @@ button.bg-zenix-green:disabled {
   /* Logo fora visualmente do card apenas no mobile */
   .login-logo {
     position: absolute;
-    top: 1.5rem;
+    top: 6rem;
     left: 50%;
     transform: translateX(-50%);
     z-index: 20;
+    margin-bottom: 0 !important;
   }
 
   /* Animação do logo letra por letra (mobile) */
@@ -957,20 +999,26 @@ button.bg-zenix-green:disabled {
 
   .login-logo .text-zenix-text-dark,
   .login-logo .logo-text span.text-zenix-text-dark {
-    font-size: 1.75rem !important;
+    font-size: 50px !important;
     line-height: 1;
     margin: 0;
     font-weight: 700 !important;
     color: #FFFFFF !important;
+    font-family: 'Inter', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
   }
 
   .login-logo .text-zenix-green,
   .login-logo .logo-text span.text-zenix-green {
-    font-size: 1.75rem !important;
+    font-size: 50px !important;
     line-height: 1;
     margin: 0;
     font-weight: 700 !important;
     color: #22C55E !important;
+    font-family: 'Inter', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
   }
 
   /* Remover espaçamento entre letras no mobile */
@@ -984,7 +1032,7 @@ button.bg-zenix-green:disabled {
 
   /* Espaçamento do card após o logo */
   #login-section {
-    padding-top: 7rem !important;
+    padding-top: 11rem !important;
   }
 
   /* Ajuste de padding interno do card */
@@ -1109,7 +1157,7 @@ button.bg-zenix-green:disabled {
 
   /* Espaçamento entre campos do formulário */
   #login-form > div {
-    margin-bottom: 1.25rem !important;
+    margin-bottom: 2.5rem !important;
   }
 
   #login-form > div:last-of-type {
@@ -1118,7 +1166,16 @@ button.bg-zenix-green:disabled {
 
   /* Espaçamento após o campo de senha (antes do botão) */
   #login-form > div:nth-of-type(2) {
-    margin-bottom: 1.5rem !important;
+    margin-bottom: 2.5rem !important;
+  }
+  
+  /* Espaçamento após o campo de email */
+  #login-form > div:nth-of-type(1) {
+    margin-top: 20px !important;
+    margin-bottom: 20px !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
   }
 
   /* Espaçamento após o botão */
@@ -1154,7 +1211,7 @@ button.bg-zenix-green:disabled {
 
 @media (max-width: 375px){
   .login-logo{
-    top: 2rem !important;
+    top: 6rem !important;
   }
 }
 </style>

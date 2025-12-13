@@ -10,7 +10,7 @@
           <!-- Logo -->
           <div class="mb-12 flex justify-center forgot-logo">
             <div class="flex items-center space-x-2 logo-animation">
-              <div class="text-3xl font-bold text-zenix-text-dark">
+              <div class="text-3xl font-bold text-zenix-text-dark zenix-logo-title">
                 <span v-if="isMobile" v-html="typedLogoTitle" class="logo-text"></span>
                 <template v-else>
                   <span class="text-zenix-text-dark">ZENI</span><span class="text-zenix-green">X</span>
@@ -188,7 +188,7 @@ export default {
       // Reset do título antes de começar
       this.typedLogoTitle = '';
       let index = 0;
-      const typingSpeed = 100; // velocidade de digitação em ms
+      const typingSpeed = 180; // velocidade de digitação em ms (mais lenta)
       
       const typeChar = () => {
         if (index < this.fullLogoTitle.length) {
@@ -974,10 +974,11 @@ button.bg-zenix-green:disabled {
 
   .forgot-logo {
     position: absolute;
-    top: 1.5rem;
+    top: 6rem;
     left: 50%;
     transform: translateX(-50%);
     z-index: 20;
+    margin-bottom: 0 !important;
   }
 
   /* Animação do logo letra por letra (mobile) */
@@ -993,22 +994,40 @@ button.bg-zenix-green:disabled {
     display: inline-block;
   }
 
+  /* Estilo do título ZENIX - apenas no mobile */
+  .zenix-logo-title {
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 50px !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    line-height: 1;
+  }
+
+  .zenix-logo-title .text-zenix-text-dark,
   .forgot-logo .text-zenix-text-dark,
   .forgot-logo .logo-text span.text-zenix-text-dark {
-    font-size: 2rem !important;
+    font-size: 50px !important;
     line-height: 1;
     margin: 0;
     color: #FFFFFF !important;
     font-weight: 700 !important;
+    font-family: 'Inter', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
   }
 
+  .zenix-logo-title .text-zenix-green,
   .forgot-logo .text-zenix-green,
   .forgot-logo .logo-text span.text-zenix-green {
-    font-size: 2rem !important;
+    font-size: 50px !important;
     line-height: 1;
     margin: 0;
     color: #22C55E !important;
     font-weight: 700 !important;
+    font-family: 'Inter', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
   }
 
   /* Remover espaçamento entre letras no mobile */
@@ -1022,7 +1041,7 @@ button.bg-zenix-green:disabled {
 
   /* Espaçamento do card após o logo */
   #forgot-section {
-    padding-top: 7rem !important;
+    padding-top: 11rem !important;
   }
 
   /* Ajuste de padding interno do card */
@@ -1054,11 +1073,26 @@ button.bg-zenix-green:disabled {
   .mobile-disclaimer {
     display: none !important;
   }
+  
+  /* Desktop - manter estilo original do título */
+  .forgot-logo {
+    position: relative !important;
+    margin-bottom: 3rem !important;
+  }
+  
+  .zenix-logo-title {
+    font-size: 1.875rem !important;
+  }
+  
+  .zenix-logo-title .text-zenix-text-dark,
+  .zenix-logo-title .text-zenix-green {
+    font-size: 1.875rem !important;
+  }
 }
 
 @media (max-width: 375px){
   .forgot-logo{
-    top: 3rem !important;
+    top: 6rem !important;
   }
 }
 </style>

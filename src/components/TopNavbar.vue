@@ -1,8 +1,9 @@
 <template>
   <nav 
     id="top-navbar" 
-    class="fixed top-0 left-0 right-0 h-[60px] bg-[#0B0B0B] z-40 mobile-header" 
-    :style="{ left: isSidebarCollapsed ? '72px' : '280px', width: isSidebarCollapsed ? 'calc(100% - 72px)' : 'calc(100% - 280px)' }"
+    class="fixed top-0 left-0 right-0 h-[60px] z-50 mobile-header" 
+    :class="{ 'bg-[#0B0B0B]': !isMobile, 'bg-transparent': isMobile }"
+    :style="{ left: isSidebarCollapsed ? '40px' : '280px', width: isSidebarCollapsed ? 'calc(100% - 40px)' : 'calc(100% - 280px)' }"
   >
     <!-- Desktop Layout -->
     <div class="h-full px-6 flex items-center justify-between desktop-nav">
@@ -428,6 +429,9 @@ export default {
     window.removeEventListener('userProfileUpdated', this.handleProfileUpdate);
   },
   methods: {
+    checkMobile() {
+      this.isMobile = window.innerWidth <= 1024;
+    },
     toggleBalance() {
       this.balanceHidden = !this.balanceHidden;
     },
@@ -812,14 +816,38 @@ export default {
   display: none;
 }
 
-.mobile-menu-btn {
+.mobile-search-btn {
+  width: 36px;
+  height: 36px;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  transition: all 0.3s ease;
   background: transparent;
   border: none;
   cursor: pointer;
-  padding: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  flex-shrink: 0;
+  visibility: visible !important;
+  opacity: 1 !important;
+}
+
+.mobile-search-btn i {
+  font-size: 17px !important;
+  color: rgba(255, 255, 255, 0.45) !important;
+  transition: color 0.3s ease;
+}
+
+.mobile-search-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.mobile-search-btn:hover i {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.mobile-search-btn:active {
+  transform: scale(0.95);
 }
 
 .mobile-logo {
@@ -915,6 +943,7 @@ export default {
   #top-navbar {
     left: 0 !important;
     width: 100% !important;
+    background: transparent !important;
   }
 
   .desktop-nav {
@@ -923,6 +952,33 @@ export default {
 
   .mobile-nav {
     display: flex;
+    gap: 16px;
+  }
+
+  .mobile-menu-btn,
+  .mobile-search-btn {
+    width: 36px !important;
+    height: 36px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  .mobile-search-btn i {
+    font-size: 17px !important;
+    color: rgba(255, 255, 255, 0.45) !important;
+  }
+
+  .mobile-search-btn:hover i {
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .mobile-logo {
+    flex: 1;
+    justify-content: center;
   }
 }
 
