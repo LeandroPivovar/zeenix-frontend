@@ -1,28 +1,11 @@
 <template>
-  <div class="layout-home" :class="{ 'sidebar-collapsed': isSidebarCollapsed, 'no-sidebar': !connectedInfo }">
+  <div class="layout-home">
     <!-- Fundo animado: luzes e partículas -->
     <div class="animated-light-primary"></div>
     <div class="animated-light-secondary"></div>
     <div class="particles">
       <span v-for="n in 12" :key="n" class="particle"></span>
     </div>
-    <!-- Sidebar e Header só aparecem quando conectado -->
-    <template v-if="connectedInfo">
-      <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
-      <header>
-        <button class="hamburger-menu" @click="handleHamburgerClick">
-          <span class="line"></span>
-          <span class="line"></span>
-          <span class="line"></span>
-        </button>
-        <h1 class="title">Zenix</h1>
-        <button class="notify-btn">
-          <img src="../assets/icons/notify.svg" alt="" width="20px">
-        </button>
-        <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
-      </header>
-    </template>
-
     <!-- Tela de Conexão (sem sidebar e header) -->
     <main class="content welcome-screen" :class="{ 'modal-open': showCreateAccountCard }" v-if="!connectedInfo && !loading">
       <!-- Indicador de Etapa (apenas mobile, todas as etapas) - fora do container para ocupar toda largura -->
@@ -118,7 +101,7 @@
     </main>
 
     <!-- Dashboard Conectado (com sidebar e header) -->
-    <DashboardConnected v-else :info="connectedInfo" :is-sidebar-collapsed="isSidebarCollapsed" />
+    <DashboardConnected v-else :info="connectedInfo" />
     
     <!-- Modal de Criação de Conta (apenas desktop) -->
     <CreateDerivAccountModal 
@@ -132,19 +115,16 @@
 </template>
 
 <script>
-import AppSidebar from '../components/Sidebar.vue'
 import DashboardConnected from './DashboardConnected.vue'
 import CreateDerivAccountModal from '../components/CreateDerivAccountModal.vue'
 
 export default {
   name: 'HomeView',
-  components: { AppSidebar, DashboardConnected, CreateDerivAccountModal },
+  components: { DashboardConnected, CreateDerivAccountModal },
   data() {
     return { 
       connectedInfo: null,
       loading: true,
-      isSidebarOpen: false,
-      isSidebarCollapsed: false,
       firstName: 'Usuário',
       showCreateAccountModal: false,
       showCreateAccountCard: false,
@@ -241,25 +221,6 @@ export default {
       console.log('[HomeView] Nome não encontrado, usando fallback')
       this.firstName = 'Usuário'
     },
-    toggleSidebar() {
-      this.isSidebarOpen = !this.isSidebarOpen
-    },
-    closeSidebar() {
-      this.isSidebarOpen = false
-    },
-    toggleSidebarCollapse() {
-      this.isSidebarCollapsed = !this.isSidebarCollapsed
-    },
-    handleHamburgerClick() {
-      if (this.isSidebarCollapsed) {
-        // Se estiver colapsada, expandir
-        this.isSidebarCollapsed = false
-      } else {
-        // Se não estiver colapsada, abrir no modo mobile
-        this.toggleSidebar()
-      }
-    },
-
     async startBrokerConnection() {
       try {
         const state = this.generateState()

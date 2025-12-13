@@ -3102,7 +3102,7 @@ export default {
     display: block !important;
     background: transparent !important;
     border-radius: 0 !important;
-    padding: 80px 0 0 0 !important;
+    padding: 60px 0 0 0 !important;
     margin-bottom: 0 !important;
     border: none !important;
     animation: fadeInUp 0.6s ease-out;
