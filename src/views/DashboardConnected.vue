@@ -360,14 +360,21 @@
               </div>
               <div class="mobile-account-info">
                 <div class="mobile-account-name-wrapper">
-                  <div class="mobile-account-name">{{ userName }}</div>
-                  <svg class="mobile-notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#9B9B9B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#9B9B9B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    <circle cx="18" cy="6" r="4" fill="#22C55E"/>
-                  </svg>
+                  <div class="mobile-account-name-container">
+                    <div class="mobile-account-name">{{ userName }}</div>
+                    <div class="mobile-account-status">Conta Ativa</div>
+                  </div>
+                  <div class="mobile-header-icons">
+                    <button class="mobile-search-icon-btn" type="button" @click.prevent>
+                      <i class="fas fa-magnifying-glass text-white/45 hover:text-white/80 text-[17px]"></i>
+                    </button>
+                    <svg class="mobile-notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#9B9B9B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#9B9B9B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                      <circle cx="18" cy="6" r="4" fill="#22C55E"/>
+                    </svg>
+                  </div>
                 </div>
-                <div class="mobile-account-status">Conta Ativa</div>
               </div>
             </div>
           </div>
@@ -515,7 +522,7 @@
           <div class="mobile-performance-header-title">
             <h2 class="text-[20px] font-bold text-[#E6E6E6]">Desempenho Geral</h2>
           </div>
-          <div class="grid grid-cols-4 gap-4 justify-items-center desktop-performance-grid">
+          <div class="desktop-performance-grid">
             <div 
               v-for="(perf, index) in performanceData" 
               :key="index"
@@ -623,7 +630,7 @@
     </main>
     
     <!-- Footer -->
-    <footer id="footer" class="bg-zenix-bg border-t border-zenix-border mt-12 w-full">
+    <footer id="footer" class="bg-zenix-bg border-t border-zenix-border w-full">
       <div class="max-w-7xl mx-auto px-8 py-12">
         <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
           <div>
@@ -2156,6 +2163,13 @@ export default {
   animation: ticker-scroll 60s linear infinite;
 }
 
+/* Esconder ticker-section no mobile */
+@media (max-width: 768px) {
+  #ticker-section {
+    display: none !important;
+  }
+}
+
 /* Center Pulse Animation */
 @keyframes center-pulse {
   0%,
@@ -2426,28 +2440,222 @@ export default {
 }
 
 @media (max-width: 768px) {
+  /* Background com gradiente do HTML */
+  .main-content {
+    background: linear-gradient(180deg, #0F2416 0%, #0A1C12 15%, #060606 45%, #030303 55%, #050505 75%, #0B0B0B 100%) !important;
+    position: relative;
+    overflow-x: hidden;
+    min-height: 100vh;
+  }
+
+  .main-content::before {
+    content: '';
+    position: fixed;
+    top: -150px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 140%;
+    height: 600px;
+    background: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.10) 0%, rgba(34, 197, 94, 0.05) 30%, rgba(34, 197, 94, 0.015) 60%, transparent 80%);
+    pointer-events: none;
+    z-index: 0;
+    filter: blur(80px);
+  }
+
+  .main-content::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(15, 63, 15, 0.015) 3px, rgba(15, 63, 15, 0.015) 4px);
+    pointer-events: none;
+    z-index: 0;
+    opacity: 1;
+  }
+
+  /* Animações de luzes */
+  @keyframes moveLight1 {
+    0% {
+      top: -10%;
+      left: -20%;
+    }
+    33% {
+      top: 20%;
+      left: 15%;
+    }
+    66% {
+      top: 50%;
+      left: 70%;
+    }
+    100% {
+      top: -10%;
+      left: -20%;
+    }
+  }
+
+  @keyframes moveLight2 {
+    0% {
+      top: 60%;
+      left: 75%;
+    }
+    50% {
+      top: 30%;
+      left: -10%;
+    }
+    100% {
+      top: 60%;
+      left: 75%;
+    }
+  }
+
+  @keyframes float1 {
+    0%, 100% {
+      transform: translate(0, 0);
+      opacity: 0.06;
+    }
+    50% {
+      transform: translate(15px, -20px);
+      opacity: 0.10;
+    }
+  }
+
+  @keyframes float2 {
+    0%, 100% {
+      transform: translate(0, 0);
+      opacity: 0.08;
+    }
+    50% {
+      transform: translate(-18px, 22px);
+      opacity: 0.12;
+    }
+  }
+
+  @keyframes float3 {
+    0%, 100% {
+      transform: translate(0, 0);
+      opacity: 0.07;
+    }
+    50% {
+      transform: translate(12px, 25px);
+      opacity: 0.10;
+    }
+  }
+
+  @keyframes fadeInUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @keyframes fadeInScale {
+    from {
+      opacity: 0;
+      transform: scale(0.92);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1);
+    }
+  }
+
+  @keyframes slideInRight {
+    from {
+      opacity: 0;
+      transform: translateX(40px);
+    }
+    to {
+      opacity: 1;
+      transform: translateX(0);
+    }
+  }
+
+  @keyframes pulseGlow {
+    0%, 100% {
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(34, 197, 94, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.02);
+    }
+    50% {
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 30px rgba(34, 197, 94, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+  }
+
   .grid.grid-cols-4 {
     grid-template-columns: 1fr;
   }
 
-  /* Padding lateral da página no mobile */
+  /* Container principal no mobile - max-width 430px como no HTML */
+  .dashboard-content-wrapper {
+    max-width: 430px !important;
+    margin: 0 auto !important;
+    position: relative;
+    z-index: 10;
+  }
+
+  .main-content {
+    max-width: 430px !important;
+    margin: 0 auto !important;
+    position: relative;
+    z-index: 10;
+  }
+
+  /* Padding lateral da página no mobile - reduzido */
   .px-8,
   .px-12 {
     padding-left: 20px !important;
     padding-right: 20px !important;
   }
 
-  /* Padding das sections no mobile */
+  .main-content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Padding das sections no mobile - sem padding lateral */
   #best-ai-section {
     padding-left: 0 !important;
     padding-right: 0 !important;
-    padding-top: 30px !important;
-    padding-bottom: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 40px !important;
+    animation: fadeInUp 0.9s ease-out 0.3s backwards;
   }
 
   #performance-section {
     padding-left: 0 !important;
     padding-right: 0 !important;
+    padding-top: 0 !important;
+    padding-bottom: 40px !important;
+    animation: fadeInUp 1s ease-out 0.4s backwards;
+  }
+
+  /* Espaçamento entre seções conforme HTML - sem padding lateral */
+  #portfolio-section {
+    padding: 8px 0 0 0 !important;
+    margin-bottom: 32px !important;
+    animation: fadeInUp 0.7s ease-out 0.1s backwards;
+  }
+
+  #action-buttons {
+    padding: 0 !important;
+    margin-bottom: 40px !important;
+    animation: fadeInUp 0.8s ease-out 0.2s backwards;
+  }
+
+  #quick-access {
+    padding: 0 !important;
+    margin-bottom: 40px !important;
+    animation: fadeInUp 0.9s ease-out 0.3s backwards;
+  }
+
+  #recent-transactions {
+    padding: 0 !important;
+    margin-bottom: 40px !important;
+    animation: fadeInUp 1s ease-out 0.4s backwards;
   }
 
   /* Apenas grids gerais, não o desktop-grid-ias */
@@ -2467,11 +2675,27 @@ export default {
 
   .mobile-ias-header {
     display: block !important;
-    margin-bottom: 8px;
+    margin-bottom: 20px !important;
+    animation: fadeInUp 0.9s ease-out 0.3s backwards;
+  }
+
+  .mobile-ias-header > div {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    margin-bottom: 20px !important;
+  }
+
+  .mobile-ias-header h2 {
+    font-size: 18px !important;
+    font-weight: 600 !important;
+    color: #FFFFFF !important;
+    letter-spacing: -0.01em !important;
+    margin: 0 !important;
   }
 
   .mobile-ias-header + div.w-full.h-\[1px\] {
-    margin-bottom: 8px !important;
+    display: none !important;
   }
 
   /* Mobile Performance Section Header */
@@ -2481,18 +2705,35 @@ export default {
 
   .mobile-performance-header-title {
     display: block !important;
-    margin-bottom: 16px;
+    margin-bottom: 20px !important;
+    animation: fadeInUp 1s ease-out 0.4s backwards;
+  }
+
+  .mobile-performance-header-title h2 {
+    font-size: 17px !important;
+    font-weight: 600 !important;
+    color: #FFFFFF !important;
+    line-height: 1.2 !important;
   }
 
   .mobile-grid-ias {
-    display: grid !important;
-    grid-template-columns: repeat(1, 1fr) !important;
+    display: flex !important;
+    flex-direction: column !important;
     gap: 12px !important;
     width: 100% !important;
-    margin-bottom: 20px !important;
-    margin-top: 8px !important;
+    margin-bottom: 40px !important;
+    margin-top: 20px !important;
     visibility: visible !important;
     opacity: 1 !important;
+  }
+
+  /* Ajustar gap dos cards de IA para corresponder ao HTML (space-y-3 = 12px) */
+  .mobile-grid-ias > * {
+    margin-bottom: 0;
+  }
+
+  .mobile-grid-ias > * + * {
+    margin-top: 12px;
   }
 
   /* Ocultar texto descritivo no mobile */
@@ -2503,12 +2744,19 @@ export default {
   .see-all-btn-mobile {
     background: none;
     border: none;
-    color: #22C55E;
-    font-size: 14px;
-    font-weight: 600;
+    color: #22C55E !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
     cursor: pointer;
-    padding: 4px 8px;
+    padding: 4px 0;
     transition: opacity 0.3s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .see-all-btn-mobile:hover {
+    opacity: 0.8;
   }
 
   .see-all-btn-mobile:active {
@@ -2516,37 +2764,113 @@ export default {
   }
 
   .ia-card-mobile {
-    background: #0B0B0B;
-    border-radius: 16px;
-    padding: 16px;
+    background: rgba(10, 10, 10, 0.70) !important;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(34, 197, 94, 0.08) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(34, 197, 94, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.02) !important;
+    border-radius: 22px !important;
+    padding: 16px !important;
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 16px;
-    border: 1px solid rgba(34, 197, 94, 0.1);
-    transition: all 0.3s;
+    gap: 14px !important;
+    position: relative;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
     width: 100%;
     box-sizing: border-box;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(34, 197, 94, 0.1), 0 0 30px rgba(34, 197, 94, 0.15) !important;
+    overflow: hidden;
+    animation: fadeInUp 0.8s ease-out backwards;
+  }
+
+  .ia-card-mobile:nth-child(1) {
+    animation-delay: 0.35s;
+  }
+
+  .ia-card-mobile:nth-child(2) {
+    animation-delay: 0.45s;
+  }
+
+  .ia-card-mobile:nth-child(3) {
+    animation-delay: 0.55s;
+  }
+
+  .ia-card-mobile:nth-child(4) {
+    animation-delay: 0.65s;
+  }
+
+  .ia-card-mobile::before {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: linear-gradient(to right, transparent, #22C55E, transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  .ia-card-mobile:hover::before {
+    opacity: 0.4;
+  }
+
+  .ia-card-mobile::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 20px;
+    background: linear-gradient(to top, rgba(34, 197, 94, 0.08), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+  }
+
+  .ia-card-mobile:hover::after {
+    opacity: 1;
+  }
+
+  .ia-card-mobile:hover {
+    transform: translateY(-2px) scale(1.01);
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(34, 197, 94, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
   }
 
   .ia-card-mobile:active {
-    transform: scale(0.98);
-    border-color: rgba(34, 197, 94, 0.3);
+    transform: scale(0.99);
   }
 
   .ia-icon-mobile {
-    width: 60px;
-    height: 60px;
-    border-radius: 12px;
+    width: 52px !important;
+    height: 52px !important;
+    border-radius: 50% !important;
     overflow: hidden;
     flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #0F1210 0%, #0A0D0B 100%);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transition: all 0.3s ease;
+  }
+
+  .ia-card-mobile:hover .ia-icon-mobile {
+    transform: scale(1.1);
   }
 
   .ia-icon-mobile img {
     width: 100%;
     height: 100%;
     object-fit: cover;
+    opacity: 0.9;
+    transition: all 0.5s ease;
+  }
+
+  .ia-card-mobile:hover .ia-icon-mobile img {
+    transform: scale(1.1);
+    opacity: 1;
   }
 
   .ia-info-mobile {
@@ -2556,17 +2880,20 @@ export default {
   }
 
   .ia-name-mobile {
-    font-size: 16px;
-    font-weight: 600;
-    color: #fff;
-    margin: 0 0 4px 0;
+    font-size: 16px !important;
+    font-weight: 700 !important;
+    color: #FFFFFF !important;
+    margin: 0 0 2px 0 !important;
+    line-height: 1.2 !important;
+    letter-spacing: 0.02em !important;
   }
 
   .ia-category-mobile {
-    font-size: 12px;
-    color: #9B9B9B;
-    margin: 0;
+    font-size: 11px !important;
+    color: #6B6B6B !important;
+    margin: 0 !important;
     display: block !important;
+    font-weight: 400 !important;
   }
 
   .ia-performance-mobile {
@@ -2578,19 +2905,22 @@ export default {
   }
 
   .ia-chart-mobile {
-    width: 80px;
-    height: 30px;
+    width: 68px !important;
+    height: 26px !important;
   }
 
   .sparkline-mobile {
     width: 100%;
     height: 100%;
+    filter: drop-shadow(0 0 8px rgba(34, 197, 94, 0.3));
+    transition: all 0.3s ease;
   }
 
   .ia-percentage-mobile {
-    font-size: 14px;
-    font-weight: 600;
-    color: #22C55E;
+    font-size: 14px !important;
+    font-weight: 700 !important;
+    color: #22C55E !important;
+    letter-spacing: 0.02em !important;
   }
 
   /* Mobile Performance Section */
@@ -2601,22 +2931,86 @@ export default {
   .mobile-performance-grid {
     display: grid !important;
     grid-template-columns: repeat(2, 1fr) !important;
-    gap: 12px !important;
+    gap: 16px !important;
     width: 100% !important;
   }
 
+  /* Remover margin do footer no mobile */
+  #footer {
+    margin-top: 0 !important;
+  }
+
   .mobile-performance-card {
-    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
-    border-radius: 20px;
-    padding: 16px 16px 0 16px;
+    background: linear-gradient(135deg, rgba(11, 11, 11, 0.85) 0%, rgba(14, 46, 28, 0.18) 35%, rgb(10, 10, 10) 100%) !important;
+    border: 1.5px solid rgba(34, 197, 94, 0.18) !important;
+    box-shadow: rgba(34, 197, 94, 0.12) 0px 0px 8px, rgba(0, 0, 0, 0.4) 0px 8px 32px !important;
+    border-radius: 24px !important;
+    padding: 20px 20px 0 20px !important;
     display: flex;
     flex-direction: column;
-    gap: 12px;
-    border: 1px solid rgba(34, 197, 94, 0.1);
+    gap: 0;
     position: relative;
     min-height: 180px;
     overflow: hidden;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(34, 197, 94, 0.1), 0 0 30px rgba(34, 197, 94, 0.15) !important;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: fadeInUp 0.8s ease-out backwards;
+  }
+
+  .mobile-performance-card:nth-child(1) {
+    animation-delay: 0.45s;
+  }
+
+  .mobile-performance-card:nth-child(2) {
+    animation-delay: 0.55s;
+  }
+
+  .mobile-performance-card:nth-child(3) {
+    animation-delay: 0.65s;
+  }
+
+  .mobile-performance-card:nth-child(4) {
+    animation-delay: 0.75s;
+  }
+
+  .mobile-performance-card:hover {
+    transform: translateY(-4px) scale(1.02);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.8), 0 0 40px rgba(34, 197, 94, 0.2) !important;
+  }
+
+  .mobile-performance-card:active {
+    transform: translateY(-2px) scale(1.01);
+  }
+
+  /* Bordas superiores dos performance cards */
+  .mobile-performance-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 50px;
+    border-top: 1.8px solid rgba(34, 197, 94, 0.35);
+    border-left: 1.8px solid rgba(34, 197, 94, 0.35);
+    border-right: 1.8px solid rgba(34, 197, 94, 0.35);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  /* Gradiente no canto superior direito */
+  .mobile-performance-card::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 50px;
+    height: 50px;
+    background: radial-gradient(at right top, rgba(34, 197, 94, 0.25) 0%, transparent 70%);
+    pointer-events: none;
+    filter: blur(16px);
+    border-top-right-radius: 24px;
   }
 
   .mobile-performance-header {
@@ -2627,67 +3021,80 @@ export default {
   }
 
   .mobile-performance-icon {
-    width: 32px;
-    height: 32px;
-    background: rgba(34, 197, 94, 0.1);
-    border-radius: 8px;
+    width: 15px !important;
+    height: 15px !important;
+    background: transparent !important;
+    border-radius: 0 !important;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 16px;
     flex-shrink: 0;
+    filter: brightness(1.15);
   }
 
   .mobile-performance-title {
-    font-size: 11px;
-    font-weight: 600;
-    color: #fff;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin: 0;
-    line-height: 1.2;
-    text-align: left;
+    font-size: 9px !important;
+    font-weight: 500 !important;
+    color: #D9D9D9 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+    text-align: left !important;
   }
 
   .mobile-performance-percentage {
-    font-size: 40px !important;
-    font-weight: 700;
-    color: #22C55E;
-    margin: 8px 0 4px 0;
-    text-align: left;
+    font-size: 32px !important;
+    font-weight: 700 !important;
+    color: #22C55E !important;
+    margin: 16px 0 16px 0 !important;
+    text-align: left !important;
+    line-height: 1 !important;
+    letter-spacing: -0.02em !important;
   }
 
   .mobile-performance-chart {
     width: 100%;
-    height: 35px;
-    margin: 8px 0;
+    height: 28px !important;
+    margin: 0 0 12px 0 !important;
+  }
+
+  .mobile-performance-chart svg {
+    filter: drop-shadow(0 0 3px rgba(34, 197, 94, 0.25));
   }
 
   .mobile-performance-btn {
-    width: calc(100% + 32px) !important;
-    max-width: calc(100% + 32px) !important;
-    margin-left: -16px !important;
-    margin-right: -16px !important;
+    width: calc(100% + 40px) !important;
+    max-width: calc(100% + 40px) !important;
+    margin-left: -20px !important;
+    margin-right: -20px !important;
     margin-top: auto !important;
     margin-bottom: 0 !important;
-    height: 44px;
-    background: #22C55E;
-    border: none;
-    border-radius: 0 0 20px 20px;
-    color: #fff;
-    font-size: 13px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
+    height: 50px !important;
+    background: linear-gradient(180deg, rgb(13, 63, 36) 0%, rgb(15, 90, 44) 100%) !important;
+    border: none !important;
+    border-top: 1px solid rgba(34, 197, 94, 0.18) !important;
+    border-radius: 0 0 24px 24px !important;
+    color: rgb(232, 255, 232) !important;
+    font-size: 13px !important;
+    font-weight: 700 !important;
+    text-transform: uppercase !important;
+    letter-spacing: 0.05em !important;
     cursor: pointer;
     transition: all 0.3s;
     flex-shrink: 0;
     box-sizing: border-box !important;
+    position: relative;
+    z-index: 10;
+  }
+
+  .mobile-performance-btn:hover {
+    filter: brightness(1.1);
   }
 
   .mobile-performance-btn:active {
-    transform: scale(0.98);
-    background: #16A34A;
+    transform: scale(0.95);
   }
 
   /* Mobile Account Summary */
@@ -2695,9 +3102,10 @@ export default {
     display: block !important;
     background: transparent !important;
     border-radius: 0 !important;
-    padding: 20px;
-    margin-bottom: 24px;
+    padding: 80px 0 0 0 !important;
+    margin-bottom: 0 !important;
     border: none !important;
+    animation: fadeInUp 0.6s ease-out;
   }
 
   /* Remove backgrounds das sections no mobile */
@@ -2707,21 +3115,35 @@ export default {
   }
 
   .mobile-account-user {
-    margin-bottom: 20px;
+    margin-bottom: 0 !important;
+    animation: fadeInUp 0.6s ease-out;
   }
 
   .mobile-account-profile-wrapper {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 14px !important;
+  }
+
+  /* Ajustar gap do nome do usuário conforme HTML */
+  .mobile-account-name-wrapper {
+    gap: 16px !important;
   }
 
   .mobile-account-avatar {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 50% !important;
     object-fit: cover;
     flex-shrink: 0;
+    border: 2px solid rgba(255, 255, 255, 0.1) !important;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  }
+
+  .mobile-account-avatar:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.6), 0 0 16px rgba(34, 197, 94, 0.2) !important;
   }
 
   .mobile-account-avatar-placeholder {
@@ -2739,46 +3161,110 @@ export default {
 
   .mobile-account-info {
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0 !important;
   }
 
   .mobile-account-name-wrapper {
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     width: 100%;
-    margin-bottom: 4px;
+    margin-bottom: 0 !important;
+  }
+
+  .mobile-account-name-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0 !important;
+    align-items: flex-start;
   }
 
   .mobile-account-name {
-    font-size: 22px;
-    font-weight: 600;
-    color: #fff;
-    margin: 0;
-    text-align: left;
+    font-size: 15px !important;
+    font-weight: 600 !important;
+    color: #FFFFFF !important;
+    margin: 0 !important;
+    text-align: left !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.01em !important;
+  }
+
+  .mobile-header-icons {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .mobile-search-icon-btn {
+    width: 36px;
+    height: 36px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    transition: all 0.3s ease;
+  }
+
+  .mobile-search-icon-btn:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+  }
+
+  .mobile-search-icon-btn:active {
+    transform: scale(0.95);
+  }
+
+  .mobile-search-icon-btn i {
+    font-size: 17px !important;
+    color: rgba(255, 255, 255, 0.45) !important;
+    transition: color 0.3s ease;
+  }
+
+  .mobile-search-icon-btn:hover i {
+    color: rgba(255, 255, 255, 0.8) !important;
   }
 
   .mobile-notification-icon {
     flex-shrink: 0;
+    cursor: pointer;
+    transition: opacity 0.3s ease;
+  }
+
+  .mobile-notification-icon:hover {
+    opacity: 0.8;
   }
 
   .mobile-account-status {
-    font-size: 12px;
-    color: #9B9B9B;
-    text-align: left;
+    font-size: 11px !important;
+    color: #9B9B9B !important;
+    text-align: left !important;
+    font-weight: 500 !important;
+    margin: 0 !important;
+    line-height: 1.2 !important;
+    padding-top: 1px !important;
   }
 
   .mobile-account-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 10px !important;
+    margin-top: 32px !important;
+    animation: fadeInUp 0.7s ease-out 0.1s backwards;
   }
 
   .mobile-account-title {
-    font-size: 14px;
-    color: #9B9B9B;
-    font-weight: 500;
-    margin: 0;
+    font-size: 12px !important;
+    color: #999999 !important;
+    font-weight: 300 !important;
+    margin: 0 !important;
   }
 
   .mobile-account-eye {
@@ -2791,60 +3277,73 @@ export default {
   }
 
   .mobile-account-balance {
-    font-size: 40px;
-    font-weight: 700;
-    color: #fff;
-    margin-bottom: 8px;
-    text-align: left;
+    font-size: 56px !important;
+    font-weight: 700 !important;
+    color: #FFFFFF !important;
+    margin-bottom: 8px !important;
+    margin-top: 0 !important;
+    text-align: left !important;
+    line-height: 1 !important;
+    letter-spacing: -0.02em !important;
   }
 
   .mobile-account-performance {
     display: flex;
     align-items: center;
     justify-content: flex-start;
-    gap: 6px;
-    margin-bottom: 20px;
+    gap: 8px !important;
+    margin-bottom: 40px !important;
+    margin-top: 8px !important;
   }
 
   .mobile-account-percentage {
-    font-size: 16px !important;
-    font-weight: 600;
-    color: #22C55E;
+    font-size: 15px !important;
+    font-weight: 500 !important;
+    color: #22C55E !important;
   }
 
-
   .mobile-account-period {
-    font-size: 14px;
-    color: #9B9B9B;
+    font-size: 12px !important;
+    color: rgba(255, 255, 255, 0.35) !important;
+    font-weight: 300 !important;
   }
 
   .mobile-account-actions {
-    display: flex;
-    gap: 12px;
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 12px !important;
     justify-content: flex-start;
     width: 100%;
+    margin-bottom: 40px !important;
+    animation: fadeInUp 0.8s ease-out 0.2s backwards;
   }
 
   .mobile-action-btn {
     flex: 1;
-    height: 48px;
-    background: #22C55E;
-    border: none;
-    border-radius: 12px;
-    color: #fff;
-    font-size: 14px;
-    font-weight: 700;
+    height: 52px !important;
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.95) 0%, rgba(22, 163, 74, 0.95) 100%) !important;
+    box-shadow: 0 8px 24px rgba(34, 197, 94, 0.30), 0 0 32px rgba(34, 197, 94, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+    border: 1px solid rgba(34, 197, 94, 0.4) !important;
+    border-radius: 12px !important;
+    color: #fff !important;
+    font-size: 15px !important;
+    font-weight: 600 !important;
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 8px;
+    gap: 10px;
     cursor: pointer;
-    transition: all 0.3s;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+
+  .mobile-action-btn:hover {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 1) 0%, rgba(22, 163, 74, 1) 100%) !important;
+    box-shadow: 0 12px 32px rgba(34, 197, 94, 0.40), 0 0 48px rgba(34, 197, 94, 0.20), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+    transform: translateY(-2px);
   }
 
   .mobile-action-btn:active {
     transform: scale(0.98);
-    background: #16A34A;
   }
 
   .mobile-action-btn i {
@@ -2877,7 +3376,9 @@ export default {
   }
 
   .desktop-performance-grid {
+    display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
+    gap: 24px !important;
   }
 }
 
