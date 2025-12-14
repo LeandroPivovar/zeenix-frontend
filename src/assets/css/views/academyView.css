@@ -40,6 +40,10 @@
     margin-right: auto;
 }
 
+.main-content.academy-content {
+    margin-bottom: 100px;
+}
+
 /* =========================================
    3. Courses Grid & Cards
    ========================================= */
@@ -51,21 +55,61 @@
 }
 
 .course-card {
-    background-color: #0E0E0E;
-    border: 1px solid #1C1C1C;
+    background: linear-gradient(135deg, rgba(10, 15, 10, 0.96) 0%, rgba(11, 11, 11, 0.98) 50%, rgba(8, 13, 8, 0.96) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(34, 197, 94, 0.03);
     border-radius: 1rem;
     overflow: hidden;
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
     display: flex;
     flex-direction: column;
     height: 100%;
     text-align: left;
+    box-shadow: 0 0 1px 0 rgba(34, 197, 94, 0.06) inset, 0 8px 32px rgba(0, 0, 0, 0.5), 0 16px 64px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.course-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(34, 197, 94, 0.02) 0%, transparent 60%), url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+    opacity: 1;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.4s ease;
+}
+
+.course-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.05) 0%, transparent 50%);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.4s ease;
 }
 
 .course-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 12px 24px rgba(0,0,0,0.5);
-    border-color: #2C2C2C;
+    border-color: rgba(34, 197, 94, 0.12);
+    box-shadow: 0 0 2px 0 rgba(34, 197, 94, 0.15) inset, 0 12px 40px rgba(0, 0, 0, 0.6), 0 20px 72px rgba(34, 197, 94, 0.08);
+}
+
+.course-card:hover::before {
+    opacity: 1.3;
+}
+
+.course-card:hover::after {
+    opacity: 0.8;
+}
+
+.course-card > * {
+    position: relative;
+    z-index: 2;
 }
 
 .course-header-image {
@@ -75,6 +119,29 @@
     align-items: center;
     justify-content: center;
     overflow: hidden;
+    position: relative;
+}
+
+.course-header-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, transparent 40%, transparent 60%, rgba(11, 11, 11, 0.8) 100%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.course-header-image img {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+}
+
+.course-card:hover .course-header-image img {
+    transform: scale(1.05);
 }
 
 .course-header-image img {
@@ -93,6 +160,8 @@
     flex: 1;
     display: flex;
     flex-direction: column;
+    position: relative;
+    z-index: 2;
 }
 
 .card-top {
@@ -318,9 +387,9 @@
 
     /* Fundo da página com gradiente verde */
     .main-content {
-        margin-top: 80px !important;
-        padding: 1.5rem;
-        background: radial-gradient(ellipse 150% 80% at 50% 0%, rgba(34, 197, 94, 0.06) 0%, rgba(34, 197, 94, 0.03) 30%, transparent 70%);
+        margin-top: 60px !important;
+        padding: 1.5rem !important;
+        background: radial-gradient(ellipse 120% 60% at 50% 0%, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.06) 25%, rgba(34, 197, 94, 0.02) 50%, transparent 80%) !important;
     }
 
     /* Sidebar vira gaveta (Drawer) */
@@ -348,16 +417,80 @@
         gap: 1.5rem;
     }
 
-    /* Cards com gradiente verde */
+    /* Cards com estilo premium-card do HTML */
     .course-card {
-        background: linear-gradient(to bottom, rgba(34, 197, 94, 0.08), rgba(34, 197, 94, 0.02), rgba(0, 0, 0, 0));
-        background-color: #0E0E0E;
-        border: 1px solid rgba(34, 197, 94, 0.15);
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.96) 0%, rgba(11, 11, 11, 0.98) 50%, rgba(8, 13, 8, 0.96) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(34, 197, 94, 0.03) !important;
+        border-radius: 22px !important;
+        box-shadow: 0 0 1px 0 rgba(34, 197, 94, 0.08) inset, 0 8px 32px rgba(0, 0, 0, 0.6), 0 16px 64px rgba(0, 0, 0, 0.4) !important;
+        position: relative !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .course-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(34, 197, 94, 0.02) 0%, transparent 60%), url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+        opacity: 1;
+        pointer-events: none;
+        z-index: 1;
+        transition: opacity 0.4s ease;
+    }
+
+    .course-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.05) 0%, transparent 50%);
+        opacity: 0.5;
+        pointer-events: none;
+        z-index: 0;
+        transition: opacity 0.4s ease;
     }
 
     .course-card:hover {
-        border-color: rgba(34, 197, 94, 0.3);
-        box-shadow: 0 12px 24px rgba(34, 197, 94, 0.1);
+        transform: translateY(-4px) !important;
+        border-color: rgba(34, 197, 94, 0.12) !important;
+        box-shadow: 0 0 2px 0 rgba(34, 197, 94, 0.2) inset, 0 12px 40px rgba(0, 0, 0, 0.7), 0 20px 72px rgba(34, 197, 94, 0.12) !important;
+    }
+
+    .course-card:hover::before {
+        opacity: 1.3;
+    }
+
+    .course-card:hover::after {
+        opacity: 0.8;
+    }
+
+    .course-card > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Sombra superior na área verde abaixo da foto */
+    .card-body {
+        position: relative;
+    }
+
+    .card-body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .card-top {
+        position: relative;
+        z-index: 2;
     }
 
     /* Metadados com ícones verdes */
@@ -462,13 +595,68 @@
     }
 }
 
+/* Seção Zenix Academy - Apenas Mobile */
+.academy-header-mobile {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    .academy-header-mobile {
+        display: block;
+        padding: 1.5rem 1rem;
+        margin-bottom: 1.5rem;
+        text-align: left;
+    }
+
+    .academy-title-mobile {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.2;
+        text-align: left;
+    }
+
+    .academy-description-mobile {
+        font-size: 0.9375rem;
+        color: #A1A1A1;
+        margin: 0;
+        line-height: 1.5;
+        text-align: left;
+    }
+}
+
 @media (max-width: 600px) {
     .main-content {
         padding: 1rem;
     }
     
     .course-header-image {
-        height: 180px;
+        height: 160px;
+        border-radius: 22px 22px 0 0;
+    }
+
+    .course-header-image::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, transparent 40%, transparent 60%, rgba(11, 11, 11, 0.8) 100%);
+        pointer-events: none;
+        z-index: 2;
+        border-radius: 22px 22px 0 0;
+    }
+
+    .course-header-image img {
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 1;
+    }
+
+    .course-card:hover .course-header-image img {
+        transform: scale(1.05);
     }
 
     .courses-grid {
@@ -485,6 +673,19 @@
     .progress-label{
         text-align: center!important;
         justify-content: center!important;
+    }
+
+    .academy-header-mobile {
+        padding: 1.25rem 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .academy-title-mobile {
+        font-size: 1.5rem;
+    }
+
+    .academy-description-mobile {
+        font-size: 0.875rem;
     }
 }
 

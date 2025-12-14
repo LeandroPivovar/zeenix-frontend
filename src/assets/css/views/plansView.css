@@ -11,6 +11,49 @@
     }
 }
 
+/* Animação badgePulse */
+@keyframes badgePulse {
+    0%, 100% {
+        transform: translateX(-50%) scale(1);
+    }
+    50% {
+        transform: translateX(-50%) scale(1.05);
+    }
+}
+
+@keyframes float1 {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.12;
+    }
+    50% {
+        transform: translate(18px, -22px);
+        opacity: 0.2;
+    }
+}
+
+@keyframes float2 {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.14;
+    }
+    50% {
+        transform: translate(-20px, 25px);
+        opacity: 0.22;
+    }
+}
+
+@keyframes float3 {
+    0%, 100% {
+        transform: translate(0, 0);
+        opacity: 0.2;
+    }
+    50% {
+        transform: translate(16px, 28px);
+        opacity: 0.22;
+    }
+}
+
 /* --- Reset e Layout Base --- */
 .zenix-layout {
     min-height: 100vh;
@@ -427,10 +470,11 @@
     }
 
     .plans-content {
-        margin-top: 80px !important;
+        margin-top: 60px !important;
         padding: 1rem;
-		background: radial-gradient(ellipse 120% 60% at 50% 0%, rgba(34, 197, 94, 0.103) 0%, rgba(34, 197, 94, 0.08) 25%, rgba(34, 197, 94, 0.03) 50%, transparent 80%); 
-
+        position: relative;
+        min-height: 100vh;
+        padding-bottom: 80px;
     }
 
     /* Sidebar vira gaveta (Drawer) */
@@ -455,136 +499,511 @@
     /* Ajustes Grid Mobile */
     .plans-grid {
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: 1.25rem;
+        margin-bottom: 0;
     }
 
-    /* Ajustes Cards Mobile */
+    /* Ajustes Cards Mobile - Video */
     .video-card-wrapper {
-        padding: 1.5rem;
-        margin-bottom: 1.5rem;
-		background: none;
-		border: none;
-		box-shadow: none;
-	}
+        padding: 0;
+        margin-bottom: 1rem;
+        background: none;
+        border: none;
+        box-shadow: none;
+    }
 
+    .video-box {
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.96) 0%, rgba(11, 11, 11, 0.98) 50%, rgba(8, 13, 8, 0.96) 100%);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(34, 197, 94, 0.03);
+        box-shadow: 0 0 1px 0 rgba(34, 197, 94, 0.06) inset, 0 8px 32px rgba(0, 0, 0, 0.5), 0 16px 64px rgba(0, 0, 0, 0.3);
+        border-radius: 22px;
+        padding: 12px;
+        position: relative;
+        overflow: hidden;
+    }
 
+    .video-box::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(34, 197, 94, 0.02) 0%, transparent 60%), url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+        opacity: 1;
+        pointer-events: none;
+        z-index: 1;
+    }
 
-	.video-box {
-		background: radial-gradient(ellipse 120% 60% at 50% 0%, rgba(34, 197, 94, 0.055) 0%, rgba(34, 197, 94, 0.08) 25%, rgba(34, 197, 94, 0.014) 50%, transparent 80%); 
-		padding: 10px;
-		box-shadow: 0 0px 10px 15px rgba(0, 0, 0, 0.185);
-		margin-bottom: 20px;
-		
-		border-radius: 10px;
-	}
-	
+    .video-box::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.05) 0%, transparent 50%);
+        opacity: 0.5;
+        pointer-events: none;
+        z-index: 0;
+    }
+
     .video-thumbnail {
-		height: 200px;
-		margin-bottom: 0px;
+        width: 100%;
+        aspect-ratio: 16/9;
+        background: linear-gradient(135deg, #0A0A0A 0%, #0E0E0E 100%);
+        border-radius: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 0;
+        z-index: 2;
+    }
+
+    .video-thumbnail::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at center, rgba(34, 197, 94, 0.08) 0%, transparent 70%);
+        opacity: 0.6;
+    }
+
+    .play-icon {
+        width: 64px;
+        height: 64px;
+        background: rgba(34, 197, 94, 0.15);
+        border: 2px solid #22C55E;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 0 24px rgba(34, 197, 94, 0.3);
+        transition: all 0.3s ease;
+        cursor: pointer;
+        position: relative;
+        z-index: 10;
+    }
+
+    .play-icon:active {
+        transform: scale(0.95);
+    }
+
+    .play-icon i {
+        color: #22C55E;
+        font-size: 1.25rem;
+        margin-left: 0.25rem;
+    }
+
+    .video-details {
+        margin-top: 1rem;
+        text-align: center;
+        position: relative;
+        z-index: 2;
+    }
+
+    .video-title {
+        font-size: 18px;
+        font-weight: 700;
+        color: #FFFFFF;
+        margin-bottom: 0.5rem;
+        text-align: center;
+    }
+
+    .video-description {
+        font-size: 14px;
+        color: #7A7A7A;
+        text-align: center;
+        margin: 0;
     }
 
 
+    /* Plan Cards Mobile */
     .plan-card {
-        padding: 1.5rem;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
+        background: linear-gradient(135deg, rgba(12, 18, 12, 0.98) 0%, rgba(11, 11, 11, 1) 50%, rgba(10, 15, 10, 0.98) 100%);
+        backdrop-filter: blur(24px);
+        border: 1.5px solid rgba(34, 197, 94, 0.12);
+        box-shadow: 
+            0 0 2px 0 rgba(34, 197, 94, 0.1) inset, 
+            0 12px 40px rgba(0, 0, 0, 0.7),
+            0 4px 16px rgba(0, 0, 0, 0.4);
+        border-radius: 22px;
+        padding: 1.25rem;
+        position: relative;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        display: flex;
+        flex-direction: column;
+        align-items: center;
     }
 
-	.plan-icon-box {
-		border-radius: 50%;
-		margin-top: 10px;
-	}
+    .plan-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: 
+            radial-gradient(ellipse 500px 350px at 50% 0%, rgba(34, 197, 94, 0.06) 0%, transparent 70%),
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+        opacity: 1;
+        pointer-events: none;
+        z-index: 1;
+    }
 
-	.plan-features-list{
-		width: 100%;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		justify-content: center;
-	}
+    .plan-card::after {
+        content: '';
+        position: absolute;
+        inset: -1px;
+        border-radius: inherit;
+        padding: 1.5px;
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.15) 0%, transparent 40%, transparent 60%, rgba(34, 197, 94, 0.08) 100%);
+        -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+        -webkit-mask-composite: xor;
+        mask-composite: exclude;
+        opacity: 0;
+        transition: opacity 0.4s ease;
+        pointer-events: none;
+        z-index: 0;
+    }
 
-    /* Zenix Black em AZUL no mobile */
+    .plan-card > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    .plan-card:hover {
+        transform: translateY(-6px);
+        box-shadow: 
+            0 0 3px 0 rgba(34, 197, 94, 0.18) inset, 
+            0 16px 56px rgba(0, 0, 0, 0.8), 
+            0 8px 24px rgba(0, 0, 0, 0.5),
+            0 0 32px rgba(34, 197, 94, 0.12);
+        border-color: rgba(34, 197, 94, 0.22);
+    }
+
+    .plan-card:hover::after {
+        opacity: 1;
+    }
+
+    /* Starter Card */
+    .starter-card {
+        border-color: rgba(34, 197, 94, 0.12);
+    }
+
+    /* Pro Card - Popular */
+    .pro-card {
+        border-color: rgba(34, 197, 94, 0.28);
+        background: linear-gradient(135deg, rgba(14, 22, 14, 1) 0%, rgba(11, 11, 11, 1) 50%, rgba(12, 18, 12, 1) 100%);
+        box-shadow: 
+            0 0 3px 0 rgba(34, 197, 94, 0.15) inset, 
+            0 12px 40px rgba(0, 0, 0, 0.7),
+            0 0 40px rgba(34, 197, 94, 0.08);
+    }
+
+    .pro-card::before {
+        background: 
+            radial-gradient(ellipse 500px 350px at 50% 0%, rgba(34, 197, 94, 0.1) 0%, transparent 70%),
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulance type='fractalNoise' baseFrequency='1.4' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+    }
+
+    .pro-card::after {
+        background: linear-gradient(135deg, rgba(34, 197, 94, 0.25) 0%, rgba(34, 197, 94, 0.15) 40%, rgba(34, 197, 94, 0.15) 60%, rgba(34, 197, 94, 0.12) 100%);
+        opacity: 0.6;
+    }
+
+    .pro-card:hover {
+        border-color: rgba(34, 197, 94, 0.4);
+        box-shadow: 
+            0 0 4px 0 rgba(34, 197, 94, 0.25) inset, 
+            0 16px 56px rgba(0, 0, 0, 0.8), 
+            0 8px 24px rgba(0, 0, 0, 0.5),
+            0 0 48px rgba(34, 197, 94, 0.2);
+    }
+
+    .pro-card:hover::after {
+        opacity: 1;
+    }
+
+    /* Black Card - Premium */
     .black-card {
-        border: 2px solid #0099FF;
-        background: linear-gradient(to bottom, rgba(0, 153, 255, 0.082), rgba(0, 153, 255, 0.02));
-        box-shadow: 0 0 50px rgba(0, 153, 255, 0.2);
+        border-color: rgba(0, 153, 255, 0.28);
+        background: linear-gradient(135deg, rgba(10, 15, 20, 1) 0%, rgba(11, 11, 11, 1) 50%, rgba(8, 12, 18, 1) 100%);
+        box-shadow: 
+            0 0 3px 0 rgba(0, 153, 255, 0.15) inset, 
+            0 12px 40px rgba(0, 0, 0, 0.7),
+            0 0 40px rgba(0, 153, 255, 0.08);
     }
 
-    /* Ícone azul para Zenix Black mobile */
-    .icon-box-gradient {
-        background: linear-gradient(to bottom right, rgba(0, 153, 255, 0.2), rgba(34, 197, 94, 0.1));
+    .black-card::before {
+        background: 
+            radial-gradient(ellipse 500px 350px at 50% 0%, rgba(0, 153, 255, 0.08) 0%, transparent 70%),
+            url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.4' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
     }
 
-    .icon-box-gradient i {
+    .black-card::after {
+        background: linear-gradient(135deg, rgba(0, 153, 255, 0.25) 0%, rgba(0, 153, 255, 0.15) 40%, rgba(0, 153, 255, 0.15) 60%, rgba(0, 153, 255, 0.12) 100%);
+        opacity: 0.6;
+    }
+
+    .black-card:hover {
+        border-color: rgba(0, 153, 255, 0.4);
+        box-shadow: 
+            0 0 4px 0 rgba(0, 153, 255, 0.25) inset, 
+            0 16px 56px rgba(0, 0, 0, 0.8), 
+            0 8px 24px rgba(0, 0, 0, 0.5),
+            0 0 48px rgba(0, 153, 255, 0.2);
+    }
+
+    .black-card:hover::after {
+        opacity: 1;
+    }
+
+    /* Plan Icon */
+    .plan-icon-box {
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 1rem;
+        margin-top: 0.625rem;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .plan-icon-box i {
+        font-size: 1.5rem;
+    }
+
+    .starter-card .plan-icon-box {
+        background: rgba(34, 197, 94, 0.1);
+    }
+
+    .starter-card .plan-icon-box i {
+        color: #22C55E;
+    }
+
+    .pro-card .plan-icon-box {
+        background: rgba(34, 197, 94, 0.15);
+    }
+
+    .pro-card .plan-icon-box i {
+        color: #22C55E;
+    }
+
+    .black-card .plan-icon-box {
+        background: rgba(0, 153, 255, 0.15);
+    }
+
+    .black-card .plan-icon-box i {
         color: #0099FF;
     }
 
-    /* Preço azul para Zenix Black mobile */
+    .plan-card:hover .plan-icon-box {
+        transform: scale(1.1) rotate(5deg);
+    }
+
+    /* Plan Title */
+    .plan-title {
+        font-size: 20px;
+        font-weight: 700;
+        color: #FFFFFF;
+        text-align: center;
+        margin-bottom: 0.5rem;
+        margin-top: 0;
+    }
+
+    /* Plan Price */
+    .plan-price-wrapper {
+        text-align: center;
+        margin-bottom: 1.25rem;
+    }
+
+    .plan-price-value {
+        font-size: 28px;
+        font-weight: 700;
+        color: #22C55E;
+    }
+
     .black-card .plan-price-value {
         color: #0099FF;
     }
 
-	.feature-item {
-		width: 100%;
-		align-items: center;
-	}
+    .plan-price-period {
+        font-size: 16px;
+        font-weight: 400;
+        color: #7A7A7A;
+    }
 
-	.feature-icon-cross{
-		color: #8D8D8D;
-        background: #8d8d8d2a;
-        padding: 5px 7px;
+    /* Plan Features */
+    .plan-features-list {
+        list-style: none;
+        padding: 0;
+        margin: 0 0 1.25rem;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: flex-start;
+    }
+
+    .feature-item {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        width: 100%;
+        transition: all 0.3s ease;
+    }
+
+    .plan-card:hover .feature-item {
+        transform: translateX(4px);
+    }
+
+    .feature-check {
+        width: 20px;
+        height: 20px;
         border-radius: 50%;
-	}
+        background: rgba(34, 197, 94, 0.15);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+        transition: all 0.3s ease;
+    }
 
-	.pro-card .feature-icon-check, .starter-card .feature-icon-check {
-		color: #22C55E;
-        background: #22c55e2a;
-        padding: 5px 6.5px;
-        border-radius: 50%;
-	}
+    .feature-check i {
+        font-size: 10px;
+        color: #22C55E;
+    }
 
-
-
-
-
-	.btn-green-soft[data-v-2cc15be5] {
-		background:  #22C55E;
-		color: #FFFFFF;
-	}	
-
-	.plan-btn {
-		background: linear-gradient(to left, rgba(34, 197, 94, 0.055), rgba(34, 197, 94, 0.02));
-		border: 2px solid #22C55E;
-		border-radius: 15px;
-	}
-
-	.black-card-btn{
-		background: linear-gradient(to left, rgba(34, 197, 94, 0.055), rgba(34, 197, 94, 0.02))!important;
-		border: 2px solid #22C55E!important;
-		border-radius: 15px!important;
-	}
-    /* Checkmarks azuis com fundo para Zenix Black mobile */
-    .black-card .feature-icon-check {
-        color: #0099FF;
+    .black-card .feature-check {
         background: rgba(0, 153, 255, 0.15);
-        padding: 5px 6.5px;
-        border-radius: 50%;
     }
 
-    /* Badge RECOMENDADO com gradiente azul→verde */
+    .black-card .feature-check i {
+        color: #0099FF;
+    }
+
+    .plan-card:hover .feature-check {
+        transform: scale(1.15);
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+    }
+
+    .black-card:hover .feature-check {
+        box-shadow: 0 0 12px rgba(0, 153, 255, 0.3);
+    }
+
+    .feature-item span {
+        font-size: 14px;
+        color: #DFDFDF;
+    }
+
+
+
+
+
+    /* Plan Badges */
+    .plan-badge-popular,
     .plan-badge-recommended {
-        background: linear-gradient(to right, #0099FF, #055083);
-		box-shadow: 0 5px 10px 0px rgba(0, 153, 255, 0.2);
-		animation: pulse 2s ease-in-out infinite;
+        position: absolute;
+        top: -12px;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 6px 16px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        text-transform: uppercase;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        animation: badgePulse 3s ease-in-out infinite;
+        z-index: 3;
     }
 
-	.plan-badge-popular {
-		background: #22C55E;
-		box-shadow: 0 5px 10px 0px rgba(34, 197, 94, 0.2);
-		animation: pulse 2s ease-in-out infinite;
-	}
+    .plan-badge-popular {
+        background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+        color: #DFDFDF;
+        box-shadow: 0 4px 12px rgba(34, 197, 94, 0.4), 0 0 20px rgba(34, 197, 94, 0.2);
+    }
+
+    .plan-badge-recommended {
+        background: linear-gradient(135deg, #0099FF 0%, #0077CC 100%);
+        color: #DFDFDF;
+        box-shadow: 0 4px 12px rgba(0, 153, 255, 0.4), 0 0 20px rgba(0, 153, 255, 0.2);
+    }
+
+    .plan-badge-popular span,
+    .plan-badge-recommended span {
+        font-size: 11px;
+        font-weight: 600;
+    }
+
+    /* Plan Buttons */
+    .plan-btn {
+        width: 100%;
+        padding: 14px 20px;
+        border-radius: 18px;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+
+    .btn-outline {
+        background: linear-gradient(135deg, rgba(14, 14, 14, 0.95) 0%, rgba(22, 163, 74, 0.08) 100%);
+        border: 1px solid #22C55E;
+        color: #DFDFDF;
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.06) inset;
+    }
+
+    .btn-outline:hover {
+        background: linear-gradient(135deg, rgba(22, 163, 74, 0.15) 0%, rgba(34, 197, 94, 0.12) 100%);
+        border-color: #16A34A;
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.15) inset, 0 0 16px rgba(34, 197, 94, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .btn-outline:active {
+        transform: scale(0.97);
+    }
+
+    .btn-green-soft,
+    .premium-btn {
+        background: linear-gradient(135deg, rgba(14, 14, 14, 0.95) 0%, rgba(22, 163, 74, 0.08) 100%);
+        border: 1px solid #22C55E;
+        color: #DFDFDF;
+        box-shadow: 0 0 12px rgba(34, 197, 94, 0.06) inset;
+    }
+
+    .btn-green-soft:hover,
+    .premium-btn:hover {
+        background: linear-gradient(135deg, rgba(22, 163, 74, 0.15) 0%, rgba(34, 197, 94, 0.12) 100%);
+        border-color: #16A34A;
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.15) inset, 0 0 16px rgba(34, 197, 94, 0.1);
+        transform: translateY(-2px);
+    }
+
+    .btn-green-soft:active,
+    .premium-btn:active {
+        transform: scale(0.97);
+    }
+
+    /* Active button (Plano atual / Pro) */
+    .plan-btn.premium-btn-active,
+    .btn-green-soft.premium-btn-active,
+    .premium-btn.premium-btn-active {
+        background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+        border-color: #22C55E;
+        color: #DFDFDF;
+        box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+    }
+
+    .plan-btn.premium-btn-active:hover,
+    .btn-green-soft.premium-btn-active:hover,
+    .premium-btn.premium-btn-active:hover {
+        background: linear-gradient(135deg, #16A34A 0%, #15803D 100%);
+    }
 
     .zenix-footer-mini {
         padding: 1rem;
@@ -595,14 +1014,11 @@
         text-align: center;
     }
 
-	.starter-card, .pro-card{
-		background: linear-gradient(to bottom, rgba(5, 190, 73, 0.068), rgba(0, 0, 0, 0));
-	}
-
-	.plan-price-value{
-		color: #05B449;
-		font-size: 26px;
-	}
+    .footer-content-right p {
+        font-size: 0.75rem;
+        color: rgba(223, 223, 223, 0.4);
+        margin: 0;
+    }
 }
 
 @media (max-width: 480px) {
