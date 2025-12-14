@@ -120,7 +120,7 @@ aside.sidebar,
 /* --- Brand/Logo --- */
 
 .brand {
-	display: flex;
+	display: none; /* Oculto por padrão (desktop) */
 	align-items: center;
 	padding: 0 15px;
 	height: 60px;
@@ -193,6 +193,67 @@ aside.sidebar,
 	transform: none;
 	white-space: nowrap;
 	line-height: 1.2;
+	text-align: left;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+}
+
+/* Brand Mobile - Mostra "Menu" e botão X */
+.brand-mobile {
+	display: none; /* Oculto por padrão (desktop) */
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	padding: 0 15px;
+}
+
+.brand-text-mobile {
+	font-size: 1.2rem !important;
+	font-weight: 600;
+	color: #DFDFDF;
+	letter-spacing: 0;
+}
+
+.close-sidebar-btn {
+	background: transparent;
+	border: none;
+	color: #DFDFDF;
+	cursor: pointer;
+	padding: 8px;
+	border-radius: 6px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	transition: all 0.2s ease;
+	width: 32px;
+	height: 32px;
+	flex-shrink: 0;
+}
+
+.close-sidebar-btn:hover {
+	background: rgba(255, 255, 255, 0.05);
+	color: #22C55E;
+}
+
+.close-sidebar-btn i {
+	font-size: 18px;
+}
+
+/* Desktop: mostra brand-text-desktop, esconde brand-mobile */
+.brand-text-desktop {
+	display: flex;
+}
+
+@media (max-width: 768px) {
+	.brand-text-desktop {
+		display: none !important;
+	}
+	
+	.brand-mobile {
+		display: flex !important;
+	}
 }
 
 .text-zenix-green {
@@ -343,15 +404,23 @@ aside.sidebar,
 @media (max-width: 768px) {
 	.sidebar {
 		left: -300px;
-		top: 0;
-		height: 100vh;
+		top: 0 !important;
+		height: 100vh !important;
 		box-shadow: 5px 0 15px rgba(0, 0, 0, 0.7);
+		z-index: 10001 !important; /* Acima do header (1000) e desktopbottomnav (1000) */
+		margin: 0 !important;
+		padding-top: 0 !important;
+	}
+
+	/* Mostrar título Zenix apenas no mobile */
+	.brand {
+		display: flex !important;
 	}
 
 	/* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
 	.sidebar.is-open {
 		left: 0;
-		z-index: 10000 !important;
+		z-index: 10001 !important; /* Acima do header (1000) e desktopbottomnav (1000) */
 	}
 
 	/* No mobile, a sidebar deve estar sempre expandida quando aberta. */
@@ -369,9 +438,13 @@ aside.sidebar,
 		width: auto;
 	}
 	
-	/* Garantir que o texto ZENIX mantenha 1.8rem em mobile */
-	.brand-text {
-		font-size: 1.8rem !important;
+	/* No mobile, esconde brand-text-desktop e mostra brand-mobile */
+	.brand-text-desktop {
+		display: none !important;
+	}
+	
+	.brand-mobile {
+		display: flex !important;
 	}
 }
 

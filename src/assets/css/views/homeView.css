@@ -24,6 +24,10 @@
     padding: 0;
 }
 
+.layout-home[data-v-2646741f]{
+    padding: 0;
+}
+
 .container[data-v-9ea40744]{
     padding-top: 50px;
     margin-top: auto;
@@ -471,7 +475,11 @@ header{
     .layout-home {
         align-items: center;
         justify-content: center;
-        padding: 20px 0;
+        padding: 0;
+    }
+
+    .layout-home[data-v-2646741f] {
+        padding: 0 !important;
     }
 
     .text-mobile-description{

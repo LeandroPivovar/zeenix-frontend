@@ -141,3 +141,8 @@ html, body, #app {
     text-shadow: 0 0 30px rgba(34, 197, 94, 0.5);
   }
 }
+
+/* Sidebar Overlay - z-index global */
+.sidebar-overlay {
+  z-index: 9998 !important;
+}
