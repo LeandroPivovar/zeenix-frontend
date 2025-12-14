@@ -222,13 +222,16 @@
   /* Overlay */
   .sidebar-overlay {
     display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.7);
-    z-index: 998;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    inset: 0 !important;
+    background-color: rgba(0, 0, 0, 0.7) !important;
+    z-index: 9998 !important;
     backdrop-filter: blur(2px);
   }
   
@@ -344,7 +347,15 @@
 
 
     .sidebar-overlay {
-      display: block;
+      display: block !important;
+      position: fixed !important;
+      top: 0 !important;
+      left: 0 !important;
+      right: 0 !important;
+      bottom: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      inset: 0 !important;
     }
 
     /* Sidebar no mobile */

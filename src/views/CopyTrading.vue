@@ -2,7 +2,7 @@
     <div class="layout">
         <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @close-sidebar="closeSidebar" @toggle-collapse="toggleSidebarCollapse" />
         
-        <div v-if="isSidebarOpen" class="mobile-overlay" @click="closeSidebar"></div>
+        <div v-if="isSidebarOpen" class="sidebar-overlay" @click="closeSidebar"></div>
 
         <main class="copy-trading-content loading-content" v-if="loading" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <div class="background-glow"></div>
@@ -157,14 +157,18 @@ export default {
     display: flex;
 }
 
-.mobile-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 998;
+.sidebar-overlay {
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: 100% !important;
+    inset: 0 !important;
+    background: rgba(0, 0, 0, 0.5) !important;
+    z-index: 9998 !important;
+    backdrop-filter: blur(2px);
 }
 
 .copy-trading-content {

@@ -3,7 +3,7 @@
     <!-- Mobile Sidebar Overlay -->
     <div
       v-if="sidebarIsOpen && isMobile"
-      class="fixed inset-0 bg-black/50 z-40"
+      class="sidebar-overlay"
       @click="closeSidebar"
     ></div>
 
@@ -918,5 +918,20 @@ main {
   .mobile-privacy-btn-center {
     text-align: center !important;
   }
+}
+
+/* Sidebar Overlay - Garantir 100% de cobertura */
+.sidebar-overlay {
+  position: fixed !important;
+  top: 0 !important;
+  left: 0 !important;
+  right: 0 !important;
+  bottom: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  inset: 0 !important;
+  background-color: rgba(0, 0, 0, 0.7) !important;
+  z-index: 9998 !important;
+  backdrop-filter: blur(2px);
 }
 </style>

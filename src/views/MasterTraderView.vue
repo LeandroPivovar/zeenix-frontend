@@ -1,6 +1,17 @@
 <template>
     <div class="layout-master-trader" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
+        <div
+            v-if="isSidebarOpen"
+            class="sidebar-overlay"
+            @click="closeSidebar"
+        ></div>
+        
+        <AppSidebar 
+            :is-open="isSidebarOpen" 
+            :is-collapsed="isSidebarCollapsed" 
+            @toggle-collapse="toggleSidebarCollapse"
+            @close-sidebar="closeSidebar"
+        />
         
         <TopNavbar 
             :is-sidebar-collapsed="isSidebarCollapsed"
@@ -9,6 +20,7 @@
             :currency="accountCurrency"
             @account-type-changed="handleAccountTypeChange"
             @toggle-sidebar-collapse="toggleSidebarCollapse"
+            @toggle-sidebar="toggleSidebar"
         />
 
         <div class="content-wrapper">
@@ -260,6 +272,9 @@ export default {
     methods: {
         toggleSidebar() {
             this.isSidebarOpen = !this.isSidebarOpen
+        },
+        closeSidebar() {
+            this.isSidebarOpen = false
         },
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed
@@ -813,6 +828,18 @@ export default {
 /* --------------------
     Media Queries
     -------------------- */
+/* Sidebar Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 9998 !important;
+    backdrop-filter: blur(2px);
+}
+
 @media (max-width: 1024px) {
     .layout-master-trader {
         margin-left: 0;
@@ -831,6 +858,21 @@ export default {
 
     .content-wrapper {
         padding: 0 16px 20px 16px;
+    }
+
+    /* Sidebar no mobile */
+    :deep(.sidebar) {
+        position: fixed;
+        width: 280px !important;
+        height: 100vh;
+        z-index: 10000 !important;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-out;
+    }
+
+    :deep(.sidebar.is-open) {
+        transform: translateX(0);
+        z-index: 10000 !important;
     }
 }
 

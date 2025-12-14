@@ -2922,6 +2922,11 @@ export default {
 }
 
 @media (max-width: 768px) {
+  /* Padding zero no dashboard layout mobile */
+  .dashboard-layout {
+    padding: 0 !important;
+  }
+
   /* Background com gradiente do HTML */
   .main-content {
     background: linear-gradient(180deg, #0F2416 0%, #0A1C12 15%, #060606 45%, #030303 55%, #050505 75%, #0B0B0B 100%) !important;
@@ -3077,6 +3082,7 @@ export default {
     margin: 0 auto !important;
     position: relative;
     z-index: 10;
+    padding: 0 !important;
   }
 
   .main-content {
