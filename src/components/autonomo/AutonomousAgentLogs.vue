@@ -80,7 +80,9 @@ export default {
   },
   computed: {
     formattedLogs() {
-      return this.realtimeLogs.map(log => {
+      // Limitar a 50 logs mais recentes para performance
+      const limitedLogs = this.realtimeLogs.slice(0, 50);
+      return limitedLogs.map(log => {
         // Determinar tipo de log e ícone baseado na mensagem e módulo
         let logType = 'info';
         let icon = 'fa-solid fa-info-circle';
@@ -389,6 +391,8 @@ export default {
   overflow-y: auto;
   padding: 0;
   background-color: transparent;
+  max-height: 500px;
+  min-height: 200px;
 }
 
 .logs-list {
@@ -406,6 +410,8 @@ export default {
   border: 1px solid #1C1C1C;
   border-radius: 0.75rem;
   animation: fadeIn 0.3s ease;
+  text-align: left;
+  justify-content: flex-start;
 }
 
 @keyframes fadeIn {
@@ -427,6 +433,7 @@ export default {
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  margin-right: 0;
 }
 
 .log-icon-container i {
@@ -434,28 +441,28 @@ export default {
 }
 
 .log-icon-success {
-  background-color: rgba(34, 197, 94, 0.2);
-  color: #22C55E;
+  background-color: #22C55E;
+  color: #FFFFFF;
 }
 
 .log-icon-purchase {
-  background-color: rgba(250, 204, 21, 0.2);
-  color: #FACC15;
+  background-color: #FACC15;
+  color: #FFFFFF;
 }
 
 .log-icon-analysis {
-  background-color: rgba(59, 130, 246, 0.2);
+  background-color: #1C1C1C;
   color: #3B82F6;
 }
 
 .log-icon-waiting {
-  background-color: rgba(156, 163, 175, 0.2);
+  background-color: #1C1C1C;
   color: #9CA3AF;
 }
 
 .log-icon-loss {
-  background-color: rgba(255, 71, 71, 0.2);
-  color: #FF4747;
+  background-color: #FF4747;
+  color: #FFFFFF;
 }
 
 .log-icon-info {
@@ -468,14 +475,18 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 0.125rem;
+  text-align: left;
+  align-items: flex-start;
 }
 
 .log-title {
   font-size: 0.75rem;
-  font-weight: 500;
+  font-weight: 600;
   color: #FFFFFF;
   margin: 0;
   line-height: 1.4;
+  text-align: left;
+  width: 100%;
 }
 
 .log-details {
@@ -483,6 +494,8 @@ export default {
   color: #A1A1A1;
   margin: 0;
   line-height: 1.4;
+  text-align: left;
+  width: 100%;
 }
 
 .logs-content::-webkit-scrollbar {

@@ -862,7 +862,7 @@ export default {
   right: 0;
   bottom: 0;
   background-color: rgba(0, 0, 0, 0.7);
-  z-index: 998; /* Z-index MENOR que o da sidebar (1000) */
+  z-index: 9998 !important;
   backdrop-filter: blur(2px);
 }
 

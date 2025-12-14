@@ -3136,12 +3136,19 @@ export default {
 /* Full Screen Loader */
 .fullscreen-loader {
     position: fixed;
-    inset: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
     background: #000000;
-    z-index: 9999;
+    z-index: 10002 !important; /* Acima de tudo, incluindo sidebar (10001) e desktopbottomnav (1000) */
     display: flex;
     align-items: center;
     justify-content: center;
+    margin: 0;
+    padding: 0;
 }
 
 .loader-spinner {

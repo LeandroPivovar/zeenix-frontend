@@ -32,27 +32,27 @@
 			<div class="data-row-line">
 				<div class="data-item">
 					<span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/brain.svg" alt="" width="15px" >
+						<img src="../../assets/icons/brain.svg" alt="" width="20px" >
 						Estratégia
 					</span>
 					<div class="data-label">{{ agenteData.estrategia }}</div>
 				</div>
 				<div class="data-item">
 					<span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/stats-green.svg" alt="" width="15px">
+						<img src="../../assets/icons/stats-green.svg" alt="" width="20px">
 						Mercado
 					</span>
 					<div class="data-label">{{ agenteData.mercado }}</div>
 				</div>
 				<div class="data-item">
-					<span class="icon-bullet" style="color: #666;"><img src="../../assets/icons/clock.svg" alt="" width="15px">
+					<span class="icon-bullet" style="color: #666;"><img src="../../assets/icons/clock.svg" alt="" width="20px">
 						Tempo ativo
 					</span>
 					<div class="data-label">{{ tempoAtivoDisplay }}</div>
 				</div>
 				<div class="data-item">
 					<span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/linechart.svg" alt="" width="15px">
+						<img src="../../assets/icons/linechart.svg" alt="" width="20px">
 						Operações hoje
 					</span>
 					<div class="data-label">{{ agenteData.operacoesHoje }}</div>
@@ -62,15 +62,14 @@
 		<div class="metrics-grid">
 			<div class="metric-card">
 				<div class="metric-box">
-					<div class="metric-label">Lucro do dia</div>
+					<div class="metric-label">Lucro do dia<i class="fa-solid fa-arrow-trend-up metric-icon positive"></i></div>
 					<div class="metric-value-row">
-						<i class="fa-solid fa-arrow-trend-up metric-icon positive"></i>
 					<div class="metric-value positive">
 						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change positive">
 						{{ progressoMeta.meta > 0 ? (((sessionStats?.netProfit || 0) / progressoMeta.meta) * 100).toFixed(2) : '0.00' }}%
-						</div>
+					</div>
 					</div>
 				</div>
 			</div>
@@ -1311,6 +1310,7 @@
 		grid-template-columns: 1fr 1fr 2fr;
 		gap: 15px;
 		margin-top: 1.5rem;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	}
 
 	.metric-card {
@@ -1330,6 +1330,10 @@
 		color: #a09e9e;
 		text-transform: capitalize;
 		text-align: left;
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 6px;
 	}
 
 	.metric-box {
@@ -1440,7 +1444,7 @@
 	.chart-section {
 		padding: 20px;
 		margin-top: 1.5rem;
-		background: #0e0e0e;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	}
 
 	.chart-controls {
@@ -1648,9 +1652,23 @@
 
 	.register-content {
 		min-height: 400px;
+		display: flex;
+		flex-direction: column;
 	}
 
 	.register-content.hidden {
+		display: none;
+	}
+	
+	#contentHistorico.history-content,
+	.history-content {
+		display: flex;
+		flex-direction: column;
+		min-height: 400px;
+	}
+	
+	#contentHistorico.history-content.hidden,
+	.history-content.hidden {
 		display: none;
 	}
 
@@ -1853,9 +1871,12 @@
 		display: none;
 	}
 
-	.progress-card,
-	.chart-section {
+	.progress-card {
 		background: #0e0e0e;
+	}
+	
+	.chart-section {
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	}
 
 	.history-section,
@@ -1872,11 +1893,15 @@
 	/* Desktop: garantir que todos os cards tenham #0e0e0e */
 	@media (min-width: 1025px) {
 		.metric-card,
-		.chart-section,
 		.history-section,
 		.actions-section,
 		.progress-card {
 			background: #0e0e0e !important;
+		}
+		
+		.chart-section,
+		.metrics-grid {
+			background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 		}
 
 		.agent-title {
@@ -1958,6 +1983,7 @@
 
 	.chart-section {
 		padding: 15px;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	}
 
 	.chart-controls {
@@ -2262,7 +2288,7 @@
 		gap: 0;
 		border: 1px solid #333;
 		border-radius: 12px;
-		background: #0e0e0e;
+		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 	}
 
 	.metric-card{
@@ -2490,7 +2516,11 @@
 		font-size: 0.875rem;
 	}
 
-	.history-pause-btn,
+	.history-pause-btn {
+		display: flex;
+		margin-top: auto;
+	}
+	
 	.register-pause-btn {
 		display: flex;
 	}

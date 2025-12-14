@@ -204,15 +204,17 @@
                 <span class="value">{{ leverage }}</span>
             </div>
 
-            <div class="summary-item">
-                <span class="label">
-                    Stop Loss
-                    <TooltipsCopyTraders position="left">
-                        <h4>Stop Loss</h4>
-                        <p>Valor máximo de perda permitido antes do Copy encerrar as operações automaticamente.</p>
-                    </TooltipsCopyTraders>
-                </span>
-                <span class="value red">{{ stopLoss }}</span>
+            <div class="form-group">
+                <div class="summary-item">
+                    <span class="label">
+                        Stop Loss
+                        <TooltipsCopyTraders position="left">
+                            <h4>Stop Loss</h4>
+                            <p>Valor máximo de perda permitido antes do Copy encerrar as operações automaticamente.</p>
+                        </TooltipsCopyTraders>
+                    </span>
+                    <span class="value red">{{ stopLoss }}</span>
+                </div>
             </div>
 
             <div class="summary-item">
@@ -811,6 +813,12 @@ input:checked + .slider:before {
 
 .summary-item:last-of-type {
     border-bottom: none;
+}
+
+/* Borda abaixo do Stop Loss */
+.card-right .form-group .summary-item {
+    border-bottom: 1px solid #222;
+    padding-bottom: 12px;
 }
 
 /* Remover borda abaixo de Proteção */
