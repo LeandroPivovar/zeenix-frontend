@@ -62,7 +62,7 @@
       </main>
 
       <!-- Footer -->
-      <footer id="footer" class="zenix-footer">
+      <footer v-if="!isMobile" id="footer" class="zenix-footer">
         <div class="footer-content">
           <div class="footer-grid">
             <div class="footer-brand">
@@ -166,6 +166,7 @@ export default {
       isSidebarCollapsed: false,
       loadingConnection: false,
       accountType: 'real', // 'real' ou 'demo'
+      isMobile: false,
     };
   },
   computed: {
@@ -597,6 +598,13 @@ export default {
         console.warn('Não foi possível atualizar cache da Deriv.', error);
       }
     },
+  },
+  created() {
+    this.checkMobile();
+    window.addEventListener('resize', this.checkMobile);
+  },
+  beforeUnmount() {
+    window.removeEventListener('resize', this.checkMobile);
   },
   async mounted() {
     await this.checkConnection(true);

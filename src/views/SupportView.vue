@@ -174,7 +174,7 @@
       </main>
 
       <!-- Footer -->
-      <footer id="footer" class="zenix-footer">
+      <footer v-if="!isMobile" id="footer" class="zenix-footer">
         <div class="footer-content">
           <div class="footer-grid">
             <div class="footer-brand">

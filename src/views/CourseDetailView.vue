@@ -514,7 +514,9 @@ export default {
 }
 </script>
 
-<style scoped src="../assets/css/views/courseDetailView.css"></style>
+<style scoped>
+/* Estilos do CourseDetailView */
+</style>
 <style scoped>
 .main-wrapper {
     width: 100%!important;

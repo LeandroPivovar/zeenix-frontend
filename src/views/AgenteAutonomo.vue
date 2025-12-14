@@ -1296,13 +1296,12 @@
     }
 
     .container-componentes {
-      padding: 0 1rem 20px 1rem;
+      padding: 1px 1rem 20px 1rem !important;
       margin-top: 50px;
-      background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%) !important;
+      background: linear-gradient(to bottom, 50%, #000100 100%) !important;
       background-blend-mode: normal;
       position: relative;
       min-height: calc(100vh - 50px);
-      padding-bottom: 100px;
     }
 
     .container-componentes::before {

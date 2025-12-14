@@ -18,6 +18,7 @@
     <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': localSidebarCollapsed }">
       <!-- Top Navbar -->
       <TopNavbar 
+        v-if="!isMobile"
         :is-sidebar-collapsed="localSidebarCollapsed"
         :balance="info?.balance"
         :account-type="accountType"
@@ -366,14 +367,21 @@
                     <div class="mobile-account-status">Conta Ativa</div>
                   </div>
                   <div class="mobile-header-icons">
-                    <button class="mobile-search-icon-btn" type="button" @click.prevent>
-                      <i class="fas fa-magnifying-glass text-white/45 hover:text-white/80 text-[17px]"></i>
+                    <button 
+                      id="notifications-btn-mobile"
+                      @click="toggleNotificationsModal"
+                      class="text-white/45 hover:text-white/80 transition-colors w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/5 active:scale-95 relative"
+                    >
+                      <i class="fa-solid fa-bell text-[17px]"></i>
+                      <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#22C55E] rounded-full"></span>
                     </button>
-                    <svg class="mobile-notification-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9" stroke="#9B9B9B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M13.73 21a2 2 0 0 1-3.46 0" stroke="#9B9B9B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                      <circle cx="18" cy="6" r="4" fill="#22C55E"/>
-                    </svg>
+                    <button 
+                      id="settings-btn-mobile"
+                      @click="toggleSettingsModal"
+                      class="text-white/45 hover:text-white/80 transition-colors w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/5 active:scale-95"
+                    >
+                      <i class="fa-solid fa-gear text-[17px]"></i>
+                    </button>
                   </div>
                 </div>
               </div>
@@ -741,6 +749,164 @@
       </div>
     </div>
   </div>
+
+<!-- Modal de Settings -->
+  <div v-if="showSettingsModal" class="settings-modal-overlay" @click="closeSettingsModal">
+    <div class="settings-modal-content" @click.stop>
+      <div class="settings-modal-header">
+        <h2 class="settings-modal-title">Configurações</h2>
+        <button class="settings-modal-close" @click="closeSettingsModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="settings-modal-body">
+        <div class="settings-modal-section">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-white/10">
+              <img 
+                v-if="userProfilePicture"
+                :src="userProfilePicture"
+                :alt="userName"
+                class="w-full h-full object-cover"
+              />
+              <div 
+                v-else
+                class="w-full h-full bg-[#22C55E]/20 flex items-center justify-center"
+              >
+                <span class="text-white text-lg font-semibold">{{ userInitials }}</span>
+              </div>
+            </div>
+            <div class="settings-user-info">
+              <h3 class="settings-user-name">{{ userName }}</h3>
+              <p class="settings-user-status">Conta Ativa</p>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-xl p-4 mb-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="settings-balance-label">Saldo Total</span>
+              <button 
+                @click="toggleBalanceVisibility"
+                class="settings-eye-btn"
+              >
+                <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
+              </button>
+            </div>
+            <p class="settings-balance-amount">
+              {{ balanceVisible ? formattedBalance : '••••••' }}
+            </p>
+            <div class="flex items-center gap-3 mt-3">
+              <button 
+                @click="switchAccount('real')"
+                :class="currentAccountType === 'real' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
+                class="settings-account-btn"
+              >
+                Real
+              </button>
+              <button 
+                @click="switchAccount('demo')"
+                :class="currentAccountType === 'demo' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
+                class="settings-account-btn"
+              >
+                Demo
+              </button>
+            </div>
+          </div>
+
+          <button 
+            @click="openDepositFlow"
+            class="settings-deposit-btn"
+          >
+            <i class="fa-solid fa-wallet"></i>
+            <span>Depositar</span>
+          </button>
+        </div>
+
+        <div class="settings-modal-section settings-modal-section-with-border">
+          <div class="mb-4">
+            <button 
+              @click="toggleAccountsList"
+              class="w-full flex items-center justify-between py-4 text-white/70 hover:text-white transition-colors"
+            >
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-wallet text-[16px]"></i>
+                <span class="text-[14px] font-medium">Minhas Contas</span>
+              </div>
+              <i :class="showAccountsList ? 'fa-solid fa-chevron-up text-[12px]' : 'fa-solid fa-chevron-down text-[12px]'"></i>
+            </button>
+            
+            <div v-if="showAccountsList" class="accounts-list">
+              <div 
+                v-for="account in availableAccounts" 
+                :key="account.loginid"
+                @click="selectAccount(account)"
+                class="account-item flex items-center justify-between py-3 px-4 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-white text-[14px] font-medium">{{ account.loginid }}</span>
+                    <i v-if="isCurrentAccount(account)" class="fa-solid fa-check text-[#22C55E] text-[12px]"></i>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span :class="account.isDemo ? 'text-white/60 text-[12px]' : 'text-white/80 text-[12px]'">
+                      {{ account.isDemo ? 'Demo' : 'Real' }}
+                    </span>
+                    <span class="text-white/40 text-[12px]">•</span>
+                    <span class="text-white/80 text-[12px]">{{ formatBalance(account.balance || 0, account.currency) }}</span>
+                  </div>
+                </div>
+              </div>
+              <div v-if="availableAccounts.length === 0" class="text-white/40 text-[12px] py-4 text-center">
+                Nenhuma conta encontrada
+              </div>
+            </div>
+          </div>
+
+          <button 
+            @click="logout"
+            class="w-full flex items-center gap-3 py-4 text-[#FF4747] hover:text-[#FF6060] transition-colors"
+          >
+            <i class="fa-solid fa-right-from-bracket text-[16px]"></i>
+            <span class="text-[14px] font-medium">Sair da corretora</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal de Notificações -->
+  <div v-if="showNotificationsModal" class="notifications-modal-overlay" @click="closeNotificationsModal">
+    <div class="notifications-modal-content" @click.stop>
+      <div class="notifications-modal-header">
+        <h2 class="notifications-modal-title">Notificações</h2>
+        <button class="notifications-modal-close" @click="closeNotificationsModal">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="notifications-modal-body">
+        <div v-if="notifications.length === 0" class="notifications-empty">
+          <i class="fa-solid fa-bell-slash text-[48px] text-white/20 mb-4"></i>
+          <p class="text-white/40 text-[14px]">Nenhuma notificação</p>
+        </div>
+        <div v-else class="notifications-list">
+          <div 
+            v-for="(notification, index) in notifications" 
+            :key="index"
+            class="notification-item"
+          >
+            <div class="notification-icon">
+              <i :class="notification.icon || 'fa-solid fa-info-circle'"></i>
+            </div>
+            <div class="notification-content">
+              <h3 class="notification-title">{{ notification.title }}</h3>
+              <p class="notification-message">{{ notification.message }}</p>
+              <span class="notification-time">{{ notification.time }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
@@ -772,7 +938,14 @@ export default {
       localSidebarCollapsed: this.isSidebarCollapsed || false,
       accountType: 'real',
       showIAsModal: false,
+      showSettingsModal: false,
+      showNotificationsModal: false,
+      showAccountsList: false,
+      availableAccounts: [],
+      loadingAccounts: false,
       userProfilePictureUrl: null,
+      tradeCurrency: 'USD',
+      notifications: [],
       quickTools: [
         {
           icon: 'fas fa-brain',
@@ -938,14 +1111,14 @@ export default {
       return isNaN(num) ? 0 : num;
     },
     formattedBalance() {
-      // Mesma lógica do TopNavbar
-      if (this.accountType === 'demo') {
-        const demo = this.balancesByCurrencyDemo['USD'] || this.balanceNumeric || 0;
-        const prefix = this.preferredCurrencyPrefix || this.getCurrencyPrefix(this.info?.currency);
+      // Mesma lógica do TopNavbar - usa tradeCurrency para determinar se é demo
+      if (this.tradeCurrency === 'DEMO') {
+        const demo = this.balancesByCurrencyDemo['USD'] || 0;
+        const prefix = this.getCurrencyPrefix('DEMO');
         return `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       }
       const value = this.balanceNumeric;
-      const prefix = this.preferredCurrencyPrefix || this.getCurrencyPrefix(this.info?.currency);
+      const prefix = this.getCurrencyPrefix(this.tradeCurrency || 'USD');
       return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     },
     balancesByCurrency() {
@@ -1025,6 +1198,24 @@ export default {
       }
       return 'U';
     },
+    currentAccountType() {
+      // Determina o tipo de conta atual baseado no tradeCurrency do settings
+      // Se tradeCurrency for 'DEMO', então é demo, senão é real
+      return this.tradeCurrency === 'DEMO' ? 'demo' : 'real';
+    },
+    currentAccountLoginid() {
+      // Retorna o loginid da conta atual
+      try {
+        const connectionStr = localStorage.getItem('deriv_connection');
+        if (connectionStr) {
+          const connection = JSON.parse(connectionStr);
+          return connection.loginid || null;
+        }
+      } catch (e) {
+        console.error('[Dashboard] Erro ao obter loginid:', e);
+      }
+      return null;
+    },
   },
   watch: {
     accountType() {
@@ -1047,6 +1238,7 @@ export default {
     this.initSparklines();
     await this.loadTodayProfitLoss();
     this.loadUserProfilePicture();
+    await this.loadTradeCurrency();
   },
   methods: {
     toggleMobileSidebar() {
@@ -1069,8 +1261,76 @@ export default {
         this.isSidebarOpen = true;
       }
     },
-    switchAccount(type) {
-      this.accountType = type;
+    async switchAccount(type) {
+      // Usa a mesma lógica do Settings - altera o tradeCurrency
+      try {
+        const tradeCurrency = type === 'demo' ? 'DEMO' : 'USD';
+        
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${apiBase}/settings`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            tradeCurrency: tradeCurrency
+          })
+        });
+
+        if (response.ok) {
+          // Atualizar tradeCurrency local imediatamente
+          this.tradeCurrency = tradeCurrency;
+          this.accountType = type;
+          
+          // Recarregar página para aplicar mudanças em todos os componentes
+          window.location.reload();
+        } else {
+          throw new Error('Erro ao alterar moeda');
+        }
+      } catch (error) {
+        console.error('[Dashboard] Erro ao alterar moeda:', error);
+        alert('Erro ao alterar moeda. Tente novamente.');
+      }
+    },
+    async loadTradeCurrency() {
+      // Carrega o tradeCurrency do settings
+      try {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${apiBase}/settings`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          this.tradeCurrency = data.tradeCurrency || 'USD';
+          // Atualizar accountType baseado no tradeCurrency
+          this.accountType = this.tradeCurrency === 'DEMO' ? 'demo' : 'real';
+        }
+      } catch (error) {
+        console.error('[Dashboard] Erro ao carregar tradeCurrency:', error);
+        // Fallback: tentar pegar do deriv_connection
+        try {
+          const connectionStr = localStorage.getItem('deriv_connection');
+          if (connectionStr) {
+            const connection = JSON.parse(connectionStr);
+            if (connection.tradeCurrency) {
+              this.tradeCurrency = connection.tradeCurrency;
+              this.accountType = this.tradeCurrency === 'DEMO' ? 'demo' : 'real';
+            }
+          }
+        } catch (e) {
+          // Ignorar erro
+        }
+      }
     },
     handleToolClick(tool) {
       if (tool.route) {
@@ -1090,6 +1350,216 @@ export default {
     },
     closeIAsModal() {
       this.showIAsModal = false;
+    },
+    toggleSettingsModal() {
+      this.showSettingsModal = !this.showSettingsModal;
+      if (this.showSettingsModal && this.availableAccounts.length === 0) {
+        this.loadAvailableAccounts();
+      }
+    },
+    closeSettingsModal() {
+      this.showSettingsModal = false;
+      this.showAccountsList = false;
+    },
+    toggleNotificationsModal() {
+      this.showNotificationsModal = !this.showNotificationsModal;
+    },
+    closeNotificationsModal() {
+      this.showNotificationsModal = false;
+    },
+    toggleAccountsList() {
+      this.showAccountsList = !this.showAccountsList;
+      if (this.showAccountsList && this.availableAccounts.length === 0) {
+        this.loadAvailableAccounts();
+      }
+    },
+    async loadAvailableAccounts() {
+      // Usa a mesma lógica do TopNavbar
+      this.loadingAccounts = true;
+      try {
+        const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+        if (!tokensByLoginIdStr) {
+          console.warn('[Dashboard] Nenhum token de conta encontrado');
+          this.availableAccounts = [];
+          return;
+        }
+
+        const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+        const loginIds = Object.keys(tokensByLoginId);
+        
+        if (loginIds.length === 0) {
+          this.availableAccounts = [];
+          return;
+        }
+
+        const accounts = [];
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token');
+        const appId = localStorage.getItem('deriv_app_id') || '1089';
+
+        for (const loginid of loginIds) {
+          try {
+            const accountToken = tokensByLoginId[loginid];
+            
+            const response = await fetch(`${apiBase}/broker/deriv/status`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                token: accountToken,
+                appId: parseInt(appId)
+              })
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              
+              let balance = 0;
+              let currency = 'USD';
+              let isDemo = false;
+              let accountFound = false;
+              
+              // Tentar buscar da estrutura accountsByCurrency primeiro (estrutura principal)
+              if (data.accountsByCurrency && typeof data.accountsByCurrency === 'object') {
+                for (const curr in data.accountsByCurrency) {
+                  const accountList = data.accountsByCurrency[curr];
+                  if (Array.isArray(accountList)) {
+                    const account = accountList.find(acc => acc.loginid === loginid);
+                    if (account) {
+                      balance = parseFloat(account.value) || 0;
+                      currency = curr.toUpperCase();
+                      isDemo = account.isDemo || false;
+                      accountFound = true;
+                      break;
+                    }
+                  }
+                }
+              }
+              
+              // Se não encontrou em accountsByCurrency, tentar buscar do raw.accounts
+              if (!accountFound && data.raw && data.raw.accounts && data.raw.accounts[loginid]) {
+                const accountData = data.raw.accounts[loginid];
+                currency = (accountData.currency || 'USD').toUpperCase();
+                balance = accountData.converted_amount !== null && accountData.converted_amount !== undefined
+                  ? parseFloat(accountData.converted_amount) || 0
+                  : parseFloat(accountData.balance || 0);
+                isDemo = accountData.demo_account === 1 || accountData.demo_account === true;
+                accountFound = true;
+              }
+              
+              // Se ainda não encontrou, usar fallback
+              if (!accountFound) {
+                isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT');
+                
+                if (isDemo && data.balancesByCurrencyDemo) {
+                  const currencies = Object.keys(data.balancesByCurrencyDemo);
+                  if (currencies.length > 0) {
+                    currency = currencies[0];
+                    balance = parseFloat(data.balancesByCurrencyDemo[currency]) || 0;
+                  }
+                } else if (!isDemo && data.balancesByCurrencyReal) {
+                  const currencies = Object.keys(data.balancesByCurrencyReal);
+                  if (currencies.length > 0) {
+                    currency = currencies[0];
+                    balance = parseFloat(data.balancesByCurrencyReal[currency]) || 0;
+                  }
+                } else if (data.balance) {
+                  balance = typeof data.balance === 'object' ? (parseFloat(data.balance.value) || 0) : (parseFloat(data.balance) || 0);
+                  currency = data.currency || (data.balance?.currency || 'USD');
+                }
+              }
+              
+              // Garantir que sempre temos valores válidos
+              balance = parseFloat(balance) || 0;
+              currency = (currency || 'USD').toUpperCase();
+              
+              // Confirmar se é demo baseado no loginid
+              if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
+                isDemo = true;
+              }
+
+              accounts.push({
+                loginid,
+                token: accountToken,
+                isDemo,
+                balance,
+                currency
+              });
+            }
+          } catch (error) {
+            console.error(`[Dashboard] Erro ao buscar conta ${loginid}:`, error);
+          }
+        }
+
+        // Ordenar: contas reais primeiro, depois demo
+        accounts.sort((a, b) => {
+          if (a.isDemo === b.isDemo) return 0;
+          return a.isDemo ? 1 : -1;
+        });
+
+        this.availableAccounts = accounts;
+      } catch (error) {
+        console.error('[Dashboard] Erro ao carregar contas:', error);
+        this.availableAccounts = [];
+      } finally {
+        this.loadingAccounts = false;
+      }
+    },
+    isCurrentAccount(account) {
+      // Usa a mesma lógica do sidebar - compara loginid
+      const currentLoginid = this.currentAccountLoginid;
+      return currentLoginid && currentLoginid === account.loginid;
+    },
+    async selectAccount(account) {
+      // Usa a mesma lógica do TopNavbar
+      try {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token');
+        const appId = localStorage.getItem('deriv_app_id') || '1089';
+
+        const response = await fetch(`${apiBase}/broker/deriv/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            token: account.token,
+            appId: parseInt(appId),
+            currency: account.currency
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Atualizar localStorage com a conta selecionada
+          localStorage.setItem('deriv_token', account.token);
+          localStorage.setItem('deriv_connection', JSON.stringify({
+            ...data,
+            loginid: account.loginid,
+            currency: account.currency,
+            isDemo: account.isDemo,
+            timestamp: Date.now()
+          }));
+
+          // Emitir evento para atualizar o componente pai
+          const accountType = account.isDemo ? 'demo' : 'real';
+          this.accountType = accountType;
+          this.$emit('account-type-changed', accountType);
+          
+          // Fechar modal e recarregar página para atualizar todos os componentes
+          this.closeSettingsModal();
+          window.location.reload();
+        } else {
+          throw new Error('Erro ao selecionar conta');
+        }
+      } catch (error) {
+        console.error('[Dashboard] Erro ao selecionar conta:', error);
+        alert('Erro ao trocar de conta. Tente novamente.');
+      }
     },
     getIAPerformance(iaId) {
       // Retorna performance baseada no ID da IA
@@ -1126,15 +1596,15 @@ export default {
     getCurrencyPrefix(currency) {
       switch ((currency || '').toUpperCase()) {
         case 'USD':
-          return '$'
+          return '$';
         case 'EUR':
-          return '€'
+          return '€';
         case 'BTC':
-          return '₿'
+          return '₿';
         case 'DEMO':
-          return 'D$'
+          return 'D$';
         default:
-          return currency ? `${currency} ` : ''
+          return currency ? `${currency} ` : '$';
       }
     },
     formatProfit(value) {
@@ -1260,13 +1730,24 @@ export default {
     toggleBalanceVisibility() {
       this.balanceVisible = !this.balanceVisible;
     },
-    formatBalance(value) {
-      if (!value && value !== 0) return '$0,00';
-      const formatted = value.toLocaleString('pt-BR', {
+    formatBalance(value, currency = 'USD') {
+      const prefix = this.getCurrencyPrefix(currency);
+      const formatted = (parseFloat(value) || 0).toLocaleString('pt-BR', {
         minimumFractionDigits: 2,
         maximumFractionDigits: 2
       });
-      return `$${formatted}`;
+      return `${prefix}${formatted}`;
+    },
+    logout() {
+      // Fechar modal
+      this.closeSettingsModal();
+      // Remover tokens e conexão Deriv
+      localStorage.removeItem('deriv_token');
+      localStorage.removeItem('deriv_tokens_by_loginid');
+      localStorage.removeItem('deriv_connection');
+      localStorage.removeItem('deriv_app_id');
+      // Recarregar página para atualizar estado
+      window.location.reload();
     },
     async loadUserProfilePicture() {
       try {
@@ -3103,7 +3584,7 @@ export default {
     display: block !important;
     background: transparent !important;
     border-radius: 0 !important;
-    padding: 60px 0 0 0 !important;
+    padding: 0 !important;
     margin-bottom: 0 !important;
     border: none !important;
     animation: fadeInUp 0.6s ease-out;
@@ -3523,6 +4004,401 @@ export default {
 
 .ia-activate-btn-modal:active {
   transform: scale(0.98);
+}
+
+/* Settings Modal Styles */
+.settings-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  padding: 0;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.settings-modal-content {
+  background: #0B0B0B;
+  border-radius: 0;
+  width: 100%;
+  max-width: 400px;
+  min-width: 320px;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid rgba(255, 255, 255, 0.05);
+  animation: slideInRight 0.3s ease-out;
+}
+
+.settings-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: none;
+}
+
+.settings-modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.settings-modal-close {
+  background: none;
+  border: none;
+  color: #9B9B9B;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.3s;
+}
+
+.settings-modal-close:hover {
+  color: #fff;
+}
+
+.settings-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.settings-modal-section {
+  margin-bottom: 24px;
+}
+
+.settings-modal-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-modal-section .glass-card {
+  background: #1A1A1A;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.settings-account-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.settings-account-btn-active {
+  background: #22C55E;
+  color: #FFFFFF;
+}
+
+.settings-account-btn-inactive {
+  background: #2A2A2A;
+  color: #9B9B9B;
+}
+
+.settings-account-btn-inactive:hover {
+  background: #333333;
+  color: #CCCCCC;
+}
+
+.settings-deposit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  margin-bottom: 0;
+}
+
+.settings-deposit-btn:hover {
+  opacity: 0.9;
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+  transform: translateY(-1px);
+}
+
+.settings-deposit-btn:active {
+  transform: scale(0.98);
+}
+
+.settings-balance-amount {
+  color: #FFFFFF;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+}
+
+.settings-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  color: #FFFFFF;
+}
+
+.settings-modal-section {
+  margin-bottom: 24px;
+}
+
+.settings-modal-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-modal-section-with-border {
+  border-top: 2px solid rgba(255, 255, 255, 0.05);
+  padding-top: 24px;
+  margin-top: 0;
+  margin-left: -24px;
+  margin-right: -24px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.settings-user-info {
+  text-align: left;
+}
+
+.settings-user-name {
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.settings-user-status {
+  color: #22C55E;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 2px 0 0 0;
+  line-height: 1.3;
+}
+
+.settings-balance-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.settings-eye-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s ease;
+  font-size: 14px;
+}
+
+.settings-eye-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.accounts-list {
+  margin-top: 8px;
+  border-top: 2px solid rgba(255, 255, 255, 0.05);
+  padding-top: 8px;
+}
+
+.account-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.account-item:last-child {
+  border-bottom: none;
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-modal-content {
+    max-width: 85%;
+    min-width: 280px;
+  }
+}
+
+/* Notifications Modal Styles */
+.notifications-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  padding: 0;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.notifications-modal-content {
+  background: #0B0B0B;
+  border-radius: 0;
+  width: 100%;
+  max-width: 400px;
+  min-width: 320px;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid rgba(255, 255, 255, 0.05);
+  animation: slideInRight 0.3s ease-out;
+}
+
+.notifications-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: none;
+}
+
+.notifications-modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.notifications-modal-close {
+  background: none;
+  border: none;
+  color: #9B9B9B;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.3s;
+}
+
+.notifications-modal-close:hover {
+  color: #fff;
+}
+
+.notifications-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  color: #FFFFFF;
+}
+
+.notifications-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #1A1A1A;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: #1F1F1F;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: 10px;
+  color: #22C55E;
+  font-size: 18px;
+}
+
+.notification-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-title {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.notification-message {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.notification-time {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .notifications-modal-content {
+    max-width: 85%;
+    min-width: 280px;
+  }
 }
 
 </style>

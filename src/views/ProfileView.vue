@@ -8,12 +8,14 @@
         <button class="back" @click="$router.push('/dashboard')">Voltar ao Dashboard</button>
       </div>
     </main>
+    <DesktopBottomNav />
   </div>
 </template>
 
 <script>
 import AppSidebar from '../components/Sidebar.vue'
-export default { name: 'ProfileView', components: { AppSidebar } }
+import DesktopBottomNav from '../components/DesktopBottomNav.vue'
+export default { name: 'ProfileView', components: { AppSidebar, DesktopBottomNav } }
 </script>
 
 <style scoped>

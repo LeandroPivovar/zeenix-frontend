@@ -135,7 +135,7 @@
                 </div>
             </main>
             
-            <footer class="zenix-footer-mini">
+            <footer v-if="!isMobile" class="zenix-footer-mini">
                 <div class="footer-content-right">
                     <p>Administrador: Marcos Costa / Online / Versão v2.0</p>
                 </div>
@@ -167,6 +167,7 @@ export default {
             isSidebarCollapsed: false,
             
             // Controle Menu Mobile
+            isMobile: false,
             isMobileMenuOpen: false,
 
             // Dados da Conta
@@ -184,6 +185,10 @@ export default {
             return this.accountBalance.toFixed(2);
         }
     },
+    created() {
+        this.checkMobile();
+        window.addEventListener('resize', this.checkMobile);
+    },
     mounted() {
         this.loadDependencies();
         this.fetchPlansFromAPI();
@@ -191,9 +196,13 @@ export default {
         this.startBalanceUpdates();
     },
     beforeUnmount() {
+        window.removeEventListener('resize', this.checkMobile);
         this.stopBalanceUpdates();
     },
     methods: {
+        checkMobile() {
+            this.isMobile = window.innerWidth <= 1024;
+        },
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         },

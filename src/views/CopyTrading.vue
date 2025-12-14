@@ -32,6 +32,7 @@
                 @navigate-to-history="showHistory = true; showPerformance = false; updateHeaders()"
             />
         </main>
+        <DesktopBottomNav />
     </div>
 </template>
 
@@ -39,10 +40,11 @@
 import AppSidebar from '../components/Sidebar.vue'
 import CopyTradingComponent from '../components/copy/CopyTradingComponent.vue'
 import CopyHistory from '../components/copy/CopyHistory.vue'
+import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 
 export default {
     name: 'CopyTrading',
-    components: { AppSidebar, CopyTradingComponent, CopyHistory },
+    components: { AppSidebar, CopyTradingComponent, CopyHistory, DesktopBottomNav },
     data() {
         return {
             loading: true,

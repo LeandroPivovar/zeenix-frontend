@@ -26,6 +26,12 @@
         />
 
         <main class="main-content academy-content">
+            <!-- Seção Zenix Academy - Apenas Mobile -->
+            <div class="academy-header-mobile">
+                <h1 class="academy-title-mobile">Zenix Academy</h1>
+                <p class="academy-description-mobile">Aprenda estratégias de trading e domine o mercado</p>
+            </div>
+
             <div v-if="loading" class="loading-container">
                 <i class="fas fa-circle-notch fa-spin fa-2x"></i>
                 <p>Carregando cursos...</p>

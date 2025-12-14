@@ -177,12 +177,18 @@
 				</table>
 			</div>
 		</div>
+		<DesktopBottomNav />
 	</div>
 </template>
 
 <script>
+import DesktopBottomNav from '../components/DesktopBottomNav.vue'
+
 export default {
 	name: 'AutonomousAgentView',
+	components: {
+		DesktopBottomNav
+	},
 	data() {
 		return {
 			agentConfig: null,

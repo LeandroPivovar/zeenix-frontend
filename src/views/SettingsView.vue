@@ -384,7 +384,7 @@
         </template>
       </main>
 
-      <footer id="footer" class="border-t border-zenix-border bg-zenix-card/50 mt-16">
+      <footer v-if="!isMobile" id="footer" class="border-t border-zenix-border bg-zenix-card/50 mt-16">
         <div class="max-w-7xl mx-auto px-8 py-8 text-center">
           <div class="flex items-center justify-center space-x-2 mb-4">
             <div class="w-8 h-8 bg-zenix-green rounded-lg flex items-center justify-center">

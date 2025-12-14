@@ -15,7 +15,7 @@
       <div class="container">
         
         <h1 v-if="!showCreateAccountCard || currentAccountStep === 1" class="title"> Bem-vindo, {{ firstName }}</h1>
-        <p v-if="!showCreateAccountCard || currentAccountStep === 1" class="subtitle">Antes de começar a operar, você precisa conectar sua conta Deriv ou criar uma nova.</p>
+        <p v-if="!showCreateAccountCard || currentAccountStep === 1" class="subtitle">Antes de começar a operar, você precisa<br class="mobile-br"> conectar sua conta Deriv ou criar uma nova.</p>
         
         <div class="box">
           <!-- Título e botão X fora do card (apenas mobile, etapas 2 e 3) -->
@@ -52,14 +52,11 @@
           <div v-else class="video-card">
             <div class="video-placeholder">
               <div class="play">▶</div>
-              <div class="video-text">Zenix Black Tutorial Video</div>
             </div>
+            <div class="video-text">Zenix Black Tutorial Video</div>
           </div>
-          <h1 v-if="!showCreateAccountCard" class="text-mobile">Zenix Black Tutorial Video</h1>
-          <p v-if="!showCreateAccountCard" class="text-video">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
+          <p v-if="!showCreateAccountCard" class="text-mobile-description">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
         </div>
-
-        <p v-if="!showCreateAccountCard" class="text-mobile-description">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
       
 
         <div class="actions">

@@ -189,12 +189,18 @@
 				</template>
 			</div>
 		</div>
+		<DesktopBottomNav />
 	</div>
 </template>
 
 <script>
+import DesktopBottomNav from '../components/DesktopBottomNav.vue'
+
 export default {
 	name: 'AutonomousAgentLogsView',
+	components: {
+		DesktopBottomNav
+	},
 	data() {
 		return {
 			activeTab: 'database', // 'database' ou 'console'
