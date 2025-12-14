@@ -855,7 +855,7 @@ main {
     background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
     background-blend-mode: normal;
     position: relative;
-    padding: 1rem;
+    padding: 6rem;
     min-height: calc(100vh - 80px);
   }
 

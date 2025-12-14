@@ -83,12 +83,7 @@
                             'icon-box-green': plan.slug === 'pro',
                             'icon-box-gradient': plan.slug === 'black'
                         }">
-                            <i :class="[
-                                'fas',
-                                plan.slug === 'starter' ? 'fa-rocket' : '',
-                                plan.slug === 'pro' ? 'fa-star' : '',
-                                plan.slug === 'black' ? 'fa-crown' : 'fa-gem'
-                            ]"></i>
+                            <i :class="['fas', getPlanIcon(plan.slug)]"></i>
                         </div>
                         
                         <!-- Título -->
@@ -125,7 +120,8 @@
                             class="plan-btn" 
                             :class="[
                                 plan.slug === 'starter' ? 'btn-outline' : '',
-                                plan.slug === 'pro' || plan.slug === 'black' ? 'btn-green-soft' : ''
+                                plan.slug === 'pro' ? 'btn-green-soft btn-pro-green' : '',
+                                plan.slug === 'black' ? 'btn-green-soft' : ''
                             ]"
                             @click="handlePlanAction(plan)"
                         >
@@ -254,6 +250,12 @@ export default {
             } finally {
                 this.loading = false;
             }
+        },
+        getPlanIcon(slug) {
+            if (slug === 'starter') return 'fa-rocket';
+            if (slug === 'pro') return 'fa-star';
+            if (slug === 'black') return 'fa-crown';
+            return '';
         },
         getPlanBenefits(plan) {
             // Extrair array de benefícios do features
