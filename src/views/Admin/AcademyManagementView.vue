@@ -1307,4 +1307,4 @@ export default {
     },
 }
 </script>
-<style src="../../assets/css/views/admin/AcademyManagementView.css"></style>
+<style src="../../assets/css/views/Admin/AcademyManagementView.css"></style>
