@@ -1,0 +1,824 @@
+/* ========================================================== */
+/* ZENIX TRADING DASHBOARD CSS                                */
+/* ========================================================== */
+
+/* Variáveis e Paleta de Cores Zenix */
+:root {
+    --zenix-background: #0a0b0a;
+    --zenix-card: #0e0f0f;
+    --zenix-dark-border: #1C1C1C;
+    --zenix-text: #FFFFFF;
+    --zenix-secondary: #8D8D8D;
+    --zenix-green: #22C55E; /* Cor para CALL e WIN */
+    --zenix-danger: #FF4747; /* Cor para PUT e LOSS */
+    --zenix-primary-dark: #121212;
+    --zenix-blue-primary: #3296FF;
+}
+
+/* ------------------ Base & Layout ------------------ */
+
+.layout {
+    min-height: 100vh;
+    background-color: var(--zenix-background);
+    color: var(--zenix-text);
+    font-family: Arial, sans-serif;
+}
+
+.main-content-area {
+    width: 100%;
+    margin: 0 auto;
+    display: flex;
+    justify-content: center;
+}
+
+.main-content {
+    width: 100%; 
+    padding: 24px;
+}
+
+/* Base Card Styling */
+.card {
+    padding: 24px;
+    border-radius: 12px;
+    background-color: var(--zenix-card);
+    border: 1px solid var(--zenix-dark-border);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.card-title-small {
+    font-size: 1.125rem;
+    font-weight: 600;
+    text-align: left;
+    color: var(--zenix-text);
+    display: flex;
+    gap: 10px;
+}
+
+/* Base Inputs/Labels */
+.input-label-compact {
+    font-size: 0.75rem;
+    color: var(--zenix-secondary);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: block;
+    margin-bottom: 4px;
+}
+.input-help-text {
+    font-size: 0.75rem;
+    color: var(--zenix-secondary);
+}
+.input-help-text-dark {
+    font-size: 0.75rem;
+    color: #838282;
+}
+
+/* Utilitários de Cor */
+.text-zenix-green {
+    color: var(--zenix-green);
+}
+.text-zenix-danger {
+    color: var(--zenix-danger);
+}
+.text-xl {
+    font-size: 1.25rem;
+}
+.mr-2 {
+    margin-right: 8px;
+}
+.mr-1 {
+    margin-right: 4px;
+}
+.mb-4 {
+    margin-bottom: 16px;
+}
+
+/* ------------------ AI Status Pulse Animation ------------------ */
+
+@keyframes pulse-ring {
+    0% {
+        transform: scale(0.3);
+        opacity: 0.8;
+    }
+    100% {
+        transform: scale(2.5);
+        opacity: 0;
+    }
+}
+.ai-status-pulse {
+    width: 12px;
+    height: 12px;
+    border-radius: 9999px;
+    position: relative;
+    flex-shrink: 0;
+}
+.ai-status-pulse.pulse-active {
+    background-color: var(--zenix-green);
+}
+.ai-status-pulse.pulse-active::before {
+    content: '';
+    display: block;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    border-radius: 9999px;
+    background-color: var(--zenix-green);
+    opacity: 0.5;
+    animation: pulse-ring 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+.ai-status-pulse.pulse-inactive {
+    background-color: var(--zenix-danger);
+}
+/* Tamanhos de Pulse */
+.ai-status-pulse.pulse-small {
+    width: 8px;
+    height: 8px;
+}
+.ai-status-pulse.pulse-large {
+    width: 20px;
+    height: 20px;
+}
+
+/* Estilos Específicos do Rodapé (Para não usar classes separadas) */
+.pulse-active-small {
+    background-color: var(--zenix-green);
+}
+.pulse-active-small::before {
+    background-color: var(--zenix-green);
+}
+.pulse-inactive-small {
+    background-color: var(--zenix-danger);
+}
+.pulse-inactive-small::before {
+    content: none;
+}
+
+
+/* ------------------ IA Vision Section (Primary Stats) ------------------ */
+
+.section-vision {
+    margin-bottom: 24px;
+    width: 100%;
+}
+
+.ai-vision-title-area {
+    margin-bottom: 24px;
+    text-align: left;
+}
+
+.ai-vision-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 4px;
+}
+
+.ai-vision-subtitle {
+    font-size: 0.875rem;
+    color: var(--zenix-secondary);
+}
+
+.stat-bar-primary {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 16px;
+    width: 100%;
+    background: var(--zenix-primary-dark);
+    padding: 20px;
+    border-radius: 12px;
+    border: 1px solid #161616;
+    box-shadow: 1px 1px 10px rgba(0, 0, 0, 0.2);
+}
+
+.stat-card-primary {
+    text-align: left
+}
+
+.stat-label-primary {
+    font-size: 0.75rem;
+    color: #838282;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.stat-value-area {
+    display: flex;
+    flex-direction: column;
+}
+
+.stat-value-large {
+    font-size: 1.7rem;
+    margin: 0.2rem 0;
+    font-weight: 700;
+}
+
+.stat-subtitle-small {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--zenix-secondary);
+}
+
+/* Status Indicator Panel (Analisando) */
+.status-indicator-panel {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: var(--zenix-card); 
+    border: 1px solid var(--zenix-dark-border);
+    border-radius: 12px;
+}
+.status-indicator-content {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+.status-indicator-panel .pulse-large {
+    /* Cor Amarela/Laranja para o painel de Análise */
+    background-color: #f7a01a; 
+}
+.status-indicator-panel .pulse-large::before {
+    background-color: #f7a01a;
+}
+.status-indicator-text {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+.status-indicator-subtext {
+    font-size: 0.625rem;
+    color: var(--zenix-secondary);
+}
+
+.chart-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+    flex-wrap: wrap;
+}
+.chart-type-selector,
+.timeframe-selector {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+.chart-type-option,
+.timeframe-option {
+    border: 1px solid var(--zenix-dark-border);
+    background: transparent;
+    color: #cbd5f5;
+    padding: 6px 14px;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, border-color 0.2s ease;
+}
+.chart-type-option:hover,
+.timeframe-option:hover:not(.disabled) {
+    border-color: var(--zenix-green);
+    color: var(--zenix-green);
+}
+.chart-type-option.active,
+.timeframe-option.active {
+    background: var(--zenix-green);
+    border-color: var(--zenix-green);
+    color: #0b0b0b;
+    font-weight: 600;
+}
+.timeframe-option.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.status-loading-spinner {
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    border: 3px solid rgba(247, 160, 26, 0.25);
+    border-top-color: #f7a01a;
+    animation: status-indicator-spin 0.9s linear infinite;
+}
+
+@keyframes status-indicator-spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
+
+
+/* ------------------ Configuration & Log Grid ------------------ */
+
+.config-log-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 24px;
+    width: 100%;
+}
+
+.config-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.config-col-right {
+    position: relative;
+}
+
+/* Configuração Ativa Card (Sticky) */
+.sticky-config-card {
+    position: sticky;
+    top: 24px;
+}
+
+/* Market Analysis Card */
+.market-analysis-card {
+    min-height: 280px;
+}
+.card-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+}
+.chart-subtitle {
+    font-size: 0.875rem;
+    color: var(--zenix-secondary);
+    margin-bottom: 16px;
+}
+/* Chart Placeholder Styles */
+.chart-placeholder {
+    background-color: var(--zenix-background);
+    min-height: 400px;
+    height: 90%; /* Ocupar 90% do espaço disponível */
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid rgba(28, 28, 28, 0.5);
+    position: relative;
+    overflow: hidden;
+}
+.chart-svg {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+.chart-point {
+    width: 12px;
+    height: 12px;
+    background-color: var(--zenix-green);
+    border-radius: 50%;
+    position: absolute;
+    top: 35%;
+    right: 18%;
+    box-shadow: 0 0 8px rgba(34, 197, 94, 0.8);
+}
+.chart-text-placeholder {
+    font-size: 0.75rem;
+    color: rgba(141, 141, 141, 0.5);
+    z-index: 1;
+}
+
+/* Configuração Ativa Details */
+.card-content-spacing-compact {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.config-stat-row-half {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.config-card{
+    background: var(--zenix-background);
+    padding: 15px;
+    border-radius: 8px;
+    text-align: left;
+}
+
+.active-status-tag-mini {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: black;
+    background-color: var(--zenix-green);
+    padding: 2px 8px;
+    border-radius: 4px;
+    align-self: flex-start;
+}
+
+.config-grid-2x2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(28, 28, 28, 0.5);
+}
+
+.config-value-main {
+    font-size: 0.875rem; 
+    font-weight: 500;
+    margin-top: 4px;
+    margin-bottom: 4px;
+}
+
+/* SEÇÃO "GERENCIAMENTO" */
+.risk-summary {
+    padding-top: 8px;
+    border-top: 1px solid rgba(28, 28, 28, 0.5);
+}
+.risk-display-area {
+    display: flex;
+    flex-direction: column;
+}
+.title-risk-display {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+}
+.risk-display-area .config-value-main {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin: 0;
+}
+.config-card .input-label-compact {
+    margin-bottom: 0;
+}
+
+/* Estilos da Barra de Progresso */
+.risk-progress-bar-container {
+    height: 4px;
+    background-color: var(--zenix-dark-border); 
+    border-radius: 4px;
+    overflow: hidden; 
+    width: 100%; 
+    margin-bottom: 4px;
+}
+
+.risk-progress-bar {
+    height: 100%;
+    background-color: var(--zenix-green);
+    transition: width 0.3s ease; 
+}
+
+/* Risco Estimado (bottom card) */
+.risk-indicator-box-small {
+    padding: 16px;
+    border-radius: 8px;
+    color: var(--zenix-green); 
+    box-shadow: 0px 0px 5px 1px rgba(34, 197, 94, 0.3);
+    border: none;
+    margin-top: 8px;
+    background: var(--zenix-background);
+    text-align: left;
+}
+
+.risk-indicator-header-small {
+    font-size: 0.875rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    margin-bottom: 4px;
+}
+
+.risk-indicator-value {
+    font-size: 1.125rem;
+    font-weight: 700;
+    margin-bottom: 2px;
+    margin-top: 8px;
+    color: rgb(255, 255, 255);
+}
+
+/* Log Table */
+.full-height-card {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    margin-bottom: 24px;
+}
+.log-table-container {
+    overflow-x: auto;
+    flex-grow: 1;
+}
+.log-table-container table {
+    width: 100%;
+    font-size: 0.875rem;
+    text-align: left;
+    border-collapse: collapse;
+}
+
+.log-table-container thead {
+    font-size: 0.75rem;
+    color: var(--zenix-secondary);
+    text-transform: uppercase;
+    border-bottom: 1px solid #333;
+}
+
+.log-table-container th {
+    padding: 8px 16px;
+    font-weight: 500;
+}
+
+.log-table-container td {
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(28, 28, 28, 0.5);
+    vertical-align: top; 
+}
+
+/* Estilos de Direção e Resultado na Tabela */
+.op-direction, .op-result {
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    /* Adicionado padding e background para replicar o visual da imagem */
+    width: fit-content;
+    padding: 4px 8px;
+    border-radius: 6px;
+    color: var(--zenix-text); /* Cor do texto será branco/cinza, mas o ícone herdará a cor principal */
+}
+
+/* Estilos específicos de cor e fundo para Direção/Resultado */
+.op-direction.text-zenix-green,
+.op-result.text-zenix-green {
+    background-color: #0e2b18; /* Verde escuro (Fundo do WIN/CALL) */
+    color: var(--zenix-green);
+}
+.op-direction.text-zenix-danger,
+.op-result.text-zenix-danger {
+    background-color: #2b0e0e; /* Vermelho escuro (Fundo do LOSS/PUT) */
+    color: var(--zenix-danger);
+}
+
+
+.op-direction i, .op-result i {
+    font-size: 0.75rem;
+    margin-right: 8px;
+    /* O ícone herda a cor do seu container, que é o verde/vermelho principal */
+}
+
+.op-pnl {
+    font-weight: 700;
+    padding-top: 12px; 
+}
+
+/* Operation Status Footer */
+.operation-status-footer {
+    display: flex;
+    padding: 20px;
+    border: 1px solid var(--zenix-dark-border);
+    background: var(--zenix-card);
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    text-align: left;
+    border-radius: 12px;
+}
+
+.status-active-footer {
+    border: 1px solid #1a5a31;
+    background: #121212;
+}
+
+.status-main-box{
+    display: flex;
+    gap: 5px;
+    flex-direction: row;
+    flex-grow: 1;
+}
+
+.status-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-main-text {
+    margin-bottom: 5px;
+}
+
+.status-main-box span {
+    background: #22c55e41 !important;
+    padding: 10px;
+    margin-right: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+}
+.status-sub-text {
+    font-size: 0.75rem;
+    color: var(--zenix-secondary);
+}
+.status-online-tag {
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: var(--zenix-text);
+}
+
+.text-zenix-green-background {
+    background-color: #0e2b18;
+    color: var(--zenix-green);
+    width: fit-content;
+    padding: 5px 10px;
+    border-radius: 8px;
+}
+
+.text-zenix-red-background{
+    background-color: #2b0e0e;
+    color: var(--zenix-danger);
+    width: fit-content;
+    padding: 5px 10px;
+    border-radius: 8px;
+}
+
+/* Botão do Modal no Footer */
+.modal-trigger-button {
+    background: none;
+    border: none;
+    color: var(--zenix-secondary);
+    cursor: pointer;
+    font-size: 1rem;
+    transition: color 0.2s;
+    padding: 0 8px;
+}
+.modal-trigger-button:hover {
+    color: var(--zenix-danger);
+}
+
+
+/* ------------------ Modal de Desconexão ------------------ */
+
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.75);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-content {
+    width: 90%;
+    max-width: 400px;
+    padding: 30px;
+    text-align: center;
+}
+
+.modal-icon-container {
+    margin-bottom: 16px;
+}
+
+.modal-title {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.modal-description {
+    font-size: 0.875rem;
+    color: var(--zenix-secondary);
+    margin-bottom: 24px;
+}
+
+.modal-button-group {
+    display: flex;
+    gap: 12px;
+    justify-content: stretch;
+    width: 100%;
+}
+
+.modal-button {
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s, border-color 0.2s;
+    flex-grow: 1;
+    border: 1px solid transparent;
+}
+
+.modal-button-cancel {
+    background-color: var(--zenix-dark-border);
+    color: var(--zenix-text);
+    border: 1px solid var(--zenix-secondary);
+}
+
+.modal-button-cancel:hover {
+    background-color: rgba(28, 28, 28, 0.5);
+    border-color: var(--zenix-text);
+}
+
+.modal-button-disconnect {
+    background-color: var(--zenix-danger);
+    color: var(--zenix-text);
+}
+
+.modal-button-disconnect:hover {
+    background-color: #e63939;
+}
+
+
+/* ------------------ Responsividade ------------------ */
+
+@media (max-width: 1200px) {
+    .stat-bar-primary {
+        grid-template-columns: repeat(3, 1fr);
+    }
+    .stat-bar-primary .status-indicator-panel {
+        grid-column: 1 / span 3;
+    }
+    .main-content {
+        padding: 16px;
+    }
+}
+
+@media (max-width: 1024px) {
+    .config-log-grid {
+        grid-template-columns: 1fr;
+    }
+    .stat-bar-primary {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    .stat-bar-primary .status-indicator-panel {
+        grid-column: span 2;
+    }
+    .sticky-config-card {
+        position: static;
+        top: 0;
+    }
+
+    .status-main-box span{
+        height: 40px;
+    }
+}
+
+@media (max-width: 600px) {
+    .stat-bar-primary {
+        grid-template-columns: 1fr;
+        padding: 16px;
+    }
+    .stat-bar-primary .status-indicator-panel {
+        grid-column: span 1;
+    }
+    .operation-status-footer {
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .status-content {
+        flex-grow: 1;
+        min-width: 100%;
+        order: 1;
+    }
+    .modal-button-group {
+        flex-direction: column;
+    }
+    .modal-button {
+        padding: 12px;
+    }
+
+    .main-content, .main-content-area{
+        width: 100%;
+        padding: 0;
+    }
+}
+
+/* ========================================================== */
+/* Loading and Empty States for Logs                          */
+/* ========================================================== */
+.loading-logs, .no-logs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--zenix-secondary);
+    font-size: 0.9rem;
+}
+
+.loading-logs {
+    animation: pulse-logs 2s ease-in-out infinite;
+}
+
+.no-logs {
+    opacity: 0.7;
+}
+
+@keyframes pulse-logs {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}

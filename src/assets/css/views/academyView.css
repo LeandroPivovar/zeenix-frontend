@@ -1,0 +1,699 @@
+/* Import da fonte Inter */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* =========================================
+   1. Layout Base & Reset
+   ========================================= */
+.zenix-layout {
+    min-height: 100vh;
+    background-color: #0B0B0B;
+    color: #DFDFDF;
+    font-family: 'Inter', sans-serif;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* =========================================
+   2. Main Content Wrapper & Responsividade
+   ========================================= */
+.main-content-wrapper {
+    margin-left: 280px;
+    min-height: 100vh;
+    transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1), width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    width: calc(100% - 280px);
+    width: calc(100% - 280px);
+    box-sizing: border-box;
+    position: relative;
+    z-index: 1;
+}
+
+.main-content-wrapper.sidebar-collapsed {
+    margin-left: 0;
+    width: 100%;
+}
+
+.main-content {
+    margin-top: 60px;
+    padding: 2rem 2rem;
+    max-width: 1600px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.main-content.academy-content {
+    margin-bottom: 100px;
+}
+
+/* =========================================
+   3. Courses Grid & Cards
+   ========================================= */
+.courses-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    gap: 1.5rem;
+    width: 100%;
+}
+
+.course-card {
+    background: linear-gradient(135deg, rgba(10, 15, 10, 0.96) 0%, rgba(11, 11, 11, 0.98) 50%, rgba(8, 13, 8, 0.96) 100%);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(34, 197, 94, 0.03);
+    border-radius: 1rem;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    text-align: left;
+    box-shadow: 0 0 1px 0 rgba(34, 197, 94, 0.06) inset, 0 8px 32px rgba(0, 0, 0, 0.5), 0 16px 64px rgba(0, 0, 0, 0.3);
+    position: relative;
+}
+
+.course-card::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(34, 197, 94, 0.02) 0%, transparent 60%), url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+    opacity: 1;
+    pointer-events: none;
+    z-index: 1;
+    transition: opacity 0.4s ease;
+}
+
+.course-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.05) 0%, transparent 50%);
+    opacity: 0.5;
+    pointer-events: none;
+    z-index: 0;
+    transition: opacity 0.4s ease;
+}
+
+.course-card:hover {
+    transform: translateY(-4px);
+    border-color: rgba(34, 197, 94, 0.12);
+    box-shadow: 0 0 2px 0 rgba(34, 197, 94, 0.15) inset, 0 12px 40px rgba(0, 0, 0, 0.6), 0 20px 72px rgba(34, 197, 94, 0.08);
+}
+
+.course-card:hover::before {
+    opacity: 1.3;
+}
+
+.course-card:hover::after {
+    opacity: 0.8;
+}
+
+.course-card > * {
+    position: relative;
+    z-index: 2;
+}
+
+.course-header-image {
+    height: 250px;
+    background: linear-gradient(135deg, #1C1C1C, #0B0B0B);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    position: relative;
+}
+
+.course-header-image::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, transparent 40%, transparent 60%, rgba(11, 11, 11, 0.8) 100%);
+    pointer-events: none;
+    z-index: 2;
+}
+
+.course-header-image img {
+    transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    z-index: 1;
+}
+
+.course-card:hover .course-header-image img {
+    transform: scale(1.05);
+}
+
+.course-header-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.course-icon-placeholder {
+    font-size: 3.5rem;
+    opacity: 0.3;
+}
+
+.card-body {
+    padding: 1.5rem;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    z-index: 2;
+}
+
+.card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1rem;
+}
+
+.course-title {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #FFF;
+    margin: 0 0 0.5rem 0;
+    line-height: 1.3;
+}
+
+.course-description {
+    font-size: 0.85rem;
+    color: #8D8D8D;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+/* Tooltip */
+.tooltip {
+    position: relative;
+    margin-left: 0.5rem;
+}
+
+.tooltip-icon { 
+    color: #555; 
+    cursor: pointer; 
+}
+
+.tooltip-text {
+    visibility: hidden;
+    width: 200px;
+    background-color: #1F1F1F;
+    color: #fff;
+    text-align: center;
+    padding: 8px;
+    border-radius: 6px;
+    position: absolute;
+    z-index: 10;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.75rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+}
+
+.tooltip:hover .tooltip-text { 
+    visibility: visible; 
+    opacity: 1; 
+}
+
+/* Meta & Progress */
+.course-meta {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+    font-size: 0.8rem;
+    color: #8D8D8D;
+}
+
+.meta-item { 
+    display: flex; 
+    align-items: center; 
+    gap: 0.4rem; 
+}
+
+.progress-container { 
+    margin-bottom: 1.5rem; 
+}
+
+.progress-bar {
+    height: 6px;
+    background: #1C1C1C;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-bottom: 0.5rem;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #22C55E;
+    transition: width 0.5s ease;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: flex-start;
+    font-size: 0.75rem;
+}
+
+.progress-percent {
+    color: #8D8D8D;
+    font-size: 0.75rem;
+}
+
+/* Buttons */
+.action-btn {
+    width: 100%;
+    padding: 0.75rem;
+    border-radius: 0.75rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    margin-top: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.action-btn i {
+    font-size: 0.875rem;
+}
+
+.btn-green { 
+    background: #22C55E; 
+    color: #000; 
+}
+
+.btn-green:hover { 
+    background: #16A34A; 
+}
+
+.btn-outline { 
+    background: transparent; 
+    border: 1px solid #2C2C2C; 
+    color: #FFF; 
+}
+
+.btn-outline:hover { 
+    border-color: #22C55E; 
+    color: #22C55E; 
+}
+
+.loading-container { 
+    text-align: center; 
+    padding: 4rem; 
+    color: #444; 
+}
+
+.error-container {
+    text-align: center;
+    padding: 3rem;
+    color: #EF4444;
+}
+
+/* =========================================
+   4. MOBILE MENU & RESPONSIVIDADE
+   ========================================= */
+
+/* Botão Hambúrguer (Mobile Only) */
+.mobile-hamburger-btn {
+    display: none;
+    position: fixed;
+    top: 12px;
+    left: 15px;
+    z-index: 60;
+    background-color: #0E0E0E;
+    border: 1px solid #1C1C1C;
+    color: #DFDFDF;
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    cursor: pointer;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    transition: all 0.3s ease;
+}
+
+.mobile-hamburger-btn:hover {
+    border-color: #22C55E;
+    color: #22C55E;
+}
+
+/* Overlay Escuro */
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(2px);
+    z-index: 45;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.sidebar-overlay.show {
+    opacity: 1;
+    visibility: visible;
+}
+
+/* =========================================
+   5. MEDIA QUERIES (Responsividade)
+   ========================================= */
+
+/* Tablet & Mobile (< 768px) */
+@media (max-width: 768px) {
+    /* Mostra hambúrguer */
+    .mobile-hamburger-btn {
+        display: flex;
+    }
+
+    /* Conteúdo Principal expande 100% */
+    .main-content-wrapper,
+    .main-content-wrapper.sidebar-collapsed {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+
+    /* Fundo da página com gradiente verde */
+    .main-content {
+        margin-top: 60px !important;
+        padding: 1.5rem !important;
+        background: radial-gradient(ellipse 120% 60% at 50% 0%, rgba(34, 197, 94, 0.12) 0%, rgba(34, 197, 94, 0.06) 25%, rgba(34, 197, 94, 0.02) 50%, transparent 80%) !important;
+    }
+
+    /* Sidebar vira gaveta (Drawer) */
+    .app-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        height: 100vh;
+        z-index: 50;
+        transform: translateX(-100%);
+        transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        width: 280px !important;
+        box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+        background-color: #0B0B0B;
+    }
+
+    /* Classe ativa para abrir menu - z-index alto para ficar acima de tudo */
+    .app-sidebar.mobile-open {
+        transform: translateX(0);
+        z-index: 10000 !important;
+    }
+
+    /* Grid vira 1 coluna */
+    .courses-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    /* Cards com estilo premium-card do HTML */
+    .course-card {
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.96) 0%, rgba(11, 11, 11, 0.98) 50%, rgba(8, 13, 8, 0.96) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        border: 1px solid rgba(34, 197, 94, 0.03) !important;
+        border-radius: 22px !important;
+        box-shadow: 0 0 1px 0 rgba(34, 197, 94, 0.08) inset, 0 8px 32px rgba(0, 0, 0, 0.6), 0 16px 64px rgba(0, 0, 0, 0.4) !important;
+        position: relative !important;
+        transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .course-card::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(34, 197, 94, 0.02) 0%, transparent 60%), url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+        opacity: 1;
+        pointer-events: none;
+        z-index: 1;
+        transition: opacity 0.4s ease;
+    }
+
+    .course-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.05) 0%, transparent 50%);
+        opacity: 0.5;
+        pointer-events: none;
+        z-index: 0;
+        transition: opacity 0.4s ease;
+    }
+
+    .course-card:hover {
+        transform: translateY(-4px) !important;
+        border-color: rgba(34, 197, 94, 0.12) !important;
+        box-shadow: 0 0 2px 0 rgba(34, 197, 94, 0.2) inset, 0 12px 40px rgba(0, 0, 0, 0.7), 0 20px 72px rgba(34, 197, 94, 0.12) !important;
+    }
+
+    .course-card:hover::before {
+        opacity: 1.3;
+    }
+
+    .course-card:hover::after {
+        opacity: 0.8;
+    }
+
+    .course-card > * {
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Sombra superior na área verde abaixo da foto */
+    .card-body {
+        position: relative;
+    }
+
+    .card-body::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 40px;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.4) 0%, rgba(0, 0, 0, 0.2) 50%, transparent 100%);
+        pointer-events: none;
+        z-index: 1;
+    }
+
+    .card-top {
+        position: relative;
+        z-index: 2;
+    }
+
+    /* Metadados com ícones verdes */
+    .course-meta {
+        display: flex;
+        justify-content: flex-start;
+        gap: 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .meta-item i {
+        color: #22C55E !important;
+        font-size: 1rem;
+    }
+
+    .meta-item svg {
+        color: #22C55E !important;
+        fill: #22C55E !important;
+    }
+
+    .meta-item span {
+        color: #22C55E;
+        font-weight: 500;
+    }
+
+    /* Barra de progresso */
+    .progress-container {
+        margin-bottom: 1.5rem;
+    }
+
+    .progress-bar {
+        height: 8px;
+        border-radius: 10px;
+        background: #1C1C1C;
+        margin-bottom: 0.625rem;
+    }
+
+    .progress-fill {
+        background: #22C55E;
+        border-radius: 10px;
+    }
+
+    .progress-label {
+        display: flex;
+        justify-content: flex-start;
+    }
+
+    .progress-percent {
+        color: #22C55E !important;
+        font-weight: 500;
+        font-size: 0.8125rem;
+    }
+
+    /* Botões mobile */
+    .action-btn {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        padding: 0.875rem 1.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        border-radius: 0.75rem;
+    }
+
+    .btn-green {
+        background: rgba(34, 197, 94, 0.15);
+        color: #FFF;
+        border: 2px solid #22C55E;
+    }
+
+    .btn-green:hover {
+        background: rgba(34, 197, 94, 0.25);
+        border-color: #22C55E;
+    }
+
+    .btn-outline {
+        background: rgba(34, 197, 94, 0.15);
+        border: 2px solid #22C55E;
+        color: #FFF;
+    }
+
+    .btn-outline:hover {
+        background: rgba(34, 197, 94, 0.25);
+        border-color: #22C55E;
+    }
+
+    /* Garantir que todos os ícones SVG e FontAwesome fiquem verdes */
+    .course-card svg,
+    .meta-item i.fa-play-circle,
+    .meta-item i.fa-clock,
+    .meta-item i.fa-book-open,
+    .fa-play-circle,
+    .fa-clock {
+        color: #22C55E !important;
+        fill: #22C55E !important;
+    }
+
+    /* Ícones dos metadados sempre verdes */
+    .course-meta i {
+        color: #22C55E !important;
+    }
+}
+
+/* Seção Zenix Academy - Apenas Mobile */
+.academy-header-mobile {
+    display: none;
+}
+
+@media (max-width: 1024px) {
+    .academy-header-mobile {
+        display: block;
+        padding: 1.5rem 1rem;
+        margin-bottom: 1.5rem;
+        text-align: left;
+        background: transparent;
+    }
+
+    .academy-title-mobile {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.2;
+        text-align: left;
+    }
+
+    .academy-description-mobile {
+        font-size: 0.9375rem;
+        font-weight: 400;
+        color: #A1A1A1;
+        margin: 0;
+        line-height: 1.5;
+        text-align: left;
+    }
+}
+
+@media (max-width: 600px) {
+    .main-content {
+        padding: 1rem;
+    }
+    
+    .course-header-image {
+        height: 160px;
+        border-radius: 22px 22px 0 0;
+    }
+
+    .course-header-image::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, rgba(0, 0, 0, 0.5) 0%, transparent 40%, transparent 60%, rgba(11, 11, 11, 0.8) 100%);
+        pointer-events: none;
+        z-index: 2;
+        border-radius: 22px 22px 0 0;
+    }
+
+    .course-header-image img {
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        z-index: 1;
+    }
+
+    .course-card:hover .course-header-image img {
+        transform: scale(1.05);
+    }
+
+    .courses-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+
+    .course-meta{
+        text-align: center!important;
+        justify-content: center!important;
+        margin-bottom: 15px!important;
+    }
+
+    .progress-label{
+        text-align: center!important;
+        justify-content: center!important;
+    }
+
+    .academy-header-mobile {
+        padding: 1.25rem 1rem;
+        margin-bottom: 1.25rem;
+    }
+
+    .academy-title-mobile {
+        font-size: 1.5rem;
+    }
+
+    .academy-description-mobile {
+        font-size: 0.875rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .main-content {
+        padding: 0.75rem;
+    }
+}
