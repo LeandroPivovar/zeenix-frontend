@@ -83,7 +83,7 @@ export default {
 
 <style scoped>
 .desktop-bottom-nav {
-  display: flex; /* Visível por padrão (mobile) */
+  display: flex; /* Mostrar no mobile por padrão */
   position: fixed;
   bottom: 0;
   left: 0;
