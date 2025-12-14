@@ -5169,6 +5169,13 @@ tbody tr:hover {
 	backdrop-filter: blur(2px);
 }
 
+/* No mobile, overlay fica abaixo da sidebar quando visível */
+@media (max-width: 1024px) {
+	.sidebar-overlay {
+		z-index: 9999;
+	}
+}
+
 /* Mobile Styles */
 @media (max-width: 1024px) {
 	.layout {
@@ -5198,8 +5205,10 @@ tbody tr:hover {
 		transition: transform 0.3s ease-out;
 	}
 
+	/* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
 	:deep(.sidebar.is-open) {
 		transform: translateX(0);
+		z-index: 10000 !important;
 	}
 
 	.main-header {

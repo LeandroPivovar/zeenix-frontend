@@ -1034,6 +1034,7 @@ export default {
   /* Classe ativa para abrir menu - APENAS NO MOBILE */
   .zenix-layout .sidebar.mobile-open {
     transform: translateX(0);
+    z-index: 10000 !important;
   }
 
   /* Ajustes de padding no mobile - manter mesma posição */

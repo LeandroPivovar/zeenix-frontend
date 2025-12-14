@@ -3669,8 +3669,10 @@ export default {
         transition: transform 0.3s ease-out;
     }
     
+    /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
     :deep(.sidebar.is-open) {
         transform: translateX(0);
+        z-index: 10000 !important;
     }
 }
 

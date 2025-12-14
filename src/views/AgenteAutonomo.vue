@@ -1286,6 +1286,7 @@
     /* 2. Quando o AppSidebar tiver a classe .is-open, ela aparece */
     :deep(.sidebar.is-open) {
       transform: translateX(0); /* Traz de volta para a tela */
+      z-index: 10000 !important; /* Z-index alto para ficar acima de tudo */
     }
   }
   
