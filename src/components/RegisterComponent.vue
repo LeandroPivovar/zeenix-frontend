@@ -74,10 +74,22 @@
                   type="text" 
                   v-model="cpf"
                   @input="formatCPF"
+                  @blur="validateCPF"
                   placeholder="000.000.000-00" 
                   maxlength="14"
-                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                  :class="[
+                    'w-full bg-zenix-input-bg border rounded-xl pl-10 pr-4 py-3 text-zenix-text-dark placeholder-zenix-gray focus:outline-none transition-colors',
+                    cpfError ? 'border-red-500' : 'border-zenix-input-border focus:border-zenix-green'
+                  ]"
                 >
+              </div>
+              <div v-if="cpfError" class="mt-1 text-xs text-red-500 flex items-center">
+                <i class="fa-solid fa-times mr-2"></i>
+                {{ cpfError }}
+              </div>
+              <div v-else-if="cpf && !cpfError && isValidCPF" class="mt-1 text-xs text-zenix-green flex items-center">
+                <i class="fa-solid fa-check mr-2"></i>
+                CPF válido
               </div>
             </div>
 
@@ -234,7 +246,7 @@
             <button 
               type="submit" 
               class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3 rounded-full transition-colors flex items-center justify-center space-x-2"
-              :disabled="isLoading || password !== confirmPassword || !isValidPhone || !whatsapp"
+              :disabled="isLoading || password !== confirmPassword || !isValidPhone || !whatsapp || !isValidCPF || !cpf"
             >
               <span v-if="isLoading" class="spinner"></span>
               <span>{{ isLoading ? 'Criando conta...' : 'Criar conta' }}</span>
@@ -243,8 +255,8 @@
           </form>
 
           <!-- Links -->
-          <div class="mt-6 space-y-3 text-center">
-            <router-link to="/login" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors">Já possui uma conta? Voltar ao login</router-link>
+          <div class="mt-0 space-y-3 text-center">
+            <a @click.prevent="$router.push('/login')" href="/login" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors cursor-pointer">Já possui uma conta? Voltar ao login</a>
           </div>
 
           <!-- Footer -->
@@ -345,6 +357,8 @@ export default {
       isLoading: false,
       phoneError: '',
       isValidPhone: false,
+      cpfError: '',
+      isValidCPF: false,
       fullTitle: 'ZENIX',
       fullSubtitle: 'A única tecnologia criada para operar com a precisão que o mercado exige.',
       typedTitle: '',
@@ -546,6 +560,12 @@ export default {
       // Validar senhas
       if (this.password !== this.confirmPassword) {
         this.$root.$toast.error('As senhas não correspondem!');
+        return;
+      }
+
+      // Validar CPF
+      if (!this.validateCPF()) {
+        this.$root.$toast.error(this.cpfError || 'Por favor, verifique o CPF');
         return;
       }
 
@@ -970,7 +990,8 @@ button.bg-zenix-green:disabled {
     flex-direction: column;
     justify-content: flex-start;
     min-height: 100vh;
-    background: transparent;
+    background: transparent !important;
+    background-color: transparent !important;
     overflow-y: auto !important;
     overflow-x: hidden !important;
     -webkit-overflow-scrolling: touch;
@@ -1086,7 +1107,8 @@ button.bg-zenix-green:disabled {
   }
 
   #register-section .border-zenix-input-border {
-    border-color: #111827 !important;
+    border: none !important;
+    border-color: transparent !important;
   }
 
   #register-section .text-zenix-text-dark {
@@ -1109,53 +1131,68 @@ button.bg-zenix-green:disabled {
   }
 
   .header-title {
-    font-size: 1.75rem !important;
+    font-size: 1.5rem !important;
     font-weight: 700 !important;
     margin-bottom: 0.75rem !important;
     margin-top: 0 !important;
-    color: #FFFFFF !important;
+    color: #DFDFDF !important;
     text-align: center !important;
   }
 
   .header-subtitle {
-    font-size: 0.8125rem !important;
+    font-size: 13px !important;
     line-height: 1.5 !important;
-    color: #9CA3AF !important;
+    color: #8A8A8A !important;
     text-align: center !important;
     margin-bottom: 0 !important;
+    font-weight: 400 !important;
   }
 
   /* Ajustes nos inputs */
   #register-section input {
     padding: 0.875rem 1rem !important;
     font-size: 0.875rem !important;
-    background-color: #1F2937 !important;
-    border-color: #374151 !important;
+    background-color: #1A1A1A !important;
+    border: none !important;
+    border-color: transparent !important;
     color: #FFFFFF !important;
+    height: 52px !important;
+  }
+  
+  #register-section input:focus {
+    border: none !important;
+    border-color: transparent !important;
+    outline: none !important;
   }
 
   /* Ajustar padding dos inputs com ícones */
   #register-section input[type="email"],
   #register-section input[type="password"],
   #register-section input[type="text"] {
-    padding-left: 2.5rem !important;
+    padding-left: 2.75rem !important;
   }
 
   #register-section input::placeholder {
-    color: #6B7280 !important;
+    color: rgba(255, 255, 255, 0.35) !important;
   }
 
   #register-section label {
-    font-size: 0.875rem !important;
-    margin-bottom: 0.5rem !important;
-    color: #FFFFFF !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.375rem !important;
+    color: #a0a3a2 !important;
+  }
+  
+  /* Garantir que labels com text-zenix-text-dark também usem a cor correta */
+  #register-section label.text-zenix-text-dark {
+    color: #a0a3a2 !important;
   }
 
   /* Ícones dos inputs (SVG) */
   .input-icon {
-    color: #9CA3AF !important;
-    width: 16px !important;
-    height: 16px !important;
+    color: #6B7280 !important;
+    width: 14px !important;
+    height: 14px !important;
     z-index: 10;
     pointer-events: none;
   }
@@ -1164,10 +1201,11 @@ button.bg-zenix-green:disabled {
   #register-section button.bg-zenix-green {
     padding: 0.875rem 1.5rem !important;
     font-size: 0.875rem !important;
-    border-radius: 0.5rem !important;
+    border-radius: 0.75rem !important;
     font-weight: 600 !important;
     background-color: #22C55E !important;
     color: #FFFFFF !important;
+    height: 52px !important;
   }
 
   #register-section button.bg-zenix-green i {
@@ -1176,11 +1214,25 @@ button.bg-zenix-green:disabled {
 
   /* Links */
   #register-section a {
-    color: #9CA3AF !important;
+    color: #AAAAAA !important;
+    font-size: 0.875rem !important;
+    font-weight: 400 !important;
+    text-align: center !important;
   }
 
   #register-section a.text-zenix-green {
     color: #22C55E !important;
+  }
+  
+  /* Espaçamento entre botão e links - 15px */
+  #register-form > button {
+    margin-bottom: 0 !important;
+  }
+  
+  #register-form + div {
+    margin-top: 15px !important;
+    padding-top: 0 !important;
+    text-align: center !important;
   }
 
   /* Footer ajustes */
@@ -1191,9 +1243,10 @@ button.bg-zenix-green:disabled {
   }
 
   .footer-text {
-    font-size: 0.6875rem !important;
+    font-size: 11px !important;
     line-height: 1.5 !important;
-    color: #9CA3AF !important;
+    color: #6B7280 !important;
+    font-weight: 400 !important;
   }
 
   .footer-text a {
@@ -1270,7 +1323,7 @@ button.bg-zenix-green:disabled {
 
   /* Espaçamento do card após o logo */
   #register-section {
-    padding-top: 11rem !important;
+    padding-top: 12rem !important;
   }
 
   /* Ajuste de padding interno do card */
@@ -1316,6 +1369,11 @@ button.bg-zenix-green:disabled {
     margin-bottom: 3rem !important;
   }
   
+  /* Desktop - padding de 15px nos links */
+  #register-section a {
+    padding: 15px !important;
+  }
+  
   .zenix-logo-title {
     font-size: 1.875rem !important;
   }
@@ -1323,6 +1381,19 @@ button.bg-zenix-green:disabled {
   .zenix-logo-title .text-zenix-text-dark,
   .zenix-logo-title .text-zenix-green {
     font-size: 1.875rem !important;
+  }
+  
+  /* Centralizar título e descrição no desktop */
+  .header-section {
+    text-align: center !important;
+  }
+  
+  .header-title {
+    text-align: center !important;
+  }
+  
+  .header-subtitle {
+    text-align: center !important;
   }
 }
 </style>

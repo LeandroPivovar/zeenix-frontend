@@ -74,8 +74,8 @@
             </div>
 
             <!-- Success Message -->
-            <div v-if="success" class="bg-green-50 border border-green-200 rounded-xl p-4">
-              <p class="text-sm text-green-600">{{ success }}</p>
+            <div v-if="success" class="bg-green-50 border border-green-200 rounded-xl p-4 mb-4">
+              <p class="text-sm text-green-600 font-medium">{{ success }}</p>
             </div>
 
             <!-- Submit Button -->
@@ -91,8 +91,8 @@
           </form>
 
           <!-- Links -->
-          <div class="mt-8 space-y-4 text-center">
-            <router-link to="/login" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors">Voltar ao login</router-link>
+          <div class="mt-4 space-y-4 text-center">
+            <a @click.prevent="$router.push('/login')" href="/login" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors cursor-pointer">Voltar ao login</a>
           </div>
 
           <!-- Footer -->
@@ -313,7 +313,7 @@ export default {
           throw new Error(data.message || 'Erro ao redefinir senha');
         }
         
-        this.success = data.message || 'Senha redefinida com sucesso!';
+        this.success = 'Senha redefinida com sucesso!';
         
         // Redirecionar para login após 2 segundos
         setTimeout(() => {
@@ -593,6 +593,64 @@ button.bg-zenix-green:disabled {
   
   .p-10 {
     padding: 1.5rem !important;
+  }
+  
+  /* Remover bordas dos inputs no mobile */
+  #reset-section input {
+    background-color: #1A1A1A !important;
+    border: none !important;
+    border-color: transparent !important;
+    color: #FFFFFF !important;
+    height: 52px !important;
+    padding: 0.875rem 1rem !important;
+    font-size: 0.875rem !important;
+  }
+  
+  #reset-section input::placeholder {
+    color: rgba(255, 255, 255, 0.35) !important;
+  }
+  
+  #reset-section input:focus {
+    border: none !important;
+    border-color: transparent !important;
+    outline: none !important;
+  }
+  
+  #reset-section label {
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.375rem !important;
+    color: #A8A8A8 !important;
+  }
+  
+  #reset-section a {
+    color: #AAAAAA !important;
+    font-size: 11px !important;
+    font-weight: 400 !important;
+  }
+  
+  #reset-section .footer-text {
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+    color: #6B7280 !important;
+    font-weight: 400 !important;
+  }
+  
+  #reset-section button.bg-zenix-green {
+    height: 52px !important;
+    border-radius: 0.75rem !important;
+  }
+  
+  #reset-section h1 {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    color: #DFDFDF !important;
+  }
+  
+  #reset-section p {
+    font-size: 13px !important;
+    color: #8A8A8A !important;
+    font-weight: 400 !important;
   }
 }
 </style>

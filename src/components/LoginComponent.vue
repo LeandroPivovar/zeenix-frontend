@@ -82,7 +82,7 @@
                   <path d="M12 6H11V4C11 2.89543 10.1046 2 9 2H7C5.89543 2 5 2.89543 5 4V6H4C3.44772 6 3 6.44772 3 7V13C3 13.5523 3.44772 14 4 14H12C12.5523 14 13 13.5523 13 13V7C13 6.44772 12.5523 6 12 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                   <path d="M6 4C6 3.44772 6.44772 3 7 3H9C9.55228 3 10 3.44772 10 4V6H6V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                 </svg>
-                <span class="text-xs security-text">Seus dados estão protegidos com criptografia avançada</span>
+                <span class="text-xxs security-text">Seus dados estão protegidos com criptografia avançada</span>
               </div>
             </div>
 
@@ -99,8 +99,8 @@
           </form>
 
           <!-- Links -->
-          <div class="mt-8 links-section">
-            <router-link to="/forgot-password" class="text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors link-left">Esqueceu a senha?</router-link>
+          <div class="links-section">
+            <router-link to="/forgot-password" class="text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors link-left">Esqueceu a senha? </router-link>
             <router-link to="/register" class="text-sm text-zenix-green hover:text-zenix-green-hover font-medium transition-colors link-right">Criar conta agora</router-link>
           </div>
 
@@ -514,6 +514,60 @@ button.bg-zenix-green:disabled {
   .zenix-logo-title .text-zenix-green {
     font-size: 1.875rem !important;
   }
+  
+  /* Centralizar título e descrição no desktop */
+  .header-section {
+    text-align: center !important;
+  }
+  
+  .header-title {
+    text-align: center !important;
+  }
+  
+  .header-subtitle {
+    text-align: center !important;
+  }
+  
+  /* Ajustes de desktop - mensagem de segurança */
+  .security-message {
+    margin-top: 0.75rem !important;
+    padding-top: 0.75rem !important;
+    display: flex !important;
+    align-items: flex-start !important;
+    justify-content: flex-start !important;
+    gap: 0.25rem !important;
+  }
+  
+  .security-message svg,
+  .security-message .security-icon {
+    margin-top: 0 !important;
+    margin-right: 0 !important;
+    align-self: flex-start !important;
+    flex-shrink: 0 !important;
+  }
+  
+  .security-text {
+    font-size: 0.75rem !important;
+    line-height: 1.4 !important;
+  }
+  
+  /* Links com space-between e espaçamento de 15px do botão */
+  .links-section {
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    margin-top: 0 !important;
+    margin: 0 !important;
+    padding-top: 0 !important;
+    gap: 15px !important;
+  }
+  
+  .link-left,
+  .link-right {
+    font-size: 0.875rem !important;
+    font-weight: 400 !important;
+    padding: 15px !important;
+  }
 }
 
 /* Animação de opacidade do logo da esquerda para direita (desktop) */
@@ -892,7 +946,8 @@ button.bg-zenix-green:disabled {
   }
 
   #login-section .border-zenix-input-border {
-    border-color: #111827 !important;
+    border: none !important;
+    border-color: transparent !important;
   }
 
   #login-section .text-zenix-text-dark {
@@ -909,26 +964,28 @@ button.bg-zenix-green:disabled {
 
   /* Ajustes de espaçamento e fonte para corresponder à imagem */
   .header-section {
-    margin-bottom: 2.5rem !important;
-    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    margin-top: 0 !important;
     text-align: center !important;
   }
 
   .header-title {
-    font-size: 1.75rem !important;
+    font-size: 1.5rem !important;
     font-weight: 700 !important;
-    margin-bottom: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
     margin-top: 0 !important;
-    color: #FFFFFF !important;
+    color: #DFDFDF !important;
     text-align: center !important;
   }
 
   .header-subtitle {
-    font-size: 0.8125rem !important;
+    font-size: 13px !important;
     line-height: 1.5 !important;
-    color: #9CA3AF !important;
+    color: #8A8A8A !important;
     text-align: center !important;
     margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    font-weight: 400 !important;
   }
 
   #login-section h1 {
@@ -941,19 +998,28 @@ button.bg-zenix-green:disabled {
     display: flex !important;
     justify-content: space-between !important;
     align-items: center !important;
-    margin-top: 1.5rem !important;
+    margin-top: 0 !important;
     gap: 1rem;
   }
 
   .link-left,
   .link-right {
     display: inline-block !important;
-    font-size: 0.8125rem !important;
-    color: #22C55E !important;
+    font-size: 0.875rem !important;
+    font-weight: 400 !important;
   }
 
   .link-left {
-    color: #9CA3AF !important;
+    color: #AAAAAA !important;
+  }
+  
+  .link-right {
+    color: #22C55E !important;
+  }
+  
+  /* Espaçamento de 15px entre os links */
+  .links-section {
+    gap: 15px !important;
   }
 
   /* Footer ajustes */
@@ -964,9 +1030,10 @@ button.bg-zenix-green:disabled {
   }
 
   .footer-text {
-    font-size: 0.6875rem !important;
+    font-size: 11px !important;
     line-height: 1.5 !important;
-    color: #9CA3AF !important;
+    color: #6B7280 !important;
+    font-weight: 400 !important;
   }
 
   .footer-text a {
@@ -1032,7 +1099,7 @@ button.bg-zenix-green:disabled {
 
   /* Espaçamento do card após o logo */
   #login-section {
-    padding-top: 11rem !important;
+    padding-top: 12rem !important;
   }
 
   /* Ajuste de padding interno do card */
@@ -1045,18 +1112,25 @@ button.bg-zenix-green:disabled {
     padding: 0.875rem 1rem !important;
     font-size: 0.875rem !important;
     background-color: #1F2937 !important;
-    border-color: #374151 !important;
+    border: none !important;
+    border-color: transparent !important;
     color: #FFFFFF !important;
+  }
+  
+  #login-section input:focus {
+    border: none !important;
+    border-color: transparent !important;
+    outline: none !important;
   }
 
   /* Input de email com ícone */
   #login-section input.input-email {
-    padding-left: 2.5rem !important;
+    padding-left: 2.75rem !important;
   }
 
   /* Input de senha com ícone */
   #login-section input.input-password {
-    padding-left: 2.5rem !important;
+    padding-left: 2.75rem !important;
   }
 
   /* Garantir que o texto digitado seja sempre branco */
@@ -1080,7 +1154,7 @@ button.bg-zenix-green:disabled {
   }
 
   #login-section input::placeholder {
-    color: #6B7280 !important;
+    color: rgba(255, 255, 255, 0.35) !important;
   }
 
   /* Texto digitado nos inputs deve ser branco */
@@ -1096,30 +1170,40 @@ button.bg-zenix-green:disabled {
   }
 
   #login-section label {
-    font-size: 0.875rem !important;
-    margin-bottom: 0.5rem !important;
-    color: #FFFFFF !important;
+    font-size: 13px !important;
+    margin-bottom: 0.375rem !important;
+    color: #a0a3a2 !important;
+    font-weight: 500 !important;
+  }
+  
+  /* Garantir que labels com text-zenix-text-dark também usem a cor correta */
+  #login-section label.text-zenix-text-dark {
+    color: #a0a3a2 !important;
   }
 
   /* Ícones dos inputs (SVG) */
   .input-icon {
-    color: #9CA3AF !important;
-    width: 16px !important;
-    height: 16px !important;
+    color: #6B7280 !important;
+    width: 14px !important;
+    height: 14px !important;
     z-index: 10;
     pointer-events: none;
   }
 
   /* Ícone do olho no campo de senha */
   #login-section .password-toggle {
-    color: #9CA3AF !important;
+    color: #6B7280 !important;
   }
 
   /* Mensagem de segurança */
   .security-message {
     display: flex !important;
     align-items: center !important;
-    margin-top: 0.625rem !important;
+    justify-content: flex-start !important;
+    gap: 0.5rem !important;
+    padding-top: 0.25rem !important;
+    margin-top: 0 !important;
+    text-align: left !important;
   }
 
   .security-message svg,
@@ -1136,19 +1220,25 @@ button.bg-zenix-green:disabled {
   }
 
   .security-text {
-    font-size: 0.75rem !important;
+    font-size: 0.625rem !important;
     color: #9CA3AF !important;
+  }
+  
+  .text-xxs {
+    font-size: 0.625rem !important;
+    line-height: 1rem;
   }
 
   /* Botão ajustes */
   #login-section button.bg-zenix-green {
     padding: 0.875rem 1.5rem !important;
     font-size: 0.875rem !important;
-    border-radius: 0.5rem !important;
+    border-radius: 0.75rem !important;
     font-weight: 600 !important;
-    margin-top: 0.5rem !important;
+    margin-top: 1.25rem !important;
     background-color: #22C55E !important;
     color: #FFFFFF !important;
+    height: 52px !important;
   }
 
   #login-section button.bg-zenix-green i {
@@ -1156,31 +1246,43 @@ button.bg-zenix-green:disabled {
   }
 
   /* Espaçamento entre campos do formulário */
-  #login-form > div {
-    margin-bottom: 2.5rem !important;
-  }
-
-  #login-form > div:last-of-type {
-    margin-bottom: 0 !important;
-  }
-
-  /* Espaçamento após o campo de senha (antes do botão) */
-  #login-form > div:nth-of-type(2) {
-    margin-bottom: 2.5rem !important;
+  #login-form {
+    gap: 1rem !important;
+    margin-top: 1.5rem !important;
   }
   
-  /* Espaçamento após o campo de email */
-  #login-form > div:nth-of-type(1) {
-    margin-top: 20px !important;
-    margin-bottom: 20px !important;
-    margin-left: 0 !important;
-    margin-right: 0 !important;
-    padding: 0 !important;
-  }
-
-  /* Espaçamento após o botão */
-  #login-form {
+  #login-form > div {
     margin-bottom: 0 !important;
+  }
+  
+  /* Espaçamento da mensagem de segurança */
+  .security-message {
+    padding-top: 0.375rem !important;
+    margin-top: 0.375rem !important;
+    margin-bottom: 0 !important;
+  }
+  
+  /* Espaçamento após o botão - 15px */
+  .links-section {
+    padding-top: 0 !important;
+    margin-top: 15px !important;
+    gap: 15px !important;
+  }
+  
+  /* Remover espaçamento do último elemento do formulário (botão) */
+  #login-form > button {
+    margin-bottom: 0 !important;
+  }
+  
+  #login-form > button + div {
+    margin-top: 0 !important;
+    padding-top: 0 !important;
+  }
+  
+  /* Espaçamento do footer */
+  .footer-login {
+    padding-top: 2rem !important;
+    margin-top: 2rem !important;
   }
 
   /* Disclaimer no final da página apenas no mobile */

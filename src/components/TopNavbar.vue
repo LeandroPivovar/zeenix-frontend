@@ -2,8 +2,7 @@
   <nav 
     id="top-navbar" 
     class="fixed top-0 left-0 right-0 h-[60px] z-[1000] mobile-header" 
-    :class="{ 'bg-[#0B0B0B]': !isMobile, 'bg-transparent': isMobile }"
-    style="width: 100%;"
+    style="width: 100%; background: #0B0B0B;"
   >
     <!-- Desktop Layout -->
     <div class="h-full flex items-center justify-between desktop-nav">
@@ -21,7 +20,8 @@
         <!-- Título ZENIX (apenas desktop, sempre visível) -->
         <div v-if="!isMobile" class="header-brand-text">
           <span class="text-white font-bold text-xl">ZEN</span>
-          <span class="text-[#22C55E] font-bold text-xl">IX</span>
+          <span class="text-white font-bold text-xl">I</span>
+          <span class="text-[#22C55E] font-bold text-xl">X</span>
         </div>
         
         <!-- Botão Grupo de Alunos (apenas desktop, sempre visível) -->
@@ -122,7 +122,8 @@
       <!-- Logo ZENIX -->
       <div class="mobile-logo">
         <span class="text-white font-bold text-xl">ZEN</span>
-        <span class="text-[#22C55E] font-bold text-xl">IX</span>
+        <span class="text-white font-bold text-xl">I</span>
+        <span class="text-[#22C55E] font-bold text-xl">X</span>
       </div>
       
       <!-- Perfil -->
@@ -821,6 +822,7 @@ export default {
 <style scoped>
 /* Top Navbar Styles */
 #top-navbar {
+  background: #0B0B0B !important;
   box-shadow: none;
   backdrop-filter: blur(12px);
   animation: fadeInSlide 0.35s ease-out;
@@ -976,7 +978,7 @@ export default {
   #top-navbar {
     left: 0 !important;
     width: 100% !important;
-    background: transparent !important;
+    background: #0B0B0B !important;
     z-index: 1000 !important;
   }
 

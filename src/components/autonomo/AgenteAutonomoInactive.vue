@@ -2,12 +2,14 @@
 	<div class="layout-content-agent-autonomo">
 		<div class="agent-config-container">
 			<header class="config-header">
-				<h1>Configuração do Agente Autônomo</h1>
+				<h1>
+					<span class="hide-on-mobile">Configuração do </span>Agente Autônomo
+				</h1>
 				<p>Configure uma única vez. O agente operará todos os dias até atingir suas metas.</p>
 			</header>
 			<div class="container-sections">
-				
-				<section class="config-section">
+				<!-- Versão Desktop: Seções separadas -->
+				<section class="config-section hide-on-mobile">
 					<h2 class="section-with-tooltip">
 						Mercado
 						<div class="tooltip-container">
@@ -20,7 +22,7 @@
 						</div>
 					</h2>
 					
-					<div class="market-options options-grid hide-on-mobile">
+					<div class="market-options options-grid">
 						<div 
 							class="option-card"
 							:class="{ 'selected': selectedMarket === 'volatility_10' }"
@@ -62,23 +64,12 @@
 							<p>Mercado com volatilidade constante de 100%.</p>
 						</div>
 					</div>
-
-					<select v-model="selectedMarket" class="select-mobile">
-						<option value="volatility_10">Volatility 10 Index</option>
-						<option value="volatility_25">Volatility 25 Index</option>
-						<option value="volatility_50">Volatility 50 Index</option>
-						<option value="volatility_75">Volatility 75 Index</option>
-						<option value="volatility_100">Volatility 100 Index</option>
-					</select>
-					
-					<p class="select-mobile-description">{{ getMarketDescription(selectedMarket) }}</p>
-
 				</section>
 
-				<section class="config-section">
+				<section class="config-section hide-on-mobile">
 					<h2>Estratégias Disponíveis</h2>
 					
-					<div class="strategies-options options-grid hide-on-mobile">
+					<div class="strategies-options options-grid">
 						<div 
 							class="option-card"
 							:class="{ 'selected': selectedStrategy === 'arion' }"
@@ -116,19 +107,9 @@
 							<p>Otimizada para os ciclos dos metais.</p>
 						</div>
 					</div>
-
-					<select v-model="selectedStrategy" class="select-mobile">
-						<option value="arion">Arion</option>
-						<option value="cryptomax">CryptoMax</option>
-						<option value="orion_ultra">Orion Ultra</option>
-						<option value="metaflow">MetaFlow</option>
-					</select>
-					
-					<p class="select-mobile-description">{{ getStrategyDescription(selectedStrategy) }}</p>
-
 				</section>
 
-				<section class="config-section risk-section">
+				<section class="config-section risk-section hide-on-mobile">
 					<h2>Nível de Risco</h2>
 					<div class="risk-options">
 						<div 
@@ -160,6 +141,71 @@
 						</div>
 					</div>
 				</section>
+
+				<!-- Versão Mobile: Card unificado para Mercado, Estratégia e Risco -->
+				<div class="mobile-unified-card premium-card">
+					<!-- Selecione o Mercado -->
+					<div class="mobile-section">
+						<p class="mobile-section-label">Selecione o Mercado</p>
+						<select v-model="selectedMarket" class="mobile-select">
+							<option value="volatility_10">Volatility 10 Index</option>
+							<option value="volatility_25">Volatility 25 Index</option>
+							<option value="volatility_50">Volatility 50 Index</option>
+							<option value="volatility_75">Volatility 75 Index</option>
+							<option value="volatility_100">Volatility 100 Index</option>
+						</select>
+						<p class="mobile-section-description">{{ getMarketDescription(selectedMarket) }}</p>
+					</div>
+
+					<!-- Divisor -->
+					<div class="mobile-divider"></div>
+
+					<!-- Estratégia -->
+					<div class="mobile-section">
+						<p class="mobile-section-label">Estratégia</p>
+						<select v-model="selectedStrategy" class="mobile-select">
+							<option value="arion">Arion</option>
+							<option value="cryptomax">CryptoMax</option>
+							<option value="orion_ultra">Orion Ultra</option>
+							<option value="metaflow">MetaFlow</option>
+						</select>
+						<p class="mobile-section-description">{{ getStrategyDescription(selectedStrategy) }}</p>
+					</div>
+
+					<!-- Divisor -->
+					<div class="mobile-divider"></div>
+
+					<!-- Gerenciamento de Risco -->
+					<div class="mobile-section">
+						<p class="mobile-section-label">Gerenciamento de Risco</p>
+						<div class="mobile-risk-buttons">
+							<button 
+								class="mobile-risk-btn"
+								:class="{ 'active': selectedRisk === 'conservative' }"
+								@click="selectRisk('conservative')"
+							>
+								<span class="mobile-risk-btn-bg" v-if="selectedRisk === 'conservative'"></span>
+								<span class="mobile-risk-btn-text" :class="{ 'active-text': selectedRisk === 'conservative' }">Conservador</span>
+							</button>
+							<button 
+								class="mobile-risk-btn"
+								:class="{ 'active': selectedRisk === 'balanced' }"
+								@click="selectRisk('balanced')"
+							>
+								<span class="mobile-risk-btn-bg" v-if="selectedRisk === 'balanced'"></span>
+								<span class="mobile-risk-btn-text" :class="{ 'active-text': selectedRisk === 'balanced' }">Equilibrado</span>
+							</button>
+							<button 
+								class="mobile-risk-btn"
+								:class="{ 'active': selectedRisk === 'aggressive' }"
+								@click="selectRisk('aggressive')"
+							>
+								<span class="mobile-risk-btn-bg" v-if="selectedRisk === 'aggressive'"></span>
+								<span class="mobile-risk-btn-text" :class="{ 'active-text': selectedRisk === 'aggressive' }">Agressivo</span>
+							</button>
+						</div>
+					</div>
+				</div>
 				<div class="footer-section">
 					<section class="config-section daily-params-section">
 						<h2>Parâmetros Diários</h2>
@@ -173,7 +219,7 @@
 									min="0.01"
 									step="0.01"
 								>
-								<p style="font-size: 0.8em; color: #777; margin-top: 5px;">{{ percentualValorOperacao }}% do capital total</p>
+								<p class="param-percentage-text">{{ percentualValorOperacao }}% do capital total</p>
 							</div>
 							<div class="param-input-group">
 								<h3>Meta diária de lucro</h3>
@@ -184,7 +230,7 @@
 									min="0.01"
 									step="0.01"
 								>
-								<p style="font-size: 0.8em; color: #00ff66; margin-top: 5px;">+{{ percentualMetaLucro }}% do capital total</p>
+								<p class="param-percentage-text positive">{{ percentualMetaLucro }}% do capital total</p>
 							</div>
 							<div class="param-input-group">
 								<h3>Limite de perda do dia</h3>
@@ -195,7 +241,7 @@
 									min="0.01"
 									step="0.01"
 								>
-								<p style="font-size: 0.8em; color: red; margin-top: 5px;">-{{ percentualLimitePerda }}% do capital total</p>
+								<p class="param-percentage-text negative">-{{ percentualLimitePerda }}% do capital total</p>
 							</div>
 						</div>
 					</section>
@@ -259,16 +305,52 @@
 
 				</div>
 				
+				<!-- Parâmetros de Entrada - Mobile -->
+				<section class="config-section mobile-params-section">
+					<div class="premium-card mobile-params-card">
+						<p class="mobile-params-title">Parâmetros de Entrada</p>
+						<div class="mobile-params-grid">
+							<div class="mobile-param-group">
+								<label class="mobile-param-label">Valor por operação</label>
+								<input 
+									type="text" 
+									:value="'$' + valorOperacaoNumero.toFixed(2)"
+									@input="updateValorOperacao"
+									class="mobile-param-input"
+								>
+								<p class="mobile-param-percentage">{{ percentualValorOperacao }}% do capital total</p>
+							</div>
+							<div class="mobile-param-group">
+								<label class="mobile-param-label">Meta diária de lucro</label>
+								<input 
+									type="text" 
+									:value="'$' + metaLucroNumero.toFixed(2)"
+									@input="updateMetaLucro"
+									class="mobile-param-input"
+								>
+								<p class="mobile-param-percentage positive">+{{ percentualMetaLucro }}% do capital total</p>
+							</div>
+							<div class="mobile-param-group">
+								<label class="mobile-param-label">Limite de perda diário</label>
+								<input 
+									type="text" 
+									:value="'$' + limitePerdaNumero.toFixed(2)"
+									@input="updateLimitePerda"
+									class="mobile-param-input"
+								>
+								<p class="mobile-param-percentage negative">-{{ percentualLimitePerda }}% do capital total</p>
+							</div>
+						</div>
+					</div>
+				</section>
+
 				<!-- Status do Agente - Apenas Mobile -->
 				<section class="config-section agent-status-mobile">
-					
-					<div class="status-card">
-						
+					<div class="premium-card status-card">
 						<div class="status-content">
 							<div class="status-text">
-								<h2>Status do AGENTE</h2>
+								<p class="status-label">Status do AGENTE</p>
 								<p class="status-value">Desativado</p>
-								
 							</div>
 							<label class="toggle-switch">
 								<input 
@@ -280,7 +362,6 @@
 							</label>
 						</div>
 						<p class="status-message">O AGENTE está desativado. Ative para começar.</p>
-
 					</div>
 				</section>
 
@@ -303,12 +384,13 @@ export default {
 		// do 'agenteData' (via v-bind), mas está usando seu próprio 'data()' local.
 		// A solução abaixo envia os dados locais para o pai ao iniciar.
 	},
-	data() {
+		data() {
 		return {
 			// Estado de seleção inicial (Baseado na imagem)
 			selectedMarket: 'volatility_75', 
 			selectedStrategy: 'arion',
 			selectedRisk: 'balanced',
+			selectedTradingMode: 'rapido', // Novo: Modo de Negociação
 
 			// Parâmetros (Baseado na imagem)
 			valorOperacao: 50.00,
@@ -471,9 +553,31 @@ export default {
 			const map = {
 				'conservative': 'Conservador',
 				'balanced': 'Equilibrado',
-				'aggressive': 'Agressivo'
+				'aggressive': 'Agressivo',
+				'fixed': 'Fixo'
 			};
 			return map[id] || id;
+		},
+		updateValorOperacao(event) {
+			const value = event.target.value.replace('$', '').replace(',', '');
+			const numValue = parseFloat(value);
+			if (!isNaN(numValue)) {
+				this.valorOperacao = numValue;
+			}
+		},
+		updateMetaLucro(event) {
+			const value = event.target.value.replace('$', '').replace(',', '');
+			const numValue = parseFloat(value);
+			if (!isNaN(numValue)) {
+				this.metaLucro = numValue;
+			}
+		},
+		updateLimitePerda(event) {
+			const value = event.target.value.replace('$', '').replace(',', '');
+			const numValue = parseFloat(value);
+			if (!isNaN(numValue)) {
+				this.limitePerda = numValue;
+			}
 		}
 	},
 	computed: {
@@ -529,7 +633,7 @@ export default {
 .config-header p {
 	color: #b0b0b0;
 	font-size: 0.9em;
-	padding-bottom: 30px;
+	padding: 10px;
 	text-align: left;
 }
 
@@ -540,9 +644,6 @@ export default {
 .container-sections{
 	padding: 0px;
 	margin-top: 0;
-	background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
-	border-radius: 12px;
-	border: 1px solid #1C1C1C;
 }
 
 
@@ -1027,17 +1128,279 @@ span.icon-sumary-risk{
 
 /* 🟢 INÍCIO: Estilos e Lógica Mobile 🟢 */
 
+/* Textos de porcentagem - Desktop */
+.param-percentage-text {
+	font-size: 0.8em;
+	margin-top: 5px;
+}
+
+.param-percentage-text.positive {
+	color: #00ff66;
+}
+
+.param-percentage-text.negative {
+	color: red;
+}
+
 /* Status do Agente - Apenas Mobile */
 .agent-status-mobile {
 	display: none;
 }
 
-.status-card {
-	background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
-	border: 1px solid #2a2a2a;
+/* Card Unificado Mobile */
+.mobile-unified-card {
+	display: none;
+}
+
+/* Seções Mobile */
+.mobile-section {
+	margin-bottom: 0;
+}
+
+.mobile-section-label {
+	font-size: 12px;
+	font-weight: 500;
+	color: #9CA3AF;
+	margin-bottom: 8px;
+	text-align: left;
+}
+
+.mobile-select {
+	width: 100%;
+	background-color: rgba(0, 0, 0, 0.6);
+	border: 1px solid #1C1C1C;
+	border-radius: 12px;
+	padding: 12px 16px;
+	color: #FFFFFF;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	appearance: none;
+	-webkit-appearance: none;
+	-moz-appearance: none;
+	background-image: url('data:image/svg+xml;utf8,<svg fill="white" height="24" viewBox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg"><path d="M7 10l5 5 5-5z"/></svg>');
+	background-repeat: no-repeat;
+	background-position: right 12px center;
+	background-size: 1.2em;
+	padding-right: 40px;
+}
+
+.mobile-select:focus {
+	outline: none;
+	border-color: #22C55E;
+}
+
+.mobile-section-description {
+	font-size: 12px;
+	color: #9CA3AF;
+	margin-top: 12px;
+	margin-bottom: 20px;
+	line-height: 1.5;
+	text-align: left;
+}
+
+.mobile-divider {
+	border-top: 1px solid #1C1C1C;
+	padding-top: 20px;
+	margin-top: 20px;
+}
+
+
+/* Botões Gerenciamento de Risco Mobile */
+.mobile-risk-buttons {
+	display: grid;
+	grid-template-columns: repeat(3, 1fr);
+	gap: 8px;
+}
+
+.mobile-risk-btn {
+	height: 44px;
+	border-radius: 10px;
+	background: rgba(14, 14, 14, 0.9);
+	border: 1px solid #1C1C1C;
+	color: #FFFFFF;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.3s ease;
+	position: relative;
+	overflow: hidden;
+	cursor: pointer;
+	box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.mobile-risk-btn:active {
+	opacity: 0.9;
+}
+
+.mobile-risk-btn.active {
+	background: linear-gradient(to bottom, #000000, #0A1A0A);
+	border: 1px solid rgba(34, 197, 94, 0.35);
+	box-shadow: 0 0 12px rgba(34, 197, 94, 0.15);
+}
+
+.mobile-risk-btn-bg {
+	position: absolute;
+	inset: 0;
+	background: rgba(34, 197, 94, 0.05);
+	filter: blur(12px);
+	z-index: 1;
+}
+
+.mobile-risk-btn-text {
+	position: relative;
+	z-index: 10;
+	color: #FFFFFF;
+}
+
+.mobile-risk-btn-text.active-text {
+	color: #22C55E;
+	text-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+}
+
+/* Parâmetros de Entrada Mobile */
+.mobile-params-section {
+	display: none;
+}
+
+.mobile-params-section .premium-card {
+	padding: 16px;
+	border-radius: 16px;
+	margin-bottom: 0; /* Remove margin do card pois a seção já tem */
+	background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	border: none;
+	box-shadow: 0 0 1px 0 rgba(34, 197, 94, 0.08) inset, 0 8px 32px rgba(0, 0, 0, 0.6), 0 16px 64px rgba(0, 0, 0, 0.4);
+	position: relative;
+	outline: 1px solid rgba(34, 197, 94, 0.04);
+	outline-offset: -1px;
+}
+
+.mobile-params-section .premium-card::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(34, 197, 94, 0.03) 0%, transparent 60%), url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+	opacity: 1;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.mobile-params-section .premium-card::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.08) 0%, transparent 50%);
+	opacity: 0.6;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.mobile-params-section .premium-card > * {
+	position: relative;
+	z-index: 2;
+}
+
+.mobile-params-title {
+	font-size: 16px;
+	font-weight: 600;
+	color: #FFFFFF;
+	margin-bottom: 16px;
+	text-align: left;
+}
+
+.mobile-params-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.mobile-param-group {
+	width: 100%;
+}
+
+.mobile-param-label {
+	display: block;
+	font-size: 12px;
+	color: #9CA3AF;
+	margin-bottom: 8px;
+	text-align: left;
+}
+
+.mobile-param-input {
+	width: 100%;
+	background-color: rgba(0, 0, 0, 0.6);
+	border: 1px solid #1C1C1C;
 	border-radius: 8px;
-	padding: 20px;
-	margin-top: 15px;
+	padding: 12px 16px;
+	color: #FFFFFF;
+	font-size: 14px;
+	font-weight: 500;
+	transition: all 0.3s ease;
+}
+
+.mobile-param-input:focus {
+	outline: none;
+	border-color: #22C55E;
+}
+
+.mobile-param-percentage {
+	font-size: 10px;
+	color: #9CA3AF;
+	margin-top: 4px;
+	font-style: italic;
+	text-align: left;
+}
+
+.mobile-param-percentage.positive {
+	color: #9CA3AF; /* Cinza para todos */
+}
+
+.mobile-param-percentage.negative {
+	color: #9CA3AF; /* Cinza para todos */
+}
+
+.agent-status-mobile .premium-card {
+	padding: 16px;
+	border-radius: 16px;
+	margin-bottom: 0; /* Remove margin do card pois a seção já tem */
+	background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%);
+	backdrop-filter: blur(20px);
+	-webkit-backdrop-filter: blur(20px);
+	border: none;
+	box-shadow: 0 0 1px 0 rgba(34, 197, 94, 0.08) inset, 0 8px 32px rgba(0, 0, 0, 0.6), 0 16px 64px rgba(0, 0, 0, 0.4);
+	position: relative;
+	outline: 1px solid rgba(34, 197, 94, 0.04);
+	outline-offset: -1px;
+}
+
+.agent-status-mobile .premium-card::before {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(34, 197, 94, 0.03) 0%, transparent 60%), url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+	opacity: 1;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.agent-status-mobile .premium-card::after {
+	content: '';
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.08) 0%, transparent 50%);
+	opacity: 0.6;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.agent-status-mobile .premium-card > * {
+	position: relative;
+	z-index: 2;
 }
 
 .status-card h2 {
@@ -1187,20 +1550,95 @@ span.icon-sumary-risk{
 
 /* Em Mobile (usei 800px para bater com sua media query existente) */
 @media (max-width: 800px) {
+	/* Título e Subtítulo Mobile */
+	.config-header {
+		padding-top: 50px;
+		margin-bottom: 20px;
+	}
+
+	.config-header h1 {
+		font-size: 19px !important;
+		font-weight: 700 !important;
+		color: #FFFFFF;
+		margin-bottom: 2px;
+	}
+
+	.config-header p {
+		font-size: 13px !important;
+		font-weight: 500;
+		color: #9CA3AF;
+		line-height: 1.4;
+		margin: 0;
+		padding: 10px;
+	}
+
+	/* Card Unificado Mobile */
+	.mobile-unified-card {
+		display: block;
+		padding: 20px;
+		border-radius: 16px;
+		margin: 0 !important; /* Remove todos os margins */
+		background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%);
+		backdrop-filter: blur(20px);
+		-webkit-backdrop-filter: blur(20px);
+		border: none;
+		box-shadow: 0 0 1px 0 rgba(34, 197, 94, 0.08) inset, 0 8px 32px rgba(0, 0, 0, 0.6), 0 16px 64px rgba(0, 0, 0, 0.4);
+		position: relative;
+		outline: 1px solid rgba(34, 197, 94, 0.04);
+		outline-offset: -1px;
+	}
+
+	.mobile-unified-card::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: radial-gradient(ellipse 600px 400px at 50% 50%, rgba(34, 197, 94, 0.03) 0%, transparent 60%), url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='1.2' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.02'/%3E%3C/svg%3E");
+		opacity: 1;
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	.mobile-unified-card::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		border-radius: inherit;
+		background: radial-gradient(circle at 50% 0%, rgba(34, 197, 94, 0.08) 0%, transparent 50%);
+		opacity: 0.6;
+		pointer-events: none;
+		z-index: 0;
+	}
+
+	.mobile-unified-card > * {
+		position: relative;
+		z-index: 2;
+	}
+
+	.container-sections {
+		background: transparent !important;
+		border: none !important;
+	}
+
+	.hide-on-mobile {
+		display: none !important;
+	}
+
+	/* Parâmetros de Entrada Mobile */
+	.mobile-params-section {
+		display: block;
+		padding: 0 !important; /* Remove padding da seção */
+		margin-bottom: 8px; /* Espaçamento reduzido entre seções */
+	}
+
+	.daily-params-section {
+		display: none;
+	}
+
 	.agent-status-mobile {
 		display: block;
-	}
-
-	.config-header{
-		padding-top: 50px;
-	}
-
-	.config-header p{
-		margin: 0;
-	}
-
-	.config-header h1{
-		font-size: 1.2rem!important;
+		padding: 0 !important; /* Remove padding da seção */
+		margin: 0 !important; /* Remove todos os margins */
 	}
 
 	
@@ -1302,7 +1740,7 @@ span.icon-sumary-risk{
 
 	/* Ajustes específicos do card de status no mobile */
 	.agent-status-mobile {
-		margin-top: 20px;
+		margin: 0 !important; /* Remove todos os margins */
 	}
 
 	.status-card {
@@ -1344,15 +1782,35 @@ span.icon-sumary-risk{
 		font-size: 0.7rem!important;
 	}
 
-	.container-sections{
-		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
-	}	
-
-	.container-sections{
+	.container-sections {
 		display: flex;
 		flex-direction: column;
-		
-		gap: 20px;
+		gap: 12px; /* Espaçamento uniforme entre todas as seções */
+		background: transparent !important;
+		border: none !important;
+	}
+
+	/* Ajustes de Status Mobile */
+	.status-label {
+		font-size: 12px;
+		color: #9CA3AF;
+		margin-bottom: 4px;
+		text-align: left;
+	}
+
+	.status-value {
+		font-size: 14px;
+		font-weight: 600;
+		color: #FFFFFF;
+		text-align: left;
+		margin: 0;
+	}
+
+	.status-message {
+		font-size: 12px;
+		color: #FF4747;
+		margin-top: 12px;
+		text-align: left;
 	}
 }
 </style>

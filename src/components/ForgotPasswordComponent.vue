@@ -1,4 +1,8 @@
 <template>
+  <!-- Background animado igual ao login -->
+  <div class="forgot-animated-bg"></div>
+  <div class="forgot-texture-layer"></div>
+  
   <!-- Main Container -->
   <main id="forgot-main" class="min-h-screen flex items-center justify-center px-8">
     <div class="w-full max-w-7xl flex items-center justify-between login-container-wrapper">
@@ -21,8 +25,8 @@
 
           <!-- Header -->
           <div class="mb-8 header-section">
-            <h1 class="text-3xl font-semibold text-zenix-text-dark mb-3 header-title">Acesse sua conta</h1>
-            <p class="text-sm text-zenix-gray leading-relaxed forgot-text header-subtitle">Se você já possui uma conta, preencha seus dados para acessar a plataforma.</p>
+            <h1 class="text-3xl font-semibold text-zenix-text-dark mb-3 header-title">Recuperar senha</h1>
+            <p class="text-sm text-zenix-gray leading-relaxed forgot-text header-subtitle">Digite seu e-mail para receber instruções de recuperação de senha.</p>
           </div>
 
           <!-- Forgot Password Form -->
@@ -57,8 +61,8 @@
           </form>
 
           <!-- Links -->
-          <div class="mt-8 space-y-4 text-center">
-            <router-link to="/login" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors">Voltar ao login</router-link>
+          <div class="mt-0 space-y-4 text-center">
+            <a @click.prevent="$router.push('/login')" href="/login" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors cursor-pointer">Voltar ao login</a>
           </div>
 
           <!-- Footer -->
@@ -392,16 +396,38 @@ button.bg-zenix-green:disabled {
   to { transform: rotate(360deg); }
 }
 
-/* Animação de gradiente para forgot-password no mobile */
+/* Animação de gradiente para forgot-password no mobile - igual ao login */
 @keyframes gradient-animation {
   0% {
     background-position: 0% 50%;
   }
+  25% {
+    background-position: 50% 0%;
+  }
   50% {
     background-position: 100% 50%;
   }
+  75% {
+    background-position: 50% 100%;
+  }
   100% {
     background-position: 0% 50%;
+  }
+}
+
+/* Animação textureFloat para o background animado */
+@keyframes textureFloat {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(8px, -8px);
+  }
+  50% {
+    transform: translate(-6px, 6px);
+  }
+  75% {
+    transform: translate(6px, 8px);
   }
 }
 
@@ -661,55 +687,137 @@ button.bg-zenix-green:disabled {
 
 /* Responsividade - Mobile pequeno (< 640px) */
 @media (max-width: 640px) {
-  #forgot-main {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
-    padding-top: 1.5rem;
-    padding-bottom: 0;
-    display: flex !important;
-    flex-direction: column;
-    justify-content: flex-start;
-    min-height: 100vh;
-    background: none !important;
-    background-color: transparent !important;
-    position: relative;
-    z-index: 1;
-    overflow-y: auto !important;
-    overflow-x: hidden !important;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  /* Aplicar gradiente no elemento pai (body ou wrapper) via pseudo-elemento */
-  #forgot-main::before {
-    content: '';
+  /* Background animado igual ao login */
+  .forgot-animated-bg {
     position: fixed;
     top: 0;
     left: 0;
-    right: 0;
-    bottom: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
     background: linear-gradient(135deg, #0B0B0B 0%, #0d2520 25%, #0a1a16 50%, #0d2520 75%, #0B0B0B 100%);
     background-size: 400% 400%;
     animation: gradient-animation 15s ease infinite;
-    z-index: -1;
+  }
+
+  .forgot-texture-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
     pointer-events: none;
+    opacity: 0.11;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 2%),
+      radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.02) 0%, transparent 2%),
+      radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.025) 0%, transparent 2%),
+      radial-gradient(circle at 60% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 2%),
+      radial-gradient(circle at 10% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 2%),
+      radial-gradient(circle at 90% 40%, rgba(255, 255, 255, 0.025) 0%, transparent 2%);
+    background-size:
+      200px 200px,
+      180px 180px,
+      220px 220px,
+      190px 190px,
+      210px 210px,
+      175px 175px;
+    background-position:
+      0 0,
+      50px 50px,
+      100px 100px,
+      150px 150px,
+      200px 200px,
+      250px 250px;
+    animation: textureFloat 45s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  .forgot-texture-layer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      repeating-linear-gradient(0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.008) 2px,
+        rgba(255, 255, 255, 0.008) 4px),
+      repeating-linear-gradient(90deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.008) 2px,
+        rgba(255, 255, 255, 0.008) 4px);
+    opacity: 0.4;
+  }
+
+  .forgot-texture-layer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.35'/%3E%3C/svg%3E");
+    opacity: 0.08;
+    mix-blend-mode: overlay;
+  }
+
+  /* Forgot main - garantir que seja transparente para mostrar background animado */
+  #forgot-main {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    padding-top: 1.5rem !important;
+    padding-bottom: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    min-height: 100vh !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    position: relative !important;
+    z-index: 100 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Remover qualquer pseudo-elemento que possa ter background */
+  #forgot-main::before,
+  #forgot-main::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    background-color: transparent !important;
   }
 
   /* Garantir que o wrapper e container sejam transparentes */
   .login-container-wrapper {
     background: transparent !important;
     background-color: transparent !important;
+    background-image: none !important;
   }
-
-  /* Garantir que todos os elementos filhos diretos sejam transparentes */
-  #forgot-main > * {
-    background: transparent !important;
-    background-color: transparent !important;
-  }
-
-  /* Garantir que o card seja transparente */
+  
   #forgot-section {
     background: transparent !important;
     background-color: transparent !important;
+    background-image: none !important;
+  }
+
+  /* Card com background transparente igual ao login */
+  #forgot-section .forgot-card {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
   }
   
   .w-\[480px\] {
@@ -804,25 +912,52 @@ button.bg-zenix-green:disabled {
     background: transparent !important;
   }
 
-  /* Remover fundo do card apenas no mobile */
+  /* Card com background transparente igual ao login */
   #forgot-section .forgot-card {
-    background-color: transparent !important;
     background: transparent !important;
+    background-color: transparent !important;
     border: none !important;
     box-shadow: none !important;
     padding: 0 !important;
   }
 
-  /* Ajuste de cores apenas no mobile para ficar igual ao layout */
-  #forgot-section .bg-white {
-    background-color: transparent !important;
+  /* Card com background transparente - sobrescrever TODOS os estilos */
+  #forgot-section .bg-white,
+  #forgot-section .forgot-card.bg-white,
+  #forgot-section .forgot-card,
+  #forgot-section > div,
+  #forgot-section > div > div {
     background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
     border-color: transparent !important;
   }
 
   /* Garantir que o container wrapper também seja transparente */
   .login-container-wrapper {
     background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+  
+  /* Sobrescrever qualquer estilo que possa estar aplicando background branco */
+  #forgot-main * {
+    background-image: none !important;
+  }
+  
+  /* Exceto o background animado */
+  #forgot-main .forgot-animated-bg,
+  .forgot-animated-bg {
+    background-image: linear-gradient(135deg, #0B0B0B 0%, #0d2520 25%, #0a1a16 50%, #0d2520 75%, #0B0B0B 100%) !important;
+  }
+  
+  #forgot-section * {
+    background-image: none !important;
+  }
+  
+  /* Exceto inputs que precisam manter seu background */
+  #forgot-section input {
+    background-image: none !important;
   }
 
   #forgot-section .bg-zenix-input-bg {
@@ -831,7 +966,8 @@ button.bg-zenix-green:disabled {
   }
 
   #forgot-section .border-zenix-input-border {
-    border-color: #111827 !important;
+    border: none !important;
+    border-color: transparent !important;
   }
 
   #forgot-section .text-zenix-text-dark {
@@ -848,26 +984,28 @@ button.bg-zenix-green:disabled {
 
   /* Ajustes de espaçamento e fonte para corresponder à imagem */
   .header-section {
-    margin-bottom: 2.5rem !important;
-    margin-top: 1.5rem !important;
+    margin-bottom: 1.5rem !important;
+    margin-top: 0 !important;
     text-align: center !important;
   }
 
   .header-title {
-    font-size: 1.75rem !important;
+    font-size: 1.5rem !important;
     font-weight: 700 !important;
-    margin-bottom: 0.75rem !important;
+    margin-bottom: 0.5rem !important;
     margin-top: 0 !important;
-    color: #FFFFFF !important;
+    color: #DFDFDF !important;
     text-align: center !important;
   }
 
   .header-subtitle {
-    font-size: 0.8125rem !important;
+    font-size: 13px !important;
     line-height: 1.5 !important;
-    color: #9CA3AF !important;
+    color: #8A8A8A !important;
     text-align: center !important;
     margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    font-weight: 400 !important;
   }
 
   #forgot-section h1 {
@@ -883,33 +1021,47 @@ button.bg-zenix-green:disabled {
   #forgot-section input {
     padding: 0.875rem 1rem !important;
     font-size: 0.875rem !important;
-    background-color: #1F2937 !important;
-    border-color: #374151 !important;
+    background-color: #1A1A1A !important;
+    border: none !important;
+    border-color: transparent !important;
     color: #FFFFFF !important;
+    height: 52px !important;
+  }
+  
+  #forgot-section input:focus {
+    border: none !important;
+    border-color: transparent !important;
+    outline: none !important;
   }
 
   #forgot-section input::placeholder {
-    color: #6B7280 !important;
+    color: rgba(255, 255, 255, 0.35) !important;
   }
 
   #forgot-section label {
-    font-size: 0.875rem !important;
-    margin-bottom: 0.5rem !important;
-    color: #FFFFFF !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    margin-bottom: 0.375rem !important;
+    color: #a0a3a2 !important;
+  }
+  
+  /* Garantir que labels com text-zenix-text-dark também usem a cor correta */
+  #forgot-section label.text-zenix-text-dark {
+    color: #a0a3a2 !important;
   }
 
   /* Ícones dos inputs (SVG) */
   .input-icon {
-    color: #9CA3AF !important;
-    width: 16px !important;
-    height: 16px !important;
+    color: #6B7280 !important;
+    width: 14px !important;
+    height: 14px !important;
     z-index: 10;
     pointer-events: none;
   }
 
   /* Input de email com ícone */
   #forgot-section input[type="email"] {
-    padding-left: 2.5rem !important;
+    padding-left: 2.75rem !important;
   }
 
   /* Garantir que o texto digitado seja sempre branco */
@@ -935,10 +1087,11 @@ button.bg-zenix-green:disabled {
   #forgot-section button.bg-zenix-green {
     padding: 0.875rem 1.5rem !important;
     font-size: 0.875rem !important;
-    border-radius: 0.5rem !important;
+    border-radius: 0.75rem !important;
     font-weight: 600 !important;
     background-color: #22C55E !important;
     color: #FFFFFF !important;
+    height: 52px !important;
   }
 
   #forgot-section button.bg-zenix-green i {
@@ -947,24 +1100,46 @@ button.bg-zenix-green:disabled {
 
   /* Links */
   #forgot-section a {
-    color: #9CA3AF !important;
+    color: #AAAAAA !important;
+    font-size: 0.875rem !important;
+    font-weight: 400 !important;
+    text-align: center !important;
   }
 
   #forgot-section a.text-zenix-green {
     color: #22C55E !important;
   }
+  
+  /* Espaçamento do formulário */
+  #forgot-form {
+    margin-top: 1.5rem !important;
+    gap: 1rem !important;
+  }
+  
+  /* Espaçamento entre botão e links - 15px */
+  #forgot-form > button {
+    margin-bottom: 0 !important;
+    margin-top: 1.5rem !important;
+  }
+  
+  #forgot-form + div {
+    margin-top: 15px !important;
+    padding-top: 0 !important;
+    text-align: center !important;
+  }
 
   /* Footer ajustes */
   .footer-login {
-    margin-top: 1.5rem !important;
-    padding-top: 1.25rem !important;
+    margin-top: 2rem !important;
+    padding-top: 1.5rem !important;
     border-top-color: rgba(255, 255, 255, 0.1) !important;
   }
 
   .footer-text {
-    font-size: 0.6875rem !important;
+    font-size: 11px !important;
     line-height: 1.5 !important;
-    color: #9CA3AF !important;
+    color: #6B7280 !important;
+    font-weight: 400 !important;
   }
 
   .footer-text a {
@@ -1041,12 +1216,31 @@ button.bg-zenix-green:disabled {
 
   /* Espaçamento do card após o logo */
   #forgot-section {
-    padding-top: 11rem !important;
+    padding-top: 12rem !important;
   }
 
-  /* Ajuste de padding interno do card */
-  #forgot-section .forgot-card {
+  /* Ajuste de padding interno do card - garantir background transparente com máxima especificidade */
+  #forgot-section .forgot-card,
+  #forgot-section .forgot-card.bg-white,
+  #forgot-section div.forgot-card,
+  #forgot-section div.forgot-card.bg-white,
+  #forgot-section > div > div.forgot-card,
+  #forgot-section > div > div.forgot-card.bg-white {
     padding: 0 !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border: none !important;
+    box-shadow: none !important;
+  }
+  
+  /* Sobrescrever qualquer classe bg-white aplicada */
+  #forgot-section .bg-white,
+  #forgot-section div.bg-white,
+  #forgot-section > div > div.bg-white {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
   }
 
   /* Disclaimer no final da página apenas no mobile */
@@ -1074,6 +1268,25 @@ button.bg-zenix-green:disabled {
     display: none !important;
   }
   
+  /* Desktop - manter background branco do card */
+  #forgot-section .forgot-card {
+    background-color: white !important;
+    background: white !important;
+    border: 1px solid #EDEDED !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1), 0 8px 32px rgba(0, 0, 0, 0.05) !important;
+    padding: 2.5rem !important;
+  }
+  
+  #forgot-section .bg-white {
+    background-color: white !important;
+    background: white !important;
+  }
+  
+  /* Desktop - padding de 15px nos links */
+  #forgot-section a {
+    padding: 15px !important;
+  }
+  
   /* Desktop - manter estilo original do título */
   .forgot-logo {
     position: relative !important;
@@ -1088,11 +1301,58 @@ button.bg-zenix-green:disabled {
   .zenix-logo-title .text-zenix-green {
     font-size: 1.875rem !important;
   }
+  
+  /* Centralizar título e descrição no desktop */
+  .header-section {
+    text-align: center !important;
+  }
+  
+  .header-title {
+    text-align: center !important;
+  }
+  
+  .header-subtitle {
+    text-align: center !important;
+  }
 }
 
 @media (max-width: 375px){
   .forgot-logo{
     top: 6rem !important;
+  }
+}
+
+/* Estilos finais com máxima especificidade para garantir background transparente no mobile */
+@media (max-width: 640px) {
+  /* Sobrescrever TODOS os backgrounds possíveis no forgot mobile */
+  #forgot-main,
+  #forgot-main > *,
+  #forgot-main > * > *,
+  #forgot-section,
+  #forgot-section > *,
+  #forgot-section > * > *,
+  #forgot-section .forgot-card,
+  #forgot-section .forgot-card.bg-white,
+  #forgot-section .bg-white,
+  .login-container-wrapper,
+  .login-container-wrapper > * {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+  
+  /* Garantir que nenhum pseudo-elemento tenha background */
+  #forgot-main::before,
+  #forgot-main::after,
+  #forgot-section::before,
+  #forgot-section::after,
+  #forgot-section .forgot-card::before,
+  #forgot-section .forgot-card::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    background-color: transparent !important;
+    background-image: none !important;
   }
 }
 </style>

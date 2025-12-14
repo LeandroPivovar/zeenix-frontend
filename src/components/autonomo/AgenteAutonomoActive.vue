@@ -61,14 +61,16 @@
 		</div>
 		<div class="metrics-grid">
 			<div class="metric-card">
-				<span class="arrow positive">↑</span>
 				<div class="metric-box">
 					<div class="metric-label">Lucro do dia</div>
+					<div class="metric-value-row">
+						<i class="fa-solid fa-arrow-trend-up metric-icon positive"></i>
 					<div class="metric-value positive">
 						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change positive">
 						{{ progressoMeta.meta > 0 ? (((sessionStats?.netProfit || 0) / progressoMeta.meta) * 100).toFixed(2) : '0.00' }}%
+						</div>
 					</div>
 				</div>
 			</div>
@@ -274,9 +276,19 @@
 							</tbody>
 						</table>
 					</div>
+					<!-- Botão Pausar Agente - Histórico -->
+					<button @click="pausarAgenteEIrParaTopo" class="pause-agent-btn history-pause-btn">
+						<i class="fa-solid fa-pause"></i>
+						<span>Pausar Agente</span>
+					</button>
 				</div>
 				<div id="contentRegistro" :class="['register-content', { hidden: abaAtiva !== 'registro' }]">
 					<AutonomousAgentLogs :user-id="userIdComputed" :is-active="true" />
+					<!-- Botão Pausar Agente - Registro -->
+					<button @click="pausarAgenteEIrParaTopo" class="pause-agent-btn register-pause-btn">
+						<i class="fa-solid fa-pause"></i>
+						<span>Pausar Agente</span>
+					</button>
 				</div>
 			</div>
 			<!-- Cards Maior Ganho e Maior Perda - apenas mobile e apenas na aba gráfico -->
@@ -1325,13 +1337,35 @@
 		flex-direction: column;
 	}
 
+	.metric-value-row {
+		display: flex;
+		align-items: baseline;
+		gap: 8px;
+		margin: 5px 0;
+		flex-wrap: wrap;
+	}
+
+	.metric-icon {
+		font-size: 12px;
+		flex-shrink: 0;
+		margin-right: 2px;
+	}
+
+	.metric-icon.positive {
+		color: #22C55E;
+	}
+
+	.metric-icon.negative {
+		color: #ff4444;
+	}
+
 	.metric-value {
 		font-size: 20px;
 		font-weight: 700;
 		display: flex;
 		align-items: center;
 		gap: 8px;
-		margin: 5px 0;
+		margin: 0;
 	}
 
 	.metric-card .arrow {
@@ -2427,6 +2461,38 @@
 			font-size: 18px;
 			font-weight: bold;
 		}
+	}
+
+	/* Botão Pausar Agente - Histórico e Registro */
+	.pause-agent-btn {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 0.5rem;
+		width: 100%;
+		background: #FACC15;
+		color: #000;
+		border: none;
+		padding: 0.875rem 1.25rem;
+		border-radius: 0.75rem;
+		font-size: 0.875rem;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.2s;
+		margin-top: 1.25rem;
+	}
+
+	.pause-agent-btn:hover {
+		background: #EAB308;
+	}
+
+	.pause-agent-btn i {
+		font-size: 0.875rem;
+	}
+
+	.history-pause-btn,
+	.register-pause-btn {
+		display: flex;
 	}
 }
 </style>

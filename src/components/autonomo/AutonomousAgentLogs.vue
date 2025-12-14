@@ -1,23 +1,9 @@
 <template>
   <div class="operation-logs-container">
     <div class="logs-header">
-      <h2 class="logs-title">Registro de Operações</h2>
-      <div class="logs-header-actions">
-        <span v-if="realtimeLogs.length > 0" class="text-xs text-zenix-green">{{ realtimeLogs.length }} eventos</span>
-        <button 
-          class="clear-logs-btn" 
-          @click="exportLogs"
-          :disabled="realtimeLogs.length === 0"
-        >
-          <i class="fas fa-download"></i> Exportar
-        </button>
-        <button 
-          class="clear-logs-btn" 
-          @click="clearLogs"
-          :disabled="realtimeLogs.length === 0"
-        >
-          <i class="fas fa-trash"></i> Limpar
-        </button>
+      <div class="logs-title-section">
+        <h2 class="logs-title">Ações do Agente</h2>
+        <p class="logs-subtitle">Registro de atividades em tempo real</p>
       </div>
     </div>
     
@@ -28,17 +14,19 @@
         <p class="text-xs mt-1">Os logs aparecerão aqui em tempo real quando o agente estiver ativo.</p>
       </div>
       
-      <div v-else>
+      <div v-else class="logs-list">
         <div 
-          v-for="(log, index) in realtimeLogs" 
+          v-for="(log, index) in formattedLogs" 
           :key="log.id || index" 
-          :class="['log-entry', `log-${log.type}`]"
+          class="log-card"
         >
-          <span class="log-timestamp">[{{ log.timestamp }}]</span>
-          <span class="log-level">[{{ log.level || log.type?.toUpperCase() || 'INFO' }}]</span>
-          <span class="log-module">[{{ log.module || 'CORE' }}]</span>
-          <span class="log-separator">-</span>
-          <span class="log-message">{{ log.message }}</span>
+          <div :class="['log-icon-container', `log-icon-${log.logType}`]">
+            <i :class="log.icon"></i>
+          </div>
+          <div class="log-content">
+            <p class="log-title">{{ log.title }}</p>
+            <p class="log-details">{{ log.details }}</p>
+          </div>
         </div>
       </div>
     </div>
@@ -89,6 +77,117 @@ export default {
   },
   beforeUnmount() {
     this.stopLogPolling();
+  },
+  computed: {
+    formattedLogs() {
+      return this.realtimeLogs.map(log => {
+        // Determinar tipo de log e ícone baseado na mensagem e módulo
+        let logType = 'info';
+        let icon = 'fa-solid fa-info-circle';
+        let title = log.message;
+        let details = '';
+        
+        // Extrair informações da mensagem
+        const message = log.message || '';
+        const module = log.module || '';
+        const level = log.level || '';
+        
+        // Detectar operação finalizada com sucesso
+        if (message.includes('WON') || message.includes('profit') || message.includes('ganho') || 
+            (module === 'TRADER' && level !== 'ERROR' && message.includes('closed'))) {
+          logType = 'success';
+          icon = 'fa-solid fa-check';
+          title = 'Operação finalizada com sucesso';
+          
+          // Tentar extrair informações da mensagem
+          const profitMatch = message.match(/[+-]?\$?[\d,]+\.?\d*/);
+          const volMatch = message.match(/Vol\s*(\d+)/i) || message.match(/R_(\d+)/);
+          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          
+          if (profitMatch && volMatch) {
+            details = `${timeMatch} • Vol ${volMatch[1]} • ${profitMatch[0]}`;
+          } else if (profitMatch) {
+            details = `${timeMatch} • ${profitMatch[0]}`;
+          } else {
+            details = timeMatch || log.timestamp;
+          }
+        }
+        // Detectar entrada executada
+        else if (message.includes('Buy') || message.includes('Proposal') || message.includes('entrada') || 
+                 (module === 'TRADER' && message.includes('opened'))) {
+          logType = 'purchase';
+          icon = 'fa-solid fa-arrow-right';
+          title = 'Entrada executada';
+          
+          const volMatch = message.match(/Vol\s*(\d+)/i) || message.match(/R_(\d+)/);
+          const priceMatch = message.match(/\$?[\d,]+\.?\d*/);
+          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          
+          if (volMatch && priceMatch) {
+            details = `${timeMatch} • Vol ${volMatch[1]} • ${priceMatch[0]}`;
+          } else if (volMatch) {
+            details = `${timeMatch} • Vol ${volMatch[1]}`;
+          } else {
+            details = timeMatch || log.timestamp;
+          }
+        }
+        // Detectar análise/volume
+        else if (message.includes('Volume') || message.includes('volume') || message.includes('detectado') ||
+                 module === 'ANALYZER' || module === 'RISK') {
+          logType = 'analysis';
+          icon = 'fa-solid fa-chart-line';
+          title = 'Volume detectado';
+          
+          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          details = `${timeMatch} • Análise de mercado`;
+        }
+        // Detectar perda
+        else if (message.includes('LOST') || message.includes('loss') || message.includes('perda') ||
+                 (module === 'TRADER' && level === 'ERROR')) {
+          logType = 'loss';
+          icon = 'fa-solid fa-xmark';
+          title = 'Operação finalizada com perda';
+          
+          const lossMatch = message.match(/[-$]?[\d,]+\.?\d*/);
+          const volMatch = message.match(/Vol\s*(\d+)/i) || message.match(/R_(\d+)/);
+          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          
+          if (lossMatch && volMatch) {
+            details = `${timeMatch} • Vol ${volMatch[1]} • ${lossMatch[0]}`;
+          } else if (lossMatch) {
+            details = `${timeMatch} • ${lossMatch[0]}`;
+          } else {
+            details = timeMatch || log.timestamp;
+          }
+        }
+        // Detectar aguardando
+        else if (message.includes('waiting') || message.includes('aguardando') || message.includes('monitoring') ||
+                 message.includes('Monitoramento')) {
+          logType = 'waiting';
+          icon = 'fa-solid fa-clock';
+          title = 'Aguardando padrão da estratégia';
+          
+          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          details = `${timeMatch} • Monitoramento ativo`;
+        }
+        // Padrão genérico
+        else {
+          logType = 'info';
+          icon = 'fa-solid fa-info-circle';
+          title = message.length > 50 ? message.substring(0, 50) + '...' : message;
+          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          details = timeMatch || log.timestamp;
+        }
+        
+        return {
+          ...log,
+          logType,
+          icon,
+          title,
+          details
+        };
+      });
+    }
   },
   methods: {
     async fetchRealtimeLogs() {
@@ -251,95 +350,62 @@ export default {
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background-color: #0E0E0E;
-  border: 1px solid #1C1C1C;
-  border-radius: 0.75rem;
-  overflow: hidden;
+  background-color: transparent;
+  border: none;
+  border-radius: 0;
+  overflow: visible;
 }
 
 .logs-header {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 1rem 1.5rem;
-  background-color: #0E0E0E;
-  border-bottom: 1px solid #1C1C1C;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0;
+}
+
+.logs-title-section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
 }
 
 .logs-title {
-  font-size: 1rem;
-  font-weight: 600;
-  color: #DFDFDF;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: #FFFFFF;
   margin: 0;
 }
 
-.logs-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.clear-logs-btn {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 1rem;
-  background-color: #1C1C1C;
-  border: 1px solid #2C2C2C;
-  border-radius: 0.5rem;
+.logs-subtitle {
+  font-size: 0.75rem;
   color: #A1A1A1;
-  font-size: 0.875rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.clear-logs-btn:hover:not(:disabled) {
-  background-color: #2C2C2C;
-  color: #DFDFDF;
-  border-color: #3C3C3C;
-}
-
-.clear-logs-btn:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
+  margin: 0;
 }
 
 .logs-content {
   flex: 1;
   overflow-y: auto;
-  padding: 1rem;
-  font-family: 'Courier New', 'Monaco', 'Consolas', monospace;
-  font-size: 0.875rem;
-  line-height: 1.6;
-  background-color: #0B0B0B;
+  padding: 0;
+  background-color: transparent;
 }
 
-.logs-content::-webkit-scrollbar {
-  width: 8px;
-}
-
-.logs-content::-webkit-scrollbar-track {
-  background: #0B0B0B;
-}
-
-.logs-content::-webkit-scrollbar-thumb {
-  background: #2C2C2C;
-  border-radius: 4px;
-}
-
-.logs-content::-webkit-scrollbar-thumb:hover {
-  background: #3C3C3C;
-}
-
-.log-entry {
+.logs-list {
   display: flex;
+  flex-direction: column;
   gap: 0.5rem;
-  padding: 0.5rem 0;
-  border-bottom: 1px solid rgba(28, 28, 28, 0.5);
-  word-wrap: break-word;
+}
+
+.log-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background-color: #0E0E0E;
+  border: 1px solid #1C1C1C;
+  border-radius: 0.75rem;
   animation: fadeIn 0.3s ease;
-  text-align: left;
 }
 
 @keyframes fadeIn {
@@ -353,67 +419,87 @@ export default {
   }
 }
 
-.log-timestamp {
-  color: #7A7A7A;
-  font-weight: 500;
-  min-width: 100px;
+.log-icon-container {
+  width: 1.5rem;
+  height: 1.5rem;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   flex-shrink: 0;
 }
 
-.log-level {
-  color: #9CA3AF;
-  font-weight: 600;
-  min-width: 60px;
-  flex-shrink: 0;
-  font-size: 0.8rem;
+.log-icon-container i {
+  font-size: 0.75rem;
 }
 
-.log-module {
-  color: #6B7280;
-  font-weight: 500;
-  min-width: 80px;
-  flex-shrink: 0;
-  font-size: 0.8rem;
-}
-
-.log-separator {
-  color: #4B5563;
-  margin: 0 0.5rem;
-  flex-shrink: 0;
-}
-
-.log-message {
-  flex: 1;
-  word-break: break-word;
-}
-
-/* Tipos de log */
-.log-info {
-  color: #DFDFDF;
-}
-
-.log-analise {
-  color: #A78BFA;
-}
-
-.log-sinal {
-  color: #FCD34D;
-}
-
-.log-operacao {
-  color: #60A5FA;
-}
-
-.log-resultado {
+.log-icon-success {
+  background-color: rgba(34, 197, 94, 0.2);
   color: #22C55E;
 }
 
-.log-alerta {
-  color: #FB923C;
+.log-icon-purchase {
+  background-color: rgba(250, 204, 21, 0.2);
+  color: #FACC15;
 }
 
-.log-erro {
+.log-icon-analysis {
+  background-color: rgba(59, 130, 246, 0.2);
+  color: #3B82F6;
+}
+
+.log-icon-waiting {
+  background-color: rgba(156, 163, 175, 0.2);
+  color: #9CA3AF;
+}
+
+.log-icon-loss {
+  background-color: rgba(255, 71, 71, 0.2);
   color: #FF4747;
+}
+
+.log-icon-info {
+  background-color: rgba(156, 163, 175, 0.2);
+  color: #9CA3AF;
+}
+
+.log-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.125rem;
+}
+
+.log-title {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #FFFFFF;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.log-details {
+  font-size: 0.625rem;
+  color: #A1A1A1;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.logs-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.logs-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.logs-content::-webkit-scrollbar-thumb {
+  background: #2C2C2C;
+  border-radius: 4px;
+}
+
+.logs-content::-webkit-scrollbar-thumb:hover {
+  background: #3C3C3C;
 }
 
 .empty-logs {

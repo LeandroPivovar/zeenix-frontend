@@ -260,6 +260,13 @@
           </svg>
           {{ loading ? 'Criando contas...' : 'Criar Conta DEMO + REAL' }}
         </button>
+        
+        <button type="button" @click="onClose" class="secondary-btn" :disabled="loading" style="margin-top: 12px;">
+          <svg class="back-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M19 12H5M5 12l6-6m-6 6l6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Voltar
+        </button>
       </form>
     </div>
   </div>
