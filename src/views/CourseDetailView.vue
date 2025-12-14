@@ -514,7 +514,7 @@ export default {
 }
 </script>
 
-<style scoped>
+<style scoped src="@/assets/css/views/courseDetailView.css">
 /* Estilos do CourseDetailView */
 </style>
 <style scoped>
