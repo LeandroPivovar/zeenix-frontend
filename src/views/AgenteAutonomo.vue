@@ -200,9 +200,21 @@
           console.log('[AgenteAutonomo] agenteData computed - operacoesHoje:', operacoesHoje, 'sessionStats.operationsToday:', this.sessionStats?.operationsToday, 'accountBalance:', this.accountBalance);
         }
         
-        const accountBalanceValue = this.accountBalance && typeof this.accountBalance === 'number' && this.accountBalance > 0 
-          ? this.accountBalance 
-          : (typeof this.accountBalance === 'number' ? this.accountBalance : 0);
+        // Garantir que accountBalance seja sempre um número válido
+        let accountBalanceValue = 0;
+        if (this.accountBalance !== null && this.accountBalance !== undefined) {
+          if (typeof this.accountBalance === 'number') {
+            accountBalanceValue = this.accountBalance;
+          } else {
+            const parsed = parseFloat(String(this.accountBalance));
+            accountBalanceValue = isNaN(parsed) ? 0 : parsed;
+          }
+        }
+        
+        // Log quando accountBalance mudar para debug
+        if (accountBalanceValue > 0 && operacoesHoje > 0) {
+          console.log('[AgenteAutonomo] agenteData computed - accountBalanceValue:', accountBalanceValue, 'this.accountBalance:', this.accountBalance);
+        }
         
         return {
           estrategia: this.agentConfig?.strategy ? this.getStrategyTitle(this.agentConfig.strategy) : this.estrategia,

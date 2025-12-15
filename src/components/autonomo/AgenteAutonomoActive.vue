@@ -364,7 +364,7 @@
 					operationHistory: [],
 					agentActions: [],
 					agentStatus: 'PAUSADO',
-					accountBalance: null,
+					accountBalance: 0, // Mudar de null para 0 para evitar problemas de reatividade
 				})
 			},
 			tempoAtivo: {
@@ -497,16 +497,20 @@
 				
 				// Converter para número se necessário
 				const backendCapitalNum = backendCapital ? (typeof backendCapital === 'number' ? backendCapital : parseFloat(String(backendCapital)) || 0) : 0;
-				const headerBalanceNum = headerBalance ? (typeof headerBalance === 'number' ? headerBalance : parseFloat(String(headerBalance)) || 0) : 0;
+				const headerBalanceNum = headerBalance !== null && headerBalance !== undefined 
+					? (typeof headerBalance === 'number' ? headerBalance : parseFloat(String(headerBalance)) || 0) 
+					: 0;
 				
-				// Log detalhado para debug
-				if (headerBalanceNum > 0 || backendCapitalNum > 0) {
+				// Log detalhado para debug (sempre logar quando houver valores ou quando agenteData existir)
+				if (this.agenteData && (headerBalanceNum > 0 || backendCapitalNum > 0 || headerBalance !== undefined)) {
 					console.log('[AgenteAutonomoActive] totalCapital computed:', {
 						backendCapital: backendCapital,
 						backendCapitalNum: backendCapitalNum,
 						headerBalance: headerBalance,
+						headerBalanceType: typeof headerBalance,
 						headerBalanceNum: headerBalanceNum,
 						agenteDataExists: !!this.agenteData,
+						agenteDataAccountBalance: this.agenteData?.accountBalance,
 						sessionStatsExists: !!this.sessionStats
 					});
 				}
@@ -516,13 +520,13 @@
 				}
 				
 				if (headerBalanceNum > 0) {
-					console.log('[AgenteAutonomoActive] totalCapital: usando headerBalance como fallback:', headerBalanceNum);
+					console.log('[AgenteAutonomoActive] ✅ totalCapital: usando headerBalance como fallback:', headerBalanceNum);
 					return headerBalanceNum;
 				}
 				
 				// Log apenas quando realmente não há valor (evitar spam)
-				if (this.sessionStats && this.agenteData) {
-					console.warn('[AgenteAutonomoActive] totalCapital: nenhum valor disponível. backendCapital:', backendCapitalNum, 'headerBalance:', headerBalanceNum, 'agenteData:', this.agenteData);
+				if (this.sessionStats && this.agenteData && headerBalanceNum === 0 && backendCapitalNum === 0) {
+					console.warn('[AgenteAutonomoActive] ⚠️ totalCapital: nenhum valor disponível. backendCapital:', backendCapitalNum, 'headerBalance:', headerBalanceNum, 'agenteData.accountBalance:', this.agenteData?.accountBalance);
 				}
 				return 0;
 			},
@@ -694,13 +698,15 @@
 			'agenteData.accountBalance'(newVal, oldVal) {
 				// Forçar atualização quando accountBalance mudar para recalcular porcentagens
 				if (newVal !== oldVal) {
-					console.log('[AgenteAutonomoActive] accountBalance mudou:', { 
+					console.log('[AgenteAutonomoActive] accountBalance mudou (watch específico):', { 
 						newVal, 
 						oldVal, 
 						newValType: typeof newVal,
-						isValid: newVal && typeof newVal === 'number' && newVal > 0
+						isValid: newVal && typeof newVal === 'number' && newVal > 0,
+						agenteDataAccountBalance: this.agenteData?.accountBalance
 					});
 					if (newVal && typeof newVal === 'number' && newVal > 0) {
+						console.log('[AgenteAutonomoActive] Forçando atualização devido a mudança de accountBalance');
 						this.$forceUpdate();
 					}
 				}
@@ -709,7 +715,19 @@
 				handler(newVal, oldVal) {
 					// Log de mudanças em agenteData
 					if (newVal && typeof newVal === 'object') {
-						console.log('[AgenteAutonomoActive] agenteData mudou, operacoesHoje:', newVal?.operacoesHoje, 'accountBalance:', newVal?.accountBalance);
+						console.log('[AgenteAutonomoActive] agenteData mudou:', {
+							operacoesHoje: newVal?.operacoesHoje,
+							accountBalance: newVal?.accountBalance,
+							accountBalanceType: typeof newVal?.accountBalance,
+							oldAccountBalance: oldVal?.accountBalance,
+							fullAgenteData: newVal
+						});
+						
+						// Forçar atualização quando accountBalance mudar
+						if (newVal.accountBalance && newVal.accountBalance !== oldVal?.accountBalance) {
+							console.log('[AgenteAutonomoActive] accountBalance mudou no agenteData, forçando atualização');
+							this.$forceUpdate();
+						}
 						
 						// Forçar atualização quando agenteData mudar (especialmente tempoAtivo)
 						if (newVal.tempoAtivo) {
