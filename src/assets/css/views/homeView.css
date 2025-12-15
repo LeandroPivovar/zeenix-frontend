@@ -585,8 +585,8 @@ header{
         max-width: 100%;
         padding: 24px;
         border-radius: 20px;
-        background: #0f1015;
-        border: 1px solid #1C1C1C;
+        background: transparent !important;
+        border: none !important;
     }
 
     .video-placeholder {
@@ -600,16 +600,12 @@ header{
     }
 
     .video-text {
-        display: block;
-        font-size: 13px;
-        color: #FFFFFF;
-        font-weight: 400;
-        margin: 0;
+        display: none !important;
     }
     
     .text-mobile-description {
         font-size: 12px;
-        color: #9CA3AF;
+        color: #9CA3AF !important;
         text-align: center;
         margin: 15px 0 0 0;
         line-height: 1.5;
