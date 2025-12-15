@@ -20,12 +20,58 @@ export async function loadAccountBalance() {
       return cachedBalance;
     }
 
-    const derivToken = localStorage.getItem('deriv_token');
     const appId = localStorage.getItem('deriv_app_id') || '1089';
     const token = localStorage.getItem('token');
     
-    if (!derivToken || !token) {
-      console.warn('[BalanceLoader] Token não disponível');
+    if (!token) {
+      console.warn('[BalanceLoader] Token de autenticação não disponível');
+      return null;
+    }
+    
+    // Tentar obter token Deriv de várias fontes
+    let derivToken = localStorage.getItem('deriv_token');
+    let loginid = null;
+    
+    // Se não encontrou deriv_token direto, tentar obter do deriv_connection
+    if (!derivToken) {
+      const connectionStr = localStorage.getItem('deriv_connection');
+      if (connectionStr) {
+        try {
+          const connection = JSON.parse(connectionStr);
+          loginid = connection.loginid || null;
+          derivToken = connection.token || null;
+        } catch (e) {
+          console.warn('[BalanceLoader] Erro ao parsear deriv_connection:', e);
+        }
+      }
+    }
+    
+    // Se ainda não encontrou, tentar obter de deriv_tokens_by_loginid
+    if (!derivToken) {
+      const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+      if (tokensByLoginIdStr) {
+        try {
+          const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+          
+          // Se tiver loginid, buscar token específico
+          if (loginid && tokensByLoginId[loginid]) {
+            derivToken = tokensByLoginId[loginid];
+            console.log('[BalanceLoader] ✅ Token extraído de deriv_tokens_by_loginid para loginid:', loginid);
+          } else if (Object.keys(tokensByLoginId).length > 0) {
+            // Se não tiver loginid específico, usar o primeiro token disponível
+            const firstLoginId = Object.keys(tokensByLoginId)[0];
+            derivToken = tokensByLoginId[firstLoginId];
+            loginid = firstLoginId;
+            console.log('[BalanceLoader] ✅ Token extraído de deriv_tokens_by_loginid (primeiro disponível):', firstLoginId);
+          }
+        } catch (e) {
+          console.warn('[BalanceLoader] Erro ao parsear deriv_tokens_by_loginid:', e);
+        }
+      }
+    }
+    
+    if (!derivToken) {
+      console.warn('[BalanceLoader] Token Deriv não disponível');
       return null;
     }
 
@@ -51,7 +97,7 @@ export async function loadAccountBalance() {
         // Extrair informações do saldo
         let balance = 0;
         let currency = 'USD';
-        let loginid = null;
+        let accountLoginid = loginid || null; // Usar loginid já obtido, se disponível
         let isDemo = false;
         
         // Extrair balancesByCurrencyReal e balancesByCurrencyDemo (essenciais para TopNavbar)
@@ -68,13 +114,13 @@ export async function loadAccountBalance() {
           if (account) {
             balance = parseFloat(account.value) || 0;
             currency = 'USD';
-            loginid = account.loginid;
+            accountLoginid = account.loginid || accountLoginid;
             isDemo = account.isDemo || false;
           }
         }
         
         // Se não encontrou, tentar buscar do raw.accounts
-        if (!loginid && data.raw && data.raw.accounts) {
+        if (!accountLoginid && data.raw && data.raw.accounts) {
           const accounts = data.raw.accounts;
           const accountIds = Object.keys(accounts);
           
@@ -84,15 +130,15 @@ export async function loadAccountBalance() {
             const acc = accounts[accountId];
             if (acc.currency === 'USD' && acc.demo_account !== 1 && acc.demo_account !== true) {
               selectedAccount = acc;
-              loginid = accountId;
+              accountLoginid = accountId;
               break;
             }
           }
           
           // Se não encontrou USD real, buscar qualquer conta
           if (!selectedAccount && accountIds.length > 0) {
-            loginid = accountIds[0];
-            selectedAccount = accounts[loginid];
+            accountLoginid = accountIds[0];
+            selectedAccount = accounts[accountLoginid];
           }
           
           if (selectedAccount) {
@@ -120,30 +166,37 @@ export async function loadAccountBalance() {
             currency = data.currency || (data.balance?.currency || 'USD');
           }
           
-          // Tentar pegar loginid da conexão salva
-          const connectionStr = localStorage.getItem('deriv_connection');
-          if (connectionStr) {
-            try {
-              const connection = JSON.parse(connectionStr);
-              loginid = connection.loginid || null;
-              if (loginid) {
-                isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT');
+          // Tentar pegar loginid da conexão salva se ainda não tiver
+          if (!accountLoginid) {
+            const connectionStr = localStorage.getItem('deriv_connection');
+            if (connectionStr) {
+              try {
+                const connection = JSON.parse(connectionStr);
+                accountLoginid = connection.loginid || null;
+                if (accountLoginid) {
+                  isDemo = accountLoginid.startsWith('VRTC') || accountLoginid.startsWith('VRT');
+                }
+              } catch (e) {
+                // Ignorar erro
               }
-            } catch (e) {
-              // Ignorar erro
             }
           }
         }
         
         // Confirmar se é demo baseado no loginid
-        if (loginid && (loginid.startsWith('VRTC') || loginid.startsWith('VRT'))) {
+        if (accountLoginid && (accountLoginid.startsWith('VRTC') || accountLoginid.startsWith('VRT'))) {
           isDemo = true;
+        }
+        
+        // Se ainda não tiver loginid, usar o que foi obtido anteriormente
+        if (!accountLoginid) {
+          accountLoginid = loginid;
         }
         
         const balanceData = {
           balance: parseFloat(balance) || 0,
           currency: (currency || 'USD').toUpperCase(),
-          loginid: loginid,
+          loginid: accountLoginid,
           isDemo: isDemo,
           balancesByCurrencyReal: balancesByCurrencyReal,
           balancesByCurrencyDemo: balancesByCurrencyDemo,
