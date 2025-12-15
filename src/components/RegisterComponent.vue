@@ -256,7 +256,9 @@
 
           <!-- Links -->
           <div class="mt-0 space-y-3 text-center">
-            <a @click.prevent="$router.push('/login')" href="/login" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors cursor-pointer">Já possui uma conta? Voltar ao login</a>
+            <a @click.prevent="$router.push('/login')" href="/login" class="block text-sm transition-colors cursor-pointer register-back-link">
+              <span class="register-text-gray">Já possui uma conta?</span> <span class="register-text-green">Voltar ao login</span>
+            </a>
           </div>
 
           <!-- Footer -->
@@ -1221,6 +1223,19 @@ button.bg-zenix-green:disabled {
   }
 
   #register-section a.text-zenix-green {
+    color: #22C55E !important;
+  }
+  
+  /* Link voltar ao login - parte cinza e parte verde no mobile */
+  #register-section a.register-back-link {
+    color: inherit !important;
+  }
+  
+  #register-section .register-text-gray {
+    color: #AAAAAA !important;
+  }
+  
+  #register-section .register-text-green {
     color: #22C55E !important;
   }
   

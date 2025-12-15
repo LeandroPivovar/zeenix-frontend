@@ -29,7 +29,7 @@
           <form id="login-form" class="space-y-6" @submit.prevent="handleLogin">
             <!-- Email Input -->
             <div>
-              <label class="block text-sm font-medium text-zenix-text-dark mb-2">E-mail</label>
+              <label class="block text-sm font-medium text-zenix-text-dark mb-2 login-label">E-mail</label>
               <div class="relative">
                 <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M2 4L8 8L14 4M2 4H14V12H2V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -37,7 +37,7 @@
                 <input 
                   type="email" 
                   v-model="email"
-                  placeholder="seu@email.com" 
+                  :placeholder="isMobile ? 'digite seu email' : 'seu@email.com'" 
                   class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors input-email"
                   required
                 >
@@ -46,7 +46,7 @@
 
             <!-- Password Input -->
             <div>
-              <label class="block text-sm font-medium text-zenix-text-dark mb-2">Senha</label>
+              <label class="block text-sm font-medium text-zenix-text-dark mb-2 login-label">Senha</label>
               <div class="relative">
                 <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 6H11V4C11 2.89543 10.1046 2 9 2H7C5.89543 2 5 2.89543 5 4V6H4C3.44772 6 3 6.44772 3 7V13C3 13.5523 3.44772 14 4 14H12C12.5523 14 13 13.5523 13 13V7C13 6.44772 12.5523 6 12 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -56,7 +56,7 @@
                   :type="showPassword ? 'text' : 'password'" 
                   id="password-input" 
                   v-model="password"
-                  placeholder="••••••••" 
+                  :placeholder="isMobile ? 'digite sua senha' : '••••••••'" 
                   class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-12 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors input-password"
                   required
                 >
@@ -77,7 +77,7 @@
                 </button>
               </div>
               <!-- Security Message -->
-              <div class="mt-2 security-message">
+              <div class="mt-2 security-message login-security-message">
                 <svg class="text-xs mr-1 security-icon" width="12" height="12" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 6H11V4C11 2.89543 10.1046 2 9 2H7C5.89543 2 5 2.89543 5 4V6H4C3.44772 6 3 6.44772 3 7V13C3 13.5523 3.44772 14 4 14H12C12.5523 14 13 13.5523 13 13V7C13 6.44772 12.5523 6 12 6Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
                   <path d="M6 4C6 3.44772 6.44772 3 7 3H9C9.55228 3 10 3.44772 10 4V6H6V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
@@ -946,8 +946,8 @@ button.bg-zenix-green:disabled {
   }
 
   #login-section .border-zenix-input-border {
-    border: none !important;
-    border-color: transparent !important;
+    border: none;
+    border-color: rgba(255, 255, 255, 0.1) !important;
   }
 
   #login-section .text-zenix-text-dark {
@@ -1111,15 +1111,16 @@ button.bg-zenix-green:disabled {
   #login-section input {
     padding: 0.875rem 1rem !important;
     font-size: 0.875rem !important;
-    background-color: #1F2937 !important;
-    border: none !important;
-    border-color: transparent !important;
+    background-color: #030606bf !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-color: rgba(255, 255, 255, 0.1) !important;
     color: #FFFFFF !important;
+    font-family: 'Inter', sans-serif !important;
   }
   
   #login-section input:focus {
-    border: none !important;
-    border-color: transparent !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    border-color: rgba(255, 255, 255, 0.2) !important;
     outline: none !important;
   }
 
@@ -1138,7 +1139,7 @@ button.bg-zenix-green:disabled {
   #login-section input:-webkit-autofill:hover,
   #login-section input:-webkit-autofill:focus {
     -webkit-text-fill-color: #FFFFFF !important;
-    -webkit-box-shadow: 0 0 0px 1000px #1F2937 inset !important;
+    -webkit-box-shadow: 0 0 0px 1000px #030606bf inset !important;
   }
 
   /* Campo de senha - quando preenchido, mostrar pontos em branco */
@@ -1155,6 +1156,7 @@ button.bg-zenix-green:disabled {
 
   #login-section input::placeholder {
     color: rgba(255, 255, 255, 0.35) !important;
+    font-family: 'Inter', sans-serif !important;
   }
 
   /* Texto digitado nos inputs deve ser branco */
@@ -1174,6 +1176,11 @@ button.bg-zenix-green:disabled {
     margin-bottom: 0.375rem !important;
     color: #a0a3a2 !important;
     font-weight: 500 !important;
+  }
+  
+  /* Ocultar labels no mobile */
+  #login-section label.login-label {
+    display: none !important;
   }
   
   /* Garantir que labels com text-zenix-text-dark também usem a cor correta */
@@ -1204,6 +1211,11 @@ button.bg-zenix-green:disabled {
     padding-top: 0.25rem !important;
     margin-top: 0 !important;
     text-align: left !important;
+  }
+  
+  /* Ocultar security-message no mobile */
+  .login-security-message {
+    display: none !important;
   }
 
   .security-message svg,
@@ -1255,8 +1267,8 @@ button.bg-zenix-green:disabled {
     margin-bottom: 0 !important;
   }
   
-  /* Espaçamento da mensagem de segurança */
-  .security-message {
+  /* Espaçamento da mensagem de segurança - apenas no desktop */
+  .security-message:not(.login-security-message) {
     padding-top: 0.375rem !important;
     margin-top: 0.375rem !important;
     margin-bottom: 0 !important;

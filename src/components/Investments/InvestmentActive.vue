@@ -1,8 +1,8 @@
 <template>
     <div class="investment-active-wrapper">
         <main class="investment-active-main">
-            <!-- Performance Summary Cards -->
-            <section id="compact-performance-panel" class="mb-6">
+            <!-- Desktop: Layout Original - Performance Summary Cards -->
+            <section id="compact-performance-panel" class="mb-6 desktop-performance-panel">
                 <div id="iya1j" class="grid grid-cols-12 gap-3" style="width: 100%; box-sizing: border-box;">
                     <!-- Card 1 - Saldo Total -->
                     <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
@@ -31,7 +31,7 @@
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-1">
-                                    <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Lucro do Dia</span>
+                                    <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide mobile-label-lucro">Lucro do Dia</span>
                                     <button class="eye-btn" @click="profitVisible = !profitVisible">
                                         <i :class="profitVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
                                     </button>
@@ -140,18 +140,204 @@
                     </div>
                 </div>
             </section>
+            
+            <!-- Mobile: Card Unificado: Header + Saldo + Resultado + Trades + Ordem -->
+            <section id="mobile-compact-performance-panel" class="mb-6 mobile-performance-panel">
+                <div class="bg-[#0B0B0B]/80 border-2 border-[#1C1C1C] rounded-2xl p-6 premium-card relative overflow-hidden">
+                    <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
+                    <div class="relative z-10">
+                        <!-- Header -->
+                        <div class="mobile-ia-header mb-3">
+                            <h1 class="mobile-ia-title">IA ORION</h1>
+                            <div class="mobile-separator"></div>
+                        </div>
+                        
+                        <!-- Saldo Total, Lucro do Dia e Trades Hoje -->
+                        <div class="grid grid-cols-3 gap-3 mb-4">
+                            <!-- Saldo Total -->
+                            <div class="flex flex-col justify-between">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide">Saldo Total</span>
+                                    <button class="eye-btn" @click="balanceVisible = !balanceVisible">
+                                        <i :class="balanceVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[9px]"></i>
+                                    </button>
+                                </div>
+                                <div class="text-[12px] font-bold text-zenix-text text-left">
+                                    <span v-if="!isLoadingStats && accountBalanceProp" :class="{ 'hidden-value': !balanceVisible }">
+                                        {{ balanceVisible ? formattedBalance : '••••••' }}
+                                    </span>
+                                    <span v-else class="text-[12px] text-zenix-secondary">Carregando...</span>
+                                </div>
+                            </div>
+
+                            <!-- Lucro do Dia -->
+                            <div class="flex flex-col justify-between">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide mobile-label-lucro">Lucro do Dia</span>
+                                    <button class="eye-btn" @click="profitVisible = !profitVisible">
+                                        <i :class="profitVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[9px]"></i>
+                                    </button>
+                                </div>
+                                <div class="flex items-baseline space-x-1.5 text-left">
+                                    <div v-if="!isLoadingStats" :class="['text-[12px] font-bold', sessionBalanceClass, { 'hidden-value': !profitVisible }]">
+                                        {{ profitVisible ? formattedSessionBalance : '••••••' }}
+                                    </div>
+                                    <span 
+                                        v-if="!isLoadingStats && profitPercentage && profitVisible" 
+                                        :class="['profit-percentage-badge text-[10px]', isProfitPositive ? 'profit-positive' : 'profit-negative']"
+                                    >
+                                        {{ profitPercentage }}
+                                    </span>
+                                    <span v-else-if="isLoadingStats" class="text-[12px] text-zenix-secondary">Carregando...</span>
+                                </div>
+                            </div>
+
+                            <!-- Trades Hoje -->
+                            <div class="flex flex-col justify-between">
+                                <div class="flex items-center justify-between mb-1">
+                                    <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
+                                    <button class="eye-btn" @click="tradesVisible = !tradesVisible">
+                                        <i :class="tradesVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[9px]"></i>
+                                    </button>
+                                </div>
+                                <div class="flex items-center space-x-2 text-left">
+                                    <span v-if="!isLoadingStats" id="i8cy7b" :class="['text-[12px] font-bold text-zenix-green', { 'hidden-value': !tradesVisible }]">
+                                        {{ tradesVisible ? (dailyStats.sessionWins || 0) : '••' }}
+                                    </span>
+                                    <div class="relative">
+                                        <span class="text-[12px] font-light text-zenix-secondary/40">|</span>
+                                        <div class="absolute inset-0 bg-zenix-green/20 blur-sm"></div>
+                                    </div>
+                                    <span v-if="!isLoadingStats" id="idsh94" :class="['text-[12px] font-bold text-zenix-red', { 'hidden-value': !tradesVisible }]">
+                                        {{ tradesVisible ? (dailyStats.sessionLosses || 0) : '••' }}
+                                    </span>
+                                    <span v-else class="text-[12px] text-zenix-secondary">Carregando...</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Ordem (Barra de Progresso) -->
+                        <div class="mobile-progress-container" style="padding-top: 0.5rem; border-top: 1px solid #1C1C1C; margin-top: 0.5rem;">
+                            <div class="mobile-progress-bar">
+                                <div :class="['mobile-progress-segment segment-1', { 'filled': progressState >= 1 }]"></div>
+                                <div :class="['mobile-progress-segment segment-2', { 'filled': progressState >= 2 }]"></div>
+                                <div :class="['mobile-progress-segment segment-3', { 'filled': progressState >= 3 }]"></div>
+                            </div>
+                            <div class="mobile-progress-text">
+                                <span class="mobile-progress-dot"></span>
+                                <div class="mobile-progress-labels">
+                                    <span class="mobile-progress-label label-1">Analisando o mercado</span>
+                                    <span class="mobile-progress-label label-2">Ordem aberta</span>
+                                    <span class="mobile-progress-label label-3">Ordem fechada</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
     
-            <!-- Main Content Grid -->
-            <div class="grid grid-cols-12 gap-6 mb-6 items-stretch" style="width: 100%; box-sizing: border-box;">
+            
+            <!-- Mobile Tabs -->
+            <div class="mobile-tabs-container">
+                <button 
+                    :class="['mobile-tab', activeTab === 'config' ? 'mobile-tab-active' : '']"
+                    @click="activeTab = 'config'"
+                >
+                    Config
+                </button>
+                <button 
+                    :class="['mobile-tab', activeTab === 'chart' ? 'mobile-tab-active' : '']"
+                    @click="activeTab = 'chart'"
+                >
+                    Gráfico
+                </button>
+                <button 
+                    :class="['mobile-tab', activeTab === 'logs' ? 'mobile-tab-active' : '']"
+                    @click="activeTab = 'logs'"
+                >
+                    Logs
+                </button>
+                <button 
+                    :class="['mobile-tab', activeTab === 'register' ? 'mobile-tab-active' : '']"
+                    @click="activeTab = 'register'"
+                >
+                    Registro
+                </button>
+            </div>
+            
+            <!-- Mobile: Conteúdo da Tab Config -->
+            <div v-if="activeTab === 'config'" class="mobile-config-content mobile-tab-content">
+                <div class="mobile-config-header">
+                    <h3 class="mobile-config-title">Configuração Ativa</h3>
+                    <i class="fas fa-cogs mobile-config-icon"></i>
+                </div>
+                <div class="mobile-config-card">
+                    <div class="mobile-config-item">
+                        <p class="mobile-config-label">Estratégia</p>
+                        <p class="mobile-config-value">{{ strategyName }}</p>
+                        <p class="mobile-config-desc">Estratégia de scalping com análise de padrões em tempo real</p>
+                    </div>
+                    <div class="mobile-config-item">
+                        <p class="mobile-config-label">Mercado</p>
+                        <p class="mobile-config-value">{{ selectedMarket }}</p>
+                        <p class="mobile-config-desc">Ticks de alta frequência</p>
+                    </div>
+                    <div class="mobile-config-grid">
+                        <div class="mobile-config-param">
+                            <p class="mobile-config-param-label">Entrada</p>
+                            <p class="mobile-config-param-value" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : '$10.00' }}</p>
+                            <p class="mobile-config-param-value" v-else>Carregando...</p>
+                        </div>
+                        <div class="mobile-config-param">
+                            <p class="mobile-config-param-label">Modo</p>
+                            <p class="mobile-config-param-value">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
+                        </div>
+                        <div class="mobile-config-param">
+                            <p class="mobile-config-param-label">Alvo de Lucro</p>
+                            <p class="mobile-config-param-value mobile-config-profit" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$15.00' }}</p>
+                            <p class="mobile-config-param-value mobile-config-profit" v-else>Carregando...</p>
+                        </div>
+                        <div class="mobile-config-param">
+                            <p class="mobile-config-param-label">Limite de Perda</p>
+                            <p class="mobile-config-param-value mobile-config-loss" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$5.00' }}</p>
+                            <p class="mobile-config-param-value mobile-config-loss" v-else>Carregando...</p>
+                        </div>
+                    </div>
+                    <div class="mobile-config-item">
+                        <p class="mobile-config-label">Gerenciamento</p>
+                        <div class="mobile-config-badge">
+                            <span class="mobile-config-badge-text">{{ realRiskLabel }}</span>
+                        </div>
+                    </div>
+                    <div class="mobile-config-item">
+                        <p class="mobile-config-label">Status da IA</p>
+                        <div class="mobile-config-status">
+                            <span class="mobile-config-status-dot"></span>
+                            <span class="mobile-config-status-text">Ativa</span>
+                        </div>
+                    </div>
+                    <button 
+                        class="mobile-pause-btn"
+                        @click="handleDeactivate"
+                        :disabled="isDeactivating"
+                    >
+                        <i class="fas fa-pause"></i>
+                        <span>{{ isDeactivating ? 'Desativando...' : 'II PAUSAR IA' }}</span>
+                    </button>
+                </div>
+            </div>
+    
+            <!-- Main Content Grid (Desktop) / Mobile Tab Content -->
+            <div v-if="activeTab !== 'config'" class="grid grid-cols-12 gap-6 mb-6 items-stretch desktop-main-content" style="width: 100%; box-sizing: border-box;">
                 <!-- Left Column - Chart -->
                 <div id="ir8sfp" class="col-span-9 flex">
                     <div id="market-chart" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-full flex flex-col w-full">
-                        <div class="flex items-center justify-between mb-4">
+                        <div class="flex items-center justify-between mb-4 desktop-chart-header">
                             <div>
                                 <h2 class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
                                 <p class="text-xs text-zenix-secondary mt-1">{{ selectedMarket }} • M5 • Última atualização: {{ formattedLastUpdate }}</p>
                             </div>
-                            <div class="flex items-center space-x-6">
+                            <div class="flex items-center space-x-6 desktop-tabs">
                                 <button 
                                     id="tab-chart" 
                                     :class="['relative text-sm font-medium transition-all pb-1', activeTab === 'chart' ? 'text-zenix-green' : 'text-zenix-secondary hover:text-zenix-text']"
@@ -178,7 +364,7 @@
                                 </button>
                             </div>
                         </div>
-                        <div v-show="activeTab === 'chart'" class="flex items-center space-x-2 mb-4">
+                        <div v-show="activeTab === 'chart'" class="flex items-center space-x-2 mb-4 mobile-chart-controls">
                             <button
                                 v-for="timeframe in timeframeOptions"
                                 :key="timeframe.value"
@@ -259,7 +445,7 @@
                         </div>
 
                         <!-- Registros View (Logs Detalhados em Tempo Real) -->
-                        <div v-show="activeTab === 'register'" id="register-view" class="h-[600px] overflow-hidden flex flex-col">
+                        <div v-show="activeTab === 'register'" id="register-view" class="h-[600px] overflow-hidden flex flex-col mobile-tab-content">
                             <div class="flex items-center justify-between mb-3 px-2">
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs text-zenix-secondary">📋 Registro de Eventos em Tempo Real</span>
@@ -497,7 +683,7 @@ export default {
             tradesVisible: true,
             aiActive: true,
             showDisconnectModal: false,
-            activeTab: 'chart', // 'chart', 'logs', or 'register'
+            activeTab: 'chart', // 'config', 'chart', 'logs', or 'register'
             showEntryMarkers: true, // Controla visibilidade dos marcadores de entradas da IA
             tradingViewWidget: null, // Widget da TradingView
             
@@ -553,6 +739,10 @@ export default {
                 { label: 'H4', value: 14400, points: 200 },
                 { label: 'D1', value: 86400, points: 200 }
             ],
+            
+            // Barra de progresso mobile
+            progressState: 1, // 1 = analisando, 2 = ordem aberta, 3 = ordem fechada
+            progressInterval: null,
         };
     },
     
@@ -857,6 +1047,15 @@ export default {
                 second: '2-digit',
                 hour12: false
             });
+        },
+        
+        progressText() {
+            const texts = {
+                1: 'Analisando o mercado',
+                2: 'Ordem aberta',
+                3: 'Ordem fechada'
+            };
+            return texts[this.progressState] || texts[1];
         }
     },
     
@@ -2236,6 +2435,23 @@ export default {
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao atualizar gráfico:', error);
             }
+        },
+        
+        // Animação da barra de progresso mobile
+        startProgressAnimation() {
+            this.stopProgressAnimation();
+            this.progressState = 1;
+            
+            this.progressInterval = setInterval(() => {
+                this.progressState = (this.progressState % 3) + 1;
+            }, 3000); // Muda de estado a cada 3 segundos
+        },
+        
+        stopProgressAnimation() {
+            if (this.progressInterval) {
+                clearInterval(this.progressInterval);
+                this.progressInterval = null;
+            }
         }
     },
 
@@ -2373,6 +2589,9 @@ export default {
         // 📊 Iniciar polling de histórico (a cada 1 minuto)
         this.startHistoryPolling();
         
+        // 🎯 Iniciar animação da barra de progresso mobile
+        this.startProgressAnimation();
+        
         this.$nextTick(() => {
             setTimeout(() => {
                 if (this.ticks && this.ticks.length > 0) {
@@ -2391,6 +2610,9 @@ export default {
         
         // Parar polling de histórico
         this.stopHistoryPolling();
+        
+        // Parar animação da barra de progresso
+        this.stopProgressAnimation();
         
         // Cleanup: Remove o widget TradingView quando o componente for desmontado
         if (this.tradingViewWidget) {
@@ -3364,23 +3586,528 @@ button i,
     }
 }
 
+/* Desktop: Mostrar layout original, esconder mobile */
+@media (min-width: 769px) {
+    .desktop-performance-panel {
+        display: block;
+    }
+    
+    .mobile-performance-panel {
+        display: none !important;
+    }
+}
+
 @media (max-width: 768px) {
     .investment-active-main {
         padding: 1rem 15px;
     }
-
-    .performance-cards-grid {
-        grid-template-columns: 1fr;
+    
+    /* Mobile: Esconder layout desktop, mostrar mobile */
+    .desktop-performance-panel {
+        display: none !important;
+    }
+    
+    .mobile-performance-panel {
+        display: block;
     }
 
-    .status-card-content {
+    /* Mobile: Header IA ORION */
+    .mobile-ia-header {
+        display: block;
+        margin-bottom: 1rem;
+        text-align: center;
+    }
+
+    .mobile-ia-title {
+        font-size: 0; /* Esconder texto original no mobile */
+        font-weight: 700;
+        margin: 0;
+        padding: 0;
+    }
+
+    .mobile-ia-title::before {
+        content: "IA ";
+        color: #22C55E;
+        font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
+    }
+
+    .mobile-ia-title::after {
+        content: "ORION";
+        color: #DFDFDF;
+        font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
+    }
+
+    .mobile-separator {
+        height: 1px;
+        background: #1C1C1C;
+        margin-top: 0.75rem;
+        width: 100%;
+    }
+
+    /* Mobile: Esconder card de status da IA */
+    #ichwdn {
+        display: none !important;
+    }
+
+    /* Mobile: Reorganizar cards - Saldo, Resultado e Trades no mesmo card */
+    #iya1j {
+        display: flex !important;
         flex-direction: column;
-        align-items: flex-start;
+        gap: 0 !important;
     }
 
-    .status-card-right {
+    #iya1j > .col-span-2 {
+        grid-column: unset !important;
+        width: 100% !important;
+        margin-bottom: 0 !important;
+    }
+
+    /* Mobile: Card consolidado com as 3 métricas */
+    #iya1j > .col-span-2:first-child {
+        border-radius: 12px 12px 0 0 !important;
+        border-bottom: 1px solid #1C1C1C !important;
+    }
+
+    #iya1j > .col-span-2:nth-child(2) {
+        border-radius: 0 !important;
+        border-top: none !important;
+        border-bottom: 1px solid #1C1C1C !important;
+    }
+
+    #iya1j > .col-span-2:nth-child(3) {
+        border-radius: 0 0 12px 12px !important;
+        border-top: none !important;
+    }
+
+    /* Mobile: Ajustar labels - mostrar Lucro do Dia */
+    .mobile-label-lucro {
+        display: inline !important;
+    }
+
+    /* Mobile: Ajustar altura dos cards */
+    #ie22vl,
+    #i790gh,
+    #i42e4g {
+        height: auto !important;
+        min-height: 70px;
+        padding: 15px !important;
+    }
+
+    /* Mobile: Barra de Progresso (separada - esconder quando está no card unificado) */
+    .mobile-progress-section {
+        display: none; /* Esconder barra separada, pois está no card unificado */
+        margin-top: 1rem;
+        margin-bottom: 1.5rem;
+        padding: 0 15px;
+    }
+    
+    .mobile-progress-container {
+        width: 100%;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+    }
+    
+    /* Quando dentro do card unificado */
+    #compact-performance-panel .mobile-progress-container {
+        margin-top: 0;
+        padding-top: 0;
+    }
+    
+    .mobile-progress-bar {
+        display: flex;
+        gap: 4px;
+        width: 100%;
+        margin-bottom: 12px;
+    }
+    
+    .mobile-progress-segment {
+        flex: 1;
+        height: 6px;
+        border-radius: 9999px;
+        background-color: #1C1C1C;
+        border: none;
+        transition: all 0.8s ease;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .mobile-progress-segment::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(34, 197, 94, 0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+    
+    /* Segmentos coloridos apenas quando têm a classe filled */
+    .mobile-progress-segment.filled {
+        background-color: #22C55E;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    }
+    
+    .mobile-progress-text {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: #DFDFDF;
+        font-size: 0.75rem;
+        justify-content: center;
+    }
+    
+    .mobile-progress-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background-color: #22C55E;
+        box-shadow: 0 0 10px 2px rgba(34, 197, 94, 0.6);
+        animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
+    .mobile-progress-labels {
+        display: flex;
+        gap: 20px;
+        position: relative;
         width: 100%;
         justify-content: space-between;
+    }
+
+    .mobile-progress-label {
+        font-weight: 500;
+        font-size: 0.75rem;
+        color: #7A7A7A;
+        transition: color 0.3s ease;
+        position: relative;
+        flex: 1;
+        text-align: center;
+    }
+
+    .mobile-progress-label.active {
+        color: #22C55E;
+    }
+
+    /* Mobile: Tabs */
+    .mobile-tabs-container {
+        display: flex;
+        background: #0B0B0B;
+        border: 1px solid #1C1C1C;
+        border-radius: 12px;
+        padding: 8px;
+        margin-bottom: 1.5rem;
+        gap: 4px;
+    }
+
+    .mobile-tab {
+        flex: 1;
+        padding: 10px 8px;
+        background: transparent;
+        border: none;
+        color: #7A7A7A;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+        text-align: center;
+    }
+
+    .mobile-tab:hover {
+        color: #DFDFDF;
+    }
+
+    .mobile-tab-active {
+        color: #22C55E !important;
+        background: rgba(34, 197, 94, 0.1);
+        position: relative;
+    }
+
+    .mobile-tab-active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #22C55E;
+        border-radius: 2px 2px 0 0;
+    }
+
+    /* Mobile: Esconder conteúdo desktop */
+    .desktop-main-content {
+        display: none !important;
+    }
+
+    .desktop-chart-header,
+    .desktop-tabs {
+        display: none !important;
+    }
+
+    /* Mobile: Conteúdo das tabs */
+    .mobile-tab-content {
+        display: block;
+    }
+
+    /* Mobile: Config Content */
+    .mobile-config-content {
+        display: block;
+        background: #0B0B0B;
+        border: 1px solid #1C1C1C;
+        border-radius: 12px;
+        padding: 20px;
+    }
+
+    .mobile-config-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .mobile-config-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #DFDFDF;
+        margin: 0;
+    }
+
+    .mobile-config-icon {
+        color: #7A7A7A;
+        font-size: 1rem;
+    }
+
+    .mobile-config-card {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .mobile-config-item {
+        padding-bottom: 20px;
+        border-bottom: 1px solid #1C1C1C;
+    }
+
+    .mobile-config-item:last-of-type {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+
+    .mobile-config-label {
+        font-size: 0.625rem;
+        color: #7D7D7D;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+    }
+
+    .mobile-config-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #DFDFDF;
+        margin-bottom: 4px;
+    }
+
+    .mobile-config-desc {
+        font-size: 0.75rem;
+        color: #A1A1A1;
+    }
+
+    .mobile-config-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .mobile-config-param {
+        border: 1px solid #1C1C1C;
+        border-radius: 8px;
+        padding: 12px;
+    }
+
+    .mobile-config-param-label {
+        font-size: 0.75rem;
+        color: #A1A1A1;
+        margin-bottom: 4px;
+    }
+
+    .mobile-config-param-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #DFDFDF;
+    }
+
+    .mobile-config-profit {
+        color: #22C55E !important;
+    }
+
+    .mobile-config-loss {
+        color: #FF4747 !important;
+    }
+
+    .mobile-config-badge {
+        display: inline-block;
+        padding: 6px 12px;
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 8px;
+        margin-top: 8px;
+    }
+
+    .mobile-config-badge-text {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #22C55E;
+    }
+
+    .mobile-config-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 8px;
+    }
+
+    .mobile-config-status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #22C55E;
+        animation: pulse 2s infinite;
+    }
+
+    .mobile-config-status-text {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #22C55E;
+    }
+
+    .mobile-pause-btn {
+        width: 100%;
+        padding: 16px;
+        background: #FFD700;
+        color: #000;
+        border: none;
+        border-radius: 12px;
+        font-size: 0.875rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 20px;
+    }
+
+    .mobile-pause-btn:hover:not(:disabled) {
+        background: #FFE07A;
+    }
+
+    .mobile-pause-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    /* Mobile: Gráfico, Logs, Registro */
+    .mobile-tab-content #market-chart {
+        display: block !important;
+        margin-bottom: 1.5rem;
+    }
+
+    .mobile-chart-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin-bottom: 15px;
+    }
+
+    /* Mobile: Logs View */
+    .mobile-tab-content #logs-view {
+        background: #0B0B0B;
+        border: 1px solid #1C1C1C;
+        border-radius: 12px;
+        padding: 15px;
+        min-height: 400px;
+        max-height: 60vh;
+    }
+
+    .mobile-tab-content #logs-view .logs-table {
+        font-size: 0.75rem;
+    }
+
+    .mobile-tab-content #logs-view .logs-table th,
+    .mobile-tab-content #logs-view .logs-table td {
+        padding: 8px 6px;
+    }
+
+    /* Mobile: Register View */
+    .mobile-tab-content #register-view {
+        background: #0B0B0B;
+        border: 1px solid #1C1C1C;
+        border-radius: 12px;
+        padding: 15px;
+        min-height: 400px;
+        max-height: 60vh;
+    }
+
+    /* Animações da barra de progresso */
+    @keyframes fillSegment1 {
+        0%, 33% {
+            background-color: #22C55E;
+        }
+        34%, 100% {
+            background-color: #1C1C1C;
+        }
+    }
+
+    @keyframes fillSegment2 {
+        0%, 33% {
+            background-color: #1C1C1C;
+        }
+        34%, 66% {
+            background-color: #22C55E;
+        }
+        67%, 100% {
+            background-color: #1C1C1C;
+        }
+    }
+
+    @keyframes fillSegment3 {
+        0%, 66% {
+            background-color: #1C1C1C;
+        }
+        67%, 100% {
+            background-color: #22C55E;
+        }
+    }
+
+    @keyframes shimmer {
+        0% {
+            left: -100%;
+        }
+        100% {
+            left: 100%;
+        }
+    }
+
+    /* Status Footer - esconder no mobile */
+    .status-footer-section {
+        display: none !important;
+    }
+}
+
+/* Desktop: esconder barra de progresso mobile (apenas quando está fora do card) */
+@media (min-width: 769px) {
+    .mobile-progress-section {
+        display: none;
+    }
+    
+    /* Manter progresso visível dentro do card unificado */
+    #compact-performance-panel .mobile-progress-container {
+        display: flex;
     }
 }
 
@@ -4066,6 +4793,17 @@ button i,
     color: rgb(222, 59, 59);
 }
 
+/* Mobile: Ajustar fonte para 12px */
+@media (max-width: 768px) {
+    #idsh94 {
+        font-size: 12px !important;
+    }
+    
+    #i8cy7b {
+        font-size: 12px !important;
+    }
+}
+
 #ai-status-card {
 	box-shadow: rgba(34, 197, 94, 0.08) 0px 0px 24px;
 	position: relative;
@@ -4240,5 +4978,576 @@ button i,
 .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: rgba(16, 185, 129, 0.3) rgba(0, 0, 0, 0.3);
+}
+
+/* ========================================================== */
+/* MOBILE RESPONSIVE STYLES                                   */
+/* ========================================================== */
+@media (max-width: 768px) {
+    .investment-active-main {
+        padding: 1rem 15px;
+    }
+    
+    /* Mobile: Header IA ORION */
+    .mobile-ia-header {
+        display: block;
+        margin-bottom: 1.5rem;
+        text-align: center;
+    }
+    
+    .mobile-ia-title {
+        font-size: 0; /* Esconder texto original no mobile */
+        font-weight: 700;
+        margin: 0;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    
+    .mobile-ia-title::before {
+        content: "IA ";
+        color: #22C55E;
+        font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
+    }
+    
+    .mobile-ia-title::after {
+        content: "ORION";
+        color: #DFDFDF;
+        font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
+    }
+    
+    .mobile-separator {
+        height: 1px;
+        background: linear-gradient(to right, transparent, #1C1C1C, transparent);
+        margin-top: 0.75rem;
+    }
+    
+    /* Mobile: Cards empilhados verticalmente */
+    #compact-performance-panel {
+        margin-bottom: 1rem;
+    }
+    
+    #iya1j {
+        grid-template-columns: 1fr !important;
+        gap: 10px !important;
+    }
+    
+    #iya1j > div {
+        grid-column: span 1 !important;
+    }
+    
+    /* Esconder card de status da IA no mobile */
+    #ichwdn {
+        display: none !important;
+    }
+    
+    /* Mobile: Barra de Progresso Animada */
+    .mobile-progress-section {
+        display: block;
+        margin: 1.5rem 0;
+        padding: 0 0.5rem;
+    }
+    
+    .mobile-progress-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .mobile-progress-bar {
+        display: flex;
+        gap: 4px;
+        width: 100%;
+        height: 8px;
+    }
+    
+    .mobile-progress-segment {
+        flex: 1;
+        height: 100%;
+        border-radius: 4px;
+        background: #1C1C1C;
+        border: 1px solid #22C55E;
+        position: relative;
+        overflow: hidden;
+        transition: all 0.8s ease;
+    }
+    
+    /* Segmentos coloridos apenas quando têm a classe filled */
+    .mobile-progress-segment.filled {
+        background: #22C55E;
+        border-color: #22C55E;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    }
+    
+    .mobile-progress-text {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        color: #A1A1A1;
+        font-size: 0.75rem;
+    }
+    
+    .mobile-progress-dot {
+        width: 8px;
+        height: 8px;
+        background: #22C55E;
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+        box-shadow: 0 0 8px rgba(34, 197, 94, 0.5);
+    }
+    
+    .mobile-progress-labels {
+        position: relative;
+        min-height: 1.25rem;
+    }
+    
+    .mobile-progress-label {
+        position: absolute;
+        left: 0;
+        top: 0;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .mobile-progress-label.label-1 {
+        animation: showLabel1 9s ease-in-out infinite;
+    }
+    
+    .mobile-progress-label.label-2 {
+        animation: showLabel2 9s ease-in-out infinite;
+    }
+    
+    .mobile-progress-label.label-3 {
+        animation: showLabel3 9s ease-in-out infinite;
+    }
+    
+    @keyframes showLabel1 {
+        0%, 30% {
+            opacity: 1;
+        }
+        31%, 100% {
+            opacity: 0;
+        }
+    }
+    
+    @keyframes showLabel2 {
+        0%, 30% {
+            opacity: 0;
+        }
+        31%, 63% {
+            opacity: 1;
+        }
+        64%, 100% {
+            opacity: 0;
+        }
+    }
+    
+    @keyframes showLabel3 {
+        0%, 63% {
+            opacity: 0;
+        }
+        64%, 97% {
+            opacity: 1;
+        }
+        98%, 100% {
+            opacity: 0;
+        }
+    }
+    
+    /* Mobile: Tabs */
+    .mobile-tabs-container {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid #1C1C1C;
+        margin-bottom: 1.5rem;
+        overflow-x: auto;
+    }
+    
+    .mobile-tab {
+        flex: 1;
+        padding: 0.75rem 0.5rem;
+        background: transparent;
+        border: none;
+        color: #A1A1A1;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        position: relative;
+        transition: color 0.2s;
+        text-align: center;
+        min-width: 80px;
+    }
+    
+    .mobile-tab:hover {
+        color: #DFDFDF;
+    }
+    
+    .mobile-tab-active {
+        color: #22C55E;
+    }
+    
+    .mobile-tab-active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #22C55E;
+    }
+    
+    /* Mobile: Conteúdo Config */
+    .mobile-config-content {
+        display: block;
+    }
+    
+    .mobile-config-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        margin-bottom: 1.5rem;
+    }
+    
+    .mobile-config-title {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #DFDFDF;
+        margin: 0;
+    }
+    
+    .mobile-config-icon {
+        color: #22C55E;
+        font-size: 1rem;
+    }
+    
+    .mobile-config-card {
+        background: #0E0E0E;
+        border: 1px solid #1C1C1C;
+        border-radius: 8px;
+        padding: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
+    }
+    
+    .mobile-config-item {
+        padding-bottom: 1.25rem;
+        border-bottom: 1px solid #1C1C1C;
+    }
+    
+    .mobile-config-item:last-of-type {
+        border-bottom: none;
+        padding-bottom: 0;
+    }
+    
+    .mobile-config-label {
+        font-size: 0.625rem;
+        color: #7D7D7D;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 0.5rem;
+    }
+    
+    .mobile-config-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #DFDFDF;
+        margin-bottom: 0.25rem;
+    }
+    
+    .mobile-config-desc {
+        font-size: 0.75rem;
+        color: #A1A1A1;
+        margin: 0;
+    }
+    
+    .mobile-config-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1rem;
+    }
+    
+    .mobile-config-param {
+        border: 1px solid rgba(28, 28, 28, 0.3);
+        border-radius: 8px;
+        padding: 0.75rem;
+    }
+    
+    .mobile-config-param-label {
+        font-size: 0.75rem;
+        color: #A1A1A1;
+        margin-bottom: 0.25rem;
+    }
+    
+    .mobile-config-param-value {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #DFDFDF;
+    }
+    
+    .mobile-config-profit {
+        color: #22C55E;
+    }
+    
+    .mobile-config-loss {
+        color: #FF4747;
+    }
+    
+    .mobile-config-badge {
+        display: inline-block;
+        padding: 0.375rem 0.75rem;
+        background: rgba(34, 197, 94, 0.1);
+        border: 1px solid rgba(34, 197, 94, 0.2);
+        border-radius: 8px;
+        margin-top: 0.5rem;
+    }
+    
+    .mobile-config-badge-text {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #22C55E;
+    }
+    
+    .mobile-config-status {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-top: 0.5rem;
+    }
+    
+    .mobile-config-status-dot {
+        width: 8px;
+        height: 8px;
+        background: #22C55E;
+        border-radius: 50%;
+        animation: pulse 2s ease-in-out infinite;
+    }
+    
+    .mobile-config-status-text {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #22C55E;
+    }
+    
+    .mobile-pause-btn {
+        width: 100%;
+        padding: 1rem 1.25rem;
+        background: #FFD058;
+        color: #000;
+        border: none;
+        border-radius: 8px;
+        font-size: 1rem;
+        font-weight: 700;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        margin-top: 1.5rem;
+        transition: background 0.2s;
+    }
+    
+    .mobile-pause-btn:hover:not(:disabled) {
+        background: #FFE07A;
+    }
+    
+    .mobile-pause-btn:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+    
+    /* Mobile: Esconder elementos desktop */
+    .status-footer-section {
+        display: none !important;
+    }
+    
+    #i0k3nl {
+        display: none !important;
+    }
+    
+    /* Mobile: Ajustar cards de performance */
+    #ie22vl,
+    #i790gh,
+    #i42e4g {
+        height: auto;
+        min-height: 80px;
+        padding: 1rem;
+    }
+    
+    /* Mobile: Mostrar label correto */
+    .mobile-label-lucro {
+        display: block;
+    }
+    
+    @media (max-width: 768px) {
+        .mobile-label-lucro {
+            display: block;
+        }
+    }
+    
+    /* Mobile: Ajustar grid principal */
+    .grid.grid-cols-12 {
+        grid-template-columns: 1fr !important;
+    }
+    
+    #ir8sfp {
+        grid-column: span 1 !important;
+    }
+    
+    /* Mobile: Ajustar altura do gráfico */
+    #chart-view,
+    #logs-view,
+    #register-view {
+        height: 400px !important;
+        min-height: 400px;
+    }
+    
+    /* Mobile: Esconder tabs desktop */
+    .desktop-tabs {
+        display: none !important;
+    }
+    
+    /* Mobile: Ajustar header do gráfico */
+    .desktop-chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+    
+    /* Mobile: Mostrar conteúdo das tabs baseado na tab ativa */
+    .mobile-tab-content {
+        display: block;
+    }
+    
+    /* Mobile: Ajustar conteúdo do gráfico para mobile */
+    #market-chart {
+        padding: 1rem;
+    }
+    
+    /* Mobile: Ajustar histórico para mobile */
+    #logs-view {
+        padding: 0;
+    }
+    
+    .logs-table-wrapper {
+        padding: 0.5rem;
+    }
+    
+    .logs-table {
+        font-size: 0.7rem;
+    }
+    
+    .logs-table th,
+    .logs-table td {
+        padding: 0.5rem 0.25rem;
+    }
+    
+    /* Mobile: Ajustar registro para mobile */
+    #register-view {
+        padding: 0.5rem;
+    }
+    
+    /* Mobile: Mostrar grid principal mas ajustado */
+    .desktop-main-content {
+        display: block !important;
+        grid-template-columns: 1fr !important;
+    }
+    
+    /* Mobile: Mostrar/esconder conteúdo baseado na tab ativa */
+    .mobile-tab-content {
+        display: block;
+    }
+    
+    /* Mobile: Ajustar visibilidade baseado na tab */
+    .desktop-main-content {
+        display: block !important;
+    }
+    
+    /* Mobile: Ajustar card do gráfico */
+    #market-chart {
+        border-radius: 0;
+        border-left: none;
+        border-right: none;
+        padding: 1rem;
+        margin-bottom: 1rem;
+        background: transparent;
+        border: none;
+    }
+    
+    /* Mobile: Ajustar título do gráfico */
+    #market-chart h2 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    #market-chart p {
+        font-size: 0.7rem;
+    }
+    
+    /* Mobile: Ajustar controles do gráfico */
+    .mobile-chart-controls {
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    .mobile-chart-controls button {
+        font-size: 0.7rem;
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Mobile: Ajustar histórico para cards */
+    #logs-view {
+        padding: 1rem 0.5rem;
+    }
+    
+    .logs-table {
+        font-size: 0.65rem;
+    }
+    
+    .logs-table th {
+        font-size: 0.7rem;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    .logs-table td {
+        font-size: 0.65rem;
+        padding: 0.5rem 0.25rem;
+    }
+    
+    /* Mobile: Ajustar registro */
+    #register-view {
+        padding: 0.5rem;
+    }
+    
+    #register-view > div:first-child {
+        padding: 0.5rem;
+        font-size: 0.7rem;
+    }
+    
+    #register-view .flex-1 {
+        font-size: 0.7rem;
+        padding: 0.75rem;
+    }
+}
+
+/* Desktop: Esconder elementos mobile */
+@media (min-width: 769px) {
+    .mobile-progress-section,
+    .mobile-tabs-container,
+    .mobile-config-content,
+    .mobile-performance-panel {
+        display: none !important;
+    }
+    
+    /* Desktop: Mostrar layout original */
+    .desktop-performance-panel {
+        display: block !important;
+    }
+    
+    /* Desktop: Mostrar grid principal */
+    .desktop-main-content {
+        display: grid !important;
+    }
 }
 </style>

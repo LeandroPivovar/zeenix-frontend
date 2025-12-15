@@ -22,6 +22,7 @@
         :is-sidebar-collapsed="localSidebarCollapsed"
         :balance="info?.balance"
         :account-type="accountType"
+        @open-settings="toggleSettingsModal"
         @account-type-changed="switchAccount"
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -638,75 +639,6 @@
       </div>
     </main>
     
-    <!-- Footer -->
-    <footer id="footer" class="bg-zenix-bg border-t border-zenix-border w-full">
-      <div class="max-w-7xl mx-auto px-8 py-12">
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-8">
-          <div>
-            <div class="flex items-center space-x-2 mb-4">
-              <div class="text-lg font-semibold text-zenix-text">ZENIX</div>
-              <div class="text-xs text-zenix-label">PRO</div>
-            </div>
-            <p class="text-zenix-label text-xs leading-relaxed mb-6 opacity-60">
-              Plataforma inteligente de investimentos com IA, copy trading e automação.
-            </p>
-            <div class="flex items-center space-x-4">
-              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
-                <i class="fa-brands fa-twitter text-sm"></i>
-              </a>
-              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
-                <i class="fa-brands fa-linkedin text-sm"></i>
-              </a>
-              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
-                <i class="fa-brands fa-instagram text-sm"></i>
-              </a>
-              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors opacity-50">
-                <i class="fa-brands fa-youtube text-sm"></i>
-              </a>
-            </div>
-          </div>
-          <div>
-            <h3 class="text-zenix-text font-medium mb-4 text-xs">Produto</h3>
-            <ul class="space-y-2.5 text-xs text-zenix-label opacity-60">
-              <li><a href="#" class="hover:text-zenix-text transition-colors">IA de Investimento</a></li>
-              <li><a href="#" class="hover:text-zenix-text transition-colors">Copy Trading</a></li>
-              <li><a href="#" class="hover:text-zenix-text transition-colors">Agente Autônomo</a></li>
-              <li><a href="#" class="hover:text-zenix-text transition-colors">Zenix Academy</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3 class="text-zenix-text font-medium mb-4 text-xs">Empresa</h3>
-            <ul class="space-y-2.5 text-xs text-zenix-label opacity-60">
-              <li><a href="#" class="hover:text-zenix-text transition-colors">Sobre Nós</a></li>
-              <li><a href="#" class="hover:text-zenix-text transition-colors">Planos</a></li>
-              <li><a href="#" class="hover:text-zenix-text transition-colors">Blog</a></li>
-              <li><a href="#" class="hover:text-zenix-text transition-colors">Carreiras</a></li>
-            </ul>
-          </div>
-          <div>
-            <h3 class="text-zenix-text font-medium mb-4 text-xs">Suporte</h3>
-            <ul class="space-y-2.5 text-xs text-zenix-label opacity-60">
-              <li><a href="#" class="hover:text-zenix-text transition-colors">Central de Ajuda</a></li>
-              <li><a href="#" class="hover:text-zenix-text transition-colors">Documentação</a></li>
-              <li><a href="#" class="hover:text-zenix-text transition-colors">Status do Sistema</a></li>
-              <li><a href="#" class="hover:text-zenix-text transition-colors">Contato</a></li>
-            </ul>
-          </div>
-        </div>
-        <div class="border-t border-zenix-border pt-8 opacity-40">
-          <div class="flex flex-col md:flex-row justify-between items-center">
-            <p class="text-zenix-label text-xs mb-3 md:mb-0">© 2025 Zenix Pro. Todos os direitos reservados.</p>
-            <div class="flex space-x-6 text-xs">
-              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors">Política de Privacidade</a>
-              <span class="text-zenix-border">|</span>
-              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors">Termos de Uso</a>
-              <span class="text-zenix-border">|</span>
-              <a href="#" class="text-zenix-label hover:text-zenix-text transition-colors">Cookies</a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </footer>
     <DesktopBottomNav />
   </div>
 </div>
