@@ -1,9 +1,7 @@
 <template>
     <div class="zenix-layout">
         <!-- Full Screen Loader -->
-        <div v-if="isActivating" class="fullscreen-loader">
-            <div class="loader-spinner"></div>
-        </div>
+        <!-- Removido loader fullscreen - usuário vai direto para tela ativa -->
         
         <!-- Overlay para fechar sidebar ao clicar fora (mobile) -->
         <div 
@@ -519,8 +517,7 @@ export default {
             isSidebarOpen: false,
             isSidebarCollapsed: false,
             isMobile: false,
-            isInvestmentActive: false,
-            isActivating: false, 
+            isInvestmentActive: false, 
 
             ticks: [],
             currentPrice: null,
@@ -728,7 +725,6 @@ export default {
         },
 
         async activateIA() {
-            this.isActivating = true;
             try {
                 console.log('[InvestmentIAView] ===== ATIVANDO IA =====');
                 console.log('[InvestmentIAView] 💰 VALOR DE ENTRADA:', this.entryValue);
@@ -741,7 +737,6 @@ export default {
 
                 if (!this.entryValue || this.entryValue < 0.35) {
                     console.warn('[InvestmentIAView] ⚠️ Valor de entrada inválido:', this.entryValue);
-                    this.isActivating = false;
                     return;
                 }
 
@@ -758,37 +753,14 @@ export default {
                 }
 
                 const preferredCurrency = this.getPreferredCurrency();
-                
-                console.log('[InvestmentIAView] 💰 Verificando saldo da conta...');
-                try {
-                    const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                    const balanceResponse = await fetch(`${apiBase}/ai/deriv-balance`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        },
-                        body: JSON.stringify({ derivToken: derivToken }),
-                    });
-                    
-                    const balanceResult = await balanceResponse.json();
-                    if (balanceResult.success && balanceResult.data) {
-                        const balance = balanceResult.data.balance;
-                        const currency = balanceResult.data.currency;
-                        const loginid = balanceResult.data.loginid;
-                        
-                        console.log('[InvestmentIAView] 💰 Saldo:', balance, currency);
-                        console.log('[InvestmentIAView] 🔑 LoginID:', loginid);
-                        
-                        if (balance < this.entryValue) {
-                            console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente:', balance, 'necessário:', this.entryValue);
-                        }
-                    }
-                } catch (balanceError) {
-                    console.warn('[InvestmentIAView] ⚠️ Não foi possível verificar saldo:', balanceError);
-                }
-
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                
+                // Mudar para tela ativa IMEDIATAMENTE (antes mesmo da resposta do backend)
+                // Isso melhora a experiência do usuário, mostrando a interface enquanto os dados carregam
+                this.isInvestmentActive = true;
+                console.log('[InvestmentIAView] ✅ Redirecionando para tela ativa imediatamente...');
+                
+                // Fazer requisição de ativação em background (não bloquear a UI)
                 const response = await fetch(`${apiBase}/ai/activate`, {
                     method: 'POST',
                     headers: {
@@ -810,18 +782,27 @@ export default {
                 const result = await response.json();
 
                 if (result.success) {
-                    this.isInvestmentActive = true;
-                    console.log('[InvestmentIAView] ✅ IA ativada com sucesso!');
+                    console.log('[InvestmentIAView] ✅ IA ativada com sucesso no backend!');
                     
-                    // Buscar histórico de ticks para construir o gráfico
-                    await this.fetchTicksHistory(1000);
+                    // Carregar dados em background (sem bloquear a UI)
+                    // O usuário já está vendo a tela ativa, os dados vão aparecendo conforme carregam
+                    this.fetchTicksHistory(1000).catch(err => {
+                        console.warn('[InvestmentIAView] Erro ao carregar histórico em background:', err);
+                    });
+                    
+                    // Iniciar polling em background se ainda não estiver ativo
+                    if (!this.pollingInterval) {
+                        this.startPolling();
+                    }
                 } else {
                     console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', result.message);
+                    // Se falhar, voltar para tela inativa
+                    this.isInvestmentActive = false;
                 }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', error);
-            } finally {
-                this.isActivating = false;
+                // Se falhar, voltar para tela inativa
+                this.isInvestmentActive = false;
             }
         },
 
