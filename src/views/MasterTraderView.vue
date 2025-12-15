@@ -226,6 +226,7 @@ import CopiersDetails from '../components/masterTrader/CopiersDetails.vue'
 import AIInvestment from '../components/masterTrader/InvestmentComponent.vue'
 import AgenteAutonomoView from '../components/masterTrader/AgentAutonomoComponent.vue'
 import ManualOperation from '../components/masterTrader/ManualOperationComponent.vue'
+import { loadAccountBalance, reloadAccountBalance } from '../utils/balanceLoader'
 
 export default {
     name: 'MasterTraderView',
@@ -351,28 +352,12 @@ export default {
         },
         async fetchAccountBalance() {
             try {
-                const derivToken = this.getDerivToken();
-                if (!derivToken) {
-                    console.warn('[MasterTrader] ❌ Token não disponível para buscar saldo');
-                    return;
-                }
-                
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const response = await fetch(`${apiBase}/ai/deriv-balance`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ derivToken: derivToken }),
-                });
-                
-                const result = await response.json();
-                if (result.success && result.data) {
-                    this.accountBalance = result.data.balance;
-                    this.accountCurrency = result.data.currency;
-                    this.accountLoginid = result.data.loginid;
-                    this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+                const balanceData = await loadAccountBalance();
+                if (balanceData) {
+                    this.accountBalance = balanceData.balance;
+                    this.accountCurrency = balanceData.currency;
+                    this.accountLoginid = balanceData.loginid;
+                    this.isDemo = balanceData.isDemo;
                     this.preferredCurrency = this.getPreferredCurrency();
                 }
             } catch (error) {
@@ -382,7 +367,17 @@ export default {
         startBalanceUpdates() {
             this.fetchAccountBalance();
             this.balanceUpdateInterval = setInterval(() => {
-                this.fetchAccountBalance();
+                reloadAccountBalance().then(balanceData => {
+                    if (balanceData) {
+                        this.accountBalance = balanceData.balance;
+                        this.accountCurrency = balanceData.currency;
+                        this.accountLoginid = balanceData.loginid;
+                        this.isDemo = balanceData.isDemo;
+                        this.preferredCurrency = this.getPreferredCurrency();
+                    }
+                }).catch(error => {
+                    console.error('[MasterTrader] Erro ao atualizar saldo:', error);
+                });
             }, 30000);
         },
         stopBalanceUpdates() {

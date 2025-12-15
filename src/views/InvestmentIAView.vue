@@ -501,6 +501,7 @@ import TopNavbar from '../components/TopNavbar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
+import { loadAccountBalance, reloadAccountBalance } from '../utils/balanceLoader';
 
 export default {
     name: 'InvestmentIAView',
@@ -958,28 +959,12 @@ export default {
 
         async fetchAccountBalance() {
             try {
-                const derivToken = this.getDerivToken();
-                if (!derivToken) {
-                    console.warn('[InvestmentIAView] ❌ Token não disponível para buscar saldo');
-                    return;
-                }
-
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const response = await fetch(`${apiBase}/ai/deriv-balance`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ derivToken: derivToken }),
-                });
-
-                const result = await response.json();
-                if (result.success && result.data) {
-                    this.accountBalance = result.data.balance;
-                    this.accountCurrency = result.data.currency;
-                    this.accountLoginid = result.data.loginid;
-                    this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+                const balanceData = await loadAccountBalance();
+                if (balanceData) {
+                    this.accountBalance = balanceData.balance;
+                    this.accountCurrency = balanceData.currency;
+                    this.accountLoginid = balanceData.loginid;
+                    this.isDemo = balanceData.isDemo;
                     this.lastBalanceUpdate = new Date();
                     
                     console.log('[InvestmentIAView] ✅ Saldo atualizado:', {
@@ -988,8 +973,6 @@ export default {
                         loginid: this.accountLoginid,
                         isDemo: this.isDemo
                     });
-                } else {
-                    console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
                 }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao buscar saldo da conta:', error);
@@ -999,7 +982,18 @@ export default {
         startBalanceUpdates() {
             this.fetchAccountBalance();
             this.balanceUpdateInterval = setInterval(() => {
-                this.fetchAccountBalance();
+                // Usar reloadAccountBalance para forçar atualização (ignora cache)
+                reloadAccountBalance().then(balanceData => {
+                    if (balanceData) {
+                        this.accountBalance = balanceData.balance;
+                        this.accountCurrency = balanceData.currency;
+                        this.accountLoginid = balanceData.loginid;
+                        this.isDemo = balanceData.isDemo;
+                        this.lastBalanceUpdate = new Date();
+                    }
+                }).catch(error => {
+                    console.error('[InvestmentIAView] Erro ao atualizar saldo:', error);
+                });
             }, 30000);
         },
 

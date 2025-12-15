@@ -145,6 +145,7 @@
 import AppSidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
+import { loadAccountBalance, reloadAccountBalance } from '../utils/balanceLoader'
 
 export default {
     name: 'PlansView',
@@ -321,25 +322,12 @@ export default {
         },
         async fetchAccountBalance() {
             try {
-                const derivToken = this.getDerivToken();
-                if (!derivToken) return;
-
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const response = await fetch(`${apiBase}/ai/deriv-balance`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ derivToken: derivToken }),
-                });
-
-                const result = await response.json();
-                if (result.success && result.data) {
-                    this.accountBalance = result.data.balance;
-                    this.accountCurrency = result.data.currency;
-                    this.accountLoginid = result.data.loginid;
-                    this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+                const balanceData = await loadAccountBalance();
+                if (balanceData) {
+                    this.accountBalance = balanceData.balance;
+                    this.accountCurrency = balanceData.currency;
+                    this.accountLoginid = balanceData.loginid;
+                    this.isDemo = balanceData.isDemo;
                 }
             } catch (error) {
                 console.error('[PlansView] Erro ao buscar saldo da conta:', error);
@@ -348,7 +336,16 @@ export default {
         startBalanceUpdates() {
             if (this.balanceUpdateInterval) clearInterval(this.balanceUpdateInterval);
             this.balanceUpdateInterval = setInterval(() => {
-                this.fetchAccountBalance();
+                reloadAccountBalance().then(balanceData => {
+                    if (balanceData) {
+                        this.accountBalance = balanceData.balance;
+                        this.accountCurrency = balanceData.currency;
+                        this.accountLoginid = balanceData.loginid;
+                        this.isDemo = balanceData.isDemo;
+                    }
+                }).catch(error => {
+                    console.error('[PlansView] Erro ao atualizar saldo:', error);
+                });
             }, 30000);
         },
         stopBalanceUpdates() {

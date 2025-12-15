@@ -14,7 +14,7 @@
       />
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
-        :balance="0"
+        :balance="accountBalance"
         account-type="real"
         @toggle-sidebar="toggleMobileSidebar"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
@@ -54,6 +54,7 @@
   import CopyTradingConfig from '../components/copy-traders/CopyTradingConfig.vue';
   import CopyTradingMonitor from '../components/copy-traders/CopyTradingMonitor.vue';
   import DesktopBottomNav from '../components/DesktopBottomNav.vue';
+  import { loadAccountBalance } from '../utils/balanceLoader';
   
   export default {
     name: 'CopyTrading',
@@ -73,6 +74,7 @@
         loading: true,
         hasActiveSession: false,
         activeSession: null,
+        accountBalance: 0
       };
     },
     methods: {
@@ -96,6 +98,16 @@
           this.isSidebarCollapsed = false;
         } else {
           this.isSidebarOpen = true;
+        }
+      },
+      async loadAccountBalance() {
+        try {
+          const balanceData = await loadAccountBalance();
+          if (balanceData) {
+            this.accountBalance = balanceData.balance;
+          }
+        } catch (error) {
+          console.error('[CopyTradersView] Erro ao carregar saldo:', error);
         }
       },
       async checkActiveSession() {
@@ -192,6 +204,8 @@
       await this.checkActiveSession();
       this.checkMobile();
       window.addEventListener('resize', this.checkMobile);
+      // Carregar saldo em background
+      this.loadAccountBalance();
     },
     beforeUnmount() {
       window.removeEventListener('resize', this.checkMobile);

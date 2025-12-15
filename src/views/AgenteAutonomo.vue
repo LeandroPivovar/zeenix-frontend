@@ -51,6 +51,7 @@
   import AgenteAutonomoActive from "../components/autonomo/AgenteAutonomoActive.vue";
   import AgenteAutonomoInactive from "../components/autonomo/AgenteAutonomoInactive.vue";
   import DesktopBottomNav from "../components/DesktopBottomNav.vue";
+  import { loadAccountBalance, reloadAccountBalance } from '../utils/balanceLoader';
 
   export default {
     name: "AgenteAutonomoView",
@@ -942,40 +943,13 @@
   
       async fetchAccountBalance() {
         try {
-          const derivToken = this.getDerivToken();
-          if (!derivToken) {
-            console.warn(
-              "[AgenteAutonomo] ❌ Token não disponível para buscar saldo"
-            );
-            return;
-          }
-  
-          const apiBase =
-            process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
-          const response = await fetch(`${apiBase}/ai/deriv-balance`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify({ derivToken: derivToken }),
-          });
-  
-          const result = await response.json();
-  
-          if (result.success && result.data) {
-            // Garantir que balance seja um número
-            const balanceValue = typeof result.data.balance === 'number' 
-              ? result.data.balance 
-              : parseFloat(result.data.balance) || 0;
-            
+          const balanceData = await loadAccountBalance();
+          if (balanceData) {
             const oldBalance = this.accountBalance;
-            this.accountBalance = balanceValue;
-            this.accountCurrency = result.data.currency;
-            this.accountLoginid = result.data.loginid;
-            this.isDemo =
-              result.data.loginid?.startsWith("VRTC") ||
-              result.data.loginid?.startsWith("VRT");
+            this.accountBalance = balanceData.balance;
+            this.accountCurrency = balanceData.currency;
+            this.accountLoginid = balanceData.loginid;
+            this.isDemo = balanceData.isDemo;
             this.preferredCurrency = this.getPreferredCurrency();
 
             console.log("[AgenteAutonomo] ✅ Saldo atualizado:", {
@@ -989,14 +963,9 @@
             });
             
             // Forçar atualização do computed agenteData quando o saldo mudar
-            if (oldBalance !== balanceValue && balanceValue > 0) {
+            if (oldBalance !== balanceData.balance && balanceData.balance > 0) {
               this.$forceUpdate();
             }
-          } else {
-            console.error(
-              "[AgenteAutonomo] ❌ Erro ao buscar saldo:",
-              result.message || "Unknown error"
-            );
           }
         } catch (error) {
           console.error(
@@ -1009,7 +978,24 @@
       startBalanceUpdates() {
         this.fetchAccountBalance();
         this.balanceUpdateInterval = setInterval(() => {
-          this.fetchAccountBalance();
+          // Usar reloadAccountBalance para forçar atualização (ignora cache)
+          reloadAccountBalance().then(balanceData => {
+            if (balanceData) {
+              const oldBalance = this.accountBalance;
+              this.accountBalance = balanceData.balance;
+              this.accountCurrency = balanceData.currency;
+              this.accountLoginid = balanceData.loginid;
+              this.isDemo = balanceData.isDemo;
+              this.preferredCurrency = this.getPreferredCurrency();
+              
+              // Forçar atualização do computed agenteData quando o saldo mudar
+              if (oldBalance !== balanceData.balance && balanceData.balance > 0) {
+                this.$forceUpdate();
+              }
+            }
+          }).catch(error => {
+            console.error('[AgenteAutonomo] Erro ao atualizar saldo:', error);
+          });
         }, 30000);
       },
   

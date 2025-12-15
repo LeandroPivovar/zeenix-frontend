@@ -19,7 +19,7 @@
     <div class="min-h-screen flex flex-col transition-all duration-300" :style="{ marginLeft: isMobile ? '0' : (isSidebarCollapsed ? '0' : '280px') }">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
-        :balance="0"
+        :balance="accountBalance"
         account-type="real"
         @toggle-sidebar="toggleSidebar"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
@@ -415,6 +415,7 @@ import EditEmailModal from '../components/modals/EditEmailModal.vue'
 import ChangePasswordModal from '../components/modals/ChangePasswordModal.vue'
 import ChangePhotoModal from '../components/modals/ChangePhotoModal.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
+import { loadAccountBalance } from '../utils/balanceLoader'
 
 export default {
   name: 'SettingsView',
@@ -453,7 +454,8 @@ export default {
       showChangePhotoModal: false,
       sidebarIsOpen: false,
       isMobile: false,
-      isSidebarCollapsed: false
+      isSidebarCollapsed: false,
+      accountBalance: 0
     }
   },
   computed: {
@@ -496,6 +498,8 @@ export default {
     this.fetchSettings();
     window.addEventListener('resize', this.checkMobile);
     this.checkMobile();
+    // Carregar saldo em background
+    this.loadAccountBalance();
   },
   beforeUnmount() {
     window.removeEventListener('resize', this.checkMobile);
@@ -503,6 +507,16 @@ export default {
   methods: {
     checkMobile() {
       this.isMobile = window.innerWidth <= 1024; // Adjusted for lg breakpoint
+    },
+    async loadAccountBalance() {
+      try {
+        const balanceData = await loadAccountBalance();
+        if (balanceData) {
+          this.accountBalance = balanceData.balance;
+        }
+      } catch (error) {
+        console.error('[SettingsView] Erro ao carregar saldo:', error);
+      }
     },
     async fetchSettings() {
       this.loading = true

@@ -118,6 +118,7 @@
 import AppSidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
+import { loadAccountBalance } from '../utils/balanceLoader'
 
 export default {
   name: 'AcademyView',
@@ -252,8 +253,16 @@ export default {
       return `${apiBaseUrl}${url.startsWith('/') ? '' : '/'}${url}`
     },
     async fetchBalance() {
-      // Implementação simplificada
-      this.balance = 1250.00;
+      try {
+        const balanceData = await loadAccountBalance();
+        if (balanceData) {
+          this.balance = balanceData.balance;
+        }
+      } catch (error) {
+        console.error('[AcademyView] Erro ao buscar saldo:', error);
+        // Fallback para valor padrão se houver erro
+        this.balance = 0;
+      }
     }
   }
 }
