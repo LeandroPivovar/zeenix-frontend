@@ -60,14 +60,34 @@ export async function loadAvailableAccounts() {
         if (response.ok) {
           const data = await response.json();
           
+          console.log(`[AccountsLoader] Buscando conta ${loginid}, resposta:`, {
+            hasAccountsByCurrency: !!data.accountsByCurrency,
+            hasRawAccounts: !!(data.raw && data.raw.accounts),
+            rawAccountsKeys: data.raw && data.raw.accounts ? Object.keys(data.raw.accounts) : [],
+            balancesByCurrencyReal: data.balancesByCurrencyReal,
+            balancesByCurrencyDemo: data.balancesByCurrencyDemo
+          });
+          
           // Buscar informações específicas da conta pelo loginid
           let balance = 0;
           let currency = 'USD';
           let isDemo = false;
           let accountFound = false;
           
-          // Tentar buscar da estrutura accountsByCurrency primeiro (estrutura principal)
-          if (data.accountsByCurrency && typeof data.accountsByCurrency === 'object') {
+          // PRIMEIRO: Tentar buscar do raw.accounts (mais confiável, contém todas as contas)
+          if (data.raw && data.raw.accounts && data.raw.accounts[loginid]) {
+            const accountData = data.raw.accounts[loginid];
+            currency = (accountData.currency || 'USD').toUpperCase();
+            balance = accountData.converted_amount !== null && accountData.converted_amount !== undefined
+              ? parseFloat(accountData.converted_amount) || 0
+              : parseFloat(accountData.balance || 0);
+            isDemo = accountData.demo_account === 1 || accountData.demo_account === true;
+            accountFound = true;
+            console.log(`[AccountsLoader] ✅ Conta ${loginid} encontrada em raw.accounts:`, { currency, balance, isDemo });
+          }
+          
+          // SEGUNDO: Tentar buscar da estrutura accountsByCurrency
+          if (!accountFound && data.accountsByCurrency && typeof data.accountsByCurrency === 'object') {
             for (const curr in data.accountsByCurrency) {
               const accountList = data.accountsByCurrency[curr];
               if (Array.isArray(accountList)) {
@@ -77,21 +97,11 @@ export async function loadAvailableAccounts() {
                   currency = curr.toUpperCase();
                   isDemo = account.isDemo || false;
                   accountFound = true;
+                  console.log(`[AccountsLoader] ✅ Conta ${loginid} encontrada em accountsByCurrency:`, { currency, balance, isDemo });
                   break;
                 }
               }
             }
-          }
-          
-          // Se não encontrou em accountsByCurrency, tentar buscar do raw.accounts
-          if (!accountFound && data.raw && data.raw.accounts && data.raw.accounts[loginid]) {
-            const accountData = data.raw.accounts[loginid];
-            currency = (accountData.currency || 'USD').toUpperCase();
-            balance = accountData.converted_amount !== null && accountData.converted_amount !== undefined
-              ? parseFloat(accountData.converted_amount) || 0
-              : parseFloat(accountData.balance || 0);
-            isDemo = accountData.demo_account === 1 || accountData.demo_account === true;
-            accountFound = true;
           }
           
           // Se ainda não encontrou, usar fallback com saldos agregados
@@ -99,22 +109,65 @@ export async function loadAvailableAccounts() {
             // Determinar se é demo baseado no loginid
             isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT');
             
-            // Buscar saldo agregado por moeda
-            if (isDemo && data.balancesByCurrencyDemo) {
-              const currencies = Object.keys(data.balancesByCurrencyDemo);
-              if (currencies.length > 0) {
-                currency = currencies[0];
-                balance = parseFloat(data.balancesByCurrencyDemo[currency]) || 0;
+            // Tentar buscar do raw.accounts primeiro (mais confiável)
+            if (data.raw && data.raw.accounts) {
+              // Buscar todas as contas no raw.accounts para encontrar a conta específica
+              const allAccounts = data.raw.accounts;
+              if (allAccounts[loginid]) {
+                const accountData = allAccounts[loginid];
+                currency = (accountData.currency || 'USD').toUpperCase();
+                balance = accountData.converted_amount !== null && accountData.converted_amount !== undefined
+                  ? parseFloat(accountData.converted_amount) || 0
+                  : parseFloat(accountData.balance || 0);
+                isDemo = accountData.demo_account === 1 || accountData.demo_account === true;
+                accountFound = true;
               }
-            } else if (!isDemo && data.balancesByCurrencyReal) {
-              const currencies = Object.keys(data.balancesByCurrencyReal);
-              if (currencies.length > 0) {
-                currency = currencies[0];
-                balance = parseFloat(data.balancesByCurrencyReal[currency]) || 0;
+            }
+            
+            // Se ainda não encontrou, buscar saldo agregado por moeda
+            if (!accountFound) {
+              if (isDemo && data.balancesByCurrencyDemo) {
+                const currencies = Object.keys(data.balancesByCurrencyDemo);
+                if (currencies.length > 0) {
+                  currency = currencies[0];
+                  balance = parseFloat(data.balancesByCurrencyDemo[currency]) || 0;
+                }
+              } else if (!isDemo && data.balancesByCurrencyReal) {
+                // Para contas reais, tentar encontrar a moeda correta
+                // Se o loginid começa com CR, pode ser BTC ou USD
+                // Verificar se há saldo em USD primeiro (mais comum)
+                if (data.balancesByCurrencyReal['USD'] !== undefined) {
+                  currency = 'USD';
+                  balance = parseFloat(data.balancesByCurrencyReal['USD']) || 0;
+                } else {
+                  const currencies = Object.keys(data.balancesByCurrencyReal);
+                  if (currencies.length > 0) {
+                    currency = currencies[0];
+                    balance = parseFloat(data.balancesByCurrencyReal[currency]) || 0;
+                  }
+                }
+              } else if (data.balance) {
+                balance = typeof data.balance === 'object' ? (parseFloat(data.balance.value) || 0) : (parseFloat(data.balance) || 0);
+                currency = data.currency || (data.balance?.currency || 'USD');
               }
-            } else if (data.balance) {
-              balance = typeof data.balance === 'object' ? (parseFloat(data.balance.value) || 0) : (parseFloat(data.balance) || 0);
-              currency = data.currency || (data.balance?.currency || 'USD');
+            }
+          }
+          
+          // Se ainda não encontrou a conta específica, mas temos raw.accounts, buscar lá
+          if (!accountFound && data.raw && data.raw.accounts) {
+            const allAccounts = data.raw.accounts;
+            // Buscar todas as contas e encontrar a que corresponde ao loginid
+            for (const accLoginId in allAccounts) {
+              if (accLoginId === loginid) {
+                const accountData = allAccounts[accLoginId];
+                currency = (accountData.currency || 'USD').toUpperCase();
+                balance = accountData.converted_amount !== null && accountData.converted_amount !== undefined
+                  ? parseFloat(accountData.converted_amount) || 0
+                  : parseFloat(accountData.balance || 0);
+                isDemo = accountData.demo_account === 1 || accountData.demo_account === true;
+                accountFound = true;
+                break;
+              }
             }
           }
           
@@ -144,9 +197,68 @@ export async function loadAvailableAccounts() {
     // Aguardar todas as requisições
     const results = await Promise.all(accountPromises);
     
-    // Filtrar resultados nulos e ordenar: contas reais primeiro, depois demo
-    const validAccounts = results
-      .filter(account => account !== null)
+    // Coletar todas as contas encontradas, usando um Map para evitar duplicatas
+    const allAccountsMap = new Map();
+    
+    // Processar resultados das requisições individuais
+    for (const result of results) {
+      if (result && result.loginid) {
+        allAccountsMap.set(result.loginid, result);
+      }
+    }
+    
+    // Agora, buscar todas as contas do raw.accounts de qualquer resposta que tenha dados completos
+    // Isso garante que encontramos todas as contas disponíveis, mesmo que não estejam nos tokens
+    for (let i = 0; i < loginIds.length; i++) {
+      try {
+        const accountToken = tokensByLoginId[loginIds[i]];
+        const response = await fetch(`${apiBase}/broker/deriv/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            token: accountToken,
+            appId: parseInt(appId)
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          
+          // Se a resposta tem raw.accounts, adicionar TODAS as contas encontradas
+          if (data.raw && data.raw.accounts) {
+            for (const accLoginId in data.raw.accounts) {
+              // Só adicionar se ainda não temos essa conta
+              if (!allAccountsMap.has(accLoginId)) {
+                const accountData = data.raw.accounts[accLoginId];
+                // Tentar obter o token dessa conta, ou usar o token atual como fallback
+                const accToken = tokensByLoginId[accLoginId] || accountToken;
+                
+                allAccountsMap.set(accLoginId, {
+                  loginid: accLoginId,
+                  token: accToken,
+                  isDemo: accountData.demo_account === 1 || accountData.demo_account === true,
+                  balance: accountData.converted_amount !== null && accountData.converted_amount !== undefined
+                    ? parseFloat(accountData.converted_amount) || 0
+                    : parseFloat(accountData.balance || 0),
+                  currency: (accountData.currency || 'USD').toUpperCase()
+                });
+                console.log(`[AccountsLoader] ✅ Conta adicional encontrada: ${accLoginId} (${accountData.currency || 'USD'})`);
+              }
+            }
+            // Se já coletamos todas as contas possíveis, podemos parar
+            break;
+          }
+        }
+      } catch (error) {
+        console.warn(`[AccountsLoader] Erro ao buscar contas adicionais:`, error);
+      }
+    }
+    
+    // Converter Map para Array e ordenar: contas reais primeiro, depois demo
+    const validAccounts = Array.from(allAccountsMap.values())
       .sort((a, b) => {
         if (a.isDemo === b.isDemo) return 0;
         return a.isDemo ? 1 : -1;
@@ -155,7 +267,12 @@ export async function loadAvailableAccounts() {
     // Armazenar no cache
     setCachedAccounts(validAccounts);
 
-    console.log(`[AccountsLoader] ${validAccounts.length} contas carregadas`);
+    console.log(`[AccountsLoader] ${validAccounts.length} contas carregadas:`, validAccounts.map(acc => ({
+      loginid: acc.loginid,
+      currency: acc.currency,
+      isDemo: acc.isDemo,
+      balance: acc.balance
+    })));
     return validAccounts;
   } catch (error) {
     console.error('[AccountsLoader] Erro ao carregar contas:', error);
