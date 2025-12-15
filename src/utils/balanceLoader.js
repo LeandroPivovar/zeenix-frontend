@@ -151,34 +151,57 @@ export async function loadAccountBalance() {
         }
         
         // Se ainda não encontrou, usar fallback com saldos agregados
-        if (!loginid) {
-          // Verificar se há saldo agregado
-          if (balancesByCurrencyReal && balancesByCurrencyReal['USD']) {
-            balance = parseFloat(balancesByCurrencyReal['USD']) || 0;
-            currency = 'USD';
-            isDemo = false;
-          } else if (balancesByCurrencyDemo && balancesByCurrencyDemo['USD']) {
-            balance = parseFloat(balancesByCurrencyDemo['USD']) || 0;
-            currency = 'USD';
-            isDemo = true;
-          } else if (data.balance) {
-            balance = typeof data.balance === 'object' ? (parseFloat(data.balance.value) || 0) : (parseFloat(data.balance) || 0);
-            currency = data.currency || (data.balance?.currency || 'USD');
+        // IMPORTANTE: Priorizar o saldo baseado no loginid da conexão atual
+        if (!accountLoginid) {
+          // Tentar pegar loginid da conexão salva primeiro
+          const connectionStr = localStorage.getItem('deriv_connection');
+          if (connectionStr) {
+            try {
+              const connection = JSON.parse(connectionStr);
+              accountLoginid = connection.loginid || null;
+              if (accountLoginid) {
+                isDemo = accountLoginid.startsWith('VRTC') || accountLoginid.startsWith('VRT');
+                
+                // Se temos loginid, buscar saldo específico dessa conta
+                if (data.raw && data.raw.accounts && data.raw.accounts[accountLoginid]) {
+                  const accountData = data.raw.accounts[accountLoginid];
+                  currency = (accountData.currency || 'USD').toUpperCase();
+                  balance = accountData.converted_amount !== null && accountData.converted_amount !== undefined
+                    ? parseFloat(accountData.converted_amount) || 0
+                    : parseFloat(accountData.balance || 0);
+                  isDemo = accountData.demo_account === 1 || accountData.demo_account === true;
+                } else {
+                  // Se não encontrou a conta específica, usar saldos agregados baseado no tipo
+                  if (isDemo && balancesByCurrencyDemo && balancesByCurrencyDemo['USD'] !== undefined) {
+                    balance = parseFloat(balancesByCurrencyDemo['USD']) || 0;
+                    currency = 'USD';
+                  } else if (!isDemo && balancesByCurrencyReal && balancesByCurrencyReal['USD'] !== undefined) {
+                    balance = parseFloat(balancesByCurrencyReal['USD']) || 0;
+                    currency = 'USD';
+                  } else if (data.balance) {
+                    balance = typeof data.balance === 'object' ? (parseFloat(data.balance.value) || 0) : (parseFloat(data.balance) || 0);
+                    currency = data.currency || (data.balance?.currency || 'USD');
+                  }
+                }
+              }
+            } catch (e) {
+              // Ignorar erro
+            }
           }
           
-          // Tentar pegar loginid da conexão salva se ainda não tiver
+          // Se ainda não encontrou, usar fallback genérico
           if (!accountLoginid) {
-            const connectionStr = localStorage.getItem('deriv_connection');
-            if (connectionStr) {
-              try {
-                const connection = JSON.parse(connectionStr);
-                accountLoginid = connection.loginid || null;
-                if (accountLoginid) {
-                  isDemo = accountLoginid.startsWith('VRTC') || accountLoginid.startsWith('VRT');
-                }
-              } catch (e) {
-                // Ignorar erro
-              }
+            if (balancesByCurrencyReal && balancesByCurrencyReal['USD']) {
+              balance = parseFloat(balancesByCurrencyReal['USD']) || 0;
+              currency = 'USD';
+              isDemo = false;
+            } else if (balancesByCurrencyDemo && balancesByCurrencyDemo['USD']) {
+              balance = parseFloat(balancesByCurrencyDemo['USD']) || 0;
+              currency = 'USD';
+              isDemo = true;
+            } else if (data.balance) {
+              balance = typeof data.balance === 'object' ? (parseFloat(data.balance.value) || 0) : (parseFloat(data.balance) || 0);
+              currency = data.currency || (data.balance?.currency || 'USD');
             }
           }
         }
@@ -191,6 +214,19 @@ export async function loadAccountBalance() {
         // Se ainda não tiver loginid, usar o que foi obtido anteriormente
         if (!accountLoginid) {
           accountLoginid = loginid;
+        }
+        
+        // IMPORTANTE: Se temos loginid específico, garantir que o saldo seja dessa conta
+        // e não do saldo agregado
+        if (accountLoginid && data.raw && data.raw.accounts && data.raw.accounts[accountLoginid]) {
+          const specificAccount = data.raw.accounts[accountLoginid];
+          // Usar saldo da conta específica, não do agregado
+          balance = specificAccount.converted_amount !== null && specificAccount.converted_amount !== undefined
+            ? parseFloat(specificAccount.converted_amount) || 0
+            : parseFloat(specificAccount.balance || 0);
+          currency = (specificAccount.currency || 'USD').toUpperCase();
+          isDemo = specificAccount.demo_account === 1 || specificAccount.demo_account === true;
+          console.log(`[BalanceLoader] ✅ Usando saldo da conta específica ${accountLoginid}:`, { balance, currency, isDemo });
         }
         
         const balanceData = {

@@ -501,7 +501,7 @@ import TopNavbar from '../components/TopNavbar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
-import { loadAccountBalance, reloadAccountBalance } from '../utils/balanceLoader';
+import { loadAccountBalance, reloadAccountBalance, clearBalanceCache } from '../utils/balanceLoader';
 
 export default {
     name: 'InvestmentIAView',
@@ -1089,7 +1089,37 @@ export default {
         },
         handleAccountTypeChangeFromNavbar(newAccountType) {
             // Alterna entre demo e real quando chamado do navbar
-            this.toggleAccountType(newAccountType);
+            this.isDemo = newAccountType === 'demo';
+            console.log('[InvestmentIAView] Tipo de conta alterado para:', this.isDemo ? 'demo' : 'real');
+            
+            // Limpar cache do saldo para forçar busca da conta correta
+            clearBalanceCache();
+            
+            // Forçar atualização imediata do saldo para refletir a conta selecionada
+            reloadAccountBalance().then(balanceData => {
+                if (balanceData) {
+                    this.accountBalance = balanceData.balance;
+                    this.accountCurrency = balanceData.currency;
+                    this.accountLoginid = balanceData.loginid;
+                    this.isDemo = balanceData.isDemo;
+                    this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
+                    this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
+                    this.lastBalanceUpdate = new Date();
+                    
+                    console.log('[InvestmentIAView] ✅ Saldo atualizado após troca de conta:', {
+                        balance: this.accountBalance,
+                        currency: this.accountCurrency,
+                        loginid: this.accountLoginid,
+                        isDemo: this.isDemo,
+                        balancesByCurrencyReal: this.balancesByCurrencyReal,
+                        balancesByCurrencyDemo: this.balancesByCurrencyDemo
+                    });
+                } else {
+                    console.warn('[InvestmentIAView] ⚠️ Nenhum dado de saldo retornado após troca de conta');
+                }
+            }).catch(error => {
+                console.error('[InvestmentIAView] Erro ao atualizar saldo após troca de conta:', error);
+            });
         },
         
         async startDataLoading() {
