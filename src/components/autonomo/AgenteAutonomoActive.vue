@@ -68,8 +68,8 @@
 						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change positive">
-						{{ (sessionStats?.netProfit || 0) > 0 && sessionStats?.totalCapital > 0 
-							? (((sessionStats?.netProfit || 0) / sessionStats.totalCapital) * 100).toFixed(2) 
+						{{ (sessionStats?.netProfit || 0) > 0 && totalCapital > 0 
+							? (((sessionStats?.netProfit || 0) / totalCapital) * 100).toFixed(2) 
 							: '0.00' }}%
 					</div>
 					</div>
@@ -83,8 +83,8 @@
 						-${{ Math.abs(sessionStats?.totalLoss || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change negative">
-						{{ (sessionStats?.totalLoss || 0) !== 0 && sessionStats?.totalCapital > 0 
-							? ((Math.abs(sessionStats?.totalLoss || 0) / sessionStats.totalCapital) * 100).toFixed(2) 
+						{{ (sessionStats?.totalLoss || 0) !== 0 && totalCapital > 0 
+							? ((Math.abs(sessionStats?.totalLoss || 0) / totalCapital) * 100).toFixed(2) 
 							: '0.00' }}%
 					</div>
 				</div>
@@ -489,6 +489,21 @@
 				const valor = this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
 				console.log('[AgenteAutonomoActive] operacoesHojeDisplay computed:', valor, 'sessionStats:', this.sessionStats?.operationsToday, 'agenteData:', this.agenteData?.operacoesHoje);
 				return valor;
+			},
+			totalCapital() {
+				// Priorizar sessionStats.totalCapital (do backend), depois usar accountBalance do header como fallback
+				const backendCapital = this.sessionStats?.totalCapital;
+				const headerBalance = this.agenteData?.accountBalance;
+				
+				if (backendCapital && backendCapital > 0) {
+					return backendCapital;
+				}
+				
+				if (headerBalance && typeof headerBalance === 'number' && headerBalance > 0) {
+					return headerBalance;
+				}
+				
+				return 0;
 			},
 			tempoOptions() {
 				return this.timeframeOptions[this.unidadeTimeframeSelecionada] || [];
