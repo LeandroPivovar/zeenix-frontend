@@ -1338,41 +1338,6 @@ export default {
         }
       }
     },
-              balance = parseFloat(balance) || 0;
-              currency = (currency || 'USD').toUpperCase();
-              
-              // Confirmar se é demo baseado no loginid
-              if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
-                isDemo = true;
-              }
-
-              accounts.push({
-                loginid,
-                token: accountToken,
-                isDemo,
-                balance,
-                currency
-              });
-            }
-          } catch (error) {
-            console.error(`[Dashboard] Erro ao buscar conta ${loginid}:`, error);
-          }
-        }
-
-        // Ordenar: contas reais primeiro, depois demo
-        accounts.sort((a, b) => {
-          if (a.isDemo === b.isDemo) return 0;
-          return a.isDemo ? 1 : -1;
-        });
-
-        this.availableAccounts = accounts;
-      } catch (error) {
-        console.error('[Dashboard] Erro ao carregar contas:', error);
-        this.availableAccounts = [];
-      } finally {
-        this.loadingAccounts = false;
-      }
-    },
     isCurrentAccount(account) {
       // Usa a mesma lógica do sidebar - compara loginid
       const currentLoginid = this.currentAccountLoginid;
