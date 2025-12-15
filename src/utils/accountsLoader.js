@@ -35,7 +35,6 @@ export async function loadAvailableAccounts() {
     }
 
     // Buscar informações de cada conta
-    const accounts = [];
     const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
     const token = localStorage.getItem('token');
     const appId = localStorage.getItem('deriv_app_id') || '1089';
