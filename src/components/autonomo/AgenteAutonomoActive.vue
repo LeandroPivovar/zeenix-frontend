@@ -485,9 +485,9 @@
 				return `${Math.min(100, Math.max(0, percentage)).toFixed(0)}%`;
 			},
 			operacoesHojeDisplay() {
-				// Priorizar agenteData.operacoesHoje, depois sessionStats.operationsToday, depois 0
-				const valor = this.agenteData?.operacoesHoje ?? this.sessionStats?.operationsToday ?? 0;
-				console.log('[AgenteAutonomoActive] operacoesHojeDisplay computed:', valor, 'agenteData:', this.agenteData?.operacoesHoje, 'sessionStats:', this.sessionStats?.operationsToday);
+				// Priorizar sessionStats.operationsToday (mais confiável), depois agenteData.operacoesHoje, depois 0
+				const valor = this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
+				console.log('[AgenteAutonomoActive] operacoesHojeDisplay computed:', valor, 'sessionStats:', this.sessionStats?.operationsToday, 'agenteData:', this.agenteData?.operacoesHoje);
 				return valor;
 			},
 			tempoOptions() {
@@ -658,15 +658,17 @@
 			agenteData: {
 				handler(newVal, oldVal) {
 					// Log de mudanças em agenteData
-					console.log('[AgenteAutonomoActive] agenteData mudou, operacoesHoje:', newVal?.operacoesHoje);
-					
-					// Forçar atualização quando agenteData mudar (especialmente tempoAtivo)
-					if (newVal && newVal.tempoAtivo) {
-						console.log('[AgenteAutonomoActive] agenteData mudou:', {
-							newTempoAtivo: newVal.tempoAtivo,
-							oldTempoAtivo: oldVal?.tempoAtivo
-						});
-						this.$forceUpdate();
+					if (newVal) {
+						console.log('[AgenteAutonomoActive] agenteData mudou, operacoesHoje:', newVal?.operacoesHoje);
+						
+						// Forçar atualização quando agenteData mudar (especialmente tempoAtivo)
+						if (newVal.tempoAtivo) {
+							console.log('[AgenteAutonomoActive] agenteData mudou:', {
+								newTempoAtivo: newVal.tempoAtivo,
+								oldTempoAtivo: oldVal?.tempoAtivo
+							});
+							this.$forceUpdate();
+						}
 					}
 				},
 				deep: true,
