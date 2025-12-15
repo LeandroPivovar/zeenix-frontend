@@ -1,7 +1,9 @@
 <template>
     <div class="zenix-layout">
         <!-- Full Screen Loader -->
-        <!-- Removido loader fullscreen - usuário vai direto para tela ativa -->
+        <div v-if="isActivating" class="fullscreen-loader">
+            <div class="loader-spinner"></div>
+        </div>
         
         <!-- Overlay para fechar sidebar ao clicar fora (mobile) -->
         <div 
@@ -23,8 +25,6 @@
                 :balance="accountBalance"
                 :account-type="isDemo ? 'demo' : 'real'"
                 :currency="accountCurrency"
-                :balances-by-currency-real="balancesByCurrencyReal"
-                :balances-by-currency-demo="balancesByCurrencyDemo"
                 @account-type-changed="handleAccountTypeChangeFromNavbar"
                 @toggle-sidebar="toggleSidebar"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
@@ -427,69 +427,6 @@
 
         </main>
 
-            <!-- Footer -->
-            <footer v-if="!isMobile" id="footer" class="zenix-footer">
-                <div class="footer-content">
-                <div class="footer-grid">
-                        <div class="footer-brand">
-                            <div class="footer-logo">
-                                <span class="footer-logo-main">ZENIX</span>
-                                <span class="footer-logo-sub">PRO</span>
-                        </div>
-                        <p class="footer-description">
-                                Plataforma inteligente de investimentos com IA, copy trading e automação.
-                            </p>
-                            <div class="footer-social">
-                                <a href="#" class="social-icon"><i class="fa-brands fa-twitter"></i></a>
-                                <a href="#" class="social-icon"><i class="fa-brands fa-linkedin"></i></a>
-                                <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                                <a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-                        </div>
-                    </div>
-
-                        <div class="footer-column">
-                            <h3 class="footer-column-title">Produto</h3>
-                            <ul class="footer-links">
-                                <li><a href="#">IA de Investimento</a></li>
-                                <li><a href="#">Copy Trading</a></li>
-                                <li><a href="#">Agente Autônomo</a></li>
-                                <li><a href="#">Zenix Academy</a></li>
-                        </ul>
-                    </div>
-                        
-                        <div class="footer-column">
-                            <h3 class="footer-column-title">Empresa</h3>
-                            <ul class="footer-links">
-                                <li><a href="#">Sobre Nós</a></li>
-                                <li><a href="#">Planos</a></li>
-                                <li><a href="#">Blog</a></li>
-                                <li><a href="#">Carreiras</a></li>
-                            </ul>
-                </div>
-
-                        <div class="footer-column">
-                            <h3 class="footer-column-title">Suporte</h3>
-                            <ul class="footer-links">
-                                <li><a href="#">Central de Ajuda</a></li>
-                                <li><a href="#">Documentação</a></li>
-                                <li><a href="#">Status do Sistema</a></li>
-                                <li><a href="#">Contato</a></li>
-                            </ul>
-                        </div>
-                    </div>
-                    
-                    <div class="footer-bottom">
-                        <p class="footer-copyright">© 2025 Zenix Pro. Todos os direitos reservados.</p>
-                        <div class="footer-legal">
-                            <a href="#">Política de Privacidade</a>
-                            <span class="footer-separator">|</span>
-                            <a href="#">Termos de Uso</a>
-                            <span class="footer-separator">|</span>
-                            <a href="#">Cookies</a>
-                    </div>
-                </div>
-            </div>
-        </footer>
         </div>
     </div>
     <DesktopBottomNav />
@@ -501,7 +438,6 @@ import TopNavbar from '../components/TopNavbar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
-import { loadAccountBalance, reloadAccountBalance, clearBalanceCache } from '../utils/balanceLoader';
 
 export default {
     name: 'InvestmentIAView',
@@ -517,7 +453,8 @@ export default {
             isSidebarOpen: false,
             isSidebarCollapsed: false,
             isMobile: false,
-            isInvestmentActive: false, 
+            isInvestmentActive: false,
+            isActivating: false, 
 
             ticks: [],
             currentPrice: null,
@@ -538,8 +475,6 @@ export default {
             isDemo: false,
             balanceVisible: true,
             lastBalanceUpdate: null,
-            balancesByCurrencyReal: {},
-            balancesByCurrencyDemo: {},
             balanceUpdateInterval: null,
             clockInterval: null,
             
@@ -725,6 +660,7 @@ export default {
         },
 
         async activateIA() {
+            this.isActivating = true;
             try {
                 console.log('[InvestmentIAView] ===== ATIVANDO IA =====');
                 console.log('[InvestmentIAView] 💰 VALOR DE ENTRADA:', this.entryValue);
@@ -737,6 +673,7 @@ export default {
 
                 if (!this.entryValue || this.entryValue < 0.35) {
                     console.warn('[InvestmentIAView] ⚠️ Valor de entrada inválido:', this.entryValue);
+                    this.isActivating = false;
                     return;
                 }
 
@@ -753,14 +690,37 @@ export default {
                 }
 
                 const preferredCurrency = this.getPreferredCurrency();
+                
+                console.log('[InvestmentIAView] 💰 Verificando saldo da conta...');
+                try {
+                    const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                    const balanceResponse = await fetch(`${apiBase}/ai/deriv-balance`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('token')}`
+                        },
+                        body: JSON.stringify({ derivToken: derivToken }),
+                    });
+                    
+                    const balanceResult = await balanceResponse.json();
+                    if (balanceResult.success && balanceResult.data) {
+                        const balance = balanceResult.data.balance;
+                        const currency = balanceResult.data.currency;
+                        const loginid = balanceResult.data.loginid;
+                        
+                        console.log('[InvestmentIAView] 💰 Saldo:', balance, currency);
+                        console.log('[InvestmentIAView] 🔑 LoginID:', loginid);
+                        
+                        if (balance < this.entryValue) {
+                            console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente:', balance, 'necessário:', this.entryValue);
+                        }
+                    }
+                } catch (balanceError) {
+                    console.warn('[InvestmentIAView] ⚠️ Não foi possível verificar saldo:', balanceError);
+                }
+
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                
-                // Mudar para tela ativa IMEDIATAMENTE (antes mesmo da resposta do backend)
-                // Isso melhora a experiência do usuário, mostrando a interface enquanto os dados carregam
-                this.isInvestmentActive = true;
-                console.log('[InvestmentIAView] ✅ Redirecionando para tela ativa imediatamente...');
-                
-                // Fazer requisição de ativação em background (não bloquear a UI)
                 const response = await fetch(`${apiBase}/ai/activate`, {
                     method: 'POST',
                     headers: {
@@ -782,27 +742,18 @@ export default {
                 const result = await response.json();
 
                 if (result.success) {
-                    console.log('[InvestmentIAView] ✅ IA ativada com sucesso no backend!');
+                    this.isInvestmentActive = true;
+                    console.log('[InvestmentIAView] ✅ IA ativada com sucesso!');
                     
-                    // Carregar dados em background (sem bloquear a UI)
-                    // O usuário já está vendo a tela ativa, os dados vão aparecendo conforme carregam
-                    this.fetchTicksHistory(1000).catch(err => {
-                        console.warn('[InvestmentIAView] Erro ao carregar histórico em background:', err);
-                    });
-                    
-                    // Iniciar polling em background se ainda não estiver ativo
-                    if (!this.pollingInterval) {
-                        this.startPolling();
-                    }
+                    // Buscar histórico de ticks para construir o gráfico
+                    await this.fetchTicksHistory(1000);
                 } else {
                     console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', result.message);
-                    // Se falhar, voltar para tela inativa
-                    this.isInvestmentActive = false;
                 }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao ativar IA:', error);
-                // Se falhar, voltar para tela inativa
-                this.isInvestmentActive = false;
+            } finally {
+                this.isActivating = false;
             }
         },
 
@@ -944,14 +895,28 @@ export default {
 
         async fetchAccountBalance() {
             try {
-                const balanceData = await loadAccountBalance();
-                if (balanceData) {
-                    this.accountBalance = balanceData.balance;
-                    this.accountCurrency = balanceData.currency;
-                    this.accountLoginid = balanceData.loginid;
-                    this.isDemo = balanceData.isDemo;
-                    this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
-                    this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
+                const derivToken = this.getDerivToken();
+                if (!derivToken) {
+                    console.warn('[InvestmentIAView] ❌ Token não disponível para buscar saldo');
+                    return;
+                }
+
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/deriv-balance`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({ derivToken: derivToken }),
+                });
+
+                const result = await response.json();
+                if (result.success && result.data) {
+                    this.accountBalance = result.data.balance;
+                    this.accountCurrency = result.data.currency;
+                    this.accountLoginid = result.data.loginid;
+                    this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
                     this.lastBalanceUpdate = new Date();
                     
                     console.log('[InvestmentIAView] ✅ Saldo atualizado:', {
@@ -960,6 +925,8 @@ export default {
                         loginid: this.accountLoginid,
                         isDemo: this.isDemo
                     });
+                } else {
+                    console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
                 }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao buscar saldo da conta:', error);
@@ -969,20 +936,7 @@ export default {
         startBalanceUpdates() {
             this.fetchAccountBalance();
             this.balanceUpdateInterval = setInterval(() => {
-                // Usar reloadAccountBalance para forçar atualização (ignora cache)
-                reloadAccountBalance().then(balanceData => {
-                    if (balanceData) {
-                        this.accountBalance = balanceData.balance;
-                        this.accountCurrency = balanceData.currency;
-                        this.accountLoginid = balanceData.loginid;
-                        this.isDemo = balanceData.isDemo;
-                        this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
-                        this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
-                        this.lastBalanceUpdate = new Date();
-                    }
-                }).catch(error => {
-                    console.error('[InvestmentIAView] Erro ao atualizar saldo:', error);
-                });
+                this.fetchAccountBalance();
             }, 30000);
         },
 
@@ -1089,37 +1043,7 @@ export default {
         },
         handleAccountTypeChangeFromNavbar(newAccountType) {
             // Alterna entre demo e real quando chamado do navbar
-            this.isDemo = newAccountType === 'demo';
-            console.log('[InvestmentIAView] Tipo de conta alterado para:', this.isDemo ? 'demo' : 'real');
-            
-            // Limpar cache do saldo para forçar busca da conta correta
-            clearBalanceCache();
-            
-            // Forçar atualização imediata do saldo para refletir a conta selecionada
-            reloadAccountBalance().then(balanceData => {
-                if (balanceData) {
-                    this.accountBalance = balanceData.balance;
-                    this.accountCurrency = balanceData.currency;
-                    this.accountLoginid = balanceData.loginid;
-                    this.isDemo = balanceData.isDemo;
-                    this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
-                    this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
-                    this.lastBalanceUpdate = new Date();
-                    
-                    console.log('[InvestmentIAView] ✅ Saldo atualizado após troca de conta:', {
-                        balance: this.accountBalance,
-                        currency: this.accountCurrency,
-                        loginid: this.accountLoginid,
-                        isDemo: this.isDemo,
-                        balancesByCurrencyReal: this.balancesByCurrencyReal,
-                        balancesByCurrencyDemo: this.balancesByCurrencyDemo
-                    });
-                } else {
-                    console.warn('[InvestmentIAView] ⚠️ Nenhum dado de saldo retornado após troca de conta');
-                }
-            }).catch(error => {
-                console.error('[InvestmentIAView] Erro ao atualizar saldo após troca de conta:', error);
-            });
+            this.toggleAccountType(newAccountType);
         },
         
         async startDataLoading() {
@@ -3394,9 +3318,27 @@ export default {
         gap: 0.5rem;
     }
     
-    /* Remover indicador de risco no mobile */
+    /* Mostrar apenas o texto descritivo no mobile, esconder barra e header */
     .risk-management-mobile .risk-indicator {
+        display: block !important;
+        background-color: transparent !important;
+        border: none !important;
+        padding: 0.5rem 0 !important;
+        margin-top: 0.5rem;
+    }
+    
+    .risk-management-mobile .risk-header,
+    .risk-management-mobile .risk-bar-container {
         display: none !important;
+    }
+    
+    .risk-management-mobile .risk-description {
+        display: block !important;
+        font-size: 0.75rem;
+        color: #A1A1A1;
+        opacity: 0.8;
+        text-align: center;
+        margin: 0;
     }
     
     #risk-management-card {
@@ -3824,6 +3766,17 @@ export default {
     /* Remove gap do grid no mobile */
     #ai-vision-panel .grid.gap-5 {
         gap: 0 !important;
+    }
+    
+    /* Remove h3 (card-title) no mobile */
+    .config-card .card-title,
+    .config-card h3 {
+        display: none !important;
+    }
+    
+    /* Remove ai-status-title no mobile */
+    .ai-status-title {
+        display: none !important;
     }
 }
 </style>
