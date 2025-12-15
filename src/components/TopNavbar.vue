@@ -308,6 +308,8 @@
 </template>
 
 <script>
+import { loadAvailableAccounts } from '../utils/accountsLoader';
+
 export default {
   name: 'TopNavbar',
   emits: ['toggle-sidebar', 'toggle-sidebar-collapse'],
@@ -535,144 +537,8 @@ export default {
     async loadAvailableAccounts() {
       this.loadingAccounts = true;
       try {
-        // Buscar tokens armazenados
-        const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
-        if (!tokensByLoginIdStr) {
-          console.warn('[TopNavbar] Nenhum token de conta encontrado');
-          this.availableAccounts = [];
-          return;
-        }
-
-        const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-        const loginIds = Object.keys(tokensByLoginId);
-        
-        if (loginIds.length === 0) {
-          this.availableAccounts = [];
-          return;
-        }
-
-        // Buscar informações de cada conta
-        const accounts = [];
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-        const token = localStorage.getItem('token');
-        const appId = localStorage.getItem('deriv_app_id') || '1089';
-
-        for (const loginid of loginIds) {
-          try {
-            const accountToken = tokensByLoginId[loginid];
-            
-            // Buscar informações da conta
-            const response = await fetch(`${apiBase}/broker/deriv/status`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({
-                token: accountToken,
-                appId: parseInt(appId)
-              })
-            });
-
-            if (response.ok) {
-              const data = await response.json();
-              
-              console.log(`[TopNavbar] Dados recebidos para conta ${loginid}:`, data);
-              
-              // Buscar informações específicas da conta pelo loginid
-              let balance = 0;
-              let currency = 'USD';
-              let isDemo = false;
-              let accountFound = false;
-              
-              // Tentar buscar da estrutura accountsByCurrency primeiro (estrutura principal)
-              if (data.accountsByCurrency && typeof data.accountsByCurrency === 'object') {
-                for (const curr in data.accountsByCurrency) {
-                  const accountList = data.accountsByCurrency[curr];
-                  if (Array.isArray(accountList)) {
-                    const account = accountList.find(acc => acc.loginid === loginid);
-                    if (account) {
-                      balance = parseFloat(account.value) || 0;
-                      currency = curr.toUpperCase();
-                      isDemo = account.isDemo || false;
-                      accountFound = true;
-                      console.log(`[TopNavbar] Conta encontrada em accountsByCurrency:`, { loginid, balance, currency, isDemo });
-                      break;
-                    }
-                  }
-                }
-              }
-              
-              // Se não encontrou em accountsByCurrency, tentar buscar do raw.accounts
-              if (!accountFound && data.raw && data.raw.accounts && data.raw.accounts[loginid]) {
-                const accountData = data.raw.accounts[loginid];
-                currency = (accountData.currency || 'USD').toUpperCase();
-                // Usar converted_amount se disponível, senão balance
-                balance = accountData.converted_amount !== null && accountData.converted_amount !== undefined
-                  ? parseFloat(accountData.converted_amount) || 0
-                  : parseFloat(accountData.balance || 0);
-                isDemo = accountData.demo_account === 1 || accountData.demo_account === true;
-                accountFound = true;
-                console.log(`[TopNavbar] Conta encontrada em raw.accounts:`, { loginid, balance, currency, isDemo });
-              }
-              
-              // Se ainda não encontrou, usar fallback com saldos agregados
-              if (!accountFound) {
-                // Determinar se é demo baseado no loginid
-                isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT');
-                
-                // Buscar saldo agregado por moeda (pode ser que a conta específica não esteja disponível)
-                if (isDemo && data.balancesByCurrencyDemo) {
-                  const currencies = Object.keys(data.balancesByCurrencyDemo);
-                  if (currencies.length > 0) {
-                    currency = currencies[0];
-                    balance = parseFloat(data.balancesByCurrencyDemo[currency]) || 0;
-                  }
-                } else if (!isDemo && data.balancesByCurrencyReal) {
-                  const currencies = Object.keys(data.balancesByCurrencyReal);
-                  if (currencies.length > 0) {
-                    currency = currencies[0];
-                    balance = parseFloat(data.balancesByCurrencyReal[currency]) || 0;
-                  }
-                } else if (data.balance) {
-                  // Último fallback: usar balance geral
-                  balance = typeof data.balance === 'object' ? (parseFloat(data.balance.value) || 0) : (parseFloat(data.balance) || 0);
-                  currency = data.currency || (data.balance?.currency || 'USD');
-                }
-                
-                console.log(`[TopNavbar] Usando fallback para conta ${loginid}:`, { balance, currency, isDemo });
-              }
-              
-              // Garantir que sempre temos valores válidos
-              balance = parseFloat(balance) || 0;
-              currency = (currency || 'USD').toUpperCase();
-              
-              // Confirmar se é demo baseado no loginid (sobrescrever se necessário)
-              if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
-                isDemo = true;
-              }
-
-              console.log(`[TopNavbar] Conta final:`, { loginid, balance, currency, isDemo });
-
-              accounts.push({
-                loginid,
-                token: accountToken,
-                isDemo,
-                balance: balance, // Sempre mostrar o valor real, mesmo se for 0.00
-                currency: currency
-              });
-            }
-          } catch (error) {
-            console.error(`[TopNavbar] Erro ao buscar conta ${loginid}:`, error);
-          }
-        }
-
-        // Ordenar: contas reais primeiro, depois demo
-        accounts.sort((a, b) => {
-          if (a.isDemo === b.isDemo) return 0;
-          return a.isDemo ? 1 : -1;
-        });
-
+        // Usar a função utilitária que já tem cache e otimizações
+        const accounts = await loadAvailableAccounts();
         this.availableAccounts = accounts;
       } catch (error) {
         console.error('[TopNavbar] Erro ao carregar contas:', error);

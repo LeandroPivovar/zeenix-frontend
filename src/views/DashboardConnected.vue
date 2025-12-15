@@ -845,6 +845,7 @@
 import TopNavbar from '../components/TopNavbar.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import AppSidebar from '../components/Sidebar.vue'
+import { loadAvailableAccounts } from '../utils/accountsLoader'
 
 export default {
   name: 'DashboardConnected',
@@ -1171,6 +1172,8 @@ export default {
     await this.loadTodayProfitLoss();
     this.loadUserProfilePicture();
     await this.loadTradeCurrency();
+    // Carregar contas disponíveis em background para otimizar troca de conta
+    this.loadAccountsInBackground();
   },
   methods: {
     toggleMobileSidebar() {
@@ -1306,104 +1309,35 @@ export default {
       }
     },
     async loadAvailableAccounts() {
-      // Usa a mesma lógica do TopNavbar
+      // Usa a função utilitária que já tem cache e otimizações
       this.loadingAccounts = true;
       try {
-        const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
-        if (!tokensByLoginIdStr) {
-          console.warn('[Dashboard] Nenhum token de conta encontrado');
-          this.availableAccounts = [];
-          return;
+        const accounts = await loadAvailableAccounts();
+        this.availableAccounts = accounts;
+      } catch (error) {
+        console.error('[Dashboard] Erro ao carregar contas:', error);
+        this.availableAccounts = [];
+      } finally {
+        this.loadingAccounts = false;
+      }
+    },
+    async loadAccountsInBackground() {
+      // Carregar contas em background sem bloquear a interface
+      // Se houver tokens armazenados, carregar as contas
+      const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+      if (tokensByLoginIdStr) {
+        try {
+          // Executar em background sem await para não bloquear a interface
+          loadAvailableAccounts().then(() => {
+            console.log('[DashboardConnected] Contas carregadas em background');
+          }).catch(err => {
+            console.warn('[DashboardConnected] Erro ao carregar contas em background:', err);
+          });
+        } catch (error) {
+          console.warn('[DashboardConnected] Erro ao iniciar carregamento de contas:', error);
         }
-
-        const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-        const loginIds = Object.keys(tokensByLoginId);
-        
-        if (loginIds.length === 0) {
-          this.availableAccounts = [];
-          return;
-        }
-
-        const accounts = [];
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-        const token = localStorage.getItem('token');
-        const appId = localStorage.getItem('deriv_app_id') || '1089';
-
-        for (const loginid of loginIds) {
-          try {
-            const accountToken = tokensByLoginId[loginid];
-            
-            const response = await fetch(`${apiBase}/broker/deriv/status`, {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`
-              },
-              body: JSON.stringify({
-                token: accountToken,
-                appId: parseInt(appId)
-              })
-            });
-
-            if (response.ok) {
-              const data = await response.json();
-              
-              let balance = 0;
-              let currency = 'USD';
-              let isDemo = false;
-              let accountFound = false;
-              
-              // Tentar buscar da estrutura accountsByCurrency primeiro (estrutura principal)
-              if (data.accountsByCurrency && typeof data.accountsByCurrency === 'object') {
-                for (const curr in data.accountsByCurrency) {
-                  const accountList = data.accountsByCurrency[curr];
-                  if (Array.isArray(accountList)) {
-                    const account = accountList.find(acc => acc.loginid === loginid);
-                    if (account) {
-                      balance = parseFloat(account.value) || 0;
-                      currency = curr.toUpperCase();
-                      isDemo = account.isDemo || false;
-                      accountFound = true;
-                      break;
-                    }
-                  }
-                }
-              }
-              
-              // Se não encontrou em accountsByCurrency, tentar buscar do raw.accounts
-              if (!accountFound && data.raw && data.raw.accounts && data.raw.accounts[loginid]) {
-                const accountData = data.raw.accounts[loginid];
-                currency = (accountData.currency || 'USD').toUpperCase();
-                balance = accountData.converted_amount !== null && accountData.converted_amount !== undefined
-                  ? parseFloat(accountData.converted_amount) || 0
-                  : parseFloat(accountData.balance || 0);
-                isDemo = accountData.demo_account === 1 || accountData.demo_account === true;
-                accountFound = true;
-              }
-              
-              // Se ainda não encontrou, usar fallback
-              if (!accountFound) {
-                isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT');
-                
-                if (isDemo && data.balancesByCurrencyDemo) {
-                  const currencies = Object.keys(data.balancesByCurrencyDemo);
-                  if (currencies.length > 0) {
-                    currency = currencies[0];
-                    balance = parseFloat(data.balancesByCurrencyDemo[currency]) || 0;
-                  }
-                } else if (!isDemo && data.balancesByCurrencyReal) {
-                  const currencies = Object.keys(data.balancesByCurrencyReal);
-                  if (currencies.length > 0) {
-                    currency = currencies[0];
-                    balance = parseFloat(data.balancesByCurrencyReal[currency]) || 0;
-                  }
-                } else if (data.balance) {
-                  balance = typeof data.balance === 'object' ? (parseFloat(data.balance.value) || 0) : (parseFloat(data.balance) || 0);
-                  currency = data.currency || (data.balance?.currency || 'USD');
-                }
-              }
-              
-              // Garantir que sempre temos valores válidos
+      }
+    },
               balance = parseFloat(balance) || 0;
               currency = (currency || 'USD').toUpperCase();
               

@@ -180,6 +180,8 @@
 </template>
 
 <script>
+import { loadAvailableAccounts } from '../utils/accountsLoader';
+
 export default {
   name: "LoginComponent",
   data() {
@@ -352,6 +354,10 @@ export default {
         localStorage.removeItem('deriv_connection');
         localStorage.removeItem('deriv_app_id');
         
+        // Carregar contas disponíveis em background após login bem-sucedido
+        // Isso otimiza o carregamento quando o usuário clicar em "trocar de conta"
+        this.loadAccountsInBackground();
+        
         // Para login bem-sucedido, usar window.location.href diretamente
         // Isso força um reload completo da página, evitando completamente
         // problemas de desmontagem do componente Vue
@@ -368,6 +374,23 @@ export default {
           }
         } catch (stateError) {
           // Ignorar erro silenciosamente se não conseguirmos atualizar
+        }
+      }
+    },
+    async loadAccountsInBackground() {
+      // Carregar contas em background sem bloquear o redirecionamento
+      // Se houver tokens armazenados, carregar as contas
+      const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+      if (tokensByLoginIdStr) {
+        try {
+          // Executar em background sem await para não bloquear o redirecionamento
+          loadAvailableAccounts().then(() => {
+            console.log('[LoginComponent] Contas carregadas em background');
+          }).catch(err => {
+            console.warn('[LoginComponent] Erro ao carregar contas em background:', err);
+          });
+        } catch (error) {
+          console.warn('[LoginComponent] Erro ao iniciar carregamento de contas:', error);
         }
       }
     }
