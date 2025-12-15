@@ -441,13 +441,18 @@ export default {
 
 		formatConsoleTimestamp(timestamp) {
 			if (!timestamp) return '--';
-			const date = new Date(timestamp);
-			return date.toLocaleTimeString('pt-BR', {
-				hour: '2-digit',
-				minute: '2-digit',
-				second: '2-digit',
-				hour12: false,
-			});
+			try {
+				const date = new Date(timestamp);
+				if (isNaN(date.getTime())) return '--';
+				return date.toLocaleTimeString('pt-BR', {
+					hour: '2-digit',
+					minute: '2-digit',
+					second: '2-digit',
+					hour12: false,
+				});
+			} catch (error) {
+				return '--';
+			}
 		},
 
 		getUserId() {

@@ -104,14 +104,14 @@ export default {
           // Tentar extrair informações da mensagem
           const profitMatch = message.match(/[+-]?\$?[\d,]+\.?\d*/);
           const volMatch = message.match(/Vol\s*(\d+)/i) || message.match(/R_(\d+)/);
-          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          const timeMatch = this.formatTimestamp(log.timestamp);
           
           if (profitMatch && volMatch) {
             details = `${timeMatch} • Vol ${volMatch[1]} • ${profitMatch[0]}`;
           } else if (profitMatch) {
             details = `${timeMatch} • ${profitMatch[0]}`;
           } else {
-            details = timeMatch || log.timestamp;
+            details = timeMatch || '--';
           }
         }
         // Detectar entrada executada
@@ -123,14 +123,14 @@ export default {
           
           const volMatch = message.match(/Vol\s*(\d+)/i) || message.match(/R_(\d+)/);
           const priceMatch = message.match(/\$?[\d,]+\.?\d*/);
-          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          const timeMatch = this.formatTimestamp(log.timestamp);
           
           if (volMatch && priceMatch) {
             details = `${timeMatch} • Vol ${volMatch[1]} • ${priceMatch[0]}`;
           } else if (volMatch) {
             details = `${timeMatch} • Vol ${volMatch[1]}`;
           } else {
-            details = timeMatch || log.timestamp;
+            details = timeMatch || '--';
           }
         }
         // Detectar análise/volume
@@ -140,7 +140,7 @@ export default {
           icon = 'fa-solid fa-chart-line';
           title = 'Volume detectado';
           
-          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          const timeMatch = this.formatTimestamp(log.timestamp);
           details = `${timeMatch} • Análise de mercado`;
         }
         // Detectar perda
@@ -152,14 +152,14 @@ export default {
           
           const lossMatch = message.match(/[-$]?[\d,]+\.?\d*/);
           const volMatch = message.match(/Vol\s*(\d+)/i) || message.match(/R_(\d+)/);
-          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          const timeMatch = this.formatTimestamp(log.timestamp);
           
           if (lossMatch && volMatch) {
             details = `${timeMatch} • Vol ${volMatch[1]} • ${lossMatch[0]}`;
           } else if (lossMatch) {
             details = `${timeMatch} • ${lossMatch[0]}`;
           } else {
-            details = timeMatch || log.timestamp;
+            details = timeMatch || '--';
           }
         }
         // Detectar aguardando
@@ -169,7 +169,7 @@ export default {
           icon = 'fa-solid fa-clock';
           title = 'Aguardando padrão da estratégia';
           
-          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
+          const timeMatch = this.formatTimestamp(log.timestamp);
           details = `${timeMatch} • Monitoramento ativo`;
         }
         // Padrão genérico
@@ -177,8 +177,8 @@ export default {
           logType = 'info';
           icon = 'fa-solid fa-info-circle';
           title = message.length > 50 ? message.substring(0, 50) + '...' : message;
-          const timeMatch = log.timestamp ? new Date(log.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : '';
-          details = timeMatch || log.timestamp;
+          const timeMatch = this.formatTimestamp(log.timestamp);
+          details = timeMatch || '--';
         }
         
         return {
@@ -192,6 +192,21 @@ export default {
     }
   },
   methods: {
+    // Função auxiliar para formatar timestamp de forma segura
+    formatTimestamp(timestamp) {
+      if (!timestamp) return '--';
+      try {
+        const date = new Date(timestamp);
+        if (isNaN(date.getTime())) return '--';
+        return date.toLocaleTimeString('pt-BR', { 
+          hour: '2-digit', 
+          minute: '2-digit', 
+          second: '2-digit' 
+        });
+      } catch (error) {
+        return '--';
+      }
+    },
     async fetchRealtimeLogs() {
       try {
         // Tentar obter userId da prop ou do localStorage

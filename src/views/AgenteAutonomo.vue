@@ -508,14 +508,29 @@
             this.apiTradeHistory = result.data;
             
             // Converter histórico da API para o formato esperado pelo componente
-            this.operationHistory = result.data.map(trade => ({
-              time: new Date(trade.createdAt).toLocaleTimeString('pt-BR'),
-              asset: trade.symbol || 'R_75',
-              type: trade.contractType === 'RISE' || trade.contractType === 'HIGHER' ? 'CALL' : 'PUT',
-              entry: parseFloat(trade.entryPrice) || 0,
-              exit: parseFloat(trade.exitPrice) || 0,
-              result: trade.profitLoss || 0,
-            }));
+            this.operationHistory = result.data.map(trade => {
+              // Formatar timestamp de forma segura
+              let formattedTime = '--';
+              if (trade.createdAt) {
+                try {
+                  const date = new Date(trade.createdAt);
+                  if (!isNaN(date.getTime())) {
+                    formattedTime = date.toLocaleTimeString('pt-BR');
+                  }
+                } catch (error) {
+                  formattedTime = '--';
+                }
+              }
+              
+              return {
+                time: formattedTime,
+                asset: trade.symbol || 'R_75',
+                type: trade.contractType === 'RISE' || trade.contractType === 'HIGHER' ? 'CALL' : 'PUT',
+                entry: parseFloat(trade.entryPrice) || 0,
+                exit: parseFloat(trade.exitPrice) || 0,
+                result: trade.profitLoss || 0,
+              };
+            });
           }
         } catch (error) {
           console.error("[AgenteAutonomo] Erro ao carregar histórico:", error);
@@ -552,9 +567,22 @@
                 logType = 'strategy';
               }
               
+              // Formatar timestamp de forma segura
+              let formattedTimestamp = '--';
+              if (log.timestamp) {
+                try {
+                  const date = new Date(log.timestamp);
+                  if (!isNaN(date.getTime())) {
+                    formattedTimestamp = date.toLocaleString('pt-BR');
+                  }
+                } catch (error) {
+                  formattedTimestamp = '--';
+                }
+              }
+              
               return {
                 id: log.id,
-                timestamp: new Date(log.timestamp).toLocaleString('pt-BR'),
+                timestamp: formattedTimestamp,
                 type: logType,
                 message: log.message,
                 module: log.module,
