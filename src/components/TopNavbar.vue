@@ -544,13 +544,18 @@ export default {
       // Caso contrário, carregar as contas
       await this.loadAvailableAccounts();
     },
-    async loadAvailableAccounts() {
+    async loadAvailableAccounts(forceReload = false) {
       this.loadingAccounts = true;
       try {
         // Usar a função utilitária que já tem cache e otimizações
-        const accounts = await loadAvailableAccounts();
+        // Se forçar recarregamento, limpar cache e buscar novamente
+        const accounts = await loadAvailableAccounts(forceReload);
         this.availableAccounts = accounts;
-        console.log('[TopNavbar] Contas carregadas:', accounts.length);
+        console.log('[TopNavbar] Contas carregadas:', accounts.length, accounts.map(acc => ({
+          loginid: acc.loginid,
+          currency: acc.currency,
+          isDemo: acc.isDemo
+        })));
       } catch (error) {
         console.error('[TopNavbar] Erro ao carregar contas:', error);
         this.availableAccounts = [];

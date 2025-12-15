@@ -180,7 +180,7 @@
 </template>
 
 <script>
-import { loadAvailableAccounts } from '../utils/accountsLoader';
+import { loadAvailableAccounts, clearAccountsCache } from '../utils/accountsLoader';
 
 export default {
   name: "LoginComponent",
@@ -378,20 +378,27 @@ export default {
       }
     },
     async loadAccountsInBackground() {
-      // Carregar contas em background sem bloquear o redirecionamento
-      // Se houver tokens armazenados, carregar as contas
+      // Limpar cache e carregar todas as contas em background após login
+      // Se houver tokens armazenados, limpar cache e recarregar as contas
       const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
       if (tokensByLoginIdStr) {
         try {
+          // Limpar cache antes de recarregar
+          clearAccountsCache();
+          console.log('[LoginComponent] Cache de contas limpo, recarregando todas as contas...');
+          
           // Executar em background sem await para não bloquear o redirecionamento
-          loadAvailableAccounts().then(() => {
-            console.log('[LoginComponent] Contas carregadas em background');
+          // Usar forceReload=true para garantir que busca todas as contas
+          loadAvailableAccounts(true).then((accounts) => {
+            console.log(`[LoginComponent] ✅ ${accounts.length} contas carregadas e salvas no cache após login`);
           }).catch(err => {
             console.warn('[LoginComponent] Erro ao carregar contas em background:', err);
           });
         } catch (error) {
           console.warn('[LoginComponent] Erro ao iniciar carregamento de contas:', error);
         }
+      } else {
+        console.log('[LoginComponent] Nenhum token de conta encontrado, pulando carregamento de contas');
       }
     }
   }
