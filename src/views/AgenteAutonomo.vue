@@ -404,9 +404,16 @@
           });
 
           const result = await response.json();
-          if (result.success && result.data && typeof result.data === 'object') {
-            this.agentConfig = result.data;
-            this.agenteEstaAtivo = result.data.isActive || false;
+          if (result.success && result.data && typeof result.data === 'object' && result.data !== null) {
+            // Garantir que agentConfig seja definido de forma segura
+            try {
+              this.agentConfig = result.data;
+              this.agenteEstaAtivo = result.data.isActive || false;
+            } catch (error) {
+              console.error('[AgenteAutonomo] Erro ao definir agentConfig:', error);
+              this.agentConfig = {};
+              this.agenteEstaAtivo = false;
+            }
             
             // Debug: logar dados recebidos
             console.log('[AgenteAutonomo] Config carregado:', {
@@ -950,6 +957,7 @@
               ? result.data.balance 
               : parseFloat(result.data.balance) || 0;
             
+            const oldBalance = this.accountBalance;
             this.accountBalance = balanceValue;
             this.accountCurrency = result.data.currency;
             this.accountLoginid = result.data.loginid;
@@ -960,12 +968,18 @@
 
             console.log("[AgenteAutonomo] ✅ Saldo atualizado:", {
               balance: this.accountBalance,
+              oldBalance: oldBalance,
               balanceType: typeof this.accountBalance,
               currency: this.accountCurrency,
               loginid: this.accountLoginid,
               isDemo: this.isDemo,
               preferredCurrency: this.preferredCurrency,
             });
+            
+            // Forçar atualização do computed agenteData quando o saldo mudar
+            if (oldBalance !== balanceValue && balanceValue > 0) {
+              this.$forceUpdate();
+            }
           } else {
             console.error(
               "[AgenteAutonomo] ❌ Erro ao buscar saldo:",
@@ -1052,11 +1066,14 @@
     },
     async mounted() {
         this.preferredCurrency = this.getPreferredCurrency();
-        this.startBalanceUpdates();
         this.checkMobile();
 
         window.addEventListener("resize", this.checkMobile);
 
+        // Carregar saldo primeiro para que esteja disponível quando agenteData for computado
+        await this.fetchAccountBalance();
+        this.startBalanceUpdates();
+        
         // Carregar configuração do agente ao montar
         await this.loadAgentConfig();
         await this.loadSessionStats();
