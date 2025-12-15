@@ -31,7 +31,7 @@
         <div class="container-componentes">
           <component
             :is="componenteAtual"
-            v-bind="agenteData"
+            :agente-data="agenteData"
             :tempo-ativo="agenteData.tempoAtivo"
             :session-stats="sessionStats"
             :trade-history="tradeHistoryData"
