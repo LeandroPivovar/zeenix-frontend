@@ -300,6 +300,12 @@
           const strategy = configData?.estrategia || 'arion';
           const riskLevel = configData?.risco || 'balanced';
           const symbol = marketToSymbol[market] || 'R_75';
+          
+          // Usar saldo atual da conta como initialBalance (valor total da conta configurada)
+          // Se accountBalance não estiver disponível, usar 0 (o backend tentará buscar o saldo)
+          const initialBalance = this.accountBalance && typeof this.accountBalance === 'number' 
+            ? this.accountBalance 
+            : 0;
 
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
           const response = await fetch(`${apiBase}/autonomous-agent/activate`, {
@@ -313,6 +319,7 @@
               initialStake,
               dailyProfitTarget,
               dailyLossLimit,
+              initialBalance,
               derivToken,
               currency,
               symbol,
