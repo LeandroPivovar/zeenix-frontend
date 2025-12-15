@@ -185,9 +185,10 @@
         // Retornar objeto reativo com todas as propriedades
         
         // Usar dados do backend quando disponíveis
-        const operacoesHoje = this.agentConfig?.totalTrades || this.operacoesHoje || 0;
-        const dailyProfit = this.agentConfig?.dailyProfit || this.dailyProfit || 0;
-        const dailyLoss = this.agentConfig?.dailyLoss || 0;
+        // operationsToday inclui ai_trades + autonomous_agent_trades do dia de hoje
+        const operacoesHoje = this.sessionStats?.operationsToday || this.operacoesHoje || 0;
+        const dailyProfit = this.sessionStats?.netProfit !== undefined ? this.sessionStats.netProfit : (this.agentConfig?.dailyProfit || this.dailyProfit || 0);
+        const dailyLoss = this.sessionStats?.totalLoss !== undefined ? this.sessionStats.totalLoss : (this.agentConfig?.dailyLoss || 0);
         
         return {
           estrategia: this.agentConfig?.strategy ? this.getStrategyTitle(this.agentConfig.strategy) : this.estrategia,
@@ -196,9 +197,9 @@
           goalValue: this.goalValue,
           stopValue: this.stopValue,
           dailyProfit: dailyProfit,
-          dailyChange: this.goalValue > 0 ? (dailyProfit / this.goalValue) * 100 : 0,
+          dailyChange: 0, // Será calculado no componente filho com base no totalCapital
           accumulatedLoss: dailyLoss,
-          accumulatedChange: this.stopValue > 0 ? (dailyLoss / this.stopValue) * 100 : 0,
+          accumulatedChange: 0, // Será calculado no componente filho com base no totalCapital
           lastExecutionTime: this.lastExecutionTime,
           tempoAtivo: tempoAtivo,
           operacoesHoje: operacoesHoje,
@@ -481,8 +482,11 @@
               totalProfit: parseFloat(result.data.totalProfit) || 0,
               totalLoss: parseFloat(result.data.totalLoss) || 0,
               netProfit: parseFloat(result.data.netProfit) || 0,
+              totalCapital: parseFloat(result.data.totalCapital) || 0,
+              operationsToday: parseInt(result.data.operationsToday) || 0,
             };
-            this.operacoesHoje = this.sessionStats.totalTrades;
+            // Usar operationsToday que inclui ai_trades + autonomous_agent_trades
+            this.operacoesHoje = this.sessionStats.operationsToday || this.sessionStats.totalTrades || 0;
             this.dailyProfit = this.sessionStats.netProfit || 0;
           }
         } catch (error) {

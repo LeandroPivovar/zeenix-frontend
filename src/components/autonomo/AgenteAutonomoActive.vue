@@ -68,7 +68,9 @@
 						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change positive">
-						{{ progressoMeta.meta > 0 ? (((sessionStats?.netProfit || 0) / progressoMeta.meta) * 100).toFixed(2) : '0.00' }}%
+						{{ (sessionStats?.netProfit || 0) > 0 && sessionStats?.totalCapital > 0 
+							? (((sessionStats?.netProfit || 0) / sessionStats.totalCapital) * 100).toFixed(2) 
+							: '0.00' }}%
 					</div>
 					</div>
 				</div>
@@ -81,7 +83,9 @@
 						-${{ Math.abs(sessionStats?.totalLoss || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change negative">
-						{{ progressoMeta.stop > 0 ? ((Math.abs(sessionStats?.totalLoss || 0) / progressoMeta.stop) * 100).toFixed(2) : '0.00' }}%
+						{{ (sessionStats?.totalLoss || 0) !== 0 && sessionStats?.totalCapital > 0 
+							? ((Math.abs(sessionStats?.totalLoss || 0) / sessionStats.totalCapital) * 100).toFixed(2) 
+							: '0.00' }}%
 					</div>
 				</div>
 			</div>
@@ -377,6 +381,8 @@
 					totalProfit: 0,
 					totalLoss: 0,
 					netProfit: 0,
+					totalCapital: 0,
+					operationsToday: 0,
 				})
 			},
 			tradeHistory: {
