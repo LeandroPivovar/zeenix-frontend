@@ -9,7 +9,7 @@ const BALANCE_CACHE_DURATION = 30 * 1000; // 30 segundos (saldo muda frequenteme
 
 /**
  * Carrega o saldo da conta Deriv atual
- * @returns {Promise<Object|null>} Objeto com balance, currency, loginid, isDemo ou null se erro
+ * @returns {Promise<Object|null>} Objeto com balance, currency, loginid, isDemo, balancesByCurrencyReal, balancesByCurrencyDemo ou null se erro
  */
 export async function loadAccountBalance() {
   try {
@@ -53,6 +53,10 @@ export async function loadAccountBalance() {
         let currency = 'USD';
         let loginid = null;
         let isDemo = false;
+        
+        // Extrair balancesByCurrencyReal e balancesByCurrencyDemo (essenciais para TopNavbar)
+        const balancesByCurrencyReal = data.balancesByCurrencyReal || {};
+        const balancesByCurrencyDemo = data.balancesByCurrencyDemo || {};
         
         // Tentar buscar da estrutura accountsByCurrency primeiro
         if (data.accountsByCurrency && typeof data.accountsByCurrency === 'object') {
@@ -103,12 +107,12 @@ export async function loadAccountBalance() {
         // Se ainda não encontrou, usar fallback com saldos agregados
         if (!loginid) {
           // Verificar se há saldo agregado
-          if (data.balancesByCurrencyReal && data.balancesByCurrencyReal['USD']) {
-            balance = parseFloat(data.balancesByCurrencyReal['USD']) || 0;
+          if (balancesByCurrencyReal && balancesByCurrencyReal['USD']) {
+            balance = parseFloat(balancesByCurrencyReal['USD']) || 0;
             currency = 'USD';
             isDemo = false;
-          } else if (data.balancesByCurrencyDemo && data.balancesByCurrencyDemo['USD']) {
-            balance = parseFloat(data.balancesByCurrencyDemo['USD']) || 0;
+          } else if (balancesByCurrencyDemo && balancesByCurrencyDemo['USD']) {
+            balance = parseFloat(balancesByCurrencyDemo['USD']) || 0;
             currency = 'USD';
             isDemo = true;
           } else if (data.balance) {
@@ -140,7 +144,11 @@ export async function loadAccountBalance() {
           balance: parseFloat(balance) || 0,
           currency: (currency || 'USD').toUpperCase(),
           loginid: loginid,
-          isDemo: isDemo
+          isDemo: isDemo,
+          balancesByCurrencyReal: balancesByCurrencyReal,
+          balancesByCurrencyDemo: balancesByCurrencyDemo,
+          // Manter compatibilidade com estrutura antiga
+          balanceValue: parseFloat(balance) || 0
         };
         
         // Armazenar no cache
@@ -171,7 +179,11 @@ export async function loadAccountBalance() {
             balance: parseFloat(result.data.balance) || 0,
             currency: (result.data.currency || 'USD').toUpperCase(),
             loginid: result.data.loginid || null,
-            isDemo: result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT') || false
+            isDemo: result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT') || false,
+            // Criar estruturas vazias se não vierem do endpoint
+            balancesByCurrencyReal: result.data.balancesByCurrencyReal || {},
+            balancesByCurrencyDemo: result.data.balancesByCurrencyDemo || {},
+            balanceValue: parseFloat(result.data.balance) || 0
           };
           
           // Armazenar no cache

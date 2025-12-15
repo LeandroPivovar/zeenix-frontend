@@ -23,6 +23,8 @@
           :balance="accountBalance"
           :account-type="isDemo ? 'demo' : 'real'"
           :currency="accountCurrency"
+          :balances-by-currency-real="balancesByCurrencyReal"
+          :balances-by-currency-demo="balancesByCurrencyDemo"
           @account-type-changed="handleAccountTypeChange"
           @toggle-sidebar="toggleMobileSidebar"
           @toggle-sidebar-collapse="toggleSidebarCollapse"
@@ -132,6 +134,8 @@
         isDemo: false,
         balanceUpdateInterval: null,
         preferredCurrency: "USD",
+        balancesByCurrencyReal: {},
+        balancesByCurrencyDemo: {},
       };
     },
     computed: {
@@ -951,6 +955,8 @@
             this.accountLoginid = balanceData.loginid;
             this.isDemo = balanceData.isDemo;
             this.preferredCurrency = this.getPreferredCurrency();
+            this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
+            this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
 
             console.log("[AgenteAutonomo] ✅ Saldo atualizado:", {
               balance: this.accountBalance,
@@ -960,6 +966,8 @@
               loginid: this.accountLoginid,
               isDemo: this.isDemo,
               preferredCurrency: this.preferredCurrency,
+              balancesByCurrencyReal: this.balancesByCurrencyReal,
+              balancesByCurrencyDemo: this.balancesByCurrencyDemo,
             });
             
             // Forçar atualização do computed agenteData quando o saldo mudar
@@ -987,6 +995,8 @@
               this.accountLoginid = balanceData.loginid;
               this.isDemo = balanceData.isDemo;
               this.preferredCurrency = this.getPreferredCurrency();
+              this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
+              this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
               
               // Forçar atualização do computed agenteData quando o saldo mudar
               if (oldBalance !== balanceData.balance && balanceData.balance > 0) {

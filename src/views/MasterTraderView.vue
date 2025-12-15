@@ -18,6 +18,8 @@
             :balance="accountBalance"
             :account-type="isDemo ? 'demo' : 'real'"
             :currency="accountCurrency"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
             @account-type-changed="handleAccountTypeChange"
             @toggle-sidebar-collapse="toggleSidebarCollapse"
             @toggle-sidebar="toggleSidebar"
@@ -251,7 +253,9 @@ export default {
             accountLoginid: null,
             isDemo: false,
             balanceUpdateInterval: null,
-            preferredCurrency: 'USD'
+            preferredCurrency: 'USD',
+            balancesByCurrencyReal: {},
+            balancesByCurrencyDemo: {}
         }
     },
     computed: {
@@ -359,6 +363,8 @@ export default {
                     this.accountLoginid = balanceData.loginid;
                     this.isDemo = balanceData.isDemo;
                     this.preferredCurrency = this.getPreferredCurrency();
+                    this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
+                    this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
                 }
             } catch (error) {
                 console.error('[MasterTrader] ❌ Erro ao buscar saldo da conta:', error);
@@ -374,6 +380,8 @@ export default {
                         this.accountLoginid = balanceData.loginid;
                         this.isDemo = balanceData.isDemo;
                         this.preferredCurrency = this.getPreferredCurrency();
+                        this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
+                        this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
                     }
                 }).catch(error => {
                     console.error('[MasterTrader] Erro ao atualizar saldo:', error);

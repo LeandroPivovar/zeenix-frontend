@@ -25,6 +25,8 @@
                 :balance="accountBalance"
                 :account-type="isDemo ? 'demo' : 'real'"
                 :currency="accountCurrency"
+                :balances-by-currency-real="balancesByCurrencyReal"
+                :balances-by-currency-demo="balancesByCurrencyDemo"
                 @account-type-changed="handleAccountTypeChangeFromNavbar"
                 @toggle-sidebar="toggleSidebar"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
@@ -539,6 +541,8 @@ export default {
             isDemo: false,
             balanceVisible: true,
             lastBalanceUpdate: null,
+            balancesByCurrencyReal: {},
+            balancesByCurrencyDemo: {},
             balanceUpdateInterval: null,
             clockInterval: null,
             
@@ -965,6 +969,8 @@ export default {
                     this.accountCurrency = balanceData.currency;
                     this.accountLoginid = balanceData.loginid;
                     this.isDemo = balanceData.isDemo;
+                    this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
+                    this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
                     this.lastBalanceUpdate = new Date();
                     
                     console.log('[InvestmentIAView] ✅ Saldo atualizado:', {
@@ -989,6 +995,8 @@ export default {
                         this.accountCurrency = balanceData.currency;
                         this.accountLoginid = balanceData.loginid;
                         this.isDemo = balanceData.isDemo;
+                        this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
+                        this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
                         this.lastBalanceUpdate = new Date();
                     }
                 }).catch(error => {

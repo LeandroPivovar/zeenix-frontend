@@ -22,6 +22,8 @@
         :balance="accountBalance"
         :account-type="isDemo ? 'demo' : 'real'"
         :currency="accountCurrency"
+        :balances-by-currency-real="balancesByCurrencyReal"
+        :balances-by-currency-demo="balancesByCurrencyDemo"
         @account-type-changed="handleAccountTypeChange"
         @toggle-sidebar="toggleMobileMenu"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
@@ -272,6 +274,8 @@ export default {
       accountLoginid: null,
       isDemo: false,
       balanceUpdateInterval: null,
+      balancesByCurrencyReal: {},
+      balancesByCurrencyDemo: {},
       searchSuggestions: [
         'Conectar corretora',
         'Erro de operação',
@@ -345,6 +349,8 @@ export default {
           this.accountCurrency = balanceData.currency;
           this.accountLoginid = balanceData.loginid;
           this.isDemo = balanceData.isDemo;
+          this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
+          this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
         }
       } catch (error) {
         console.error('[SupportView] ❌ Erro ao buscar saldo da conta:', error);
@@ -362,6 +368,8 @@ export default {
             this.accountCurrency = balanceData.currency;
             this.accountLoginid = balanceData.loginid;
             this.isDemo = balanceData.isDemo;
+            this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
+            this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
           }
         }).catch(error => {
           console.error('[SupportView] Erro ao atualizar saldo:', error);

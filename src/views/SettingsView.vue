@@ -20,7 +20,10 @@
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="accountBalance"
-        account-type="real"
+        :account-type="isDemo ? 'demo' : 'real'"
+        :currency="accountCurrency"
+        :balances-by-currency-real="balancesByCurrencyReal"
+        :balances-by-currency-demo="balancesByCurrencyDemo"
         @toggle-sidebar="toggleSidebar"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
       />
@@ -455,7 +458,12 @@ export default {
       sidebarIsOpen: false,
       isMobile: false,
       isSidebarCollapsed: false,
-      accountBalance: 0
+      accountBalance: 0,
+      accountCurrency: 'USD',
+      accountLoginid: null,
+      isDemo: false,
+      balancesByCurrencyReal: {},
+      balancesByCurrencyDemo: {}
     }
   },
   computed: {
@@ -513,6 +521,11 @@ export default {
         const balanceData = await loadAccountBalance();
         if (balanceData) {
           this.accountBalance = balanceData.balance;
+          this.accountCurrency = balanceData.currency;
+          this.accountLoginid = balanceData.loginid;
+          this.isDemo = balanceData.isDemo;
+          this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
+          this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
         }
       } catch (error) {
         console.error('[SettingsView] Erro ao carregar saldo:', error);

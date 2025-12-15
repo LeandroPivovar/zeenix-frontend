@@ -20,7 +20,10 @@
         <TopNavbar 
           :is-sidebar-collapsed="isSidebarCollapsed"
           :balance="balance"
-          account-type="real"
+          :account-type="isDemo ? 'demo' : 'real'"
+          :currency="accountCurrency"
+          :balances-by-currency-real="balancesByCurrencyReal"
+          :balances-by-currency-demo="balancesByCurrencyDemo"
           @toggle-sidebar="toggleSidebar"
           @toggle-sidebar-collapse="toggleSidebarCollapse"
         />
@@ -132,6 +135,10 @@ export default {
       isSidebarOpen: window.innerWidth > 768, // Inicia aberto apenas em desktop
       isSidebarCollapsed: false, // Controla menu Desktop mini
       balance: 0,
+      accountCurrency: 'USD',
+      isDemo: false,
+      balancesByCurrencyReal: {},
+      balancesByCurrencyDemo: {},
       windowWidth: window.innerWidth,
       isMobile: window.innerWidth <= 768
     }
@@ -257,6 +264,10 @@ export default {
         const balanceData = await loadAccountBalance();
         if (balanceData) {
           this.balance = balanceData.balance;
+          this.accountCurrency = balanceData.currency;
+          this.isDemo = balanceData.isDemo;
+          this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
+          this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
         }
       } catch (error) {
         console.error('[AcademyView] Erro ao buscar saldo:', error);
