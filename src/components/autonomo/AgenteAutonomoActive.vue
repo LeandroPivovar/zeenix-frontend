@@ -68,7 +68,7 @@
 						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change positive">
-						{{ (sessionStats?.netProfit || 0) > 0 && totalCapital > 0 
+						{{ (sessionStats?.netProfit || 0) !== 0 && totalCapital > 0 
 							? (((sessionStats?.netProfit || 0) / totalCapital) * 100).toFixed(2) 
 							: '0.00' }}%
 					</div>
@@ -495,14 +495,23 @@
 				const backendCapital = this.sessionStats?.totalCapital;
 				const headerBalance = this.agenteData?.accountBalance;
 				
-				if (backendCapital && backendCapital > 0) {
-					return backendCapital;
+				// Converter para número se necessário
+				const backendCapitalNum = backendCapital ? (typeof backendCapital === 'number' ? backendCapital : parseFloat(String(backendCapital)) || 0) : 0;
+				const headerBalanceNum = headerBalance ? (typeof headerBalance === 'number' ? headerBalance : parseFloat(String(headerBalance)) || 0) : 0;
+				
+				if (backendCapitalNum > 0) {
+					return backendCapitalNum;
 				}
 				
-				if (headerBalance && typeof headerBalance === 'number' && headerBalance > 0) {
-					return headerBalance;
+				if (headerBalanceNum > 0) {
+					console.log('[AgenteAutonomoActive] totalCapital: usando headerBalance como fallback:', headerBalanceNum);
+					return headerBalanceNum;
 				}
 				
+				// Log apenas quando realmente não há valor (evitar spam)
+				if (this.sessionStats && this.agenteData) {
+					console.warn('[AgenteAutonomoActive] totalCapital: nenhum valor disponível. backendCapital:', backendCapitalNum, 'headerBalance:', headerBalanceNum);
+				}
 				return 0;
 			},
 			tempoOptions() {
@@ -670,11 +679,18 @@
 					this.$forceUpdate();
 				}
 			},
+			'agenteData.accountBalance'(newVal, oldVal) {
+				// Forçar atualização quando accountBalance mudar para recalcular porcentagens
+				if (newVal !== oldVal && newVal && typeof newVal === 'number' && newVal > 0) {
+					console.log('[AgenteAutonomoActive] accountBalance mudou:', { newVal, oldVal });
+					this.$forceUpdate();
+				}
+			},
 			agenteData: {
 				handler(newVal, oldVal) {
 					// Log de mudanças em agenteData
-					if (newVal) {
-						console.log('[AgenteAutonomoActive] agenteData mudou, operacoesHoje:', newVal?.operacoesHoje);
+					if (newVal && typeof newVal === 'object') {
+						console.log('[AgenteAutonomoActive] agenteData mudou, operacoesHoje:', newVal?.operacoesHoje, 'accountBalance:', newVal?.accountBalance);
 						
 						// Forçar atualização quando agenteData mudar (especialmente tempoAtivo)
 						if (newVal.tempoAtivo) {

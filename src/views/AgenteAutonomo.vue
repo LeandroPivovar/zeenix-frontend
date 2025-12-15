@@ -941,16 +941,22 @@
           const result = await response.json();
   
           if (result.success && result.data) {
-            this.accountBalance = result.data.balance;
+            // Garantir que balance seja um número
+            const balanceValue = typeof result.data.balance === 'number' 
+              ? result.data.balance 
+              : parseFloat(result.data.balance) || 0;
+            
+            this.accountBalance = balanceValue;
             this.accountCurrency = result.data.currency;
             this.accountLoginid = result.data.loginid;
             this.isDemo =
               result.data.loginid?.startsWith("VRTC") ||
               result.data.loginid?.startsWith("VRT");
             this.preferredCurrency = this.getPreferredCurrency();
-  
+
             console.log("[AgenteAutonomo] ✅ Saldo atualizado:", {
               balance: this.accountBalance,
+              balanceType: typeof this.accountBalance,
               currency: this.accountCurrency,
               loginid: this.accountLoginid,
               isDemo: this.isDemo,
