@@ -474,6 +474,7 @@
 
           const result = await response.json();
           if (result.success && result.data) {
+            console.log('[AgenteAutonomo] Session stats recebidas:', result.data);
             this.sessionStats = {
               totalTrades: parseInt(result.data.totalTrades) || 0,
               wins: parseInt(result.data.wins) || 0,
@@ -488,6 +489,7 @@
             // Usar operationsToday que inclui ai_trades + autonomous_agent_trades
             this.operacoesHoje = this.sessionStats.operationsToday || this.sessionStats.totalTrades || 0;
             this.dailyProfit = this.sessionStats.netProfit || 0;
+            console.log('[AgenteAutonomo] Operações hoje definidas:', this.operacoesHoje, 'operationsToday:', this.sessionStats.operationsToday);
           }
         } catch (error) {
           console.error("[AgenteAutonomo] Erro ao carregar estatísticas:", error);
