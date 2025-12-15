@@ -454,6 +454,8 @@ export default {
     window.addEventListener('resize', this.checkMobile);
     this.checkMobile();
     this.loadUserProfilePicture();
+    // Pré-carregar contas em background para uso futuro
+    this.preloadAccounts();
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
@@ -532,6 +534,14 @@ export default {
       
       // Abre o modal de seleção de contas
       this.showAccountModal = true;
+      
+      // Se já temos contas carregadas, usar elas (do cache ou carregamento anterior)
+      if (this.availableAccounts.length > 0) {
+        console.log('[TopNavbar] Usando contas já carregadas:', this.availableAccounts.length);
+        return;
+      }
+      
+      // Caso contrário, carregar as contas
       await this.loadAvailableAccounts();
     },
     async loadAvailableAccounts() {
@@ -540,11 +550,52 @@ export default {
         // Usar a função utilitária que já tem cache e otimizações
         const accounts = await loadAvailableAccounts();
         this.availableAccounts = accounts;
+        console.log('[TopNavbar] Contas carregadas:', accounts.length);
       } catch (error) {
         console.error('[TopNavbar] Erro ao carregar contas:', error);
         this.availableAccounts = [];
       } finally {
         this.loadingAccounts = false;
+      }
+    },
+    // Pré-carregar contas em background quando o componente é montado
+    preloadAccounts() {
+      // Verificar se já temos contas no cache
+      const cachedAccounts = this.getCachedAccountsSync();
+      if (cachedAccounts && cachedAccounts.length > 0) {
+        this.availableAccounts = cachedAccounts;
+        console.log('[TopNavbar] Contas pré-carregadas do cache:', cachedAccounts.length);
+        return;
+      }
+      
+      // Se não tiver cache, carregar em background sem bloquear a UI
+      this.loadAvailableAccounts().catch(err => {
+        console.warn('[TopNavbar] Erro ao pré-carregar contas em background:', err);
+      });
+    },
+    // Obter contas do cache de forma síncrona (para uso imediato)
+    getCachedAccountsSync() {
+      try {
+        const cachedStr = localStorage.getItem('deriv_available_accounts_cache');
+        const timestampStr = localStorage.getItem('deriv_accounts_cache_timestamp');
+        
+        if (!cachedStr || !timestampStr) {
+          return null;
+        }
+
+        const timestamp = parseInt(timestampStr);
+        const now = Date.now();
+        const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+
+        // Verificar se cache expirou
+        if (now - timestamp > CACHE_DURATION) {
+          return null;
+        }
+
+        return JSON.parse(cachedStr);
+      } catch (error) {
+        console.error('[TopNavbar] Erro ao ler cache de contas:', error);
+        return null;
       }
     },
     isCurrentAccount(account) {
