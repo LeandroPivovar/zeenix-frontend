@@ -55,7 +55,7 @@
 						<img src="../../assets/icons/linechart.svg" alt="" width="20px">
 						Operações hoje
 					</span>
-					<div class="data-label">{{ agenteData.operacoesHoje }}</div>
+					<div class="data-label">{{ operacoesHojeDisplay }}</div>
 				</div>
 			</div>
 		</div>
@@ -484,6 +484,12 @@
 				const percentage = (current / this.progressoMeta.meta) * 100;
 				return `${Math.min(100, Math.max(0, percentage)).toFixed(0)}%`;
 			},
+			operacoesHojeDisplay() {
+				// Priorizar agenteData.operacoesHoje, depois sessionStats.operationsToday, depois 0
+				const valor = this.agenteData?.operacoesHoje ?? this.sessionStats?.operationsToday ?? 0;
+				console.log('[AgenteAutonomoActive] operacoesHojeDisplay computed:', valor, 'agenteData:', this.agenteData?.operacoesHoje, 'sessionStats:', this.sessionStats?.operationsToday);
+				return valor;
+			},
 			tempoOptions() {
 				return this.timeframeOptions[this.unidadeTimeframeSelecionada] || [];
 			},
@@ -589,6 +595,16 @@
 				if (newVal !== undefined) {
 					this.progressoMeta.atual = parseFloat(newVal) || 0;
 				}
+			},
+			'agenteData.operacoesHoje'(newVal) {
+				console.log('[AgenteAutonomoActive] agenteData.operacoesHoje mudou para:', newVal);
+			},
+			agenteData: {
+				handler(newVal) {
+					console.log('[AgenteAutonomoActive] agenteData mudou, operacoesHoje:', newVal?.operacoesHoje);
+				},
+				deep: true,
+				immediate: true,
 			},
 			sessionStats: {
 				handler(newStats) {
