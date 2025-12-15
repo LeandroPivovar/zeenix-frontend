@@ -92,6 +92,8 @@
           totalProfit: 0,
           totalLoss: 0,
           netProfit: 0,
+          totalCapital: 0,
+          operationsToday: 0,
         },
         apiTradeHistory: [],
         pollingInterval: null,
@@ -186,9 +188,17 @@
         
         // Usar dados do backend quando disponíveis
         // operationsToday inclui ai_trades + autonomous_agent_trades do dia de hoje
-        const operacoesHoje = this.sessionStats?.operationsToday || this.operacoesHoje || 0;
+        // Priorizar sessionStats.operationsToday, depois operacoesHoje local, depois 0
+        const operacoesHoje = (this.sessionStats?.operationsToday !== undefined && this.sessionStats?.operationsToday !== null) 
+          ? this.sessionStats.operationsToday 
+          : (this.operacoesHoje || 0);
         const dailyProfit = this.sessionStats?.netProfit !== undefined ? this.sessionStats.netProfit : (this.agentConfig?.dailyProfit || this.dailyProfit || 0);
         const dailyLoss = this.sessionStats?.totalLoss !== undefined ? this.sessionStats.totalLoss : (this.agentConfig?.dailyLoss || 0);
+        
+        // Debug: log apenas quando operacoesHoje mudar
+        if (operacoesHoje > 0) {
+          console.log('[AgenteAutonomo] agenteData computed - operacoesHoje:', operacoesHoje, 'sessionStats.operationsToday:', this.sessionStats?.operationsToday);
+        }
         
         return {
           estrategia: this.agentConfig?.strategy ? this.getStrategyTitle(this.agentConfig.strategy) : this.estrategia,
@@ -475,6 +485,7 @@
           const result = await response.json();
           if (result.success && result.data) {
             console.log('[AgenteAutonomo] Session stats recebidas:', result.data);
+            const operationsToday = parseInt(result.data.operationsToday) || 0;
             this.sessionStats = {
               totalTrades: parseInt(result.data.totalTrades) || 0,
               wins: parseInt(result.data.wins) || 0,
@@ -484,12 +495,12 @@
               totalLoss: parseFloat(result.data.totalLoss) || 0,
               netProfit: parseFloat(result.data.netProfit) || 0,
               totalCapital: parseFloat(result.data.totalCapital) || 0,
-              operationsToday: parseInt(result.data.operationsToday) || 0,
+              operationsToday: operationsToday,
             };
             // Usar operationsToday que inclui ai_trades + autonomous_agent_trades
-            this.operacoesHoje = this.sessionStats.operationsToday || this.sessionStats.totalTrades || 0;
+            this.operacoesHoje = operationsToday;
             this.dailyProfit = this.sessionStats.netProfit || 0;
-            console.log('[AgenteAutonomo] Operações hoje definidas:', this.operacoesHoje, 'operationsToday:', this.sessionStats.operationsToday);
+            console.log('[AgenteAutonomo] Operações hoje definidas:', this.operacoesHoje, 'operationsToday do backend:', operationsToday, 'sessionStats:', this.sessionStats);
           }
         } catch (error) {
           console.error("[AgenteAutonomo] Erro ao carregar estatísticas:", error);
