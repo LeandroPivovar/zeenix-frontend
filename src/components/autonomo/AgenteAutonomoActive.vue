@@ -599,13 +599,6 @@
 			'agenteData.operacoesHoje'(newVal) {
 				console.log('[AgenteAutonomoActive] agenteData.operacoesHoje mudou para:', newVal);
 			},
-			agenteData: {
-				handler(newVal) {
-					console.log('[AgenteAutonomoActive] agenteData mudou, operacoesHoje:', newVal?.operacoesHoje);
-				},
-				deep: true,
-				immediate: true,
-			},
 			sessionStats: {
 				handler(newStats) {
 					if (newStats && newStats.netProfit !== undefined) {
@@ -664,7 +657,10 @@
 			},
 			agenteData: {
 				handler(newVal, oldVal) {
-					// Forçar atualização quando agenteData mudar
+					// Log de mudanças em agenteData
+					console.log('[AgenteAutonomoActive] agenteData mudou, operacoesHoje:', newVal?.operacoesHoje);
+					
+					// Forçar atualização quando agenteData mudar (especialmente tempoAtivo)
 					if (newVal && newVal.tempoAtivo) {
 						console.log('[AgenteAutonomoActive] agenteData mudou:', {
 							newTempoAtivo: newVal.tempoAtivo,
@@ -674,7 +670,7 @@
 					}
 				},
 				deep: true,
-				immediate: false
+				immediate: true
 			},
 			tradeHistory: {
 				handler(newHistory) {
