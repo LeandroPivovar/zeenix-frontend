@@ -499,6 +499,18 @@
 				const backendCapitalNum = backendCapital ? (typeof backendCapital === 'number' ? backendCapital : parseFloat(String(backendCapital)) || 0) : 0;
 				const headerBalanceNum = headerBalance ? (typeof headerBalance === 'number' ? headerBalance : parseFloat(String(headerBalance)) || 0) : 0;
 				
+				// Log detalhado para debug
+				if (headerBalanceNum > 0 || backendCapitalNum > 0) {
+					console.log('[AgenteAutonomoActive] totalCapital computed:', {
+						backendCapital: backendCapital,
+						backendCapitalNum: backendCapitalNum,
+						headerBalance: headerBalance,
+						headerBalanceNum: headerBalanceNum,
+						agenteDataExists: !!this.agenteData,
+						sessionStatsExists: !!this.sessionStats
+					});
+				}
+				
 				if (backendCapitalNum > 0) {
 					return backendCapitalNum;
 				}
@@ -510,7 +522,7 @@
 				
 				// Log apenas quando realmente não há valor (evitar spam)
 				if (this.sessionStats && this.agenteData) {
-					console.warn('[AgenteAutonomoActive] totalCapital: nenhum valor disponível. backendCapital:', backendCapitalNum, 'headerBalance:', headerBalanceNum);
+					console.warn('[AgenteAutonomoActive] totalCapital: nenhum valor disponível. backendCapital:', backendCapitalNum, 'headerBalance:', headerBalanceNum, 'agenteData:', this.agenteData);
 				}
 				return 0;
 			},
@@ -681,9 +693,16 @@
 			},
 			'agenteData.accountBalance'(newVal, oldVal) {
 				// Forçar atualização quando accountBalance mudar para recalcular porcentagens
-				if (newVal !== oldVal && newVal && typeof newVal === 'number' && newVal > 0) {
-					console.log('[AgenteAutonomoActive] accountBalance mudou:', { newVal, oldVal });
-					this.$forceUpdate();
+				if (newVal !== oldVal) {
+					console.log('[AgenteAutonomoActive] accountBalance mudou:', { 
+						newVal, 
+						oldVal, 
+						newValType: typeof newVal,
+						isValid: newVal && typeof newVal === 'number' && newVal > 0
+					});
+					if (newVal && typeof newVal === 'number' && newVal > 0) {
+						this.$forceUpdate();
+					}
 				}
 			},
 			agenteData: {

@@ -125,7 +125,7 @@
         timeAndMetricsInterval: null,
   
         // Dados de Header/Saldo
-        accountBalance: null,
+        accountBalance: 0, // Inicializar como 0 em vez de null para evitar problemas de reatividade
         accountCurrency: "USD",
         accountLoginid: null,
         isDemo: false,
@@ -195,10 +195,14 @@
         const dailyProfit = this.sessionStats?.netProfit !== undefined ? this.sessionStats.netProfit : (this.agentConfig?.dailyProfit || this.dailyProfit || 0);
         const dailyLoss = this.sessionStats?.totalLoss !== undefined ? this.sessionStats.totalLoss : (this.agentConfig?.dailyLoss || 0);
         
-        // Debug: log apenas quando operacoesHoje mudar
-        if (operacoesHoje > 0) {
-          console.log('[AgenteAutonomo] agenteData computed - operacoesHoje:', operacoesHoje, 'sessionStats.operationsToday:', this.sessionStats?.operationsToday);
+        // Debug: log apenas quando operacoesHoje mudar ou accountBalance mudar
+        if (operacoesHoje > 0 || (this.accountBalance && this.accountBalance > 0)) {
+          console.log('[AgenteAutonomo] agenteData computed - operacoesHoje:', operacoesHoje, 'sessionStats.operationsToday:', this.sessionStats?.operationsToday, 'accountBalance:', this.accountBalance);
         }
+        
+        const accountBalanceValue = this.accountBalance && typeof this.accountBalance === 'number' && this.accountBalance > 0 
+          ? this.accountBalance 
+          : (typeof this.accountBalance === 'number' ? this.accountBalance : 0);
         
         return {
           estrategia: this.agentConfig?.strategy ? this.getStrategyTitle(this.agentConfig.strategy) : this.estrategia,
@@ -217,7 +221,7 @@
           operationHistory: this.operationHistory,
           agentActions: this.agentActions,
           agentStatus: this.agenteEstaAtivo ? "ATIVO" : "PAUSADO",
-          accountBalance: this.accountBalance,
+          accountBalance: accountBalanceValue, // Garantir que sempre seja um número válido
         };
       },
       
@@ -400,7 +404,7 @@
           });
 
           const result = await response.json();
-          if (result.success && result.data) {
+          if (result.success && result.data && typeof result.data === 'object') {
             this.agentConfig = result.data;
             this.agenteEstaAtivo = result.data.isActive || false;
             
