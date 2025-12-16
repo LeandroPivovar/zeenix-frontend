@@ -90,10 +90,13 @@
 				</div>
 			</div>
 			<div class="progress-card">
-				<div class="metric-label">Progresso até a meta</div>
+				<div class="metric-label">
+					Progresso até a meta
+				</div>
 				<div class="progress-bar-container">
 					<div class="progress-bar">
 						<div class="progress-fill" :style="{ width: progressoPorcentagem }"></div>
+						<span class="progress-percentage-text">{{ progressoPorcentagem }}</span>
 					</div>
 				</div>
 				<div class="progress-label">
@@ -1424,6 +1427,13 @@
 		gap: 6px;
 	}
 
+	.progress-percentage {
+		font-size: 12px;
+		color: #a09e9e;
+		font-weight: 500;
+		margin-left: auto;
+	}
+
 	.metric-box {
 		display: flex;
 		flex-direction: column;
@@ -1514,12 +1524,30 @@
 		background: #1a1a1a;
 		border-radius: 12px;
 		overflow: hidden;
+		position: relative;
+		display: flex;
+		align-items: center;
+		justify-content: center;
 	}
 
 	.progress-fill {
 		height: 100%;
 		background: #22C55E;
 		transition: width 0.5s;
+		position: absolute;
+		left: 0;
+		top: 0;
+	}
+
+	.progress-percentage-text {
+		position: absolute;
+		font-size: 10px;
+		font-weight: 600;
+		color: #a09e9e;
+		z-index: 10;
+		text-align: center;
+		width: 100%;
+		pointer-events: none;
 	}
 
 	.progress-label {
