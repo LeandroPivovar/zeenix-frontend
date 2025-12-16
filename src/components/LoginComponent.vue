@@ -37,7 +37,7 @@
                 <input 
                   type="email" 
                   v-model="email"
-                  :placeholder="isMobile ? 'digite seu email' : 'seu@email.com'" 
+                  placeholder="digite o seu email" 
                   class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors input-email"
                   required
                 >
@@ -56,7 +56,7 @@
                   :type="showPassword ? 'text' : 'password'" 
                   id="password-input" 
                   v-model="password"
-                  :placeholder="isMobile ? 'digite sua senha' : '••••••••'" 
+                  placeholder="digite sua senha" 
                   class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-12 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors input-password"
                   required
                 >
