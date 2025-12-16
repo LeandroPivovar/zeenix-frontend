@@ -1,4 +1,23 @@
 
+/* Vídeo de fundo hero - apenas desktop */
+.hero-video-bg {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: -1;
+    opacity: 0.3;
+    display: none;
+}
+
+@media (min-width: 769px) {
+    .hero-video-bg {
+        display: block;
+    }
+}
+
 .dash-content {
     display: flex; 
     flex-direction: column;
