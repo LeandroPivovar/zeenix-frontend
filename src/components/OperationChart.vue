@@ -1104,15 +1104,34 @@ export default {
           return;
         }
         
-        // Obter o range visível de preços do priceScale (mais preciso)
-        const priceRangeVisible = priceScale.getVisibleRange();
-        if (!priceRangeVisible) {
-          console.warn('[Chart] Range de preços visível não disponível');
+        // Obter o range visível do gráfico para calcular o preço
+        const visibleRange = timeScale.getVisibleRange();
+        if (!visibleRange) {
+          console.warn('[Chart] Range visível não disponível');
           return;
         }
         
-        const visibleMinPrice = priceRangeVisible.from;
-        const visibleMaxPrice = priceRangeVisible.to;
+        // Obter os dados da série para calcular o range de preços
+        const seriesData = this.chartSeries.data();
+        if (!seriesData || seriesData.length === 0) {
+          console.warn('[Chart] Dados da série não disponíveis');
+          return;
+        }
+        
+        // Encontrar os dados visíveis no range
+        const visibleData = seriesData.filter(d => 
+          d.time >= visibleRange.from && d.time <= visibleRange.to
+        );
+        
+        if (visibleData.length === 0) {
+          console.warn('[Chart] Nenhum dado visível encontrado');
+          return;
+        }
+        
+        // Calcular min e max dos valores visíveis
+        const values = visibleData.map(d => d.value);
+        const visibleMinPrice = Math.min(...values);
+        const visibleMaxPrice = Math.max(...values);
         const visiblePriceRange = visibleMaxPrice - visibleMinPrice;
         
         // Obter dimensões do gráfico (considerando margens)
@@ -1235,12 +1254,25 @@ export default {
         
         if (time === null || isNaN(time)) return;
         
-        // Obter o range visível de preços do priceScale (mais preciso)
-        const priceRangeVisible = priceScale.getVisibleRange();
-        if (!priceRangeVisible) return;
+        // Obter o range visível do gráfico para calcular o preço
+        const visibleRange = timeScale.getVisibleRange();
+        if (!visibleRange) return;
         
-        const visibleMinPrice = priceRangeVisible.from;
-        const visibleMaxPrice = priceRangeVisible.to;
+        // Obter os dados da série para calcular o range de preços
+        const seriesData = this.chartSeries.data();
+        if (!seriesData || seriesData.length === 0) return;
+        
+        // Encontrar os dados visíveis no range
+        const visibleData = seriesData.filter(d => 
+          d.time >= visibleRange.from && d.time <= visibleRange.to
+        );
+        
+        if (visibleData.length === 0) return;
+        
+        // Calcular min e max dos valores visíveis
+        const values = visibleData.map(d => d.value);
+        const visibleMinPrice = Math.min(...values);
+        const visibleMaxPrice = Math.max(...values);
         const visiblePriceRange = visibleMaxPrice - visibleMinPrice;
         
         // Calcular preço considerando margens do gráfico
