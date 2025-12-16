@@ -98,6 +98,20 @@ export default {
         timestamp: Date.now(),
       }));
 
+      // Carregar contas disponíveis em background e salvar no cache
+      // Isso garante que as contas estejam disponíveis imediatamente após o login
+      try {
+        const { loadAvailableAccounts } = await import('../utils/accountsLoader');
+        // Carregar em background sem bloquear o redirecionamento
+        loadAvailableAccounts().then(() => {
+          console.log('[DerivOAuthCallback] Contas carregadas e salvas no cache');
+        }).catch(err => {
+          console.warn('[DerivOAuthCallback] Erro ao carregar contas em background:', err);
+        });
+      } catch (error) {
+        console.warn('[DerivOAuthCallback] Erro ao importar accountsLoader:', error);
+      }
+
       this.$router.replace('/dashboard');
     } catch (error) {
       this.error = error?.message || 'Não foi possível finalizar a conexão com a Deriv.';

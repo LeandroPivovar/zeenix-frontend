@@ -598,14 +598,22 @@ export default {
     toggleProfileModal() {
       this.showProfileModal = !this.showProfileModal;
       if (this.showProfileModal) {
-        // Carregar contas quando abrir o modal
+        // Carregar contas quando abrir o modal (usar cache se disponível)
         this.loadAccountsForModal();
+        
         // Definir o filtro baseado no tipo de conta atual (verificar localStorage primeiro)
         const connectionStr = localStorage.getItem('deriv_connection');
         if (connectionStr) {
           try {
             const connection = JSON.parse(connectionStr);
-            this.accountTypeFilter = connection.isDemo === true ? 'demo' : 'real';
+            // Verificar isDemo de múltiplas formas para garantir precisão
+            const isDemo = connection.isDemo === true || connection.isDemo === 1 || 
+                          connection.loginid?.startsWith('VRTC') || connection.loginid?.startsWith('VRT');
+            this.accountTypeFilter = isDemo ? 'demo' : 'real';
+            console.log('[TopNavbar] Modal aberto, tipo de conta:', this.accountTypeFilter, {
+              isDemo: connection.isDemo,
+              loginid: connection.loginid
+            });
           } catch {
             this.accountTypeFilter = this.accountType === 'demo' ? 'demo' : 'real';
           }
@@ -618,12 +626,16 @@ export default {
       this.showProfileModal = false;
     },
     async loadAccountsForModal() {
-      // Se já temos contas carregadas, usar elas
-      if (this.availableAccounts.length > 0) {
+      // Sempre tentar usar cache primeiro para mostrar instantaneamente
+      const cachedAccounts = this.getCachedAccountsSync();
+      if (cachedAccounts && cachedAccounts.length > 0) {
+        this.availableAccounts = cachedAccounts;
+        console.log('[TopNavbar] Usando contas do cache para modal:', cachedAccounts.length);
         return;
       }
-      // Caso contrário, carregar as contas
-      await this.loadAvailableAccounts();
+      
+      // Se não tiver cache, carregar as contas
+      await this.loadAvailableAccounts(false); // Usar cache se disponível
     },
     async switchAccountType(type) {
       // Verificar o tipo de conta atual baseado no localStorage
@@ -650,12 +662,11 @@ export default {
       // Atualizar o filtro visual
       this.accountTypeFilter = type;
       
-      // Limpar cache para garantir dados atualizados
-      const { clearAccountsCache } = await import('../utils/accountsLoader');
-      clearAccountsCache();
-      
-      // Garantir que temos as contas carregadas (forçar recarregamento)
-      await this.loadAvailableAccounts(true);
+      // Usar cache se disponível, senão carregar
+      // Não limpar cache para troca ser instantânea
+      if (this.availableAccounts.length === 0) {
+        await this.loadAvailableAccounts(false); // Usar cache se disponível
+      }
       
       // Encontrar uma conta do tipo selecionado
       const targetAccounts = this.availableAccounts.filter(account => {
@@ -789,10 +800,14 @@ export default {
         return;
       }
       
-      // Se não tiver cache, carregar em background sem bloquear a UI
-      this.loadAvailableAccounts().catch(err => {
-        console.warn('[TopNavbar] Erro ao pré-carregar contas em background:', err);
-      });
+      // Verificar se há tokens no localStorage (usuário já logou)
+      const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+      if (tokensByLoginIdStr) {
+        // Se não tiver cache, carregar em background sem bloquear a UI
+        this.loadAvailableAccounts(false).catch(err => {
+          console.warn('[TopNavbar] Erro ao pré-carregar contas em background:', err);
+        });
+      }
     },
     // Obter contas do cache de forma síncrona (para uso imediato)
     getCachedAccountsSync() {
@@ -832,10 +847,7 @@ export default {
     },
     async selectAccount(account) {
       try {
-        // Limpar cache antes de trocar de conta
-        const { clearAccountsCache } = await import('../utils/accountsLoader');
-        clearAccountsCache();
-        
+        // Não limpar cache - usar dados já carregados para troca instantânea
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
         const token = localStorage.getItem('token');
         const appId = localStorage.getItem('deriv_app_id') || '1089';
