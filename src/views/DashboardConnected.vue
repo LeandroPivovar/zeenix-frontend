@@ -125,17 +125,21 @@
                 :src="userProfilePicture"
                 :alt="userName"
                 class="mobile-account-avatar"
+                @click="toggleMobileSidebar"
+                style="cursor: pointer;"
               />
               <div 
                 v-else
                 class="mobile-account-avatar mobile-account-avatar-placeholder"
+                @click="toggleMobileSidebar"
+                style="cursor: pointer;"
               >
                 <span class="mobile-account-avatar-initials">{{ userInitials }}</span>
               </div>
               <div class="mobile-account-info">
                 <div class="mobile-account-name-wrapper">
                   <div class="mobile-account-name-container">
-                    <div class="mobile-account-name">{{ userName }}</div>
+                    <div class="mobile-account-name">{{ fullUserName }}</div>
                     <div class="mobile-account-status">Conta Ativa</div>
                   </div>
                   <div class="mobile-header-icons">
@@ -166,7 +170,14 @@
             </button>
           </div>
           <div class="mobile-account-balance">
-            {{ balanceVisible ? formattedBalance : '••••••' }}
+            <span v-if="balanceVisible" class="inline-flex items-center">
+              <span v-if="currentAccountType === 'demo'" class="demo-currency-symbol-mobile-wrapper">
+                <span class="demo-currency-symbol-mobile">D</span>
+              </span>
+              <span v-else>$</span>
+              {{ balanceVisible ? mobileBalanceValue : '' }}
+            </span>
+            <span v-else>••••••</span>
           </div>
           <div class="mobile-account-performance">
             <span class="mobile-account-percentage">+0%</span>
@@ -485,8 +496,15 @@
                 <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
               </button>
             </div>
-            <p class="settings-balance-amount">
-              {{ balanceVisible ? formattedBalance : '••••••' }}
+            <p class="settings-balance-amount text-left">
+              <span v-if="balanceVisible" class="inline-flex items-center">
+                <span v-if="currentAccountType === 'demo'" class="demo-currency-symbol-wrapper">
+                  <span class="demo-currency-symbol">D</span>
+                </span>
+                <span v-else>$</span>
+                {{ balanceVisible ? mobileBalanceValue : '' }}
+              </span>
+              <span v-else>••••••</span>
             </p>
             <div class="flex items-center gap-3 mt-3">
               <button 
@@ -545,7 +563,13 @@
                       {{ account.isDemo ? 'Demo' : 'Real' }}
                     </span>
                     <span class="text-white/40 text-[12px]">•</span>
-                    <span class="text-white/80 text-[12px]">{{ formatBalance(account.balance || 0, account.currency) }}</span>
+                    <span class="text-white/80 text-[12px] inline-flex items-center">
+                      <span v-if="account.isDemo" class="demo-currency-symbol-modal-small-wrapper">
+                        <span class="demo-currency-symbol-modal-small">D</span>
+                      </span>
+                      <span v-else>$</span>
+                      {{ formatBalanceMobile(account.balance || 0) }}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -849,6 +873,28 @@ export default {
       }
       return 'Usuário';
     },
+    fullUserName() {
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          if (user.name) {
+            return user.name;
+          }
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e);
+        }
+      }
+      return 'Usuário';
+    },
+    mobileBalanceValue() {
+      if (this.currentAccountType === 'demo') {
+        const demo = this.balancesByCurrencyDemo['USD'] || 0;
+        return demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      const value = this.balanceNumeric;
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
     displayedIAs() {
       // Mobile: mostra apenas as primeiras 4 IAs
       return this.bestIAs.slice(0, 4);
@@ -997,6 +1043,7 @@ export default {
           this.accountType = type;
           
           // Recarregar página para aplicar mudanças em todos os componentes
+          // Force refresh especialmente no mobile
           window.location.reload();
         } else {
           throw new Error('Erro ao alterar moeda');
@@ -1366,7 +1413,12 @@ export default {
           
           // Fechar modal e recarregar página para atualizar todos os componentes
           this.closeSettingsModal();
-          window.location.reload();
+          // Force refresh no mobile
+          if (this.isMobile) {
+            window.location.reload();
+          } else {
+            window.location.reload();
+          }
         } else {
           throw new Error('Erro ao selecionar conta');
         }
@@ -1551,6 +1603,14 @@ export default {
         maximumFractionDigits: 2
       });
       return `${prefix}${formatted}`;
+    },
+    formatBalanceMobile(value) {
+      // No mobile, não incluir prefixo aqui (será adicionado no template)
+      const formatted = (parseFloat(value) || 0).toLocaleString('pt-BR', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+      });
+      return formatted;
     },
     logout() {
       // Fechar modal
@@ -4138,6 +4198,7 @@ export default {
   font-weight: 700;
   margin: 0;
   line-height: 1.2;
+  text-align: left;
 }
 
 .settings-modal-body {
@@ -4388,6 +4449,148 @@ export default {
     max-width: 85%;
     min-width: 280px;
   }
+}
+
+/* Símbolo D com três linhas para Demo no Mobile - baseado no TopNavbar */
+.demo-currency-symbol-mobile-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-right: 4px;
+}
+
+.demo-currency-symbol-mobile {
+  position: relative;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 56px;
+  line-height: 1;
+}
+
+.demo-currency-symbol-mobile::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 35%;
+  height: 3px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-symbol-mobile::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 65%;
+  height: 3px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+
+/* Símbolo D para Modal - baseado no TopNavbar */
+.demo-currency-symbol-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-right: 2px;
+}
+
+.demo-currency-symbol {
+  position: relative;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.demo-currency-symbol::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 35%;
+  height: 2.5px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-symbol::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 65%;
+  height: 2.5px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-line-middle {
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 50%;
+  height: 2.5px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+  z-index: 1;
+}
+
+/* Símbolo D pequeno para lista de contas no modal */
+.demo-currency-symbol-modal-small-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-right: 2px;
+}
+
+.demo-currency-symbol-modal-small {
+  position: relative;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.demo-currency-symbol-modal-small::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 35%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-symbol-modal-small::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 65%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-line-middle-small {
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 50%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+  z-index: 1;
 }
 
 </style>
