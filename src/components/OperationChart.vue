@@ -941,25 +941,35 @@ export default {
       alert(`Função "${functionName}" em desenvolvimento`);
     },
     toggleLineDrawingMode() {
-      this.isLineDrawingMode = !this.isLineDrawingMode;
-      if (!this.isLineDrawingMode) {
-        // Cancelar desenho se estiver em modo de desenho
-        this.cancelLineDrawing();
-      } else {
-        // Ativar modo de desenho
-        this.activateLineDrawingMode();
-      }
+      this.$nextTick(() => {
+        this.isLineDrawingMode = !this.isLineDrawingMode;
+        if (!this.isLineDrawingMode) {
+          // Cancelar desenho se estiver em modo de desenho
+          this.cancelLineDrawing();
+        } else {
+          // Ativar modo de desenho
+          this.activateLineDrawingMode();
+        }
+      });
     },
     activateLineDrawingMode() {
-      if (!this.chart) return;
-      
-      // Adicionar listener de clique no gráfico
-      const container = this.$refs.chartContainer;
-      if (container) {
-        container.style.cursor = 'crosshair';
-        container.addEventListener('click', this.handleChartClick);
-        container.addEventListener('mousemove', this.handleChartMouseMove);
+      if (!this.chart || !this.chartSeries) {
+        console.warn('[Chart] Gráfico não está pronto para desenho');
+        return;
       }
+      
+      this.$nextTick(() => {
+        // Adicionar listener de clique no gráfico
+        const container = this.$refs.chartContainer;
+        if (container) {
+          container.style.cursor = 'crosshair';
+          container.addEventListener('click', this.handleChartClick);
+          container.addEventListener('mousemove', this.handleChartMouseMove);
+          console.log('[Chart] Modo de desenho ativado');
+        } else {
+          console.warn('[Chart] Container do gráfico não encontrado');
+        }
+      });
     },
     cancelLineDrawing() {
       // Limpar estado de desenho
@@ -967,7 +977,7 @@ export default {
       this.currentLineDrawingPoint = null;
       
       // Remover linha temporária
-      if (this.tempLineSeries) {
+      if (this.tempLineSeries && this.chart) {
         try {
           this.chart.removeSeries(this.tempLineSeries);
         } catch (e) {
@@ -977,58 +987,86 @@ export default {
       }
       
       // Remover listeners
-      const container = this.$refs.chartContainer;
-      if (container) {
-        container.style.cursor = 'default';
-        container.removeEventListener('click', this.handleChartClick);
-        container.removeEventListener('mousemove', this.handleChartMouseMove);
-      }
+      this.$nextTick(() => {
+        const container = this.$refs.chartContainer;
+        if (container) {
+          container.style.cursor = 'default';
+          container.removeEventListener('click', this.handleChartClick);
+          container.removeEventListener('mousemove', this.handleChartMouseMove);
+          console.log('[Chart] Modo de desenho desativado');
+        }
+      });
     },
     handleChartClick(event) {
-      if (!this.isLineDrawingMode || !this.chart || !this.chartSeries) return;
+      if (!this.isLineDrawingMode || !this.chart || !this.chartSeries) {
+        console.warn('[Chart] Condições não atendidas para desenho:', {
+          isLineDrawingMode: this.isLineDrawingMode,
+          hasChart: !!this.chart,
+          hasChartSeries: !!this.chartSeries
+        });
+        return;
+      }
+      
+      event.preventDefault();
+      event.stopPropagation();
       
       const container = this.$refs.chartContainer;
-      if (!container) return;
+      if (!container) {
+        console.warn('[Chart] Container não encontrado');
+        return;
+      }
       
       const rect = container.getBoundingClientRect();
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
       
-      // Converter coordenadas do mouse para coordenadas do gráfico
-      const timeScale = this.chart.timeScale();
-      const priceScale = this.chart.priceScale('right');
+      // Verificar se o clique está dentro do gráfico
+      if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+        return;
+      }
       
-      // Obter o range visível do gráfico
-      const visibleRange = timeScale.getVisibleRange();
-      const priceRange = priceScale.getVisibleRange();
-      
-      if (!visibleRange || !priceRange) return;
-      
-      // Calcular dimensões do gráfico (excluindo margens)
-      const chartWidth = rect.width;
-      const chartHeight = rect.height;
-      
-      // Converter coordenada X para tempo
-      const timeRatio = (x / chartWidth);
-      const timeRange = visibleRange.to - visibleRange.from;
-      const time = Math.floor(visibleRange.from + (timeRange * timeRatio));
-      
-      // Converter coordenada Y para preço (Y é invertido - topo é maior)
-      const priceRatio = 1 - (y / chartHeight);
-      const priceRangeSize = priceRange.to - priceRange.from;
-      const price = priceRange.from + (priceRangeSize * priceRatio);
-      
-      console.log('[Chart] Clique no gráfico:', { time, price, x, y, visibleRange, priceRange });
-      
-      if (this.lineDrawingPoints.length === 0) {
-        // Primeiro ponto
-        this.lineDrawingPoints.push({ time, value: price });
-        this.currentLineDrawingPoint = { time, value: price };
-        console.log('[Chart] Primeiro ponto adicionado');
-      } else if (this.lineDrawingPoints.length === 1) {
-        // Segundo ponto - finalizar linha
-        this.lineDrawingPoints.push({ time, value: price });
-        this.finishLineDrawing();
+      try {
+        // Converter coordenadas do mouse para coordenadas do gráfico
+        const timeScale = this.chart.timeScale();
+        const priceScale = this.chart.priceScale('right');
+        
+        // Obter o range visível do gráfico
+        const visibleRange = timeScale.getVisibleRange();
+        const priceRange = priceScale.getVisibleRange();
+        
+        if (!visibleRange || !priceRange) {
+          console.warn('[Chart] Range visível não disponível');
+          return;
+        }
+        
+        // Calcular dimensões do gráfico (excluindo margens)
+        const chartWidth = rect.width;
+        const chartHeight = rect.height;
+        
+        // Converter coordenada X para tempo
+        const timeRatio = Math.max(0, Math.min(1, x / chartWidth));
+        const timeRange = visibleRange.to - visibleRange.from;
+        const time = Math.floor(visibleRange.from + (timeRange * timeRatio));
+        
+        // Converter coordenada Y para preço (Y é invertido - topo é maior)
+        const priceRatio = Math.max(0, Math.min(1, 1 - (y / chartHeight)));
+        const priceRangeSize = priceRange.to - priceRange.from;
+        const price = priceRange.from + (priceRangeSize * priceRatio);
+        
+        console.log('[Chart] Clique no gráfico:', { time, price, x, y, visibleRange, priceRange });
+        
+        if (this.lineDrawingPoints.length === 0) {
+          // Primeiro ponto
+          this.lineDrawingPoints.push({ time, value: price });
+          this.currentLineDrawingPoint = { time, value: price };
+          console.log('[Chart] Primeiro ponto adicionado:', { time, value: price });
+        } else if (this.lineDrawingPoints.length === 1) {
+          // Segundo ponto - finalizar linha
+          this.lineDrawingPoints.push({ time, value: price });
+          this.finishLineDrawing();
+        }
+      } catch (error) {
+        console.error('[Chart] Erro ao processar clique:', error);
       }
     },
     handleChartMouseMove(event) {
@@ -1041,32 +1079,36 @@ export default {
       const x = event.clientX - rect.left;
       const y = event.clientY - rect.top;
       
-      // Converter coordenadas do mouse para coordenadas do gráfico
-      const timeScale = this.chart.timeScale();
-      const priceScale = this.chart.priceScale('right');
-      
-      // Obter o range visível do gráfico
-      const visibleRange = timeScale.getVisibleRange();
-      const priceRange = priceScale.getVisibleRange();
-      
-      if (!visibleRange || !priceRange) return;
-      
-      // Calcular dimensões do gráfico
-      const chartWidth = rect.width;
-      const chartHeight = rect.height;
-      
-      // Converter coordenada X para tempo
-      const timeRatio = (x / chartWidth);
-      const timeRange = visibleRange.to - visibleRange.from;
-      const time = Math.floor(visibleRange.from + (timeRange * timeRatio));
-      
-      // Converter coordenada Y para preço (Y é invertido)
-      const priceRatio = 1 - (y / chartHeight);
-      const priceRangeSize = priceRange.to - priceRange.from;
-      const price = priceRange.from + (priceRangeSize * priceRatio);
-      
-      // Atualizar linha temporária
-      this.updateTempLine(this.lineDrawingPoints[0], { time, value: price });
+      try {
+        // Converter coordenadas do mouse para coordenadas do gráfico
+        const timeScale = this.chart.timeScale();
+        const priceScale = this.chart.priceScale('right');
+        
+        // Obter o range visível do gráfico
+        const visibleRange = timeScale.getVisibleRange();
+        const priceRange = priceScale.getVisibleRange();
+        
+        if (!visibleRange || !priceRange) return;
+        
+        // Calcular dimensões do gráfico
+        const chartWidth = rect.width;
+        const chartHeight = rect.height;
+        
+        // Converter coordenada X para tempo
+        const timeRatio = Math.max(0, Math.min(1, x / chartWidth));
+        const timeRange = visibleRange.to - visibleRange.from;
+        const time = Math.floor(visibleRange.from + (timeRange * timeRatio));
+        
+        // Converter coordenada Y para preço (Y é invertido)
+        const priceRatio = Math.max(0, Math.min(1, 1 - (y / chartHeight)));
+        const priceRangeSize = priceRange.to - priceRange.from;
+        const price = priceRange.from + (priceRangeSize * priceRatio);
+        
+        // Atualizar linha temporária
+        this.updateTempLine(this.lineDrawingPoints[0], { time, value: price });
+      } catch (error) {
+        // Ignorar erros durante movimento do mouse
+      }
     },
     updateTempLine(point1, point2) {
       if (!this.chart) return;
@@ -1089,70 +1131,83 @@ export default {
       ]);
     },
     finishLineDrawing() {
-      if (this.lineDrawingPoints.length !== 2) return;
+      if (this.lineDrawingPoints.length !== 2 || !this.chart) {
+        console.warn('[Chart] Não é possível finalizar linha:', {
+          points: this.lineDrawingPoints.length,
+          hasChart: !!this.chart
+        });
+        return;
+      }
       
       const point1 = this.lineDrawingPoints[0];
       const point2 = this.lineDrawingPoints[1];
       
-      // Remover linha temporária
-      if (this.tempLineSeries) {
-        try {
-          this.chart.removeSeries(this.tempLineSeries);
-        } catch (e) {
-          console.warn('[Chart] Erro ao remover linha temporária:', e);
+      try {
+        // Remover linha temporária
+        if (this.tempLineSeries) {
+          try {
+            this.chart.removeSeries(this.tempLineSeries);
+          } catch (e) {
+            console.warn('[Chart] Erro ao remover linha temporária:', e);
+          }
+          this.tempLineSeries = null;
         }
-        this.tempLineSeries = null;
+        
+        // Criar série permanente para a linha
+        const lineSeries = this.chart.addLineSeries({
+          color: '#22C55E',
+          lineWidth: 2,
+          priceLineVisible: false,
+          lastValueVisible: false,
+        });
+        
+        lineSeries.setData([
+          { time: point1.time, value: point1.value },
+          { time: point2.time, value: point2.value }
+        ]);
+        
+        // Adicionar markers nos pontos
+        const markers = [
+          {
+            time: point1.time,
+            position: 'inBar',
+            color: '#22C55E',
+            shape: 'circle',
+            size: 6,
+          },
+          {
+            time: point2.time,
+            position: 'inBar',
+            color: '#22C55E',
+            shape: 'circle',
+            size: 6,
+          }
+        ];
+        
+        lineSeries.setMarkers(markers);
+        
+        // Adicionar à lista de linhas desenhadas
+        const lineId = this.lineDrawingIdCounter++;
+        this.drawnLines.push({
+          id: lineId,
+          series: lineSeries,
+          markers: markers,
+          points: [point1, point2]
+        });
+        
+        console.log('[Chart] Linha finalizada:', { id: lineId, point1, point2 });
+        
+        // Limpar pontos para próxima linha
+        this.lineDrawingPoints = [];
+        this.currentLineDrawingPoint = null;
+        
+        // Manter modo de desenho ativo para desenhar mais linhas
+      } catch (error) {
+        console.error('[Chart] Erro ao finalizar linha:', error);
+        // Limpar estado em caso de erro
+        this.lineDrawingPoints = [];
+        this.currentLineDrawingPoint = null;
       }
-      
-      // Criar série permanente para a linha
-      const lineSeries = this.chart.addLineSeries({
-        color: '#22C55E',
-        lineWidth: 2,
-        priceLineVisible: false,
-        lastValueVisible: false,
-      });
-      
-      lineSeries.setData([
-        { time: point1.time, value: point1.value },
-        { time: point2.time, value: point2.value }
-      ]);
-      
-      // Adicionar markers nos pontos
-      const markers = [
-        {
-          time: point1.time,
-          position: 'inBar',
-          color: '#22C55E',
-          shape: 'circle',
-          size: 6,
-        },
-        {
-          time: point2.time,
-          position: 'inBar',
-          color: '#22C55E',
-          shape: 'circle',
-          size: 6,
-        }
-      ];
-      
-      lineSeries.setMarkers(markers);
-      
-      // Adicionar à lista de linhas desenhadas
-      const lineId = this.lineDrawingIdCounter++;
-      this.drawnLines.push({
-        id: lineId,
-        series: lineSeries,
-        markers: markers,
-        points: [point1, point2]
-      });
-      
-      console.log('[Chart] Linha finalizada:', { id: lineId, point1, point2 });
-      
-      // Limpar pontos para próxima linha
-      this.lineDrawingPoints = [];
-      this.currentLineDrawingPoint = null;
-      
-      // Manter modo de desenho ativo para desenhar mais linhas
     },
     initChart() {
       const container = this.$refs.chartContainer;
