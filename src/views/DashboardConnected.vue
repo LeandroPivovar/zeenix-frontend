@@ -2887,9 +2887,7 @@ export default {
   .main-content {
     background: linear-gradient(180deg, #0F2416 0%, #0A1C12 15%, #060606 45%, #030303 55%, #050505 75%, #0B0B0B 100%) !important;
     position: relative;
-    overflow-x: hidden;
-    min-height: 100vh;
-    padding-bottom: 60px !important;
+    padding-bottom: 90px !important;
   }
 
   .main-content::before {
@@ -3175,19 +3173,24 @@ export default {
     flex-direction: column !important;
     gap: 12px !important;
     width: 100% !important;
-    margin-bottom: 40px !important;
-    margin-top: 20px !important;
+    margin-bottom: 0px !important;
+    margin-top: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
     visibility: visible !important;
     opacity: 1 !important;
   }
 
   /* Ajustar gap dos cards de IA para corresponder ao HTML (space-y-3 = 12px) */
   .mobile-grid-ias > * {
-    margin-bottom: 0;
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 
   .mobile-grid-ias > * + * {
-    margin-top: 12px;
+    margin-top: 0 !important;
   }
 
   /* Ocultar texto descritivo no mobile */
@@ -3222,7 +3225,7 @@ export default {
     backdrop-filter: blur(20px);
     -webkit-backdrop-filter: blur(20px);
     border: 1px solid rgba(34, 197, 94, 0.08) !important;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(34, 197, 94, 0.02), inset 0 1px 0 rgba(255, 255, 255, 0.02) !important;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6), 0 0 20px rgba(34, 197, 94, 0.12), 0 0 40px rgba(34, 197, 94, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.02) !important;
     border-radius: 22px !important;
     padding: 16px !important;
     display: flex;
@@ -3269,26 +3272,10 @@ export default {
     opacity: 0.4;
   }
 
-  .ia-card-mobile::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    height: 20px;
-    background: linear-gradient(to top, rgba(34, 197, 94, 0.08), transparent);
-    opacity: 0;
-    transition: opacity 0.3s ease;
-    pointer-events: none;
-  }
-
-  .ia-card-mobile:hover::after {
-    opacity: 1;
-  }
 
   .ia-card-mobile:hover {
     transform: translateY(-2px) scale(1.01);
-    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(34, 197, 94, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.7), 0 0 30px rgba(34, 197, 94, 0.15), 0 0 50px rgba(34, 197, 94, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
   }
 
   .ia-card-mobile:active {
