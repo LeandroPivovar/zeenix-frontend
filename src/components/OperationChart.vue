@@ -16,13 +16,130 @@
         <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A] flex-shrink-0">
             <h3 class="text-base font-semibold text-zenix-text">Gráfico</h3>
+            <!-- Funções acima do gráfico -->
+            <div class="flex items-center gap-2">
+              <button 
+                @click="showFunctionAlert('Análise Técnica')"
+                class="p-2 rounded-lg bg-zenix-bg border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group"
+                title="Análise Técnica"
+              >
+                <i class="fas fa-chart-area text-zenix-secondary group-hover:text-zenix-green text-sm transition-colors"></i>
+              </button>
+              <button 
+                @click="showFunctionAlert('Indicadores')"
+                class="p-2 rounded-lg bg-zenix-bg border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group"
+                title="Indicadores"
+              >
+                <i class="fas fa-chart-line text-zenix-secondary group-hover:text-zenix-green text-sm transition-colors"></i>
+              </button>
+              <button 
+                @click="showFunctionAlert('Padrões Gráficos')"
+                class="p-2 rounded-lg bg-zenix-bg border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group"
+                title="Padrões Gráficos"
+              >
+                <i class="fas fa-shapes text-zenix-secondary group-hover:text-zenix-green text-sm transition-colors"></i>
+              </button>
+              <button 
+                @click="showFunctionAlert('Histórico')"
+                class="p-2 rounded-lg bg-zenix-bg border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group"
+                title="Histórico"
+              >
+                <i class="fas fa-history text-zenix-secondary group-hover:text-zenix-green text-sm transition-colors"></i>
+              </button>
+              <button 
+                @click="showFunctionAlert('Exportar Dados')"
+                class="p-2 rounded-lg bg-zenix-bg border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group"
+                title="Exportar Dados"
+              >
+                <i class="fas fa-download text-zenix-secondary group-hover:text-zenix-green text-sm transition-colors"></i>
+              </button>
+            </div>
           </div>
 
-          <div id="tradingviewChart" ref="chartContainer" class="w-full chart-wrapper" style="background-color: #0B0B0B; position: relative; flex: 1; min-height: 0; height: 100%;">
-            <!-- Chart will be rendered here -->
-          </div>
-          <div v-if="showChartPlaceholder" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
-            <p class="text-zenix-secondary">Carregando histórico de ticks...</p>
+          <div class="flex flex-1 min-h-0 relative">
+            <!-- Gráfico -->
+            <div id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%;">
+              <!-- Chart will be rendered here -->
+              <div v-if="showChartPlaceholder" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
+                <p class="text-zenix-secondary">Carregando histórico de ticks...</p>
+              </div>
+            </div>
+            
+            <!-- Barra lateral de funções ao lado do gráfico -->
+            <div class="w-12 bg-zenix-bg border-l border-zenix-border flex flex-col items-center py-3 gap-2 flex-shrink-0">
+              <button 
+                @click="showFunctionAlert('Desenhar Linha')"
+                class="p-2.5 rounded-lg bg-zenix-card border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group w-10 h-10 flex items-center justify-center"
+                title="Desenhar Linha"
+              >
+                <i class="fas fa-pencil-alt text-zenix-secondary group-hover:text-zenix-green text-xs transition-colors"></i>
+              </button>
+              <button 
+                @click="showFunctionAlert('Régua')"
+                class="p-2.5 rounded-lg bg-zenix-card border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group w-10 h-10 flex items-center justify-center"
+                title="Régua"
+              >
+                <i class="fas fa-ruler text-zenix-secondary group-hover:text-zenix-green text-xs transition-colors"></i>
+              </button>
+              <button 
+                @click="showFunctionAlert('Retângulo')"
+                class="p-2.5 rounded-lg bg-zenix-card border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group w-10 h-10 flex items-center justify-center"
+                title="Retângulo"
+              >
+                <i class="fas fa-square text-zenix-secondary group-hover:text-zenix-green text-xs transition-colors"></i>
+              </button>
+              <button 
+                @click="showFunctionAlert('Círculo')"
+                class="p-2.5 rounded-lg bg-zenix-card border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group w-10 h-10 flex items-center justify-center"
+                title="Círculo"
+              >
+                <i class="fas fa-circle text-zenix-secondary group-hover:text-zenix-green text-xs transition-colors"></i>
+              </button>
+              <div class="w-8 h-px bg-zenix-border my-1"></div>
+              <button 
+                @click="showFunctionAlert('Zoom In')"
+                class="p-2.5 rounded-lg bg-zenix-card border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group w-10 h-10 flex items-center justify-center"
+                title="Zoom In"
+              >
+                <i class="fas fa-search-plus text-zenix-secondary group-hover:text-zenix-green text-xs transition-colors"></i>
+              </button>
+              <button 
+                @click="showFunctionAlert('Zoom Out')"
+                class="p-2.5 rounded-lg bg-zenix-card border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group w-10 h-10 flex items-center justify-center"
+                title="Zoom Out"
+              >
+                <i class="fas fa-search-minus text-zenix-secondary group-hover:text-zenix-green text-xs transition-colors"></i>
+              </button>
+              <button 
+                @click="showFunctionAlert('Resetar Zoom')"
+                class="p-2.5 rounded-lg bg-zenix-card border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group w-10 h-10 flex items-center justify-center"
+                title="Resetar Zoom"
+              >
+                <i class="fas fa-compress-arrows-alt text-zenix-secondary group-hover:text-zenix-green text-xs transition-colors"></i>
+              </button>
+              <div class="w-8 h-px bg-zenix-border my-1"></div>
+              <button 
+                @click="showFunctionAlert('Alertas de Preço')"
+                class="p-2.5 rounded-lg bg-zenix-card border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group w-10 h-10 flex items-center justify-center"
+                title="Alertas de Preço"
+              >
+                <i class="fas fa-bell text-zenix-secondary group-hover:text-zenix-green text-xs transition-colors"></i>
+              </button>
+              <button 
+                @click="showFunctionAlert('Configurações do Gráfico')"
+                class="p-2.5 rounded-lg bg-zenix-card border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group w-10 h-10 flex items-center justify-center"
+                title="Configurações"
+              >
+                <i class="fas fa-cog text-zenix-secondary group-hover:text-zenix-green text-xs transition-colors"></i>
+              </button>
+              <button 
+                @click="showFunctionAlert('Tela Cheia')"
+                class="p-2.5 rounded-lg bg-zenix-card border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group w-10 h-10 flex items-center justify-center"
+                title="Tela Cheia"
+              >
+                <i class="fas fa-expand text-zenix-secondary group-hover:text-zenix-green text-xs transition-colors"></i>
+              </button>
+            </div>
           </div>
         </div>
         
@@ -785,6 +902,9 @@ export default {
     window.removeEventListener('resize', this.handleResize);
   },
   methods: {
+    showFunctionAlert(functionName) {
+      alert(`Função "${functionName}" em desenvolvimento`);
+    },
     initChart() {
       const container = this.$refs.chartContainer;
       if (!container) {
