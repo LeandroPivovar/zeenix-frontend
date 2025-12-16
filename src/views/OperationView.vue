@@ -198,6 +198,9 @@ export default {
     },
   },
   methods: {
+    checkMobile() {
+      this.isMobile = window.innerWidth <= 768;
+    },
     handleAccountTypeChange(newAccountType) {
       // Alterna entre demo e real
       this.accountType = newAccountType;

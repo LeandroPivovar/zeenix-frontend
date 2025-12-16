@@ -908,6 +908,7 @@ export default {
     initChart() {
       const container = this.$refs.chartContainer;
       if (!container) {
+        console.warn('[Chart] Container não encontrado, tentando novamente...');
         setTimeout(() => this.initChart(), 100);
         return;
       }
@@ -918,7 +919,18 @@ export default {
           container.innerHTML = '';
 
           const rect = container.getBoundingClientRect();
+          console.log('[Chart] Dimensões do container:', { width: rect.width, height: rect.height, container: container });
+          
           if (rect.width <= 0 || rect.height <= 0) {
+            console.warn('[Chart] Container sem dimensões válidas, tentando novamente...', { width: rect.width, height: rect.height });
+            // Forçar uma altura mínima se necessário
+            if (rect.height <= 0) {
+              const parent = container.parentElement;
+              if (parent) {
+                const parentRect = parent.getBoundingClientRect();
+                console.log('[Chart] Dimensões do parent:', { width: parentRect.width, height: parentRect.height });
+              }
+            }
             setTimeout(() => this.initChart(), 200);
             return;
           }
@@ -3019,12 +3031,14 @@ export default {
 
 .chart-wrapper {
   background-color: #0B0B0B !important;
-  min-height: 0 !important;
+  min-height: 400px !important;
   position: relative !important;
   overflow: visible !important;
   width: 100% !important;
   height: 100% !important;
   flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
 }
 
 .chart-placeholder {
