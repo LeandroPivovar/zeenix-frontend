@@ -863,6 +863,11 @@ export default {
         padding: 0 16px 20px 16px;
     }
 
+    /* Esconde a seta nas opções mobile */
+    .mobile-option-arrow {
+        display: none;
+    }
+
     /* Sidebar no mobile */
     :deep(.sidebar) {
         position: fixed;
