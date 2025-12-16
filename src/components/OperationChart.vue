@@ -13,7 +13,7 @@
       <!-- Chart Column -->
       <div class="col-chart flex-1 flex flex-col gap-5">
         <!-- Chart Container -->
-        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card">
+        <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card h-full">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A] flex-shrink-0">
             <h3 class="text-base font-semibold text-zenix-text">Gráfico</h3>
             <!-- Funções acima do gráfico -->
@@ -56,17 +56,9 @@
             </div>
           </div>
 
-          <div class="flex flex-1 min-h-0 relative">
-            <!-- Gráfico -->
-            <div id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%;">
-              <!-- Chart will be rendered here -->
-              <div v-if="showChartPlaceholder" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
-                <p class="text-zenix-secondary">Carregando histórico de ticks...</p>
-              </div>
-            </div>
-            
-            <!-- Barra lateral de funções ao lado do gráfico -->
-            <div class="w-12 bg-zenix-bg border-l border-zenix-border flex flex-col items-center py-3 gap-2 flex-shrink-0">
+          <div class="flex flex-1 min-h-0 relative h-full">
+            <!-- Barra lateral de funções à esquerda do gráfico -->
+            <div class="w-12 bg-zenix-bg border-r border-zenix-border flex flex-col items-center py-3 gap-2 flex-shrink-0">
               <button 
                 @click="showFunctionAlert('Desenhar Linha')"
                 class="p-2.5 rounded-lg bg-zenix-card border border-zenix-border hover:border-zenix-green hover:bg-zenix-green/10 transition-all duration-200 group w-10 h-10 flex items-center justify-center"
@@ -139,6 +131,14 @@
               >
                 <i class="fas fa-expand text-zenix-secondary group-hover:text-zenix-green text-xs transition-colors"></i>
               </button>
+            </div>
+            
+            <!-- Gráfico -->
+            <div id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%;">
+              <!-- Chart will be rendered here -->
+              <div v-if="showChartPlaceholder" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
+                <p class="text-zenix-secondary">Carregando histórico de ticks...</p>
+              </div>
             </div>
           </div>
         </div>
@@ -2924,7 +2924,7 @@ export default {
 .operation-chart-wrapper {
   width: 100%;
   height: 100%;
-  min-height: 800px;
+  min-height: 960px;
   padding: 1.5rem;
   box-sizing: border-box;
 }
@@ -2971,7 +2971,7 @@ export default {
   display: flex;
   gap: 1.5rem;
   height: 100%;
-  min-height: 800px;
+  min-height: 960px;
   width: 100%;
   max-width: 100%;
   box-sizing: border-box;
@@ -2981,7 +2981,7 @@ export default {
 .chart-card {
   flex: 1;
   height: 100%;
-  min-height: 800px;
+  min-height: 960px;
   display: flex;
   flex-direction: column;
   align-self: stretch;
@@ -2992,7 +2992,7 @@ export default {
   flex-direction: column;
   align-self: stretch;
   height: 100%;
-  min-height: 800px;
+  min-height: 960px;
 }
 
 .col-chart {
@@ -3000,7 +3000,7 @@ export default {
   flex-direction: column;
   gap: 1.25rem;
   height: 100%;
-  min-height: 0;
+  min-height: 960px;
   align-self: stretch;
   flex: 1;
 }
@@ -3014,16 +3014,17 @@ export default {
   flex-direction: column;
   padding: 0;
   margin: 0;
+  flex-grow: 1;
 }
 
 .chart-wrapper {
   background-color: #0B0B0B !important;
-  min-height: 400px !important;
+  min-height: 0 !important;
   position: relative !important;
   overflow: visible !important;
   width: 100% !important;
   height: 100% !important;
-  flex: 1;
+  flex: 1 1 auto;
 }
 
 .chart-placeholder {
