@@ -1127,14 +1127,10 @@ export default {
           // Tentar método direto se disponível
           if (typeof priceScale.priceToCoordinate === 'function') {
             // Não temos coordenada Y direta, então vamos calcular
-            // Encontrar a altura da área de plotagem
-            const topPrice = visibleMaxPrice;
-            const bottomPrice = visibleMinPrice;
-            
             // Calcular usando a proporção inversa (Y=0 é topo)
             const chartHeight = rect.height;
             const yRatio = 1 - (y / chartHeight);
-            price = bottomPrice + (visiblePriceRange * yRatio);
+            price = visibleMinPrice + (visiblePriceRange * yRatio);
           } else {
             // Método alternativo: usar o range visível e calcular proporção
             const chartHeight = rect.height;
