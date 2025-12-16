@@ -608,7 +608,7 @@ watch(copiers, () => {
 .controls-bar {
 	display: flex;
 	gap: 12px;
-	padding-top: 20px;
+	padding-top: 0px;
 	flex-wrap: wrap;
 }
 
@@ -654,8 +654,8 @@ watch(copiers, () => {
 .slider-control { /* O "trilho" do slider */
 	position: relative;
 	display: inline-block;
-	width: 48px; 
-	height: 30px;
+	width: 32px; 
+	height: 20px;
 	background-color: #181818; 
 	transition: 0.3s;
 	border-radius: 34px;
@@ -665,10 +665,10 @@ watch(copiers, () => {
 .slider-control:before { /* O "thumb" (círculo) */
 	position: absolute;
 	content: "";
-	height: 22px;
-	width: 22px;
-	left: 3px;
-	bottom: 3px;
+	height: 12px;
+	width: 12px;
+	left: 4px;
+	bottom: 4px;
 	background-color: #ffffff;
 	transition: 0.3s;
 	border-radius: 50%;
@@ -681,7 +681,7 @@ watch(copiers, () => {
 
 .switch-control input[type="checkbox"]:checked ~ .slider-control:before,
 .slider-control.slider-active:before {
-	transform: translateX(18px) !important; /* Move o thumb */
+	transform: translateX(12px) !important; /* Move o thumb */
 }
 
 
@@ -1047,6 +1047,7 @@ input:checked + .slider:before {
 		overflow: hidden;
 		text-overflow: ellipsis;
 		white-space: nowrap;
+		font-size: 0.7rem;
 	}
 
 	.copiador-item {
