@@ -416,6 +416,7 @@
                     :mode-config="mode"
                     :account-balance-prop="accountBalance"
                     :account-currency-prop="accountCurrency"
+                    :selected-market-prop="selectedMarket"
                         @deactivate="deactivateIA"
                 />
                 </section>

@@ -279,7 +279,7 @@
                     </div>
                     <div class="mobile-config-item">
                         <p class="mobile-config-label">Mercado</p>
-                        <p class="mobile-config-value">{{ selectedMarket }}</p>
+                        <p class="mobile-config-value">{{ formattedMarketName }}</p>
                         <p class="mobile-config-desc">Ticks de alta frequência</p>
                     </div>
                     <div class="mobile-config-grid">
@@ -335,7 +335,7 @@
                         <div class="flex items-center justify-between mb-4 desktop-chart-header">
                             <div>
                                 <h2 class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
-                                <p class="text-xs text-zenix-secondary mt-1">{{ selectedMarket }} • M5 • Última atualização: {{ formattedLastUpdate }}</p>
+                                <p class="text-xs text-zenix-secondary mt-1">{{ formattedMarketName }} • M5 • Última atualização: {{ formattedLastUpdate }}</p>
                             </div>
                             <div class="flex items-center space-x-6 desktop-tabs">
                                 <button 
@@ -511,7 +511,7 @@
                             <!-- Mercado -->
                             <div class="py-5 border-b border-zenix-border/50 text-left">
                                 <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Mercado</p>
-                                <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ selectedMarket }}</p>
+                                <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ formattedMarketName }}</p>
                                 <p class="text-xs text-zenix-secondary text-left">Ticks de alta frequência</p>
                             </div>
 
@@ -644,6 +644,10 @@ export default {
         accountCurrencyProp: {
             type: String,
             default: 'USD'
+        },
+        selectedMarketProp: {
+            type: String,
+            default: 'vol10'
         }
     },
     data() {
@@ -687,7 +691,7 @@ export default {
             showEntryMarkers: true, // Controla visibilidade dos marcadores de entradas da IA
             tradingViewWidget: null, // Widget da TradingView
             
-            selectedMarket: 'EUR/USD',
+            selectedMarket: null, // Será preenchido do prop ou do histórico de trades
             selectedStrategy: 'orion',
             selectedMode: 'Veloz',
             selectedRisk: 'Conservador', 
@@ -775,6 +779,32 @@ export default {
                 'fast': 'IA Orion Fast'
             };
             return modeMap[this.mode.toLowerCase()] || 'IA Orion';
+        },
+        
+        // Nome do mercado formatado
+        formattedMarketName() {
+            // Usar o prop primeiro (vem do componente pai)
+            const marketKey = this.selectedMarketProp || this.selectedMarket || 'vol10';
+            
+            const marketMap = {
+                'vol10': 'Volatility 10 Index',
+                'vol25': 'Volatility 25 Index',
+                'vol50': 'Volatility 50 Index',
+                'vol75': 'Volatility 75 Index',
+                'vol100': 'Volatility 100 Index',
+                'vol10_1s': 'Volatility 10 (1s) Index',
+                'vol25_1s': 'Volatility 25 (1s) Index',
+                'vol50_1s': 'Volatility 50 (1s) Index',
+                'vol75_1s': 'Volatility 75 (1s) Index',
+                'vol100_1s': 'Volatility 100 (1s) Index',
+                'jump10': 'Jump 10 Index',
+                'jump25': 'Jump 25 Index',
+                'jump50': 'Jump 50 Index',
+                'jump75': 'Jump 75 Index',
+                'jump100': 'Jump 100 Index'
+            };
+            
+            return marketMap[marketKey] || marketKey;
         },
         
         strategyDescription() {
@@ -2701,6 +2731,11 @@ export default {
 
     mounted() {
         console.log('[InvestmentActive] Componente montado. Ticks:', this.ticks.length);
+        
+        // Inicializar mercado do prop se fornecido
+        if (this.selectedMarketProp) {
+            this.selectedMarket = this.selectedMarketProp;
+        }
         
         // 📊 Buscar configuração primeiro (assíncrono)
         this.fetchSessionConfig().then(() => {
