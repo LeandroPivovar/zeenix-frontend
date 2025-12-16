@@ -634,6 +634,7 @@ export default {
       tempLineSeries: null, // Série temporária para linha em movimento
       drawnLines: [], // Array de linhas desenhadas [{id, series, markers}]
       lineDrawingIdCounter: 0, // Contador para IDs únicos das linhas
+      chartContainerElement: null, // Referência ao elemento do container
       contractDuration: null, // duração em segundos ou ticks
       contractCountdownInterval: null, // intervalo do contador
       contractTickCount: 0, // contador de ticks recebidos após compra
@@ -958,18 +959,49 @@ export default {
         return;
       }
       
-      this.$nextTick(() => {
-        // Adicionar listener de clique no gráfico
-        const container = this.$refs.chartContainer;
-        if (container) {
-          container.style.cursor = 'crosshair';
-          container.addEventListener('click', this.handleChartClick);
-          container.addEventListener('mousemove', this.handleChartMouseMove);
-          console.log('[Chart] Modo de desenho ativado');
-        } else {
-          console.warn('[Chart] Container do gráfico não encontrado');
-        }
-      });
+      // Aguardar um pouco para garantir que o DOM está pronto
+      setTimeout(() => {
+        this.$nextTick(() => {
+          // Tentar encontrar o container de várias formas
+          let container = this.chartContainerElement || this.$refs.chartContainer;
+          
+          // Se não encontrar pelo ref, tentar pelo ID
+          if (!container) {
+            container = document.getElementById('tradingviewChart');
+          }
+          
+          // Se ainda não encontrar, tentar encontrar o canvas dentro do container
+          if (container) {
+            // O lightweight-charts cria um canvas dentro do container
+            const canvas = container.querySelector('canvas');
+            if (canvas) {
+              // Adicionar listeners no canvas também
+              canvas.style.cursor = 'crosshair';
+              canvas.addEventListener('click', this.handleChartClick, { capture: true });
+              canvas.addEventListener('mousemove', this.handleChartMouseMove, { capture: true });
+            }
+          }
+          
+          if (container) {
+            container.style.cursor = 'crosshair';
+            container.style.pointerEvents = 'auto';
+            
+            // Remover listeners antigos se existirem
+            container.removeEventListener('click', this.handleChartClick, { capture: true });
+            container.removeEventListener('mousemove', this.handleChartMouseMove, { capture: true });
+            
+            // Adicionar novos listeners
+            container.addEventListener('click', this.handleChartClick, { capture: true });
+            container.addEventListener('mousemove', this.handleChartMouseMove, { capture: true });
+            
+            console.log('[Chart] Modo de desenho ativado, container:', container);
+          } else {
+            console.warn('[Chart] Container do gráfico não encontrado após tentativas');
+            // Tentar novamente após um delay
+            setTimeout(() => this.activateLineDrawingMode(), 500);
+          }
+        });
+      }, 100);
     },
     cancelLineDrawing() {
       // Limpar estado de desenho
@@ -988,31 +1020,48 @@ export default {
       
       // Remover listeners
       this.$nextTick(() => {
-        const container = this.$refs.chartContainer;
+        // Tentar encontrar o container de várias formas
+        let container = this.chartContainerElement || this.$refs.chartContainer;
+        
+        if (!container) {
+          container = document.getElementById('tradingviewChart');
+        }
+        
         if (container) {
+          // Remover listeners do canvas também
+          const canvas = container.querySelector('canvas');
+          if (canvas) {
+            canvas.style.cursor = 'default';
+            canvas.removeEventListener('click', this.handleChartClick, { capture: true });
+            canvas.removeEventListener('mousemove', this.handleChartMouseMove, { capture: true });
+          }
+          
           container.style.cursor = 'default';
-          container.removeEventListener('click', this.handleChartClick);
-          container.removeEventListener('mousemove', this.handleChartMouseMove);
+          container.removeEventListener('click', this.handleChartClick, { capture: true });
+          container.removeEventListener('mousemove', this.handleChartMouseMove, { capture: true });
           console.log('[Chart] Modo de desenho desativado');
         }
       });
     },
     handleChartClick(event) {
       if (!this.isLineDrawingMode || !this.chart || !this.chartSeries) {
-        console.warn('[Chart] Condições não atendidas para desenho:', {
-          isLineDrawingMode: this.isLineDrawingMode,
-          hasChart: !!this.chart,
-          hasChartSeries: !!this.chartSeries
-        });
         return;
       }
       
       event.preventDefault();
       event.stopPropagation();
       
-      const container = this.$refs.chartContainer;
+      // Tentar encontrar o container de várias formas
+      let container = this.$refs.chartContainer;
       if (!container) {
-        console.warn('[Chart] Container não encontrado');
+        container = document.getElementById('tradingviewChart');
+      }
+      if (!container && this.chart && this.chart._container) {
+        container = this.chart._container;
+      }
+      
+      if (!container) {
+        console.warn('[Chart] Container não encontrado no clique');
         return;
       }
       
@@ -1024,6 +1073,8 @@ export default {
       if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
         return;
       }
+      
+      console.log('[Chart] Clique detectado no gráfico:', { x, y, rect });
       
       try {
         // Converter coordenadas do mouse para coordenadas do gráfico
@@ -1072,7 +1123,15 @@ export default {
     handleChartMouseMove(event) {
       if (!this.isLineDrawingMode || !this.chart || !this.chartSeries || this.lineDrawingPoints.length !== 1) return;
       
-      const container = this.$refs.chartContainer;
+      // Tentar encontrar o container de várias formas
+      let container = this.$refs.chartContainer;
+      if (!container) {
+        container = document.getElementById('tradingviewChart');
+      }
+      if (!container && this.chart && this.chart._container) {
+        container = this.chart._container;
+      }
+      
       if (!container) return;
       
       const rect = container.getBoundingClientRect();
@@ -1272,6 +1331,9 @@ export default {
 
           console.log('[Chart] ✅ Gráfico e série criados com sucesso');
           console.log('[Chart] Dimensões:', { width: rect.width, height: rect.height });
+          
+          // Armazenar referência ao container para uso posterior
+          this.chartContainerElement = container;
 
           // Não carregar placeholders aqui - será carregado do backend
           // Os dados serão carregados via loadTicksFromBackend()
