@@ -743,6 +743,11 @@ export default {
             // Barra de progresso mobile
             progressState: 1, // 1 = analisando, 2 = ordem aberta, 3 = ordem fechada
             progressInterval: null,
+            
+            // Status do trade ativo
+            activeTrade: null, // Trade ativo atual (null = analisando, objeto = ordem aberta/fechada)
+            tradeStatusPollingInterval: null, // Polling para status do trade
+            orderClosedTimer: null, // Timer para voltar ao estado "analisando" após 15s quando ordem fechar
         };
     },
     
@@ -940,11 +945,29 @@ export default {
 
         // Formatted balance
         currentStatusTitle() {
-            // Pode ser dinâmico baseado no estado da IA
+            // Status 2: Ordem aberta (quando há trade com status ACTIVE)
+            if (this.activeTrade && this.activeTrade.status === 'ACTIVE') {
+                return 'Ordem aberta';
+            }
+            // Status 3: Ordem fechada (quando ordem acabou de fechar - exibido por 15s se orderClosedTimer estiver ativo)
+            if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null) {
+                return 'Ordem fechada';
+            }
+            // Status 1: Analisando (quando não há trade ativo ou ordem fechada já passou dos 15s)
             return 'Analisando...';
         },
         currentStatusDescription() {
-            // Pode ser dinâmico baseado no estado da IA
+            // Status 2: Ordem aberta
+            if (this.activeTrade && this.activeTrade.status === 'ACTIVE') {
+                return 'Aguardando resultado';
+            }
+            // Status 3: Ordem fechada
+            if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null) {
+                const result = this.activeTrade.status === 'WON' ? 'Ganhou' : 'Perdeu';
+                const profit = this.activeTrade.profitLoss || 0;
+                return `${result} ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}`;
+            }
+            // Status 1: Analisando
             return 'Buscando oportunidades';
         },
         formattedBalance() {
@@ -1805,6 +1828,9 @@ export default {
                         console.log('[InvestmentActive] 🔍 Primeira operação - entryPrice type:', typeof this.logOperations[0].entryPrice, 'exitPrice type:', typeof this.logOperations[0].exitPrice);
                     }
                     
+                    // Buscar trade ativo do histórico
+                    this.updateActiveTrade(result.data);
+                    
                     // Plotar marcadores de entradas no gráfico após um delay para garantir que o gráfico esteja pronto
                     this.$nextTick(() => {
                         setTimeout(() => {
@@ -1820,6 +1846,114 @@ export default {
                 this.logOperations = [];
             } finally {
                 this.isLoadingLogs = false;
+            }
+        },
+        
+        /**
+         * Atualiza o trade ativo baseado no histórico de trades
+         * Procura pelo primeiro trade com status ACTIVE, ou o último trade fechado (WON/LOST)
+         */
+        updateActiveTrade(tradeHistory) {
+            if (!tradeHistory || tradeHistory.length === 0) {
+                // Se não há histórico, não há trade ativo
+                this.activeTrade = null;
+                this.progressState = 1; // Analisando
+                
+                // Se havia um timer rodando, limpar
+                if (this.orderClosedTimer !== null) {
+                    clearTimeout(this.orderClosedTimer);
+                    this.orderClosedTimer = null;
+                }
+                return;
+            }
+            
+            // Procurar por trade com status ACTIVE (ordem aberta)
+            const activeTrade = tradeHistory.find(trade => trade.status === 'ACTIVE');
+            
+            if (activeTrade) {
+                // Há uma ordem aberta
+                const wasActive = this.activeTrade && this.activeTrade.status === 'ACTIVE';
+                this.activeTrade = activeTrade;
+                
+                // Se havia um timer rodando (ordem fechada anterior), limpar
+                if (this.orderClosedTimer !== null) {
+                    clearTimeout(this.orderClosedTimer);
+                    this.orderClosedTimer = null;
+                }
+                
+                // Atualizar progressState para mobile (2 = ordem aberta)
+                this.progressState = 2;
+                
+                if (!wasActive) {
+                    console.log('[InvestmentActive] ✅ Ordem aberta detectada:', activeTrade.id);
+                }
+            } else {
+                // Não há ordem aberta, verificar se o último trade foi fechado recentemente
+                const lastTrade = tradeHistory[0]; // Trades vêm ordenados do mais recente para o mais antigo
+                
+                if (lastTrade && (lastTrade.status === 'WON' || lastTrade.status === 'LOST')) {
+                    // Verificar se este trade é diferente do anterior (nova ordem fechada)
+                    const wasDifferent = !this.activeTrade || 
+                                       this.activeTrade.id !== lastTrade.id || 
+                                       (this.activeTrade.status === 'ACTIVE');
+                    
+                    if (wasDifferent) {
+                        // Nova ordem fechada - iniciar timer de 15 segundos
+                        this.activeTrade = lastTrade;
+                        this.progressState = 3; // Ordem fechada
+                        
+                        // Limpar timer anterior se existir
+                        if (this.orderClosedTimer !== null) {
+                            clearTimeout(this.orderClosedTimer);
+                        }
+                        
+                        // Iniciar timer de 15 segundos para voltar ao estado "analisando"
+                        this.orderClosedTimer = setTimeout(() => {
+                            console.log('[InvestmentActive] ⏰ Timer de 15s expirado, voltando para estado "analisando"');
+                            this.activeTrade = null;
+                            this.progressState = 1; // Analisando
+                            this.orderClosedTimer = null;
+                        }, 15000);
+                        
+                        console.log('[InvestmentActive] ✅ Ordem fechada detectada:', lastTrade.id, 'Timer de 15s iniciado');
+                    }
+                    // Se não foi diferente, manter estado atual (timer continua rodando se existir)
+                } else {
+                    // Não há ordem ativa nem fechada recente - estado de análise
+                    // Só atualizar se não havia timer rodando (timer ainda não expirou)
+                    if (this.orderClosedTimer === null) {
+                        this.activeTrade = null;
+                        this.progressState = 1; // Analisando
+                    }
+                }
+            }
+        },
+        
+        /**
+         * Inicia polling para verificar status do trade ativo
+         */
+        startTradeStatusPolling() {
+            // Limpar polling anterior se existir
+            if (this.tradeStatusPollingInterval) {
+                clearInterval(this.tradeStatusPollingInterval);
+            }
+            
+            // Buscar status do trade a cada 2 segundos
+            this.tradeStatusPollingInterval = setInterval(() => {
+                this.fetchTradeHistory();
+            }, 2000);
+            
+            console.log('[InvestmentActive] 🔄 Polling de status do trade iniciado');
+        },
+        
+        /**
+         * Para o polling de status do trade
+         */
+        stopTradeStatusPolling() {
+            if (this.tradeStatusPollingInterval) {
+                clearInterval(this.tradeStatusPollingInterval);
+                this.tradeStatusPollingInterval = null;
+                console.log('[InvestmentActive] ⏸️ Polling de status do trade parado');
             }
         },
         
@@ -2551,11 +2685,14 @@ export default {
                     }
                     // Iniciar polling de histórico também
                     this.startHistoryPolling();
+                    // Iniciar polling de status do trade
+                    this.startTradeStatusPolling();
                 } else if (!isActive && wasActive) {
                     // IA foi desativada - parar polling
                     console.log('[InvestmentActive] ⏸️ IA desativada, parando polling de logs...');
                     this.stopLogPolling();
                     this.stopHistoryPolling();
+                    this.stopTradeStatusPolling();
                 }
             },
             immediate: false
@@ -2589,6 +2726,9 @@ export default {
         // 📊 Iniciar polling de histórico (a cada 1 minuto)
         this.startHistoryPolling();
         
+        // 🔄 Iniciar polling de status do trade (a cada 2 segundos)
+        this.startTradeStatusPolling();
+        
         // 🎯 Iniciar animação da barra de progresso mobile
         this.startProgressAnimation();
         
@@ -2610,6 +2750,15 @@ export default {
         
         // Parar polling de histórico
         this.stopHistoryPolling();
+        
+        // Parar polling de status do trade
+        this.stopTradeStatusPolling();
+        
+        // Limpar timer de ordem fechada
+        if (this.orderClosedTimer !== null) {
+            clearTimeout(this.orderClosedTimer);
+            this.orderClosedTimer = null;
+        }
         
         // Parar animação da barra de progresso
         this.stopProgressAnimation();

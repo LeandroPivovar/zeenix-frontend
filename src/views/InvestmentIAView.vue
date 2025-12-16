@@ -1,10 +1,5 @@
 <template>
     <div class="zenix-layout">
-        <!-- Full Screen Loader -->
-        <div v-if="isActivating" class="fullscreen-loader">
-            <div class="loader-spinner"></div>
-        </div>
-        
         <!-- Overlay para fechar sidebar ao clicar fora (mobile) -->
         <div 
             v-if="isSidebarOpen" 
@@ -3560,32 +3555,6 @@ export default {
     
     .ai-brain-glow i {
         font-size: 2rem !important;
-    }
-}
-
-/* Full Screen Loader */
-.fullscreen-loader {
-    position: fixed;
-    inset: 0;
-    background: #000000;
-    z-index: 9999;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.loader-spinner {
-    width: 60px;
-    height: 60px;
-    border: 4px solid rgba(34, 197, 94, 0.2);
-    border-top-color: #22C55E;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
     }
 }
 
