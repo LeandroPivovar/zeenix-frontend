@@ -386,19 +386,6 @@
         </div>
         </template>
       </main>
-
-      <footer v-if="!isMobile" id="footer" class="border-t border-zenix-border bg-zenix-card/50 mt-16">
-        <div class="max-w-7xl mx-auto px-8 py-8 text-center">
-          <div class="flex items-center justify-center space-x-2 mb-4">
-            <div class="w-8 h-8 bg-zenix-green rounded-lg flex items-center justify-center">
-              <span class="text-white font-bold text-sm">Z</span>
-            </div>
-          </div>
-          <p class="text-zenix-secondary text-xs lg:text-sm">
-            Plataforma de investimentos automatizados — Desde 2024 oferecendo soluções confiáveis
-          </p>
-        </div>
-      </footer>
     </div>
 
     <!-- Modals (Existing) -->

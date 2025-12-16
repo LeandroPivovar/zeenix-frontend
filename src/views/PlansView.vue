@@ -132,12 +132,6 @@
                     </div>
                 </div>
             </main>
-            
-            <footer v-if="!isMobile" class="zenix-footer-mini">
-                <div class="footer-content-right">
-                    <p>Administrador: Marcos Costa / Online / Versão v2.0</p>
-                </div>
-            </footer>
         </div>
         <DesktopBottomNav />
     </div>
