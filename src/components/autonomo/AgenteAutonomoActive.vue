@@ -1300,7 +1300,7 @@
 
 	.agent-title h2 {
 		font-size: 20px;
-		font-weight: 600;
+		font-weight: 700;
 		color: white;
 		margin: 0;
 	}
@@ -2368,6 +2368,10 @@
 		align-items: center;
 
 	
+	}
+
+	.agent-title-header h2 {
+		font-weight: 700;
 	}
 
 	.agent-title-header p{

@@ -349,7 +349,7 @@
 					<div class="premium-card status-card">
 						<div class="status-content">
 							<div class="status-text">
-								<p class="status-label">Status do AGENTE</p>
+								<p class="status-label">STATUS DO AGENTE</p>
 								<p class="status-value">Desativado</p>
 							</div>
 							<label class="toggle-switch">
@@ -1552,15 +1552,16 @@ span.icon-sumary-risk{
 @media (max-width: 800px) {
 	/* Título e Subtítulo Mobile */
 	.config-header {
-		padding-top: 50px;
+		padding-top: 30px;
 		margin-bottom: 20px;
 	}
 
 	.config-header h1 {
 		font-size: 19px !important;
 		font-weight: 700 !important;
-		color: #FFFFFF;
+		color: #fff;
 		margin-bottom: 2px;
+		padding: 0px 10px;
 	}
 
 	.config-header p {
