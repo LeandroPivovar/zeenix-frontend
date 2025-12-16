@@ -1123,11 +1123,43 @@ export default {
         const maxPrice = Math.max(...values);
         const priceRange = maxPrice - minPrice;
         
-        // Calcular o preço baseado na coordenada Y
-        // Y=0 está no topo, então precisamos inverter
-        const chartHeight = rect.height;
-        const yRatio = 1 - (y / chartHeight); // Inverter Y
-        const price = minPrice + (priceRange * yRatio);
+        // Obter o priceScale para calcular margens
+        const priceScale = this.chart.priceScale('right');
+        let price;
+        
+        if (priceScale) {
+          // Tentar obter o range visível de preços diretamente do priceScale
+          try {
+            const priceRangeVisible = priceScale.getVisibleRange();
+            if (priceRangeVisible) {
+              // Usar o range visível do priceScale (mais preciso)
+              const visibleMinPrice = priceRangeVisible.from;
+              const visibleMaxPrice = priceRangeVisible.to;
+              const visiblePriceRange = visibleMaxPrice - visibleMinPrice;
+              
+              // Calcular o preço baseado na coordenada Y
+              // Y=0 está no topo, então precisamos inverter
+              const chartHeight = rect.height;
+              const yRatio = 1 - (y / chartHeight); // Inverter Y
+              price = visibleMinPrice + (visiblePriceRange * yRatio);
+            } else {
+              // Fallback
+              const chartHeight = rect.height;
+              const yRatio = 1 - (y / chartHeight);
+              price = minPrice + (priceRange * yRatio);
+            }
+          } catch (e) {
+            // Fallback se getVisibleRange não funcionar
+            const chartHeight = rect.height;
+            const yRatio = 1 - (y / chartHeight);
+            price = minPrice + (priceRange * yRatio);
+          }
+        } else {
+          // Fallback se priceScale não estiver disponível
+          const chartHeight = rect.height;
+          const yRatio = 1 - (y / chartHeight);
+          price = minPrice + (priceRange * yRatio);
+        }
         
         console.log('[Chart] Clique no gráfico:', { time, price, x, y, minPrice, maxPrice });
         
@@ -1195,11 +1227,43 @@ export default {
         const maxPrice = Math.max(...values);
         const priceRange = maxPrice - minPrice;
         
-        // Calcular o preço baseado na coordenada Y
-        // Y=0 está no topo, então precisamos inverter
-        const chartHeight = rect.height;
-        const yRatio = 1 - (y / chartHeight); // Inverter Y
-        const price = minPrice + (priceRange * yRatio);
+        // Obter o priceScale para calcular margens
+        const priceScale = this.chart.priceScale('right');
+        let price;
+        
+        if (priceScale) {
+          // Tentar obter o range visível de preços diretamente do priceScale
+          try {
+            const priceRangeVisible = priceScale.getVisibleRange();
+            if (priceRangeVisible) {
+              // Usar o range visível do priceScale (mais preciso)
+              const visibleMinPrice = priceRangeVisible.from;
+              const visibleMaxPrice = priceRangeVisible.to;
+              const visiblePriceRange = visibleMaxPrice - visibleMinPrice;
+              
+              // Calcular o preço baseado na coordenada Y
+              // Y=0 está no topo, então precisamos inverter
+              const chartHeight = rect.height;
+              const yRatio = 1 - (y / chartHeight); // Inverter Y
+              price = visibleMinPrice + (visiblePriceRange * yRatio);
+            } else {
+              // Fallback
+              const chartHeight = rect.height;
+              const yRatio = 1 - (y / chartHeight);
+              price = minPrice + (priceRange * yRatio);
+            }
+          } catch (e) {
+            // Fallback se getVisibleRange não funcionar
+            const chartHeight = rect.height;
+            const yRatio = 1 - (y / chartHeight);
+            price = minPrice + (priceRange * yRatio);
+          }
+        } else {
+          // Fallback se priceScale não estiver disponível
+          const chartHeight = rect.height;
+          const yRatio = 1 - (y / chartHeight);
+          price = minPrice + (priceRange * yRatio);
+        }
         
         // Atualizar linha temporária
         this.updateTempLine(this.lineDrawingPoints[0], { time, value: price });
@@ -1270,14 +1334,16 @@ export default {
             position: 'inBar',
             color: '#22C55E',
             shape: 'circle',
-            size: 6,
+            size: 4,
+            text: '',
           },
           {
             time: point2.time,
             position: 'inBar',
             color: '#22C55E',
             shape: 'circle',
-            size: 6,
+            size: 4,
+            text: '',
           }
         ];
         
