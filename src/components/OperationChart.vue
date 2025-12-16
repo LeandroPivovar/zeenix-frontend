@@ -56,7 +56,7 @@
             </div>
           </div>
 
-          <div class="flex flex-1 min-h-0 relative h-full">
+          <div class="flex flex-1 min-h-0 relative" style="height: 100%; flex: 1 1 0;">
             <!-- Barra lateral de funções à esquerda do gráfico -->
             <div class="w-12 bg-zenix-bg border-r border-zenix-border flex flex-col items-center py-3 gap-2 flex-shrink-0">
               <button 
@@ -976,9 +976,22 @@ export default {
           this.handleResize = () => {
             const newRect = container.getBoundingClientRect();
             if (this.chart && newRect.width > 0 && newRect.height > 0) {
+              console.log('[Chart] Redimensionando gráfico:', { width: newRect.width, height: newRect.height });
               this.chart.resize(newRect.width, newRect.height);
             }
           };
+          
+          // Adicionar listener de resize
+          window.addEventListener('resize', this.handleResize);
+          
+          // Forçar um resize inicial após um pequeno delay para garantir que o layout está completo
+          setTimeout(() => {
+            const finalRect = container.getBoundingClientRect();
+            if (this.chart && finalRect.width > 0 && finalRect.height > 0) {
+              console.log('[Chart] Resize inicial:', { width: finalRect.width, height: finalRect.height });
+              this.chart.resize(finalRect.width, finalRect.height);
+            }
+          }, 100);
         } catch (error) {
           console.error('[Chart] ❌ Erro ao inicializar gráfico:', error);
           this.showChartPlaceholder = false;
@@ -1830,6 +1843,18 @@ export default {
         // Ocultar placeholder
         this.showChartPlaceholder = false;
         this.isLoadingTicks = false;
+        
+        // Forçar resize para garantir que o gráfico use toda a altura disponível
+        this.$nextTick(() => {
+          if (this.chart && this.$refs.chartContainer) {
+            const rect = this.$refs.chartContainer.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+              console.log('[Chart] Resize após plotar dados:', { width: rect.width, height: rect.height });
+              this.chart.resize(rect.width, rect.height);
+            }
+          }
+        });
+        
         console.log('[Chart] ✅ Gráfico atualizado com sucesso');
         console.log('[Chart] Placeholder oculto:', !this.showChartPlaceholder);
     },
@@ -3019,26 +3044,24 @@ export default {
 
 .chart-container {
   height: 100%;
-  flex: 1;
+  flex: 1 1 0;
   min-height: 0;
   width: 100%;
   display: flex;
   flex-direction: column;
   padding: 0;
   margin: 0;
-  flex-grow: 1;
 }
 
 .chart-wrapper {
   background-color: #0B0B0B !important;
-  min-height: 400px !important;
+  min-height: 0 !important;
   position: relative !important;
-  overflow: visible !important;
+  overflow: hidden !important;
   width: 100% !important;
   height: 100% !important;
-  flex: 1 1 auto;
-  display: flex;
-  flex-direction: column;
+  flex: 1 1 0;
+  display: block;
 }
 
 .chart-placeholder {
