@@ -1078,27 +1078,58 @@ export default {
       
       try {
         // Converter coordenadas do mouse para coordenadas do gráfico
-        // Usar os métodos nativos do lightweight-charts
         const timeScale = this.chart.timeScale();
-        const priceScale = this.chart.priceScale('right');
         
-        if (!timeScale || !priceScale) {
-          console.warn('[Chart] Escalas não disponíveis');
+        if (!timeScale) {
+          console.warn('[Chart] TimeScale não disponível');
           return;
         }
         
         // Converter coordenada X para tempo usando o método nativo
         const time = timeScale.coordinateToTime(x);
         
-        // Converter coordenada Y para preço usando o método nativo
-        const price = priceScale.coordinateToPrice(y);
-        
-        if (time === null || price === null || isNaN(time) || isNaN(price)) {
-          console.warn('[Chart] Conversão de coordenadas falhou:', { time, price, x, y });
+        if (time === null || isNaN(time)) {
+          console.warn('[Chart] Conversão de tempo falhou:', { time, x });
           return;
         }
         
-        console.log('[Chart] Clique no gráfico:', { time, price, x, y });
+        // Obter o range visível do gráfico para calcular o preço
+        const visibleRange = timeScale.getVisibleRange();
+        if (!visibleRange) {
+          console.warn('[Chart] Range visível não disponível');
+          return;
+        }
+        
+        // Obter os dados da série para calcular o range de preços
+        const seriesData = this.chartSeries.data();
+        if (!seriesData || seriesData.length === 0) {
+          console.warn('[Chart] Dados da série não disponíveis');
+          return;
+        }
+        
+        // Encontrar os dados visíveis no range
+        const visibleData = seriesData.filter(d => 
+          d.time >= visibleRange.from && d.time <= visibleRange.to
+        );
+        
+        if (visibleData.length === 0) {
+          console.warn('[Chart] Nenhum dado visível encontrado');
+          return;
+        }
+        
+        // Calcular min e max dos valores visíveis
+        const values = visibleData.map(d => d.value);
+        const minPrice = Math.min(...values);
+        const maxPrice = Math.max(...values);
+        const priceRange = maxPrice - minPrice;
+        
+        // Calcular o preço baseado na coordenada Y
+        // Y=0 está no topo, então precisamos inverter
+        const chartHeight = rect.height;
+        const yRatio = 1 - (y / chartHeight); // Inverter Y
+        const price = minPrice + (priceRange * yRatio);
+        
+        console.log('[Chart] Clique no gráfico:', { time, price, x, y, minPrice, maxPrice });
         
         if (this.lineDrawingPoints.length === 0) {
           // Primeiro ponto
@@ -1134,21 +1165,41 @@ export default {
       
       try {
         // Converter coordenadas do mouse para coordenadas do gráfico
-        // Usar os métodos nativos do lightweight-charts
         const timeScale = this.chart.timeScale();
-        const priceScale = this.chart.priceScale('right');
         
-        if (!timeScale || !priceScale) return;
+        if (!timeScale) return;
         
         // Converter coordenada X para tempo usando o método nativo
         const time = timeScale.coordinateToTime(x);
         
-        // Converter coordenada Y para preço usando o método nativo
-        const price = priceScale.coordinateToPrice(y);
+        if (time === null || isNaN(time)) return;
         
-        if (time === null || price === null || isNaN(time) || isNaN(price)) {
-          return;
-        }
+        // Obter o range visível do gráfico para calcular o preço
+        const visibleRange = timeScale.getVisibleRange();
+        if (!visibleRange) return;
+        
+        // Obter os dados da série para calcular o range de preços
+        const seriesData = this.chartSeries.data();
+        if (!seriesData || seriesData.length === 0) return;
+        
+        // Encontrar os dados visíveis no range
+        const visibleData = seriesData.filter(d => 
+          d.time >= visibleRange.from && d.time <= visibleRange.to
+        );
+        
+        if (visibleData.length === 0) return;
+        
+        // Calcular min e max dos valores visíveis
+        const values = visibleData.map(d => d.value);
+        const minPrice = Math.min(...values);
+        const maxPrice = Math.max(...values);
+        const priceRange = maxPrice - minPrice;
+        
+        // Calcular o preço baseado na coordenada Y
+        // Y=0 está no topo, então precisamos inverter
+        const chartHeight = rect.height;
+        const yRatio = 1 - (y / chartHeight); // Inverter Y
+        const price = minPrice + (priceRange * yRatio);
         
         // Atualizar linha temporária
         this.updateTempLine(this.lineDrawingPoints[0], { time, value: price });
