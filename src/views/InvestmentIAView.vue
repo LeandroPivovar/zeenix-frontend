@@ -1059,6 +1059,17 @@ export default {
             this.toggleAccountType(newAccountType);
         },
         
+        handleAccountChange(event) {
+            console.log('[InvestmentIAView] Conta alterada, atualizando saldo...', event.detail);
+            // Atualizar saldo imediatamente quando a conta for trocada
+            this.fetchAccountBalance();
+            // Atualizar isDemo baseado na nova conta
+            const account = event.detail?.account;
+            if (account) {
+                this.isDemo = account.isDemo === true || account.loginid?.startsWith('VRTC') || account.loginid?.startsWith('VRT');
+            }
+        },
+        
         async startDataLoading() {
             try {
                 console.log('[InvestmentIAView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
@@ -1260,10 +1271,14 @@ export default {
         
         console.log('[InvestmentIAView] Iniciando atualização de estatísticas...');
         this.startStatsUpdates();
+        
+        // Escutar mudanças de conta para atualizar saldo automaticamente
+        window.addEventListener('accountChanged', this.handleAccountChange);
     },
 
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobile);
+        window.removeEventListener('accountChanged', this.handleAccountChange);
         console.log('[InvestmentIAView] Limpando polling antes de desmontar...');
         this.stopPolling();
         
@@ -1275,7 +1290,7 @@ export default {
         
         console.log('[InvestmentIAView] Parando atualização de estatísticas...');
         this.stopStatsUpdates();
-    }
+    },
 }
 </script>
 

@@ -695,10 +695,10 @@ export default {
         currency: selectedAccount.currency
       });
       
-      // Fechar o modal antes de trocar a conta
+      // Fechar o modal imediatamente (antes de trocar)
       this.closeProfileModal();
       
-      // Trocar para a conta selecionada (isso já recarrega a página)
+      // Trocar para a conta selecionada (em background, sem reload)
       await this.selectAccount(selectedAccount);
     },
     toggleAccountsList() {
@@ -750,12 +750,19 @@ export default {
     openDepositFlow() {
       this.$router.push('/settings?tab=deposit');
     },
-    disconnectAccount() {
+    async disconnectAccount() {
       localStorage.removeItem('deriv_token');
       localStorage.removeItem('deriv_tokens_by_loginid');
       localStorage.removeItem('deriv_connection');
+      // Limpar cache de contas também
+      try {
+        const { clearAccountsCache } = await import('../utils/accountsLoader');
+        clearAccountsCache();
+      } catch (error) {
+        console.warn('[TopNavbar] Erro ao limpar cache:', error);
+      }
       this.$router.push('/dashboard');
-      window.location.reload();
+      // Não recarregar página, deixar o router atualizar
     },
     async switchAccount() {
       // Abre o modal de seleção de contas
@@ -849,13 +856,40 @@ export default {
     },
     async selectAccount(account) {
       try {
-        // Não limpar cache - usar dados já carregados para troca instantânea
+        // Fechar modal imediatamente para não mostrar loading
+        this.closeProfileModal();
+        
+        // Atualizar localStorage imediatamente com dados do cache (troca instantânea)
+        const isDemo = account.isDemo === true || account.loginid?.startsWith('VRTC') || account.loginid?.startsWith('VRT');
+        
+        // Atualizar token imediatamente
+        localStorage.setItem('deriv_token', account.token);
+        
+        // Atualizar connection com dados básicos do account (do cache)
+        const currentConnection = JSON.parse(localStorage.getItem('deriv_connection') || '{}');
+        localStorage.setItem('deriv_connection', JSON.stringify({
+          ...currentConnection,
+          loginid: account.loginid,
+          currency: account.currency,
+          isDemo: isDemo,
+          timestamp: Date.now()
+        }));
+
+        // Emitir eventos imediatamente para atualizar componentes
+        const accountType = isDemo ? 'demo' : 'real';
+        this.$emit('account-type-changed', accountType);
+        
+        window.dispatchEvent(new CustomEvent('accountChanged', { 
+          detail: { accountType, account } 
+        }));
+        
+        // Buscar informações completas em background (sem bloquear UI)
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
         const token = localStorage.getItem('token');
         const appId = localStorage.getItem('deriv_app_id') || '1089';
 
-        // Buscar informações completas da conta selecionada
-        const response = await fetch(`${apiBase}/broker/deriv/status`, {
+        // Fazer requisição em background sem mostrar loading
+        fetch(`${apiBase}/broker/deriv/status`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -866,16 +900,13 @@ export default {
             appId: parseInt(appId),
             currency: account.currency
           })
-        });
-
-        if (response.ok) {
-          const data = await response.json();
-          
-          // Garantir que isDemo está correto baseado no account.isDemo (mais confiável)
-          const isDemo = account.isDemo === true || account.loginid?.startsWith('VRTC') || account.loginid?.startsWith('VRT');
-          
-          // Atualizar localStorage com a conta selecionada
-          localStorage.setItem('deriv_token', account.token);
+        }).then(response => {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error('Erro ao buscar status da conta');
+        }).then(data => {
+          // Atualizar localStorage com dados completos em background
           localStorage.setItem('deriv_connection', JSON.stringify({
             ...data,
             loginid: account.loginid,
@@ -883,22 +914,17 @@ export default {
             isDemo: isDemo,
             timestamp: Date.now()
           }));
-
-          // Emitir evento para atualizar o componente pai
-          const accountType = isDemo ? 'demo' : 'real';
-          this.$emit('account-type-changed', accountType);
           
-          // Emitir evento customizado para atualizar outros componentes
+          // Emitir evento novamente com dados atualizados
           window.dispatchEvent(new CustomEvent('accountChanged', { 
-            detail: { accountType, account } 
+            detail: { accountType, account, fullData: data } 
           }));
           
-          // Recarregar página para atualizar todos os componentes
-          // O modal já foi fechado antes de chamar este método
-          window.location.reload();
-        } else {
-          throw new Error('Erro ao selecionar conta');
-        }
+          console.log('[TopNavbar] Conta atualizada em background:', account.loginid);
+        }).catch(error => {
+          console.warn('[TopNavbar] Erro ao atualizar dados da conta em background:', error);
+          // Não mostrar erro ao usuário, a troca já foi feita com dados do cache
+        });
       } catch (error) {
         console.error('[TopNavbar] Erro ao selecionar conta:', error);
       }
