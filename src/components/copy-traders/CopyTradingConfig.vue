@@ -1032,7 +1032,8 @@ input:checked + .slider:before {
     
     .card {
         width: 100%;
-        padding: 20px;
+        padding: 20px 20px 10px 20px;
+        margin: 0;
         background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
         border: 1px solid #1C1C1C;
         border-radius: 8px;

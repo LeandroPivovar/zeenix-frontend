@@ -8,7 +8,7 @@
     <div class="h-full flex items-center justify-between desktop-nav">
       <div class="flex items-center space-x-4 mr-10">
         <!-- Botão de toggle do menu (apenas desktop, sempre visível) -->
-        <button 
+        <button
           v-if="!isMobile"
           @click="toggleSidebarCollapse"
           class="toggle-menu-btn-header p-[6px]"
@@ -47,8 +47,14 @@
           <span>Depositar Agora</span>
         </button>
         <div class="flex items-center space-x-3">
-          <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF]">
-            Saldo: {{ balanceHidden ? '••••••' : formattedBalance }}
+          <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF] inline-flex items-center">
+            Saldo: 
+            <span v-if="!balanceHidden" class="inline-flex items-center ml-1">
+              <span v-if="currentAccountType === 'demo'" class="demo-currency-symbol-navbar">D</span>
+              <span v-else>{{ navbarCurrencySymbol }}</span>
+              {{ balanceHidden ? '' : navbarBalanceValue }}
+            </span>
+            <span v-else class="ml-1">••••••</span>
           </span>
           <button 
             @click="toggleBalance" 
@@ -61,7 +67,7 @@
         </div>
         <div class="relative">
           <button 
-            @click="toggleProfileDropdown" 
+            @click="toggleProfileModal" 
             class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 overflow-hidden"
           >
             <img 
@@ -72,55 +78,25 @@
             />
             <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
           </button>
-          <div 
-            v-if="showProfileDropdown" 
-            id="profileDropdown" 
-            class="absolute right-0 top-12 w-56 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
-          >
-            <div class="p-3 border-b border-[#1C1C1C]">
-              <p class="text-sm font-semibold text-[#DFDFDF]">{{ userName }}</p>
-              <p class="text-xs text-[#7A7A7A]">{{ userEmail }}</p>
-            </div>
-            <div class="py-2">
-              <a 
-                href="#" 
-                @click.prevent="switchAccount"
-                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-              >
-                <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
-                Trocar de Conta
-              </a>
-              <a 
-                href="#" 
-                @click.prevent="$router.push('/settings')" 
-                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-              >
-                <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
-                Configurações
-              </a>
-              <a 
-                href="#" 
-                @click.prevent="disconnectAccount" 
-                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-              >
-                <i class="fas fa-plug text-xs mr-3 text-[#7A7A7A]"></i>
-                Sair da Corretora
-              </a>
-            </div>
-          </div>
         </div>
       </div>
     </div>
 
     <!-- Mobile Layout -->
     <div class="h-full px-4 flex items-center justify-between mobile-nav">
-      <!-- Menu Hambúrguer -->
+      <!-- Foto de Perfil (abre sidebar) -->
       <button 
         @click="toggleMobileSidebar"
-        class="mobile-menu-btn"
+        class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 overflow-hidden flex-shrink-0"
         type="button"
       >
-        <i class="fas fa-bars text-[#22C55E] text-xl"></i>
+        <img 
+          v-if="userProfilePicture" 
+          :src="userProfilePicture" 
+          :alt="userName"
+          class="w-full h-full object-cover rounded-full"
+        />
+        <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
       </button>
       
       <!-- Logo ZENIX -->
@@ -133,32 +109,26 @@
         <span class="text-[#22C55E] font-bold text-xl">X</span>
       </router-link>
       
-      <!-- Perfil -->
-      <div class="relative">
-        <button 
-          @click="toggleProfileModal" 
-          class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 overflow-hidden"
-        >
-          <img 
-            v-if="userProfilePicture" 
-            :src="userProfilePicture" 
-            :alt="userName"
-            class="w-full h-full object-cover rounded-full"
-          />
-          <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
-        </button>
-      </div>
+      <!-- Ícone de Engrenagem (abre modal de configurações) -->
+      <button 
+        @click="toggleProfileModal" 
+        class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 flex-shrink-0"
+        type="button"
+      >
+        <i class="fas fa-cog text-[#DFDFDF] text-base"></i>
+      </button>
     </div>
 
-    <!-- Modal do Perfil Mobile -->
+    <!-- Modal de Configurações (Unificado para Desktop e Mobile) -->
     <div 
       v-if="showProfileModal" 
-      class="profile-modal-overlay"
+      class="settings-modal-overlay"
       @click.self="closeProfileModal"
     >
-      <div class="profile-modal-container">
-        <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-[#DFDFDF]">Perfil</h2>
+      <div class="settings-modal-container">
+        <!-- Cabeçalho -->
+        <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between" style="height: fit-content;">
+          <h2 class="text-xl font-semibold text-white">Configurações</h2>
           <button 
             @click="closeProfileModal"
             class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
@@ -167,77 +137,142 @@
           </button>
         </div>
         
-        <div class="p-6 space-y-6">
-          <!-- Informações do Usuário -->
-          <div class="flex items-center space-x-4 pb-4 border-b border-[#1C1C1C]">
-            <div class="w-16 h-16 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center overflow-hidden">
-              <img 
-                v-if="userProfilePicture" 
-                :src="userProfilePicture" 
-                :alt="userName"
-                class="w-full h-full object-cover rounded-full"
-              />
-              <span v-else class="text-white font-semibold text-lg">{{ userInitials }}</span>
+        <div class="overflow-y-auto flex-1">
+          <div class="p-6 space-y-6">
+            <!-- Informações do Usuário -->
+            <div class="flex items-center space-x-4">
+              <div class="w-16 h-16 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center overflow-hidden flex-shrink-0">
+                <img 
+                  v-if="userProfilePicture" 
+                  :src="userProfilePicture" 
+                  :alt="userName"
+                  class="w-full h-full object-cover rounded-full"
+                />
+                <span v-else class="text-white font-semibold text-lg">{{ userInitials }}</span>
+              </div>
+              <div class="flex-1 min-w-0 text-left">
+                <p class="text-base font-semibold text-white text-left">{{ fullUserName }}</p>
+                <p class="text-sm text-[#22C55E] font-medium text-left">Conta Ativa</p>
+              </div>
             </div>
-            <div>
-              <p class="text-base font-semibold text-[#DFDFDF]">{{ userName }}</p>
-              <p class="text-sm text-[#7A7A7A]">{{ userEmail }}</p>
-            </div>
-          </div>
 
-          <!-- Saldo -->
-          <div class="bg-[#0E0E0E] border border-[#1C1C1C] rounded-lg p-4">
-            <div class="flex items-center justify-between mb-2">
-              <p class="text-sm text-[#7A7A7A]">Saldo</p>
-              <button 
-                @click="toggleBalance" 
-                class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
-                type="button"
+            <!-- Saldo Total -->
+            <div class="bg-[#0E0E0E] border border-[#1C1C1C] rounded-lg p-4">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-sm text-[#7A7A7A]">Saldo Total</p>
+                <button 
+                  @click="toggleBalance" 
+                  class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
+                  type="button"
+                >
+                  <i v-if="balanceHidden" class="fas fa-eye-slash text-sm"></i>
+                  <i v-else class="fas fa-eye text-sm"></i>
+                </button>
+              </div>
+              <p class="text-2xl font-bold text-white mb-4 text-left">
+                <span v-if="!balanceHidden" class="inline-flex items-center">
+                  <span v-if="accountTypeFilter === 'demo'" class="demo-currency-symbol">D</span>
+                  <span v-else>{{ currencySymbol }}</span>
+                  {{ balanceHidden ? '' : balanceValueFormatted }}
+                </span>
+                <span v-else>••••••</span>
+              </p>
+              <!-- Botões Real/Demo -->
+              <div class="flex gap-2">
+                <button
+                  @click="switchAccountType('real')"
+                  :class="accountTypeFilter === 'real' 
+                    ? 'bg-[#22C55E] text-black' 
+                    : 'bg-[#1C1C1C] text-[#7A7A7A] hover:bg-[#2A2A2A]'"
+                  class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200"
+                >
+                  Real
+                </button>
+                <button
+                  @click="switchAccountType('demo')"
+                  :class="accountTypeFilter === 'demo' 
+                    ? 'bg-[#22C55E] text-black' 
+                    : 'bg-[#1C1C1C] text-[#7A7A7A] hover:bg-[#2A2A2A]'"
+                  class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200"
+                >
+                  Demo
+                </button>
+              </div>
+            </div>
+
+            <!-- Botão Depositar -->
+            <button 
+              @click="openDepositFlowFromModal" 
+              class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold px-5 py-3 rounded-lg text-base inline-flex items-center justify-center space-x-2 transition-all duration-200 shadow-[0_2px_8px_rgba(34,197,94,0.2)] hover:shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
+            >
+              <i class="fas fa-wallet text-sm"></i>
+              <span>Depositar</span>
+            </button>
+
+            <!-- Minhas Contas -->
+            <div class="pt-2">
+              <div class="flex items-center justify-between mb-4">
+                <div class="flex items-center space-x-2">
+                  <i class="fas fa-credit-card text-[#7A7A7A] text-sm"></i>
+                  <h3 class="text-base font-semibold text-white">Minhas Contas</h3>
+                </div>
+                <button
+                  @click="toggleAccountsList"
+                  class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
+                >
+                  <i :class="showAccountsList ? 'fas fa-chevron-up' : 'fas fa-chevron-down'"></i>
+                </button>
+              </div>
+              
+              <div v-if="showAccountsList" class="space-y-2">
+                <div v-if="loadingAccounts" class="flex items-center justify-center py-8">
+                  <div class="text-center">
+                    <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-[#22C55E] mb-2"></div>
+                    <p class="text-[#A1A1A1] text-sm">Carregando contas...</p>
+                  </div>
+                </div>
+                
+                <div v-else-if="filteredAccounts.length === 0" class="text-center py-8">
+                  <i class="fas fa-exclamation-circle text-[#7A7A7A] text-2xl mb-2"></i>
+                  <p class="text-[#A1A1A1] text-sm">Nenhuma conta disponível</p>
+                </div>
+                
+                <div v-else class="space-y-2">
+                  <div 
+                    v-for="account in filteredAccounts" 
+                    :key="account.loginid"
+                    @click="selectAccountFromList(account)"
+                    class="p-3 bg-[#0B0B0B] border border-[#1C1C1C] rounded-lg cursor-pointer hover:border-[#22C55E]/50 hover:bg-[#0F0F0F] transition-all duration-200"
+                    :class="{ 'border-[#22C55E] bg-[#0F0F0F]': isCurrentAccount(account) }"
+                  >
+                    <div class="flex items-center justify-between">
+                      <div class="flex-1 min-w-0">
+                        <div class="flex items-center gap-2">
+                          <span class="text-sm font-semibold text-white">{{ account.loginid }}</span>
+                          <span class="text-xs text-[#7A7A7A]">
+                            {{ account.isDemo ? 'Demo' : 'Real' }} - {{ formatBalance(account.balance || 0, account.currency) }}
+                          </span>
+                        </div>
+                      </div>
+                      <div v-if="isCurrentAccount(account)" class="ml-3 flex-shrink-0">
+                        <i class="fas fa-check text-[#22C55E] text-sm"></i>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Sair da Corretora -->
+            <div class="pt-4 border-t border-[#1C1C1C]">
+              <button
+                @click="disconnectAccountFromModal"
+                class="w-full flex items-center justify-center space-x-2 text-red-500 hover:text-red-400 transition-colors py-2"
               >
-                <i v-if="balanceHidden" class="fas fa-eye-slash text-sm"></i>
-                <i v-else class="fas fa-eye text-sm"></i>
+                <i class="fas fa-arrow-left text-sm"></i>
+                <span class="text-sm font-medium">Sair da corretora</span>
               </button>
             </div>
-            <p class="text-2xl font-bold text-[#DFDFDF]">
-              {{ balanceHidden ? '••••••' : formattedBalance }}
-            </p>
-          </div>
-
-          <!-- Botão Depositar -->
-          <button 
-            @click="openDepositFlowFromModal" 
-            class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold px-5 py-3 rounded-lg text-base inline-flex items-center justify-center space-x-2 transition-all duration-200 shadow-[0_2px_8px_rgba(34,197,94,0.2)] hover:shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
-          >
-            <i class="fas fa-plus text-sm"></i>
-            <span>Depositar</span>
-          </button>
-
-          <!-- Outras opções -->
-          <div class="pt-4 border-t border-[#1C1C1C] space-y-2">
-            <a 
-              href="#" 
-              @click.prevent="switchAccountFromModal"
-              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg"
-            >
-              <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
-              Trocar de Conta
-            </a>
-            <a 
-              href="#" 
-              @click.prevent="goToSettings"
-              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg"
-            >
-              <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
-              Configurações
-            </a>
-            <a 
-              href="#" 
-              @click.prevent="disconnectAccountFromModal" 
-              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg"
-            >
-              <i class="fas fa-plug text-xs mr-3 text-[#7A7A7A]"></i>
-              Sair da Corretora
-            </a>
           </div>
         </div>
       </div>
@@ -353,13 +388,14 @@ export default {
   data() {
     return {
       balanceHidden: false,
-      showProfileDropdown: false,
       showProfileModal: false,
       userProfilePictureUrl: null,
       showAccountModal: false,
       loadingAccounts: false,
       availableAccounts: [],
-      isMobile: false
+      isMobile: false,
+      accountTypeFilter: 'real', // 'real' ou 'demo'
+      showAccountsList: true
     }
   },
   computed: {
@@ -372,6 +408,33 @@ export default {
       const value = this.balanceNumeric;
       const prefix = this.currencyPrefix || this.getCurrencyPrefix(this.currency);
       return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    },
+    currentAccountType() {
+      // Verificar o tipo de conta atual baseado na conexão
+      const connectionStr = localStorage.getItem('deriv_connection');
+      if (connectionStr) {
+        try {
+          const connection = JSON.parse(connectionStr);
+          return connection.isDemo ? 'demo' : 'real';
+        } catch {
+          return this.accountType || 'real';
+        }
+      }
+      return this.accountType || 'real';
+    },
+    navbarBalanceValue() {
+      if (this.currentAccountType === 'demo') {
+        const demo = this.balancesByCurrencyDemo['USD'] || 0;
+        return demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+      const value = this.balanceNumeric;
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
+    navbarCurrencySymbol() {
+      if (this.currentAccountType === 'demo') {
+        return '';
+      }
+      return this.currencyPrefix || this.getCurrencyPrefix(this.currency);
     },
     balanceNumeric() {
       const usdReal = this.balancesByCurrencyReal['USD'];
@@ -452,23 +515,72 @@ export default {
       const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
       const baseUrl = apiBaseUrl.replace(/\/api$/, '');
       return `${baseUrl}${this.userProfilePictureUrl}`;
+    },
+    fullUserName() {
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          return user.name || 'Usuário';
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e);
+        }
+      }
+      return 'Usuário';
+    },
+    totalBalanceFormatted() {
+      if (this.accountTypeFilter === 'demo') {
+        const demo = this.balancesByCurrencyDemo['USD'] || 0;
+        return demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      } else {
+        const real = this.balancesByCurrencyReal['USD'] || this.balanceNumeric || 0;
+        return real.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+    },
+    balanceValueFormatted() {
+      return this.totalBalanceFormatted;
+    },
+    currencySymbol() {
+      if (this.accountTypeFilter === 'demo') {
+        return '';
+      }
+      return this.currencyPrefix || this.getCurrencyPrefix(this.currency);
+    },
+    filteredAccounts() {
+      if (!this.availableAccounts || this.availableAccounts.length === 0) {
+        return [];
+      }
+      return this.availableAccounts.filter(account => {
+        if (this.accountTypeFilter === 'demo') {
+          return account.isDemo === true;
+        } else {
+          return account.isDemo === false;
+        }
+      });
+    }
+  },
+  watch: {
+    // Observar mudanças no localStorage para atualizar o saldo
+    currentAccountType() {
+      // Forçar atualização do componente quando o tipo de conta mudar
+      this.$forceUpdate();
     }
   },
   mounted() {
-    document.addEventListener('click', this.handleClickOutside);
     window.addEventListener('storage', this.handleStorageChange);
     window.addEventListener('userProfileUpdated', this.handleProfileUpdate);
     window.addEventListener('resize', this.checkMobile);
+    window.addEventListener('accountChanged', this.handleAccountChange);
     this.checkMobile();
     this.loadUserProfilePicture();
     // Pré-carregar contas em background para uso futuro
     this.preloadAccounts();
   },
   beforeUnmount() {
-    document.removeEventListener('click', this.handleClickOutside);
     window.removeEventListener('storage', this.handleStorageChange);
     window.removeEventListener('userProfileUpdated', this.handleProfileUpdate);
     window.removeEventListener('resize', this.checkMobile);
+    window.removeEventListener('accountChanged', this.handleAccountChange);
   },
   methods: {
     checkMobile() {
@@ -480,14 +592,83 @@ export default {
     toggleBalance() {
       this.balanceHidden = !this.balanceHidden;
     },
-    toggleProfileDropdown() {
-      this.showProfileDropdown = !this.showProfileDropdown;
-    },
     toggleProfileModal() {
       this.showProfileModal = !this.showProfileModal;
+      if (this.showProfileModal) {
+        // Carregar contas quando abrir o modal
+        this.loadAccountsForModal();
+        // Definir o filtro baseado no tipo de conta atual
+        this.accountTypeFilter = this.accountType === 'demo' ? 'demo' : 'real';
+      }
     },
     closeProfileModal() {
       this.showProfileModal = false;
+    },
+    async loadAccountsForModal() {
+      // Se já temos contas carregadas, usar elas
+      if (this.availableAccounts.length > 0) {
+        return;
+      }
+      // Caso contrário, carregar as contas
+      await this.loadAvailableAccounts();
+    },
+    async switchAccountType(type) {
+      // Verificar o tipo de conta atual
+      const currentType = this.currentAccountType;
+      
+      // Se já está no tipo selecionado, não fazer nada
+      if (currentType === type) {
+        console.log(`[TopNavbar] Já está na conta ${type}`);
+        return;
+      }
+      
+      // Atualizar o filtro visual
+      this.accountTypeFilter = type;
+      
+      // Garantir que temos as contas carregadas
+      if (this.availableAccounts.length === 0) {
+        await this.loadAvailableAccounts();
+      }
+      
+      // Encontrar uma conta do tipo selecionado
+      const targetAccounts = this.availableAccounts.filter(account => {
+        if (type === 'demo') {
+          return account.isDemo === true;
+        } else {
+          return account.isDemo === false;
+        }
+      });
+      
+      if (targetAccounts.length === 0) {
+        console.warn(`[TopNavbar] Nenhuma conta ${type} disponível`);
+        // Reverter o filtro visual
+        this.accountTypeFilter = currentType;
+        return;
+      }
+      
+      // Priorizar USD se disponível, senão pegar a primeira
+      let selectedAccount = targetAccounts.find(acc => acc.currency === 'USD') || targetAccounts[0];
+      
+      console.log(`[TopNavbar] Trocando para conta ${type}:`, selectedAccount.loginid);
+      
+      // Fechar o modal antes de trocar a conta
+      this.closeProfileModal();
+      
+      // Trocar para a conta selecionada (isso já recarrega a página)
+      await this.selectAccount(selectedAccount);
+    },
+    toggleAccountsList() {
+      this.showAccountsList = !this.showAccountsList;
+    },
+    async selectAccountFromList(account) {
+      // Se já é a conta atual, não fazer nada
+      if (this.isCurrentAccount(account)) {
+        return;
+      }
+      // Fechar o modal antes de trocar a conta
+      this.closeProfileModal();
+      // Selecionar a conta (isso já recarrega a página)
+      await this.selectAccount(account);
     },
     toggleMobileSidebar() {
       this.$emit('toggle-sidebar');
@@ -508,13 +689,6 @@ export default {
       this.closeProfileModal();
       this.disconnectAccount();
     },
-    handleClickOutside(event) {
-      const dropdown = document.getElementById('profileDropdown');
-      const button = event.target.closest('button');
-      if (dropdown && !dropdown.contains(event.target) && !button?.closest('.relative')) {
-        this.showProfileDropdown = false;
-      }
-    },
     handleStorageChange(event) {
       // Atualiza a foto quando o localStorage 'user' for alterado
       if (event.key === 'user') {
@@ -524,6 +698,10 @@ export default {
     handleProfileUpdate() {
       // Atualiza a foto quando um evento customizado for disparado
       this.loadUserProfilePicture();
+    },
+    handleAccountChange() {
+      // Atualiza o componente quando a conta for alterada
+      this.$forceUpdate();
     },
     openDepositFlow() {
       this.$router.push('/settings?tab=deposit');
@@ -536,9 +714,6 @@ export default {
       window.location.reload();
     },
     async switchAccount() {
-      // Fecha o dropdown
-      this.showProfileDropdown = false;
-      
       // Abre o modal de seleção de contas
       this.showAccountModal = true;
       
@@ -658,15 +833,19 @@ export default {
           const accountType = account.isDemo ? 'demo' : 'real';
           this.$emit('account-type-changed', accountType);
           
-          // Fechar modal e recarregar página para atualizar todos os componentes
-          this.closeAccountModal();
+          // Emitir evento customizado para atualizar outros componentes
+          window.dispatchEvent(new CustomEvent('accountChanged', { 
+            detail: { accountType, account } 
+          }));
+          
+          // Recarregar página para atualizar todos os componentes
+          // O modal já foi fechado antes de chamar este método
           window.location.reload();
         } else {
           throw new Error('Erro ao selecionar conta');
         }
       } catch (error) {
         console.error('[TopNavbar] Erro ao selecionar conta:', error);
-        alert('Erro ao trocar de conta. Tente novamente.');
       }
     },
     closeAccountModal() {
@@ -821,8 +1000,8 @@ export default {
   font-weight: bold;
 }
 
-/* Modal do Perfil Mobile */
-.profile-modal-overlay {
+/* Modal de Configurações (Unificado) */
+.settings-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
@@ -830,15 +1009,17 @@ export default {
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
-  z-index: 9999;
+  z-index: 20000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
   animation: fadeIn 0.2s ease-out;
+  min-height: 100vh;
+  overflow-y: auto;
 }
 
-.profile-modal-container {
+.settings-modal-container {
   background: #0E0E0E;
   border: 1px solid #1C1C1C;
   border-radius: 12px;
@@ -846,9 +1027,13 @@ export default {
   width: 100%;
   max-width: 28rem;
   max-height: 90vh;
-  overflow-y: auto;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
   animation: slideUp 0.3s ease-out;
   margin: auto;
+  position: relative;
+  z-index: 20001 !important;
 }
 
 /* Modal de Seleção de Contas */
@@ -926,7 +1111,6 @@ export default {
     display: none !important;
   }
 
-  .mobile-menu-btn,
   .mobile-search-btn {
     width: 36px !important;
     height: 36px !important;
@@ -1006,6 +1190,74 @@ export default {
 /* Borda da imagem de perfil igual aos cards do IA */
 .profile-img-border {
   border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+/* Símbolo D com dois riscos para Demo */
+.demo-currency-symbol {
+  position: relative;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 1.5rem;
+  line-height: 1;
+  margin-right: 2px;
+}
+
+.demo-currency-symbol::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 42%;
+  height: 2.5px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-symbol::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 58%;
+  height: 2.5px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+/* Símbolo D com dois riscos para Demo no Navbar */
+.demo-currency-symbol-navbar {
+  position: relative;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 0.875rem;
+  line-height: 1;
+  margin-right: 2px;
+}
+
+.demo-currency-symbol-navbar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 42%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-symbol-navbar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 58%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
 }
 </style>
 
