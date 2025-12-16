@@ -1078,33 +1078,27 @@ export default {
       
       try {
         // Converter coordenadas do mouse para coordenadas do gráfico
+        // Usar os métodos nativos do lightweight-charts
         const timeScale = this.chart.timeScale();
         const priceScale = this.chart.priceScale('right');
         
-        // Obter o range visível do gráfico
-        const visibleRange = timeScale.getVisibleRange();
-        const priceRange = priceScale.getVisibleRange();
-        
-        if (!visibleRange || !priceRange) {
-          console.warn('[Chart] Range visível não disponível');
+        if (!timeScale || !priceScale) {
+          console.warn('[Chart] Escalas não disponíveis');
           return;
         }
         
-        // Calcular dimensões do gráfico (excluindo margens)
-        const chartWidth = rect.width;
-        const chartHeight = rect.height;
+        // Converter coordenada X para tempo usando o método nativo
+        const time = timeScale.coordinateToTime(x);
         
-        // Converter coordenada X para tempo
-        const timeRatio = Math.max(0, Math.min(1, x / chartWidth));
-        const timeRange = visibleRange.to - visibleRange.from;
-        const time = Math.floor(visibleRange.from + (timeRange * timeRatio));
+        // Converter coordenada Y para preço usando o método nativo
+        const price = priceScale.coordinateToPrice(y);
         
-        // Converter coordenada Y para preço (Y é invertido - topo é maior)
-        const priceRatio = Math.max(0, Math.min(1, 1 - (y / chartHeight)));
-        const priceRangeSize = priceRange.to - priceRange.from;
-        const price = priceRange.from + (priceRangeSize * priceRatio);
+        if (time === null || price === null || isNaN(time) || isNaN(price)) {
+          console.warn('[Chart] Conversão de coordenadas falhou:', { time, price, x, y });
+          return;
+        }
         
-        console.log('[Chart] Clique no gráfico:', { time, price, x, y, visibleRange, priceRange });
+        console.log('[Chart] Clique no gráfico:', { time, price, x, y });
         
         if (this.lineDrawingPoints.length === 0) {
           // Primeiro ponto
@@ -1140,28 +1134,21 @@ export default {
       
       try {
         // Converter coordenadas do mouse para coordenadas do gráfico
+        // Usar os métodos nativos do lightweight-charts
         const timeScale = this.chart.timeScale();
         const priceScale = this.chart.priceScale('right');
         
-        // Obter o range visível do gráfico
-        const visibleRange = timeScale.getVisibleRange();
-        const priceRange = priceScale.getVisibleRange();
+        if (!timeScale || !priceScale) return;
         
-        if (!visibleRange || !priceRange) return;
+        // Converter coordenada X para tempo usando o método nativo
+        const time = timeScale.coordinateToTime(x);
         
-        // Calcular dimensões do gráfico
-        const chartWidth = rect.width;
-        const chartHeight = rect.height;
+        // Converter coordenada Y para preço usando o método nativo
+        const price = priceScale.coordinateToPrice(y);
         
-        // Converter coordenada X para tempo
-        const timeRatio = Math.max(0, Math.min(1, x / chartWidth));
-        const timeRange = visibleRange.to - visibleRange.from;
-        const time = Math.floor(visibleRange.from + (timeRange * timeRatio));
-        
-        // Converter coordenada Y para preço (Y é invertido)
-        const priceRatio = Math.max(0, Math.min(1, 1 - (y / chartHeight)));
-        const priceRangeSize = priceRange.to - priceRange.from;
-        const price = priceRange.from + (priceRangeSize * priceRatio);
+        if (time === null || price === null || isNaN(time) || isNaN(price)) {
+          return;
+        }
         
         // Atualizar linha temporária
         this.updateTempLine(this.lineDrawingPoints[0], { time, value: price });
