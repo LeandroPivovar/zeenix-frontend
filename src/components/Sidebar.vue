@@ -221,7 +221,6 @@
         <div class="status">
             <div class="footer-row">
                 <span class="sair-text" @click="logout">Sair</span>
-                <span class="version">v2.0</span>
             </div>
         </div>
     </aside>
