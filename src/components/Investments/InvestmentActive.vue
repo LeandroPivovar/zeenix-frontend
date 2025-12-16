@@ -84,7 +84,7 @@
                             <div class="relative z-10 h-full flex items-center justify-between gap-8">
                                 <div class="flex items-center space-x-5 flex-shrink-0">
                                     <div id="status-icon-container" class="w-16 h-16 bg-zenix-green/15 border-2 border-zenix-green/30 rounded-xl flex items-center justify-center transition-all duration-700">
-                                        <i id="status-icon" class="fas fa-robot text-zenix-green text-2xl ai-pulse"></i>
+                                        <i id="status-icon" class="fas fa-chart-line text-zenix-green text-2xl ai-pulse"></i>
                                     </div>
                                     <div class="text-left">
                                         <h3 id="status-title" class="text-xl font-bold text-zenix-text leading-tight transition-all duration-700 text-left">
@@ -112,9 +112,9 @@
                                         <div class="absolute w-24 h-24 border-2 border-zenix-green/40 rounded-full" style="opacity: 1; animation: spin 8s linear infinite;"></div>
                                         <!-- Inner Pulsing Core -->
                                         <div class="absolute w-16 h-16 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1; animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;"></div>
-                                        <!-- Central Brain Icon -->
+                                        <!-- Central Robot Icon -->
                                         <div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center; animation: brainPulse 2s ease-in-out infinite; filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.4));">
-                                            <i class="fas fa-brain text-zenix-green text-4xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 2.5rem !important;"></i>
+                                            <i class="fas fa-robot text-zenix-green text-4xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 2.5rem !important;"></i>
                                         </div>
                                         <!-- Orbiting Data Nodes -->
                                         <div class="absolute w-2 h-2 bg-zenix-green rounded-full orbit-node" style="opacity: 1; animation: orbit1 4s linear infinite;"></div>
@@ -585,7 +585,7 @@
                     <div class="status-footer-content">
                         <div class="status-footer-left">
                             <div class="status-footer-icon">
-                                <i class="fas fa-brain text-zenix-green text-lg"></i>
+                                <i class="fas fa-robot text-zenix-green text-lg"></i>
                             </div>
                             <div>
                                 <h3 class="status-footer-title">IA Operando Normalmente</h3>
