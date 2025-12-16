@@ -632,6 +632,7 @@ export default {
       lineDrawingPoints: [], // Array de pontos [{time, value}]
       currentLineDrawingPoint: null, // Ponto atual sendo desenhado
       tempLineSeries: null, // Série temporária para linha em movimento
+      tempMarkerSeries: null, // Série temporária para marker do primeiro ponto
       drawnLines: [], // Array de linhas desenhadas [{id, series, markers}]
       lineDrawingIdCounter: 0, // Contador para IDs únicos das linhas
       chartContainerElement: null, // Referência ao elemento do container
@@ -1008,7 +1009,7 @@ export default {
       this.lineDrawingPoints = [];
       this.currentLineDrawingPoint = null;
       
-      // Remover linha temporária
+      // Remover linha temporária e marker temporário
       if (this.tempLineSeries && this.chart) {
         try {
           this.chart.removeSeries(this.tempLineSeries);
@@ -1016,6 +1017,15 @@ export default {
           console.warn('[Chart] Erro ao remover linha temporária:', e);
         }
         this.tempLineSeries = null;
+      }
+      
+      if (this.tempMarkerSeries && this.chart) {
+        try {
+          this.chart.removeSeries(this.tempMarkerSeries);
+        } catch (e) {
+          console.warn('[Chart] Erro ao remover marker temporário:', e);
+        }
+        this.tempMarkerSeries = null;
       }
       
       // Remover listeners
@@ -1079,9 +1089,10 @@ export default {
       try {
         // Converter coordenadas do mouse para coordenadas do gráfico
         const timeScale = this.chart.timeScale();
+        const priceScale = this.chart.priceScale('right');
         
-        if (!timeScale) {
-          console.warn('[Chart] TimeScale não disponível');
+        if (!timeScale || !priceScale) {
+          console.warn('[Chart] Escalas não disponíveis');
           return;
         }
         
@@ -1093,80 +1104,101 @@ export default {
           return;
         }
         
-        // Obter o range visível do gráfico para calcular o preço
-        const visibleRange = timeScale.getVisibleRange();
-        if (!visibleRange) {
-          console.warn('[Chart] Range visível não disponível');
+        // Obter o range visível de preços do priceScale (mais preciso)
+        const priceRangeVisible = priceScale.getVisibleRange();
+        if (!priceRangeVisible) {
+          console.warn('[Chart] Range de preços visível não disponível');
           return;
         }
         
-        // Obter os dados da série para calcular o range de preços
-        const seriesData = this.chartSeries.data();
-        if (!seriesData || seriesData.length === 0) {
-          console.warn('[Chart] Dados da série não disponíveis');
-          return;
-        }
+        const visibleMinPrice = priceRangeVisible.from;
+        const visibleMaxPrice = priceRangeVisible.to;
+        const visiblePriceRange = visibleMaxPrice - visibleMinPrice;
         
-        // Encontrar os dados visíveis no range
-        const visibleData = seriesData.filter(d => 
-          d.time >= visibleRange.from && d.time <= visibleRange.to
-        );
+        // Obter dimensões do gráfico (considerando margens)
+        // O lightweight-charts tem margens internas, então precisamos usar
+        // o método priceToCoordinate para encontrar a área de plotagem real
+        // Como não temos esse método, vamos usar uma abordagem diferente:
+        // encontrar o ponto mais alto e mais baixo visíveis no gráfico
         
-        if (visibleData.length === 0) {
-          console.warn('[Chart] Nenhum dado visível encontrado');
-          return;
-        }
-        
-        // Calcular min e max dos valores visíveis
-        const values = visibleData.map(d => d.value);
-        const minPrice = Math.min(...values);
-        const maxPrice = Math.max(...values);
-        const priceRange = maxPrice - minPrice;
-        
-        // Obter o priceScale para calcular margens
-        const priceScale = this.chart.priceScale('right');
+        // Tentar usar priceToCoordinate se disponível (algumas versões têm)
         let price;
-        
-        if (priceScale) {
-          // Tentar obter o range visível de preços diretamente do priceScale
-          try {
-            const priceRangeVisible = priceScale.getVisibleRange();
-            if (priceRangeVisible) {
-              // Usar o range visível do priceScale (mais preciso)
-              const visibleMinPrice = priceRangeVisible.from;
-              const visibleMaxPrice = priceRangeVisible.to;
-              const visiblePriceRange = visibleMaxPrice - visibleMinPrice;
-              
-              // Calcular o preço baseado na coordenada Y
-              // Y=0 está no topo, então precisamos inverter
-              const chartHeight = rect.height;
-              const yRatio = 1 - (y / chartHeight); // Inverter Y
-              price = visibleMinPrice + (visiblePriceRange * yRatio);
-            } else {
-              // Fallback
-              const chartHeight = rect.height;
-              const yRatio = 1 - (y / chartHeight);
-              price = minPrice + (priceRange * yRatio);
-            }
-          } catch (e) {
-            // Fallback se getVisibleRange não funcionar
+        try {
+          // Tentar método direto se disponível
+          if (typeof priceScale.priceToCoordinate === 'function') {
+            // Não temos coordenada Y direta, então vamos calcular
+            // Encontrar a altura da área de plotagem
+            const topPrice = visibleMaxPrice;
+            const bottomPrice = visibleMinPrice;
+            
+            // Calcular usando a proporção inversa (Y=0 é topo)
             const chartHeight = rect.height;
             const yRatio = 1 - (y / chartHeight);
-            price = minPrice + (priceRange * yRatio);
+            price = bottomPrice + (visiblePriceRange * yRatio);
+          } else {
+            // Método alternativo: usar o range visível e calcular proporção
+            const chartHeight = rect.height;
+            // Y=0 está no topo do container, mas o gráfico pode ter margens
+            // Vamos assumir que a área de plotagem começa em algum offset
+            // Por padrão, o lightweight-charts tem ~20px de margem no topo e ~30px na parte inferior
+            const topMargin = 20;
+            const bottomMargin = 30;
+            const plotAreaHeight = chartHeight - topMargin - bottomMargin;
+            const yInPlotArea = y - topMargin;
+            
+            // Se Y está dentro da área de plotagem
+            if (yInPlotArea >= 0 && yInPlotArea <= plotAreaHeight) {
+              const yRatio = 1 - (yInPlotArea / plotAreaHeight);
+              price = visibleMinPrice + (visiblePriceRange * yRatio);
+            } else {
+              // Se está fora, usar cálculo direto
+              const yRatio = 1 - (y / chartHeight);
+              price = visibleMinPrice + (visiblePriceRange * yRatio);
+            }
           }
-        } else {
-          // Fallback se priceScale não estiver disponível
+        } catch (e) {
+          // Fallback: cálculo simples
           const chartHeight = rect.height;
           const yRatio = 1 - (y / chartHeight);
-          price = minPrice + (priceRange * yRatio);
+          price = visibleMinPrice + (visiblePriceRange * yRatio);
         }
         
-        console.log('[Chart] Clique no gráfico:', { time, price, x, y, minPrice, maxPrice });
+        console.log('[Chart] Clique no gráfico:', { time, price, x, y, visibleMinPrice, visibleMaxPrice });
         
         if (this.lineDrawingPoints.length === 0) {
-          // Primeiro ponto
+          // Primeiro ponto - criar marker temporário
           this.lineDrawingPoints.push({ time, value: price });
           this.currentLineDrawingPoint = { time, value: price };
+          
+          // Criar série temporária para mostrar o primeiro ponto
+          if (!this.tempMarkerSeries) {
+            this.tempMarkerSeries = this.chart.addLineSeries({
+              color: '#22C55E',
+              lineWidth: 0,
+              priceLineVisible: false,
+              lastValueVisible: false,
+            });
+            this.tempMarkerSeries.setData([{ time, value: price }]);
+            this.tempMarkerSeries.setMarkers([{
+              time: time,
+              position: 'inBar',
+              color: '#22C55E',
+              shape: 'circle',
+              size: 4,
+              text: '',
+            }]);
+          } else {
+            this.tempMarkerSeries.setData([{ time, value: price }]);
+            this.tempMarkerSeries.setMarkers([{
+              time: time,
+              position: 'inBar',
+              color: '#22C55E',
+              shape: 'circle',
+              size: 4,
+              text: '',
+            }]);
+          }
+          
           console.log('[Chart] Primeiro ponto adicionado:', { time, value: price });
         } else if (this.lineDrawingPoints.length === 1) {
           // Segundo ponto - finalizar linha
@@ -1198,71 +1230,52 @@ export default {
       try {
         // Converter coordenadas do mouse para coordenadas do gráfico
         const timeScale = this.chart.timeScale();
+        const priceScale = this.chart.priceScale('right');
         
-        if (!timeScale) return;
+        if (!timeScale || !priceScale) return;
         
         // Converter coordenada X para tempo usando o método nativo
         const time = timeScale.coordinateToTime(x);
         
         if (time === null || isNaN(time)) return;
         
-        // Obter o range visível do gráfico para calcular o preço
-        const visibleRange = timeScale.getVisibleRange();
-        if (!visibleRange) return;
+        // Obter o range visível de preços do priceScale (mais preciso)
+        const priceRangeVisible = priceScale.getVisibleRange();
+        if (!priceRangeVisible) return;
         
-        // Obter os dados da série para calcular o range de preços
-        const seriesData = this.chartSeries.data();
-        if (!seriesData || seriesData.length === 0) return;
+        const visibleMinPrice = priceRangeVisible.from;
+        const visibleMaxPrice = priceRangeVisible.to;
+        const visiblePriceRange = visibleMaxPrice - visibleMinPrice;
         
-        // Encontrar os dados visíveis no range
-        const visibleData = seriesData.filter(d => 
-          d.time >= visibleRange.from && d.time <= visibleRange.to
-        );
-        
-        if (visibleData.length === 0) return;
-        
-        // Calcular min e max dos valores visíveis
-        const values = visibleData.map(d => d.value);
-        const minPrice = Math.min(...values);
-        const maxPrice = Math.max(...values);
-        const priceRange = maxPrice - minPrice;
-        
-        // Obter o priceScale para calcular margens
-        const priceScale = this.chart.priceScale('right');
+        // Calcular preço considerando margens do gráfico
+        // O lightweight-charts tem margens internas que variam
+        // Vamos usar uma abordagem mais precisa: calcular baseado na proporção
+        // do range visível e ajustar para a área de plotagem real
         let price;
-        
-        if (priceScale) {
-          // Tentar obter o range visível de preços diretamente do priceScale
-          try {
-            const priceRangeVisible = priceScale.getVisibleRange();
-            if (priceRangeVisible) {
-              // Usar o range visível do priceScale (mais preciso)
-              const visibleMinPrice = priceRangeVisible.from;
-              const visibleMaxPrice = priceRangeVisible.to;
-              const visiblePriceRange = visibleMaxPrice - visibleMinPrice;
-              
-              // Calcular o preço baseado na coordenada Y
-              // Y=0 está no topo, então precisamos inverter
-              const chartHeight = rect.height;
-              const yRatio = 1 - (y / chartHeight); // Inverter Y
-              price = visibleMinPrice + (visiblePriceRange * yRatio);
-            } else {
-              // Fallback
-              const chartHeight = rect.height;
-              const yRatio = 1 - (y / chartHeight);
-              price = minPrice + (priceRange * yRatio);
-            }
-          } catch (e) {
-            // Fallback se getVisibleRange não funcionar
-            const chartHeight = rect.height;
-            const yRatio = 1 - (y / chartHeight);
-            price = minPrice + (priceRange * yRatio);
-          }
-        } else {
-          // Fallback se priceScale não estiver disponível
+        try {
+          const chartHeight = rect.height;
+          
+          // Tentar calcular margens dinamicamente
+          // O gráfico geralmente tem ~15-25px no topo e ~25-35px na parte inferior
+          // Vamos usar valores médios e ajustar baseado na altura do gráfico
+          const topMargin = Math.max(15, chartHeight * 0.03); // ~3% ou mínimo 15px
+          const bottomMargin = Math.max(25, chartHeight * 0.04); // ~4% ou mínimo 25px
+          const plotAreaHeight = chartHeight - topMargin - bottomMargin;
+          
+          // Calcular Y relativo à área de plotagem
+          const yInPlotArea = Math.max(0, Math.min(plotAreaHeight, y - topMargin));
+          const yRatio = 1 - (yInPlotArea / plotAreaHeight);
+          
+          // Calcular preço usando o range visível
+          price = visibleMinPrice + (visiblePriceRange * yRatio);
+          
+          // Garantir que o preço está dentro do range visível
+          price = Math.max(visibleMinPrice, Math.min(visibleMaxPrice, price));
+        } catch (e) {
+          // Fallback: cálculo simples
           const chartHeight = rect.height;
           const yRatio = 1 - (y / chartHeight);
-          price = minPrice + (priceRange * yRatio);
+          price = visibleMinPrice + (visiblePriceRange * yRatio);
         }
         
         // Atualizar linha temporária
@@ -1304,7 +1317,7 @@ export default {
       const point2 = this.lineDrawingPoints[1];
       
       try {
-        // Remover linha temporária
+        // Remover linha temporária e marker temporário
         if (this.tempLineSeries) {
           try {
             this.chart.removeSeries(this.tempLineSeries);
@@ -1312,6 +1325,15 @@ export default {
             console.warn('[Chart] Erro ao remover linha temporária:', e);
           }
           this.tempLineSeries = null;
+        }
+        
+        if (this.tempMarkerSeries) {
+          try {
+            this.chart.removeSeries(this.tempMarkerSeries);
+          } catch (e) {
+            console.warn('[Chart] Erro ao remover marker temporário:', e);
+          }
+          this.tempMarkerSeries = null;
         }
         
         // Criar série permanente para a linha
