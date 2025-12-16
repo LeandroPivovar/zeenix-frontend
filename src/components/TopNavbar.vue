@@ -18,11 +18,15 @@
         </button>
         
         <!-- Título ZENIX (apenas desktop, sempre visível) -->
-        <div v-if="!isMobile" class="header-brand-text">
+        <router-link 
+          v-if="!isMobile" 
+          to="/dashboard" 
+          class="header-brand-text cursor-pointer hover:opacity-80 transition-opacity"
+        >
           <span class="text-white font-bold text-xl">ZEN</span>
           <span class="text-white font-bold text-xl">I</span>
           <span class="text-[#22C55E] font-bold text-xl">X</span>
-        </div>
+        </router-link>
         
         <!-- Botão Grupo de Alunos (apenas desktop, sempre visível) -->
         <a 
@@ -64,7 +68,7 @@
               v-if="userProfilePicture" 
               :src="userProfilePicture" 
               :alt="userName"
-              class="w-full h-full object-cover rounded-full"
+              class="w-full h-full object-cover rounded-full profile-img-border"
             />
             <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
           </button>
@@ -120,11 +124,14 @@
       </button>
       
       <!-- Logo ZENIX -->
-      <div class="mobile-logo">
+      <router-link 
+        to="/dashboard" 
+        class="mobile-logo cursor-pointer hover:opacity-80 transition-opacity"
+      >
         <span class="text-white font-bold text-xl">ZEN</span>
         <span class="text-white font-bold text-xl">I</span>
         <span class="text-[#22C55E] font-bold text-xl">X</span>
-      </div>
+      </router-link>
       
       <!-- Perfil -->
       <div class="relative">
@@ -994,6 +1001,11 @@ export default {
 .header-whatsapp-button {
   text-decoration: none;
   white-space: nowrap;
+}
+
+/* Borda da imagem de perfil igual aos cards do IA */
+.profile-img-border {
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 </style>
 
