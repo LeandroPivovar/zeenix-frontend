@@ -36,135 +36,31 @@
       <!-- Hero Onboarding Section -->
       <section id="hero-section" class="w-full mt-16 py-12 px-8 relative overflow-hidden group h-[560px]">
       <div class="absolute inset-0 z-0 bg-[#0B0B0B]">
-        <div class="absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
+        <!-- Video Background - Desktop Only (Dual Video for Seamless Loop) -->
+        <video 
+          ref="heroVideo1"
+          class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-1"
+          autoplay 
+          muted 
+          playsinline
+          preload="auto"
+        >
+          <source src="@/assets/video/hero_background.mp4" type="video/mp4">
+        </video>
+        <video 
+          ref="heroVideo2"
+          class="hidden md:block absolute inset-0 w-full h-full object-cover video-bg video-layer-2"
+          muted 
+          playsinline
+          preload="auto"
+        >
+          <source src="@/assets/video/hero_background.mp4" type="video/mp4">
+        </video>
+        <!-- Fallback Background for Mobile -->
+        <div class="md:hidden absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
         </div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_80%_50%,rgba(34,197,94,0.15)_0%,transparent_50%)]">
-        </div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_85%_30%,rgba(34,197,94,0.12)_0%,transparent_40%)]">
-        </div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_90%_70%,rgba(34,197,94,0.10)_0%,transparent_35%)]">
-        </div>
-        <div class="absolute inset-0 bg-[radial-gradient(circle_at_20%_50%,rgba(34,197,94,0.08)_0%,transparent_40%)]">
-        </div>
-        <svg xmlns="http://www.w3.org/2000/svg" id="ik0zc" class="absolute inset-0 w-full h-full">
-          <defs>
-            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" id="iatpj">
-                <animate attributeName="stop-color" values="rgba(34,197,94,0.3);rgba(34,197,94,0.5);rgba(34,197,94,0.3)" dur="26.67s" repeatCount="indefinite"></animate>
-              </stop>
-              <stop offset="100%" id="ir5ig"></stop>
-            </linearGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="4" result="coloredBlur">
-              </feGaussianBlur>
-              <feMerge>
-                <feMergeNode in="coloredBlur"></feMergeNode>
-                <feMergeNode in="SourceGraphic"></feMergeNode>
-              </feMerge>
-            </filter>
-          </defs>
-          <circle cx="85%" cy="15%" r="2" fill="rgba(34,197,94,0.8)" filter="url(#glow)">
-            <animate attributeName="cy" values="15%;18%;15%" dur="20s" repeatCount="indefinite"></animate>
-            <animate attributeName="opacity" values="0.8;1;0.8" dur="20s" repeatCount="indefinite"></animate>
-          </circle>
-          <circle cx="90%" cy="40%" r="3" fill="rgba(34,197,94,0.9)" filter="url(#glow)">
-            <animate attributeName="cy" values="40%;37%;40%" dur="26.67s" repeatCount="indefinite"></animate>
-            <animate attributeName="r" values="3;4;3" dur="26.67s" repeatCount="indefinite"></animate>
-          </circle>
-          <circle cx="80%" cy="65%" r="2.5" fill="rgba(34,197,94,0.7)" filter="url(#glow)">
-            <animate attributeName="cy" values="65%;68%;65%" dur="33.33s" repeatCount="indefinite"></animate>
-          </circle>
-          <circle cx="88%" cy="25%" r="1.5" fill="rgba(34,197,94,0.6)" filter="url(#glow)">
-            <animate attributeName="cx" values="88%;90%;88%" dur="40s" repeatCount="indefinite"></animate>
-            <animate attributeName="cy" values="25%;28%;25%" dur="40s" repeatCount="indefinite"></animate>
-          </circle>
-          <circle cx="82%" cy="50%" r="2" fill="rgba(34,197,94,0.85)" filter="url(#glow)">
-            <animate attributeName="cy" values="50%;53%;50%" dur="30s" repeatCount="indefinite"></animate>
-          </circle>
-          <circle cx="15%" cy="20%" r="2.5" fill="rgba(34,197,94,0.75)" filter="url(#glow)">
-            <animate attributeName="cy" values="20%;23%;20%" dur="26.67s" repeatCount="indefinite"></animate>
-          </circle>
-          <circle cx="25%" cy="60%" r="2" fill="rgba(34,197,94,0.8)" filter="url(#glow)">
-            <animate attributeName="cy" values="60%;57%;60%" dur="33.33s" repeatCount="indefinite"></animate>
-          </circle>
-          <line x1="70%" y1="30%" x2="95%" y2="30%" stroke="rgba(34,197,94,0.3)" stroke-width="1">
-            <animate attributeName="x2" values="95%;100%;95%" dur="20s" repeatCount="indefinite"></animate>
-            <animate attributeName="opacity" values="0.3;0.6;0.3" dur="20s" repeatCount="indefinite"></animate>
-          </line>
-          <line x1="75%" y1="55%" x2="100%" y2="55%" stroke="rgba(34,197,94,0.25)" stroke-width="1">
-            <animate attributeName="x2" values="100%;95%;100%" dur="26.67s" repeatCount="indefinite"></animate>
-            <animate attributeName="opacity" values="0.25;0.5;0.25" dur="26.67s" repeatCount="indefinite"></animate>
-          </line>
-          <line x1="5%" y1="40%" x2="30%" y2="40%" stroke="rgba(34,197,94,0.3)" stroke-width="1">
-            <animate attributeName="x2" values="30%;35%;30%" dur="23.33s" repeatCount="indefinite"></animate>
-            <animate attributeName="opacity" values="0.3;0.6;0.3" dur="23.33s" repeatCount="indefinite"></animate>
-          </line>
-          <polygon points="85,80 95,100 75,100" fill="none" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" transform="translate(900, 100)">
-            <animateTransform attributeName="transform" type="rotate" values="0 950 150;10 950 150;0 950 150" dur="40s" repeatCount="indefinite"></animateTransform>
-            <animate attributeName="opacity" values="0.4;0.7;0.4" dur="40s" repeatCount="indefinite"></animate>
-          </polygon>
-          <path d="M 1100 200 Q 1150 220 1200 200 T 1300 200" fill="none" stroke="rgba(34,197,94,0.35)" stroke-width="2">
-            <animate attributeName="d" values="M 1100 200 Q 1150 220 1200 200 T 1300 200;M 1100 200 Q 1150 180 1200 200 T 1300 200;M 1100 200 Q 1150 220 1200 200 T 1300 200" dur="33.33s" repeatCount="indefinite"></animate>
-          </path>
-          <rect x="75%" y="10%" width="80" height="80" fill="none" stroke="rgba(34,197,94,0.2)" stroke-width="1" rx="5">
-            <animate attributeName="opacity" values="0.2;0.5;0.2" dur="26.67s" repeatCount="indefinite"></animate>
-            <animateTransform attributeName="transform" type="rotate" values="0 1100 100;5 1100 100;0 1100 100" dur="53.33s" repeatCount="indefinite"></animateTransform>
-          </rect>
-          <circle cx="92%" cy="35%" r="50" fill="none" stroke="rgba(34,197,94,0.15)" stroke-width="1.5">
-            <animate attributeName="r" values="50;60;50" dur="33.33s" repeatCount="indefinite"></animate>
-            <animate attributeName="opacity" values="0.15;0.3;0.15" dur="33.33s" repeatCount="indefinite"></animate>
-          </circle>
-          <circle cx="92%" cy="35%" r="50" fill="none" stroke="rgba(34,197,94,0.1)" stroke-width="1.5">
-            <animate attributeName="r" values="60;70;60" dur="33.33s" repeatCount="indefinite" begin="1.67s"></animate>
-            <animate attributeName="opacity" values="0.1;0.2;0.1" dur="33.33s" repeatCount="indefinite" begin="1.67s"></animate>
-          </circle>
-          <g transform="translate(1150, 250)">
-            <polygon points="0,-20 17.32,-10 17.32,10 0,20 -17.32,10 -17.32,-10" fill="none" stroke="rgba(34,197,94,0.35)" stroke-width="1.5">
-              <animateTransform attributeName="transform" type="rotate" values="0;360" dur="80s" repeatCount="indefinite" additive="sum"></animateTransform>
-            </polygon>
-          </g>
-          <g transform="translate(1100, 400)">
-            <polygon points="0,-15 12.99,-7.5 12.99,7.5 0,15 -12.99,7.5 -12.99,-7.5" fill="none" stroke="rgba(34,197,94,0.3)" stroke-width="1.5">
-              <animateTransform attributeName="transform" type="rotate" values="360;0" dur="66.67s" repeatCount="indefinite" additive="sum"></animateTransform>
-            </polygon>
-          </g>
-          <g transform="translate(150, 180)">
-            <polygon points="0,-18 15.59,-9 15.59,9 0,18 -15.59,9 -15.59,-9" fill="none" stroke="rgba(34,197,94,0.35)" stroke-width="1.5">
-              <animateTransform attributeName="transform" type="rotate" values="0;360" dur="93.33s" repeatCount="indefinite" additive="sum"></animateTransform>
-            </polygon>
-          </g>
-        </svg>
-      </div>
-      <div class="absolute inset-0 z-[1] pointer-events-none">
-        <div id="i99s1i" class="grid-pattern"></div>
-        <div id="ixr7uj">
-          BTC
-          <div id="ianwqb">$67,234</div>
-        </div>
-        <div id="ivafvh">
-          ETH
-          <div id="i6bn58">$3,421</div>
-        </div>
-        <div id="im44s3">
-          USD
-          <div id="ijm3gj">$1.00</div>
-        </div>
-        <div id="ibz4um">
-          ₿
-        </div>
-        <div id="ic8zog">
-          $
-        </div>
-        <div id="ixwg04">
-          SOL
-          <div id="ijp6v7">$142.87</div>
-        </div>
-        <div id="ih4yn4">
-          EUR
-          <div id="iyevqf">€0.92</div>
-        </div>
-        <div id="ioxiss">
-          Ξ
+        <!-- Overlay for Desktop -->
+        <div class="hidden md:block absolute inset-0 bg-gradient-to-br from-[#0B0B0B]/35 via-[#0d1410]/35 to-[#0B0B0B]/35">
         </div>
       </div>
       <div class="relative z-10 h-full w-full px-12">
@@ -178,7 +74,7 @@
                 Comece agora configurando sua conta e realizando seu primeiro depósito.
               </p>
             </div>
-            <div class="pt-4">
+            <div class="pt-4 self-start">
               <button 
                 @click="$router.push('/settings?tab=deposit')"
                 class="relative bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white text-base font-semibold px-10 py-4 rounded-xl transition-all duration-300 overflow-hidden group shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] hover:scale-105"
@@ -189,131 +85,6 @@
                 </span>
                 <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent translate-x-[-200%] group-hover:translate-x-[200%] transition-transform duration-700"></div>
               </button>
-            </div>
-          </div>
-          <div class="relative h-full flex items-center justify-center">
-            <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.08)_0%,transparent_70%)] blur-[100px] opacity-60"></div>
-            <div class="relative w-[560px] h-[560px]">
-              <!-- Central Core -->
-              <div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-36 h-36 group transition-transform duration-700 ease-out hover:scale-110 z-20">
-                <div class="relative w-full h-full">
-                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-2xl border-2 border-[rgba(34,197,94,0.6)] shadow-[0_0_60px_rgba(34,197,94,0.5),0_0_120px_rgba(34,197,94,0.3),inset_0_0_40px_rgba(34,197,94,0.2)] transition-all duration-700 ease-out group-hover:shadow-[0_0_80px_rgba(34,197,94,0.6),0_0_160px_rgba(34,197,94,0.4),inset_0_0_50px_rgba(34,197,94,0.25)] group-hover:border-[rgba(34,197,94,0.8)] animate-center-pulse">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.4)_0%,transparent_70%)] animate-pulse"></div>
-                  </div>
-                  <div class="absolute inset-0 flex items-center justify-center transition-transform duration-700 ease-out group-hover:scale-105">
-                    <i class="fas fa-brain text-[#22C55E] text-5xl drop-shadow-[0_0_25px_rgba(34,197,94,1)] transition-all duration-700 ease-out group-hover:drop-shadow-[0_0_35px_rgba(34,197,94,1)]"></i>
-                  </div>
-                </div>
-              </div>
-              <!-- SVG Lines -->
-              <svg class="absolute inset-0 w-full h-full pointer-events-none">
-                <defs>
-                  <filter id="glow-line">
-                    <feGaussianBlur stdDeviation="2" result="coloredBlur"></feGaussianBlur>
-                    <feMerge>
-                      <feMergeNode in="coloredBlur"></feMergeNode>
-                      <feMergeNode in="SourceGraphic"></feMergeNode>
-                    </feMerge>
-                  </filter>
-                </defs>
-                <line x1="280" y1="280" x2="420" y2="160" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" stroke-dasharray="4 8" filter="url(#glow-line)">
-                  <animate attributeName="stroke-dashoffset" from="0" to="12" dur="1.5s" repeatCount="indefinite"></animate>
-                </line>
-                <line x1="280" y1="280" x2="140" y2="220" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" stroke-dasharray="4 8" filter="url(#glow-line)">
-                  <animate attributeName="stroke-dashoffset" from="0" to="12" dur="1.5s" repeatCount="indefinite"></animate>
-                </line>
-                <line x1="280" y1="280" x2="140" y2="380" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" stroke-dasharray="4 8" filter="url(#glow-line)">
-                  <animate attributeName="stroke-dashoffset" from="0" to="12" dur="1.5s" repeatCount="indefinite"></animate>
-                </line>
-                <line x1="280" y1="280" x2="420" y2="340" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" stroke-dasharray="4 8" filter="url(#glow-line)">
-                  <animate attributeName="stroke-dashoffset" from="0" to="12" dur="1.5s" repeatCount="indefinite"></animate>
-                </line>
-                <line x1="280" y1="280" x2="380" y2="420" stroke="rgba(34,197,94,0.4)" stroke-width="1.5" stroke-dasharray="4 8" filter="url(#glow-line)">
-                  <animate attributeName="stroke-dashoffset" from="0" to="12" dur="1.5s" repeatCount="indefinite"></animate>
-                </line>
-              </svg>
-              <!-- Floating Cards -->
-              <div class="absolute top-[15%] right-[10%] w-32 h-20 group transition-all duration-500 hover:scale-105 animate-[float-card-1_6s_ease-in-out_infinite]">
-                <div class="relative w-full h-full">
-                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-xl border border-[rgba(34,197,94,0.3)] shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.15)] group-hover:shadow-[0_6px_28px_rgba(0,0,0,0.9),0_0_45px_rgba(34,197,94,0.3)]">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(34,197,94,0.06)_0%,transparent_60%)]"></div>
-                  </div>
-                  <div class="absolute inset-0 flex items-center px-4 space-x-2">
-                    <div class="w-9 h-9 rounded-lg bg-[rgba(247,147,26,0.12)] border border-[rgba(247,147,26,0.25)] flex items-center justify-center">
-                      <i class="fab fa-bitcoin text-[#F7931A] text-base"></i>
-                    </div>
-                    <div class="flex flex-col">
-                      <span class="text-[11px] font-semibold text-white/90">BTC</span>
-                      <span class="text-[9px] text-[#22C55E] font-medium">$43,250</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="absolute top-[32%] left-[4%] w-32 h-20 group transition-all duration-500 hover:scale-105 animate-[float-card-2_7s_ease-in-out_infinite]">
-                <div class="relative w-full h-full">
-                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-xl border border-[rgba(34,197,94,0.3)] shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.15)] group-hover:shadow-[0_6px_28px_rgba(0,0,0,0.9),0_0_45px_rgba(34,197,94,0.3)]">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(34,197,94,0.06)_0%,transparent_60%)]"></div>
-                  </div>
-                  <div class="absolute inset-0 flex items-center px-4 space-x-2">
-                    <div class="w-9 h-9 rounded-lg bg-[rgba(38,161,123,0.12)] border border-[rgba(38,161,123,0.25)] flex items-center justify-center">
-                      <span class="text-[#26A17B] text-sm font-bold">₮</span>
-                    </div>
-                    <div class="flex flex-col">
-                      <span class="text-[11px] font-semibold text-white/90">USDT</span>
-                      <span class="text-[9px] text-[#22C55E] font-medium">$1.00</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="absolute bottom-[28%] left-[8%] w-32 h-20 group transition-all duration-500 hover:scale-105 animate-[float-card-3_8s_ease-in-out_infinite]">
-                <div class="relative w-full h-full">
-                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-xl border border-[rgba(34,197,94,0.3)] shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.15)] group-hover:shadow-[0_6px_28px_rgba(0,0,0,0.9),0_0_45px_rgba(34,197,94,0.3)]">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(34,197,94,0.06)_0%,transparent_60%)]"></div>
-                  </div>
-                  <div class="absolute inset-0 flex items-center px-4 space-x-2">
-                    <div class="w-9 h-9 rounded-lg bg-[rgba(34,197,94,0.12)] border border-[rgba(34,197,94,0.25)] flex items-center justify-center">
-                      <i class="fas fa-dollar-sign text-[#22C55E] text-sm"></i>
-                    </div>
-                    <div class="flex flex-col">
-                      <span class="text-[11px] font-semibold text-white/90">USD</span>
-                      <span class="text-[9px] text-[#22C55E] font-medium">+2.4%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div class="absolute top-[48%] right-[8%] w-36 h-20 group transition-all duration-500 hover:scale-105 animate-[float-card-1_6.5s_ease-in-out_infinite]">
-                <div class="relative w-full h-full">
-                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-xl border border-[rgba(34,197,94,0.3)] shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.15)] group-hover:shadow-[0_6px_28px_rgba(0,0,0,0.9),0_0_45px_rgba(34,197,94,0.3)]">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(34,197,94,0.06)_0%,transparent_60%)]"></div>
-                  </div>
-                  <div class="absolute inset-0 flex items-center px-4 space-x-2">
-                    <div class="w-9 h-9 rounded-lg bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.25)] flex items-center justify-center">
-                      <i class="fas fa-robot text-[#22C55E] text-sm"></i>
-                    </div>
-                    <div class="flex flex-col">
-                      <span class="text-[11px] font-semibold text-[#22C55E]">IA Orion</span>
-                      <span class="text-[9px] text-white/50 font-medium">Ativo</span>
-                    </div>
-                    <div class="absolute top-2 right-2 w-2 h-2 bg-[#22C55E] rounded-full shadow-[0_0_10px_rgba(34,197,94,1)] animate-pulse"></div>
-                  </div>
-                </div>
-              </div>
-              <div class="absolute bottom-[16%] right-[14%] w-36 h-20 group transition-all duration-500 hover:scale-105 animate-[float-card-2_7.5s_ease-in-out_infinite]">
-                <div class="relative w-full h-full">
-                  <div class="absolute inset-0 bg-gradient-to-br from-[#1C1C1C] via-[#0E0E0E] to-[#000000] rounded-xl border border-[rgba(34,197,94,0.3)] shadow-[0_4px_20px_rgba(0,0,0,0.8),0_0_30px_rgba(34,197,94,0.15)] group-hover:shadow-[0_6px_28px_rgba(0,0,0,0.9),0_0_45px_rgba(34,197,94,0.3)]">
-                    <div class="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(34,197,94,0.06)_0%,transparent_60%)]"></div>
-                  </div>
-                  <div class="absolute inset-0 flex items-center px-4 space-x-2">
-                    <div class="w-9 h-9 rounded-lg bg-[rgba(34,197,94,0.1)] border border-[rgba(34,197,94,0.25)] flex items-center justify-center">
-                      <i class="fas fa-chart-line text-[#22C55E] text-sm"></i>
-                    </div>
-                    <div class="flex flex-col">
-                      <span class="text-[11px] font-semibold text-white/90">Lucro</span>
-                      <span class="text-[12px] text-[#22C55E] font-bold">+12.4%</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -414,7 +185,7 @@
         </section>
         
         <!-- Best IAs Section -->
-        <section id="best-ai-section" class="px-12 pt-20 pb-20 relative w-full">
+        <section id="best-ai-section" class="px-12 pt-20 pb-0 relative w-full">
           <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
           <div class="relative z-10 w-full">
             <!-- Desktop Header -->
@@ -438,7 +209,7 @@
             <div class="w-full h-[1px] bg-[#1C1C1C] opacity-35 mb-12"></div>
             
             <!-- Desktop Grid -->
-            <div class="grid grid-cols-4 gap-6 mb-20 desktop-grid-ias">
+            <div class="grid grid-cols-4 gap-6 mb-0 desktop-grid-ias">
             <div 
               v-for="(ia, index) in bestIAs" 
               :key="index"
@@ -450,6 +221,8 @@
               <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.02)_0%,transparent_70%)] animate-pulse" :style="{ animationDelay: `${index * 0.5}s`, animationDuration: '4s' }"></div>
               <div class="h-[182px] w-full overflow-hidden relative">
                 <img :src="ia.image" :alt="ia.alt || ia.name" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-[1.21] group-hover:saturate-[1.30] group-hover:-translate-y-0.5" style="filter: brightness(1.23) saturate(1.3) drop-shadow(0 0 12px rgba(34,197,94,0.18));">
+                <!-- Gradiente da esquerda para direita (similar ao academy) -->
+                <div class="absolute inset-0 bg-gradient-to-r from-[#0B0B0B] via-[rgba(11,11,11,0.98)] via-[rgba(11,11,11,0.95)] via-[rgba(11,11,11,0.85)] via-[rgba(11,11,11,0.75)] via-[rgba(11,11,11,0.65)] via-[rgba(11,11,11,0.5)] via-[rgba(11,11,11,0.35)] via-[rgba(11,11,11,0.25)] via-[rgba(11,11,11,0.15)] via-[rgba(11,11,11,0.1)] to-transparent pointer-events-none z-10"></div>
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[rgba(11,11,11,0.3)] to-[#0B0B0B]"></div>
                 <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent opacity-60"></div>
               </div>
@@ -501,18 +274,6 @@
           </div>
         </div>
       </section>
-      
-      <!-- Divider -->
-      <div class="relative flex items-center justify-center -mt-[70px] mb-[60px] px-12 z-20">
-        <div class="absolute left-1/2 -translate-x-1/2 flex flex-col items-center">
-          <div class="w-0.5 h-[30px] relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-b from-[#0E0E0E] via-[#22C55E] to-[#0E0E0E] blur-[6px] opacity-40"></div>
-          </div>
-          <div class="w-0.5 h-[30px] relative overflow-hidden">
-            <div class="absolute inset-0 bg-gradient-to-b from-[#0E0E0E] via-[#22C55E] to-[#0E0E0E] blur-[6px] opacity-40"></div>
-          </div>
-        </div>
-      </div>
       
       <!-- Overall Performance Section -->
       <section id="performance-section" class="px-12 pt-0 pb-36 relative w-full">
@@ -618,7 +379,7 @@
                 <div class="mobile-performance-icon">
                   <i :class="[perf.icon, 'text-[#22C55E]']"></i>
                 </div>
-                <h3 class="mobile-performance-title">{{ perf.title }}</h3>
+                <h3 class="mobile-performance-title" v-html="formatTitleForMobile(perf.title)"></h3>
               </div>
               <div class="mobile-performance-percentage">{{ perf.percentage }}</div>
               <div class="mobile-performance-chart">
@@ -1174,6 +935,8 @@ export default {
     await this.loadTradeCurrency();
     // Carregar contas disponíveis em background para otimizar troca de conta
     this.loadAccountsInBackground();
+    // Configurar loop imperceptível do vídeo
+    this.setupVideoLoop();
   },
   methods: {
     toggleMobileSidebar() {
@@ -1195,6 +958,19 @@ export default {
       } else {
         this.isSidebarOpen = true;
       }
+    },
+    formatTitleForMobile(title) {
+      if (!this.isMobile) {
+        return title;
+      }
+      // Aplicar quebras de linha apenas no mobile
+      const titleMap = {
+        "IA's de Investimento": "IA's de <br> Investimento",
+        "Copy Trading": "Copy <br> Trading",
+        "Agente Autônomo": "Agente <br> Autônomo",
+        "Operações com Sinais": "Operações <br> com sinais"
+      };
+      return titleMap[title] || title;
     },
     async switchAccount(type) {
       // Usa a mesma lógica do Settings - altera o tradeCurrency
@@ -1337,6 +1113,213 @@ export default {
           console.warn('[DashboardConnected] Erro ao iniciar carregamento de contas:', error);
         }
       }
+    },
+    setupVideoLoop() {
+      // Aguardar o próximo tick para garantir que o DOM está renderizado
+      this.$nextTick(() => {
+        const video1 = this.$refs.heroVideo1;
+        const video2 = this.$refs.heroVideo2;
+        
+        if (!video1 || !video2) return;
+        
+        let isPlayingForward = true;
+        let currentVideo = video1;
+        let nextVideo = video2;
+        let reverseAnimationFrame = null;
+        let lastReverseTime = 0;
+        let isTransitioning = false;
+        
+        const setupVideos = () => {
+          // Iniciar o primeiro vídeo normalmente (forward)
+          video1.style.opacity = '1';
+          video2.style.opacity = '0';
+          video1.currentTime = 0;
+          video1.play().catch(() => {});
+          
+          // Função para tocar vídeo de trás para frente (apenas 2 segundos)
+          const playReverse = (video) => {
+            if (!video.duration || isTransitioning) return;
+            
+            // Começar do fim (onde o forward parou)
+            const startTime = video.duration;
+            const endTime = Math.max(0, video.duration - 2); // Parar 2 segundos antes do fim
+            
+            if (!video.currentTime || video.currentTime < startTime - 0.1) {
+              video.currentTime = startTime;
+            }
+            
+            const reverseStep = () => {
+              if (!video.duration) return;
+              
+              const now = Date.now();
+              const deltaTime = (now - lastReverseTime) / 1000;
+              lastReverseTime = now;
+              
+              // Decrementar currentTime manualmente
+              video.currentTime = Math.max(endTime, video.currentTime - (deltaTime * 1.0));
+              
+              if (video.currentTime > endTime + 0.01) {
+                reverseAnimationFrame = requestAnimationFrame(reverseStep);
+              } else {
+                // Chegou aos 2 segundos, trocar imediatamente para forward
+                video.pause();
+                video.currentTime = endTime;
+                if (reverseAnimationFrame) {
+                  cancelAnimationFrame(reverseAnimationFrame);
+                  reverseAnimationFrame = null;
+                }
+                switchToForward();
+              }
+            };
+            
+            lastReverseTime = Date.now();
+            reverseAnimationFrame = requestAnimationFrame(reverseStep);
+          };
+          
+          // Função para trocar para forward (transição rápida)
+          const switchToForward = () => {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            
+            if (reverseAnimationFrame) {
+              cancelAnimationFrame(reverseAnimationFrame);
+              reverseAnimationFrame = null;
+            }
+            
+            // Transição rápida (200ms)
+            const fadeDuration = 200;
+            const startTime = Date.now();
+            
+            const fade = () => {
+              const elapsed = Date.now() - startTime;
+              const progress = Math.min(elapsed / fadeDuration, 1);
+              
+              currentVideo.style.opacity = String(1 * (1 - progress));
+              nextVideo.style.opacity = String(1 * progress);
+              
+              if (progress < 1) {
+                requestAnimationFrame(fade);
+              } else {
+                // Transição completa
+                currentVideo.pause();
+                currentVideo.style.opacity = '0';
+                
+                // Trocar referências
+                const temp = currentVideo;
+                currentVideo = nextVideo;
+                nextVideo = temp;
+                
+                // Iniciar vídeo forward imediatamente
+                currentVideo.currentTime = 0;
+                currentVideo.play().catch(() => {});
+                isPlayingForward = true;
+                isTransitioning = false;
+              }
+            };
+            
+            requestAnimationFrame(fade);
+          };
+          
+          // Função para trocar para reverse (transição rápida)
+          const switchToReverse = () => {
+            if (isTransitioning) return;
+            isTransitioning = true;
+            
+            // Transição rápida (200ms)
+            const fadeDuration = 200;
+            const startTime = Date.now();
+            
+            const fade = () => {
+              const elapsed = Date.now() - startTime;
+              const progress = Math.min(elapsed / fadeDuration, 1);
+              
+              currentVideo.style.opacity = String(1 * (1 - progress));
+              nextVideo.style.opacity = String(1 * progress);
+              
+              if (progress < 1) {
+                requestAnimationFrame(fade);
+              } else {
+                // Transição completa
+                currentVideo.pause();
+                currentVideo.style.opacity = '0';
+                
+                // Trocar referências
+                const temp = currentVideo;
+                currentVideo = nextVideo;
+                nextVideo = temp;
+                
+                isPlayingForward = false;
+                isTransitioning = false;
+                
+                // Iniciar reverse imediatamente (do fim)
+                playReverse(currentVideo);
+              }
+            };
+            
+            requestAnimationFrame(fade);
+          };
+          
+          // Listener para quando vídeo forward termina
+          const handleForwardEnd = () => {
+            if (isPlayingForward && !isTransitioning && currentVideo.ended) {
+              // Preparar próximo vídeo no fim
+              if (nextVideo.duration) {
+                nextVideo.currentTime = nextVideo.duration;
+              }
+              switchToReverse();
+            }
+          };
+          
+          // Adicionar listeners
+          video1.addEventListener('ended', handleForwardEnd);
+          video2.addEventListener('ended', handleForwardEnd);
+          
+          // Garantir que os vídeos continuem reproduzindo
+          [video1, video2].forEach(video => {
+            video.addEventListener('pause', () => {
+              if (isPlayingForward && !isTransitioning && video === currentVideo && !video.ended) {
+                video.play().catch(() => {});
+              }
+            });
+          });
+        };
+        
+        // Aguardar ambos os vídeos estarem prontos
+        let video1Ready = false;
+        let video2Ready = false;
+        
+        const checkReady = () => {
+          if (video1.readyState >= 3) video1Ready = true;
+          if (video2.readyState >= 3) video2Ready = true;
+          
+          if (video1Ready && video2Ready) {
+            setupVideos();
+          }
+        };
+        
+        if (video1.readyState >= 3) {
+          video1Ready = true;
+        } else {
+          video1.addEventListener('canplaythrough', () => {
+            video1Ready = true;
+            checkReady();
+          }, { once: true });
+        }
+        
+        if (video2.readyState >= 3) {
+          video2Ready = true;
+        } else {
+          video2.addEventListener('canplaythrough', () => {
+            video2Ready = true;
+            checkReady();
+          }, { once: true });
+        }
+        
+        checkReady();
+        
+        // Tentar reproduzir o primeiro vídeo imediatamente
+        video1.play().catch(() => {});
+      });
     },
     isCurrentAccount(account) {
       // Usa a mesma lógica do sidebar - compara loginid
@@ -1648,6 +1631,26 @@ export default {
   display: flex;
   min-height: 100vh;
   position: relative;
+}
+
+/* Isolar DashboardConnected dos estilos do layout-home */
+.layout-home .dashboard-layout {
+  display: flex !important;
+  flex-direction: row !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  background: transparent !important;
+  min-height: 100vh !important;
+  position: relative !important;
+  overflow-x: hidden !important;
+}
+
+.layout-home .dashboard-layout::before {
+  display: none !important;
 }
 
 /* Sidebar Overlay */
@@ -2736,6 +2739,108 @@ export default {
   height: 700px;
 }
 
+/* Video Loop Suave */
+#hero-section .video-bg {
+  will-change: opacity;
+  image-rendering: auto;
+  backface-visibility: hidden;
+  transform: translateZ(0);
+  transition: opacity 1.5s cubic-bezier(0.4, 0, 0.2, 1);
+  filter: brightness(1.05) contrast(1.1) saturate(1.1);
+}
+
+#hero-section .video-layer-1,
+#hero-section .video-layer-2 {
+  pointer-events: none;
+}
+
+#hero-section .video-bg::-webkit-media-controls {
+  display: none !important;
+}
+
+/* Dashboard específico - Cor #050705 apenas no desktop */
+@media (min-width: 1025px) {
+  /* Sidebar com box-shadow para transição suave entre sidebar e conteúdo do vídeo */
+  .dashboard-layout .sidebar,
+  .dashboard-layout aside.sidebar {
+    background: #050705 !important;
+    box-shadow: 10px 0 80px rgba(5, 7, 5, 0),
+                10px 0 120px rgba(5, 7, 5, 0.445) !important;
+  }
+  
+  /* Overlay no conteúdo principal para transição suave do vídeo para a sidebar */
+  .dashboard-layout .main-content::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 280px;
+    width: 50px;
+    height: 100vh;
+    background: linear-gradient(to right, 
+      #050705 0%,
+      rgba(5, 7, 5, 0) 100%,
+      transparent 100%);
+    pointer-events: none;
+    z-index: 50;
+  }
+  
+  .dashboard-layout.sidebar-collapsed .main-content::before {
+    display: none;
+  }
+  
+  /* Header/TopNavbar */
+  .dashboard-layout #top-navbar,
+  .dashboard-layout .top-header {
+    background: #050705 !important;
+  }
+  
+  /* Ticker Section (Carrossel de nomes) */
+  .dashboard-layout #ticker-section {
+    background: #050705 !important;
+  }
+  .dashboard-layout #ticker-section .absolute {
+    background: transparent !important;
+  }
+  
+  /* Best IAs Section */
+  .dashboard-layout #best-ai-section {
+    background: #050705 !important;
+  }
+  .dashboard-layout #best-ai-section .absolute.inset-0 {
+    background: transparent !important;
+  }
+  
+  /* Performance Section */
+  .dashboard-layout #performance-section {
+    background: #050705 !important;
+  }
+  .dashboard-layout #performance-section .absolute.inset-0 {
+    background: transparent !important;
+  }
+  
+  /* Conteúdo principal */
+  .dashboard-layout .main-content,
+  .dashboard-layout .dashboard-content-wrapper {
+    background: #050705 !important;
+  }
+  
+  /* Sobrescrever classe bg-zenix-bg */
+  .dashboard-layout .main-content.bg-zenix-bg {
+    background: #050705 !important;
+  }
+  
+  /* Garantir que o body/html também fique com a cor no dashboard */
+  body:has(.dashboard-layout),
+  html:has(.dashboard-layout) {
+    background: #050705 !important;
+  }
+  
+  /* Seletor alternativo para navegadores que não suportam :has() */
+  .dashboard-layout {
+    background: #050705 !important;
+  }
+}
+
 @media (max-width: 1024px) {
   #hero-section {
     height: auto;
@@ -2758,12 +2863,33 @@ export default {
     padding: 0 !important;
   }
 
+  /* Isolar DashboardConnected dos estilos do layout-home no mobile */
+  .layout-home .dashboard-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    background: transparent !important;
+    min-height: 100vh !important;
+    position: relative !important;
+    overflow-x: hidden !important;
+  }
+
+  .layout-home .dashboard-layout::before {
+    display: none !important;
+  }
+
   /* Background com gradiente do HTML */
   .main-content {
     background: linear-gradient(180deg, #0F2416 0%, #0A1C12 15%, #060606 45%, #030303 55%, #050505 75%, #0B0B0B 100%) !important;
     position: relative;
     overflow-x: hidden;
     min-height: 100vh;
+    padding-bottom: 60px !important;
   }
 
   .main-content::before {
@@ -2907,18 +3033,20 @@ export default {
     grid-template-columns: 1fr;
   }
 
-  /* Container principal no mobile - max-width 430px como no HTML */
+  /* Container principal no mobile - largura total */
   .dashboard-content-wrapper {
-    max-width: 430px !important;
-    margin: 0 auto !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
     position: relative;
     z-index: 10;
     padding: 0 !important;
   }
 
   .main-content {
-    max-width: 430px !important;
-    margin: 0 auto !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
     position: relative;
     z-index: 10;
   }
@@ -2940,7 +3068,7 @@ export default {
     padding-left: 0 !important;
     padding-right: 0 !important;
     padding-top: 0 !important;
-    padding-bottom: 40px !important;
+    padding-bottom: 0 !important;
     animation: fadeInUp 0.9s ease-out 0.3s backwards;
   }
 
@@ -2948,8 +3076,13 @@ export default {
     padding-left: 0 !important;
     padding-right: 0 !important;
     padding-top: 0 !important;
-    padding-bottom: 40px !important;
+    padding-bottom: 0 !important;
     animation: fadeInUp 1s ease-out 0.4s backwards;
+  }
+
+  #performance-section .relative.z-10 {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
 
   /* Espaçamento entre seções conforme HTML - sem padding lateral */
@@ -3025,6 +3158,8 @@ export default {
   .mobile-performance-header-title {
     display: block !important;
     margin-bottom: 20px !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
     animation: fadeInUp 1s ease-out 0.4s backwards;
   }
 
@@ -3252,6 +3387,10 @@ export default {
     grid-template-columns: repeat(2, 1fr) !important;
     gap: 16px !important;
     width: 100% !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
   }
 
   /* Remover margin do footer no mobile */
@@ -3267,7 +3406,7 @@ export default {
     padding: 20px 20px 0 20px !important;
     display: flex;
     flex-direction: column;
-    gap: 0;
+    gap: 5px;
     position: relative;
     min-height: 180px;
     overflow: hidden;
@@ -3698,6 +3837,32 @@ export default {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 24px !important;
+  }
+  
+  /* Gradiente da esquerda para direita nos cards de IA (similar ao academy) */
+  .desktop-grid-ias [id^="ai-card-"] > div.p-6::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100px;
+    right: 0;
+    height: 100%;
+    background: linear-gradient(to right, 
+      rgba(11, 11, 11, 0) 0%,
+      rgba(11, 11, 11, 0.2) 15%,
+      rgba(11, 11, 11, 0.4) 30%,
+      rgba(11, 11, 11, 0.6) 45%,
+      rgba(11, 11, 11, 0.75) 60%,
+      rgba(11, 11, 11, 0.85) 75%,
+      rgba(11, 11, 11, 0.92) 90%,
+      rgba(11, 11, 11, 0.98) 100%);
+    pointer-events: none;
+    z-index: 1;
+  }
+  
+  .desktop-grid-ias [id^="ai-card-"] > div.p-6 > * {
+    position: relative;
+    z-index: 2;
   }
 }
 
@@ -4239,4 +4404,3 @@ export default {
 }
 
 </style>
-
