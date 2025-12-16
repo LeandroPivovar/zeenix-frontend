@@ -10,21 +10,26 @@
                         <p>Consolidação das operações do dia.</p>
                     </TooltipsCopyTraders>
                 </div>
-                <div class="profit-box">
-                    <div class="profit-label">Lucro da Sessão</div>
-                    <span class="profit-value">{{ resumo.lucroHoje }}</span>
-                    <span class="profit-percent">{{ resumo.percentualHoje }}</span>
-                </div>
-                <div class="stats-row">
-                    <div class="stat-item">
-                        <span class="label">Wins</span>
-                        <span class="value green">{{ resumo.wins }}</span>
+                <div class="summary-row">
+                    <div class="profit-box">
+                        <div class="profit-label">Lucro da Sessão</div>
+                        <div class="profit-content">
+                            <span class="profit-value">{{ resumo.lucroHoje }}</span>
+                            <span class="profit-percent">{{ resumo.percentualHoje }}</span>
+                        </div>
                     </div>
-                    <div class="stat-item">
-                        <span class="label">Losses</span>
-                        <span class="value red">{{ resumo.losses }}</span>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <span class="label">Wins</span>
+                            <span class="value green">{{ resumo.wins }}</span>
+                        </div>
+                        <div class="stat-item">
+                            <span class="label">Losses</span>
+                            <span class="value red">{{ resumo.losses }}</span>
+                        </div>
                     </div>
                 </div>
+                <div class="separator"></div>
                 <div class="weekly">
                     <span>Últimos 7 dias</span><br>
                     <span class="weekly-value">{{ resumo.lucroSemana }} ({{ resumo.percentualSemana }})</span>
@@ -66,16 +71,33 @@
                     </div>
                 </div>
                 <div class="sync-row">
+                    <div class="ops-today mobile-only">
+                        <div class="label">Operações Totais</div>
+                        <div class="value">{{ statusCopy.operacoesHoje }}</div>
+                    </div>
                     <div class="sync-info">
-                        <div class="label">Última Sincronização</div>
-                        <div class="value">{{ statusCopy.ultimaSincronizacao }}</div>
+                        <div class="label">Sincronização</div>
+                        <div class="value">{{ statusCopy.ultimaSincronizacao === 'Aguardando primeira operação' ? 'Aguardando' : statusCopy.ultimaSincronizacao }}</div>
                         </div>
                     <div class="sync-tags">
-                        <span class="sync-tag">SL: {{ statusCopy.slValor }}</span>
-                        <span class="sync-tag">TP: {{ statusCopy.tpValor }}</span>
-                        <span class="sl-badge">
-                            <i><img src="../../assets/icons/security.svg" alt="" width="10px" height="10px"></i>
-                            SL Blindado</span>
+                        <div class="sync-tag">
+                            <div class="tag-label"><span class="desktop-only">SL: </span><span class="mobile-only">SL</span></div>
+                            <div class="tag-value sl-value">{{ statusCopy.slValor }}</div>
+                        </div>
+                        <div class="sync-tag">
+                            <div class="tag-label"><span class="desktop-only">TP: </span><span class="mobile-only">TP</span></div>
+                            <div class="tag-value tp-value">{{ statusCopy.tpValor }}</div>
+                        </div>
+                        <div class="sl-blindado-toggle">
+                            <div class="sl-blindado-label">
+                                <img src="../../assets/icons/security.svg" alt="" class="sl-blindado-icon desktop-only">
+                                <span>SL Blindado</span>
+                            </div>
+                            <label class="toggle-switch mobile-only">
+                                <input type="checkbox" :checked="risco.slBlindado === 'Ativo'" @change="toggleSlBlindado">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -88,7 +110,25 @@
                     </TooltipsCopyTraders>
                 </div>
                 <div class="operations-list">
-                    <table class="operations-table">
+                    <!-- Cards para mobile -->
+                    <div class="operations-cards mobile-only">
+                        <div v-for="op in operacoes" :key="op.time" class="operation-card">
+                            <div class="card-time">{{ op.time }}</div>
+                            <div class="card-type">{{ op.type }}</div>
+                            <div class="card-footer">
+                                <div class="card-invested">
+                                    <span class="card-label">Investido: </span>
+                                    <span class="card-value">{{ op.investedValue }}</span>
+                                </div>
+                                <div class="card-result">
+                                    <span class="card-label">Resultado: </span>
+                                    <span :class="['card-value', op.result.startsWith('+') ? 'green' : 'red']">{{ op.result }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Tabela para desktop -->
+                    <table class="operations-table desktop-only">
                         <thead>
                             <tr>
                                 <th>Status</th>
@@ -139,7 +179,7 @@
                     <span class="risk-label">TP Diário</span>
                     <span class="risk-value green">{{ risco.tpDiario }}</span>
                 </div>
-                <div class="risk-row">
+                <div class="risk-row risk-row-last">
                     <span class="risk-label">SL Blindado</span>
                     <span class="risk-value green">{{ risco.slBlindado }}</span>
                 </div>
@@ -172,25 +212,30 @@
                                     <line x1="8" y1="2" x2="8" y2="6" stroke="currentColor"/>
                                     <line x1="3" y1="10" x2="21" y2="10" stroke="currentColor"/>
                                 </svg>
-                                <template v-if="periodoAtivo === 'Personalizado'">
-                                    Personalizado: {{ formatarData(dataInicioPersonalizada) }} - {{ formatarData(dataFimPersonalizada) }}
-                                </template>
-                                <template v-else>
-                                    {{ periodo.label }}
-                                </template>
+                                <span class="desktop-only">
+                                    <template v-if="periodoAtivo === 'Personalizado'">
+                                        Personalizado: {{ formatarData(dataInicioPersonalizada) }} - {{ formatarData(dataFimPersonalizada) }}
+                                    </template>
+                                    <template v-else>
+                                        {{ periodo.label }}
+                                    </template>
+                                </span>
+                                <span class="mobile-only">{{ periodo.label }}</span>
                             </span>
                         </button>
                     </div>
                 </div>
                 
                 <div v-if="showDateRangePicker" class="date-picker-area">
-                    <div class="date-input-group">
-                        <label for="date-start">Data Início:</label>
-                        <input id="date-start" type="date" v-model="dataInicioPersonalizada" class="date-input">
-                    </div>
-                    <div class="date-input-group">
-                        <label for="date-end">Data Fim:</label>
-                        <input id="date-end" type="date" v-model="dataFimPersonalizada" class="date-input">
+                    <div class="date-inputs-row">
+                        <div class="date-input-group">
+                            <label for="date-start">Data Início:</label>
+                            <input id="date-start" type="date" v-model="dataInicioPersonalizada" class="date-input">
+                        </div>
+                        <div class="date-input-group">
+                            <label for="date-end">Data Fim:</label>
+                            <input id="date-end" type="date" v-model="dataFimPersonalizada" class="date-input">
+                        </div>
                     </div>
                     <button class="apply-btn" @click="aplicarPeriodoPersonalizado">Aplicar</button>
                 </div>
@@ -250,6 +295,7 @@
                     </div>
                 </div>
             </div>
+            <button class="pause-copy-btn" @click="pauseCopy">II Pausar Copy</button>
         </div>
 
         <div v-if="showAllOperationsModal" class="modal-overlay" @click="closeModal">
@@ -486,6 +532,10 @@ export default {
             const sign = value >= 0 ? '+' : '';
             return `${sign}$${Math.abs(value).toFixed(2)}`;
         },
+        formatCurrencyNoSign(value) {
+            if (value === null || value === undefined) return '$0.00';
+            return `$${Math.abs(value).toFixed(2)}`;
+        },
         updateSessionData() {
             if (!this.session) return;
 
@@ -493,8 +543,8 @@ export default {
             this.statusCopy.status = this.session.status === 'active' ? 'COPIANDO' : 'PAUSADO';
             this.statusCopy.trader = this.session.traderName ? `@${this.session.traderName}` : '@Trader';
             this.statusCopy.operacoesHoje = this.session.totalOperations || 0;
-            this.statusCopy.slValor = this.formatCurrency(this.session.stopLoss || 0);
-            this.statusCopy.tpValor = this.formatCurrency(this.session.takeProfit || 0);
+            this.statusCopy.slValor = this.formatCurrencyNoSign(this.session.stopLoss || 0);
+            this.statusCopy.tpValor = this.formatCurrencyNoSign(this.session.takeProfit || 0);
 
             // Calcular tempo desde última sincronização
             if (this.session.lastOperationAt) {
@@ -525,6 +575,9 @@ export default {
         async pauseCopy() {
                 this.$emit('pause-copy');
         },
+        toggleSlBlindado(event) {
+            this.risco.slBlindado = event.target.checked ? 'Ativo' : 'Inativo';
+        },
     },
     watch: {
         session: {
@@ -551,7 +604,15 @@ export default {
 * { margin: 0; padding: 0; box-sizing: border-box; }
 #copy-trading-monitor {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background: #0a0b0a; color: #fff; padding: 20px; min-height: 100vh;
+    background: none; 
+    color: #fff; 
+    padding: 20px; 
+    min-height: 100vh;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    position: relative;
 }
 .tabs { display: flex; gap: 24px; border-bottom: 1px solid #222; padding-bottom: 12px; margin-bottom: 20px; }
 .tab { background: none; border: none; color: #666; font-size: 14px; cursor: pointer; padding-bottom: 12px; }
@@ -561,25 +622,103 @@ export default {
     display: grid;
     grid-template-columns: repeat(6, 1fr);
     gap: 16px;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .div1 { grid-area: 1 / 1 / 3 / 3; }
 .div2 { grid-area: 1 / 3 / 3 / 7; }
 .div3 { grid-area: 3 / 4 / 6 / 7; } 
 .div4 { grid-area: 3 / 1 / 6 / 4; } 
-.performance-card { grid-area: 6 / 1 / 7 / 7; } 
+.performance-card { grid-area: 6 / 1 / 7 / 4; }
+
+/* Estilos para desktop */
+@media (min-width: 1025px) {
+    /* Esconder cards no desktop */
+    .operations-cards.mobile-only {
+        display: none;
+    }
+    
+    /* Mostrar tabela no desktop */
+    .operations-table.desktop-only {
+        display: table;
+    }
+    
+    /* Remover separator do date-picker no desktop */
+    .date-picker-area {
+        border-bottom: none;
+    }
+    
+    /* Sync-tags em row no desktop */
+    .status-card .sync-row .sync-tags {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 12px;
+        flex-wrap: nowrap;
+    }
+    
+    /* SL Blindado no desktop - estilo como badge com ícone */
+    .status-card .sync-row .sync-tags .sl-blindado-toggle {
+        background: #102117;
+        border: 1px solid rgba(57, 211, 85, 0.3);
+        box-shadow: 0 0 8px rgba(57, 211, 85, 0.2), inset 0 0 8px rgba(57, 211, 85, 0.1);
+        border-radius: 8px;
+        padding: 6px 12px;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        flex: 0 0 auto;
+    }
+    
+    .status-card .sync-row .sync-tags .sl-blindado-toggle .sl-blindado-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: #39D355;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .status-card .sync-row .sync-tags .sl-blindado-toggle .sl-blindado-icon {
+        width: 16px;
+        height: 16px;
+    }
+    
+    .status-card .sync-row .sync-tags .sl-blindado-toggle .sl-blindado-icon.desktop-only {
+        filter: brightness(0) saturate(100%) invert(65%) sepia(90%) saturate(500%) hue-rotate(80deg) brightness(100%) contrast(100%);
+    }
+    
+    /* Esconder toggle switch no desktop */
+    .status-card .sync-row .sync-tags .sl-blindado-toggle .toggle-switch.mobile-only {
+        display: none;
+    }
+} 
 
 
-.card { background: #0e0f0f; border: 1px solid #1a1a1a; border-radius: 12px; padding: 20px; }
+.card { background: #0e0f0f; border: 1px solid #1a1a1a; border-radius: 12px; padding: 20px; width: 100%; box-sizing: border-box; overflow: hidden; }
+
+.box {
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+    border: 1px solid #1a1a1a;
+    border-radius: 12px;
+    padding: 20px;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: hidden;
+}
 .card-header { display: flex; align-items: center; gap: 8px; margin-bottom: 16px; }
-.card-title { font-size: 19px; color: #ececec; font-weight: 500; text-transform: capitalize;}
+.card-title { font-size: 16px; color: #FFFFFF; font-weight: 700; text-transform: capitalize;}
 
 
-.profit-box { background: #102117; border: 1px solid #2f6646; border-radius: 8px; padding: 16px; margin-bottom: 16px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; }
+.summary-row { display: flex; flex-direction: column; gap: 16px; margin-bottom: 16px; }
+.profit-box { background: #102117; border: 1px solid #2f6646; border-radius: 8px; padding: 16px; margin-bottom: 16px; text-align: left; display: flex; flex-direction: column; justify-content: space-between; width: 100%; box-sizing: border-box; }
 .profit-label { font-size: 12px; color: #9e9e9e; margin-bottom: 4px; }
-.profit-value { font-size: 25px; font-weight: 700; color: #22c55e; }
-.profit-percent { font-size: 12px; color: #22c55e; margin-left: 8px; }
-.stats-row { display: flex; gap: 24px; margin-bottom: 16px; width: 100%; }
+.profit-content { display: flex; flex-direction: column; gap: 4px; }
+.profit-value { font-size: 38px; font-weight: 700; color: #39D355; }
+.profit-percent { font-size: 15px; font-weight: 400; color: #39D355; }
+.stats-row { display: flex; gap: 24px; width: 100%; box-sizing: border-box; margin-bottom: 16px; }
 .stat-item{
     display: flex;
     flex-direction: column;
@@ -591,13 +730,20 @@ export default {
     border-radius: 12px;
 }
 
-.stat-item .label { font-size: 14px; color: #9b9696 ; display: block; }
-.stat-item .value { font-size: 20px; font-weight: 600; }
-.stat-item .value.green { color: #22c55e; }
-.stat-item .value.red { color: #ef4444; }
+.stat-item .label { font-size: 12px; color: #949393; font-weight: 400; display: block; }
+.stat-item .value { font-size: 26px; font-weight: 600; }
+.stat-item .value.green { color: #39D355; }
+.stat-item .value.red { color: #FF4B4B; }
 
-.weekly { font-size: 14px; color: #9b9696; text-align: left;}
-.weekly-value { font-size: 14px; color: #22c55e; font-weight: 500; }
+.separator {
+    width: 100%;
+    height: 1px;
+    background: #1a1a1a;
+    margin: 16px 0;
+}
+
+.weekly { font-size: 12px; color: #949393; font-weight: 400; text-align: left;}
+.weekly-value { font-size: 17px; color: #39D355; font-weight: 600; }
 .status-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px; }
 .status-row { display: flex; align-items: center; gap: 12px; }
 .status-row .value{
@@ -616,8 +762,8 @@ export default {
     border: 1px solid #1a1a1a;}
 .trader-avatar { width: 40px; height: 40px; background: #222; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .trader-avatar svg { width: 20px; height: 20px; color: #666; }
-.trader-details .label { font-size: 11px; color: #666; }
-.trader-details .name { font-size: 13px; font-weight: 500; }
+.trader-details .label { font-size: 15px; color: white; font-weight: 700; }
+.trader-details .name { font-size: 14px; font-weight: 500; color: #b3b0b0; }
 .ops-today{
     display: flex;
     flex-direction: column;
@@ -629,6 +775,28 @@ export default {
     text-align: left;
     border-radius: 8px;
     border: 1px solid #1a1a1a;
+}
+
+.mobile-only {
+    display: none;
+}
+
+.desktop-only {
+    display: none;
+}
+
+@media (min-width: 1025px) {
+    .desktop-only {
+        display: inline-block;
+    }
+    
+    .mobile-only {
+        display: none !important;
+    }
+
+    .pause-copy-btn{
+        display: none!important;
+    }
 }
 .ops-today .label { font-size: 11px; color: #666; }
 .ops-today .value { font-size: 20px; font-weight: 600; color: #22c55e; }
@@ -754,8 +922,21 @@ export default {
 .view-btn:hover { background: #22c55e17; }
 
 
-.risk-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 10px; border: 1px solid #151515; background: #0a0b0a; border-radius: 12px; margin-bottom: 8px;}
-.risk-row:last-of-type { border-bottom: 1px solid #151515; }
+.risk-row { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    padding: 15px 10px; 
+    border: none;
+    border-bottom: 1px solid #151515; 
+    background: transparent; 
+    border-radius: 0; 
+    margin-bottom: 0;
+}
+.risk-row.risk-row-last,
+.risk-row:last-of-type { 
+    border-bottom: none; 
+}
 .risk-label { font-size: 14px; color: #888; }
 .risk-value { font-size: 16px; font-weight: 600; }
 .risk-value.green { color: #22c55e; }
@@ -861,6 +1042,42 @@ export default {
 }
 .footer-item .value.green { color: #22c55e; }
 .footer-item .value.red { color: #ef4444; }
+
+/* Botão Pausar Copy abaixo do card de evolução - escondido no desktop */
+.pause-copy-btn {
+    width: 100%;
+    background: #ef4444;
+    border: none;
+    color: white;
+    padding: 16px 20px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 0px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.pause-copy-btn:hover {
+    background: #dc2626;
+}
+
+/* Fundo escuro para o card de performance */
+.performance-card {
+    background: #0a0b0a;
+}
+
+/* Fundo escuro para os footer-items */
+.footer-item {
+    background: #050605;
+    border: 1px solid #1a1a1a;
+    border-radius: 8px;
+    padding: 16px;
+}
 
 
 .status-card .trader-row {
@@ -1060,6 +1277,822 @@ export default {
 }
 .apply-btn:hover {
     background: #10b981;
+}
+
+/* Responsividade Mobile */
+@media (max-width: 1024px) {
+    .mobile-only {
+        display: inline-block !important;
+    }
+    
+    .desktop-only {
+        display: none !important;
+    }
+    
+    #copy-trading-monitor {
+        padding: 12px;
+        overflow-x: hidden;
+    }
+    
+    /* Grid responsivo - coluna única no mobile */
+    .grid {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .div1, .div2, .div3, .div4, .performance-card {
+        grid-area: auto;
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    /* Lucro da sessão, Wins e Losses na mesma linha no mobile */
+    .summary-row {
+        display: flex;
+        flex-direction: row;
+        gap: 12px;
+        align-items: stretch;
+        margin-bottom: 16px;
+    }
+    
+    .profit-box {
+        flex: 1;
+        flex-direction: column;
+        padding: 0;
+        min-width: 0;
+        margin-bottom: 0;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+    }
+    
+    .profit-label {
+        display: none;
+    }
+    
+    .profit-content {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .profit-value {
+        font-size: 18px;
+        white-space: nowrap;
+        color: #20be5b;
+    }
+    
+    .profit-percent {
+        font-size: 10px;
+        white-space: nowrap;
+        color: #20be5b;
+    }
+    
+    /* Win e Loss no mesmo card no mobile */
+    .stats-row {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        background: transparent;
+        padding: 0;
+        border-radius: 0;
+        flex: 1;
+        min-width: 0;
+        margin-bottom: 0;
+        justify-content: flex-end;
+    }
+    
+    .stat-item {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        justify-content: space-between;
+        padding: 0;
+        flex: 1;
+        max-width: 50px;
+        background: transparent;
+        border: none;
+        min-width: 0;
+    }
+    
+    .stat-item:first-child {
+        border-right: none;
+        padding-right: 0;
+        margin-right: 0;
+    }
+    
+    .stat-item .label {
+        margin-bottom: 4px;
+        font-size: 13px;
+    }
+    
+    .stat-item .value {
+        font-size: 20px;
+        text-align: center;
+    }
+    
+    .stat-item {
+        align-items: center;
+    }
+    
+    .stat-item .value.green {
+        color: #20be5b;
+    }
+    
+    /* Ajustes adicionais para mobile */
+    .card {
+        padding: 16px;
+        width: 100%;
+        max-width: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+    }
+    
+    .card-header {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+    
+    .card-title {
+        font-size: 16px;
+    }
+    
+    /* Reorganizar layout do status-card no mobile */
+    .status-card {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    /* Título e Status na mesma linha no topo usando flexbox */
+    .status-card {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        align-items: flex-start;
+    }
+    
+    /* Card-header e status-header na mesma linha */
+    .status-card > .card-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        flex: 1;
+        min-width: 0;
+        margin-bottom: 16px;
+        order: 1;
+    }
+    
+    /* Esconder tooltip no mobile para dar espaço */
+    .status-card .card-header :deep(.info-icon-wrapper) {
+        display: none !important;
+    }
+    
+    /* Status ao lado do título na mesma linha */
+    .status-card > .status-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        gap: 8px;
+        margin: 0;
+        margin-bottom: 16px;
+        order: 1;
+        flex-shrink: 0;
+        align-self: center;
+    }
+    
+    /* Esconder botão pause no mobile */
+    .status-card .status-header .pause-btn {
+        display: none;
+    }
+    
+    /* Ajustar card-title */
+    .status-card .card-header .card-title {
+        white-space: nowrap;
+    }
+    
+    /* Trader abaixo do título - sem background separado */
+    .status-card > .trader-row {
+        display: flex;
+        flex-direction: column;
+        gap: 0;
+        margin-bottom: 16px;
+        order: 2;
+        width: 100%;
+    }
+    
+    .status-card .trader-row .trader-info {
+        width: 100%;
+        margin-bottom: 0;
+        background: #0a0b0a;
+        border: none;
+        padding: 15px 20px;
+        border-radius: 8px;
+    }
+    
+    /* SVG do trader com fundo e borda circular */
+    .status-card .trader-row .trader-avatar {
+        background: #222;
+        border: 1px solid #565656;
+        border-radius: 50%;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    
+    .status-card .trader-row .trader-avatar svg {
+        color: #22c55e;
+        width: 20px;
+        height: 20px;
+    }
+    
+    /* Esconder ops-today do trader-row no mobile */
+    .status-card .trader-row .ops-today {
+        display: none;
+    }
+    
+    /* Mostrar ops-today mobile-only no sync-row */
+    .status-card .sync-row .ops-today.mobile-only {
+        display: flex;
+    }
+    
+    /* Operações Totais e Última Sincronização lado a lado no sync-row */
+    .status-card > .sync-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: auto auto;
+        gap: 12px;
+        order: 3;
+        width: 100%;
+        border-top: none;
+        padding-top: 0;
+        margin-bottom: 16px;
+    }
+    
+    /* Operações Totais na primeira coluna do sync-row - com background sem borda */
+    .status-card .sync-row .ops-today {
+        display: flex;
+        flex-direction: column;
+        grid-column: 1;
+        grid-row: 1;
+        margin-bottom: 0;
+        background: #0a0b0a;
+        border: none;
+        border-radius: 8px;
+        height: 70px;
+        padding: 15px 20px;
+        justify-content: center;
+    }
+    
+    .status-card .sync-row .ops-today .label {
+        color: #666;
+        font-size: 11px;
+    }
+    
+    .status-card .sync-row .ops-today .value {
+        color: #22c55e;
+        font-size: 20px;
+        font-weight: 600;
+    }
+    
+    /* Última Sincronização na segunda coluna - com background sem borda */
+    .status-card .sync-row .sync-info {
+        grid-column: 2;
+        grid-row: 1;
+        border-right: none;
+        padding-right: 0;
+        border-bottom: none;
+        padding-bottom: 0;
+        margin-bottom: 0;
+        background: #0a0b0a;
+        border: none;
+        border-radius: 8px;
+        padding: 15px 20px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        height: 70px;
+    }
+    
+    .status-card .sync-row .sync-info .label {
+        color: #666;
+        font-size: 11px;
+    }
+    
+    .status-card .sync-row .sync-info .value {
+        color: #ccc;
+        font-size: 13px;
+    }
+    
+    /* SL, TP e SL Blindado abaixo em uma linha horizontal */
+    .status-card .sync-row .sync-tags {
+        display: flex;
+        flex-direction: row;
+        align-items: stretch;
+        gap: 12px;
+        grid-column: 1 / -1;
+        grid-row: 2;
+        margin-top: 0;
+        width: 100%;
+    }
+    
+    /* SL e TP como cards individuais - sem borda */
+    .status-card .sync-row .sync-tags .sync-tag {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        background: #0a0b0a;
+        border: none;
+        border-radius: 8px;
+        gap: 4px;
+    }
+    
+    .status-card .sync-row .sync-tags .tag-label {
+        font-size: 12px;
+        color: #d4d3d3;
+        font-weight: 500;
+        text-align: center;
+    }
+    
+    .status-card .sync-row .sync-tags .tag-value {
+        text-align: center;
+    }
+    
+    .status-card .sync-row .sync-tags .tag-value {
+        font-size: 14px;
+        font-weight: 600;
+    }
+    
+    .status-card .sync-row .sync-tags .sl-value {
+        color: #ef4444;
+    }
+    
+    .status-card .sync-row .sync-tags .tp-value {
+        color: #22c55e;
+    }
+    
+    /* SL Blindado como card individual com slider - sem borda */
+    .status-card .sync-row .sync-tags .sl-blindado-toggle {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 12px;
+        background: #0a0b0a;
+        border: none;
+        border-radius: 8px;
+        gap: 8px;
+    }
+    
+    .status-card .sync-row .sync-tags .sl-blindado-toggle .sl-blindado-label {
+        font-size: 12px;
+        color: #d4d3d3;
+        font-weight: 500;
+        text-align: center;
+    }
+    
+    .status-card .sync-row .sync-tags .sl-blindado-toggle .toggle-switch {
+        align-self: center;
+    }
+    
+    /* Toggle Switch para SL Blindado */
+    .sl-blindado-toggle {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: rgba(34,197,94,0.15);
+        border: 1px solid rgba(34,197,94,0.3);
+        padding: 6px 12px;
+        border-radius: 8px;
+    }
+    
+    .sl-blindado-label {
+        font-size: 11px;
+        font-weight: 500;
+        color: #22c55e;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 40px;
+        height: 22px;
+        flex-shrink: 0;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-switch .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #333;
+        transition: 0.3s;
+        border-radius: 22px;
+    }
+    
+    .toggle-switch .slider:before {
+        position: absolute;
+        content: "";
+        height: 16px;
+        width: 16px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.3s;
+        border-radius: 50%;
+    }
+    
+    .toggle-switch input:checked + .slider {
+        background-color: #22c55e;
+    }
+    
+    .toggle-switch input:checked + .slider:before {
+        transform: translateX(18px);
+    }
+    
+    /* Esconder sl-badge original no mobile */
+    .status-card .sl-badge {
+        display: none;
+    }
+    
+    .status-card .status-header {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+    
+    .status-card .status-header .status-row {
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-direction: row;
+        order: 2;
+    }
+    
+    .status-card .status-header .pause-btn {
+        order: 1;
+    }
+    
+    /* Esconder tooltips no mobile */
+    .card-header :deep(.info-icon-wrapper) {
+        display: none !important;
+    }
+    
+    /* Esconder o label "Status" no mobile */
+    .status-card .status-info .label {
+        display: none;
+    }
+    
+    /* Ajustar padding e border-radius do .value no mobile */
+    .status-card .status-row .value,
+    .status-card .status-info .value {
+        padding: 6px 12px;
+        border-radius: 20px;
+        min-width: 120px;
+    }
+    
+    /* Reorganizar para colocar SVG dentro do .value */
+    .status-card .status-row {
+        display: flex;
+        align-items: center;
+        gap: 0;
+    }
+    
+    /* Esconder o status-icon original e mover para dentro do .value */
+    .status-card .status-icon {
+        display: none;
+    }
+    
+    /* Adicionar SVG dentro do .value usando ::before */
+    .status-card .status-info .value {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 6px;
+        padding-left: 30px;
+        padding-right: 0;
+        border-radius: 20px;
+        position: relative;
+    }
+    
+    .status-card .status-info .value::before {
+        content: '';
+        position: absolute;
+        left: 12px;
+        width: 14px;
+        height: 14px;
+        background-image: url("data:image/svg+xml,%3Csvg fill='none' stroke='%2322c55e' viewBox='0 0 24 24' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M5 13l4 4L19 7'/%3E%3C/svg%3E");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+    }
+
+    .pause-copy-btn{
+        display: flex !important;
+        margin-top: 0;
+        margin-bottom: 90px;
+    }
+    
+    .status-card .status-header .pause-btn {
+        display: none;
+    }
+    
+    /* Ajustar espaçamento para o trader-row */
+    .status-card .trader-row {
+        margin-top: 12px;
+    }
+    
+    .trader-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .sync-row {
+        flex-direction: column;
+        gap: 12px;
+        border-top: 1px solid #151515;
+        padding-top: 12px;
+    }
+    
+    .sync-info {
+        border-right: none;
+        padding-right: 0;
+        border-bottom: 1px solid #1d1c1c;
+        padding-bottom: 12px;
+    }
+    
+    .performance-footer {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-template-rows: 1fr 1fr;
+        gap: 12px;
+        margin-top: 20px;
+        padding-top: 20px;
+    }
+    
+    .footer-item {
+        text-align: center;
+        width: 100%;
+    }
+    
+    .footer-item .label {
+        font-size: 12px;
+        color: #fff;
+        margin-bottom: 4px;
+    }
+    
+    .footer-item .value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+    }
+    
+    .footer-item .value.green {
+        color: #22c55e;
+    }
+    
+    .footer-item .value.red {
+        color: #ef4444;
+    }
+    
+    .chart-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
+    
+    .period-btns {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 8px;
+        width: 100%;
+    }
+    
+    .period-btn {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    /* Garantir que Personalizado fique ao lado de 30 dias */
+    .period-btn:nth-child(3) {
+        grid-row: 2;
+        grid-column: 1;
+    }
+    
+    .period-btn:nth-child(4) {
+        grid-row: 2;
+        grid-column: 2;
+    }
+    
+    /* Background do card de performance no mobile (igual configurações do copy) */
+    .performance-card {
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1a1a1a !important;
+        border-radius: 12px !important;
+        padding: 20px 15px 10px !important;
+        margin: 0 !important;
+        width: 100% !important;
+        box-sizing: border-box !important;
+        overflow: hidden !important;
+    }
+    
+    /* Date picker no mobile */
+    .date-picker-area {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+        padding: 0;
+        margin-top: 0;
+        margin-bottom: 0;
+        border-bottom: 1px solid #1a1a1a;
+    }
+    
+    .date-inputs-row {
+        display: flex;
+        flex-direction: row;
+        gap: 10px;
+        width: 100%;
+        margin-bottom: 0;
+    }
+    
+    .date-input-group {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+        width: 100%;
+    }
+    
+    .date-input-group label {
+        font-size: 11px;
+        color: #929292;
+        margin-bottom: 0;
+    }
+    
+    .date-input {
+        width: 100%;
+        padding: 8px 10px;
+        font-size: 13px;
+        background: #1a1a1a;
+        border: 1px solid #222;
+        border-radius: 6px;
+        color: #fff;
+        box-sizing: border-box;
+        height: 36px;
+        line-height: 1.2;
+    }
+    
+    .apply-btn {
+        width: 100%;
+        padding: 10px;
+        font-size: 14px;
+        font-weight: 600;
+        margin-top: 0;
+        margin-bottom: 20px;
+        height: auto;
+        min-height: 40px;
+    }
+    
+    /* Padding entre botão Aplicar e gráfico */
+    .date-picker-area + .chart-content {
+        margin-top: 20px;
+    }
+    
+    /* Cards de operações no mobile */
+    .operations-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        width: 100%;
+    }
+    
+    .operation-card {
+        background: #0a0b0a;
+        border-radius: 8px;
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .card-time {
+        font-size: 12px;
+        color: #929292;
+        margin-bottom: 4px;
+    }
+    
+    .card-type {
+        font-size: 16px;
+        font-weight: 700;
+        color: #fff;
+        margin-bottom: 8px;
+    }
+    
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-top: 8px;
+    }
+    
+    .card-invested {
+        display: flex;
+        align-items: center;
+    }
+    
+    .card-result {
+        display: flex;
+        align-items: center;
+    }
+    
+    .card-label {
+        font-size: 14px;
+        color: #fff;
+    }
+    
+    .card-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #fff;
+    }
+    
+    .card-value.green {
+        color: #22c55e;
+    }
+    
+    .card-value.red {
+        color: #ef4444;
+    }
+    
+    /* Esconder tabela no mobile */
+    .operations-table.desktop-only {
+        display: none;
+    }
+    
+    /* Garantir que tabelas não transbordem */
+    .operations-list {
+        overflow-x: auto;
+        width: 100%;
+        max-width: 100%;
+        -webkit-overflow-scrolling: touch;
+    }
+    
+    .operations-table {
+        min-width: 100%;
+        max-width: 100%;
+        table-layout: fixed;
+    }
+    
+    /* Weekly centralizado no mobile */
+    .weekly {
+        text-align: center;
+        font-size: 13px;
+    }
+    
+    .weekly-value {
+        color: #20be5b;
+    }
+    
+    /* Garantir que todos os elementos respeitem os limites */
+    .card-header,
+    .status-header,
+    .trader-row,
+    .sync-row,
+    .risk-row,
+    .risk-badge {
+        max-width: 100%;
+        box-sizing: border-box;
+    }
+    
+    /* Ajustar texto para não transbordar */
+    .card-title,
+    .profit-label,
+    .label,
+    .value {
+        word-wrap: break-word;
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
 }
 
 </style>

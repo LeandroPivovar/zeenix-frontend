@@ -26,7 +26,15 @@
             <div class="trader-info-area">
                 <div v-if="!selectedTrader" class="empty-state">
                     <div class="empty-icon">
-                        <img src="../../assets/icons/add-people.svg" alt="" width="50px" height="50px">
+                        <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <circle cx="25" cy="25" r="25" fill="#2a2a2a"/>
+                            <g fill="#22C55E">
+                                <circle cx="25" cy="18" r="6"/>
+                                <path d="M15 35c0-5.5 4.5-10 10-10s10 4.5 10 10" stroke="#22C55E" stroke-width="2" fill=""/>
+                                <line x1="32" y1="20" x2="38" y2="20" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                                <line x1="35" y1="17" x2="35" y2="23" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                            </g>
+                        </svg>
                     </div>
                     <p>Nenhum trader selecionado</p>
                     <small>Clique no campo acima para escolher</small>
@@ -507,15 +515,16 @@ export default {
 
 /* --- Card --- */
 .card {
-    background: #0b0b0b;
+    background: #ebebeb;
     border: 1px solid #222;
-    border-radius: 8px;
+    border-radius: 0px;
     padding: 24px;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    position: relative; 
-    z-index: 0; 
+    position: relative;
+    z-index: 0;
+    margin: 0;
 }
 
 /* .card-middle { z-index: 2; } */
@@ -817,13 +826,20 @@ input:checked + .slider:before {
 
 /* Borda abaixo do Stop Loss */
 .card-right .form-group .summary-item {
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid #222 !important;
     padding-bottom: 12px;
+    margin-bottom: 0;
+}
+
+/* Remover border none e padding 0 do form-group do Stop Loss */
+.card-right .form-group {
+    border: initial;
+    padding: initial;
 }
 
 /* Remover borda abaixo de Proteção */
 .card-right .summary-item:last-of-type {
-    border-bottom: none !important;
+    border-bottom: 1px solid #222 !important;
 }
 
 
@@ -910,7 +926,7 @@ input:checked + .slider:before {
     font-size: 15px;
     font-weight: 600;
     cursor: pointer;
-    margin-bottom: 16px;
+    margin-bottom: 0px;
     transition: background 0.3s;
 }
 
@@ -1038,9 +1054,7 @@ input:checked + .slider:before {
     
     /* Ajustar resumo no mobile */
     .card-right .summary-item:last-of-type {
-        border-bottom: none;
         margin-bottom: 0;
-        padding-bottom: 0;
     }
     
     .card-right .warning-text {
