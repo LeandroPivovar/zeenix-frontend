@@ -84,7 +84,7 @@
                             <div class="relative z-10 h-full flex items-center justify-between gap-8">
                                 <div class="flex items-center space-x-5 flex-shrink-0">
                                     <div id="status-icon-container" class="w-16 h-16 bg-zenix-green/15 border-2 border-zenix-green/30 rounded-xl flex items-center justify-center transition-all duration-700">
-                                        <i id="status-icon" class="fas fa-chart-line text-zenix-green text-2xl ai-pulse"></i>
+                                        <i id="status-icon" class="fas fa-robot text-zenix-green text-2xl ai-pulse"></i>
                                     </div>
                                     <div class="text-left">
                                         <h3 id="status-title" class="text-xl font-bold text-zenix-text leading-tight transition-all duration-700 text-left">
