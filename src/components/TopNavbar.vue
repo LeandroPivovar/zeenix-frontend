@@ -415,9 +415,18 @@ export default {
       if (connectionStr) {
         try {
           const connection = JSON.parse(connectionStr);
-          // Verificar isDemo explicitamente (pode ser true, false, 1, 0, etc)
-          const isDemo = connection.isDemo === true || connection.isDemo === 1 || 
-                        connection.loginid?.startsWith('VRTC') || connection.loginid?.startsWith('VRT');
+          // PRIORIDADE 1: Verificar loginid primeiro (mais confiável)
+          const loginid = connection.loginid || '';
+          const isDemoByLoginid = loginid.startsWith('VRTC') || loginid.startsWith('VRT');
+          
+          // PRIORIDADE 2: Verificar isDemo se existir
+          const isDemoByFlag = connection.isDemo === true || connection.isDemo === 1;
+          
+          // Se loginid indica demo, é demo (independente do flag)
+          // Se loginid não indica demo mas flag indica, usar flag
+          // Se loginid começa com CR, é real
+          const isDemo = isDemoByLoginid || (isDemoByFlag && !loginid.startsWith('CR'));
+          
           return isDemo ? 'demo' : 'real';
         } catch {
           return this.accountType || 'real';
@@ -601,24 +610,22 @@ export default {
         // Carregar contas quando abrir o modal (usar cache se disponível)
         this.loadAccountsForModal();
         
-        // Definir o filtro baseado no tipo de conta atual (verificar localStorage primeiro)
+        // Definir o filtro baseado no tipo de conta atual
+        // Usar o computed currentAccountType que já tem a lógica correta
+        this.accountTypeFilter = this.currentAccountType;
+        
         const connectionStr = localStorage.getItem('deriv_connection');
         if (connectionStr) {
           try {
             const connection = JSON.parse(connectionStr);
-            // Verificar isDemo de múltiplas formas para garantir precisão
-            const isDemo = connection.isDemo === true || connection.isDemo === 1 || 
-                          connection.loginid?.startsWith('VRTC') || connection.loginid?.startsWith('VRT');
-            this.accountTypeFilter = isDemo ? 'demo' : 'real';
             console.log('[TopNavbar] Modal aberto, tipo de conta:', this.accountTypeFilter, {
               isDemo: connection.isDemo,
-              loginid: connection.loginid
+              loginid: connection.loginid,
+              currentAccountType: this.currentAccountType
             });
-          } catch {
-            this.accountTypeFilter = this.accountType === 'demo' ? 'demo' : 'real';
+          } catch (e) {
+            console.warn('[TopNavbar] Erro ao parsear connection:', e);
           }
-        } else {
-          this.accountTypeFilter = this.accountType === 'demo' ? 'demo' : 'real';
         }
       }
     },
@@ -639,19 +646,14 @@ export default {
     },
     async switchAccountType(type) {
       // Verificar o tipo de conta atual baseado no localStorage
-      const connectionStr = localStorage.getItem('deriv_connection');
-      let currentType = 'real';
-      if (connectionStr) {
-        try {
-          const connection = JSON.parse(connectionStr);
-          currentType = connection.isDemo === true ? 'demo' : 'real';
-        } catch {
-          // Se não conseguir parsear, usar o accountType da prop
-          currentType = this.accountType || 'real';
-        }
-      } else {
-        currentType = this.accountType || 'real';
-      }
+      // Usar a mesma lógica do computed currentAccountType
+      const currentType = this.currentAccountType;
+      
+      console.log(`[TopNavbar] switchAccountType chamado:`, {
+        typeDesejado: type,
+        tipoAtual: currentType,
+        connection: JSON.parse(localStorage.getItem('deriv_connection') || '{}')
+      });
       
       // Se já está no tipo selecionado, não fazer nada
       if (currentType === type) {

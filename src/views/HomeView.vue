@@ -314,8 +314,14 @@ export default {
             if (data?.appId) {
               localStorage.setItem('deriv_app_id', String(data.appId))
             }
+            // Determinar isDemo baseado no loginid (mais confiável)
+            const loginid = data.loginid || '';
+            const isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT');
+            
             localStorage.setItem('deriv_connection', JSON.stringify({
               ...data,
+              loginid: loginid,
+              isDemo: isDemo,
               timestamp: Date.now()
             }))
           } else {

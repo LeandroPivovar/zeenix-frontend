@@ -93,8 +93,14 @@ export default {
       } else if (!localStorage.getItem('deriv_app_id')) {
         localStorage.setItem('deriv_app_id', '1089');
       }
+      // Determinar isDemo baseado no loginid (mais confiável)
+      const loginid = data.loginid || chosenAccount?.loginid || '';
+      const isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT');
+      
       localStorage.setItem('deriv_connection', JSON.stringify({
         ...data,
+        loginid: loginid,
+        isDemo: isDemo,
         timestamp: Date.now(),
       }));
 
