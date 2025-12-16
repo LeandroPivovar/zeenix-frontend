@@ -912,7 +912,24 @@ export default {
                     this.accountBalance = result.data.balance;
                     this.accountCurrency = result.data.currency;
                     this.accountLoginid = result.data.loginid;
-                    this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+                    
+                    // Verificar isDemo de múltiplas fontes para garantir precisão
+                    let isDemoFromLoginid = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+                    
+                    // Verificar também no localStorage deriv_connection
+                    try {
+                        const connectionStr = localStorage.getItem('deriv_connection');
+                        if (connectionStr) {
+                            const connection = JSON.parse(connectionStr);
+                            if (connection.isDemo !== undefined) {
+                                isDemoFromLoginid = connection.isDemo === true || connection.isDemo === 1;
+                            }
+                        }
+                    } catch (error) {
+                        console.warn('[InvestmentIAView] Erro ao verificar deriv_connection:', error);
+                    }
+                    
+                    this.isDemo = isDemoFromLoginid;
                     this.lastBalanceUpdate = new Date();
                     
                     console.log('[InvestmentIAView] ✅ Saldo atualizado:', {

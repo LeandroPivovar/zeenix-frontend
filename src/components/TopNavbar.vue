@@ -415,7 +415,10 @@ export default {
       if (connectionStr) {
         try {
           const connection = JSON.parse(connectionStr);
-          return connection.isDemo ? 'demo' : 'real';
+          // Verificar isDemo explicitamente (pode ser true, false, 1, 0, etc)
+          const isDemo = connection.isDemo === true || connection.isDemo === 1 || 
+                        connection.loginid?.startsWith('VRTC') || connection.loginid?.startsWith('VRT');
+          return isDemo ? 'demo' : 'real';
         } catch {
           return this.accountType || 'real';
         }
@@ -597,8 +600,18 @@ export default {
       if (this.showProfileModal) {
         // Carregar contas quando abrir o modal
         this.loadAccountsForModal();
-        // Definir o filtro baseado no tipo de conta atual
-        this.accountTypeFilter = this.accountType === 'demo' ? 'demo' : 'real';
+        // Definir o filtro baseado no tipo de conta atual (verificar localStorage primeiro)
+        const connectionStr = localStorage.getItem('deriv_connection');
+        if (connectionStr) {
+          try {
+            const connection = JSON.parse(connectionStr);
+            this.accountTypeFilter = connection.isDemo === true ? 'demo' : 'real';
+          } catch {
+            this.accountTypeFilter = this.accountType === 'demo' ? 'demo' : 'real';
+          }
+        } else {
+          this.accountTypeFilter = this.accountType === 'demo' ? 'demo' : 'real';
+        }
       }
     },
     closeProfileModal() {
@@ -613,8 +626,20 @@ export default {
       await this.loadAvailableAccounts();
     },
     async switchAccountType(type) {
-      // Verificar o tipo de conta atual
-      const currentType = this.currentAccountType;
+      // Verificar o tipo de conta atual baseado no localStorage
+      const connectionStr = localStorage.getItem('deriv_connection');
+      let currentType = 'real';
+      if (connectionStr) {
+        try {
+          const connection = JSON.parse(connectionStr);
+          currentType = connection.isDemo === true ? 'demo' : 'real';
+        } catch {
+          // Se não conseguir parsear, usar o accountType da prop
+          currentType = this.accountType || 'real';
+        }
+      } else {
+        currentType = this.accountType || 'real';
+      }
       
       // Se já está no tipo selecionado, não fazer nada
       if (currentType === type) {
@@ -625,10 +650,12 @@ export default {
       // Atualizar o filtro visual
       this.accountTypeFilter = type;
       
-      // Garantir que temos as contas carregadas
-      if (this.availableAccounts.length === 0) {
-        await this.loadAvailableAccounts();
-      }
+      // Limpar cache para garantir dados atualizados
+      const { clearAccountsCache } = await import('../utils/accountsLoader');
+      clearAccountsCache();
+      
+      // Garantir que temos as contas carregadas (forçar recarregamento)
+      await this.loadAvailableAccounts(true);
       
       // Encontrar uma conta do tipo selecionado
       const targetAccounts = this.availableAccounts.filter(account => {
@@ -649,7 +676,11 @@ export default {
       // Priorizar USD se disponível, senão pegar a primeira
       let selectedAccount = targetAccounts.find(acc => acc.currency === 'USD') || targetAccounts[0];
       
-      console.log(`[TopNavbar] Trocando para conta ${type}:`, selectedAccount.loginid);
+      console.log(`[TopNavbar] Trocando para conta ${type}:`, selectedAccount.loginid, {
+        isDemo: selectedAccount.isDemo,
+        loginid: selectedAccount.loginid,
+        currency: selectedAccount.currency
+      });
       
       // Fechar o modal antes de trocar a conta
       this.closeProfileModal();
@@ -727,7 +758,10 @@ export default {
       await this.loadAvailableAccounts();
     },
     async loadAvailableAccounts(forceReload = false) {
-      this.loadingAccounts = true;
+      // Só mostrar loading se o modal estiver aberto (para não mostrar durante troca de conta)
+      if (this.showProfileModal || this.showAccountModal) {
+        this.loadingAccounts = true;
+      }
       try {
         // Usar a função utilitária que já tem cache e otimizações
         // Se forçar recarregamento, limpar cache e buscar novamente
@@ -798,6 +832,10 @@ export default {
     },
     async selectAccount(account) {
       try {
+        // Limpar cache antes de trocar de conta
+        const { clearAccountsCache } = await import('../utils/accountsLoader');
+        clearAccountsCache();
+        
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
         const token = localStorage.getItem('token');
         const appId = localStorage.getItem('deriv_app_id') || '1089';
@@ -819,18 +857,21 @@ export default {
         if (response.ok) {
           const data = await response.json();
           
+          // Garantir que isDemo está correto baseado no account.isDemo (mais confiável)
+          const isDemo = account.isDemo === true || account.loginid?.startsWith('VRTC') || account.loginid?.startsWith('VRT');
+          
           // Atualizar localStorage com a conta selecionada
           localStorage.setItem('deriv_token', account.token);
           localStorage.setItem('deriv_connection', JSON.stringify({
             ...data,
             loginid: account.loginid,
             currency: account.currency,
-            isDemo: account.isDemo,
+            isDemo: isDemo,
             timestamp: Date.now()
           }));
 
           // Emitir evento para atualizar o componente pai
-          const accountType = account.isDemo ? 'demo' : 'real';
+          const accountType = isDemo ? 'demo' : 'real';
           this.$emit('account-type-changed', accountType);
           
           // Emitir evento customizado para atualizar outros componentes
