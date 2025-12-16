@@ -34,8 +34,8 @@
     <!-- Main Content -->
     <main class="main-content bg-zenix-bg noise-bg font-inter overflow-y-auto w-full" style="overflow-x: hidden;">
       <!-- Hero Onboarding Section -->
-      <section id="hero-section" class="w-full mt-16 py-12 px-8 relative overflow-hidden group h-[560px]">
-      <div class="absolute inset-0 z-0 bg-[#0B0B0B]">
+      <section id="hero-section" class="w-full mt-16 py-12 px-8 relative overflow-visible group h-[560px]">
+      <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent" style="left: -32px; width: calc(100% + 64px);">
         <!-- Video Background - Desktop Only (Dual Video for Seamless Loop) -->
         <video 
           ref="heroVideo1"
@@ -59,8 +59,8 @@
         <!-- Fallback Background for Mobile -->
         <div class="md:hidden absolute inset-0 bg-gradient-to-br from-[#0B0B0B] via-[#0d1410] to-[#0B0B0B]">
         </div>
-        <!-- Overlay for Desktop -->
-        <div class="hidden md:block absolute inset-0 bg-gradient-to-br from-[#0B0B0B]/35 via-[#0d1410]/35 to-[#0B0B0B]/35">
+        <!-- Overlay for Desktop - desaparece quando sidebar está colapsada -->
+        <div v-if="!localSidebarCollapsed" class="hidden md:block absolute inset-0 bg-gradient-to-r from-[rgb(20_17_17/0.35)] to-transparent">
         </div>
       </div>
       <div class="relative z-10 h-full w-full px-12">
@@ -2818,6 +2818,8 @@ export default {
   display: none !important;
 }
 
+
+
 /* Dashboard específico - Cor #050705 apenas no desktop */
 @media (min-width: 1025px) {
   /* Sidebar com box-shadow para transição suave entre sidebar e conteúdo do vídeo */
@@ -2844,8 +2846,9 @@ export default {
     z-index: 50;
   }
   
-  .dashboard-layout.sidebar-collapsed .main-content::before {
-    display: none;
+  .dashboard-layout.sidebar-collapsed .main-content::before,
+  .dashboard-content-wrapper.sidebar-collapsed .main-content::before {
+    display: none !important;
   }
   
   /* Header/TopNavbar */
