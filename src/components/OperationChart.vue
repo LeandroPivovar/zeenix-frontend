@@ -963,33 +963,73 @@ export default {
         return false;
       }
       
-      // Tentar fazer a atribuição diretamente
+      // Usar nextTick para garantir que estamos em um ciclo seguro de renderização
       try {
-        this[propertyName] = value;
+        this.$nextTick(() => {
+          // Verificar novamente antes de atualizar
+          if (this.isComponentDestroyed || !this.isComponentMounted()) {
+            return;
+          }
+          
+          try {
+            // Verificar se a propriedade existe no componente
+            if (!(propertyName in this)) {
+              console.warn(`[Chart] Propriedade ${propertyName} não existe no componente`);
+              return;
+            }
+            
+            // Atualizar propriedade
+            this[propertyName] = value;
+          } catch (error) {
+            // Se falhar, verificar se é um erro conhecido do Vue durante desmontagem
+            const errorMessage = String(error?.message || error || '');
+            const knownErrors = [
+              'insertBefore',
+              'Symbol(_assign)',
+              'emitsOptions',
+              '_assigning',
+              'Cannot read properties of null',
+              'Cannot set properties of null',
+              'Cannot use \'in\' operator',
+              'Cannot destructure property',
+              'bum'
+            ];
+            
+            // Se for erro conhecido, ignorar silenciosamente (componente está sendo desmontado)
+            if (!knownErrors.some(err => errorMessage.includes(err))) {
+              console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, error);
+            }
+          }
+        });
         return true;
       } catch (error) {
-        // Se falhar, verificar se é um erro conhecido do Vue durante desmontagem
-        const errorMessage = String(error?.message || error || '');
-        const knownErrors = [
-          'insertBefore',
-          'Symbol(_assign)',
-          'emitsOptions',
-          '_assigning',
-          'Cannot read properties of null',
-          'Cannot set properties of null',
-          'Cannot use \'in\' operator',
-          'Cannot destructure property',
-          'bum'
-        ];
-        
-        // Se for erro conhecido, ignorar silenciosamente (componente está sendo desmontado)
-        if (knownErrors.some(err => errorMessage.includes(err))) {
+        // Se nextTick falhar, tentar atualização direta como fallback
+        try {
+          if (this.isComponentDestroyed || !this.isComponentMounted()) {
+            return false;
+          }
+          this[propertyName] = value;
+          return true;
+        } catch (directError) {
+          // Ignorar erros conhecidos
+          const errorMessage = String(directError?.message || directError || '');
+          const knownErrors = [
+            'insertBefore',
+            'Symbol(_assign)',
+            'emitsOptions',
+            '_assigning',
+            'Cannot read properties of null',
+            'Cannot set properties of null',
+            'Cannot use \'in\' operator',
+            'Cannot destructure property',
+            'bum'
+          ];
+          
+          if (!knownErrors.some(err => errorMessage.includes(err))) {
+            console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, directError);
+          }
           return false;
         }
-        
-        // Se não for erro conhecido, logar mas não re-lançar
-        console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, error);
-        return false;
       }
     },
     // Helper para criar timeout rastreado
@@ -2421,22 +2461,35 @@ export default {
         return;
       }
       
-      // Usar safeUpdate para garantir atualização segura
-      this.safeUpdate(() => {
-        // Verificar novamente antes de atualizar (dentro do callback também)
-        if (!this.isSafeToUpdate()) {
+      // Usar nextTick para garantir atualização segura
+      this.$nextTick(() => {
+        if (!this.isComponentMounted()) {
           return;
         }
         
-        // Usar safeSetProperty para atualizar propriedades de forma segura
-        const proposalIdSet = this.safeSetProperty('currentProposalId', proposalData.id);
-        const proposalPriceSet = this.safeSetProperty('currentProposalPrice', Number(proposalData.askPrice || proposalData.ask_price || 0));
-        
-        if (proposalIdSet && proposalPriceSet) {
+        try {
+          this.currentProposalId = proposalData.id;
+          this.currentProposalPrice = Number(proposalData.askPrice || proposalData.ask_price || 0);
+          
           console.log('[Chart] ✅ Proposta processada:', {
             proposalId: this.currentProposalId,
             proposalPrice: this.currentProposalPrice
           });
+        } catch (error) {
+          // Ignorar erros conhecidos do Vue durante desmontagem
+          const errorMessage = String(error?.message || error || '');
+          const knownErrors = [
+            'insertBefore',
+            'Symbol(_assign)',
+            'emitsOptions',
+            '_assigning',
+            'Cannot read properties of null',
+            'Cannot set properties of null'
+          ];
+          
+          if (!knownErrors.some(err => errorMessage.includes(err))) {
+            console.warn('[Chart] Erro ao processar proposta:', error);
+          }
         }
       });
     },
@@ -2612,16 +2665,24 @@ export default {
         return;
       }
       
-      // Usar safeSetProperty diretamente para abrir modal
-      this.safeSetProperty('showMarketModal', true);
+      // Usar nextTick para garantir que o DOM está pronto
+      this.$nextTick(() => {
+        if (this.isComponentMounted()) {
+          this.showMarketModal = true;
+        }
+      });
     },
     closeMarketModal() {
       if (!this.isComponentMounted()) {
         return;
       }
       
-      // Usar safeSetProperty diretamente para fechar modal
-      this.safeSetProperty('showMarketModal', false);
+      // Usar nextTick para garantir que o DOM está pronto
+      this.$nextTick(() => {
+        if (this.isComponentMounted()) {
+          this.showMarketModal = false;
+        }
+      });
     },
     async selectMarket(marketValue) {
       if (!this.isComponentMounted()) {
@@ -2649,16 +2710,24 @@ export default {
         return;
       }
       
-      // Usar safeSetProperty diretamente para abrir modal
-      this.safeSetProperty('showTradeTypeModal', true);
+      // Usar nextTick para garantir que o DOM está pronto
+      this.$nextTick(() => {
+        if (this.isComponentMounted()) {
+          this.showTradeTypeModal = true;
+        }
+      });
     },
     closeTradeTypeModal() {
       if (!this.isComponentMounted()) {
         return;
       }
       
-      // Usar safeSetProperty diretamente para fechar modal
-      this.safeSetProperty('showTradeTypeModal', false);
+      // Usar nextTick para garantir que o DOM está pronto
+      this.$nextTick(() => {
+        if (this.isComponentMounted()) {
+          this.showTradeTypeModal = false;
+        }
+      });
     },
     selectTradeType(type) {
       if (!this.isComponentMounted()) {
@@ -3287,6 +3356,10 @@ export default {
     },
     async loadProposal() {
       if (!this.isConnected || !this.localOrderConfig.type) {
+        console.warn('[Chart] Não conectado ou tipo não definido:', {
+          isConnected: this.isConnected,
+          type: this.localOrderConfig.type
+        });
         return;
       }
       
@@ -3299,15 +3372,32 @@ export default {
           amount: this.localOrderConfig.amount,
         });
         
-        // Atualizar proposta atual diretamente (dentro de async, mas componente está montado)
+        // Atualizar proposta atual usando nextTick para garantir que está em ciclo seguro
         if (!this.isComponentDestroyed && this.isComponentMounted()) {
-          this.currentProposalId = proposal.id;
-          this.currentProposalPrice = proposal.askPrice;
+          this.$nextTick(() => {
+            if (this.isComponentMounted() && proposal && proposal.id) {
+              this.currentProposalId = proposal.id;
+              this.currentProposalPrice = proposal.askPrice || proposal.ask_price || 0;
+              console.log('[Chart] ✅ Proposta carregada e atualizada:', {
+                proposalId: this.currentProposalId,
+                proposalPrice: this.currentProposalPrice
+              });
+            }
+          });
         }
         
         console.log('[Chart] ✅ Proposta carregada:', proposal);
       } catch (error) {
         console.error('[Chart] Erro ao carregar proposta:', error);
+        // Limpar proposta em caso de erro
+        if (this.isComponentMounted()) {
+          this.$nextTick(() => {
+            if (this.isComponentMounted()) {
+              this.currentProposalId = null;
+              this.currentProposalPrice = null;
+            }
+          });
+        }
       }
     },
     async subscribeToProposal() {

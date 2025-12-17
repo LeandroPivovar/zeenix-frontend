@@ -839,10 +839,21 @@ export default {
   },
   watch: {
     '$route'(to, from) {
-      // Verificar se realmente mudou de rota
-      if (to.path === '/operation' && from.path !== '/operation') {
-        // Recarregar conexão apenas se estiver entrando na página
-        this.checkConnection();
+      // Verificar se realmente mudou de rota ou se estamos na mesma rota (forçar atualização)
+      if (to.path === '/operation') {
+        // Sempre recarregar quando estiver na rota de operação
+        // Isso garante que a view seja atualizada mesmo quando já estamos na rota
+        if (from.path !== '/operation') {
+          // Primeira vez entrando na página
+          this.checkConnection(true);
+        } else {
+          // Já estávamos na página, forçar atualização
+          this.$nextTick(() => {
+            if (this.isComponentMounted()) {
+              this.checkConnection(true);
+            }
+          });
+        }
       }
     },
   },

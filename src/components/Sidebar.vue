@@ -401,17 +401,32 @@ export default {
                                 return;
                             }
                             
-                            this.$router.push(route).catch(err => {
-                                // Ignorar erros de navegação duplicada e erros relacionados a componentes null
-                                const errMsg = String(err?.message || err || '');
-                                if (err.name !== 'NavigationDuplicated' && 
-                                    !errMsg.includes('Cannot destructure') &&
-                                    !errMsg.includes('bum') &&
-                                    !errMsg.includes('insertBefore') &&
-                                    !errMsg.includes('Symbol(_assign)')) {
-                                    console.error('[Sidebar] Erro ao navegar:', err);
-                                }
-                            });
+                            // Verificar se já estamos na rota atual
+                            const currentRoute = this.$route?.path;
+                            if (currentRoute === route) {
+                                // Forçar atualização da view mesmo estando na mesma rota
+                                this.$router.replace(route).then(() => {
+                                    // Forçar reload do componente se necessário
+                                    if (this.$router.currentRoute.value.path === route) {
+                                        // Disparar evento para forçar atualização
+                                        window.dispatchEvent(new PopStateEvent('popstate'));
+                                    }
+                                }).catch(() => {
+                                    // Ignorar erros de navegação duplicada
+                                });
+                            } else {
+                                this.$router.push(route).catch(err => {
+                                    // Ignorar erros de navegação duplicada e erros relacionados a componentes null
+                                    const errMsg = String(err?.message || err || '');
+                                    if (err.name !== 'NavigationDuplicated' && 
+                                        !errMsg.includes('Cannot destructure') &&
+                                        !errMsg.includes('bum') &&
+                                        !errMsg.includes('insertBefore') &&
+                                        !errMsg.includes('Symbol(_assign)')) {
+                                        console.error('[Sidebar] Erro ao navegar:', err);
+                                    }
+                                });
+                            }
                         } catch (pushError) {
                             // Ignorar erros de push se componente está sendo desmontado
                             const errMsg = String(pushError?.message || pushError || '');
