@@ -386,6 +386,35 @@ class DerivTradingService {
   }
 
   /**
+   * Solicita símbolos ativos (via WebSocket interno do backend)
+   */
+  async requestActiveSymbols() {
+    const authToken = this.token || localStorage.getItem('token');
+    if (!authToken) {
+      throw new Error('Token de autenticação não encontrado');
+    }
+
+    try {
+      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/active-symbols`, {
+        method: 'GET',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Erro ao solicitar símbolos');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('[DerivTrading] Erro ao solicitar símbolos:', error);
+      throw error;
+    }
+  }
+
+  /**
    * Executa venda de contrato
    */
   async sellContract(contractId) {

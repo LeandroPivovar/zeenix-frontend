@@ -205,6 +205,7 @@
 
 <script lang="js">
 import { createChart, ColorType } from 'lightweight-charts';
+import derivTradingService from '../services/deriv-trading.service.js';
 
 export default {
   name: 'OperationChart',
@@ -220,40 +221,8 @@ export default {
       amount: 10,
       showMarketModal: false,
       showTradeTypeModal: false,
-      markets: [
-        { value: 'R_10', label: 'Volatility 10 Index', category: 'Índices Contínuos' },
-        { value: 'R_25', label: 'Volatility 25 Index', category: 'Índices Contínuos' },
-        { value: 'R_50', label: 'Volatility 50 Index', category: 'Índices Contínuos' },
-        { value: 'R_75', label: 'Volatility 75 Index', category: 'Índices Contínuos' },
-        { value: 'R_100', label: 'Volatility 100 Index', category: 'Índices Contínuos' },
-        { value: '1HZ10V', label: 'Volatility 10 (1s) Index', category: 'Índices Contínuos' },
-        { value: '1HZ25V', label: 'Volatility 25 (1s) Index', category: 'Índices Contínuos' },
-        { value: '1HZ50V', label: 'Volatility 50 (1s) Index', category: 'Índices Contínuos' },
-        { value: '1HZ75V', label: 'Volatility 75 (1s) Index', category: 'Índices Contínuos' },
-        { value: '1HZ100V', label: 'Volatility 100 (1s) Index', category: 'Índices Contínuos' },
-        { value: 'cryBTCUSD', label: 'BTC/USD (Bitcoin)', category: 'Criptomoedas' },
-        { value: 'cryETHUSD', label: 'ETH/USD (Ethereum)', category: 'Criptomoedas' },
-        { value: 'frxEURUSD', label: 'EUR/USD (Euro / Dólar)', category: 'Forex Majors' },
-        { value: 'frxUSDJPY', label: 'USD/JPY (Dólar / Iene)', category: 'Forex Majors' },
-        { value: 'frxGBPUSD', label: 'GBP/USD (Libra / Dólar)', category: 'Forex Majors' },
-        { value: 'frxUSDCHF', label: 'USD/CHF (Dólar / Franco)', category: 'Forex Majors' },
-        { value: 'frxAUDUSD', label: 'AUD/USD (Dólar Australiano)', category: 'Forex Majors' },
-        { value: 'frxUSDCAD', label: 'USD/CAD (Dólar / Dólar Canadense)', category: 'Forex Majors' },
-        { value: 'frxNZDUSD', label: 'NZD/USD (Dólar Neozelandês)', category: 'Forex Majors' },
-        { value: 'frxEURGBP', label: 'EUR/GBP (Euro / Libra)', category: 'Forex Majors' },
-        { value: 'frxEURJPY', label: 'EUR/JPY (Euro / Iene)', category: 'Forex Majors' },
-        { value: 'frxGBPJPY', label: 'GBP/JPY (Libra / Iene)', category: 'Forex Majors' },
-        { value: 'frxAUDCAD', label: 'AUD/CAD (Dólar Australiano / Canadense)', category: 'Forex Majors' },
-        { value: 'frxAUDJPY', label: 'AUD/JPY (Dólar Australiano / Iene)', category: 'Forex Majors' },
-        { value: 'frxCHFJPY', label: 'CHF/JPY (Franco / Iene)', category: 'Forex Majors' },
-        { value: 'frxEURAUD', label: 'EUR/AUD (Euro / Dólar Australiano)', category: 'Forex Majors' },
-        { value: 'frxGBPAUD', label: 'GBP/AUD (Libra / Dólar Australiano)', category: 'Forex Majors' },
-        { value: 'frxUSDMXN', label: 'USD/MXN (Dólar / Peso Mexicano)', category: 'Forex Majors' },
-        { value: 'frxXAUUSD', label: 'XAU/USD (Ouro / Dólar)', category: 'Metais' },
-        { value: 'frxXAGUSD', label: 'XAG/USD (Prata / Dólar)', category: 'Metais' },
-        { value: 'frxXPTUSD', label: 'XPT/USD (Platina / Dólar)', category: 'Metais' },
-        { value: 'frxXPDUSD', label: 'XPD/USD (Paládio / Dólar)', category: 'Metais' },
-      ],
+      markets: [], // Será preenchido pela API
+      isLoadingMarkets: false,
       availableTradeTypes: [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
         { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
@@ -292,12 +261,17 @@ export default {
   },
   mounted() {
     this.initChart();
+    this.loadMarketsFromAPI();
   },
   beforeUnmount() {
     if (this.chart) {
       this.chart.remove();
       this.chart = null;
       this.chartSeries = null;
+    }
+    // Parar stream SSE se estiver ativo
+    if (derivTradingService.eventSource) {
+      derivTradingService.stopStream();
     }
   },
   methods: {
@@ -382,6 +356,172 @@ export default {
     selectTradeType(type) {
       this.tradeType = type;
       this.closeTradeTypeModal();
+    },
+    async loadMarketsFromAPI() {
+      try {
+        this.isLoadingMarkets = true;
+        
+        // Buscar token e loginid do localStorage
+        const derivConnection = localStorage.getItem('deriv_connection');
+        let derivToken = localStorage.getItem('deriv_token');
+        let loginid = null;
+
+        if (derivConnection) {
+          try {
+            const connection = JSON.parse(derivConnection);
+            loginid = connection.loginid;
+            if (!derivToken) {
+              derivToken = connection.token;
+            }
+          } catch (e) {
+            console.warn('[Chart] Erro ao parsear deriv_connection:', e);
+          }
+        }
+
+        // Se não tiver token, tentar deriv_tokens_by_loginid
+        if (!derivToken) {
+          const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
+          if (tokensByLoginId) {
+            try {
+              const tokens = JSON.parse(tokensByLoginId);
+              if (loginid && tokens[loginid]) {
+                derivToken = tokens[loginid];
+              } else if (Object.keys(tokens).length > 0) {
+                const firstLoginId = Object.keys(tokens)[0];
+                derivToken = tokens[firstLoginId];
+                loginid = firstLoginId;
+              }
+            } catch (e) {
+              console.warn('[Chart] Erro ao parsear deriv_tokens_by_loginid:', e);
+            }
+          }
+        }
+
+        if (!derivToken) {
+          console.warn('[Chart] Token Deriv não encontrado, usando mercados padrão');
+          // Usar mercados padrão se não tiver token
+          this.markets = this.getDefaultMarkets();
+          this.isLoadingMarkets = false;
+          return;
+        }
+
+        // Conectar ao backend
+        await derivTradingService.connect(derivToken, loginid);
+
+        // Iniciar stream SSE para receber active_symbols
+        await derivTradingService.startStream((data) => {
+          if (data.type === 'active_symbols' && data.data) {
+            this.processActiveSymbols(data.data);
+            this.isLoadingMarkets = false;
+          }
+        }, derivToken);
+
+        // Solicitar símbolos ativos via endpoint REST
+        try {
+          await derivTradingService.requestActiveSymbols();
+          console.log('[Chart] Solicitação de símbolos enviada');
+        } catch (error) {
+          console.warn('[Chart] Erro ao solicitar símbolos:', error);
+        }
+
+        // Aguardar um pouco para receber os símbolos via SSE
+        setTimeout(() => {
+          if (this.markets.length === 0) {
+            console.warn('[Chart] Nenhum símbolo recebido, usando mercados padrão');
+            this.markets = this.getDefaultMarkets();
+            this.isLoadingMarkets = false;
+          }
+        }, 5000);
+
+      } catch (error) {
+        console.error('[Chart] Erro ao carregar mercados da API:', error);
+        // Usar mercados padrão em caso de erro
+        this.markets = this.getDefaultMarkets();
+        this.isLoadingMarkets = false;
+      }
+    },
+    processActiveSymbols(symbols) {
+      if (!symbols || !Array.isArray(symbols)) {
+        console.warn('[Chart] active_symbols inválido:', symbols);
+        return;
+      }
+
+      console.log('[Chart] Processando símbolos ativos:', symbols.length);
+
+      // Mapear símbolos para o formato esperado
+      const mappedMarkets = symbols.map(symbol => {
+        const symbolData = typeof symbol === 'string' ? { symbol } : symbol;
+        const symbolValue = symbolData.symbol || symbolData.market || symbol;
+        const displayName = symbolData.display_name || symbolData.name || symbolValue;
+        
+        // Determinar categoria baseado no prefixo do símbolo
+        let category = 'Outros';
+        if (symbolValue.startsWith('R_') || symbolValue.startsWith('1HZ')) {
+          category = 'Índices Contínuos';
+        } else if (symbolValue.startsWith('cry')) {
+          category = 'Criptomoedas';
+        } else if (symbolValue.startsWith('frx')) {
+          if (symbolValue.includes('XAU') || symbolValue.includes('XAG') || symbolValue.includes('XPT') || symbolValue.includes('XPD')) {
+            category = 'Metais';
+          } else {
+            category = 'Forex Majors';
+          }
+        }
+
+        return {
+          value: symbolValue,
+          label: displayName,
+          category: category,
+        };
+      });
+
+      // Ordenar por categoria e depois por label
+      mappedMarkets.sort((a, b) => {
+        if (a.category !== b.category) {
+          return a.category.localeCompare(b.category);
+        }
+        return a.label.localeCompare(b.label);
+      });
+
+      this.markets = mappedMarkets;
+      console.log('[Chart] Mercados carregados:', this.markets.length);
+    },
+    getDefaultMarkets() {
+      // Mercados padrão caso a API não retorne
+      return [
+        { value: 'R_10', label: 'Volatility 10 Index', category: 'Índices Contínuos' },
+        { value: 'R_25', label: 'Volatility 25 Index', category: 'Índices Contínuos' },
+        { value: 'R_50', label: 'Volatility 50 Index', category: 'Índices Contínuos' },
+        { value: 'R_75', label: 'Volatility 75 Index', category: 'Índices Contínuos' },
+        { value: 'R_100', label: 'Volatility 100 Index', category: 'Índices Contínuos' },
+        { value: '1HZ10V', label: 'Volatility 10 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ25V', label: 'Volatility 25 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ50V', label: 'Volatility 50 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ75V', label: 'Volatility 75 (1s) Index', category: 'Índices Contínuos' },
+        { value: '1HZ100V', label: 'Volatility 100 (1s) Index', category: 'Índices Contínuos' },
+        { value: 'cryBTCUSD', label: 'BTC/USD (Bitcoin)', category: 'Criptomoedas' },
+        { value: 'cryETHUSD', label: 'ETH/USD (Ethereum)', category: 'Criptomoedas' },
+        { value: 'frxEURUSD', label: 'EUR/USD (Euro / Dólar)', category: 'Forex Majors' },
+        { value: 'frxUSDJPY', label: 'USD/JPY (Dólar / Iene)', category: 'Forex Majors' },
+        { value: 'frxGBPUSD', label: 'GBP/USD (Libra / Dólar)', category: 'Forex Majors' },
+        { value: 'frxUSDCHF', label: 'USD/CHF (Dólar / Franco)', category: 'Forex Majors' },
+        { value: 'frxAUDUSD', label: 'AUD/USD (Dólar Australiano)', category: 'Forex Majors' },
+        { value: 'frxUSDCAD', label: 'USD/CAD (Dólar / Dólar Canadense)', category: 'Forex Majors' },
+        { value: 'frxNZDUSD', label: 'NZD/USD (Dólar Neozelandês)', category: 'Forex Majors' },
+        { value: 'frxEURGBP', label: 'EUR/GBP (Euro / Libra)', category: 'Forex Majors' },
+        { value: 'frxEURJPY', label: 'EUR/JPY (Euro / Iene)', category: 'Forex Majors' },
+        { value: 'frxGBPJPY', label: 'GBP/JPY (Libra / Iene)', category: 'Forex Majors' },
+        { value: 'frxAUDCAD', label: 'AUD/CAD (Dólar Australiano / Canadense)', category: 'Forex Majors' },
+        { value: 'frxAUDJPY', label: 'AUD/JPY (Dólar Australiano / Iene)', category: 'Forex Majors' },
+        { value: 'frxCHFJPY', label: 'CHF/JPY (Franco / Iene)', category: 'Forex Majors' },
+        { value: 'frxEURAUD', label: 'EUR/AUD (Euro / Dólar Australiano)', category: 'Forex Majors' },
+        { value: 'frxGBPAUD', label: 'GBP/AUD (Libra / Dólar Australiano)', category: 'Forex Majors' },
+        { value: 'frxUSDMXN', label: 'USD/MXN (Dólar / Peso Mexicano)', category: 'Forex Majors' },
+        { value: 'frxXAUUSD', label: 'XAU/USD (Ouro / Dólar)', category: 'Metais' },
+        { value: 'frxXAGUSD', label: 'XAG/USD (Prata / Dólar)', category: 'Metais' },
+        { value: 'frxXPTUSD', label: 'XPT/USD (Platina / Dólar)', category: 'Metais' },
+        { value: 'frxXPDUSD', label: 'XPD/USD (Paládio / Dólar)', category: 'Metais' },
+      ];
     },
   },
 };
