@@ -557,14 +557,17 @@ export default {
         
         formattedDailyProfit() {
             const value = this.dailyStats.profitLoss || 0;
-            const sign = value >= 0 ? '+' : '-';
-            return `${sign}${this.accountCurrency} ${Math.abs(value).toFixed(2)}`;
+            if (value >= 0) {
+                return `+${this.accountCurrency} ${value.toFixed(2)}`;
+            } else {
+                return `-${this.accountCurrency} ${Math.abs(value).toFixed(2)}`;
+            }
         },
         
         formattedDailyProfitPercent() {
             const value = this.dailyStats.profitLossPercent || 0;
-            const sign = value >= 0 ? '+' : '';
-            return `(${sign}${value.toFixed(2)}%)`;
+            const sign = value >= 0 ? '+' : '-';
+            return `(${sign}${Math.abs(value).toFixed(2)}%)`;
         },
         
         dailyProfitClass() {
