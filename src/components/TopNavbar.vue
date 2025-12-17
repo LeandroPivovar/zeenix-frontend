@@ -5,7 +5,7 @@
     style="width: 100%; background: #0B0B0B;"
   >
     <!-- Desktop Layout -->
-    <div class="h-full flex items-center justify-between desktop-nav pl-0.5">
+    <div class="h-full flex items-center justify-between desktop-nav">
       <div class="flex items-center space-x-4 mr-10">
         <!-- Botão de toggle do menu (apenas desktop, sempre visível) -->
         <button
@@ -65,25 +65,35 @@
             <i v-else class="fas fa-eye text-sm"></i>
           </button>
         </div>
-        <div class="relative">
+        <div class="flex items-center space-x-3">
           <button 
-            @click="toggleProfileModal" 
-            class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 overflow-hidden"
+            @click="toggleNotificationsModal" 
+            class="text-white/45 hover:text-white/80 transition-colors w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/5 active:scale-95 relative"
+            type="button"
           >
-            <img 
-              v-if="userProfilePicture" 
-              :src="userProfilePicture" 
-              :alt="userName"
-              class="w-full h-full object-cover rounded-full profile-img-border"
-            />
-            <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
+            <i class="fa-solid fa-bell text-[17px]"></i>
+            <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#22C55E] rounded-full"></span>
           </button>
+          <div class="relative">
+            <button 
+              @click="toggleProfileModal" 
+              class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 overflow-hidden"
+            >
+              <img 
+                v-if="userProfilePicture" 
+                :src="userProfilePicture" 
+                :alt="userName"
+                class="w-full h-full object-cover rounded-full profile-img-border"
+              />
+              <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Mobile Layout -->
-    <div class="h-full px-0.5 flex items-center justify-between mobile-nav">
+    <div class="h-full px-4 flex items-center justify-between mobile-nav">
       <!-- Foto de Perfil (abre sidebar) -->
       <button 
         @click="toggleMobileSidebar"
@@ -109,14 +119,24 @@
         <span class="text-[#22C55E] font-bold text-xl">X</span>
       </router-link>
       
-      <!-- Ícone de Engrenagem (abre modal de configurações) -->
-      <button 
-        @click="toggleProfileModal" 
-        class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 flex-shrink-0"
-        type="button"
-      >
-        <i class="fas fa-cog text-[#DFDFDF] text-base"></i>
-      </button>
+      <!-- Botões de Ação (Notificações e Configurações) -->
+      <div class="flex items-center space-x-2">
+        <button 
+          @click="toggleNotificationsModal" 
+          class="text-white/45 hover:text-white/80 transition-colors w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/5 active:scale-95 relative flex-shrink-0"
+          type="button"
+        >
+          <i class="fa-solid fa-bell text-[17px]"></i>
+          <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#22C55E] rounded-full"></span>
+        </button>
+        <button 
+          @click="toggleProfileModal" 
+          class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 flex-shrink-0"
+          type="button"
+        >
+          <i class="fas fa-cog text-[#DFDFDF] text-base"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Modal de Configurações (Unificado para Desktop e Mobile) -->
@@ -125,20 +145,20 @@
       class="settings-modal-overlay"
       @click.self="closeProfileModal"
     >
-      <div class="settings-modal-container">
+      <div class="settings-modal-content" @click.stop>
         <!-- Cabeçalho -->
-        <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between" style="height: fit-content;">
-          <h2 class="text-xl font-semibold text-white">Configurações</h2>
+        <div class="settings-modal-header">
+          <h2 class="settings-modal-title">Configurações</h2>
           <button 
             @click="closeProfileModal"
-            class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
+            class="settings-modal-close"
           >
-            <i class="fas fa-times text-lg"></i>
+            <i class="fas fa-times"></i>
           </button>
         </div>
         
-        <div class="overflow-y-auto flex-1">
-          <div class="p-6 space-y-6">
+        <div class="settings-modal-body">
+          <div class="space-y-6">
             <!-- Informações do Usuário -->
             <div class="flex items-center space-x-4">
               <div class="w-16 h-16 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center overflow-hidden flex-shrink-0">
@@ -278,6 +298,44 @@
       </div>
     </div>
 
+    <!-- Modal de Notificações -->
+    <div 
+      v-if="showNotificationsModal" 
+      class="notifications-modal-overlay"
+      @click.self="closeNotificationsModal"
+    >
+      <div class="notifications-modal-content" @click.stop>
+        <div class="notifications-modal-header">
+          <h2 class="notifications-modal-title">Notificações</h2>
+          <button class="notifications-modal-close" @click="closeNotificationsModal">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="notifications-modal-body">
+          <div v-if="notifications.length === 0" class="notifications-empty">
+            <i class="fa-solid fa-bell-slash text-[48px] text-white/20 mb-4"></i>
+            <p class="text-white/40 text-[14px]">Nenhuma notificação</p>
+          </div>
+          <div v-else class="notifications-list">
+            <div 
+              v-for="(notification, index) in notifications" 
+              :key="index"
+              class="notification-item"
+            >
+              <div class="notification-icon">
+                <i :class="notification.icon || 'fa-solid fa-info-circle'"></i>
+              </div>
+              <div class="notification-content">
+                <h3 class="notification-title">{{ notification.title }}</h3>
+                <p class="notification-message">{{ notification.message }}</p>
+                <span class="notification-time">{{ notification.time }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal de Seleção de Contas -->
     <div 
       v-if="showAccountModal" 
@@ -391,11 +449,13 @@ export default {
       showProfileModal: false,
       userProfilePictureUrl: null,
       showAccountModal: false,
+      showNotificationsModal: false,
       loadingAccounts: false,
       availableAccounts: [],
       isMobile: false,
       accountTypeFilter: 'real', // 'real' ou 'demo'
-      showAccountsList: true
+      showAccountsList: true,
+      notifications: []
     }
   },
   computed: {
@@ -605,6 +665,10 @@ export default {
       this.balanceHidden = !this.balanceHidden;
     },
     toggleProfileModal() {
+      // Fechar modal de notificações se estiver aberto
+      if (this.showNotificationsModal) {
+        this.showNotificationsModal = false;
+      }
       this.showProfileModal = !this.showProfileModal;
       if (this.showProfileModal) {
         // Carregar contas quando abrir o modal (usar cache se disponível)
@@ -933,6 +997,16 @@ export default {
       this.showAccountModal = false;
       this.availableAccounts = [];
     },
+    toggleNotificationsModal() {
+      // Fechar modal de settings se estiver aberto
+      if (this.showProfileModal) {
+        this.showProfileModal = false;
+      }
+      this.showNotificationsModal = !this.showNotificationsModal;
+    },
+    closeNotificationsModal() {
+      this.showNotificationsModal = false;
+    },
     formatBalance(balance, currency) {
       const prefix = this.getCurrencyPrefix(currency);
       // Sempre mostrar o saldo, mesmo se for zero
@@ -1088,33 +1162,65 @@ export default {
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(4px);
-  z-index: 20000 !important;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 20px;
-  animation: fadeIn 0.2s ease-out;
   min-height: 100vh;
-  overflow-y: auto;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 200000 !important;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  padding: 0;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
 }
 
-.settings-modal-container {
-  background: #0E0E0E;
-  border: 1px solid #1C1C1C;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
+.settings-modal-content {
+  background: #0B0B0B;
+  border-radius: 0;
   width: 100%;
-  max-width: 28rem;
-  max-height: 90vh;
+  max-width: 400px;
+  min-width: 320px;
+  height: 100%;
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.3s ease-out;
-  margin: auto;
-  position: relative;
-  z-index: 20001 !important;
+  border-left: 2px solid rgba(255, 255, 255, 0.05);
+  animation: slideInRight 0.3s ease-out;
+}
+
+.settings-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: none;
+}
+
+.settings-modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.settings-modal-close {
+  background: none;
+  border: none;
+  color: #9B9B9B;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.3s;
+}
+
+.settings-modal-close:hover {
+  color: #fff;
+}
+
+.settings-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  color: #FFFFFF;
 }
 
 /* Modal de Seleção de Contas */
@@ -1126,7 +1232,7 @@ export default {
   bottom: 0;
   background: rgba(0, 0, 0, 0.6);
   backdrop-filter: blur(4px);
-  z-index: 9999;
+  z-index: 200000 !important;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1166,6 +1272,15 @@ export default {
   to {
     opacity: 1;
     transform: translateY(0);
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
   }
 }
 
@@ -1339,6 +1454,153 @@ export default {
   background-color: currentColor;
   transform: translateY(-50%);
   border-radius: 1px;
+}
+
+/* Notifications Modal Styles */
+.notifications-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  min-height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 200000 !important;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  padding: 0;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.notifications-modal-content {
+  background: #0B0B0B;
+  border-radius: 0;
+  width: 100%;
+  max-width: 400px;
+  min-width: 320px;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid rgba(255, 255, 255, 0.05);
+  animation: slideInRight 0.3s ease-out;
+}
+
+.notifications-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: none;
+}
+
+.notifications-modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.notifications-modal-close {
+  background: none;
+  border: none;
+  color: #9B9B9B;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.3s;
+}
+
+.notifications-modal-close:hover {
+  color: #fff;
+}
+
+.notifications-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  color: #FFFFFF;
+}
+
+.notifications-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #1A1A1A;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: #1F1F1F;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: 10px;
+  color: #22C55E;
+  font-size: 18px;
+}
+
+.notification-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-title {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.notification-message {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.notification-time {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
+@media (max-width: 768px) {
+  .notifications-modal-content {
+    max-width: 85%;
+    min-width: 280px;
+  }
 }
 </style>
 
