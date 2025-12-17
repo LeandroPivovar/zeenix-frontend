@@ -911,11 +911,12 @@ export default {
         return false;
       }
       
+      // Tentar fazer a atribuição diretamente primeiro (mais eficiente)
       try {
         this[propertyName] = value;
         return true;
       } catch (error) {
-        // Capturar erros de renderização do Vue
+        // Se falhar, usar nextTick como fallback
         const errorMessage = error?.message || String(error) || '';
         const errorString = String(errorMessage);
         
@@ -942,11 +943,20 @@ export default {
         );
         
         if (isKnownError) {
-          // Erro conhecido do Vue, ignorar silenciosamente
-          return false;
+          // Erro conhecido, tentar com nextTick
+          this.$nextTick(() => {
+            if (this.isSafeToUpdate()) {
+              try {
+                this[propertyName] = value;
+              } catch (retryError) {
+                // Se ainda falhar, ignorar silenciosamente
+              }
+            }
+          });
+          return true;
         }
         
-        // Re-lançar erros desconhecidos
+        // Erro desconhecido, re-lançar
         throw error;
       }
     },
@@ -2730,20 +2740,16 @@ export default {
         return;
       }
       
-      // Usar safeUpdate para garantir atualização segura
-      this.safeUpdate(() => {
-        this.showMarketModal = true;
-      });
+      // Usar safeSetProperty diretamente para abrir modal
+      this.safeSetProperty('showMarketModal', true);
     },
     closeMarketModal() {
       if (!this.isComponentMounted()) {
         return;
       }
       
-      // Usar safeUpdate para garantir atualização segura
-      this.safeUpdate(() => {
-        this.showMarketModal = false;
-      });
+      // Usar safeSetProperty diretamente para fechar modal
+      this.safeSetProperty('showMarketModal', false);
     },
     async selectMarket(marketValue) {
       this.symbol = marketValue;
@@ -2768,20 +2774,16 @@ export default {
         return;
       }
       
-      // Usar safeUpdate para garantir atualização segura
-      this.safeUpdate(() => {
-        this.showTradeTypeModal = true;
-      });
+      // Usar safeSetProperty diretamente para abrir modal
+      this.safeSetProperty('showTradeTypeModal', true);
     },
     closeTradeTypeModal() {
       if (!this.isComponentMounted()) {
         return;
       }
       
-      // Usar safeUpdate para garantir atualização segura
-      this.safeUpdate(() => {
-        this.showTradeTypeModal = false;
-      });
+      // Usar safeSetProperty diretamente para fechar modal
+      this.safeSetProperty('showTradeTypeModal', false);
     },
     selectTradeType(type) {
       if (!this.isComponentMounted()) {
@@ -3375,17 +3377,29 @@ export default {
                   if (this.isComponentMounted()) {
                     if (currentUnit === minDur.unit && currentDuration < minDur.value) {
                       // Mesma unidade, apenas ajustar valor se menor
-                      this.safeUpdate(() => {
+                      try {
                         this.localOrderConfig.duration = minDur.value;
                         console.log('[Chart] Duração ajustada para mínima:', minDur.value, minDur.unit);
-                      });
+                      } catch (error) {
+                        // Ignorar erros conhecidos do Vue silenciosamente
+                        const errorMessage = error?.message || String(error) || '';
+                        if (!errorMessage.includes('insertBefore') && !errorMessage.includes('null') && !errorMessage.includes('Symbol(_assign)')) {
+                          console.warn('[Chart] Erro ao ajustar duração:', error);
+                        }
+                      }
                     } else if (currentUnit !== minDur.unit && currentInMinutes < minInMinutes) {
                       // Unidades diferentes, converter e ajustar apenas se menor
-                      this.safeUpdate(() => {
+                      try {
                         this.localOrderConfig.duration = minDur.value;
                         this.localOrderConfig.durationUnit = minDur.unit;
                         console.log('[Chart] Duração ajustada para mínima (conversão):', minDur.value, minDur.unit);
-                      });
+                      } catch (error) {
+                        // Ignorar erros conhecidos do Vue silenciosamente
+                        const errorMessage = error?.message || String(error) || '';
+                        if (!errorMessage.includes('insertBefore') && !errorMessage.includes('null') && !errorMessage.includes('Symbol(_assign)')) {
+                          console.warn('[Chart] Erro ao ajustar duração:', error);
+                        }
+                      }
                     } else {
                       // Duração atual é válida, preservar
                       console.log('[Chart] Duração do usuário preservada:', currentDuration, currentUnit);

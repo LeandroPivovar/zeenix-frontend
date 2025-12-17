@@ -485,25 +485,44 @@ export default {
       
       // Usar safeUpdate para atualizar estados reativos
       this.safeUpdate(() => {
-        if (balanceValue != null) {
-          this.accountBalanceValue = Number(balanceValue);
-          console.log('[OperationView] Saldo atualizado:', this.accountBalanceValue);
-        }
-        if (currency) {
-          this.accountCurrency = currency.toUpperCase();
-          console.log('[OperationView] Moeda da conta atualizada:', this.accountCurrency);
-        }
-        if (preferredCurrency) {
-          this.preferredCurrency = preferredCurrency.toUpperCase();
-          console.log('[OperationView] Moeda preferida atualizada:', this.preferredCurrency);
-        }
-        if (loginid) {
-          this.accountLoginId = loginid;
-          // Determinar tipo de conta (demo ou real) baseado no loginid
-          this.accountType = (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) ? 'demo' : 'real';
-          console.log('[OperationView] LoginID atualizado:', this.accountLoginId);
-          console.log('[OperationView] Tipo de conta:', this.accountType);
-        }
+        // Usar nextTick adicional para garantir que estamos em um ciclo seguro
+        this.$nextTick(() => {
+          try {
+            if (balanceValue != null) {
+              this.accountBalanceValue = Number(balanceValue);
+              console.log('[OperationView] Saldo atualizado:', this.accountBalanceValue);
+            }
+            if (currency) {
+              this.accountCurrency = currency.toUpperCase();
+              console.log('[OperationView] Moeda da conta atualizada:', this.accountCurrency);
+            }
+            if (preferredCurrency) {
+              this.preferredCurrency = preferredCurrency.toUpperCase();
+              console.log('[OperationView] Moeda preferida atualizada:', this.preferredCurrency);
+            }
+            if (loginid) {
+              this.accountLoginId = loginid;
+              // Determinar tipo de conta (demo ou real) baseado no loginid
+              this.accountType = (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) ? 'demo' : 'real';
+              console.log('[OperationView] LoginID atualizado:', this.accountLoginId);
+              console.log('[OperationView] Tipo de conta:', this.accountType);
+            }
+          } catch (error) {
+            // Capturar erros de renderização do Vue - ignorar silenciosamente se for erro conhecido
+            const errorMessage = error?.message || String(error) || '';
+            if (errorMessage.includes('insertBefore') || 
+                errorMessage.includes('null') ||
+                errorMessage.includes('Symbol(_assign)') ||
+                errorMessage.includes('_assigning') ||
+                errorMessage.includes('emitsOptions') ||
+                errorMessage.includes('disabled')) {
+              // Erro conhecido do Vue, ignorar silenciosamente
+              return;
+            }
+            // Logar outros erros
+            console.warn('[OperationView] Erro ao atualizar propriedades:', error);
+          }
+        });
       });
       
       // Armazenar tokens retornados pelo backend no localStorage
