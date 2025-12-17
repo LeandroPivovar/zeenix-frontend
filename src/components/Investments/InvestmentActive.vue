@@ -1058,8 +1058,11 @@ export default {
         },
         formattedSessionBalance() {
             const value = this.dailyStats.sessionBalance || 0;
-            const sign = value >= 0 ? '+' : '';
-            return `${sign}$${Math.abs(value).toFixed(2)}`;
+            if (value >= 0) {
+                return `+$${value.toFixed(2)}`;
+            } else {
+                return `-$${Math.abs(value).toFixed(2)}`;
+            }
         },
         profitLossClass() {
             return this.dailyStats.profitLoss >= 0 ? 'text-zenix-green' : 'text-zenix-red';
@@ -1168,8 +1171,8 @@ export default {
             if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return null;
             const profit = this.dailyStats.sessionBalance || 0;
             const percentage = (profit / this.accountBalanceProp) * 100;
-            const sign = percentage >= 0 ? '+' : '';
-            return `${sign}${percentage.toFixed(2)}%`;
+            const sign = percentage >= 0 ? '+' : '-';
+            return `${sign}${Math.abs(percentage).toFixed(2)}%`;
         },
         
         // Check if profit is positive
