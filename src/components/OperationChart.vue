@@ -1061,16 +1061,49 @@ export default {
             }
             
             try {
+              // Verificar se o elemento DOM ainda está conectado
+              if (this.$el && !this.$el.isConnected) {
+                return;
+              }
+              
               // Verificar se a propriedade existe no componente
               if (!(propertyName in this)) {
                 console.warn(`[Chart] Propriedade ${propertyName} não existe no componente`);
                 return;
               }
               
-              // Atualizar propriedade
-              this[propertyName] = value;
+              // Atualizar propriedade com tratamento de erro robusto
+              try {
+                this[propertyName] = value;
+              } catch (assignError) {
+                // Capturar e ignorar erros conhecidos do Vue durante desmontagem
+                const errorMessage = String(assignError?.message || assignError || '');
+                const errorStack = String(assignError?.stack || '');
+                const knownErrors = [
+                  'insertBefore',
+                  'Symbol(_assign)',
+                  'emitsOptions',
+                  '_assigning',
+                  'Cannot read properties of null',
+                  'Cannot set properties of null',
+                  'Cannot use \'in\' operator',
+                  'Cannot destructure property',
+                  'bum',
+                  'textContent',
+                  'nextSibling',
+                  'Symbol(_vtc)'
+                ];
+                
+                // Se for erro conhecido, ignorar silenciosamente
+                const isKnownError = knownErrors.some(err => errorMessage.includes(err) || errorStack.includes(err));
+                if (!isKnownError) {
+                  console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, assignError);
+                }
+                // Não propagar o erro
+                return;
+              }
             } catch (error) {
-              // Se falhar, verificar se é um erro conhecido do Vue durante desmontagem
+              // Capturar qualquer outro erro e verificar se é conhecido
               const errorMessage = String(error?.message || error || '');
               const errorStack = String(error?.stack || '');
               const knownErrors = [
@@ -1088,11 +1121,12 @@ export default {
                 'Symbol(_vtc)'
               ];
               
-              // Se for erro conhecido, ignorar silenciosamente (componente está sendo desmontado)
               const isKnownError = knownErrors.some(err => errorMessage.includes(err) || errorStack.includes(err));
               if (!isKnownError) {
                 console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, error);
               }
+              // Não propagar o erro
+              return;
             }
           });
         });
@@ -1110,20 +1144,51 @@ export default {
             }
             
             try {
+              // Verificar se o elemento DOM ainda está conectado
+              if (this.$el && !this.$el.isConnected) {
+                return;
+              }
+              
               if (!(propertyName in this)) {
                 return;
               }
-              this[propertyName] = value;
+              
+              // Tentar atualizar com tratamento de erro robusto
+              try {
+                this[propertyName] = value;
+              } catch (assignError) {
+                const errorMessage = String(assignError?.message || assignError || '');
+                const errorStack = String(assignError?.stack || '');
+                const knownErrors = [
+                  'insertBefore', 'Symbol(_assign)', 'emitsOptions', '_assigning',
+                  'Cannot read properties of null', 'Cannot set properties of null',
+                  'Cannot use \'in\' operator', 'Cannot destructure property', 'bum',
+                  'textContent', 'nextSibling', 'Symbol(_vtc)'
+                ];
+                
+                const isKnownError = knownErrors.some(err => errorMessage.includes(err) || errorStack.includes(err));
+                if (!isKnownError) {
+                  console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, assignError);
+                }
+                // Não propagar o erro
+                return;
+              }
             } catch (updateError) {
               const errorMessage = String(updateError?.message || updateError || '');
+              const errorStack = String(updateError?.stack || '');
               const knownErrors = [
                 'insertBefore', 'Symbol(_assign)', 'emitsOptions', '_assigning',
                 'Cannot read properties of null', 'Cannot set properties of null',
-                'Cannot use \'in\' operator', 'Cannot destructure property', 'bum'
+                'Cannot use \'in\' operator', 'Cannot destructure property', 'bum',
+                'textContent', 'nextSibling', 'Symbol(_vtc)'
               ];
-              if (!knownErrors.some(err => errorMessage.includes(err))) {
+              
+              const isKnownError = knownErrors.some(err => errorMessage.includes(err) || errorStack.includes(err));
+              if (!isKnownError) {
                 console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, updateError);
               }
+              // Não propagar o erro
+              return;
             }
           });
           return true;
@@ -1230,11 +1295,52 @@ export default {
             // Executar callback se componente está montado
             if (typeof callback === 'function') {
               try {
+                // Verificar se o elemento DOM ainda está conectado antes de executar
+                if (this.$el && !this.$el.isConnected) {
+                  return;
+                }
+                
                 console.log('[Chart] ✅ Executando callback em safeUpdate');
-                callback();
-                console.log('[Chart] ✅ Callback executado com sucesso');
+                
+                // Executar callback com tratamento de erro robusto
+                try {
+                  callback();
+                  console.log('[Chart] ✅ Callback executado com sucesso');
+                } catch (callbackError) {
+                  // Capturar e ignorar erros conhecidos do Vue durante desmontagem
+                  const errorMsg = String(callbackError?.message || callbackError || '');
+                  const errorStack = String(callbackError?.stack || '');
+                  const knownErrors = [
+                    'insertBefore',
+                    'Symbol(_assign)',
+                    'emitsOptions',
+                    '_assigning',
+                    'Cannot read properties of null',
+                    'Cannot set properties of null',
+                    'Cannot use \'in\' operator',
+                    'Cannot destructure property',
+                    'bum',
+                    'textContent',
+                    'nextSibling',
+                    'Symbol(_vtc)'
+                  ];
+                  
+                  const isKnownError = knownErrors.some(err => errorMsg.includes(err) || errorStack.includes(err));
+                  
+                  if (!isKnownError) {
+                    console.error('[Chart] ❌ Erro em safeUpdate callback:', {
+                      error: errorMsg,
+                      stack: errorStack,
+                      isKnownError,
+                      componentState: afterTickState,
+                      timestamp: Date.now()
+                    });
+                  }
+                  // Não propagar o erro
+                  return;
+                }
               } catch (error) {
-                // Ignorar erros conhecidos do Vue durante desmontagem
+                // Capturar qualquer outro erro e verificar se é conhecido
                 const errorMsg = String(error?.message || error || '');
                 const errorStack = String(error?.stack || '');
                 const knownErrors = [
@@ -1255,7 +1361,7 @@ export default {
                 const isKnownError = knownErrors.some(err => errorMsg.includes(err) || errorStack.includes(err));
                 
                 if (!isKnownError) {
-                  console.error('[Chart] ❌ Erro em safeUpdate callback:', {
+                  console.error('[Chart] ❌ Erro em safeUpdate:', {
                     error: errorMsg,
                     stack: errorStack,
                     isKnownError,
@@ -1263,6 +1369,8 @@ export default {
                     timestamp: Date.now()
                   });
                 }
+                // Não propagar o erro
+                return;
               }
             }
           });
@@ -1288,9 +1396,41 @@ export default {
             
             if (typeof callback === 'function') {
               try {
-                callback();
+                // Verificar se o elemento DOM ainda está conectado antes de executar
+                if (this.$el && !this.$el.isConnected) {
+                  return;
+                }
+                
+                // Executar callback com tratamento de erro robusto
+                try {
+                  callback();
+                } catch (callbackError) {
+                  const errorMsg = String(callbackError?.message || callbackError || '');
+                  const errorStack = String(callbackError?.stack || '');
+                  const knownErrors = [
+                    'insertBefore',
+                    'Symbol(_assign)',
+                    'emitsOptions',
+                    '_assigning',
+                    'Cannot read properties of null',
+                    'Cannot set properties of null',
+                    'Cannot use \'in\' operator',
+                    'Cannot destructure property',
+                    'bum',
+                    'textContent',
+                    'nextSibling',
+                    'Symbol(_vtc)'
+                  ];
+                  const isKnownError = knownErrors.some(err => errorMsg.includes(err) || errorStack.includes(err));
+                  if (!isKnownError) {
+                    console.warn('[Chart] Erro no fallback de safeUpdate:', callbackError);
+                  }
+                  // Não propagar o erro
+                  return;
+                }
               } catch (fallbackError) {
                 const errorMsg = String(fallbackError?.message || fallbackError || '');
+                const errorStack = String(fallbackError?.stack || '');
                 const knownErrors = [
                   'insertBefore',
                   'Symbol(_assign)',
@@ -1300,11 +1440,17 @@ export default {
                   'Cannot set properties of null',
                   'Cannot use \'in\' operator',
                   'Cannot destructure property',
-                  'bum'
+                  'bum',
+                  'textContent',
+                  'nextSibling',
+                  'Symbol(_vtc)'
                 ];
-                if (!knownErrors.some(err => errorMsg.includes(err))) {
+                const isKnownError = knownErrors.some(err => errorMsg.includes(err) || errorStack.includes(err));
+                if (!isKnownError) {
                   console.warn('[Chart] Erro no fallback de safeUpdate:', fallbackError);
                 }
+                // Não propagar o erro
+                return;
               }
             }
           });
