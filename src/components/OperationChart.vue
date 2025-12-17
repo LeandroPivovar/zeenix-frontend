@@ -8,6 +8,14 @@
         <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card h-full">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A] flex-shrink-0">
             <h3 class="text-base font-semibold text-zenix-text">Gráfico</h3>
+            <button
+              @click="toggleChartType"
+              class="inline-flex items-center gap-2 px-3 py-1.5 bg-zenix-bg border border-zenix-border hover:border-zenix-green rounded-lg text-xs text-zenix-text transition-all duration-200"
+              title="Alternar entre gráfico de linhas e velas"
+            >
+              <i :class="chartType === 'line' ? 'fas fa-chart-line' : 'fas fa-chart-bar'"></i>
+              <span>{{ chartType === 'line' ? 'Linhas' : 'Velas' }}</span>
+            </button>
           </div>
 
           <!-- Gráfico -->
@@ -421,6 +429,9 @@ export default {
       analysisInterval: null,
       aiRecommendation: null,
       collectedTicks: [], // Ticks coletados para análise
+      // Chart Type
+      chartType: 'line', // 'line' ou 'candles'
+      storedTicks: [], // Armazenar ticks para conversão em velas
       allTradeTypes: [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
         { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
@@ -564,10 +575,8 @@ export default {
             },
           });
 
-          this.chartSeries = this.chart.addLineSeries({
-            color: '#22C55E',
-            lineWidth: 2,
-      });
+          // Criar série baseada no tipo de gráfico
+          this.createChartSeries();
 
       // Resize observer
       const resizeObserver = new ResizeObserver(() => {
@@ -579,6 +588,113 @@ export default {
       resizeObserver.observe(container);
 
               this.showChartPlaceholder = false;
+    },
+    createChartSeries() {
+      if (!this.chart) return;
+      
+      // Remover série anterior se existir
+      if (this.chartSeries) {
+        this.chart.removeSeries(this.chartSeries);
+        this.chartSeries = null;
+      }
+      
+      // Criar nova série baseada no tipo
+      if (this.chartType === 'line') {
+        this.chartSeries = this.chart.addLineSeries({
+          color: '#22C55E',
+          lineWidth: 2,
+        });
+      } else {
+        // Gráfico de velas
+        this.chartSeries = this.chart.addCandlestickSeries({
+          upColor: '#22C55E',
+          downColor: '#EF4444',
+          borderVisible: true,
+          borderUpColor: '#22C55E',
+          borderDownColor: '#EF4444',
+          wickUpColor: '#22C55E',
+          wickDownColor: '#EF4444',
+        });
+      }
+    },
+    toggleChartType() {
+      // Alternar tipo de gráfico
+      this.chartType = this.chartType === 'line' ? 'candles' : 'line';
+      
+      // Recriar série
+      this.createChartSeries();
+      
+      // Replotar dados com o novo formato
+      if (this.storedTicks.length > 0) {
+        if (this.chartType === 'candles') {
+          const candles = this.aggregateTicksToCandles(this.storedTicks);
+          if (candles.length > 0) {
+            this.chartSeries.setData(candles);
+            this.chart.timeScale().fitContent();
+          }
+        } else {
+          const lineData = this.storedTicks.map(tick => ({
+            time: tick.time,
+            value: tick.value
+          }));
+          if (lineData.length > 0) {
+            this.chartSeries.setData(lineData);
+            this.chart.timeScale().fitContent();
+          }
+        }
+      }
+    },
+    aggregateTicksToCandles(ticks, timeframeSeconds = 1) {
+      if (!Array.isArray(ticks) || ticks.length === 0) {
+        return [];
+      }
+      
+      // Ordenar ticks por tempo
+      const sortedTicks = [...ticks].sort((a, b) => a.time - b.time);
+      
+      const candles = [];
+      let bucketStart = null;
+      let bucketTicks = [];
+      
+      const finalizeBucket = () => {
+        if (!bucketTicks.length || bucketStart === null) return;
+        
+        const prices = bucketTicks.map(t => t.value);
+        candles.push({
+          time: bucketStart,
+          open: bucketTicks[0].value,
+          high: Math.max(...prices),
+          low: Math.min(...prices),
+          close: bucketTicks[bucketTicks.length - 1].value,
+        });
+      };
+      
+      for (const tick of sortedTicks) {
+        const tickTime = Math.floor(tick.time);
+        const bucket = Math.floor(tickTime / timeframeSeconds) * timeframeSeconds;
+        
+        if (bucketStart === null) {
+          bucketStart = bucket;
+        }
+        
+        if (bucket !== bucketStart) {
+          // Finalizar bucket anterior
+          finalizeBucket();
+          // Iniciar novo bucket
+          bucketStart = bucket;
+          bucketTicks = [];
+        }
+        
+        bucketTicks.push({
+          value: tick.value,
+          time: tickTime
+        });
+      }
+      
+      // Finalizar último bucket
+      finalizeBucket();
+      
+      return candles;
     },
     async loadTicksFromBackend() {
       if (!this.chart || !this.chartSeries || !this.symbol) {
@@ -670,16 +786,37 @@ export default {
       }
       
       try {
+        // Armazenar ticks para conversão futura
+        this.storedTicks = chartData.map(tick => ({
+          time: tick.time,
+          value: tick.value
+        }));
+        
+        // Converter para formato correto baseado no tipo de gráfico
+        let dataToPlot = [];
+        if (this.chartType === 'candles') {
+          // Converter ticks em velas
+          dataToPlot = this.aggregateTicksToCandles(this.storedTicks);
+        } else {
+          // Usar dados de linha diretamente
+          dataToPlot = chartData;
+        }
+        
+        if (dataToPlot.length === 0) {
+          console.warn('[Chart] Nenhum dado para plotar após conversão');
+          return;
+        }
+        
         // Limpar dados anteriores
         this.chartSeries.setData([]);
         
         // Plotar novos dados
-        this.chartSeries.setData(chartData);
+        this.chartSeries.setData(dataToPlot);
         
         // Ajustar o gráfico para mostrar todos os dados
         this.chart.timeScale().fitContent();
         
-        console.log('[Chart] ✅ Dados plotados com sucesso');
+        console.log('[Chart] ✅ Dados plotados com sucesso:', dataToPlot.length, this.chartType === 'candles' ? 'velas' : 'pontos');
         
         // Atualizar latestTick com o último tick
         if (chartData.length > 0) {
@@ -716,11 +853,33 @@ export default {
           return;
         }
         
-        // Adicionar novo tick à série
-        this.chartSeries.update({
+        // Adicionar tick aos ticks armazenados
+        this.storedTicks.push({
           time: Math.floor(time),
           value: value
         });
+        
+        // Manter apenas os últimos 1000 ticks para performance
+        if (this.storedTicks.length > 1000) {
+          this.storedTicks.shift();
+        }
+        
+        // Atualizar gráfico baseado no tipo
+        if (this.chartType === 'candles') {
+          // Para velas, precisamos recalcular a última vela ou criar nova
+          // Vamos usar uma abordagem mais simples: recalcular as últimas velas
+          const recentTicks = this.storedTicks.slice(-60); // Últimos 60 ticks
+          const candles = this.aggregateTicksToCandles(recentTicks);
+          if (candles.length > 0) {
+            this.chartSeries.setData(candles);
+          }
+        } else {
+          // Para linhas, apenas atualizar
+          this.chartSeries.update({
+            time: Math.floor(time),
+            value: value
+          });
+        }
         
         // Atualizar latestTick
         this.latestTick = {
