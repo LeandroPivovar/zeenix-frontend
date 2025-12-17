@@ -748,6 +748,24 @@ export default {
     }, 1000);
   },
   watch: {
+    showMarketModal(newVal, oldVal) {
+      console.log('[Chart] 🔍 showMarketModal mudou:', { de: oldVal, para: newVal, timestamp: Date.now() });
+      if (newVal && !oldVal) {
+        // Modal foi aberto, forçar atualização do DOM
+        this.$nextTick(() => {
+          console.log('[Chart] ✅ showMarketModal = true, DOM deve estar atualizado');
+        });
+      }
+    },
+    showTradeTypeModal(newVal, oldVal) {
+      console.log('[Chart] 🔍 showTradeTypeModal mudou:', { de: oldVal, para: newVal, timestamp: Date.now() });
+      if (newVal && !oldVal) {
+        // Modal foi aberto, forçar atualização do DOM
+        this.$nextTick(() => {
+          console.log('[Chart] ✅ showTradeTypeModal = true, DOM deve estar atualizado');
+        });
+      }
+    },
     symbol(newSymbol, oldSymbol) {
       if (newSymbol !== oldSymbol && this.chart && this.chartSeries) {
         console.log('[Chart] Símbolo alterado via watcher:', { oldSymbol, newSymbol });
@@ -1053,8 +1071,26 @@ export default {
       if (propertyName === 'showMarketModal' || propertyName === 'showTradeTypeModal') {
         try {
           console.log(`[Chart] 🔄 safeSetProperty - atualizando ${propertyName} diretamente para:`, value);
+          // Usar $set para garantir que o Vue detecte a mudança
+          this.$set(this, propertyName, value);
+          // Também atualizar diretamente para garantir
           this[propertyName] = value;
           console.log(`[Chart] ✅ safeSetProperty - ${propertyName} atualizado com sucesso, valor atual:`, this[propertyName]);
+          
+          // Forçar atualização do DOM se necessário
+          this.$nextTick(() => {
+            console.log(`[Chart] 🔍 safeSetProperty - após nextTick, ${propertyName} =`, this[propertyName]);
+            // Verificar se o modal está realmente no DOM
+            const modalElement = document.querySelector(`.modal-overlay`);
+            if (value && modalElement) {
+              console.log(`[Chart] ✅ Modal encontrado no DOM`);
+            } else if (value && !modalElement) {
+              console.warn(`[Chart] ⚠️ Modal deveria estar no DOM mas não foi encontrado`);
+              // Tentar forçar atualização
+              this.$forceUpdate();
+            }
+          });
+          
           return true;
         } catch (error) {
           console.error(`[Chart] ❌ safeSetProperty - erro ao atualizar ${propertyName}:`, error);
