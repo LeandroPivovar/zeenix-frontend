@@ -444,6 +444,8 @@ export default {
       isComponentDestroyed: false, // Flag para verificar se componente foi destruído
       updateQueue: [], // Fila de atualizações pendentes
       isProcessingUpdates: false, // Flag para evitar processamento simultâneo
+      pendingTimeouts: [], // Array para rastrear todos os timeouts pendentes
+      pendingIntervals: [], // Array para rastrear todos os intervals pendentes
       showLoading: false,
       showChartPlaceholder: true,
       showSellButton: false,
@@ -811,13 +813,41 @@ export default {
     // Marcar componente como destruído PRIMEIRO
     this.isComponentDestroyed = true;
     
+    // Cancelar TODOS os timeouts pendentes
+    if (this.pendingTimeouts && Array.isArray(this.pendingTimeouts)) {
+      this.pendingTimeouts.forEach(timeoutId => {
+        try {
+          clearTimeout(timeoutId);
+        } catch (e) {
+          // Ignorar erros ao limpar timeout
+        }
+      });
+      this.pendingTimeouts = [];
+    }
+    
+    // Cancelar TODOS os intervals pendentes
+    if (this.pendingIntervals && Array.isArray(this.pendingIntervals)) {
+      this.pendingIntervals.forEach(intervalId => {
+        try {
+          clearInterval(intervalId);
+        } catch (e) {
+          // Ignorar erros ao limpar interval
+        }
+      });
+      this.pendingIntervals = [];
+    }
+    
     // Limpar fila de atualizações pendentes
     this.updateQueue = [];
     this.isProcessingUpdates = false;
     
     // Limpar contador de contrato
     if (this.stopContractCountdown) {
-      this.stopContractCountdown();
+      try {
+        this.stopContractCountdown();
+      } catch (e) {
+        // Ignorar erros
+      }
     }
     
     // Limpar gráfico
@@ -825,7 +855,7 @@ export default {
       try {
         this.chart.remove();
       } catch (e) {
-        console.warn('[Chart] Erro ao remover gráfico:', e);
+        // Ignorar erros
       }
       this.chart = null;
       this.chartSeries = null;
@@ -833,7 +863,11 @@ export default {
     
     // Remover listener de resize
     if (this.handleResize) {
-      window.removeEventListener('resize', this.handleResize);
+      try {
+        window.removeEventListener('resize', this.handleResize);
+      } catch (e) {
+        // Ignorar erros
+      }
     }
     
     // Cancelar subscriptions SSE se existirem
@@ -846,7 +880,7 @@ export default {
         derivTradingService.disconnect();
       }
     } catch (e) {
-      console.warn('[Chart] Erro ao cancelar subscription/desconectar:', e);
+      // Ignorar erros
     }
   },
   methods: {
@@ -928,42 +962,19 @@ export default {
     },
     // Helper para atualizar propriedade reativa de forma segura
     safeSetProperty(propertyName, value) {
-      // Verificar se componente foi destruído primeiro
-      if (this.isComponentDestroyed) {
+      // Se componente foi destruído ou não está montado, não fazer nada
+      if (this.isComponentDestroyed || !this.isComponentMounted()) {
         return false;
       }
       
-      // Verificar se é seguro atualizar - verificação mais rigorosa
-      if (!this.isSafeToUpdate()) {
-        return false;
-      }
-      
-      // Verificação adicional: garantir que o componente Vue ainda está válido
-      try {
-        if (!this.$ || !this.$.vnode || !this.$.vnode.component) {
-          return false;
-        }
-        
-        const component = this.$.vnode.component;
-        if (component.isUnmounted || component.ctx === null) {
-          return false;
-        }
-      } catch (checkError) {
-        // Se verificação falhar, não é seguro atualizar
-        return false;
-      }
-      
-      // Tentar fazer a atribuição diretamente primeiro (mais eficiente)
+      // Tentar fazer a atribuição diretamente
       try {
         this[propertyName] = value;
         return true;
       } catch (error) {
-        // Se falhar, verificar se é um erro conhecido do Vue
-        const errorMessage = error?.message || String(error) || '';
-        const errorString = String(errorMessage);
-        
-        // Lista de erros conhecidos do Vue durante renderização/desmontagem
-        const knownReactivityErrors = [
+        // Se falhar, verificar se é um erro conhecido do Vue durante desmontagem
+        const errorMessage = String(error?.message || error || '');
+        const knownErrors = [
           'insertBefore',
           'Symbol(_assign)',
           'emitsOptions',
@@ -971,270 +982,91 @@ export default {
           'Cannot read properties of null',
           'Cannot set properties of null',
           'Cannot use \'in\' operator',
-          'reading \'insertBefore\'',
-          'setting \'Symbol(_assign)\'',
-          'reading \'emitsOptions\'',
-          'reading \'_assigning\'',
-          'parentNode',
-          'removeChild',
-          'disabled',
           'Cannot destructure property',
           'bum'
         ];
         
-        const isKnownError = knownReactivityErrors.some(err => 
-          errorString.includes(err)
-        );
-        
-        if (isKnownError) {
-          // Erro conhecido, tentar com nextTick de forma mais segura
-          try {
-            // Verificar novamente antes de usar nextTick
-            if (this.isComponentDestroyed || !this.isSafeToUpdate()) {
-              return false;
-            }
-            
-            this.$nextTick(() => {
-              // Verificar novamente antes de tentar
-              if (this.isComponentDestroyed || !this.isSafeToUpdate()) {
-                return;
-              }
-              
-              // Verificação final antes de atualizar
-              try {
-                if (!this.$ || !this.$.vnode || !this.$.vnode.component) {
-                  return;
-                }
-                
-                const component = this.$.vnode.component;
-                if (component.isUnmounted || component.ctx === null) {
-                  return;
-                }
-                
-                this[propertyName] = value;
-              } catch (retryError) {
-                // Se ainda falhar, ignorar silenciosamente - componente pode estar sendo desmontado
-              }
-            });
-          } catch (nextTickError) {
-            // Se nextTick também falhar, ignorar silenciosamente
-          }
-          return true;
-        }
-        
-        // Erro desconhecido, mas ainda assim tentar ignorar se componente está sendo desmontado
-        if (this.isComponentDestroyed) {
+        // Se for erro conhecido, ignorar silenciosamente (componente está sendo desmontado)
+        if (knownErrors.some(err => errorMessage.includes(err))) {
           return false;
         }
         
-        // Se não for erro conhecido e componente ainda está montado, logar mas não re-lançar
+        // Se não for erro conhecido, logar mas não re-lançar
         console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, error);
         return false;
       }
     },
-    // Helper para atualizar dados reativos de forma segura
-    safeUpdate(callback) {
-      // Se componente foi destruído, ignorar
-      if (this.isComponentDestroyed) {
-        return;
+    // Helper para criar timeout rastreado
+    safeTimeout(callback, delay) {
+      if (this.isComponentDestroyed || !this.isComponentMounted()) {
+        return null;
       }
       
-      // Verificar se componente está montado antes de adicionar à fila
-      if (!this.isComponentMounted()) {
-        return;
-      }
-      
-      // Adicionar à fila de atualizações
-      if (typeof callback === 'function') {
-        this.updateQueue.push(callback);
-      }
-      
-      // Processar fila se não estiver processando
-      if (!this.isProcessingUpdates) {
-        this.processUpdateQueue();
-      }
-    },
-    // Processar fila de atualizações de forma segura
-    processUpdateQueue() {
-      if (this.isProcessingUpdates || this.isComponentDestroyed) {
-        return;
-      }
-      
-      this.isProcessingUpdates = true;
-      
-      // Usar requestAnimationFrame + setTimeout + nextTick para garantir que estamos completamente fora do ciclo
-      requestAnimationFrame(() => {
-        // Verificar se componente ainda está válido antes de continuar
-        if (!this.isComponentMounted()) {
-          this.updateQueue = [];
-          this.isProcessingUpdates = false;
-          return;
+      const timeoutId = setTimeout(() => {
+        // Remover do array quando executar
+        if (this.pendingTimeouts) {
+          const index = this.pendingTimeouts.indexOf(timeoutId);
+          if (index > -1) {
+            this.pendingTimeouts.splice(index, 1);
+          }
         }
         
-        // Adicionar um delay de 2 frames (32ms) para garantir que estamos completamente fora do ciclo de renderização
-        setTimeout(() => {
-          // Verificar novamente antes de usar nextTick
-          if (!this.isComponentMounted()) {
-            this.updateQueue = [];
-            this.isProcessingUpdates = false;
-            return;
-          }
-          
-          // Aguardar mais um frame antes de processar
-          requestAnimationFrame(() => {
-            // Verificar novamente
-            if (!this.isComponentMounted()) {
-              this.updateQueue = [];
-              this.isProcessingUpdates = false;
-              return;
+        // Verificar se componente ainda está montado antes de executar
+        if (!this.isComponentDestroyed && this.isComponentMounted() && typeof callback === 'function') {
+          try {
+            callback();
+          } catch (error) {
+            // Ignorar erros silenciosamente se componente está sendo desmontado
+            const errorMsg = String(error?.message || error || '');
+            if (!errorMsg.includes('insertBefore') && 
+                !errorMsg.includes('Symbol(_assign)') &&
+                !errorMsg.includes('emitsOptions') &&
+                !errorMsg.includes('_assigning') &&
+                !errorMsg.includes('Cannot destructure')) {
+              console.warn('[Chart] Erro em safeTimeout:', error);
             }
-            
-            // Usar queueMicrotask para garantir que estamos fora do ciclo de renderização atual
-            queueMicrotask(() => {
-              // Verificar novamente antes de processar
-              if (!this.isComponentMounted()) {
-                this.updateQueue = [];
-                this.isProcessingUpdates = false;
-                return;
-              }
-              
-              // Agora usar nextTick para garantir que estamos em um ciclo seguro
-              this.$nextTick(() => {
-                try {
-                  // Verificar novamente se componente ainda está válido
-                  if (!this.isComponentMounted()) {
-                    this.updateQueue = [];
-                    this.isProcessingUpdates = false;
-                    return;
-                  }
-                  
-                  // Processar todas as atualizações na fila
-                  while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
-                    const callback = this.updateQueue.shift();
-                    if (typeof callback === 'function') {
-                      try {
-                        // Verificar se componente ainda está montado antes de executar
-                        if (!this.isComponentMounted()) {
-                          break;
-                        }
-                        
-                        // Tentar executar callback com proteção adicional
-                        try {
-                          // Verificar uma última vez antes de executar - verificar se é seguro atualizar
-                          if (!this.isSafeToUpdate()) {
-                            break;
-                          }
-                          
-                          // Executar callback com proteção adicional
-                          let result;
-                          try {
-                            result = callback();
-                          } catch (reactivityError) {
-                            // Capturar erros de reatividade do Vue
-                            const errorMessage = reactivityError?.message || String(reactivityError) || '';
-                            const errorString = String(errorMessage);
-                            
-                            // Lista de erros conhecidos do Vue durante renderização/desmontagem
-                            const knownReactivityErrors = [
-                              'insertBefore',
-                              'Symbol(_assign)',
-                              'emitsOptions',
-                              '_assigning',
-                              'Cannot read properties of null',
-                              'Cannot set properties of null',
-                              'Cannot use \'in\' operator',
-                              'reading \'insertBefore\'',
-                              'setting \'Symbol(_assign)\'',
-                              'reading \'emitsOptions\'',
-                              'reading \'_assigning\'',
-                              'parentNode',
-                              'removeChild',
-                              'disabled'
-                            ];
-                            
-                            const isKnownError = knownReactivityErrors.some(err => 
-                              errorString.includes(err)
-                            );
-                            
-                            if (isKnownError) {
-                              // Erro conhecido do Vue, ignorar silenciosamente
-                              return;
-                            }
-                            
-                            // Re-lançar erros desconhecidos para serem capturados pelo catch externo
-                            throw reactivityError;
-                          }
-                          
-                          // Se retornou uma Promise, aguardar e ignorar erros
-                          if (result && typeof result.then === 'function') {
-                            result.catch(() => {
-                              // Ignorar erros de Promise silenciosamente
-                            });
-                          }
-                        } catch (updateError) {
-                          // Se for erro de atualização do Vue, ignorar silenciosamente
-                          if (updateError && typeof updateError === 'object') {
-                            const errorMessage = updateError.message || String(updateError);
-                            const errorString = String(errorMessage);
-                            
-                            // Lista de erros conhecidos do Vue que podem ocorrer durante desmontagem
-                            const knownVueErrors = [
-                              'insertBefore',
-                              'Symbol(_assign)',
-                              'emitsOptions',
-                              '_assigning',
-                              'Cannot read properties of null',
-                              'Cannot set properties of null',
-                              'Cannot use \'in\' operator',
-                              'reading \'insertBefore\'',
-                              'setting \'Symbol(_assign)\'',
-                              'reading \'emitsOptions\'',
-                              'reading \'_assigning\'',
-                              'parentNode',
-                              'removeChild',
-                              'disabled'
-                            ];
-                            
-                            const isKnownError = knownVueErrors.some(err => 
-                              errorString.includes(err)
-                            );
-                            
-                            if (isKnownError) {
-                              // Erro conhecido do Vue durante ciclo de renderização/desmontagem, ignorar silenciosamente
-                              return;
-                            }
-                          }
-                          
-                          // Para outros erros, logar apenas se componente ainda estiver montado
-                          if (this.isComponentMounted()) {
-                            console.warn('[Chart] Erro ao executar callback na fila:', updateError);
-                          }
-                        }
-                      } catch (error) {
-                        // Erro ao verificar estado, ignorar callback silenciosamente
-                        // Não logar para evitar spam durante desmontagem
-                      }
-                    }
-                  }
-                } catch (error) {
-                  console.warn('[Chart] Erro ao processar fila de atualizações:', error);
-                } finally {
-                  this.isProcessingUpdates = false;
-                  // Se a fila não estiver vazia, agendar próximo processamento
-                  if (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
-                    // Usar setTimeout com delay maior para evitar processamento imediato
-                    setTimeout(() => {
-                      if (!this.isComponentDestroyed) {
-                        this.processUpdateQueue();
-                      }
-                    }, 32);
-                  }
-                }
-              });
-            });
-          });
-        }, 32); // Delay de 2 frames para garantir que estamos fora do ciclo
-      });
+          }
+        }
+      }, delay);
+      
+      // Adicionar ao array de timeouts pendentes
+      if (this.pendingTimeouts && Array.isArray(this.pendingTimeouts)) {
+        this.pendingTimeouts.push(timeoutId);
+      }
+      
+      return timeoutId;
+    },
+    // Helper para atualizar dados reativos de forma segura
+    safeUpdate(callback) {
+      // Se componente foi destruído ou não está montado, ignorar
+      if (this.isComponentDestroyed || !this.isComponentMounted()) {
+        return;
+      }
+      
+      // Executar callback diretamente se componente está montado
+      if (typeof callback === 'function') {
+        try {
+          callback();
+        } catch (error) {
+          // Ignorar erros conhecidos do Vue durante desmontagem
+          const errorMsg = String(error?.message || error || '');
+          const knownErrors = [
+            'insertBefore',
+            'Symbol(_assign)',
+            'emitsOptions',
+            '_assigning',
+            'Cannot read properties of null',
+            'Cannot set properties of null',
+            'Cannot use \'in\' operator',
+            'Cannot destructure property',
+            'bum'
+          ];
+          
+          if (!knownErrors.some(err => errorMsg.includes(err))) {
+            console.warn('[Chart] Erro em safeUpdate:', error);
+          }
+        }
+      }
     },
     initChart() {
       const container = this.$refs.chartContainer;
