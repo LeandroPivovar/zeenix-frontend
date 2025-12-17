@@ -1045,10 +1045,24 @@ export default {
       // Se componente foi destruído ou não está montado, não fazer nada
       // NOTA: Não bloqueamos por isChartUpdating aqui, pois precisamos permitir atualizações de UI (modais, etc)
       if (this.isComponentDestroyed || !this.isComponentMounted()) {
+        console.log(`[Chart] ⚠️ safeSetProperty ignorado - componente não montado: ${propertyName}`);
         return false;
       }
       
-      // Usar requestAnimationFrame + nextTick para garantir que estamos em um ciclo seguro
+      // Para propriedades de modais, atualizar diretamente (são operações síncronas simples)
+      if (propertyName === 'showMarketModal' || propertyName === 'showTradeTypeModal') {
+        try {
+          console.log(`[Chart] 🔄 safeSetProperty - atualizando ${propertyName} diretamente para:`, value);
+          this[propertyName] = value;
+          console.log(`[Chart] ✅ safeSetProperty - ${propertyName} atualizado com sucesso, valor atual:`, this[propertyName]);
+          return true;
+        } catch (error) {
+          console.error(`[Chart] ❌ safeSetProperty - erro ao atualizar ${propertyName}:`, error);
+          return false;
+        }
+      }
+      
+      // Para outras propriedades, usar requestAnimationFrame + nextTick
       try {
         requestAnimationFrame(() => {
           // Verificar novamente antes de continuar
@@ -3360,7 +3374,20 @@ export default {
       });
       
       // Usar safeSetProperty para garantir atualização segura
-      this.safeSetProperty('showMarketModal', true);
+      console.log('[Chart] 🔍 openMarketModal - chamando safeSetProperty para showMarketModal = true');
+      const result = this.safeSetProperty('showMarketModal', true);
+      console.log('[Chart] 🔍 openMarketModal - resultado do safeSetProperty:', result);
+      
+      // Fallback: atualizar diretamente se safeSetProperty falhar
+      if (!result && this.isComponentMounted() && !this.isComponentDestroyed) {
+        console.log('[Chart] ⚠️ openMarketModal - safeSetProperty falhou, tentando atualização direta');
+        try {
+          this.showMarketModal = true;
+          console.log('[Chart] ✅ openMarketModal - atualização direta bem-sucedida');
+        } catch (error) {
+          console.error('[Chart] ❌ openMarketModal - erro na atualização direta:', error);
+        }
+      }
     },
     closeMarketModal() {
       if (!this.isComponentMounted() || !this.isSafeToUpdate()) {
@@ -3412,7 +3439,20 @@ export default {
       });
       
       // Usar safeSetProperty para garantir atualização segura
-      this.safeSetProperty('showTradeTypeModal', true);
+      console.log('[Chart] 🔍 openTradeTypeModal - chamando safeSetProperty para showTradeTypeModal = true');
+      const result = this.safeSetProperty('showTradeTypeModal', true);
+      console.log('[Chart] 🔍 openTradeTypeModal - resultado do safeSetProperty:', result);
+      
+      // Fallback: atualizar diretamente se safeSetProperty falhar
+      if (!result && this.isComponentMounted() && !this.isComponentDestroyed) {
+        console.log('[Chart] ⚠️ openTradeTypeModal - safeSetProperty falhou, tentando atualização direta');
+        try {
+          this.showTradeTypeModal = true;
+          console.log('[Chart] ✅ openTradeTypeModal - atualização direta bem-sucedida');
+        } catch (error) {
+          console.error('[Chart] ❌ openTradeTypeModal - erro na atualização direta:', error);
+        }
+      }
     },
     closeTradeTypeModal() {
       if (!this.isComponentMounted()) {
