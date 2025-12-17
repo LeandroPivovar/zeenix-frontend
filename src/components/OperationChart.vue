@@ -567,7 +567,7 @@ export default {
   },
   data() {
     return {
-      _isDestroyed: false, // Flag para verificar se componente foi destruído
+      isComponentDestroyed: false, // Flag para verificar se componente foi destruído
       showLoading: false,
       showChartPlaceholder: true,
       showSellButton: false,
@@ -832,7 +832,7 @@ export default {
     console.log('[Chart] ========== COMPONENTE MONTADO ==========');
     
     // Resetar flag de destruição
-    this._isDestroyed = false;
+    this.isComponentDestroyed = false;
     
     // Limpar gráfico anterior se existir (caso de remontagem)
     if (this.chart) {
@@ -857,7 +857,7 @@ export default {
     // Aguardar um pouco mais para garantir que o gráfico foi criado
     setTimeout(async () => {
       // Verificar se componente ainda está montado
-      if (this._isDestroyed || !this.$el) {
+      if (this.isComponentDestroyed || !this.$el) {
         console.warn('[Chart] Componente destruído durante inicialização');
         return;
       }
@@ -867,7 +867,7 @@ export default {
         this.initChart();
         await this.$nextTick();
         setTimeout(() => {
-          if (!this._isDestroyed && this.$el) {
+          if (!this.isComponentDestroyed && this.$el) {
             this.initializeConnection();
           }
         }, 500);
@@ -935,7 +935,7 @@ export default {
   },
   beforeUnmount() {
     // Marcar componente como destruído
-    this._isDestroyed = true;
+    this.isComponentDestroyed = true;
     
     // Limpar contador de contrato
     if (this.stopContractCountdown) {
@@ -2026,7 +2026,7 @@ export default {
         this.ticks = ticksWithBrasiliaTime;
 
         // Plotar os ticks apenas se componente ainda estiver montado
-        if (!this._isDestroyed && this.$el) {
+        if (!this.isComponentDestroyed && this.$el) {
           this.plotTicks(ticksWithBrasiliaTime);
         }
       } catch (error) {
@@ -2034,7 +2034,7 @@ export default {
         console.error('[Chart] Erro completo:', error.message, error.stack);
         
         // Verificar se componente ainda está montado antes de tentar novamente
-        if (this._isDestroyed || !this.$el) {
+        if (this.isComponentDestroyed || !this.$el) {
           return;
         }
         
@@ -2045,14 +2045,14 @@ export default {
         if (this.errorRetryCount < 2) {
           setTimeout(() => {
             // Verificar novamente antes de tentar
-            if (!this._isDestroyed && this.$el) {
+            if (!this.isComponentDestroyed && this.$el) {
               this.isLoadingTicks = false;
               this.loadTicksFromBackend();
             }
           }, 3000);
         } else {
           console.error('[Chart] Máximo de tentativas com erro atingido');
-          if (!this._isDestroyed && this.$el) {
+          if (!this.isComponentDestroyed && this.$el) {
             this.showChartPlaceholder = false;
             this.isLoadingTicks = false;
           }
@@ -2067,7 +2067,7 @@ export default {
     },
     plotTicks(ticks) {
       // Verificar se componente ainda está montado
-      if (this._isDestroyed || !this.$el) {
+      if (this.isComponentDestroyed || !this.$el) {
         console.warn('[Chart] Componente destruído, ignorando plotagem de ticks');
         return;
       }
@@ -2432,7 +2432,7 @@ export default {
         
         // Ocultar placeholder
         // Verificar se componente ainda está montado antes de atualizar
-        if (this._isDestroyed || !this.$el) {
+        if (this.isComponentDestroyed || !this.$el) {
           console.warn('[Chart] Componente destruído, ignorando atualização');
           return;
         }
@@ -2443,7 +2443,7 @@ export default {
         // Forçar resize para garantir que o gráfico use toda a altura disponível
         this.$nextTick(() => {
           // Verificar novamente se componente ainda está montado
-          if (this._isDestroyed || !this.$el || !this.chart || !this.$refs.chartContainer) {
+          if (this.isComponentDestroyed || !this.$el || !this.chart || !this.$refs.chartContainer) {
             return;
           }
           
@@ -2670,7 +2670,7 @@ export default {
     },
     processProposal(proposalData) {
       // Verificar se componente ainda está montado antes de atualizar
-      if (this._isDestroyed || !this.$el) {
+      if (this.isComponentDestroyed || !this.$el) {
         console.warn('[Chart] Componente destruído, ignorando proposta');
         return;
       }
@@ -2684,11 +2684,11 @@ export default {
       }
       
       // Usar $nextTick para garantir que a atualização aconteça no ciclo correto do Vue
-      this.$nextTick(() => {
-        // Verificar novamente se componente ainda está montado
-        if (this._isDestroyed || !this.$el) {
-          return;
-        }
+        this.$nextTick(() => {
+          // Verificar novamente se componente ainda está montado
+          if (this.isComponentDestroyed || !this.$el) {
+            return;
+          }
         
         try {
           // Armazenar ID e preço da proposta
