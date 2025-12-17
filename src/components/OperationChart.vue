@@ -884,29 +884,56 @@ export default {
     },
     // Helper para verificar se é seguro fazer atualizações reativas
     isSafeToUpdate() {
+      // Verificar flag de destruição primeiro
+      if (this.isComponentDestroyed) {
+        return false;
+      }
+      
+      // Verificar se componente está montado
       if (!this.isComponentMounted()) {
         return false;
       }
       
       try {
         // Verificar se o Vue está em um estado válido para receber atualizações
-        // Tentar acessar propriedades internas do Vue para verificar estado
-        if (this.$ && this.$.vnode && this.$.vnode.component) {
+        if (!this.$ || !this.$.vnode) {
+          return false;
+        }
+        
+        // Verificar se vnode ainda está válido
+        if (this.$.vnode.component) {
           const component = this.$.vnode.component;
           
           // Verificar se não está em processo de atualização/desmontagem
           if (component.isUnmounted || component.ctx === null) {
             return false;
           }
+          
+          // Verificar se o elemento ainda está conectado
+          if (component.vnode && component.vnode.el && !component.vnode.el.isConnected) {
+            return false;
+          }
+        }
+        
+        // Verificar se elemento DOM ainda está conectado
+        if (this.$el && !this.$el.isConnected) {
+          return false;
         }
         
         return true;
       } catch (e) {
+        // Se qualquer verificação falhar, não é seguro atualizar
         return false;
       }
     },
     // Helper para atualizar propriedade reativa de forma segura
     safeSetProperty(propertyName, value) {
+      // Verificar se componente foi destruído primeiro
+      if (this.isComponentDestroyed) {
+        return false;
+      }
+      
+      // Verificar se é seguro atualizar
       if (!this.isSafeToUpdate()) {
         return false;
       }
@@ -916,7 +943,7 @@ export default {
         this[propertyName] = value;
         return true;
       } catch (error) {
-        // Se falhar, usar nextTick como fallback
+        // Se falhar, verificar se é um erro conhecido do Vue
         const errorMessage = error?.message || String(error) || '';
         const errorString = String(errorMessage);
         
@@ -935,7 +962,9 @@ export default {
           'reading \'_assigning\'',
           'parentNode',
           'removeChild',
-          'disabled'
+          'disabled',
+          'Cannot destructure property',
+          'bum'
         ];
         
         const isKnownError = knownReactivityErrors.some(err => 
@@ -943,21 +972,35 @@ export default {
         );
         
         if (isKnownError) {
-          // Erro conhecido, tentar com nextTick
-          this.$nextTick(() => {
-            if (this.isSafeToUpdate()) {
-              try {
-                this[propertyName] = value;
-              } catch (retryError) {
-                // Se ainda falhar, ignorar silenciosamente
-              }
+          // Erro conhecido, tentar com nextTick de forma mais segura
+          try {
+            if (this.$nextTick && typeof this.$nextTick === 'function') {
+              this.$nextTick(() => {
+                // Verificar novamente antes de tentar
+                if (this.isComponentDestroyed || !this.isSafeToUpdate()) {
+                  return;
+                }
+                try {
+                  this[propertyName] = value;
+                } catch (retryError) {
+                  // Se ainda falhar, ignorar silenciosamente - componente pode estar sendo desmontado
+                }
+              });
             }
-          });
+          } catch (nextTickError) {
+            // Se nextTick também falhar, ignorar silenciosamente
+          }
           return true;
         }
         
-        // Erro desconhecido, re-lançar
-        throw error;
+        // Erro desconhecido, mas ainda assim tentar ignorar se componente está sendo desmontado
+        if (this.isComponentDestroyed) {
+          return false;
+        }
+        
+        // Se não for erro conhecido e componente ainda está montado, logar mas não re-lançar
+        console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, error);
+        return false;
       }
     },
     // Helper para atualizar dados reativos de forma segura

@@ -365,20 +365,41 @@ export default {
                 // e evitar problemas durante transições de rota
                 setTimeout(() => {
                     // Verificar se componente ainda está montado e router está disponível
-                    if (this.$el && this.$el.isConnected && this.$router) {
+                    if (!this.$el || !this.$el.isConnected || !this.$router) {
+                        return;
+                    }
+                    
+                    try {
+                        // Verificar se componente Vue ainda está válido
+                        if (!this.$ || !this.$.vnode) {
+                            return;
+                        }
+                        
+                        // Verificar se vnode ainda está válido
                         try {
-                            // Verificar se componente Vue ainda está válido
-                            if (!this.$ || !this.$.vnode) {
+                            if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
                                 return;
                             }
-                            
-                            this.$router.push(route).catch(err => {
-                                // Ignorar erros de navegação duplicada
-                                if (err.name !== 'NavigationDuplicated') {
-                                    console.error('[Sidebar] Erro ao navegar:', err);
-                                }
-                            });
-                        } catch (error) {
+                        } catch (vnodeCheckError) {
+                            // Se verificação falhar, componente pode estar sendo desmontado
+                            return;
+                        }
+                        
+                        this.$router.push(route).catch(err => {
+                            // Ignorar erros de navegação duplicada e erros relacionados a componentes null
+                            if (err.name !== 'NavigationDuplicated' && 
+                                !String(err.message || err).includes('Cannot destructure') &&
+                                !String(err.message || err).includes('bum')) {
+                                console.error('[Sidebar] Erro ao navegar:', err);
+                            }
+                        });
+                    } catch (error) {
+                        // Ignorar erros conhecidos relacionados a componentes desmontados
+                        const errorMsg = String(error?.message || error || '');
+                        if (!errorMsg.includes('Cannot destructure') && 
+                            !errorMsg.includes('bum') &&
+                            !errorMsg.includes('insertBefore') &&
+                            !errorMsg.includes('Symbol(_assign)')) {
                             console.warn('[Sidebar] Erro ao executar navegação:', error);
                         }
                     }

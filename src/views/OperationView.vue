@@ -238,20 +238,59 @@ export default {
         this.isSidebarOpen = true;
       }
     },
+    // Helper para verificar se componente está montado e válido
+    isComponentMounted() {
+      if (this.isComponentDestroyed) {
+        return false;
+      }
+      
+      try {
+        // Verificar se elemento DOM existe e está conectado
+        if (!this.$el || !this.$el.isConnected) {
+          return false;
+        }
+        
+        // Verificar se componente Vue ainda está válido
+        if (!this.$ || !this.$.vnode) {
+          return false;
+        }
+        
+        // Verificar se não está em processo de desmontagem
+        if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
+          return false;
+        }
+        
+        // Verificar se o vnode tem um elemento e está conectado
+        if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
+          return false;
+        }
+        
+        return true;
+      } catch (e) {
+        return false;
+      }
+    },
     changeView(componentName) {
       // Verificar se componente ainda está montado antes de mudar view
-      if (this.isComponentDestroyed || !this.$el) {
+      if (!this.isComponentMounted()) {
         return;
       }
       try {
         this.currentView = componentName;
       } catch (error) {
-        console.warn('[OperationView] Erro ao mudar view:', error);
+        // Ignorar erros conhecidos relacionados a componentes desmontados
+        const errorMsg = String(error?.message || error || '');
+        if (!errorMsg.includes('Cannot destructure') && 
+            !errorMsg.includes('bum') &&
+            !errorMsg.includes('insertBefore') &&
+            !errorMsg.includes('Symbol(_assign)')) {
+          console.warn('[OperationView] Erro ao mudar view:', error);
+        }
       }
     },
     async checkConnection(forceRefresh = false) {
       // Verificar se componente ainda está montado
-      if (this.isComponentDestroyed || !this.$el) {
+      if (!this.isComponentMounted()) {
         console.warn('[OperationView] Componente desmontado, ignorando verificação de conexão');
         return;
       }
@@ -374,86 +413,70 @@ export default {
       // Usar requestAnimationFrame + nextTick para garantir que estamos fora do ciclo de renderização
       requestAnimationFrame(() => {
         // Verificar se componente ainda está válido antes de usar nextTick
-        if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-          this.updateQueue = [];
-          this.isProcessingUpdates = false;
-          return;
-        }
-        
-        // Verificar se componente Vue ainda está válido
-        try {
-          if (!this.$ || !this.$.vnode) {
-            this.updateQueue = [];
-            this.isProcessingUpdates = false;
-            return;
-          }
-        } catch (e) {
+        if (!this.isComponentMounted()) {
           this.updateQueue = [];
           this.isProcessingUpdates = false;
           return;
         }
         
         // Agora usar nextTick para garantir que estamos em um ciclo seguro
-        this.$nextTick(() => {
-          try {
-            // Verificar novamente se componente ainda está válido
-            if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-              this.updateQueue = [];
-              this.isProcessingUpdates = false;
-              return;
-            }
-            
-            // Verificar se componente Vue ainda está válido
-            try {
-              if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
-                this.updateQueue = [];
-                this.isProcessingUpdates = false;
-                return;
-              }
+        try {
+          if (this.$nextTick && typeof this.$nextTick === 'function') {
+            this.$nextTick(() => {
+              try {
+                // Verificar novamente se componente ainda está válido
+                if (!this.isComponentMounted()) {
+                  this.updateQueue = [];
+                  this.isProcessingUpdates = false;
+                  return;
+                }
               
-              // Verificar se o vnode ainda está conectado ao DOM
-              if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
+                // Processar fila de atualizações
+                while (this.updateQueue.length > 0 && this.isComponentMounted()) {
+                  try {
+                    const callback = this.updateQueue.shift();
+                    if (typeof callback === 'function') {
+                      callback();
+                    }
+                  } catch (callbackError) {
+                    // Ignorar erros de callbacks individuais
+                    const errorMsg = String(callbackError?.message || callbackError || '');
+                    if (!errorMsg.includes('insertBefore') && 
+                        !errorMsg.includes('Symbol(_assign)') &&
+                        !errorMsg.includes('emitsOptions') &&
+                        !errorMsg.includes('_assigning') &&
+                        !errorMsg.includes('Cannot destructure')) {
+                      console.warn('[OperationView] Erro em callback da fila:', callbackError);
+                    }
+                  }
+                }
+                
+                this.isProcessingUpdates = false;
+              } catch (nextTickError) {
+                // Se nextTick falhar, limpar fila e resetar flag
                 this.updateQueue = [];
                 this.isProcessingUpdates = false;
-                return;
               }
-            } catch (e) {
-              this.updateQueue = [];
-              this.isProcessingUpdates = false;
-              return;
-            }
-            
-            // Processar todas as atualizações na fila
-            while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
-              const callback = this.updateQueue.shift();
-              if (typeof callback === 'function') {
-                try {
-                  // Verificar novamente antes de executar cada callback
-                  if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-                    break;
-                  }
-                  
-                  // Verificar se componente Vue ainda está válido antes de cada atualização
-                  try {
-                    if (!this.$ || !this.$.vnode) {
-                      break;
-                    }
-                  } catch (e) {
-                    break;
-                  }
-                  
+            });
+          } else {
+            // Se nextTick não estiver disponível, processar diretamente
+            try {
+              while (this.updateQueue.length > 0 && this.isComponentMounted()) {
+                const callback = this.updateQueue.shift();
+                if (typeof callback === 'function') {
                   callback();
-                } catch (error) {
-                  console.warn('[OperationView] Erro ao executar callback na fila:', error);
                 }
               }
+            } catch (directError) {
+              // Ignorar erros
             }
-          } catch (error) {
-            console.warn('[OperationView] Erro ao processar fila de atualizações:', error);
-          } finally {
             this.isProcessingUpdates = false;
           }
-        });
+        } catch (rafError) {
+          // Se requestAnimationFrame falhar, limpar tudo
+          this.updateQueue = [];
+          this.isProcessingUpdates = false;
+        }
       });
     },
     applyConnectionSnapshot(snapshot) {
@@ -485,44 +508,75 @@ export default {
       
       // Usar safeUpdate para atualizar estados reativos
       this.safeUpdate(() => {
+        // Verificar se componente ainda está válido antes de continuar
+        if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+          return;
+        }
+        
         // Usar nextTick adicional para garantir que estamos em um ciclo seguro
-        this.$nextTick(() => {
-          try {
-            if (balanceValue != null) {
-              this.accountBalanceValue = Number(balanceValue);
-              console.log('[OperationView] Saldo atualizado:', this.accountBalanceValue);
+        try {
+          if (this.$nextTick && typeof this.$nextTick === 'function') {
+            this.$nextTick(() => {
+              // Verificar novamente antes de fazer atualizações
+              if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+                return;
+              }
+              
+              try {
+                if (balanceValue != null) {
+                  this.accountBalanceValue = Number(balanceValue);
+                  console.log('[OperationView] Saldo atualizado:', this.accountBalanceValue);
+                }
+                if (currency) {
+                  this.accountCurrency = currency.toUpperCase();
+                  console.log('[OperationView] Moeda da conta atualizada:', this.accountCurrency);
+                }
+                if (preferredCurrency) {
+                  this.preferredCurrency = preferredCurrency.toUpperCase();
+                  console.log('[OperationView] Moeda preferida atualizada:', this.preferredCurrency);
+                }
+                if (loginid) {
+                  this.accountLoginId = loginid;
+                  // Determinar tipo de conta (demo ou real) baseado no loginid
+                  this.accountType = (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) ? 'demo' : 'real';
+                  console.log('[OperationView] LoginID atualizado:', this.accountLoginId);
+                  console.log('[OperationView] Tipo de conta:', this.accountType);
+                }
+              } catch (updateError) {
+                // Ignorar erros de atualização se componente está sendo desmontado
+                const errorMsg = String(updateError?.message || updateError || '');
+                if (!errorMsg.includes('insertBefore') && 
+                    !errorMsg.includes('Symbol(_assign)') && 
+                    !errorMsg.includes('emitsOptions') &&
+                    !errorMsg.includes('_assigning') &&
+                    !errorMsg.includes('Cannot destructure')) {
+                  console.warn('[OperationView] Erro ao atualizar propriedades:', updateError);
+                }
+              }
+            });
+          } else {
+            // Se nextTick não estiver disponível, tentar diretamente com proteção
+            try {
+              if (balanceValue != null) {
+                this.accountBalanceValue = Number(balanceValue);
+              }
+              if (currency) {
+                this.accountCurrency = currency.toUpperCase();
+              }
+              if (preferredCurrency) {
+                this.preferredCurrency = preferredCurrency.toUpperCase();
+              }
+              if (loginid) {
+                this.accountLoginId = loginid;
+                this.accountType = (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) ? 'demo' : 'real';
+              }
+            } catch (directError) {
+              // Ignorar erros conhecidos
             }
-            if (currency) {
-              this.accountCurrency = currency.toUpperCase();
-              console.log('[OperationView] Moeda da conta atualizada:', this.accountCurrency);
-            }
-            if (preferredCurrency) {
-              this.preferredCurrency = preferredCurrency.toUpperCase();
-              console.log('[OperationView] Moeda preferida atualizada:', this.preferredCurrency);
-            }
-            if (loginid) {
-              this.accountLoginId = loginid;
-              // Determinar tipo de conta (demo ou real) baseado no loginid
-              this.accountType = (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) ? 'demo' : 'real';
-              console.log('[OperationView] LoginID atualizado:', this.accountLoginId);
-              console.log('[OperationView] Tipo de conta:', this.accountType);
-            }
-          } catch (error) {
-            // Capturar erros de renderização do Vue - ignorar silenciosamente se for erro conhecido
-            const errorMessage = error?.message || String(error) || '';
-            if (errorMessage.includes('insertBefore') || 
-                errorMessage.includes('null') ||
-                errorMessage.includes('Symbol(_assign)') ||
-                errorMessage.includes('_assigning') ||
-                errorMessage.includes('emitsOptions') ||
-                errorMessage.includes('disabled')) {
-              // Erro conhecido do Vue, ignorar silenciosamente
-              return;
-            }
-            // Logar outros erros
-            console.warn('[OperationView] Erro ao atualizar propriedades:', error);
           }
-        });
+        } catch (nextTickError) {
+          // Se nextTick falhar, ignorar silenciosamente
+        }
       });
       
       // Armazenar tokens retornados pelo backend no localStorage
