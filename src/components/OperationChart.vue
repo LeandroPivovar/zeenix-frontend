@@ -2280,18 +2280,17 @@ export default {
           // Mostrar modal de resultado
           this.showTradeResultModal = true;
           
-          // Limpar contrato ativo após um delay
-          setTimeout(() => {
-            if (this.isComponentMounted()) {
-              this.safeUpdate(() => {
-                this.activeContract = null;
-                this.purchasePrice = null;
-                this.realTimeProfit = null;
-                this.isSellEnabled = false;
-              });
-            }
-          }, 3000);
         });
+        
+        // Limpar contrato ativo após um delay
+        setTimeout(() => {
+          if (this.isComponentMounted()) {
+            this.activeContract = null;
+            this.purchasePrice = null;
+            this.realTimeProfit = null;
+            this.isSellEnabled = false;
+          }
+        }, 3000);
       
       console.log('[Chart] ✅ Venda processada com sucesso');
     },
@@ -2595,12 +2594,10 @@ export default {
       // Limpar contrato ativo após um delay
       setTimeout(() => {
         if (this.isComponentMounted()) {
-          this.safeUpdate(() => {
-            this.activeContract = null;
-            this.purchasePrice = null;
-            this.realTimeProfit = null;
-            this.isSellEnabled = false;
-          });
+          this.activeContract = null;
+          this.purchasePrice = null;
+          this.realTimeProfit = null;
+          this.isSellEnabled = false;
         }
       }, 3000);
       
