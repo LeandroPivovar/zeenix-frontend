@@ -237,13 +237,13 @@
             </section>
     
             
-            <!-- Mobile Tabs -->
-            <div class="mobile-tabs-container">
+            <!-- Mobile Tabs (fora do card - apenas para desktop) -->
+            <div class="mobile-tabs-container mobile-tabs-outside">
                 <button 
                     :class="['mobile-tab', activeTab === 'config' ? 'mobile-tab-active' : '']"
                     @click="activeTab = 'config'"
                 >
-                    Config
+                    Configuração
                 </button>
                 <button 
                     :class="['mobile-tab', activeTab === 'chart' ? 'mobile-tab-active' : '']"
@@ -252,16 +252,16 @@
                     Gráfico
                 </button>
                 <button 
-                    :class="['mobile-tab', activeTab === 'logs' ? 'mobile-tab-active' : '']"
-                    @click="activeTab = 'logs'"
-                >
-                    Logs
-                </button>
-                <button 
                     :class="['mobile-tab', activeTab === 'register' ? 'mobile-tab-active' : '']"
                     @click="activeTab = 'register'"
                 >
                     Registro
+                </button>
+                <button 
+                    :class="['mobile-tab', activeTab === 'logs' ? 'mobile-tab-active' : '']"
+                    @click="activeTab = 'logs'"
+                >
+                    Histórico
                 </button>
             </div>
             
@@ -270,6 +270,33 @@
                 <div class="mobile-config-header">
                     <h3 class="mobile-config-title">Configuração Ativa</h3>
                     <i class="fas fa-cogs mobile-config-icon"></i>
+                </div>
+                <!-- Mobile Tabs (dentro do card de configuração) -->
+                <div class="mobile-tabs-container mobile-tabs-inside">
+                    <button 
+                        :class="['mobile-tab', activeTab === 'config' ? 'mobile-tab-active' : '']"
+                        @click="activeTab = 'config'"
+                    >
+                        Config
+                    </button>
+                    <button 
+                        :class="['mobile-tab', activeTab === 'chart' ? 'mobile-tab-active' : '']"
+                        @click="activeTab = 'chart'"
+                    >
+                        Gráfico
+                    </button>
+                    <button 
+                        :class="['mobile-tab', activeTab === 'register' ? 'mobile-tab-active' : '']"
+                        @click="activeTab = 'register'"
+                    >
+                        Registro
+                    </button>
+                    <button 
+                        :class="['mobile-tab', activeTab === 'logs' ? 'mobile-tab-active' : '']"
+                        @click="activeTab = 'logs'"
+                    >
+                        Histórico
+                    </button>
                 </div>
                 <div class="mobile-config-card">
                     <div class="mobile-config-item">
@@ -322,7 +349,7 @@
                         :disabled="isDeactivating"
                     >
                         <i class="fas fa-pause"></i>
-                        <span>{{ isDeactivating ? 'Desativando...' : 'II PAUSAR IA' }}</span>
+                        <span>{{ isDeactivating ? 'Desativando...' : ' PAUSAR IA' }}</span>
                     </button>
                 </div>
             </div>
@@ -332,10 +359,39 @@
                 <!-- Left Column - Chart -->
                 <div id="ir8sfp" class="col-span-9 flex">
                     <div id="market-chart" class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card h-full flex flex-col w-full">
+                        <!-- Mobile Tabs (dentro do card) -->
+                        <div class="mobile-tabs-container mobile-tabs-inside">
+                            <button 
+                                :class="['mobile-tab', activeTab === 'config' ? 'mobile-tab-active' : '']"
+                                @click="activeTab = 'config'"
+                            >
+                                Config
+                            </button>
+                            <button 
+                                :class="['mobile-tab', activeTab === 'chart' ? 'mobile-tab-active' : '']"
+                                @click="activeTab = 'chart'"
+                            >
+                                Gráfico
+                            </button>
+                            <button 
+                                :class="['mobile-tab', activeTab === 'register' ? 'mobile-tab-active' : '']"
+                                @click="activeTab = 'register'"
+                            >
+                                Registro
+                            </button>
+                            <button 
+                                :class="['mobile-tab', activeTab === 'logs' ? 'mobile-tab-active' : '']"
+                                @click="activeTab = 'logs'"
+                            >
+                                Histórico
+                            </button>
+                        </div>
                         <div class="flex items-center justify-between mb-4 desktop-chart-header">
                             <div>
-                                <h2 class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
-                                <p class="text-xs text-zenix-secondary mt-1">{{ formattedMarketName }} • M5 • Última atualização: {{ formattedLastUpdate }}</p>
+                                <h2 v-if="activeTab === 'logs'" class="text-lg font-semibold text-zenix-text">Histórico de Operações</h2>
+                                <h2 v-else-if="activeTab === 'register'" class="text-lg font-semibold text-zenix-text">Registro de Eventos em Tempo Real</h2>
+                                <h2 v-else class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
+                                <p v-if="activeTab !== 'register' && activeTab !== 'logs'" class="text-xs text-zenix-secondary mt-1">{{ formattedMarketName }} • M5 • Última atualização: {{ formattedLastUpdate }}</p>
                             </div>
                             <div class="flex items-center space-x-6 desktop-tabs">
                                 <button 
@@ -364,22 +420,37 @@
                                 </button>
                             </div>
                         </div>
-                        <div v-show="activeTab === 'chart'" class="flex items-center space-x-2 mb-4 mobile-chart-controls">
-                            <button
-                                v-for="timeframe in timeframeOptions"
-                                :key="timeframe.value"
-                                :class="['timeframe-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all', selectedTimeframe === timeframe.value ? 'bg-zenix-green text-black border border-zenix-green font-bold' : 'bg-zenix-bg text-zenix-secondary border border-zenix-border hover:border-zenix-green hover:text-zenix-green']"
-                                @click="setChartSize(timeframe.value, timeframe.points)"
-                            >
-                                {{ timeframe.label }}
-                            </button>
-                            <button
-                                :class="['px-3 py-1.5 rounded-lg text-xs font-medium transition-all border', showEntryMarkers ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/40 hover:bg-zenix-green/30' : 'bg-zenix-bg text-zenix-secondary border-zenix-border hover:border-zenix-green hover:text-zenix-green']"
-                                @click="toggleEntryMarkers"
-                            >
-                                <i :class="showEntryMarkers ? 'far fa-eye' : 'far fa-eye-slash'" class="mr-1"></i>
-                                Entradas IA
-                            </button>
+                        <!-- Tabs de Timeframe organizados em 2 linhas -->
+                        <div v-show="activeTab === 'chart'" class="mb-4 timeframe-tabs-container">
+                            <!-- Primeira linha: M1, M5, M15, M30, H1, H4 -->
+                            <div class="flex items-center space-x-2 mb-2 flex-wrap">
+                                <button
+                                    v-for="timeframe in timeframeOptions.filter(t => ['M1', 'M5', 'M15', 'M30', 'H1', 'H4'].includes(t.label))"
+                                    :key="timeframe.value"
+                                    :class="['timeframe-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all', selectedTimeframe === timeframe.value ? 'bg-zenix-green text-black border border-zenix-green font-bold' : 'bg-zenix-bg text-zenix-secondary border border-zenix-border hover:border-zenix-green hover:text-zenix-green']"
+                                    @click="setChartSize(timeframe.value, timeframe.points)"
+                                >
+                                    {{ timeframe.label }}
+                                </button>
+                            </div>
+                            <!-- Segunda linha: D1 e Entradas IA -->
+                            <div class="flex items-center space-x-2 flex-wrap">
+                                <button
+                                    v-for="timeframe in timeframeOptions.filter(t => t.label === 'D1')"
+                                    :key="timeframe.value"
+                                    :class="['timeframe-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all', selectedTimeframe === timeframe.value ? 'bg-zenix-green text-black border border-zenix-green font-bold' : 'bg-zenix-bg text-zenix-secondary border border-zenix-border hover:border-zenix-green hover:text-zenix-green']"
+                                    @click="setChartSize(timeframe.value, timeframe.points)"
+                                >
+                                    {{ timeframe.label }}
+                                </button>
+                                <button
+                                    :class="['px-3 py-1.5 rounded-lg text-xs font-medium transition-all border', showEntryMarkers ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/40 hover:bg-zenix-green/30' : 'bg-zenix-bg text-zenix-secondary border border-zenix-border hover:border-zenix-green hover:text-zenix-green']"
+                                    @click="toggleEntryMarkers"
+                                >
+                                    <i :class="showEntryMarkers ? 'far fa-eye' : 'far fa-eye-slash'" class="mr-1"></i>
+                                    Entradas IA
+                                </button>
+                            </div>
                         </div>
             
                         <!-- Chart View -->
@@ -397,51 +468,71 @@
                                 <p>Nenhuma operação executada ainda.</p>
                             </div>
                             
-                            <div v-else class="logs-table-wrapper">
-                                <table class="logs-table">
-                                    <thead>
-                                        <tr>
-                                            <th class="text-left">Horário</th>
-                                            <th class="text-left">Mercado</th>
-                                            <th class="text-left">Negociação</th>
-                                            <th class="text-left">Investimento</th>
-                                            <th class="text-right">Preço Entrada</th>
-                                            <th class="text-right">Preço Saída</th>
-                                            <th class="text-right">Retorno</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr v-for="(op, index) in logOperations" :key="index" :class="['log-row', index % 2 === 0 ? 'log-row-even' : 'log-row-odd']">
-                                            <td>{{ op.time }}</td>
-                                            <td>{{ op.pair }}</td>
-                                            <td>
-                                                <span :class="['direction-badge', op.direction === 'CALL' ? 'call-badge' : 'put-badge']">
-                                                    <i :class="`fas fa-arrow-${op.direction === 'CALL' ? 'up' : 'down'} text-xs mr-1`"></i>
-                                                    {{ op.direction }}
-                                                </span>
-                                            </td>
-                                            <td>
-                                                {{ op.investment }}
-                                            </td>
-                                            <td class="text-right">
-                                                <span v-if="op.entryPrice != null && op.entryPrice !== undefined && !isNaN(op.entryPrice) && op.entryPrice > 0">
-                                                    {{ parseFloat(op.entryPrice).toFixed(2) }}
-                                                </span>
-                                                <span v-else>-</span>
-                                            </td>
-                                            <td class="text-right">
-                                                <span v-if="op.exitPrice != null && op.exitPrice !== undefined && !isNaN(op.exitPrice) && op.exitPrice > 0">
-                                                    {{ parseFloat(op.exitPrice).toFixed(2) }}
-                                                </span>
-                                                <span v-else>-</span>
-                                            </td>
-                                            <td :class="['text-right', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
-                                                {{ op.pnl }}
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
+                            <template v-else>
+                                <!-- Desktop: Tabela -->
+                                <div class="logs-table-wrapper desktop-logs-table">
+                                    <table class="logs-table">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-left">Horário</th>
+                                                <th class="text-left">Mercado</th>
+                                                <th class="text-left">Negociação</th>
+                                                <th class="text-left">Investimento</th>
+                                                <th class="text-right">Preço Entrada</th>
+                                                <th class="text-right">Preço Saída</th>
+                                                <th class="text-right">Retorno</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr v-for="(op, index) in logOperations" :key="index" :class="['log-row', index % 2 === 0 ? 'log-row-even' : 'log-row-odd']">
+                                                <td>{{ op.time }}</td>
+                                                <td>{{ op.pair }}</td>
+                                                <td>
+                                                    <span :class="['direction-badge', (op.direction === 'CALL' || op.direction === 'PAR') ? 'call-badge' : 'put-badge']">
+                                                        <i :class="`fas fa-arrow-${(op.direction === 'CALL' || op.direction === 'PAR') ? 'up' : 'down'} text-xs mr-1`"></i>
+                                                        {{ op.direction === 'CALL' ? 'PAR' : op.direction === 'PUT' ? 'IMPAR' : op.direction }}
+                                                    </span>
+                                                </td>
+                                                <td>
+                                                    {{ op.investment }}
+                                                </td>
+                                                <td class="text-right">
+                                                    <span v-if="op.entryPrice != null && op.entryPrice !== undefined && !isNaN(op.entryPrice) && op.entryPrice > 0">
+                                                        {{ parseFloat(op.entryPrice).toFixed(2) }}
+                                                    </span>
+                                                    <span v-else>-</span>
+                                                </td>
+                                                <td class="text-right">
+                                                    <span v-if="op.exitPrice != null && op.exitPrice !== undefined && !isNaN(op.exitPrice) && op.exitPrice > 0">
+                                                        {{ parseFloat(op.exitPrice).toFixed(2) }}
+                                                    </span>
+                                                    <span v-else>-</span>
+                                                </td>
+                                                <td :class="['text-right', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
+                                                    {{ op.pnl }}
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                
+                                <!-- Mobile: Cards -->
+                                <div class="mobile-logs-cards">
+                                    <div v-for="(op, index) in logOperations" :key="index" class="mobile-log-card">
+                                        <div class="mobile-log-time">{{ op.time }}</div>
+                                        <div class="mobile-log-type">
+                                            <span v-if="op.pair">{{ op.pair }}</span>
+                                            <span v-if="op.direction"> - {{ op.direction === 'CALL' ? 'PAR' : op.direction === 'PUT' ? 'IMPAR' : op.direction }}</span>
+                                        </div>
+                                        <div class="mobile-log-footer">
+                                            <span class="mobile-log-invested">Investido: {{ op.investment }}</span>
+                                            <span class="mobile-log-result">
+                                                Resultado: <span :class="[op.pnl && (op.pnl.startsWith('+') || (!op.pnl.includes('-') && parseFloat(op.pnl.replace('$', '').replace('+', '')) > 0)) ? 'mobile-log-result-value-positive' : 'mobile-log-result-value-negative']">{{ op.pnl || '$0.00' }}</span>
+                                            </span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
                         </div>
 
                         <!-- Registros View (Logs Detalhados em Tempo Real) -->
@@ -3783,7 +3874,7 @@ button i,
 
 @media (max-width: 768px) {
     .investment-active-main {
-        padding: 1rem 15px;
+        padding: 2rem;
     }
     
     /* Mobile: Esconder layout desktop, mostrar mobile */
@@ -3793,6 +3884,32 @@ button i,
     
     .mobile-performance-panel {
         display: block;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* Mobile: Card IA ORION - 100% largura */
+    #mobile-compact-performance-panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    #mobile-compact-performance-panel > div.bg-\[#0B0B0B\]\/80 {
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        border-left: none !important;
+        border-right: none !important;
     }
 
     /* Mobile: Header IA ORION */
@@ -3807,18 +3924,30 @@ button i,
         font-weight: 700;
         margin: 0;
         padding: 0;
+        animation: blink-slow 2s ease-in-out infinite;
     }
 
     .mobile-ia-title::before {
         content: "IA ";
         color: #22C55E;
         font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
+        animation: blink-slow 2s ease-in-out infinite;
     }
 
     .mobile-ia-title::after {
         content: "ORION";
         color: #DFDFDF;
         font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
+        animation: blink-slow 2s ease-in-out infinite;
+    }
+    
+    @keyframes blink-slow {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.7;
+        }
     }
 
     .mobile-separator {
@@ -3981,8 +4110,18 @@ button i,
         border: 1px solid #1C1C1C;
         border-radius: 12px;
         padding: 8px;
-        margin-bottom: 1.5rem;
         gap: 4px;
+    }
+
+    /* Mobile: Tabs fora do card - esconder no mobile */
+    .mobile-tabs-container.mobile-tabs-outside {
+        margin-bottom: 1.5rem;
+    }
+
+    /* Mobile: Tabs dentro do card - mostrar apenas no mobile */
+    .mobile-tabs-container.mobile-tabs-inside {
+        display: none;
+        margin-bottom: 1.5rem;
     }
 
     .mobile-tab {
@@ -4033,22 +4172,60 @@ button i,
     /* Mobile: Conteúdo das tabs */
     .mobile-tab-content {
         display: block;
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
     }
 
     /* Mobile: Config Content */
     .mobile-config-content {
         display: block;
-        background: #0B0B0B;
-        border: 1px solid #1C1C1C;
-        border-radius: 12px;
-        padding: 20px;
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
+    
+    .mobile-config-content.mobile-tab-content {
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
     }
 
     .mobile-config-header {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        margin-bottom: 20px;
+        margin-bottom: 1rem;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        text-align: left !important;
     }
 
     .mobile-config-title {
@@ -4171,19 +4348,20 @@ button i,
 
     .mobile-pause-btn {
         width: 100%;
-        padding: 16px;
-        background: #FFD700;
+        padding: 1rem 1.25rem;
+        background: #FFD058;
         color: #000;
         border: none;
-        border-radius: 12px;
-        font-size: 0.875rem;
+        border-radius: 8px;
+        font-size: 1rem;
         font-weight: 700;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        margin-top: 20px;
+        gap: 0.5rem;
+        margin-top: 0;
+        transition: background 0.2s;
     }
 
     .mobile-pause-btn:hover:not(:disabled) {
@@ -4198,7 +4376,7 @@ button i,
     /* Mobile: Gráfico, Logs, Registro */
     .mobile-tab-content #market-chart {
         display: block !important;
-        margin-bottom: 1.5rem;
+        margin-bottom: 0 !important;
     }
 
     .mobile-chart-controls {
@@ -4210,29 +4388,111 @@ button i,
 
     /* Mobile: Logs View */
     .mobile-tab-content #logs-view {
-        background: #0B0B0B;
-        border: 1px solid #1C1C1C;
-        border-radius: 12px;
-        padding: 15px;
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
         min-height: 400px;
         max-height: 60vh;
     }
 
-    .mobile-tab-content #logs-view .logs-table {
-        font-size: 0.75rem;
+    /* Mobile: Esconder tabela, mostrar cards */
+    #logs-view .desktop-logs-table {
+        display: none !important;
     }
-
-    .mobile-tab-content #logs-view .logs-table th,
-    .mobile-tab-content #logs-view .logs-table td {
-        padding: 8px 6px;
+    
+    #logs-view .mobile-logs-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    #logs-view .mobile-log-card {
+        background: #1A1A1A;
+        border-radius: 8px;
+        padding: 1rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.25rem;
+        text-align: left;
+    }
+    
+    #logs-view .mobile-log-time {
+        font-size: 0.75rem;
+        color: #A0A0A0;
+        font-weight: 400;
+        text-align: left;
+        margin-bottom: 0.125rem;
+    }
+    
+    #logs-view .mobile-log-type {
+        font-size: 0.9rem;
+        color: #FFFFFF;
+        font-weight: 700;
+        text-align: left;
+        margin-bottom: 0.5rem;
+    }
+    
+    #logs-view .mobile-log-separator {
+        display: none;
+    }
+    
+    #logs-view .mobile-log-footer {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 1rem;
+        text-align: left;
+        align-items: center;
+        border-top: 1px solid #404040;
+        padding-top: 0.5rem;
+        margin-top: 0.25rem;
+    }
+    
+    #logs-view .mobile-log-invested {
+        font-size: 0.75rem;
+        color: #A0A0A0;
+        font-weight: 400;
+        text-align: left;
+    }
+    
+    #logs-view .mobile-log-result {
+        font-size: 0.75rem;
+        font-weight: 400;
+        color: #A0A0A0;
+        text-align: left;
+    }
+    
+    #logs-view .mobile-log-result-value-positive {
+        color: #28a745;
+        font-weight: 600;
+    }
+    
+    #logs-view .mobile-log-result-value-negative {
+        color: #dc3545;
+        font-weight: 600;
     }
 
     /* Mobile: Register View */
     .mobile-tab-content #register-view {
-        background: #0B0B0B;
-        border: 1px solid #1C1C1C;
-        border-radius: 12px;
-        padding: 15px;
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
         min-height: 400px;
         max-height: 60vh;
     }
@@ -5169,7 +5429,7 @@ button i,
 /* ========================================================== */
 @media (max-width: 768px) {
     .investment-active-main {
-        padding: 1rem 15px;
+        padding: 2rem;
     }
     
     /* Mobile: Header IA ORION */
@@ -5185,18 +5445,30 @@ button i,
         margin: 0;
         text-transform: uppercase;
         letter-spacing: 0.05em;
+        animation: blink-slow 2s ease-in-out infinite;
     }
     
     .mobile-ia-title::before {
         content: "IA ";
         color: #22C55E;
         font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
+        animation: blink-slow 2s ease-in-out infinite;
     }
     
     .mobile-ia-title::after {
         content: "ORION";
         color: #DFDFDF;
         font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
+        animation: blink-slow 2s ease-in-out infinite;
+    }
+    
+    @keyframes blink-slow {
+        0%, 100% {
+            opacity: 1;
+        }
+        50% {
+            opacity: 0.7;
+        }
     }
     
     .mobile-separator {
@@ -5338,8 +5610,8 @@ button i,
         }
     }
     
-    /* Mobile: Tabs */
-    .mobile-tabs-container {
+    /* Mobile: Tabs (versão duplicada - manter para compatibilidade) */
+    .mobile-tabs-container.mobile-tabs-outside {
         display: flex;
         gap: 0;
         border-bottom: 1px solid #1C1C1C;
@@ -5383,6 +5655,28 @@ button i,
     /* Mobile: Conteúdo Config */
     .mobile-config-content {
         display: block;
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
+    }
+    
+    .mobile-config-content.mobile-tab-content {
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
     }
     
     .mobile-config-header {
@@ -5397,31 +5691,80 @@ button i,
         font-weight: 700;
         color: #DFDFDF;
         margin: 0;
+        text-align: left !important;
     }
     
     .mobile-config-icon {
-        color: #22C55E;
+        color: #FFFFFF;
         font-size: 1rem;
     }
     
     .mobile-config-card {
-        background: #0E0E0E;
-        border: 1px solid #1C1C1C;
-        border-radius: 8px;
-        padding: 1.5rem;
+        background: transparent !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 0;
         display: flex;
         flex-direction: column;
-        gap: 1.25rem;
+        gap: 1rem;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    .mobile-config-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
+    }
+    
+    .mobile-config-content.mobile-tab-content {
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
+    }
+    
+    .mobile-config-header {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
     }
     
     .mobile-config-item {
-        padding-bottom: 1.25rem;
-        border-bottom: 1px solid #1C1C1C;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: none !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        margin-bottom: 0 !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
+        text-align: left !important;
     }
     
     .mobile-config-item:last-of-type {
-        border-bottom: none;
-        padding-bottom: 0;
+        margin-bottom: 0;
     }
     
     .mobile-config-label {
@@ -5431,43 +5774,59 @@ button i,
         text-transform: uppercase;
         letter-spacing: 0.05em;
         margin-bottom: 0.5rem;
+        text-align: left !important;
     }
     
     .mobile-config-value {
         font-size: 1rem;
         font-weight: 700;
-        color: #DFDFDF;
+        color: #FFFFFF;
         margin-bottom: 0.25rem;
+        text-align: left !important;
     }
     
     .mobile-config-desc {
         font-size: 0.75rem;
         color: #A1A1A1;
         margin: 0;
+        margin-top: 0.25rem;
+        text-align: left !important;
     }
     
     .mobile-config-grid {
         display: grid;
         grid-template-columns: repeat(2, 1fr);
         gap: 1rem;
+        margin-top: 0;
     }
     
     .mobile-config-param {
-        border: 1px solid rgba(28, 28, 28, 0.3);
-        border-radius: 8px;
-        padding: 0.75rem;
+        background: #0000005e;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: none !important;
+        border-radius: 12px;
+        padding: 20px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
+        text-align: left !important;
     }
     
     .mobile-config-param-label {
         font-size: 0.75rem;
         color: #A1A1A1;
         margin-bottom: 0.25rem;
+        text-align: left !important;
     }
     
     .mobile-config-param-value {
         font-size: 1rem;
         font-weight: 700;
-        color: #DFDFDF;
+        color: #FFFFFF;
+        text-align: left !important;
     }
     
     .mobile-config-profit {
@@ -5481,16 +5840,17 @@ button i,
     .mobile-config-badge {
         display: inline-block;
         padding: 0.375rem 0.75rem;
-        background: rgba(34, 197, 94, 0.1);
-        border: 1px solid rgba(34, 197, 94, 0.2);
+        background: #22C55E !important;
+        border: none !important;
         border-radius: 8px;
         margin-top: 0.5rem;
+        text-align: left !important;
     }
     
     .mobile-config-badge-text {
         font-size: 0.75rem;
         font-weight: 700;
-        color: #22C55E;
+        color: #FFFFFF !important;
     }
     
     .mobile-config-status {
@@ -5498,6 +5858,15 @@ button i,
         align-items: center;
         gap: 0.5rem;
         margin-top: 0.5rem;
+        justify-content: flex-start !important;
+        text-align: left !important;
+    }
+    
+    .mobile-config-status-text {
+        font-size: 1rem;
+        font-weight: 700;
+        color: #DFDFDF !important;
+        text-align: left !important;
     }
     
     .mobile-config-status-dot {
@@ -5506,12 +5875,6 @@ button i,
         background: #22C55E;
         border-radius: 50%;
         animation: pulse 2s ease-in-out infinite;
-    }
-    
-    .mobile-config-status-text {
-        font-size: 1rem;
-        font-weight: 700;
-        color: #22C55E;
     }
     
     .mobile-pause-btn {
@@ -5528,7 +5891,7 @@ button i,
         align-items: center;
         justify-content: center;
         gap: 0.5rem;
-        margin-top: 1.5rem;
+        margin-top: 0;
         transition: background 0.2s;
     }
     
@@ -5577,6 +5940,8 @@ button i,
     
     #ir8sfp {
         grid-column: span 1 !important;
+        width: 100% !important;
+        max-width: 100% !important;
     }
     
     /* Mobile: Ajustar altura do gráfico */
@@ -5585,6 +5950,48 @@ button i,
     #register-view {
         height: 400px !important;
         min-height: 400px;
+    }
+    
+    /* Mobile: Chart View */
+    @media (max-width: 768px) {
+        #market-chart #chart-view {
+            background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-radius: 0 !important;
+            padding: 20px !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            position: relative !important;
+            outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+            outline-offset: -1px !important;
+        }
+        
+        #market-chart #logs-view {
+            background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-radius: 0 !important;
+            padding: 20px !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            position: relative !important;
+            outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+            outline-offset: -1px !important;
+        }
+        
+        #market-chart #register-view {
+            background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-radius: 0 !important;
+            padding: 20px !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            position: relative !important;
+            outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+            outline-offset: -1px !important;
+        }
     }
     
     /* Mobile: Esconder tabs desktop */
@@ -5602,11 +6009,121 @@ button i,
     /* Mobile: Mostrar conteúdo das tabs baseado na tab ativa */
     .mobile-tab-content {
         display: block;
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
     }
     
     /* Mobile: Ajustar conteúdo do gráfico para mobile */
     #market-chart {
         padding: 1rem;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+    
+    /* Mobile: Garantir que o container principal ocupe 100% */
+    .desktop-main-content {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+    }
+
+    /* Mobile: Esconder tabs fora do card (versão antiga) */
+    .mobile-tabs-container.mobile-tabs-outside {
+        display: none !important;
+    }
+
+    /* Mobile: Mostrar tabs dentro do card */
+    .mobile-tabs-container.mobile-tabs-inside {
+        display: flex !important;
+        margin-bottom: 1.5rem;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        border-bottom: 1px solid #1C1C1C;
+        gap: 0;
+        overflow-x: auto;
+    }
+
+    /* Mobile: Tabs no topo (acima do card IA ORION) */
+    .mobile-tabs-container.mobile-tabs-top {
+        display: flex !important;
+        background: #0B0B0B;
+        border: 1px solid #1C1C1C;
+        border-radius: 0 !important;
+        padding: 8px;
+        gap: 4px;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        border-left: none !important;
+        border-right: none !important;
+    }
+
+    /* Mobile: Ajustar estilo dos tabs dentro do card */
+    #market-chart .mobile-tabs-container.mobile-tabs-inside .mobile-tab,
+    .mobile-config-content .mobile-tabs-container.mobile-tabs-inside .mobile-tab {
+        flex: 1;
+        padding: 0.75rem 0.5rem;
+        background: transparent;
+        border: none;
+        color: #A1A1A1;
+        font-size: 0.875rem;
+        font-weight: 500;
+        cursor: pointer;
+        text-align: center;
+        transition: all 0.3s ease;
+    }
+
+    #market-chart .mobile-tabs-container.mobile-tabs-inside .mobile-tab:hover,
+    .mobile-config-content .mobile-tabs-container.mobile-tabs-inside .mobile-tab:hover {
+        color: #DFDFDF;
+    }
+
+    #market-chart .mobile-tabs-container.mobile-tabs-inside .mobile-tab-active,
+    .mobile-config-content .mobile-tabs-container.mobile-tabs-inside .mobile-tab-active {
+        color: #22C55E !important;
+        position: relative;
+    }
+
+    #market-chart .mobile-tabs-container.mobile-tabs-inside .mobile-tab-active::after,
+    .mobile-config-content .mobile-tabs-container.mobile-tabs-inside .mobile-tab-active::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #22C55E;
+        border-radius: 2px 2px 0 0;
+    }
+    
+    /* Mobile: Tabs dentro do conteúdo de configuração */
+    .mobile-config-content .mobile-tabs-container.mobile-tabs-inside {
+        display: flex !important;
+        margin-bottom: 1.5rem;
+        margin-top: 1rem;
+        background: transparent;
+        border: none;
+        border-radius: 0;
+        padding: 0;
+        border-bottom: 1px solid #1C1C1C;
+        gap: 0;
+        overflow-x: auto;
     }
     
     /* Mobile: Ajustar histórico para mobile */
@@ -5636,11 +6153,28 @@ button i,
     .desktop-main-content {
         display: block !important;
         grid-template-columns: 1fr !important;
+        gap: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
     }
     
     /* Mobile: Mostrar/esconder conteúdo baseado na tab ativa */
     .mobile-tab-content {
         display: block;
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border-radius: 0 !important;
+        padding: 20px !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
     }
     
     /* Mobile: Ajustar visibilidade baseado na tab */
@@ -5650,13 +6184,23 @@ button i,
     
     /* Mobile: Ajustar card do gráfico */
     #market-chart {
-        border-radius: 0;
+        border-radius: 0 !important;
         border-left: none;
         border-right: none;
-        padding: 1rem;
+        padding: 20px !important;
         margin-bottom: 1rem;
-        background: transparent;
-        border: none;
+        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+        border: none !important;
+        box-shadow: none !important;
+        position: relative !important;
+        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+        outline-offset: -1px !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
     }
     
     /* Mobile: Ajustar título do gráfico */
@@ -5682,19 +6226,19 @@ button i,
     
     /* Mobile: Ajustar histórico para cards */
     #logs-view {
-        padding: 1rem 0.5rem;
+        padding: 1rem;
     }
     
-    .logs-table {
+    #logs-view .logs-table {
         font-size: 0.65rem;
     }
     
-    .logs-table th {
+    #logs-view .logs-table th {
         font-size: 0.7rem;
         padding: 0.5rem 0.25rem;
     }
     
-    .logs-table td {
+    #logs-view .logs-table td {
         font-size: 0.65rem;
         padding: 0.5rem 0.25rem;
     }
@@ -5719,8 +6263,20 @@ button i,
 @media (min-width: 769px) {
     .mobile-progress-section,
     .mobile-tabs-container,
+    .mobile-tabs-container.mobile-tabs-outside,
+    .mobile-tabs-container.mobile-tabs-inside,
+    .mobile-tabs-container.mobile-tabs-top,
     .mobile-config-content,
     .mobile-performance-panel {
+        display: none !important;
+    }
+    
+    /* Desktop: Mostrar tabela, esconder cards */
+    #logs-view .desktop-logs-table {
+        display: block !important;
+    }
+    
+    #logs-view .mobile-logs-cards {
         display: none !important;
     }
     
