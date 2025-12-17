@@ -457,9 +457,43 @@
                         <div v-show="activeTab === 'chart'" id="chart-view" class="h-[600px]">
                             <div ref="chartContainer" id="tradingview-chart" class="chart-container tradingview-container h-full"></div>
                         </div>
+                        
+                        <!-- Mobile: Informações do mercado abaixo do gráfico -->
+                        <div v-show="activeTab === 'chart'" class="mobile-market-info mt-4 desktop-hidden">
+                            <!-- Linha superior: Preço/Percentual e Botão Compra -->
+                            <div class="flex items-center justify-between mb-4">
+                                <div class="flex flex-col text-left">
+                                    <span class="text-2xl font-bold text-zenix-text">{{ currentPrice ? currentPrice.toFixed(5) : '1.08542' }}</span>
+                                    <span class="text-base font-semibold text-zenix-green mt-0.5">+0.24%</span>
+                                </div>
+                                <button class="bg-zenix-green/20 hover:bg-zenix-green/30 border border-zenix-green text-zenix-green px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2">
+                                    <i class="fas fa-arrow-up"></i>
+                                    Compra
+                                </button>
+                            </div>
+                            
+                            <!-- Linha inferior: Volume, Spread, Sinal IA -->
+                            <div class="grid grid-cols-3 gap-4 text-left border-t border-[#1C1C1C] pt-4">
+                                <div class="flex flex-col text-left">
+                                    <span class="text-xs text-zenix-secondary mb-1">Volume</span>
+                                    <span class="text-sm font-semibold text-zenix-text">2.4M</span>
+                                </div>
+                                <div class="flex flex-col text-left">
+                                    <span class="text-xs text-zenix-secondary mb-1">Spread</span>
+                                    <span class="text-sm font-semibold text-zenix-text">0.8</span>
+                                </div>
+                                <div class="flex flex-col text-left">
+                                    <span class="text-xs text-zenix-secondary mb-1">Sinal IA</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <span class="w-2 h-2 rounded-full bg-zenix-green"></span>
+                                        <span class="text-sm font-semibold text-zenix-green">Alta</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Histórico View (Tabela de Operações Executadas) -->
-                        <div v-show="activeTab === 'logs'" id="logs-view" class="h-[600px] overflow-y-auto">
+                        <div v-show="activeTab === 'logs'" id="logs-view" class="h-[600px] overflow-y-auto mobile-logs-view">
                             <div v-if="isLoadingLogs" class="loading-logs">
                                 <p>Carregando histórico de operações...</p>
                             </div>
@@ -526,8 +560,8 @@
                                         </div>
                                         <div class="mobile-log-footer">
                                             <span class="mobile-log-invested">Investido: {{ op.investment }}</span>
-                                            <span class="mobile-log-result">
-                                                Resultado: <span :class="[op.pnl && (op.pnl.startsWith('+') || (!op.pnl.includes('-') && parseFloat(op.pnl.replace('$', '').replace('+', '')) > 0)) ? 'mobile-log-result-value-positive' : 'mobile-log-result-value-negative']">{{ op.pnl || '$0.00' }}</span>
+                                            <span :class="['mobile-log-result', op.pnl && op.pnl.startsWith('+') ? 'mobile-log-result-positive' : 'mobile-log-result-negative']">
+                                                Resultado: <span :class="[op.pnl && op.pnl.startsWith('+') ? 'mobile-log-result-value-positive' : 'mobile-log-result-value-negative']">{{ op.pnl ? (op.pnl.includes('$-') ? op.pnl.replace('$-', '-$') : op.pnl) : '$0.00' }}</span>
                                             </span>
                                         </div>
                                     </div>
@@ -537,7 +571,8 @@
 
                         <!-- Registros View (Logs Detalhados em Tempo Real) -->
                         <div v-show="activeTab === 'register'" id="register-view" class="h-[600px] overflow-hidden flex flex-col mobile-tab-content">
-                            <div class="flex items-center justify-between mb-3 px-2">
+                            <!-- Desktop Header -->
+                            <div class="flex items-center justify-between mb-3 px-2 desktop-register-header">
                                 <div class="flex items-center gap-2">
                                     <span class="text-xs text-zenix-secondary">📋 Registro de Eventos em Tempo Real</span>
                                     <span v-if="realtimeLogs.length > 0" class="text-xs text-zenix-green">{{ realtimeLogs.length }} eventos</span>
@@ -560,9 +595,16 @@
                                 </div>
                             </div>
                             
+                            <!-- Mobile Header -->
+                            <div class="mobile-register-header">
+                                <h2 class="mobile-register-title">Registro de Operações</h2>
+                                <p class="mobile-register-subtitle">Histórico completo de eventos da sessão</p>
+                            </div>
+                            
+                            <!-- Desktop Logs List -->
                             <div 
                                 ref="logsContainer" 
-                                class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar relative" 
+                                class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar relative desktop-register-list" 
                                 style="scroll-behavior: smooth; max-height: 500px;"
                             >
                                 <div v-if="realtimeLogs.length === 0" class="text-zenix-secondary text-left py-12 px-4">
@@ -576,6 +618,27 @@
                                         <span class="text-gray-500">[{{ log.timestamp }}]</span>
                                         <span class="ml-1">{{ log.icon }}</span>
                                         <span class="ml-1">{{ log.message }}</span>
+                                    </div>
+                                </div>
+                                
+                            </div>
+                            
+                            <!-- Mobile: Cards de Registro -->
+                            <div 
+                                ref="logsContainerMobile" 
+                                class="flex-1 overflow-y-auto custom-scrollbar relative mobile-register-cards" 
+                                style="scroll-behavior: smooth; max-height: 500px;"
+                            >
+                                <div v-if="realtimeLogs.length === 0" class="mobile-register-empty">
+                                    <i class="fas fa-info-circle"></i>
+                                    <p>Nenhum evento registrado ainda.</p>
+                                    <p class="mobile-register-empty-subtitle">Os logs aparecerão aqui em tempo real quando a IA estiver ativa.</p>
+                                </div>
+                                
+                                <div v-else class="mobile-register-cards-container">
+                                    <div v-for="(log, index) in realtimeLogs.slice(0, 100)" :key="index" class="mobile-register-card">
+                                        <span class="mobile-register-time">{{ log.timestamp }}</span>
+                                        <span class="mobile-register-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
                                     </div>
                                 </div>
                                 
@@ -1204,6 +1267,26 @@ export default {
     },
     
     methods: {
+        // Formatar valor PnL para colocar sinal negativo antes do $
+        formatPnlValue(pnl) {
+            if (!pnl) return '$0.00';
+            // Se já começa com +, retornar como está
+            if (pnl.startsWith('+')) return pnl;
+            // Se tem $ seguido de -, formatar para -$valor
+            if (pnl.includes('$-')) {
+                return pnl.replace('$-', '-$');
+            }
+            // Se começa com -$, já está correto
+            if (pnl.startsWith('-$')) return pnl;
+            // Se começa com $ mas não tem sinal, verificar se é negativo
+            if (pnl.startsWith('$')) {
+                const value = parseFloat(pnl.replace('$', '').replace('+', ''));
+                if (value < 0) {
+                    return '-$' + Math.abs(value).toFixed(2);
+                }
+            }
+            return pnl;
+        },
         // ============================================
         // SISTEMA DE LOGS EM TEMPO REAL - ZENIX v2.0
         // ============================================
@@ -1249,11 +1332,20 @@ export default {
             
             // ✅ Auto-scroll para o topo apenas se o usuário já estiver no topo
             this.$nextTick(() => {
+                // Desktop: lista simples
                 const container = this.$refs.logsContainer;
                 if (container) {
                     // Se está no topo (ou próximo - margem de 50px), manter no topo
                     if (container.scrollTop <= 50) {
                         container.scrollTop = 0;
+                    }
+                }
+                // Mobile: cards
+                const containerMobile = this.$refs.logsContainerMobile;
+                if (containerMobile) {
+                    // Se está no topo (ou próximo - margem de 50px), manter no topo
+                    if (containerMobile.scrollTop <= 50) {
+                        containerMobile.scrollTop = 0;
                     }
                 }
             });
@@ -1275,6 +1367,44 @@ export default {
             };
             
             return colors[log.type] || 'text-gray-400';
+        },
+        
+        /**
+         * Retorna a classe CSS para mensagem de log no mobile baseado no conteúdo
+         */
+        getMobileLogMessageClass(log) {
+            const message = log.message || '';
+            const lowerMessage = message.toLowerCase();
+            
+            // Verde para ganho/vitória/sucesso
+            if (lowerMessage.includes('ganho') || 
+                lowerMessage.includes('ganhou') || 
+                lowerMessage.includes('vitória') || 
+                lowerMessage.includes('vitoria') ||
+                lowerMessage.includes('lucro') ||
+                lowerMessage.startsWith('+')) {
+                return 'mobile-log-success';
+            }
+            
+            // Vermelho para perda/derrota/erro
+            if (lowerMessage.includes('perda') || 
+                lowerMessage.includes('perdeu') || 
+                lowerMessage.includes('derrota') ||
+                lowerMessage.includes('erro') ||
+                lowerMessage.startsWith('-')) {
+                return 'mobile-log-error';
+            }
+            
+            // Cor padrão baseada no tipo
+            if (log.type === 'resultado') {
+                return 'mobile-log-success';
+            }
+            
+            if (log.type === 'erro') {
+                return 'mobile-log-error';
+            }
+            
+            return 'mobile-log-default';
         },
         
         /**
@@ -1439,6 +1569,10 @@ export default {
                             if (container) {
                                 container.scrollTop = 0;
                             }
+                            const containerMobile = this.$refs.logsContainerMobile;
+                            if (containerMobile) {
+                                containerMobile.scrollTop = 0;
+                            }
                         });
                     } else {
                         // ✅ Adicionar apenas logs novos (comparar por ID ou created_at)
@@ -1460,7 +1594,9 @@ export default {
                         if (logsToAdd.length > 0) {
                             // Verificar se usuário está no topo (vendo logs mais novos)
                             const container = this.$refs.logsContainer;
+                            const containerMobile = this.$refs.logsContainerMobile;
                             const isAtTop = container && container.scrollTop <= 50;
+                            const isAtTopMobile = containerMobile && containerMobile.scrollTop <= 50;
                             
                             // ✅ FORÇAR REATIVIDADE DO VUE: Criar novo array
                             // Adicionar novos logs no INÍCIO do array (topo)
@@ -1477,6 +1613,9 @@ export default {
                             this.$nextTick(() => {
                                 if (container && isAtTop) {
                                     container.scrollTop = 0;
+                                }
+                                if (containerMobile && isAtTopMobile) {
+                                    containerMobile.scrollTop = 0;
                                 }
                             });
                         } else {
@@ -2932,6 +3071,14 @@ export default {
     margin: 0;
 }
 
+/* Mobile: Aplicar gradiente no wrapper */
+@media (max-width: 768px) {
+    .investment-active-wrapper {
+        background: linear-gradient(135deg, rgba(15, 20, 30, 0.98) 0%, rgba(11, 15, 25, 0.99) 50%, rgba(8, 12, 20, 0.98) 100%) !important;
+        background-image: none !important;
+    }
+}
+
 /* Ensure Font Awesome icons are visible */
 .fas,
 .far,
@@ -2978,7 +3125,7 @@ button i,
 /* Premium Card */
 .premium-card {
     box-shadow: 0 0 12px rgba(0, 0, 0, 0.4);
-    background: radial-gradient(circle at top left, #101010 0%, #0E0E0E 100%);
+    background: #0b0b0b;
     border-radius: 12px;
     transition: all 0.3s ease;
     border: 1px solid #1C1C1C;
@@ -3906,10 +4053,47 @@ button i,
         border-radius: 0 !important;
         margin-left: 0 !important;
         margin-right: 0 !important;
-        padding-left: 1rem !important;
-        padding-right: 1rem !important;
+        padding: 0px !important;
         border-left: none !important;
         border-right: none !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
+        backdrop-filter: blur(20px) !important;
+        -webkit-backdrop-filter: blur(20px) !important;
+    }
+    
+    /* Garantir que o gradiente seja aplicado mesmo com classes Tailwind */
+    #mobile-compact-performance-panel > div.premium-card.bg-\[#0B0B0B\]\/80,
+    #mobile-compact-performance-panel > div[class*="bg-\[#0B0B0B\]"] {
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
+    }
+    
+    /* Mobile: Esconder eye-btn no mobile-compact-performance-panel */
+    #mobile-compact-performance-panel .eye-btn {
+        display: none !important;
+    }
+    
+    /* Mobile: Aumentar fonte em 2px nos itens do mobile-compact-performance-panel */
+    #mobile-compact-performance-panel .text-\[8px\] {
+        font-size: 10px !important;
+    }
+    
+    #mobile-compact-performance-panel .text-\[12px\] {
+        font-size: 14px !important;
+    }
+    
+    #mobile-compact-performance-panel .text-\[10px\] {
+        font-size: 12px !important;
+    }
+    
+    #mobile-compact-performance-panel .text-\[9px\] {
+        font-size: 11px !important;
+    }
+    
+    /* Mobile: Aumentar fonte dos labels de progresso em 2px */
+    #mobile-compact-performance-panel .mobile-progress-label {
+        font-size: 0.875rem !important; /* 14px (era 12px/0.75rem) */
     }
 
     /* Mobile: Header IA ORION */
@@ -4172,7 +4356,8 @@ button i,
     /* Mobile: Conteúdo das tabs */
     .mobile-tab-content {
         display: block;
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border-radius: 0 !important;
@@ -4187,7 +4372,8 @@ button i,
     /* Mobile: Config Content */
     .mobile-config-content {
         display: block;
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border: none !important;
@@ -4207,7 +4393,8 @@ button i,
     }
     
     .mobile-config-content.mobile-tab-content {
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border-radius: 0 !important;
@@ -4388,7 +4575,8 @@ button i,
 
     /* Mobile: Logs View */
     .mobile-tab-content #logs-view {
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border: none !important;
@@ -4399,8 +4587,13 @@ button i,
         position: relative !important;
         outline: 1px solid rgba(34, 197, 94, 0.04) !important;
         outline-offset: -1px !important;
-        min-height: 400px;
-        max-height: 60vh;
+        min-height: 600px;
+        max-height: 80vh;
+    }
+    
+    #logs-view {
+        min-height: 600px !important;
+        max-height: 80vh !important;
     }
 
     /* Mobile: Esconder tabela, mostrar cards */
@@ -4415,7 +4608,7 @@ button i,
     }
     
     #logs-view .mobile-log-card {
-        background: #1A1A1A;
+        background: #00000066 !important;
         border-radius: 8px;
         padding: 1rem;
         display: flex;
@@ -4466,8 +4659,15 @@ button i,
     #logs-view .mobile-log-result {
         font-size: 0.75rem;
         font-weight: 400;
-        color: #A0A0A0;
         text-align: left;
+    }
+    
+    #logs-view .mobile-log-result-positive {
+        color: #28a745;
+    }
+    
+    #logs-view .mobile-log-result-negative {
+        color: #dc3545;
     }
     
     #logs-view .mobile-log-result-value-positive {
@@ -4480,21 +4680,266 @@ button i,
         font-weight: 600;
     }
 
-    /* Mobile: Register View */
-    .mobile-tab-content #register-view {
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        border: none !important;
-        border-radius: 0 !important;
-        padding: 20px !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-        position: relative !important;
-        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
-        outline-offset: -1px !important;
-        min-height: 400px;
-        max-height: 60vh;
+    /* Desktop: Esconder cards, mostrar lista */
+    .desktop-register-list {
+        display: block;
+    }
+    
+    .desktop-register-header {
+        display: flex;
+    }
+    
+    /* Mobile: Register Header - escondido por padrão */
+    .mobile-register-header {
+        display: none;
+        margin-bottom: 1.5rem;
+        text-align: left;
+    }
+    
+    .mobile-register-title {
+        font-size: 1.125rem;
+        font-weight: 700;
+        color: #DFDFDF;
+        margin: 0;
+        margin-bottom: 0.5rem;
+        text-align: left;
+    }
+    
+    .mobile-register-subtitle {
+        font-size: 0.875rem;
+        color: #A1A1A1;
+        margin: 0;
+        text-align: left;
+    }
+    
+    /* Mobile: Register Empty State */
+    .mobile-register-empty {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 3rem 1rem;
+        text-align: center;
+        color: #A1A1A1;
+    }
+    
+    .mobile-register-empty i {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        color: #7D7D7D;
+    }
+    
+    .mobile-register-empty p {
+        font-size: 0.875rem;
+        margin: 0.5rem 0;
+    }
+    
+    .mobile-register-empty-subtitle {
+        font-size: 0.75rem;
+        color: #7D7D7D;
+    }
+    
+    /* Mobile: Register Cards - escondido por padrão */
+    .mobile-register-cards {
+        display: none;
+        padding: 0;
+    }
+    
+    .mobile-register-cards-container {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        padding: 0;
+    }
+    
+    .mobile-register-card {
+        background: rgba(11, 11, 11, 0.8);
+        border: 1px solid #1C1C1C;
+        border-radius: 12px;
+        padding: 0.875rem 1rem;
+        display: flex;
+        flex-direction: row;
+        align-items: flex-start;
+        gap: 0.75rem;
+        text-align: left;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        transition: all 0.2s ease;
+    }
+    
+    .mobile-register-card:hover {
+        border-color: rgba(34, 197, 94, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+    }
+    
+    .mobile-register-time {
+        font-size: 0.75rem;
+        color: #7A7A7A;
+        font-weight: 400;
+        text-align: left;
+        flex-shrink: 0;
+        white-space: nowrap;
+        font-family: 'Courier New', monospace;
+        margin-top: 0.125rem;
+    }
+    
+    .mobile-register-message {
+        font-size: 0.875rem;
+        color: #DFDFDF;
+        font-weight: 400;
+        text-align: left;
+        line-height: 1.5;
+        flex: 1;
+        word-wrap: break-word;
+    }
+    
+    /* Cores para mensagens de log no mobile */
+    .mobile-log-success {
+        color: #22C55E !important;
+        font-weight: 500;
+    }
+    
+    .mobile-log-error {
+        color: #FF4747 !important;
+        font-weight: 500;
+    }
+    
+    .mobile-log-default {
+        color: #DFDFDF !important;
+    }
+    
+    .mobile-register-message .text-blue-400 {
+        color: #60a5fa;
+    }
+    
+    .mobile-register-message .text-gray-400 {
+        color: #9ca3af;
+    }
+    
+    .mobile-register-message .text-purple-400 {
+        color: #c084fc;
+    }
+    
+    .mobile-register-message .text-yellow-400 {
+        color: #facc15;
+    }
+    
+    .mobile-register-message .text-cyan-400 {
+        color: #22d3ee;
+    }
+    
+    .mobile-register-message .text-green-400 {
+        color: #4ade80;
+    }
+    
+    .mobile-register-message .text-orange-400 {
+        color: #fb923c;
+    }
+    
+    .mobile-register-message .text-red-500 {
+        color: #ef4444;
+    }
+    
+    .mobile-register-icon {
+        font-size: 1rem;
+        flex-shrink: 0;
+    }
+    
+    /* Mobile: Esconder lista e header desktop, mostrar cards e header mobile */
+    @media (max-width: 768px) {
+        .desktop-register-list {
+            display: none !important;
+        }
+        
+        .desktop-register-header {
+            display: none !important;
+        }
+        
+        .mobile-register-cards {
+            display: flex !important;
+            flex-direction: column;
+            background: transparent !important;
+        }
+        
+        .mobile-register-header {
+            display: block !important;
+        }
+        
+        /* Mobile: Ajustar espaçamento do registro */
+        #register-view {
+            border: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            outline: none !important;
+            outline-width: 0 !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            padding: 0px !important;
+        }
+        
+        .mobile-register-cards-container {
+            padding: 0;
+            background: transparent !important;
+            border: none !important;
+        }
+        
+        .mobile-register-header {
+            padding: 1rem 1rem 0.5rem 1rem;
+        }
+        
+        .mobile-register-card {
+            padding: 1rem;
+            gap: 0.5rem;
+            background: #00000066 !important;
+        }
+        
+        .mobile-register-time {
+            font-size: 0.7rem;
+        }
+        
+        .mobile-register-message {
+            font-size: 0.8rem;
+        }
+    }
+
+    /* Mobile: Register View - apenas no mobile */
+    @media (max-width: 768px) {
+        #register-view {
+            border: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            outline: none !important;
+            outline-width: 0 !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            padding: 0px !important;
+        }
+        
+        .mobile-tab-content #register-view,
+        #register-view.mobile-tab-content {
+            border: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            outline: none !important;
+            outline-width: 0 !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            padding: 0px !important;
+        }
     }
 
     /* Animações da barra de progresso */
@@ -5655,7 +6100,8 @@ button i,
     /* Mobile: Conteúdo Config */
     .mobile-config-content {
         display: block;
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border-radius: 0 !important;
@@ -5668,7 +6114,8 @@ button i,
     }
     
     .mobile-config-content.mobile-tab-content {
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border-radius: 0 !important;
@@ -5720,7 +6167,8 @@ button i,
         margin-right: 0 !important;
         padding-left: 0 !important;
         padding-right: 0 !important;
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border-radius: 0 !important;
@@ -5733,7 +6181,8 @@ button i,
     }
     
     .mobile-config-content.mobile-tab-content {
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border-radius: 0 !important;
@@ -5750,10 +6199,11 @@ button i,
     }
     
     .mobile-config-item {
+        background: #00000066 !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border: none !important;
-        border-radius: 0 !important;
+        border-radius: 12px;
         padding: 20px !important;
         margin: 0 !important;
         margin-bottom: 0 !important;
@@ -5801,7 +6251,7 @@ button i,
     }
     
     .mobile-config-param {
-        background: #0000005e;
+        background: #00000066 !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border: none !important;
@@ -5948,17 +6398,72 @@ button i,
     #chart-view,
     #logs-view,
     #register-view {
-        height: 400px !important;
-        min-height: 400px;
+        height: 100% !important;
+        min-height: 600px;
+        border-radius: 12px;
+    }
+    
+    /* Remover qualquer borda do register-view no mobile */
+    @media (max-width: 768px) {
+        #register-view,
+        #register-view[class*="border"],
+        .mobile-tab-content#register-view,
+        #register-view.mobile-tab-content {
+            border: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            border-top: none !important;
+            border-right: none !important;
+            border-bottom: none !important;
+            border-left: none !important;
+            outline: none !important;
+            outline-width: 0 !important;
+            outline-style: none !important;
+            outline-color: transparent !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+        }
+    }
+    
+    /* Mobile: Aplicar estilos no registro */
+    @media (max-width: 768px) {
+        #register-view {
+            border: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            outline: none !important;
+            outline-width: 0 !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+            background: transparent !important;
+            background-color: transparent !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            padding: 0px !important;
+        }
+        
+        .mobile-tab-content#register-view,
+        #register-view.mobile-tab-content {
+            border: none !important;
+            border-width: 0 !important;
+            border-style: none !important;
+            border-color: transparent !important;
+            outline: none !important;
+            outline-width: 0 !important;
+            box-shadow: none !important;
+            -webkit-box-shadow: none !important;
+        }
     }
     
     /* Mobile: Chart View */
     @media (max-width: 768px) {
         #market-chart #chart-view {
-            background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+            background: linear-gradient(135deg, rgba(15, 20, 30, 0.95) 0%, rgba(11, 15, 25, 0.97) 50%, rgba(8, 12, 20, 0.95) 100%) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
-            border-radius: 0 !important;
+            border-radius: 12px !important;
             padding: 20px !important;
             margin: 0 !important;
             box-shadow: none !important;
@@ -5968,30 +6473,17 @@ button i,
         }
         
         #market-chart #logs-view {
-            background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
             backdrop-filter: blur(20px) !important;
             -webkit-backdrop-filter: blur(20px) !important;
             border-radius: 0 !important;
-            padding: 20px !important;
+            padding: 0;
             margin: 0 !important;
             box-shadow: none !important;
             position: relative !important;
-            outline: 1px solid rgba(34, 197, 94, 0.04) !important;
             outline-offset: -1px !important;
         }
         
-        #market-chart #register-view {
-            background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border-radius: 0 !important;
-            padding: 20px !important;
-            margin: 0 !important;
-            box-shadow: none !important;
-            position: relative !important;
-            outline: 1px solid rgba(34, 197, 94, 0.04) !important;
-            outline-offset: -1px !important;
-        }
+        /* Mobile: Estilos do registro já estão consolidados na seção específica acima */
     }
     
     /* Mobile: Esconder tabs desktop */
@@ -6009,7 +6501,8 @@ button i,
     /* Mobile: Mostrar conteúdo das tabs baseado na tab ativa */
     .mobile-tab-content {
         display: block;
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border-radius: 0 !important;
@@ -6144,10 +6637,7 @@ button i,
         padding: 0.5rem 0.25rem;
     }
     
-    /* Mobile: Ajustar registro para mobile */
-    #register-view {
-        padding: 0.5rem;
-    }
+    /* Mobile: Ajustar registro para mobile - removido (já está na seção específica acima) */
     
     /* Mobile: Mostrar grid principal mas ajustado */
     .desktop-main-content {
@@ -6165,7 +6655,8 @@ button i,
     /* Mobile: Mostrar/esconder conteúdo baseado na tab ativa */
     .mobile-tab-content {
         display: block;
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
         border-radius: 0 !important;
@@ -6182,25 +6673,60 @@ button i,
         display: block !important;
     }
     
+    /* Mobile: Esconder informações do mercado no desktop */
+    .desktop-hidden {
+        display: none !important;
+    }
+    
+    /* Mobile: Mostrar informações do mercado apenas no mobile */
+    @media (max-width: 768px) {
+        .desktop-hidden {
+            display: block !important;
+        }
+        
+        .mobile-market-info {
+            padding: 0.5rem 1rem 1rem 1rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #1C1C1C;
+            background: #0b0b0b !important;
+            background-color: #0b0b0b !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border-radius: 12px;
+            border: 1px solid #1C1C1C;
+        }
+        
+        /* Mobile: Aplicar gradiente nos cards premium no mobile */
+        .premium-card {
+            background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+            background-color: transparent !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+        }
+    }
+    
     /* Mobile: Ajustar card do gráfico */
-    #market-chart {
-        border-radius: 0 !important;
-        border-left: none;
-        border-right: none;
-        padding: 20px !important;
-        margin-bottom: 1rem;
-        background: linear-gradient(135deg, rgba(10, 15, 10, 0.92) 0%, rgba(11, 11, 11, 0.94) 50%, rgba(8, 13, 8, 0.92) 100%) !important;
-        backdrop-filter: blur(20px) !important;
-        -webkit-backdrop-filter: blur(20px) !important;
-        border: none !important;
-        box-shadow: none !important;
-        position: relative !important;
-        outline: 1px solid rgba(34, 197, 94, 0.04) !important;
-        outline-offset: -1px !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        margin-left: 0 !important;
-        margin-right: 0 !important;
+    @media (max-width: 768px) {
+        #market-chart {
+            border-radius: 12px !important;
+            border-left: none;
+            border-right: none;
+            padding: 20px !important;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+            background-color: transparent !important;
+            backdrop-filter: blur(20px) !important;
+            -webkit-backdrop-filter: blur(20px) !important;
+            border: none !important;
+            box-shadow: none !important;
+            position: relative !important;
+            outline: 1px solid rgba(34, 197, 94, 0.04) !important;
+            outline-offset: -1px !important;
+            width: 100% !important;
+            max-width: 100% !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
     }
     
     /* Mobile: Ajustar título do gráfico */
@@ -6244,19 +6770,7 @@ button i,
     }
     
     /* Mobile: Ajustar registro */
-    #register-view {
-        padding: 0.5rem;
-    }
-    
-    #register-view > div:first-child {
-        padding: 0.5rem;
-        font-size: 0.7rem;
-    }
-    
-    #register-view .flex-1 {
-        font-size: 0.7rem;
-        padding: 0.75rem;
-    }
+    /* Mobile: Estilos do registro já estão consolidados na seção acima */
 }
 
 /* Desktop: Esconder elementos mobile */
@@ -6267,8 +6781,18 @@ button i,
     .mobile-tabs-container.mobile-tabs-inside,
     .mobile-tabs-container.mobile-tabs-top,
     .mobile-config-content,
-    .mobile-performance-panel {
+    .mobile-performance-panel,
+    .mobile-register-title,
+    .mobile-register-subtitle,
+    .mobile-market-info,
+    .desktop-hidden {
         display: none !important;
+    }
+    
+    /* Desktop: Garantir que todos os cards premium tenham fundo #0b0b0b */
+    .premium-card {
+        background: #0b0b0b !important;
+        background-color: #0b0b0b !important;
     }
     
     /* Desktop: Mostrar tabela, esconder cards */
@@ -6288,6 +6812,15 @@ button i,
     /* Desktop: Mostrar grid principal */
     .desktop-main-content {
         display: grid !important;
+    }
+    
+    /* Desktop: Mostrar lista de registro, esconder cards */
+    .desktop-register-list {
+        display: block !important;
+    }
+    
+    .mobile-register-cards {
+        display: none !important;
     }
 }
 </style>
