@@ -290,6 +290,57 @@
           </div>
         </div>
     </Teleport>
+    
+    <!-- Trade Result Modal -->
+    <Teleport to="body">
+      <div 
+        v-if="showTradeResultModal" 
+        class="modal-overlay" 
+        data-modal="trade-result" 
+        @click.self="closeTradeResultModal"
+      >
+        <div class="modal-content trade-result-modal">
+          <div class="modal-header">
+            <h3 class="modal-title">Resultado da Operação</h3>
+            <button @click="closeTradeResultModal" class="modal-close-btn">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          <div class="modal-body">
+            <div class="trade-result-content">
+              <!-- Ícone e Status -->
+              <div class="trade-result-icon" :class="finalTradeProfit >= 0 ? 'trade-result-win' : 'trade-result-loss'">
+                <i :class="finalTradeProfit >= 0 ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+              </div>
+              
+              <!-- Título -->
+              <h4 class="trade-result-title" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                {{ finalTradeProfit >= 0 ? 'Ganho!' : 'Perda' }}
+              </h4>
+              
+              <!-- Valor -->
+              <div class="trade-result-value" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                {{ finalTradeProfit >= 0 ? '+' : '' }}${{ finalTradeProfit.toFixed(pricePrecision) }}
+              </div>
+              
+              <!-- Tipo de Contrato -->
+              <div class="trade-result-type">
+                <span class="text-zenix-secondary">Tipo:</span>
+                <span class="text-zenix-text font-semibold">{{ finalTradeType }}</span>
+              </div>
+              
+              <!-- Botão Fechar -->
+              <button 
+                @click="closeTradeResultModal"
+                class="trade-result-close-btn"
+              >
+                Fechar
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </Teleport>
   </div>
 </template>
 
@@ -311,6 +362,9 @@ export default {
       amount: 10,
       showMarketModal: false,
       showTradeTypeModal: false,
+      showTradeResultModal: false,
+      finalTradeProfit: 0,
+      finalTradeType: 'CALL',
       markets: [], // Será preenchido pela API
       isLoadingMarkets: false,
       availableContracts: [], // Contratos disponíveis para o símbolo atual
@@ -1199,6 +1253,13 @@ export default {
         this.activeContract.status = contractData.status || (profit > 0 ? 'won' : 'lost');
       }
       
+      // Preparar dados para o modal
+      this.finalTradeProfit = profit;
+      this.finalTradeType = this.activeContract?.contract_type || this.tradeType || 'CALL';
+      
+      // Mostrar modal de resultado
+      this.showTradeResultModal = true;
+      
       // Limpar contrato após um tempo
       setTimeout(() => {
         this.activeContract = null;
@@ -1206,6 +1267,12 @@ export default {
         this.realTimeProfit = null;
         this.tradeMessage = '';
       }, 5000);
+    },
+    closeTradeResultModal() {
+      this.showTradeResultModal = false;
+      // Limpar dados do resultado
+      this.finalTradeProfit = 0;
+      this.finalTradeType = 'CALL';
     },
     getDefaultMarkets() {
       // Mercados padrão caso a API não retorne
@@ -1979,5 +2046,84 @@ export default {
 
 .text-green-400 {
   color: #4ADE80;
+}
+
+/* Trade Result Modal Styles */
+.trade-result-modal {
+  max-width: 480px;
+}
+
+.trade-result-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 20px 0;
+  text-align: center;
+}
+
+.trade-result-icon {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 20px;
+  font-size: 40px;
+}
+
+.trade-result-win {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.1));
+  border: 2px solid #22C55E;
+  color: #22C55E;
+}
+
+.trade-result-loss {
+  background: linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(239, 68, 68, 0.1));
+  border: 2px solid #EF4444;
+  color: #EF4444;
+}
+
+.trade-result-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 10px;
+}
+
+.trade-result-value {
+  font-size: 36px;
+  font-weight: 700;
+  margin-bottom: 20px;
+}
+
+.trade-result-type {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-bottom: 30px;
+  padding: 12px 20px;
+  background: rgba(26, 26, 26, 0.5);
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.trade-result-close-btn {
+  width: 100%;
+  padding: 14px 24px;
+  background: #22C55E;
+  color: #000000;
+  font-weight: 600;
+  font-size: 14px;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.trade-result-close-btn:hover {
+  background: #16A34A;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 </style>
