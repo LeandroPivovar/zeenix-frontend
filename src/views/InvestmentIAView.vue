@@ -895,12 +895,37 @@ export default {
 
         async fetchAccountBalance() {
             try {
+                // PRIMEIRO: Verificar qual tipo de conta está ativa (demo ou real)
+                let preferredIsDemo = false;
+                try {
+                    const connectionStr = localStorage.getItem('deriv_connection');
+                    if (connectionStr) {
+                        const connection = JSON.parse(connectionStr);
+                        if (connection.isDemo !== undefined) {
+                            preferredIsDemo = connection.isDemo === true || connection.isDemo === 1;
+                        }
+                    }
+                } catch (error) {
+                    console.warn('[InvestmentIAView] Erro ao verificar deriv_connection:', error);
+                }
+                
                 // PRIMEIRO: Tentar buscar do cache (como no Dashboard)
                 try {
                     const cachedAccounts = await loadAvailableAccounts();
                     if (cachedAccounts && cachedAccounts.length > 0) {
-                        // Buscar a conta ativa (real primeiro, depois demo)
-                        const activeAccount = cachedAccounts.find(acc => !acc.isDemo) || cachedAccounts[0];
+                        // Buscar a conta que corresponde ao tipo preferido (demo ou real)
+                        let activeAccount = cachedAccounts.find(acc => acc.isDemo === preferredIsDemo);
+                        
+                        // Se não encontrou, tentar o tipo oposto
+                        if (!activeAccount) {
+                            activeAccount = cachedAccounts.find(acc => acc.isDemo !== preferredIsDemo);
+                        }
+                        
+                        // Se ainda não encontrou, usar a primeira disponível
+                        if (!activeAccount) {
+                            activeAccount = cachedAccounts[0];
+                        }
+                        
                         if (activeAccount && activeAccount.balance !== null && activeAccount.balance !== undefined) {
                             this.accountBalance = parseFloat(activeAccount.balance) || 0;
                             this.accountCurrency = activeAccount.currency || 'USD';
@@ -912,7 +937,8 @@ export default {
                                 balance: this.accountBalance,
                                 currency: this.accountCurrency,
                                 loginid: this.accountLoginid,
-                                isDemo: this.isDemo
+                                isDemo: this.isDemo,
+                                preferredIsDemo: preferredIsDemo
                             });
                             
                             // Continuar para atualizar com dados mais recentes em background
@@ -945,23 +971,6 @@ export default {
                     const newCurrency = result.data.currency;
                     const newLoginid = result.data.loginid;
                     
-                    // Só atualizar o saldo se o valor recebido for válido (não null, não undefined, e maior ou igual a 0)
-                    if (newBalance !== null && newBalance !== undefined && newBalance >= 0) {
-                        this.accountBalance = newBalance;
-                    } else if (this.accountBalance === null || this.accountBalance === undefined) {
-                        // Se o saldo atual é null/undefined e o novo também é inválido, manter como 0 para evitar null
-                        this.accountBalance = 0;
-                    }
-                    // Se o novo saldo for inválido mas já temos um saldo válido, manter o saldo atual
-                    
-                    // Sempre atualizar currency e loginid se disponíveis
-                    if (newCurrency) {
-                        this.accountCurrency = newCurrency;
-                    }
-                    if (newLoginid) {
-                        this.accountLoginid = newLoginid;
-                    }
-                    
                     // Verificar isDemo de múltiplas fontes para garantir precisão
                     let isDemoFromLoginid = newLoginid?.startsWith('VRTC') || newLoginid?.startsWith('VRT');
                     
@@ -978,7 +987,31 @@ export default {
                         console.warn('[InvestmentIAView] Erro ao verificar deriv_connection:', error);
                     }
                     
-                    this.isDemo = isDemoFromLoginid;
+                    // Só atualizar se o tipo de conta corresponder ao tipo preferido OU se ainda não temos um saldo válido
+                    const accountTypeMatches = (isDemoFromLoginid === this.isDemo) || 
+                                               (this.accountBalance === null || this.accountBalance === undefined || this.accountBalance === 0);
+                    
+                    // Só atualizar o saldo se o valor recebido for válido e o tipo de conta corresponder
+                    if (newBalance !== null && newBalance !== undefined && newBalance >= 0 && accountTypeMatches) {
+                        this.accountBalance = newBalance;
+                    } else if (this.accountBalance === null || this.accountBalance === undefined) {
+                        // Se o saldo atual é null/undefined e o novo também é inválido, manter como 0 para evitar null
+                        this.accountBalance = 0;
+                    }
+                    // Se o novo saldo for inválido ou o tipo não corresponder, manter o saldo atual do cache
+                    
+                    // Sempre atualizar currency e loginid se disponíveis
+                    if (newCurrency) {
+                        this.accountCurrency = newCurrency;
+                    }
+                    if (newLoginid && accountTypeMatches) {
+                        this.accountLoginid = newLoginid;
+                    }
+                    
+                    // Só atualizar isDemo se o tipo corresponder
+                    if (accountTypeMatches) {
+                        this.isDemo = isDemoFromLoginid;
+                    }
                     this.lastBalanceUpdate = new Date();
                     
                     console.log('[InvestmentIAView] ✅ Saldo atualizado da API:', {
