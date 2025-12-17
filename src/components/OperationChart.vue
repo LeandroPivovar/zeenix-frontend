@@ -115,6 +115,54 @@
             </div>
           </div>
           
+          <!-- Card de Dígitos de Previsão (apenas para contratos de dígitos) -->
+          <div v-if="isDigitContract && latestTick" class="bg-zenix-bg border border-zenix-border rounded-lg p-4">
+            <div class="text-xs font-medium text-zenix-secondary mb-3">
+              <i class="fas fa-calculator text-zenix-green mr-2"></i>Dígitos de Previsão
+            </div>
+            
+            <!-- Grid de Dígitos 0-9 com último destacado -->
+            <div class="mb-4">
+              <div class="text-xs text-zenix-secondary mb-2">Último dígito: <span class="text-zenix-green font-bold">{{ lastDigit }}</span> ({{ lastDigitParity }})</div>
+              <div class="grid grid-cols-5 gap-2">
+                <div
+                  v-for="digit in 10"
+                  :key="digit - 1"
+                  :class="[
+                    'digit-display-item',
+                    lastDigit === (digit - 1) ? 'digit-display-item-last' : 'digit-display-item-normal'
+                  ]"
+                >
+                  {{ digit - 1 }}
+                </div>
+              </div>
+            </div>
+            
+            <!-- Seleção de Dígito (0-9) para DIGITMATCH -->
+            <div v-if="tradeType === 'DIGITMATCH'" class="mt-3 pt-3 border-t border-zenix-border">
+              <label class="block text-xs font-medium text-[#DFDFDF88] mb-3">
+                <i class="fas fa-bullseye text-zenix-green mr-2"></i>Selecione o Dígito para Match
+              </label>
+              <div class="grid grid-cols-5 gap-2">
+                <button
+                  v-for="digit in 10"
+                  :key="digit - 1"
+                  @click="digitMatchValue = digit - 1"
+                  :class="[
+                    'digit-select-btn',
+                    digitMatchValue === (digit - 1) ? 'digit-select-btn-active' : 'digit-select-btn-inactive'
+                  ]"
+                >
+                  {{ digit - 1 }}
+                </button>
+              </div>
+              <div v-if="digitMatchValue !== null" class="mt-3 text-center">
+                <span class="text-xs text-zenix-secondary">Dígito selecionado: </span>
+                <span class="text-lg font-bold text-zenix-green">{{ digitMatchValue }}</span>
+              </div>
+            </div>
+          </div>
+          
           <!-- Action Button -->
           <div class="space-y-3 pt-3">
             <button 
@@ -124,12 +172,12 @@
               <i class="fas fa-arrow-up"></i>
               Executar Ordem
             </button>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-    
-    <!-- Market Selection Modal -->
+          </div>
+          </div>
+      
+      <!-- Market Selection Modal -->
     <Teleport to="body">
       <div 
         v-if="showMarketModal" 
@@ -166,8 +214,8 @@
         </div>
       </div>
     </Teleport>
-    
-    <!-- Trade Type Selection Modal -->
+      
+      <!-- Trade Type Selection Modal -->
     <Teleport to="body">
       <div 
         v-if="showTradeTypeModal" 
@@ -196,9 +244,9 @@
                 <span class="trade-type-desc">{{ type.description }}</span>
               </button>
             </div>
+            </div>
           </div>
         </div>
-      </div>
     </Teleport>
   </div>
 </template>
@@ -216,8 +264,8 @@ export default {
       chartSeries: null,
       symbol: 'R_100',
       tradeType: '',
-      duration: 1,
-      durationUnit: 'm',
+        duration: 1,
+        durationUnit: 'm',
       amount: 10,
       showMarketModal: false,
       showTradeTypeModal: false,
@@ -225,6 +273,10 @@ export default {
       isLoadingMarkets: false,
       availableContracts: [], // Contratos disponíveis para o símbolo atual
       isLoadingContracts: false,
+      latestTick: null, // Último tick recebido
+      lastDigit: null, // Último dígito do preço
+      lastDigitParity: null, // Paridade do último dígito (PAR/IMPAR)
+      digitMatchValue: null, // Valor do dígito selecionado para DIGITMATCH
       allTradeTypes: [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
         { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
@@ -268,13 +320,13 @@ export default {
       
       // Extrair tipos de contrato dos contratos disponíveis
       const contractTypes = this.availableContracts.map(contract => {
-        if (typeof contract === 'string') {
-          return contract.toUpperCase();
-        }
-        if (contract && typeof contract === 'object') {
+            if (typeof contract === 'string') {
+              return contract.toUpperCase();
+            }
+            if (contract && typeof contract === 'object') {
           return (contract.contract_type || contract.type || contract.name || '').toString().toUpperCase();
-        }
-        return null;
+            }
+            return null;
       }).filter(type => type && type.length > 0);
       
       // Filtrar tipos de negociação baseado nos contratos disponíveis
@@ -284,6 +336,10 @@ export default {
       
       // Se não encontrou nenhum tipo, retornar todos (fallback)
       return filteredTypes.length > 0 ? filteredTypes : this.allTradeTypes;
+    },
+    isDigitContract() {
+      const digitTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
+      return digitTypes.includes(this.tradeType);
     },
   },
   async mounted() {
@@ -297,7 +353,7 @@ export default {
   },
   beforeUnmount() {
     if (this.chart) {
-      this.chart.remove();
+        this.chart.remove();
       this.chart = null;
       this.chartSeries = null;
     }
@@ -313,26 +369,26 @@ export default {
 
       const { width, height } = container.getBoundingClientRect();
       
-      this.chart = createChart(container, {
+          this.chart = createChart(container, {
         width,
         height,
-        layout: {
-          background: { type: ColorType.Solid, color: '#0B0B0B' },
-          textColor: '#DFDFDF',
-        },
-        grid: {
+            layout: {
+              background: { type: ColorType.Solid, color: '#0B0B0B' },
+              textColor: '#DFDFDF',
+            },
+            grid: {
           vertLines: { color: '#1A1A1A' },
           horzLines: { color: '#1A1A1A' },
-        },
-        timeScale: {
-          timeVisible: true,
-          secondsVisible: false,
-        },
-      });
+            },
+            timeScale: {
+              timeVisible: true,
+              secondsVisible: false,
+            },
+          });
 
-      this.chartSeries = this.chart.addLineSeries({
-        color: '#22C55E',
-        lineWidth: 2,
+          this.chartSeries = this.chart.addLineSeries({
+            color: '#22C55E',
+            lineWidth: 2,
       });
 
       // Dados placeholder
@@ -347,7 +403,7 @@ export default {
       });
       resizeObserver.observe(container);
 
-      this.showChartPlaceholder = false;
+              this.showChartPlaceholder = false;
     },
     loadPlaceholderData() {
       if (!this.chartSeries) return;
@@ -367,7 +423,20 @@ export default {
       }
 
       this.chartSeries.setData(data);
-      this.chart.timeScale().fitContent();
+          this.chart.timeScale().fitContent();
+      
+      // Simular latestTick com o último valor para calcular dígitos
+      if (data.length > 0) {
+        const lastValue = data[data.length - 1].value;
+        this.latestTick = {
+          value: lastValue,
+          epoch: now
+        };
+        // Calcular último dígito se for contrato de dígitos
+        if (this.isDigitContract) {
+          this.updateDigitInfo(lastValue);
+        }
+      }
     },
     openMarketModal() {
       this.showMarketModal = true;
@@ -391,9 +460,28 @@ export default {
     closeTradeTypeModal() {
       this.showTradeTypeModal = false;
     },
-    selectTradeType(type) {
+    async selectTradeType(type) {
       this.tradeType = type;
-      this.closeTradeTypeModal();
+        this.closeTradeTypeModal();
+      
+      // Se mudou para um contrato de dígitos e temos latestTick, calcular dígito
+      const digitTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
+      if (digitTypes.includes(this.tradeType) && this.latestTick && this.latestTick.value) {
+        this.updateDigitInfo(this.latestTick.value);
+      }
+      
+      // Se mudou para DIGITMATCH e temos um último dígito, inicializar digitMatchValue
+      if (this.tradeType === 'DIGITMATCH' && this.lastDigit !== null) {
+        this.digitMatchValue = this.lastDigit;
+      } else if (this.tradeType !== 'DIGITMATCH') {
+        // Limpar digitMatchValue se não for DIGITMATCH
+        this.digitMatchValue = null;
+      }
+      
+      // Carregar valores padrão (duração e valor mínimo) para o tipo selecionado
+      if (this.symbol) {
+        await this.loadDefaultValuesForType(type);
+      }
     },
     async loadMarketsFromAPI() {
       try {
@@ -440,9 +528,9 @@ export default {
           // Usar mercados padrão se não tiver token
           this.markets = this.getDefaultMarkets();
           this.isLoadingMarkets = false;
-          return;
-        }
-
+        return;
+      }
+      
         // Conectar ao backend
         await derivTradingService.connect(derivToken, loginid);
 
@@ -471,7 +559,7 @@ export default {
           }
         }, 5000);
 
-      } catch (error) {
+        } catch (error) {
         console.error('[Chart] Erro ao carregar mercados da API:', error);
         // Usar mercados padrão em caso de erro
         this.markets = this.getDefaultMarkets();
@@ -573,9 +661,9 @@ export default {
           console.warn('[Chart] Token Deriv não encontrado, não é possível buscar contratos');
           this.availableContracts = [];
           this.isLoadingContracts = false;
-          return;
-        }
-
+        return;
+      }
+      
         // Garantir que está conectado
         if (!derivTradingService.isConnected) {
           await derivTradingService.connect(derivToken, loginid);
@@ -605,7 +693,7 @@ export default {
             }
           }
           
-          this.availableContracts = contractsArray;
+              this.availableContracts = contractsArray;
           console.log('[Chart] Contratos disponíveis atualizados:', this.availableContracts.length, 'contratos');
           
           // Se o tipo atual não estiver disponível, limpar seleção
@@ -630,6 +718,117 @@ export default {
         this.availableContracts = [];
       } finally {
         this.isLoadingContracts = false;
+      }
+    },
+    async loadDefaultValuesForType(contractType) {
+      if (!this.symbol || !contractType) {
+        return;
+      }
+      
+      try {
+        // Buscar valores padrão para o tipo de contrato
+        const defaultValues = await derivTradingService.getDefaultValues(this.symbol, contractType);
+        
+        console.log('[Chart] Valores padrão recebidos para tipo:', contractType, defaultValues);
+        
+        // Encontrar o contrato selecionado nos contratos disponíveis
+            const selectedContract = this.availableContracts.find(c => {
+          const contractTypeValue = typeof c === 'string' ? c : (c.contract_type || c.type || c.name);
+          return contractTypeValue && contractTypeValue.toUpperCase() === contractType.toUpperCase();
+            });
+            
+            if (selectedContract && typeof selectedContract === 'object') {
+          // Ajustar duração mínima
+          if (selectedContract.min_contract_duration) {
+              const parseDuration = (durationStr) => {
+                if (!durationStr) return null;
+                const match = String(durationStr).match(/^(\d+)([a-z]+)$/i);
+                if (match) {
+                  return {
+                    value: parseInt(match[1]),
+                    unit: match[2].toLowerCase()
+                  };
+                }
+                return null;
+              };
+              
+              const minDur = parseDuration(selectedContract.min_contract_duration);
+              
+              if (minDur) {
+              const currentDuration = this.duration || 1;
+              const currentUnit = this.durationUnit || 'm';
+                
+              // Ajustar se necessário
+                if (minDur.unit === 't') {
+                if (currentUnit !== 't' || currentDuration < minDur.value) {
+                  this.duration = minDur.value;
+                  this.durationUnit = 't';
+                  console.log('[Chart] Duração ajustada para mínima (ticks):', minDur.value);
+                    }
+                  } else {
+                // Para outras unidades, converter para comparação
+                  const currentInMinutes = currentUnit === 'm' ? currentDuration : 
+                                          (currentUnit === 'h' ? currentDuration * 60 : 
+                                          (currentUnit === 'd' ? currentDuration * 1440 : 0));
+                  const minInMinutes = minDur.unit === 'm' ? minDur.value : 
+                                      (minDur.unit === 'h' ? minDur.value * 60 : 
+                                      (minDur.unit === 'd' ? minDur.value * 1440 : 0));
+                  
+                    if (currentUnit === minDur.unit && currentDuration < minDur.value) {
+                  this.duration = minDur.value;
+                        console.log('[Chart] Duração ajustada para mínima:', minDur.value, minDur.unit);
+                    } else if (currentUnit !== minDur.unit && currentInMinutes < minInMinutes) {
+                  this.duration = minDur.value;
+                  this.durationUnit = minDur.unit;
+                        console.log('[Chart] Duração ajustada para mínima (conversão):', minDur.value, minDur.unit);
+                }
+              }
+            }
+          }
+          
+          // Ajustar valor mínimo
+          if (selectedContract.min_contract_amount) {
+            const minAmount = parseFloat(selectedContract.min_contract_amount);
+            if (!isNaN(minAmount) && this.amount < minAmount) {
+              this.amount = minAmount;
+              console.log('[Chart] Valor de entrada ajustado para mínimo:', minAmount);
+            }
+          }
+        }
+        
+        // Se houver valores padrão retornados, usar eles (apenas se não foram ajustados pelo contrato)
+        if (defaultValues.amount) {
+          const defaultAmount = parseFloat(defaultValues.amount);
+          if (!isNaN(defaultAmount) && this.amount < defaultAmount) {
+            this.amount = defaultAmount;
+            console.log('[Chart] Valor de entrada ajustado para padrão:', defaultAmount);
+          }
+        }
+        if (defaultValues.duration && !this.duration) {
+          this.duration = defaultValues.duration;
+        }
+        if (defaultValues.durationUnit && !this.durationUnit) {
+          this.durationUnit = defaultValues.durationUnit;
+        }
+        
+      } catch (error) {
+        console.error('[Chart] Erro ao carregar valores padrão para tipo:', error);
+      }
+    },
+    updateDigitInfo(value) {
+      // Extrair último dígito do valor
+      const valueStr = value.toFixed(5); // Usar 5 casas decimais para garantir precisão
+      const lastChar = valueStr[valueStr.length - 1];
+      const digit = parseInt(lastChar, 10);
+      
+      if (!isNaN(digit) && digit >= 0 && digit <= 9) {
+        this.lastDigit = digit;
+        this.lastDigitParity = digit % 2 === 0 ? 'PAR' : 'IMPAR';
+        
+        // Se for DIGITMATCH e não tiver valor selecionado, usar o último dígito
+        if (this.tradeType === 'DIGITMATCH' && this.digitMatchValue === null) {
+          this.digitMatchValue = digit;
+        }
       }
     },
     getDefaultMarkets() {
@@ -1281,5 +1480,72 @@ export default {
     opacity: 1;
     transform: scale(1) translateY(0);
   }
+}
+
+/* Digit Display Items (visualização dos dígitos 0-9) */
+.digit-display-item {
+  aspect-ratio: 1;
+  min-height: 36px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.digit-display-item-normal {
+  background: rgba(11, 11, 11, 0.6);
+  color: rgba(255, 255, 255, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+}
+
+.digit-display-item-last {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.25), rgba(34, 197, 94, 0.15));
+  border-color: #22C55E;
+  color: #22C55E;
+  box-shadow: 0 0 10px rgba(34, 197, 94, 0.4);
+  transform: scale(1.1);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+/* Digit Select Buttons (seleção de dígito para DIGITMATCH) */
+.digit-select-btn {
+  aspect-ratio: 1;
+  min-height: 40px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.digit-select-btn-inactive {
+  background: rgba(11, 11, 11, 0.8);
+  color: rgba(255, 255, 255, 0.7);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.digit-select-btn-inactive:hover {
+  background: rgba(11, 11, 11, 1);
+  border-color: rgba(34, 197, 94, 0.5);
+  color: rgba(255, 255, 255, 0.9);
+  transform: translateY(-1px);
+  box-shadow: 0 2px 8px rgba(34, 197, 94, 0.2);
+}
+
+.digit-select-btn-active {
+  background: linear-gradient(135deg, rgba(34, 197, 94, 0.2), rgba(34, 197, 94, 0.15));
+  border-color: #22C55E;
+  color: #22C55E;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+  transform: scale(1.05);
 }
 </style>
