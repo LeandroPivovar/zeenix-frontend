@@ -168,6 +168,8 @@ export default {
       accountType: 'real', // 'real' ou 'demo'
       isMobile: false,
       isComponentDestroyed: false, // Flag para verificar se componente foi destruído
+      updateQueue: [], // Fila de atualizações pendentes
+      isProcessingUpdates: false, // Flag para evitar processamento simultâneo
     };
   },
   computed: {
@@ -344,6 +346,76 @@ export default {
         console.log('[OperationView] ========== VERIFICAÇÃO DE CONEXÃO FINALIZADA ==========');
       }
     },
+    // Helper para atualizar dados reativos de forma segura
+    safeUpdate(callback) {
+      // Se componente foi destruído, ignorar
+      if (this.isComponentDestroyed) {
+        return;
+      }
+      
+      // Adicionar à fila de atualizações
+      if (typeof callback === 'function') {
+        this.updateQueue.push(callback);
+      }
+      
+      // Processar fila se não estiver processando
+      if (!this.isProcessingUpdates) {
+        this.processUpdateQueue();
+      }
+    },
+    // Processar fila de atualizações de forma segura
+    processUpdateQueue() {
+      if (this.isProcessingUpdates || this.isComponentDestroyed) {
+        return;
+      }
+      
+      this.isProcessingUpdates = true;
+      
+      // Usar nextTick para garantir que estamos em um ciclo de renderização seguro
+      this.$nextTick(() => {
+        try {
+          // Verificar se componente ainda está válido
+          if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+            this.updateQueue = [];
+            this.isProcessingUpdates = false;
+            return;
+          }
+          
+          // Verificar se componente Vue ainda está válido
+          try {
+            if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+              this.updateQueue = [];
+              this.isProcessingUpdates = false;
+              return;
+            }
+          } catch (e) {
+            this.updateQueue = [];
+            this.isProcessingUpdates = false;
+            return;
+          }
+          
+          // Processar todas as atualizações na fila
+          while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
+            const callback = this.updateQueue.shift();
+            if (typeof callback === 'function') {
+              try {
+                // Verificar novamente antes de executar cada callback
+                if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+                  break;
+                }
+                callback();
+              } catch (error) {
+                console.warn('[OperationView] Erro ao executar callback na fila:', error);
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('[OperationView] Erro ao processar fila de atualizações:', error);
+        } finally {
+          this.isProcessingUpdates = false;
+        }
+      });
+    },
     applyConnectionSnapshot(snapshot) {
       // Verificar se componente ainda está montado
       if (this.isComponentDestroyed || !this.$el) {
@@ -371,25 +443,28 @@ export default {
         loginid
       });
       
-      if (balanceValue != null) {
-        this.accountBalanceValue = Number(balanceValue);
-        console.log('[OperationView] Saldo atualizado:', this.accountBalanceValue);
-      }
-      if (currency) {
-        this.accountCurrency = currency.toUpperCase();
-        console.log('[OperationView] Moeda da conta atualizada:', this.accountCurrency);
-      }
-      if (preferredCurrency) {
-        this.preferredCurrency = preferredCurrency.toUpperCase();
-        console.log('[OperationView] Moeda preferida atualizada:', this.preferredCurrency);
-      }
-      if (loginid) {
-        this.accountLoginId = loginid;
-        // Determinar tipo de conta (demo ou real) baseado no loginid
-        this.accountType = (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) ? 'demo' : 'real';
-        console.log('[OperationView] LoginID atualizado:', this.accountLoginId);
-        console.log('[OperationView] Tipo de conta:', this.accountType);
-      }
+      // Usar safeUpdate para atualizar estados reativos
+      this.safeUpdate(() => {
+        if (balanceValue != null) {
+          this.accountBalanceValue = Number(balanceValue);
+          console.log('[OperationView] Saldo atualizado:', this.accountBalanceValue);
+        }
+        if (currency) {
+          this.accountCurrency = currency.toUpperCase();
+          console.log('[OperationView] Moeda da conta atualizada:', this.accountCurrency);
+        }
+        if (preferredCurrency) {
+          this.preferredCurrency = preferredCurrency.toUpperCase();
+          console.log('[OperationView] Moeda preferida atualizada:', this.preferredCurrency);
+        }
+        if (loginid) {
+          this.accountLoginId = loginid;
+          // Determinar tipo de conta (demo ou real) baseado no loginid
+          this.accountType = (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) ? 'demo' : 'real';
+          console.log('[OperationView] LoginID atualizado:', this.accountLoginId);
+          console.log('[OperationView] Tipo de conta:', this.accountType);
+        }
+      });
       
       // Armazenar tokens retornados pelo backend no localStorage
       if (snapshot?.tokensByLoginId && Object.keys(snapshot.tokensByLoginId).length > 0) {
@@ -591,29 +666,10 @@ export default {
           market: getMarketName(order.symbol),
         }));
 
-        // Verificar novamente antes de atribuir (pode ter sido desmontado durante o map)
-        if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-          console.warn('[OperationView] Componente desmontado durante formatação, ignorando');
-          return;
-        }
-
-        // Verificar se o componente Vue ainda está válido
-        try {
-          if (!this.$ || !this.$.vnode) {
-            console.warn('[OperationView] Componente Vue inválido, ignorando atualização');
-            return;
-          }
-        } catch (e) {
-          console.warn('[OperationView] Erro ao verificar componente Vue:', e);
-          return;
-        }
-
-        // Atualizar usando reatividade normal (sem $forceUpdate)
-        try {
+        // Usar safeUpdate para atualizar lastOrders de forma segura
+        this.safeUpdate(() => {
           this.lastOrders = formattedOrders;
-        } catch (error) {
-          console.warn('[OperationView] Erro ao atualizar lastOrders:', error);
-        }
+        });
 
         console.log('[OperationView] Últimas ordens formatadas:', this.lastOrders);
         console.log('[OperationView] Total de ordens formatadas:', this.lastOrders.length);
@@ -667,8 +723,12 @@ export default {
     window.addEventListener('resize', this.checkMobile);
   },
   beforeUnmount() {
-    // Marcar componente como destruído
+    // Marcar componente como destruído PRIMEIRO
     this.isComponentDestroyed = true;
+    
+    // Limpar fila de atualizações pendentes
+    this.updateQueue = [];
+    this.isProcessingUpdates = false;
     
     // Limpar event listeners
     window.removeEventListener('resize', this.checkMobile);

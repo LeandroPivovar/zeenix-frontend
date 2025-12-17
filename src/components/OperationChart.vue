@@ -442,6 +442,8 @@ export default {
   data() {
     return {
       isComponentDestroyed: false, // Flag para verificar se componente foi destruído
+      updateQueue: [], // Fila de atualizações pendentes
+      isProcessingUpdates: false, // Flag para evitar processamento simultâneo
       showLoading: false,
       showChartPlaceholder: true,
       showSellButton: false,
@@ -803,8 +805,12 @@ export default {
     },
   },
   beforeUnmount() {
-    // Marcar componente como destruído
+    // Marcar componente como destruído PRIMEIRO
     this.isComponentDestroyed = true;
+    
+    // Limpar fila de atualizações pendentes
+    this.updateQueue = [];
+    this.isProcessingUpdates = false;
     
     // Limpar contador de contrato
     if (this.stopContractCountdown) {
@@ -847,49 +853,73 @@ export default {
     },
     // Helper para atualizar dados reativos de forma segura
     safeUpdate(callback) {
-      // Verificação inicial rigorosa
-      if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+      // Se componente foi destruído, ignorar
+      if (this.isComponentDestroyed) {
         return;
       }
       
-      // Verificar se o componente Vue ainda está válido
-      try {
-        if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
-          return;
-        }
-        
-        // Verificar se o vnode ainda está conectado ao DOM
-        if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
-          return;
-        }
-      } catch (e) {
-        // Se não conseguir acessar $, componente está sendo desmontado
+      // Adicionar à fila de atualizações
+      if (typeof callback === 'function') {
+        this.updateQueue.push(callback);
+      }
+      
+      // Processar fila se não estiver processando
+      if (!this.isProcessingUpdates) {
+        this.processUpdateQueue();
+      }
+    },
+    // Processar fila de atualizações de forma segura
+    processUpdateQueue() {
+      if (this.isProcessingUpdates || this.isComponentDestroyed) {
         return;
       }
       
-      try {
-        // Executar callback diretamente se componente estiver válido
-        // Não usar $nextTick ou requestAnimationFrame para evitar problemas de timing
-        if (typeof callback === 'function') {
-          // Verificar novamente antes de executar
+      this.isProcessingUpdates = true;
+      
+      // Usar nextTick para garantir que estamos em um ciclo de renderização seguro
+      this.$nextTick(() => {
+        try {
+          // Verificar se componente ainda está válido
           if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+            this.updateQueue = [];
+            this.isProcessingUpdates = false;
             return;
           }
           
-          // Verificar novamente se componente Vue ainda está válido
+          // Verificar se componente Vue ainda está válido
           try {
-            if (!this.$ || !this.$.vnode) {
+            if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+              this.updateQueue = [];
+              this.isProcessingUpdates = false;
               return;
             }
           } catch (e) {
+            this.updateQueue = [];
+            this.isProcessingUpdates = false;
             return;
           }
           
-          callback();
+          // Processar todas as atualizações na fila
+          while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
+            const callback = this.updateQueue.shift();
+            if (typeof callback === 'function') {
+              try {
+                // Verificar novamente antes de executar cada callback
+                if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+                  break;
+                }
+                callback();
+              } catch (error) {
+                console.warn('[Chart] Erro ao executar callback na fila:', error);
+              }
+            }
+          }
+        } catch (error) {
+          console.warn('[Chart] Erro ao processar fila de atualizações:', error);
+        } finally {
+          this.isProcessingUpdates = false;
         }
-      } catch (error) {
-        console.warn('[Chart] Erro ao executar callback em safeUpdate:', error);
-      }
+      });
     },
     initChart() {
       const container = this.$refs.chartContainer;
