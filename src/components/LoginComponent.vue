@@ -1189,6 +1189,12 @@ button.bg-zenix-green:disabled {
     font-family: 'Inter', sans-serif !important;
   }
 
+  /* Placeholder do campo de senha sem letter-spacing */
+  #login-section input.input-password::placeholder {
+    letter-spacing: 0 !important;
+    font-family: 'Inter', sans-serif !important;
+  }
+
   /* Texto digitado nos inputs deve ser branco */
   #login-section input[type="text"],
   #login-section input[type="email"],
