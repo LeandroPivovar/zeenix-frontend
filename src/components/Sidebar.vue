@@ -415,17 +415,17 @@ export default {
                                     // Ignorar erros de navegação duplicada
                                 });
                             } else {
-                                this.$router.push(route).catch(err => {
-                                    // Ignorar erros de navegação duplicada e erros relacionados a componentes null
-                                    const errMsg = String(err?.message || err || '');
-                                    if (err.name !== 'NavigationDuplicated' && 
-                                        !errMsg.includes('Cannot destructure') &&
-                                        !errMsg.includes('bum') &&
-                                        !errMsg.includes('insertBefore') &&
-                                        !errMsg.includes('Symbol(_assign)')) {
-                                        console.error('[Sidebar] Erro ao navegar:', err);
-                                    }
-                                });
+                            this.$router.push(route).catch(err => {
+                                // Ignorar erros de navegação duplicada e erros relacionados a componentes null
+                                const errMsg = String(err?.message || err || '');
+                                if (err.name !== 'NavigationDuplicated' && 
+                                    !errMsg.includes('Cannot destructure') &&
+                                    !errMsg.includes('bum') &&
+                                    !errMsg.includes('insertBefore') &&
+                                    !errMsg.includes('Symbol(_assign)')) {
+                                    console.error('[Sidebar] Erro ao navegar:', err);
+                                }
+                            });
                             }
                         } catch (pushError) {
                             // Ignorar erros de push se componente está sendo desmontado

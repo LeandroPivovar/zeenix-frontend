@@ -2551,24 +2551,24 @@ export default {
         console.warn('[Chart] Aviso ao limpar dados anteriores:', error);
       }
 
-      // Converter ticks para formato TradingView
-      // Limitar aos últimos 100 ticks
-      let ticksToUse = ticks.slice(-100);
-      
-      // Verificar se todos os ticks são do mesmo símbolo (valores similares)
-      // Se houver valores muito diferentes, pode ser mistura de símbolos
-      const tickValues = ticksToUse
-        .map(t => {
-          if (!t || typeof t !== 'object') return null;
-          if (t.value === null || t.value === undefined) return null;
-          const val = Number(t.value);
-          if (isNaN(val) || !isFinite(val) || val <= 0) return null;
-          return val;
+      // Abordagem simplificada igual ao InvestmentActive.vue
+      // Converter ticks para formato do gráfico - mesma abordagem do InvestmentActive
+      const sortedTicks = [...ticks]
+        .map(tick => {
+          // Converter epoch para horário de Brasília (UTC-3)
+          const epoch = tick.epoch || tick.time || Date.now() / 1000;
+          const brasiliaEpoch = Math.floor(Number(epoch)) - (3 * 60 * 60);
+          
+          return {
+            time: brasiliaEpoch,
+            value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
+          };
         })
-        .filter(v => v !== null);
+        .filter(point => point.value && point.value > 0 && point.time > 0) // Filtrar apenas valores válidos
+        .sort((a, b) => a.time - b.time); // Ordenar por tempo
       
-      if (tickValues.length === 0) {
-        console.warn('[Chart] Nenhum valor válido encontrado nos ticks');
+      if (sortedTicks.length === 0) {
+        console.warn('[Chart] ⚠️ Nenhum tick válido após processamento');
         if (this.isComponentMounted()) {
           this.safeUpdate(() => {
             this.showChartPlaceholder = false;
@@ -2578,487 +2578,70 @@ export default {
         return;
       }
       
-      // Filtrar ticks por símbolo atual - usar apenas valores compatíveis
-      // Se já temos dados no gráfico, usar a mediana para determinar o símbolo
-      let filteredTicks = ticksToUse;
+      // Limitar aos últimos 100 ticks
+      const ticksToUse = sortedTicks.slice(-100);
       
-      if (this.ticks.length > 0) {
-        const existingValues = this.ticks
-          .map(t => t.value)
-          .filter(v => v !== null && v !== undefined && isFinite(v) && v > 0);
-        
-        if (existingValues.length > 0) {
-          const sortedValues = [...existingValues].sort((a, b) => a - b);
-          const medianExisting = sortedValues[Math.floor(sortedValues.length / 2)];
-          const tolerance = 0.5; // 50% de tolerância
-          const lowerBound = medianExisting * (1 - tolerance);
-          const upperBound = medianExisting * (1 + tolerance);
-          
-          filteredTicks = ticksToUse.filter(tick => {
-            if (!tick || typeof tick !== 'object') return false;
-            if (tick.value === null || tick.value === undefined) return false;
-            const val = Number(tick.value);
-            if (isNaN(val) || !isFinite(val) || val <= 0) return false;
-            return val >= lowerBound && val <= upperBound;
-          });
-          
-          if (filteredTicks.length > 0) {
-            console.log('[Chart] Ticks filtrados por símbolo:', filteredTicks.length, 'de', ticksToUse.length);
-            ticksToUse = filteredTicks;
-          }
-        }
-      } else {
-        // Se não temos dados ainda, usar a mediana dos ticks recebidos
-        const sortedValues = [...tickValues].sort((a, b) => a - b);
-        const median = sortedValues[Math.floor(sortedValues.length / 2)];
-        const tolerance = 0.5;
-        const lowerBound = median * (1 - tolerance);
-        const upperBound = median * (1 + tolerance);
-        
-        filteredTicks = ticksToUse.filter(tick => {
-          if (!tick || typeof tick !== 'object') return false;
-          if (tick.value === null || tick.value === undefined) return false;
-          const val = Number(tick.value);
-          if (isNaN(val) || !isFinite(val) || val <= 0) return false;
-          return val >= lowerBound && val <= upperBound;
-        });
-        
-        if (filteredTicks.length > 0) {
-          console.log('[Chart] Ticks filtrados por mediana inicial:', filteredTicks.length, 'de', ticksToUse.length);
-          ticksToUse = filteredTicks;
-        }
-      }
-      
-      const chartData = ticksToUse
-        .map(tick => {
-          // Validar dados básicos
-          if (!tick || typeof tick !== 'object') {
-            return null;
-          }
-          
-          // Validar null/undefined ANTES de processar
-          if (tick.value === null || tick.value === undefined) {
-            return null;
-          }
-          
-          if (tick.epoch === null || tick.epoch === undefined) {
-            return null;
-          }
-          
-          const value = tick.value;
-          const epoch = tick.epoch;
-          
-          // Validação rigorosa de tipos e valores
-          if (
-            value === null || 
-            value === undefined ||
-            !isFinite(Number(value)) || 
-            Number(value) <= 0 || 
-            isNaN(Number(value)) ||
-            epoch === null ||
-            epoch === undefined ||
-            !isFinite(Number(epoch)) ||
-            Number(epoch) <= 0 ||
-            isNaN(Number(epoch))
-          ) {
-            return null;
-          }
-          
-          // Converter epoch para horário de Brasília (UTC-3)
-          // O epoch vem em segundos UTC, precisamos subtrair 3 horas (10800 segundos)
-          const brasiliaEpoch = Math.floor(Number(epoch)) - (3 * 60 * 60);
-          const numValue = Number(value);
-          
-          // Validação final após conversão
-          if (isNaN(brasiliaEpoch) || !isFinite(brasiliaEpoch) || brasiliaEpoch <= 0) {
-            return null;
-          }
-          
-          if (isNaN(numValue) || !isFinite(numValue) || numValue <= 0) {
-            return null;
-          }
-          
-          return {
-            time: brasiliaEpoch,
-            value: numValue
-          };
-        })
-        .filter(item => item !== null && item !== undefined);
+      // Usar os ticks já processados (já ordenados)
+      const chartData = ticksToUse;
 
-        if (chartData.length === 0) {
-          console.warn('[Chart] Nenhum tick válido após validação');
-          if (this.isComponentMounted()) {
-            this.safeUpdate(() => {
-              this.showChartPlaceholder = false;
-              this.isLoadingTicks = false;
-            });
-          }
-          return;
-        }
-
-        // Ordenar por tempo
-        chartData.sort((a, b) => a.time - b.time);
-
-        // Validação final EXTREMAMENTE rigorosa antes de setar dados - garantir que não há nulls
-        let finalChartData = chartData.filter(item => {
-          // Validação de objeto
-          if (!item || item === null || item === undefined || typeof item !== 'object') {
-            return false;
-          }
-          
-          // Validação de time - múltiplas verificações
-          const time = item.time;
-          if (time === null || time === undefined) {
-            return false;
-          }
-          const numTime = Number(time);
-          if (isNaN(numTime) || !isFinite(numTime) || numTime <= 0) {
-            return false;
-          }
-          
-          // Validação de value - múltiplas verificações
-          const value = item.value;
-          if (value === null || value === undefined) {
-            return false;
-          }
-          const numValue = Number(value);
-          if (isNaN(numValue) || !isFinite(numValue) || numValue <= 0) {
-            return false;
-          }
-          
-          return true;
-        });
-        
-        if (finalChartData.length === 0) {
-          console.warn('[Chart] Nenhum dado válido após validação final');
-          if (this.isComponentMounted()) {
-            this.safeUpdate(() => {
-              this.showChartPlaceholder = false;
-              this.isLoadingTicks = false;
-            });
-          }
-          return;
-        }
-        
-        // Verificar se há valores muito diferentes (possível mistura de símbolos)
-        const chartValues = finalChartData.map(d => {
-          const val = Number(d.value);
-          return (val !== null && val !== undefined && isFinite(val) && val > 0) ? val : null;
-        }).filter(v => v !== null);
-        
-        if (chartValues.length === 0) {
-          console.warn('[Chart] Nenhum valor válido após validação');
-          if (this.isComponentMounted()) {
-            this.safeUpdate(() => {
-              this.showChartPlaceholder = false;
-              this.isLoadingTicks = false;
-            });
-          }
-          return;
-        }
-        
-        const minValue = Math.min(...chartValues);
-        const maxValue = Math.max(...chartValues);
-        const medianValue = [...chartValues].sort((a, b) => a - b)[Math.floor(chartValues.length / 2)];
-        
-        // Se a variação for muito grande (mais de 5x), filtrar valores outliers
-        if (minValue > 0 && medianValue > 0 && (maxValue / minValue) > 5) {
-          console.warn('[Chart] ⚠️ Valores muito diferentes detectados - possível mistura de símbolos:', {
-            min: minValue,
-            max: maxValue,
-            median: medianValue,
-            ratio: maxValue / minValue
-          });
-          
-          // Usar mediana como referência (mais robusta que média)
-          // Manter apenas valores dentro de 2x da mediana
-          const filteredData = finalChartData.filter(item => {
-            if (!item || item.value === null || item.value === undefined) return false;
-            const val = Number(item.value);
-            if (isNaN(val) || !isFinite(val) || val <= 0) return false;
-            // Manter apenas valores dentro de 2x da mediana
-            return val >= medianValue / 2 && val <= medianValue * 2;
-          });
-          
-          if (filteredData.length > 0) {
-            console.log('[Chart] Dados filtrados por mediana:', filteredData.length, 'de', finalChartData.length);
-            finalChartData = filteredData;
-            
-            // Recalcular valores após filtro
-            const newValues = filteredData.map(d => d.value).filter(v => v !== null && v !== undefined && isFinite(v) && v > 0);
-            if (newValues.length > 0) {
-              const newMin = Math.min(...newValues);
-              const newMax = Math.max(...newValues);
-              const newAvg = newValues.reduce((a, b) => a + b, 0) / newValues.length;
-              console.log('[Chart] Após filtro - min:', newMin, 'max:', newMax, 'avg:', newAvg.toFixed(2));
-            }
-          }
-        }
-        
-        console.log('[Chart] Plotando', finalChartData.length, 'ticks no gráfico');
-        if (finalChartData.length > 0) {
-          console.log('[Chart] Primeiro tick:', finalChartData[0]);
-          console.log('[Chart] Último tick:', finalChartData[finalChartData.length - 1]);
-        }
-        console.log('[Chart] Range de valores:', { min: minValue, max: maxValue, median: medianValue });
-
-        // Validação final EXTREMAMENTE rigorosa individual de cada item antes de passar para o gráfico
-        const validatedData = finalChartData
-          .map(item => {
-            // Verificar se o item existe e não é null/undefined
-            if (!item || item === null || item === undefined || typeof item !== 'object') {
-              return null;
-            }
-            
-            // Verificar time - múltiplas validações
-            if (item.time === null || item.time === undefined) {
-              return null;
-            }
-            const timeNum = Number(item.time);
-            if (isNaN(timeNum) || !isFinite(timeNum) || timeNum <= 0) {
-              return null;
-            }
-            
-            // Verificar value - múltiplas validações
-            if (item.value === null || item.value === undefined) {
-              return null;
-            }
-            const valueNum = Number(item.value);
-            if (isNaN(valueNum) || !isFinite(valueNum) || valueNum <= 0) {
-              return null;
-            }
-            
-            // Retornar objeto com valores validados e convertidos
-            return {
-              time: timeNum,
-              value: valueNum
-            };
-          })
-          .filter(item => item !== null && item !== undefined);
-        
-        if (validatedData.length === 0) {
-          console.error('[Chart] ❌ Nenhum dado válido após validação final rigorosa');
-          if (this.isComponentMounted()) {
-            this.safeUpdate(() => {
-              this.showChartPlaceholder = false;
-              this.isLoadingTicks = false;
-            });
-          }
-          return;
-        }
-        
-        // Validação final antes de setData() - garantir que não há nulls
-        // Simplificar validação para evitar filtrar dados válidos
-        const finalData = validatedData
-          .filter(item => {
-            if (!item || item === null || item === undefined) return false;
-            const time = Number(item.time);
-            const value = Number(item.value);
-            return isFinite(time) && time > 0 && isFinite(value) && value > 0;
-          })
-          .map(item => ({
-            time: Number(item.time),
-            value: Number(item.value)
-          }));
-        
-        if (finalData.length === 0) {
-          console.error('[Chart] ❌ Nenhum dado válido após validação');
-          console.error('[Chart] Dados validados originais (primeiros 5):', validatedData.slice(0, 5));
+      if (chartData.length === 0) {
+        console.warn('[Chart] ⚠️ Nenhum tick válido após processamento');
+        if (this.isComponentMounted()) {
           this.safeUpdate(() => {
             this.showChartPlaceholder = false;
             this.isLoadingTicks = false;
           });
-          return;
         }
+        return;
+      }
+      
+      console.log('[Chart] Plotando', chartData.length, 'ticks no gráfico');
+      if (chartData.length > 0) {
+        console.log('[Chart] Primeiro tick:', chartData[0]);
+        console.log('[Chart] Último tick:', chartData[chartData.length - 1]);
+      }
+      
+      // Atualizar gráfico - mesma abordagem do InvestmentActive
+      try {
+        this.chartSeries.setData(chartData);
         
-        // Log para debug
-        console.log('[Chart] 📊 Dados finais para gráfico:', {
-          total: finalData.length,
-          primeiro: finalData[0],
-          ultimo: finalData[finalData.length - 1],
-          amostra: finalData.slice(0, 3)
-        });
+        // Ajustar o gráfico para mostrar todos os dados
+        this.chart.timeScale().fitContent();
         
-        // Atualizar gráfico com try-catch robusto
-        // Marcar que gráfico está sendo atualizado para pausar atualizações reativas
-        this.isChartUpdating = true;
-        try {
-          // Limpar série antes de adicionar novos dados
-          this.chartSeries.setData([]);
-          
-          // Adicionar novos dados validados diretamente
-          this.chartSeries.setData(finalData);
-          console.log('[Chart] ✅ Dados setados na série:', finalData.length, 'pontos válidos');
-        } catch (error) {
-          console.error('[Chart] ❌ Erro ao setar dados:', error);
-          console.error('[Chart] Dados que causaram erro:', finalChartData.slice(0, 5));
-          
-          // Tentar recriar a série se houver erro
-          try {
-            if (this.chartSeries) {
-              this.chart.removeSeries(this.chartSeries);
+        console.log('[Chart] ✅ Dados setados na série:', chartData.length, 'pontos válidos');
+        console.log('[Chart] ✅ Viewport ajustado');
+        
+        // Resize após plotar dados
+        if (this.chart && this.$el) {
+          const container = this.$el.querySelector('#tradingviewChart');
+          if (container) {
+            const width = container.clientWidth;
+            const height = container.clientHeight;
+            if (width > 0 && height > 0) {
+              this.chart.resize(width, height);
+              console.log('[Chart] Resize após plotar dados:', { width, height });
             }
-            this.chartSeries = this.chart.addLineSeries({
-              color: '#22C55E',
-              lineWidth: 2,
-              priceLineVisible: false,
-              lastValueVisible: true,
-            });
-            this.chartSeries.setData(validatedData);
-            console.log('[Chart] ✅ Série recriada e dados setados');
-          } catch (recreateError) {
-            console.error('[Chart] ❌ Erro ao recriar série:', recreateError);
           }
-          
-          // Resetar flag de atualização do gráfico
-          this.isChartUpdating = false;
-          
-          if (this.isComponentMounted()) {
-            // Usar setTimeout para garantir que a flag foi resetada antes de atualizar
-            setTimeout(() => {
-              this.safeUpdate(() => {
-                this.showChartPlaceholder = false;
-                this.isLoadingTicks = false;
-              });
-            }, 10);
-          }
-          return;
-        } finally {
-          // Garantir que a flag seja resetada mesmo em caso de erro
-          setTimeout(() => {
-            this.isChartUpdating = false;
-          }, 100);
         }
         
-        // Ajustar viewport para mostrar todos os dados
-        try {
-          this.chart.timeScale().fitContent();
-          console.log('[Chart] ✅ Viewport ajustado');
-        } catch (error) {
-          console.warn('[Chart] Erro ao ajustar viewport:', error);
-        }
-        
-        // Ocultar placeholder - usar delay para garantir que DOM está estável
-        if (!this.isComponentMounted()) {
-          console.warn('[Chart] Componente não está montado, ignorando atualização');
-          return;
-        }
-        
-        // Usar um pequeno delay para garantir que o DOM está totalmente renderizado
-        const timeoutState = {
-          isDestroyed: this.isComponentDestroyed,
-          isMounted: this.isComponentMounted(),
-          hasEl: !!this.$el,
-          elConnected: this.$el?.isConnected,
-          hasVnode: !!this.$?.vnode,
-          vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
-          isSafe: this.isSafeToUpdate()
-        };
-        
-        console.log('[Chart] 🔍 plotTicks - antes de setTimeout:', {
-          timeoutState,
-          timestamp: Date.now()
-        });
-        
-        setTimeout(() => {
-          const afterTimeoutState = {
-            isDestroyed: this.isComponentDestroyed,
-            isMounted: this.isComponentMounted(),
-            hasEl: !!this.$el,
-            elConnected: this.$el?.isConnected,
-            hasVnode: !!this.$?.vnode,
-            vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
-            isSafe: this.isSafeToUpdate()
-          };
-          
-          console.log('[Chart] 🔍 plotTicks - dentro de setTimeout:', {
-            afterTimeoutState,
-            timestamp: Date.now()
+        // Ocultar placeholder
+        if (this.isComponentMounted()) {
+          this.safeUpdate(() => {
+            this.showChartPlaceholder = false;
+            this.isLoadingTicks = false;
           });
-          
-          // Verificar novamente se componente ainda está montado e seguro para atualizar
-          if (!this.isSafeToUpdate()) {
-            console.warn('[Chart] ⚠️ plotTicks cancelado - não é seguro atualizar:', afterTimeoutState);
-            return;
-          }
-          
-          // Usar nextTick para garantir que estamos em um ciclo seguro
-          this.$nextTick(() => {
-            const afterNextTickState = {
-              isDestroyed: this.isComponentDestroyed,
-              isMounted: this.isComponentMounted(),
-              hasEl: !!this.$el,
-              elConnected: this.$el?.isConnected,
-              hasVnode: !!this.$?.vnode,
-              vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
-              isSafe: this.isSafeToUpdate()
-            };
-            
-            console.log('[Chart] 🔍 plotTicks - dentro de nextTick:', {
-              afterNextTickState,
-              timestamp: Date.now()
-            });
-            
-            // Verificar uma última vez antes de atualizar
-            if (!this.isSafeToUpdate()) {
-              console.warn('[Chart] ⚠️ plotTicks cancelado após nextTick - não é seguro atualizar:', afterNextTickState);
-              return;
-            }
-            
-            // Marcar que gráfico terminou de atualizar
-            this.isChartUpdating = false;
-            
-            // Atualizar estado após plotar ticks usando safeUpdate
-            if (!this.isComponentDestroyed && this.isComponentMounted()) {
-              console.log('[Chart] 🔄 plotTicks - chamando safeUpdate para atualizar estado');
-              // Usar setTimeout para garantir que a flag foi resetada antes de atualizar
-              setTimeout(() => {
-                this.safeUpdate(() => {
-                  try {
-                    // Verificar vnode antes de atualizar
-                    if (this.$?.vnode?.component) {
-                      const component = this.$.vnode.component;
-                      if (component.isUnmounted || component.ctx === null) {
-                        return;
-                      }
-                    }
-                    this.showChartPlaceholder = false;
-                    this.isLoadingTicks = false;
-                  } catch (updateError) {
-                    const errorMsg = String(updateError?.message || updateError || '');
-                    const knownErrors = ['insertBefore', 'Symbol(_assign)', 'emitsOptions', '_assigning', 'Cannot read properties of null', 'Cannot set properties of null'];
-                    if (!knownErrors.some(err => errorMsg.includes(err))) {
-                      console.warn('[Chart] Erro ao atualizar estado em plotTicks:', updateError);
-                    }
-                  }
-                });
-              }, 10);
-            } else {
-              console.warn('[Chart] ⚠️ plotTicks - componente destruído ou não montado:', afterNextTickState);
-            }
-          });
-        }, 50); // Pequeno delay de 50ms para garantir que DOM está estável
-        
-        // Forçar resize para garantir que o gráfico use toda a altura disponível
-        this.$nextTick(() => {
-          // Verificar novamente se componente ainda está montado
-          if (this.isComponentDestroyed || !this.$el || !this.chart || !this.$refs.chartContainer) {
-            return;
-          }
-          
-          try {
-            const rect = this.$refs.chartContainer.getBoundingClientRect();
-            if (rect.width > 0 && rect.height > 0) {
-              console.log('[Chart] Resize após plotar dados:', { width: rect.width, height: rect.height });
-              this.chart.resize(rect.width, rect.height);
-            }
-          } catch (error) {
-            console.warn('[Chart] Erro ao fazer resize:', error);
-          }
-        });
+        }
         
         console.log('[Chart] ✅ Gráfico atualizado com sucesso');
-        console.log('[Chart] Placeholder oculto:', !this.showChartPlaceholder);
+      } catch (error) {
+        console.error('[Chart] ❌ Erro ao atualizar gráfico:', error);
+        if (this.isComponentMounted()) {
+          this.safeUpdate(() => {
+            this.showChartPlaceholder = false;
+            this.isLoadingTicks = false;
+          });
+        }
+      }
     },
     async handleSymbolChange() {
       console.log('[Chart] Mercado alterado para:', this.symbol);
