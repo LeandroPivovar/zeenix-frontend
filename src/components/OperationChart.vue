@@ -847,21 +847,17 @@ export default {
     },
     // Helper para atualizar dados reativos de forma segura
     safeUpdate(callback) {
-      if (!this.isComponentMounted()) {
-        console.warn('[Chart] Componente não está montado, ignorando atualização');
+      if (this.isComponentDestroyed || !this.$el) {
         return;
       }
-      
-      try {
-        this.$nextTick(() => {
-          if (!this.isComponentMounted()) {
-            return;
-          }
+      this.$nextTick(() => {
+        if (this.isComponentDestroyed || !this.$el) {
+          return;
+        }
+        if (typeof callback === 'function') {
           callback();
-        });
-      } catch (error) {
-        console.error('[Chart] Erro ao atualizar:', error);
-      }
+        }
+      });
     },
     initChart() {
       const container = this.$refs.chartContainer;
@@ -2113,18 +2109,14 @@ export default {
       
       // Usar safeUpdate para garantir atualização segura
       this.safeUpdate(() => {
-        try {
-          // Armazenar ID e preço da proposta
-          this.currentProposalId = proposalData.id;
-          this.currentProposalPrice = Number(proposalData.askPrice || proposalData.ask_price || 0);
-          
-          console.log('[Chart] ✅ Proposta processada:', {
-            proposalId: this.currentProposalId,
-            proposalPrice: this.currentProposalPrice
-          });
-        } catch (error) {
-          console.error('[Chart] Erro ao processar proposta:', error);
-        }
+        // Armazenar ID e preço da proposta
+        this.currentProposalId = proposalData.id;
+        this.currentProposalPrice = Number(proposalData.askPrice || proposalData.ask_price || 0);
+        
+        console.log('[Chart] ✅ Proposta processada:', {
+          proposalId: this.currentProposalId,
+          proposalPrice: this.currentProposalPrice
+        });
       });
     },
     processBuy(buyData) {
@@ -2280,17 +2272,17 @@ export default {
           // Mostrar modal de resultado
           this.showTradeResultModal = true;
           
-        });
-        
-        // Limpar contrato ativo após um delay
-        setTimeout(() => {
-          if (this.isComponentMounted()) {
-            this.activeContract = null;
-            this.purchasePrice = null;
-            this.realTimeProfit = null;
-            this.isSellEnabled = false;
-          }
-        }, 3000);
+          // Limpar contrato ativo após um delay
+          setTimeout(() => {
+            if (this.isComponentMounted()) {
+              this.activeContract = null;
+              this.purchasePrice = null;
+              this.realTimeProfit = null;
+              this.isSellEnabled = false;
+            }
+          }, 3000);
+        }
+      });
       
       console.log('[Chart] ✅ Venda processada com sucesso');
     },
