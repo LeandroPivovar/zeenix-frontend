@@ -557,7 +557,7 @@ export default {
         
         formattedDailyProfit() {
             const value = this.dailyStats.profitLoss || 0;
-            const sign = value >= 0 ? '+' : '';
+            const sign = value >= 0 ? '+' : '-';
             return `${sign}${this.accountCurrency} ${Math.abs(value).toFixed(2)}`;
         },
         
