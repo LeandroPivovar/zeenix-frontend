@@ -356,7 +356,7 @@
     />
     
     <!-- Market Selection Modal - usando Teleport para renderizar no body -->
-    <!-- Sempre renderizar no DOM, controlar visibilidade via CSS -->
+    <!-- Sempre renderizar no DOM, controlar visibilidade via v-show -->
     <Teleport to="body">
       <div 
         v-show="showMarketModal" 
@@ -364,7 +364,6 @@
         class="modal-overlay" 
         data-modal="market" 
         @click.self="closeMarketModal"
-        :style="{ display: showMarketModal ? 'flex' : 'none', visibility: showMarketModal ? 'visible' : 'hidden' }"
       >
         <div class="modal-content">
           <div class="modal-header">
@@ -397,7 +396,7 @@
     </Teleport>
     
     <!-- Trade Type Selection Modal - usando Teleport para renderizar no body -->
-    <!-- Sempre renderizar no DOM, controlar visibilidade via CSS -->
+    <!-- Sempre renderizar no DOM, controlar visibilidade via v-show -->
     <Teleport to="body">
       <div 
         v-show="showTradeTypeModal" 
@@ -405,7 +404,6 @@
         class="modal-overlay" 
         data-modal="trade-type" 
         @click.self="closeTradeTypeModal"
-        :style="{ display: showTradeTypeModal ? 'flex' : 'none', visibility: showTradeTypeModal ? 'visible' : 'hidden' }"
       >
         <div class="modal-content">
           <div class="modal-header">
@@ -2849,28 +2847,23 @@ export default {
           return;
         }
         
-        // Validação final EXTRA antes de setData() - garantir que não há nulls
+        // Validação final antes de setData() - garantir que não há nulls
+        // Simplificar validação para evitar filtrar dados válidos
         const finalData = validatedData
           .filter(item => {
             if (!item || item === null || item === undefined) return false;
-            if (item.time === null || item.time === undefined || item.value === null || item.value === undefined) return false;
             const time = Number(item.time);
             const value = Number(item.value);
-            return isFinite(time) && time > 0 && isFinite(value) && value > 0 && value !== null && time !== null;
+            return isFinite(time) && time > 0 && isFinite(value) && value > 0;
           })
           .map(item => ({
             time: Number(item.time),
             value: Number(item.value)
-          }))
-          .filter(item => {
-            // Validação final após conversão
-            return item.time !== null && item.value !== null && 
-                   isFinite(item.time) && item.time > 0 && 
-                   isFinite(item.value) && item.value > 0;
-          });
+          }));
         
         if (finalData.length === 0) {
-          console.error('[Chart] ❌ Nenhum dado válido após validação extra');
+          console.error('[Chart] ❌ Nenhum dado válido após validação');
+          console.error('[Chart] Dados validados originais (primeiros 5):', validatedData.slice(0, 5));
           this.safeUpdate(() => {
             this.showChartPlaceholder = false;
             this.isLoadingTicks = false;
@@ -2878,35 +2871,24 @@ export default {
           return;
         }
         
+        // Log para debug
+        console.log('[Chart] 📊 Dados finais para gráfico:', {
+          total: finalData.length,
+          primeiro: finalData[0],
+          ultimo: finalData[finalData.length - 1],
+          amostra: finalData.slice(0, 3)
+        });
+        
         // Atualizar gráfico com try-catch robusto
         // Marcar que gráfico está sendo atualizado para pausar atualizações reativas
         this.isChartUpdating = true;
         try {
-          // Validação final antes de setData - garantir que não há nulls
-          const safeData = finalData.filter(item => {
-            return item && 
-                   item.time !== null && item.time !== undefined && 
-                   item.value !== null && item.value !== undefined &&
-                   isFinite(item.time) && item.time > 0 &&
-                   isFinite(item.value) && item.value > 0;
-          });
-          
-          if (safeData.length === 0) {
-            console.error('[Chart] ❌ Nenhum dado seguro após validação final');
-            this.isChartUpdating = false;
-            this.safeUpdate(() => {
-              this.showChartPlaceholder = false;
-              this.isLoadingTicks = false;
-            });
-            return;
-          }
-          
-          // Limpar série novamente antes de adicionar novos dados
+          // Limpar série antes de adicionar novos dados
           this.chartSeries.setData([]);
           
-          // Adicionar novos dados validados
-          this.chartSeries.setData(safeData);
-          console.log('[Chart] ✅ Dados setados na série:', safeData.length, 'pontos válidos');
+          // Adicionar novos dados validados diretamente
+          this.chartSeries.setData(finalData);
+          console.log('[Chart] ✅ Dados setados na série:', finalData.length, 'pontos válidos');
         } catch (error) {
           console.error('[Chart] ❌ Erro ao setar dados:', error);
           console.error('[Chart] Dados que causaram erro:', finalChartData.slice(0, 5));
