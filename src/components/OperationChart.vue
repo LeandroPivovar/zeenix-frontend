@@ -336,6 +336,13 @@
     </div>
     
     <!-- Modais usando Teleport para renderizar diretamente no body -->
+    <!-- Teste de Teleport -->
+    <Teleport to="body">
+      <div v-show="showMarketModal || showTradeTypeModal" style="position: fixed; top: 10px; right: 10px; z-index: 99999; background: yellow; color: black; padding: 10px; border: 2px solid red;">
+        Debug Teleport: showMarketModal={{ showMarketModal }}, showTradeTypeModal={{ showTradeTypeModal }}
+      </div>
+    </Teleport>
+    
     <!-- Trade Result Modal -->
     <TradeResultModal
       :visible="showTradeResultModal"
@@ -350,7 +357,7 @@
     
     <!-- Market Selection Modal - usando Teleport para renderizar no body -->
     <Teleport to="body">
-      <div v-if="showMarketModal" class="modal-overlay" data-modal="market" @click.self="closeMarketModal">
+      <div v-show="showMarketModal" class="modal-overlay" data-modal="market" @click.self="closeMarketModal">
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Mercado</h3>
@@ -383,7 +390,7 @@
     
     <!-- Trade Type Selection Modal - usando Teleport para renderizar no body -->
     <Teleport to="body">
-      <div v-if="showTradeTypeModal" class="modal-overlay" data-modal="trade-type" @click.self="closeTradeTypeModal">
+      <div v-show="showTradeTypeModal" class="modal-overlay" data-modal="trade-type" @click.self="closeTradeTypeModal">
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
@@ -4308,13 +4315,17 @@ export default {
         
         console.log('[Chart] ✅ Proposta carregada:', proposal);
       } catch (error) {
-        console.error('[Chart] Erro ao carregar proposta:', error);
-        // Limpar proposta em caso de erro
+        // Log do erro mas não bloquear outras funcionalidades
+        const errorMessage = error?.message || String(error);
+        console.warn('[Chart] ⚠️ Erro ao carregar proposta (não crítico):', errorMessage);
+        
+        // Limpar proposta em caso de erro, mas não bloquear UI
         if (this.isComponentMounted()) {
           this.$nextTick(() => {
             if (this.isComponentMounted()) {
               this.currentProposalId = null;
               this.currentProposalPrice = null;
+              console.log('[Chart] ℹ️ Proposta limpa devido ao erro, mas UI continua funcional');
             }
           });
         }
