@@ -191,7 +191,7 @@
               </div>
               <p class="text-2xl font-bold text-white mb-4 text-left">
                 <span v-if="!balanceHidden" class="inline-flex items-center">
-                  <span v-if="accountTypeFilter === 'demo'" class="demo-currency-symbol">D</span>
+                  <span v-if="currentAccountType === 'demo'" class="demo-currency-symbol">D</span>
                   <span v-else>{{ currencySymbol }}</span>
                   {{ balanceHidden ? '' : balanceValueFormatted }}
                 </span>
@@ -201,7 +201,7 @@
               <div class="flex gap-2">
                 <button
                   @click="switchAccountType('real')"
-                  :class="accountTypeFilter === 'real' 
+                  :class="currentAccountType === 'real' 
                     ? 'bg-[#22C55E] text-black' 
                     : 'bg-[#1C1C1C] text-[#7A7A7A] hover:bg-[#2A2A2A]'"
                   class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200"
@@ -210,7 +210,7 @@
                 </button>
                 <button
                   @click="switchAccountType('demo')"
-                  :class="accountTypeFilter === 'demo' 
+                  :class="currentAccountType === 'demo' 
                     ? 'bg-[#22C55E] text-black' 
                     : 'bg-[#1C1C1C] text-[#7A7A7A] hover:bg-[#2A2A2A]'"
                   class="flex-1 py-2 px-4 rounded-lg text-sm font-medium transition-all duration-200"
@@ -601,19 +601,31 @@ export default {
       return 'Usuário';
     },
     totalBalanceFormatted() {
-      if (this.accountTypeFilter === 'demo') {
-        const demo = this.balancesByCurrencyDemo['USD'] || 0;
-        return demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      // Usar currentAccountType em vez de accountTypeFilter para sempre mostrar o saldo correto
+      const accountType = this.currentAccountType;
+      
+      if (accountType === 'demo') {
+        // Buscar saldo demo - pode estar em diferentes moedas
+        const demoBalances = this.balancesByCurrencyDemo || {};
+        const demoUSD = demoBalances['USD'] || 0;
+        // Se não tiver USD, pegar a primeira moeda disponível
+        const demoValue = demoUSD > 0 ? demoUSD : (Object.values(demoBalances)[0] || 0);
+        return demoValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       } else {
-        const real = this.balancesByCurrencyReal['USD'] || this.balanceNumeric || 0;
-        return real.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        // Buscar saldo real - pode estar em diferentes moedas
+        const realBalances = this.balancesByCurrencyReal || {};
+        const realUSD = realBalances['USD'] || 0;
+        // Se não tiver USD, usar balanceNumeric ou pegar a primeira moeda disponível
+        const realValue = realUSD > 0 ? realUSD : (this.balanceNumeric || Object.values(realBalances)[0] || 0);
+        return realValue.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
     },
     balanceValueFormatted() {
       return this.totalBalanceFormatted;
     },
     currencySymbol() {
-      if (this.accountTypeFilter === 'demo') {
+      // Usar currentAccountType para sempre mostrar o símbolo correto
+      if (this.currentAccountType === 'demo') {
         return '';
       }
       return this.currencyPrefix || this.getCurrencyPrefix(this.currency);
@@ -633,9 +645,23 @@ export default {
   },
   watch: {
     // Observar mudanças no localStorage para atualizar o saldo
-    currentAccountType() {
+    currentAccountType(newType) {
+      // Atualizar o filtro quando o tipo de conta mudar
+      if (this.accountTypeFilter !== newType) {
+        this.accountTypeFilter = newType;
+        console.log('[TopNavbar] Tipo de conta mudou, atualizando filtro:', {
+          oldFilter: this.accountTypeFilter,
+          newType: newType
+        });
+      }
       // Forçar atualização do componente quando o tipo de conta mudar
       this.$forceUpdate();
+    },
+    // Observar mudanças no balance para atualizar o modal se estiver aberto
+    balance() {
+      if (this.showProfileModal) {
+        this.$forceUpdate();
+      }
     }
   },
   mounted() {
@@ -808,6 +834,15 @@ export default {
       this.loadUserProfilePicture();
     },
     handleAccountChange() {
+      // Atualizar o filtro quando a conta for alterada
+      const newAccountType = this.currentAccountType;
+      if (this.accountTypeFilter !== newAccountType) {
+        this.accountTypeFilter = newAccountType;
+        console.log('[TopNavbar] Conta alterada, atualizando filtro e saldo:', {
+          newAccountType: newAccountType,
+          accountTypeFilter: this.accountTypeFilter
+        });
+      }
       // Atualiza o componente quando a conta for alterada
       this.$forceUpdate();
     },
@@ -939,13 +974,16 @@ export default {
           timestamp: Date.now()
         }));
 
-        // Emitir eventos imediatamente para atualizar componentes
-        const accountType = isDemo ? 'demo' : 'real';
-        this.$emit('account-type-changed', accountType);
-        
-        window.dispatchEvent(new CustomEvent('accountChanged', { 
-          detail: { accountType, account } 
-        }));
+          // Emitir eventos imediatamente para atualizar componentes
+          const accountType = isDemo ? 'demo' : 'real';
+          this.$emit('account-type-changed', accountType);
+          
+          // Atualizar o filtro imediatamente para refletir a mudança no modal
+          this.accountTypeFilter = accountType;
+          
+          window.dispatchEvent(new CustomEvent('accountChanged', { 
+            detail: { accountType, account } 
+          }));
         
         // Buscar informações completas em background (sem bloquear UI)
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';

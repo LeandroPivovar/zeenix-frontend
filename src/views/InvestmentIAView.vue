@@ -538,8 +538,10 @@ export default {
             if (this.isDemo) {
                 return {};
             }
+            const balance = this.accountBalance || 0;
+            const currency = this.accountCurrency || 'USD';
             return {
-                [this.accountCurrency || 'USD']: this.accountBalance || 0
+                [currency]: balance
             };
         },
         
@@ -548,8 +550,10 @@ export default {
             if (!this.isDemo) {
                 return {};
             }
+            const balance = this.accountBalance || 0;
+            const currency = this.accountCurrency || 'USD';
             return {
-                [this.accountCurrency || 'USD']: this.accountBalance || 0
+                [currency]: balance
             };
         },
         
