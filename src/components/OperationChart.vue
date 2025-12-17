@@ -52,8 +52,8 @@
                 </div>
                 <div class="signal-confidence">
                   <span class="confidence-label">Confiança:</span>
-                  <span class="confidence-value" :class="getConfidenceClass(aiRecommendation.confidence)">
-                    {{ aiRecommendation.confidence }}%
+                  <span class="confidence-value" :class="getConfidenceClass(Number(aiRecommendation.confidence))">
+                    {{ Number(aiRecommendation.confidence) || 0 }}%
                   </span>
                 </div>
               </div>
@@ -516,8 +516,12 @@ export default {
       }
     },
     getConfidenceClass(confidence) {
-      if (confidence >= 70) return 'confidence-high';
-      if (confidence >= 50) return 'confidence-medium';
+      // Garantir que é um número
+      const confValue = Number(confidence);
+      if (isNaN(confValue)) return 'confidence-low';
+      
+      if (confValue >= 70) return 'confidence-high';
+      if (confValue >= 50) return 'confidence-medium';
       return 'confidence-low';
     },
   },
