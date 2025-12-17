@@ -3140,17 +3140,6 @@ export default {
     openMarketModal() {
       // Atualizar diretamente - mesma abordagem simples
       this.showMarketModal = true;
-      
-      // Fallback: atualizar diretamente se safeSetProperty falhar
-      if (!result && this.isComponentMounted() && !this.isComponentDestroyed) {
-        console.log('[Chart] ⚠️ openMarketModal - safeSetProperty falhou, tentando atualização direta');
-        try {
-          this.showMarketModal = true;
-          console.log('[Chart] ✅ openMarketModal - atualização direta bem-sucedida');
-        } catch (error) {
-          console.error('[Chart] ❌ openMarketModal - erro na atualização direta:', error);
-        }
-      }
     },
     closeMarketModal() {
       // Atualizar diretamente - mesma abordagem simples
