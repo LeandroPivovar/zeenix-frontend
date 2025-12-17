@@ -223,7 +223,9 @@ export default {
       showTradeTypeModal: false,
       markets: [], // Será preenchido pela API
       isLoadingMarkets: false,
-      availableTradeTypes: [
+      availableContracts: [], // Contratos disponíveis para o símbolo atual
+      isLoadingContracts: false,
+      allTradeTypes: [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
         { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
         { value: 'DIGITMATCH', label: 'Dígito Igual', description: 'O último dígito será igual', icon: 'fas fa-equals' },
@@ -258,10 +260,40 @@ export default {
       const selectedType = this.availableTradeTypes.find(t => t.value === this.tradeType);
       return selectedType ? selectedType.label : this.tradeType;
     },
+    availableTradeTypes() {
+      // Se não houver contratos disponíveis, retornar todos os tipos
+      if (!this.availableContracts || this.availableContracts.length === 0) {
+        return this.allTradeTypes;
+      }
+      
+      // Extrair tipos de contrato dos contratos disponíveis
+      const contractTypes = this.availableContracts.map(contract => {
+        if (typeof contract === 'string') {
+          return contract.toUpperCase();
+        }
+        if (contract && typeof contract === 'object') {
+          return (contract.contract_type || contract.type || contract.name || '').toString().toUpperCase();
+        }
+        return null;
+      }).filter(type => type && type.length > 0);
+      
+      // Filtrar tipos de negociação baseado nos contratos disponíveis
+      const filteredTypes = this.allTradeTypes.filter(type => {
+        return contractTypes.some(ct => ct === type.value.toUpperCase());
+      });
+      
+      // Se não encontrou nenhum tipo, retornar todos (fallback)
+      return filteredTypes.length > 0 ? filteredTypes : this.allTradeTypes;
+    },
   },
-  mounted() {
+  async mounted() {
     this.initChart();
-    this.loadMarketsFromAPI();
+    await this.loadMarketsFromAPI();
+    
+    // Se já houver um símbolo selecionado, carregar contratos disponíveis
+    if (this.symbol) {
+      await this.loadAvailableContracts(this.symbol);
+    }
   },
   beforeUnmount() {
     if (this.chart) {
@@ -343,9 +375,15 @@ export default {
     closeMarketModal() {
       this.showMarketModal = false;
     },
-    selectMarket(marketValue) {
+    async selectMarket(marketValue) {
       this.symbol = marketValue;
       this.closeMarketModal();
+      
+      // Limpar tipo de negociação selecionado
+      this.tradeType = '';
+      
+      // Buscar tipos de negociação disponíveis para o mercado selecionado
+      await this.loadAvailableContracts(marketValue);
     },
     openTradeTypeModal() {
       this.showTradeTypeModal = true;
@@ -485,6 +523,114 @@ export default {
 
       this.markets = mappedMarkets;
       console.log('[Chart] Mercados carregados:', this.markets.length);
+    },
+    async loadAvailableContracts(symbol) {
+      if (!symbol) {
+        this.availableContracts = [];
+        return;
+      }
+      
+      try {
+        this.isLoadingContracts = true;
+        
+        // Buscar token e loginid do localStorage
+        const derivConnection = localStorage.getItem('deriv_connection');
+        let derivToken = localStorage.getItem('deriv_token');
+        let loginid = null;
+
+        if (derivConnection) {
+          try {
+            const connection = JSON.parse(derivConnection);
+            loginid = connection.loginid;
+            if (!derivToken) {
+              derivToken = connection.token;
+            }
+          } catch (e) {
+            console.warn('[Chart] Erro ao parsear deriv_connection:', e);
+          }
+        }
+
+        // Se não tiver token, tentar deriv_tokens_by_loginid
+        if (!derivToken) {
+          const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
+          if (tokensByLoginId) {
+            try {
+              const tokens = JSON.parse(tokensByLoginId);
+              if (loginid && tokens[loginid]) {
+                derivToken = tokens[loginid];
+              } else if (Object.keys(tokens).length > 0) {
+                const firstLoginId = Object.keys(tokens)[0];
+                derivToken = tokens[firstLoginId];
+                loginid = firstLoginId;
+              }
+            } catch (e) {
+              console.warn('[Chart] Erro ao parsear deriv_tokens_by_loginid:', e);
+            }
+          }
+        }
+
+        if (!derivToken) {
+          console.warn('[Chart] Token Deriv não encontrado, não é possível buscar contratos');
+          this.availableContracts = [];
+          this.isLoadingContracts = false;
+          return;
+        }
+
+        // Garantir que está conectado
+        if (!derivTradingService.isConnected) {
+          await derivTradingService.connect(derivToken, loginid);
+        }
+
+        // Buscar valores padrão (que incluem contratos disponíveis)
+        // Usar CALL como tipo padrão para buscar contratos
+        const defaultValues = await derivTradingService.getDefaultValues(symbol, 'CALL');
+        
+        console.log('[Chart] Valores padrão recebidos:', defaultValues);
+        
+        // Processar contratos disponíveis
+        if (defaultValues.availableContracts) {
+          let contractsArray = [];
+          
+          if (Array.isArray(defaultValues.availableContracts)) {
+            contractsArray = defaultValues.availableContracts;
+          } else if (defaultValues.availableContracts.available && Array.isArray(defaultValues.availableContracts.available)) {
+            contractsArray = defaultValues.availableContracts.available;
+          } else if (typeof defaultValues.availableContracts === 'object') {
+            // Tentar extrair de outras estruturas
+            const values = Object.values(defaultValues.availableContracts);
+            for (const value of values) {
+              if (Array.isArray(value)) {
+                contractsArray = [...contractsArray, ...value];
+              }
+            }
+          }
+          
+          this.availableContracts = contractsArray;
+          console.log('[Chart] Contratos disponíveis atualizados:', this.availableContracts.length, 'contratos');
+          
+          // Se o tipo atual não estiver disponível, limpar seleção
+          if (this.tradeType) {
+            const isTypeAvailable = this.availableContracts.some(c => {
+              const contractType = typeof c === 'string' ? c : (c.contract_type || c.type || c.name);
+              return contractType && contractType.toUpperCase() === this.tradeType.toUpperCase();
+            });
+            
+            if (!isTypeAvailable) {
+              this.tradeType = '';
+              console.log('[Chart] Tipo de negociação anterior não está disponível, limpo');
+            }
+          }
+        } else {
+          console.warn('[Chart] Nenhum contrato disponível retornado para o símbolo:', symbol);
+          this.availableContracts = [];
+        }
+        
+      } catch (error) {
+        console.error('[Chart] Erro ao carregar contratos disponíveis:', error);
+        this.availableContracts = [];
+      } finally {
+        this.isLoadingContracts = false;
+      }
     },
     getDefaultMarkets() {
       // Mercados padrão caso a API não retorne
