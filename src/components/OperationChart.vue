@@ -762,14 +762,11 @@ export default {
       if (this.isConnected) {
         // Limpar proposalId antigo quando o tipo muda (importante para evitar usar proposta do tipo errado)
         if (this.isComponentMounted()) {
-          this.safeUpdate(() => {
-            if (!this.isSafeToUpdate()) {
-              return;
-            }
-            this.safeSetProperty('currentProposalId', null);
-            this.safeSetProperty('currentProposalPrice', null);
+          if (!this.isComponentDestroyed && this.isComponentMounted()) {
+            this.currentProposalId = null;
+            this.currentProposalPrice = null;
             console.log('[Chart] Tipo de contrato alterado, limpando proposalId antigo');
-          });
+          }
         }
         
         // Se mudou para DIGITMATCH e temos um último dígito, inicializar digitMatchValue
@@ -886,17 +883,19 @@ export default {
   methods: {
     // Helper para verificar se componente está montado e válido
     isComponentMounted() {
+      // Se foi marcado como destruído, não está montado
       if (this.isComponentDestroyed) {
         return false;
       }
       
       try {
-        // Verificar se elemento DOM existe e está conectado
-        if (!this.$el || !this.$el.isConnected) {
+        // Durante a montagem inicial, apenas verificar se $el existe
+        // Não verificar isConnected durante a montagem, pois pode não estar conectado ainda
+        if (!this.$el) {
           return false;
         }
         
-        // Verificar se componente Vue ainda está válido
+        // Verificar se componente Vue ainda está válido (menos restritivo)
         if (!this.$ || !this.$.vnode) {
           return false;
         }
@@ -906,11 +905,8 @@ export default {
           return false;
         }
         
-        // Verificar se o vnode tem um elemento e está conectado
-        if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
-          return false;
-        }
-        
+        // Não verificar isConnected durante a montagem, pois pode não estar conectado ainda
+        // Apenas verificar se o vnode existe
         return true;
       } catch (e) {
         return false;
@@ -1160,13 +1156,8 @@ export default {
           }, 100);
         } catch (error) {
           console.error('[Chart] ❌ Erro ao inicializar gráfico:', error);
-          if (this.isComponentMounted()) {
-            this.safeUpdate(() => {
-              if (!this.isSafeToUpdate()) {
-                return;
-              }
-              this.safeSetProperty('showChartPlaceholder', false);
-            });
+          if (!this.isComponentDestroyed && this.isComponentMounted()) {
+            this.showChartPlaceholder = false;
           }
         }
       });
@@ -1621,14 +1612,11 @@ export default {
         return;
       }
 
-      // Usar safeUpdate para atualizar estados
-      this.safeUpdate(() => {
-        if (!this.isSafeToUpdate()) {
-          return;
-        }
-        this.safeSetProperty('isLoadingTicks', true);
-        this.safeSetProperty('showChartPlaceholder', true);
-      });
+      // Atualizar estados diretamente (durante montagem normal)
+      if (!this.isComponentDestroyed) {
+        this.isLoadingTicks = true;
+        this.showChartPlaceholder = true;
+      }
 
       try {
         console.log('[Chart] ========== BUSCANDO TICKS ==========');
@@ -1642,11 +1630,9 @@ export default {
         if (!response || !response.ticks || !Array.isArray(response.ticks)) {
           console.warn('[Chart] Resposta inválida do backend:', response);
           // Tentar novamente após 3 segundos
-          setTimeout(() => {
-            if (this.isComponentMounted()) {
-              this.safeUpdate(() => {
-                this.isLoadingTicks = false;
-              });
+          this.safeTimeout(() => {
+            if (!this.isComponentDestroyed && this.isComponentMounted()) {
+              this.isLoadingTicks = false;
               this.loadTicksFromBackend();
             }
           }, 3000);
@@ -1663,25 +1649,18 @@ export default {
           this.retryCount++;
           
           if (this.retryCount < 3) {
-            setTimeout(() => {
-              if (this.isComponentMounted()) {
-                this.safeUpdate(() => {
-                  this.isLoadingTicks = false;
-                });
+            this.safeTimeout(() => {
+              if (!this.isComponentDestroyed && this.isComponentMounted()) {
+                this.isLoadingTicks = false;
                 this.loadTicksFromBackend();
               }
             }, 3000);
           } else {
             console.error('[Chart] Máximo de tentativas atingido, parando...');
-            if (this.isComponentMounted()) {
-              this.safeUpdate(() => {
-                if (!this.isSafeToUpdate()) {
-                  return;
-                }
-                this.safeSetProperty('showChartPlaceholder', false);
-                this.safeSetProperty('isLoadingTicks', false);
-                this.retryCount = 0;
-              });
+            if (!this.isComponentDestroyed && this.isComponentMounted()) {
+              this.showChartPlaceholder = false;
+              this.isLoadingTicks = false;
+              this.retryCount = 0;
             }
           }
           return;
@@ -1725,12 +1704,9 @@ export default {
         this.errorRetryCount++;
         
         if (this.errorRetryCount < 2) {
-          setTimeout(() => {
-            // Verificar novamente antes de tentar
-            if (this.isComponentMounted()) {
-              this.safeUpdate(() => {
-                this.isLoadingTicks = false;
-              });
+          this.safeTimeout(() => {
+            if (!this.isComponentDestroyed && this.isComponentMounted()) {
+              this.isLoadingTicks = false;
               this.loadTicksFromBackend();
             }
           }, 3000);
@@ -1746,10 +1722,8 @@ export default {
         }
       } finally {
         // Não resetar isLoadingTicks aqui se ainda estiver tentando
-        if (!this.retryCount && !this.errorRetryCount && this.isComponentMounted()) {
-          this.safeUpdate(() => {
-            this.isLoadingTicks = false;
-          });
+        if (!this.retryCount && !this.errorRetryCount && !this.isComponentDestroyed && this.isComponentMounted()) {
+          this.isLoadingTicks = false;
         }
       }
     },
@@ -2168,17 +2142,11 @@ export default {
               return;
             }
             
-            // Usar safeUpdate para atualizar estado após plotar ticks
-            this.safeUpdate(() => {
-              // Verificar novamente antes de atualizar (dentro do callback também)
-              if (!this.isSafeToUpdate()) {
-                return;
-              }
-              
-              // Usar safeSetProperty para atualizar propriedades de forma segura
-              this.safeSetProperty('showChartPlaceholder', false);
-              this.safeSetProperty('isLoadingTicks', false);
-            });
+            // Atualizar estado após plotar ticks (dentro de setTimeout, então usar safeTimeout)
+            if (!this.isComponentDestroyed && this.isComponentMounted()) {
+              this.showChartPlaceholder = false;
+              this.isLoadingTicks = false;
+            }
           });
         }, 50); // Pequeno delay de 50ms para garantir que DOM está estável
         
@@ -3147,8 +3115,9 @@ export default {
               return;
             }
             
-            // Usar safeSetProperty para atualizar de forma segura
-            if (this.safeSetProperty('availableContracts', contractsArray)) {
+            // Atualizar contratos disponíveis diretamente (dentro de callback assíncrono)
+            if (!this.isComponentDestroyed && this.isComponentMounted()) {
+              this.availableContracts = contractsArray;
               console.log('[Chart] ✅ Contratos disponíveis atualizados:', this.availableContracts);
               console.log('[Chart] Total de contratos:', this.availableContracts.length);
               if (this.availableContracts && this.availableContracts.length > 0) {
@@ -3330,9 +3299,11 @@ export default {
           amount: this.localOrderConfig.amount,
         });
         
-        // Usar safeSetProperty para atualizar proposta atual de forma segura
-        this.safeSetProperty('currentProposalId', proposal.id);
-        this.safeSetProperty('currentProposalPrice', proposal.askPrice);
+        // Atualizar proposta atual diretamente (dentro de async, mas componente está montado)
+        if (!this.isComponentDestroyed && this.isComponentMounted()) {
+          this.currentProposalId = proposal.id;
+          this.currentProposalPrice = proposal.askPrice;
+        }
         
         console.log('[Chart] ✅ Proposta carregada:', proposal);
       } catch (error) {
