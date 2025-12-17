@@ -1068,12 +1068,11 @@ export default {
       }
       
       // Para propriedades de modais, atualizar diretamente (são operações síncronas simples)
+      // No Vue 3, a reatividade é automática, não precisamos de $set
       if (propertyName === 'showMarketModal' || propertyName === 'showTradeTypeModal') {
         try {
           console.log(`[Chart] 🔄 safeSetProperty - atualizando ${propertyName} diretamente para:`, value);
-          // Usar $set para garantir que o Vue detecte a mudança
-          this.$set(this, propertyName, value);
-          // Também atualizar diretamente para garantir
+          // No Vue 3, atribuição direta é suficiente para reatividade
           this[propertyName] = value;
           console.log(`[Chart] ✅ safeSetProperty - ${propertyName} atualizado com sucesso, valor atual:`, this[propertyName]);
           
