@@ -5,7 +5,7 @@
     style="width: 100%; background: #0B0B0B;"
   >
     <!-- Desktop Layout -->
-    <div class="h-full flex items-center justify-between desktop-nav">
+    <div class="h-full flex items-center justify-between desktop-nav pl-0.5">
       <div class="flex items-center space-x-4 mr-10">
         <!-- Botão de toggle do menu (apenas desktop, sempre visível) -->
         <button
@@ -38,7 +38,7 @@
           <span>Grupo de Alunos</span>
         </a>
       </div>
-      <div class="flex items-center space-x-6 pr-6">
+      <div class="flex items-center space-x-6 pr-0.5">
         <button 
           @click="openDepositFlow" 
           class="bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold px-5 py-2 rounded-lg text-sm inline-flex items-center space-x-2 transition-all duration-200 shadow-[0_2px_8px_rgba(34,197,94,0.2)] hover:shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
@@ -83,7 +83,7 @@
     </div>
 
     <!-- Mobile Layout -->
-    <div class="h-full px-4 flex items-center justify-between mobile-nav">
+    <div class="h-full px-0.5 flex items-center justify-between mobile-nav">
       <!-- Foto de Perfil (abre sidebar) -->
       <button 
         @click="toggleMobileSidebar"
