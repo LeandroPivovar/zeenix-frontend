@@ -163,16 +163,58 @@
             </div>
           </div>
           
+          <!-- Purchase Price -->
+          <div v-if="purchasePrice" class="bg-zenix-bg border border-zenix-border rounded-lg p-3">
+            <div class="text-xs text-zenix-secondary mb-1">Preço de Compra:</div>
+            <div class="text-base font-semibold text-zenix-text">$ {{ purchasePrice.toFixed(pricePrecision) }}</div>
+          </div>
+          
+          <!-- Real-time P&L -->
+          <div v-if="realTimeProfit !== null && activeContract" class="bg-zenix-bg border rounded-lg p-3" :class="realTimeProfitClass">
+            <div class="text-xs text-zenix-secondary mb-1">P&L em Tempo Real:</div>
+            <div class="text-base font-semibold" :class="realTimeProfitTextClass">
+              $ {{ realTimeProfit >= 0 ? '+' : '' }}{{ realTimeProfit.toFixed(pricePrecision) }}
+            </div>
+          </div>
+          
+          <!-- Tempo/Ticks Restantes -->
+          <div v-if="activeContract && (contractTimeRemaining !== null || contractTicksRemaining !== null)" class="bg-zenix-bg border border-zenix-border rounded-lg p-3">
+            <div class="text-xs text-zenix-secondary mb-1">
+              <i class="fas fa-clock mr-2"></i>
+              {{ isTickBasedContract ? 'Ticks Restantes:' : 'Tempo Restante:' }}
+            </div>
+            <div class="text-base font-semibold text-zenix-text" :class="getCountdownClass">
+              <span v-if="isTickBasedContract && contractTicksRemaining !== null">
+                {{ contractTicksRemaining }}
+              </span>
+              <span v-else-if="!isTickBasedContract && contractTimeRemaining !== null">
+                {{ formatTimeRemaining(contractTimeRemaining) }}
+              </span>
+            </div>
+          </div>
+          
           <!-- Action Button -->
           <div class="space-y-3 pt-3">
             <button 
+              v-if="!activeContract"
+              @click="executeBuy"
+              :disabled="!canExecuteOrder"
               class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled
             >
               <i class="fas fa-arrow-up"></i>
               Executar Ordem
             </button>
-            </div>
+          </div>
+          
+          <!-- Error Message -->
+          <div v-if="tradeError" class="mt-3 p-3 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
+            {{ tradeError }}
+          </div>
+          
+          <!-- Success Message -->
+          <div v-if="tradeMessage" class="mt-3 p-3 bg-green-500/10 border border-green-500/30 rounded text-green-400 text-xs">
+            {{ tradeMessage }}
+          </div>
           </div>
           </div>
           </div>
@@ -277,6 +319,22 @@ export default {
       lastDigit: null, // Último dígito do preço
       lastDigitParity: null, // Paridade do último dígito (PAR/IMPAR)
       digitMatchValue: null, // Valor do dígito selecionado para DIGITMATCH
+      // Estado do contrato ativo
+      activeContract: null,
+      purchasePrice: null,
+      isTrading: false,
+      tradeError: '',
+      tradeMessage: '',
+      realTimeProfit: null,
+      realTimeProfitClass: 'border-zenix-green',
+      realTimeProfitTextClass: 'text-zenix-green',
+      contractTimeRemaining: null,
+      contractTicksRemaining: null,
+      contractStartTime: null,
+      contractDuration: null,
+      contractCountdownInterval: null,
+      contractTickCount: 0,
+      pricePrecision: 2,
       allTradeTypes: [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
         { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
@@ -341,6 +399,25 @@ export default {
       const digitTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
       return digitTypes.includes(this.tradeType);
     },
+    canExecuteOrder() {
+      return this.symbol && this.tradeType && this.duration && this.amount && !this.isTrading && !this.activeContract;
+    },
+    isTickBasedContract() {
+      return this.activeContract && this.activeContract.duration_unit === 't';
+    },
+    getCountdownClass() {
+      if (this.isTickBasedContract) {
+        if (this.contractTicksRemaining === null) return '';
+        if (this.contractTicksRemaining <= 5) return 'countdown-warning';
+        if (this.contractTicksRemaining <= 10) return 'countdown-alert';
+        return 'countdown-normal';
+      } else {
+        if (this.contractTimeRemaining === null) return '';
+        if (this.contractTimeRemaining <= 10) return 'countdown-warning';
+        if (this.contractTimeRemaining <= 30) return 'countdown-alert';
+        return 'countdown-normal';
+      }
+    },
   },
   async mounted() {
     this.initChart();
@@ -352,8 +429,11 @@ export default {
     }
   },
   beforeUnmount() {
+    // Parar contador de contrato
+    this.stopContractCountdown();
+    
     if (this.chart) {
-        this.chart.remove();
+      this.chart.remove();
       this.chart = null;
       this.chartSeries = null;
     }
@@ -534,11 +614,47 @@ export default {
         // Conectar ao backend
         await derivTradingService.connect(derivToken, loginid);
 
-        // Iniciar stream SSE para receber active_symbols
+        // Iniciar stream SSE para receber mensagens
         await derivTradingService.startStream((data) => {
           if (data.type === 'active_symbols' && data.data) {
             this.processActiveSymbols(data.data);
             this.isLoadingMarkets = false;
+          } else if (data.type === 'buy' && data.data) {
+            this.processBuy(data.data);
+          } else if (data.type === 'contract' && data.data) {
+            this.processContract(data.data);
+          } else if (data.type === 'tick' && data.data) {
+            // Atualizar latestTick
+            const tickValue = Number(data.data.value);
+            const tickEpoch = Math.floor(Number(data.data.epoch)) - (3 * 60 * 60);
+            
+            if (!isNaN(tickValue) && isFinite(tickValue) && tickValue > 0 &&
+                !isNaN(tickEpoch) && isFinite(tickEpoch) && tickEpoch > 0) {
+              this.latestTick = {
+                value: tickValue,
+                epoch: tickEpoch
+              };
+              
+              // Calcular último dígito se for contrato de dígitos
+              if (this.isDigitContract) {
+                this.updateDigitInfo(tickValue);
+              }
+              
+              // Atualizar P&L em tempo real se houver contrato ativo
+              if (this.activeContract) {
+                this.updateRealTimeProfit();
+                
+                // Atualizar ticks restantes se for contrato baseado em ticks
+                if (this.isTickBasedContract && this.contractTicksRemaining !== null) {
+                  this.contractTickCount++;
+                  this.contractTicksRemaining = Math.max(0, (this.activeContract.duration || this.duration || 1) - this.contractTickCount);
+                  
+                  if (this.contractTicksRemaining <= 0) {
+                    this.handleContractExpiration({ status: 'expired' });
+                  }
+                }
+              }
+            }
           }
         }, derivToken);
 
@@ -830,6 +946,266 @@ export default {
           this.digitMatchValue = digit;
         }
       }
+    },
+    async executeBuy() {
+      if (!this.canExecuteOrder) {
+        return;
+      }
+      
+      // Definir preço de compra
+      if (this.latestTick && this.latestTick.value) {
+        this.purchasePrice = this.latestTick.value;
+      }
+      
+      this.tradeError = '';
+      this.tradeMessage = '';
+      this.isTrading = true;
+      
+      console.log('[Chart] ========== EXECUTAR COMPRA ==========');
+      console.log('[Chart] Configuração:', {
+        symbol: this.symbol,
+        tradeType: this.tradeType,
+        duration: this.duration,
+        durationUnit: this.durationUnit,
+        amount: this.amount
+      });
+      
+      try {
+        const buyConfig = {
+          symbol: this.symbol,
+          contractType: this.tradeType,
+          duration: this.duration,
+          durationUnit: this.durationUnit,
+          amount: this.amount,
+        };
+        
+        // Adicionar barrier para DIGITMATCH
+        if (this.tradeType === 'DIGITMATCH') {
+          buyConfig.barrier = this.digitMatchValue !== null && this.digitMatchValue !== undefined 
+            ? this.digitMatchValue 
+            : (this.lastDigit !== null && this.lastDigit !== undefined ? this.lastDigit : 5);
+        }
+        
+        // Enviar compra para o backend
+        await derivTradingService.buyContract(buyConfig);
+        console.log('[Chart] ✅ Compra executada via backend');
+        // A resposta chegará via SSE no evento 'buy'
+      } catch (error) {
+        console.error('[Chart] Erro ao executar compra:', error);
+        this.tradeError = error.message || 'Erro ao executar compra';
+        this.isTrading = false;
+      }
+    },
+    processBuy(buyData) {
+      console.log('[Chart] ========== PROCESSANDO COMPRA ==========');
+      console.log('[Chart] Dados da compra:', buyData);
+      
+      const contractId = buyData.contractId || buyData.contract_id;
+      
+      if (!buyData || !contractId) {
+        console.error('[Chart] Dados de compra inválidos:', buyData);
+        this.tradeError = 'Erro ao processar compra.';
+        this.isTrading = false;
+        return;
+      }
+      
+      const durationUnit = buyData.durationUnit || buyData.duration_unit || this.durationUnit || 'm';
+      const duration = buyData.duration || this.duration || 1;
+      
+      this.activeContract = {
+        contract_id: contractId,
+        buy_price: buyData.buyPrice || buyData.buy_price || this.purchasePrice,
+        entry_spot: buyData.entrySpot || buyData.entry_spot || this.purchasePrice || null,
+        entry_time: buyData.entryTime || buyData.entry_time || Date.now() / 1000,
+        contract_type: buyData.contractType || buyData.contract_type || this.tradeType,
+        duration: duration,
+        duration_unit: durationUnit,
+        symbol: buyData.symbol || this.symbol,
+        sell_price: buyData.sellPrice || buyData.sell_price || null,
+        profit: buyData.profit || null,
+        expiry_time: buyData.expiryTime || buyData.expiry_time || null,
+        payout: buyData.payout || null,
+      };
+      
+      this.isTrading = false;
+      this.tradeMessage = 'Compra executada com sucesso!';
+      
+      // Inicializar contador
+      this.initializeContractCountdown();
+      
+      // Inicializar P&L
+      this.updateRealTimeProfit();
+    },
+    initializeContractCountdown() {
+      if (!this.activeContract) return;
+      
+      const duration = this.activeContract.duration || this.duration || 1;
+      const durationUnit = this.activeContract.duration_unit || this.durationUnit || 'm';
+      const entryTime = this.activeContract.entry_time || Date.now() / 1000;
+      
+      this.contractStartTime = entryTime;
+      this.contractTickCount = 0;
+      
+      if (durationUnit === 't') {
+        // Contrato baseado em ticks
+        this.contractTicksRemaining = duration;
+        this.contractTimeRemaining = null;
+      } else {
+        // Contrato baseado em tempo
+        let durationInSeconds = 0;
+        switch (durationUnit) {
+          case 's':
+            durationInSeconds = duration;
+            break;
+          case 'm':
+            durationInSeconds = duration * 60;
+            break;
+          case 'h':
+            durationInSeconds = duration * 3600;
+            break;
+          case 'd':
+            durationInSeconds = duration * 86400;
+            break;
+          default:
+            durationInSeconds = duration * 60;
+        }
+        
+        this.contractDuration = durationInSeconds;
+        this.contractTimeRemaining = durationInSeconds;
+        this.contractTicksRemaining = null;
+        
+        // Iniciar contador de tempo
+        const intervalId = setInterval(() => {
+          if (!this.activeContract) {
+            this.stopContractCountdown();
+            return;
+          }
+          
+          const now = Date.now() / 1000;
+          const elapsed = now - this.contractStartTime;
+          const remaining = Math.max(0, this.contractDuration - elapsed);
+          
+          this.contractTimeRemaining = remaining;
+          
+          // Se expirou, processar expiração
+          if (remaining <= 0) {
+            this.stopContractCountdown();
+            this.handleContractExpiration({ status: 'expired' });
+          }
+        }, 1000);
+        
+        this.contractCountdownInterval = intervalId;
+      }
+    },
+    stopContractCountdown() {
+      if (this.contractCountdownInterval) {
+        clearInterval(this.contractCountdownInterval);
+        this.contractCountdownInterval = null;
+      }
+      
+      this.contractTimeRemaining = null;
+      this.contractTicksRemaining = null;
+      this.contractStartTime = null;
+      this.contractDuration = null;
+      this.contractTickCount = 0;
+    },
+    formatTimeRemaining(seconds) {
+      if (seconds === null || seconds === undefined || seconds < 0) return '00:00';
+      
+      const mins = Math.floor(seconds / 60);
+      const secs = Math.floor(seconds % 60);
+      return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    },
+    updateRealTimeProfit() {
+      if (!this.activeContract || !this.purchasePrice || !this.latestTick) {
+        return;
+      }
+      
+      const currentPrice = this.latestTick.value;
+      const entryPrice = this.purchasePrice;
+      
+      // Calcular P&L baseado no tipo de contrato
+      let profit = 0;
+      if (this.activeContract.contract_type === 'CALL') {
+        profit = currentPrice - entryPrice;
+      } else if (this.activeContract.contract_type === 'PUT') {
+        profit = entryPrice - currentPrice;
+      }
+      
+      this.realTimeProfit = profit;
+      
+      // Atualizar classes CSS baseado no P&L
+      if (profit > 0) {
+        this.realTimeProfitClass = 'border-zenix-green';
+        this.realTimeProfitTextClass = 'text-zenix-green';
+      } else if (profit < 0) {
+        this.realTimeProfitClass = 'border-red-500';
+        this.realTimeProfitTextClass = 'text-red-500';
+      } else {
+        this.realTimeProfitClass = 'border-zenix-border';
+        this.realTimeProfitTextClass = 'text-zenix-text';
+      }
+    },
+    processContract(contractData) {
+      if (!this.activeContract) {
+        return;
+      }
+      
+      // Verificar se o contrato expirou
+      const isExpired = contractData.status === 'sold' || contractData.status === 'won' || 
+                        contractData.status === 'lost' || contractData.is_sold === true || 
+                        contractData.is_expired === true || contractData.status === 'expired';
+      
+      // Atualizar dados do contrato
+      if (contractData.sell_price !== undefined) {
+        this.activeContract.sell_price = contractData.sell_price;
+      }
+      if (contractData.profit !== undefined) {
+        this.activeContract.profit = contractData.profit;
+      }
+      if (contractData.exit_spot !== undefined || contractData.exitSpot !== undefined) {
+        this.activeContract.exit_spot = contractData.exit_spot || contractData.exitSpot || null;
+      }
+      
+      // Se o contrato expirou, processar resultado final
+      if (isExpired) {
+        this.handleContractExpiration(contractData);
+        return;
+      }
+      
+      // Atualizar P&L em tempo real
+      this.updateRealTimeProfit();
+      
+      // Atualizar ticks restantes se for contrato baseado em ticks
+      if (this.isTickBasedContract && contractData.ticks_remaining !== undefined) {
+        this.contractTicksRemaining = contractData.ticks_remaining;
+      }
+    },
+    handleContractExpiration(contractData) {
+      console.log('[Chart] ========== CONTRATO EXPIRADO ==========');
+      
+      // Parar contador
+      this.stopContractCountdown();
+      
+      // Determinar resultado
+      const profit = contractData.profit !== undefined && contractData.profit !== null 
+        ? Number(contractData.profit) 
+        : (this.realTimeProfit !== null ? this.realTimeProfit : 0);
+      
+      // Atualizar contrato com dados finais
+      if (this.activeContract) {
+        this.activeContract.sell_price = contractData.sell_price || this.activeContract.sell_price;
+        this.activeContract.profit = profit;
+        this.activeContract.status = contractData.status || (profit > 0 ? 'won' : 'lost');
+      }
+      
+      // Limpar contrato após um tempo
+      setTimeout(() => {
+        this.activeContract = null;
+        this.purchasePrice = null;
+        this.realTimeProfit = null;
+        this.tradeMessage = '';
+      }, 5000);
     },
     getDefaultMarkets() {
       // Mercados padrão caso a API não retorne
@@ -1547,5 +1923,61 @@ export default {
   color: #22C55E;
   box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
   transform: scale(1.05);
+}
+
+/* Countdown Styles */
+.countdown-normal {
+  color: #DFDFDF;
+}
+
+.countdown-alert {
+  color: #FBBF24;
+  animation: pulse 1s ease-in-out infinite;
+}
+
+.countdown-warning {
+  color: #EF4444;
+  animation: pulse 0.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.7;
+  }
+}
+
+.border-red-500 {
+  border-color: #EF4444;
+}
+
+.text-red-500 {
+  color: #EF4444;
+}
+
+.bg-red-500\/10 {
+  background-color: rgba(239, 68, 68, 0.1);
+}
+
+.border-red-500\/30 {
+  border-color: rgba(239, 68, 68, 0.3);
+}
+
+.text-red-400 {
+  color: #F87171;
+}
+
+.bg-green-500\/10 {
+  background-color: rgba(34, 197, 94, 0.1);
+}
+
+.border-green-500\/30 {
+  border-color: rgba(34, 197, 94, 0.3);
+}
+
+.text-green-400 {
+  color: #4ADE80;
 }
 </style>
