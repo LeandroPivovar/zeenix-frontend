@@ -184,7 +184,7 @@
                                     </div>
                                     <span 
                                         v-if="!isLoadingStats && profitPercentage && profitVisible" 
-                                        :class="['profit-percentage-badge text-[10px]', isProfitPositive ? 'profit-positive' : 'profit-negative']"
+                                        :class="['profit-percentage-badge profit-percentage-badge-mobile', isProfitPositive ? 'profit-positive' : 'profit-negative']"
                                     >
                                         {{ profitPercentage }}
                                     </span>
@@ -267,10 +267,6 @@
             
             <!-- Mobile: Conteúdo da Tab Config -->
             <div v-if="activeTab === 'config'" class="mobile-config-content mobile-tab-content">
-                <div class="mobile-config-header">
-                    <h3 class="mobile-config-title">Configuração Ativa</h3>
-                    <i class="fas fa-cogs mobile-config-icon"></i>
-                </div>
                 <!-- Mobile Tabs (dentro do card de configuração) -->
                 <div class="mobile-tabs-container mobile-tabs-inside">
                     <button 
@@ -297,6 +293,10 @@
                     >
                         Histórico
                     </button>
+                </div>
+                <div class="mobile-config-header">
+                    <h3 class="mobile-config-title">Configuração Ativa</h3>
+                    <i class="fas fa-cogs mobile-config-icon"></i>
                 </div>
                 <div class="mobile-config-card">
                     <div class="mobile-config-item">
@@ -386,6 +386,10 @@
                                 Histórico
                             </button>
                         </div>
+                        <!-- Mobile: Título do Gráfico -->
+                        <div v-show="activeTab === 'chart'" class="mobile-chart-title">
+                            <h3 class="mobile-chart-title-text">Gráfico</h3>
+                        </div>
                         <div class="flex items-center justify-between mb-4 desktop-chart-header">
                             <div>
                                 <h2 v-if="activeTab === 'logs'" class="text-lg font-semibold text-zenix-text">Histórico de Operações</h2>
@@ -451,49 +455,56 @@
                                     Entradas IA
                                 </button>
                             </div>
+                            
                         </div>
             
                         <!-- Chart View -->
                         <div v-show="activeTab === 'chart'" id="chart-view" class="h-[600px]">
                             <div ref="chartContainer" id="tradingview-chart" class="chart-container tradingview-container h-full"></div>
-                        </div>
-                        
-                        <!-- Mobile: Informações do mercado abaixo do gráfico -->
-                        <div v-show="activeTab === 'chart'" class="mobile-market-info mt-4 desktop-hidden">
-                            <!-- Linha superior: Preço/Percentual e Botão Compra -->
-                            <div class="flex items-center justify-between mb-4">
-                                <div class="flex flex-col text-left">
-                                    <span class="text-2xl font-bold text-zenix-text">{{ currentPrice ? currentPrice.toFixed(5) : '1.08542' }}</span>
-                                    <span class="text-base font-semibold text-zenix-green mt-0.5">+0.24%</span>
-                                </div>
-                                <button class="bg-zenix-green/20 hover:bg-zenix-green/30 border border-zenix-green text-zenix-green px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2">
-                                    <i class="fas fa-arrow-up"></i>
-                                    Compra
-                                </button>
-                            </div>
                             
-                            <!-- Linha inferior: Volume, Spread, Sinal IA -->
-                            <div class="grid grid-cols-3 gap-4 text-left border-t border-[#1C1C1C] pt-4">
-                                <div class="flex flex-col text-left">
-                                    <span class="text-xs text-zenix-secondary mb-1">Volume</span>
-                                    <span class="text-sm font-semibold text-zenix-text">2.4M</span>
+                            <!-- Mobile: Informações do mercado abaixo do gráfico -->
+                            <div class="mobile-market-info mt-4 desktop-hidden">
+                                <!-- Linha superior: Preço/Percentual e Botão Compra -->
+                                <div class="flex items-center justify-between mb-4">
+                                    <div class="flex flex-col text-left">
+                                        <span class="text-2xl font-bold text-zenix-text">{{ currentPrice ? currentPrice.toFixed(5) : '1.08542' }}</span>
+                                        <span class="text-base font-semibold text-zenix-green mt-0.5">+0.24%</span>
+                                    </div>
+                                    <button class="bg-zenix-green/20 hover:bg-zenix-green/30 border border-zenix-green text-zenix-green px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2">
+                                        <i class="fas fa-arrow-up"></i>
+                                        Compra
+                                    </button>
                                 </div>
-                                <div class="flex flex-col text-left">
-                                    <span class="text-xs text-zenix-secondary mb-1">Spread</span>
-                                    <span class="text-sm font-semibold text-zenix-text">0.8</span>
-                                </div>
-                                <div class="flex flex-col text-left">
-                                    <span class="text-xs text-zenix-secondary mb-1">Sinal IA</span>
-                                    <div class="flex items-center gap-1.5">
-                                        <span class="w-2 h-2 rounded-full bg-zenix-green"></span>
-                                        <span class="text-sm font-semibold text-zenix-green">Alta</span>
+                                
+                                <!-- Linha inferior: Volume, Spread, Sinal IA -->
+                                <div class="grid grid-cols-3 gap-4 text-left border-t border-[#1C1C1C] pt-4">
+                                    <div class="flex flex-col text-left">
+                                        <span class="text-xs text-zenix-secondary mb-1">Volume</span>
+                                        <span class="text-sm font-semibold text-zenix-text">2.4M</span>
+                                    </div>
+                                    <div class="flex flex-col text-left">
+                                        <span class="text-xs text-zenix-secondary mb-1">Spread</span>
+                                        <span class="text-sm font-semibold text-zenix-text">0.8</span>
+                                    </div>
+                                    <div class="flex flex-col text-left">
+                                        <span class="text-xs text-zenix-secondary mb-1">Sinal IA</span>
+                                        <div class="flex items-center gap-1.5">
+                                            <span class="w-2 h-2 rounded-full bg-zenix-green"></span>
+                                            <span class="text-sm font-semibold text-zenix-green">Alta</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
+                        
 
                         <!-- Histórico View (Tabela de Operações Executadas) -->
                         <div v-show="activeTab === 'logs'" id="logs-view" class="h-[600px] overflow-y-auto mobile-logs-view">
+                            <!-- Mobile: Título do Histórico -->
+                            <div class="mobile-logs-title">
+                                <h3 class="mobile-logs-title-text">Histórico de Operações</h3>
+                            </div>
+                            
                             <div v-if="isLoadingLogs" class="loading-logs">
                                 <p>Carregando histórico de operações...</p>
                             </div>
@@ -1058,11 +1069,8 @@ export default {
         },
         formattedSessionBalance() {
             const value = this.dailyStats.sessionBalance || 0;
-            if (value >= 0) {
-                return `+$${value.toFixed(2)}`;
-            } else {
-                return `-$${Math.abs(value).toFixed(2)}`;
-            }
+            const sign = value >= 0 ? '+' : '';
+            return `${sign}$${Math.abs(value).toFixed(2)}`;
         },
         profitLossClass() {
             return this.dailyStats.profitLoss >= 0 ? 'text-zenix-green' : 'text-zenix-red';
@@ -1171,8 +1179,8 @@ export default {
             if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return null;
             const profit = this.dailyStats.sessionBalance || 0;
             const percentage = (profit / this.accountBalanceProp) * 100;
-            const sign = percentage >= 0 ? '+' : '-';
-            return `${sign}${Math.abs(percentage).toFixed(2)}%`;
+            const sign = percentage >= 0 ? '+' : '';
+            return `${sign}${percentage.toFixed(2)}%`;
         },
         
         // Check if profit is positive
@@ -4094,6 +4102,12 @@ button i,
         font-size: 11px !important;
     }
     
+    /* Mobile: Diminuir fonte e padding do percentage badge no card IA Orion */
+    #mobile-compact-performance-panel .profit-percentage-badge-mobile {
+        font-size: 0.625rem !important; /* 10px reduzido para 8px */
+        padding: 0.125rem 0.25rem !important; /* Reduzir padding */
+    }
+    
     /* Mobile: Aumentar fonte dos labels de progresso em 2px */
     #mobile-compact-performance-panel .mobile-progress-label {
         font-size: 0.875rem !important; /* 14px (era 12px/0.75rem) */
@@ -4413,16 +4427,18 @@ button i,
         justify-content: space-between;
         align-items: center;
         margin-bottom: 1rem;
+        margin-top: 0;
         padding-left: 0 !important;
         padding-right: 0 !important;
         text-align: left !important;
     }
 
     .mobile-config-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: #DFDFDF;
-        margin: 0;
+        font-size: 1.2rem !important;
+        font-weight: 600 !important;
+        color: #DFDFDF !important;
+        margin: 0 !important;
+        margin-bottom: 0 !important;
     }
 
     .mobile-config-icon {
@@ -4599,6 +4615,56 @@ button i,
         max-height: 80vh !important;
     }
 
+    /* Mobile: Título do Gráfico - Padronizado */
+    .mobile-chart-title {
+        display: block;
+        margin-bottom: 1rem;
+        margin-top: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .mobile-chart-title-text {
+        font-size: 1.2rem !important;
+        font-weight: 600 !important;
+        color: #DFDFDF !important;
+        margin: 0 !important;
+        margin-bottom: 0 !important;
+        text-align: left !important;
+    }
+    
+    /* Desktop: Esconder título do gráfico */
+    @media (min-width: 769px) {
+        .mobile-chart-title {
+            display: none !important;
+        }
+    }
+
+    /* Mobile: Título do Histórico - Padronizado */
+    .mobile-logs-title {
+        display: block;
+        margin-bottom: 1rem;
+        margin-top: 0;
+        padding-bottom: 0;
+        border-bottom: none;
+    }
+    
+    .mobile-logs-title-text {
+        font-size: 1.2rem !important;
+        font-weight: 600 !important;
+        color: #DFDFDF !important;
+        margin: 0 !important;
+        margin-bottom: 0 !important;
+        text-align: left !important;
+    }
+    
+    /* Desktop: Esconder título do histórico */
+    @media (min-width: 769px) {
+        .mobile-logs-title {
+            display: none !important;
+        }
+    }
+    
     /* Mobile: Esconder tabela, mostrar cards */
     #logs-view .desktop-logs-table {
         display: none !important;
@@ -4695,24 +4761,22 @@ button i,
     /* Mobile: Register Header - escondido por padrão */
     .mobile-register-header {
         display: none;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1rem;
+        margin-top: 0;
         text-align: left;
     }
     
     .mobile-register-title {
-        font-size: 1.125rem;
-        font-weight: 700;
-        color: #DFDFDF;
-        margin: 0;
-        margin-bottom: 0.5rem;
-        text-align: left;
+        font-size: 1.2rem !important;
+        font-weight: 600 !important;
+        color: #DFDFDF !important;
+        margin: 0 !important;
+        margin-bottom: 0 !important;
+        text-align: left !important;
     }
     
     .mobile-register-subtitle {
-        font-size: 0.875rem;
-        color: #A1A1A1;
-        margin: 0;
-        text-align: left;
+        display: none; /* Esconder subtítulo no mobile para padronizar */
     }
     
     /* Mobile: Register Empty State */
@@ -4891,7 +4955,9 @@ button i,
         }
         
         .mobile-register-header {
-            padding: 1rem 1rem 0.5rem 1rem;
+            padding: 0;
+            margin-bottom: 1rem;
+            margin-top: 0;
         }
         
         .mobile-register-card {
@@ -6137,10 +6203,11 @@ button i,
     }
     
     .mobile-config-title {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #DFDFDF;
-        margin: 0;
+        font-size: 1.2rem !important;
+        font-weight: 600 !important;
+        color: #DFDFDF !important;
+        margin: 0 !important;
+        margin-bottom: 0 !important;
         text-align: left !important;
     }
     
@@ -6463,27 +6530,48 @@ button i,
     /* Mobile: Chart View */
     @media (max-width: 768px) {
         #market-chart #chart-view {
-            background: linear-gradient(135deg, rgba(15, 20, 30, 0.95) 0%, rgba(11, 15, 25, 0.97) 50%, rgba(8, 12, 20, 0.95) 100%) !important;
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
-            border-radius: 12px !important;
-            padding: 20px !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
             margin: 0 !important;
             box-shadow: none !important;
             position: relative !important;
-            outline: 1px solid rgba(34, 197, 94, 0.04) !important;
-            outline-offset: -1px !important;
+            outline: none !important;
+            outline-offset: 0 !important;
+            height: auto !important;
+            min-height: 600px;
+        }
+        
+        #market-chart #chart-view .chart-container {
+            height: 600px;
         }
         
         #market-chart #logs-view {
-            backdrop-filter: blur(20px) !important;
-            -webkit-backdrop-filter: blur(20px) !important;
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
             border-radius: 0 !important;
-            padding: 0;
+            padding: 0 !important;
             margin: 0 !important;
             box-shadow: none !important;
             position: relative !important;
-            outline-offset: -1px !important;
+            outline: none !important;
+            outline-offset: 0 !important;
+        }
+        
+        #market-chart #register-view {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+            border-radius: 0 !important;
+            padding: 0 !important;
+            margin: 0 !important;
+            box-shadow: none !important;
+            position: relative !important;
+            outline: none !important;
+            outline-offset: 0 !important;
         }
         
         /* Mobile: Estilos do registro já estão consolidados na seção específica acima */
@@ -6494,11 +6582,25 @@ button i,
         display: none !important;
     }
     
-    /* Mobile: Ajustar header do gráfico */
+    /* Mobile: Ajustar header do gráfico - Padronizar títulos */
     .desktop-chart-header {
         flex-direction: column;
         align-items: flex-start;
-        gap: 1rem;
+        gap: 0;
+        margin-bottom: 1rem;
+        margin-top: 0;
+    }
+    
+    .desktop-chart-header h2 {
+        font-size: 1.2rem !important;
+        font-weight: 600 !important;
+        color: #DFDFDF !important;
+        margin: 0 !important;
+        margin-bottom: 0 !important;
+    }
+    
+    .desktop-chart-header p {
+        display: none; /* Esconder subtítulo no mobile */
     }
     
     /* Mobile: Mostrar conteúdo das tabs baseado na tab ativa */
@@ -6508,7 +6610,7 @@ button i,
         background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
-        border-radius: 0 !important;
+        border-radius: 12px !important;
         padding: 20px !important;
         margin: 0 !important;
         box-shadow: none !important;
@@ -6662,7 +6764,7 @@ button i,
         background-color: transparent !important;
         backdrop-filter: blur(20px) !important;
         -webkit-backdrop-filter: blur(20px) !important;
-        border-radius: 0 !important;
+        border-radius: 12px !important;
         padding: 20px !important;
         margin: 0 !important;
         box-shadow: none !important;
@@ -6681,7 +6783,6 @@ button i,
         display: none !important;
     }
     
-    /* Mobile: Mostrar informações do mercado apenas no mobile */
     @media (max-width: 768px) {
         .desktop-hidden {
             display: block !important;
@@ -6699,6 +6800,20 @@ button i,
             border: 1px solid #1C1C1C;
         }
         
+        /* Garantir que mobile-market-info só apareça no tab do gráfico */
+        /* Esconder quando não estiver dentro do chart-view */
+        #logs-view ~ .mobile-market-info,
+        #register-view ~ .mobile-market-info,
+        #logs-view .mobile-market-info,
+        #register-view .mobile-market-info {
+            display: none !important;
+        }
+        
+        /* Garantir que só apareça dentro do chart-view */
+        #chart-view .mobile-market-info {
+            display: block !important;
+        }
+        
         /* Mobile: Aplicar gradiente nos cards premium no mobile */
         .premium-card {
             background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
@@ -6708,14 +6823,16 @@ button i,
         }
     }
     
-    /* Mobile: Ajustar card do gráfico */
+    /* Mobile: Ajustar card do gráfico - aplicar background gradiente */
     @media (max-width: 768px) {
         #market-chart {
             border-radius: 12px !important;
-            border-left: none;
-            border-right: none;
+            border-left: none !important;
+            border-right: none !important;
+            border-top: none !important;
+            border-bottom: none !important;
             padding: 20px !important;
-            margin-bottom: 1rem;
+            margin-bottom: 0 !important;
             background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
             background-color: transparent !important;
             backdrop-filter: blur(20px) !important;
@@ -6723,12 +6840,19 @@ button i,
             border: none !important;
             box-shadow: none !important;
             position: relative !important;
-            outline: 1px solid rgba(34, 197, 94, 0.04) !important;
-            outline-offset: -1px !important;
+            outline: none !important;
+            outline-offset: 0 !important;
             width: 100% !important;
             max-width: 100% !important;
             margin-left: 0 !important;
             margin-right: 0 !important;
+        }
+        
+        /* Aplicar background gradiente nas classes do market-chart no mobile */
+        #market-chart.bg-zenix-card,
+        #market-chart.premium-card {
+            background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+            background-color: transparent !important;
         }
     }
     
@@ -6788,6 +6912,8 @@ button i,
     .mobile-register-title,
     .mobile-register-subtitle,
     .mobile-market-info,
+    .mobile-logs-title,
+    .mobile-chart-title,
     .desktop-hidden {
         display: none !important;
     }
