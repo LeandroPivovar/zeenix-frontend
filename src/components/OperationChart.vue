@@ -876,9 +876,9 @@ export default {
       
       this.isProcessingUpdates = true;
       
-      // Usar requestAnimationFrame + nextTick para garantir que estamos fora do ciclo de renderização
+      // Usar requestAnimationFrame + setTimeout + nextTick para garantir que estamos completamente fora do ciclo
       requestAnimationFrame(() => {
-        // Verificar se componente ainda está válido antes de usar nextTick
+        // Verificar se componente ainda está válido antes de continuar
         if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
           this.updateQueue = [];
           this.isProcessingUpdates = false;
@@ -898,67 +898,118 @@ export default {
           return;
         }
         
-        // Agora usar nextTick para garantir que estamos em um ciclo seguro
-        this.$nextTick(() => {
+        // Adicionar um pequeno delay para garantir que estamos completamente fora do ciclo de renderização
+        setTimeout(() => {
+          // Verificar novamente antes de usar nextTick
+          if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+            this.updateQueue = [];
+            this.isProcessingUpdates = false;
+            return;
+          }
+          
+          // Verificar se componente Vue ainda está válido
           try {
-            // Verificar novamente se componente ainda está válido
-            if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+            if (!this.$ || !this.$.vnode) {
               this.updateQueue = [];
               this.isProcessingUpdates = false;
               return;
             }
             
-            // Verificar se componente Vue ainda está válido
+            // Verificar se o componente não está em processo de desmontagem
+            if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
+              this.updateQueue = [];
+              this.isProcessingUpdates = false;
+              return;
+            }
+          } catch (e) {
+            this.updateQueue = [];
+            this.isProcessingUpdates = false;
+            return;
+          }
+          
+          // Agora usar nextTick para garantir que estamos em um ciclo seguro
+          this.$nextTick(() => {
             try {
-              if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+              // Verificar novamente se componente ainda está válido
+              if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
                 this.updateQueue = [];
                 this.isProcessingUpdates = false;
                 return;
               }
               
-              // Verificar se o vnode ainda está conectado ao DOM
-              if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
+              // Verificar se componente Vue ainda está válido
+              try {
+                if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+                  this.updateQueue = [];
+                  this.isProcessingUpdates = false;
+                  return;
+                }
+                
+                // Verificar se o vnode ainda está conectado ao DOM
+                if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
+                  this.updateQueue = [];
+                  this.isProcessingUpdates = false;
+                  return;
+                }
+                
+                // Verificar se o componente não está em processo de desmontagem
+                if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
+                  this.updateQueue = [];
+                  this.isProcessingUpdates = false;
+                  return;
+                }
+              } catch (e) {
                 this.updateQueue = [];
                 this.isProcessingUpdates = false;
                 return;
               }
-            } catch (e) {
-              this.updateQueue = [];
-              this.isProcessingUpdates = false;
-              return;
-            }
-            
-            // Processar todas as atualizações na fila
-            while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
-              const callback = this.updateQueue.shift();
-              if (typeof callback === 'function') {
-                try {
-                  // Verificar novamente antes de executar cada callback
-                  if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-                    break;
-                  }
-                  
-                  // Verificar se componente Vue ainda está válido antes de cada atualização
+              
+              // Processar todas as atualizações na fila
+              while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
+                const callback = this.updateQueue.shift();
+                if (typeof callback === 'function') {
                   try {
-                    if (!this.$ || !this.$.vnode) {
+                    // Verificar novamente antes de executar cada callback
+                    if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
                       break;
                     }
-                  } catch (e) {
-                    break;
+                    
+                    // Verificar se componente Vue ainda está válido antes de cada atualização
+                    try {
+                      if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+                        break;
+                      }
+                      
+                      // Verificar se não está em processo de desmontagem
+                      if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
+                        break;
+                      }
+                    } catch (e) {
+                      break;
+                    }
+                    
+                    callback();
+                  } catch (error) {
+                    console.warn('[Chart] Erro ao executar callback na fila:', error);
                   }
-                  
-                  callback();
-                } catch (error) {
-                  console.warn('[Chart] Erro ao executar callback na fila:', error);
                 }
               }
+            } catch (error) {
+              console.warn('[Chart] Erro ao processar fila de atualizações:', error);
+            } finally {
+              this.isProcessingUpdates = false;
+              // Se a fila não estiver vazia, agendar próximo processamento
+              if (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
+                // Usar setTimeout para evitar processamento imediato
+                setTimeout(() => {
+                  if (!this.isComponentDestroyed) {
+                    this.processUpdateQueue();
+                  }
+                }, 10);
+              }
             }
-          } catch (error) {
-            console.warn('[Chart] Erro ao processar fila de atualizações:', error);
-          } finally {
-            this.isProcessingUpdates = false;
-          }
-        });
+          });
+        }, 0); // Delay mínimo para garantir que estamos fora do ciclo
       });
     },
     initChart() {
@@ -1053,7 +1104,11 @@ export default {
           }, 100);
         } catch (error) {
           console.error('[Chart] ❌ Erro ao inicializar gráfico:', error);
-          this.showChartPlaceholder = false;
+          if (this.isComponentMounted()) {
+            this.safeUpdate(() => {
+              this.showChartPlaceholder = false;
+            });
+          }
         }
       });
     },
@@ -1507,8 +1562,11 @@ export default {
         return;
       }
 
-      this.isLoadingTicks = true;
-      this.showChartPlaceholder = true;
+      // Usar safeUpdate para atualizar estados
+      this.safeUpdate(() => {
+        this.isLoadingTicks = true;
+        this.showChartPlaceholder = true;
+      });
 
       try {
         console.log('[Chart] ========== BUSCANDO TICKS ==========');
@@ -1523,8 +1581,12 @@ export default {
           console.warn('[Chart] Resposta inválida do backend:', response);
           // Tentar novamente após 3 segundos
           setTimeout(() => {
-            this.isLoadingTicks = false;
-            this.loadTicksFromBackend();
+            if (this.isComponentMounted()) {
+              this.safeUpdate(() => {
+                this.isLoadingTicks = false;
+              });
+              this.loadTicksFromBackend();
+            }
           }, 3000);
           return;
         }
@@ -1600,23 +1662,29 @@ export default {
         if (this.errorRetryCount < 2) {
           setTimeout(() => {
             // Verificar novamente antes de tentar
-            if (!this.isComponentDestroyed && this.$el) {
-              this.isLoadingTicks = false;
+            if (this.isComponentMounted()) {
+              this.safeUpdate(() => {
+                this.isLoadingTicks = false;
+              });
               this.loadTicksFromBackend();
             }
           }, 3000);
         } else {
           console.error('[Chart] Máximo de tentativas com erro atingido');
-          if (!this.isComponentDestroyed && this.$el) {
-            this.showChartPlaceholder = false;
-            this.isLoadingTicks = false;
+          if (this.isComponentMounted()) {
+            this.safeUpdate(() => {
+              this.showChartPlaceholder = false;
+              this.isLoadingTicks = false;
+            });
           }
           this.errorRetryCount = 0;
         }
       } finally {
         // Não resetar isLoadingTicks aqui se ainda estiver tentando
-        if (!this.retryCount && !this.errorRetryCount) {
-          this.isLoadingTicks = false;
+        if (!this.retryCount && !this.errorRetryCount && this.isComponentMounted()) {
+          this.safeUpdate(() => {
+            this.isLoadingTicks = false;
+          });
         }
       }
     },
@@ -1639,7 +1707,11 @@ export default {
       
       if (!ticks || !Array.isArray(ticks)) {
         console.error('[Chart] ❌ Ticks inválidos:', ticks);
-        this.showChartPlaceholder = false;
+        if (this.isComponentMounted()) {
+          this.safeUpdate(() => {
+            this.showChartPlaceholder = false;
+          });
+        }
         return;
       }
 
@@ -1670,8 +1742,12 @@ export default {
       
       if (tickValues.length === 0) {
         console.warn('[Chart] Nenhum valor válido encontrado nos ticks');
-        this.showChartPlaceholder = false;
-        this.isLoadingTicks = false;
+        if (this.isComponentMounted()) {
+          this.safeUpdate(() => {
+            this.showChartPlaceholder = false;
+            this.isLoadingTicks = false;
+          });
+        }
         return;
       }
       
@@ -1784,8 +1860,12 @@ export default {
 
         if (chartData.length === 0) {
           console.warn('[Chart] Nenhum tick válido após validação');
-          this.showChartPlaceholder = false;
-          this.isLoadingTicks = false;
+          if (this.isComponentMounted()) {
+            this.safeUpdate(() => {
+              this.showChartPlaceholder = false;
+              this.isLoadingTicks = false;
+            });
+          }
           return;
         }
 
@@ -1824,8 +1904,12 @@ export default {
         
         if (finalChartData.length === 0) {
           console.warn('[Chart] Nenhum dado válido após validação final');
-          this.showChartPlaceholder = false;
-          this.isLoadingTicks = false;
+          if (this.isComponentMounted()) {
+            this.safeUpdate(() => {
+              this.showChartPlaceholder = false;
+              this.isLoadingTicks = false;
+            });
+          }
           return;
         }
         
@@ -1938,8 +2022,10 @@ export default {
         
         if (finalData.length === 0) {
           console.error('[Chart] ❌ Nenhum dado válido após validação extra');
-          this.showChartPlaceholder = false;
-          this.isLoadingTicks = false;
+          this.safeUpdate(() => {
+            this.showChartPlaceholder = false;
+            this.isLoadingTicks = false;
+          });
           return;
         }
         
