@@ -849,7 +849,30 @@ export default {
   methods: {
     // Helper para verificar se componente está montado e válido
     isComponentMounted() {
-      return !this.isComponentDestroyed && this.$el && this.$el.isConnected !== false;
+      if (this.isComponentDestroyed) {
+        return false;
+      }
+      
+      try {
+        // Verificar se elemento DOM existe e está conectado
+        if (!this.$el || !this.$el.isConnected) {
+          return false;
+        }
+        
+        // Verificar se componente Vue ainda está válido
+        if (!this.$ || !this.$.vnode) {
+          return false;
+        }
+        
+        // Verificar se não está em processo de desmontagem
+        if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
+          return false;
+        }
+        
+        return true;
+      } catch (e) {
+        return false;
+      }
     },
     // Helper para atualizar dados reativos de forma segura
     safeUpdate(callback) {
@@ -859,7 +882,7 @@ export default {
       }
       
       // Verificar se componente está montado antes de adicionar à fila
-      if (!this.$el || !this.$el.isConnected) {
+      if (!this.isComponentMounted()) {
         return;
       }
       
@@ -884,20 +907,7 @@ export default {
       // Usar requestAnimationFrame + setTimeout + nextTick para garantir que estamos completamente fora do ciclo
       requestAnimationFrame(() => {
         // Verificar se componente ainda está válido antes de continuar
-        if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-          this.updateQueue = [];
-          this.isProcessingUpdates = false;
-          return;
-        }
-        
-        // Verificar se componente Vue ainda está válido
-        try {
-          if (!this.$ || !this.$.vnode) {
-            this.updateQueue = [];
-            this.isProcessingUpdates = false;
-            return;
-          }
-        } catch (e) {
+        if (!this.isComponentMounted()) {
           this.updateQueue = [];
           this.isProcessingUpdates = false;
           return;
@@ -906,27 +916,7 @@ export default {
         // Adicionar um delay de 2 frames (32ms) para garantir que estamos completamente fora do ciclo de renderização
         setTimeout(() => {
           // Verificar novamente antes de usar nextTick
-          if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-            this.updateQueue = [];
-            this.isProcessingUpdates = false;
-            return;
-          }
-          
-          // Verificar se componente Vue ainda está válido
-          try {
-            if (!this.$ || !this.$.vnode) {
-              this.updateQueue = [];
-              this.isProcessingUpdates = false;
-              return;
-            }
-            
-            // Verificar se o componente não está em processo de desmontagem
-            if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
-              this.updateQueue = [];
-              this.isProcessingUpdates = false;
-              return;
-            }
-          } catch (e) {
+          if (!this.isComponentMounted()) {
             this.updateQueue = [];
             this.isProcessingUpdates = false;
             return;
@@ -935,7 +925,7 @@ export default {
           // Aguardar mais um frame antes de processar
           requestAnimationFrame(() => {
             // Verificar novamente
-            if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+            if (!this.isComponentMounted()) {
               this.updateQueue = [];
               this.isProcessingUpdates = false;
               return;
@@ -944,34 +934,7 @@ export default {
             // Usar queueMicrotask para garantir que estamos fora do ciclo de renderização atual
             queueMicrotask(() => {
               // Verificar novamente antes de processar
-              if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-                this.updateQueue = [];
-                this.isProcessingUpdates = false;
-                return;
-              }
-              
-              // Verificar se componente Vue ainda está válido
-              try {
-                if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
-                  this.updateQueue = [];
-                  this.isProcessingUpdates = false;
-                  return;
-                }
-                
-                // Verificar se o vnode ainda está conectado ao DOM
-                if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
-                  this.updateQueue = [];
-                  this.isProcessingUpdates = false;
-                  return;
-                }
-                
-                // Verificar se o componente não está em processo de desmontagem
-                if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
-                  this.updateQueue = [];
-                  this.isProcessingUpdates = false;
-                  return;
-                }
-              } catch (e) {
+              if (!this.isComponentMounted()) {
                 this.updateQueue = [];
                 this.isProcessingUpdates = false;
                 return;
@@ -981,34 +944,7 @@ export default {
               this.$nextTick(() => {
                 try {
                   // Verificar novamente se componente ainda está válido
-                  if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-                    this.updateQueue = [];
-                    this.isProcessingUpdates = false;
-                    return;
-                  }
-                  
-                  // Verificar se componente Vue ainda está válido
-                  try {
-                    if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
-                      this.updateQueue = [];
-                      this.isProcessingUpdates = false;
-                      return;
-                    }
-                    
-                    // Verificar se o vnode ainda está conectado ao DOM
-                    if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
-                      this.updateQueue = [];
-                      this.isProcessingUpdates = false;
-                      return;
-                    }
-                    
-                    // Verificar se o componente não está em processo de desmontagem
-                    if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
-                      this.updateQueue = [];
-                      this.isProcessingUpdates = false;
-                      return;
-                    }
-                  } catch (e) {
+                  if (!this.isComponentMounted()) {
                     this.updateQueue = [];
                     this.isProcessingUpdates = false;
                     return;
@@ -1019,52 +955,66 @@ export default {
                     const callback = this.updateQueue.shift();
                     if (typeof callback === 'function') {
                       try {
-                        // Verificar novamente antes de executar cada callback
-                        if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-                          break;
-                        }
-                        
-                        // Verificar se componente Vue ainda está válido antes de cada atualização
-                        try {
-                          if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
-                            break;
-                          }
-                          
-                          // Verificar se não está em processo de desmontagem
-                          if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
-                            break;
-                          }
-                        } catch (e) {
+                        // Verificar se componente ainda está montado antes de executar
+                        if (!this.isComponentMounted()) {
                           break;
                         }
                         
                         // Tentar executar callback com proteção adicional
                         try {
                           // Verificar uma última vez antes de executar
-                          if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+                          if (!this.isComponentMounted()) {
                             break;
                           }
                           
                           // Executar callback dentro de um try-catch adicional
-                          callback();
+                          const result = callback();
+                          
+                          // Se retornou uma Promise, aguardar e ignorar erros
+                          if (result && typeof result.then === 'function') {
+                            result.catch(() => {
+                              // Ignorar erros de Promise silenciosamente
+                            });
+                          }
                         } catch (updateError) {
                           // Se for erro de atualização do Vue, ignorar silenciosamente
-                          if (updateError && (
-                            updateError.message && (
-                              updateError.message.includes('insertBefore') ||
-                              updateError.message.includes('Symbol(_assign)') ||
-                              updateError.message.includes('emitsOptions') ||
-                              updateError.message.includes('_assigning')
-                            )
-                          )) {
-                            // Erro conhecido do Vue durante ciclo de renderização, ignorar
-                            return;
+                          if (updateError && typeof updateError === 'object') {
+                            const errorMessage = updateError.message || String(updateError);
+                            const errorString = String(errorMessage);
+                            
+                            // Lista de erros conhecidos do Vue que podem ocorrer durante desmontagem
+                            const knownVueErrors = [
+                              'insertBefore',
+                              'Symbol(_assign)',
+                              'emitsOptions',
+                              '_assigning',
+                              'Cannot read properties of null',
+                              'Cannot set properties of null',
+                              'Cannot use \'in\' operator',
+                              'reading \'insertBefore\'',
+                              'setting \'Symbol(_assign)\'',
+                              'reading \'emitsOptions\'',
+                              'reading \'_assigning\''
+                            ];
+                            
+                            const isKnownError = knownVueErrors.some(err => 
+                              errorString.includes(err)
+                            );
+                            
+                            if (isKnownError) {
+                              // Erro conhecido do Vue durante ciclo de renderização/desmontagem, ignorar silenciosamente
+                              return;
+                            }
                           }
-                          console.warn('[Chart] Erro ao executar callback na fila:', updateError);
+                          
+                          // Para outros erros, logar apenas se componente ainda estiver montado
+                          if (this.isComponentMounted()) {
+                            console.warn('[Chart] Erro ao executar callback na fila:', updateError);
+                          }
                         }
                       } catch (error) {
-                        // Erro ao verificar estado, ignorar callback
-                        console.warn('[Chart] Erro ao verificar estado antes de executar callback:', error);
+                        // Erro ao verificar estado, ignorar callback silenciosamente
+                        // Não logar para evitar spam durante desmontagem
                       }
                     }
                   }
@@ -1997,8 +1947,12 @@ export default {
         
         if (chartValues.length === 0) {
           console.warn('[Chart] Nenhum valor válido após validação');
-          this.showChartPlaceholder = false;
-          this.isLoadingTicks = false;
+          if (this.isComponentMounted()) {
+            this.safeUpdate(() => {
+              this.showChartPlaceholder = false;
+              this.isLoadingTicks = false;
+            });
+          }
           return;
         }
         
@@ -2083,8 +2037,12 @@ export default {
         
         if (validatedData.length === 0) {
           console.error('[Chart] ❌ Nenhum dado válido após validação final rigorosa');
-          this.showChartPlaceholder = false;
-          this.isLoadingTicks = false;
+          if (this.isComponentMounted()) {
+            this.safeUpdate(() => {
+              this.showChartPlaceholder = false;
+              this.isLoadingTicks = false;
+            });
+          }
           return;
         }
         
@@ -2134,8 +2092,12 @@ export default {
             console.error('[Chart] ❌ Erro ao recriar série:', recreateError);
           }
           
-          this.showChartPlaceholder = false;
-          this.isLoadingTicks = false;
+          if (this.isComponentMounted()) {
+            this.safeUpdate(() => {
+              this.showChartPlaceholder = false;
+              this.isLoadingTicks = false;
+            });
+          }
           return;
         }
         
@@ -3083,15 +3045,17 @@ export default {
         
         // Atualizar valores padrão se não estiverem configurados - de forma segura
         if (this.isComponentMounted()) {
-          if (defaultValues.amount && !this.localOrderConfig.amount) {
-            this.localOrderConfig.amount = defaultValues.amount;
-          }
-          if (defaultValues.duration && !this.localOrderConfig.duration) {
-            this.localOrderConfig.duration = defaultValues.duration;
-          }
-          if (defaultValues.durationUnit && !this.localOrderConfig.durationUnit) {
-            this.localOrderConfig.durationUnit = defaultValues.durationUnit;
-          }
+          this.safeUpdate(() => {
+            if (defaultValues.amount && !this.localOrderConfig.amount) {
+              this.localOrderConfig.amount = defaultValues.amount;
+            }
+            if (defaultValues.duration && !this.localOrderConfig.duration) {
+              this.localOrderConfig.duration = defaultValues.duration;
+            }
+            if (defaultValues.durationUnit && !this.localOrderConfig.durationUnit) {
+              this.localOrderConfig.durationUnit = defaultValues.durationUnit;
+            }
+          });
         }
         
         // Atualizar contratos disponíveis
