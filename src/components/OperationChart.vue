@@ -52,8 +52,8 @@
                 </div>
                 <div class="signal-confidence">
                   <span class="confidence-label">Confiança:</span>
-                  <span class="confidence-value" :class="getConfidenceClass(Number(aiRecommendation.confidence))">
-                    {{ Number(aiRecommendation.confidence) || 0 }}%
+                  <span class="confidence-value" :class="getConfidenceClass(aiRecommendation.confidence)">
+                    {{ aiRecommendation.confidence }}%
                   </span>
                 </div>
               </div>
@@ -516,9 +516,12 @@ export default {
       }
     },
     getConfidenceClass(confidence) {
-      // Garantir que é um número
-      const confValue = Number(confidence);
-      if (isNaN(confValue)) return 'confidence-low';
+      // Garantir que é um número válido
+      if (confidence === null || confidence === undefined) return 'confidence-low';
+      
+      const confValue = typeof confidence === 'number' ? confidence : Number(confidence);
+      
+      if (isNaN(confValue) || !isFinite(confValue)) return 'confidence-low';
       
       if (confValue >= 70) return 'confidence-high';
       if (confValue >= 50) return 'confidence-medium';
@@ -1772,10 +1775,19 @@ export default {
         
         console.log('[Chart] Recomendação recebida:', recommendation);
         
+        // Garantir que confidence seja um número
+        let confidenceValue = 50; // valor padrão
+        if (recommendation.confidence !== undefined && recommendation.confidence !== null) {
+          const parsed = Number(recommendation.confidence);
+          if (!isNaN(parsed) && isFinite(parsed)) {
+            confidenceValue = parsed;
+          }
+        }
+        
         // Atualizar recomendação
         this.aiRecommendation = {
           action: recommendation.action || 'CALL',
-          confidence: recommendation.confidence || 50,
+          confidence: confidenceValue,
           reasoning: recommendation.reasoning || ''
         };
         
