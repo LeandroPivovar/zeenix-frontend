@@ -1042,8 +1042,9 @@ export default {
     },
     // Helper para atualizar propriedade reativa de forma segura
     safeSetProperty(propertyName, value) {
-      // Se componente foi destruído ou não está montado, ou gráfico está atualizando, não fazer nada
-      if (this.isComponentDestroyed || !this.isComponentMounted() || this.isChartUpdating) {
+      // Se componente foi destruído ou não está montado, não fazer nada
+      // NOTA: Não bloqueamos por isChartUpdating aqui, pois precisamos permitir atualizações de UI (modais, etc)
+      if (this.isComponentDestroyed || !this.isComponentMounted()) {
         return false;
       }
       
@@ -1277,10 +1278,10 @@ export default {
       });
       
       // Se componente foi destruído ou não está montado, ignorar
-      if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate() || this.isChartUpdating) {
-        console.warn('[Chart] ⚠️ safeUpdate ignorado - componente não está montado ou gráfico está atualizando:', {
-          ...componentState,
-          isChartUpdating: this.isChartUpdating
+      // NOTA: Não bloqueamos por isChartUpdating aqui, pois precisamos permitir atualizações de UI (modais, etc)
+      if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate()) {
+        console.warn('[Chart] ⚠️ safeUpdate ignorado - componente não está montado:', {
+          ...componentState
         });
         return;
       }
