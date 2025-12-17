@@ -3138,29 +3138,8 @@ export default {
       console.log('[Chart] ✅ Venda processada com sucesso');
     },
     openMarketModal() {
-      if (!this.isComponentMounted() || !this.isSafeToUpdate()) {
-        return;
-      }
-      
-      const componentState = {
-        isDestroyed: this.isComponentDestroyed,
-        isMounted: this.isComponentMounted(),
-        hasEl: !!this.$el,
-        elConnected: this.$el?.isConnected,
-        hasVnode: !!this.$?.vnode,
-        vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
-        isSafe: this.isSafeToUpdate()
-      };
-      
-      console.log('[Chart] 🔍 openMarketModal - antes de atualizar:', {
-        componentState,
-        timestamp: Date.now()
-      });
-      
-      // Usar safeSetProperty para garantir atualização segura
-      console.log('[Chart] 🔍 openMarketModal - chamando safeSetProperty para showMarketModal = true');
-      const result = this.safeSetProperty('showMarketModal', true);
-      console.log('[Chart] 🔍 openMarketModal - resultado do safeSetProperty:', result);
+      // Atualizar diretamente - mesma abordagem simples
+      this.showMarketModal = true;
       
       // Fallback: atualizar diretamente se safeSetProperty falhar
       if (!result && this.isComponentMounted() && !this.isComponentDestroyed) {
@@ -3174,12 +3153,8 @@ export default {
       }
     },
     closeMarketModal() {
-      if (!this.isComponentMounted() || !this.isSafeToUpdate()) {
-        return;
-      }
-      
-      // Usar safeSetProperty para garantir atualização segura
-      this.safeSetProperty('showMarketModal', false);
+      // Atualizar diretamente - mesma abordagem simples
+      this.showMarketModal = false;
     },
     async selectMarket(marketValue) {
       if (!this.isComponentMounted()) {
@@ -3239,16 +3214,8 @@ export default {
       }
     },
     closeTradeTypeModal() {
-      if (!this.isComponentMounted()) {
-        return;
-      }
-      
-      // Usar nextTick para garantir que o DOM está pronto
-      this.$nextTick(() => {
-        if (this.isComponentMounted()) {
-          this.showTradeTypeModal = false;
-        }
-      });
+      // Atualizar diretamente - mesma abordagem simples
+      this.showTradeTypeModal = false;
     },
     selectTradeType(type) {
       if (!this.isComponentMounted()) {
@@ -4533,6 +4500,11 @@ export default {
   justify-content: center;
   z-index: 10000;
   padding: 20px;
+  pointer-events: auto;
+}
+
+.modal-overlay[style*="display: none"] {
+  pointer-events: none;
 }
 
 .modal-content {
