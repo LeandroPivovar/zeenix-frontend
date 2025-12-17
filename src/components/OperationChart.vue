@@ -2247,6 +2247,27 @@ export default {
         const lastTick = this.tickUpdateQueue[this.tickUpdateQueue.length - 1];
         this.tickUpdateQueue = []; // Limpar fila
         
+        // Validação robusta do tick
+        const time = Number(lastTick.time);
+        const value = Number(lastTick.value);
+        
+        if (!isFinite(time) || time <= 0 || !isFinite(value) || value <= 0 || value === null || time === null) {
+          console.warn('[Chart] ⚠️ Tick inválido ignorado:', { 
+            original: lastTick, 
+            time, 
+            value,
+            isTimeValid: isFinite(time) && time > 0,
+            isValueValid: isFinite(value) && value > 0 && value !== null
+          });
+          this.isProcessingTickQueue = false;
+          
+          // Se houver mais ticks na fila, processar novamente
+          if (this.tickUpdateQueue.length > 0 && !this.isComponentDestroyed) {
+            this.processTickQueue();
+          }
+          return;
+        }
+        
         // Marcar que gráfico está sendo atualizado
         this.isChartUpdating = true;
         
@@ -2254,20 +2275,24 @@ export default {
           // Usar requestAnimationFrame para não bloquear a UI
           requestAnimationFrame(() => {
             if (this.chartSeries && !this.isComponentDestroyed) {
-              this.chartSeries.update({
-                time: lastTick.time,
-                value: lastTick.value
-              });
-              console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: lastTick.time, value: lastTick.value });
-              
-              // Atualizar linha de entrada para terminar no último tick
-              if (this.entrySpotLine && this.activeContract) {
-                this.updateEntrySpotLine();
+              try {
+                this.chartSeries.update({
+                  time: time,
+                  value: value
+                });
+                console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time, value });
+                
+                // Atualizar linha de entrada para terminar no último tick
+                if (this.entrySpotLine && this.activeContract) {
+                  this.updateEntrySpotLine();
+                }
+              } catch (chartError) {
+                console.error('[Chart] ❌ Erro ao atualizar gráfico:', chartError, { time, value });
               }
             }
           });
         } catch (updateError) {
-          console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', updateError, lastTick);
+          console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', updateError, { time, value });
         } finally {
           // Resetar flags após um pequeno delay
           setTimeout(() => {
@@ -2825,12 +2850,24 @@ export default {
         }
         
         // Validação final EXTRA antes de setData() - garantir que não há nulls
-        const finalData = validatedData.filter(item => {
-          if (!item || item === null || item === undefined) return false;
-          const time = Number(item.time);
-          const value = Number(item.value);
-          return isFinite(time) && time > 0 && isFinite(value) && value > 0;
-        });
+        const finalData = validatedData
+          .filter(item => {
+            if (!item || item === null || item === undefined) return false;
+            if (item.time === null || item.time === undefined || item.value === null || item.value === undefined) return false;
+            const time = Number(item.time);
+            const value = Number(item.value);
+            return isFinite(time) && time > 0 && isFinite(value) && value > 0 && value !== null && time !== null;
+          })
+          .map(item => ({
+            time: Number(item.time),
+            value: Number(item.value)
+          }))
+          .filter(item => {
+            // Validação final após conversão
+            return item.time !== null && item.value !== null && 
+                   isFinite(item.time) && item.time > 0 && 
+                   isFinite(item.value) && item.value > 0;
+          });
         
         if (finalData.length === 0) {
           console.error('[Chart] ❌ Nenhum dado válido após validação extra');
@@ -2845,12 +2882,31 @@ export default {
         // Marcar que gráfico está sendo atualizado para pausar atualizações reativas
         this.isChartUpdating = true;
         try {
+          // Validação final antes de setData - garantir que não há nulls
+          const safeData = finalData.filter(item => {
+            return item && 
+                   item.time !== null && item.time !== undefined && 
+                   item.value !== null && item.value !== undefined &&
+                   isFinite(item.time) && item.time > 0 &&
+                   isFinite(item.value) && item.value > 0;
+          });
+          
+          if (safeData.length === 0) {
+            console.error('[Chart] ❌ Nenhum dado seguro após validação final');
+            this.isChartUpdating = false;
+            this.safeUpdate(() => {
+              this.showChartPlaceholder = false;
+              this.isLoadingTicks = false;
+            });
+            return;
+          }
+          
           // Limpar série novamente antes de adicionar novos dados
           this.chartSeries.setData([]);
           
           // Adicionar novos dados validados
-          this.chartSeries.setData(finalData);
-          console.log('[Chart] ✅ Dados setados na série:', finalData.length, 'pontos válidos');
+          this.chartSeries.setData(safeData);
+          console.log('[Chart] ✅ Dados setados na série:', safeData.length, 'pontos válidos');
         } catch (error) {
           console.error('[Chart] ❌ Erro ao setar dados:', error);
           console.error('[Chart] Dados que causaram erro:', finalChartData.slice(0, 5));
