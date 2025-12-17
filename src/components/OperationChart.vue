@@ -57,10 +57,6 @@
                   </span>
                 </div>
               </div>
-              <div v-if="aiRecommendation.reasoning" class="signal-reasoning">
-                <i class="fas fa-lightbulb text-zenix-green mr-2"></i>
-                <span>{{ aiRecommendation.reasoning }}</span>
-              </div>
             </div>
             <div v-else-if="isAnalyzing" class="signal-loading">
               <i class="fas fa-spinner fa-spin text-zenix-green mr-2"></i>
@@ -432,6 +428,7 @@ export default {
       // Chart Type
       chartType: 'line', // 'line' ou 'candles'
       storedTicks: [], // Armazenar ticks para conversão em velas
+      entrySpotLine: null, // Linha tracejada indicando o momento da compra
       allTradeTypes: [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
         { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
@@ -577,6 +574,9 @@ export default {
     
     // Parar contador de contrato
     this.stopContractCountdown();
+    
+    // Remover linha de compra
+    this.removeEntrySpotLine();
     
     if (this.chart) {
       this.chart.remove();
@@ -1084,6 +1084,11 @@ export default {
                 value: tickValue
               });
               
+              // Atualizar linha de compra se existir
+              if (this.entrySpotLine && this.activeContract) {
+                this.updateEntrySpotLine();
+              }
+              
               // Coletar tick para análise se estiver analisando (usando epoch original)
               if (this.isAnalyzing) {
                 this.collectTickForAnalysis({
@@ -1487,6 +1492,12 @@ export default {
       this.isTrading = false;
       this.tradeMessage = 'Compra executada com sucesso!';
       
+      // Adicionar linha de compra no gráfico
+      if (this.activeContract && this.activeContract.entry_spot) {
+        const entryTime = this.activeContract.entry_time || (Date.now() / 1000);
+        this.addEntrySpotLine(this.activeContract.entry_spot, entryTime);
+      }
+      
       // Inicializar contador
       this.initializeContractCountdown();
       
@@ -1644,6 +1655,9 @@ export default {
       // Parar contador
       this.stopContractCountdown();
       
+      // Remover linha de compra
+      this.removeEntrySpotLine();
+      
       // Determinar resultado
       const profit = contractData.profit !== undefined && contractData.profit !== null 
         ? Number(contractData.profit) 
@@ -1676,6 +1690,161 @@ export default {
       // Limpar dados do resultado
       this.finalTradeProfit = 0;
       this.finalTradeType = 'CALL';
+    },
+    addEntrySpotLine(entrySpot, entryTime) {
+      if (!this.chart || !entrySpot) {
+        console.warn('[Chart] Não é possível adicionar linha de entrada: chart ou entrySpot não disponível');
+        return;
+      }
+      
+      try {
+        // Remover linha anterior se existir
+        this.removeEntrySpotLine();
+        
+        const entryColor = '#ef4444'; // Vermelho para linha de entrada
+        const entryTimeUnix = Math.floor(Number(entryTime)) - (3 * 60 * 60); // Converter para horário de Brasília
+        
+        console.log('[Chart] Adicionando linha de entrada:', {
+          entrySpot,
+          entryTime: entryTimeUnix,
+          entryTimeDate: new Date(entryTimeUnix * 1000).toISOString()
+        });
+        
+        // Criar linha horizontal no gráfico
+        const lineSeries = this.chart.addLineSeries({
+          color: entryColor,
+          lineWidth: 2,
+          lineStyle: 2, // Linha pontilhada (dashed)
+          axisLabelVisible: true,
+          title: `Preço de Compra: ${entrySpot.toFixed(this.pricePrecision)}`,
+          priceLineVisible: true,
+          lastValueVisible: true,
+        });
+        
+        // Validar entrySpot antes de usar
+        if (entrySpot === null || entrySpot === undefined || isNaN(Number(entrySpot)) || !isFinite(Number(entrySpot)) || Number(entrySpot) <= 0) {
+          console.error('[Chart] EntrySpot inválido para linha de entrada:', entrySpot);
+          return;
+        }
+        
+        const validEntrySpot = Number(entrySpot);
+        
+        // Obter o primeiro e último tick para criar uma linha que ocupe 100% da largura
+        const firstTick = this.storedTicks && this.storedTicks.length > 0 ? this.storedTicks[0] : null;
+        const lastTick = this.storedTicks && this.storedTicks.length > 0 ? this.storedTicks[this.storedTicks.length - 1] : null;
+        
+        // Validar e calcular tempos
+        let lineStartTime = entryTimeUnix;
+        let lineEndTime = entryTimeUnix;
+        
+        if (firstTick && firstTick.time !== null && firstTick.time !== undefined) {
+          const firstEpoch = Math.floor(Number(firstTick.time));
+          if (!isNaN(firstEpoch) && isFinite(firstEpoch) && firstEpoch > 0) {
+            lineStartTime = firstEpoch;
+          }
+        }
+        
+        if (lastTick && lastTick.time !== null && lastTick.time !== undefined) {
+          const lastEpoch = Math.floor(Number(lastTick.time));
+          if (!isNaN(lastEpoch) && isFinite(lastEpoch) && lastEpoch > 0) {
+            lineEndTime = lastEpoch;
+          }
+        }
+        
+        // Se não temos ticks armazenados, usar o tempo atual como referência
+        if (!firstTick || !lastTick) {
+          const now = Math.floor(Date.now() / 1000) - (3 * 60 * 60);
+          lineStartTime = entryTimeUnix;
+          lineEndTime = now;
+        }
+        
+        // Validar tempos finais
+        if (isNaN(lineStartTime) || !isFinite(lineStartTime) || lineStartTime <= 0) {
+          console.error('[Chart] LineStartTime inválido:', lineStartTime);
+          return;
+        }
+        
+        if (isNaN(lineEndTime) || !isFinite(lineEndTime) || lineEndTime <= 0) {
+          console.error('[Chart] LineEndTime inválido:', lineEndTime);
+          return;
+        }
+        
+        // Criar dois pontos: um no início do gráfico e outro no final
+        // Isso cria uma linha horizontal pontilhada que ocupa 100% da largura
+        lineSeries.setData([
+          { time: lineStartTime, value: validEntrySpot },
+          { time: lineEndTime, value: validEntrySpot }
+        ]);
+        this.entrySpotLine = lineSeries;
+        
+        // Atualizar linha quando novos ticks chegarem
+        this.updateEntrySpotLine();
+        
+        console.log('[Chart] ✅ Linha de entrada adicionada ao gráfico');
+      } catch (error) {
+        console.error('[Chart] Erro ao adicionar linha de entrada:', error);
+      }
+    },
+    removeEntrySpotLine() {
+      if (this.entrySpotLine) {
+        try {
+          this.chart.removeSeries(this.entrySpotLine);
+          this.entrySpotLine = null;
+          console.log('[Chart] ✅ Linha de entrada removida');
+        } catch (error) {
+          console.error('[Chart] Erro ao remover linha de entrada:', error);
+        }
+      }
+    },
+    updateEntrySpotLine() {
+      if (!this.entrySpotLine || !this.activeContract || !this.storedTicks || this.storedTicks.length === 0) {
+        return;
+      }
+      
+      try {
+        const firstTick = this.storedTicks[0];
+        const lastTick = this.storedTicks[this.storedTicks.length - 1];
+        const entrySpot = this.activeContract.entry_spot || this.purchasePrice;
+        
+        // Validar entrySpot
+        if (entrySpot === null || entrySpot === undefined || isNaN(Number(entrySpot)) || !isFinite(Number(entrySpot)) || Number(entrySpot) <= 0) {
+          console.warn('[Chart] EntrySpot inválido ao atualizar linha:', entrySpot);
+          return;
+        }
+        
+        const validEntrySpot = Number(entrySpot);
+        
+        // Validar ticks
+        if (!firstTick || !lastTick) {
+          return;
+        }
+        
+        if (firstTick.time === null || firstTick.time === undefined || 
+            lastTick.time === null || lastTick.time === undefined) {
+          return;
+        }
+        
+        const lineStartTime = Math.floor(Number(firstTick.time));
+        const lineEndTime = Math.floor(Number(lastTick.time));
+        
+        // Validar tempos
+        if (isNaN(lineStartTime) || !isFinite(lineStartTime) || lineStartTime <= 0) {
+          console.warn('[Chart] LineStartTime inválido:', lineStartTime);
+          return;
+        }
+        
+        if (isNaN(lineEndTime) || !isFinite(lineEndTime) || lineEndTime <= 0) {
+          console.warn('[Chart] LineEndTime inválido:', lineEndTime);
+          return;
+        }
+        
+        this.entrySpotLine.setData([
+          { time: lineStartTime, value: validEntrySpot },
+          { time: lineEndTime, value: validEntrySpot }
+        ]);
+      } catch (error) {
+        console.error('[Chart] Erro ao atualizar linha de entrada:', error);
+      }
     },
     toggleAnalysis() {
       if (this.isAnalyzing) {
@@ -2753,16 +2922,6 @@ export default {
 .confidence-low {
   color: #EF4444;
   background: rgba(239, 68, 68, 0.1);
-}
-
-.signal-reasoning {
-  padding: 12px;
-  background: rgba(26, 26, 26, 0.5);
-  border-radius: 8px;
-  border-left: 3px solid #22C55E;
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.8);
-  line-height: 1.5;
 }
 
 .signal-loading {
