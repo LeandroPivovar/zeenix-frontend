@@ -837,11 +837,11 @@ export default {
         }
         
         await this.loadDefaultValues();
-        // Aguardar que a duração seja ajustada antes de carregar proposta
+        // Aguardar que a duração seja ajustada antes de inscrever em propostas
         if (this.localOrderConfig.type) {
           this.safeTimeout(() => {
             if (this.isComponentMounted()) {
-              this.loadProposal();
+              // Apenas inscrever via SSE (não fazer requisição HTTP)
               this.subscribeToProposal();
             }
           }, 500);
@@ -849,21 +849,21 @@ export default {
       }
     },
     'localOrderConfig.duration'() {
-      // Quando a duração mudar, recarregar proposta
+      // Quando a duração mudar, re-inscrever em propostas via SSE
       if (this.isConnected && this.localOrderConfig.type) {
-        this.loadProposal();
+        this.subscribeToProposal();
       }
     },
     'localOrderConfig.durationUnit'() {
-      // Quando a unidade de duração mudar, recarregar proposta
+      // Quando a unidade de duração mudar, re-inscrever em propostas via SSE
       if (this.isConnected && this.localOrderConfig.type) {
-        this.loadProposal();
+        this.subscribeToProposal();
       }
     },
     'localOrderConfig.amount'() {
-      // Quando o valor mudar, recarregar proposta
+      // Quando o valor mudar, re-inscrever em propostas via SSE
       if (this.isConnected && this.localOrderConfig.type) {
-        this.loadProposal();
+        this.subscribeToProposal();
       }
     },
   },
@@ -1821,12 +1821,14 @@ export default {
           this.loadTicksFromBackend();
         }, 2000);
         
-        // Carregar valores padrão e proposta após conectar
+        // Carregar valores padrão após conectar
         setTimeout(async () => {
           await this.loadDefaultValues();
+          // A proposta será carregada via subscribeToProposal quando necessário
+          // Não precisamos fazer uma requisição HTTP adicional aqui
           if (this.localOrderConfig.type) {
             setTimeout(() => {
-              this.loadProposal();
+              // Apenas inscrever em propostas via SSE (não fazer requisição HTTP)
               this.subscribeToProposal();
             }, 500);
           } else {
@@ -2984,7 +2986,7 @@ export default {
             
             if (isTypeAvailable) {
               setTimeout(() => {
-                this.loadProposal();
+                // Apenas inscrever via SSE (não fazer requisição HTTP)
                 this.subscribeToProposal();
               }, 500);
             } else {
@@ -2993,7 +2995,7 @@ export default {
               await this.loadDefaultValues();
               if (this.localOrderConfig.type) {
                 setTimeout(() => {
-                  this.loadProposal();
+                  // Apenas inscrever via SSE (não fazer requisição HTTP)
                   this.subscribeToProposal();
                 }, 500);
               }
@@ -3563,11 +3565,12 @@ export default {
         this.closeTradeTypeModal();
       });
       
-      // Recarregar valores padrão e proposta com novo tipo
+      // Recarregar valores padrão e inscrever em propostas com novo tipo
       if (this.isConnected) {
         this.loadDefaultValues();
         setTimeout(() => {
-          this.loadProposal();
+          // Apenas inscrever via SSE (não fazer requisição HTTP)
+          this.subscribeToProposal();
         }, 500);
       }
     },
