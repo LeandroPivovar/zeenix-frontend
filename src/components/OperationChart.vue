@@ -751,18 +751,42 @@ export default {
     showMarketModal(newVal, oldVal) {
       console.log('[Chart] 🔍 showMarketModal mudou:', { de: oldVal, para: newVal, timestamp: Date.now() });
       if (newVal && !oldVal) {
-        // Modal foi aberto, forçar atualização do DOM
+        // Modal foi aberto, verificar se está no DOM
         this.$nextTick(() => {
-          console.log('[Chart] ✅ showMarketModal = true, DOM deve estar atualizado');
+          const modal = document.querySelector('[data-modal="market"]');
+          if (modal) {
+            const styles = window.getComputedStyle(modal);
+            console.log('[Chart] ✅ showMarketModal = true, modal encontrado no DOM:', {
+              display: styles.display,
+              visibility: styles.visibility,
+              opacity: styles.opacity,
+              zIndex: styles.zIndex,
+              isConnected: modal.isConnected
+            });
+          } else {
+            console.warn('[Chart] ⚠️ showMarketModal = true, mas modal não encontrado no DOM');
+          }
         });
       }
     },
     showTradeTypeModal(newVal, oldVal) {
       console.log('[Chart] 🔍 showTradeTypeModal mudou:', { de: oldVal, para: newVal, timestamp: Date.now() });
       if (newVal && !oldVal) {
-        // Modal foi aberto, forçar atualização do DOM
+        // Modal foi aberto, verificar se está no DOM
         this.$nextTick(() => {
-          console.log('[Chart] ✅ showTradeTypeModal = true, DOM deve estar atualizado');
+          const modal = document.querySelector('[data-modal="trade-type"]');
+          if (modal) {
+            const styles = window.getComputedStyle(modal);
+            console.log('[Chart] ✅ showTradeTypeModal = true, modal encontrado no DOM:', {
+              display: styles.display,
+              visibility: styles.visibility,
+              opacity: styles.opacity,
+              zIndex: styles.zIndex,
+              isConnected: modal.isConnected
+            });
+          } else {
+            console.warn('[Chart] ⚠️ showTradeTypeModal = true, mas modal não encontrado no DOM');
+          }
         });
       }
     },
@@ -1084,12 +1108,26 @@ export default {
             const modalSelector = propertyName === 'showMarketModal' 
               ? '[data-modal="market"]' 
               : '[data-modal="trade-type"]';
-            const modalElement = document.querySelector(modalSelector) || document.querySelector('.modal-overlay');
+            
+            // Verificar imediatamente
+            let modalElement = document.querySelector(modalSelector) || document.querySelector('.modal-overlay');
             if (value && modalElement) {
-              console.log(`[Chart] ✅ Modal encontrado no DOM`);
+              console.log(`[Chart] ✅ Modal encontrado no DOM imediatamente`);
             } else if (value && !modalElement) {
-              // Modal pode estar sendo renderizado ainda, isso é normal
-              console.log(`[Chart] ℹ️ Modal ainda não está no DOM, mas a propriedade foi atualizada. Vue deve renderizar em breve.`);
+              // Tentar novamente após um pequeno delay (Vue pode precisar de mais tempo)
+              setTimeout(() => {
+                modalElement = document.querySelector(modalSelector) || document.querySelector('.modal-overlay');
+                if (modalElement) {
+                  console.log(`[Chart] ✅ Modal encontrado no DOM após delay`);
+                } else {
+                  console.warn(`[Chart] ⚠️ Modal não encontrado no DOM após delay. Verificando propriedade:`, {
+                    propertyName,
+                    propertyValue: this[propertyName],
+                    allModals: document.querySelectorAll('.modal-overlay').length,
+                    componentMounted: this.isComponentMounted()
+                  });
+                }
+              }, 100);
             }
           });
           
