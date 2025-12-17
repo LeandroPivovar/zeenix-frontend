@@ -470,16 +470,21 @@ export default {
       return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     },
     currentAccountType() {
-      // Verificar o tipo de conta atual baseado na conexão
+      // PRIORIDADE 1: Usar accountType da prop (vem do tradeCurrency do settings, igual ao Dashboard)
+      if (this.accountType && (this.accountType === 'demo' || this.accountType === 'real')) {
+        return this.accountType;
+      }
+      
+      // PRIORIDADE 2: Verificar o tipo de conta atual baseado na conexão
       const connectionStr = localStorage.getItem('deriv_connection');
       if (connectionStr) {
         try {
           const connection = JSON.parse(connectionStr);
-          // PRIORIDADE 1: Verificar loginid primeiro (mais confiável)
+          // Verificar loginid primeiro (mais confiável)
           const loginid = connection.loginid || '';
           const isDemoByLoginid = loginid.startsWith('VRTC') || loginid.startsWith('VRT');
           
-          // PRIORIDADE 2: Verificar isDemo se existir
+          // Verificar isDemo se existir
           const isDemoByFlag = connection.isDemo === true || connection.isDemo === 1;
           
           // Se loginid indica demo, é demo (independente do flag)
@@ -833,6 +838,35 @@ export default {
       // Atualiza a foto quando um evento customizado for disparado
       this.loadUserProfilePicture();
     },
+    async updateTradeCurrencyInSettings(accountType) {
+      // Atualiza o tradeCurrency no settings (igual ao Dashboard)
+      try {
+        const tradeCurrency = accountType === 'demo' ? 'DEMO' : 'USD';
+        
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${apiBase}/settings`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            tradeCurrency: tradeCurrency
+          })
+        });
+
+        if (response.ok) {
+          console.log('[TopNavbar] TradeCurrency atualizado no settings:', tradeCurrency);
+        } else {
+          console.warn('[TopNavbar] Erro ao atualizar tradeCurrency:', response.statusText);
+        }
+      } catch (error) {
+        console.error('[TopNavbar] Erro ao atualizar tradeCurrency:', error);
+      }
+    },
+    
     handleAccountChange() {
       // Atualizar o filtro quando a conta for alterada
       const newAccountType = this.currentAccountType;
@@ -980,6 +1014,11 @@ export default {
           
           // Atualizar o filtro imediatamente para refletir a mudança no modal
           this.accountTypeFilter = accountType;
+          
+          // Atualizar tradeCurrency no settings (igual ao Dashboard)
+          this.updateTradeCurrencyInSettings(accountType).catch(err => {
+            console.warn('[TopNavbar] Erro ao atualizar tradeCurrency:', err);
+          });
           
           window.dispatchEvent(new CustomEvent('accountChanged', { 
             detail: { accountType, account } 

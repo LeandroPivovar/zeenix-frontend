@@ -18,7 +18,7 @@
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 :balance="balanceObject"
-                :account-type="isDemo ? 'demo' : 'real'"
+                :account-type="tradeCurrency === 'DEMO' ? 'demo' : 'real'"
                 :currency="accountCurrency"
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -473,6 +473,7 @@ export default {
             accountCurrency: 'USD',
             accountLoginid: null,
             isDemo: false,
+            tradeCurrency: 'USD', // Usar tradeCurrency como no Dashboard
             balanceVisible: true,
             lastBalanceUpdate: null,
             balanceUpdateInterval: null,
@@ -1234,21 +1235,109 @@ export default {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
         },
         
-        toggleAccountType(type) {
-            this.isDemo = type === 'demo';
+        async loadTradeCurrency() {
+            // Carrega o tradeCurrency do settings (igual ao Dashboard)
+            try {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch(`${apiBase}/settings`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    const data = await response.json();
+                    this.tradeCurrency = data.tradeCurrency || 'USD';
+                    // Atualizar isDemo baseado no tradeCurrency (igual ao Dashboard)
+                    this.isDemo = this.tradeCurrency === 'DEMO';
+                    console.log('[InvestmentIAView] TradeCurrency carregado:', {
+                        tradeCurrency: this.tradeCurrency,
+                        isDemo: this.isDemo
+                    });
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao carregar tradeCurrency:', error);
+                // Fallback: tentar pegar do deriv_connection
+                try {
+                    const connectionStr = localStorage.getItem('deriv_connection');
+                    if (connectionStr) {
+                        const connection = JSON.parse(connectionStr);
+                        if (connection.tradeCurrency) {
+                            this.tradeCurrency = connection.tradeCurrency;
+                            this.isDemo = this.tradeCurrency === 'DEMO';
+                        } else {
+                            // Se não tiver tradeCurrency, usar isDemo do connection
+                            const loginid = connection.loginid || '';
+                            this.isDemo = connection.isDemo === true || connection.isDemo === 1 || 
+                                         loginid.startsWith('VRTC') || loginid.startsWith('VRT');
+                            this.tradeCurrency = this.isDemo ? 'DEMO' : 'USD';
+                        }
+                    }
+                } catch (e) {
+                    console.warn('[InvestmentIAView] Erro ao verificar deriv_connection:', e);
+                }
+            }
         },
+        
+        async updateTradeCurrency(type) {
+            // Atualiza o tradeCurrency no settings (igual ao Dashboard)
+            try {
+                const tradeCurrency = type === 'demo' ? 'DEMO' : 'USD';
+                
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch(`${apiBase}/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        tradeCurrency: tradeCurrency
+                    })
+                });
+
+                if (response.ok) {
+                    // Atualizar tradeCurrency local imediatamente
+                    this.tradeCurrency = tradeCurrency;
+                    this.isDemo = type === 'demo';
+                    console.log('[InvestmentIAView] TradeCurrency atualizado:', {
+                        tradeCurrency: this.tradeCurrency,
+                        isDemo: this.isDemo
+                    });
+                } else {
+                    throw new Error('Erro ao alterar moeda');
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao atualizar tradeCurrency:', error);
+            }
+        },
+        
+        toggleAccountType(type) {
+            // Atualizar tradeCurrency no settings quando trocar de conta
+            this.updateTradeCurrency(type);
+        },
+        
         handleAccountTypeChangeFromNavbar(newAccountType) {
             // Alterna entre demo e real quando chamado do navbar
-            this.toggleAccountType(newAccountType);
+            // Atualiza tradeCurrency no settings (igual ao Dashboard)
+            this.updateTradeCurrency(newAccountType);
         },
         
         handleAccountChange(event) {
             console.log('[InvestmentIAView] Conta alterada, atualizando saldo...', event.detail);
             
-            // Atualizar isDemo baseado na nova conta primeiro
+            // Atualizar isDemo e tradeCurrency baseado na nova conta
             const account = event.detail?.account;
             if (account) {
-                this.isDemo = account.isDemo === true || account.loginid?.startsWith('VRTC') || account.loginid?.startsWith('VRT');
+                const isDemoAccount = account.isDemo === true || account.loginid?.startsWith('VRTC') || account.loginid?.startsWith('VRT');
+                this.isDemo = isDemoAccount;
+                this.tradeCurrency = isDemoAccount ? 'DEMO' : 'USD';
                 
                 // Se temos dados da conta no evento, atualizar saldo imediatamente do cache
                 if (account.balance !== null && account.balance !== undefined) {
@@ -1261,10 +1350,14 @@ export default {
                             balance: this.accountBalance,
                             currency: this.accountCurrency,
                             loginid: this.accountLoginid,
-                            isDemo: this.isDemo
+                            isDemo: this.isDemo,
+                            tradeCurrency: this.tradeCurrency
                         });
                     }
                 }
+                
+                // Atualizar tradeCurrency no settings (igual ao Dashboard)
+                this.updateTradeCurrency(isDemoAccount ? 'demo' : 'real');
             }
             
             // Buscar saldo atualizado da API em background (sem bloquear)
@@ -1458,6 +1551,9 @@ export default {
     async mounted() {
         console.log('🚀 TESTE: InvestmentIAView mounted() foi chamado!');
         console.warn('⚠️ SE VOCÊ VÊ ESTA MENSAGEM, O COMPONENTE ESTÁ CARREGANDO!');
+        
+        // Carregar tradeCurrency do settings (igual ao Dashboard)
+        await this.loadTradeCurrency();
         
         // Buscar saldo imediatamente ao montar o componente
         console.log('[InvestmentIAView] Buscando saldo inicial...');
