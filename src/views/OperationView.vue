@@ -371,49 +371,89 @@ export default {
       
       this.isProcessingUpdates = true;
       
-      // Usar nextTick para garantir que estamos em um ciclo de renderização seguro
-      this.$nextTick(() => {
+      // Usar requestAnimationFrame + nextTick para garantir que estamos fora do ciclo de renderização
+      requestAnimationFrame(() => {
+        // Verificar se componente ainda está válido antes de usar nextTick
+        if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+          this.updateQueue = [];
+          this.isProcessingUpdates = false;
+          return;
+        }
+        
+        // Verificar se componente Vue ainda está válido
         try {
-          // Verificar se componente ainda está válido
-          if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+          if (!this.$ || !this.$.vnode) {
             this.updateQueue = [];
             this.isProcessingUpdates = false;
             return;
           }
-          
-          // Verificar se componente Vue ainda está válido
+        } catch (e) {
+          this.updateQueue = [];
+          this.isProcessingUpdates = false;
+          return;
+        }
+        
+        // Agora usar nextTick para garantir que estamos em um ciclo seguro
+        this.$nextTick(() => {
           try {
-            if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+            // Verificar novamente se componente ainda está válido
+            if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
               this.updateQueue = [];
               this.isProcessingUpdates = false;
               return;
             }
-          } catch (e) {
-            this.updateQueue = [];
-            this.isProcessingUpdates = false;
-            return;
-          }
-          
-          // Processar todas as atualizações na fila
-          while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
-            const callback = this.updateQueue.shift();
-            if (typeof callback === 'function') {
-              try {
-                // Verificar novamente antes de executar cada callback
-                if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-                  break;
+            
+            // Verificar se componente Vue ainda está válido
+            try {
+              if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+                this.updateQueue = [];
+                this.isProcessingUpdates = false;
+                return;
+              }
+              
+              // Verificar se o vnode ainda está conectado ao DOM
+              if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
+                this.updateQueue = [];
+                this.isProcessingUpdates = false;
+                return;
+              }
+            } catch (e) {
+              this.updateQueue = [];
+              this.isProcessingUpdates = false;
+              return;
+            }
+            
+            // Processar todas as atualizações na fila
+            while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
+              const callback = this.updateQueue.shift();
+              if (typeof callback === 'function') {
+                try {
+                  // Verificar novamente antes de executar cada callback
+                  if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+                    break;
+                  }
+                  
+                  // Verificar se componente Vue ainda está válido antes de cada atualização
+                  try {
+                    if (!this.$ || !this.$.vnode) {
+                      break;
+                    }
+                  } catch (e) {
+                    break;
+                  }
+                  
+                  callback();
+                } catch (error) {
+                  console.warn('[OperationView] Erro ao executar callback na fila:', error);
                 }
-                callback();
-              } catch (error) {
-                console.warn('[OperationView] Erro ao executar callback na fila:', error);
               }
             }
+          } catch (error) {
+            console.warn('[OperationView] Erro ao processar fila de atualizações:', error);
+          } finally {
+            this.isProcessingUpdates = false;
           }
-        } catch (error) {
-          console.warn('[OperationView] Erro ao processar fila de atualizações:', error);
-        } finally {
-          this.isProcessingUpdates = false;
-        }
+        });
       });
     },
     applyConnectionSnapshot(snapshot) {

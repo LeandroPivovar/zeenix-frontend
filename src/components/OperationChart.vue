@@ -876,49 +876,89 @@ export default {
       
       this.isProcessingUpdates = true;
       
-      // Usar nextTick para garantir que estamos em um ciclo de renderização seguro
-      this.$nextTick(() => {
+      // Usar requestAnimationFrame + nextTick para garantir que estamos fora do ciclo de renderização
+      requestAnimationFrame(() => {
+        // Verificar se componente ainda está válido antes de usar nextTick
+        if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+          this.updateQueue = [];
+          this.isProcessingUpdates = false;
+          return;
+        }
+        
+        // Verificar se componente Vue ainda está válido
         try {
-          // Verificar se componente ainda está válido
-          if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+          if (!this.$ || !this.$.vnode) {
             this.updateQueue = [];
             this.isProcessingUpdates = false;
             return;
           }
-          
-          // Verificar se componente Vue ainda está válido
+        } catch (e) {
+          this.updateQueue = [];
+          this.isProcessingUpdates = false;
+          return;
+        }
+        
+        // Agora usar nextTick para garantir que estamos em um ciclo seguro
+        this.$nextTick(() => {
           try {
-            if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+            // Verificar novamente se componente ainda está válido
+            if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
               this.updateQueue = [];
               this.isProcessingUpdates = false;
               return;
             }
-          } catch (e) {
-            this.updateQueue = [];
-            this.isProcessingUpdates = false;
-            return;
-          }
-          
-          // Processar todas as atualizações na fila
-          while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
-            const callback = this.updateQueue.shift();
-            if (typeof callback === 'function') {
-              try {
-                // Verificar novamente antes de executar cada callback
-                if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-                  break;
+            
+            // Verificar se componente Vue ainda está válido
+            try {
+              if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+                this.updateQueue = [];
+                this.isProcessingUpdates = false;
+                return;
+              }
+              
+              // Verificar se o vnode ainda está conectado ao DOM
+              if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
+                this.updateQueue = [];
+                this.isProcessingUpdates = false;
+                return;
+              }
+            } catch (e) {
+              this.updateQueue = [];
+              this.isProcessingUpdates = false;
+              return;
+            }
+            
+            // Processar todas as atualizações na fila
+            while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
+              const callback = this.updateQueue.shift();
+              if (typeof callback === 'function') {
+                try {
+                  // Verificar novamente antes de executar cada callback
+                  if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+                    break;
+                  }
+                  
+                  // Verificar se componente Vue ainda está válido antes de cada atualização
+                  try {
+                    if (!this.$ || !this.$.vnode) {
+                      break;
+                    }
+                  } catch (e) {
+                    break;
+                  }
+                  
+                  callback();
+                } catch (error) {
+                  console.warn('[Chart] Erro ao executar callback na fila:', error);
                 }
-                callback();
-              } catch (error) {
-                console.warn('[Chart] Erro ao executar callback na fila:', error);
               }
             }
+          } catch (error) {
+            console.warn('[Chart] Erro ao processar fila de atualizações:', error);
+          } finally {
+            this.isProcessingUpdates = false;
           }
-        } catch (error) {
-          console.warn('[Chart] Erro ao processar fila de atualizações:', error);
-        } finally {
-          this.isProcessingUpdates = false;
-        }
+        });
       });
     },
     initChart() {
@@ -1951,22 +1991,11 @@ export default {
           return;
         }
         
-        // Verificar novamente antes de atualizar estado
-        if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-          return;
-        }
-        
-        // Verificar se componente Vue ainda está válido
-        try {
-          if (!this.$ || !this.$.vnode) {
-            return;
-          }
-          
+        // Usar safeUpdate para atualizar estado após plotar ticks
+        this.safeUpdate(() => {
           this.showChartPlaceholder = false;
           this.isLoadingTicks = false;
-        } catch (error) {
-          console.warn('[Chart] Erro ao atualizar estado após plotar ticks:', error);
-        }
+        });
         
         // Forçar resize para garantir que o gráfico use toda a altura disponível
         this.$nextTick(() => {
@@ -2423,33 +2452,20 @@ export default {
         return;
       }
       
-      // Verificar se componente ainda está válido antes de atualizar
-      if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-        return;
-      }
-      
-      // Atualizar diretamente se possível, sem safeUpdate para modais
-      try {
+      // Usar safeUpdate para garantir atualização segura
+      this.safeUpdate(() => {
         this.showMarketModal = true;
-      } catch (error) {
-        console.warn('[Chart] Erro ao abrir modal de mercado:', error);
-      }
+      });
     },
     closeMarketModal() {
       if (!this.isComponentMounted()) {
         return;
       }
       
-      // Verificar se componente ainda está válido antes de atualizar
-      if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-        return;
-      }
-      
-      try {
+      // Usar safeUpdate para garantir atualização segura
+      this.safeUpdate(() => {
         this.showMarketModal = false;
-      } catch (error) {
-        console.warn('[Chart] Erro ao fechar modal de mercado:', error);
-      }
+      });
     },
     async selectMarket(marketValue) {
       this.symbol = marketValue;
@@ -2466,41 +2482,28 @@ export default {
         return;
       }
       
-      // Verificar se componente ainda está válido antes de atualizar
-      if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-        return;
-      }
-      
       if (!this.symbol) {
-        try {
+        // Usar safeUpdate para definir erro
+        this.safeUpdate(() => {
           this.tradeError = 'Selecione um mercado primeiro';
-        } catch (error) {
-          console.warn('[Chart] Erro ao definir erro de trade:', error);
-        }
+        });
         return;
       }
       
-      try {
+      // Usar safeUpdate para garantir atualização segura
+      this.safeUpdate(() => {
         this.showTradeTypeModal = true;
-      } catch (error) {
-        console.warn('[Chart] Erro ao abrir modal de tipo de trade:', error);
-      }
+      });
     },
     closeTradeTypeModal() {
       if (!this.isComponentMounted()) {
         return;
       }
       
-      // Verificar se componente ainda está válido antes de atualizar
-      if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-        return;
-      }
-      
-      try {
+      // Usar safeUpdate para garantir atualização segura
+      this.safeUpdate(() => {
         this.showTradeTypeModal = false;
-      } catch (error) {
-        console.warn('[Chart] Erro ao fechar modal de tipo de trade:', error);
-      }
+      });
     },
     selectTradeType(type) {
       if (!this.isComponentMounted()) {
@@ -3133,9 +3136,11 @@ export default {
           amount: this.localOrderConfig.amount,
         });
         
-        // Atualizar proposta atual
-        this.currentProposalId = proposal.id;
-        this.currentProposalPrice = proposal.askPrice;
+        // Usar safeUpdate para atualizar proposta atual
+        this.safeUpdate(() => {
+          this.currentProposalId = proposal.id;
+          this.currentProposalPrice = proposal.askPrice;
+        });
         
         console.log('[Chart] ✅ Proposta carregada:', proposal);
       } catch (error) {
