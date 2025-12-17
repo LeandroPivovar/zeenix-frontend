@@ -444,6 +444,7 @@ export default {
       isComponentDestroyed: false, // Flag para verificar se componente foi destruído
       updateQueue: [], // Fila de atualizações pendentes
       isProcessingUpdates: false, // Flag para evitar processamento simultâneo
+      isChartUpdating: false, // Flag para pausar atualizações durante operações críticas do gráfico
       pendingTimeouts: [], // Array para rastrear todos os timeouts pendentes
       pendingIntervals: [], // Array para rastrear todos os intervals pendentes
       showLoading: false,
@@ -1041,8 +1042,8 @@ export default {
     },
     // Helper para atualizar propriedade reativa de forma segura
     safeSetProperty(propertyName, value) {
-      // Se componente foi destruído ou não está montado, não fazer nada
-      if (this.isComponentDestroyed || !this.isComponentMounted()) {
+      // Se componente foi destruído ou não está montado, ou gráfico está atualizando, não fazer nada
+      if (this.isComponentDestroyed || !this.isComponentMounted() || this.isChartUpdating) {
         return false;
       }
       
@@ -1257,8 +1258,11 @@ export default {
       });
       
       // Se componente foi destruído ou não está montado, ignorar
-      if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate()) {
-        console.warn('[Chart] ⚠️ safeUpdate ignorado - componente não está montado:', componentState);
+      if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate() || this.isChartUpdating) {
+        console.warn('[Chart] ⚠️ safeUpdate ignorado - componente não está montado ou gráfico está atualizando:', {
+          ...componentState,
+          isChartUpdating: this.isChartUpdating
+        });
         return;
       }
       
@@ -2043,18 +2047,31 @@ export default {
           return;
         }
         
-        this.chartSeries.update({
-          time: finalTime,
-          value: finalValue
-        });
-        console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: finalTime, value: finalValue });
-        
-        // Atualizar linha de entrada para terminar no último tick
-        if (this.entrySpotLine && this.activeContract) {
-          this.updateEntrySpotLine();
+        // Marcar que gráfico está sendo atualizado
+        this.isChartUpdating = true;
+        try {
+            this.chartSeries.update({
+            time: finalTime,
+            value: finalValue
+          });
+          console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: finalTime, value: finalValue });
+          
+          // Atualizar linha de entrada para terminar no último tick
+          if (this.entrySpotLine && this.activeContract) {
+            this.updateEntrySpotLine();
+          }
+        } catch (updateError) {
+          console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', updateError, { time: brasiliaEpoch, value: numValue });
+        } finally {
+          // Resetar flag de atualização do gráfico após um pequeno delay
+          setTimeout(() => {
+            this.isChartUpdating = false;
+          }, 10);
         }
       } catch (error) {
-        console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', error, { time: brasiliaEpoch, value: numValue });
+        console.error('[Chart] ❌ Erro geral ao processar tick:', error, { time: brasiliaEpoch, value: numValue });
+        // Resetar flag em caso de erro geral também
+        this.isChartUpdating = false;
       }
     },
     async loadTicksFromBackend() {
@@ -2253,6 +2270,9 @@ export default {
         console.warn('[Chart] Componente destruído, ignorando plotagem de ticks');
         return;
       }
+      
+      // Resetar flag de atualização do gráfico no início
+      this.isChartUpdating = false;
       
       console.log('[Chart] ========== PLOTANDO TICKS ==========');
       console.log('[Chart] Gráfico existe:', !!this.chart);
@@ -2597,6 +2617,8 @@ export default {
         }
         
         // Atualizar gráfico com try-catch robusto
+        // Marcar que gráfico está sendo atualizado para pausar atualizações reativas
+        this.isChartUpdating = true;
         try {
           // Limpar série novamente antes de adicionar novos dados
           this.chartSeries.setData([]);
@@ -2625,13 +2647,24 @@ export default {
             console.error('[Chart] ❌ Erro ao recriar série:', recreateError);
           }
           
+          // Resetar flag de atualização do gráfico
+          this.isChartUpdating = false;
+          
           if (this.isComponentMounted()) {
-            this.safeUpdate(() => {
-              this.showChartPlaceholder = false;
-              this.isLoadingTicks = false;
-            });
+            // Usar setTimeout para garantir que a flag foi resetada antes de atualizar
+            setTimeout(() => {
+              this.safeUpdate(() => {
+                this.showChartPlaceholder = false;
+                this.isLoadingTicks = false;
+              });
+            }, 10);
           }
           return;
+        } finally {
+          // Garantir que a flag seja resetada mesmo em caso de erro
+          setTimeout(() => {
+            this.isChartUpdating = false;
+          }, 100);
         }
         
         // Ajustar viewport para mostrar todos os dados
@@ -2709,13 +2742,19 @@ export default {
               return;
             }
             
+            // Marcar que gráfico terminou de atualizar
+            this.isChartUpdating = false;
+            
             // Atualizar estado após plotar ticks usando safeUpdate
             if (!this.isComponentDestroyed && this.isComponentMounted()) {
               console.log('[Chart] 🔄 plotTicks - chamando safeUpdate para atualizar estado');
-              this.safeUpdate(() => {
-                this.showChartPlaceholder = false;
-                this.isLoadingTicks = false;
-              });
+              // Usar setTimeout para garantir que a flag foi resetada antes de atualizar
+              setTimeout(() => {
+                this.safeUpdate(() => {
+                  this.showChartPlaceholder = false;
+                  this.isLoadingTicks = false;
+                });
+              }, 10);
             } else {
               console.warn('[Chart] ⚠️ plotTicks - componente destruído ou não montado:', afterNextTickState);
             }
@@ -3031,12 +3070,14 @@ export default {
         
         try {
           console.log('[Chart] 🔄 processProposal - atualizando propriedades...');
-          this.currentProposalId = proposalData.id;
-          this.currentProposalPrice = Number(proposalData.askPrice || proposalData.ask_price || 0);
+          
+          // Usar safeSetProperty para atualizar propriedades de forma segura
+          this.safeSetProperty('currentProposalId', proposalData.id);
+          this.safeSetProperty('currentProposalPrice', Number(proposalData.askPrice || proposalData.ask_price || 0));
           
           console.log('[Chart] ✅ Proposta processada:', {
-            proposalId: this.currentProposalId,
-            proposalPrice: this.currentProposalPrice,
+            proposalId: proposalData.id,
+            proposalPrice: Number(proposalData.askPrice || proposalData.ask_price || 0),
             componentState: afterTickState
           });
         } catch (error) {
