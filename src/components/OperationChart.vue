@@ -477,9 +477,13 @@ export default {
     this.initChart();
     await this.loadMarketsFromAPI();
     
-    // Se já houver um símbolo selecionado, carregar contratos disponíveis
+    // Se já houver um símbolo selecionado, carregar contratos disponíveis e ticks
     if (this.symbol) {
       await this.loadAvailableContracts(this.symbol);
+      // Aguardar um pouco para garantir que o gráfico está pronto
+      setTimeout(() => {
+        this.loadTicksFromBackend();
+      }, 1000);
     }
   },
   beforeUnmount() {
@@ -525,9 +529,6 @@ export default {
             lineWidth: 2,
       });
 
-      // Dados placeholder
-      this.loadPlaceholderData();
-
       // Resize observer
       const resizeObserver = new ResizeObserver(() => {
         if (this.chart && container) {
@@ -539,37 +540,140 @@ export default {
 
               this.showChartPlaceholder = false;
     },
-    loadPlaceholderData() {
-      if (!this.chartSeries) return;
-
-      // Gerar dados placeholder (últimas 100 horas)
-      const now = Math.floor(Date.now() / 1000);
-      const data = [];
-      let baseValue = 625.0;
-
-      for (let i = 100; i >= 0; i--) {
-        const time = now - (i * 3600); // 1 hora atrás
-        baseValue += (Math.random() - 0.5) * 2; // Variação aleatória
-        data.push({
-          time: time,
-          value: Math.max(600, Math.min(650, baseValue)), // Limitar entre 600 e 650
-        });
+    async loadTicksFromBackend() {
+      if (!this.chart || !this.chartSeries || !this.symbol) {
+        console.warn('[Chart] Gráfico não inicializado ou símbolo não definido');
+        return;
       }
-
-      this.chartSeries.setData(data);
-          this.chart.timeScale().fitContent();
       
-      // Simular latestTick com o último valor para calcular dígitos
-      if (data.length > 0) {
-        const lastValue = data[data.length - 1].value;
-        this.latestTick = {
-          value: lastValue,
-          epoch: now
-        };
-        // Calcular último dígito se for contrato de dígitos
-        if (this.isDigitContract) {
-          this.updateDigitInfo(lastValue);
+      try {
+        console.log('[Chart] ========== BUSCANDO TICKS ==========');
+        console.log('[Chart] Símbolo:', this.symbol);
+        
+        const response = await derivTradingService.getTicks(this.symbol);
+        console.log('[Chart] Resposta do backend:', response);
+        
+        if (!response || !response.ticks || !Array.isArray(response.ticks)) {
+          console.warn('[Chart] Resposta inválida do backend:', response);
+          return;
         }
+        
+        // Filtrar ticks dos últimos 10 minutos
+        const now = Math.floor(Date.now() / 1000);
+        const tenMinutesAgo = now - (10 * 60);
+        
+        const recentTicks = response.ticks.filter(tick => {
+          const tickEpoch = tick.epoch || tick.time || 0;
+          return tickEpoch >= tenMinutesAgo;
+        });
+        
+        console.log('[Chart] Ticks recebidos:', response.ticks.length);
+        console.log('[Chart] Ticks dos últimos 10 minutos:', recentTicks.length);
+        
+        if (recentTicks.length > 0) {
+          this.plotTicks(recentTicks);
+        } else {
+          console.warn('[Chart] Nenhum tick dos últimos 10 minutos encontrado');
+        }
+      } catch (error) {
+        console.error('[Chart] Erro ao carregar ticks do backend:', error);
+      }
+    },
+    plotTicks(ticks) {
+      if (!this.chart || !this.chartSeries) {
+        console.warn('[Chart] Gráfico não inicializado');
+        return;
+      }
+      
+      if (!ticks || !Array.isArray(ticks) || ticks.length === 0) {
+        console.warn('[Chart] Ticks inválidos ou vazios');
+        return;
+      }
+      
+      console.log('[Chart] ========== PLOTANDO TICKS ==========');
+      console.log('[Chart] Ticks recebidos:', ticks.length);
+      
+      // Converter ticks para formato do gráfico
+      const chartData = ticks
+        .map(tick => {
+          // Converter epoch para horário de Brasília (UTC-3)
+          const epoch = tick.epoch || tick.time || Date.now() / 1000;
+          const brasiliaEpoch = Math.floor(Number(epoch)) - (3 * 60 * 60);
+          
+          return {
+            time: brasiliaEpoch,
+            value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
+          };
+        })
+        .filter(point => point.value && point.value > 0 && point.time > 0)
+        .sort((a, b) => a.time - b.time);
+      
+      if (chartData.length === 0) {
+        console.warn('[Chart] Nenhum tick válido após processamento');
+        return;
+      }
+      
+      console.log('[Chart] Plotando', chartData.length, 'ticks no gráfico');
+      if (chartData.length > 0) {
+        console.log('[Chart] Primeiro tick:', chartData[0]);
+        console.log('[Chart] Último tick:', chartData[chartData.length - 1]);
+      }
+      
+      try {
+        // Limpar dados anteriores
+        this.chartSeries.setData([]);
+        
+        // Plotar novos dados
+        this.chartSeries.setData(chartData);
+        
+        // Ajustar o gráfico para mostrar todos os dados
+        this.chart.timeScale().fitContent();
+        
+        console.log('[Chart] ✅ Dados plotados com sucesso');
+        
+        // Atualizar latestTick com o último tick
+        if (chartData.length > 0) {
+          const lastTick = chartData[chartData.length - 1];
+          this.latestTick = {
+            value: lastTick.value,
+            epoch: lastTick.time
+          };
+          
+          // Calcular último dígito se for contrato de dígitos
+          if (this.isDigitContract) {
+            this.updateDigitInfo(lastTick.value);
+          }
+        }
+      } catch (error) {
+        console.error('[Chart] Erro ao plotar ticks:', error);
+      }
+    },
+    addTickToChart(tickData) {
+      if (!this.chart || !this.chartSeries || !tickData) {
+        return;
+      }
+      
+      try {
+        const time = tickData.time || tickData.epoch || Date.now() / 1000;
+        const value = Number(tickData.value);
+        
+        if (!isFinite(value) || value <= 0 || !isFinite(time) || time <= 0) {
+          return;
+        }
+        
+        // Adicionar novo tick à série
+        this.chartSeries.update({
+          time: Math.floor(time),
+          value: value
+        });
+        
+        // Atualizar latestTick
+        this.latestTick = {
+          value: value,
+          epoch: Math.floor(time)
+        };
+      } catch (error) {
+        console.warn('[Chart] Erro ao adicionar tick ao gráfico:', error);
       }
     },
     openMarketModal() {
@@ -587,6 +691,11 @@ export default {
       
       // Buscar tipos de negociação disponíveis para o mercado selecionado
       await this.loadAvailableContracts(marketValue);
+      
+      // Carregar ticks do novo mercado
+      setTimeout(() => {
+        this.loadTicksFromBackend();
+      }, 500);
     },
     openTradeTypeModal() {
       this.showTradeTypeModal = true;
@@ -673,12 +782,30 @@ export default {
           if (data.type === 'active_symbols' && data.data) {
             this.processActiveSymbols(data.data);
             this.isLoadingMarkets = false;
+          } else if (data.type === 'history' && data.data && data.data.ticks) {
+            // Histórico recebido via SSE - filtrar últimos 10 minutos e plotar
+            const now = Math.floor(Date.now() / 1000);
+            const tenMinutesAgo = now - (10 * 60);
+            
+            const recentTicks = data.data.ticks
+              .filter(tick => {
+                const tickEpoch = tick.epoch || tick.time || 0;
+                return tickEpoch >= tenMinutesAgo;
+              })
+              .map(tick => ({
+                value: Number(tick.value),
+                epoch: Math.floor(Number(tick.epoch)) - (3 * 60 * 60) // UTC-3
+              }));
+            
+            if (recentTicks.length > 0) {
+              this.plotTicks(recentTicks);
+            }
           } else if (data.type === 'buy' && data.data) {
             this.processBuy(data.data);
           } else if (data.type === 'contract' && data.data) {
             this.processContract(data.data);
           } else if (data.type === 'tick' && data.data) {
-            // Atualizar latestTick
+            // Atualizar latestTick e adicionar ao gráfico
             const tickValue = Number(data.data.value);
             const tickEpoch = Math.floor(Number(data.data.epoch)) - (3 * 60 * 60);
             
@@ -688,6 +815,12 @@ export default {
                 value: tickValue,
                 epoch: tickEpoch
               };
+              
+              // Adicionar tick ao gráfico
+              this.addTickToChart({
+                time: tickEpoch,
+                value: tickValue
+              });
               
               // Calcular último dígito se for contrato de dígitos
               if (this.isDigitContract) {
