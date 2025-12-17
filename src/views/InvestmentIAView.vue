@@ -466,7 +466,7 @@ export default {
             selectedMarket: 'vol10',
             selectedStrategy: 'orion',
             
-            accountBalance: null,
+            accountBalance: 0,
             accountCurrency: 'USD',
             accountLoginid: null,
             isDemo: false,
@@ -526,10 +526,9 @@ export default {
             if (!this.balanceVisible) {
                 return '••••••';
             }
-            if (this.accountBalance === null || this.accountBalance === undefined) {
-                return '$0,00';
-            }
-            return `$${this.accountBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            // Sempre formatar o saldo, mesmo se for 0
+            const balance = this.accountBalance || 0;
+            return `$${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         },
         
         selectedStrategyName() {
@@ -987,31 +986,36 @@ export default {
                         console.warn('[InvestmentIAView] Erro ao verificar deriv_connection:', error);
                     }
                     
-                    // Só atualizar se o tipo de conta corresponder ao tipo preferido OU se ainda não temos um saldo válido
-                    const accountTypeMatches = (isDemoFromLoginid === this.isDemo) || 
-                                               (this.accountBalance === null || this.accountBalance === undefined || this.accountBalance === 0);
+                    console.log('[InvestmentIAView] 🔍 Verificando atualização de saldo:', {
+                        newBalance,
+                        newLoginid,
+                        isDemoFromLoginid,
+                        currentBalance: this.accountBalance,
+                        currentIsDemo: this.isDemo,
+                        accountTypeMatches: isDemoFromLoginid === this.isDemo
+                    });
                     
-                    // Só atualizar o saldo se o valor recebido for válido e o tipo de conta corresponder
-                    if (newBalance !== null && newBalance !== undefined && newBalance >= 0 && accountTypeMatches) {
+                    // Sempre atualizar o saldo se o valor recebido for válido (>= 0)
+                    // Isso garante que o saldo seja atualizado mesmo que o tipo de conta mude
+                    if (newBalance !== null && newBalance !== undefined && newBalance >= 0) {
                         this.accountBalance = newBalance;
+                        console.log('[InvestmentIAView] ✅ Saldo atualizado para:', newBalance);
                     } else if (this.accountBalance === null || this.accountBalance === undefined) {
                         // Se o saldo atual é null/undefined e o novo também é inválido, manter como 0 para evitar null
                         this.accountBalance = 0;
                     }
-                    // Se o novo saldo for inválido ou o tipo não corresponder, manter o saldo atual do cache
+                    // Se o novo saldo for inválido mas já temos um saldo válido, manter o saldo atual do cache
                     
                     // Sempre atualizar currency e loginid se disponíveis
                     if (newCurrency) {
                         this.accountCurrency = newCurrency;
                     }
-                    if (newLoginid && accountTypeMatches) {
+                    if (newLoginid) {
                         this.accountLoginid = newLoginid;
                     }
                     
-                    // Só atualizar isDemo se o tipo corresponder
-                    if (accountTypeMatches) {
-                        this.isDemo = isDemoFromLoginid;
-                    }
+                    // Atualizar isDemo baseado no loginid retornado
+                    this.isDemo = isDemoFromLoginid;
                     this.lastBalanceUpdate = new Date();
                     
                     console.log('[InvestmentIAView] ✅ Saldo atualizado da API:', {
