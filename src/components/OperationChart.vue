@@ -858,6 +858,11 @@ export default {
         return;
       }
       
+      // Verificar se componente está montado antes de adicionar à fila
+      if (!this.$el || !this.$el.isConnected) {
+        return;
+      }
+      
       // Adicionar à fila de atualizações
       if (typeof callback === 'function') {
         this.updateQueue.push(callback);
@@ -898,7 +903,7 @@ export default {
           return;
         }
         
-        // Adicionar um pequeno delay para garantir que estamos completamente fora do ciclo de renderização
+        // Adicionar um delay de 2 frames (32ms) para garantir que estamos completamente fora do ciclo de renderização
         setTimeout(() => {
           // Verificar novamente antes de usar nextTick
           if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
@@ -927,10 +932,18 @@ export default {
             return;
           }
           
-          // Agora usar nextTick para garantir que estamos em um ciclo seguro
-          this.$nextTick(() => {
-            try {
-              // Verificar novamente se componente ainda está válido
+          // Aguardar mais um frame antes de processar
+          requestAnimationFrame(() => {
+            // Verificar novamente
+            if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+              this.updateQueue = [];
+              this.isProcessingUpdates = false;
+              return;
+            }
+            
+            // Usar queueMicrotask para garantir que estamos fora do ciclo de renderização atual
+            queueMicrotask(() => {
+              // Verificar novamente antes de processar
               if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
                 this.updateQueue = [];
                 this.isProcessingUpdates = false;
@@ -964,52 +977,115 @@ export default {
                 return;
               }
               
-              // Processar todas as atualizações na fila
-              while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
-                const callback = this.updateQueue.shift();
-                if (typeof callback === 'function') {
+              // Agora usar nextTick para garantir que estamos em um ciclo seguro
+              this.$nextTick(() => {
+                try {
+                  // Verificar novamente se componente ainda está válido
+                  if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+                    this.updateQueue = [];
+                    this.isProcessingUpdates = false;
+                    return;
+                  }
+                  
+                  // Verificar se componente Vue ainda está válido
                   try {
-                    // Verificar novamente antes de executar cada callback
-                    if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-                      break;
+                    if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+                      this.updateQueue = [];
+                      this.isProcessingUpdates = false;
+                      return;
                     }
                     
-                    // Verificar se componente Vue ainda está válido antes de cada atualização
-                    try {
-                      if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
-                        break;
-                      }
-                      
-                      // Verificar se não está em processo de desmontagem
-                      if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
-                        break;
-                      }
-                    } catch (e) {
-                      break;
+                    // Verificar se o vnode ainda está conectado ao DOM
+                    if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
+                      this.updateQueue = [];
+                      this.isProcessingUpdates = false;
+                      return;
                     }
                     
-                    callback();
-                  } catch (error) {
-                    console.warn('[Chart] Erro ao executar callback na fila:', error);
+                    // Verificar se o componente não está em processo de desmontagem
+                    if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
+                      this.updateQueue = [];
+                      this.isProcessingUpdates = false;
+                      return;
+                    }
+                  } catch (e) {
+                    this.updateQueue = [];
+                    this.isProcessingUpdates = false;
+                    return;
+                  }
+                  
+                  // Processar todas as atualizações na fila
+                  while (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
+                    const callback = this.updateQueue.shift();
+                    if (typeof callback === 'function') {
+                      try {
+                        // Verificar novamente antes de executar cada callback
+                        if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+                          break;
+                        }
+                        
+                        // Verificar se componente Vue ainda está válido antes de cada atualização
+                        try {
+                          if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+                            break;
+                          }
+                          
+                          // Verificar se não está em processo de desmontagem
+                          if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
+                            break;
+                          }
+                        } catch (e) {
+                          break;
+                        }
+                        
+                        // Tentar executar callback com proteção adicional
+                        try {
+                          // Verificar uma última vez antes de executar
+                          if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+                            break;
+                          }
+                          
+                          // Executar callback dentro de um try-catch adicional
+                          callback();
+                        } catch (updateError) {
+                          // Se for erro de atualização do Vue, ignorar silenciosamente
+                          if (updateError && (
+                            updateError.message && (
+                              updateError.message.includes('insertBefore') ||
+                              updateError.message.includes('Symbol(_assign)') ||
+                              updateError.message.includes('emitsOptions') ||
+                              updateError.message.includes('_assigning')
+                            )
+                          )) {
+                            // Erro conhecido do Vue durante ciclo de renderização, ignorar
+                            return;
+                          }
+                          console.warn('[Chart] Erro ao executar callback na fila:', updateError);
+                        }
+                      } catch (error) {
+                        // Erro ao verificar estado, ignorar callback
+                        console.warn('[Chart] Erro ao verificar estado antes de executar callback:', error);
+                      }
+                    }
+                  }
+                } catch (error) {
+                  console.warn('[Chart] Erro ao processar fila de atualizações:', error);
+                } finally {
+                  this.isProcessingUpdates = false;
+                  // Se a fila não estiver vazia, agendar próximo processamento
+                  if (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
+                    // Usar setTimeout com delay maior para evitar processamento imediato
+                    setTimeout(() => {
+                      if (!this.isComponentDestroyed) {
+                        this.processUpdateQueue();
+                      }
+                    }, 32);
                   }
                 }
-              }
-            } catch (error) {
-              console.warn('[Chart] Erro ao processar fila de atualizações:', error);
-            } finally {
-              this.isProcessingUpdates = false;
-              // Se a fila não estiver vazia, agendar próximo processamento
-              if (this.updateQueue.length > 0 && !this.isComponentDestroyed) {
-                // Usar setTimeout para evitar processamento imediato
-                setTimeout(() => {
-                  if (!this.isComponentDestroyed) {
-                    this.processUpdateQueue();
-                  }
-                }, 10);
-              }
-            }
+              });
+            });
           });
-        }, 0); // Delay mínimo para garantir que estamos fora do ciclo
+        }, 32); // Delay de 2 frames para garantir que estamos fora do ciclo
       });
     },
     initChart() {
