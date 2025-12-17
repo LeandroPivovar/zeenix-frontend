@@ -2274,6 +2274,12 @@ export default {
           // Parar contador
           this.stopContractCountdown();
           
+          this.isTrading = false;
+          this.tradeMessage = `Venda executada com sucesso! P&L: $${finalProfit.toFixed(this.pricePrecision)}`;
+          
+          // Mostrar modal de resultado
+          this.showTradeResultModal = true;
+          
           // Limpar contrato ativo após um delay
           setTimeout(() => {
             if (this.isComponentMounted()) {
@@ -2285,12 +2291,6 @@ export default {
               });
             }
           }, 3000);
-          
-          this.isTrading = false;
-          this.tradeMessage = `Venda executada com sucesso! P&L: $${finalProfit.toFixed(this.pricePrecision)}`;
-          
-          // Mostrar modal de resultado
-          this.showTradeResultModal = true;
         });
       
       console.log('[Chart] ✅ Venda processada com sucesso');
@@ -2552,15 +2552,15 @@ export default {
         return;
       }
       
+      if (this.activeContract) {
+        this.activeContract.sell_price = finalContractData.sell_price || this.activeContract.sell_price;
+        this.activeContract.profit = profit;
+        this.activeContract.exit_spot = finalContractData.exit_spot || this.latestTick?.value || null;
+        this.activeContract.exit_time = finalContractData.exit_time || Date.now() / 1000;
+        this.activeContract.status = status;
+      }
+      
       this.safeUpdate(() => {
-        if (this.activeContract) {
-          this.activeContract.sell_price = finalContractData.sell_price || this.activeContract.sell_price;
-          this.activeContract.profit = profit;
-          this.activeContract.exit_spot = finalContractData.exit_spot || this.latestTick?.value || null;
-          this.activeContract.exit_time = finalContractData.exit_time || Date.now() / 1000;
-          this.activeContract.status = status;
-        }
-        
         // Preparar dados para o modal
         this.finalTradeProfit = profit;
         this.finalTradeType = this.activeContract?.contract_type || 'CALL';
@@ -2583,18 +2583,6 @@ export default {
           status: status.toUpperCase(),
         });
         
-        // Limpar contrato ativo após um delay
-        setTimeout(() => {
-          if (this.isComponentMounted()) {
-            this.safeUpdate(() => {
-              this.activeContract = null;
-              this.purchasePrice = null;
-              this.realTimeProfit = null;
-              this.isSellEnabled = false;
-            });
-          }
-        }, 3000);
-        
         this.isTrading = false;
         this.tradeMessage = isWin 
           ? `🎉 Contrato vencido com lucro! P&L: +$${profit.toFixed(this.pricePrecision)}`
@@ -2603,6 +2591,18 @@ export default {
         // Mostrar modal de resultado
         this.showTradeResultModal = true;
       });
+      
+      // Limpar contrato ativo após um delay
+      setTimeout(() => {
+        if (this.isComponentMounted()) {
+          this.safeUpdate(() => {
+            this.activeContract = null;
+            this.purchasePrice = null;
+            this.realTimeProfit = null;
+            this.isSellEnabled = false;
+          });
+        }
+      }, 3000);
       
       console.log('[Chart] ✅ Expiração processada:', { profit, status, isWin });
     },
