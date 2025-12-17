@@ -411,7 +411,7 @@
   </div>
 </template>
 
-<script>
+<script lang="js">
 import { createChart, ColorType } from 'lightweight-charts';
 import derivTradingService from '../services/deriv-trading.service.js';
 import TradeResultModal from './TradeResultModal.vue';
@@ -2350,9 +2350,11 @@ export default {
       this.safeUpdate(() => {
         this.localOrderConfig.type = type;
         this.closeTradeTypeModal();
-        // Recarregar valores padrão e proposta com novo tipo
-        if (this.isConnected) {
-          this.loadDefaultValues();
+      });
+      
+      // Recarregar valores padrão e proposta com novo tipo
+      if (this.isConnected) {
+        this.loadDefaultValues();
         setTimeout(() => {
           this.loadProposal();
         }, 500);
