@@ -854,7 +854,12 @@ export default {
       
       // Verificar se o componente Vue ainda está válido
       try {
-        if (!this.$ || !this.$.vnode) {
+        if (!this.$ || !this.$.vnode || !this.$.vnode.el) {
+          return;
+        }
+        
+        // Verificar se o vnode ainda está conectado ao DOM
+        if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
           return;
         }
       } catch (e) {
@@ -870,6 +875,16 @@ export default {
           if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
             return;
           }
+          
+          // Verificar novamente se componente Vue ainda está válido
+          try {
+            if (!this.$ || !this.$.vnode) {
+              return;
+            }
+          } catch (e) {
+            return;
+          }
+          
           callback();
         }
       } catch (error) {
@@ -1911,7 +1926,12 @@ export default {
           return;
         }
         
+        // Verificar se componente Vue ainda está válido
         try {
+          if (!this.$ || !this.$.vnode) {
+            return;
+          }
+          
           this.showChartPlaceholder = false;
           this.isLoadingTicks = false;
         } catch (error) {
@@ -2900,14 +2920,26 @@ export default {
           
           // Atualizar contratos disponíveis de forma segura
           if (this.isComponentMounted()) {
-            this.safeUpdate(() => {
+            // Verificar novamente antes de atualizar
+            if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+              return;
+            }
+            
+            try {
+              // Verificar se componente Vue ainda está válido
+              if (!this.$ || !this.$.vnode) {
+                return;
+              }
+              
               this.availableContracts = contractsArray;
               console.log('[Chart] ✅ Contratos disponíveis atualizados:', this.availableContracts);
               console.log('[Chart] Total de contratos:', this.availableContracts.length);
               if (this.availableContracts.length > 0) {
                 console.log('[Chart] Primeiro contrato exemplo:', this.availableContracts[0]);
               }
-            });
+            } catch (error) {
+              console.warn('[Chart] Erro ao atualizar contratos disponíveis:', error);
+            }
           }
           
           // Se o tipo atual não estiver disponível, selecionar o primeiro disponível

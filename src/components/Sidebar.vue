@@ -361,11 +361,17 @@ export default {
                 // Fechar sidebar primeiro
                 this.close();
                 
-                // Usar nextTick para garantir que a navegação aconteça após o fechamento
-                this.$nextTick(() => {
+                // Usar setTimeout com delay mínimo para garantir que a navegação aconteça após o fechamento
+                // e evitar problemas durante transições de rota
+                setTimeout(() => {
                     // Verificar se componente ainda está montado e router está disponível
                     if (this.$el && this.$el.isConnected && this.$router) {
                         try {
+                            // Verificar se componente Vue ainda está válido
+                            if (!this.$ || !this.$.vnode) {
+                                return;
+                            }
+                            
                             this.$router.push(route).catch(err => {
                                 // Ignorar erros de navegação duplicada
                                 if (err.name !== 'NavigationDuplicated') {
@@ -376,7 +382,7 @@ export default {
                             console.warn('[Sidebar] Erro ao executar navegação:', error);
                         }
                     }
-                });
+                }, 50); // Pequeno delay para garantir que o DOM foi atualizado
             } catch (error) {
                 console.error('[Sidebar] Erro ao navegar:', error);
             }

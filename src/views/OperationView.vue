@@ -592,13 +592,28 @@ export default {
         }));
 
         // Verificar novamente antes de atribuir (pode ter sido desmontado durante o map)
-        if (this.isComponentDestroyed || !this.$el) {
+        if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
           console.warn('[OperationView] Componente desmontado durante formatação, ignorando');
           return;
         }
 
+        // Verificar se o componente Vue ainda está válido
+        try {
+          if (!this.$ || !this.$.vnode) {
+            console.warn('[OperationView] Componente Vue inválido, ignorando atualização');
+            return;
+          }
+        } catch (e) {
+          console.warn('[OperationView] Erro ao verificar componente Vue:', e);
+          return;
+        }
+
         // Atualizar usando reatividade normal (sem $forceUpdate)
-        this.lastOrders = formattedOrders;
+        try {
+          this.lastOrders = formattedOrders;
+        } catch (error) {
+          console.warn('[OperationView] Erro ao atualizar lastOrders:', error);
+        }
 
         console.log('[OperationView] Últimas ordens formatadas:', this.lastOrders);
         console.log('[OperationView] Total de ordens formatadas:', this.lastOrders.length);
