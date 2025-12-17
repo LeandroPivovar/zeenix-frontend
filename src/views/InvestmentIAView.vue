@@ -17,9 +17,12 @@
         <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
-                :balance="accountBalance"
+                :balance="balanceObject"
                 :account-type="isDemo ? 'demo' : 'real'"
                 :currency="accountCurrency"
+                :balances-by-currency-real="balancesByCurrencyReal"
+                :balances-by-currency-demo="balancesByCurrencyDemo"
+                :currency-prefix="currencyPrefix"
                 @account-type-changed="handleAccountTypeChangeFromNavbar"
                 @toggle-sidebar="toggleSidebar"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
@@ -522,6 +525,39 @@ export default {
         }
     },
     computed: {
+        // Objeto de saldo no formato esperado pelo TopNavbar (igual ao Dashboard)
+        balanceObject() {
+            return {
+                value: this.accountBalance || 0,
+                currency: this.accountCurrency || 'USD'
+            };
+        },
+        
+        // Saldos por moeda - Real (igual ao Dashboard)
+        balancesByCurrencyReal() {
+            if (this.isDemo) {
+                return {};
+            }
+            return {
+                [this.accountCurrency || 'USD']: this.accountBalance || 0
+            };
+        },
+        
+        // Saldos por moeda - Demo (igual ao Dashboard)
+        balancesByCurrencyDemo() {
+            if (!this.isDemo) {
+                return {};
+            }
+            return {
+                [this.accountCurrency || 'USD']: this.accountBalance || 0
+            };
+        },
+        
+        // Prefixo da moeda (igual ao Dashboard)
+        currencyPrefix() {
+            return this.getCurrencyPrefix(this.accountCurrency || 'USD');
+        },
+        
         formattedBalance() {
             if (!this.balanceVisible) {
                 return '••••••';
@@ -633,6 +669,21 @@ export default {
         }
     },
     methods: {
+        getCurrencyPrefix(currency) {
+            switch ((currency || '').toUpperCase()) {
+                case 'USD':
+                    return '$';
+                case 'EUR':
+                    return '€';
+                case 'BTC':
+                    return '₿';
+                case 'DEMO':
+                    return 'D$';
+                default:
+                    return currency ? `${currency} ` : '$';
+            }
+        },
+        
         checkMobile() {
             this.isMobile = window.innerWidth <= 1024;
         },
@@ -926,19 +977,26 @@ export default {
                         }
                         
                         if (activeAccount && activeAccount.balance !== null && activeAccount.balance !== undefined) {
-                            this.accountBalance = parseFloat(activeAccount.balance) || 0;
-                            this.accountCurrency = activeAccount.currency || 'USD';
-                            this.accountLoginid = activeAccount.loginid;
-                            this.isDemo = activeAccount.isDemo || false;
-                            this.lastBalanceUpdate = new Date();
-                            
-                            console.log('[InvestmentIAView] ✅ Saldo carregado do cache:', {
-                                balance: this.accountBalance,
-                                currency: this.accountCurrency,
-                                loginid: this.accountLoginid,
-                                isDemo: this.isDemo,
-                                preferredIsDemo: preferredIsDemo
-                            });
+                            const cachedBalance = parseFloat(activeAccount.balance) || 0;
+                            // Só atualizar se o saldo do cache for válido (> 0) ou se não temos saldo ainda
+                            if (cachedBalance > 0 || this.accountBalance === 0 || this.accountBalance === null || this.accountBalance === undefined) {
+                                this.accountBalance = cachedBalance;
+                                this.accountCurrency = activeAccount.currency || 'USD';
+                                this.accountLoginid = activeAccount.loginid;
+                                this.isDemo = activeAccount.isDemo || false;
+                                this.lastBalanceUpdate = new Date();
+                                
+                                console.log('[InvestmentIAView] ✅ Saldo carregado do cache:', {
+                                    balance: this.accountBalance,
+                                    currency: this.accountCurrency,
+                                    loginid: this.accountLoginid,
+                                    isDemo: this.isDemo,
+                                    preferredIsDemo: preferredIsDemo,
+                                    cachedBalance: cachedBalance
+                                });
+                            } else {
+                                console.log('[InvestmentIAView] ⚠️ Mantendo saldo atual, cache tem valor inválido:', cachedBalance);
+                            }
                             
                             // Continuar para atualizar com dados mais recentes em background
                         }
@@ -966,7 +1024,14 @@ export default {
 
                 const result = await response.json();
                 if (result.success && result.data) {
-                    const newBalance = result.data.balance;
+                    // Extrair saldo - pode vir como número, string ou objeto com value
+                    let newBalance = result.data.balance;
+                    if (typeof newBalance === 'object' && newBalance !== null) {
+                        newBalance = newBalance.value || newBalance.balance || 0;
+                    }
+                    // Converter para número
+                    newBalance = parseFloat(newBalance) || 0;
+                    
                     const newCurrency = result.data.currency;
                     const newLoginid = result.data.loginid;
                     
@@ -992,19 +1057,37 @@ export default {
                         isDemoFromLoginid,
                         currentBalance: this.accountBalance,
                         currentIsDemo: this.isDemo,
-                        accountTypeMatches: isDemoFromLoginid === this.isDemo
+                        accountTypeMatches: isDemoFromLoginid === this.isDemo,
+                        balanceType: typeof newBalance
                     });
                     
-                    // Sempre atualizar o saldo se o valor recebido for válido (>= 0)
-                    // Isso garante que o saldo seja atualizado mesmo que o tipo de conta mude
-                    if (newBalance !== null && newBalance !== undefined && newBalance >= 0) {
-                        this.accountBalance = newBalance;
-                        console.log('[InvestmentIAView] ✅ Saldo atualizado para:', newBalance);
-                    } else if (this.accountBalance === null || this.accountBalance === undefined) {
-                        // Se o saldo atual é null/undefined e o novo também é inválido, manter como 0 para evitar null
-                        this.accountBalance = 0;
+                    // Sempre atualizar o saldo se o valor recebido for válido (>= 0 e é um número)
+                    // Mas só atualizar se:
+                    // 1. O novo saldo é válido (> 0) OU
+                    // 2. O novo saldo é 0 mas não temos saldo válido ainda OU
+                    // 3. O novo saldo é >= 0 e não temos saldo válido ainda
+                    const hasValidBalance = this.accountBalance !== null && this.accountBalance !== undefined && this.accountBalance > 0;
+                    
+                    if (!isNaN(newBalance) && newBalance >= 0) {
+                        // Se temos um saldo válido do cache e o novo saldo é 0, não atualizar (manter o cache)
+                        if (hasValidBalance && newBalance === 0) {
+                            console.log('[InvestmentIAView] ⚠️ Mantendo saldo do cache, novo saldo é 0:', {
+                                cachedBalance: this.accountBalance,
+                                newBalance: newBalance
+                            });
+                        } else {
+                            // Atualizar o saldo
+                            this.accountBalance = newBalance;
+                            console.log('[InvestmentIAView] ✅ Saldo atualizado para:', newBalance);
+                        }
+                    } else {
+                        console.warn('[InvestmentIAView] ⚠️ Saldo inválido recebido:', newBalance);
+                        // Se o saldo recebido for inválido, manter o saldo atual do cache (não resetar para 0)
+                        if (!hasValidBalance) {
+                            // Só resetar para 0 se realmente não tivermos saldo válido
+                            this.accountBalance = 0;
+                        }
                     }
-                    // Se o novo saldo for inválido mas já temos um saldo válido, manter o saldo atual do cache
                     
                     // Sempre atualizar currency e loginid se disponíveis
                     if (newCurrency) {
@@ -1023,11 +1106,12 @@ export default {
                         currency: this.accountCurrency,
                         loginid: this.accountLoginid,
                         isDemo: this.isDemo,
-                        newBalanceReceived: newBalance
+                        newBalanceReceived: newBalance,
+                        finalBalance: this.accountBalance
                     });
                 } else {
                     console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
-                    // Se houver erro mas já temos um saldo do cache, manter o saldo atual
+                    // Se houver erro mas já temos um saldo do cache, manter o saldo atual (não resetar)
                     if (this.accountBalance === null || this.accountBalance === undefined) {
                         this.accountBalance = 0;
                     }
@@ -1156,13 +1240,31 @@ export default {
         
         handleAccountChange(event) {
             console.log('[InvestmentIAView] Conta alterada, atualizando saldo...', event.detail);
-            // Atualizar saldo imediatamente quando a conta for trocada
-            this.fetchAccountBalance();
-            // Atualizar isDemo baseado na nova conta
+            
+            // Atualizar isDemo baseado na nova conta primeiro
             const account = event.detail?.account;
             if (account) {
                 this.isDemo = account.isDemo === true || account.loginid?.startsWith('VRTC') || account.loginid?.startsWith('VRT');
+                
+                // Se temos dados da conta no evento, atualizar saldo imediatamente do cache
+                if (account.balance !== null && account.balance !== undefined) {
+                    const balance = parseFloat(account.balance) || 0;
+                    if (balance > 0) {
+                        this.accountBalance = balance;
+                        this.accountCurrency = account.currency || 'USD';
+                        this.accountLoginid = account.loginid;
+                        console.log('[InvestmentIAView] ✅ Saldo atualizado do evento:', {
+                            balance: this.accountBalance,
+                            currency: this.accountCurrency,
+                            loginid: this.accountLoginid,
+                            isDemo: this.isDemo
+                        });
+                    }
+                }
             }
+            
+            // Buscar saldo atualizado da API em background (sem bloquear)
+            this.fetchAccountBalance();
         },
         
         async startDataLoading() {
