@@ -380,19 +380,46 @@ export default {
                             if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
                                 return;
                             }
+                            
+                            // Verificação adicional: garantir que o componente não está sendo desmontado
+                            if (this.$.vnode.component && this.$.vnode.component.ctx === null) {
+                                return;
+                            }
+                            
+                            // Verificar se o elemento ainda está conectado
+                            if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
+                                return;
+                            }
                         } catch (vnodeCheckError) {
                             // Se verificação falhar, componente pode estar sendo desmontado
                             return;
                         }
                         
-                        this.$router.push(route).catch(err => {
-                            // Ignorar erros de navegação duplicada e erros relacionados a componentes null
-                            if (err.name !== 'NavigationDuplicated' && 
-                                !String(err.message || err).includes('Cannot destructure') &&
-                                !String(err.message || err).includes('bum')) {
-                                console.error('[Sidebar] Erro ao navegar:', err);
+                        // Verificação final antes de navegar
+                        try {
+                            if (!this.$router || !this.$el || !this.$el.isConnected) {
+                                return;
                             }
-                        });
+                            
+                            this.$router.push(route).catch(err => {
+                                // Ignorar erros de navegação duplicada e erros relacionados a componentes null
+                                const errMsg = String(err?.message || err || '');
+                                if (err.name !== 'NavigationDuplicated' && 
+                                    !errMsg.includes('Cannot destructure') &&
+                                    !errMsg.includes('bum') &&
+                                    !errMsg.includes('insertBefore') &&
+                                    !errMsg.includes('Symbol(_assign)')) {
+                                    console.error('[Sidebar] Erro ao navegar:', err);
+                                }
+                            });
+                        } catch (pushError) {
+                            // Ignorar erros de push se componente está sendo desmontado
+                            const errMsg = String(pushError?.message || pushError || '');
+                            if (!errMsg.includes('Cannot destructure') && 
+                                !errMsg.includes('bum')) {
+                                console.warn('[Sidebar] Erro ao executar push:', pushError);
+                            }
+                        }
                     } catch (error) {
                         // Ignorar erros conhecidos relacionados a componentes desmontados
                         const errorMsg = String(error?.message || error || '');

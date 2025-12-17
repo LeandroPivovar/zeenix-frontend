@@ -933,8 +933,23 @@ export default {
         return false;
       }
       
-      // Verificar se é seguro atualizar
+      // Verificar se é seguro atualizar - verificação mais rigorosa
       if (!this.isSafeToUpdate()) {
+        return false;
+      }
+      
+      // Verificação adicional: garantir que o componente Vue ainda está válido
+      try {
+        if (!this.$ || !this.$.vnode || !this.$.vnode.component) {
+          return false;
+        }
+        
+        const component = this.$.vnode.component;
+        if (component.isUnmounted || component.ctx === null) {
+          return false;
+        }
+      } catch (checkError) {
+        // Se verificação falhar, não é seguro atualizar
         return false;
       }
       
@@ -974,12 +989,28 @@ export default {
         if (isKnownError) {
           // Erro conhecido, tentar com nextTick de forma mais segura
           try {
+            // Verificar novamente antes de usar nextTick
+            if (this.isComponentDestroyed || !this.isSafeToUpdate()) {
+              return false;
+            }
+            
             this.$nextTick(() => {
               // Verificar novamente antes de tentar
               if (this.isComponentDestroyed || !this.isSafeToUpdate()) {
                 return;
               }
+              
+              // Verificação final antes de atualizar
               try {
+                if (!this.$ || !this.$.vnode || !this.$.vnode.component) {
+                  return;
+                }
+                
+                const component = this.$.vnode.component;
+                if (component.isUnmounted || component.ctx === null) {
+                  return;
+                }
+                
                 this[propertyName] = value;
               } catch (retryError) {
                 // Se ainda falhar, ignorar silenciosamente - componente pode estar sendo desmontado
@@ -2350,7 +2381,7 @@ export default {
       }
 
       // Limpar contratos disponíveis para forçar recarregamento
-      this.availableContracts = [];
+      this.safeSetProperty('availableContracts', []);
 
       // Cancelar subscription anterior e inscrever-se no novo símbolo
       try {
@@ -2793,10 +2824,13 @@ export default {
       this.safeSetProperty('showMarketModal', false);
     },
     async selectMarket(marketValue) {
+      if (!this.isComponentMounted()) {
+        return;
+      }
       this.symbol = marketValue;
       this.closeMarketModal();
       // Limpar contratos disponíveis para forçar recarregamento
-      this.availableContracts = [];
+      this.safeSetProperty('availableContracts', []);
       // Disparar mudança de símbolo
       if (this.isConnected) {
         await this.handleSymbolChange();
@@ -3281,20 +3315,13 @@ export default {
               return;
             }
             
-            try {
-              // Verificar se componente Vue ainda está válido
-              if (!this.$ || !this.$.vnode) {
-                return;
-              }
-              
-              this.availableContracts = contractsArray;
+            // Usar safeSetProperty para atualizar de forma segura
+            if (this.safeSetProperty('availableContracts', contractsArray)) {
               console.log('[Chart] ✅ Contratos disponíveis atualizados:', this.availableContracts);
               console.log('[Chart] Total de contratos:', this.availableContracts.length);
-              if (this.availableContracts.length > 0) {
+              if (this.availableContracts && this.availableContracts.length > 0) {
                 console.log('[Chart] Primeiro contrato exemplo:', this.availableContracts[0]);
               }
-            } catch (error) {
-              console.warn('[Chart] Erro ao atualizar contratos disponíveis:', error);
             }
           }
           
@@ -3471,11 +3498,9 @@ export default {
           amount: this.localOrderConfig.amount,
         });
         
-        // Usar safeUpdate para atualizar proposta atual
-        this.safeUpdate(() => {
-          this.currentProposalId = proposal.id;
-          this.currentProposalPrice = proposal.askPrice;
-        });
+        // Usar safeSetProperty para atualizar proposta atual de forma segura
+        this.safeSetProperty('currentProposalId', proposal.id);
+        this.safeSetProperty('currentProposalPrice', proposal.askPrice);
         
         console.log('[Chart] ✅ Proposta carregada:', proposal);
       } catch (error) {
