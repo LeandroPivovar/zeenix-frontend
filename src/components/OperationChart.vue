@@ -761,28 +761,34 @@ export default {
       // Quando o tipo de contrato mudar, recarregar valores padrão e proposta
       if (this.isConnected) {
         // Limpar proposalId antigo quando o tipo muda (importante para evitar usar proposta do tipo errado)
-        if (this.isComponentMounted()) {
-          if (!this.isComponentDestroyed && this.isComponentMounted()) {
+        if (this.isComponentMounted() && !this.isComponentDestroyed) {
+          this.safeUpdate(() => {
             this.currentProposalId = null;
             this.currentProposalPrice = null;
             console.log('[Chart] Tipo de contrato alterado, limpando proposalId antigo');
-          }
+          });
         }
         
         // Se mudou para DIGITMATCH e temos um último dígito, inicializar digitMatchValue
-        if (this.localOrderConfig.type === 'DIGITMATCH' && this.lastDigit !== null) {
-          this.digitMatchValue = this.lastDigit;
-        } else if (this.localOrderConfig.type !== 'DIGITMATCH') {
-          // Limpar digitMatchValue se não for DIGITMATCH
-          this.digitMatchValue = null;
+        if (this.isComponentMounted() && !this.isComponentDestroyed) {
+          this.safeUpdate(() => {
+            if (this.localOrderConfig.type === 'DIGITMATCH' && this.lastDigit !== null) {
+              this.digitMatchValue = this.lastDigit;
+            } else if (this.localOrderConfig.type !== 'DIGITMATCH') {
+              // Limpar digitMatchValue se não for DIGITMATCH
+              this.digitMatchValue = null;
+            }
+          });
         }
         
         await this.loadDefaultValues();
         // Aguardar que a duração seja ajustada antes de carregar proposta
         if (this.localOrderConfig.type) {
-          setTimeout(() => {
-            this.loadProposal();
-            this.subscribeToProposal();
+          this.safeTimeout(() => {
+            if (this.isComponentMounted()) {
+              this.loadProposal();
+              this.subscribeToProposal();
+            }
           }, 500);
         }
       }
@@ -839,7 +845,17 @@ export default {
     this.isProcessingUpdates = false;
     
     // Limpar contador de contrato
-    if (this.stopContractCountdown) {
+    if (this.contractCountdownInterval) {
+      try {
+        clearInterval(this.contractCountdownInterval);
+        this.contractCountdownInterval = null;
+      } catch (e) {
+        // Ignorar erros
+      }
+    }
+    
+    // Limpar usando método stopContractCountdown se disponível
+    if (this.stopContractCountdown && typeof this.stopContractCountdown === 'function') {
       try {
         this.stopContractCountdown();
       } catch (e) {
@@ -1079,27 +1095,68 @@ export default {
         return;
       }
       
-      // Executar callback diretamente se componente está montado
-      if (typeof callback === 'function') {
-        try {
-          callback();
-        } catch (error) {
-          // Ignorar erros conhecidos do Vue durante desmontagem
-          const errorMsg = String(error?.message || error || '');
-          const knownErrors = [
-            'insertBefore',
-            'Symbol(_assign)',
-            'emitsOptions',
-            '_assigning',
-            'Cannot read properties of null',
-            'Cannot set properties of null',
-            'Cannot use \'in\' operator',
-            'Cannot destructure property',
-            'bum'
-          ];
+      // Usar nextTick para garantir que estamos em um ciclo seguro
+      try {
+        this.$nextTick(() => {
+          // Verificar novamente antes de executar
+          if (this.isComponentDestroyed || !this.isComponentMounted()) {
+            return;
+          }
           
-          if (!knownErrors.some(err => errorMsg.includes(err))) {
-            console.warn('[Chart] Erro em safeUpdate:', error);
+          // Executar callback se componente está montado
+          if (typeof callback === 'function') {
+            try {
+              callback();
+            } catch (error) {
+              // Ignorar erros conhecidos do Vue durante desmontagem
+              const errorMsg = String(error?.message || error || '');
+              const knownErrors = [
+                'insertBefore',
+                'Symbol(_assign)',
+                'emitsOptions',
+                '_assigning',
+                'Cannot read properties of null',
+                'Cannot set properties of null',
+                'Cannot use \'in\' operator',
+                'Cannot destructure property',
+                'bum',
+                'textContent',
+                'nextSibling',
+                'Symbol(_vtc)'
+              ];
+              
+              if (!knownErrors.some(err => errorMsg.includes(err))) {
+                console.warn('[Chart] Erro em safeUpdate:', error);
+              }
+            }
+          }
+        });
+      } catch (error) {
+        // Se nextTick falhar, tentar executar diretamente como fallback
+        if (typeof callback === 'function' && !this.isComponentDestroyed && this.isComponentMounted()) {
+          try {
+            callback();
+          } catch (callbackError) {
+            // Ignorar erros conhecidos
+            const errorMsg = String(callbackError?.message || callbackError || '');
+            const knownErrors = [
+              'insertBefore',
+              'Symbol(_assign)',
+              'emitsOptions',
+              '_assigning',
+              'Cannot read properties of null',
+              'Cannot set properties of null',
+              'Cannot use \'in\' operator',
+              'Cannot destructure property',
+              'bum',
+              'textContent',
+              'nextSibling',
+              'Symbol(_vtc)'
+            ];
+            
+            if (!knownErrors.some(err => errorMsg.includes(err))) {
+              console.warn('[Chart] Erro em safeUpdate (fallback):', callbackError);
+            }
           }
         }
       }
@@ -1197,7 +1254,9 @@ export default {
         } catch (error) {
           console.error('[Chart] ❌ Erro ao inicializar gráfico:', error);
           if (!this.isComponentDestroyed && this.isComponentMounted()) {
-            this.showChartPlaceholder = false;
+            this.safeUpdate(() => {
+              this.showChartPlaceholder = false;
+            });
           }
         }
       });
@@ -1652,10 +1711,12 @@ export default {
         return;
       }
 
-      // Atualizar estados diretamente (durante montagem normal)
-      if (!this.isComponentDestroyed) {
-        this.isLoadingTicks = true;
-        this.showChartPlaceholder = true;
+      // Atualizar estados usando safeUpdate
+      if (!this.isComponentDestroyed && this.isComponentMounted()) {
+        this.safeUpdate(() => {
+          this.isLoadingTicks = true;
+          this.showChartPlaceholder = true;
+        });
       }
 
       try {
@@ -1672,7 +1733,9 @@ export default {
           // Tentar novamente após 3 segundos
           this.safeTimeout(() => {
             if (!this.isComponentDestroyed && this.isComponentMounted()) {
-              this.isLoadingTicks = false;
+              this.safeUpdate(() => {
+                this.isLoadingTicks = false;
+              });
               this.loadTicksFromBackend();
             }
           }, 3000);
@@ -1691,15 +1754,19 @@ export default {
           if (this.retryCount < 3) {
             this.safeTimeout(() => {
               if (!this.isComponentDestroyed && this.isComponentMounted()) {
-                this.isLoadingTicks = false;
+                this.safeUpdate(() => {
+                  this.isLoadingTicks = false;
+                });
                 this.loadTicksFromBackend();
               }
             }, 3000);
           } else {
             console.error('[Chart] Máximo de tentativas atingido, parando...');
             if (!this.isComponentDestroyed && this.isComponentMounted()) {
-              this.showChartPlaceholder = false;
-              this.isLoadingTicks = false;
+              this.safeUpdate(() => {
+                this.showChartPlaceholder = false;
+                this.isLoadingTicks = false;
+              });
               this.retryCount = 0;
             }
           }
@@ -1746,7 +1813,9 @@ export default {
         if (this.errorRetryCount < 2) {
           this.safeTimeout(() => {
             if (!this.isComponentDestroyed && this.isComponentMounted()) {
-              this.isLoadingTicks = false;
+              this.safeUpdate(() => {
+                this.isLoadingTicks = false;
+              });
               this.loadTicksFromBackend();
             }
           }, 3000);
@@ -1763,7 +1832,9 @@ export default {
       } finally {
         // Não resetar isLoadingTicks aqui se ainda estiver tentando
         if (!this.retryCount && !this.errorRetryCount && !this.isComponentDestroyed && this.isComponentMounted()) {
-          this.isLoadingTicks = false;
+          this.safeUpdate(() => {
+            this.isLoadingTicks = false;
+          });
         }
       }
     },
@@ -2182,10 +2253,12 @@ export default {
               return;
             }
             
-            // Atualizar estado após plotar ticks (dentro de setTimeout, então usar safeTimeout)
+            // Atualizar estado após plotar ticks usando safeUpdate
             if (!this.isComponentDestroyed && this.isComponentMounted()) {
-              this.showChartPlaceholder = false;
-              this.isLoadingTicks = false;
+              this.safeUpdate(() => {
+                this.showChartPlaceholder = false;
+                this.isLoadingTicks = false;
+              });
             }
           });
         }, 50); // Pequeno delay de 50ms para garantir que DOM está estável
@@ -2647,12 +2720,14 @@ export default {
           this.showTradeResultModal = true;
           
           // Limpar contrato ativo após um delay
-          setTimeout(() => {
+          this.safeTimeout(() => {
             if (this.isComponentMounted()) {
-              this.activeContract = null;
-              this.purchasePrice = null;
-              this.realTimeProfit = null;
-              this.isSellEnabled = false;
+              this.safeUpdate(() => {
+                this.activeContract = null;
+                this.purchasePrice = null;
+                this.realTimeProfit = null;
+                this.isSellEnabled = false;
+              });
             }
           }, 3000);
         }
@@ -2779,43 +2854,49 @@ export default {
                         contractData.is_sold === true || contractData.is_expired === true ||
                         contractData.status === 'expired';
       
-      // Atualizar dados do contrato ativo
-      if (contractData.sell_price !== undefined) {
-        this.activeContract.sell_price = contractData.sell_price;
-      }
-      if (contractData.profit !== undefined) {
-        this.activeContract.profit = contractData.profit;
-      }
-      if (contractData.exit_spot !== undefined || contractData.exitSpot !== undefined) {
-        this.activeContract.exit_spot = contractData.exit_spot || contractData.exitSpot || null;
-      }
-      if (contractData.is_sold !== undefined) {
-        this.isSellEnabled = !contractData.is_sold;
-      }
-      
-      // Atualizar se venda antecipada está disponível
-      // A maioria dos contratos permite venda antecipada, exceto alguns tipos específicos
-      if (contractData.is_valid_to_sell !== undefined) {
-        this.isSellEnabled = contractData.is_valid_to_sell;
-      } else {
-        // Por padrão, assumir que venda antecipada está disponível se não foi vendido
-        if (contractData.is_sold === undefined || !contractData.is_sold) {
-          // Verificar se o tipo de contrato permite venda antecipada
-          const noEarlySellTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
-          this.isSellEnabled = !noEarlySellTypes.includes(this.activeContract.contract_type);
+      // Atualizar dados do contrato ativo usando safeUpdate
+      this.safeUpdate(() => {
+        if (!this.activeContract) {
+          return;
         }
-      }
-      
-      // Atualizar tempo de expiração se disponível
-      if (contractData.expiry_time !== undefined && contractData.expiry_time !== null) {
-        this.activeContract.expiry_time = contractData.expiry_time;
-        // Recalcular tempo restante se necessário
-        if (!this.isTickBasedContract && this.contractStartTime) {
-          const now = Date.now() / 1000;
-          const expiry = Number(contractData.expiry_time);
-          this.contractTimeRemaining = Math.max(0, expiry - now);
+        
+        if (contractData.sell_price !== undefined) {
+          this.activeContract.sell_price = contractData.sell_price;
         }
-      }
+        if (contractData.profit !== undefined) {
+          this.activeContract.profit = contractData.profit;
+        }
+        if (contractData.exit_spot !== undefined || contractData.exitSpot !== undefined) {
+          this.activeContract.exit_spot = contractData.exit_spot || contractData.exitSpot || null;
+        }
+        if (contractData.is_sold !== undefined) {
+          this.isSellEnabled = !contractData.is_sold;
+        }
+        
+        // Atualizar se venda antecipada está disponível
+        // A maioria dos contratos permite venda antecipada, exceto alguns tipos específicos
+        if (contractData.is_valid_to_sell !== undefined) {
+          this.isSellEnabled = contractData.is_valid_to_sell;
+        } else {
+          // Por padrão, assumir que venda antecipada está disponível se não foi vendido
+          if (contractData.is_sold === undefined || !contractData.is_sold) {
+            // Verificar se o tipo de contrato permite venda antecipada
+            const noEarlySellTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
+            this.isSellEnabled = !noEarlySellTypes.includes(this.activeContract.contract_type);
+          }
+        }
+        
+        // Atualizar tempo de expiração se disponível
+        if (contractData.expiry_time !== undefined && contractData.expiry_time !== null) {
+          this.activeContract.expiry_time = contractData.expiry_time;
+          // Recalcular tempo restante se necessário
+          if (!this.isTickBasedContract && this.contractStartTime) {
+            const now = Date.now() / 1000;
+            const expiry = Number(contractData.expiry_time);
+            this.contractTimeRemaining = Math.max(0, expiry - now);
+          }
+        }
+      });
       
       // Se o contrato expirou, processar resultado final
       if (isExpired) {
@@ -2866,7 +2947,13 @@ export default {
         this.contractTicksRemaining = null;
         
         // Iniciar contador de tempo
-        this.contractCountdownInterval = setInterval(() => {
+        const intervalId = setInterval(() => {
+          // Verificar se componente ainda está montado
+          if (this.isComponentDestroyed || !this.isComponentMounted()) {
+            this.stopContractCountdown();
+            return;
+          }
+          
           if (!this.activeContract) {
             this.stopContractCountdown();
             return;
@@ -2876,22 +2963,49 @@ export default {
           const elapsed = now - this.contractStartTime;
           const remaining = Math.max(0, this.contractDuration - elapsed);
           
-          this.contractTimeRemaining = remaining;
+          // Usar safeUpdate para atualizar contractTimeRemaining
+          this.safeUpdate(() => {
+            if (this.isComponentMounted() && !this.isComponentDestroyed) {
+              this.contractTimeRemaining = remaining;
+            }
+          });
           
           // Se expirou, processar expiração
           if (remaining <= 0) {
             this.stopContractCountdown();
-            this.handleContractExpiration({ status: 'expired' });
+            if (this.isComponentMounted() && !this.isComponentDestroyed) {
+              this.handleContractExpiration({ status: 'expired' });
+            }
           }
         }, 1000); // Atualizar a cada segundo
+        
+        this.contractCountdownInterval = intervalId;
+        
+        // Adicionar ao array de intervals pendentes para limpeza
+        if (this.pendingIntervals && Array.isArray(this.pendingIntervals)) {
+          this.pendingIntervals.push(intervalId);
+        }
       }
     },
     stopContractCountdown() {
       if (this.contractCountdownInterval) {
         clearInterval(this.contractCountdownInterval);
+        
+        // Remover do array de intervals pendentes
+        if (this.pendingIntervals && Array.isArray(this.pendingIntervals)) {
+          const index = this.pendingIntervals.indexOf(this.contractCountdownInterval);
+          if (index > -1) {
+            this.pendingIntervals.splice(index, 1);
+          }
+        }
+        
         this.contractCountdownInterval = null;
       }
-      this.contractTimeRemaining = null;
+      
+      // Usar safeUpdate para atualizar contractTimeRemaining
+      this.safeUpdate(() => {
+        this.contractTimeRemaining = null;
+      });
       this.contractTicksRemaining = null;
       this.contractStartTime = null;
       this.contractDuration = null;
@@ -2979,12 +3093,14 @@ export default {
       });
       
       // Limpar contrato ativo após um delay
-      setTimeout(() => {
+      this.safeTimeout(() => {
         if (this.isComponentMounted()) {
-          this.activeContract = null;
-          this.purchasePrice = null;
-          this.realTimeProfit = null;
-          this.isSellEnabled = false;
+          this.safeUpdate(() => {
+            this.activeContract = null;
+            this.purchasePrice = null;
+            this.realTimeProfit = null;
+            this.isSellEnabled = false;
+          });
         }
       }, 3000);
       
@@ -3111,19 +3227,22 @@ export default {
         profit = profit * this.localOrderConfig.multiplier;
       }
       
-      this.realTimeProfit = profit;
-      
-      // Atualizar classes CSS baseado no P&L
-      if (profit > 0) {
-        this.realTimeProfitClass = 'border-zenix-green';
-        this.realTimeProfitTextClass = 'text-zenix-green';
-      } else if (profit < 0) {
-        this.realTimeProfitClass = 'border-red-500';
-        this.realTimeProfitTextClass = 'text-red-500';
-      } else {
-        this.realTimeProfitClass = 'border-zenix-border';
-        this.realTimeProfitTextClass = 'text-zenix-text';
-      }
+      // Usar safeUpdate para atualizar propriedades reativas
+      this.safeUpdate(() => {
+        this.realTimeProfit = profit;
+        
+        // Atualizar classes CSS baseado no P&L
+        if (profit > 0) {
+          this.realTimeProfitClass = 'border-zenix-green';
+          this.realTimeProfitTextClass = 'text-zenix-green';
+        } else if (profit < 0) {
+          this.realTimeProfitClass = 'border-red-500';
+          this.realTimeProfitTextClass = 'text-red-500';
+        } else {
+          this.realTimeProfitClass = 'border-zenix-border';
+          this.realTimeProfitTextClass = 'text-zenix-text';
+        }
+      });
     },
     async loadDefaultValues() {
       if (!this.isComponentMounted()) {
@@ -3184,14 +3303,16 @@ export default {
               return;
             }
             
-            // Atualizar contratos disponíveis diretamente (dentro de callback assíncrono)
+            // Atualizar contratos disponíveis usando safeUpdate
             if (!this.isComponentDestroyed && this.isComponentMounted()) {
-              this.availableContracts = contractsArray;
-              console.log('[Chart] ✅ Contratos disponíveis atualizados:', this.availableContracts);
-              console.log('[Chart] Total de contratos:', this.availableContracts.length);
-              if (this.availableContracts && this.availableContracts.length > 0) {
-                console.log('[Chart] Primeiro contrato exemplo:', this.availableContracts[0]);
-              }
+              this.safeUpdate(() => {
+                this.availableContracts = contractsArray;
+                console.log('[Chart] ✅ Contratos disponíveis atualizados:', this.availableContracts);
+                console.log('[Chart] Total de contratos:', this.availableContracts.length);
+                if (this.availableContracts && this.availableContracts.length > 0) {
+                  console.log('[Chart] Primeiro contrato exemplo:', this.availableContracts[0]);
+                }
+              });
             }
           }
           
