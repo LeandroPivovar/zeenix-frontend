@@ -1046,71 +1046,89 @@ export default {
         return false;
       }
       
-      // Usar nextTick para garantir que estamos em um ciclo seguro de renderização
+      // Usar requestAnimationFrame + nextTick para garantir que estamos em um ciclo seguro
       try {
-        this.$nextTick(() => {
-          // Verificar novamente antes de atualizar
-          if (this.isComponentDestroyed || !this.isComponentMounted()) {
+        requestAnimationFrame(() => {
+          // Verificar novamente antes de continuar
+          if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate()) {
             return;
           }
           
-          try {
-            // Verificar se a propriedade existe no componente
-            if (!(propertyName in this)) {
-              console.warn(`[Chart] Propriedade ${propertyName} não existe no componente`);
+          this.$nextTick(() => {
+            // Verificar novamente antes de atualizar
+            if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate()) {
               return;
             }
             
-            // Atualizar propriedade
-            this[propertyName] = value;
-          } catch (error) {
-            // Se falhar, verificar se é um erro conhecido do Vue durante desmontagem
-            const errorMessage = String(error?.message || error || '');
-            const knownErrors = [
-              'insertBefore',
-              'Symbol(_assign)',
-              'emitsOptions',
-              '_assigning',
-              'Cannot read properties of null',
-              'Cannot set properties of null',
-              'Cannot use \'in\' operator',
-              'Cannot destructure property',
-              'bum'
-            ];
-            
-            // Se for erro conhecido, ignorar silenciosamente (componente está sendo desmontado)
-            if (!knownErrors.some(err => errorMessage.includes(err))) {
-              console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, error);
+            try {
+              // Verificar se a propriedade existe no componente
+              if (!(propertyName in this)) {
+                console.warn(`[Chart] Propriedade ${propertyName} não existe no componente`);
+                return;
+              }
+              
+              // Atualizar propriedade
+              this[propertyName] = value;
+            } catch (error) {
+              // Se falhar, verificar se é um erro conhecido do Vue durante desmontagem
+              const errorMessage = String(error?.message || error || '');
+              const errorStack = String(error?.stack || '');
+              const knownErrors = [
+                'insertBefore',
+                'Symbol(_assign)',
+                'emitsOptions',
+                '_assigning',
+                'Cannot read properties of null',
+                'Cannot set properties of null',
+                'Cannot use \'in\' operator',
+                'Cannot destructure property',
+                'bum',
+                'textContent',
+                'nextSibling',
+                'Symbol(_vtc)'
+              ];
+              
+              // Se for erro conhecido, ignorar silenciosamente (componente está sendo desmontado)
+              const isKnownError = knownErrors.some(err => errorMessage.includes(err) || errorStack.includes(err));
+              if (!isKnownError) {
+                console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, error);
+              }
             }
-          }
+          });
         });
         return true;
       } catch (error) {
-        // Se nextTick falhar, tentar atualização direta como fallback
+        // Se requestAnimationFrame falhar, tentar apenas nextTick
         try {
-          if (this.isComponentDestroyed || !this.isComponentMounted()) {
+          if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate()) {
             return false;
           }
-          this[propertyName] = value;
-          return true;
-        } catch (directError) {
-          // Ignorar erros conhecidos
-          const errorMessage = String(directError?.message || directError || '');
-          const knownErrors = [
-            'insertBefore',
-            'Symbol(_assign)',
-            'emitsOptions',
-            '_assigning',
-            'Cannot read properties of null',
-            'Cannot set properties of null',
-            'Cannot use \'in\' operator',
-            'Cannot destructure property',
-            'bum'
-          ];
           
-          if (!knownErrors.some(err => errorMessage.includes(err))) {
-            console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, directError);
-          }
+          this.$nextTick(() => {
+            if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate()) {
+              return;
+            }
+            
+            try {
+              if (!(propertyName in this)) {
+                return;
+              }
+              this[propertyName] = value;
+            } catch (updateError) {
+              const errorMessage = String(updateError?.message || updateError || '');
+              const knownErrors = [
+                'insertBefore', 'Symbol(_assign)', 'emitsOptions', '_assigning',
+                'Cannot read properties of null', 'Cannot set properties of null',
+                'Cannot use \'in\' operator', 'Cannot destructure property', 'bum'
+              ];
+              if (!knownErrors.some(err => errorMessage.includes(err))) {
+                console.warn(`[Chart] Erro ao atualizar propriedade ${propertyName}:`, updateError);
+              }
+            }
+          });
+          return true;
+        } catch (nextTickError) {
+          // Se tudo falhar, retornar false silenciosamente
           return false;
         }
       }
@@ -1174,118 +1192,124 @@ export default {
       });
       
       // Se componente foi destruído ou não está montado, ignorar
-      if (this.isComponentDestroyed || !this.isComponentMounted()) {
+      if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate()) {
         console.warn('[Chart] ⚠️ safeUpdate ignorado - componente não está montado:', componentState);
         return;
       }
       
-      // Usar nextTick para garantir que estamos em um ciclo seguro
+      // Usar requestAnimationFrame + nextTick para garantir que estamos em um ciclo seguro
       try {
-        this.$nextTick(() => {
-          const afterTickState = {
-            isDestroyed: this.isComponentDestroyed,
-            isMounted: this.isComponentMounted(),
-            hasEl: !!this.$el,
-            elConnected: this.$el?.isConnected,
-            hasVnode: !!this.$?.vnode,
-            vnodeMounted: !this.$?.vnode?.component?.isUnmounted
-          };
-          
-          console.log('[Chart] 🔍 safeUpdate dentro de nextTick:', {
-            afterTickState,
-            timestamp: Date.now()
-          });
-          
-          // Verificar novamente antes de executar
-          if (this.isComponentDestroyed || !this.isComponentMounted()) {
-            console.warn('[Chart] ⚠️ safeUpdate cancelado após nextTick - componente não está montado:', afterTickState);
+        requestAnimationFrame(() => {
+          // Verificar novamente antes de continuar
+          if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate()) {
             return;
           }
           
-          // Executar callback se componente está montado
-          if (typeof callback === 'function') {
-            try {
-              console.log('[Chart] ✅ Executando callback em safeUpdate');
-              callback();
-              console.log('[Chart] ✅ Callback executado com sucesso');
-            } catch (error) {
-              // Ignorar erros conhecidos do Vue durante desmontagem
-              const errorMsg = String(error?.message || error || '');
-              const errorStack = error?.stack || '';
-              const knownErrors = [
-                'insertBefore',
-                'Symbol(_assign)',
-                'emitsOptions',
-                '_assigning',
-                'Cannot read properties of null',
-                'Cannot set properties of null',
-                'Cannot use \'in\' operator',
-                'Cannot destructure property',
-                'bum',
-                'textContent',
-                'nextSibling',
-                'Symbol(_vtc)'
-              ];
-              
-              const isKnownError = knownErrors.some(err => errorMsg.includes(err));
-              
-              console.error('[Chart] ❌ Erro em safeUpdate callback:', {
-                error: errorMsg,
-                stack: errorStack,
-                isKnownError,
-                componentState: afterTickState,
-                timestamp: Date.now()
-              });
-              
-              if (!isKnownError) {
-                console.warn('[Chart] Erro desconhecido em safeUpdate:', error);
+          this.$nextTick(() => {
+            const afterTickState = {
+              isDestroyed: this.isComponentDestroyed,
+              isMounted: this.isComponentMounted(),
+              hasEl: !!this.$el,
+              elConnected: this.$el?.isConnected,
+              hasVnode: !!this.$?.vnode,
+              vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
+              isSafe: this.isSafeToUpdate()
+            };
+            
+            console.log('[Chart] 🔍 safeUpdate dentro de nextTick:', {
+              afterTickState,
+              timestamp: Date.now()
+            });
+            
+            // Verificar novamente antes de executar
+            if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate()) {
+              console.warn('[Chart] ⚠️ safeUpdate cancelado após nextTick - componente não está montado:', afterTickState);
+              return;
+            }
+            
+            // Executar callback se componente está montado
+            if (typeof callback === 'function') {
+              try {
+                console.log('[Chart] ✅ Executando callback em safeUpdate');
+                callback();
+                console.log('[Chart] ✅ Callback executado com sucesso');
+              } catch (error) {
+                // Ignorar erros conhecidos do Vue durante desmontagem
+                const errorMsg = String(error?.message || error || '');
+                const errorStack = String(error?.stack || '');
+                const knownErrors = [
+                  'insertBefore',
+                  'Symbol(_assign)',
+                  'emitsOptions',
+                  '_assigning',
+                  'Cannot read properties of null',
+                  'Cannot set properties of null',
+                  'Cannot use \'in\' operator',
+                  'Cannot destructure property',
+                  'bum',
+                  'textContent',
+                  'nextSibling',
+                  'Symbol(_vtc)'
+                ];
+                
+                const isKnownError = knownErrors.some(err => errorMsg.includes(err) || errorStack.includes(err));
+                
+                if (!isKnownError) {
+                  console.error('[Chart] ❌ Erro em safeUpdate callback:', {
+                    error: errorMsg,
+                    stack: errorStack,
+                    isKnownError,
+                    componentState: afterTickState,
+                    timestamp: Date.now()
+                  });
+                }
               }
             }
-          }
+          });
         });
       } catch (error) {
-        console.error('[Chart] ❌ Erro ao chamar $nextTick em safeUpdate:', {
+        console.error('[Chart] ❌ Erro ao chamar requestAnimationFrame em safeUpdate:', {
           error: error?.message || error,
           stack: error?.stack,
           componentState,
           timestamp: Date.now()
         });
         
-        // Se nextTick falhar, tentar executar diretamente como fallback
-        if (typeof callback === 'function' && !this.isComponentDestroyed && this.isComponentMounted()) {
-          try {
-            console.log('[Chart] 🔄 Tentando fallback direto em safeUpdate');
-            callback();
-            console.log('[Chart] ✅ Fallback executado com sucesso');
-          } catch (callbackError) {
-            // Ignorar erros conhecidos
-            const errorMsg = String(callbackError?.message || callbackError || '');
-            const knownErrors = [
-              'insertBefore',
-              'Symbol(_assign)',
-              'emitsOptions',
-              '_assigning',
-              'Cannot read properties of null',
-              'Cannot set properties of null',
-              'Cannot use \'in\' operator',
-              'Cannot destructure property',
-              'bum',
-              'textContent',
-              'nextSibling',
-              'Symbol(_vtc)'
-            ];
-            
-            console.error('[Chart] ❌ Erro em safeUpdate (fallback):', {
-              error: errorMsg,
-              stack: callbackError?.stack,
-              componentState,
-              timestamp: Date.now()
-            });
-            
-            if (!knownErrors.some(err => errorMsg.includes(err))) {
-              console.warn('[Chart] Erro desconhecido em safeUpdate (fallback):', callbackError);
-            }
+        // Se requestAnimationFrame falhar, tentar apenas nextTick como fallback
+        try {
+          if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate()) {
+            return;
           }
+          
+          this.$nextTick(() => {
+            if (this.isComponentDestroyed || !this.isComponentMounted() || !this.isSafeToUpdate()) {
+              return;
+            }
+            
+            if (typeof callback === 'function') {
+              try {
+                callback();
+              } catch (fallbackError) {
+                const errorMsg = String(fallbackError?.message || fallbackError || '');
+                const knownErrors = [
+                  'insertBefore',
+                  'Symbol(_assign)',
+                  'emitsOptions',
+                  '_assigning',
+                  'Cannot read properties of null',
+                  'Cannot set properties of null',
+                  'Cannot use \'in\' operator',
+                  'Cannot destructure property',
+                  'bum'
+                ];
+                if (!knownErrors.some(err => errorMsg.includes(err))) {
+                  console.warn('[Chart] Erro no fallback de safeUpdate:', fallbackError);
+                }
+              }
+            }
+          });
+        } catch (nextTickError) {
+          // Se tudo falhar, ignorar silenciosamente
         }
       }
     },
@@ -3066,7 +3090,7 @@ export default {
       console.log('[Chart] ✅ Venda processada com sucesso');
     },
     openMarketModal() {
-      if (!this.isComponentMounted()) {
+      if (!this.isComponentMounted() || !this.isSafeToUpdate()) {
         return;
       }
       
@@ -3076,59 +3100,25 @@ export default {
         hasEl: !!this.$el,
         elConnected: this.$el?.isConnected,
         hasVnode: !!this.$?.vnode,
-        vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+        vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
+        isSafe: this.isSafeToUpdate()
       };
       
-      console.log('[Chart] 🔍 openMarketModal - antes de nextTick:', {
+      console.log('[Chart] 🔍 openMarketModal - antes de atualizar:', {
         componentState,
         timestamp: Date.now()
       });
       
-      // Usar nextTick para garantir que o DOM está pronto
-      this.$nextTick(() => {
-        const afterTickState = {
-          isDestroyed: this.isComponentDestroyed,
-          isMounted: this.isComponentMounted(),
-          hasEl: !!this.$el,
-          elConnected: this.$el?.isConnected,
-          hasVnode: !!this.$?.vnode,
-          vnodeMounted: !this.$?.vnode?.component?.isUnmounted
-        };
-        
-        console.log('[Chart] 🔍 openMarketModal - dentro de nextTick:', {
-          afterTickState,
-          timestamp: Date.now()
-        });
-        
-        if (this.isComponentMounted()) {
-          try {
-            console.log('[Chart] 🔄 openMarketModal - definindo showMarketModal = true');
-            this.showMarketModal = true;
-            console.log('[Chart] ✅ openMarketModal - showMarketModal definido com sucesso');
-          } catch (error) {
-            console.error('[Chart] ❌ Erro ao abrir modal de mercado:', {
-              error: error?.message || error,
-              stack: error?.stack,
-              componentState: afterTickState,
-              timestamp: Date.now()
-            });
-          }
-        } else {
-          console.warn('[Chart] ⚠️ openMarketModal cancelado - componente não montado:', afterTickState);
-        }
-      });
+      // Usar safeSetProperty para garantir atualização segura
+      this.safeSetProperty('showMarketModal', true);
     },
     closeMarketModal() {
-      if (!this.isComponentMounted()) {
+      if (!this.isComponentMounted() || !this.isSafeToUpdate()) {
         return;
       }
       
-      // Usar nextTick para garantir que o DOM está pronto
-      this.$nextTick(() => {
-        if (this.isComponentMounted()) {
-          this.showMarketModal = false;
-        }
-      });
+      // Usar safeSetProperty para garantir atualização segura
+      this.safeSetProperty('showMarketModal', false);
     },
     async selectMarket(marketValue) {
       if (!this.isComponentMounted()) {
@@ -3144,7 +3134,7 @@ export default {
       }
     },
     openTradeTypeModal() {
-      if (!this.isComponentMounted()) {
+      if (!this.isComponentMounted() || !this.isSafeToUpdate()) {
         return;
       }
       
@@ -3162,47 +3152,17 @@ export default {
         hasEl: !!this.$el,
         elConnected: this.$el?.isConnected,
         hasVnode: !!this.$?.vnode,
-        vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+        vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
+        isSafe: this.isSafeToUpdate()
       };
       
-      console.log('[Chart] 🔍 openTradeTypeModal - antes de nextTick:', {
+      console.log('[Chart] 🔍 openTradeTypeModal - antes de atualizar:', {
         componentState,
         timestamp: Date.now()
       });
       
-      // Usar nextTick para garantir que o DOM está pronto
-      this.$nextTick(() => {
-        const afterTickState = {
-          isDestroyed: this.isComponentDestroyed,
-          isMounted: this.isComponentMounted(),
-          hasEl: !!this.$el,
-          elConnected: this.$el?.isConnected,
-          hasVnode: !!this.$?.vnode,
-          vnodeMounted: !this.$?.vnode?.component?.isUnmounted
-        };
-        
-        console.log('[Chart] 🔍 openTradeTypeModal - dentro de nextTick:', {
-          afterTickState,
-          timestamp: Date.now()
-        });
-        
-        if (this.isComponentMounted()) {
-          try {
-            console.log('[Chart] 🔄 openTradeTypeModal - definindo showTradeTypeModal = true');
-            this.showTradeTypeModal = true;
-            console.log('[Chart] ✅ openTradeTypeModal - showTradeTypeModal definido com sucesso');
-          } catch (error) {
-            console.error('[Chart] ❌ Erro ao abrir modal de tipo de trade:', {
-              error: error?.message || error,
-              stack: error?.stack,
-              componentState: afterTickState,
-              timestamp: Date.now()
-            });
-          }
-        } else {
-          console.warn('[Chart] ⚠️ openTradeTypeModal cancelado - componente não montado:', afterTickState);
-        }
-      });
+      // Usar safeSetProperty para garantir atualização segura
+      this.safeSetProperty('showTradeTypeModal', true);
     },
     closeTradeTypeModal() {
       if (!this.isComponentMounted()) {

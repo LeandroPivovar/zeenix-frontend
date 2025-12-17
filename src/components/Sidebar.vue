@@ -430,13 +430,36 @@ export default {
                         } catch (pushError) {
                             // Ignorar erros de push se componente está sendo desmontado
                             const errMsg = String(pushError?.message || pushError || '');
-                            if (!errMsg.includes('Cannot destructure') && 
-                                !errMsg.includes('bum')) {
+                            const errStack = String(pushError?.stack || '');
+                            const knownErrors = [
+                                'Cannot destructure',
+                                'bum',
+                                'insertBefore',
+                                'Symbol(_assign)',
+                                'emitsOptions',
+                                '_assigning'
+                            ];
+                            const isKnownError = knownErrors.some(err => errMsg.includes(err) || errStack.includes(err));
+                            if (!isKnownError) {
                                 console.warn('[Sidebar] Erro ao executar push:', pushError);
                             }
                         }
                     } catch (error) {
                         // Ignorar erros conhecidos relacionados a componentes desmontados
+                        const errMsg = String(error?.message || error || '');
+                        const errStack = String(error?.stack || '');
+                        const knownErrors = [
+                            'Cannot destructure',
+                            'bum',
+                            'insertBefore',
+                            'Symbol(_assign)',
+                            'emitsOptions',
+                            '_assigning'
+                        ];
+                        const isKnownError = knownErrors.some(err => errMsg.includes(err) || errStack.includes(err));
+                        if (!isKnownError) {
+                            console.warn('[Sidebar] Erro geral:', error);
+                        }
                         const errorMsg = String(error?.message || error || '');
                         if (!errorMsg.includes('Cannot destructure') && 
                             !errorMsg.includes('bum') &&
