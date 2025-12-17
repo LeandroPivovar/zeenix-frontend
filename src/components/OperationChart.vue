@@ -357,7 +357,7 @@
     
     <!-- Market Selection Modal - usando Teleport para renderizar no body -->
     <Teleport to="body">
-      <div v-if="showMarketModal" class="modal-overlay" data-modal="market" @click.self="closeMarketModal">
+      <div v-if="showMarketModal" :key="`market-modal-${showMarketModal}`" class="modal-overlay" data-modal="market" @click.self="closeMarketModal" style="display: flex !important;">
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Mercado</h3>
@@ -390,7 +390,7 @@
     
     <!-- Trade Type Selection Modal - usando Teleport para renderizar no body -->
     <Teleport to="body">
-      <div v-if="showTradeTypeModal" class="modal-overlay" data-modal="trade-type" @click.self="closeTradeTypeModal">
+      <div v-if="showTradeTypeModal" :key="`trade-type-modal-${showTradeTypeModal}`" class="modal-overlay" data-modal="trade-type" @click.self="closeTradeTypeModal" style="display: flex !important;">
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
@@ -1103,44 +1103,56 @@ export default {
         return false;
       }
       
-      // Para propriedades de modais, atualizar diretamente (são operações síncronas simples)
+      // Para propriedades de modais, atualizar diretamente com prioridade
       // No Vue 3, a reatividade é automática, não precisamos de $set
       if (propertyName === 'showMarketModal' || propertyName === 'showTradeTypeModal') {
         try {
           console.log(`[Chart] 🔄 safeSetProperty - atualizando ${propertyName} diretamente para:`, value);
-          // No Vue 3, atribuição direta é suficiente para reatividade
-          this[propertyName] = value;
-          console.log(`[Chart] ✅ safeSetProperty - ${propertyName} atualizado com sucesso, valor atual:`, this[propertyName]);
           
-          // Verificar se o modal foi renderizado após nextTick
-          this.$nextTick(() => {
-            console.log(`[Chart] 🔍 safeSetProperty - após nextTick, ${propertyName} =`, this[propertyName]);
-            // Verificar se o modal está realmente no DOM
-            // Usar um seletor mais específico para evitar conflitos
-            const modalSelector = propertyName === 'showMarketModal' 
-              ? '[data-modal="market"]' 
-              : '[data-modal="trade-type"]';
+          // Usar requestAnimationFrame para garantir prioridade na renderização
+          requestAnimationFrame(() => {
+            // No Vue 3, atribuição direta é suficiente para reatividade
+            this[propertyName] = value;
+            console.log(`[Chart] ✅ safeSetProperty - ${propertyName} atualizado com sucesso, valor atual:`, this[propertyName]);
             
-            // Verificar imediatamente
-            let modalElement = document.querySelector(modalSelector) || document.querySelector('.modal-overlay');
-            if (value && modalElement) {
-              console.log(`[Chart] ✅ Modal encontrado no DOM imediatamente`);
-            } else if (value && !modalElement) {
-              // Tentar novamente após um pequeno delay (Vue pode precisar de mais tempo)
-              setTimeout(() => {
-                modalElement = document.querySelector(modalSelector) || document.querySelector('.modal-overlay');
-                if (modalElement) {
-                  console.log(`[Chart] ✅ Modal encontrado no DOM após delay`);
-                } else {
-                  console.warn(`[Chart] ⚠️ Modal não encontrado no DOM após delay. Verificando propriedade:`, {
-                    propertyName,
-                    propertyValue: this[propertyName],
-                    allModals: document.querySelectorAll('.modal-overlay').length,
-                    componentMounted: this.isComponentMounted()
-                  });
+            // Forçar renderização do modal usando múltiplos nextTick
+            this.$nextTick(() => {
+              this.$nextTick(() => {
+                console.log(`[Chart] 🔍 safeSetProperty - após nextTick duplo, ${propertyName} =`, this[propertyName]);
+                // Verificar se o modal está realmente no DOM
+                const modalSelector = propertyName === 'showMarketModal' 
+                  ? '[data-modal="market"]' 
+                  : '[data-modal="trade-type"]';
+                
+                // Verificar imediatamente
+                let modalElement = document.querySelector(modalSelector);
+                if (value && modalElement) {
+                  console.log(`[Chart] ✅ Modal encontrado no DOM`);
+                  // Forçar display se necessário
+                  if (window.getComputedStyle(modalElement).display === 'none') {
+                    modalElement.style.display = 'flex';
+                  }
+                } else if (value && !modalElement) {
+                  // Tentar novamente após um pequeno delay
+                  setTimeout(() => {
+                    modalElement = document.querySelector(modalSelector);
+                    if (modalElement) {
+                      console.log(`[Chart] ✅ Modal encontrado no DOM após delay`);
+                      if (window.getComputedStyle(modalElement).display === 'none') {
+                        modalElement.style.display = 'flex';
+                      }
+                    } else {
+                      console.warn(`[Chart] ⚠️ Modal não encontrado no DOM após delay. Verificando propriedade:`, {
+                        propertyName,
+                        propertyValue: this[propertyName],
+                        allModals: document.querySelectorAll('.modal-overlay').length,
+                        componentMounted: this.isComponentMounted()
+                      });
+                    }
+                  }, 200);
                 }
-              }, 100);
-            }
+              });
+            });
           });
           
           return true;
@@ -2187,16 +2199,21 @@ export default {
         // Marcar que gráfico está sendo atualizado
         this.isChartUpdating = true;
         try {
-            this.chartSeries.update({
-            time: finalTime,
-            value: finalValue
+          // Usar requestAnimationFrame para não bloquear a UI
+          requestAnimationFrame(() => {
+            if (this.chartSeries && !this.isComponentDestroyed) {
+              this.chartSeries.update({
+                time: finalTime,
+                value: finalValue
+              });
+              console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: finalTime, value: finalValue });
+              
+              // Atualizar linha de entrada para terminar no último tick
+              if (this.entrySpotLine && this.activeContract) {
+                this.updateEntrySpotLine();
+              }
+            }
           });
-          console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: finalTime, value: finalValue });
-          
-          // Atualizar linha de entrada para terminar no último tick
-          if (this.entrySpotLine && this.activeContract) {
-            this.updateEntrySpotLine();
-          }
         } catch (updateError) {
           console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', updateError, { time: brasiliaEpoch, value: numValue });
         } finally {
