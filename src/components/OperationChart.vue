@@ -26,14 +26,41 @@
               <span class="text-xs font-bold text-zenix-text tracking-wide uppercase">Sinal Gerado</span>
             </div>
             <button 
-              class="inline-flex items-center gap-2 px-4 py-2 bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold rounded-lg text-xs transition-all duration-300 shadow-[0_0_12px_rgba(34,197,94,0.3)] hover:shadow-[0_0_16px_rgba(34,197,94,0.4)]"
+              @click="toggleAnalysis"
+              :disabled="!symbol"
+              class="inline-flex items-center gap-2 px-4 py-2 bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold rounded-lg text-xs transition-all duration-300 shadow-[0_0_12px_rgba(34,197,94,0.3)] hover:shadow-[0_0_16px_rgba(34,197,94,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              <i class="far fa-chart-line text-[9px]"></i>
-              <span>Iniciar Análise do Gráfico</span>
+              <i :class="isAnalyzing ? 'fas fa-stop' : 'far fa-chart-line text-[9px]'"></i>
+              <span>{{ isAnalyzing ? 'Parar Análise' : 'Iniciar Análise do Gráfico' }}</span>
             </button>
           </div>
           <div id="signalArea" class="min-h-[80px]">
-            <!-- Signal content placeholder -->
+            <!-- Signal content -->
+            <div v-if="aiRecommendation" class="signal-content">
+              <div class="signal-header">
+                <div class="signal-action" :class="aiRecommendation.action === 'CALL' ? 'signal-call' : 'signal-put'">
+                  <i :class="aiRecommendation.action === 'CALL' ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                  <span class="signal-action-text">{{ aiRecommendation.action === 'CALL' ? 'COMPRA (CALL)' : 'VENDA (PUT)' }}</span>
+                </div>
+                <div class="signal-confidence">
+                  <span class="confidence-label">Confiança:</span>
+                  <span class="confidence-value" :class="getConfidenceClass(aiRecommendation.confidence)">
+                    {{ aiRecommendation.confidence }}%
+                  </span>
+                </div>
+              </div>
+              <div v-if="aiRecommendation.reasoning" class="signal-reasoning">
+                <i class="fas fa-lightbulb text-zenix-green mr-2"></i>
+                <span>{{ aiRecommendation.reasoning }}</span>
+              </div>
+            </div>
+            <div v-else-if="isAnalyzing" class="signal-loading">
+              <i class="fas fa-spinner fa-spin text-zenix-green mr-2"></i>
+              <span>Analisando gráfico...</span>
+            </div>
+            <div v-else class="signal-placeholder">
+              <span class="text-zenix-secondary">Clique em "Iniciar Análise do Gráfico" para começar</span>
+            </div>
           </div>
         </div>
       </div>
@@ -389,6 +416,11 @@ export default {
       contractCountdownInterval: null,
       contractTickCount: 0,
       pricePrecision: 2,
+      // IA Analysis
+      isAnalyzing: false,
+      analysisInterval: null,
+      aiRecommendation: null,
+      collectedTicks: [], // Ticks coletados para análise
       allTradeTypes: [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
         { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
@@ -472,6 +504,11 @@ export default {
         return 'countdown-normal';
       }
     },
+    getConfidenceClass(confidence) {
+      if (confidence >= 70) return 'confidence-high';
+      if (confidence >= 50) return 'confidence-medium';
+      return 'confidence-low';
+    },
   },
   async mounted() {
     this.initChart();
@@ -487,6 +524,9 @@ export default {
     }
   },
   beforeUnmount() {
+    // Parar análise
+    this.stopAnalysis();
+    
     // Parar contador de contrato
     this.stopContractCountdown();
     
@@ -571,6 +611,16 @@ export default {
         console.log('[Chart] Ticks dos últimos 10 minutos:', recentTicks.length);
         
         if (recentTicks.length > 0) {
+          // Se estiver analisando, coletar ticks antes de plotar
+          if (this.isAnalyzing) {
+            recentTicks.forEach(tick => {
+              this.collectTickForAnalysis({
+                value: Number(tick.value),
+                epoch: Number(tick.epoch || tick.time)
+              });
+            });
+          }
+          
           this.plotTicks(recentTicks);
         } else {
           console.warn('[Chart] Nenhum tick dos últimos 10 minutos encontrado');
@@ -638,6 +688,11 @@ export default {
             value: lastTick.value,
             epoch: lastTick.time
           };
+          
+          // Coletar ticks para análise se estiver analisando
+          // Nota: chartData tem time em UTC-3, mas precisamos do epoch original
+          // Vamos coletar dos ticks originais que foram passados para plotTicks
+          // Isso será feito quando recebermos ticks do backend ou via SSE
           
           // Calcular último dígito se for contrato de dígitos
           if (this.isDigitContract) {
@@ -794,8 +849,18 @@ export default {
               })
               .map(tick => ({
                 value: Number(tick.value),
-                epoch: Math.floor(Number(tick.epoch)) - (3 * 60 * 60) // UTC-3
+                epoch: Number(tick.epoch || tick.time) // Manter epoch original para análise
               }));
+            
+            // Se estiver analisando, coletar ticks antes de plotar
+            if (this.isAnalyzing && recentTicks.length > 0) {
+              recentTicks.forEach(tick => {
+                this.collectTickForAnalysis({
+                  value: tick.value,
+                  epoch: tick.epoch
+                });
+              });
+            }
             
             if (recentTicks.length > 0) {
               this.plotTicks(recentTicks);
@@ -807,20 +872,29 @@ export default {
           } else if (data.type === 'tick' && data.data) {
             // Atualizar latestTick e adicionar ao gráfico
             const tickValue = Number(data.data.value);
-            const tickEpoch = Math.floor(Number(data.data.epoch)) - (3 * 60 * 60);
+            const tickEpochOriginal = Math.floor(Number(data.data.epoch)); // Epoch original (UTC)
+            const tickEpochBrasilia = tickEpochOriginal - (3 * 60 * 60); // UTC-3 para o gráfico
             
             if (!isNaN(tickValue) && isFinite(tickValue) && tickValue > 0 &&
-                !isNaN(tickEpoch) && isFinite(tickEpoch) && tickEpoch > 0) {
+                !isNaN(tickEpochOriginal) && isFinite(tickEpochOriginal) && tickEpochOriginal > 0) {
               this.latestTick = {
                 value: tickValue,
-                epoch: tickEpoch
+                epoch: tickEpochBrasilia
               };
               
-              // Adicionar tick ao gráfico
+              // Adicionar tick ao gráfico (usando epoch em UTC-3)
               this.addTickToChart({
-                time: tickEpoch,
+                time: tickEpochBrasilia,
                 value: tickValue
               });
+              
+              // Coletar tick para análise se estiver analisando (usando epoch original)
+              if (this.isAnalyzing) {
+                this.collectTickForAnalysis({
+                  value: tickValue,
+                  epoch: tickEpochOriginal
+                });
+              }
               
               // Calcular último dígito se for contrato de dígitos
               if (this.isDigitContract) {
@@ -1406,6 +1480,146 @@ export default {
       // Limpar dados do resultado
       this.finalTradeProfit = 0;
       this.finalTradeType = 'CALL';
+    },
+    toggleAnalysis() {
+      if (this.isAnalyzing) {
+        this.stopAnalysis();
+      } else {
+        this.startAnalysis();
+      }
+    },
+    startAnalysis() {
+      if (!this.symbol) {
+        console.warn('[Chart] Símbolo não selecionado');
+        return;
+      }
+      
+      this.isAnalyzing = true;
+      this.collectedTicks = [];
+      
+      // Coletar ticks iniciais do gráfico (se houver)
+      this.collectInitialTicks();
+      
+      // Executar primeira análise imediatamente
+      this.analyzeChart();
+      
+      // Configurar intervalo para repetir a cada 2 minutos
+      this.analysisInterval = setInterval(() => {
+        if (this.isAnalyzing) {
+          this.analyzeChart();
+        }
+      }, 2 * 60 * 1000); // 2 minutos
+      
+      console.log('[Chart] Análise iniciada');
+    },
+    stopAnalysis() {
+      this.isAnalyzing = false;
+      
+      if (this.analysisInterval) {
+        clearInterval(this.analysisInterval);
+        this.analysisInterval = null;
+      }
+      
+      this.collectedTicks = [];
+      this.aiRecommendation = null;
+      
+      console.log('[Chart] Análise parada');
+    },
+    collectInitialTicks() {
+      // Coletar ticks dos últimos 10 minutos que já foram plotados
+      // Isso será feito quando carregar os ticks do backend
+      // Por enquanto, vamos coletar apenas os novos ticks que chegarem
+    },
+    collectTickForAnalysis(tick) {
+      if (!this.isAnalyzing) return;
+      
+      // Adicionar tick à coleção
+      this.collectedTicks.push({
+        value: tick.value,
+        epoch: tick.epoch
+      });
+      
+      // Manter apenas os últimos 50 ticks
+      if (this.collectedTicks.length > 50) {
+        this.collectedTicks.shift();
+      }
+    },
+    async analyzeChart() {
+      if (!this.isAnalyzing || !this.symbol) {
+        return;
+      }
+      
+      try {
+        // Coletar os últimos 50 ticks
+        // Se não tiver 50 ticks coletados, usar os ticks do gráfico
+        let ticksToAnalyze = [...this.collectedTicks];
+        
+        // Se não tiver ticks suficientes, tentar buscar do backend
+        if (ticksToAnalyze.length < 50) {
+          try {
+            const response = await derivTradingService.getTicks(this.symbol);
+            if (response && response.ticks && Array.isArray(response.ticks)) {
+              // Pegar os últimos 50 ticks
+              const recentTicks = response.ticks.slice(-50);
+              ticksToAnalyze = recentTicks.map(tick => ({
+                value: Number(tick.value),
+                epoch: Number(tick.epoch)
+              }));
+            }
+          } catch (error) {
+            console.warn('[Chart] Erro ao buscar ticks para análise:', error);
+          }
+        }
+        
+        // Se ainda não tiver ticks suficientes, usar os coletados
+        if (ticksToAnalyze.length === 0) {
+          console.warn('[Chart] Nenhum tick disponível para análise');
+          return;
+        }
+        
+        // Pegar os últimos 50 ticks
+        const last50Ticks = ticksToAnalyze.slice(-50);
+        
+        console.log('[Chart] Enviando', last50Ticks.length, 'ticks para análise');
+        
+        // Enviar para o backend
+        const authToken = localStorage.getItem('token');
+        if (!authToken) {
+          throw new Error('Token de autenticação não encontrado');
+        }
+        
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://taxafacil.site/api';
+        const response = await fetch(`${API_BASE_URL}/gemini/recommendation`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${authToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            ticks: last50Ticks
+          }),
+        });
+        
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.message || 'Erro ao obter recomendação');
+        }
+        
+        const recommendation = await response.json();
+        
+        console.log('[Chart] Recomendação recebida:', recommendation);
+        
+        // Atualizar recomendação
+        this.aiRecommendation = {
+          action: recommendation.action || 'CALL',
+          confidence: recommendation.confidence || 50,
+          reasoning: recommendation.reasoning || ''
+        };
+        
+      } catch (error) {
+        console.error('[Chart] Erro ao analisar gráfico:', error);
+        this.aiRecommendation = null;
+      }
     },
     getDefaultMarkets() {
       // Mercados padrão caso a API não retorne
@@ -2258,5 +2472,109 @@ export default {
   background: #16A34A;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+
+/* Signal Area Styles */
+.signal-content {
+  padding: 16px;
+  background: rgba(11, 11, 11, 0.6);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 12px;
+}
+
+.signal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.signal-action {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.signal-call {
+  background: rgba(34, 197, 94, 0.15);
+  border: 1px solid rgba(34, 197, 94, 0.4);
+  color: #22C55E;
+}
+
+.signal-put {
+  background: rgba(239, 68, 68, 0.15);
+  border: 1px solid rgba(239, 68, 68, 0.4);
+  color: #EF4444;
+}
+
+.signal-action-text {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+}
+
+.signal-confidence {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.confidence-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.6);
+}
+
+.confidence-value {
+  font-size: 16px;
+  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: 6px;
+}
+
+.confidence-high {
+  color: #22C55E;
+  background: rgba(34, 197, 94, 0.1);
+}
+
+.confidence-medium {
+  color: #FBBF24;
+  background: rgba(251, 191, 36, 0.1);
+}
+
+.confidence-low {
+  color: #EF4444;
+  background: rgba(239, 68, 68, 0.1);
+}
+
+.signal-reasoning {
+  padding: 12px;
+  background: rgba(26, 26, 26, 0.5);
+  border-radius: 8px;
+  border-left: 3px solid #22C55E;
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.5;
+}
+
+.signal-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 14px;
+}
+
+.signal-placeholder {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 13px;
 }
 </style>
