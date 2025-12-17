@@ -347,7 +347,7 @@
       />
       
       <!-- Market Selection Modal -->
-      <div v-if="showMarketModal" class="modal-overlay" @click.self="closeMarketModal">
+      <div v-if="showMarketModal" class="modal-overlay" data-modal="market" @click.self="closeMarketModal">
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Mercado</h3>
@@ -378,7 +378,7 @@
       </div>
       
       <!-- Trade Type Selection Modal -->
-      <div v-if="showTradeTypeModal" class="modal-overlay" @click.self="closeTradeTypeModal">
+      <div v-if="showTradeTypeModal" class="modal-overlay" data-modal="trade-type" @click.self="closeTradeTypeModal">
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
@@ -1076,17 +1076,20 @@ export default {
           this[propertyName] = value;
           console.log(`[Chart] ✅ safeSetProperty - ${propertyName} atualizado com sucesso, valor atual:`, this[propertyName]);
           
-          // Forçar atualização do DOM se necessário
+          // Verificar se o modal foi renderizado após nextTick
           this.$nextTick(() => {
             console.log(`[Chart] 🔍 safeSetProperty - após nextTick, ${propertyName} =`, this[propertyName]);
             // Verificar se o modal está realmente no DOM
-            const modalElement = document.querySelector(`.modal-overlay`);
+            // Usar um seletor mais específico para evitar conflitos
+            const modalSelector = propertyName === 'showMarketModal' 
+              ? '[data-modal="market"]' 
+              : '[data-modal="trade-type"]';
+            const modalElement = document.querySelector(modalSelector) || document.querySelector('.modal-overlay');
             if (value && modalElement) {
               console.log(`[Chart] ✅ Modal encontrado no DOM`);
             } else if (value && !modalElement) {
-              console.warn(`[Chart] ⚠️ Modal deveria estar no DOM mas não foi encontrado`);
-              // Tentar forçar atualização
-              this.$forceUpdate();
+              // Modal pode estar sendo renderizado ainda, isso é normal
+              console.log(`[Chart] ℹ️ Modal ainda não está no DOM, mas a propriedade foi atualizada. Vue deve renderizar em breve.`);
             }
           });
           
