@@ -813,16 +813,29 @@ export default {
     },
   },
   beforeUnmount() {
+    console.log('[Chart] 🚨 ========== BEFORE UNMOUNT INICIADO ==========');
+    console.log('[Chart] 🚨 Estado antes de desmontar:', {
+      isDestroyed: this.isComponentDestroyed,
+      hasEl: !!this.$el,
+      elConnected: this.$el?.isConnected,
+      pendingTimeouts: this.pendingTimeouts?.length || 0,
+      pendingIntervals: this.pendingIntervals?.length || 0,
+      hasCountdownInterval: !!this.contractCountdownInterval,
+      timestamp: Date.now()
+    });
+    
     // Marcar componente como destruído PRIMEIRO
     this.isComponentDestroyed = true;
+    console.log('[Chart] 🚨 Componente marcado como destruído');
     
     // Cancelar TODOS os timeouts pendentes
     if (this.pendingTimeouts && Array.isArray(this.pendingTimeouts)) {
+      console.log(`[Chart] 🚨 Limpando ${this.pendingTimeouts.length} timeouts pendentes`);
       this.pendingTimeouts.forEach(timeoutId => {
         try {
           clearTimeout(timeoutId);
         } catch (e) {
-          // Ignorar erros ao limpar timeout
+          console.warn('[Chart] ⚠️ Erro ao limpar timeout:', e);
         }
       });
       this.pendingTimeouts = [];
@@ -830,11 +843,12 @@ export default {
     
     // Cancelar TODOS os intervals pendentes
     if (this.pendingIntervals && Array.isArray(this.pendingIntervals)) {
+      console.log(`[Chart] 🚨 Limpando ${this.pendingIntervals.length} intervals pendentes`);
       this.pendingIntervals.forEach(intervalId => {
         try {
           clearInterval(intervalId);
         } catch (e) {
-          // Ignorar erros ao limpar interval
+          console.warn('[Chart] ⚠️ Erro ao limpar interval:', e);
         }
       });
       this.pendingIntervals = [];
@@ -843,25 +857,30 @@ export default {
     // Limpar fila de atualizações pendentes
     this.updateQueue = [];
     this.isProcessingUpdates = false;
+    console.log('[Chart] 🚨 Fila de atualizações limpa');
     
     // Limpar contador de contrato
     if (this.contractCountdownInterval) {
       try {
+        console.log('[Chart] 🚨 Limpando contractCountdownInterval');
         clearInterval(this.contractCountdownInterval);
         this.contractCountdownInterval = null;
       } catch (e) {
-        // Ignorar erros
+        console.warn('[Chart] ⚠️ Erro ao limpar contractCountdownInterval:', e);
       }
     }
     
     // Limpar usando método stopContractCountdown se disponível
     if (this.stopContractCountdown && typeof this.stopContractCountdown === 'function') {
       try {
+        console.log('[Chart] 🚨 Chamando stopContractCountdown');
         this.stopContractCountdown();
       } catch (e) {
-        // Ignorar erros
+        console.warn('[Chart] ⚠️ Erro ao chamar stopContractCountdown:', e);
       }
     }
+    
+    console.log('[Chart] 🚨 ========== BEFORE UNMOUNT FINALIZADO ==========');
     
     // Limpar gráfico
     if (this.chart) {
@@ -899,8 +918,18 @@ export default {
   methods: {
     // Helper para verificar se componente está montado e válido
     isComponentMounted() {
+      const checks = {
+        isDestroyed: this.isComponentDestroyed,
+        hasEl: !!this.$el,
+        elConnected: this.$el?.isConnected,
+        hasVnode: !!this.$?.vnode,
+        vnodeComponent: !!this.$?.vnode?.component,
+        vnodeUnmounted: this.$?.vnode?.component?.isUnmounted
+      };
+      
       // Se foi marcado como destruído, não está montado
       if (this.isComponentDestroyed) {
+        console.log('[Chart] 🔍 isComponentMounted: false (isDestroyed)', checks);
         return false;
       }
       
@@ -908,41 +937,65 @@ export default {
         // Durante a montagem inicial, apenas verificar se $el existe
         // Não verificar isConnected durante a montagem, pois pode não estar conectado ainda
         if (!this.$el) {
+          console.log('[Chart] 🔍 isComponentMounted: false (sem $el)', checks);
           return false;
         }
         
         // Verificar se componente Vue ainda está válido (menos restritivo)
         if (!this.$ || !this.$.vnode) {
+          console.log('[Chart] 🔍 isComponentMounted: false (sem vnode)', checks);
           return false;
         }
         
         // Verificar se não está em processo de desmontagem
         if (this.$.vnode.component && this.$.vnode.component.isUnmounted) {
+          console.log('[Chart] 🔍 isComponentMounted: false (componente desmontado)', checks);
           return false;
         }
         
         // Não verificar isConnected durante a montagem, pois pode não estar conectado ainda
         // Apenas verificar se o vnode existe
+        console.log('[Chart] ✅ isComponentMounted: true', checks);
         return true;
       } catch (e) {
+        console.error('[Chart] ❌ Erro em isComponentMounted:', {
+          error: e?.message || e,
+          stack: e?.stack,
+          checks,
+          timestamp: Date.now()
+        });
         return false;
       }
     },
     // Helper para verificar se é seguro fazer atualizações reativas
     isSafeToUpdate() {
+      const checks = {
+        isDestroyed: this.isComponentDestroyed,
+        isMounted: this.isComponentMounted(),
+        hasVnode: !!this.$?.vnode,
+        vnodeComponent: !!this.$?.vnode?.component,
+        vnodeUnmounted: this.$?.vnode?.component?.isUnmounted,
+        vnodeCtxNull: this.$?.vnode?.component?.ctx === null,
+        vnodeElConnected: this.$?.vnode?.component?.vnode?.el?.isConnected,
+        elConnected: this.$el?.isConnected
+      };
+      
       // Verificar flag de destruição primeiro
       if (this.isComponentDestroyed) {
+        console.log('[Chart] 🔍 isSafeToUpdate: false (isDestroyed)', checks);
         return false;
       }
       
       // Verificar se componente está montado
       if (!this.isComponentMounted()) {
+        console.log('[Chart] 🔍 isSafeToUpdate: false (não montado)', checks);
         return false;
       }
       
       try {
         // Verificar se o Vue está em um estado válido para receber atualizações
         if (!this.$ || !this.$.vnode) {
+          console.log('[Chart] 🔍 isSafeToUpdate: false (sem vnode)', checks);
           return false;
         }
         
@@ -952,23 +1005,37 @@ export default {
           
           // Verificar se não está em processo de atualização/desmontagem
           if (component.isUnmounted || component.ctx === null) {
+            console.log('[Chart] 🔍 isSafeToUpdate: false (componente inválido)', {
+              ...checks,
+              isUnmounted: component.isUnmounted,
+              ctxNull: component.ctx === null
+            });
             return false;
           }
           
           // Verificar se o elemento ainda está conectado
           if (component.vnode && component.vnode.el && !component.vnode.el.isConnected) {
+            console.log('[Chart] 🔍 isSafeToUpdate: false (vnode.el não conectado)', checks);
             return false;
           }
         }
         
         // Verificar se elemento DOM ainda está conectado
         if (this.$el && !this.$el.isConnected) {
+          console.log('[Chart] 🔍 isSafeToUpdate: false ($el não conectado)', checks);
           return false;
         }
         
+        console.log('[Chart] ✅ isSafeToUpdate: true', checks);
         return true;
       } catch (e) {
         // Se qualquer verificação falhar, não é seguro atualizar
+        console.error('[Chart] ❌ Erro em isSafeToUpdate:', {
+          error: e?.message || e,
+          stack: e?.stack,
+          checks,
+          timestamp: Date.now()
+        });
         return false;
       }
     },
@@ -1090,26 +1157,61 @@ export default {
     },
     // Helper para atualizar dados reativos de forma segura
     safeUpdate(callback) {
+      const componentState = {
+        isDestroyed: this.isComponentDestroyed,
+        isMounted: this.isComponentMounted(),
+        hasEl: !!this.$el,
+        elConnected: this.$el?.isConnected,
+        hasVnode: !!this.$?.vnode,
+        vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
+        stackTrace: new Error().stack
+      };
+      
+      console.log('[Chart] 🔍 safeUpdate chamado:', {
+        componentState,
+        callbackType: typeof callback,
+        timestamp: Date.now()
+      });
+      
       // Se componente foi destruído ou não está montado, ignorar
       if (this.isComponentDestroyed || !this.isComponentMounted()) {
+        console.warn('[Chart] ⚠️ safeUpdate ignorado - componente não está montado:', componentState);
         return;
       }
       
       // Usar nextTick para garantir que estamos em um ciclo seguro
       try {
         this.$nextTick(() => {
+          const afterTickState = {
+            isDestroyed: this.isComponentDestroyed,
+            isMounted: this.isComponentMounted(),
+            hasEl: !!this.$el,
+            elConnected: this.$el?.isConnected,
+            hasVnode: !!this.$?.vnode,
+            vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+          };
+          
+          console.log('[Chart] 🔍 safeUpdate dentro de nextTick:', {
+            afterTickState,
+            timestamp: Date.now()
+          });
+          
           // Verificar novamente antes de executar
           if (this.isComponentDestroyed || !this.isComponentMounted()) {
+            console.warn('[Chart] ⚠️ safeUpdate cancelado após nextTick - componente não está montado:', afterTickState);
             return;
           }
           
           // Executar callback se componente está montado
           if (typeof callback === 'function') {
             try {
+              console.log('[Chart] ✅ Executando callback em safeUpdate');
               callback();
+              console.log('[Chart] ✅ Callback executado com sucesso');
             } catch (error) {
               // Ignorar erros conhecidos do Vue durante desmontagem
               const errorMsg = String(error?.message || error || '');
+              const errorStack = error?.stack || '';
               const knownErrors = [
                 'insertBefore',
                 'Symbol(_assign)',
@@ -1125,17 +1227,36 @@ export default {
                 'Symbol(_vtc)'
               ];
               
-              if (!knownErrors.some(err => errorMsg.includes(err))) {
-                console.warn('[Chart] Erro em safeUpdate:', error);
+              const isKnownError = knownErrors.some(err => errorMsg.includes(err));
+              
+              console.error('[Chart] ❌ Erro em safeUpdate callback:', {
+                error: errorMsg,
+                stack: errorStack,
+                isKnownError,
+                componentState: afterTickState,
+                timestamp: Date.now()
+              });
+              
+              if (!isKnownError) {
+                console.warn('[Chart] Erro desconhecido em safeUpdate:', error);
               }
             }
           }
         });
       } catch (error) {
+        console.error('[Chart] ❌ Erro ao chamar $nextTick em safeUpdate:', {
+          error: error?.message || error,
+          stack: error?.stack,
+          componentState,
+          timestamp: Date.now()
+        });
+        
         // Se nextTick falhar, tentar executar diretamente como fallback
         if (typeof callback === 'function' && !this.isComponentDestroyed && this.isComponentMounted()) {
           try {
+            console.log('[Chart] 🔄 Tentando fallback direto em safeUpdate');
             callback();
+            console.log('[Chart] ✅ Fallback executado com sucesso');
           } catch (callbackError) {
             // Ignorar erros conhecidos
             const errorMsg = String(callbackError?.message || callbackError || '');
@@ -1154,8 +1275,15 @@ export default {
               'Symbol(_vtc)'
             ];
             
+            console.error('[Chart] ❌ Erro em safeUpdate (fallback):', {
+              error: errorMsg,
+              stack: callbackError?.stack,
+              componentState,
+              timestamp: Date.now()
+            });
+            
             if (!knownErrors.some(err => errorMsg.includes(err))) {
-              console.warn('[Chart] Erro em safeUpdate (fallback):', callbackError);
+              console.warn('[Chart] Erro desconhecido em safeUpdate (fallback):', callbackError);
             }
           }
         }
@@ -1405,8 +1533,27 @@ export default {
       }
     },
     handleSSEMessage(data) {
+      const componentState = {
+        isDestroyed: this.isComponentDestroyed,
+        isMounted: this.isComponentMounted(),
+        hasEl: !!this.$el,
+        elConnected: this.$el?.isConnected,
+        hasVnode: !!this.$?.vnode,
+        vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
+        messageType: data?.type,
+        timestamp: Date.now()
+      };
+      
+      console.log('[Chart] 🔍 handleSSEMessage chamado:', {
+        componentState,
+        dataType: data?.type,
+        hasData: !!data?.data,
+        timestamp: Date.now()
+      });
+      
       // Verificar se componente ainda está montado antes de processar mensagem
       if (this.isComponentDestroyed || !this.$el) {
+        console.warn('[Chart] ⚠️ handleSSEMessage ignorado - componente destruído ou sem $el:', componentState);
         return;
       }
 
@@ -1510,17 +1657,90 @@ export default {
           this.updateEntrySpotLine();
         }
       } else if (data.type === 'proposal' && data.data) {
-        console.log('[Chart] Proposta recebida via SSE:', data.data);
-        this.processProposal(data.data);
+        const proposalState = {
+          isDestroyed: this.isComponentDestroyed,
+          isMounted: this.isComponentMounted(),
+          hasEl: !!this.$el,
+          elConnected: this.$el?.isConnected,
+          hasVnode: !!this.$?.vnode,
+          vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+        };
+        
+        console.log('[Chart] 🔍 Proposta recebida via SSE:', {
+          data: data.data,
+          componentState: proposalState,
+          timestamp: Date.now()
+        });
+        
+        if (this.isComponentMounted() && !this.isComponentDestroyed) {
+          this.processProposal(data.data);
+        } else {
+          console.warn('[Chart] ⚠️ Proposta ignorada - componente não montado:', proposalState);
+        }
       } else if (data.type === 'buy' && data.data) {
-        console.log('[Chart] Compra recebida via SSE:', data.data);
-        this.processBuy(data.data);
+        const buyState = {
+          isDestroyed: this.isComponentDestroyed,
+          isMounted: this.isComponentMounted(),
+          hasEl: !!this.$el,
+          elConnected: this.$el?.isConnected,
+          hasVnode: !!this.$?.vnode,
+          vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+        };
+        
+        console.log('[Chart] 🔍 Compra recebida via SSE:', {
+          data: data.data,
+          componentState: buyState,
+          timestamp: Date.now()
+        });
+        
+        if (this.isComponentMounted() && !this.isComponentDestroyed) {
+          this.processBuy(data.data);
+        } else {
+          console.warn('[Chart] ⚠️ Compra ignorada - componente não montado:', buyState);
+        }
       } else if (data.type === 'sell' && data.data) {
-        console.log('[Chart] Venda recebida via SSE:', data.data);
-        this.processSell(data.data);
+        const sellState = {
+          isDestroyed: this.isComponentDestroyed,
+          isMounted: this.isComponentMounted(),
+          hasEl: !!this.$el,
+          elConnected: this.$el?.isConnected,
+          hasVnode: !!this.$?.vnode,
+          vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+        };
+        
+        console.log('[Chart] 🔍 Venda recebida via SSE:', {
+          data: data.data,
+          componentState: sellState,
+          timestamp: Date.now()
+        });
+        
+        if (this.isComponentMounted() && !this.isComponentDestroyed) {
+          this.processSell(data.data);
+        } else {
+          console.warn('[Chart] ⚠️ Venda ignorada - componente não montado:', sellState);
+        }
       } else if (data.type === 'contract' && data.data) {
-        console.log('[Chart] Contrato atualizado via SSE:', data.data);
-        this.processContract(data.data);
+        const contractState = {
+          isDestroyed: this.isComponentDestroyed,
+          isMounted: this.isComponentMounted(),
+          hasEl: !!this.$el,
+          elConnected: this.$el?.isConnected,
+          hasVnode: !!this.$?.vnode,
+          vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
+          hasActiveContract: !!this.activeContract
+        };
+        
+        console.log('[Chart] 🔍 Contrato atualizado via SSE:', {
+          data: data.data,
+          componentState: contractState,
+          timestamp: Date.now()
+        });
+        
+        if (this.isComponentMounted() && !this.isComponentDestroyed) {
+          this.processContract(data.data);
+        } else {
+          console.warn('[Chart] ⚠️ Contrato ignorado - componente não montado:', contractState);
+        }
       }
     },
     addTickToChart(tickData) {
@@ -1711,12 +1931,31 @@ export default {
         return;
       }
 
+      const componentState = {
+        isDestroyed: this.isComponentDestroyed,
+        isMounted: this.isComponentMounted(),
+        hasEl: !!this.$el,
+        elConnected: this.$el?.isConnected,
+        hasVnode: !!this.$?.vnode,
+        vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+      };
+      
+      console.log('[Chart] 🔍 loadTicksFromBackend - antes de safeUpdate:', {
+        componentState,
+        timestamp: Date.now()
+      });
+      
       // Atualizar estados usando safeUpdate
       if (!this.isComponentDestroyed && this.isComponentMounted()) {
+        console.log('[Chart] 🔄 loadTicksFromBackend - chamando safeUpdate');
         this.safeUpdate(() => {
+          console.log('[Chart] 🔄 loadTicksFromBackend - dentro de safeUpdate, atualizando estados');
           this.isLoadingTicks = true;
           this.showChartPlaceholder = true;
+          console.log('[Chart] ✅ loadTicksFromBackend - estados atualizados');
         });
+      } else {
+        console.warn('[Chart] ⚠️ loadTicksFromBackend - componente não está montado:', componentState);
       }
 
       try {
@@ -2240,25 +2479,75 @@ export default {
         }
         
         // Usar um pequeno delay para garantir que o DOM está totalmente renderizado
+        const timeoutState = {
+          isDestroyed: this.isComponentDestroyed,
+          isMounted: this.isComponentMounted(),
+          hasEl: !!this.$el,
+          elConnected: this.$el?.isConnected,
+          hasVnode: !!this.$?.vnode,
+          vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
+          isSafe: this.isSafeToUpdate()
+        };
+        
+        console.log('[Chart] 🔍 plotTicks - antes de setTimeout:', {
+          timeoutState,
+          timestamp: Date.now()
+        });
+        
         setTimeout(() => {
+          const afterTimeoutState = {
+            isDestroyed: this.isComponentDestroyed,
+            isMounted: this.isComponentMounted(),
+            hasEl: !!this.$el,
+            elConnected: this.$el?.isConnected,
+            hasVnode: !!this.$?.vnode,
+            vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
+            isSafe: this.isSafeToUpdate()
+          };
+          
+          console.log('[Chart] 🔍 plotTicks - dentro de setTimeout:', {
+            afterTimeoutState,
+            timestamp: Date.now()
+          });
+          
           // Verificar novamente se componente ainda está montado e seguro para atualizar
           if (!this.isSafeToUpdate()) {
+            console.warn('[Chart] ⚠️ plotTicks cancelado - não é seguro atualizar:', afterTimeoutState);
             return;
           }
           
           // Usar nextTick para garantir que estamos em um ciclo seguro
           this.$nextTick(() => {
+            const afterNextTickState = {
+              isDestroyed: this.isComponentDestroyed,
+              isMounted: this.isComponentMounted(),
+              hasEl: !!this.$el,
+              elConnected: this.$el?.isConnected,
+              hasVnode: !!this.$?.vnode,
+              vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
+              isSafe: this.isSafeToUpdate()
+            };
+            
+            console.log('[Chart] 🔍 plotTicks - dentro de nextTick:', {
+              afterNextTickState,
+              timestamp: Date.now()
+            });
+            
             // Verificar uma última vez antes de atualizar
             if (!this.isSafeToUpdate()) {
+              console.warn('[Chart] ⚠️ plotTicks cancelado após nextTick - não é seguro atualizar:', afterNextTickState);
               return;
             }
             
             // Atualizar estado após plotar ticks usando safeUpdate
             if (!this.isComponentDestroyed && this.isComponentMounted()) {
+              console.log('[Chart] 🔄 plotTicks - chamando safeUpdate para atualizar estado');
               this.safeUpdate(() => {
                 this.showChartPlaceholder = false;
                 this.isLoadingTicks = false;
               });
+            } else {
+              console.warn('[Chart] ⚠️ plotTicks - componente destruído ou não montado:', afterNextTickState);
             }
           });
         }, 50); // Pequeno delay de 50ms para garantir que DOM está estável
@@ -2534,23 +2823,64 @@ export default {
         return;
       }
       
+      const componentState = {
+        isDestroyed: this.isComponentDestroyed,
+        isMounted: this.isComponentMounted(),
+        hasEl: !!this.$el,
+        elConnected: this.$el?.isConnected,
+        hasVnode: !!this.$?.vnode,
+        vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+      };
+      
+      console.log('[Chart] 🔍 processProposal - antes de nextTick:', {
+        componentState,
+        proposalData: { id: proposalData.id, askPrice: proposalData.askPrice },
+        timestamp: Date.now()
+      });
+      
       // Usar nextTick para garantir atualização segura
       this.$nextTick(() => {
+        const afterTickState = {
+          isDestroyed: this.isComponentDestroyed,
+          isMounted: this.isComponentMounted(),
+          hasEl: !!this.$el,
+          elConnected: this.$el?.isConnected,
+          hasVnode: !!this.$?.vnode,
+          vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+        };
+        
+        console.log('[Chart] 🔍 processProposal - dentro de nextTick:', {
+          afterTickState,
+          timestamp: Date.now()
+        });
+        
         if (!this.isComponentMounted()) {
+          console.warn('[Chart] ⚠️ processProposal cancelado - componente não montado:', afterTickState);
           return;
         }
         
         try {
+          console.log('[Chart] 🔄 processProposal - atualizando propriedades...');
           this.currentProposalId = proposalData.id;
           this.currentProposalPrice = Number(proposalData.askPrice || proposalData.ask_price || 0);
           
           console.log('[Chart] ✅ Proposta processada:', {
             proposalId: this.currentProposalId,
-            proposalPrice: this.currentProposalPrice
+            proposalPrice: this.currentProposalPrice,
+            componentState: afterTickState
           });
         } catch (error) {
           // Ignorar erros conhecidos do Vue durante desmontagem
           const errorMessage = String(error?.message || error || '');
+          const errorStack = error?.stack || '';
+          console.error('[Chart] ❌ Erro em processProposal:', {
+            error: errorMessage,
+            stack: errorStack,
+            componentState: afterTickState,
+            proposalData: { id: proposalData.id, askPrice: proposalData.askPrice },
+            timestamp: Date.now()
+          });
+          
           const knownErrors = [
             'insertBefore',
             'Symbol(_assign)',
@@ -2740,10 +3070,51 @@ export default {
         return;
       }
       
+      const componentState = {
+        isDestroyed: this.isComponentDestroyed,
+        isMounted: this.isComponentMounted(),
+        hasEl: !!this.$el,
+        elConnected: this.$el?.isConnected,
+        hasVnode: !!this.$?.vnode,
+        vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+      };
+      
+      console.log('[Chart] 🔍 openMarketModal - antes de nextTick:', {
+        componentState,
+        timestamp: Date.now()
+      });
+      
       // Usar nextTick para garantir que o DOM está pronto
       this.$nextTick(() => {
+        const afterTickState = {
+          isDestroyed: this.isComponentDestroyed,
+          isMounted: this.isComponentMounted(),
+          hasEl: !!this.$el,
+          elConnected: this.$el?.isConnected,
+          hasVnode: !!this.$?.vnode,
+          vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+        };
+        
+        console.log('[Chart] 🔍 openMarketModal - dentro de nextTick:', {
+          afterTickState,
+          timestamp: Date.now()
+        });
+        
         if (this.isComponentMounted()) {
-          this.showMarketModal = true;
+          try {
+            console.log('[Chart] 🔄 openMarketModal - definindo showMarketModal = true');
+            this.showMarketModal = true;
+            console.log('[Chart] ✅ openMarketModal - showMarketModal definido com sucesso');
+          } catch (error) {
+            console.error('[Chart] ❌ Erro ao abrir modal de mercado:', {
+              error: error?.message || error,
+              stack: error?.stack,
+              componentState: afterTickState,
+              timestamp: Date.now()
+            });
+          }
+        } else {
+          console.warn('[Chart] ⚠️ openMarketModal cancelado - componente não montado:', afterTickState);
         }
       });
     },
@@ -2785,10 +3156,51 @@ export default {
         return;
       }
       
+      const componentState = {
+        isDestroyed: this.isComponentDestroyed,
+        isMounted: this.isComponentMounted(),
+        hasEl: !!this.$el,
+        elConnected: this.$el?.isConnected,
+        hasVnode: !!this.$?.vnode,
+        vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+      };
+      
+      console.log('[Chart] 🔍 openTradeTypeModal - antes de nextTick:', {
+        componentState,
+        timestamp: Date.now()
+      });
+      
       // Usar nextTick para garantir que o DOM está pronto
       this.$nextTick(() => {
+        const afterTickState = {
+          isDestroyed: this.isComponentDestroyed,
+          isMounted: this.isComponentMounted(),
+          hasEl: !!this.$el,
+          elConnected: this.$el?.isConnected,
+          hasVnode: !!this.$?.vnode,
+          vnodeMounted: !this.$?.vnode?.component?.isUnmounted
+        };
+        
+        console.log('[Chart] 🔍 openTradeTypeModal - dentro de nextTick:', {
+          afterTickState,
+          timestamp: Date.now()
+        });
+        
         if (this.isComponentMounted()) {
-          this.showTradeTypeModal = true;
+          try {
+            console.log('[Chart] 🔄 openTradeTypeModal - definindo showTradeTypeModal = true');
+            this.showTradeTypeModal = true;
+            console.log('[Chart] ✅ openTradeTypeModal - showTradeTypeModal definido com sucesso');
+          } catch (error) {
+            console.error('[Chart] ❌ Erro ao abrir modal de tipo de trade:', {
+              error: error?.message || error,
+              stack: error?.stack,
+              componentState: afterTickState,
+              timestamp: Date.now()
+            });
+          }
+        } else {
+          console.warn('[Chart] ⚠️ openTradeTypeModal cancelado - componente não montado:', afterTickState);
         }
       });
     },
@@ -2854,47 +3266,103 @@ export default {
                         contractData.is_sold === true || contractData.is_expired === true ||
                         contractData.status === 'expired';
       
+      const componentState = {
+        isDestroyed: this.isComponentDestroyed,
+        isMounted: this.isComponentMounted(),
+        hasEl: !!this.$el,
+        elConnected: this.$el?.isConnected,
+        hasVnode: !!this.$?.vnode,
+        vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
+        hasActiveContract: !!this.activeContract
+      };
+      
+      console.log('[Chart] 🔍 processContract - antes de safeUpdate:', {
+        componentState,
+        contractData: {
+          sell_price: contractData.sell_price,
+          profit: contractData.profit,
+          is_sold: contractData.is_sold,
+          is_valid_to_sell: contractData.is_valid_to_sell,
+          expiry_time: contractData.expiry_time
+        },
+        timestamp: Date.now()
+      });
+      
       // Atualizar dados do contrato ativo usando safeUpdate
       this.safeUpdate(() => {
+        const afterSafeUpdateState = {
+          isDestroyed: this.isComponentDestroyed,
+          isMounted: this.isComponentMounted(),
+          hasEl: !!this.$el,
+          elConnected: this.$el?.isConnected,
+          hasVnode: !!this.$?.vnode,
+          vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
+          hasActiveContract: !!this.activeContract
+        };
+        
+        console.log('[Chart] 🔍 processContract - dentro de safeUpdate:', {
+          afterSafeUpdateState,
+          timestamp: Date.now()
+        });
+        
         if (!this.activeContract) {
+          console.warn('[Chart] ⚠️ processContract - activeContract não existe:', afterSafeUpdateState);
           return;
         }
         
-        if (contractData.sell_price !== undefined) {
-          this.activeContract.sell_price = contractData.sell_price;
-        }
-        if (contractData.profit !== undefined) {
-          this.activeContract.profit = contractData.profit;
-        }
-        if (contractData.exit_spot !== undefined || contractData.exitSpot !== undefined) {
-          this.activeContract.exit_spot = contractData.exit_spot || contractData.exitSpot || null;
-        }
-        if (contractData.is_sold !== undefined) {
-          this.isSellEnabled = !contractData.is_sold;
-        }
-        
-        // Atualizar se venda antecipada está disponível
-        // A maioria dos contratos permite venda antecipada, exceto alguns tipos específicos
-        if (contractData.is_valid_to_sell !== undefined) {
-          this.isSellEnabled = contractData.is_valid_to_sell;
-        } else {
-          // Por padrão, assumir que venda antecipada está disponível se não foi vendido
-          if (contractData.is_sold === undefined || !contractData.is_sold) {
-            // Verificar se o tipo de contrato permite venda antecipada
-            const noEarlySellTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
-            this.isSellEnabled = !noEarlySellTypes.includes(this.activeContract.contract_type);
+        try {
+          console.log('[Chart] 🔄 processContract - atualizando propriedades do contrato...');
+          
+          if (contractData.sell_price !== undefined) {
+            this.activeContract.sell_price = contractData.sell_price;
           }
-        }
-        
-        // Atualizar tempo de expiração se disponível
-        if (contractData.expiry_time !== undefined && contractData.expiry_time !== null) {
-          this.activeContract.expiry_time = contractData.expiry_time;
-          // Recalcular tempo restante se necessário
-          if (!this.isTickBasedContract && this.contractStartTime) {
-            const now = Date.now() / 1000;
-            const expiry = Number(contractData.expiry_time);
-            this.contractTimeRemaining = Math.max(0, expiry - now);
+          if (contractData.profit !== undefined) {
+            this.activeContract.profit = contractData.profit;
           }
+          if (contractData.exit_spot !== undefined || contractData.exitSpot !== undefined) {
+            this.activeContract.exit_spot = contractData.exit_spot || contractData.exitSpot || null;
+          }
+          if (contractData.is_sold !== undefined) {
+            this.isSellEnabled = !contractData.is_sold;
+          }
+          
+          // Atualizar se venda antecipada está disponível
+          // A maioria dos contratos permite venda antecipada, exceto alguns tipos específicos
+          if (contractData.is_valid_to_sell !== undefined) {
+            this.isSellEnabled = contractData.is_valid_to_sell;
+          } else {
+            // Por padrão, assumir que venda antecipada está disponível se não foi vendido
+            if (contractData.is_sold === undefined || !contractData.is_sold) {
+              // Verificar se o tipo de contrato permite venda antecipada
+              const noEarlySellTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
+              this.isSellEnabled = !noEarlySellTypes.includes(this.activeContract.contract_type);
+            }
+          }
+          
+          // Atualizar tempo de expiração se disponível
+          if (contractData.expiry_time !== undefined && contractData.expiry_time !== null) {
+            this.activeContract.expiry_time = contractData.expiry_time;
+            // Recalcular tempo restante se necessário
+            if (!this.isTickBasedContract && this.contractStartTime) {
+              const now = Date.now() / 1000;
+              const expiry = Number(contractData.expiry_time);
+              this.contractTimeRemaining = Math.max(0, expiry - now);
+            }
+          }
+          
+          console.log('[Chart] ✅ processContract - propriedades atualizadas com sucesso');
+        } catch (error) {
+          console.error('[Chart] ❌ Erro ao atualizar propriedades em processContract:', {
+            error: error?.message || error,
+            stack: error?.stack,
+            componentState: afterSafeUpdateState,
+            contractData: {
+              sell_price: contractData.sell_price,
+              profit: contractData.profit,
+              is_sold: contractData.is_sold
+            },
+            timestamp: Date.now()
+          });
         }
       });
       
