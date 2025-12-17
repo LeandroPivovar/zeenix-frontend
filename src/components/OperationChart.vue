@@ -995,20 +995,14 @@ export default {
                             break;
                           }
                           
-                          // Envolver a atualização em um wrapper que captura erros de renderização
-                          try {
-                            // Executar callback dentro de um try-catch adicional
-                            const result = callback();
-                            
-                            // Se retornou uma Promise, aguardar e ignorar erros
-                            if (result && typeof result.then === 'function') {
-                              result.catch(() => {
-                                // Ignorar erros de Promise silenciosamente
-                              });
-                            }
-                          } catch (reactivityError) {
-                            // Este catch interno captura erros de reatividade do Vue
-                            throw reactivityError;
+                          // Executar callback
+                          const result = callback();
+                          
+                          // Se retornou uma Promise, aguardar e ignorar erros
+                          if (result && typeof result.then === 'function') {
+                            result.catch(() => {
+                              // Ignorar erros de Promise silenciosamente
+                            });
                           }
                         } catch (updateError) {
                           // Se for erro de atualização do Vue, ignorar silenciosamente
