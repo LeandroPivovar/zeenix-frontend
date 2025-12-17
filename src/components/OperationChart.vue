@@ -757,9 +757,13 @@ export default {
       // Quando o tipo de contrato mudar, recarregar valores padrão e proposta
       if (this.isConnected) {
         // Limpar proposalId antigo quando o tipo muda (importante para evitar usar proposta do tipo errado)
-        this.currentProposalId = null;
-        this.currentProposalPrice = null;
-        console.log('[Chart] Tipo de contrato alterado, limpando proposalId antigo');
+        if (this.isComponentMounted()) {
+          this.safeUpdate(() => {
+            this.currentProposalId = null;
+            this.currentProposalPrice = null;
+            console.log('[Chart] Tipo de contrato alterado, limpando proposalId antigo');
+          });
+        }
         
         // Se mudou para DIGITMATCH e temos um último dígito, inicializar digitMatchValue
         if (this.localOrderConfig.type === 'DIGITMATCH' && this.lastDigit !== null) {
@@ -837,6 +841,28 @@ export default {
     }
   },
   methods: {
+    // Helper para verificar se componente está montado e válido
+    isComponentMounted() {
+      return !this.isComponentDestroyed && this.$el && this.$el.isConnected !== false;
+    },
+    // Helper para atualizar dados reativos de forma segura
+    safeUpdate(callback) {
+      if (!this.isComponentMounted()) {
+        console.warn('[Chart] Componente não está montado, ignorando atualização');
+        return;
+      }
+      
+      try {
+        this.$nextTick(() => {
+          if (!this.isComponentMounted()) {
+            return;
+          }
+          callback();
+        });
+      } catch (error) {
+        console.error('[Chart] Erro ao atualizar:', error);
+      }
+    },
     initChart() {
       const container = this.$refs.chartContainer;
       if (!container) {
@@ -1103,8 +1129,10 @@ export default {
             epoch: Math.floor(Number(tick.epoch)) - (3 * 60 * 60) // UTC-3
           }));
         // Armazenar ticks para atualização em tempo real
-        this.ticks = ticksWithBrasiliaTime;
-        this.plotTicks(ticksWithBrasiliaTime);
+        if (this.isComponentMounted()) {
+          this.ticks = ticksWithBrasiliaTime;
+          this.plotTicks(ticksWithBrasiliaTime);
+        }
       } else if (data.type === 'tick' && data.data) {
         // Ticks em tempo real - validar antes de processar
         if (data.data.value === null || data.data.value === undefined || 
@@ -1364,14 +1392,22 @@ export default {
           
           if (this.retryCount < 3) {
             setTimeout(() => {
-              this.isLoadingTicks = false;
-              this.loadTicksFromBackend();
+              if (this.isComponentMounted()) {
+                this.safeUpdate(() => {
+                  this.isLoadingTicks = false;
+                });
+                this.loadTicksFromBackend();
+              }
             }, 3000);
           } else {
             console.error('[Chart] Máximo de tentativas atingido, parando...');
-            this.showChartPlaceholder = false;
-            this.isLoadingTicks = false;
-            this.retryCount = 0;
+            if (this.isComponentMounted()) {
+              this.safeUpdate(() => {
+                this.showChartPlaceholder = false;
+                this.isLoadingTicks = false;
+                this.retryCount = 0;
+              });
+            }
           }
           return;
         }
@@ -1793,15 +1829,16 @@ export default {
           console.warn('[Chart] Erro ao ajustar viewport:', error);
         }
         
-        // Ocultar placeholder
-        // Verificar se componente ainda está montado antes de atualizar
-        if (this.isComponentDestroyed || !this.$el) {
-          console.warn('[Chart] Componente destruído, ignorando atualização');
+        // Ocultar placeholder - usar safeUpdate
+        if (!this.isComponentMounted()) {
+          console.warn('[Chart] Componente não está montado, ignorando atualização');
           return;
         }
         
-        this.showChartPlaceholder = false;
-        this.isLoadingTicks = false;
+        this.safeUpdate(() => {
+          this.showChartPlaceholder = false;
+          this.isLoadingTicks = false;
+        });
         
         // Forçar resize para garantir que o gráfico use toda a altura disponível
         this.$nextTick(() => {
@@ -1893,10 +1930,16 @@ export default {
       }
     },
     async executeBuy() {
+      if (!this.isComponentMounted()) {
+        return;
+      }
+      
       console.log('[Chart] ========== EXECUTAR COMPRA CHAMADO ==========');
       
       if (!this.isConnected) {
-        this.tradeError = 'Conecte-se à Deriv antes de operar.';
+        this.safeUpdate(() => {
+          this.tradeError = 'Conecte-se à Deriv antes de operar.';
+        });
         return;
       }
       
@@ -1906,7 +1949,9 @@ export default {
       }
       
       if (!this.localOrderConfig.type) {
-        this.tradeError = 'Selecione o tipo de negociação (CALL ou PUT).';
+        this.safeUpdate(() => {
+          this.tradeError = 'Selecione o tipo de negociação (CALL ou PUT).';
+        });
         return;
       }
       
@@ -1915,9 +1960,11 @@ export default {
         this.purchasePrice = this.latestTick.value;
       }
       
-      this.tradeError = '';
-      this.tradeMessage = '';
-      this.isTrading = true;
+      this.safeUpdate(() => {
+        this.tradeError = '';
+        this.tradeMessage = '';
+        this.isTrading = true;
+      });
       
       console.log('[Chart] ========== EXECUTAR COMPRA ==========');
       console.log('[Chart] Configuração:', this.localOrderConfig);
@@ -1931,8 +1978,12 @@ export default {
       if (accountBalance !== null && accountBalance < requiredAmount) {
         const balanceFormatted = accountBalance.toFixed(2);
         const requiredFormatted = requiredAmount.toFixed(2);
-        this.tradeError = `Saldo insuficiente! Você possui $${balanceFormatted} mas precisa de $${requiredFormatted} para esta operação.`;
-        this.isTrading = false;
+        if (this.isComponentMounted()) {
+          this.safeUpdate(() => {
+            this.tradeError = `Saldo insuficiente! Você possui $${balanceFormatted} mas precisa de $${requiredFormatted} para esta operação.`;
+            this.isTrading = false;
+          });
+        }
         console.warn('[Chart] Saldo insuficiente:', { accountBalance, requiredAmount });
         return;
       }
@@ -1994,18 +2045,27 @@ export default {
         console.error('[Chart] Erro ao executar compra:', error);
         
         // Verificar se o erro é de saldo insuficiente
-        if (error.message && (error.message.includes('InsufficientBalance') || error.message.includes('insufficient'))) {
-          this.tradeError = `Saldo insuficiente! Você não possui saldo suficiente para esta operação de $${requiredAmount.toFixed(2)}.`;
-        } else {
-          this.tradeError = error.message || 'Erro ao executar compra';
+        if (this.isComponentMounted()) {
+          this.safeUpdate(() => {
+            if (error.message && (error.message.includes('InsufficientBalance') || error.message.includes('insufficient'))) {
+              this.tradeError = `Saldo insuficiente! Você não possui saldo suficiente para esta operação de $${requiredAmount.toFixed(2)}.`;
+            } else {
+              this.tradeError = error.message || 'Erro ao executar compra';
+            }
+            this.isTrading = false;
+          });
         }
-        
-        this.isTrading = false;
       }
     },
     async executeSell() {
+      if (!this.isComponentMounted()) {
+        return;
+      }
+      
       if (!this.activeContract || !this.isSellEnabled) {
-        this.tradeError = 'Venda não disponível no momento.';
+        this.safeUpdate(() => {
+          this.tradeError = 'Venda não disponível no momento.';
+        });
         return;
       }
       
@@ -2013,9 +2073,11 @@ export default {
         return;
       }
       
-      this.tradeError = '';
-      this.tradeMessage = '';
-      this.isTrading = true;
+      this.safeUpdate(() => {
+        this.tradeError = '';
+        this.tradeMessage = '';
+        this.isTrading = true;
+      });
       
       console.log('[Chart] ========== EXECUTANDO VENDA ==========');
       console.log('[Chart] ContractId:', this.activeContract.contract_id);
@@ -2027,14 +2089,17 @@ export default {
         // A resposta chegará via SSE no evento 'sell'
       } catch (error) {
         console.error('[Chart] Erro ao executar venda:', error);
-        this.tradeError = error.message || 'Erro ao executar venda';
-        this.isTrading = false;
+        if (this.isComponentMounted()) {
+          this.safeUpdate(() => {
+            this.tradeError = error.message || 'Erro ao executar venda';
+            this.isTrading = false;
+          });
+        }
       }
     },
     processProposal(proposalData) {
-      // Verificar se componente ainda está montado antes de atualizar
-      if (this.isComponentDestroyed || !this.$el) {
-        console.warn('[Chart] Componente destruído, ignorando proposta');
+      if (!this.isComponentMounted()) {
+        console.warn('[Chart] Componente não está montado, ignorando proposta');
         return;
       }
       
@@ -2046,13 +2111,8 @@ export default {
         return;
       }
       
-      // Usar $nextTick para garantir que a atualização aconteça no ciclo correto do Vue
-        this.$nextTick(() => {
-          // Verificar novamente se componente ainda está montado
-          if (this.isComponentDestroyed || !this.$el) {
-            return;
-          }
-        
+      // Usar safeUpdate para garantir atualização segura
+      this.safeUpdate(() => {
         try {
           // Armazenar ID e preço da proposta
           this.currentProposalId = proposalData.id;
@@ -2076,8 +2136,16 @@ export default {
       
       if (!buyData || !contractId) {
         console.error('[Chart] Dados de compra inválidos:', buyData);
-        this.tradeError = 'Erro ao processar compra.';
-        this.isTrading = false;
+        if (this.isComponentMounted()) {
+          this.safeUpdate(() => {
+            this.tradeError = 'Erro ao processar compra.';
+            this.isTrading = false;
+          });
+        }
+        return;
+      }
+      
+      if (!this.isComponentMounted()) {
         return;
       }
       
@@ -2107,53 +2175,64 @@ export default {
         finalEntrySpot: buyData.entrySpot || buyData.entry_spot || this.purchasePrice
       });
       
-      this.activeContract = {
-        contract_id: contractId,
-        buy_price: buyData.buyPrice || buyData.buy_price || this.currentProposalPrice,
-        entry_spot: buyData.entrySpot || buyData.entry_spot || this.purchasePrice || null,
-        entry_time: buyData.entryTime || buyData.entry_time || Date.now() / 1000,
-        contract_type: buyData.contractType || buyData.contract_type || this.localOrderConfig.type,
-        duration: duration,
-        duration_unit: durationUnit, // Preservar 't' ou 'm'
-        symbol: buyData.symbol || this.symbol,
-        sell_price: buyData.sellPrice || buyData.sell_price || null,
-        profit: buyData.profit || null,
-        expiry_time: buyData.expiryTime || buyData.expiry_time || null, // Tempo de expiração se disponível
-        payout: buyData.payout || null, // Payout do contrato
-      };
-      
-      // Desabilitar venda para contratos de ticks
-      if (durationUnit === 't') {
-        this.isSellEnabled = false;
-        console.log('[Chart] Contrato de ticks detectado - venda desabilitada');
-      }
+      this.safeUpdate(() => {
+        this.activeContract = {
+          contract_id: contractId,
+          buy_price: buyData.buyPrice || buyData.buy_price || this.currentProposalPrice,
+          entry_spot: buyData.entrySpot || buyData.entry_spot || this.purchasePrice || null,
+          entry_time: buyData.entryTime || buyData.entry_time || Date.now() / 1000,
+          contract_type: buyData.contractType || buyData.contract_type || this.localOrderConfig.type,
+          duration: duration,
+          duration_unit: durationUnit, // Preservar 't' ou 'm'
+          symbol: buyData.symbol || this.symbol,
+          sell_price: buyData.sellPrice || buyData.sell_price || null,
+          profit: buyData.profit || null,
+          expiry_time: buyData.expiryTime || buyData.expiry_time || null, // Tempo de expiração se disponível
+          payout: buyData.payout || null, // Payout do contrato
+        };
+        
+        // Desabilitar venda para contratos de ticks
+        if (durationUnit === 't') {
+          this.isSellEnabled = false;
+          console.log('[Chart] Contrato de ticks detectado - venda desabilitada');
+        }
+        
+        this.isTrading = false;
+        this.tradeMessage = 'Compra executada com sucesso!';
+        // Só habilitar venda se não for contrato de ticks
+        if (this.activeContract.duration_unit !== 't') {
+          this.isSellEnabled = true;
+        }
+      });
       
       // Inicializar contador
-      this.initializeContractCountdown();
-      
-      // Adicionar linha de compra no gráfico
-      if (this.activeContract.entry_spot) {
-        const entryTime = this.activeContract.entry_time || (Date.now() / 1000);
-        this.addEntrySpotLine(this.activeContract.entry_spot, entryTime);
+      if (this.isComponentMounted()) {
+        this.initializeContractCountdown();
       }
       
-      this.isTrading = false;
-      this.tradeMessage = 'Compra executada com sucesso!';
-      // Só habilitar venda se não for contrato de ticks
-      if (this.activeContract.duration_unit !== 't') {
-        this.isSellEnabled = true;
+      // Adicionar linha de compra no gráfico
+      if (this.activeContract && this.activeContract.entry_spot) {
+        const entryTime = this.activeContract.entry_time || (Date.now() / 1000);
+        this.addEntrySpotLine(this.activeContract.entry_spot, entryTime);
       }
       
       console.log('[Chart] ✅ Compra processada com sucesso:', this.activeContract);
     },
     processSell(sellData) {
+      if (!this.isComponentMounted()) {
+        console.warn('[Chart] Componente não está montado, ignorando processSell');
+        return;
+      }
+      
       console.log('[Chart] ========== PROCESSANDO VENDA ==========');
       console.log('[Chart] Dados da venda:', sellData);
       
       if (!sellData) {
         console.error('[Chart] Dados de venda inválidos');
-        this.tradeError = 'Erro ao processar venda.';
-        this.isTrading = false;
+        this.safeUpdate(() => {
+          this.tradeError = 'Erro ao processar venda.';
+          this.isTrading = false;
+        });
         return;
       }
       
@@ -2163,17 +2242,18 @@ export default {
         : (this.realTimeProfit !== null ? this.realTimeProfit : 0);
       
       // Atualizar contrato com dados da venda
-      if (this.activeContract) {
-        this.activeContract.sell_price = sellData.sell_price || this.activeContract.sell_price;
-        this.activeContract.profit = finalProfit;
-        this.activeContract.exit_spot = sellData.exit_spot || null;
-        this.activeContract.exit_time = sellData.exit_time || Date.now() / 1000;
-        
-        // Preparar dados para o modal
-        this.finalTradeProfit = finalProfit;
-        this.finalTradeType = this.activeContract.contract_type || 'CALL';
-        this.finalTradeBuyPrice = this.activeContract.buy_price || this.purchasePrice || 0;
-        this.finalTradeSellPrice = sellData.sell_price ? Number(sellData.sell_price) : null;
+      this.safeUpdate(() => {
+        if (this.activeContract) {
+          this.activeContract.sell_price = sellData.sell_price || this.activeContract.sell_price;
+          this.activeContract.profit = finalProfit;
+          this.activeContract.exit_spot = sellData.exit_spot || null;
+          this.activeContract.exit_time = sellData.exit_time || Date.now() / 1000;
+          
+          // Preparar dados para o modal
+          this.finalTradeProfit = finalProfit;
+          this.finalTradeType = this.activeContract.contract_type || 'CALL';
+          this.finalTradeBuyPrice = this.activeContract.buy_price || this.purchasePrice || 0;
+          this.finalTradeSellPrice = sellData.sell_price ? Number(sellData.sell_price) : null;
         this.finalTradeBalanceAfter = sellData.balance_after ? Number(sellData.balance_after) : null;
       }
       
@@ -2212,10 +2292,20 @@ export default {
       console.log('[Chart] ✅ Venda processada com sucesso');
     },
     openMarketModal() {
-      this.showMarketModal = true;
+      if (!this.isComponentMounted()) {
+        return;
+      }
+      this.safeUpdate(() => {
+        this.showMarketModal = true;
+      });
     },
     closeMarketModal() {
-      this.showMarketModal = false;
+      if (!this.isComponentMounted()) {
+        return;
+      }
+      this.safeUpdate(() => {
+        this.showMarketModal = false;
+      });
     },
     async selectMarket(marketValue) {
       this.symbol = marketValue;
@@ -2228,21 +2318,37 @@ export default {
       }
     },
     openTradeTypeModal() {
-      if (!this.symbol) {
-        this.tradeError = 'Selecione um mercado primeiro';
+      if (!this.isComponentMounted()) {
         return;
       }
-      this.showTradeTypeModal = true;
+      if (!this.symbol) {
+        this.safeUpdate(() => {
+          this.tradeError = 'Selecione um mercado primeiro';
+        });
+        return;
+      }
+      this.safeUpdate(() => {
+        this.showTradeTypeModal = true;
+      });
     },
     closeTradeTypeModal() {
-      this.showTradeTypeModal = false;
+      if (!this.isComponentMounted()) {
+        return;
+      }
+      this.safeUpdate(() => {
+        this.showTradeTypeModal = false;
+      });
     },
     selectTradeType(type) {
-      this.localOrderConfig.type = type;
-      this.closeTradeTypeModal();
-      // Recarregar valores padrão e proposta com novo tipo
-      if (this.isConnected) {
-        this.loadDefaultValues();
+      if (!this.isComponentMounted()) {
+        return;
+      }
+      this.safeUpdate(() => {
+        this.localOrderConfig.type = type;
+        this.closeTradeTypeModal();
+        // Recarregar valores padrão e proposta com novo tipo
+        if (this.isConnected) {
+          this.loadDefaultValues();
         setTimeout(() => {
           this.loadProposal();
         }, 500);
@@ -2435,11 +2541,16 @@ export default {
       const isWin = profit > 0;
       const status = finalContractData.status || (isWin ? 'won' : 'lost');
       
-      // Atualizar contrato com dados finais
-      if (this.activeContract) {
-        this.activeContract.sell_price = finalContractData.sell_price || this.activeContract.sell_price;
-        this.activeContract.profit = profit;
-        this.activeContract.exit_spot = finalContractData.exit_spot || this.latestTick?.value || null;
+      // Atualizar contrato com dados finais - de forma segura
+      if (!this.isComponentMounted()) {
+        return;
+      }
+      
+      this.safeUpdate(() => {
+        if (this.activeContract) {
+          this.activeContract.sell_price = finalContractData.sell_price || this.activeContract.sell_price;
+          this.activeContract.profit = profit;
+          this.activeContract.exit_spot = finalContractData.exit_spot || this.latestTick?.value || null;
         this.activeContract.exit_time = finalContractData.exit_time || Date.now() / 1000;
         this.activeContract.status = status;
       }
@@ -2620,6 +2731,11 @@ export default {
       }
     },
     async loadDefaultValues() {
+      if (!this.isComponentMounted()) {
+        console.warn('[Chart] Componente não está montado, ignorando loadDefaultValues');
+        return;
+      }
+      
       if (!this.isConnected || !this.symbol) {
         return;
       }
@@ -2632,15 +2748,17 @@ export default {
           contractType
         );
         
-        // Atualizar valores padrão se não estiverem configurados
-        if (defaultValues.amount && !this.localOrderConfig.amount) {
-          this.localOrderConfig.amount = defaultValues.amount;
-        }
-        if (defaultValues.duration && !this.localOrderConfig.duration) {
-          this.localOrderConfig.duration = defaultValues.duration;
-        }
-        if (defaultValues.durationUnit && !this.localOrderConfig.durationUnit) {
-          this.localOrderConfig.durationUnit = defaultValues.durationUnit;
+        // Atualizar valores padrão se não estiverem configurados - de forma segura
+        if (this.isComponentMounted()) {
+          if (defaultValues.amount && !this.localOrderConfig.amount) {
+            this.localOrderConfig.amount = defaultValues.amount;
+          }
+          if (defaultValues.duration && !this.localOrderConfig.duration) {
+            this.localOrderConfig.duration = defaultValues.duration;
+          }
+          if (defaultValues.durationUnit && !this.localOrderConfig.durationUnit) {
+            this.localOrderConfig.durationUnit = defaultValues.durationUnit;
+          }
         }
         
         // Atualizar contratos disponíveis
@@ -2662,11 +2780,16 @@ export default {
             }
           }
           
-          this.availableContracts = contractsArray;
-          console.log('[Chart] ✅ Contratos disponíveis atualizados:', this.availableContracts);
-          console.log('[Chart] Total de contratos:', this.availableContracts.length);
-          if (this.availableContracts.length > 0) {
-            console.log('[Chart] Primeiro contrato exemplo:', this.availableContracts[0]);
+          // Atualizar contratos disponíveis de forma segura
+          if (this.isComponentMounted()) {
+            this.safeUpdate(() => {
+              this.availableContracts = contractsArray;
+              console.log('[Chart] ✅ Contratos disponíveis atualizados:', this.availableContracts);
+              console.log('[Chart] Total de contratos:', this.availableContracts.length);
+              if (this.availableContracts.length > 0) {
+                console.log('[Chart] Primeiro contrato exemplo:', this.availableContracts[0]);
+              }
+            });
           }
           
           // Se o tipo atual não estiver disponível, selecionar o primeiro disponível
@@ -2710,8 +2833,12 @@ export default {
               ? selectedType 
               : (selectedType.contract_type || selectedType.type || selectedType.name || 'CALL');
             
-            this.localOrderConfig.type = newType;
-            console.log('[Chart] Tipo de contrato alterado para:', this.localOrderConfig.type, '(disponível para', this.symbol, ')');
+            if (this.isComponentMounted()) {
+              this.safeUpdate(() => {
+                this.localOrderConfig.type = newType;
+                console.log('[Chart] Tipo de contrato alterado para:', this.localOrderConfig.type, '(disponível para', this.symbol, ')');
+              });
+            }
           } else if (this.localOrderConfig.type && currentTypeAvailable) {
             console.log('[Chart] Tipo de contrato mantido:', this.localOrderConfig.type, '(disponível para', this.symbol, ')');
           }
@@ -2755,15 +2882,21 @@ export default {
                       console.log('[Chart] Duração do usuário preservada:', currentDuration, currentUnit);
                     } else {
                       // Apenas ajustar se a duração for inválida
-                      this.localOrderConfig.duration = minDur.value;
-                      this.localOrderConfig.durationUnit = 't';
-                      console.log('[Chart] Duração ajustada para:', minDur.value, minDur.unit);
+                      if (this.isComponentMounted()) {
+                        this.safeUpdate(() => {
+                          this.localOrderConfig.duration = minDur.value;
+                          this.localOrderConfig.durationUnit = 't';
+                          console.log('[Chart] Duração ajustada para:', minDur.value, minDur.unit);
+                        });
+                      }
                     }
                   } else {
                     // Se já está em ticks, apenas ajustar se for menor que o mínimo
-                    if (currentDuration < minDur.value) {
-                      this.localOrderConfig.duration = minDur.value;
-                      console.log('[Chart] Duração em ticks ajustada para mínima:', minDur.value);
+                    if (currentDuration < minDur.value && this.isComponentMounted()) {
+                      this.safeUpdate(() => {
+                        this.localOrderConfig.duration = minDur.value;
+                        console.log('[Chart] Duração em ticks ajustada para mínima:', minDur.value);
+                      });
                     }
                   }
                 } else {
@@ -2776,18 +2909,24 @@ export default {
                                       (minDur.unit === 'd' ? minDur.value * 1440 : 0));
                   
                   // Apenas ajustar se a duração atual for menor que a mínima E a unidade for compatível
-                  if (currentUnit === minDur.unit && currentDuration < minDur.value) {
-                    // Mesma unidade, apenas ajustar valor se menor
-                    this.localOrderConfig.duration = minDur.value;
-                    console.log('[Chart] Duração ajustada para mínima:', minDur.value, minDur.unit);
-                  } else if (currentUnit !== minDur.unit && currentInMinutes < minInMinutes) {
-                    // Unidades diferentes, converter e ajustar apenas se menor
-                    this.localOrderConfig.duration = minDur.value;
-                    this.localOrderConfig.durationUnit = minDur.unit;
-                    console.log('[Chart] Duração ajustada para mínima (conversão):', minDur.value, minDur.unit);
-                  } else {
-                    // Duração atual é válida, preservar
-                    console.log('[Chart] Duração do usuário preservada:', currentDuration, currentUnit);
+                  if (this.isComponentMounted()) {
+                    if (currentUnit === minDur.unit && currentDuration < minDur.value) {
+                      // Mesma unidade, apenas ajustar valor se menor
+                      this.safeUpdate(() => {
+                        this.localOrderConfig.duration = minDur.value;
+                        console.log('[Chart] Duração ajustada para mínima:', minDur.value, minDur.unit);
+                      });
+                    } else if (currentUnit !== minDur.unit && currentInMinutes < minInMinutes) {
+                      // Unidades diferentes, converter e ajustar apenas se menor
+                      this.safeUpdate(() => {
+                        this.localOrderConfig.duration = minDur.value;
+                        this.localOrderConfig.durationUnit = minDur.unit;
+                        console.log('[Chart] Duração ajustada para mínima (conversão):', minDur.value, minDur.unit);
+                      });
+                    } else {
+                      // Duração atual é válida, preservar
+                      console.log('[Chart] Duração do usuário preservada:', currentDuration, currentUnit);
+                    }
                   }
                 }
               }
