@@ -356,8 +356,16 @@
     />
     
     <!-- Market Selection Modal - usando Teleport para renderizar no body -->
+    <!-- Sempre renderizar no DOM, controlar visibilidade via CSS -->
     <Teleport to="body">
-      <div v-if="showMarketModal" :key="`market-modal-${showMarketModal}`" class="modal-overlay" data-modal="market" @click.self="closeMarketModal" style="display: flex !important;">
+      <div 
+        v-show="showMarketModal" 
+        :key="'market-modal'" 
+        class="modal-overlay" 
+        data-modal="market" 
+        @click.self="closeMarketModal"
+        :style="{ display: showMarketModal ? 'flex' : 'none', visibility: showMarketModal ? 'visible' : 'hidden' }"
+      >
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Mercado</h3>
@@ -389,8 +397,16 @@
     </Teleport>
     
     <!-- Trade Type Selection Modal - usando Teleport para renderizar no body -->
+    <!-- Sempre renderizar no DOM, controlar visibilidade via CSS -->
     <Teleport to="body">
-      <div v-if="showTradeTypeModal" :key="`trade-type-modal-${showTradeTypeModal}`" class="modal-overlay" data-modal="trade-type" @click.self="closeTradeTypeModal" style="display: flex !important;">
+      <div 
+        v-show="showTradeTypeModal" 
+        :key="'trade-type-modal'" 
+        class="modal-overlay" 
+        data-modal="trade-type" 
+        @click.self="closeTradeTypeModal"
+        :style="{ display: showTradeTypeModal ? 'flex' : 'none', visibility: showTradeTypeModal ? 'visible' : 'hidden' }"
+      >
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
@@ -459,6 +475,8 @@ export default {
       isChartUpdating: false, // Flag para pausar atualizações durante operações críticas do gráfico
       pendingTimeouts: [], // Array para rastrear todos os timeouts pendentes
       pendingIntervals: [], // Array para rastrear todos os intervals pendentes
+      tickUpdateQueue: [], // Fila para throttling de atualizações de ticks
+      isProcessingTickQueue: false, // Flag para evitar processamento simultâneo
       showLoading: false,
       showChartPlaceholder: true,
       showSellButton: false,
@@ -913,6 +931,13 @@ export default {
     this.updateQueue = [];
     this.isProcessingUpdates = false;
     console.log('[Chart] 🚨 Fila de atualizações limpa');
+    
+    // Limpar fila de ticks
+    if (this.tickUpdateQueue) {
+      this.tickUpdateQueue = [];
+      this.isProcessingTickQueue = false;
+      console.log('[Chart] 🚨 Fila de ticks limpa');
+    }
     
     // Limpar contador de contrato
     if (this.contractCountdownInterval) {
@@ -2196,17 +2221,44 @@ export default {
           return;
         }
         
+        // Adicionar à fila de atualizações com throttling
+        this.tickUpdateQueue.push({ time: finalTime, value: finalValue });
+        
+        // Processar fila apenas se não estiver processando
+        if (!this.isProcessingTickQueue) {
+          this.processTickQueue();
+        }
+      } catch (error) {
+        console.error('[Chart] ❌ Erro geral ao processar tick:', error, { time: brasiliaEpoch, value: numValue });
+        // Resetar flag em caso de erro geral também
+        this.isChartUpdating = false;
+      }
+    },
+    processTickQueue() {
+      // Evitar processamento simultâneo
+      if (this.isProcessingTickQueue || this.isComponentDestroyed || !this.chartSeries) {
+        return;
+      }
+      
+      this.isProcessingTickQueue = true;
+      
+      // Processar apenas o último tick da fila (throttling)
+      if (this.tickUpdateQueue.length > 0) {
+        const lastTick = this.tickUpdateQueue[this.tickUpdateQueue.length - 1];
+        this.tickUpdateQueue = []; // Limpar fila
+        
         // Marcar que gráfico está sendo atualizado
         this.isChartUpdating = true;
+        
         try {
           // Usar requestAnimationFrame para não bloquear a UI
           requestAnimationFrame(() => {
             if (this.chartSeries && !this.isComponentDestroyed) {
               this.chartSeries.update({
-                time: finalTime,
-                value: finalValue
+                time: lastTick.time,
+                value: lastTick.value
               });
-              console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: finalTime, value: finalValue });
+              console.log('[Chart] ✅ Tick em tempo real adicionado ao gráfico:', { time: lastTick.time, value: lastTick.value });
               
               // Atualizar linha de entrada para terminar no último tick
               if (this.entrySpotLine && this.activeContract) {
@@ -2215,17 +2267,21 @@ export default {
             }
           });
         } catch (updateError) {
-          console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', updateError, { time: brasiliaEpoch, value: numValue });
+          console.error('[Chart] ❌ Erro ao adicionar tick em tempo real:', updateError, lastTick);
         } finally {
-          // Resetar flag de atualização do gráfico após um pequeno delay
+          // Resetar flags após um pequeno delay
           setTimeout(() => {
             this.isChartUpdating = false;
-          }, 10);
+            this.isProcessingTickQueue = false;
+            
+            // Se houver mais ticks na fila, processar novamente
+            if (this.tickUpdateQueue.length > 0 && !this.isComponentDestroyed) {
+              this.processTickQueue();
+            }
+          }, 50); // Throttling de 50ms
         }
-      } catch (error) {
-        console.error('[Chart] ❌ Erro geral ao processar tick:', error, { time: brasiliaEpoch, value: numValue });
-        // Resetar flag em caso de erro geral também
-        this.isChartUpdating = false;
+      } else {
+        this.isProcessingTickQueue = false;
       }
     },
     async loadTicksFromBackend() {
