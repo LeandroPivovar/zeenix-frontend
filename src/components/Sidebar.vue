@@ -363,13 +363,18 @@ export default {
                 
                 // Usar nextTick para garantir que a navegação aconteça após o fechamento
                 this.$nextTick(() => {
-                    if (!this._isDestroyed && this.$el && this.$router) {
-                        this.$router.push(route).catch(err => {
-                            // Ignorar erros de navegação duplicada
-                            if (err.name !== 'NavigationDuplicated') {
-                                console.error('[Sidebar] Erro ao navegar:', err);
-                            }
-                        });
+                    // Verificar se componente ainda está montado e router está disponível
+                    if (this.$el && this.$el.isConnected && this.$router) {
+                        try {
+                            this.$router.push(route).catch(err => {
+                                // Ignorar erros de navegação duplicada
+                                if (err.name !== 'NavigationDuplicated') {
+                                    console.error('[Sidebar] Erro ao navegar:', err);
+                                }
+                            });
+                        } catch (error) {
+                            console.warn('[Sidebar] Erro ao executar navegação:', error);
+                        }
                     }
                 });
             } catch (error) {

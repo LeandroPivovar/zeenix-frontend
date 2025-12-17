@@ -847,27 +847,33 @@ export default {
     },
     // Helper para atualizar dados reativos de forma segura
     safeUpdate(callback) {
-      if (this.isComponentDestroyed || !this.$el) {
+      // Verificação inicial rigorosa
+      if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+        return;
+      }
+      
+      // Verificar se o componente Vue ainda está válido
+      try {
+        if (!this.$ || !this.$.vnode) {
+          return;
+        }
+      } catch (e) {
+        // Se não conseguir acessar $, componente está sendo desmontado
         return;
       }
       
       try {
-        this.$nextTick(() => {
-          // Verificar novamente antes de executar callback
+        // Executar callback diretamente se componente estiver válido
+        // Não usar $nextTick ou requestAnimationFrame para evitar problemas de timing
+        if (typeof callback === 'function') {
+          // Verificar novamente antes de executar
           if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
             return;
           }
-          
-          try {
-            if (typeof callback === 'function') {
-              callback();
-            }
-          } catch (error) {
-            console.warn('[Chart] Erro ao executar callback em safeUpdate:', error);
-          }
-        });
+          callback();
+        }
       } catch (error) {
-        console.warn('[Chart] Erro ao agendar atualização:', error);
+        console.warn('[Chart] Erro ao executar callback em safeUpdate:', error);
       }
     },
     initChart() {
@@ -1894,16 +1900,23 @@ export default {
           console.warn('[Chart] Erro ao ajustar viewport:', error);
         }
         
-        // Ocultar placeholder - usar safeUpdate
+        // Ocultar placeholder - verificar antes de atualizar
         if (!this.isComponentMounted()) {
           console.warn('[Chart] Componente não está montado, ignorando atualização');
           return;
         }
         
-        this.safeUpdate(() => {
+        // Verificar novamente antes de atualizar estado
+        if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+          return;
+        }
+        
+        try {
           this.showChartPlaceholder = false;
           this.isLoadingTicks = false;
-        });
+        } catch (error) {
+          console.warn('[Chart] Erro ao atualizar estado após plotar ticks:', error);
+        }
         
         // Forçar resize para garantir que o gráfico use toda a altura disponível
         this.$nextTick(() => {
@@ -2359,17 +2372,34 @@ export default {
       if (!this.isComponentMounted()) {
         return;
       }
-      this.safeUpdate(() => {
+      
+      // Verificar se componente ainda está válido antes de atualizar
+      if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+        return;
+      }
+      
+      // Atualizar diretamente se possível, sem safeUpdate para modais
+      try {
         this.showMarketModal = true;
-      });
+      } catch (error) {
+        console.warn('[Chart] Erro ao abrir modal de mercado:', error);
+      }
     },
     closeMarketModal() {
       if (!this.isComponentMounted()) {
         return;
       }
-      this.safeUpdate(() => {
+      
+      // Verificar se componente ainda está válido antes de atualizar
+      if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+        return;
+      }
+      
+      try {
         this.showMarketModal = false;
-      });
+      } catch (error) {
+        console.warn('[Chart] Erro ao fechar modal de mercado:', error);
+      }
     },
     async selectMarket(marketValue) {
       this.symbol = marketValue;
@@ -2385,23 +2415,42 @@ export default {
       if (!this.isComponentMounted()) {
         return;
       }
-      if (!this.symbol) {
-        this.safeUpdate(() => {
-          this.tradeError = 'Selecione um mercado primeiro';
-        });
+      
+      // Verificar se componente ainda está válido antes de atualizar
+      if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
         return;
       }
-      this.safeUpdate(() => {
+      
+      if (!this.symbol) {
+        try {
+          this.tradeError = 'Selecione um mercado primeiro';
+        } catch (error) {
+          console.warn('[Chart] Erro ao definir erro de trade:', error);
+        }
+        return;
+      }
+      
+      try {
         this.showTradeTypeModal = true;
-      });
+      } catch (error) {
+        console.warn('[Chart] Erro ao abrir modal de tipo de trade:', error);
+      }
     },
     closeTradeTypeModal() {
       if (!this.isComponentMounted()) {
         return;
       }
-      this.safeUpdate(() => {
+      
+      // Verificar se componente ainda está válido antes de atualizar
+      if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+        return;
+      }
+      
+      try {
         this.showTradeTypeModal = false;
-      });
+      } catch (error) {
+        console.warn('[Chart] Erro ao fechar modal de tipo de trade:', error);
+      }
     },
     selectTradeType(type) {
       if (!this.isComponentMounted()) {
