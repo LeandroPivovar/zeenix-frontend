@@ -333,81 +333,82 @@
           
         </div>
       </div>
-      
-      <!-- Trade Result Modal -->
-      <TradeResultModal
-        :visible="showTradeResultModal"
-        :profit="finalTradeProfit"
-        :currency="'USD'"
-        :type="finalTradeType"
-        :buy-price="finalTradeBuyPrice"
-        :sell-price="finalTradeSellPrice"
-        :balance-after="finalTradeBalanceAfter"
-        @close="closeTradeResultModal"
-      />
-      
-      <!-- Market Selection Modal -->
-      <div v-if="showMarketModal" class="modal-overlay" data-modal="market" @click.self="closeMarketModal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title">Selecionar Mercado</h3>
-            <button @click="closeMarketModal" class="modal-close-btn">
-              <i class="fas fa-times"></i>
-            </button>
-          </div>
-          <div class="modal-body">
-            <div class="market-categories">
-              <div v-for="(markets, category) in marketsByCategory" :key="category" class="market-category">
-                <h4 class="category-title">{{ category }}</h4>
-                <div class="market-grid">
-                  <button
-                    v-for="market in markets"
-                    :key="market.value"
-                    @click="selectMarket(market.value)"
-                    class="market-item"
-                    :class="{ 'active': symbol === market.value }"
-                  >
-                    <span class="market-label">{{ market.label }}</span>
-                    <span class="market-symbol">{{ market.value }}</span>
-                  </button>
-                </div>
+    </div>
+    
+    <!-- Modais movidos para fora do operation-layout para garantir renderização correta -->
+    <!-- Trade Result Modal -->
+    <TradeResultModal
+      :visible="showTradeResultModal"
+      :profit="finalTradeProfit"
+      :currency="'USD'"
+      :type="finalTradeType"
+      :buy-price="finalTradeBuyPrice"
+      :sell-price="finalTradeSellPrice"
+      :balance-after="finalTradeBalanceAfter"
+      @close="closeTradeResultModal"
+    />
+    
+    <!-- Market Selection Modal -->
+    <div v-if="showMarketModal" class="modal-overlay" data-modal="market" @click.self="closeMarketModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Selecionar Mercado</h3>
+          <button @click="closeMarketModal" class="modal-close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="market-categories">
+            <div v-for="(markets, category) in marketsByCategory" :key="category" class="market-category">
+              <h4 class="category-title">{{ category }}</h4>
+              <div class="market-grid">
+                <button
+                  v-for="market in markets"
+                  :key="market.value"
+                  @click="selectMarket(market.value)"
+                  class="market-item"
+                  :class="{ 'active': symbol === market.value }"
+                >
+                  <span class="market-label">{{ market.label }}</span>
+                  <span class="market-symbol">{{ market.value }}</span>
+                </button>
               </div>
             </div>
           </div>
         </div>
       </div>
-      
-      <!-- Trade Type Selection Modal -->
-      <div v-if="showTradeTypeModal" class="modal-overlay" data-modal="trade-type" @click.self="closeTradeTypeModal">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
-            <button @click="closeTradeTypeModal" class="modal-close-btn">
-              <i class="fas fa-times"></i>
+    </div>
+    
+    <!-- Trade Type Selection Modal -->
+    <div v-if="showTradeTypeModal" class="modal-overlay" data-modal="trade-type" @click.self="closeTradeTypeModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
+          <button @click="closeTradeTypeModal" class="modal-close-btn">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="trade-type-grid">
+            <button
+              v-for="type in availableTradeTypes"
+              :key="type.value"
+              @click="selectTradeType(type.value)"
+              class="trade-type-item"
+              :class="{ 'active': localOrderConfig.type === type.value }"
+            >
+              <i :class="type.icon"></i>
+              <span class="trade-type-label">{{ type.label }}</span>
+              <span class="trade-type-desc">{{ type.description }}</span>
             </button>
           </div>
-          <div class="modal-body">
-            <div class="trade-type-grid">
-              <button
-                v-for="type in availableTradeTypes"
-                :key="type.value"
-                @click="selectTradeType(type.value)"
-                class="trade-type-item"
-                :class="{ 'active': localOrderConfig.type === type.value }"
-              >
-                <i :class="type.icon"></i>
-                <span class="trade-type-label">{{ type.label }}</span>
-                <span class="trade-type-desc">{{ type.description }}</span>
-              </button>
-            </div>
-            <div v-if="!canUseCallPut" class="warning-message mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
-              ⚠️ Este ativo não suporta contratos CALL/PUT. Use a operação com dígitos para negociar este ativo.
-            </div>
+          <div v-if="!canUseCallPut" class="warning-message mt-4 p-3 bg-red-500/10 border border-red-500/30 rounded text-red-400 text-xs">
+            ⚠️ Este ativo não suporta contratos CALL/PUT. Use a operação com dígitos para negociar este ativo.
           </div>
         </div>
       </div>
-      
     </div>
+    
   </div>
 </template>
 
