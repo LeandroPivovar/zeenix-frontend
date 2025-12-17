@@ -421,15 +421,14 @@ export default {
         
         // Agora usar nextTick para garantir que estamos em um ciclo seguro
         try {
-          if (this.$nextTick && typeof this.$nextTick === 'function') {
-            this.$nextTick(() => {
-              try {
-                // Verificar novamente se componente ainda está válido
-                if (!this.isComponentMounted()) {
-                  this.updateQueue = [];
-                  this.isProcessingUpdates = false;
-                  return;
-                }
+          this.$nextTick(() => {
+            try {
+              // Verificar novamente se componente ainda está válido
+              if (!this.isComponentMounted()) {
+                this.updateQueue = [];
+                this.isProcessingUpdates = false;
+                return;
+              }
               
                 // Processar fila de atualizações
                 while (this.updateQueue.length > 0 && this.isComponentMounted()) {
@@ -458,20 +457,6 @@ export default {
                 this.isProcessingUpdates = false;
               }
             });
-          } else {
-            // Se nextTick não estiver disponível, processar diretamente
-            try {
-              while (this.updateQueue.length > 0 && this.isComponentMounted()) {
-                const callback = this.updateQueue.shift();
-                if (typeof callback === 'function') {
-                  callback();
-                }
-              }
-            } catch (directError) {
-              // Ignorar erros
-            }
-            this.isProcessingUpdates = false;
-          }
         } catch (rafError) {
           // Se requestAnimationFrame falhar, limpar tudo
           this.updateQueue = [];
@@ -515,65 +500,44 @@ export default {
         
         // Usar nextTick adicional para garantir que estamos em um ciclo seguro
         try {
-          if (this.$nextTick && typeof this.$nextTick === 'function') {
-            this.$nextTick(() => {
-              // Verificar novamente antes de fazer atualizações
-              if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
-                return;
-              }
-              
-              try {
-                if (balanceValue != null) {
-                  this.accountBalanceValue = Number(balanceValue);
-                  console.log('[OperationView] Saldo atualizado:', this.accountBalanceValue);
-                }
-                if (currency) {
-                  this.accountCurrency = currency.toUpperCase();
-                  console.log('[OperationView] Moeda da conta atualizada:', this.accountCurrency);
-                }
-                if (preferredCurrency) {
-                  this.preferredCurrency = preferredCurrency.toUpperCase();
-                  console.log('[OperationView] Moeda preferida atualizada:', this.preferredCurrency);
-                }
-                if (loginid) {
-                  this.accountLoginId = loginid;
-                  // Determinar tipo de conta (demo ou real) baseado no loginid
-                  this.accountType = (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) ? 'demo' : 'real';
-                  console.log('[OperationView] LoginID atualizado:', this.accountLoginId);
-                  console.log('[OperationView] Tipo de conta:', this.accountType);
-                }
-              } catch (updateError) {
-                // Ignorar erros de atualização se componente está sendo desmontado
-                const errorMsg = String(updateError?.message || updateError || '');
-                if (!errorMsg.includes('insertBefore') && 
-                    !errorMsg.includes('Symbol(_assign)') && 
-                    !errorMsg.includes('emitsOptions') &&
-                    !errorMsg.includes('_assigning') &&
-                    !errorMsg.includes('Cannot destructure')) {
-                  console.warn('[OperationView] Erro ao atualizar propriedades:', updateError);
-                }
-              }
-            });
-          } else {
-            // Se nextTick não estiver disponível, tentar diretamente com proteção
+          this.$nextTick(() => {
+            // Verificar novamente antes de fazer atualizações
+            if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+              return;
+            }
+            
             try {
               if (balanceValue != null) {
                 this.accountBalanceValue = Number(balanceValue);
+                console.log('[OperationView] Saldo atualizado:', this.accountBalanceValue);
               }
               if (currency) {
                 this.accountCurrency = currency.toUpperCase();
+                console.log('[OperationView] Moeda da conta atualizada:', this.accountCurrency);
               }
               if (preferredCurrency) {
                 this.preferredCurrency = preferredCurrency.toUpperCase();
+                console.log('[OperationView] Moeda preferida atualizada:', this.preferredCurrency);
               }
               if (loginid) {
                 this.accountLoginId = loginid;
+                // Determinar tipo de conta (demo ou real) baseado no loginid
                 this.accountType = (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) ? 'demo' : 'real';
+                console.log('[OperationView] LoginID atualizado:', this.accountLoginId);
+                console.log('[OperationView] Tipo de conta:', this.accountType);
               }
-            } catch (directError) {
-              // Ignorar erros conhecidos
+            } catch (updateError) {
+              // Ignorar erros de atualização se componente está sendo desmontado
+              const errorMsg = String(updateError?.message || updateError || '');
+              if (!errorMsg.includes('insertBefore') && 
+                  !errorMsg.includes('Symbol(_assign)') && 
+                  !errorMsg.includes('emitsOptions') &&
+                  !errorMsg.includes('_assigning') &&
+                  !errorMsg.includes('Cannot destructure')) {
+                console.warn('[OperationView] Erro ao atualizar propriedades:', updateError);
+              }
             }
-          }
+          });
         } catch (nextTickError) {
           // Se nextTick falhar, ignorar silenciosamente
         }

@@ -974,19 +974,17 @@ export default {
         if (isKnownError) {
           // Erro conhecido, tentar com nextTick de forma mais segura
           try {
-            if (this.$nextTick && typeof this.$nextTick === 'function') {
-              this.$nextTick(() => {
-                // Verificar novamente antes de tentar
-                if (this.isComponentDestroyed || !this.isSafeToUpdate()) {
-                  return;
-                }
-                try {
-                  this[propertyName] = value;
-                } catch (retryError) {
-                  // Se ainda falhar, ignorar silenciosamente - componente pode estar sendo desmontado
-                }
-              });
-            }
+            this.$nextTick(() => {
+              // Verificar novamente antes de tentar
+              if (this.isComponentDestroyed || !this.isSafeToUpdate()) {
+                return;
+              }
+              try {
+                this[propertyName] = value;
+              } catch (retryError) {
+                // Se ainda falhar, ignorar silenciosamente - componente pode estar sendo desmontado
+              }
+            });
           } catch (nextTickError) {
             // Se nextTick também falhar, ignorar silenciosamente
           }
