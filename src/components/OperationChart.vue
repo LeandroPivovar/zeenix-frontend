@@ -761,8 +761,11 @@ export default {
         // Limpar proposalId antigo quando o tipo muda (importante para evitar usar proposta do tipo errado)
         if (this.isComponentMounted()) {
           this.safeUpdate(() => {
-            this.currentProposalId = null;
-            this.currentProposalPrice = null;
+            if (!this.isSafeToUpdate()) {
+              return;
+            }
+            this.safeSetProperty('currentProposalId', null);
+            this.safeSetProperty('currentProposalPrice', null);
             console.log('[Chart] Tipo de contrato alterado, limpando proposalId antigo');
           });
         }
@@ -902,6 +905,51 @@ export default {
         return false;
       }
     },
+    // Helper para atualizar propriedade reativa de forma segura
+    safeSetProperty(propertyName, value) {
+      if (!this.isSafeToUpdate()) {
+        return false;
+      }
+      
+      try {
+        this[propertyName] = value;
+        return true;
+      } catch (error) {
+        // Capturar erros de renderização do Vue
+        const errorMessage = error?.message || String(error) || '';
+        const errorString = String(errorMessage);
+        
+        // Lista de erros conhecidos do Vue durante renderização/desmontagem
+        const knownReactivityErrors = [
+          'insertBefore',
+          'Symbol(_assign)',
+          'emitsOptions',
+          '_assigning',
+          'Cannot read properties of null',
+          'Cannot set properties of null',
+          'Cannot use \'in\' operator',
+          'reading \'insertBefore\'',
+          'setting \'Symbol(_assign)\'',
+          'reading \'emitsOptions\'',
+          'reading \'_assigning\'',
+          'parentNode',
+          'removeChild',
+          'disabled'
+        ];
+        
+        const isKnownError = knownReactivityErrors.some(err => 
+          errorString.includes(err)
+        );
+        
+        if (isKnownError) {
+          // Erro conhecido do Vue, ignorar silenciosamente
+          return false;
+        }
+        
+        // Re-lançar erros desconhecidos
+        throw error;
+      }
+    },
     // Helper para atualizar dados reativos de forma segura
     safeUpdate(callback) {
       // Se componente foi destruído, ignorar
@@ -995,8 +1043,45 @@ export default {
                             break;
                           }
                           
-                          // Executar callback
-                          const result = callback();
+                          // Executar callback com proteção adicional
+                          let result;
+                          try {
+                            result = callback();
+                          } catch (reactivityError) {
+                            // Capturar erros de reatividade do Vue
+                            const errorMessage = reactivityError?.message || String(reactivityError) || '';
+                            const errorString = String(errorMessage);
+                            
+                            // Lista de erros conhecidos do Vue durante renderização/desmontagem
+                            const knownReactivityErrors = [
+                              'insertBefore',
+                              'Symbol(_assign)',
+                              'emitsOptions',
+                              '_assigning',
+                              'Cannot read properties of null',
+                              'Cannot set properties of null',
+                              'Cannot use \'in\' operator',
+                              'reading \'insertBefore\'',
+                              'setting \'Symbol(_assign)\'',
+                              'reading \'emitsOptions\'',
+                              'reading \'_assigning\'',
+                              'parentNode',
+                              'removeChild',
+                              'disabled'
+                            ];
+                            
+                            const isKnownError = knownReactivityErrors.some(err => 
+                              errorString.includes(err)
+                            );
+                            
+                            if (isKnownError) {
+                              // Erro conhecido do Vue, ignorar silenciosamente
+                              return;
+                            }
+                            
+                            // Re-lançar erros desconhecidos para serem capturados pelo catch externo
+                            throw reactivityError;
+                          }
                           
                           // Se retornou uma Promise, aguardar e ignorar erros
                           if (result && typeof result.then === 'function') {
@@ -1024,8 +1109,8 @@ export default {
                               'reading \'emitsOptions\'',
                               'reading \'_assigning\'',
                               'parentNode',
-                              'insertBefore',
-                              'removeChild'
+                              'removeChild',
+                              'disabled'
                             ];
                             
                             const isKnownError = knownVueErrors.some(err => 
@@ -1163,7 +1248,10 @@ export default {
           console.error('[Chart] ❌ Erro ao inicializar gráfico:', error);
           if (this.isComponentMounted()) {
             this.safeUpdate(() => {
-              this.showChartPlaceholder = false;
+              if (!this.isSafeToUpdate()) {
+                return;
+              }
+              this.safeSetProperty('showChartPlaceholder', false);
             });
           }
         }
@@ -1621,8 +1709,11 @@ export default {
 
       // Usar safeUpdate para atualizar estados
       this.safeUpdate(() => {
-        this.isLoadingTicks = true;
-        this.showChartPlaceholder = true;
+        if (!this.isSafeToUpdate()) {
+          return;
+        }
+        this.safeSetProperty('isLoadingTicks', true);
+        this.safeSetProperty('showChartPlaceholder', true);
       });
 
       try {
@@ -1670,8 +1761,11 @@ export default {
             console.error('[Chart] Máximo de tentativas atingido, parando...');
             if (this.isComponentMounted()) {
               this.safeUpdate(() => {
-                this.showChartPlaceholder = false;
-                this.isLoadingTicks = false;
+                if (!this.isSafeToUpdate()) {
+                  return;
+                }
+                this.safeSetProperty('showChartPlaceholder', false);
+                this.safeSetProperty('isLoadingTicks', false);
                 this.retryCount = 0;
               });
             }
@@ -2162,26 +2256,14 @@ export default {
             
             // Usar safeUpdate para atualizar estado após plotar ticks
             this.safeUpdate(() => {
-              // Envolver em try-catch adicional para capturar erros de renderização
-              try {
-                this.showChartPlaceholder = false;
-                this.isLoadingTicks = false;
-              } catch (error) {
-                // Se for erro conhecido do Vue, ignorar silenciosamente
-                const errorMessage = error?.message || String(error) || '';
-                if (errorMessage.includes('insertBefore') || 
-                    errorMessage.includes('null') ||
-                    errorMessage.includes('Symbol(_assign)') ||
-                    errorMessage.includes('parentNode') ||
-                    errorMessage.includes('removeChild')) {
-                  // Erro conhecido do Vue durante renderização, ignorar silenciosamente
-                  return;
-                }
-                // Para outros erros, apenas ignorar durante desmontagem
-                if (this.isComponentMounted()) {
-                  console.warn('[Chart] Erro ao atualizar showChartPlaceholder:', error);
-                }
+              // Verificar novamente antes de atualizar (dentro do callback também)
+              if (!this.isSafeToUpdate()) {
+                return;
               }
+              
+              // Usar safeSetProperty para atualizar propriedades de forma segura
+              this.safeSetProperty('showChartPlaceholder', false);
+              this.safeSetProperty('isLoadingTicks', false);
             });
           });
         }, 50); // Pequeno delay de 50ms para garantir que DOM está estável
@@ -2459,14 +2541,21 @@ export default {
       
       // Usar safeUpdate para garantir atualização segura
       this.safeUpdate(() => {
-        // Armazenar ID e preço da proposta
-        this.currentProposalId = proposalData.id;
-        this.currentProposalPrice = Number(proposalData.askPrice || proposalData.ask_price || 0);
+        // Verificar novamente antes de atualizar (dentro do callback também)
+        if (!this.isSafeToUpdate()) {
+          return;
+        }
         
-        console.log('[Chart] ✅ Proposta processada:', {
-          proposalId: this.currentProposalId,
-          proposalPrice: this.currentProposalPrice
-        });
+        // Usar safeSetProperty para atualizar propriedades de forma segura
+        const proposalIdSet = this.safeSetProperty('currentProposalId', proposalData.id);
+        const proposalPriceSet = this.safeSetProperty('currentProposalPrice', Number(proposalData.askPrice || proposalData.ask_price || 0));
+        
+        if (proposalIdSet && proposalPriceSet) {
+          console.log('[Chart] ✅ Proposta processada:', {
+            proposalId: this.currentProposalId,
+            proposalPrice: this.currentProposalPrice
+          });
+        }
       });
     },
     processBuy(buyData) {
