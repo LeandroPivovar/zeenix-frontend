@@ -359,7 +359,7 @@
     <!-- Sempre renderizar no DOM, controlar visibilidade via v-show -->
     <Teleport to="body">
       <div 
-        v-show="showMarketModal" 
+        v-if="showMarketModal" 
         :key="'market-modal'" 
         class="modal-overlay" 
         data-modal="market" 
@@ -399,7 +399,7 @@
     <!-- Sempre renderizar no DOM, controlar visibilidade via v-show -->
     <Teleport to="body">
       <div 
-        v-show="showTradeTypeModal" 
+        v-if="showTradeTypeModal" 
         :key="'trade-type-modal'" 
         class="modal-overlay" 
         data-modal="trade-type" 
@@ -3159,48 +3159,13 @@ export default {
       }
     },
     openTradeTypeModal() {
-      if (!this.isComponentMounted() || !this.isSafeToUpdate()) {
-        return;
-      }
-      
       if (!this.symbol) {
-        // Usar safeUpdate para definir erro
-        this.safeUpdate(() => {
-          this.tradeError = 'Selecione um mercado primeiro';
-        });
+        this.tradeError = 'Selecione um mercado primeiro';
         return;
       }
       
-      const componentState = {
-        isDestroyed: this.isComponentDestroyed,
-        isMounted: this.isComponentMounted(),
-        hasEl: !!this.$el,
-        elConnected: this.$el?.isConnected,
-        hasVnode: !!this.$?.vnode,
-        vnodeMounted: !this.$?.vnode?.component?.isUnmounted,
-        isSafe: this.isSafeToUpdate()
-      };
-      
-      console.log('[Chart] 🔍 openTradeTypeModal - antes de atualizar:', {
-        componentState,
-        timestamp: Date.now()
-      });
-      
-      // Usar safeSetProperty para garantir atualização segura
-      console.log('[Chart] 🔍 openTradeTypeModal - chamando safeSetProperty para showTradeTypeModal = true');
-      const result = this.safeSetProperty('showTradeTypeModal', true);
-      console.log('[Chart] 🔍 openTradeTypeModal - resultado do safeSetProperty:', result);
-      
-      // Fallback: atualizar diretamente se safeSetProperty falhar
-      if (!result && this.isComponentMounted() && !this.isComponentDestroyed) {
-        console.log('[Chart] ⚠️ openTradeTypeModal - safeSetProperty falhou, tentando atualização direta');
-        try {
-          this.showTradeTypeModal = true;
-          console.log('[Chart] ✅ openTradeTypeModal - atualização direta bem-sucedida');
-        } catch (error) {
-          console.error('[Chart] ❌ openTradeTypeModal - erro na atualização direta:', error);
-        }
-      }
+      // Atualizar diretamente - mesma abordagem simples
+      this.showTradeTypeModal = true;
     },
     closeTradeTypeModal() {
       // Atualizar diretamente - mesma abordagem simples
@@ -4490,10 +4455,6 @@ export default {
   z-index: 10000;
   padding: 20px;
   pointer-events: auto;
-}
-
-.modal-overlay[style*="display: none"] {
-  pointer-events: none;
 }
 
 .modal-content {
