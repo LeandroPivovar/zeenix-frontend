@@ -1073,9 +1073,28 @@ export default {
                 return;
               }
               
+              // Verificar se o vnode ainda está válido antes de atualizar
+              try {
+                if (this.$?.vnode?.component) {
+                  const component = this.$.vnode.component;
+                  if (component.isUnmounted || component.ctx === null) {
+                    return;
+                  }
+                }
+              } catch (vnodeCheckError) {
+                // Se verificação falhar, componente pode estar sendo desmontado
+                return;
+              }
+              
               // Atualizar propriedade com tratamento de erro robusto
               try {
-                this[propertyName] = value;
+                // Usar Object.defineProperty para evitar trigger de reatividade durante desmontagem
+                const descriptor = Object.getOwnPropertyDescriptor(this, propertyName);
+                if (descriptor && descriptor.set) {
+                  descriptor.set.call(this, value);
+                } else {
+                  this[propertyName] = value;
+                }
               } catch (assignError) {
                 // Capturar e ignorar erros conhecidos do Vue durante desmontagem
                 const errorMessage = String(assignError?.message || assignError || '');
@@ -1305,6 +1324,19 @@ export default {
                 }
                 
                 console.log('[Chart] ✅ Executando callback em safeUpdate');
+                
+                // Verificar se o vnode ainda está válido antes de executar callback
+                try {
+                  if (this.$?.vnode?.component) {
+                    const component = this.$.vnode.component;
+                    if (component.isUnmounted || component.ctx === null) {
+                      return;
+                    }
+                  }
+                } catch (vnodeCheckError) {
+                  // Se verificação falhar, componente pode estar sendo desmontado
+                  return;
+                }
                 
                 // Executar callback com tratamento de erro robusto
                 try {
@@ -2136,10 +2168,25 @@ export default {
       if (!this.isComponentDestroyed && this.isComponentMounted()) {
         console.log('[Chart] 🔄 loadTicksFromBackend - chamando safeUpdate');
         this.safeUpdate(() => {
-          console.log('[Chart] 🔄 loadTicksFromBackend - dentro de safeUpdate, atualizando estados');
-          this.isLoadingTicks = true;
-          this.showChartPlaceholder = true;
-          console.log('[Chart] ✅ loadTicksFromBackend - estados atualizados');
+          try {
+            // Verificar vnode antes de atualizar
+            if (this.$?.vnode?.component) {
+              const component = this.$.vnode.component;
+              if (component.isUnmounted || component.ctx === null) {
+                return;
+              }
+            }
+            console.log('[Chart] 🔄 loadTicksFromBackend - dentro de safeUpdate, atualizando estados');
+            this.isLoadingTicks = true;
+            this.showChartPlaceholder = true;
+            console.log('[Chart] ✅ loadTicksFromBackend - estados atualizados');
+          } catch (updateError) {
+            const errorMsg = String(updateError?.message || updateError || '');
+            const knownErrors = ['insertBefore', 'Symbol(_assign)', 'emitsOptions', '_assigning', 'Cannot read properties of null', 'Cannot set properties of null'];
+            if (!knownErrors.some(err => errorMsg.includes(err))) {
+              console.warn('[Chart] Erro ao atualizar estado em loadTicksFromBackend:', updateError);
+            }
+          }
         });
       } else {
         console.warn('[Chart] ⚠️ loadTicksFromBackend - componente não está montado:', componentState);
@@ -2751,8 +2798,23 @@ export default {
               // Usar setTimeout para garantir que a flag foi resetada antes de atualizar
               setTimeout(() => {
                 this.safeUpdate(() => {
-                  this.showChartPlaceholder = false;
-                  this.isLoadingTicks = false;
+                  try {
+                    // Verificar vnode antes de atualizar
+                    if (this.$?.vnode?.component) {
+                      const component = this.$.vnode.component;
+                      if (component.isUnmounted || component.ctx === null) {
+                        return;
+                      }
+                    }
+                    this.showChartPlaceholder = false;
+                    this.isLoadingTicks = false;
+                  } catch (updateError) {
+                    const errorMsg = String(updateError?.message || updateError || '');
+                    const knownErrors = ['insertBefore', 'Symbol(_assign)', 'emitsOptions', '_assigning', 'Cannot read properties of null', 'Cannot set properties of null'];
+                    if (!knownErrors.some(err => errorMsg.includes(err))) {
+                      console.warn('[Chart] Erro ao atualizar estado em plotTicks:', updateError);
+                    }
+                  }
                 });
               }, 10);
             } else {
