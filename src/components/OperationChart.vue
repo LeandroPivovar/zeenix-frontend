@@ -357,7 +357,7 @@
     
     <!-- Market Selection Modal - usando Teleport para renderizar no body -->
     <Teleport to="body">
-      <div v-show="showMarketModal" class="modal-overlay" data-modal="market" @click.self="closeMarketModal">
+      <div v-if="showMarketModal" class="modal-overlay" data-modal="market" @click.self="closeMarketModal">
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Mercado</h3>
@@ -390,7 +390,7 @@
     
     <!-- Trade Type Selection Modal - usando Teleport para renderizar no body -->
     <Teleport to="body">
-      <div v-show="showTradeTypeModal" class="modal-overlay" data-modal="trade-type" @click.self="closeTradeTypeModal">
+      <div v-if="showTradeTypeModal" class="modal-overlay" data-modal="trade-type" @click.self="closeTradeTypeModal">
         <div class="modal-content">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
