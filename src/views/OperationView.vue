@@ -245,12 +245,18 @@ export default {
       const saved = localStorage.getItem('deriv_connection');
       console.log('[OperationView] Conexão salva no localStorage:', saved ? 'Sim' : 'Não');
       
-      if (!forceRefresh && saved) {
+      // Sempre aplicar snapshot salvo primeiro para evitar mostrar saldo zerado
+      if (saved) {
         try {
           const parsed = JSON.parse(saved);
-          console.log('[OperationView] Usando conexão salva (cache)');
+          console.log('[OperationView] Aplicando conexão salva (cache) primeiro...');
           this.applyConnectionSnapshot(parsed);
-          return;
+          
+          // Se não for refresh forçado, usar cache e retornar
+          if (!forceRefresh) {
+            console.log('[OperationView] Usando conexão salva (cache)');
+            return;
+          }
         } catch (error) {
           console.warn('[OperationView] Erro ao parsear conexão salva:', error);
           // ignore parsing issues
@@ -610,12 +616,34 @@ export default {
     window.removeEventListener('resize', this.checkMobile);
   },
   async mounted() {
+    // Verificar se há saldo salvo no localStorage antes de buscar do backend
+    const savedConnection = localStorage.getItem('deriv_connection');
+    if (savedConnection) {
+      try {
+        const parsed = JSON.parse(savedConnection);
+        if (parsed.balance?.value != null) {
+          // Aplicar saldo salvo imediatamente para evitar mostrar zero
+          this.accountBalanceValue = Number(parsed.balance.value);
+          this.accountCurrency = parsed.currency || parsed.balance?.currency || 'USD';
+          this.accountLoginId = parsed.loginid || null;
+          if (this.accountLoginId) {
+            this.accountType = (this.accountLoginId.startsWith('VRTC') || this.accountLoginId.startsWith('VRT')) ? 'demo' : 'real';
+          }
+          console.log('[OperationView] Saldo restaurado do cache:', this.accountBalanceValue);
+        }
+      } catch (error) {
+        console.warn('[OperationView] Erro ao restaurar saldo do cache:', error);
+      }
+    }
+    
     await this.checkConnection(true);
     await this.loadLastOrders();
   },
   watch: {
-    '$route'(to) {
-      if (to.path === '/operation') {
+    '$route'(to, from) {
+      // Verificar se realmente mudou de rota
+      if (to.path === '/operation' && from.path !== '/operation') {
+        // Recarregar conexão apenas se estiver entrando na página
         this.checkConnection();
       }
     },

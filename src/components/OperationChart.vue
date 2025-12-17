@@ -567,6 +567,7 @@ export default {
   },
   data() {
     return {
+      _isDestroyed: false, // Flag para verificar se componente foi destruído
       showLoading: false,
       showChartPlaceholder: true,
       showSellButton: false,
@@ -830,6 +831,20 @@ export default {
   async mounted() {
     console.log('[Chart] ========== COMPONENTE MONTADO ==========');
     
+    // Resetar flag de destruição
+    this._isDestroyed = false;
+    
+    // Limpar gráfico anterior se existir (caso de remontagem)
+    if (this.chart) {
+      try {
+        this.chart.remove();
+      } catch (e) {
+        console.warn('[Chart] Erro ao limpar gráfico anterior:', e);
+      }
+      this.chart = null;
+      this.chartSeries = null;
+    }
+    
     // Inicializar gráfico primeiro
     this.initChart();
     
@@ -841,12 +856,20 @@ export default {
     
     // Aguardar um pouco mais para garantir que o gráfico foi criado
     setTimeout(async () => {
+      // Verificar se componente ainda está montado
+      if (this._isDestroyed || !this.$el) {
+        console.warn('[Chart] Componente destruído durante inicialização');
+        return;
+      }
+      
       if (!this.chart || !this.chartSeries) {
         console.warn('[Chart] Gráfico ainda não inicializado, tentando novamente...');
         this.initChart();
         await this.$nextTick();
         setTimeout(() => {
-          this.initializeConnection();
+          if (!this._isDestroyed && this.$el) {
+            this.initializeConnection();
+          }
         }, 500);
       } else {
         console.log('[Chart] Gráfico inicializado, conectando...');
@@ -911,11 +934,18 @@ export default {
     },
   },
   beforeUnmount() {
+    // Marcar componente como destruído
+    this._isDestroyed = true;
+    
     // Limpar contador de contrato
-    this.stopContractCountdown();
+    if (this.stopContractCountdown) {
+      this.stopContractCountdown();
+    }
     
     // Limpar modo de desenho
-    this.cancelLineDrawing();
+    if (this.cancelLineDrawing) {
+      this.cancelLineDrawing();
+    }
     
     // Remover todas as linhas desenhadas
     if (this.drawnLines && this.drawnLines.length > 0) {
@@ -931,12 +961,34 @@ export default {
       this.drawnLines = [];
     }
     
+    // Limpar gráfico
     if (this.chart) {
-      this.chart.remove();
+      try {
+        this.chart.remove();
+      } catch (e) {
+        console.warn('[Chart] Erro ao remover gráfico:', e);
+      }
       this.chart = null;
       this.chartSeries = null;
     }
-    window.removeEventListener('resize', this.handleResize);
+    
+    // Remover listener de resize
+    if (this.handleResize) {
+      window.removeEventListener('resize', this.handleResize);
+    }
+    
+    // Cancelar subscriptions SSE se existirem
+    try {
+      if (typeof derivTradingService.cancelTickSubscription === 'function') {
+        derivTradingService.cancelTickSubscription();
+      }
+      // Desconectar SSE se possível
+      if (typeof derivTradingService.disconnect === 'function') {
+        derivTradingService.disconnect();
+      }
+    } catch (e) {
+      console.warn('[Chart] Erro ao cancelar subscription/desconectar:', e);
+    }
   },
   methods: {
     showFunctionAlert(functionName) {
@@ -1973,11 +2025,18 @@ export default {
         // Armazenar ticks para atualização em tempo real
         this.ticks = ticksWithBrasiliaTime;
 
-        // Plotar os ticks
-        this.plotTicks(ticksWithBrasiliaTime);
+        // Plotar os ticks apenas se componente ainda estiver montado
+        if (!this._isDestroyed && this.$el) {
+          this.plotTicks(ticksWithBrasiliaTime);
+        }
       } catch (error) {
         console.error('[Chart] ❌ Erro ao carregar ticks do backend:', error);
         console.error('[Chart] Erro completo:', error.message, error.stack);
+        
+        // Verificar se componente ainda está montado antes de tentar novamente
+        if (this._isDestroyed || !this.$el) {
+          return;
+        }
         
         // Tentar novamente após 3 segundos (máximo 2 tentativas)
         if (!this.errorRetryCount) this.errorRetryCount = 0;
@@ -1985,13 +2044,18 @@ export default {
         
         if (this.errorRetryCount < 2) {
           setTimeout(() => {
-            this.isLoadingTicks = false;
-            this.loadTicksFromBackend();
+            // Verificar novamente antes de tentar
+            if (!this._isDestroyed && this.$el) {
+              this.isLoadingTicks = false;
+              this.loadTicksFromBackend();
+            }
           }, 3000);
         } else {
           console.error('[Chart] Máximo de tentativas com erro atingido');
-          this.showChartPlaceholder = false;
-          this.isLoadingTicks = false;
+          if (!this._isDestroyed && this.$el) {
+            this.showChartPlaceholder = false;
+            this.isLoadingTicks = false;
+          }
           this.errorRetryCount = 0;
         }
       } finally {
@@ -2002,6 +2066,12 @@ export default {
       }
     },
     plotTicks(ticks) {
+      // Verificar se componente ainda está montado
+      if (this._isDestroyed || !this.$el) {
+        console.warn('[Chart] Componente destruído, ignorando plotagem de ticks');
+        return;
+      }
+      
       console.log('[Chart] ========== PLOTANDO TICKS ==========');
       console.log('[Chart] Gráfico existe:', !!this.chart);
       console.log('[Chart] Série existe:', !!this.chartSeries);
@@ -2361,17 +2431,30 @@ export default {
         }
         
         // Ocultar placeholder
+        // Verificar se componente ainda está montado antes de atualizar
+        if (this._isDestroyed || !this.$el) {
+          console.warn('[Chart] Componente destruído, ignorando atualização');
+          return;
+        }
+        
         this.showChartPlaceholder = false;
         this.isLoadingTicks = false;
         
         // Forçar resize para garantir que o gráfico use toda a altura disponível
         this.$nextTick(() => {
-          if (this.chart && this.$refs.chartContainer) {
+          // Verificar novamente se componente ainda está montado
+          if (this._isDestroyed || !this.$el || !this.chart || !this.$refs.chartContainer) {
+            return;
+          }
+          
+          try {
             const rect = this.$refs.chartContainer.getBoundingClientRect();
             if (rect.width > 0 && rect.height > 0) {
               console.log('[Chart] Resize após plotar dados:', { width: rect.width, height: rect.height });
               this.chart.resize(rect.width, rect.height);
             }
+          } catch (error) {
+            console.warn('[Chart] Erro ao fazer resize:', error);
           }
         });
         
@@ -2586,6 +2669,12 @@ export default {
       }
     },
     processProposal(proposalData) {
+      // Verificar se componente ainda está montado antes de atualizar
+      if (this._isDestroyed || !this.$el) {
+        console.warn('[Chart] Componente destruído, ignorando proposta');
+        return;
+      }
+      
       console.log('[Chart] ========== PROCESSANDO PROPOSTA ==========');
       console.log('[Chart] Dados da proposta:', proposalData);
       
@@ -2594,13 +2683,25 @@ export default {
         return;
       }
       
-      // Armazenar ID e preço da proposta
-      this.currentProposalId = proposalData.id;
-      this.currentProposalPrice = Number(proposalData.askPrice || proposalData.ask_price || 0);
-      
-      console.log('[Chart] ✅ Proposta processada:', {
-        proposalId: this.currentProposalId,
-        proposalPrice: this.currentProposalPrice
+      // Usar $nextTick para garantir que a atualização aconteça no ciclo correto do Vue
+      this.$nextTick(() => {
+        // Verificar novamente se componente ainda está montado
+        if (this._isDestroyed || !this.$el) {
+          return;
+        }
+        
+        try {
+          // Armazenar ID e preço da proposta
+          this.currentProposalId = proposalData.id;
+          this.currentProposalPrice = Number(proposalData.askPrice || proposalData.ask_price || 0);
+          
+          console.log('[Chart] ✅ Proposta processada:', {
+            proposalId: this.currentProposalId,
+            proposalPrice: this.currentProposalPrice
+          });
+        } catch (error) {
+          console.error('[Chart] Erro ao processar proposta:', error);
+        }
       });
     },
     processBuy(buyData) {

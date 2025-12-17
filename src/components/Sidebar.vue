@@ -350,14 +350,61 @@ export default {
     methods: {
         close() { if (this.isOpen) { this.$emit('close-sidebar') } },
         toggleCollapse() { this.$emit('toggle-collapse') },
-        navigateAndClose(route) { this.$router.push(route); this.close() },
+        navigateAndClose(route) { 
+            // Verificar se router está disponível e componente está montado
+            if (this._isDestroyed || !this.$el || !this.$router) {
+                console.warn('[Sidebar] Componente destruído ou router não disponível, ignorando navegação');
+                return;
+            }
+            
+            try {
+                // Fechar sidebar primeiro
+                this.close();
+                
+                // Usar nextTick para garantir que a navegação aconteça após o fechamento
+                this.$nextTick(() => {
+                    if (!this._isDestroyed && this.$el && this.$router) {
+                        this.$router.push(route).catch(err => {
+                            // Ignorar erros de navegação duplicada
+                            if (err.name !== 'NavigationDuplicated') {
+                                console.error('[Sidebar] Erro ao navegar:', err);
+                            }
+                        });
+                    }
+                });
+            } catch (error) {
+                console.error('[Sidebar] Erro ao navegar:', error);
+            }
+        },
         toggleUserMenu() { this.showUserMenu = !this.showUserMenu },
         logout() {
+            // Verificar se router está disponível
+            if (!this.$router) {
+                console.warn('[Sidebar] Router não disponível, redirecionando via window.location');
+                localStorage.removeItem('token');
+                localStorage.removeItem('deriv_connection');
+                window.location.href = '/login';
+                return;
+            }
+            
             localStorage.removeItem('token');
             localStorage.removeItem('deriv_connection');
-            this.$router.push('/login');
+            this.$router.push('/login').catch(err => {
+                // Se falhar, tentar redirecionar via window.location
+                if (err.name !== 'NavigationDuplicated') {
+                    window.location.href = '/login';
+                }
+            });
         },
-        goProfile() { this.$router.push('/profile'); }
+        goProfile() { 
+            if (this.$router && !this._isDestroyed && this.$el) {
+                this.$router.push('/profile').catch(err => {
+                    if (err.name !== 'NavigationDuplicated') {
+                        console.error('[Sidebar] Erro ao navegar para perfil:', err);
+                    }
+                });
+            }
+        }
     }
 }
 </script>

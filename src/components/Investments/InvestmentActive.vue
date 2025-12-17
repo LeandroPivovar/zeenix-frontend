@@ -424,39 +424,6 @@
                                 </button>
                             </div>
                         </div>
-                        <!-- Tabs de Timeframe organizados em 2 linhas -->
-                        <div v-show="activeTab === 'chart'" class="mb-4 timeframe-tabs-container">
-                            <!-- Primeira linha: M1, M5, M15, M30, H1, H4 -->
-                            <div class="flex items-center space-x-2 mb-2 flex-wrap">
-                                <button
-                                    v-for="timeframe in timeframeOptions.filter(t => ['M1', 'M5', 'M15', 'M30', 'H1', 'H4'].includes(t.label))"
-                                    :key="timeframe.value"
-                                    :class="['timeframe-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all', selectedTimeframe === timeframe.value ? 'bg-zenix-green text-black border border-zenix-green font-bold' : 'bg-zenix-bg text-zenix-secondary border border-zenix-border hover:border-zenix-green hover:text-zenix-green']"
-                                    @click="setChartSize(timeframe.value, timeframe.points)"
-                                >
-                                    {{ timeframe.label }}
-                                </button>
-                            </div>
-                            <!-- Segunda linha: D1 e Entradas IA -->
-                            <div class="flex items-center space-x-2 flex-wrap">
-                                <button
-                                    v-for="timeframe in timeframeOptions.filter(t => t.label === 'D1')"
-                                    :key="timeframe.value"
-                                    :class="['timeframe-btn px-3 py-1.5 rounded-lg text-xs font-medium transition-all', selectedTimeframe === timeframe.value ? 'bg-zenix-green text-black border border-zenix-green font-bold' : 'bg-zenix-bg text-zenix-secondary border border-zenix-border hover:border-zenix-green hover:text-zenix-green']"
-                                    @click="setChartSize(timeframe.value, timeframe.points)"
-                                >
-                                    {{ timeframe.label }}
-                                </button>
-                                <button
-                                    :class="['px-3 py-1.5 rounded-lg text-xs font-medium transition-all border', showEntryMarkers ? 'bg-zenix-green/20 text-zenix-green border-zenix-green/40 hover:bg-zenix-green/30' : 'bg-zenix-bg text-zenix-secondary border border-zenix-border hover:border-zenix-green hover:text-zenix-green']"
-                                    @click="toggleEntryMarkers"
-                                >
-                                    <i :class="showEntryMarkers ? 'far fa-eye' : 'far fa-eye-slash'" class="mr-1"></i>
-                                    Entradas IA
-                                </button>
-                            </div>
-                            
-                        </div>
             
                         <!-- Chart View -->
                         <div v-show="activeTab === 'chart'" id="chart-view" class="h-[600px]">
