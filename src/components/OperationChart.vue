@@ -869,6 +869,34 @@ export default {
           return false;
         }
         
+        // Verificar se o vnode tem um elemento e está conectado
+        if (this.$.vnode.el && !this.$.vnode.el.isConnected) {
+          return false;
+        }
+        
+        return true;
+      } catch (e) {
+        return false;
+      }
+    },
+    // Helper para verificar se é seguro fazer atualizações reativas
+    isSafeToUpdate() {
+      if (!this.isComponentMounted()) {
+        return false;
+      }
+      
+      try {
+        // Verificar se o Vue está em um estado válido para receber atualizações
+        // Tentar acessar propriedades internas do Vue para verificar estado
+        if (this.$ && this.$.vnode && this.$.vnode.component) {
+          const component = this.$.vnode.component;
+          
+          // Verificar se não está em processo de atualização/desmontagem
+          if (component.isUnmounted || component.ctx === null) {
+            return false;
+          }
+        }
+        
         return true;
       } catch (e) {
         return false;
@@ -962,19 +990,25 @@ export default {
                         
                         // Tentar executar callback com proteção adicional
                         try {
-                          // Verificar uma última vez antes de executar
-                          if (!this.isComponentMounted()) {
+                          // Verificar uma última vez antes de executar - verificar se é seguro atualizar
+                          if (!this.isSafeToUpdate()) {
                             break;
                           }
                           
-                          // Executar callback dentro de um try-catch adicional
-                          const result = callback();
-                          
-                          // Se retornou uma Promise, aguardar e ignorar erros
-                          if (result && typeof result.then === 'function') {
-                            result.catch(() => {
-                              // Ignorar erros de Promise silenciosamente
-                            });
+                          // Envolver a atualização em um wrapper que captura erros de renderização
+                          try {
+                            // Executar callback dentro de um try-catch adicional
+                            const result = callback();
+                            
+                            // Se retornou uma Promise, aguardar e ignorar erros
+                            if (result && typeof result.then === 'function') {
+                              result.catch(() => {
+                                // Ignorar erros de Promise silenciosamente
+                              });
+                            }
+                          } catch (reactivityError) {
+                            // Este catch interno captura erros de reatividade do Vue
+                            throw reactivityError;
                           }
                         } catch (updateError) {
                           // Se for erro de atualização do Vue, ignorar silenciosamente
@@ -994,7 +1028,10 @@ export default {
                               'reading \'insertBefore\'',
                               'setting \'Symbol(_assign)\'',
                               'reading \'emitsOptions\'',
-                              'reading \'_assigning\''
+                              'reading \'_assigning\'',
+                              'parentNode',
+                              'insertBefore',
+                              'removeChild'
                             ];
                             
                             const isKnownError = knownVueErrors.some(err => 
@@ -2109,17 +2146,51 @@ export default {
           console.warn('[Chart] Erro ao ajustar viewport:', error);
         }
         
-        // Ocultar placeholder - verificar antes de atualizar
+        // Ocultar placeholder - usar delay para garantir que DOM está estável
         if (!this.isComponentMounted()) {
           console.warn('[Chart] Componente não está montado, ignorando atualização');
           return;
         }
         
-        // Usar safeUpdate para atualizar estado após plotar ticks
-        this.safeUpdate(() => {
-          this.showChartPlaceholder = false;
-          this.isLoadingTicks = false;
-        });
+        // Usar um pequeno delay para garantir que o DOM está totalmente renderizado
+        setTimeout(() => {
+          // Verificar novamente se componente ainda está montado e seguro para atualizar
+          if (!this.isSafeToUpdate()) {
+            return;
+          }
+          
+          // Usar nextTick para garantir que estamos em um ciclo seguro
+          this.$nextTick(() => {
+            // Verificar uma última vez antes de atualizar
+            if (!this.isSafeToUpdate()) {
+              return;
+            }
+            
+            // Usar safeUpdate para atualizar estado após plotar ticks
+            this.safeUpdate(() => {
+              // Envolver em try-catch adicional para capturar erros de renderização
+              try {
+                this.showChartPlaceholder = false;
+                this.isLoadingTicks = false;
+              } catch (error) {
+                // Se for erro conhecido do Vue, ignorar silenciosamente
+                const errorMessage = error?.message || String(error) || '';
+                if (errorMessage.includes('insertBefore') || 
+                    errorMessage.includes('null') ||
+                    errorMessage.includes('Symbol(_assign)') ||
+                    errorMessage.includes('parentNode') ||
+                    errorMessage.includes('removeChild')) {
+                  // Erro conhecido do Vue durante renderização, ignorar silenciosamente
+                  return;
+                }
+                // Para outros erros, apenas ignorar durante desmontagem
+                if (this.isComponentMounted()) {
+                  console.warn('[Chart] Erro ao atualizar showChartPlaceholder:', error);
+                }
+              }
+            });
+          });
+        }, 50); // Pequeno delay de 50ms para garantir que DOM está estável
         
         // Forçar resize para garantir que o gráfico use toda a altura disponível
         this.$nextTick(() => {
