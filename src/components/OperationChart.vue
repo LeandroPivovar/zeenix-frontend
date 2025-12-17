@@ -850,14 +850,25 @@ export default {
       if (this.isComponentDestroyed || !this.$el) {
         return;
       }
-      this.$nextTick(() => {
-        if (this.isComponentDestroyed || !this.$el) {
-          return;
-        }
-        if (typeof callback === 'function') {
-          callback();
-        }
-      });
+      
+      try {
+        this.$nextTick(() => {
+          // Verificar novamente antes de executar callback
+          if (this.isComponentDestroyed || !this.$el || !this.$el.isConnected) {
+            return;
+          }
+          
+          try {
+            if (typeof callback === 'function') {
+              callback();
+            }
+          } catch (error) {
+            console.warn('[Chart] Erro ao executar callback em safeUpdate:', error);
+          }
+        });
+      } catch (error) {
+        console.warn('[Chart] Erro ao agendar atualização:', error);
+      }
     },
     initChart() {
       const container = this.$refs.chartContainer;
@@ -1099,6 +1110,11 @@ export default {
       }
     },
     handleSSEMessage(data) {
+      // Verificar se componente ainda está montado antes de processar mensagem
+      if (this.isComponentDestroyed || !this.$el) {
+        return;
+      }
+
       // Processar mensagens SSE
       if (data.type === 'history' && data.data && data.data.ticks) {
         console.log('[Chart] Histórico recebido via SSE:', data.data.ticks.length, 'ticks');
@@ -1137,9 +1153,19 @@ export default {
           return;
         }
         
+        // Verificar novamente antes de processar tick
+        if (this.isComponentDestroyed || !this.$el) {
+          return;
+        }
+
         // Ticks em tempo real - adicionar ao gráfico
         console.log('[Chart] Tick em tempo real recebido:', data.data);
         this.addTickToChart(data.data);
+        
+        // Verificar novamente antes de atualizar estados
+        if (this.isComponentDestroyed || !this.$el) {
+          return;
+        }
         
         // Atualizar latestTick apenas se os valores forem válidos
         const tickValue = Number(data.data.value);
@@ -1147,15 +1173,21 @@ export default {
         
         // Calcular último dígito e paridade para contratos de dígitos
         if (this.isDigitContract && tickValue && isFinite(tickValue) && tickValue > 0) {
-          this.updateDigitInfo(tickValue);
+          // Verificar antes de atualizar
+          if (!this.isComponentDestroyed && this.$el) {
+            this.updateDigitInfo(tickValue);
+          }
         }
         
         if (!isNaN(tickValue) && isFinite(tickValue) && tickValue > 0 &&
             !isNaN(tickEpoch) && isFinite(tickEpoch) && tickEpoch > 0) {
-          this.latestTick = {
-            value: tickValue,
-            epoch: tickEpoch
-          };
+          // Verificar antes de atualizar
+          if (!this.isComponentDestroyed && this.$el) {
+            this.latestTick = {
+              value: tickValue,
+              epoch: tickEpoch
+            };
+          }
         }
         // Atualizar contador de ticks se for contrato baseado em ticks
         if (this.activeContract && this.activeContract.duration_unit === 't' && this.contractTicksRemaining !== null) {
@@ -1197,6 +1229,11 @@ export default {
       }
     },
     addTickToChart(tickData) {
+      // Verificar se componente ainda está montado
+      if (this.isComponentDestroyed || !this.$el) {
+        return;
+      }
+
       if (!this.chart || !this.chartSeries || !tickData) {
         return;
       }
@@ -1281,12 +1318,22 @@ export default {
         }
       }
 
+      // Verificar novamente antes de atualizar estado
+      if (this.isComponentDestroyed || !this.$el) {
+        return;
+      }
+
       // Adicionar ao array de ticks
       this.ticks.push({ value: numValue, epoch: brasiliaEpoch });
       
       // Manter apenas últimos 100 ticks
       if (this.ticks.length > 100) {
         this.ticks.shift();
+      }
+
+      // Verificar novamente antes de atualizar gráfico
+      if (this.isComponentDestroyed || !this.$el || !this.chart || !this.chartSeries) {
+        return;
       }
 
       // Adicionar ao gráfico usando update() para atualização incremental
@@ -1326,6 +1373,12 @@ export default {
       }
     },
     async loadTicksFromBackend() {
+      // Verificar se componente ainda está montado
+      if (this.isComponentDestroyed || !this.$el) {
+        console.warn('[Chart] Componente desmontado, ignorando carregamento de ticks');
+        return;
+      }
+
       // Verificar se o gráfico está inicializado
       if (!this.chart || !this.chartSeries) {
         // Limitar tentativas para evitar loop infinito
@@ -1342,7 +1395,10 @@ export default {
         
         console.warn(`[Chart] Gráfico não inicializado, aguardando... (tentativa ${this.loadTicksAttempts}/20)`);
         setTimeout(() => {
-          this.loadTicksFromBackend();
+          // Verificar novamente antes de tentar novamente
+          if (!this.isComponentDestroyed && this.$el) {
+            this.loadTicksFromBackend();
+          }
         }, 500);
         return;
       }
@@ -1352,6 +1408,11 @@ export default {
 
       if (this.isLoadingTicks) {
         console.log('[Chart] Já está carregando ticks, ignorando...');
+        return;
+      }
+
+      // Verificar novamente antes de atualizar estado
+      if (this.isComponentDestroyed || !this.$el) {
         return;
       }
 
@@ -1417,12 +1478,20 @@ export default {
           epoch: Math.floor(Number(tick.epoch)) - (3 * 60 * 60) // UTC-3
         }));
         
+        // Verificar novamente antes de atualizar estado e plotar
+        if (this.isComponentDestroyed || !this.$el) {
+          console.warn('[Chart] Componente desmontado durante carregamento de ticks, ignorando');
+          return;
+        }
+
         // Armazenar ticks para atualização em tempo real
         this.ticks = ticksWithBrasiliaTime;
 
         // Plotar os ticks apenas se componente ainda estiver montado
-        if (!this.isComponentDestroyed && this.$el) {
+        if (this.isComponentMounted()) {
           this.plotTicks(ticksWithBrasiliaTime);
+        } else {
+          console.warn('[Chart] Componente não montado, não plotando ticks');
         }
       } catch (error) {
         console.error('[Chart] ❌ Erro ao carregar ticks do backend:', error);

@@ -167,6 +167,7 @@ export default {
       loadingConnection: false,
       accountType: 'real', // 'real' ou 'demo'
       isMobile: false,
+      isComponentDestroyed: false, // Flag para verificar se componente foi destruído
     };
   },
   computed: {
@@ -236,9 +237,23 @@ export default {
       }
     },
     changeView(componentName) {
-      this.currentView = componentName;
+      // Verificar se componente ainda está montado antes de mudar view
+      if (this.isComponentDestroyed || !this.$el) {
+        return;
+      }
+      try {
+        this.currentView = componentName;
+      } catch (error) {
+        console.warn('[OperationView] Erro ao mudar view:', error);
+      }
     },
     async checkConnection(forceRefresh = false) {
+      // Verificar se componente ainda está montado
+      if (this.isComponentDestroyed || !this.$el) {
+        console.warn('[OperationView] Componente desmontado, ignorando verificação de conexão');
+        return;
+      }
+
       console.log('[OperationView] ========== VERIFICANDO CONEXÃO ==========');
       console.log('[OperationView] forceRefresh:', forceRefresh);
       
@@ -304,6 +319,12 @@ export default {
         const data = await res.json();
         console.log('[OperationView] Dados recebidos do backend:', JSON.stringify(data, null, 2));
         
+        // Verificar se componente ainda está montado antes de aplicar snapshot
+        if (this.isComponentDestroyed || !this.$el) {
+          console.warn('[OperationView] Componente desmontado durante requisição, ignorando resposta');
+          return;
+        }
+        
         const snapshot = { ...data, timestamp: Date.now() };
         this.applyConnectionSnapshot(snapshot);
         localStorage.setItem('deriv_connection', JSON.stringify(snapshot));
@@ -324,6 +345,12 @@ export default {
       }
     },
     applyConnectionSnapshot(snapshot) {
+      // Verificar se componente ainda está montado
+      if (this.isComponentDestroyed || !this.$el) {
+        console.warn('[OperationView] Componente desmontado, ignorando snapshot');
+        return;
+      }
+
       console.log('[OperationView] ========== APLICANDO SNAPSHOT DE CONEXÃO ==========');
       console.log('[OperationView] Snapshot completo:', JSON.stringify(snapshot, null, 2));
       
@@ -538,8 +565,14 @@ export default {
           return marketMap[symbol] || symbol;
         };
 
+        // Verificar se componente ainda está montado antes de atualizar
+        if (this.isComponentDestroyed || !this.$el) {
+          console.warn('[OperationView] Componente desmontado, ignorando atualização de ordens');
+          return;
+        }
+
         // Converter para o formato esperado pelo componente
-        this.lastOrders = orders.map(order => ({
+        const formattedOrders = orders.map(order => ({
           time: new Date(order.createdAt).toLocaleTimeString('pt-BR', {
             hour: '2-digit',
             minute: '2-digit',
@@ -558,6 +591,15 @@ export default {
           market: getMarketName(order.symbol),
         }));
 
+        // Verificar novamente antes de atribuir (pode ter sido desmontado durante o map)
+        if (this.isComponentDestroyed || !this.$el) {
+          console.warn('[OperationView] Componente desmontado durante formatação, ignorando');
+          return;
+        }
+
+        // Atualizar usando reatividade normal (sem $forceUpdate)
+        this.lastOrders = formattedOrders;
+
         console.log('[OperationView] Últimas ordens formatadas:', this.lastOrders);
         console.log('[OperationView] Total de ordens formatadas:', this.lastOrders.length);
         if (this.lastOrders && this.lastOrders.length > 0) {
@@ -571,9 +613,6 @@ export default {
             status: this.lastOrders[0].status
           });
         }
-        
-        // Forçar atualização reativa
-        this.$forceUpdate();
       } catch (error) {
         console.error('[OperationView] Erro ao carregar últimas ordens:', error);
         this.lastOrders = [];
@@ -613,7 +652,14 @@ export default {
     window.addEventListener('resize', this.checkMobile);
   },
   beforeUnmount() {
+    // Marcar componente como destruído
+    this.isComponentDestroyed = true;
+    
+    // Limpar event listeners
     window.removeEventListener('resize', this.checkMobile);
+    
+    // Cancelar qualquer operação assíncrona pendente
+    // (se houver timeouts ou promises pendentes, devem verificar isComponentDestroyed)
   },
   async mounted() {
     // Verificar se há saldo salvo no localStorage antes de buscar do backend
