@@ -434,6 +434,7 @@ import TopNavbar from '../components/TopNavbar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
+import { loadAvailableAccounts } from '../utils/accountsLoader';
 
 export default {
     name: 'InvestmentIAView',
@@ -894,6 +895,34 @@ export default {
 
         async fetchAccountBalance() {
             try {
+                // PRIMEIRO: Tentar buscar do cache (como no Dashboard)
+                try {
+                    const cachedAccounts = await loadAvailableAccounts();
+                    if (cachedAccounts && cachedAccounts.length > 0) {
+                        // Buscar a conta ativa (real primeiro, depois demo)
+                        const activeAccount = cachedAccounts.find(acc => !acc.isDemo) || cachedAccounts[0];
+                        if (activeAccount && activeAccount.balance !== null && activeAccount.balance !== undefined) {
+                            this.accountBalance = parseFloat(activeAccount.balance) || 0;
+                            this.accountCurrency = activeAccount.currency || 'USD';
+                            this.accountLoginid = activeAccount.loginid;
+                            this.isDemo = activeAccount.isDemo || false;
+                            this.lastBalanceUpdate = new Date();
+                            
+                            console.log('[InvestmentIAView] ✅ Saldo carregado do cache:', {
+                                balance: this.accountBalance,
+                                currency: this.accountCurrency,
+                                loginid: this.accountLoginid,
+                                isDemo: this.isDemo
+                            });
+                            
+                            // Continuar para atualizar com dados mais recentes em background
+                        }
+                    }
+                } catch (cacheError) {
+                    console.warn('[InvestmentIAView] Erro ao buscar do cache:', cacheError);
+                }
+                
+                // SEGUNDO: Buscar da API para atualizar com dados mais recentes
                 const derivToken = this.getDerivToken();
                 if (!derivToken) {
                     console.warn('[InvestmentIAView] ❌ Token não disponível para buscar saldo');
@@ -919,8 +948,8 @@ export default {
                     // Só atualizar o saldo se o valor recebido for válido (não null, não undefined, e maior ou igual a 0)
                     if (newBalance !== null && newBalance !== undefined && newBalance >= 0) {
                         this.accountBalance = newBalance;
-                    } else if (this.accountBalance === null) {
-                        // Se o saldo atual é null e o novo também é inválido, manter como 0 para evitar null
+                    } else if (this.accountBalance === null || this.accountBalance === undefined) {
+                        // Se o saldo atual é null/undefined e o novo também é inválido, manter como 0 para evitar null
                         this.accountBalance = 0;
                     }
                     // Se o novo saldo for inválido mas já temos um saldo válido, manter o saldo atual
@@ -952,7 +981,7 @@ export default {
                     this.isDemo = isDemoFromLoginid;
                     this.lastBalanceUpdate = new Date();
                     
-                    console.log('[InvestmentIAView] ✅ Saldo atualizado:', {
+                    console.log('[InvestmentIAView] ✅ Saldo atualizado da API:', {
                         balance: this.accountBalance,
                         currency: this.accountCurrency,
                         loginid: this.accountLoginid,
@@ -961,13 +990,17 @@ export default {
                     });
                 } else {
                     console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
-                    // Se houver erro mas já temos um saldo, manter o saldo atual
-                    if (this.accountBalance === null) {
+                    // Se houver erro mas já temos um saldo do cache, manter o saldo atual
+                    if (this.accountBalance === null || this.accountBalance === undefined) {
                         this.accountBalance = 0;
                     }
                 }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao buscar saldo da conta:', error);
+                // Se houver erro mas já temos um saldo do cache, manter o saldo atual
+                if (this.accountBalance === null || this.accountBalance === undefined) {
+                    this.accountBalance = 0;
+                }
             }
         },
 
