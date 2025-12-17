@@ -912,12 +912,29 @@ export default {
 
                 const result = await response.json();
                 if (result.success && result.data) {
-                    this.accountBalance = result.data.balance;
-                    this.accountCurrency = result.data.currency;
-                    this.accountLoginid = result.data.loginid;
+                    const newBalance = result.data.balance;
+                    const newCurrency = result.data.currency;
+                    const newLoginid = result.data.loginid;
+                    
+                    // Só atualizar o saldo se o valor recebido for válido (não null, não undefined, e maior ou igual a 0)
+                    if (newBalance !== null && newBalance !== undefined && newBalance >= 0) {
+                        this.accountBalance = newBalance;
+                    } else if (this.accountBalance === null) {
+                        // Se o saldo atual é null e o novo também é inválido, manter como 0 para evitar null
+                        this.accountBalance = 0;
+                    }
+                    // Se o novo saldo for inválido mas já temos um saldo válido, manter o saldo atual
+                    
+                    // Sempre atualizar currency e loginid se disponíveis
+                    if (newCurrency) {
+                        this.accountCurrency = newCurrency;
+                    }
+                    if (newLoginid) {
+                        this.accountLoginid = newLoginid;
+                    }
                     
                     // Verificar isDemo de múltiplas fontes para garantir precisão
-                    let isDemoFromLoginid = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+                    let isDemoFromLoginid = newLoginid?.startsWith('VRTC') || newLoginid?.startsWith('VRT');
                     
                     // Verificar também no localStorage deriv_connection
                     try {
@@ -939,10 +956,15 @@ export default {
                         balance: this.accountBalance,
                         currency: this.accountCurrency,
                         loginid: this.accountLoginid,
-                        isDemo: this.isDemo
+                        isDemo: this.isDemo,
+                        newBalanceReceived: newBalance
                     });
                 } else {
                     console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
+                    // Se houver erro mas já temos um saldo, manter o saldo atual
+                    if (this.accountBalance === null) {
+                        this.accountBalance = 0;
+                    }
                 }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao buscar saldo da conta:', error);
@@ -1260,6 +1282,10 @@ export default {
     async mounted() {
         console.log('🚀 TESTE: InvestmentIAView mounted() foi chamado!');
         console.warn('⚠️ SE VOCÊ VÊ ESTA MENSAGEM, O COMPONENTE ESTÁ CARREGANDO!');
+        
+        // Buscar saldo imediatamente ao montar o componente
+        console.log('[InvestmentIAView] Buscando saldo inicial...');
+        await this.fetchAccountBalance();
         
         await this.checkAIStatus();
         
