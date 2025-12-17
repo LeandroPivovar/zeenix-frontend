@@ -7,8 +7,11 @@
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="accountBalanceValue"
         :account-type="accountType"
-        @account-type-changed="handleAccountTypeChange"
+        @account-type-changed="switchAccount"
         :currency="accountCurrency"
+        :balances-by-currency-real="balancesByCurrencyReal"
+        :balances-by-currency-demo="balancesByCurrencyDemo"
+        :currency-prefix="preferredCurrencyPrefix"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
       />
 
@@ -170,12 +173,21 @@ export default {
       isComponentDestroyed: false, // Flag para verificar se componente foi destruído
       updateQueue: [], // Fila de atualizações pendentes
       isProcessingUpdates: false, // Flag para evitar processamento simultâneo
+      balancesByCurrencyReal: {},
+      balancesByCurrencyDemo: {},
+      tradeCurrency: 'USD', // 'USD' ou 'DEMO'
     };
   },
   computed: {
     accountBalanceFormatted() {
       if (this.accountBalanceValue == null) return '---';
       return this.formatCurrency(this.accountBalanceValue, this.accountCurrency);
+    },
+    preferredCurrencyPrefix() {
+      if (this.preferredCurrency === 'DEMO') {
+        return 'D$';
+      }
+      return this.getCurrencyPrefix(this.accountCurrency || 'USD');
     },
     lastOrdersFormatted() {
       if (!this.lastOrders || !Array.isArray(this.lastOrders)) {
@@ -204,13 +216,42 @@ export default {
     checkMobile() {
       this.isMobile = window.innerWidth <= 768;
     },
-    handleAccountTypeChange(newAccountType) {
-      // Alterna entre demo e real
-      this.accountType = newAccountType;
-      console.log('[OperationView] Tipo de conta alterado para:', this.accountType);
-      
-      // Recarrega a conexão para atualizar os dados da conta correta
-      this.checkConnection(true);
+    async switchAccount(type) {
+      // Usa a mesma lógica do Dashboard - altera o tradeCurrency
+      try {
+        const tradeCurrency = type === 'demo' ? 'DEMO' : 'USD';
+        
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${apiBase}/settings`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            tradeCurrency: tradeCurrency
+          })
+        });
+
+        if (response.ok) {
+          // Atualizar tradeCurrency local imediatamente
+          this.tradeCurrency = tradeCurrency;
+          this.accountType = type;
+          
+          // Recarregar conexão para atualizar os dados da conta correta
+          await this.checkConnection(true);
+          
+          // Recarregar página para aplicar mudanças em todos os componentes
+          window.location.reload();
+        } else {
+          throw new Error('Erro ao alterar moeda');
+        }
+      } catch (error) {
+        console.error('[OperationView] Erro ao alterar moeda:', error);
+        alert('Erro ao alterar moeda. Tente novamente.');
+      }
     },
     formatCurrency(value, currency) {
       try {
@@ -221,6 +262,20 @@ export default {
         }).format(Number(value));
       } catch (error) {
         return `${currency || 'USD'} ${Number(value).toFixed(2)}`;
+      }
+    },
+    getCurrencyPrefix(currency) {
+      switch ((currency || '').toUpperCase()) {
+        case 'USD':
+          return '$';
+        case 'EUR':
+          return '€';
+        case 'BTC':
+          return '₿';
+        case 'DEMO':
+          return 'D$';
+        default:
+          return currency ? `${currency} ` : '$';
       }
     },
     closeSidebar() {
@@ -483,12 +538,16 @@ export default {
       const currency = snapshot?.currency ?? snapshot?.balance?.currency ?? this.accountCurrency;
       const preferredCurrency = snapshot?.preferredCurrency ?? 'USD';
       const loginid = snapshot?.loginid ?? null;
+      const balancesByCurrencyReal = snapshot?.balancesByCurrencyReal ?? snapshot?.aggregatedBalances?.by_type?.deriv?.real ?? {};
+      const balancesByCurrencyDemo = snapshot?.balancesByCurrencyDemo ?? snapshot?.aggregatedBalances?.by_type?.deriv?.demo ?? {};
       
       console.log('[OperationView] Valores extraídos:', {
         balanceValue,
         currency,
         preferredCurrency,
-        loginid
+        loginid,
+        balancesByCurrencyReal,
+        balancesByCurrencyDemo
       });
       
       // Usar safeUpdate para atualizar estados reativos
@@ -525,6 +584,16 @@ export default {
                 this.accountType = (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) ? 'demo' : 'real';
                 console.log('[OperationView] LoginID atualizado:', this.accountLoginId);
                 console.log('[OperationView] Tipo de conta:', this.accountType);
+              }
+              
+              // Atualizar saldos por moeda
+              if (balancesByCurrencyReal && Object.keys(balancesByCurrencyReal).length > 0) {
+                this.balancesByCurrencyReal = balancesByCurrencyReal;
+                console.log('[OperationView] Saldos reais atualizados:', this.balancesByCurrencyReal);
+              }
+              if (balancesByCurrencyDemo && Object.keys(balancesByCurrencyDemo).length > 0) {
+                this.balancesByCurrencyDemo = balancesByCurrencyDemo;
+                console.log('[OperationView] Saldos demo atualizados:', this.balancesByCurrencyDemo);
               }
             } catch (updateError) {
               // Ignorar erros de atualização se componente está sendo desmontado
@@ -642,6 +711,44 @@ export default {
       this.lastOrders = this.lastOrders.slice(0, 10);
       console.log('[OperationView] Total de ordens no histórico:', this.lastOrders.length);
       console.log('[OperationView] ========== RESULTADO PROCESSADO ==========');
+    },
+    async loadTradeCurrency() {
+      // Carrega o tradeCurrency do settings
+      try {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${apiBase}/settings`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          this.tradeCurrency = data.tradeCurrency || 'USD';
+          // Atualizar accountType baseado no tradeCurrency
+          this.accountType = this.tradeCurrency === 'DEMO' ? 'demo' : 'real';
+          console.log('[OperationView] TradeCurrency carregado:', this.tradeCurrency, 'AccountType:', this.accountType);
+        }
+      } catch (error) {
+        console.error('[OperationView] Erro ao carregar tradeCurrency:', error);
+        // Fallback: tentar pegar do deriv_connection
+        try {
+          const connectionStr = localStorage.getItem('deriv_connection');
+          if (connectionStr) {
+            const connection = JSON.parse(connectionStr);
+            if (connection.tradeCurrency) {
+              this.tradeCurrency = connection.tradeCurrency;
+              this.accountType = this.tradeCurrency === 'DEMO' ? 'demo' : 'real';
+            }
+          }
+        } catch (e) {
+          // Ignorar erro
+        }
+      }
     },
     async loadLastOrders() {
       console.log('[OperationView] Carregando últimas ordens do banco...');
@@ -814,6 +921,9 @@ export default {
     // (se houver timeouts ou promises pendentes, devem verificar isComponentDestroyed)
   },
   async mounted() {
+    // Carregar tradeCurrency do settings primeiro
+    await this.loadTradeCurrency();
+    
     // Verificar se há saldo salvo no localStorage antes de buscar do backend
     const savedConnection = localStorage.getItem('deriv_connection');
     if (savedConnection) {
@@ -824,6 +934,14 @@ export default {
           this.accountBalanceValue = Number(parsed.balance.value);
           this.accountCurrency = parsed.currency || parsed.balance?.currency || 'USD';
           this.accountLoginId = parsed.loginid || null;
+          
+          // Aplicar saldos por moeda se disponíveis
+          if (parsed.balancesByCurrencyReal) {
+            this.balancesByCurrencyReal = parsed.balancesByCurrencyReal;
+          }
+          if (parsed.balancesByCurrencyDemo) {
+            this.balancesByCurrencyDemo = parsed.balancesByCurrencyDemo;
+          }
           if (this.accountLoginId) {
             this.accountType = (this.accountLoginId.startsWith('VRTC') || this.accountLoginId.startsWith('VRT')) ? 'demo' : 'real';
           }
