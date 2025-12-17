@@ -52,8 +52,8 @@
                 </div>
                 <div class="signal-confidence">
                   <span class="confidence-label">Confiança:</span>
-                  <span class="confidence-value" :class="getConfidenceClass(aiRecommendation.confidence)">
-                    {{ aiRecommendation.confidence }}%
+                  <span class="confidence-value" :class="confidenceClass">
+                    {{ confidenceValue }}%
                   </span>
                 </div>
               </div>
@@ -515,17 +515,47 @@ export default {
         return 'countdown-normal';
       }
     },
-    getConfidenceClass(confidence) {
-      // Garantir que é um número válido
-      if (confidence === null || confidence === undefined) return 'confidence-low';
+    confidenceClass() {
+      if (!this.aiRecommendation || this.aiRecommendation.confidence === null || this.aiRecommendation.confidence === undefined) {
+        return 'confidence-low';
+      }
       
-      const confValue = typeof confidence === 'number' ? confidence : Number(confidence);
+      try {
+        // Extrair valor numérico
+        const confidence = this.aiRecommendation.confidence;
+        let confValue;
+        
+        if (typeof confidence === 'number') {
+          confValue = confidence;
+        } else {
+          confValue = parseFloat(String(confidence));
+        }
+        
+        if (isNaN(confValue) || !isFinite(confValue)) return 'confidence-low';
+        
+        if (confValue >= 70) return 'confidence-high';
+        if (confValue >= 50) return 'confidence-medium';
+        return 'confidence-low';
+      } catch (error) {
+        console.error('[Chart] Erro ao processar confidence:', error);
+        return 'confidence-low';
+      }
+    },
+    confidenceValue() {
+      if (!this.aiRecommendation || this.aiRecommendation.confidence === null || this.aiRecommendation.confidence === undefined) {
+        return 0;
+      }
       
-      if (isNaN(confValue) || !isFinite(confValue)) return 'confidence-low';
-      
-      if (confValue >= 70) return 'confidence-high';
-      if (confValue >= 50) return 'confidence-medium';
-      return 'confidence-low';
+      try {
+        const confidence = this.aiRecommendation.confidence;
+        if (typeof confidence === 'number') {
+          return confidence;
+        }
+        const parsed = parseFloat(String(confidence));
+        return isNaN(parsed) || !isFinite(parsed) ? 0 : parsed;
+      } catch (error) {
+        return 0;
+      }
     },
   },
   async mounted() {
