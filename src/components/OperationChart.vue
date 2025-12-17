@@ -1747,8 +1747,8 @@ export default {
           throw new Error('Token de autenticação não encontrado');
         }
         
-        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://taxafacil.site/api';
-        const response = await fetch(`${API_BASE_URL}/gemini/recommendation`, {
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const response = await fetch(`${apiBaseUrl}/gemini/recommendation`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${authToken}`,
