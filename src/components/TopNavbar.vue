@@ -673,7 +673,7 @@ export default {
     },
     // Observar mudanças em availableAccounts para garantir que todas as contas sejam exibidas
     availableAccounts: {
-      handler(newAccounts, oldAccounts) {
+      handler(newAccounts) {
         console.log('[TopNavbar] availableAccounts atualizado:', {
           count: newAccounts?.length || 0,
           accounts: newAccounts?.map(acc => acc.loginid) || [],
