@@ -246,7 +246,7 @@
             <button 
               type="submit" 
               class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3 rounded-full transition-colors flex items-center justify-center space-x-2"
-              :disabled="isLoading || password !== confirmPassword || !isValidPhone || !whatsapp || !isValidCPF || !cpf"
+              :disabled="!isFormValid"
             >
               <span v-if="isLoading" class="spinner"></span>
               <span>{{ isLoading ? 'Criando conta...' : 'Criar conta' }}</span>
@@ -382,6 +382,52 @@ export default {
   watch: {
     password(newPassword) {
       this.calculatePasswordStrength(newPassword);
+    },
+    cpf(newCpf) {
+      // Validar CPF automaticamente quando tiver 11 dígitos
+      const cpfDigits = newCpf ? newCpf.replace(/\D/g, '') : '';
+      if (cpfDigits.length === 11) {
+        this.$nextTick(() => {
+          this.validateCPF();
+        });
+      } else if (cpfDigits.length < 11) {
+        this.isValidCPF = false;
+        this.cpfError = '';
+      }
+    },
+    whatsapp(newWhatsapp) {
+      // Validar telefone automaticamente quando tiver tamanho suficiente
+      // Mas não validar se estiver vazio ou muito curto
+      if (newWhatsapp && newWhatsapp.length >= 10) {
+        // Usar setTimeout para evitar conflito com formatPhone
+        setTimeout(() => {
+          if (this.whatsapp === newWhatsapp) {
+            this.validatePhone();
+          }
+        }, 100);
+      } else if (!newWhatsapp || newWhatsapp.length < 10) {
+        // Limpar validação se o campo estiver vazio ou muito curto
+        if (!newWhatsapp || newWhatsapp.length === 0) {
+          this.isValidPhone = false;
+          this.phoneError = '';
+        }
+      }
+    }
+  },
+  computed: {
+    isFormValid() {
+      return (
+        this.name &&
+        this.email &&
+        this.cpf &&
+        this.isValidCPF &&
+        this.whatsapp &&
+        this.isValidPhone &&
+        this.password &&
+        this.confirmPassword &&
+        this.password === this.confirmPassword &&
+        !this.isLoading
+      );
     }
   },
   methods: {
@@ -523,6 +569,14 @@ export default {
       value = value.replace(/(\d{3})(\d)/, '$1.$2');
       value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
       this.cpf = value;
+      // Validar automaticamente quando o CPF tiver 11 dígitos
+      const cpfDigits = value.replace(/\D/g, '');
+      if (cpfDigits.length === 11) {
+        this.validateCPF();
+      } else {
+        this.isValidCPF = false;
+        this.cpfError = '';
+      }
     },
     validateCPF() {
       this.cpfError = '';
