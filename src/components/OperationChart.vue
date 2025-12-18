@@ -801,22 +801,30 @@ export default {
       // Ordenar por tempo (mais recentes primeiro, como a IA faz)
       const sortedTicks = [...validTicks].sort((a, b) => b.time - a.time);
 
-      // Calcular timeframe adaptativo baseado na quantidade desejada de velas (seguindo padrão da IA)
-      const timeSpan = sortedTicks.length > 1 
-        ? sortedTicks[0].time - sortedTicks[sortedTicks.length - 1].time
-        : timeframeSeconds;
+      // Calcular timeframe baseado no período de zoom para manter consistência visual
+      // Usar um timeframe proporcional ao período de zoom
+      let effectiveTimeframe;
       
-      // Calcular timeframe ideal, mas limitar para garantir velas menores
-      // Para velas menores, usar o menor entre o calculado e o timeframe base
-      let calculatedTimeframe = timeSpan > 0 
-        ? Math.floor(timeSpan / this.chartPointsVisible)
-        : timeframeSeconds;
-      
-      // Usar o menor entre o calculado e o timeframe base para garantir velas menores
-      let effectiveTimeframe = Math.min(timeframeSeconds, Math.max(1, calculatedTimeframe));
-      
-      // Garantir um mínimo de 1 segundo e máximo de 60 segundos para velas menores
-      effectiveTimeframe = Math.max(1, Math.min(60, effectiveTimeframe));
+      if (this.zoomPeriod === 3) {
+        // Para 3 minutos: usar 2 segundos para manter proporcionalidade
+        effectiveTimeframe = 2;
+      } else if (this.zoomPeriod === 5) {
+        // Para 5 minutos: usar 3 segundos (já está funcionando bem)
+        effectiveTimeframe = 3;
+      } else if (this.zoomPeriod === 10) {
+        // Para 10 minutos: usar 5-6 segundos (já está funcionando bem)
+        // Usar cálculo adaptativo mas com limite mínimo
+        const timeSpan = sortedTicks.length > 1 
+          ? sortedTicks[0].time - sortedTicks[sortedTicks.length - 1].time
+          : timeframeSeconds;
+        const calculatedTimeframe = timeSpan > 0 
+          ? Math.floor(timeSpan / this.chartPointsVisible)
+          : 5;
+        effectiveTimeframe = Math.max(5, Math.min(60, calculatedTimeframe));
+      } else {
+        // Para outros períodos, usar o timeframe padrão
+        effectiveTimeframe = timeframeSeconds;
+      }
 
       // Reverter para ordem cronológica (mais antigos primeiro) para agregação
       const chronologicalTicks = [...sortedTicks].reverse();
