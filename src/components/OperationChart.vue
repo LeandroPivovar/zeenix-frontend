@@ -806,8 +806,8 @@ export default {
       let effectiveTimeframe;
       
       if (this.zoomPeriod === 3) {
-        // Para 3 minutos: usar 2 segundos para manter proporcionalidade
-        effectiveTimeframe = 2;
+        // Para 3 minutos: usar 3 segundos (aumentado de 2 para velas maiores)
+        effectiveTimeframe = 3;
       } else if (this.zoomPeriod === 5) {
         // Para 5 minutos: usar 3 segundos (já está funcionando bem)
         effectiveTimeframe = 3;
