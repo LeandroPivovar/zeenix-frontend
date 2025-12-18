@@ -65,7 +65,8 @@
 						<p>Nenhum copiador encontrado.</p>
 					</div>
 					<!-- Versão Desktop -->
-					<div v-else v-for="copier in filteredCopiers" :key="copier.id" class="copiador-item copiador-item-desktop">
+					<template v-else>
+						<div v-for="copier in filteredCopiers" :key="copier.id" class="copiador-item copiador-item-desktop">
 						<div class="copiador-info">
 							<span class="copiador-name">{{ copier.name }}</span>
 							<span class="copiador-email" :style="{ visibility: emailVisibility }">
@@ -121,10 +122,10 @@
 								<img src="../../assets/icons/delete.svg" alt="Excluir" width="15px">
 							</span>
 						</div>
-					</div>
+						</div>
 
-					<!-- Versão Mobile -->
-					<div v-else v-for="copier in filteredCopiers" :key="'mobile-' + copier.id" class="copiador-item copiador-item-mobile">
+						<!-- Versão Mobile -->
+						<div v-for="copier in filteredCopiers" :key="'mobile-' + copier.id" class="copiador-item copiador-item-mobile">
 						<!-- Topo: Nome + Tag à esquerda, Botões + Slider à direita -->
 						<div class="copiador-header-mobile">
 							<div class="copiador-name-tag-mobile">
@@ -171,7 +172,8 @@
 								<img src="../../assets/icons/delete.svg" alt="Excluir" width="18px">
 							</span>
 						</div>
-					</div>
+						</div>
+					</template>
 				</div>
 			</section>
 		</div>
