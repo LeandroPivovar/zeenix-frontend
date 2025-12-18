@@ -524,6 +524,61 @@ export default {
       value = value.replace(/(\d{3})(\d{1,2})$/, '$1-$2');
       this.cpf = value;
     },
+    validateCPF() {
+      this.cpfError = '';
+      this.isValidCPF = false;
+      
+      if (!this.cpf) {
+        this.cpfError = 'CPF é obrigatório';
+        return false;
+      }
+
+      // Remove formatação
+      const cpfDigits = this.cpf.replace(/\D/g, '');
+      
+      // Verifica se tem 11 dígitos
+      if (cpfDigits.length !== 11) {
+        this.cpfError = 'CPF deve ter 11 dígitos';
+        return false;
+      }
+
+      // Verifica se todos os dígitos são iguais (CPF inválido)
+      if (/^(\d)\1{10}$/.test(cpfDigits)) {
+        this.cpfError = 'CPF inválido';
+        return false;
+      }
+
+      // Validação dos dígitos verificadores
+      let sum = 0;
+      let remainder;
+
+      // Valida primeiro dígito verificador
+      for (let i = 1; i <= 9; i++) {
+        sum += parseInt(cpfDigits.substring(i - 1, i)) * (11 - i);
+      }
+      remainder = (sum * 10) % 11;
+      if (remainder === 10 || remainder === 11) remainder = 0;
+      if (remainder !== parseInt(cpfDigits.substring(9, 10))) {
+        this.cpfError = 'CPF inválido';
+        return false;
+      }
+
+      // Valida segundo dígito verificador
+      sum = 0;
+      for (let i = 1; i <= 10; i++) {
+        sum += parseInt(cpfDigits.substring(i - 1, i)) * (12 - i);
+      }
+      remainder = (sum * 10) % 11;
+      if (remainder === 10 || remainder === 11) remainder = 0;
+      if (remainder !== parseInt(cpfDigits.substring(10, 11))) {
+        this.cpfError = 'CPF inválido';
+        return false;
+      }
+
+      this.isValidCPF = true;
+      this.cpfError = '';
+      return true;
+    },
     formatPhone(event) {
       let value = event.target.value.replace(/\D/g, '');
       // Limitar a 11 dígitos (DDD + 9 dígitos para celular)
@@ -586,7 +641,9 @@ export default {
           throw new Error(validation.error || 'Telefone inválido');
         }
         
-        const res = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/auth/register', {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const endpoint = apiBase.includes('/api') ? '/auth/register' : '/api/auth/register';
+        const res = await fetch(`${apiBase}${endpoint}`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ 
@@ -601,8 +658,8 @@ export default {
           throw new Error(err?.message || 'Falha no cadastro');
         }
         const data = await res.json();
-        localStorage.setItem('token', data.token);
-        this.$root.$toast.success('Cadastro realizado com sucesso');
+        // Não salvar token - usuário precisa confirmar conta primeiro
+        this.$root.$toast.success('Cadastro realizado! Verifique seu e-mail para confirmar a conta.');
         this.$router.push('/login');
       } catch (e) {
         this.$root.$toast.error(e.message || 'Erro inesperado');

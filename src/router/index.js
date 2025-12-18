@@ -50,6 +50,11 @@ const routes = [
     component: () => import('../components/ResetPasswordComponent.vue')
   },
   {
+    path: '/confirm-account',
+    name: 'ConfirmAccount',
+    component: () => import('../components/ConfirmAccountComponent.vue')
+  },
+  {
     path: '/dashboard',
     name: 'Dashboard',
     component: HomeView,

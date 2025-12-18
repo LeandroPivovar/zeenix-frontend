@@ -9,7 +9,6 @@
 					<div class="search-add-bar">
 						<input
 							type="text"
-							placeholder="Digite o token da conta"
 							class="input-token"
 							v-model="newToken"
 						/>
@@ -57,8 +56,16 @@
 				</div>
 
 				<div class="copiadores-list">
+					<!-- Loading state -->
+					<div v-if="loadingCopiers" class="loading-state">
+						<p>Carregando copiadores...</p>
+					</div>
+					<!-- Empty state -->
+					<div v-else-if="filteredCopiers.length === 0" class="empty-state">
+						<p>Nenhum copiador encontrado.</p>
+					</div>
 					<!-- Versão Desktop -->
-					<div v-for="copier in filteredCopiers" :key="copier.id" class="copiador-item copiador-item-desktop">
+					<div v-else v-for="copier in filteredCopiers" :key="copier.id" class="copiador-item copiador-item-desktop">
 						<div class="copiador-info">
 							<span class="copiador-name">{{ copier.name }}</span>
 							<span class="copiador-email" :style="{ visibility: emailVisibility }">
@@ -117,7 +124,7 @@
 					</div>
 
 					<!-- Versão Mobile -->
-					<div v-for="copier in filteredCopiers" :key="'mobile-' + copier.id" class="copiador-item copiador-item-mobile">
+					<div v-else v-for="copier in filteredCopiers" :key="'mobile-' + copier.id" class="copiador-item copiador-item-mobile">
 						<!-- Topo: Nome + Tag à esquerda, Botões + Slider à direita -->
 						<div class="copiador-header-mobile">
 							<div class="copiador-name-tag-mobile">
@@ -264,7 +271,7 @@
 </template>
 
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, computed, watch, onMounted } from 'vue';
 
 // Dados reativos
 const newToken = ref('');
@@ -282,62 +289,44 @@ const editingCopier = ref(null);
 const historyCopier = ref(null);
 
 
-const copiers = ref([
-	{
-		id: 1,
-		name: 'João Santos',
-		email: 'joao.santos@email.com',
-		tag: 'APP',
-		multiplier: '1.5x',
-		profitTarget: 100,
-		lossLimit: 50,
-		balance: 310,
-		pnl: 8.20,
-		isActive: true,
-	},
-	{
-		id: 2,
-		name: 'Maria Oliveira',
-		email: 'maria.oliveira@email.com',
-		tag: 'WEB',
-		multiplier: '1.0x',
-		profitTarget: 50,
-		lossLimit: 25,
-		balance: 550,
-		pnl: -3.50,
-		isActive: true,
-	},
-	{
-		id: 3,
-		name: 'Pedro Costa',
-		email: 'pedro.costa@outro.com',
-		tag: 'APP',
-		multiplier: '2.0x',
-		profitTarget: 200,
-		lossLimit: 100,
-		balance: 1200,
-		pnl: 15.10,
-		isActive: true,
-	},
-]);
+const copiers = ref([]);
+const loadingCopiers = ref(false);
+
+// Função para carregar copiadores do backend
+const loadCopiers = async () => {
+	loadingCopiers.value = true;
+	try {
+		const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+		const token = localStorage.getItem('token');
+
+		const response = await fetch(`${apiBase}/copy-trading/copiers`, {
+			method: 'GET',
+			headers: {
+				'Content-Type': 'application/json',
+				'Authorization': `Bearer ${token}`
+			}
+		});
+
+		const result = await response.json();
+		if (result.success && result.data) {
+			copiers.value = result.data;
+		} else {
+			console.error('Erro ao carregar copiadores:', result.message || 'Unknown error');
+			copiers.value = [];
+		}
+	} catch (error) {
+		console.error('Erro ao buscar copiadores:', error);
+		copiers.value = [];
+	} finally {
+		loadingCopiers.value = false;
+	}
+};
 
 // Funções de manipulação
 const addCopier = () => {
 	if (newToken.value.trim() !== '') {
 		console.log('Adicionar copiador com token:', newToken.value);
-		const newId = Math.max(...copiers.value.map(c => c.id)) + 1;
-		copiers.value.push({
-			id: newId,
-			name: 'Novo Copiador',
-			email: `copier_${newId}@email.com`,
-			tag: 'NEW',
-			multiplier: '1.0x',
-			profitTarget: 50,
-			lossLimit: 25,
-			balance: 100,
-			pnl: 0.00,
-			isActive: true,
-		});
+		// TODO: Implementar adição de copiador via API
 		newToken.value = ''; // Limpa o campo
 	}
 };
@@ -474,6 +463,11 @@ watch(copiers, () => {
 		deactivateAllToggle.value = false;
 	}
 }, { deep: true });
+
+// Carregar copiadores ao montar o componente
+onMounted(() => {
+	loadCopiers();
+});
 </script>
 
 <style scoped>
@@ -1346,5 +1340,19 @@ input:checked + .slider:before {
 	.history-item-details {
 		grid-template-columns: 1fr;
 	}
+}
+
+/* Loading and Empty States */
+.loading-state,
+.empty-state {
+	text-align: center;
+	padding: 60px 20px;
+	color: #888888;
+	font-size: 14px;
+}
+
+.loading-state p,
+.empty-state p {
+	margin: 0;
 }
 </style>
