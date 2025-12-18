@@ -751,17 +751,75 @@ export default {
           return;
         }
         
-        // Filtrar ticks dos últimos 10 minutos
+        // Filtrar ticks dos últimos 10 minutos, ou usar os mais recentes disponíveis
         const now = Math.floor(Date.now() / 1000);
         const tenMinutesAgo = now - (10 * 60);
+        const oneHourAgo = now - (60 * 60);
         
-        const recentTicks = response.ticks.filter(tick => {
-          const tickEpoch = tick.epoch || tick.time || 0;
-          return tickEpoch >= tenMinutesAgo;
+        // Debug: mostrar alguns ticks para diagnóstico
+        if (response.ticks.length > 0) {
+          const firstTick = response.ticks[0];
+          const lastTick = response.ticks[response.ticks.length - 1];
+          const firstEpoch = Number(firstTick.epoch || firstTick.time || 0);
+          const lastEpoch = Number(lastTick.epoch || lastTick.time || 0);
+          console.log('[Chart] Primeiro tick - epoch:', firstEpoch, 'hora:', new Date(firstEpoch * 1000).toLocaleTimeString('pt-BR'));
+          console.log('[Chart] Último tick - epoch:', lastEpoch, 'hora:', new Date(lastEpoch * 1000).toLocaleTimeString('pt-BR'));
+          console.log('[Chart] Agora (epoch):', now, 'hora:', new Date(now * 1000).toLocaleTimeString('pt-BR'));
+        }
+        
+        // Primeiro, tentar filtrar pelos últimos 10 minutos
+        let recentTicks = response.ticks.filter(tick => {
+          const tickEpoch = Number(tick.epoch || tick.time || 0);
+          // Se o epoch parece estar em milissegundos (muito maior que now), converter para segundos
+          const epochInSeconds = tickEpoch > 10000000000 ? Math.floor(tickEpoch / 1000) : tickEpoch;
+          return epochInSeconds >= tenMinutesAgo;
         });
         
         console.log('[Chart] Ticks recebidos:', response.ticks.length);
         console.log('[Chart] Ticks dos últimos 10 minutos:', recentTicks.length);
+        
+        // Se não houver ticks dos últimos 10 minutos, tentar os últimos 60 minutos
+        if (recentTicks.length === 0 && response.ticks.length > 0) {
+          console.log('[Chart] Nenhum tick dos últimos 10 minutos, buscando dos últimos 60 minutos...');
+          recentTicks = response.ticks.filter(tick => {
+            const tickEpoch = Number(tick.epoch || tick.time || 0);
+            // Se o epoch parece estar em milissegundos (muito maior que now), converter para segundos
+            const epochInSeconds = tickEpoch > 10000000000 ? Math.floor(tickEpoch / 1000) : tickEpoch;
+            return epochInSeconds >= oneHourAgo;
+          });
+          console.log('[Chart] Ticks dos últimos 60 minutos:', recentTicks.length);
+        }
+        
+        // Se ainda não houver, usar os ticks mais recentes disponíveis (últimos 100 ticks ou 30 minutos)
+        if (recentTicks.length === 0 && response.ticks.length > 0) {
+          console.log('[Chart] Nenhum tick recente encontrado, usando os ticks mais recentes disponíveis...');
+          // Ordenar por epoch (mais recente primeiro) e pegar os últimos 100
+          const sortedTicks = [...response.ticks].sort((a, b) => {
+            const epochA = Number(a.epoch || a.time || 0);
+            const epochB = Number(b.epoch || b.time || 0);
+            // Converter para segundos se estiver em milissegundos
+            const epochASeconds = epochA > 10000000000 ? Math.floor(epochA / 1000) : epochA;
+            const epochBSeconds = epochB > 10000000000 ? Math.floor(epochB / 1000) : epochB;
+            return epochBSeconds - epochASeconds; // Ordenar do mais recente para o mais antigo
+          });
+          
+          // Pegar os últimos 100 ticks mais recentes
+          recentTicks = sortedTicks.slice(0, 100);
+          console.log('[Chart] Usando os últimos', recentTicks.length, 'ticks disponíveis');
+          
+          // Se houver ticks, mostrar o range de tempo
+          if (recentTicks.length > 0) {
+            const oldestTick = recentTicks[recentTicks.length - 1];
+            const newestTick = recentTicks[0];
+            let oldestEpoch = Number(oldestTick.epoch || oldestTick.time || 0);
+            let newestEpoch = Number(newestTick.epoch || newestTick.time || 0);
+            // Converter para segundos se estiver em milissegundos
+            oldestEpoch = oldestEpoch > 10000000000 ? Math.floor(oldestEpoch / 1000) : oldestEpoch;
+            newestEpoch = newestEpoch > 10000000000 ? Math.floor(newestEpoch / 1000) : newestEpoch;
+            const minutesAgo = Math.floor((now - oldestEpoch) / 60);
+            console.log('[Chart] Range de ticks: de', minutesAgo, 'minutos atrás até agora');
+          }
+        }
         
         if (recentTicks.length > 0) {
           // Se estiver analisando, coletar ticks antes de plotar
@@ -776,7 +834,7 @@ export default {
           
           this.plotTicks(recentTicks);
         } else {
-          console.warn('[Chart] Nenhum tick dos últimos 10 minutos encontrado');
+          console.warn('[Chart] Nenhum tick disponível para plotar');
         }
       } catch (error) {
         console.error('[Chart] Erro ao carregar ticks do backend:', error);
@@ -800,8 +858,12 @@ export default {
       const chartData = ticks
         .map(tick => {
           // Converter epoch para horário de Brasília (UTC-3)
-          const epoch = tick.epoch || tick.time || Date.now() / 1000;
-          const brasiliaEpoch = Math.floor(Number(epoch)) - (3 * 60 * 60);
+          let epoch = Number(tick.epoch || tick.time || Date.now() / 1000);
+          // Se o epoch parece estar em milissegundos (muito maior que um timestamp Unix normal), converter para segundos
+          if (epoch > 10000000000) {
+            epoch = Math.floor(epoch / 1000);
+          }
+          const brasiliaEpoch = Math.floor(epoch) - (3 * 60 * 60);
           
           return {
             time: brasiliaEpoch,
