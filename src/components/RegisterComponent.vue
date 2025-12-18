@@ -711,8 +711,8 @@ export default {
           const err = await res.json().catch(() => ({}));
           throw new Error(err?.message || 'Falha no cadastro');
         }
-        const data = await res.json();
         // Não salvar token - usuário precisa confirmar conta primeiro
+        await res.json(); // Consumir resposta, mas não usar os dados
         this.$root.$toast.success('Cadastro realizado! Verifique seu e-mail para confirmar a conta.');
         this.$router.push('/login');
       } catch (e) {
