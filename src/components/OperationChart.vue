@@ -790,8 +790,42 @@ export default {
         
         // Buscar histórico via subscribeSymbol que solicita ticks_history
         // Isso vai ativar a subscrição no backend que enviará histórico via SSE
-        const derivToken = localStorage.getItem('deriv_token');
-        const loginid = localStorage.getItem('deriv_loginid') || null;
+        
+        // Buscar token e loginid do localStorage (mesma lógica de loadMarketsFromAPI)
+        const derivConnection = localStorage.getItem('deriv_connection');
+        let derivToken = localStorage.getItem('deriv_token');
+        let loginid = null;
+
+        if (derivConnection) {
+          try {
+            const connection = JSON.parse(derivConnection);
+            loginid = connection.loginid;
+            if (!derivToken) {
+              derivToken = connection.token;
+            }
+          } catch (e) {
+            console.warn('[Chart] Erro ao parsear deriv_connection:', e);
+          }
+        }
+
+        // Se não tiver token, tentar deriv_tokens_by_loginid
+        if (!derivToken) {
+          const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
+          if (tokensByLoginId) {
+            try {
+              const tokens = JSON.parse(tokensByLoginId);
+              if (loginid && tokens[loginid]) {
+                derivToken = tokens[loginid];
+              } else if (Object.keys(tokens).length > 0) {
+                const firstLoginId = Object.keys(tokens)[0];
+                derivToken = tokens[firstLoginId];
+                loginid = firstLoginId;
+              }
+            } catch (e) {
+              console.warn('[Chart] Erro ao parsear deriv_tokens_by_loginid:', e);
+            }
+          }
+        }
         
         if (!derivToken) {
           console.warn('[Chart] Token Deriv não encontrado');
@@ -826,10 +860,17 @@ export default {
         if (tickEpoch > 10000000000) {
           tickEpoch = Math.floor(tickEpoch / 1000);
         }
-        return tickEpoch >= minutesAgo;
+        const isRecent = tickEpoch >= minutesAgo;
+        if (!isRecent && filtered.length === 0 && ticks.indexOf(tick) === ticks.length - 1) {
+          // Debug: mostrar por que o último tick não passou no filtro
+          const ageInMinutes = Math.floor((now - tickEpoch) / 60);
+          console.log(`[Chart] Último tick muito antigo: epoch=${tickEpoch}, idade=${ageInMinutes} minutos, limite=${this.zoomPeriod} minutos`);
+        }
+        return isRecent;
       });
       
       console.log(`[Chart] Filtro de zoom: ${ticks.length} ticks totais, ${filtered.length} ticks nos últimos ${this.zoomPeriod} minutos`);
+      console.log(`[Chart] Limite de tempo: ${minutesAgo} (${new Date(minutesAgo * 1000).toLocaleTimeString('pt-BR')})`);
       return filtered;
     },
     setZoomPeriod(minutes) {
@@ -1107,11 +1148,34 @@ export default {
             // Histórico recebido via SSE - armazenar todos os ticks e filtrar pelo zoom
             console.log('[Chart] Histórico recebido via SSE:', data.data.ticks.length, 'ticks');
             
-            // Armazenar todos os ticks históricos
-            this.allHistoricalTicks = data.data.ticks.map(tick => ({
-              value: Number(tick.value),
-              epoch: Number(tick.epoch || tick.time)
-            }));
+            // Armazenar todos os ticks históricos (garantir que epoch está em segundos)
+            this.allHistoricalTicks = data.data.ticks.map(tick => {
+              let epoch = Number(tick.epoch || tick.time);
+              // Se o epoch parece estar em milissegundos, converter para segundos
+              if (epoch > 10000000000) {
+                epoch = Math.floor(epoch / 1000);
+              }
+              return {
+                value: Number(tick.value),
+                epoch: epoch
+              };
+            });
+            
+            // Ordenar por epoch (do mais antigo para o mais recente)
+            this.allHistoricalTicks.sort((a, b) => a.epoch - b.epoch);
+            
+            // Debug: mostrar informações dos ticks recebidos
+            if (this.allHistoricalTicks.length > 0) {
+              const now = Math.floor(Date.now() / 1000);
+              const firstTick = this.allHistoricalTicks[0];
+              const lastTick = this.allHistoricalTicks[this.allHistoricalTicks.length - 1];
+              const firstTickAge = Math.floor((now - firstTick.epoch) / 60);
+              const lastTickAge = Math.floor((now - lastTick.epoch) / 60);
+              console.log(`[Chart] Range de ticks: primeiro há ${firstTickAge} min, último há ${lastTickAge} min`);
+              console.log(`[Chart] Primeiro tick epoch: ${firstTick.epoch} (${new Date(firstTick.epoch * 1000).toLocaleTimeString('pt-BR')})`);
+              console.log(`[Chart] Último tick epoch: ${lastTick.epoch} (${new Date(lastTick.epoch * 1000).toLocaleTimeString('pt-BR')})`);
+              console.log(`[Chart] Agora: ${now} (${new Date(now * 1000).toLocaleTimeString('pt-BR')})`);
+            }
             
             // Filtrar ticks pelo período de zoom selecionado
             const filteredTicks = this.filterTicksByZoom(this.allHistoricalTicks);
@@ -1132,6 +1196,12 @@ export default {
               this.plotTicks(filteredTicks);
             } else {
               console.warn(`[Chart] Nenhum tick encontrado para os últimos ${this.zoomPeriod} minutos`);
+              // Se não houver ticks filtrados, tentar usar os últimos 100 ticks disponíveis
+              if (this.allHistoricalTicks.length > 0) {
+                const last100Ticks = this.allHistoricalTicks.slice(-100);
+                console.log('[Chart] Usando os últimos 100 ticks disponíveis como fallback');
+                this.plotTicks(last100Ticks);
+              }
             }
           } else if (data.type === 'buy' && data.data) {
             this.processBuy(data.data);
