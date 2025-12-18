@@ -816,8 +816,9 @@ export default {
             // Converter para segundos se estiver em milissegundos
             oldestEpoch = oldestEpoch > 10000000000 ? Math.floor(oldestEpoch / 1000) : oldestEpoch;
             newestEpoch = newestEpoch > 10000000000 ? Math.floor(newestEpoch / 1000) : newestEpoch;
-            const minutesAgo = Math.floor((now - oldestEpoch) / 60);
-            console.log('[Chart] Range de ticks: de', minutesAgo, 'minutos atrás até agora');
+            const oldestMinutesAgo = Math.floor((now - oldestEpoch) / 60);
+            const newestMinutesAgo = Math.floor((now - newestEpoch) / 60);
+            console.log('[Chart] Range de ticks: de', oldestMinutesAgo, 'minutos atrás até', newestMinutesAgo, 'minutos atrás');
           }
         }
         
