@@ -1,24 +1,32 @@
 <template>
+  <!-- Background animado igual ao forgot-password -->
+  <div class="confirm-animated-bg"></div>
+  <div class="confirm-texture-layer"></div>
+  
   <!-- Main Container -->
   <main id="confirm-main" class="min-h-screen flex items-center justify-center px-8 gradient-glow">
     <div class="w-full max-w-7xl flex items-center justify-between login-container-wrapper">
       
       <!-- Left Column - Confirm Account Card -->
       <div id="confirm-section" class="w-[480px]">
-        <div class="bg-white border border-zenix-card-border rounded-2xl p-10 login-card-shadow">
+        <div class="bg-white border border-zenix-card-border rounded-2xl p-10 login-card-shadow confirm-card">
           
           <!-- Logo -->
-          <div class="mb-8 flex justify-center">
-            <div class="flex items-center space-x-2">
-              <div class="text-3xl font-bold text-zenix-text-dark">ZENI</div>
-              <div class="text-3xl font-bold text-zenix-green">X</div>
+          <div class="mb-8 flex justify-center confirm-logo">
+            <div class="flex items-center logo-animation">
+              <div class="text-3xl font-bold text-zenix-text-dark zenix-logo-title">
+                <span v-if="isMobile" v-html="typedLogoTitle" class="logo-text"></span>
+                <template v-else>
+                  <span class="text-zenix-text-dark">ZENI</span><span class="text-zenix-green">X</span>
+                </template>
+              </div>
             </div>
           </div>
 
           <!-- Header -->
-          <div class="mb-8">
-            <h1 class="text-2xl font-semibold text-zenix-text-dark mb-3">Confirmar Conta</h1>
-            <p class="text-sm text-zenix-gray leading-relaxed">Clique no botão abaixo para confirmar sua conta e começar a usar a plataforma.</p>
+          <div class="mb-8 header-section">
+            <h1 class="text-2xl font-semibold text-zenix-text-dark mb-3 header-title">Confirmar Conta</h1>
+            <p class="text-sm text-zenix-gray leading-relaxed header-subtitle">Clique no botão abaixo para confirmar sua conta e começar a usar a plataforma.</p>
           </div>
 
           <!-- Error Message -->
@@ -49,8 +57,8 @@
           </div>
 
           <!-- Footer -->
-          <div class="mt-10 pt-6 border-t border-zenix-input-border">
-            <p class="text-xs text-zenix-gray text-center leading-relaxed">Ao confirmar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de Uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
+          <div class="mt-10 pt-6 border-t border-zenix-input-border footer-login">
+            <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao continuar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
           </div>
         </div>
       </div>
@@ -115,6 +123,11 @@
         </div>
       </div>
     </div>
+    
+    <!-- Disclaimer apenas no mobile -->
+    <div class="mobile-disclaimer">
+      <p class="disclaimer-text">Deriv offers complex derivatives, such as options and contracts for difference ("CFDs"). These products may not be suitable for all clients, and trading them puts you at risk. Please make sure that you understand the following risks before trading Deriv products: a) you may lose some or all of the money you invest in the trade, b) if your trade involves currency conversion, exchange rates will affect your profit and loss. You should never trade with borrowed money or with money that you cannot afford to lose.</p>
+    </div>
   </main>
 </template>
 
@@ -130,6 +143,10 @@ export default {
       fullSubtitle: 'A única tecnologia criada para operar com a precisão que o mercado exige.',
       typedTitle: '',
       typedSubtitle: '',
+      fullLogoTitle: 'ZENIX',
+      typedLogoTitle: '',
+      isMobile: false,
+      logoAnimationStarted: false,
       showBenefit1: false,
       showBenefit2: false,
       showBenefit3: false,
@@ -137,6 +154,7 @@ export default {
     }
   },
   mounted() {
+    this.isMobile = window.innerWidth <= 640;
     // Verificar se há token na URL e confirmar automaticamente
     const token = this.$route.query.token;
     if (!token) {
@@ -160,8 +178,37 @@ export default {
       }
     },
     startAnimations() {
-      // 1. Primeiro o Zenix aparece letra por letra
-      this.typeTitle();
+      // 1. Primeiro o logo ZENIX aparece letra por letra (apenas no mobile)
+      if (window.innerWidth <= 640 && !this.logoAnimationStarted) {
+        this.logoAnimationStarted = true;
+        this.typeLogoTitle();
+      }
+      // 2. Depois o Zenix do hero aparece letra por letra
+      setTimeout(() => {
+        this.typeTitle();
+      }, 500);
+    },
+    typeLogoTitle() {
+      // Reset do título antes de começar
+      this.typedLogoTitle = '';
+      let index = 0;
+      const typingSpeed = 180; // velocidade de digitação em ms (mais lenta)
+      
+      const typeChar = () => {
+        if (index < this.fullLogoTitle.length) {
+          const char = this.fullLogoTitle.charAt(index);
+          if (char === 'X') {
+            this.typedLogoTitle += '<span class="text-zenix-green">X</span>';
+          } else {
+            this.typedLogoTitle += `<span class="text-zenix-text-dark">${char}</span>`;
+          }
+          index++;
+          setTimeout(typeChar, typingSpeed);
+        }
+      };
+      
+      // Inicia após um pequeno delay
+      setTimeout(typeChar, 200);
     },
     typeTitle() {
       let index = 0;
@@ -302,6 +349,23 @@ export default {
   min-height: 1.75rem;
 }
 
+/* Desktop - manter estilo original do título */
+@media (min-width: 641px) {
+  .confirm-logo {
+    position: relative !important;
+    margin-bottom: 3rem !important;
+  }
+  
+  .zenix-logo-title {
+    font-size: 1.875rem !important;
+  }
+  
+  .zenix-logo-title .text-zenix-text-dark,
+  .zenix-logo-title .text-zenix-green {
+    font-size: 1.875rem !important;
+  }
+}
+
 /* Animação dos benefícios da esquerda para direita */
 .benefit-item {
   opacity: 0;
@@ -370,6 +434,47 @@ button.bg-zenix-green:disabled {
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* Background animado - ocultar no desktop */
+.confirm-animated-bg,
+.confirm-texture-layer {
+  display: none;
+}
+
+/* Animações para background animado */
+@keyframes gradient-animation {
+  0% {
+    background-position: 0% 50%;
+  }
+  25% {
+    background-position: 50% 0%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  75% {
+    background-position: 50% 100%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+/* Animação textureFloat para o background animado */
+@keyframes textureFloat {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(8px, -8px);
+  }
+  50% {
+    transform: translate(-6px, 6px);
+  }
+  75% {
+    transform: translate(4px, 4px);
+  }
 }
 
 /* Classes Tailwind CSS inline - estrutura exata do original */
@@ -447,7 +552,7 @@ button.bg-zenix-green:disabled {
   gap: 2rem;
 }
 
-/* Responsividade - mesma do ResetPasswordComponent */
+/* Responsividade - Monitores médios (1280px - 1440px) */
 @media (max-width: 1440px) {
   #confirm-main {
     padding-left: 2rem;
@@ -461,8 +566,13 @@ button.bg-zenix-green:disabled {
   .text-6xl {
     font-size: 3rem !important;
   }
+  
+  .login-container-wrapper {
+    gap: 1.5rem;
+  }
 }
 
+/* Responsividade - Monitores pequenos (1024px - 1280px) */
 @media (max-width: 1280px) {
   #confirm-main {
     padding-left: 1.5rem;
@@ -485,37 +595,216 @@ button.bg-zenix-green:disabled {
   .text-6xl {
     font-size: 2.5rem !important;
   }
-}
-
-@media (max-width: 1024px) {
-  .login-container-wrapper {
-    justify-content: center;
-  }
   
-  #hero-section {
-    display: none;
-  }
-  
-  #confirm-section {
-    width: 100% !important;
-    max-width: 420px;
-  }
-}
-
-@media (max-width: 768px) {
-  #confirm-section {
-    max-width: 100%;
+  .text-lg {
+    font-size: 1rem !important;
   }
   
   .p-10 {
-    padding: 1.75rem !important;
+    padding: 2.25rem !important;
   }
 }
 
-@media (max-width: 640px) {
+/* Responsividade - Tablets (768px - 1024px) */
+@media (max-width: 1024px) {
+  .login-container-wrapper {
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  #hero-section {
+    display: none;
+  }
+
+  #confirm-section {
+    width: 100% !important;
+    max-width: 450px;
+  }
+
   #confirm-main {
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
+    padding-top: 1.5rem;
+    flex-direction: column-reverse;
+    padding-bottom: 1.5rem;
+  }
+
+  .p-10 {
+    padding: 2rem !important;
+  }
+
+  .text-2xl {
+    font-size: 1.375rem !important;
+  }
+
+  .text-sm {
+    font-size: 0.8125rem !important;
+  }
+}
+
+/* Responsividade - Mobile grande (640px - 768px) */
+@media (max-width: 768px) {
+  #confirm-section {
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
+  #confirm-main {
+    padding-top: 1rem;
+    padding-bottom: 1rem;
+  }
+
+  .p-10 {
+    padding: 1.75rem !important;
+  }
+
+  .text-3xl {
+    font-size: 1.75rem !important;
+  }
+
+  .text-2xl {
+    font-size: 1.25rem !important;
+  }
+
+  .mb-8 {
+    margin-bottom: 1.5rem !important;
+  }
+
+  .space-y-4 > * + * {
+    margin-top: 1.25rem !important;
+  }
+  
+  .py-4 {
+    padding-top: 0.875rem !important;
+    padding-bottom: 0.875rem !important;
+  }
+}
+
+/* Responsividade - Mobile pequeno (< 640px) */
+@media (max-width: 640px) {
+  /* Background animado igual ao forgot-password */
+  .confirm-animated-bg {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(135deg, #0B0B0B 0%, #0d2520 25%, #0a1a16 50%, #0d2520 75%, #0B0B0B 100%);
+    background-size: 400% 400%;
+    animation: gradient-animation 15s ease infinite;
+  }
+
+  .confirm-texture-layer {
+    display: block !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.11;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 2%),
+      radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.02) 0%, transparent 2%),
+      radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.025) 0%, transparent 2%),
+      radial-gradient(circle at 60% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 2%),
+      radial-gradient(circle at 10% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 2%),
+      radial-gradient(circle at 90% 40%, rgba(255, 255, 255, 0.025) 0%, transparent 2%);
+    background-size:
+      200px 200px,
+      180px 180px,
+      220px 220px,
+      190px 190px,
+      210px 210px,
+      175px 175px;
+    background-position:
+      0 0,
+      50px 50px,
+      100px 100px,
+      150px 150px,
+      200px 200px,
+      250px 250px;
+    animation: textureFloat 45s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  .confirm-texture-layer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      repeating-linear-gradient(0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.008) 2px,
+        rgba(255, 255, 255, 0.008) 4px),
+      repeating-linear-gradient(90deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.008) 2px,
+        rgba(255, 255, 255, 0.008) 4px);
+    opacity: 0.4;
+  }
+
+  .confirm-texture-layer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.35'/%3E%3C/svg%3E");
+    opacity: 0.08;
+    mix-blend-mode: overlay;
+  }
+
+  /* Confirm main - garantir que seja transparente para mostrar background animado */
+  #confirm-main {
+    padding-left: 0.75rem !important;
+    padding-right: 0.75rem !important;
+    padding-top: 1.5rem !important;
+    padding-bottom: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+    min-height: 100vh !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    position: relative !important;
+    z-index: 100 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  /* Remover qualquer pseudo-elemento que possa ter background */
+  #confirm-main::before,
+  #confirm-main::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    background-color: transparent !important;
+  }
+
+  /* Garantir que o wrapper e container sejam transparentes */
+  .login-container-wrapper {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+  
+  #confirm-section {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
   }
   
   .w-\[480px\] {
@@ -525,5 +814,367 @@ button.bg-zenix-green:disabled {
   .p-10 {
     padding: 1.5rem !important;
   }
+  
+  .text-3xl {
+    font-size: 1.5rem !important;
+  }
+  
+  .text-2xl {
+    font-size: 1.125rem !important;
+  }
+  
+  .text-lg {
+    font-size: 0.9375rem !important;
+  }
+  
+  .text-sm {
+    font-size: 0.75rem !important;
+  }
+  
+  .mb-8 {
+    margin-bottom: 1.25rem !important;
+  }
+  
+  .mb-4 {
+    margin-bottom: 0.75rem !important;
+  }
+  
+  .mb-3 {
+    margin-bottom: 0.5rem !important;
+  }
+  
+  .mb-1 {
+    margin-bottom: 0.375rem !important;
+  }
+  
+  .space-y-4 > * + * {
+    margin-top: 0.75rem !important;
+  }
+  
+  .px-4 {
+    padding-left: 0.875rem !important;
+    padding-right: 0.875rem !important;
+  }
+  
+  .py-4 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+  }
+  
+  .rounded-xl {
+    border-radius: 0.625rem !important;
+  }
+  
+  .rounded-2xl {
+    border-radius: 0.875rem !important;
+  }
+
+  /* Layout em coluna: hero acima do card no mobile */
+  .login-container-wrapper {
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.5rem;
+  }
+
+  /* Card mais estreito e centralizado para ficar igual ao layout */
+  #confirm-section {
+    width: 100% !important;
+    max-width: 360px !important;
+    margin: 0 auto !important;
+    padding: 0;
+    padding-top: 12rem !important;
+  }
+
+  /* Remover fundo do card apenas no mobile */
+  #confirm-section .confirm-card {
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+    background-image: none !important;
+  }
+
+  /* Card com background transparente - sobrescrever TODOS os estilos */
+  #confirm-section .bg-white,
+  #confirm-section .confirm-card.bg-white,
+  #confirm-section .confirm-card,
+  #confirm-section > div,
+  #confirm-section > div > div {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+    border-color: transparent !important;
+  }
+
+  /* Sobrescrever qualquer estilo que possa estar aplicando background branco */
+  #confirm-main * {
+    background-image: none !important;
+  }
+  
+  /* Exceto o background animado */
+  #confirm-main .confirm-animated-bg,
+  .confirm-animated-bg {
+    background-image: linear-gradient(135deg, #0B0B0B 0%, #0d2520 25%, #0a1a16 50%, #0d2520 75%, #0B0B0B 100%) !important;
+  }
+  
+  #confirm-section * {
+    background-image: none !important;
+  }
+
+  #confirm-section .text-zenix-text-dark {
+    color: #FFFFFF !important;
+  }
+
+  #confirm-section .text-zenix-gray {
+    color: #9CA3AF !important;
+  }
+
+  /* Ajustes de espaçamento e fonte para corresponder à imagem */
+  .header-section {
+    margin-bottom: 1.5rem !important;
+    margin-top: 0 !important;
+    text-align: center !important;
+  }
+
+  .header-title {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+    margin-bottom: 0.5rem !important;
+    margin-top: 0 !important;
+    color: #DFDFDF !important;
+    text-align: center !important;
+  }
+
+  .header-subtitle {
+    font-size: 13px !important;
+    line-height: 1.5 !important;
+    color: #8A8A8A !important;
+    text-align: center !important;
+    margin-bottom: 0 !important;
+    margin-top: 0 !important;
+    font-weight: 400 !important;
+  }
+
+  #confirm-section h1 {
+    font-size: 1.5rem !important;
+    font-weight: 700 !important;
+  }
+
+  /* Logo fora visualmente do card apenas no mobile */
+  .confirm-logo {
+    position: absolute;
+    top: 6rem;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 20;
+    margin-bottom: 0 !important;
+  }
+
+  /* Animação do logo letra por letra (mobile) */
+  .confirm-logo .logo-animation {
+    overflow: hidden;
+  }
+
+  .confirm-logo .logo-text {
+    display: inline-block;
+  }
+
+  .confirm-logo .logo-text span {
+    display: inline-block;
+  }
+
+  .zenix-logo-title {
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 700 !important;
+    font-size: 50px !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
+    line-height: 1;
+  }
+
+  .zenix-logo-title .text-zenix-text-dark,
+  .confirm-logo .text-zenix-text-dark,
+  .confirm-logo .logo-text span.text-zenix-text-dark {
+    font-size: 50px !important;
+    line-height: 1;
+    margin: 0;
+    font-weight: 700 !important;
+    color: #FFFFFF !important;
+    font-family: 'Inter', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  .zenix-logo-title .text-zenix-green,
+  .confirm-logo .text-zenix-green,
+  .confirm-logo .logo-text span.text-zenix-green {
+    font-size: 50px !important;
+    line-height: 1;
+    margin: 0;
+    font-weight: 700 !important;
+    color: #22C55E !important;
+    font-family: 'Inter', sans-serif !important;
+    text-transform: uppercase;
+    letter-spacing: 0;
+  }
+
+  /* Remover espaçamento entre letras no mobile */
+  .confirm-logo .logo-animation {
+    gap: 0 !important;
+  }
+
+  .confirm-logo .logo-animation > * {
+    margin: 0 !important;
+  }
+
+  /* Ajuste de padding interno do card */
+  #confirm-section .confirm-card {
+    padding: 0 !important;
+  }
+
+  /* Mensagens de erro e sucesso */
+  #confirm-section .bg-red-50 {
+    background-color: rgba(239, 68, 68, 0.1) !important;
+    border-color: rgba(239, 68, 68, 0.3) !important;
+  }
+
+  #confirm-section .bg-green-50 {
+    background-color: rgba(34, 197, 94, 0.1) !important;
+    border-color: rgba(34, 197, 94, 0.3) !important;
+  }
+
+  #confirm-section .text-red-600 {
+    color: #FCA5A5 !important;
+  }
+
+  #confirm-section .text-green-600 {
+    color: #86EFAC !important;
+  }
+
+  #confirm-section .bg-red-50.mb-4,
+  #confirm-section .bg-green-50.mb-4 {
+    margin-bottom: 1rem !important;
+  }
+
+  /* Botão ajustes */
+  #confirm-section button.bg-zenix-green {
+    padding: 0.875rem 1.5rem !important;
+    font-size: 0.875rem !important;
+    border-radius: 0.75rem !important;
+    font-weight: 600 !important;
+    margin-top: 0 !important;
+    background-color: #22C55E !important;
+    color: #FFFFFF !important;
+    height: 52px !important;
+  }
+
+  #confirm-section button.bg-zenix-green i {
+    color: #FFFFFF !important;
+  }
+
+  /* Links */
+  #confirm-section a {
+    color: #AAAAAA !important;
+    font-size: 0.875rem !important;
+    font-weight: 400 !important;
+  }
+
+  /* Espaçamento após o botão - 15px */
+  #confirm-section .mt-4 {
+    margin-top: 15px !important;
+  }
+
+  /* Footer ajustes */
+  .footer-login {
+    margin-top: 1.5rem !important;
+    padding-top: 1.25rem !important;
+    border-top-width: 1px !important;
+    border-top-color: rgba(255, 255, 255, 0.1) !important;
+  }
+
+  #confirm-section .text-xs {
+    font-size: 11px !important;
+    line-height: 1.5 !important;
+    color: #6B7280 !important;
+    font-weight: 400 !important;
+  }
+
+  #confirm-section .text-xs a {
+    color: #22C55E !important;
+    text-decoration: underline !important;
+  }
+
+  /* Espaçamento do footer */
+  .footer-login {
+    padding-top: 2rem !important;
+    margin-top: 2rem !important;
+  }
+
+  /* Disclaimer no final da página apenas no mobile */
+  .mobile-disclaimer {
+    display: block;
+    width: 100%;
+    max-width: 360px;
+    margin: auto auto 1rem;
+    padding: 0 1rem;
+    padding-bottom: 1.5rem;
+    margin-top: 4.5rem;
+  }
+
+  .disclaimer-text {
+    font-size: 0.625rem;
+    line-height: 1.6;
+    color: #9CA3AF;
+    text-align: center;
+  }
+}
+
+@media (max-width: 375px) {
+  .confirm-logo {
+    top: 6rem !important;
+  }
+}
+
+/* Ocultar disclaimer no desktop */
+@media (min-width: 641px) {
+  .mobile-disclaimer {
+    display: none !important;
+  }
+}
+
+/* Estilos finais com máxima especificidade para garantir background transparente no mobile */
+@media (max-width: 640px) {
+  /* Sobrescrever TODOS os backgrounds possíveis no confirm mobile */
+  #confirm-main,
+  #confirm-main > *,
+  #confirm-main > * > *,
+  #confirm-section,
+  #confirm-section > *,
+  #confirm-section > * > *,
+  #confirm-section .confirm-card,
+  #confirm-section .confirm-card.bg-white,
+  #confirm-section .bg-white,
+  .login-container-wrapper,
+  .login-container-wrapper > * {
+    background: transparent !important;
+    background-color: transparent !important;
+    background-image: none !important;
+  }
+  
+  /* Garantir que nenhum pseudo-elemento tenha background */
+  #confirm-main::before,
+  #confirm-main::after,
+  #confirm-section::before,
+  #confirm-section::after,
+  #confirm-section .confirm-card::before,
+  #confirm-section .confirm-card::after {
+    display: none !important;
+    content: none !important;
+    background: none !important;
+    background-color: transparent !important;
+    background-image: none !important;
+  }
 }
 </style>
+
