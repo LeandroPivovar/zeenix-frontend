@@ -245,6 +245,9 @@
               </div>
               
               <div v-if="showAccountsList" class="space-y-2">
+                <!-- Debug: mostrar quantidade de contas -->
+                <!-- <div class="text-xs text-[#7A7A7A] mb-2">Debug: {{ availableAccounts.length }} contas carregadas</div> -->
+                
                 <div v-if="loadingAccounts" class="flex items-center justify-center py-8">
                   <div class="text-center">
                     <div class="inline-block animate-spin rounded-full h-6 w-6 border-b-2 border-[#22C55E] mb-2"></div>
@@ -252,14 +255,14 @@
                   </div>
                 </div>
                 
-                <div v-else-if="filteredAccounts.length === 0" class="text-center py-8">
+                <div v-else-if="availableAccounts.length === 0" class="text-center py-8">
                   <i class="fas fa-exclamation-circle text-[#7A7A7A] text-2xl mb-2"></i>
                   <p class="text-[#A1A1A1] text-sm">Nenhuma conta disponível</p>
                 </div>
                 
                 <div v-else class="space-y-2">
                   <div 
-                    v-for="account in filteredAccounts" 
+                    v-for="account in availableAccounts" 
                     :key="account.loginid"
                     @click="selectAccountFromList(account)"
                     class="p-3 bg-[#0B0B0B] border border-[#1C1C1C] rounded-lg cursor-pointer hover:border-[#22C55E]/50 hover:bg-[#0F0F0F] transition-all duration-200"
@@ -667,6 +670,24 @@ export default {
       if (this.showProfileModal) {
         this.$forceUpdate();
       }
+    },
+    // Observar mudanças em availableAccounts para garantir que todas as contas sejam exibidas
+    availableAccounts: {
+      handler(newAccounts, oldAccounts) {
+        console.log('[TopNavbar] availableAccounts atualizado:', {
+          count: newAccounts?.length || 0,
+          accounts: newAccounts?.map(acc => acc.loginid) || [],
+          modalAberto: this.showProfileModal
+        });
+        // Forçar atualização quando as contas mudarem e o modal estiver aberto
+        if (this.showProfileModal && newAccounts && newAccounts.length > 0) {
+          this.$nextTick(() => {
+            this.$forceUpdate();
+          });
+        }
+      },
+      deep: true,
+      immediate: false
     }
   },
   mounted() {
@@ -702,7 +723,10 @@ export default {
       }
       this.showProfileModal = !this.showProfileModal;
       if (this.showProfileModal) {
-        // Carregar contas quando abrir o modal (usar cache se disponível)
+        // Verificar quantas contas temos atualmente
+        console.log('[TopNavbar] Modal aberto, contas atuais:', this.availableAccounts.length, this.availableAccounts.map(acc => acc.loginid));
+        
+        // Carregar contas quando abrir o modal (sempre garantir que temos todas)
         this.loadAccountsForModal();
         
         // Definir o filtro baseado no tipo de conta atual
@@ -716,7 +740,8 @@ export default {
             console.log('[TopNavbar] Modal aberto, tipo de conta:', this.accountTypeFilter, {
               isDemo: connection.isDemo,
               loginid: connection.loginid,
-              currentAccountType: this.currentAccountType
+              currentAccountType: this.currentAccountType,
+              contasDisponiveis: this.availableAccounts.length
             });
           } catch (e) {
             console.warn('[TopNavbar] Erro ao parsear connection:', e);
@@ -728,16 +753,50 @@ export default {
       this.showProfileModal = false;
     },
     async loadAccountsForModal() {
+      // Verificar quantas contas esperamos ter
+      const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+      let expectedCount = 0;
+      if (tokensByLoginIdStr) {
+        try {
+          const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+          expectedCount = Object.keys(tokensByLoginId).length;
+        } catch (e) {
+          console.warn('[TopNavbar] Erro ao parsear tokens:', e);
+        }
+      }
+      
       // Sempre tentar usar cache primeiro para mostrar instantaneamente
       const cachedAccounts = this.getCachedAccountsSync();
       if (cachedAccounts && cachedAccounts.length > 0) {
-        this.availableAccounts = cachedAccounts;
-        console.log('[TopNavbar] Usando contas do cache para modal:', cachedAccounts.length);
-        return;
+        // Verificar se o cache tem todas as contas esperadas
+        if (expectedCount > 0 && cachedAccounts.length >= expectedCount) {
+          this.availableAccounts = cachedAccounts;
+          console.log('[TopNavbar] Usando contas do cache para modal:', cachedAccounts.length, 'de', expectedCount, 'esperadas');
+          // Mesmo com cache, garantir que temos todas as contas em background
+          this.loadAvailableAccounts(false).catch(err => {
+            console.warn('[TopNavbar] Erro ao atualizar contas em background:', err);
+          });
+          return;
+        } else if (expectedCount === 0) {
+          // Se não sabemos quantas esperar, usar cache mesmo assim
+          this.availableAccounts = cachedAccounts;
+          console.log('[TopNavbar] Usando contas do cache para modal:', cachedAccounts.length);
+          return;
+        } else {
+          console.log(`[TopNavbar] Cache incompleto: ${cachedAccounts.length} contas, esperado ${expectedCount}. Recarregando...`);
+        }
       }
       
-      // Se não tiver cache, carregar as contas
-      await this.loadAvailableAccounts(false); // Usar cache se disponível
+      // Se não tiver cache ou cache incompleto, carregar todas as contas
+      await this.loadAvailableAccounts(false); // Usar cache se disponível, mas garantir que temos todas
+      
+      // Verificar novamente se temos todas as contas após carregar
+      if (expectedCount > 0 && this.availableAccounts.length < expectedCount) {
+        console.warn(`[TopNavbar] Apenas ${this.availableAccounts.length} contas após carregamento, esperado ${expectedCount}. Forçando recarregamento...`);
+        await this.loadAvailableAccounts(true); // Forçar recarregamento completo
+      }
+      
+      console.log('[TopNavbar] Contas finais para modal:', this.availableAccounts.length, this.availableAccounts.map(acc => acc.loginid));
     },
     async switchAccountType(type) {
       // Verificar o tipo de conta atual baseado no localStorage
@@ -919,12 +978,20 @@ export default {
         // Usar a função utilitária que já tem cache e otimizações
         // Se forçar recarregamento, limpar cache e buscar novamente
         const accounts = await loadAvailableAccounts(forceReload);
-        this.availableAccounts = accounts;
+        // Garantir que sempre atualizamos o array de forma reativa
+        this.availableAccounts = [...accounts]; // Criar novo array para garantir reatividade
         console.log('[TopNavbar] Contas carregadas:', accounts.length, accounts.map(acc => ({
           loginid: acc.loginid,
           currency: acc.currency,
           isDemo: acc.isDemo
         })));
+        
+        // Forçar atualização do componente se o modal estiver aberto
+        if (this.showProfileModal) {
+          this.$nextTick(() => {
+            this.$forceUpdate();
+          });
+        }
       } catch (error) {
         console.error('[TopNavbar] Erro ao carregar contas:', error);
         this.availableAccounts = [];
