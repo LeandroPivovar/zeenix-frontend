@@ -474,7 +474,7 @@ export default {
       // Zoom
       zoomPeriod: 10, // Período de zoom em minutos: 10, 5 ou 3
       allHistoricalTicks: [], // Armazenar todos os ticks históricos recebidos
-      selectedTimeframe: 300, // Timeframe padrão para velas (5 minutos em segundos)
+      selectedTimeframe: 60, // Timeframe padrão para velas (1 minuto em segundos) - velas menores
       chartPointsVisible: 100, // Número de pontos/velas visíveis no gráfico
       allTradeTypes: [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
@@ -806,10 +806,17 @@ export default {
         ? sortedTicks[0].time - sortedTicks[sortedTicks.length - 1].time
         : timeframeSeconds;
       
-      // Calcular timeframe ideal para ter aproximadamente chartPointsVisible velas
-      let effectiveTimeframe = timeSpan > 0 
-        ? Math.max(timeframeSeconds, Math.floor(timeSpan / this.chartPointsVisible))
+      // Calcular timeframe ideal, mas limitar para garantir velas menores
+      // Para velas menores, usar o menor entre o calculado e o timeframe base
+      let calculatedTimeframe = timeSpan > 0 
+        ? Math.floor(timeSpan / this.chartPointsVisible)
         : timeframeSeconds;
+      
+      // Usar o menor entre o calculado e o timeframe base para garantir velas menores
+      let effectiveTimeframe = Math.min(timeframeSeconds, Math.max(1, calculatedTimeframe));
+      
+      // Garantir um mínimo de 1 segundo e máximo de 60 segundos para velas menores
+      effectiveTimeframe = Math.max(1, Math.min(60, effectiveTimeframe));
 
       // Reverter para ordem cronológica (mais antigos primeiro) para agregação
       const chronologicalTicks = [...sortedTicks].reverse();
