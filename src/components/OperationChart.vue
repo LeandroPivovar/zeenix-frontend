@@ -8,14 +8,56 @@
         <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card h-full">
           <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A] flex-shrink-0">
             <h3 class="text-base font-semibold text-zenix-text">Gráfico</h3>
-            <button
-              @click="toggleChartType"
-              class="inline-flex items-center gap-2 px-3 py-1.5 bg-zenix-bg border border-zenix-border hover:border-zenix-green rounded-lg text-xs text-zenix-text transition-all duration-200"
-              title="Alternar entre gráfico de linhas e velas"
-            >
-              <i :class="chartType === 'line' ? 'fas fa-chart-line' : 'fas fa-chart-bar'"></i>
-              <span>{{ chartType === 'line' ? 'Linhas' : 'Velas' }}</span>
-            </button>
+            <div class="flex items-center gap-2">
+              <!-- Botões de Zoom -->
+              <div class="flex items-center gap-1 border border-zenix-border rounded-lg overflow-hidden">
+                <button
+                  @click="setZoomPeriod(10)"
+                  :class="[
+                    'px-2 py-1.5 text-xs font-medium transition-all duration-200',
+                    zoomPeriod === 10 
+                      ? 'bg-zenix-green text-black' 
+                      : 'bg-zenix-bg text-zenix-text hover:bg-zenix-border'
+                  ]"
+                  title="Zoom 10 minutos"
+                >
+                  10m
+                </button>
+                <button
+                  @click="setZoomPeriod(5)"
+                  :class="[
+                    'px-2 py-1.5 text-xs font-medium transition-all duration-200',
+                    zoomPeriod === 5 
+                      ? 'bg-zenix-green text-black' 
+                      : 'bg-zenix-bg text-zenix-text hover:bg-zenix-border'
+                  ]"
+                  title="Zoom 5 minutos"
+                >
+                  5m
+                </button>
+                <button
+                  @click="setZoomPeriod(3)"
+                  :class="[
+                    'px-2 py-1.5 text-xs font-medium transition-all duration-200',
+                    zoomPeriod === 3 
+                      ? 'bg-zenix-green text-black' 
+                      : 'bg-zenix-bg text-zenix-text hover:bg-zenix-border'
+                  ]"
+                  title="Zoom 3 minutos"
+                >
+                  3m
+                </button>
+              </div>
+              <!-- Botão Linhas/Velas -->
+              <button
+                @click="toggleChartType"
+                class="inline-flex items-center gap-2 px-3 py-1.5 bg-zenix-bg border border-zenix-border hover:border-zenix-green rounded-lg text-xs text-zenix-text transition-all duration-200"
+                title="Alternar entre gráfico de linhas e velas"
+              >
+                <i :class="chartType === 'line' ? 'fas fa-chart-line' : 'fas fa-chart-bar'"></i>
+                <span>{{ chartType === 'line' ? 'Linhas' : 'Velas' }}</span>
+              </button>
+            </div>
           </div>
 
           <!-- Gráfico -->
@@ -429,6 +471,9 @@ export default {
       chartType: 'line', // 'line' ou 'candles'
       storedTicks: [], // Armazenar ticks para conversão em velas
       entrySpotLine: null, // Linha tracejada indicando o momento da compra
+      // Zoom
+      zoomPeriod: 10, // Período de zoom em minutos: 10, 5 ou 3
+      allHistoricalTicks: [], // Armazenar todos os ticks históricos recebidos
       allTradeTypes: [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
         { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
@@ -740,105 +785,64 @@ export default {
       }
       
       try {
-        console.log('[Chart] ========== BUSCANDO TICKS ==========');
+        console.log('[Chart] ========== BUSCANDO HISTÓRICO DE TICKS ==========');
         console.log('[Chart] Símbolo:', this.symbol);
         
-        const response = await derivTradingService.getTicks(this.symbol);
-        console.log('[Chart] Resposta do backend:', response);
+        // Buscar histórico via subscribeSymbol que solicita ticks_history
+        // Isso vai ativar a subscrição no backend que enviará histórico via SSE
+        const derivToken = localStorage.getItem('deriv_token');
+        const loginid = localStorage.getItem('deriv_loginid') || null;
         
-        if (!response || !response.ticks || !Array.isArray(response.ticks)) {
-          console.warn('[Chart] Resposta inválida do backend:', response);
+        if (!derivToken) {
+          console.warn('[Chart] Token Deriv não encontrado');
           return;
         }
         
-        // Filtrar ticks dos últimos 10 minutos, ou usar os mais recentes disponíveis
-        const now = Math.floor(Date.now() / 1000);
-        const tenMinutesAgo = now - (10 * 60);
-        const oneHourAgo = now - (60 * 60);
-        
-        // Debug: mostrar alguns ticks para diagnóstico
-        if (response.ticks.length > 0) {
-          const firstTick = response.ticks[0];
-          const lastTick = response.ticks[response.ticks.length - 1];
-          const firstEpoch = Number(firstTick.epoch || firstTick.time || 0);
-          const lastEpoch = Number(lastTick.epoch || lastTick.time || 0);
-          console.log('[Chart] Primeiro tick - epoch:', firstEpoch, 'hora:', new Date(firstEpoch * 1000).toLocaleTimeString('pt-BR'));
-          console.log('[Chart] Último tick - epoch:', lastEpoch, 'hora:', new Date(lastEpoch * 1000).toLocaleTimeString('pt-BR'));
-          console.log('[Chart] Agora (epoch):', now, 'hora:', new Date(now * 1000).toLocaleTimeString('pt-BR'));
+        // Garantir que está conectado
+        if (!derivTradingService.isConnected) {
+          await derivTradingService.connect(derivToken, loginid);
         }
         
-        // Primeiro, tentar filtrar pelos últimos 10 minutos
-        let recentTicks = response.ticks.filter(tick => {
-          const tickEpoch = Number(tick.epoch || tick.time || 0);
-          // Se o epoch parece estar em milissegundos (muito maior que now), converter para segundos
-          const epochInSeconds = tickEpoch > 10000000000 ? Math.floor(tickEpoch / 1000) : tickEpoch;
-          return epochInSeconds >= tenMinutesAgo;
-        });
+        // Inscrever-se no símbolo para receber histórico (isso vai disparar histórico via SSE)
+        await derivTradingService.subscribeSymbol(this.symbol, derivToken, loginid);
+        console.log('[Chart] Inscrição no símbolo enviada, aguardando histórico via SSE...');
         
-        console.log('[Chart] Ticks recebidos:', response.ticks.length);
-        console.log('[Chart] Ticks dos últimos 10 minutos:', recentTicks.length);
-        
-        // Se não houver ticks dos últimos 10 minutos, tentar os últimos 60 minutos
-        if (recentTicks.length === 0 && response.ticks.length > 0) {
-          console.log('[Chart] Nenhum tick dos últimos 10 minutos, buscando dos últimos 60 minutos...');
-          recentTicks = response.ticks.filter(tick => {
-            const tickEpoch = Number(tick.epoch || tick.time || 0);
-            // Se o epoch parece estar em milissegundos (muito maior que now), converter para segundos
-            const epochInSeconds = tickEpoch > 10000000000 ? Math.floor(tickEpoch / 1000) : tickEpoch;
-            return epochInSeconds >= oneHourAgo;
-          });
-          console.log('[Chart] Ticks dos últimos 60 minutos:', recentTicks.length);
-        }
-        
-        // Se ainda não houver, usar os ticks mais recentes disponíveis (últimos 100 ticks ou 30 minutos)
-        if (recentTicks.length === 0 && response.ticks.length > 0) {
-          console.log('[Chart] Nenhum tick recente encontrado, usando os ticks mais recentes disponíveis...');
-          // Ordenar por epoch (mais recente primeiro) e pegar os últimos 100
-          const sortedTicks = [...response.ticks].sort((a, b) => {
-            const epochA = Number(a.epoch || a.time || 0);
-            const epochB = Number(b.epoch || b.time || 0);
-            // Converter para segundos se estiver em milissegundos
-            const epochASeconds = epochA > 10000000000 ? Math.floor(epochA / 1000) : epochA;
-            const epochBSeconds = epochB > 10000000000 ? Math.floor(epochB / 1000) : epochB;
-            return epochBSeconds - epochASeconds; // Ordenar do mais recente para o mais antigo
-          });
-          
-          // Pegar os últimos 100 ticks mais recentes
-          recentTicks = sortedTicks.slice(0, 100);
-          console.log('[Chart] Usando os últimos', recentTicks.length, 'ticks disponíveis');
-          
-          // Se houver ticks, mostrar o range de tempo
-          if (recentTicks.length > 0) {
-            const oldestTick = recentTicks[recentTicks.length - 1];
-            const newestTick = recentTicks[0];
-            let oldestEpoch = Number(oldestTick.epoch || oldestTick.time || 0);
-            let newestEpoch = Number(newestTick.epoch || newestTick.time || 0);
-            // Converter para segundos se estiver em milissegundos
-            oldestEpoch = oldestEpoch > 10000000000 ? Math.floor(oldestEpoch / 1000) : oldestEpoch;
-            newestEpoch = newestEpoch > 10000000000 ? Math.floor(newestEpoch / 1000) : newestEpoch;
-            const oldestMinutesAgo = Math.floor((now - oldestEpoch) / 60);
-            const newestMinutesAgo = Math.floor((now - newestEpoch) / 60);
-            console.log('[Chart] Range de ticks: de', oldestMinutesAgo, 'minutos atrás até', newestMinutesAgo, 'minutos atrás');
-          }
-        }
-        
-        if (recentTicks.length > 0) {
-          // Se estiver analisando, coletar ticks antes de plotar
-          if (this.isAnalyzing) {
-            recentTicks.forEach(tick => {
-              this.collectTickForAnalysis({
-                value: Number(tick.value),
-                epoch: Number(tick.epoch || tick.time)
-              });
-            });
-          }
-          
-          this.plotTicks(recentTicks);
-        } else {
-          console.warn('[Chart] Nenhum tick disponível para plotar');
-        }
+        // O histórico será recebido via SSE no handler processHistoryFromSSE
       } catch (error) {
-        console.error('[Chart] Erro ao carregar ticks do backend:', error);
+        console.error('[Chart] Erro ao buscar histórico de ticks:', error);
+      }
+    },
+    filterTicksByZoom(ticks) {
+      if (!ticks || !Array.isArray(ticks) || ticks.length === 0) {
+        return [];
+      }
+      
+      const now = Math.floor(Date.now() / 1000);
+      const minutesAgo = now - (this.zoomPeriod * 60);
+      
+      return ticks.filter(tick => {
+        let tickEpoch = Number(tick.epoch || tick.time || 0);
+        // Se o epoch parece estar em milissegundos, converter para segundos
+        if (tickEpoch > 10000000000) {
+          tickEpoch = Math.floor(tickEpoch / 1000);
+        }
+        return tickEpoch >= minutesAgo;
+      });
+    },
+    setZoomPeriod(minutes) {
+      if (this.zoomPeriod === minutes) {
+        return; // Já está no período selecionado
+      }
+      
+      console.log(`[Chart] Alterando zoom para ${minutes} minutos`);
+      this.zoomPeriod = minutes;
+      
+      // Replotar ticks com o novo zoom
+      if (this.allHistoricalTicks.length > 0) {
+        const filteredTicks = this.filterTicksByZoom(this.allHistoricalTicks);
+        if (filteredTicks.length > 0) {
+          this.plotTicks(filteredTicks);
+        }
       }
     },
     plotTicks(ticks) {
@@ -1097,23 +1101,23 @@ export default {
             this.processActiveSymbols(data.data);
             this.isLoadingMarkets = false;
           } else if (data.type === 'history' && data.data && data.data.ticks) {
-            // Histórico recebido via SSE - filtrar últimos 10 minutos e plotar
-            const now = Math.floor(Date.now() / 1000);
-            const tenMinutesAgo = now - (10 * 60);
+            // Histórico recebido via SSE - armazenar todos os ticks e filtrar pelo zoom
+            console.log('[Chart] Histórico recebido via SSE:', data.data.ticks.length, 'ticks');
             
-            const recentTicks = data.data.ticks
-              .filter(tick => {
-                const tickEpoch = tick.epoch || tick.time || 0;
-                return tickEpoch >= tenMinutesAgo;
-              })
-              .map(tick => ({
-                value: Number(tick.value),
-                epoch: Number(tick.epoch || tick.time) // Manter epoch original para análise
-              }));
+            // Armazenar todos os ticks históricos
+            this.allHistoricalTicks = data.data.ticks.map(tick => ({
+              value: Number(tick.value),
+              epoch: Number(tick.epoch || tick.time)
+            }));
+            
+            // Filtrar ticks pelo período de zoom selecionado
+            const filteredTicks = this.filterTicksByZoom(this.allHistoricalTicks);
+            
+            console.log(`[Chart] Ticks filtrados para ${this.zoomPeriod} minutos:`, filteredTicks.length);
             
             // Se estiver analisando, coletar ticks antes de plotar
-            if (this.isAnalyzing && recentTicks.length > 0) {
-              recentTicks.forEach(tick => {
+            if (this.isAnalyzing && filteredTicks.length > 0) {
+              filteredTicks.forEach(tick => {
                 this.collectTickForAnalysis({
                   value: tick.value,
                   epoch: tick.epoch
@@ -1121,8 +1125,10 @@ export default {
               });
             }
             
-            if (recentTicks.length > 0) {
-              this.plotTicks(recentTicks);
+            if (filteredTicks.length > 0) {
+              this.plotTicks(filteredTicks);
+            } else {
+              console.warn(`[Chart] Nenhum tick encontrado para os últimos ${this.zoomPeriod} minutos`);
             }
           } else if (data.type === 'buy' && data.data) {
             this.processBuy(data.data);
@@ -1141,11 +1147,28 @@ export default {
                 epoch: tickEpochBrasilia
               };
               
-              // Adicionar tick ao gráfico (usando epoch em UTC-3)
-              this.addTickToChart({
-                time: tickEpochBrasilia,
-                value: tickValue
-              });
+              // Adicionar tick ao histórico (usando epoch original)
+              const newTick = {
+                value: tickValue,
+                epoch: tickEpochOriginal
+              };
+              this.allHistoricalTicks.push(newTick);
+              
+              // Manter apenas os ticks que estão dentro do período de zoom ou um pouco mais
+              const now = Math.floor(Date.now() / 1000);
+              const maxPeriod = Math.max(this.zoomPeriod * 60, 10 * 60); // Manter pelo menos 10 minutos
+              const cutoffTime = now - maxPeriod;
+              this.allHistoricalTicks = this.allHistoricalTicks.filter(tick => tick.epoch >= cutoffTime);
+              
+              // Verificar se o tick está dentro do período de zoom atual
+              const zoomCutoff = now - (this.zoomPeriod * 60);
+              if (tickEpochOriginal >= zoomCutoff) {
+                // Adicionar tick ao gráfico (usando epoch em UTC-3)
+                this.addTickToChart({
+                  time: tickEpochBrasilia,
+                  value: tickValue
+                });
+              }
               
               // Atualizar linha de compra se existir
               if (this.entrySpotLine && this.activeContract) {
