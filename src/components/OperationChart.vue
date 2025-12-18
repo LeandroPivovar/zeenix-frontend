@@ -820,7 +820,7 @@ export default {
       const now = Math.floor(Date.now() / 1000);
       const minutesAgo = now - (this.zoomPeriod * 60);
       
-      return ticks.filter(tick => {
+      const filtered = ticks.filter(tick => {
         let tickEpoch = Number(tick.epoch || tick.time || 0);
         // Se o epoch parece estar em milissegundos, converter para segundos
         if (tickEpoch > 10000000000) {
@@ -828,6 +828,9 @@ export default {
         }
         return tickEpoch >= minutesAgo;
       });
+      
+      console.log(`[Chart] Filtro de zoom: ${ticks.length} ticks totais, ${filtered.length} ticks nos últimos ${this.zoomPeriod} minutos`);
+      return filtered;
     },
     setZoomPeriod(minutes) {
       if (this.zoomPeriod === minutes) {
