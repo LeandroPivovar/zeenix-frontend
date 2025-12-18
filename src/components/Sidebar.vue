@@ -113,6 +113,16 @@
                 <span>Suporte</span>
             </a>
 
+            <a
+                href="#"
+                class="menu-item"
+                @click.prevent="logout"
+                data-text="Sair"
+            >
+                <i class="fa-solid fa-arrow-right-from-bracket w-5 opacity-85"></i>
+                <span>Sair</span>
+            </a>
+
             <!-- Links de Administração (apenas para admins) -->
             <template v-if="isAdmin">
                 <div class="separator"></div>
@@ -218,11 +228,6 @@
             </template>
 
         </nav>
-        <div class="status">
-            <div class="footer-row">
-                <span class="sair-text" @click="logout">Sair</span>
-            </div>
-        </div>
     </aside>
 </template>
 
