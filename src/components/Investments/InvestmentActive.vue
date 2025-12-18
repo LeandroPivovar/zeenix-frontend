@@ -37,8 +37,8 @@
                                     </button>
                                 </div>
                                 <div class="flex items-baseline space-x-1.5 text-left">
-                                    <div v-if="!isLoadingStats" :class="['text-2xl font-bold', sessionBalanceClass, { 'hidden-value': !profitVisible }]">
-                                        {{ profitVisible ? formattedSessionBalance : '••••••' }}
+                                    <div v-if="!isLoadingStats" :class="['text-2xl font-bold', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
+                                        {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
                                     </div>
                                     <span 
                                         v-if="!isLoadingStats && profitPercentage && profitVisible" 
@@ -179,8 +179,8 @@
                                     </button>
                                 </div>
                                 <div class="flex items-baseline space-x-1.5 text-left">
-                                    <div v-if="!isLoadingStats" :class="['text-[12px] font-bold', sessionBalanceClass, { 'hidden-value': !profitVisible }]">
-                                        {{ profitVisible ? formattedSessionBalance : '••••••' }}
+                                    <div v-if="!isLoadingStats" :class="['text-[12px] font-bold', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
+                                        {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
                                     </div>
                                     <span 
                                         v-if="!isLoadingStats && profitPercentage && profitVisible" 
@@ -1144,7 +1144,7 @@ export default {
         // Profit percentage
         profitPercentage() {
             if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return null;
-            const profit = this.dailyStats.sessionBalance || 0;
+            const profit = this.dailyStats.sessionProfitLoss || 0;
             const percentage = (profit / this.accountBalanceProp) * 100;
             const sign = percentage >= 0 ? '+' : '';
             return `${sign}${percentage.toFixed(2)}%`;
@@ -1153,7 +1153,7 @@ export default {
         // Check if profit is positive
         isProfitPositive() {
             if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return true;
-            const profit = this.dailyStats.sessionBalance || 0;
+            const profit = this.dailyStats.sessionProfitLoss || 0;
             return profit >= 0;
         },
 
