@@ -53,15 +53,7 @@
                                 </label>
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
                                     <option value="orion">IA Orion</option>
-                                    <option value="vega">IA Vega</option>
-                                    <option value="pulse">IA Pulse</option>
-                                    <option value="nova">IA Nova</option>
-                                    <option value="titan">IA Titan</option>
-                                    <option value="phoenix">IA Phoenix</option>
-                                    <option value="quantum">IA Quantum</option>
-                                    <option value="nebula">IA Nebula</option>
-                                    <option value="apex">IA Apex</option>
-                                    <option value="zenith">IA Zenith</option>
+                                    <option value="trinity">IA Trinity</option>
                                 </select>
                                 <p id="strategyDescription" class="form-help">Análise técnica avançada com machine learning</p>
                     </div>
@@ -584,6 +576,7 @@ export default {
                         profitTarget: this.profitTarget,
                         lossLimit: this.lossLimit,
                         modoMartingale: this.modoMartingale || 'conservador',
+                        strategy: this.selectedStrategy || 'orion',
                     }),
                 });
 
