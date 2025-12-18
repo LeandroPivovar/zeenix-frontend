@@ -860,17 +860,23 @@ export default {
         if (tickEpoch > 10000000000) {
           tickEpoch = Math.floor(tickEpoch / 1000);
         }
-        const isRecent = tickEpoch >= minutesAgo;
-        if (!isRecent && filtered.length === 0 && ticks.indexOf(tick) === ticks.length - 1) {
-          // Debug: mostrar por que o último tick não passou no filtro
-          const ageInMinutes = Math.floor((now - tickEpoch) / 60);
-          console.log(`[Chart] Último tick muito antigo: epoch=${tickEpoch}, idade=${ageInMinutes} minutos, limite=${this.zoomPeriod} minutos`);
-        }
-        return isRecent;
+        return tickEpoch >= minutesAgo;
       });
       
       console.log(`[Chart] Filtro de zoom: ${ticks.length} ticks totais, ${filtered.length} ticks nos últimos ${this.zoomPeriod} minutos`);
       console.log(`[Chart] Limite de tempo: ${minutesAgo} (${new Date(minutesAgo * 1000).toLocaleTimeString('pt-BR')})`);
+      
+      // Debug: se não houver ticks filtrados, mostrar informações do último tick
+      if (filtered.length === 0 && ticks.length > 0) {
+        const lastTick = ticks[ticks.length - 1];
+        let lastTickEpoch = Number(lastTick.epoch || lastTick.time || 0);
+        if (lastTickEpoch > 10000000000) {
+          lastTickEpoch = Math.floor(lastTickEpoch / 1000);
+        }
+        const ageInMinutes = Math.floor((now - lastTickEpoch) / 60);
+        console.log(`[Chart] Último tick muito antigo: epoch=${lastTickEpoch}, idade=${ageInMinutes} minutos, limite=${this.zoomPeriod} minutos`);
+      }
+      
       return filtered;
     },
     setZoomPeriod(minutes) {
@@ -882,11 +888,18 @@ export default {
       this.zoomPeriod = minutes;
       
       // Replotar ticks com o novo zoom
-      if (this.allHistoricalTicks.length > 0) {
+      if (this.allHistoricalTicks && this.allHistoricalTicks.length > 0) {
+        console.log(`[Chart] Filtrando ${this.allHistoricalTicks.length} ticks para zoom de ${minutes} minutos`);
         const filteredTicks = this.filterTicksByZoom(this.allHistoricalTicks);
+        console.log(`[Chart] ${filteredTicks.length} ticks após filtro`);
+        
         if (filteredTicks.length > 0) {
           this.plotTicks(filteredTicks);
+        } else {
+          console.warn(`[Chart] Nenhum tick encontrado para os últimos ${minutes} minutos, mantendo gráfico atual`);
         }
+      } else {
+        console.warn('[Chart] Nenhum histórico de ticks disponível para aplicar zoom');
       }
     },
     plotTicks(ticks) {
@@ -955,13 +968,10 @@ export default {
           return;
         }
         
-        // Limpar dados anteriores
-        this.chartSeries.setData([]);
-        
-        // Plotar novos dados
+        // Limpar dados anteriores e plotar novos dados
         this.chartSeries.setData(dataToPlot);
         
-        // Ajustar o gráfico para mostrar todos os dados
+        // Ajustar o gráfico para mostrar apenas o intervalo selecionado
         this.chart.timeScale().fitContent();
         
         console.log('[Chart] ✅ Dados plotados com sucesso:', dataToPlot.length, this.chartType === 'candles' ? 'velas' : 'pontos');
