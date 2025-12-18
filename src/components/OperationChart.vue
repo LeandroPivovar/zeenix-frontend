@@ -474,6 +474,8 @@ export default {
       // Zoom
       zoomPeriod: 10, // Período de zoom em minutos: 10, 5 ou 3
       allHistoricalTicks: [], // Armazenar todos os ticks históricos recebidos
+      selectedTimeframe: 300, // Timeframe padrão para velas (5 minutos em segundos)
+      chartPointsVisible: 100, // Número de pontos/velas visíveis no gráfico
       allTradeTypes: [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
         { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
@@ -706,77 +708,157 @@ export default {
       // Recriar série
       this.createChartSeries();
       
-      // Replotar dados com o novo formato
-      if (this.storedTicks.length > 0) {
-        if (this.chartType === 'candles') {
-          const candles = this.aggregateTicksToCandles(this.storedTicks);
-          if (candles.length > 0) {
-            this.chartSeries.setData(candles);
-            this.chart.timeScale().fitContent();
-          }
-        } else {
-          const lineData = this.storedTicks.map(tick => ({
-            time: tick.time,
-            value: tick.value
-          }));
-          if (lineData.length > 0) {
-            this.chartSeries.setData(lineData);
-            this.chart.timeScale().fitContent();
-          }
+      // Replotar dados com o novo formato (seguindo padrão da IA)
+      this.updateChartData();
+    },
+    updateChartData() {
+      if (!this.chart || !this.chartSeries) {
+        return;
+      }
+
+      // Usar os ticks filtrados pelo zoom atual
+      const ticksToUse = this.filterTicksByZoom(this.allHistoricalTicks);
+      
+      if (ticksToUse.length === 0 && this.storedTicks.length > 0) {
+        // Fallback: usar storedTicks se não houver ticks filtrados
+        const now = Math.floor(Date.now() / 1000);
+        const minutesAgo = now - (this.zoomPeriod * 60);
+        const filteredStored = this.storedTicks.filter(tick => {
+          // storedTicks já tem time em UTC-3, então precisamos converter de volta ou usar como está
+          // Assumindo que storedTicks.time já está em segundos UTC-3
+          return tick.time >= (minutesAgo - (3 * 60 * 60)); // Ajustar para UTC-3
+        });
+        if (filteredStored.length > 0) {
+          this.plotTicksForChartType(filteredStored);
+          return;
         }
       }
+      
+      if (ticksToUse.length > 0) {
+        this.plotTicksForChartType(ticksToUse);
+      }
     },
-    aggregateTicksToCandles(ticks, timeframeSeconds = 1) {
+    plotTicksForChartType(ticks) {
+      if (!this.chart || !this.chartSeries || !ticks || ticks.length === 0) {
+        return;
+      }
+
+      let data = [];
+      
+      if (this.chartType === 'candles') {
+        // Para velas, converter ticks em velas usando timeframe adaptativo
+        data = this.aggregateTicksToCandlesForPeriod(ticks, this.selectedTimeframe);
+      } else {
+        // Gráfico de linhas: mapear ticks para formato de linha
+        const sortedTicks = [...ticks]
+          .map(tick => {
+            let epoch = Number(tick.epoch || tick.time || Date.now() / 1000);
+            if (epoch > 10000000000) {
+              epoch = Math.floor(epoch / 1000);
+            }
+            const brasiliaEpoch = Math.floor(epoch) - (3 * 60 * 60);
+            return {
+              time: brasiliaEpoch,
+              value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
+            };
+          })
+          .filter(point => point.value && point.value > 0 && point.time > 0)
+          .sort((a, b) => a.time - b.time);
+        
+        data = sortedTicks;
+      }
+
+      if (data.length === 0) {
+        console.warn('[Chart] Nenhum dado para plotar após conversão');
+        return;
+      }
+
+      console.log('[Chart] Atualizando gráfico com', data.length, this.chartType === 'candles' ? 'velas' : 'pontos');
+      this.chartSeries.setData(data);
+      this.chart.timeScale().fitContent();
+    },
+    aggregateTicksToCandlesForPeriod(ticks, timeframeSeconds) {
       if (!Array.isArray(ticks) || ticks.length === 0) {
         return [];
       }
+
+      // Processar ticks para formato padronizado (seguindo padrão da IA)
+      const validTicks = ticks.map(tick => {
+        let epoch = Number(tick.epoch || tick.time || Date.now() / 1000);
+        if (epoch > 10000000000) {
+          epoch = Math.floor(epoch / 1000);
+        }
+        // Converter para UTC-3 (Brasília) como a IA faz
+        const brasiliaEpoch = Math.floor(epoch) - (3 * 60 * 60);
+        const price = Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0);
+        return { time: brasiliaEpoch, price };
+      }).filter(tick => tick.price > 0);
+
+      if (validTicks.length === 0) {
+        return [];
+      }
+
+      // Ordenar por tempo (mais recentes primeiro, como a IA faz)
+      const sortedTicks = [...validTicks].sort((a, b) => b.time - a.time);
+
+      // Calcular timeframe adaptativo baseado na quantidade desejada de velas (seguindo padrão da IA)
+      const timeSpan = sortedTicks.length > 1 
+        ? sortedTicks[0].time - sortedTicks[sortedTicks.length - 1].time
+        : timeframeSeconds;
       
-      // Ordenar ticks por tempo
-      const sortedTicks = [...ticks].sort((a, b) => a.time - b.time);
-      
+      // Calcular timeframe ideal para ter aproximadamente chartPointsVisible velas
+      let effectiveTimeframe = timeSpan > 0 
+        ? Math.max(timeframeSeconds, Math.floor(timeSpan / this.chartPointsVisible))
+        : timeframeSeconds;
+
+      // Reverter para ordem cronológica (mais antigos primeiro) para agregação
+      const chronologicalTicks = [...sortedTicks].reverse();
+
       const candles = [];
       let bucketStart = null;
       let bucketTicks = [];
-      
+
       const finalizeBucket = () => {
         if (!bucketTicks.length || bucketStart === null) return;
-        
-        const prices = bucketTicks.map(t => t.value);
+        const prices = bucketTicks.map(t => t.price);
         candles.push({
           time: bucketStart,
-          open: bucketTicks[0].value,
+          open: bucketTicks[0].price,
           high: Math.max(...prices),
           low: Math.min(...prices),
-          close: bucketTicks[bucketTicks.length - 1].value,
+          close: bucketTicks[bucketTicks.length - 1].price,
         });
       };
-      
-      for (const tick of sortedTicks) {
-        const tickTime = Math.floor(tick.time);
-        const bucket = Math.floor(tickTime / timeframeSeconds) * timeframeSeconds;
-        
+
+      for (const tick of chronologicalTicks) {
+        const bucket = Math.floor(tick.time / effectiveTimeframe) * effectiveTimeframe;
+
         if (bucketStart === null) {
           bucketStart = bucket;
         }
-        
+
         if (bucket !== bucketStart) {
-          // Finalizar bucket anterior
           finalizeBucket();
-          // Iniciar novo bucket
           bucketStart = bucket;
           bucketTicks = [];
         }
-        
-        bucketTicks.push({
-          value: tick.value,
-          time: tickTime
-        });
+
+        bucketTicks.push(tick);
       }
-      
-      // Finalizar último bucket
+
       finalizeBucket();
       
-      return candles;
+      // Limitar a quantidade final de velas (pegar as últimas N velas - mais recentes)
+      const finalCandles = candles.slice(-this.chartPointsVisible);
+      
+      console.log('[Chart] Velas geradas:', {
+        totalCandles: candles.length,
+        finalCandles: finalCandles.length,
+        effectiveTimeframe,
+        timeSpanMinutes: finalCandles.length > 0 ? ((finalCandles[finalCandles.length - 1].time - finalCandles[0].time) / 60).toFixed(2) : 0
+      });
+      
+      return finalCandles;
     },
     async loadTicksFromBackend() {
       if (!this.chart || !this.chartSeries || !this.symbol) {
@@ -956,10 +1038,12 @@ export default {
         // Converter para formato correto baseado no tipo de gráfico
         let dataToPlot = [];
         if (this.chartType === 'candles') {
-          // Converter ticks em velas
-          dataToPlot = this.aggregateTicksToCandles(this.storedTicks);
+          // Converter ticks em velas usando o mesmo método da IA
+          // aggregateTicksToCandlesForPeriod espera ticks no formato original (com epoch)
+          // então usamos os ticks originais passados para a função
+          dataToPlot = this.aggregateTicksToCandlesForPeriod(ticks, this.selectedTimeframe);
         } else {
-          // Usar dados de linha diretamente
+          // Usar dados de linha diretamente (já convertidos para UTC-3)
           dataToPlot = chartData;
         }
         
@@ -1024,10 +1108,13 @@ export default {
         
         // Atualizar gráfico baseado no tipo
         if (this.chartType === 'candles') {
-          // Para velas, precisamos recalcular a última vela ou criar nova
-          // Vamos usar uma abordagem mais simples: recalcular as últimas velas
-          const recentTicks = this.storedTicks.slice(-60); // Últimos 60 ticks
-          const candles = this.aggregateTicksToCandles(recentTicks);
+          // Para velas, precisamos recalcular todas as velas com os ticks atualizados
+          // Converter storedTicks de volta para formato com epoch
+          const ticksForCandles = this.storedTicks.map(t => ({
+            epoch: t.time + (3 * 60 * 60), // Converter de UTC-3 de volta para UTC
+            value: t.value
+          }));
+          const candles = this.aggregateTicksToCandlesForPeriod(ticksForCandles, this.selectedTimeframe);
           if (candles.length > 0) {
             this.chartSeries.setData(candles);
           }
