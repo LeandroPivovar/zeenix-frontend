@@ -59,6 +59,7 @@
           <!-- Footer -->
           <div class="mt-10 pt-6 border-t border-zenix-input-border footer-login">
             <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao continuar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
+            <p class="desktop-disclaimer-text">Deriv offers complex derivatives, such as options and contracts for difference ("CFDs"). These products may not be suitable for all clients, and trading them puts you at risk. Please make sure that you understand the following risks before trading Deriv products: a) you may lose some or all of the money you invest in the trade, b) if your trade involves currency conversion, exchange rates will affect your profit and loss. You should never trade with borrowed money or with money that you cannot afford to lose.</p>
           </div>
         </div>
       </div>
@@ -363,6 +364,24 @@ export default {
   .zenix-logo-title .text-zenix-text-dark,
   .zenix-logo-title .text-zenix-green {
     font-size: 1.875rem !important;
+  }
+  
+  /* Disclaimer no desktop */
+  .desktop-disclaimer-text {
+    display: block;
+    font-size: 0.625rem;
+    line-height: 1.6;
+    color: #4e4e4e;
+    text-align: center;
+    margin-top: 3rem;
+    padding: 0 1rem;
+  }
+}
+
+/* Ocultar disclaimer desktop no mobile */
+@media (max-width: 640px) {
+  .desktop-disclaimer-text {
+    display: none !important;
   }
 }
 
