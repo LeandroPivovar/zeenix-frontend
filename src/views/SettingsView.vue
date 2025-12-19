@@ -19,7 +19,7 @@
     <div class="min-h-screen flex flex-col transition-all duration-300" :style="{ marginLeft: isMobile ? '0' : (isSidebarCollapsed ? '0' : '280px') }">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
-        :balance="info?.balance"
+        :balance="currentBalance?.balance || info?.balance"
         :account-type="accountType"
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"

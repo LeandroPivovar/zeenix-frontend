@@ -5,7 +5,7 @@
     <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
-        :balance="info?.balance"
+        :balance="currentBalance?.balance || info?.balance"
         :account-type="accountType"
         @open-settings="toggleSettingsModal"
         @account-type-changed="switchAccount"

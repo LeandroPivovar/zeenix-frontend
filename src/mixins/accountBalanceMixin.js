@@ -21,6 +21,36 @@ export default {
     balancesByCurrencyDemo() {
       return this.info?.balancesByCurrencyDemo || {};
     },
+    // Computed para retornar o saldo correto baseado no accountType atual
+    // Isso garante que o balance passado para TopNavbar seja o correto
+    currentBalance() {
+      if (!this.info) return null;
+      
+      // Se for demo, retornar o saldo demo
+      if (this.accountType === 'demo') {
+        const demoBalance = this.balancesByCurrencyDemo['USD'];
+        if (demoBalance !== undefined && demoBalance !== null) {
+          return {
+            ...this.info,
+            balance: demoBalance,
+            isDemo: true
+          };
+        }
+      }
+      
+      // Se for real, retornar o saldo real
+      const realBalance = this.balancesByCurrencyReal['USD'];
+      if (realBalance !== undefined && realBalance !== null) {
+        return {
+          ...this.info,
+          balance: realBalance,
+          isDemo: false
+        };
+      }
+      
+      // Fallback para o saldo original
+      return this.info;
+    },
     preferredCurrencyPrefix() {
       if (this.tradeCurrency === 'DEMO') {
         return 'D$';
@@ -253,6 +283,24 @@ export default {
         
         this.accountType = balanceData.isDemo ? 'demo' : 'real';
       }
+    }
+  },
+  watch: {
+    accountType(newType) {
+      // Quando accountType muda, garantir que o info está sincronizado
+      if (this.info) {
+        // O TopNavbar já usa balancesByCurrencyReal/Demo corretamente
+        // Mas podemos atualizar o info.balance para refletir o tipo correto
+        if (newType === 'demo') {
+          this.info.isDemo = true;
+        } else {
+          this.info.isDemo = false;
+        }
+      }
+    },
+    tradeCurrency(newCurrency) {
+      // Quando tradeCurrency muda, atualizar accountType
+      this.accountType = newCurrency === 'DEMO' ? 'demo' : 'real';
     }
   },
   async mounted() {
