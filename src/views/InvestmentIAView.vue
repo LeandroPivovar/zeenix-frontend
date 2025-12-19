@@ -748,6 +748,8 @@ export default {
                 const preferredCurrency = this.getPreferredCurrency();
                 
                 console.log('[InvestmentIAView] 💰 Verificando saldo da conta...');
+                let accountBalanceReal = this.accountBalance || 0;
+                
                 try {
                     const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
                     const balanceResponse = await fetch(`${apiBase}/ai/deriv-balance`, {
@@ -765,7 +767,11 @@ export default {
                         const currency = balanceResult.data.currency;
                         const loginid = balanceResult.data.loginid;
                         
-                        console.log('[InvestmentIAView] 💰 Saldo:', balance, currency);
+                        // ✅ Atualizar saldo da conta com o valor real obtido
+                        accountBalanceReal = balance;
+                        this.accountBalance = balance;
+                        
+                        console.log('[InvestmentIAView] 💰 Saldo obtido:', balance, currency);
                         console.log('[InvestmentIAView] 🔑 LoginID:', loginid);
                         
                         if (balance < this.entryValue) {
@@ -777,6 +783,12 @@ export default {
                 }
 
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                // ✅ Usar saldo real da conta como capital inicial, não o valor de entrada
+                // O stakeAmount deve ser o capital total disponível, não o valor por operação
+                const capitalInicial = accountBalanceReal > 0 ? accountBalanceReal : (this.accountBalance || this.entryValue || 0.35);
+                
+                console.log('[InvestmentIAView] 💰 Capital inicial para IA:', capitalInicial, '| Valor de entrada por operação:', this.entryValue);
+                
                 const response = await fetch(`${apiBase}/ai/activate`, {
                     method: 'POST',
                     headers: {
@@ -785,7 +797,7 @@ export default {
                     },
                     body: JSON.stringify({
                         userId: userId,
-                        stakeAmount: this.entryValue,
+                        stakeAmount: capitalInicial, // ✅ Capital inicial = saldo real da conta ($9k)
                         derivToken: derivToken,
                         currency: preferredCurrency,
                         mode: this.mode.toLowerCase(),

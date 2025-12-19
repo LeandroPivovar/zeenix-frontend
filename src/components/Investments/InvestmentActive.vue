@@ -903,8 +903,28 @@ export default {
             return this.sessionConfig.mode || this.modeConfig || 'veloz';
         },
         
+        // Verificar se Trinity está ativa (baseado no mercado)
+        isTrinityActive() {
+            const marketKey = (this.selectedMarketProp || this.selectedMarket || '').toString();
+            // Trinity usa mercados R_10, R_25, R_50
+            return marketKey === 'R_10' || marketKey === 'R_25' || marketKey === 'R_50' || 
+                   marketKey.startsWith('R_') || marketKey.toLowerCase().includes('trinity');
+        },
+        
         // Nome da estratégia baseado no modo
         strategyName() {
+            // Se Trinity está ativa, retornar nome da Trinity
+            if (this.isTrinityActive) {
+                const modeMap = {
+                    'veloz': 'IA Trinity Veloz',
+                    'moderado': 'IA Trinity Moderado',
+                    'preciso': 'IA Trinity Preciso',
+                    'fast': 'IA Trinity Fast'
+                };
+                return modeMap[this.mode.toLowerCase()] || 'IA Trinity';
+            }
+            
+            // Caso contrário, retornar Orion
             const modeMap = {
                 'veloz': 'IA Orion Veloz',
                 'moderado': 'IA Orion Moderado',
@@ -918,6 +938,16 @@ export default {
         formattedMarketName() {
             // Usar o prop primeiro (vem do componente pai)
             const marketKey = this.selectedMarketProp || this.selectedMarket || 'vol10';
+            
+            // Se Trinity está ativa, retornar mercado Trinity
+            if (this.isTrinityActive) {
+                const trinityMarketMap = {
+                    'R_10': 'R_10, R_25, R_50',
+                    'R_25': 'R_10, R_25, R_50',
+                    'R_50': 'R_10, R_25, R_50',
+                };
+                return trinityMarketMap[marketKey] || 'R_10, R_25, R_50';
+            }
             
             const marketMap = {
                 'vol10': 'Volatility 10 Index',
