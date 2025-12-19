@@ -22,9 +22,9 @@
                 <th style="text-align: left;">Horário</th>
                 <th style="text-align: left;">Mercado</th>
                 <th style="text-align: center;">Tipo</th>
-                <th style="text-align: right;">Valor Entrada</th>
                 <th style="text-align: right;">Preço Entrada</th>
                 <th style="text-align: right;">Preço Saída</th>
+                <th style="text-align: right;">Valor Entrada</th>
                 <th style="text-align: right;">P&L</th>
                 <th style="text-align: center;">Status</th>
               </tr>
@@ -42,7 +42,6 @@
                     {{ order.direction || order.type || 'N/A' }}
                   </span>
                 </td>
-                <td class="order-value" style="text-align: right;">${{ formatPrice(order.buyPrice || order.price) }}</td>
                 <td class="order-value" style="text-align: right;">
                   <span v-if="order.entryPrice">${{ formatPrice(order.entryPrice) }}</span>
                   <span v-else class="text-muted">-</span>
@@ -51,6 +50,7 @@
                   <span v-if="order.exitPrice">${{ formatPrice(order.exitPrice) }}</span>
                   <span v-else class="text-muted">-</span>
                 </td>
+                <td class="order-value" style="text-align: right;">${{ formatPrice(order.buyPrice || order.price) }}</td>
                 <td style="text-align: right;">
                   <span v-if="order.profit !== null && order.profit !== undefined" class="order-profit" :class="order.profit >= 0 ? 'profit' : 'loss'">
                     {{ order.profit >= 0 ? '+' : '' }}${{ formatPrice(order.profit) }}
