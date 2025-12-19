@@ -523,14 +523,14 @@ export default {
     },
     async loadAccountBalance() {
       try {
-        const balanceData = await loadAccountBalance();
-        if (balanceData) {
-          this.accountBalance = balanceData.balance;
-          this.accountCurrency = balanceData.currency;
-          this.accountLoginid = balanceData.loginid;
-          this.isDemo = balanceData.isDemo;
-          this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
-          this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
+        await this.loadAccountBalanceInfo();
+        if (this.info) {
+          this.accountBalance = this.info.balance;
+          this.accountCurrency = this.info.currency;
+          this.accountLoginid = this.info.loginid;
+          this.isDemo = this.info.isDemo;
+          this.balancesByCurrencyReal = this.info.balancesByCurrencyReal || {};
+          this.balancesByCurrencyDemo = this.info.balancesByCurrencyDemo || {};
         }
       } catch (error) {
         console.error('[SettingsView] Erro ao carregar saldo:', error);

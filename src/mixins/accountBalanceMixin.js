@@ -26,18 +26,6 @@ export default {
         return 'D$';
       }
       return this.getCurrencyPrefix?.(this.info?.currency || 'USD') || '$';
-    }
-  },
-  methods: {
-    getCurrencyPrefix(currency) {
-      const prefixes = {
-        'USD': '$',
-        'EUR': '€',
-        'GBP': '£',
-        'BTC': '₿',
-        'ETH': 'Ξ'
-      };
-      return prefixes[currency?.toUpperCase()] || '$';
     },
     balanceNumeric() {
       // Mesma lógica do Dashboard
@@ -68,6 +56,16 @@ export default {
     }
   },
   methods: {
+    getCurrencyPrefix(currency) {
+      const prefixes = {
+        'USD': '$',
+        'EUR': '€',
+        'GBP': '£',
+        'BTC': '₿',
+        'ETH': 'Ξ'
+      };
+      return prefixes[currency?.toUpperCase()] || '$';
+    },
     /**
      * Carrega o saldo da conta usando o balanceLoader
      * Cria o objeto info no mesmo formato que o Dashboard recebe

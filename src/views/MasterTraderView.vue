@@ -379,15 +379,15 @@ export default {
         },
         async fetchAccountBalance() {
             try {
-                const balanceData = await loadAccountBalance();
-                if (balanceData) {
-                    this.accountBalance = balanceData.balance;
-                    this.accountCurrency = balanceData.currency;
-                    this.accountLoginid = balanceData.loginid;
-                    this.isDemo = balanceData.isDemo;
+                await this.loadAccountBalanceInfo();
+                if (this.info) {
+                    this.accountBalance = this.info.balance;
+                    this.accountCurrency = this.info.currency;
+                    this.accountLoginid = this.info.loginid;
+                    this.isDemo = this.info.isDemo;
                     this.preferredCurrency = this.getPreferredCurrency();
-                    this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
-                    this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
+                    this.balancesByCurrencyReal = this.info.balancesByCurrencyReal || {};
+                    this.balancesByCurrencyDemo = this.info.balancesByCurrencyDemo || {};
                 }
             } catch (error) {
                 console.error('[MasterTrader] ❌ Erro ao buscar saldo da conta:', error);
@@ -396,15 +396,15 @@ export default {
         startBalanceUpdates() {
             this.fetchAccountBalance();
             this.balanceUpdateInterval = setInterval(() => {
-                reloadAccountBalance().then(balanceData => {
-                    if (balanceData) {
-                        this.accountBalance = balanceData.balance;
-                        this.accountCurrency = balanceData.currency;
-                        this.accountLoginid = balanceData.loginid;
-                        this.isDemo = balanceData.isDemo;
+                this.reloadBalance().then(() => {
+                    if (this.info) {
+                        this.accountBalance = this.info.balance;
+                        this.accountCurrency = this.info.currency;
+                        this.accountLoginid = this.info.loginid;
+                        this.isDemo = this.info.isDemo;
                         this.preferredCurrency = this.getPreferredCurrency();
-                        this.balancesByCurrencyReal = balanceData.balancesByCurrencyReal || {};
-                        this.balancesByCurrencyDemo = balanceData.balancesByCurrencyDemo || {};
+                        this.balancesByCurrencyReal = this.info.balancesByCurrencyReal || {};
+                        this.balancesByCurrencyDemo = this.info.balancesByCurrencyDemo || {};
                     }
                 }).catch(error => {
                     console.error('[MasterTrader] Erro ao atualizar saldo:', error);
