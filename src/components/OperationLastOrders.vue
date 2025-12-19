@@ -21,11 +21,11 @@
               <tr>
                 <th style="text-align: left;">Horário</th>
                 <th style="text-align: left;">Mercado</th>
-                <th style="text-align: center;">Tipo</th>
+                <th style="text-align: center;">Negociação</th>
                 <th style="text-align: right;">Preço Entrada</th>
                 <th style="text-align: right;">Preço Saída</th>
-                <th style="text-align: right;">Valor Entrada</th>
-                <th style="text-align: right;">P&L</th>
+                <th style="text-align: right;">Investimento</th>
+                <th style="text-align: right;">Retorno</th>
                 <th style="text-align: center;">Status</th>
               </tr>
             </thead>
