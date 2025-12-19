@@ -860,20 +860,20 @@ export default {
             isDeactivating: false,
             
             // Controle de tamanho do gráfico
-            chartPointsVisible: 50, // ✅ AJUSTE: Reduzido para 50 pontos para gráfico ocupar mais espaço horizontal
+            chartPointsVisible: 300, // ✅ AJUSTE: Aumentado para 300 pontos para mostrar mais velas
             chartSizeOptions: [
-                { label: 'Pequeno', timeframe: 60, points: 50 },    // M1 - mais detalhado
-                { label: 'Médio', timeframe: 300, points: 50 },   // M5 - padrão
-                { label: 'Grande', timeframe: 900, points: 50 }    // M15 - menos detalhado
+                { label: 'Pequeno', timeframe: 60, points: 300 },    // M1 - mais detalhado
+                { label: 'Médio', timeframe: 300, points: 300 },   // M5 - padrão
+                { label: 'Grande', timeframe: 900, points: 300 }    // M15 - menos detalhado
             ],
             timeframeOptions: [
-                { label: 'M1', value: 60, points: 200 },
-                { label: 'M5', value: 300, points: 200 },
-                { label: 'M15', value: 900, points: 200 },
-                { label: 'M30', value: 1800, points: 200 },
-                { label: 'H1', value: 3600, points: 200 },
-                { label: 'H4', value: 14400, points: 200 },
-                { label: 'D1', value: 86400, points: 200 }
+                { label: 'M1', value: 60, points: 300 },
+                { label: 'M5', value: 300, points: 300 },
+                { label: 'M15', value: 900, points: 300 },
+                { label: 'M30', value: 1800, points: 300 },
+                { label: 'H1', value: 3600, points: 300 },
+                { label: 'H4', value: 14400, points: 300 },
+                { label: 'D1', value: 86400, points: 300 }
             ],
             
             // Barra de progresso mobile
@@ -2468,19 +2468,19 @@ export default {
 
             finalizeBucket();
             
-            // ✅ AJUSTE: Reduzir quantidade de velas para ocupar mais espaço horizontal
-            // Calcular quantas velas são necessárias para mostrar 5 minutos (reduzido de 10)
-            const candlesFor5Minutes = Math.ceil((5 * 60) / effectiveTimeframe);
-            const minCandles = Math.max(candlesFor5Minutes, this.chartPointsVisible);
+            // ✅ AJUSTE: Aumentar quantidade de velas para mostrar mais histórico
+            // Calcular quantas velas são necessárias para mostrar 15 minutos (aumentado de 10)
+            const candlesFor15Minutes = Math.ceil((15 * 60) / effectiveTimeframe);
+            const minCandles = Math.max(candlesFor15Minutes, this.chartPointsVisible);
             
-            // Limitar a quantidade final de velas, garantindo pelo menos 5 minutos
+            // Limitar a quantidade final de velas, garantindo pelo menos 15 minutos
             // Pegar as últimas N velas (mais recentes)
             const finalCandles = candles.slice(-minCandles);
             
             console.log('[InvestmentActive] Velas geradas:', {
                 totalCandles: candles.length,
                 finalCandles: finalCandles.length,
-                candlesFor5Minutes,
+                candlesFor15Minutes,
                 minCandles,
                 effectiveTimeframe,
                 timeSpanMinutes: finalCandles.length > 0 ? ((finalCandles[finalCandles.length - 1].time - finalCandles[0].time) / 60).toFixed(2) : 0
@@ -2774,10 +2774,10 @@ export default {
                         .filter(point => point.value)
                         .sort((a, b) => a.time - b.time);
                     
-                    // ✅ AJUSTE: Reduzir ticks necessários para gráfico ocupar mais espaço
-                    // Calcular quantos ticks são necessários para 5 minutos (300 segundos)
-                    const minTicksFor5Minutes = 300;
-                    const ticksNeeded = Math.max(minTicksFor5Minutes, this.chartPointsVisible);
+                    // ✅ AJUSTE: Aumentar ticks necessários para mostrar mais histórico
+                    // Calcular quantos ticks são necessários para 15 minutos (900 segundos)
+                    const minTicksFor15Minutes = 900;
+                    const ticksNeeded = Math.max(minTicksFor15Minutes, this.chartPointsVisible);
                     
                     // Pegar os últimos N pontos, garantindo pelo menos 10 minutos
                     const limitedTicks = sortedTicks.slice(-ticksNeeded);
