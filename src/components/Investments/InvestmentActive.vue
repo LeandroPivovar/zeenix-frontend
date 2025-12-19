@@ -860,11 +860,11 @@ export default {
             isDeactivating: false,
             
             // Controle de tamanho do gráfico
-            chartPointsVisible: 200, // Padrão: 200 pontos (Médio)
+            chartPointsVisible: 50, // ✅ AJUSTE: Reduzido para 50 pontos para gráfico ocupar mais espaço horizontal
             chartSizeOptions: [
-                { label: 'Pequeno', timeframe: 60, points: 200 },    // M1 - mais detalhado
-                { label: 'Médio', timeframe: 300, points: 200 },   // M5 - padrão
-                { label: 'Grande', timeframe: 900, points: 200 }    // M15 - menos detalhado
+                { label: 'Pequeno', timeframe: 60, points: 50 },    // M1 - mais detalhado
+                { label: 'Médio', timeframe: 300, points: 50 },   // M5 - padrão
+                { label: 'Grande', timeframe: 900, points: 50 }    // M15 - menos detalhado
             ],
             timeframeOptions: [
                 { label: 'M1', value: 60, points: 200 },
@@ -2468,18 +2468,19 @@ export default {
 
             finalizeBucket();
             
-            // Calcular quantas velas são necessárias para mostrar 10 minutos
-            const candlesFor10Minutes = Math.ceil((10 * 60) / effectiveTimeframe);
-            const minCandles = Math.max(candlesFor10Minutes, this.chartPointsVisible);
+            // ✅ AJUSTE: Reduzir quantidade de velas para ocupar mais espaço horizontal
+            // Calcular quantas velas são necessárias para mostrar 5 minutos (reduzido de 10)
+            const candlesFor5Minutes = Math.ceil((5 * 60) / effectiveTimeframe);
+            const minCandles = Math.max(candlesFor5Minutes, this.chartPointsVisible);
             
-            // Limitar a quantidade final de velas, garantindo pelo menos 10 minutos
+            // Limitar a quantidade final de velas, garantindo pelo menos 5 minutos
             // Pegar as últimas N velas (mais recentes)
             const finalCandles = candles.slice(-minCandles);
             
             console.log('[InvestmentActive] Velas geradas:', {
                 totalCandles: candles.length,
                 finalCandles: finalCandles.length,
-                candlesFor10Minutes,
+                candlesFor5Minutes,
                 minCandles,
                 effectiveTimeframe,
                 timeSpanMinutes: finalCandles.length > 0 ? ((finalCandles[finalCandles.length - 1].time - finalCandles[0].time) / 60).toFixed(2) : 0
@@ -2773,9 +2774,10 @@ export default {
                         .filter(point => point.value)
                         .sort((a, b) => a.time - b.time);
                     
-                    // Calcular quantos ticks são necessários para 10 minutos (600 segundos)
-                    const minTicksFor10Minutes = 600;
-                    const ticksNeeded = Math.max(minTicksFor10Minutes, this.chartPointsVisible);
+                    // ✅ AJUSTE: Reduzir ticks necessários para gráfico ocupar mais espaço
+                    // Calcular quantos ticks são necessários para 5 minutos (300 segundos)
+                    const minTicksFor5Minutes = 300;
+                    const ticksNeeded = Math.max(minTicksFor5Minutes, this.chartPointsVisible);
                     
                     // Pegar os últimos N pontos, garantindo pelo menos 10 minutos
                     const limitedTicks = sortedTicks.slice(-ticksNeeded);
