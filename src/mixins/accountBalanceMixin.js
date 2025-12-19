@@ -118,8 +118,15 @@ export default {
             balanceValue: balanceData.balanceValue || balanceData.balance
           };
           
-          // Atualizar accountType baseado no isDemo
-          this.accountType = balanceData.isDemo ? 'demo' : 'real';
+          // IMPORTANTE: accountType deve ser baseado no tradeCurrency, não no isDemo do saldo
+          // O tradeCurrency é a fonte da verdade para qual conta o usuário quer usar
+          // Não atualizar accountType aqui, ele já foi definido pelo loadTradeCurrency
+          // Apenas garantir que está sincronizado
+          if (this.tradeCurrency === 'DEMO') {
+            this.accountType = 'demo';
+          } else {
+            this.accountType = 'real';
+          }
           
           console.log('[AccountBalanceMixin] Saldo carregado:', this.info);
         } else {
@@ -174,9 +181,16 @@ export default {
 
         if (response.ok) {
           const data = await response.json();
-          this.tradeCurrency = data.tradeCurrency || 'USD';
+          const newTradeCurrency = data.tradeCurrency || 'USD';
+          this.tradeCurrency = newTradeCurrency;
           // Atualizar accountType baseado no tradeCurrency
-          this.accountType = this.tradeCurrency === 'DEMO' ? 'demo' : 'real';
+          const newAccountType = newTradeCurrency === 'DEMO' ? 'demo' : 'real';
+          this.accountType = newAccountType;
+          
+          console.log('[AccountBalanceMixin] loadTradeCurrency - Carregado:', {
+            tradeCurrency: newTradeCurrency,
+            accountType: newAccountType
+          });
         }
       } catch (error) {
         console.error('[AccountBalanceMixin] Erro ao carregar tradeCurrency:', error);
@@ -223,12 +237,25 @@ export default {
         });
 
         if (response.ok) {
-          // Atualizar tradeCurrency local imediatamente
-          this.tradeCurrency = tradeCurrency;
+          // Atualizar tradeCurrency e accountType local imediatamente ANTES do reload
+          // IMPORTANTE: Atualizar accountType primeiro para garantir sincronização
           this.accountType = type;
+          this.tradeCurrency = tradeCurrency;
           
-          // Recarregar saldo para atualizar info
-          await this.loadAccountBalanceInfo();
+          console.log('[AccountBalanceMixin] switchAccount - Atualizado:', { 
+            type, 
+            tradeCurrency, 
+            accountType: this.accountType,
+            tradeCurrencyValue: this.tradeCurrency 
+          });
+          
+          // Forçar atualização reativa para garantir que os componentes vejam a mudança
+          if (this.$forceUpdate) {
+            this.$forceUpdate();
+          }
+          
+          // Pequeno delay para garantir que a atualização seja processada antes do reload
+          await new Promise(resolve => setTimeout(resolve, 100));
           
           // Recarregar página para aplicar mudanças em todos os componentes
           window.location.reload();
@@ -286,9 +313,9 @@ export default {
     }
   },
   watch: {
-    accountType(newType) {
+    accountType(newType, oldType) {
       // Quando accountType muda, garantir que o info está sincronizado
-      if (this.info) {
+      if (this.info && newType !== oldType) {
         // O TopNavbar já usa balancesByCurrencyReal/Demo corretamente
         // Mas podemos atualizar o info.balance para refletir o tipo correto
         if (newType === 'demo') {
@@ -296,18 +323,55 @@ export default {
         } else {
           this.info.isDemo = false;
         }
+        console.log('[AccountBalanceMixin] accountType mudou:', { oldType, newType, info: this.info });
       }
     },
-    tradeCurrency(newCurrency) {
+    tradeCurrency(newCurrency, oldCurrency) {
       // Quando tradeCurrency muda, atualizar accountType
-      this.accountType = newCurrency === 'DEMO' ? 'demo' : 'real';
+      if (newCurrency !== oldCurrency) {
+        const newAccountType = newCurrency === 'DEMO' ? 'demo' : 'real';
+        if (this.accountType !== newAccountType) {
+          this.accountType = newAccountType;
+          console.log('[AccountBalanceMixin] tradeCurrency mudou, accountType atualizado:', { tradeCurrency: newCurrency, accountType: newAccountType });
+        }
+      }
     }
   },
   async mounted() {
-    // Carregar tradeCurrency primeiro
+    // Carregar tradeCurrency primeiro para garantir que accountType está correto
     await this.loadTradeCurrency();
+    
+    // Garantir que accountType está sincronizado com tradeCurrency
+    // Isso é importante caso o loadTradeCurrency não tenha atualizado corretamente
+    if (this.tradeCurrency === 'DEMO' && this.accountType !== 'demo') {
+      this.accountType = 'demo';
+    } else if (this.tradeCurrency !== 'DEMO' && this.accountType !== 'real') {
+      this.accountType = 'real';
+    }
+    
+    console.log('[AccountBalanceMixin] mounted - Estado inicial:', {
+      tradeCurrency: this.tradeCurrency,
+      accountType: this.accountType
+    });
+    
     // Depois carregar saldo
     await this.loadAccountBalanceInfo();
+    
+    // Após carregar saldo, garantir novamente que accountType está correto
+    // baseado no tradeCurrency (não no isDemo do saldo carregado)
+    if (this.tradeCurrency === 'DEMO') {
+      this.accountType = 'demo';
+    } else {
+      this.accountType = 'real';
+    }
+    
+    console.log('[AccountBalanceMixin] mounted - Estado final:', {
+      tradeCurrency: this.tradeCurrency,
+      accountType: this.accountType,
+      hasInfo: !!this.info,
+      balancesByCurrencyReal: this.balancesByCurrencyReal,
+      balancesByCurrencyDemo: this.balancesByCurrencyDemo
+    });
   },
   beforeUnmount() {
     // Limpar intervalos
