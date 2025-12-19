@@ -121,8 +121,67 @@ export async function loadAccountBalance(forceRefresh = false) {
         let isDemo = false;
         
         // Extrair balancesByCurrencyReal e balancesByCurrencyDemo (essenciais para TopNavbar)
-        const balancesByCurrencyReal = data.balancesByCurrencyReal || {};
-        const balancesByCurrencyDemo = data.balancesByCurrencyDemo || {};
+        let balancesByCurrencyReal = data.balancesByCurrencyReal || {};
+        let balancesByCurrencyDemo = data.balancesByCurrencyDemo || {};
+        
+        // Se os saldos agregados não vieram da API, calcular a partir das contas
+        if ((!balancesByCurrencyReal || Object.keys(balancesByCurrencyReal).length === 0) &&
+            (!balancesByCurrencyDemo || Object.keys(balancesByCurrencyDemo).length === 0)) {
+          
+          // Tentar calcular a partir de accountsByCurrency
+          if (data.accountsByCurrency && typeof data.accountsByCurrency === 'object') {
+            balancesByCurrencyReal = {};
+            balancesByCurrencyDemo = {};
+            
+            Object.keys(data.accountsByCurrency).forEach(currency => {
+              const accounts = data.accountsByCurrency[currency] || [];
+              
+              const realTotal = accounts
+                .filter(acc => !acc.isDemo)
+                .reduce((sum, acc) => sum + (parseFloat(acc.value) || 0), 0);
+              
+              const demoTotal = accounts
+                .filter(acc => acc.isDemo)
+                .reduce((sum, acc) => sum + (parseFloat(acc.value) || 0), 0);
+              
+              if (realTotal > 0) {
+                balancesByCurrencyReal[currency] = realTotal;
+              }
+              if (demoTotal > 0) {
+                balancesByCurrencyDemo[currency] = demoTotal;
+              }
+            });
+          }
+          
+          // Se ainda não calculou, tentar a partir de raw.accounts
+          if ((!balancesByCurrencyReal || Object.keys(balancesByCurrencyReal).length === 0) &&
+              (!balancesByCurrencyDemo || Object.keys(balancesByCurrencyDemo).length === 0)) {
+            if (data.raw && data.raw.accounts) {
+              balancesByCurrencyReal = {};
+              balancesByCurrencyDemo = {};
+              
+              Object.values(data.raw.accounts).forEach(account => {
+                const currency = (account.currency || 'USD').toUpperCase();
+                const isDemo = account.demo_account === 1 || account.demo_account === true;
+                const balance = account.converted_amount !== null && account.converted_amount !== undefined
+                  ? parseFloat(account.converted_amount) || 0
+                  : parseFloat(account.balance || 0);
+                
+                if (isDemo) {
+                  if (!balancesByCurrencyDemo[currency]) {
+                    balancesByCurrencyDemo[currency] = 0;
+                  }
+                  balancesByCurrencyDemo[currency] += balance;
+                } else {
+                  if (!balancesByCurrencyReal[currency]) {
+                    balancesByCurrencyReal[currency] = 0;
+                  }
+                  balancesByCurrencyReal[currency] += balance;
+                }
+              });
+            }
+          }
+        }
         
         // Tentar buscar da estrutura accountsByCurrency primeiro
         if (data.accountsByCurrency && typeof data.accountsByCurrency === 'object') {

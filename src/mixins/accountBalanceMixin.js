@@ -2,7 +2,7 @@
  * Mixin para padronizar carregamento de saldo e funcionalidades da sidebar
  * em todas as páginas, igual ao Dashboard
  */
-import { loadAccountBalance, reloadAccountBalance } from '../utils/balanceLoader';
+// Não precisa mais importar balanceLoader, usa a mesma lógica do Dashboard
 
 export default {
   data() {
@@ -97,63 +97,235 @@ export default {
       return prefixes[currency?.toUpperCase()] || '$';
     },
     /**
-     * Carrega o saldo da conta usando o balanceLoader
-     * Cria o objeto info no mesmo formato que o Dashboard recebe
+     * Carrega o saldo da conta - EXATAMENTE como o Dashboard faz
+     * Copia a lógica do HomeView.checkConnection
      */
     async loadAccountBalanceInfo(forceRefresh = false) {
       this.loadingBalance = true;
       try {
-        // Se os saldos estão zerados ou vazios, forçar recarregamento
-        if (!forceRefresh && this.info) {
-          const realUSD = this.info.balancesByCurrencyReal?.['USD'];
-          const demoUSD = this.info.balancesByCurrencyDemo?.['USD'];
-          // Se ambos estão zerados ou undefined, forçar recarregamento
-          if ((realUSD === undefined || realUSD === null || realUSD === 0) && 
-              (demoUSD === undefined || demoUSD === null || demoUSD === 0)) {
-            console.log('[AccountBalanceMixin] Saldos zerados detectados, forçando recarregamento');
-            forceRefresh = true;
+        // MESMA LÓGICA DO HomeView.checkConnection
+        // Verificar se há token válido antes de usar cache
+        let hasToken = !!localStorage.getItem('deriv_token');
+        if (!hasToken) {
+          try {
+            const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
+            if (tokensByLoginId) {
+              const parsed = JSON.parse(tokensByLoginId);
+              hasToken = Object.keys(parsed).length > 0;
+            }
+          } catch (e) {
+            // Ignorar erro de parsing
           }
         }
         
-        const balanceData = await loadAccountBalance(forceRefresh);
-        
-        if (balanceData) {
-          // Criar objeto info no mesmo formato que o Dashboard recebe
-          this.info = {
-            balance: balanceData.balance,
-            currency: balanceData.currency,
-            loginid: balanceData.loginid,
-            isDemo: balanceData.isDemo,
-            balancesByCurrencyReal: balanceData.balancesByCurrencyReal || {},
-            balancesByCurrencyDemo: balanceData.balancesByCurrencyDemo || {},
-            // Manter compatibilidade
-            balanceValue: balanceData.balanceValue || balanceData.balance
-          };
-          
-          // IMPORTANTE: accountType deve ser baseado no tradeCurrency, não no isDemo do saldo
-          // O tradeCurrency é a fonte da verdade para qual conta o usuário quer usar
-          // Não atualizar accountType aqui, ele já foi definido pelo loadTradeCurrency
-          // Apenas garantir que está sincronizado
-          if (this.tradeCurrency === 'DEMO') {
-            this.accountType = 'demo';
-          } else {
-            this.accountType = 'real';
+        const saved = localStorage.getItem('deriv_connection');
+        if (saved && !forceRefresh && hasToken) {
+          try {
+            const parsed = JSON.parse(saved);
+            const maxAge = 60 * 60 * 1000; // 1 hora
+            if (Date.now() - parsed.timestamp < maxAge) {
+              // Usar dados do cache (igual ao Dashboard)
+              this.info = {
+                balance: parsed.balance || 0,
+                currency: parsed.currency || 'USD',
+                loginid: parsed.loginid || null,
+                isDemo: parsed.isDemo || false,
+                balancesByCurrencyReal: parsed.balancesByCurrencyReal || {},
+                balancesByCurrencyDemo: parsed.balancesByCurrencyDemo || {},
+                balanceValue: parsed.balance || 0
+              };
+              
+              // Sincronizar accountType com tradeCurrency
+              if (this.tradeCurrency === 'DEMO') {
+                this.accountType = 'demo';
+              } else {
+                this.accountType = 'real';
+              }
+              
+              console.log('[AccountBalanceMixin] Saldo carregado do cache (como Dashboard):', {
+                balance: this.info.balance,
+                loginid: this.info.loginid,
+                isDemo: this.info.isDemo,
+                tradeCurrency: this.tradeCurrency,
+                accountType: this.accountType,
+                balancesByCurrencyReal: this.info.balancesByCurrencyReal,
+                balancesByCurrencyDemo: this.info.balancesByCurrencyDemo
+              });
+              
+              this.loadingBalance = false;
+              return;
+            }
+          } catch (e) {
+            // Se houver erro ao parsear, continua para buscar do backend
           }
-          
-          console.log('[AccountBalanceMixin] Saldo carregado:', {
-            balance: this.info.balance,
-            loginid: this.info.loginid,
-            isDemo: this.info.isDemo,
-            tradeCurrency: this.tradeCurrency,
-            accountType: this.accountType,
-            balancesByCurrencyReal: this.info.balancesByCurrencyReal,
-            balancesByCurrencyDemo: this.info.balancesByCurrencyDemo,
-            realUSD: this.info.balancesByCurrencyReal['USD'],
-            demoUSD: this.info.balancesByCurrencyDemo['USD']
-          });
+        }
+        
+        // Se não há token, limpar cache e retornar
+        if (!hasToken) {
+          this.info = {
+            balance: 0,
+            currency: 'USD',
+            loginid: null,
+            isDemo: false,
+            balancesByCurrencyReal: {},
+            balancesByCurrencyDemo: {},
+            balanceValue: 0
+          };
+          this.loadingBalance = false;
+          return;
+        }
+        
+        // Buscar da API /broker/deriv/status (igual ao Dashboard)
+        const storedAppId = localStorage.getItem('deriv_app_id');
+        const derivToken = localStorage.getItem('deriv_token');
+        const token = localStorage.getItem('token');
+        
+        if (!derivToken || !token) {
+          this.info = {
+            balance: 0,
+            currency: 'USD',
+            loginid: null,
+            isDemo: false,
+            balancesByCurrencyReal: {},
+            balancesByCurrencyDemo: {},
+            balanceValue: 0
+          };
+          this.loadingBalance = false;
+          return;
+        }
+        
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const response = await fetch(`${apiBase}/broker/deriv/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            token: derivToken,
+            appId: storedAppId ? parseInt(storedAppId) : undefined
+          })
+        });
+        
+        if (response.ok) {
+          const data = await response.json();
+          if (data?.loginid) {
+            const loginid = data.loginid || '';
+            const isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT');
+            
+            // Criar objeto info no mesmo formato que o Dashboard recebe
+            this.info = {
+              balance: data.balance || 0,
+              currency: data.currency || 'USD',
+              loginid: loginid,
+              isDemo: isDemo,
+              balancesByCurrencyReal: data.balancesByCurrencyReal || {},
+              balancesByCurrencyDemo: data.balancesByCurrencyDemo || {},
+              balanceValue: data.balance || 0
+            };
+            
+            // Salvar no cache (igual ao Dashboard)
+            localStorage.setItem('deriv_connection', JSON.stringify({
+              ...data,
+              loginid: loginid,
+              isDemo: isDemo,
+              balancesByCurrencyReal: data.balancesByCurrencyReal || {},
+              balancesByCurrencyDemo: data.balancesByCurrencyDemo || {},
+              timestamp: Date.now()
+            }));
+            
+            // Sincronizar accountType com tradeCurrency
+            if (this.tradeCurrency === 'DEMO') {
+              this.accountType = 'demo';
+            } else {
+              this.accountType = 'real';
+            }
+            
+            console.log('[AccountBalanceMixin] Saldo carregado da API (como Dashboard):', {
+              balance: this.info.balance,
+              loginid: this.info.loginid,
+              isDemo: this.info.isDemo,
+              tradeCurrency: this.tradeCurrency,
+              accountType: this.accountType,
+              balancesByCurrencyReal: this.info.balancesByCurrencyReal,
+              balancesByCurrencyDemo: this.info.balancesByCurrencyDemo
+            });
+          } else {
+            this.info = {
+              balance: 0,
+              currency: 'USD',
+              loginid: null,
+              isDemo: false,
+              balancesByCurrencyReal: {},
+              balancesByCurrencyDemo: {},
+              balanceValue: 0
+            };
+          }
         } else {
-          console.warn('[AccountBalanceMixin] Não foi possível carregar saldo');
-          // Criar objeto vazio para evitar erros
+          // Se falhar, tentar usar cache antigo
+          if (saved) {
+            try {
+              const parsed = JSON.parse(saved);
+              this.info = {
+                balance: parsed.balance || 0,
+                currency: parsed.currency || 'USD',
+                loginid: parsed.loginid || null,
+                isDemo: parsed.isDemo || false,
+                balancesByCurrencyReal: parsed.balancesByCurrencyReal || {},
+                balancesByCurrencyDemo: parsed.balancesByCurrencyDemo || {},
+                balanceValue: parsed.balance || 0
+              };
+            } catch (e2) {
+              this.info = {
+                balance: 0,
+                currency: 'USD',
+                loginid: null,
+                isDemo: false,
+                balancesByCurrencyReal: {},
+                balancesByCurrencyDemo: {},
+                balanceValue: 0
+              };
+            }
+          } else {
+            this.info = {
+              balance: 0,
+              currency: 'USD',
+              loginid: null,
+              isDemo: false,
+              balancesByCurrencyReal: {},
+              balancesByCurrencyDemo: {},
+              balanceValue: 0
+            };
+          }
+        }
+      } catch (error) {
+        console.error('[AccountBalanceMixin] Erro ao carregar saldo:', error);
+        // Tentar usar cache em caso de erro
+        const saved = localStorage.getItem('deriv_connection');
+        if (saved) {
+          try {
+            const parsed = JSON.parse(saved);
+            this.info = {
+              balance: parsed.balance || 0,
+              currency: parsed.currency || 'USD',
+              loginid: parsed.loginid || null,
+              isDemo: parsed.isDemo || false,
+              balancesByCurrencyReal: parsed.balancesByCurrencyReal || {},
+              balancesByCurrencyDemo: parsed.balancesByCurrencyDemo || {},
+              balanceValue: parsed.balance || 0
+            };
+          } catch (e) {
+            this.info = {
+              balance: 0,
+              currency: 'USD',
+              loginid: null,
+              isDemo: false,
+              balancesByCurrencyReal: {},
+              balancesByCurrencyDemo: {},
+              balanceValue: 0
+            };
+          }
+        } else {
           this.info = {
             balance: 0,
             currency: 'USD',
@@ -164,17 +336,6 @@ export default {
             balanceValue: 0
           };
         }
-      } catch (error) {
-        console.error('[AccountBalanceMixin] Erro ao carregar saldo:', error);
-        this.info = {
-          balance: 0,
-          currency: 'USD',
-          loginid: null,
-          isDemo: false,
-          balancesByCurrencyReal: {},
-          balancesByCurrencyDemo: {},
-          balanceValue: 0
-        };
       } finally {
         this.loadingBalance = false;
       }
@@ -317,22 +478,9 @@ export default {
      * Recarrega o saldo forçando atualização (ignora cache)
      */
     async reloadBalance() {
-      const balanceData = await reloadAccountBalance();
-      
-      if (balanceData) {
-        this.info = {
-          balance: balanceData.balance,
-          currency: balanceData.currency,
-          loginid: balanceData.loginid,
-          isDemo: balanceData.isDemo,
-          balancesByCurrencyReal: balanceData.balancesByCurrencyReal || {},
-          balancesByCurrencyDemo: balanceData.balancesByCurrencyDemo || {},
-          balanceValue: balanceData.balanceValue || balanceData.balance
-        };
-        
-        this.accountType = balanceData.isDemo ? 'demo' : 'real';
-      }
-    }
+      // Forçar recarregamento ignorando cache
+      await this.loadAccountBalanceInfo(true);
+    },
   },
   watch: {
     accountType(newType, oldType) {
