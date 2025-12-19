@@ -128,7 +128,17 @@ export default {
             this.accountType = 'real';
           }
           
-          console.log('[AccountBalanceMixin] Saldo carregado:', this.info);
+          console.log('[AccountBalanceMixin] Saldo carregado:', {
+            balance: this.info.balance,
+            loginid: this.info.loginid,
+            isDemo: this.info.isDemo,
+            tradeCurrency: this.tradeCurrency,
+            accountType: this.accountType,
+            balancesByCurrencyReal: this.info.balancesByCurrencyReal,
+            balancesByCurrencyDemo: this.info.balancesByCurrencyDemo,
+            realUSD: this.info.balancesByCurrencyReal['USD'],
+            demoUSD: this.info.balancesByCurrencyDemo['USD']
+          });
         } else {
           console.warn('[AccountBalanceMixin] Não foi possível carregar saldo');
           // Criar objeto vazio para evitar erros

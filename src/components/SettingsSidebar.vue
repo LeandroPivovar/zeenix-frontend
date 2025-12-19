@@ -183,21 +183,12 @@ export default {
     },
     formattedBalance() {
       // Mesma lógica do TopNavbar - sempre usar balancesByCurrency baseado no accountType
-      console.log('[SettingsSidebar] formattedBalance:', {
-        accountType: this.accountType,
-        balancesByCurrencyReal: this.balancesByCurrencyReal,
-        balancesByCurrencyDemo: this.balancesByCurrencyDemo,
-        balanceProp: this.balance
-      });
-      
       if (this.accountType === 'demo') {
         // Para Demo, usar APENAS o saldo Demo, nunca fallback para Real
         const demo = this.balancesByCurrencyDemo['USD'];
-        if (demo !== undefined && demo !== null) {
+        if (demo !== undefined && demo !== null && demo > 0) {
           const prefix = this.currencyPrefix || 'D$';
-          const formatted = `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-          console.log('[SettingsSidebar] Saldo Demo formatado:', formatted);
-          return formatted;
+          return `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
         }
         // Se não tiver saldo Demo, mostrar 0
         const prefix = this.currencyPrefix || 'D$';
@@ -205,48 +196,83 @@ export default {
       }
       
       // Para Real, usar APENAS o saldo Real
-      const real = this.balancesByCurrencyReal['USD'];
-      if (real !== undefined && real !== null) {
+      // Primeiro tentar balancesByCurrencyReal
+      const realFromBalances = this.balancesByCurrencyReal['USD'];
+      if (realFromBalances !== undefined && realFromBalances !== null && realFromBalances >= 0) {
         const prefix = this.currencyPrefix || '$';
-        const formatted = `${prefix}${real.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        console.log('[SettingsSidebar] Saldo Real formatado:', formatted);
-        return formatted;
+        return `${prefix}${realFromBalances.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       }
       
-      // Fallback para o balance prop se não tiver saldo Real
-      const value = this.balanceNumeric;
+      // Se não tiver saldo Real nos balancesByCurrency, tentar calcular a partir das contas disponíveis
+      // Buscar todas as contas Real e somar os saldos
+      if (this.availableAccounts && this.availableAccounts.length > 0) {
+        const realAccounts = this.availableAccounts.filter(acc => !acc.isDemo && acc.currency === 'USD');
+        if (realAccounts.length > 0) {
+          const totalReal = realAccounts.reduce((sum, acc) => {
+            const balance = parseFloat(acc.balance || 0);
+            return sum + (isNaN(balance) ? 0 : balance);
+          }, 0);
+          if (totalReal >= 0) {
+            const prefix = this.currencyPrefix || '$';
+            return `${prefix}${totalReal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          }
+        }
+      }
+      
+      // Se não encontrou saldo Real em lugar nenhum, mostrar 0
+      // NUNCA usar o balance prop como fallback se for Real, pois pode ser saldo Demo
       const prefix = this.currencyPrefix || '$';
-      const formatted = `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-      console.log('[SettingsSidebar] Saldo usando fallback (balanceNumeric):', formatted);
-      return formatted;
+      return `${prefix}0,00`;
     },
     balanceNumeric() {
-      // Para Real, priorizar balancesByCurrencyReal
+      // Para Real, usar APENAS balancesByCurrencyReal
       if (this.accountType === 'real') {
         const usdReal = this.balancesByCurrencyReal['USD'];
-        if (usdReal !== undefined && usdReal !== null) {
+        if (usdReal !== undefined && usdReal !== null && usdReal >= 0) {
           return usdReal;
         }
+        // Se não tiver saldo Real, tentar calcular das contas disponíveis
+        if (this.availableAccounts && this.availableAccounts.length > 0) {
+          const realAccounts = this.availableAccounts.filter(acc => !acc.isDemo && acc.currency === 'USD');
+          if (realAccounts.length > 0) {
+            const totalReal = realAccounts.reduce((sum, acc) => {
+              const balance = parseFloat(acc.balance || 0);
+              return sum + (isNaN(balance) ? 0 : balance);
+            }, 0);
+            if (totalReal >= 0) {
+              return totalReal;
+            }
+          }
+        }
+        // Se não encontrou saldo Real, retornar 0
+        return 0;
       }
       
-      // Para Demo, usar balancesByCurrencyDemo
+      // Para Demo, usar APENAS balancesByCurrencyDemo
       if (this.accountType === 'demo') {
         const usdDemo = this.balancesByCurrencyDemo['USD'];
-        if (usdDemo !== undefined && usdDemo !== null) {
+        if (usdDemo !== undefined && usdDemo !== null && usdDemo >= 0) {
           return usdDemo;
         }
+        // Se não tiver saldo Demo, tentar calcular das contas disponíveis
+        if (this.availableAccounts && this.availableAccounts.length > 0) {
+          const demoAccounts = this.availableAccounts.filter(acc => acc.isDemo && acc.currency === 'USD');
+          if (demoAccounts.length > 0) {
+            const totalDemo = demoAccounts.reduce((sum, acc) => {
+              const balance = parseFloat(acc.balance || 0);
+              return sum + (isNaN(balance) ? 0 : balance);
+            }, 0);
+            if (totalDemo >= 0) {
+              return totalDemo;
+            }
+          }
+        }
+        // Se não encontrou saldo Demo, retornar 0
+        return 0;
       }
       
-      // Fallback para o balance prop
-      const raw = this.balance;
-      if (typeof raw === 'number') return raw;
-      if (typeof raw === 'string') {
-        const parsed = Number(raw);
-        return isNaN(parsed) ? 0 : parsed;
-      }
-      const val = raw?.value ?? raw?.balance ?? 0;
-      const num = Number(val);
-      return isNaN(num) ? 0 : num;
+      // Fallback genérico (não deveria chegar aqui)
+      return 0;
     },
     userName() {
       const userInfo = localStorage.getItem('user');
@@ -304,18 +330,33 @@ export default {
       if (newVal) {
         // Sempre tentar carregar contas quando abrir, mesmo se já tiver algumas
         // Isso garante que as contas estejam atualizadas
-        if (this.availableAccounts.length === 0) {
-          this.loadAvailableAccounts();
-        }
+        this.loadAvailableAccounts(false);
       }
     },
     accountType(newType) {
       console.log('[SettingsSidebar] accountType mudou:', newType);
+      // Forçar atualização do formattedBalance quando accountType mudar
+      this.$forceUpdate();
+    },
+    balancesByCurrencyReal: {
+      handler(newVal) {
+        console.log('[SettingsSidebar] balancesByCurrencyReal atualizado:', newVal);
+      },
+      deep: true
+    },
+    balancesByCurrencyDemo: {
+      handler(newVal) {
+        console.log('[SettingsSidebar] balancesByCurrencyDemo atualizado:', newVal);
+      },
+      deep: true
     }
   },
   mounted() {
     this.loadUserProfilePicture();
     window.addEventListener('userProfileUpdated', this.handleProfileUpdate);
+    // Carregar contas disponíveis quando o componente montar
+    // Isso garante que as contas estejam disponíveis para calcular o saldo
+    this.loadAvailableAccounts(false);
   },
   beforeUnmount() {
     window.removeEventListener('userProfileUpdated', this.handleProfileUpdate);
