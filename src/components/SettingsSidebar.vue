@@ -182,20 +182,62 @@ export default {
       return this.accountType || 'real';
     },
     formattedBalance() {
+      // Mesma lógica do TopNavbar - sempre usar balancesByCurrency baseado no accountType
+      console.log('[SettingsSidebar] formattedBalance:', {
+        accountType: this.accountType,
+        balancesByCurrencyReal: this.balancesByCurrencyReal,
+        balancesByCurrencyDemo: this.balancesByCurrencyDemo,
+        balanceProp: this.balance
+      });
+      
       if (this.accountType === 'demo') {
-        const demo = this.balancesByCurrencyDemo['USD'] || this.balanceNumeric || 0;
-        const prefix = this.currencyPrefix || '$';
-        return `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        // Para Demo, usar APENAS o saldo Demo, nunca fallback para Real
+        const demo = this.balancesByCurrencyDemo['USD'];
+        if (demo !== undefined && demo !== null) {
+          const prefix = this.currencyPrefix || 'D$';
+          const formatted = `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          console.log('[SettingsSidebar] Saldo Demo formatado:', formatted);
+          return formatted;
+        }
+        // Se não tiver saldo Demo, mostrar 0
+        const prefix = this.currencyPrefix || 'D$';
+        return `${prefix}0,00`;
       }
+      
+      // Para Real, usar APENAS o saldo Real
+      const real = this.balancesByCurrencyReal['USD'];
+      if (real !== undefined && real !== null) {
+        const prefix = this.currencyPrefix || '$';
+        const formatted = `${prefix}${real.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        console.log('[SettingsSidebar] Saldo Real formatado:', formatted);
+        return formatted;
+      }
+      
+      // Fallback para o balance prop se não tiver saldo Real
       const value = this.balanceNumeric;
       const prefix = this.currencyPrefix || '$';
-      return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      const formatted = `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      console.log('[SettingsSidebar] Saldo usando fallback (balanceNumeric):', formatted);
+      return formatted;
     },
     balanceNumeric() {
-      const usdReal = this.balancesByCurrencyReal['USD'];
-      if (usdReal !== undefined && usdReal !== null && usdReal > 0) {
-        return usdReal;
+      // Para Real, priorizar balancesByCurrencyReal
+      if (this.accountType === 'real') {
+        const usdReal = this.balancesByCurrencyReal['USD'];
+        if (usdReal !== undefined && usdReal !== null) {
+          return usdReal;
+        }
       }
+      
+      // Para Demo, usar balancesByCurrencyDemo
+      if (this.accountType === 'demo') {
+        const usdDemo = this.balancesByCurrencyDemo['USD'];
+        if (usdDemo !== undefined && usdDemo !== null) {
+          return usdDemo;
+        }
+      }
+      
+      // Fallback para o balance prop
       const raw = this.balance;
       if (typeof raw === 'number') return raw;
       if (typeof raw === 'string') {
@@ -259,9 +301,16 @@ export default {
   },
   watch: {
     isOpen(newVal) {
-      if (newVal && this.availableAccounts.length === 0) {
-        this.loadAvailableAccounts();
+      if (newVal) {
+        // Sempre tentar carregar contas quando abrir, mesmo se já tiver algumas
+        // Isso garante que as contas estejam atualizadas
+        if (this.availableAccounts.length === 0) {
+          this.loadAvailableAccounts();
+        }
       }
+    },
+    accountType(newType) {
+      console.log('[SettingsSidebar] accountType mudou:', newType);
     }
   },
   mounted() {
@@ -281,15 +330,65 @@ export default {
     },
     toggleAccountsList() {
       this.showAccountsList = !this.showAccountsList;
-      if (this.showAccountsList && this.availableAccounts.length === 0) {
-        this.loadAvailableAccounts();
+      console.log('[SettingsSidebar] toggleAccountsList:', {
+        showAccountsList: this.showAccountsList,
+        availableAccountsCount: this.availableAccounts.length,
+        availableAccounts: this.availableAccounts
+      });
+      
+      // Sempre tentar carregar quando abrir, mesmo se já tiver contas
+      // Isso garante que as contas estejam atualizadas
+      if (this.showAccountsList) {
+        if (this.availableAccounts.length === 0) {
+          console.log('[SettingsSidebar] Nenhuma conta disponível, carregando...');
+          // Se não tem contas, tentar forçar recarregamento
+          this.loadAvailableAccounts(true);
+        } else {
+          console.log('[SettingsSidebar] Contas já disponíveis:', this.availableAccounts.length);
+          // Mesmo assim, tentar recarregar para garantir que está atualizado
+          this.loadAvailableAccounts(false);
+        }
       }
     },
-    async loadAvailableAccounts() {
+    async loadAvailableAccounts(forceReload = false) {
       this.loadingAccounts = true;
       try {
-        const accounts = await loadAvailableAccounts();
-        this.availableAccounts = accounts;
+        console.log('[SettingsSidebar] Carregando contas disponíveis...', { forceReload });
+        
+        // Usar a função importada
+        const accounts = await loadAvailableAccounts(forceReload);
+        
+        console.log('[SettingsSidebar] Contas carregadas:', {
+          count: accounts?.length || 0,
+          accounts: accounts
+        });
+        
+        // Garantir que é um array válido
+        if (Array.isArray(accounts)) {
+          this.availableAccounts = accounts;
+        } else {
+          console.warn('[SettingsSidebar] Resposta não é um array:', accounts);
+          this.availableAccounts = [];
+        }
+        
+        if (this.availableAccounts.length === 0) {
+          console.warn('[SettingsSidebar] Nenhuma conta encontrada após carregamento');
+          // Tentar verificar o cache diretamente
+          try {
+            const cacheKey = 'deriv_available_accounts_cache';
+            const cachedStr = localStorage.getItem(cacheKey);
+            if (cachedStr) {
+              const cached = JSON.parse(cachedStr);
+              console.log('[SettingsSidebar] Cache encontrado no localStorage:', cached);
+              if (Array.isArray(cached) && cached.length > 0) {
+                console.log('[SettingsSidebar] Usando contas do cache diretamente');
+                this.availableAccounts = cached;
+              }
+            }
+          } catch (e) {
+            console.error('[SettingsSidebar] Erro ao ler cache:', e);
+          }
+        }
       } catch (error) {
         console.error('[SettingsSidebar] Erro ao carregar contas:', error);
         this.availableAccounts = [];
