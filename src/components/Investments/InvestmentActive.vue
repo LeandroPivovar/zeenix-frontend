@@ -858,6 +858,7 @@ export default {
             logPollingInterval: null,
             historyPollingInterval: null, // Polling para histórico de operações
             lastLogTimestamp: null, // Timestamp do último log recebido (para detectar novos)
+            tradeEventsSource: null,
             
             // Estado de desativação
             isDeactivating: false,
@@ -2193,6 +2194,50 @@ export default {
             this.fetchTradeHistory();
             console.log('[InvestmentActive] 🔄 Polling de status do trade desativado (fetch único)');
         },
+
+        /**
+         * Inicia SSE para eventos de trade (criação/atualização)
+         */
+        startTradeEventsStream() {
+            const userId = this.getUserId?.();
+            if (!userId) {
+                console.warn('[InvestmentActive] ⚠️ Não foi possível iniciar SSE: userId indefinido');
+                return;
+            }
+
+            // Fechar conexão anterior se existir
+            this.stopTradeEventsStream();
+
+            const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+            const url = `${apiBase}/ai/trade-events/${userId}`;
+            const source = new EventSource(url);
+            this.tradeEventsSource = source;
+
+            source.onmessage = async (event) => {
+                try {
+                    const payload = JSON.parse(event.data);
+                    console.log('[InvestmentActive] 📡 Evento de trade recebido:', payload);
+                    // Atualizar histórico e logs sob demanda
+                    await this.fetchTradeHistory();
+                    await this.fetchRealtimeLogs();
+                } catch (e) {
+                    console.warn('[InvestmentActive] ⚠️ Evento SSE inválido:', e);
+                }
+            };
+
+            source.onerror = () => {
+                console.warn('[InvestmentActive] ⚠️ SSE trade-events erro/fechado; reconectando em 5s');
+                this.stopTradeEventsStream();
+                setTimeout(() => this.startTradeEventsStream(), 5000);
+            };
+        },
+
+        stopTradeEventsStream() {
+            if (this.tradeEventsSource) {
+                this.tradeEventsSource.close();
+                this.tradeEventsSource = null;
+            }
+        },
         
         /**
          * Para o polling de status do trade
@@ -2996,11 +3041,8 @@ export default {
         // 📊 Buscar histórico de operações
         this.fetchTradeHistory();
         
-        // 📊 Iniciar polling de histórico (a cada 1 minuto)
-        this.startHistoryPolling();
-        
-        // 🔄 Iniciar polling de status do trade (a cada 2 segundos)
-        this.startTradeStatusPolling();
+            // 🔄 Iniciar SSE de eventos de trade (sem polling)
+            this.startTradeEventsStream();
         
         // 🎯 Iniciar animação da barra de progresso mobile
         this.startProgressAnimation();
@@ -3021,11 +3063,8 @@ export default {
         // Parar polling de logs
         this.stopLogPolling();
         
-        // Parar polling de histórico
-        this.stopHistoryPolling();
-        
-        // Parar polling de status do trade
-        this.stopTradeStatusPolling();
+        // Parar SSE de eventos
+        this.stopTradeEventsStream();
         
         // Limpar timer de ordem fechada
         if (this.orderClosedTimer !== null) {
