@@ -7,12 +7,25 @@
         :is-sidebar-collapsed="isSidebarCollapsed"
         :balance="accountBalanceValue"
         :account-type="accountType"
+        @open-settings="toggleSettingsModal"
         @account-type-changed="switchAccount"
         :currency="accountCurrency"
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
         :currency-prefix="preferredCurrencyPrefix"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
+      />
+      
+      <!-- Settings Sidebar -->
+      <SettingsSidebar
+        :is-open="showSettingsModal"
+        :balance="accountBalanceValue"
+        :account-type="accountType"
+        :balances-by-currency-real="balancesByCurrencyReal"
+        :balances-by-currency-demo="balancesByCurrencyDemo"
+        :currency-prefix="preferredCurrencyPrefix"
+        @close="closeSettingsModal"
+        @account-type-changed="switchAccount"
       />
 
       <main class="main-content" style="margin-top: 60px;">
@@ -135,6 +148,7 @@
 <script>
 import AppSidebar from '../components/Sidebar.vue';
 import TopNavbar from '../components/TopNavbar.vue';
+import SettingsSidebar from '../components/SettingsSidebar.vue';
 import OperationChart from '../components/OperationChart.vue';
 import OperationDigits from '../components/OperationDigits.vue';
 import OperationLogs from '../components/OperationLogs.vue';
@@ -146,6 +160,7 @@ export default {
   components: {
     AppSidebar,
     TopNavbar,
+    SettingsSidebar,
     OperationChart,
     OperationDigits,
     OperationLogs,
@@ -170,6 +185,7 @@ export default {
       loadingConnection: false,
       accountType: 'real', // 'real' ou 'demo'
       isMobile: false,
+      showSettingsModal: false,
       isComponentDestroyed: false, // Flag para verificar se componente foi destruído
       updateQueue: [], // Fila de atualizações pendentes
       isProcessingUpdates: false, // Flag para evitar processamento simultâneo
@@ -283,6 +299,12 @@ export default {
     },
     toggleSidebarCollapse() {
       this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    },
+    toggleSettingsModal() {
+      this.showSettingsModal = !this.showSettingsModal;
+    },
+    closeSettingsModal() {
+      this.showSettingsModal = false;
     },
     handleHamburgerClick() {
       if (this.isSidebarCollapsed) {

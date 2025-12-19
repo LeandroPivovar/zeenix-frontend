@@ -1,0 +1,701 @@
+<template>
+  <div v-if="isOpen" class="settings-modal-overlay" @click="close">
+    <div class="settings-modal-content" @click.stop>
+      <div class="settings-modal-header">
+        <h2 class="settings-modal-title">Configurações</h2>
+        <button class="settings-modal-close" @click="close">
+          <i class="fas fa-times"></i>
+        </button>
+      </div>
+      <div class="settings-modal-body">
+        <div class="settings-modal-section">
+          <div class="flex items-center gap-3 mb-6">
+            <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-white/10">
+              <img 
+                v-if="userProfilePicture"
+                :src="userProfilePicture"
+                :alt="userName"
+                class="w-full h-full object-cover"
+              />
+              <div 
+                v-else
+                class="w-full h-full bg-[#22C55E]/20 flex items-center justify-center"
+              >
+                <span class="text-white text-lg font-semibold">{{ userInitials }}</span>
+              </div>
+            </div>
+            <div class="settings-user-info">
+              <h3 class="settings-user-name">{{ userName }}</h3>
+              <p class="settings-user-status">Conta Ativa</p>
+            </div>
+          </div>
+
+          <div class="glass-card rounded-xl p-4 mb-4">
+            <div class="flex items-center justify-between mb-3">
+              <span class="settings-balance-label">Saldo Total</span>
+              <button 
+                @click="toggleBalanceVisibility"
+                class="settings-eye-btn"
+              >
+                <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
+              </button>
+            </div>
+            <p class="settings-balance-amount text-left">
+              <span v-if="balanceVisible" class="inline-flex items-center">
+                <span v-if="currentAccountType === 'demo'" class="demo-currency-symbol-wrapper">
+                  <span class="demo-currency-symbol">D</span>
+                </span>
+                <span v-else>$</span>
+                {{ balanceVisible ? formattedBalance : '' }}
+              </span>
+              <span v-else>••••••</span>
+            </p>
+            <div class="flex items-center gap-3 mt-3">
+              <button 
+                @click="switchAccount('real')"
+                :class="currentAccountType === 'real' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
+                class="settings-account-btn"
+              >
+                Real
+              </button>
+              <button 
+                @click="switchAccount('demo')"
+                :class="currentAccountType === 'demo' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
+                class="settings-account-btn"
+              >
+                Demo
+              </button>
+            </div>
+          </div>
+
+          <button 
+            @click="openDepositFlow"
+            class="settings-deposit-btn"
+          >
+            <i class="fa-solid fa-wallet"></i>
+            <span>Depositar</span>
+          </button>
+        </div>
+
+        <div class="settings-modal-section settings-modal-section-with-border">
+          <div class="mb-4">
+            <button 
+              @click="toggleAccountsList"
+              class="w-full flex items-center justify-between py-4 text-white/70 hover:text-white transition-colors"
+            >
+              <div class="flex items-center gap-3">
+                <i class="fa-solid fa-wallet text-[16px]"></i>
+                <span class="text-[14px] font-medium">Minhas Contas</span>
+              </div>
+              <i :class="showAccountsList ? 'fa-solid fa-chevron-up text-[12px]' : 'fa-solid fa-chevron-down text-[12px]'"></i>
+            </button>
+            
+            <div v-if="showAccountsList" class="accounts-list">
+              <div 
+                v-for="account in availableAccounts" 
+                :key="account.loginid"
+                @click="selectAccount(account)"
+                class="account-item flex items-center justify-between py-3 px-4 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
+              >
+                <div class="flex-1">
+                  <div class="flex items-center gap-2 mb-1">
+                    <span class="text-white text-[14px] font-medium">{{ account.loginid }}</span>
+                    <i v-if="isCurrentAccount(account)" class="fa-solid fa-check text-[#22C55E] text-[12px]"></i>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span :class="account.isDemo ? 'text-white/60 text-[12px]' : 'text-white/80 text-[12px]'">
+                      {{ account.isDemo ? 'Demo' : 'Real' }}
+                    </span>
+                    <span class="text-white/40 text-[12px]">•</span>
+                    <span class="text-white/80 text-[12px] inline-flex items-center">
+                      <span v-if="account.isDemo" class="demo-currency-symbol-modal-small-wrapper">
+                        <span class="demo-currency-symbol-modal-small">D</span>
+                      </span>
+                      <span v-else>$</span>
+                      {{ formatBalance(account.balance || 0) }}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div v-if="availableAccounts.length === 0" class="text-white/40 text-[12px] py-4 text-center">
+                Nenhuma conta encontrada
+              </div>
+            </div>
+          </div>
+
+          <button 
+            @click="logout"
+            class="w-full flex items-center gap-3 py-4 text-[#FF4747] hover:text-[#FF6060] transition-colors"
+          >
+            <i class="fa-solid fa-right-from-bracket text-[16px]"></i>
+            <span class="text-[14px] font-medium">Sair da corretora</span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script>
+import { loadAvailableAccounts } from '../utils/accountsLoader';
+
+export default {
+  name: 'SettingsSidebar',
+  props: {
+    isOpen: {
+      type: Boolean,
+      default: false
+    },
+    balance: {
+      type: [Number, String, Object],
+      default: 0
+    },
+    accountType: {
+      type: String,
+      default: 'real'
+    },
+    balancesByCurrencyReal: {
+      type: Object,
+      default: () => ({})
+    },
+    balancesByCurrencyDemo: {
+      type: Object,
+      default: () => ({})
+    },
+    currencyPrefix: {
+      type: String,
+      default: '$'
+    }
+  },
+  emits: ['close', 'account-type-changed'],
+  data() {
+    return {
+      balanceVisible: true,
+      showAccountsList: false,
+      availableAccounts: [],
+      loadingAccounts: false,
+      userProfilePictureUrl: null
+    };
+  },
+  computed: {
+    currentAccountType() {
+      return this.accountType || 'real';
+    },
+    formattedBalance() {
+      if (this.accountType === 'demo') {
+        const demo = this.balancesByCurrencyDemo['USD'] || this.balanceNumeric || 0;
+        const prefix = this.currencyPrefix || '$';
+        return `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+      const value = this.balanceNumeric;
+      const prefix = this.currencyPrefix || '$';
+      return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    },
+    balanceNumeric() {
+      const usdReal = this.balancesByCurrencyReal['USD'];
+      if (usdReal !== undefined && usdReal !== null && usdReal > 0) {
+        return usdReal;
+      }
+      const raw = this.balance;
+      if (typeof raw === 'number') return raw;
+      if (typeof raw === 'string') {
+        const parsed = Number(raw);
+        return isNaN(parsed) ? 0 : parsed;
+      }
+      const val = raw?.value ?? raw?.balance ?? 0;
+      const num = Number(val);
+      return isNaN(num) ? 0 : num;
+    },
+    userName() {
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          if (user.name) {
+            return user.name.split(' ')[0];
+          }
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e);
+        }
+      }
+      return 'Usuário';
+    },
+    userInitials() {
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          if (user.name) {
+            const names = user.name.split(' ');
+            if (names.length >= 2) {
+              return (names[0][0] + names[1][0]).toUpperCase();
+            }
+            return names[0][0].toUpperCase();
+          }
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e);
+        }
+      }
+      return 'U';
+    },
+    userProfilePicture() {
+      if (!this.userProfilePictureUrl) return null;
+      
+      if (this.userProfilePictureUrl.startsWith('http://') || 
+          this.userProfilePictureUrl.startsWith('https://')) {
+        return this.userProfilePictureUrl;
+      }
+      
+      if (this.userProfilePictureUrl.startsWith('/api/uploads')) {
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const baseUrl = apiBaseUrl.replace(/\/api$/, '');
+        return `${baseUrl}${this.userProfilePictureUrl}`;
+      }
+      
+      const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+      const baseUrl = apiBaseUrl.replace(/\/api$/, '');
+      return `${baseUrl}${this.userProfilePictureUrl}`;
+    }
+  },
+  watch: {
+    isOpen(newVal) {
+      if (newVal && this.availableAccounts.length === 0) {
+        this.loadAvailableAccounts();
+      }
+    }
+  },
+  mounted() {
+    this.loadUserProfilePicture();
+    window.addEventListener('userProfileUpdated', this.handleProfileUpdate);
+  },
+  beforeUnmount() {
+    window.removeEventListener('userProfileUpdated', this.handleProfileUpdate);
+  },
+  methods: {
+    close() {
+      this.$emit('close');
+      this.showAccountsList = false;
+    },
+    toggleBalanceVisibility() {
+      this.balanceVisible = !this.balanceVisible;
+    },
+    toggleAccountsList() {
+      this.showAccountsList = !this.showAccountsList;
+      if (this.showAccountsList && this.availableAccounts.length === 0) {
+        this.loadAvailableAccounts();
+      }
+    },
+    async loadAvailableAccounts() {
+      this.loadingAccounts = true;
+      try {
+        const accounts = await loadAvailableAccounts();
+        this.availableAccounts = accounts;
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao carregar contas:', error);
+        this.availableAccounts = [];
+      } finally {
+        this.loadingAccounts = false;
+      }
+    },
+    async selectAccount(account) {
+      try {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const token = localStorage.getItem('token');
+        const appId = localStorage.getItem('deriv_app_id') || '1089';
+
+        const response = await fetch(`${apiBase}/broker/deriv/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            token: account.token,
+            appId: parseInt(appId),
+            currency: account.currency
+          })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          
+          localStorage.setItem('deriv_token', account.token);
+          localStorage.setItem('deriv_connection', JSON.stringify({
+            ...data,
+            loginid: account.loginid,
+            currency: account.currency,
+            isDemo: account.isDemo,
+            timestamp: Date.now()
+          }));
+
+          const accountType = account.isDemo ? 'demo' : 'real';
+          this.$emit('account-type-changed', accountType);
+          
+          this.close();
+          window.location.reload();
+        } else {
+          throw new Error('Erro ao selecionar conta');
+        }
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao selecionar conta:', error);
+        alert('Erro ao trocar de conta. Tente novamente.');
+      }
+    },
+    isCurrentAccount(account) {
+      const connectionStr = localStorage.getItem('deriv_connection');
+      if (!connectionStr) return false;
+      
+      try {
+        const connection = JSON.parse(connectionStr);
+        return connection.loginid === account.loginid;
+      } catch {
+        return false;
+      }
+    },
+    switchAccount(type) {
+      this.$emit('account-type-changed', type);
+    },
+    openDepositFlow() {
+      this.close();
+      this.$router.push('/settings?tab=deposit');
+    },
+    logout() {
+      localStorage.removeItem('deriv_token');
+      localStorage.removeItem('deriv_tokens_by_loginid');
+      localStorage.removeItem('deriv_connection');
+      this.close();
+      this.$router.push('/dashboard');
+      window.location.reload();
+    },
+    formatBalance(balance) {
+      const value = parseFloat(balance) || 0;
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
+    handleProfileUpdate() {
+      this.loadUserProfilePicture();
+    },
+    async loadUserProfilePicture() {
+      try {
+        const userInfo = localStorage.getItem('user');
+        if (userInfo) {
+          try {
+            const user = JSON.parse(userInfo);
+            if (user.profilePictureUrl) {
+              this.userProfilePictureUrl = user.profilePictureUrl;
+              return;
+            }
+          } catch (e) {
+            // Ignorar erro de parsing
+          }
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBaseUrl}/settings`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.profilePictureUrl) {
+            this.userProfilePictureUrl = data.profilePictureUrl;
+            
+            const userInfo = localStorage.getItem('user');
+            if (userInfo) {
+              try {
+                const user = JSON.parse(userInfo);
+                user.profilePictureUrl = data.profilePictureUrl;
+                localStorage.setItem('user', JSON.stringify(user));
+              } catch (e) {
+                // Ignorar erro de parsing
+              }
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao carregar foto do perfil:', error);
+      }
+    }
+  }
+};
+</script>
+
+<style scoped>
+.settings-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  padding: 0;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.settings-modal-content {
+  background: #0B0B0B;
+  border-radius: 0;
+  width: 100%;
+  max-width: 400px;
+  min-width: 320px;
+  height: 100%;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid rgba(255, 255, 255, 0.05);
+  animation: slideInRight 0.3s ease-out;
+}
+
+.settings-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: none;
+}
+
+.settings-modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.settings-modal-close {
+  background: none;
+  border: none;
+  color: #9B9B9B;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.3s;
+}
+
+.settings-modal-close:hover {
+  color: #fff;
+}
+
+.settings-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  color: #FFFFFF;
+}
+
+.settings-modal-section {
+  margin-bottom: 24px;
+}
+
+.settings-modal-section:last-child {
+  margin-bottom: 0;
+}
+
+.settings-modal-section-with-border {
+  border-top: 2px solid rgba(255, 255, 255, 0.05);
+  padding-top: 24px;
+  margin-top: 0;
+  margin-left: -24px;
+  margin-right: -24px;
+  padding-left: 24px;
+  padding-right: 24px;
+}
+
+.settings-user-info {
+  text-align: left;
+}
+
+.settings-user-name {
+  color: #FFFFFF;
+  font-size: 15px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.settings-user-status {
+  color: #22C55E;
+  font-size: 12px;
+  font-weight: 500;
+  margin: 2px 0 0 0;
+  line-height: 1.3;
+}
+
+.settings-balance-label {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 12px;
+  font-weight: 400;
+}
+
+.settings-eye-btn {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.6);
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s ease;
+  font-size: 14px;
+}
+
+.settings-eye-btn:hover {
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.settings-balance-amount {
+  color: #FFFFFF;
+  font-size: 24px;
+  font-weight: 700;
+  margin: 0;
+  line-height: 1.2;
+  text-align: left;
+}
+
+.settings-account-btn {
+  flex: 1;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 600;
+  transition: all 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.settings-account-btn-active {
+  background: #22C55E;
+  color: #FFFFFF;
+}
+
+.settings-account-btn-inactive {
+  background: #2A2A2A;
+  color: #9B9B9B;
+}
+
+.settings-account-btn-inactive:hover {
+  background: #333333;
+  color: #CCCCCC;
+}
+
+.settings-deposit-btn {
+  width: 100%;
+  background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
+  border: none;
+  border-radius: 12px;
+  padding: 14px;
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+  margin-bottom: 0;
+}
+
+.settings-deposit-btn:hover {
+  opacity: 0.9;
+  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+  transform: translateY(-1px);
+}
+
+.settings-deposit-btn:active {
+  transform: scale(0.98);
+}
+
+.glass-card {
+  background: #1A1A1A;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 16px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.accounts-list {
+  margin-top: 8px;
+  border-top: 2px solid rgba(255, 255, 255, 0.05);
+  padding-top: 8px;
+}
+
+.account-item {
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.account-item:last-child {
+  border-bottom: none;
+}
+
+.demo-currency-symbol-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: linear-gradient(135deg, #9333EA 0%, #7C3AED 100%);
+  border-radius: 4px;
+  margin-right: 4px;
+}
+
+.demo-currency-symbol {
+  color: #FFFFFF;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.demo-currency-symbol-modal-small-wrapper {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 14px;
+  height: 14px;
+  background: linear-gradient(135deg, #9333EA 0%, #7C3AED 100%);
+  border-radius: 3px;
+  margin-right: 2px;
+}
+
+.demo-currency-symbol-modal-small {
+  color: #FFFFFF;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .settings-modal-content {
+    max-width: 85%;
+    min-width: 280px;
+  }
+}
+</style>
+

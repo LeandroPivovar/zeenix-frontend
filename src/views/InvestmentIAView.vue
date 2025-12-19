@@ -23,9 +23,22 @@
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
                 :currency-prefix="currencyPrefix"
+                @open-settings="toggleSettingsModal"
                 @account-type-changed="handleAccountTypeChangeFromNavbar"
                 @toggle-sidebar="toggleSidebar"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
+            />
+            
+            <!-- Settings Sidebar -->
+            <SettingsSidebar
+                :is-open="showSettingsModal"
+                :balance="balanceObject"
+                :account-type="tradeCurrency === 'DEMO' ? 'demo' : 'real'"
+                :balances-by-currency-real="balancesByCurrencyReal"
+                :balances-by-currency-demo="balancesByCurrencyDemo"
+                :currency-prefix="currencyPrefix"
+                @close="closeSettingsModal"
+                @account-type-changed="handleAccountTypeChangeFromNavbar"
             />
 
             <main class="main-content" style="margin-top: 60px;">
@@ -426,6 +439,7 @@
 <script>
 import AppSidebar from '../components/Sidebar.vue';
 import TopNavbar from '../components/TopNavbar.vue';
+import SettingsSidebar from '../components/SettingsSidebar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
@@ -436,6 +450,7 @@ export default {
     components: {
         AppSidebar,
         TopNavbar,
+        SettingsSidebar,
         InvestmentActive,
         TooltipsCopyTraders,
         DesktopBottomNav
@@ -446,7 +461,8 @@ export default {
             isSidebarCollapsed: false,
             isMobile: false,
             isInvestmentActive: false,
-            isActivating: false, 
+            isActivating: false,
+            showSettingsModal: false, 
 
             ticks: [],
             currentPrice: null,
@@ -1218,6 +1234,14 @@ export default {
         
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        },
+        
+        toggleSettingsModal() {
+            this.showSettingsModal = !this.showSettingsModal;
+        },
+        
+        closeSettingsModal() {
+            this.showSettingsModal = false;
         },
         
         async loadTradeCurrency() {

@@ -24,8 +24,19 @@
         :currency="accountCurrency"
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
+        @open-settings="toggleSettingsModal"
         @toggle-sidebar="toggleSidebar"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
+      />
+      
+      <!-- Settings Sidebar -->
+      <SettingsSidebar
+        :is-open="showSettingsModal"
+        :balance="accountBalance"
+        :account-type="isDemo ? 'demo' : 'real'"
+        :balances-by-currency-real="balancesByCurrencyReal"
+        :balances-by-currency-demo="balancesByCurrencyDemo"
+        @close="closeSettingsModal"
       />
       <!-- Header -->
       <header id="header" class="sticky top-0 z-30 glass-effect border-b border-zenix-border" style="margin-top: 60px;">
@@ -400,6 +411,7 @@
 <script>
 import AppSidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
+import SettingsSidebar from '../components/SettingsSidebar.vue'
 import EditNameModal from '../components/modals/EditNameModal.vue'
 import EditEmailModal from '../components/modals/EditEmailModal.vue'
 import ChangePasswordModal from '../components/modals/ChangePasswordModal.vue'
@@ -412,6 +424,7 @@ export default {
   components: {
     AppSidebar,
     TopNavbar,
+    SettingsSidebar,
     EditNameModal,
     EditEmailModal,
     ChangePasswordModal,
@@ -434,6 +447,7 @@ export default {
       },
       lastLogin: null,
       activeSessions: 0,
+      showSettingsModal: false,
       activityLogs: [],
       loading: true,
       error: null,
@@ -820,6 +834,12 @@ export default {
     },
     toggleSidebarCollapse() {
       this.isSidebarCollapsed = !this.isSidebarCollapsed;
+    },
+    toggleSettingsModal() {
+      this.showSettingsModal = !this.showSettingsModal;
+    },
+    closeSettingsModal() {
+      this.showSettingsModal = false;
     }
   }
 }

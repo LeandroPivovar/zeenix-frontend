@@ -20,9 +20,21 @@
             :currency="accountCurrency"
             :balances-by-currency-real="balancesByCurrencyReal"
             :balances-by-currency-demo="balancesByCurrencyDemo"
+            @open-settings="toggleSettingsModal"
             @account-type-changed="handleAccountTypeChange"
             @toggle-sidebar-collapse="toggleSidebarCollapse"
             @toggle-sidebar="toggleSidebar"
+        />
+        
+        <!-- Settings Sidebar -->
+        <SettingsSidebar
+            :is-open="showSettingsModal"
+            :balance="accountBalance"
+            :account-type="isDemo ? 'demo' : 'real'"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
+            @close="closeSettingsModal"
+            @account-type-changed="handleAccountTypeChange"
         />
 
         <div class="content-wrapper">
@@ -223,6 +235,7 @@
 // Componentes necessários (crie estes arquivos .vue)
 import AppSidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
+import SettingsSidebar from '../components/SettingsSidebar.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import CopiersDetails from '../components/masterTrader/CopiersDetails.vue'
 import AIInvestment from '../components/masterTrader/InvestmentComponent.vue'
@@ -235,6 +248,7 @@ export default {
     components: {
         AppSidebar,
         TopNavbar,
+        SettingsSidebar,
         CopiersDetails,
         AIInvestment,
         ManualOperation,
@@ -245,6 +259,7 @@ export default {
         return {
             isSidebarOpen: false, 
             isSidebarCollapsed: false,
+            showSettingsModal: false,
             // Variável de estado para controlar o modo ativo
             activeMode: 'Detalhes Copiadores',
             // Dados do header
@@ -283,6 +298,12 @@ export default {
         },
         toggleSidebarCollapse() {
             this.isSidebarCollapsed = !this.isSidebarCollapsed
+        },
+        toggleSettingsModal() {
+            this.showSettingsModal = !this.showSettingsModal;
+        },
+        closeSettingsModal() {
+            this.showSettingsModal = false;
         },
         // Método para trocar o modo
         selectMode(modeName) {
