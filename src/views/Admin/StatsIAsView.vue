@@ -1084,12 +1084,15 @@ export default {
 		},
 		
 		formatBalance(value) {
-			return new Intl.NumberFormat('pt-BR', { 
-				style: 'currency', 
-				currency: 'BRL', 
+			const formatter = new Intl.NumberFormat('pt-BR', { 
 				minimumFractionDigits: 2,
 				maximumFractionDigits: 2
-			}).format(value);
+			});
+			// ✅ Se for conta Demo, usar prefixo D$ (igual ao header)
+			if (this.accountType === 'Demo') {
+				return `D$${formatter.format(value)}`;
+			}
+			return `$${formatter.format(value)}`;
 		},
 		
 		async loadAccountInfo() {

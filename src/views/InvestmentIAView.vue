@@ -422,7 +422,7 @@
                     :loss-limit-config="lossLimit"
                     :mode-config="mode"
                     :account-balance-prop="accountBalance"
-                    :account-currency-prop="accountCurrency"
+                    :account-currency-prop="tradeCurrency || accountCurrency"
                     :selected-market-prop="selectedMarket"
                         @deactivate="deactivateIA"
                 />

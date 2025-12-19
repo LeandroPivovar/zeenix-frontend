@@ -1134,11 +1134,23 @@ export default {
             return 'Buscando oportunidades';
         },
         formattedBalance() {
-            if (!this.accountBalanceProp) return '$0,00';
+            if (!this.accountBalanceProp) {
+                const isDemo = this.accountType === 'demo' || 
+                              this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
+                              (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
+                return isDemo ? 'D$0,00' : '$0,00';
+            }
             const formatter = new Intl.NumberFormat('pt-BR', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             });
+            // ✅ Se for conta Demo, usar prefixo D$ (igual ao header)
+            const isDemo = this.accountType === 'demo' || 
+                          this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
+                          (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
+            if (isDemo) {
+                return `D$${formatter.format(this.accountBalanceProp)}`;
+            }
             return `$${formatter.format(this.accountBalanceProp)}`;
         },
 
@@ -2937,11 +2949,29 @@ export default {
                 }
             },
             immediate: false
+        },
+        // ✅ Watcher para atualizar accountType quando accountCurrencyProp mudar
+        accountCurrencyProp: {
+            handler(newCurrency) {
+                if (newCurrency && (newCurrency.toUpperCase() === 'DEMO' || newCurrency.includes('DEMO'))) {
+                    this.accountType = 'demo';
+                } else {
+                    this.accountType = 'real';
+                }
+            },
+            immediate: true
         }
     },
 
     mounted() {
         console.log('[InvestmentActive] Componente montado. Ticks:', this.ticks.length);
+        
+        // ✅ Inicializar accountType baseado no accountCurrencyProp
+        if (this.accountCurrencyProp && (this.accountCurrencyProp.toUpperCase() === 'DEMO' || this.accountCurrencyProp.includes('DEMO'))) {
+            this.accountType = 'demo';
+        } else {
+            this.accountType = 'real';
+        }
         
         // Inicializar mercado do prop se fornecido
         if (this.selectedMarketProp) {
