@@ -2093,8 +2093,13 @@ export default {
 				const result = await response.json();
 
 				if (result.success && result.data) {
-					this.tradeHistory = result.data;
-					console.log('[StatsIAsView] Histórico carregado:', result.data.length, 'operações');
+					// ✅ Filtrar operações com status ERROR (não devem aparecer no histórico)
+					this.tradeHistory = result.data.filter(trade => 
+						trade.status !== 'ERROR' && 
+						trade.status !== 'error' &&
+						!trade.error_message
+					);
+					console.log('[StatsIAsView] Histórico carregado:', this.tradeHistory.length, 'operações (filtradas)');
 				}
 			} catch (error) {
 				console.error('[StatsIAsView] Erro ao carregar histórico:', error);
