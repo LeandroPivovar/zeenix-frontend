@@ -1739,6 +1739,10 @@ export default {
 			const derivToken = this.getDerivToken();
 			if (!derivToken) {
 				this.$root.$toast.error('Por favor, conecte sua conta Deriv primeiro');
+				// Redirecionar para a tela de conexão Deriv já existente
+				if (this.$router) {
+					this.$router.push('/dashboard');
+				}
 				return;
 			}
 			
