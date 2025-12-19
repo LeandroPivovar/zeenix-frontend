@@ -100,10 +100,22 @@ export default {
      * Carrega o saldo da conta usando o balanceLoader
      * Cria o objeto info no mesmo formato que o Dashboard recebe
      */
-    async loadAccountBalanceInfo() {
+    async loadAccountBalanceInfo(forceRefresh = false) {
       this.loadingBalance = true;
       try {
-        const balanceData = await loadAccountBalance();
+        // Se os saldos estão zerados ou vazios, forçar recarregamento
+        if (!forceRefresh && this.info) {
+          const realUSD = this.info.balancesByCurrencyReal?.['USD'];
+          const demoUSD = this.info.balancesByCurrencyDemo?.['USD'];
+          // Se ambos estão zerados ou undefined, forçar recarregamento
+          if ((realUSD === undefined || realUSD === null || realUSD === 0) && 
+              (demoUSD === undefined || demoUSD === null || demoUSD === 0)) {
+            console.log('[AccountBalanceMixin] Saldos zerados detectados, forçando recarregamento');
+            forceRefresh = true;
+          }
+        }
+        
+        const balanceData = await loadAccountBalance(forceRefresh);
         
         if (balanceData) {
           // Criar objeto info no mesmo formato que o Dashboard recebe
@@ -364,8 +376,8 @@ export default {
       accountType: this.accountType
     });
     
-    // Depois carregar saldo
-    await this.loadAccountBalanceInfo();
+    // Depois carregar saldo (forçar recarregamento na primeira vez para garantir dados atualizados)
+    await this.loadAccountBalanceInfo(true);
     
     // Após carregar saldo, garantir novamente que accountType está correto
     // baseado no tradeCurrency (não no isDemo do saldo carregado)

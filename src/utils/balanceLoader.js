@@ -11,13 +11,33 @@ const BALANCE_CACHE_DURATION = 30 * 1000; // 30 segundos (saldo muda frequenteme
  * Carrega o saldo da conta Deriv atual
  * @returns {Promise<Object|null>} Objeto com balance, currency, loginid, isDemo, balancesByCurrencyReal, balancesByCurrencyDemo ou null se erro
  */
-export async function loadAccountBalance() {
+export async function loadAccountBalance(forceRefresh = false) {
   try {
-    // Verificar cache primeiro
-    const cachedBalance = getCachedBalance();
-    if (cachedBalance) {
-      console.log('[BalanceLoader] Usando saldo do cache');
-      return cachedBalance;
+    // Verificar cache primeiro (a menos que forceRefresh seja true)
+    if (!forceRefresh) {
+      const cachedBalance = getCachedBalance();
+      if (cachedBalance) {
+        // Verificar se o cache tem saldos válidos
+        const hasValidRealBalance = cachedBalance.balancesByCurrencyReal && 
+          cachedBalance.balancesByCurrencyReal['USD'] !== undefined && 
+          cachedBalance.balancesByCurrencyReal['USD'] !== null;
+        const hasValidDemoBalance = cachedBalance.balancesByCurrencyDemo && 
+          cachedBalance.balancesByCurrencyDemo['USD'] !== undefined && 
+          cachedBalance.balancesByCurrencyDemo['USD'] !== null;
+        
+        // Se o cache tem saldos válidos, usar
+        if (hasValidRealBalance || hasValidDemoBalance) {
+          console.log('[BalanceLoader] Usando saldo do cache');
+          return cachedBalance;
+        } else {
+          // Se o cache não tem saldos válidos, limpar e buscar novamente
+          console.log('[BalanceLoader] Cache inválido (saldos zerados ou ausentes), forçando recarregamento');
+          clearCachedBalance();
+        }
+      }
+    } else {
+      // Se forceRefresh, limpar cache
+      clearCachedBalance();
     }
 
     const appId = localStorage.getItem('deriv_app_id') || '1089';
@@ -346,11 +366,18 @@ export function clearBalanceCache() {
 }
 
 /**
+ * Alias para clearBalanceCache (compatibilidade)
+ */
+function clearCachedBalance() {
+  clearBalanceCache();
+}
+
+/**
  * Força o recarregamento do saldo (ignora cache)
  * @returns {Promise<Object|null>} Objeto com saldo ou null se erro
  */
 export async function reloadAccountBalance() {
   clearBalanceCache();
-  return await loadAccountBalance();
+  return await loadAccountBalance(true);
 }
 
