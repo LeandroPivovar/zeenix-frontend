@@ -61,7 +61,7 @@
           </div>
 
           <!-- Gráfico -->
-          <div id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%;">
+          <div id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%; margin: 0; padding: 0;">
             <div v-if="showChartPlaceholder" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
               <p class="text-zenix-secondary">Carregando gráfico...</p>
             </div>
@@ -2377,6 +2377,8 @@ export default {
   height: 100% !important;
   flex: 1 1 0;
   display: block;
+  margin: 0;
+  padding: 0;
 }
 
 .chart-placeholder {
@@ -3213,3 +3215,4 @@ export default {
   font-size: 13px;
 }
 </style>
+

@@ -426,8 +426,8 @@
                         </div>
             
                         <!-- Chart View -->
-                        <div v-show="activeTab === 'chart'" id="chart-view" class="h-[600px]">
-                            <div ref="chartContainer" id="tradingview-chart" class="chart-container tradingview-container h-full"></div>
+                        <div v-show="activeTab === 'chart'" id="chart-view" class="flex-1 flex flex-col min-h-0 -mx-6 -mb-6 px-6" style="margin-top: 0;">
+                            <div ref="chartContainer" id="tradingview-chart" class="chart-container tradingview-container flex-1 min-h-0"></div>
                             
                             <!-- Mobile: Informações do mercado abaixo do gráfico -->
                             <div class="mobile-market-info mt-4 desktop-hidden">
@@ -3552,17 +3552,34 @@ button i,
     width: 100%;
 }
 
+#chart-view {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
+    align-self: stretch;
+}
+
 .chart-container {
     width: 100%;
     height: 100%;
-    min-height: 600px;
+    flex: 1;
+    min-height: 0;
+    margin: 0;
+    padding: 0;
 }
 
 /* TradingView Chart Container */
 .tradingview-container {
     width: 100%;
-    min-height: 500px;
+    height: 100%;
+    flex: 1;
+    min-height: 0;
     background: #131722;
+    margin: 0;
+    padding: 0;
 }
 
 .logs-view-container {
@@ -6432,7 +6449,15 @@ button i,
     }
     
     /* Mobile: Ajustar altura do gráfico */
-    #chart-view,
+    #chart-view {
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+        min-height: 0 !important;
+        height: auto !important;
+        border-radius: 12px;
+    }
+    
     #logs-view,
     #register-view {
         height: 100% !important;
@@ -6511,8 +6536,17 @@ button i,
             min-height: 600px;
         }
         
+        #market-chart #chart-view {
+            flex: 1 !important;
+            display: flex !important;
+            flex-direction: column !important;
+            min-height: 0 !important;
+        }
+        
         #market-chart #chart-view .chart-container {
-            height: 600px;
+            flex: 1 !important;
+            min-height: 0 !important;
+            height: 100% !important;
         }
         
         #market-chart #logs-view {
