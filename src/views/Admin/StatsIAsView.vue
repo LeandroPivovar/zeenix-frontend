@@ -1015,6 +1015,7 @@ export default {
 				profitLoss: 0,
 			},
 			tradeHistory: [],
+			tradeEventsSource: null,
 			
 			// Dados para tela padrão (IA desativada)
 			accountBalance: 0,
@@ -2133,6 +2134,49 @@ export default {
 		}
 	},
 
+	startTradeEventsStream() {
+		const userId = this.getUserId();
+		if (!userId) return;
+
+		// Evitar múltiplas conexões
+		if (this.tradeEventsSource) {
+			this.tradeEventsSource.close();
+		}
+
+		const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+		const url = `${apiBase}/ai/trade-events/${userId}`;
+
+		const source = new EventSource(url);
+		this.tradeEventsSource = source;
+
+		source.onmessage = async (event) => {
+			try {
+				const payload = JSON.parse(event.data);
+				console.log('[StatsIAsView] Evento de trade recebido:', payload);
+
+				// Recarregar histórico e estatísticas apenas quando houver mudança real
+				await this.loadTradeHistory();
+				await this.loadSessionStats();
+			} catch (e) {
+				console.warn('[StatsIAsView] Evento de trade inválido:', e);
+			}
+		};
+
+		source.onerror = () => {
+			console.warn('[StatsIAsView] Erro na conexão SSE, tentando reconectar em 5s...');
+			source.close();
+			this.tradeEventsSource = null;
+			setTimeout(() => this.startTradeEventsStream(), 5000);
+		};
+	},
+
+	stopTradeEventsStream() {
+		if (this.tradeEventsSource) {
+			this.tradeEventsSource.close();
+			this.tradeEventsSource = null;
+		}
+	},
+
 	async fetchBackgroundStatus() {
 		try {
 			const userId = this.getUserId();
@@ -2190,10 +2234,6 @@ export default {
 			} else {
 				this.activeTrade = null;
 			}
-			
-			// Atualizar estatísticas e histórico
-			await this.loadSessionStats();
-			await this.loadTradeHistory();
 			
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao buscar status background:', error);
@@ -2719,6 +2759,9 @@ async mounted() {
 	
 	// Carregar configuração da IA ao montar o componente
 	await this.loadAIConfigOnMount();
+
+	// Assinar eventos de trade para atualizar histórico somente em mudanças
+	this.startTradeEventsStream();
 	
 	// Iniciar carregamento de dados mesmo quando IA está desativada
 	// (somente após tentar detectar sessão ativa para reduzir espera de UI)
@@ -2749,6 +2792,7 @@ async mounted() {
 		window.removeEventListener('resize', this.checkMobile);
 		this.stopPolling();
 		this.stopBackgroundPolling();
+	this.stopTradeEventsStream();
 	},
 }
 </script>

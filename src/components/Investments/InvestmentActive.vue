@@ -1037,7 +1037,7 @@ export default {
         // Estatísticas formatadas
         formattedProfitLoss() {
             const value = this.dailyStats.profitLoss || 0;
-            const sign = value >= 0 ? '+' : '';
+            const sign = value >= 0 ? '+' : '-';
             return `${sign}$${Math.abs(value).toFixed(2)}`;
         },
         profitLossPercentage() {
@@ -1072,12 +1072,12 @@ export default {
         },
         formattedSessionProfitLoss() {
             const value = this.dailyStats.sessionProfitLoss || 0;
-            const sign = value >= 0 ? '+' : '';
+            const sign = value >= 0 ? '+' : '-';
             return `${sign}$${Math.abs(value).toFixed(2)}`;
         },
         formattedSessionBalance() {
             const value = this.dailyStats.sessionBalance || 0;
-            const sign = value >= 0 ? '+' : '';
+            const sign = value >= 0 ? '+' : '-';
             return `${sign}$${Math.abs(value).toFixed(2)}`;
         },
         profitLossClass() {
