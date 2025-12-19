@@ -838,6 +838,7 @@ export default {
                 stakeAmount: 0,
                 entryValue: 0.35, // ✅ Valor de entrada por operação
                 mode: 'veloz',
+                strategy: 'orion', // ✅ Estratégia ativa (orion ou trinity)
                 modoMartingale: 'conservador',
                 profitTarget: null,
                 lossLimit: null,
@@ -906,16 +907,24 @@ export default {
         
         // Verificar se Trinity está ativa (baseado no mercado)
         isTrinityActive() {
+            // ✅ Verificar primeiro pela estratégia na configuração da sessão
+            if (this.sessionConfig && this.sessionConfig.strategy) {
+                return this.sessionConfig.strategy.toLowerCase() === 'trinity';
+            }
+            // Fallback: verificar pelo mercado selecionado
             const marketKey = (this.selectedMarketProp || this.selectedMarket || '').toString();
             // Trinity usa mercados R_10, R_25, R_50
             return marketKey === 'R_10' || marketKey === 'R_25' || marketKey === 'R_50' || 
                    marketKey.startsWith('R_') || marketKey.toLowerCase().includes('trinity');
         },
         
-        // Nome da estratégia baseado no modo
+        // Nome da estratégia baseado na estratégia ativa e modo
         strategyName() {
+            // ✅ Determinar se é Trinity baseado na configuração da sessão
+            const isTrinity = this.isTrinityActive;
+            
             // Se Trinity está ativa, retornar nome da Trinity
-            if (this.isTrinityActive) {
+            if (isTrinity) {
                 const modeMap = {
                     'veloz': 'IA Trinity Veloz',
                     'moderado': 'IA Trinity Moderado',
@@ -1947,6 +1956,7 @@ export default {
                         stakeAmount: parseFloat(result.data.stakeAmount) || 0,
                         entryValue: parseFloat(result.data.entryValue) || 0.35, // ✅ Valor de entrada por operação
                         mode: result.data.mode || 'veloz',
+                        strategy: result.data.strategy || 'orion', // ✅ Estratégia ativa (orion ou trinity)
                         modoMartingale: result.data.modoMartingale || 'conservador',
                         profitTarget: result.data.profitTarget ? parseFloat(result.data.profitTarget) : null,
                         lossLimit: result.data.lossLimit ? parseFloat(result.data.lossLimit) : null,

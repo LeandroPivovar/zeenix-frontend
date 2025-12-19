@@ -2221,6 +2221,7 @@ export default {
 			if (result.success && result.data) {
 				const config = result.data;
 				this.tradingConfig.isActive = config.isActive || false;
+				this.aiMonitoring.isActive = !!config.isActive; // mostra UI ativa imediatamente se já houver sessão
 				this.tradingConfig.stakeAmount = config.stakeAmount || 50;
 				this.tradingConfig.mode = config.mode || 'veloz';
 				this.tradingConfig.profitTarget = config.profitTarget || 100;
@@ -2233,15 +2234,15 @@ export default {
 					console.log('[StatsIAsView] - Vitórias:', config.totalWins);
 					console.log('[StatsIAsView] - Derrotas:', config.totalLosses);
 					
-					// ATIVAR O MONITORAMENTO AUTOMATICAMENTE
-					await this.startAIMonitoring();
+					// Não bloquear a UI: já ativamos flags e começamos os polls sem esperar /ai/start
+					if (!this.aiPollingInterval) {
+						this.startPolling();
+					}
+					this.startBackgroundPolling();
 					
 					// Carregar estatísticas e histórico
 					await this.loadSessionStats();
 					await this.loadTradeHistory();
-					
-					// Iniciar polling para atualização em tempo real
-					this.startBackgroundPolling();
 					
 					console.log('[StatsIAsView] ✅ Sistema pronto! IA operando em background.');
 				} else {
@@ -2716,8 +2717,11 @@ async mounted() {
 	// Carregar informações da conta
 	this.loadAccountInfo();
 	
+	// Carregar configuração da IA ao montar o componente
+	await this.loadAIConfigOnMount();
+	
 	// Iniciar carregamento de dados mesmo quando IA está desativada
-	// para mostrar o gráfico na tela padrão
+	// (somente após tentar detectar sessão ativa para reduzir espera de UI)
 	console.log('[StatsIAsView] Chamando startDataLoading()...');
 	this.startDataLoading();
 	
@@ -2729,9 +2733,6 @@ async mounted() {
 			second: '2-digit' 
 		});
 	}, 1000);
-	
-	// Carregar configuração da IA ao montar o componente
-	this.loadAIConfigOnMount();
 	
 	// Inicializar gráfico de mercado após o componente ser montado
 	this.$nextTick(() => {
