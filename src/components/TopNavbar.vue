@@ -57,7 +57,7 @@
         </div>
         <div class="relative">
           <button 
-            @click="toggleProfileDropdown" 
+            @click="handleProfileClick" 
             class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 overflow-hidden"
           >
             <img 
@@ -310,7 +310,7 @@
 <script>
 export default {
   name: 'TopNavbar',
-  emits: ['toggle-sidebar', 'toggle-sidebar-collapse'],
+  emits: ['toggle-sidebar', 'toggle-sidebar-collapse', 'open-settings'],
   props: {
     isSidebarCollapsed: {
       type: Boolean,
@@ -468,6 +468,19 @@ export default {
     },
     toggleBalance() {
       this.balanceHidden = !this.balanceHidden;
+    },
+    handleProfileClick() {
+      // No desktop, abre o modal de configurações (sidebar direita)
+      // No mobile, abre o modal de perfil
+      if (!this.isMobile) {
+        // Emitir evento para abrir o modal de configurações
+        this.$emit('open-settings');
+        // Fechar dropdown se estiver aberto
+        this.showProfileDropdown = false;
+      } else {
+        // No mobile, usar o comportamento antigo (modal de perfil)
+        this.toggleProfileModal();
+      }
     },
     toggleProfileDropdown() {
       this.showProfileDropdown = !this.showProfileDropdown;

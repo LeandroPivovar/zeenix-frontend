@@ -815,7 +815,6 @@
 							<table>
 								<thead>
 									<tr>
-										<th>Horário</th>
 										<th>Mercado</th>
 										<th>Negociação</th>
 										<th>Preço Entrada</th>
@@ -826,16 +825,15 @@
 								</thead>
 								<tbody>
 									<tr v-for="trade in tradeHistory" :key="trade.id" :class="['trade-row', trade.status.toLowerCase()]">
-										<td>{{ formatTradeTime(trade.closedAt || trade.createdAt) }}</td>
 										<td>{{ trade.symbol || 'R_10' }}</td>
 										<td>
 											<span :class="['signal-badge', (trade.signal || trade.geminiSignal || '').toLowerCase()]">
 												{{ (trade.signal || trade.geminiSignal || '') === 'CALL' || (trade.signal || trade.geminiSignal || '') === 'PAR' ? '📈 PAR' : '📉 ÍMPAR' }}
 											</span>
 										</td>
-										<td>${{ (trade.entryPrice || trade.entry_price || 0).toFixed(2) }}</td>
+										<td>{{ (trade.entryPrice || trade.entry_price || 0).toFixed(2) }}</td>
 										<td>
-											<span v-if="trade.exitPrice || trade.exit_price">${{ (trade.exitPrice || trade.exit_price || 0).toFixed(2) }}</span>
+											<span v-if="trade.exitPrice || trade.exit_price">{{ (trade.exitPrice || trade.exit_price || 0).toFixed(2) }}</span>
 											<span v-else class="text-muted">-</span>
 										</td>
 										<td>${{ (trade.stakeAmount || trade.stake_amount || 0).toFixed(2) }}</td>
