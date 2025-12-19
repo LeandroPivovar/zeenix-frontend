@@ -5,11 +5,10 @@
     <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
-        :balance="accountBalanceValue"
+        :balance="info?.balance"
         :account-type="accountType"
         @open-settings="toggleSettingsModal"
         @account-type-changed="switchAccount"
-        :currency="accountCurrency"
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
         :currency-prefix="preferredCurrencyPrefix"
@@ -19,7 +18,7 @@
       <!-- Settings Sidebar -->
       <SettingsSidebar
         :is-open="showSettingsModal"
-        :balance="accountBalanceValue"
+        :balance="info?.balance"
         :account-type="accountType"
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -154,9 +153,11 @@ import OperationDigits from '../components/OperationDigits.vue';
 import OperationLogs from '../components/OperationLogs.vue';
 import OperationLastOrders from '../components/OperationLastOrders.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
+import accountBalanceMixin from '../mixins/accountBalanceMixin';
 
 export default {
   name: 'OperationView',
+  mixins: [accountBalanceMixin],
   components: {
     AppSidebar,
     TopNavbar,

@@ -19,12 +19,13 @@
     <div class="min-h-screen flex flex-col transition-all duration-300" :style="{ marginLeft: isMobile ? '0' : (isSidebarCollapsed ? '0' : '280px') }">
       <TopNavbar 
         :is-sidebar-collapsed="isSidebarCollapsed"
-        :balance="accountBalance"
-        :account-type="isDemo ? 'demo' : 'real'"
-        :currency="accountCurrency"
+        :balance="info?.balance"
+        :account-type="accountType"
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
+        :currency-prefix="preferredCurrencyPrefix"
         @open-settings="toggleSettingsModal"
+        @account-type-changed="switchAccount"
         @toggle-sidebar="toggleSidebar"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
       />
@@ -32,11 +33,13 @@
       <!-- Settings Sidebar -->
       <SettingsSidebar
         :is-open="showSettingsModal"
-        :balance="accountBalance"
-        :account-type="isDemo ? 'demo' : 'real'"
+        :balance="info?.balance"
+        :account-type="accountType"
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
+        :currency-prefix="preferredCurrencyPrefix"
         @close="closeSettingsModal"
+        @account-type-changed="switchAccount"
       />
       <!-- Header -->
       <header id="header" class="sticky top-0 z-30 glass-effect border-b border-zenix-border" style="margin-top: 60px;">
@@ -417,10 +420,11 @@ import EditEmailModal from '../components/modals/EditEmailModal.vue'
 import ChangePasswordModal from '../components/modals/ChangePasswordModal.vue'
 import ChangePhotoModal from '../components/modals/ChangePhotoModal.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
-import { loadAccountBalance } from '../utils/balanceLoader'
+import accountBalanceMixin from '../mixins/accountBalanceMixin'
 
 export default {
   name: 'SettingsView',
+  mixins: [accountBalanceMixin],
   components: {
     AppSidebar,
     TopNavbar,

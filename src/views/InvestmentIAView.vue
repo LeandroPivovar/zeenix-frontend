@@ -17,14 +17,13 @@
         <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
-                :balance="balanceObject"
-                :account-type="tradeCurrency === 'DEMO' ? 'demo' : 'real'"
-                :currency="accountCurrency"
+                :balance="info?.balance"
+                :account-type="accountType"
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
-                :currency-prefix="currencyPrefix"
+                :currency-prefix="preferredCurrencyPrefix"
                 @open-settings="toggleSettingsModal"
-                @account-type-changed="handleAccountTypeChangeFromNavbar"
+                @account-type-changed="switchAccount"
                 @toggle-sidebar="toggleSidebar"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
             />
@@ -32,13 +31,13 @@
             <!-- Settings Sidebar -->
             <SettingsSidebar
                 :is-open="showSettingsModal"
-                :balance="balanceObject"
-                :account-type="tradeCurrency === 'DEMO' ? 'demo' : 'real'"
+                :balance="info?.balance"
+                :account-type="accountType"
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
-                :currency-prefix="currencyPrefix"
+                :currency-prefix="preferredCurrencyPrefix"
                 @close="closeSettingsModal"
-                @account-type-changed="handleAccountTypeChangeFromNavbar"
+                @account-type-changed="switchAccount"
             />
 
             <main class="main-content" style="margin-top: 60px;">
@@ -444,9 +443,11 @@ import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
 import { loadAvailableAccounts } from '../utils/accountsLoader';
+import accountBalanceMixin from '../mixins/accountBalanceMixin';
 
 export default {
     name: 'InvestmentIAView',
+    mixins: [accountBalanceMixin],
     components: {
         AppSidebar,
         TopNavbar,

@@ -15,13 +15,13 @@
         
         <TopNavbar 
             :is-sidebar-collapsed="isSidebarCollapsed"
-            :balance="accountBalance"
-            :account-type="isDemo ? 'demo' : 'real'"
-            :currency="accountCurrency"
+            :balance="info?.balance"
+            :account-type="accountType"
             :balances-by-currency-real="balancesByCurrencyReal"
             :balances-by-currency-demo="balancesByCurrencyDemo"
+            :currency-prefix="preferredCurrencyPrefix"
             @open-settings="toggleSettingsModal"
-            @account-type-changed="handleAccountTypeChange"
+            @account-type-changed="switchAccount"
             @toggle-sidebar-collapse="toggleSidebarCollapse"
             @toggle-sidebar="toggleSidebar"
         />
@@ -29,12 +29,13 @@
         <!-- Settings Sidebar -->
         <SettingsSidebar
             :is-open="showSettingsModal"
-            :balance="accountBalance"
-            :account-type="isDemo ? 'demo' : 'real'"
+            :balance="info?.balance"
+            :account-type="accountType"
             :balances-by-currency-real="balancesByCurrencyReal"
             :balances-by-currency-demo="balancesByCurrencyDemo"
+            :currency-prefix="preferredCurrencyPrefix"
             @close="closeSettingsModal"
-            @account-type-changed="handleAccountTypeChange"
+            @account-type-changed="switchAccount"
         />
 
         <div class="content-wrapper">
@@ -241,10 +242,11 @@ import CopiersDetails from '../components/masterTrader/CopiersDetails.vue'
 import AIInvestment from '../components/masterTrader/InvestmentComponent.vue'
 import AgenteAutonomoView from '../components/masterTrader/AgentAutonomoComponent.vue'
 import ManualOperation from '../components/masterTrader/ManualOperationComponent.vue'
-import { loadAccountBalance, reloadAccountBalance } from '../utils/balanceLoader'
+import accountBalanceMixin from '../mixins/accountBalanceMixin'
 
 export default {
     name: 'MasterTraderView',
+    mixins: [accountBalanceMixin],
     components: {
         AppSidebar,
         TopNavbar,
