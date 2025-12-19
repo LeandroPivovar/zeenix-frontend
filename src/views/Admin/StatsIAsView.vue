@@ -816,32 +816,31 @@
 								<thead>
 									<tr>
 										<th>Horário</th>
-										<th>Sinal</th>
-										<th>Entrada</th>
-										<th>Saída</th>
-										<th>Duração</th>
-										<th>Status</th>
-										<th>Lucro/Perda</th>
+										<th>Mercado</th>
+										<th>Negociação</th>
+										<th>Preço Entrada</th>
+										<th>Preço Saída</th>
+										<th>Investimento</th>
+										<th>Retorno</th>
 									</tr>
 								</thead>
 								<tbody>
 									<tr v-for="trade in tradeHistory" :key="trade.id" :class="['trade-row', trade.status.toLowerCase()]">
-										<td>{{ formatTradeTime(trade.closedAt) }}</td>
+										<td>{{ formatTradeTime(trade.closedAt || trade.createdAt) }}</td>
+										<td>{{ trade.symbol || 'R_10' }}</td>
 										<td>
-											<span :class="['signal-badge', trade.signal.toLowerCase()]">
-												{{ trade.signal === 'CALL' ? '📈 CALL' : '📉 PUT' }}
+											<span :class="['signal-badge', (trade.signal || trade.geminiSignal || '').toLowerCase()]">
+												{{ (trade.signal || trade.geminiSignal || '') === 'CALL' || (trade.signal || trade.geminiSignal || '') === 'PAR' ? '📈 PAR' : '📉 ÍMPAR' }}
 											</span>
 										</td>
-										<td>${{ trade.entryPrice.toFixed(2) }}</td>
-										<td>${{ trade.exitPrice.toFixed(2) }}</td>
-										<td>{{ trade.duration }}s</td>
+										<td>${{ (trade.entryPrice || trade.entry_price || 0).toFixed(2) }}</td>
 										<td>
-											<span :class="['status-badge', trade.status.toLowerCase()]">
-												{{ trade.status === 'WON' ? '✅ Ganhou' : '❌ Perdeu' }}
-											</span>
+											<span v-if="trade.exitPrice || trade.exit_price">${{ (trade.exitPrice || trade.exit_price || 0).toFixed(2) }}</span>
+											<span v-else class="text-muted">-</span>
 										</td>
-										<td :class="['profit-cell', trade.profitLoss >= 0 ? 'positive' : 'negative']">
-											{{ trade.profitLoss >= 0 ? '+' : '' }}${{ trade.profitLoss.toFixed(2) }}
+										<td>${{ (trade.stakeAmount || trade.stake_amount || 0).toFixed(2) }}</td>
+										<td :class="['profit-cell', (trade.profitLoss || trade.profit_loss || 0) >= 0 ? 'positive' : 'negative']">
+											{{ (trade.profitLoss || trade.profit_loss || 0) >= 0 ? '+' : '' }}${{ (trade.profitLoss || trade.profit_loss || 0).toFixed(2) }}
 										</td>
 									</tr>
 								</tbody>
