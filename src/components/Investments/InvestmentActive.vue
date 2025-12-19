@@ -2188,17 +2188,10 @@ export default {
          * Inicia polling para verificar status do trade ativo
          */
         startTradeStatusPolling() {
-            // Limpar polling anterior se existir
-            if (this.tradeStatusPollingInterval) {
-                clearInterval(this.tradeStatusPollingInterval);
-            }
-            
-            // Buscar status do trade a cada 2 segundos
-            this.tradeStatusPollingInterval = setInterval(() => {
-                this.fetchTradeHistory();
-            }, 2000);
-            
-            console.log('[InvestmentActive] 🔄 Polling de status do trade iniciado');
+            // Desativado: buscar apenas uma vez; atualizações devem vir por eventos
+            this.stopTradeStatusPolling();
+            this.fetchTradeHistory();
+            console.log('[InvestmentActive] 🔄 Polling de status do trade desativado (fetch único)');
         },
         
         /**
