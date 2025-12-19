@@ -1662,22 +1662,8 @@ export default {
         startLogPolling() {
             // Parar polling anterior se existir
             this.stopLogPolling();
-            
-            console.log('[InvestmentActive] 🚀 Iniciando polling de logs (a cada 2s)');
-            
-            // Buscar logs a cada 2 segundos
-            this.logPollingInterval = setInterval(() => {
-                // Verificar se IA está ativa (pode ser 1 ou true)
-                const isActive = this.sessionConfig.isActive === 1 || this.sessionConfig.isActive === true;
-                if (isActive) {
-                    this.fetchRealtimeLogs();
-                } else {
-                    console.log('[InvestmentActive] ⏸️ IA não está ativa, parando polling...');
-                    this.stopLogPolling();
-                }
-            }, 2000);
-            
-            // Buscar logs imediatamente na primeira vez
+            console.log('[InvestmentActive] 🚀 Buscando logs uma vez (pooling desativado)');
+            // Buscar logs apenas uma vez; futuros updates devem vir por eventos ou ações do usuário
             this.fetchRealtimeLogs();
         },
         
@@ -1695,22 +1681,8 @@ export default {
         startHistoryPolling() {
             // Parar polling anterior se existir
             this.stopHistoryPolling();
-            
-            console.log('[InvestmentActive] 🚀 Iniciando polling de histórico (a cada 1 minuto)');
-            
-            // Buscar histórico a cada 1 minuto (60000ms)
-            this.historyPollingInterval = setInterval(() => {
-                // Verificar se IA está ativa
-                const isActive = this.sessionConfig.isActive === 1 || this.sessionConfig.isActive === true;
-                if (isActive) {
-                    this.fetchTradeHistory();
-                } else {
-                    console.log('[InvestmentActive] ⏸️ IA não está ativa, parando polling de histórico...');
-                    this.stopHistoryPolling();
-                }
-            }, 60000); // 1 minuto = 60000ms
-            
-            // Buscar histórico imediatamente na primeira vez
+            console.log('[InvestmentActive] 🚀 Buscando histórico uma vez (pooling desativado)');
+            // Buscar histórico apenas uma vez; atualizações devem ser acionadas por eventos
             this.fetchTradeHistory();
         },
         
@@ -1866,20 +1838,10 @@ export default {
         },
         
         startStatsUpdates() {
-            // Buscar estatísticas imediatamente
+            // Executar apenas uma atualização inicial; pooling desativado
             this.fetchDailyStats();
-            
-            // Buscar configuração da sessão
             this.fetchSessionConfig();
-            
-            // Atualizar a cada 10 segundos
-            this.statsUpdateInterval = setInterval(() => {
-                this.fetchDailyStats();
-                // Atualizar configuração também (pode ter mudado)
-                this.fetchSessionConfig();
-            }, 10000);
-            
-            console.log('[InvestmentActive] ⏰ Atualizações de stats iniciadas');
+            console.log('[InvestmentActive] ⏰ Atualizações de stats executadas uma vez (sem intervalo)');
         },
         
         stopStatsUpdates() {
