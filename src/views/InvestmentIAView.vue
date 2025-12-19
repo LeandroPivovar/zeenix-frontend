@@ -798,6 +798,7 @@ export default {
                     body: JSON.stringify({
                         userId: userId,
                         stakeAmount: capitalInicial, // ✅ Capital inicial = saldo real da conta ($9k)
+                        entryValue: this.entryValue || 0.35, // ✅ Valor de entrada por operação (R$ 1.00)
                         derivToken: derivToken,
                         currency: preferredCurrency,
                         mode: this.mode.toLowerCase(),

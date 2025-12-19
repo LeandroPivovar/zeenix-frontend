@@ -312,7 +312,7 @@
                     <div class="mobile-config-grid">
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Entrada</p>
-                            <p class="mobile-config-param-value" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : '$10.00' }}</p>
+                            <p class="mobile-config-param-value" v-if="!isLoadingConfig">{{ sessionConfig.entryValue ? '$' + sessionConfig.entryValue.toFixed(2) : '$0.35' }}</p>
                             <p class="mobile-config-param-value" v-else>Carregando...</p>
                         </div>
                         <div class="mobile-config-param">
@@ -654,7 +654,7 @@
                                 <div class="grid grid-cols-2 gap-4">
                                     <div class="text-left border border-zenix-border/30 rounded-lg p-2.5">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left">Entrada</p>
-                                        <p class="text-base font-bold text-zenix-text text-left" v-if="!isLoadingConfig">{{ sessionConfig.stakeAmount ? '$' + sessionConfig.stakeAmount.toFixed(2) : '$50' }}</p>
+                                        <p class="text-base font-bold text-zenix-text text-left" v-if="!isLoadingConfig">{{ sessionConfig.entryValue ? '$' + sessionConfig.entryValue.toFixed(2) : '$0.35' }}</p>
                                         <p class="text-base font-bold text-zenix-text text-left" v-else>Carregando...</p>
                                     </div>
                                     <div class="text-left border border-zenix-border/30 rounded-lg p-2.5">
@@ -836,6 +836,7 @@ export default {
             sessionConfig: {
                 isActive: false,
                 stakeAmount: 0,
+                entryValue: 0.35, // ✅ Valor de entrada por operação
                 mode: 'veloz',
                 modoMartingale: 'conservador',
                 profitTarget: null,
@@ -891,7 +892,7 @@ export default {
     computed: {
         // Usar valores reais da sessão ou fallback para props
         entryValue() {
-            return this.sessionConfig.stakeAmount || this.entryValueConfig || 0.35;
+            return this.sessionConfig.entryValue || this.entryValueConfig || 0.35;
         },
         profitTarget() {
             return this.sessionConfig.profitTarget || this.profitTargetConfig || null;
@@ -1517,7 +1518,7 @@ export default {
             this.addLog('info', '✨ SISTEMA ZENIX v2.0 INICIADO');
             this.addLog('info', '📋 CONFIGURAÇÃO ATIVA:');
             this.addLog('info', `Modo: ${this.sessionConfig.mode ? this.sessionConfig.mode.toUpperCase() : 'VELOZ'}`);
-            this.addLog('info', `Entrada: $${this.sessionConfig.stakeAmount ? this.sessionConfig.stakeAmount.toFixed(2) : '0.50'}`);
+            this.addLog('info', `Entrada: $${this.sessionConfig.entryValue ? this.sessionConfig.entryValue.toFixed(2) : '0.35'}`);
             this.addLog('info', `Martingale: ${this.sessionConfig.modoMartingale ? this.sessionConfig.modoMartingale.toUpperCase() : 'AGRESSIVO'}`);
             this.addLog('info', `Alvo de Lucro: $${this.sessionConfig.profitTarget || 25}`);
             this.addLog('info', `Limite de Perda: $${this.sessionConfig.lossLimit || 20}`);
@@ -1944,6 +1945,7 @@ export default {
                     this.sessionConfig = {
                         isActive: result.data.isActive || false,
                         stakeAmount: parseFloat(result.data.stakeAmount) || 0,
+                        entryValue: parseFloat(result.data.entryValue) || 0.35, // ✅ Valor de entrada por operação
                         mode: result.data.mode || 'veloz',
                         modoMartingale: result.data.modoMartingale || 'conservador',
                         profitTarget: result.data.profitTarget ? parseFloat(result.data.profitTarget) : null,
@@ -2029,7 +2031,7 @@ export default {
                     this.rawTradeHistory = result.data;
                     
                     // Transformar dados do backend para o formato do frontend
-                    const defaultStakeAmount = this.sessionConfig.stakeAmount || this.entryValue || 0;
+                    const defaultStakeAmount = this.sessionConfig.entryValue || this.entryValue || 0.35;
                     console.log('[InvestmentActive] 📊 Dados recebidos do backend:', result.data);
                     this.logOperations = result.data.map(trade => {
                         console.log('[InvestmentActive] 🔍 Trade:', {
