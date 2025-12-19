@@ -1,7 +1,7 @@
 <template>
   <!-- Main Container -->
   <main id="register-main" class="min-h-screen flex items-center justify-center px-8">
-    <div class="w-full max-w-7xl flex items-center justify-between login-container-wrapper">
+    <div class="w-full max-w-7xl flex items-center justify-center login-container-wrapper">
       
       <!-- Left Column - Register Card -->
       <div id="register-section" class="w-full max-w-[420px] flex-shrink-0">
@@ -264,14 +264,13 @@
           <!-- Footer -->
           <div class="mt-6 pt-4 border-t border-zenix-input-border footer-login">
             <p class="text-xs text-zenix-gray text-center leading-relaxed footer-text">Ao continuar, você concorda com nossos <a href="#" class="text-zenix-green hover:underline">Termos de uso</a> e <a href="#" class="text-zenix-green hover:underline">Política de Privacidade</a>.</p>
-            <p class="desktop-disclaimer-text">Deriv offers complex derivatives, such as options and contracts for difference ("CFDs"). These products may not be suitable for all clients, and trading them puts you at risk. Please make sure that you understand the following risks before trading Deriv products: a) you may lose some or all of the money you invest in the trade, b) if your trade involves currency conversion, exchange rates will affect your profit and loss. You should never trade with borrowed money or with money that you cannot afford to lose.</p>
           </div>
 
         </div>
       </div>
 
       <!-- Right Column - Hero Content -->
-      <div id="hero-section" class="w-full max-w-[600px] pl-20 flex-shrink-0">
+      <div id="hero-section" class="w-full max-w-[600px] pl-12 flex-shrink-0">
         
         <!-- Main Title -->
         <div class="mb-8 text-left">
@@ -331,6 +330,11 @@
           </div>
         </div>
       </div>
+    </div>
+    
+    <!-- Disclaimer desktop - no final da página, precisa rolar para ver -->
+    <div class="desktop-disclaimer-page">
+      <p class="desktop-disclaimer-text">Deriv offers complex derivatives, such as options and contracts for difference ("CFDs"). These products may not be suitable for all clients, and trading them puts you at risk. Please make sure that you understand the following risks before trading Deriv products: a) you may lose some or all of the money you invest in the trade, b) if your trade involves currency conversion, exchange rates will affect your profit and loss. You should never trade with borrowed money or with money that you cannot afford to lose.</p>
     </div>
     
     <!-- Disclaimer apenas no mobile -->
@@ -1524,20 +1528,63 @@ button.bg-zenix-green:disabled {
     text-align: center !important;
   }
   
-  /* Disclaimer no desktop */
+  /* Disclaimer desktop - removido do card */
   .desktop-disclaimer-text {
+    display: none;
+  }
+  
+  /* Disclaimer na página (desktop) - bem abaixo, precisa rolar */
+  .desktop-disclaimer-page {
+    display: block;
+    width: 100%;
+    max-width: 1080px;
+    margin: 0 auto 4rem;
+    padding: 0 2rem;
+    flex: 0 0 auto;
+    margin-top: 0;
+  }
+  
+  .desktop-disclaimer-page .desktop-disclaimer-text {
     display: block;
     font-size: 0.625rem;
     line-height: 1.6;
     color: #4e4e4e;
     text-align: center;
-    margin-top: 3rem;
     padding: 0 1rem;
+  }
+  
+  /* Garantir que a página tenha scroll no desktop e centralizar conteúdo */
+  #register-main {
+    overflow-y: auto;
+    overflow-x: hidden;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    padding-top: 0;
+    padding-bottom: 0;
+  }
+  
+  /* Container wrapper centralizado verticalmente na viewport */
+  .login-container-wrapper {
+    margin: 0 auto;
+    flex: 0 0 auto;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    z-index: 1;
   }
 }
 
 /* Ocultar disclaimer desktop no mobile */
 @media (max-width: 640px) {
+  .desktop-disclaimer-page {
+    display: none !important;
+  }
+  
   .desktop-disclaimer-text {
     display: none !important;
   }
