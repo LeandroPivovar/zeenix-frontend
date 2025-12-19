@@ -489,9 +489,9 @@
                                                 <th class="text-left">Horário</th>
                                                 <th class="text-left">Mercado</th>
                                                 <th class="text-left">Negociação</th>
-                                                <th class="text-left">Investimento</th>
                                                 <th class="text-right">Preço Entrada</th>
                                                 <th class="text-right">Preço Saída</th>
+                                                <th class="text-left">Investimento</th>
                                                 <th class="text-right">Retorno</th>
                                             </tr>
                                         </thead>
@@ -505,9 +505,7 @@
                                                         {{ op.direction === 'CALL' ? 'PAR' : op.direction === 'PUT' ? 'IMPAR' : op.direction }}
                                                     </span>
                                                 </td>
-                                                <td>
-                                                    {{ op.investment }}
-                                                </td>
+                                                
                                                 <td class="text-right">
                                                     <span v-if="op.entryPrice != null && op.entryPrice !== undefined && !isNaN(op.entryPrice) && op.entryPrice > 0">
                                                         {{ parseFloat(op.entryPrice).toFixed(2) }}
@@ -519,6 +517,9 @@
                                                         {{ parseFloat(op.exitPrice).toFixed(2) }}
                                                     </span>
                                                     <span v-else>-</span>
+                                                </td>
+                                                <td>
+                                                    {{ op.investment }}
                                                 </td>
                                                 <td :class="['text-right', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
                                                     {{ op.pnl }}
