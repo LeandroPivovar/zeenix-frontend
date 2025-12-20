@@ -99,6 +99,12 @@
               >
                 <div class="flex-1">
                   <div class="flex items-center gap-2 mb-1">
+                    <img 
+                      v-if="!account.isDemo && getCurrencyIcon(account.currency || 'USD', 'real')" 
+                      :src="getCurrencyIcon(account.currency || 'USD', 'real')" 
+                      :alt="account.currency || 'USD'"
+                      class="w-5 h-5 rounded-full object-cover"
+                    />
                     <span class="text-white text-[14px] font-medium">{{ getAccountDisplayName(account) }}</span>
                     <i v-if="isCurrentAccount(account)" class="fa-solid fa-check text-[#22C55E] text-[12px]"></i>
                   </div>
@@ -182,25 +188,22 @@ export default {
       return this.accountType || 'real';
     },
     formattedBalance() {
-      // Mesma lógica do TopNavbar - sempre usar balancesByCurrency baseado no accountType
+      // Retorna apenas o valor numérico formatado (sem prefixo, pois o símbolo é adicionado no template)
       if (this.accountType === 'demo') {
         // Para Demo, usar APENAS o saldo Demo, nunca fallback para Real
         const demo = this.balancesByCurrencyDemo['USD'];
         if (demo !== undefined && demo !== null && demo > 0) {
-          const prefix = this.currencyPrefix || 'D$';
-          return `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+          return demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         }
         // Se não tiver saldo Demo, mostrar 0
-        const prefix = this.currencyPrefix || 'D$';
-        return `${prefix}0,00`;
+        return '0,00';
       }
       
       // Para Real, usar APENAS o saldo Real
       // Primeiro tentar balancesByCurrencyReal
       const realFromBalances = this.balancesByCurrencyReal['USD'];
       if (realFromBalances !== undefined && realFromBalances !== null && realFromBalances >= 0) {
-        const prefix = this.currencyPrefix || '$';
-        return `${prefix}${realFromBalances.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return realFromBalances.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
       
       // Se não tiver saldo Real nos balancesByCurrency, tentar calcular a partir das contas disponíveis
@@ -213,16 +216,14 @@ export default {
             return sum + (isNaN(balance) ? 0 : balance);
           }, 0);
           if (totalReal >= 0) {
-            const prefix = this.currencyPrefix || '$';
-            return `${prefix}${totalReal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+            return totalReal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
           }
         }
       }
       
       // Se não encontrou saldo Real em lugar nenhum, mostrar 0
       // NUNCA usar o balance prop como fallback se for Real, pois pode ser saldo Demo
-      const prefix = this.currencyPrefix || '$';
-      return `${prefix}0,00`;
+      return '0,00';
     },
     balanceNumeric() {
       // Para Real, usar APENAS balancesByCurrencyReal
@@ -523,6 +524,27 @@ export default {
       const value = parseFloat(balance) || 0;
       return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
+    getCurrencyIcon(currency, accountType) {
+      // Retorna o ícone da moeda baseado no tipo de conta
+      const isDemo = accountType === 'demo';
+      const curr = (currency || 'USD').toUpperCase();
+      
+      // Para demo, não mostrar ícone
+      if (isDemo) {
+        return null;
+      }
+      
+      // Para real, retornar ícone baseado na moeda
+      if (curr === 'USD') {
+        // Bandeira dos EUA - usando SVG inline
+        return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='15' viewBox='0 0 20 15'%3E%3Crect width='20' height='15' fill='%23BD0023'/%3E%3Cpath d='M0 3h20M0 6h20M0 9h20M0 12h20' stroke='%23fff' stroke-width='2'/%3E%3Crect width='8' height='8' fill='%2300007F'/%3E%3C/svg%3E";
+      } else if (curr === 'USDT') {
+        // Logo do USDT (Tether) - usando SVG inline
+        return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='10' fill='%2326A378'/%3E%3Ctext x='10' y='15' font-size='12' font-weight='bold' fill='white' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E";
+      }
+      
+      return null;
+    },
     handleProfileUpdate() {
       this.loadUserProfilePicture();
     },
@@ -790,39 +812,81 @@ export default {
 }
 
 .demo-currency-symbol-wrapper {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 20px;
-  height: 20px;
-  background: linear-gradient(135deg, #9333EA 0%, #7C3AED 100%);
-  border-radius: 4px;
-  margin-right: 4px;
+  position: relative;
+  display: inline-block;
+  margin-right: 2px;
 }
 
 .demo-currency-symbol {
-  color: #FFFFFF;
-  font-size: 12px;
-  font-weight: 700;
+  position: relative;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 1.5rem;
   line-height: 1;
+  color: currentColor;
+}
+
+.demo-currency-symbol::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 35%;
+  height: 2.5px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-symbol::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 65%;
+  height: 2.5px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
 }
 
 .demo-currency-symbol-modal-small-wrapper {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  background: linear-gradient(135deg, #9333EA 0%, #7C3AED 100%);
-  border-radius: 3px;
+  position: relative;
+  display: inline-block;
   margin-right: 2px;
 }
 
 .demo-currency-symbol-modal-small {
-  color: #FFFFFF;
-  font-size: 9px;
-  font-weight: 700;
+  position: relative;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 12px;
   line-height: 1;
+  color: currentColor;
+}
+
+.demo-currency-symbol-modal-small::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 35%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-symbol-modal-small::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.3em;
+  top: 65%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
 }
 
 @keyframes fadeIn {

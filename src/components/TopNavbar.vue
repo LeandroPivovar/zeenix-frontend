@@ -2,7 +2,7 @@
   <nav 
     id="top-navbar" 
     class="fixed top-0 left-0 right-0 h-[60px] z-[1000] mobile-header" 
-    style="width: 100%; background: #0B0B0B;"
+    style="width: 100%; background: #0B0B0B; padding: 0;"
   >
     <!-- Desktop Layout -->
     <div class="h-full flex items-center justify-between desktop-nav">
@@ -43,8 +43,16 @@
           <span>Depositar Agora</span>
         </button>
         <div class="flex items-center space-x-3">
-          <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF]">
-            Saldo: {{ balanceHidden ? '••••••' : formattedBalance }}
+          <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF] inline-flex items-center gap-2">
+            <span>Saldo:</span>
+            <span v-if="!balanceHidden" class="inline-flex items-center gap-1.5">
+              <span v-if="accountType === 'demo'" class="demo-currency-symbol-navbar-wrapper">
+                <span class="demo-currency-symbol-navbar">D</span>
+              </span>
+              <span v-else>$</span>
+              {{ formattedBalance }}
+            </span>
+            <span v-else>••••••</span>
           </span>
           <button 
             @click="toggleBalance" 
@@ -56,60 +64,18 @@
           </button>
         </div>
         <!-- Botão de Notificação -->
-        <div class="relative notification-container">
+        <div class="relative">
           <button 
-            @click="toggleNotificationDropdown" 
-            class="notification-button relative w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200"
+            @click="toggleNotifications" 
+            class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 relative"
+            type="button"
           >
             <i class="fas fa-bell text-[#DFDFDF] text-sm"></i>
-            <span v-if="notificationCount > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-[#22C55E] rounded-full flex items-center justify-center">
-              <span class="text-[10px] font-bold text-black">{{ notificationCount > 9 ? '9+' : notificationCount }}</span>
-            </span>
+            <span 
+              v-if="hasUnreadNotifications" 
+              class="absolute top-0 right-0 w-2 h-2 bg-[#22C55E] rounded-full border border-[#0E0E0E]"
+            ></span>
           </button>
-            <!-- Dropdown de Notificações -->
-          <div 
-            v-if="showNotificationDropdown" 
-            class="notification-dropdown absolute right-0 top-12 w-80 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50"
-          >
-            <div class="p-4 border-b border-[#1C1C1C] flex items-center justify-between">
-              <h3 class="text-sm font-semibold text-[#DFDFDF]">Notificações</h3>
-              <button 
-                @click="markAllAsRead"
-                class="text-xs text-[#22C55E] hover:text-[#16A34A] transition-colors"
-              >
-                Marcar todas como lidas
-              </button>
-            </div>
-            <div class="max-h-96 overflow-y-auto">
-              <div v-if="notifications.length === 0" class="p-8 text-center">
-                <i class="fas fa-bell-slash text-[#7A7A7A] text-2xl mb-2"></i>
-                <p class="text-sm text-[#7A7A7A]">Nenhuma notificação</p>
-              </div>
-              <div 
-                v-for="notification in notifications" 
-                :key="notification.id"
-                :class="['p-4 border-b border-[#1C1C1C] hover:bg-[#0B0B0B] transition-colors cursor-pointer', { 'bg-[#0B0B0B]/50': !notification.read }]"
-                @click="handleNotificationClick(notification)"
-              >
-                <div class="flex items-start gap-3">
-                  <div :class="['w-2 h-2 rounded-full mt-2 flex-shrink-0', notification.read ? 'bg-transparent' : 'bg-[#22C55E]']"></div>
-                  <div class="flex-1">
-                    <p class="text-sm font-medium text-[#DFDFDF]">{{ notification.title }}</p>
-                    <p class="text-xs text-[#7A7A7A] mt-1">{{ notification.message }}</p>
-                    <p class="text-xs text-[#7A7A7A] mt-2">{{ formatNotificationDate(notification.date) }}</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <div v-if="notifications.length > 0" class="p-3 border-t border-[#1C1C1C] text-center">
-              <button 
-                @click="viewAllNotifications"
-                class="text-sm text-[#22C55E] hover:text-[#16A34A] transition-colors"
-              >
-                Ver todas as notificações
-              </button>
-            </div>
-          </div>
         </div>
         <div class="relative">
           <button 
@@ -124,12 +90,48 @@
             />
             <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
           </button>
+          <div 
+            v-if="showProfileDropdown" 
+            id="profileDropdown" 
+            class="absolute right-0 top-12 w-56 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
+          >
+            <div class="p-3 border-b border-[#1C1C1C]">
+              <p class="text-sm font-semibold text-[#DFDFDF]">{{ userName }}</p>
+              <p class="text-xs text-[#7A7A7A]">{{ userEmail }}</p>
+            </div>
+            <div class="py-2">
+              <a 
+                href="#" 
+                @click.prevent="switchAccount"
+                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
+              >
+                <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
+                Trocar de Conta
+              </a>
+              <a 
+                href="#" 
+                @click.prevent="$router.push('/settings')" 
+                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
+              >
+                <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
+                Configurações
+              </a>
+              <a 
+                href="#" 
+                @click.prevent="disconnectAccount" 
+                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
+              >
+                <i class="fas fa-plug text-xs mr-3 text-[#7A7A7A]"></i>
+                Sair da Corretora
+              </a>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Mobile Layout -->
-    <div class="h-full flex items-center justify-between mobile-nav">
+    <div class="h-full px-4 flex items-center justify-between mobile-nav">
       <!-- Menu Hambúrguer -->
       <button 
         @click="toggleMobileSidebar"
@@ -146,66 +148,25 @@
         <span class="text-[#22C55E] font-bold text-xl">X</span>
       </div>
       
-      <!-- Botão de Notificação Mobile -->
-      <div class="relative notification-container">
+      <!-- Botão de Notificação (Mobile) -->
+      <div class="relative">
         <button 
-          @click="toggleNotificationDropdown" 
-          class="notification-button relative w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200"
+          @click="toggleNotifications" 
+          class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 relative"
+          type="button"
         >
           <i class="fas fa-bell text-[#DFDFDF] text-sm"></i>
-          <span v-if="notificationCount > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-[#22C55E] rounded-full flex items-center justify-center">
-            <span class="text-[10px] font-bold text-black">{{ notificationCount > 9 ? '9+' : notificationCount }}</span>
-          </span>
+          <span 
+            v-if="hasUnreadNotifications" 
+            class="absolute top-0 right-0 w-2 h-2 bg-[#22C55E] rounded-full border border-[#0E0E0E]"
+          ></span>
         </button>
-        <!-- Dropdown de Notificações Mobile -->
-        <div 
-          v-if="showNotificationDropdown" 
-          class="notification-dropdown absolute right-0 top-12 w-80 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-[10001]"
-        >
-          <div class="p-4 border-b border-[#1C1C1C] flex items-center justify-between">
-            <h3 class="text-sm font-semibold text-[#DFDFDF]">Notificações</h3>
-            <button 
-              @click="markAllAsRead"
-              class="text-xs text-[#22C55E] hover:text-[#16A34A] transition-colors"
-            >
-              Marcar todas como lidas
-            </button>
-          </div>
-          <div class="max-h-96 overflow-y-auto">
-            <div v-if="notifications.length === 0" class="p-8 text-center">
-              <i class="fas fa-bell-slash text-[#7A7A7A] text-2xl mb-2"></i>
-              <p class="text-sm text-[#7A7A7A]">Nenhuma notificação</p>
-            </div>
-            <div 
-              v-for="notification in notifications" 
-              :key="notification.id"
-              :class="['p-4 border-b border-[#1C1C1C] hover:bg-[#0B0B0B] transition-colors cursor-pointer', { 'bg-[#0B0B0B]/50': !notification.read }]"
-              @click="handleNotificationClick(notification)"
-            >
-              <div class="flex items-start gap-3">
-                <div :class="['w-2 h-2 rounded-full mt-2 flex-shrink-0', notification.read ? 'bg-transparent' : 'bg-[#22C55E]']"></div>
-                <div class="flex-1">
-                  <p class="text-sm font-medium text-[#DFDFDF]">{{ notification.title }}</p>
-                  <p class="text-xs text-[#7A7A7A] mt-1">{{ notification.message }}</p>
-                  <p class="text-xs text-[#7A7A7A] mt-2">{{ formatNotificationDate(notification.date) }}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-          <div v-if="notifications.length > 0" class="p-3 border-t border-[#1C1C1C] text-center">
-            <button 
-              @click="viewAllNotifications"
-              class="text-sm text-[#22C55E] hover:text-[#16A34A] transition-colors"
-            >
-              Ver todas as notificações
-            </button>
-          </div>
-        </div>
       </div>
+      
       <!-- Perfil -->
       <div class="relative">
         <button 
-          @click="toggleProfileModal" 
+          @click="handleProfileClick" 
           class="w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200 overflow-hidden"
         >
           <img 
@@ -216,103 +177,36 @@
           />
           <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
         </button>
-      </div>
-    </div>
-
-    <!-- Modal do Perfil Mobile -->
-    <div 
-      v-if="showProfileModal" 
-      class="profile-modal-overlay"
-      @click.self="closeProfileModal"
-    >
-      <div class="profile-modal-container">
-        <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-[#DFDFDF] text-left">Perfil</h2>
-          <button 
-            @click="closeProfileModal"
-            class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
-          >
-            <i class="fas fa-times text-lg"></i>
-          </button>
-        </div>
-        
-        <div class="p-6 space-y-6">
-          <!-- Informações do Usuário -->
-          <div class="flex items-center space-x-4 pb-4 border-b border-[#1C1C1C]">
-            <div class="w-16 h-16 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center overflow-hidden">
-              <img 
-                v-if="userProfilePicture" 
-                :src="userProfilePicture" 
-                :alt="userName"
-                class="w-full h-full object-cover rounded-full"
-              />
-              <span v-else class="text-white font-semibold text-lg">{{ userInitials }}</span>
-            </div>
-            <div class="text-left">
-              <p class="text-base font-semibold text-[#DFDFDF]">{{ userName }}</p>
-              <p class="text-sm text-[#7A7A7A]">{{ userEmail }}</p>
-            </div>
+        <div 
+          v-if="showProfileDropdown" 
+          id="profileDropdownMobile" 
+          class="absolute right-0 top-12 w-56 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50"
+        >
+          <div class="p-3 border-b border-[#1C1C1C]">
+            <p class="text-sm font-semibold text-[#DFDFDF]">{{ userName }}</p>
+            <p class="text-xs text-[#7A7A7A]">{{ userEmail }}</p>
           </div>
-
-          <!-- Saldo -->
-          <div class="bg-[#0E0E0E] border border-[#1C1C1C] rounded-lg p-4">
-            <div class="flex items-center justify-between mb-2">
-              <p class="text-sm text-[#7A7A7A]">Saldo</p>
-              <button 
-                @click="toggleBalance" 
-                class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
-                type="button"
-              >
-                <i v-if="balanceHidden" class="fas fa-eye-slash text-sm"></i>
-                <i v-else class="fas fa-eye text-sm"></i>
-              </button>
-            </div>
-            <p class="text-2xl font-bold text-[#DFDFDF] text-left">
-              {{ balanceHidden ? '••••••' : formattedBalance }}
-            </p>
-          </div>
-
-          <!-- Botões Real e Demo -->
-          <div class="flex gap-2 mt-4">
-            <button
-              @click="switchToRealAccount"
-              :class="accountType === 'real' ? 'bg-[#22C55E] text-black' : 'bg-[#1C1C1C] text-[#DFDFDF] hover:bg-[#2A2A2A]'"
-              class="flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 text-center"
-            >
-              Real
-            </button>
-            <button
-              @click="switchToDemoAccount"
-              :class="accountType === 'demo' ? 'bg-[#22C55E] text-black' : 'bg-[#1C1C1C] text-[#DFDFDF] hover:bg-[#2A2A2A]'"
-              class="flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 text-center"
-            >
-              Demo
-            </button>
-          </div>
-
-          <!-- Botão Depositar -->
-          <button 
-            @click="openDepositFlowFromModal" 
-            class="w-full bg-[#22C55E] hover:bg-[#16A34A] text-black font-semibold px-5 py-3 rounded-lg text-base inline-flex items-center justify-center space-x-2 transition-all duration-200 shadow-[0_2px_8px_rgba(34,197,94,0.2)] hover:shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
-          >
-            <i class="fas fa-plus text-sm"></i>
-            <span>Depositar</span>
-          </button>
-
-          <!-- Outras opções -->
-          <div class="pt-2 space-y-2">
+          <div class="py-2">
             <a 
               href="#" 
-              @click.prevent="goToSettings"
-              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg text-left"
+              @click.prevent="switchAccount"
+              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
+            >
+              <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
+              Trocar de Conta
+            </a>
+            <a 
+              href="#" 
+              @click.prevent="$router.push('/settings')" 
+              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
             >
               <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
               Configurações
             </a>
             <a 
               href="#" 
-              @click.prevent="disconnectAccountFromModal" 
-              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg text-left"
+              @click.prevent="disconnectAccount" 
+              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
             >
               <i class="fas fa-plug text-xs mr-3 text-[#7A7A7A]"></i>
               Sair da Corretora
@@ -322,6 +216,124 @@
       </div>
     </div>
 
+    <!-- Modal de Notificações -->
+    <div 
+      v-if="showNotificationsModal" 
+      class="notifications-modal-overlay"
+      @click.self="closeNotificationsModal"
+    >
+      <div class="notifications-modal-content">
+        <div class="notifications-modal-header">
+          <h2 class="notifications-modal-title">Notificações</h2>
+          <button 
+            @click="closeNotificationsModal"
+            class="notifications-modal-close"
+          >
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="notifications-modal-body">
+          <div v-if="notifications.length === 0" class="notifications-empty">
+            <i class="fas fa-bell-slash text-[48px] text-white/20 mb-4"></i>
+            <p class="text-white/40 text-[14px]">Nenhuma notificação</p>
+          </div>
+          <div v-else class="notifications-list">
+            <div 
+              v-for="notification in notifications" 
+              :key="notification.id"
+              class="notification-item"
+            >
+              <div class="notification-icon">
+                <i :class="notification.icon || 'fa-solid fa-info-circle'"></i>
+              </div>
+              <div class="notification-content">
+                <h3 class="notification-title">{{ notification.title }}</h3>
+                <p class="notification-message">{{ notification.message }}</p>
+                <span class="notification-time">{{ formatNotificationDate(notification.date) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Seleção de Contas -->
+    <div 
+      v-if="showAccountModal" 
+      class="account-modal-overlay"
+      @click.self="closeAccountModal"
+    >
+      <div class="account-modal-container">
+        <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between">
+          <h2 class="text-xl font-semibold text-[#DFDFDF]">Selecionar Conta</h2>
+          <button 
+            @click="closeAccountModal"
+            class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
+          >
+            <i class="fas fa-times text-lg"></i>
+          </button>
+        </div>
+        
+        <div class="overflow-y-auto flex-1 p-6">
+          <div v-if="loadingAccounts" class="flex items-center justify-center py-12">
+            <div class="text-center">
+              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#22C55E] mb-4"></div>
+              <p class="text-[#A1A1A1]">Carregando contas...</p>
+            </div>
+          </div>
+          
+          <div v-else-if="availableAccounts.length === 0" class="text-center py-12">
+            <i class="fas fa-exclamation-circle text-[#7A7A7A] text-4xl mb-4"></i>
+            <p class="text-[#A1A1A1]">Nenhuma conta disponível</p>
+          </div>
+          
+          <div v-else class="space-y-3">
+            <div 
+              v-for="account in availableAccounts" 
+              :key="account.loginid"
+              @click="selectAccount(account)"
+              class="p-4 bg-[#0B0B0B] border border-[#1C1C1C] rounded-lg cursor-pointer hover:border-[#22C55E] hover:bg-[#0F0F0F] transition-all duration-200"
+              :class="{ 'border-[#22C55E] bg-[#0F0F0F]': isCurrentAccount(account) }"
+            >
+              <div class="flex items-center justify-between">
+                <div class="flex-1">
+                  <div class="flex items-center gap-3 mb-2">
+                    <span class="text-sm font-semibold text-[#DFDFDF]">{{ getAccountDisplayName(account) }}</span>
+                    <span 
+                      class="px-2 py-0.5 rounded text-xs font-medium"
+                      :class="account.isDemo ? 'bg-[#22C55E]/20 text-[#22C55E]' : 'bg-[#F59E0B]/20 text-[#F59E0B]'"
+                    >
+                      {{ account.isDemo ? 'DEMO' : 'REAL' }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-4">
+                    <div>
+                      <p class="text-xs text-[#7A7A7A] mb-1">Saldo</p>
+                      <p class="text-base font-semibold text-[#DFDFDF] inline-flex items-center gap-1.5">
+                        <img 
+                          v-if="!account.isDemo && getCurrencyIcon(account.currency, 'real')" 
+                          :src="getCurrencyIcon(account.currency, 'real')" 
+                          :alt="account.currency"
+                          class="w-5 h-5 rounded-full object-cover"
+                        />
+                        <span v-if="account.isDemo" class="demo-currency-symbol-account-wrapper">
+                          <span class="demo-currency-symbol-account">D</span>
+                        </span>
+                        <span v-else-if="!account.isDemo">$</span>
+                        {{ formatBalance(account.balance || 0) }}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div v-if="isCurrentAccount(account)" class="ml-4">
+                  <i class="fas fa-check-circle text-[#22C55E] text-xl"></i>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
   </nav>
 </template>
 
@@ -365,23 +377,24 @@ export default {
       showProfileDropdown: false,
       showProfileModal: false,
       userProfilePictureUrl: null,
+      showAccountModal: false,
       loadingAccounts: false,
       availableAccounts: [],
       isMobile: false,
-      showNotificationDropdown: false,
+      hasUnreadNotifications: false,
+      showNotificationsModal: false,
       notifications: []
     }
   },
   computed: {
     formattedBalance() {
+      // Retorna apenas o valor numérico formatado (sem prefixo, pois o símbolo é adicionado no template)
       if (this.accountType === 'demo') {
         const demo = this.balancesByCurrencyDemo['USD'] || this.balanceNumeric || 0;
-        const prefix = this.currencyPrefix || this.getCurrencyPrefix();
-        return `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
       const value = this.balanceNumeric;
-      const prefix = this.currencyPrefix || this.getCurrencyPrefix(this.currency);
-      return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
     balanceNumeric() {
       const usdReal = this.balancesByCurrencyReal['USD'];
@@ -442,9 +455,6 @@ export default {
       }
       return 'email@exemplo.com';
     },
-    notificationCount() {
-      return this.notifications.filter(n => !n.read).length;
-    },
     userProfilePicture() {
       if (!this.userProfilePictureUrl) return null;
       
@@ -491,6 +501,23 @@ export default {
     toggleBalance() {
       this.balanceHidden = !this.balanceHidden;
     },
+    toggleNotifications() {
+      this.showNotificationsModal = !this.showNotificationsModal;
+    },
+    closeNotificationsModal() {
+      this.showNotificationsModal = false;
+    },
+    formatNotificationDate(date) {
+      if (!date) return '';
+      const d = new Date(date);
+      return d.toLocaleDateString('pt-BR', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    },
     /**
      * Retorna nome amigável da conta baseado no tipo e moeda
      * Ex: "Conta Demo (USD)" ou "Conta Real (USD)"
@@ -504,131 +531,31 @@ export default {
       return `Conta ${type} (${currency})`;
     },
     handleProfileClick() {
-      // No desktop e mobile, abre o modal de perfil
-      this.toggleProfileModal();
+      // Desktop e mobile: usar dropdown
+      if (!this.isMobile) {
+        // Emitir evento para abrir o modal de configurações
+        this.$emit('open-settings');
+        this.showProfileDropdown = false;
+      } else {
+        // No mobile, alternar dropdown
+        this.showProfileDropdown = !this.showProfileDropdown;
+      }
     },
     toggleProfileDropdown() {
       this.showProfileDropdown = !this.showProfileDropdown;
     },
-    toggleNotificationDropdown() {
-      this.showNotificationDropdown = !this.showNotificationDropdown;
-      // Fechar dropdown de perfil se estiver aberto
-      if (this.showNotificationDropdown) {
-        this.showProfileDropdown = false;
-      }
-      // Carregar notificações quando abrir
-      if (this.showNotificationDropdown && this.notifications.length === 0) {
-        this.loadNotifications();
-      }
-    },
-    loadNotifications() {
-      // TODO: Carregar notificações da API
-      // Por enquanto, usando dados mockados
-      this.notifications = [
-        // Exemplo de notificações
-        // { id: 1, title: 'Nova notificação', message: 'Você tem uma nova mensagem', date: new Date(), read: false }
-      ];
-    },
-    markAllAsRead() {
-      this.notifications.forEach(notification => {
-        notification.read = true;
-      });
-      // TODO: Enviar para API para marcar como lidas
-    },
-    handleNotificationClick(notification) {
-      notification.read = true;
-      // TODO: Navegar para a página relacionada à notificação ou executar ação
-      this.showNotificationDropdown = false;
-    },
-    viewAllNotifications() {
-      // TODO: Navegar para página de todas as notificações
-      this.showNotificationDropdown = false;
-      console.log('Ver todas as notificações');
-    },
-    formatNotificationDate(date) {
-      if (!date) return '';
-      const now = new Date();
-      const notificationDate = new Date(date);
-      const diffInSeconds = Math.floor((now - notificationDate) / 1000);
-      
-      if (diffInSeconds < 60) {
-        return 'Agora';
-      } else if (diffInSeconds < 3600) {
-        const minutes = Math.floor(diffInSeconds / 60);
-        return `${minutes} min atrás`;
-      } else if (diffInSeconds < 86400) {
-        const hours = Math.floor(diffInSeconds / 3600);
-        return `${hours}h atrás`;
-      } else {
-        const days = Math.floor(diffInSeconds / 86400);
-        return `${days} dia${days > 1 ? 's' : ''} atrás`;
-      }
-    },
-    async toggleProfileModal() {
-      this.showProfileModal = !this.showProfileModal;
-      // Carregar contas quando abrir o modal
-      if (this.showProfileModal && this.availableAccounts.length === 0) {
-        await this.loadAvailableAccounts();
-      }
-    },
-    closeProfileModal() {
-      this.showProfileModal = false;
-    },
     toggleMobileSidebar() {
       this.$emit('toggle-sidebar');
     },
-    openDepositFlowFromModal() {
-      this.closeProfileModal();
-      this.openDepositFlow();
-    },
-    async selectAccountFromModal(account) {
-      await this.selectAccount(account);
-      this.closeProfileModal();
-    },
-    async switchToRealAccount() {
-      // Se já está em real, não faz nada
-      if (this.accountType === 'real') {
-        return;
-      }
-      
-      // Encontrar primeira conta real
-      const realAccount = this.availableAccounts.find(acc => !acc.isDemo);
-      if (realAccount) {
-        await this.selectAccountFromModal(realAccount);
-      }
-    },
-    async switchToDemoAccount() {
-      // Se já está em demo, não faz nada
-      if (this.accountType === 'demo') {
-        return;
-      }
-      
-      // Encontrar primeira conta demo
-      const demoAccount = this.availableAccounts.find(acc => acc.isDemo);
-      if (demoAccount) {
-        await this.selectAccountFromModal(demoAccount);
-      }
-    },
-    goToSettings() {
-      this.closeProfileModal();
-      this.$router.push('/settings');
-    },
-    disconnectAccountFromModal() {
-      this.closeProfileModal();
-      this.disconnectAccount();
-    },
     handleClickOutside(event) {
-      // Fechar dropdown de perfil ao clicar fora
-      const profileDropdown = document.getElementById('profileDropdown');
-      const profileContainer = event.target.closest('.relative');
-      if (profileDropdown && !profileDropdown.contains(event.target) && profileContainer && !profileContainer.querySelector('#profileDropdown')) {
+      const dropdown = document.getElementById('profileDropdown');
+      const dropdownMobile = document.getElementById('profileDropdownMobile');
+      const button = event.target.closest('button');
+      if (dropdown && !dropdown.contains(event.target) && !button?.closest('.relative')) {
         this.showProfileDropdown = false;
       }
-      // Fechar dropdown de notificações ao clicar fora
-      const notificationContainer = event.target.closest('.notification-container');
-      const notificationDropdown = event.target.closest('.notification-dropdown');
-      if (!notificationContainer && !notificationDropdown && this.showNotificationDropdown) {
-        this.showNotificationDropdown = false;
+      if (dropdownMobile && !dropdownMobile.contains(event.target) && !button?.closest('.relative')) {
+        this.showProfileDropdown = false;
       }
     },
     handleStorageChange(event) {
@@ -650,6 +577,14 @@ export default {
       localStorage.removeItem('deriv_connection');
       this.$router.push('/dashboard');
       window.location.reload();
+    },
+    async switchAccount() {
+      // Fecha o dropdown
+      this.showProfileDropdown = false;
+      
+      // Abre o modal de seleção de contas
+      this.showAccountModal = true;
+      await this.loadAvailableAccounts();
     },
     async loadAvailableAccounts() {
       this.loadingAccounts = true;
@@ -848,8 +783,8 @@ export default {
           const accountType = account.isDemo ? 'demo' : 'real';
           this.$emit('account-type-changed', accountType);
           
-          // Recarregar página para atualizar todos os componentes
-          this.closeProfileModal();
+          // Fechar modal e recarregar página para atualizar todos os componentes
+          this.closeAccountModal();
           window.location.reload();
         } else {
           throw new Error('Erro ao selecionar conta');
@@ -859,20 +794,52 @@ export default {
         alert('Erro ao trocar de conta. Tente novamente.');
       }
     },
-    formatBalance(balance) {
-      const prefix = this.getCurrencyPrefix();
-      // Sempre mostrar o saldo, mesmo se for zero
-      const value = parseFloat(balance) || 0;
-      return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    closeAccountModal() {
+      this.showAccountModal = false;
+      this.availableAccounts = [];
     },
-    getCurrencyPrefix() {
-      // Se a conta atual for demo, sempre retornar D
-      if (this.accountType === 'demo') {
-        return 'D';
+    formatBalance(balance) {
+      // Retorna apenas o valor numérico formatado (sem prefixo, pois o símbolo é adicionado no template)
+      const value = parseFloat(balance) || 0;
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    },
+    getCurrencyPrefix(currency, isDemo = false) {
+      // Se for demo, retornar vazio (o D será renderizado via CSS)
+      if (isDemo) {
+        return '';
+      }
+      // Para real, retornar símbolo padrão da moeda
+      switch ((currency || '').toUpperCase()) {
+        case 'USD':
+          return '$'
+        case 'EUR':
+          return '€'
+        case 'BTC':
+          return '₿'
+        default:
+          return currency ? `${currency} ` : '$'
+      }
+    },
+    getCurrencyIcon(currency, accountType) {
+      // Retorna o ícone da moeda baseado no tipo de conta
+      const isDemo = accountType === 'demo';
+      const curr = (currency || 'USD').toUpperCase();
+      
+      // Para demo, não mostrar ícone
+      if (isDemo) {
+        return null;
       }
       
-      // Para real, sempre retornar $
-      return '$';
+      // Para real, retornar ícone baseado na moeda
+      if (curr === 'USD') {
+        // Bandeira dos EUA - usando SVG inline
+        return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='15' viewBox='0 0 20 15'%3E%3Crect width='20' height='15' fill='%23BD0023'/%3E%3Cpath d='M0 3h20M0 6h20M0 9h20M0 12h20' stroke='%23fff' stroke-width='2'/%3E%3Crect width='8' height='8' fill='%2300007F'/%3E%3C/svg%3E";
+      } else if (curr === 'USDT') {
+        // Logo do USDT (Tether) - usando SVG inline
+        return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='10' fill='%2326A378'/%3E%3Ctext x='10' y='15' font-size='12' font-weight='bold' fill='white' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E";
+      }
+      
+      return null;
     },
     async loadUserProfilePicture() {
       try {
@@ -1033,6 +1000,145 @@ export default {
   margin: auto;
 }
 
+/* Modal de Notificações */
+.notifications-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  z-index: 9999;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-end;
+  padding: 0;
+  backdrop-filter: blur(4px);
+  animation: fadeIn 0.3s ease-out;
+}
+
+.notifications-modal-content {
+  background: #0B0B0B;
+  border-radius: 0;
+  width: 100%;
+  max-width: 400px;
+  min-width: 320px;
+  height: 100vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  border-left: 2px solid rgba(255, 255, 255, 0.05);
+  animation: slideInRight 0.3s ease-out;
+}
+
+.notifications-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: none;
+}
+
+.notifications-modal-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0;
+}
+
+.notifications-modal-close {
+  background: none;
+  border: none;
+  color: #9B9B9B;
+  font-size: 24px;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.3s;
+}
+
+.notifications-modal-close:hover {
+  color: #fff;
+}
+
+.notifications-modal-body {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+  color: #FFFFFF;
+}
+
+.notifications-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 60px 20px;
+  text-align: center;
+}
+
+.notifications-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.notification-item {
+  display: flex;
+  gap: 12px;
+  padding: 16px;
+  background: #1A1A1A;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  transition: all 0.2s ease;
+  cursor: pointer;
+}
+
+.notification-item:hover {
+  background: #1F1F1F;
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.notification-icon {
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(34, 197, 94, 0.1);
+  border-radius: 10px;
+  color: #22C55E;
+  font-size: 18px;
+}
+
+.notification-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.notification-title {
+  color: #FFFFFF;
+  font-size: 14px;
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.notification-message {
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 13px;
+  margin: 0;
+  line-height: 1.4;
+}
+
+.notification-time {
+  color: rgba(255, 255, 255, 0.4);
+  font-size: 11px;
+  margin-top: 4px;
+}
+
 /* Modal de Seleção de Contas */
 .account-modal-overlay {
   position: fixed;
@@ -1085,6 +1191,15 @@ export default {
   }
 }
 
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
 @media (max-width: 1024px) {
   #top-navbar {
     left: 0 !important;
@@ -1100,32 +1215,12 @@ export default {
   .mobile-nav {
     display: flex;
     gap: 16px;
-    padding-left: 10px !important;
-    padding-right: 10px !important;
   }
   
   .toggle-menu-btn-header,
   .header-brand-text,
   .header-whatsapp-button {
     display: none !important;
-  }
-
-  .notification-dropdown {
-    position: fixed !important;
-    width: calc(100vw - 32px) !important;
-    max-width: 400px !important;
-    right: 16px !important;
-    left: auto !important;
-    top: 70px !important;
-    bottom: auto !important;
-    z-index: 10001 !important;
-    max-height: calc(100vh - 80px) !important;
-    overflow: visible !important;
-  }
-
-  .notification-dropdown .max-h-96 {
-    max-height: calc(100vh - 200px) !important;
-    overflow-y: auto !important;
   }
 
   .mobile-menu-btn,
@@ -1204,5 +1299,83 @@ export default {
   text-decoration: none;
   white-space: nowrap;
 }
-</style>
 
+/* Símbolo D com linhas horizontais para Demo (estilo Deriv) */
+.demo-currency-symbol-navbar-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-right: 2px;
+}
+
+.demo-currency-symbol-navbar {
+  position: relative;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 1rem;
+  line-height: 1;
+  color: currentColor;
+}
+
+.demo-currency-symbol-navbar::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.35em;
+  top: 35%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-symbol-navbar::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.35em;
+  top: 65%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-symbol-account-wrapper {
+  position: relative;
+  display: inline-block;
+  margin-right: 2px;
+}
+
+.demo-currency-symbol-account {
+  position: relative;
+  display: inline-block;
+  font-weight: bold;
+  font-size: 1rem;
+  line-height: 1;
+  color: currentColor;
+}
+
+.demo-currency-symbol-account::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.35em;
+  top: 35%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+
+.demo-currency-symbol-account::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  width: 0.35em;
+  top: 65%;
+  height: 2px;
+  background-color: currentColor;
+  transform: translateY(-50%);
+  border-radius: 1px;
+}
+</style>
