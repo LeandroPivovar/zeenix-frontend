@@ -397,10 +397,12 @@ export default {
 .layout-content {
     flex-grow: 1;
     padding: 20px;
-    padding-top: 80px;
+    padding-top: 50px;
     background-color: #0B0B0B;
     width: 100%;
-    padding: 40px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
 }
 
 /* Mobile Header */
@@ -457,7 +459,7 @@ export default {
     }
     
     .layout-content {
-        padding-top: 80px;
+        padding-top: 50px;
     }
 }
 

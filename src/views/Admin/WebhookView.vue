@@ -422,12 +422,11 @@ export default {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 2rem 0;
-
+    margin: 0 0 2rem 0;
 }
 
 .add-webhook{
-    background-color: var(--color-success);
+    background-color: #22C55E;
 } 
 
 .page-header {
@@ -445,6 +444,13 @@ export default {
     text-align: left;
     display: flex;
     flex-direction: column;
+}
+
+.header-info h1 {
+    font-size: calc(1.5rem + 0.5rem);
+    font-weight: 600;
+    margin-top: 0;
+    padding-top: 0;
 }
 
 .page-header h1 {
@@ -494,7 +500,7 @@ export default {
 .webhook-cards-grid {
     display: grid;
     width: 100%;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 2fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 1.5rem;
     margin-bottom: 3rem;
 }
@@ -504,6 +510,7 @@ export default {
     padding: 1.5rem;
     border-radius: 0.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+    border: 1px solid var(--color-border);
 }
 
 .card-header {
@@ -628,7 +635,7 @@ export default {
 .events-available-card {
     background-color: var(--color-bg-card);
     border-radius: 0.5rem;
-    padding: 1.5rem;
+    padding: 1.5rem 0;
     margin-bottom: 2rem;
     width: 100%;
 }
@@ -705,7 +712,7 @@ export default {
 .webhook-logs {
     background-color: var(--color-bg-card);
     border-radius: 0.5rem;
-    padding: 1.5rem;
+    padding: 1.5rem 0;
     margin-bottom: 3rem;
     width: 100%;
 }

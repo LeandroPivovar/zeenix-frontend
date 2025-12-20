@@ -61,6 +61,7 @@
                                     <path d="M2 12L12 17L22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                                 </svg>
                             </div>
+                            <div class="course-card-image-gradient"></div>
                             <div class="course-card-status" :class="getStatusClass(course.status)">
                                 {{ getStatusLabel(course.status) }}
                             </div>
@@ -354,13 +355,13 @@ export default {
 .container {
     max-width: 1400px;
     margin: 0 auto;
-    padding: 2rem;
+    padding: 0;
 }
 
 .page-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     margin-bottom: 2rem;
     flex-wrap: wrap;
     gap: 1rem;
@@ -442,6 +443,22 @@ export default {
     object-fit: cover;
 }
 
+.course-card-image-gradient {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 120px;
+    background: linear-gradient(to bottom, 
+        transparent 0%, 
+        rgba(26, 26, 26, 0.2) 30%, 
+        rgba(26, 26, 26, 0.5) 60%, 
+        rgba(26, 26, 26, 0.8) 85%, 
+        #1a1a1a 100%);
+    pointer-events: none;
+    z-index: 1;
+}
+
 .course-card-placeholder {
     width: 100%;
     height: 100%;
@@ -460,6 +477,7 @@ export default {
     font-size: 0.75rem;
     font-weight: 600;
     text-transform: uppercase;
+    z-index: 2;
 }
 
 .status-published {
@@ -479,6 +497,7 @@ export default {
 
 .course-card-content {
     padding: 1.5rem;
+    text-align: left;
 }
 
 .course-card-title {
@@ -486,6 +505,7 @@ export default {
     font-weight: 700;
     color: #f0f2f5;
     margin: 0 0 0.5rem 0;
+    text-align: left;
 }
 
 .course-card-description {
@@ -493,6 +513,7 @@ export default {
     font-size: 0.9rem;
     line-height: 1.5;
     margin: 0 0 1rem 0;
+    text-align: left;
 }
 
 .course-card-meta {

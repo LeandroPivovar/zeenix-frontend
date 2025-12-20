@@ -829,10 +829,11 @@ body {
 .layout-content {
     flex-grow: 1;
     padding: 20px;
-    padding-top: 80px;
+    padding-top: 50px;
     background-color: #0B0B0B;
     display: flex;
     flex-direction: column;
+    justify-content: flex-start;
 }
 
 /* Mobile Header */
@@ -889,7 +890,7 @@ body {
     }
     
     .layout-content {
-        padding-top: 80px;
+        padding-top: 50px;
     }
 }
 
@@ -1329,7 +1330,7 @@ body {
         width: 100%;
         margin-left: 0;
         padding: 10px;
-        padding-top: 60px; /* Espaço para o hamburger */
+        padding-top: 50px;
     }
 
 

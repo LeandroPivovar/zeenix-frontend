@@ -45,7 +45,7 @@
 				</div>
 			</div>
 
-			<main class="layout-content">
+		<main class="layout-content">
 			<div class="background-glow"></div>
 			<div class="background-grid"></div>
 
