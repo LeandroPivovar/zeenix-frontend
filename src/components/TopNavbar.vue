@@ -124,48 +124,12 @@
             />
             <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
           </button>
-          <div 
-            v-if="showProfileDropdown" 
-            id="profileDropdown" 
-            class="absolute right-0 top-12 w-56 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
-          >
-            <div class="p-3 border-b border-[#1C1C1C]">
-              <p class="text-sm font-semibold text-[#DFDFDF]">{{ userName }}</p>
-              <p class="text-xs text-[#7A7A7A]">{{ userEmail }}</p>
-            </div>
-            <div class="py-2">
-              <a 
-                href="#" 
-                @click.prevent="switchAccount"
-                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-              >
-                <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
-                Trocar de Conta
-              </a>
-              <a 
-                href="#" 
-                @click.prevent="$router.push('/settings')" 
-                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-              >
-                <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
-                Configurações
-              </a>
-              <a 
-                href="#" 
-                @click.prevent="disconnectAccount" 
-                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-              >
-                <i class="fas fa-plug text-xs mr-3 text-[#7A7A7A]"></i>
-                Sair da Corretora
-              </a>
-            </div>
-          </div>
         </div>
       </div>
     </div>
 
     <!-- Mobile Layout -->
-    <div class="h-full px-4 flex items-center justify-between mobile-nav">
+    <div class="h-full flex items-center justify-between mobile-nav">
       <!-- Menu Hambúrguer -->
       <button 
         @click="toggleMobileSidebar"
@@ -193,6 +157,50 @@
             <span class="text-[10px] font-bold text-black">{{ notificationCount > 9 ? '9+' : notificationCount }}</span>
           </span>
         </button>
+        <!-- Dropdown de Notificações Mobile -->
+        <div 
+          v-if="showNotificationDropdown" 
+          class="notification-dropdown absolute right-0 top-12 w-80 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-[10001]"
+        >
+          <div class="p-4 border-b border-[#1C1C1C] flex items-center justify-between">
+            <h3 class="text-sm font-semibold text-[#DFDFDF]">Notificações</h3>
+            <button 
+              @click="markAllAsRead"
+              class="text-xs text-[#22C55E] hover:text-[#16A34A] transition-colors"
+            >
+              Marcar todas como lidas
+            </button>
+          </div>
+          <div class="max-h-96 overflow-y-auto">
+            <div v-if="notifications.length === 0" class="p-8 text-center">
+              <i class="fas fa-bell-slash text-[#7A7A7A] text-2xl mb-2"></i>
+              <p class="text-sm text-[#7A7A7A]">Nenhuma notificação</p>
+            </div>
+            <div 
+              v-for="notification in notifications" 
+              :key="notification.id"
+              :class="['p-4 border-b border-[#1C1C1C] hover:bg-[#0B0B0B] transition-colors cursor-pointer', { 'bg-[#0B0B0B]/50': !notification.read }]"
+              @click="handleNotificationClick(notification)"
+            >
+              <div class="flex items-start gap-3">
+                <div :class="['w-2 h-2 rounded-full mt-2 flex-shrink-0', notification.read ? 'bg-transparent' : 'bg-[#22C55E]']"></div>
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-[#DFDFDF]">{{ notification.title }}</p>
+                  <p class="text-xs text-[#7A7A7A] mt-1">{{ notification.message }}</p>
+                  <p class="text-xs text-[#7A7A7A] mt-2">{{ formatNotificationDate(notification.date) }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div v-if="notifications.length > 0" class="p-3 border-t border-[#1C1C1C] text-center">
+            <button 
+              @click="viewAllNotifications"
+              class="text-sm text-[#22C55E] hover:text-[#16A34A] transition-colors"
+            >
+              Ver todas as notificações
+            </button>
+          </div>
+        </div>
       </div>
       <!-- Perfil -->
       <div class="relative">
@@ -219,7 +227,7 @@
     >
       <div class="profile-modal-container">
         <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-[#DFDFDF]">Perfil</h2>
+          <h2 class="text-xl font-semibold text-[#DFDFDF] text-left">Perfil</h2>
           <button 
             @click="closeProfileModal"
             class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
@@ -240,7 +248,7 @@
               />
               <span v-else class="text-white font-semibold text-lg">{{ userInitials }}</span>
             </div>
-            <div>
+            <div class="text-left">
               <p class="text-base font-semibold text-[#DFDFDF]">{{ userName }}</p>
               <p class="text-sm text-[#7A7A7A]">{{ userEmail }}</p>
             </div>
@@ -259,9 +267,27 @@
                 <i v-else class="fas fa-eye text-sm"></i>
               </button>
             </div>
-            <p class="text-2xl font-bold text-[#DFDFDF]">
+            <p class="text-2xl font-bold text-[#DFDFDF] text-left">
               {{ balanceHidden ? '••••••' : formattedBalance }}
             </p>
+          </div>
+
+          <!-- Botões Real e Demo -->
+          <div class="flex gap-2 mt-4">
+            <button
+              @click="switchToRealAccount"
+              :class="accountType === 'real' ? 'bg-[#22C55E] text-black' : 'bg-[#1C1C1C] text-[#DFDFDF] hover:bg-[#2A2A2A]'"
+              class="flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 text-center"
+            >
+              Real
+            </button>
+            <button
+              @click="switchToDemoAccount"
+              :class="accountType === 'demo' ? 'bg-[#22C55E] text-black' : 'bg-[#1C1C1C] text-[#DFDFDF] hover:bg-[#2A2A2A]'"
+              class="flex-1 py-2.5 px-4 rounded-lg font-semibold text-sm transition-all duration-200 text-center"
+            >
+              Demo
+            </button>
           </div>
 
           <!-- Botão Depositar -->
@@ -274,19 +300,11 @@
           </button>
 
           <!-- Outras opções -->
-          <div class="pt-4 border-t border-[#1C1C1C] space-y-2">
-            <a 
-              href="#" 
-              @click.prevent="switchAccountFromModal"
-              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg"
-            >
-              <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
-              Trocar de Conta
-            </a>
+          <div class="pt-2 space-y-2">
             <a 
               href="#" 
               @click.prevent="goToSettings"
-              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg"
+              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg text-left"
             >
               <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
               Configurações
@@ -294,7 +312,7 @@
             <a 
               href="#" 
               @click.prevent="disconnectAccountFromModal" 
-              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg"
+              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors rounded-lg text-left"
             >
               <i class="fas fa-plug text-xs mr-3 text-[#7A7A7A]"></i>
               Sair da Corretora
@@ -304,73 +322,6 @@
       </div>
     </div>
 
-    <!-- Modal de Seleção de Contas -->
-    <div 
-      v-if="showAccountModal" 
-      class="account-modal-overlay"
-      @click.self="closeAccountModal"
-    >
-      <div class="account-modal-container">
-        <div class="p-6 border-b border-[#1C1C1C] flex items-center justify-between">
-          <h2 class="text-xl font-semibold text-[#DFDFDF]">Selecionar Conta</h2>
-          <button 
-            @click="closeAccountModal"
-            class="text-[#7A7A7A] hover:text-[#DFDFDF] transition-colors"
-          >
-            <i class="fas fa-times text-lg"></i>
-          </button>
-        </div>
-        
-        <div class="overflow-y-auto flex-1 p-6">
-          <div v-if="loadingAccounts" class="flex items-center justify-center py-12">
-            <div class="text-center">
-              <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-[#22C55E] mb-4"></div>
-              <p class="text-[#A1A1A1]">Carregando contas...</p>
-            </div>
-          </div>
-          
-          <div v-else-if="availableAccounts.length === 0" class="text-center py-12">
-            <i class="fas fa-exclamation-circle text-[#7A7A7A] text-4xl mb-4"></i>
-            <p class="text-[#A1A1A1]">Nenhuma conta disponível</p>
-          </div>
-          
-          <div v-else class="space-y-3">
-            <div 
-              v-for="account in availableAccounts" 
-              :key="account.loginid"
-              @click="selectAccount(account)"
-              class="p-4 bg-[#0B0B0B] border border-[#1C1C1C] rounded-lg cursor-pointer hover:border-[#22C55E] hover:bg-[#0F0F0F] transition-all duration-200"
-              :class="{ 'border-[#22C55E] bg-[#0F0F0F]': isCurrentAccount(account) }"
-            >
-              <div class="flex items-center justify-between">
-                <div class="flex-1">
-                  <div class="flex items-center gap-3 mb-2">
-                    <span class="text-sm font-semibold text-[#DFDFDF]">{{ getAccountDisplayName(account) }}</span>
-                    <span 
-                      class="px-2 py-0.5 rounded text-xs font-medium"
-                      :class="account.isDemo ? 'bg-[#22C55E]/20 text-[#22C55E]' : 'bg-[#F59E0B]/20 text-[#F59E0B]'"
-                    >
-                      {{ account.isDemo ? 'DEMO' : 'REAL' }}
-                    </span>
-                  </div>
-                  <div class="flex items-center gap-4">
-                    <div>
-                      <p class="text-xs text-[#7A7A7A] mb-1">Saldo</p>
-                      <p class="text-base font-semibold text-[#DFDFDF]">
-                        {{ formatBalance(account.balance || 0, account.currency) }}
-                      </p>
-                    </div>
-                  </div>
-                </div>
-                <div v-if="isCurrentAccount(account)" class="ml-4">
-                  <i class="fas fa-check-circle text-[#22C55E] text-xl"></i>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
   </nav>
 </template>
 
@@ -414,7 +365,6 @@ export default {
       showProfileDropdown: false,
       showProfileModal: false,
       userProfilePictureUrl: null,
-      showAccountModal: false,
       loadingAccounts: false,
       availableAccounts: [],
       isMobile: false,
@@ -426,7 +376,7 @@ export default {
     formattedBalance() {
       if (this.accountType === 'demo') {
         const demo = this.balancesByCurrencyDemo['USD'] || this.balanceNumeric || 0;
-        const prefix = this.currencyPrefix || this.getCurrencyPrefix(this.currency);
+        const prefix = this.currencyPrefix || this.getCurrencyPrefix();
         return `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       }
       const value = this.balanceNumeric;
@@ -554,17 +504,8 @@ export default {
       return `Conta ${type} (${currency})`;
     },
     handleProfileClick() {
-      // No desktop, abre o modal de configurações (sidebar direita)
-      // No mobile, abre o modal de perfil
-      if (!this.isMobile) {
-        // Emitir evento para abrir o modal de configurações
-        this.$emit('open-settings');
-        // Fechar dropdown se estiver aberto
-        this.showProfileDropdown = false;
-      } else {
-        // No mobile, usar o comportamento antigo (modal de perfil)
-        this.toggleProfileModal();
-      }
+      // No desktop e mobile, abre o modal de perfil
+      this.toggleProfileModal();
     },
     toggleProfileDropdown() {
       this.showProfileDropdown = !this.showProfileDropdown;
@@ -623,8 +564,12 @@ export default {
         return `${days} dia${days > 1 ? 's' : ''} atrás`;
       }
     },
-    toggleProfileModal() {
+    async toggleProfileModal() {
       this.showProfileModal = !this.showProfileModal;
+      // Carregar contas quando abrir o modal
+      if (this.showProfileModal && this.availableAccounts.length === 0) {
+        await this.loadAvailableAccounts();
+      }
     },
     closeProfileModal() {
       this.showProfileModal = false;
@@ -636,9 +581,33 @@ export default {
       this.closeProfileModal();
       this.openDepositFlow();
     },
-    switchAccountFromModal() {
+    async selectAccountFromModal(account) {
+      await this.selectAccount(account);
       this.closeProfileModal();
-      this.switchAccount();
+    },
+    async switchToRealAccount() {
+      // Se já está em real, não faz nada
+      if (this.accountType === 'real') {
+        return;
+      }
+      
+      // Encontrar primeira conta real
+      const realAccount = this.availableAccounts.find(acc => !acc.isDemo);
+      if (realAccount) {
+        await this.selectAccountFromModal(realAccount);
+      }
+    },
+    async switchToDemoAccount() {
+      // Se já está em demo, não faz nada
+      if (this.accountType === 'demo') {
+        return;
+      }
+      
+      // Encontrar primeira conta demo
+      const demoAccount = this.availableAccounts.find(acc => acc.isDemo);
+      if (demoAccount) {
+        await this.selectAccountFromModal(demoAccount);
+      }
     },
     goToSettings() {
       this.closeProfileModal();
@@ -681,14 +650,6 @@ export default {
       localStorage.removeItem('deriv_connection');
       this.$router.push('/dashboard');
       window.location.reload();
-    },
-    async switchAccount() {
-      // Fecha o dropdown
-      this.showProfileDropdown = false;
-      
-      // Abre o modal de seleção de contas
-      this.showAccountModal = true;
-      await this.loadAvailableAccounts();
     },
     async loadAvailableAccounts() {
       this.loadingAccounts = true;
@@ -887,8 +848,8 @@ export default {
           const accountType = account.isDemo ? 'demo' : 'real';
           this.$emit('account-type-changed', accountType);
           
-          // Fechar modal e recarregar página para atualizar todos os componentes
-          this.closeAccountModal();
+          // Recarregar página para atualizar todos os componentes
+          this.closeProfileModal();
           window.location.reload();
         } else {
           throw new Error('Erro ao selecionar conta');
@@ -898,29 +859,20 @@ export default {
         alert('Erro ao trocar de conta. Tente novamente.');
       }
     },
-    closeAccountModal() {
-      this.showAccountModal = false;
-      this.availableAccounts = [];
-    },
-    formatBalance(balance, currency) {
-      const prefix = this.getCurrencyPrefix(currency);
+    formatBalance(balance) {
+      const prefix = this.getCurrencyPrefix();
       // Sempre mostrar o saldo, mesmo se for zero
       const value = parseFloat(balance) || 0;
       return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
     },
-    getCurrencyPrefix(currency) {
-      switch ((currency || '').toUpperCase()) {
-        case 'USD':
-          return '$'
-        case 'EUR':
-          return '€'
-        case 'BTC':
-          return '₿'
-        case 'DEMO':
-          return 'D$'
-        default:
-          return currency ? `${currency} ` : '$'
+    getCurrencyPrefix() {
+      // Se a conta atual for demo, sempre retornar D
+      if (this.accountType === 'demo') {
+        return 'D';
       }
+      
+      // Para real, sempre retornar $
+      return '$';
     },
     async loadUserProfilePicture() {
       try {
@@ -986,6 +938,7 @@ export default {
   animation: fadeInSlide 0.35s ease-out;
   transition: left 0.3s ease, width 0.3s ease;
   border-bottom: none;
+  padding: 0 !important;
 }
 
 /* Mobile Header - Borda roxa no topo */
@@ -1147,12 +1100,32 @@ export default {
   .mobile-nav {
     display: flex;
     gap: 16px;
+    padding-left: 10px !important;
+    padding-right: 10px !important;
   }
   
   .toggle-menu-btn-header,
   .header-brand-text,
   .header-whatsapp-button {
     display: none !important;
+  }
+
+  .notification-dropdown {
+    position: fixed !important;
+    width: calc(100vw - 32px) !important;
+    max-width: 400px !important;
+    right: 16px !important;
+    left: auto !important;
+    top: 70px !important;
+    bottom: auto !important;
+    z-index: 10001 !important;
+    max-height: calc(100vh - 80px) !important;
+    overflow: visible !important;
+  }
+
+  .notification-dropdown .max-h-96 {
+    max-height: calc(100vh - 200px) !important;
+    overflow-y: auto !important;
   }
 
   .mobile-menu-btn,
