@@ -425,6 +425,28 @@
                             </div>
                         </div>
             
+                        <!-- Controles do gráfico -->
+                        <div v-show="activeTab === 'chart'" class="chart-controls-active">
+                            <div class="zoom-buttons">
+                                <button
+                                    @click="setZoomMinutes(10)"
+                                    :class="['zoom-btn', chartZoomMinutes === 10 ? 'active' : '']"
+                                >10m</button>
+                                <button
+                                    @click="setZoomMinutes(5)"
+                                    :class="['zoom-btn', chartZoomMinutes === 5 ? 'active' : '']"
+                                >5m</button>
+                                <button
+                                    @click="setZoomMinutes(3)"
+                                    :class="['zoom-btn', chartZoomMinutes === 3 ? 'active' : '']"
+                                >3m</button>
+                            </div>
+                            <button class="type-toggle" @click="toggleChartType">
+                                <i :class="chartType === 'line' ? 'fas fa-chart-line' : 'fas fa-chart-bar'"></i>
+                                <span>{{ chartType === 'line' ? 'Linhas' : 'Velas' }}</span>
+                            </button>
+                        </div>
+
                         <!-- Chart View -->
                         <div v-show="activeTab === 'chart'" id="chart-view" class="flex-1 flex flex-col min-h-0 -mx-6 -mb-6 px-6" style="margin-top: 0;">
                             <div ref="chartContainer" id="tradingview-chart" class="chart-container tradingview-container flex-1 min-h-0"></div>
@@ -789,12 +811,13 @@ export default {
             currentSeries: null,
             chartInitialized: false,
             accountType: 'real',
-            chartType: 'candles',
+            chartType: 'line', // iniciar com linhas
             chartTypeOptions: [
                 { label: 'Velas', value: 'candles' },
                 { label: 'Linhas', value: 'line' },
             ],
             selectedTimeframe: 300, // 5 minutos (M5) - padrão Médio
+            chartZoomMinutes: 10, // zoom padrão (10m)
             
             // Estatísticas do dia
             dailyStats: {
@@ -2441,13 +2464,36 @@ export default {
                 });
             }
         },
-        aggregateTicksToCandles(timeframeSeconds) {
-            if (!Array.isArray(this.ticks) || this.ticks.length === 0) {
+        setZoomMinutes(minutes) {
+            if (this.chartZoomMinutes === minutes) return;
+            this.chartZoomMinutes = minutes;
+            this.updateChart();
+        },
+        toggleChartType() {
+            this.chartType = this.chartType === 'line' ? 'candles' : 'line';
+        },
+        filterTicksByZoom(ticks) {
+            if (!Array.isArray(ticks) || ticks.length === 0) return [];
+            const now = Math.floor(Date.now() / 1000);
+            const cutoff = now - (this.chartZoomMinutes * 60);
+            const filtered = ticks.filter(tick => {
+                let epoch = Number(tick.epoch || tick.time || 0);
+                if (epoch > 10000000000) epoch = Math.floor(epoch / 1000);
+                return epoch >= cutoff;
+            });
+            // Fallback: se vazio, retorna os últimos 300 ticks
+            if (filtered.length === 0) {
+                return ticks.slice(-300);
+            }
+            return filtered;
+        },
+        aggregateTicksToCandles(timeframeSeconds, ticksArg = this.ticks) {
+            if (!Array.isArray(ticksArg) || ticksArg.length === 0) {
                 return [];
             }
 
             // Filtrar e processar todos os ticks primeiro
-            const validTicks = this.ticks.map(tick => {
+            const validTicks = ticksArg.map(tick => {
                 const rawTime = Math.floor(tick.epoch || tick.time || Date.now() / 1000);
                 const price = Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0);
                 return { time: rawTime, price };
@@ -2818,13 +2864,15 @@ export default {
             }
 
             try {
+                const filteredTicks = this.filterTicksByZoom(this.ticks);
+
                 let data = [];
                 if (this.chartType === 'candles') {
                     // Usar o timeframe selecionado com controle de zoom
-                    data = this.aggregateTicksToCandles(this.selectedTimeframe);
+                    data = this.aggregateTicksToCandles(this.selectedTimeframe, filteredTicks);
                 } else {
                     // Gráfico de linhas: garantir pelo menos 10 minutos de dados
-                    const sortedTicks = [...this.ticks]
+                    const sortedTicks = [...filteredTicks]
                         .map(tick => ({
                             time: Math.floor(tick.epoch || tick.time || Date.now() / 1000),
                             value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
@@ -3641,6 +3689,60 @@ button i,
     min-height: 0;
     margin: 0;
     padding: 0;
+}
+
+/* Controles do gráfico (zoom e tipo) */
+.chart-controls-active {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.chart-controls-active .zoom-buttons {
+    display: inline-flex;
+    border: 1px solid #1C1C1C;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.chart-controls-active .zoom-btn {
+    padding: 6px 10px;
+    font-size: 12px;
+    color: #DFDFDF;
+    background: #0B0B0B;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chart-controls-active .zoom-btn:not(.active):hover {
+    background: #1A1A1A;
+}
+
+.chart-controls-active .zoom-btn.active {
+    background: #22C55E;
+    color: #0B0B0B;
+    font-weight: 600;
+}
+
+.chart-controls-active .type-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 12px;
+    color: #DFDFDF;
+    background: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.chart-controls-active .type-toggle:hover {
+    border-color: #22C55E;
+    color: #22C55E;
 }
 
 /* TradingView Chart Container */
