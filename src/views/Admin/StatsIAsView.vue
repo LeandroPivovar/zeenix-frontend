@@ -24,7 +24,28 @@
 			@toggle-collapse="toggleSidebarCollapse" 
 		/>
 
-		<main class="layout-content">
+		<div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+			<!-- Top Navbar -->
+			<TopNavbar 
+				v-if="!isMobile"
+				:is-sidebar-collapsed="isSidebarCollapsed"
+				@toggle-sidebar="isSidebarOpen = !isSidebarOpen"
+				@toggle-sidebar-collapse="toggleSidebarCollapse"
+			/>
+			
+			<!-- Mobile Header -->
+			<div v-if="isMobile" class="mobile-header-admin">
+				<button class="menu-toggler-btn" @click="isSidebarOpen = true">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</button>
+				<div class="mobile-brand">
+					<span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
+				</div>
+			</div>
+
+			<main class="layout-content">
 			<div class="background-glow"></div>
 			<div class="background-grid"></div>
 
@@ -967,19 +988,20 @@
 				</div>
 			</div>
 		</main>
+		</div>
 	</div>
 </template>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
-import LineChart from '../../components/LineChart.vue';
+import TopNavbar from '../../components/TopNavbar.vue';
 import { createChart, ColorType } from 'lightweight-charts';
 
 export default {
 	name: 'StatsIAs',
 	components: {
 		AppSidebar,
-		LineChart,
+		TopNavbar,
 	},
 	data() {
 		const currentDate = '2025-11-18';
@@ -3054,21 +3076,68 @@ async mounted() {
 	background-color: #0B0B0B;
 	color: #fff;
 	min-height: 100vh;
-	width: calc(100% - 280px);
-	margin-left: 280px;
-	padding: 0 20px;
+	width: 100%;
+	margin-left: 0;
+	padding: 0;
 	font-family: 'Roboto', sans-serif;
+	display: flex;
 }
 
 h1{
 	font-weight: 700;
 }
 
+.dashboard-content-wrapper {
+	flex: 1;
+	margin-left: 280px;
+	transition: margin-left 0.3s ease;
+	min-height: 100vh;
+	background-color: #0b0b0b;
+	position: relative;
+}
+
+.dashboard-content-wrapper.sidebar-collapsed {
+	margin-left: 80px;
+}
+
+/* Mobile Header */
+.mobile-header-admin {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 60px;
+	background: #0B0B0B;
+	border-bottom: 2px solid #9333EA;
+	z-index: 999;
+	align-items: center;
+	padding: 0 1rem;
+	justify-content: space-between;
+}
+
+.menu-toggler-btn {
+	background: transparent;
+	border: none;
+	color: #22C55E;
+	cursor: pointer;
+	padding: 8px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.mobile-brand {
+	display: flex;
+	align-items: center;
+	gap: 0;
+}
+
 .layout-content {
 	margin: 0;
 	justify-content: flex-start;
 	padding: 40px;
-
+	padding-top: 100px; /* Espaço para o TopNavbar */
 }
 
 .main-header {
@@ -5539,6 +5608,20 @@ tbody tr:hover {
 		margin-left: 0;
 		padding: 0;
 		position: relative;
+		flex-direction: column;
+	}
+
+	.dashboard-content-wrapper {
+		margin-left: 0;
+		width: 100%;
+	}
+
+	.mobile-header-admin {
+		display: flex;
+	}
+
+	.layout-content {
+		padding-top: 80px; /* Espaço para mobile header */
 	}
 
 	.hamburger-btn {
