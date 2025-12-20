@@ -284,7 +284,7 @@
         </section>
         
         <!-- Best IAs Section -->
-        <section id="best-ai-section" class="pt-20 pb-5 relative w-full" :style="{ backgroundImage: `url(${require('@/assets/best-ia.svg')})`, paddingBottom: '20px' }">
+        <section id="best-ai-section" class="pt-20 pb-5 relative w-full" style="padding-bottom: 20px">
           <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
           <div class="relative z-10 w-full" style="padding: 2rem;">
             <!-- Desktop Header -->
@@ -377,7 +377,7 @@
       </section>
       
       <!-- Overall Performance Section -->
-      <section id="performance-section" class="pt-0 pb-36 relative w-full" :style="{ backgroundImage: `url(${require('@/assets/performance.svg')})` }">
+      <section id="performance-section" class="pt-0 pb-36 relative w-full">
         <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
         <div class="w-full h-[1px] bg-[#1C1C1C] opacity-35 mb-12"></div>
         <div class="relative z-10 w-full" style="padding: 2rem;">
