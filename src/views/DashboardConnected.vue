@@ -258,7 +258,7 @@
             </button>
           </div>
           <div class="mobile-account-balance">
-            <span v-if="balanceVisible" class="inline-flex items-center">
+            <span v-if="balanceVisible" class="inline-flex items-center gap-2">
               <span v-if="currentAccountType === 'demo'" class="demo-currency-symbol-mobile-wrapper">
                 <span class="demo-currency-symbol-mobile">D</span>
               </span>
@@ -587,7 +587,7 @@
               </button>
             </div>
             <p class="settings-balance-amount text-left">
-              <span v-if="balanceVisible" class="inline-flex items-center">
+              <span v-if="balanceVisible" class="inline-flex items-center gap-2">
                 <span v-if="currentAccountType === 'demo'" class="demo-currency-symbol-wrapper">
                   <span class="demo-currency-symbol">D</span>
                 </span>
@@ -653,7 +653,13 @@
                       {{ account.isDemo ? 'Demo' : 'Real' }}
                     </span>
                     <span class="text-white/40 text-[12px]">•</span>
-                    <span class="text-white/80 text-[12px] inline-flex items-center">
+                    <span class="text-white/80 text-[12px] inline-flex items-center gap-1">
+                      <img 
+                        v-if="!account.isDemo && getCurrencyIcon(account.currency || 'USD', 'real')" 
+                        :src="getCurrencyIcon(account.currency || 'USD', 'real')" 
+                        :alt="account.currency || 'USD'"
+                        class="w-4 h-4 rounded-full object-cover"
+                      />
                       <span v-if="account.isDemo" class="demo-currency-symbol-modal-small-wrapper">
                         <span class="demo-currency-symbol-modal-small">D</span>
                       </span>
@@ -919,15 +925,13 @@ export default {
       return isNaN(num) ? 0 : num;
     },
     formattedBalance() {
-      // Mesma lógica do TopNavbar - usa tradeCurrency para determinar se é demo
+      // Retorna apenas o valor numérico formatado (sem prefixo, pois o símbolo é adicionado no template)
       if (this.tradeCurrency === 'DEMO') {
         const demo = this.balancesByCurrencyDemo['USD'] || 0;
-        const prefix = this.getCurrencyPrefix('DEMO');
-        return `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
       const value = this.balanceNumeric;
-      const prefix = this.getCurrencyPrefix(this.tradeCurrency || 'USD');
-      return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
     balancesByCurrency() {
       return this.info?.balancesByCurrency || {};
@@ -1561,7 +1565,12 @@ export default {
         this.$router.push('/operation');
       }
     },
-    getCurrencyPrefix(currency) {
+    getCurrencyPrefix(currency, isDemo = false) {
+      // Se for demo, retornar vazio (o D será renderizado via CSS)
+      if (isDemo) {
+        return '';
+      }
+      // Para real, retornar símbolo padrão da moeda
       switch ((currency || '').toUpperCase()) {
         case 'USD':
           return '$';
@@ -1569,11 +1578,30 @@ export default {
           return '€';
         case 'BTC':
           return '₿';
-        case 'DEMO':
-          return 'D$';
         default:
           return currency ? `${currency} ` : '$';
       }
+    },
+    getCurrencyIcon(currency, accountType) {
+      // Retorna o ícone da moeda baseado no tipo de conta
+      const isDemo = accountType === 'demo';
+      const curr = (currency || 'USD').toUpperCase();
+      
+      // Para demo, não mostrar ícone
+      if (isDemo) {
+        return null;
+      }
+      
+      // Para real, retornar ícone baseado na moeda
+      if (curr === 'USD') {
+        // Bandeira dos EUA - usando SVG inline
+        return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='15' viewBox='0 0 20 15'%3E%3Crect width='20' height='15' fill='%23BD0023'/%3E%3Cpath d='M0 3h20M0 6h20M0 9h20M0 12h20' stroke='%23fff' stroke-width='2'/%3E%3Crect width='8' height='8' fill='%2300007F'/%3E%3C/svg%3E";
+      } else if (curr === 'USDT') {
+        // Logo do USDT (Tether) - usando SVG inline
+        return "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='20' height='20' viewBox='0 0 20 20'%3E%3Ccircle cx='10' cy='10' r='10' fill='%2326A378'/%3E%3Ctext x='10' y='15' font-size='12' font-weight='bold' fill='white' text-anchor='middle'%3ET%3C/text%3E%3C/svg%3E";
+      }
+      
+      return null;
     },
     formatProfit(value) {
       if (value === null || value === undefined) return '0,00';
