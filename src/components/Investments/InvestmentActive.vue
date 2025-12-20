@@ -615,10 +615,10 @@
                                 </div>
                                 
                                 <div v-else class="text-left">
-                                    <div v-for="(log, index) in realtimeLogs.slice(0, 100)" :key="index" :class="getLogClass(log)" class="mb-0.5 text-left">
+                                    <div v-for="(log, index) in realtimeLogs.slice(0, 100)" :key="index" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
                                         <span class="text-gray-500">[{{ log.timestamp }}]</span>
                                         <span class="ml-1">{{ log.icon }}</span>
-                                        <span class="ml-1">{{ log.message }}</span>
+                                        <span class="ml-1 log-message">{{ log.message }}</span>
                                     </div>
                                 </div>
                                 
@@ -639,7 +639,7 @@
                                 <div v-else class="mobile-register-cards-container">
                                     <div v-for="(log, index) in realtimeLogs.slice(0, 100)" :key="index" class="mobile-register-card">
                                         <span class="mobile-register-time">{{ log.timestamp }}</span>
-                                        <span class="mobile-register-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
+                                        <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
                                     </div>
                                 </div>
                                 
@@ -912,6 +912,7 @@ export default {
             tradeStatusPollingInterval: null, // Polling para status do trade
             orderClosedTimer: null, // Timer para voltar ao estado "analisando mercado" após 4s quando contrato fechar
             hadOpenContract: false, // Flag para garantir que "Contrato fechado" só apareça após "Contrato aberto"
+            lastProcessedTradeId: null, // ID do último trade processado para detectar novos trades
         };
     },
     
@@ -1177,8 +1178,8 @@ export default {
             if (this.activeTrade && (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING')) {
                 return 'Contrato aberto';
             }
-            // Status 3: Contrato fechado (APENAS se houve "Contrato aberto" antes E timer ativo)
-            if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null && this.hadOpenContract) {
+            // Status 3: Contrato fechado (quando timer está ativo - indica que contrato acabou de fechar)
+            if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null) {
                 return 'Contrato fechado';
             }
             // Status 1: Analisando mercado (quando não há trade ativo ou contrato fechado já passou dos 4s)
@@ -1189,8 +1190,8 @@ export default {
             if (this.activeTrade && (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING')) {
                 return 'Aguardando resultado';
             }
-            // Status 3: Contrato fechado (APENAS se houve "Contrato aberto" antes)
-            if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null && this.hadOpenContract) {
+            // Status 3: Contrato fechado (quando timer está ativo)
+            if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null) {
                 const result = this.activeTrade.status === 'WON' ? 'Ganhou' : 'Perdeu';
                 const profit = this.activeTrade.profitLoss || 0;
                 return `${result} ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}`;
@@ -2161,7 +2162,7 @@ export default {
                 // Se não há histórico, não há trade ativo
                 this.activeTrade = null;
                 this.progressState = 1; // Analisando mercado
-                this.hadOpenContract = false; // Resetar flag
+                this.hadOpenContract = false;
                 
                 // Se havia um timer rodando, limpar
                 if (this.orderClosedTimer !== null) {
@@ -2179,6 +2180,7 @@ export default {
                 const wasActive = this.activeTrade && (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING');
                 this.activeTrade = activeTrade;
                 this.hadOpenContract = true; // Marcar que vimos um contrato aberto
+                this.lastProcessedTradeId = activeTrade.id; // Salvar ID do trade atual
                 
                 // Se havia um timer rodando (contrato fechado anterior), limpar
                 if (this.orderClosedTimer !== null) {
@@ -2197,16 +2199,22 @@ export default {
                 const lastTrade = tradeHistory[0]; // Trades vêm ordenados do mais recente para o mais antigo
                 
                 if (lastTrade && (lastTrade.status === 'WON' || lastTrade.status === 'LOST')) {
-                    // Verificar se este trade é diferente do anterior (novo contrato fechado)
-                    const wasDifferent = !this.activeTrade || 
-                                       this.activeTrade.id !== lastTrade.id || 
-                                       (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING');
+                    // Verificar se este trade é NOVO (ID diferente do último processado)
+                    const isNewTrade = this.lastProcessedTradeId !== lastTrade.id;
                     
-                    // SÓ mostrar "Contrato fechado" se houve um "Contrato aberto" antes
-                    if (wasDifferent && this.hadOpenContract) {
-                        // Novo contrato fechado - iniciar timer de 4 segundos
+                    // Verificar se houve transição de ACTIVE/PENDING para WON/LOST
+                    const wasOpenNowClosed = this.activeTrade && 
+                                            (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING') &&
+                                            this.activeTrade.id === lastTrade.id;
+                    
+                    // Mostrar "Contrato fechado" se:
+                    // 1. Trade mudou de ACTIVE/PENDING para WON/LOST, OU
+                    // 2. É um novo trade que não vimos antes E já houve algum contrato aberto antes
+                    if (wasOpenNowClosed || (isNewTrade && this.hadOpenContract)) {
+                        // Contrato fechado - iniciar timer de 4 segundos
                         this.activeTrade = lastTrade;
                         this.progressState = 3; // Contrato fechado
+                        this.lastProcessedTradeId = lastTrade.id; // Atualizar ID processado
                         
                         // Limpar timer anterior se existir
                         if (this.orderClosedTimer !== null) {
@@ -2218,25 +2226,43 @@ export default {
                             console.log('[InvestmentActive] ⏰ Timer de 4s expirado, voltando para estado "analisando mercado"');
                             this.activeTrade = null;
                             this.progressState = 1; // Analisando mercado
-                            this.hadOpenContract = false; // Resetar flag
+                            this.hadOpenContract = false;
                             this.orderClosedTimer = null;
                         }, 4000);
                         
                         console.log('[InvestmentActive] ✅ Contrato fechado detectado:', lastTrade.id, 'Timer de 4s iniciado');
-                    } else if (wasDifferent && !this.hadOpenContract) {
-                        // Trade fechado mas não vimos ele aberto - ir direto para "Analisando mercado"
-                        console.log('[InvestmentActive] ⏭️ Trade fechado sem ter visto aberto, mantendo "Analisando mercado"');
-                        this.activeTrade = null;
-                        this.progressState = 1; // Analisando mercado
+                    } else if (isNewTrade && !this.hadOpenContract) {
+                        // NOVO: Se é um trade novo e nunca vimos contrato aberto, 
+                        // considerar como se tivesse passado pelo estado aberto (trade muito rápido)
+                        this.activeTrade = lastTrade;
+                        this.progressState = 3; // Contrato fechado
+                        this.lastProcessedTradeId = lastTrade.id;
+                        this.hadOpenContract = true; // Marcar para próximos trades
+                        
+                        // Limpar timer anterior se existir
+                        if (this.orderClosedTimer !== null) {
+                            clearTimeout(this.orderClosedTimer);
+                        }
+                        
+                        // Iniciar timer de 4 segundos para voltar ao estado "analisando mercado"
+                        this.orderClosedTimer = setTimeout(() => {
+                            console.log('[InvestmentActive] ⏰ Timer de 4s expirado (trade rápido), voltando para "analisando mercado"');
+                            this.activeTrade = null;
+                            this.progressState = 1; // Analisando mercado
+                            this.hadOpenContract = false;
+                            this.orderClosedTimer = null;
+                        }, 4000);
+                        
+                        console.log('[InvestmentActive] ✅ Trade rápido detectado:', lastTrade.id, '(não visto como ACTIVE)');
                     }
-                    // Se não foi diferente, manter estado atual (timer continua rodando se existir)
+                    // Se não é novo trade, manter estado atual (timer continua rodando se existir)
                 } else {
                     // Não há contrato ativo nem fechado recente - estado de análise
                     // Só atualizar se não havia timer rodando (timer ainda não expirou)
                     if (this.orderClosedTimer === null) {
                         this.activeTrade = null;
                         this.progressState = 1; // Analisando mercado
-                        this.hadOpenContract = false; // Resetar flag
+                        this.hadOpenContract = false;
                     }
                 }
             }
@@ -3200,6 +3226,18 @@ export default {
 * {
     font-family: 'Inter', sans-serif;
     box-sizing: border-box;
+}
+
+/* Log messages with line breaks preserved */
+.log-message {
+    white-space: pre-line;
+    display: inline-block;
+    vertical-align: top;
+}
+
+.log-entry {
+    padding: 4px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .investment-active-wrapper {
@@ -5058,6 +5096,7 @@ button i,
         line-height: 1.5;
         flex: 1;
         word-wrap: break-word;
+        white-space: pre-line; /* Preserva quebras de linha */
     }
     
     /* Cores para mensagens de log no mobile */
@@ -5173,6 +5212,7 @@ button i,
         
         .mobile-register-message {
             font-size: 0.8rem;
+            white-space: pre-line; /* Preserva quebras de linha */
         }
     }
 
