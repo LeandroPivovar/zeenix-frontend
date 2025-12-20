@@ -55,6 +55,62 @@
             <i v-else class="fas fa-eye text-sm"></i>
           </button>
         </div>
+        <!-- Botão de Notificação -->
+        <div class="relative notification-container">
+          <button 
+            @click="toggleNotificationDropdown" 
+            class="notification-button relative w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200"
+          >
+            <i class="fas fa-bell text-[#DFDFDF] text-sm"></i>
+            <span v-if="notificationCount > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-[#22C55E] rounded-full flex items-center justify-center">
+              <span class="text-[10px] font-bold text-black">{{ notificationCount > 9 ? '9+' : notificationCount }}</span>
+            </span>
+          </button>
+            <!-- Dropdown de Notificações -->
+          <div 
+            v-if="showNotificationDropdown" 
+            class="notification-dropdown absolute right-0 top-12 w-80 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50"
+          >
+            <div class="p-4 border-b border-[#1C1C1C] flex items-center justify-between">
+              <h3 class="text-sm font-semibold text-[#DFDFDF]">Notificações</h3>
+              <button 
+                @click="markAllAsRead"
+                class="text-xs text-[#22C55E] hover:text-[#16A34A] transition-colors"
+              >
+                Marcar todas como lidas
+              </button>
+            </div>
+            <div class="max-h-96 overflow-y-auto">
+              <div v-if="notifications.length === 0" class="p-8 text-center">
+                <i class="fas fa-bell-slash text-[#7A7A7A] text-2xl mb-2"></i>
+                <p class="text-sm text-[#7A7A7A]">Nenhuma notificação</p>
+              </div>
+              <div 
+                v-for="notification in notifications" 
+                :key="notification.id"
+                :class="['p-4 border-b border-[#1C1C1C] hover:bg-[#0B0B0B] transition-colors cursor-pointer', { 'bg-[#0B0B0B]/50': !notification.read }]"
+                @click="handleNotificationClick(notification)"
+              >
+                <div class="flex items-start gap-3">
+                  <div :class="['w-2 h-2 rounded-full mt-2 flex-shrink-0', notification.read ? 'bg-transparent' : 'bg-[#22C55E]']"></div>
+                  <div class="flex-1">
+                    <p class="text-sm font-medium text-[#DFDFDF]">{{ notification.title }}</p>
+                    <p class="text-xs text-[#7A7A7A] mt-1">{{ notification.message }}</p>
+                    <p class="text-xs text-[#7A7A7A] mt-2">{{ formatNotificationDate(notification.date) }}</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div v-if="notifications.length > 0" class="p-3 border-t border-[#1C1C1C] text-center">
+              <button 
+                @click="viewAllNotifications"
+                class="text-sm text-[#22C55E] hover:text-[#16A34A] transition-colors"
+              >
+                Ver todas as notificações
+              </button>
+            </div>
+          </div>
+        </div>
         <div class="relative">
           <button 
             @click="handleProfileClick" 
@@ -126,6 +182,18 @@
         <span class="text-[#22C55E] font-bold text-xl">X</span>
       </div>
       
+      <!-- Botão de Notificação Mobile -->
+      <div class="relative notification-container">
+        <button 
+          @click="toggleNotificationDropdown" 
+          class="notification-button relative w-9 h-9 rounded-full bg-[#0E0E0E] border border-[#1C1C1C] flex items-center justify-center cursor-pointer hover:border-[#22C55E] hover:shadow-[0_0_12px_rgba(34,197,94,0.2)] transition-all duration-200"
+        >
+          <i class="fas fa-bell text-[#DFDFDF] text-sm"></i>
+          <span v-if="notificationCount > 0" class="absolute -top-1 -right-1 w-4 h-4 bg-[#22C55E] rounded-full flex items-center justify-center">
+            <span class="text-[10px] font-bold text-black">{{ notificationCount > 9 ? '9+' : notificationCount }}</span>
+          </span>
+        </button>
+      </div>
       <!-- Perfil -->
       <div class="relative">
         <button 
@@ -349,7 +417,9 @@ export default {
       showAccountModal: false,
       loadingAccounts: false,
       availableAccounts: [],
-      isMobile: false
+      isMobile: false,
+      showNotificationDropdown: false,
+      notifications: []
     }
   },
   computed: {
@@ -421,6 +491,9 @@ export default {
         }
       }
       return 'email@exemplo.com';
+    },
+    notificationCount() {
+      return this.notifications.filter(n => !n.read).length;
     },
     userProfilePicture() {
       if (!this.userProfilePictureUrl) return null;
@@ -496,6 +569,60 @@ export default {
     toggleProfileDropdown() {
       this.showProfileDropdown = !this.showProfileDropdown;
     },
+    toggleNotificationDropdown() {
+      this.showNotificationDropdown = !this.showNotificationDropdown;
+      // Fechar dropdown de perfil se estiver aberto
+      if (this.showNotificationDropdown) {
+        this.showProfileDropdown = false;
+      }
+      // Carregar notificações quando abrir
+      if (this.showNotificationDropdown && this.notifications.length === 0) {
+        this.loadNotifications();
+      }
+    },
+    loadNotifications() {
+      // TODO: Carregar notificações da API
+      // Por enquanto, usando dados mockados
+      this.notifications = [
+        // Exemplo de notificações
+        // { id: 1, title: 'Nova notificação', message: 'Você tem uma nova mensagem', date: new Date(), read: false }
+      ];
+    },
+    markAllAsRead() {
+      this.notifications.forEach(notification => {
+        notification.read = true;
+      });
+      // TODO: Enviar para API para marcar como lidas
+    },
+    handleNotificationClick(notification) {
+      notification.read = true;
+      // TODO: Navegar para a página relacionada à notificação ou executar ação
+      this.showNotificationDropdown = false;
+    },
+    viewAllNotifications() {
+      // TODO: Navegar para página de todas as notificações
+      this.showNotificationDropdown = false;
+      console.log('Ver todas as notificações');
+    },
+    formatNotificationDate(date) {
+      if (!date) return '';
+      const now = new Date();
+      const notificationDate = new Date(date);
+      const diffInSeconds = Math.floor((now - notificationDate) / 1000);
+      
+      if (diffInSeconds < 60) {
+        return 'Agora';
+      } else if (diffInSeconds < 3600) {
+        const minutes = Math.floor(diffInSeconds / 60);
+        return `${minutes} min atrás`;
+      } else if (diffInSeconds < 86400) {
+        const hours = Math.floor(diffInSeconds / 3600);
+        return `${hours}h atrás`;
+      } else {
+        const days = Math.floor(diffInSeconds / 86400);
+        return `${days} dia${days > 1 ? 's' : ''} atrás`;
+      }
+    },
     toggleProfileModal() {
       this.showProfileModal = !this.showProfileModal;
     },
@@ -522,10 +649,17 @@ export default {
       this.disconnectAccount();
     },
     handleClickOutside(event) {
-      const dropdown = document.getElementById('profileDropdown');
-      const button = event.target.closest('button');
-      if (dropdown && !dropdown.contains(event.target) && !button?.closest('.relative')) {
+      // Fechar dropdown de perfil ao clicar fora
+      const profileDropdown = document.getElementById('profileDropdown');
+      const profileContainer = event.target.closest('.relative');
+      if (profileDropdown && !profileDropdown.contains(event.target) && profileContainer && !profileContainer.querySelector('#profileDropdown')) {
         this.showProfileDropdown = false;
+      }
+      // Fechar dropdown de notificações ao clicar fora
+      const notificationContainer = event.target.closest('.notification-container');
+      const notificationDropdown = event.target.closest('.notification-dropdown');
+      if (!notificationContainer && !notificationDropdown && this.showNotificationDropdown) {
+        this.showNotificationDropdown = false;
       }
     },
     handleStorageChange(event) {

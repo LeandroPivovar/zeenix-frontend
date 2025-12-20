@@ -141,8 +141,8 @@
                 <a
                     href="#"
                     class="menu-item"
-                    :class="{ active: isStatsIAsActive }"
-                    @click.prevent="navigateAndClose('/StatsIAs')"
+                    :class="{ active: isAdminStatsIAsActive }"
+                    @click.prevent="navigateAndClose('/AdminStatsIAs')"
                     data-text="Estatísticas IAs"
                 >
                     <i class="fa-solid fa-chart-bar w-5 opacity-85"></i>
@@ -262,6 +262,7 @@ export default {
         isAutonomousAgentActive() { return this.$route?.path === '/agente-autonomo'; },
         isMarkupActive() { return this.$route?.path === '/markup'; },
         isStatsIAsActive() { return this.$route?.path === '/StatsIAs'; },
+        isAdminStatsIAsActive() { return this.$route?.path === '/AdminStatsIAs'; },
         isExpertsActive() { return this.$route?.path === '/Experts'; },
         isClientesActive() { return this.$route?.path === '/Clientes'; },
         isWebhooksActive() { return this.$route?.path === '/Webhooks'; },
