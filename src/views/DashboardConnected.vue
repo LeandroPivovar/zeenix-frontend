@@ -645,11 +645,11 @@
               >
                 <div class="flex-1">
                   <div class="flex items-center gap-2 mb-1">
-                    <span class="text-white text-[14px] font-medium">{{ account.loginid }}</span>
+                    <span class="text-white text-[14px] font-medium">{{ getAccountDisplayName(account) }}</span>
                     <i v-if="isCurrentAccount(account)" class="fa-solid fa-check text-[#22C55E] text-[12px]"></i>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span :class="account.isDemo ? 'text-white/60 text-[12px]' : 'text-white/80 text-[12px]'">
+                    <span :class="account.isDemo ? 'text-[#22C55E]/70 text-[12px]' : 'text-[#F59E0B]/70 text-[12px]'">
                       {{ account.isDemo ? 'Demo' : 'Real' }}
                     </span>
                     <span class="text-white/40 text-[12px]">•</span>
@@ -1080,6 +1080,18 @@ export default {
     },
     closeSidebar() {
       this.isSidebarOpen = false;
+    },
+    /**
+     * Retorna nome amigável da conta baseado no tipo e moeda
+     * Ex: "Conta Demo (USD)" ou "Conta Real (USD)"
+     */
+    getAccountDisplayName(account) {
+      if (!account) return 'Conta';
+      
+      const type = account.isDemo ? 'Demo' : 'Real';
+      const currency = account.currency || 'USD';
+      
+      return `Conta ${type} (${currency})`;
     },
     toggleSidebarCollapse() {
       if (!this.isMobile) {

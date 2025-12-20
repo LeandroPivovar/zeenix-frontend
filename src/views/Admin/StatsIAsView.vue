@@ -1152,18 +1152,27 @@ export default {
 				if (connectionStr) {
 					const connection = JSON.parse(connectionStr);
 					
-					// Determinar tipo de conta
-					const currency = connection.tradeCurrency || connection.currency || 'USD';
-					this.accountType = currency.toUpperCase() === 'DEMO' ? 'Demo' : 'Real';
+					// ✅ CORREÇÃO: Determinar tipo de conta pelo loginid, não pela moeda
+					// Contas demo começam com VRTC ou VRT
+					const loginid = connection.loginid || '';
+					const isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT') || connection.isDemo === true;
+					this.accountType = isDemo ? 'Demo' : 'Real';
 					
-					// Buscar saldo
-					const balance = connection.balance || connection.balanceAfter || 0;
-					this.accountBalance = parseFloat(balance) || 0;
-					
-					// Converter para BRL se necessário (exemplo: 1 USD = 5 BRL)
-					if (currency.toUpperCase() !== 'BRL') {
-						this.accountBalance = this.accountBalance * 5; // Conversão aproximada
+					// Buscar saldo correto baseado no tipo de conta
+					let balance = 0;
+					if (isDemo && connection.balancesByCurrencyDemo) {
+						// Para demo, usar saldo demo
+						const demoBalances = connection.balancesByCurrencyDemo;
+						balance = demoBalances['USD'] || Object.values(demoBalances)[0] || 0;
+					} else if (!isDemo && connection.balancesByCurrencyReal) {
+						// Para real, usar saldo real
+						const realBalances = connection.balancesByCurrencyReal;
+						balance = realBalances['USD'] || Object.values(realBalances)[0] || 0;
+					} else {
+						// Fallback para balance direto
+						balance = connection.balance || connection.balanceAfter || 0;
 					}
+					this.accountBalance = parseFloat(balance) || 0;
 				}
 				
 				// Buscar estatísticas de hoje

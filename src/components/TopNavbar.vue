@@ -277,14 +277,13 @@
               <div class="flex items-center justify-between">
                 <div class="flex-1">
                   <div class="flex items-center gap-3 mb-2">
-                    <span class="text-sm font-semibold text-[#DFDFDF]">{{ account.loginid }}</span>
+                    <span class="text-sm font-semibold text-[#DFDFDF]">{{ getAccountDisplayName(account) }}</span>
                     <span 
                       class="px-2 py-0.5 rounded text-xs font-medium"
-                      :class="account.isDemo ? 'bg-[#333] text-[#A1A1A1]' : 'bg-[#22C55E]/20 text-[#22C55E]'"
+                      :class="account.isDemo ? 'bg-[#22C55E]/20 text-[#22C55E]' : 'bg-[#F59E0B]/20 text-[#F59E0B]'"
                     >
                       {{ account.isDemo ? 'DEMO' : 'REAL' }}
                     </span>
-                    <span class="text-xs text-[#7A7A7A]">{{ account.currency }}</span>
                   </div>
                   <div class="flex items-center gap-4">
                     <div>
@@ -468,6 +467,18 @@ export default {
     },
     toggleBalance() {
       this.balanceHidden = !this.balanceHidden;
+    },
+    /**
+     * Retorna nome amigável da conta baseado no tipo e moeda
+     * Ex: "Conta Demo (USD)" ou "Conta Real (USD)"
+     */
+    getAccountDisplayName(account) {
+      if (!account) return 'Conta';
+      
+      const type = account.isDemo ? 'Demo' : 'Real';
+      const currency = account.currency || 'USD';
+      
+      return `Conta ${type} (${currency})`;
     },
     handleProfileClick() {
       // No desktop, abre o modal de configurações (sidebar direita)
