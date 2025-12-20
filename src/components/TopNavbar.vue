@@ -531,15 +531,9 @@ export default {
       return `Conta ${type} (${currency})`;
     },
     handleProfileClick() {
-      // Desktop e mobile: usar dropdown
-      if (!this.isMobile) {
-        // Emitir evento para abrir o modal de configurações
-        this.$emit('open-settings');
-        this.showProfileDropdown = false;
-      } else {
-        // No mobile, alternar dropdown
-        this.showProfileDropdown = !this.showProfileDropdown;
-      }
+      // Desktop e mobile: sempre abrir o modal de configurações (SettingsSidebar)
+      this.$emit('open-settings');
+      this.showProfileDropdown = false;
     },
     toggleProfileDropdown() {
       this.showProfileDropdown = !this.showProfileDropdown;
@@ -1015,6 +1009,7 @@ export default {
   padding: 0;
   backdrop-filter: blur(4px);
   animation: fadeIn 0.3s ease-out;
+  height: 100vh;
 }
 
 .notifications-modal-content {
@@ -1065,6 +1060,7 @@ export default {
   overflow-y: auto;
   flex: 1;
   color: #FFFFFF;
+  max-height: calc(100vh - 80px);
 }
 
 .notifications-empty {
