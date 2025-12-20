@@ -702,28 +702,28 @@
 							<div class="market-analysis-meta">
 								<span>Volatility 10 • M5 • Última atualização: {{ aiMonitoring.lastUpdate || lastReadingTime }}</span>
 							</div>
-
-							<!-- Controles do gráfico (IA ativa) -->
-							<div class="chart-controls-active">
-								<div class="zoom-buttons">
-									<button
-										@click="setZoomPeriodActive(10)"
-										:class="['zoom-btn', zoomPeriodActive === 10 ? 'active' : '']"
-									>10m</button>
-									<button
-										@click="setZoomPeriodActive(5)"
-										:class="['zoom-btn', zoomPeriodActive === 5 ? 'active' : '']"
-									>5m</button>
-									<button
-										@click="setZoomPeriodActive(3)"
-										:class="['zoom-btn', zoomPeriodActive === 3 ? 'active' : '']"
-									>3m</button>
-								</div>
-								<button class="type-toggle" @click="toggleChartTypeActive">
-									<i :class="chartTypeActive === 'line' ? 'fas fa-chart-line' : 'fas fa-chart-bar'"></i>
-									<span>{{ chartTypeActive === 'line' ? 'Linhas' : 'Velas' }}</span>
-								</button>
+						</div>
+						
+						<!-- Controles do gráfico (IA ativa) -->
+						<div class="chart-controls-active">
+							<div class="zoom-buttons">
+								<button
+									@click="setZoomPeriodActive(10)"
+									:class="['zoom-btn', zoomPeriodActive === 10 ? 'active' : '']"
+								>10m</button>
+								<button
+									@click="setZoomPeriodActive(5)"
+									:class="['zoom-btn', zoomPeriodActive === 5 ? 'active' : '']"
+								>5m</button>
+								<button
+									@click="setZoomPeriodActive(3)"
+									:class="['zoom-btn', zoomPeriodActive === 3 ? 'active' : '']"
+								>3m</button>
 							</div>
+							<button class="type-toggle" @click="toggleChartTypeActive">
+								<i :class="chartTypeActive === 'line' ? 'fas fa-chart-line' : 'fas fa-chart-bar'"></i>
+								<span>{{ chartTypeActive === 'line' ? 'Linhas' : 'Velas' }}</span>
+							</button>
 						</div>
 						<div class="market-chart-container">
 							<div ref="marketChartContainerActive" class="market-chart-wrapper"></div>
