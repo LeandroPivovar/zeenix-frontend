@@ -6778,6 +6778,11 @@ button i,
     
     /* Mobile: Chart View */
     @media (max-width: 768px) {
+        /* Esconder chart-view quando não estiver na tab chart */
+        #market-chart #chart-view[style*="display: none"] {
+            display: none !important;
+        }
+        
         #market-chart #chart-view {
             background: transparent !important;
             backdrop-filter: none !important;
@@ -6793,6 +6798,7 @@ button i,
             min-height: 600px;
         }
         
+        /* Aplicar display flex ao chart-view (o v-show do Vue já controla a visibilidade) */
         #market-chart #chart-view {
             flex: 1 !important;
             display: flex !important;
@@ -7058,18 +7064,12 @@ button i,
             border: 1px solid #1C1C1C;
         }
         
-        /* Garantir que mobile-market-info só apareça no tab do gráfico */
-        /* Esconder quando não estiver dentro do chart-view */
-        #logs-view ~ .mobile-market-info,
-        #register-view ~ .mobile-market-info,
-        #logs-view .mobile-market-info,
-        #register-view .mobile-market-info {
+        /* Garantir que mobile-market-info só apareça quando chart-view estiver visível */
+        /* O v-show do Vue já controla a visibilidade do chart-view */
+        /* Esta regra apenas garante que o market-info seja escondido quando o chart-view estiver escondido */
+        #market-chart #chart-view[style*="display: none"] .mobile-market-info,
+        #market-chart #chart-view[style*="display:none"] .mobile-market-info {
             display: none !important;
-        }
-        
-        /* Garantir que só apareça dentro do chart-view */
-        #chart-view .mobile-market-info {
-            display: block !important;
         }
         
         /* Mobile: Aplicar gradiente nos cards premium no mobile */
