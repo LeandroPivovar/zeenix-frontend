@@ -520,7 +520,7 @@
                                         <tbody>
                                             <tr v-for="(op, index) in logOperations" :key="index" :class="['log-row', index % 2 === 0 ? 'log-row-even' : 'log-row-odd']">
                                                 <td>{{ op.time }}</td>
-                                                <td>{{ op.pair }}</td>
+                                                <td>{{ getMarketDisplayName(op.pair) }}</td>
                                                 <td>
                                                     <span :class="['direction-badge', (op.direction === 'CALL' || op.direction === 'PAR') ? 'call-badge' : 'put-badge']">
                                                         <i :class="`fas fa-arrow-${(op.direction === 'CALL' || op.direction === 'PAR') ? 'up' : 'down'} text-xs mr-1`"></i>
@@ -556,7 +556,7 @@
                                     <div v-for="(op, index) in logOperations" :key="index" class="mobile-log-card">
                                         <div class="mobile-log-time">{{ op.time }}</div>
                                         <div class="mobile-log-type">
-                                            <span v-if="op.pair">{{ op.pair }}</span>
+                                            <span v-if="op.pair">{{ getMarketDisplayName(op.pair) }}</span>
                                             <span v-if="op.direction"> - {{ op.direction === 'CALL' ? 'PAR' : op.direction === 'PUT' ? 'IMPAR' : op.direction }}</span>
                                         </div>
                                         <div class="mobile-log-footer">
@@ -1322,6 +1322,29 @@ export default {
     },
     
     methods: {
+        /**
+         * Converte símbolo do mercado para nome amigável
+         * Ex: R_10 → Volatility 10 Index
+         */
+        getMarketDisplayName(symbol) {
+            if (!symbol) return 'R_10';
+            
+            const marketMap = {
+                'R_10': 'Volatility 10 Index',
+                'R_25': 'Volatility 25 Index',
+                'R_50': 'Volatility 50 Index',
+                'R_75': 'Volatility 75 Index',
+                'R_100': 'Volatility 100 Index',
+                '1HZ10V': 'Volatility 10 (1s) Index',
+                '1HZ25V': 'Volatility 25 (1s) Index',
+                '1HZ50V': 'Volatility 50 (1s) Index',
+                '1HZ75V': 'Volatility 75 (1s) Index',
+                '1HZ100V': 'Volatility 100 (1s) Index',
+            };
+            
+            return marketMap[symbol] || symbol;
+        },
+        
         // Formatar valor PnL para colocar sinal negativo antes do $
         formatPnlValue(pnl) {
             if (!pnl) return '$0.00';
