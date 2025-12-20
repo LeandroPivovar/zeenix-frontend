@@ -149,12 +149,6 @@
                 <div class="config-grid" v-if="!isInvestmentActive">
                     <!-- Mercado & Estratégia -->
                     <div id="market-strategy-card" class="config-card premium-card">
-                        <h3 class="card-title">
-                            Mercado & Estratégia
-                            <TooltipsCopyTraders position="left"> 
-                                <h4>🎯 Mercado & Estratégia</h4>
-                            </TooltipsCopyTraders>
-                        </h3>
                         <div class="card-content">
                             <div class="form-group">
                                 <label class="form-label">
@@ -194,7 +188,7 @@
                                     <option value="orion">IA Orion</option>
                                     <option value="trinity">IA Trinity</option>
                                 </select>
-                                <p id="strategyDescription" class="form-help">Análise técnica avançada com machine learning</p>
+                                <p id="strategyDescription" class="form-help">{{ strategyDescription }}</p>
                     </div>
 
                             <div class="form-group">
@@ -212,7 +206,7 @@
                                         :class="['mode-btn', { 'active': mode === 'moderado' }]"
                                         @click="mode = 'moderado'"
                                     >
-                                        Moderado
+                                        Normal
                                     </button>
                                     <button 
                                         id="modeLento" 
@@ -229,12 +223,6 @@
                             <div class="form-group risk-management-mobile">
                                 <label class="form-label">Gerenciamento de Risco</label>
                                 <div class="risk-buttons">
-                                    <button 
-                                        :class="['risk-btn', { 'active': modoMartingale === 'fixo' }]"
-                                        @click="modoMartingale = 'fixo'"
-                                    >
-                                        Fixo
-                                    </button>
                                     <button 
                                         :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
                                         @click="modoMartingale = 'conservador'"
@@ -270,7 +258,6 @@
 
                     <!-- Parâmetros de Entrada -->
                     <div id="entry-params-card" class="config-card premium-card">
-                        <h3 class="card-title">Parâmetros de Entrada</h3>
                         <div class="card-content">
                             <div class="form-group">
                                 <label class="form-label">Valor de Entrada (USD)</label>
@@ -324,12 +311,6 @@
                         <h3 class="card-title">Gerenciamento de Risco</h3>
                         <div class="card-content">
                             <div class="risk-buttons">
-                                <button 
-                                    :class="['risk-btn', { 'active': modoMartingale === 'fixo' }]"
-                                    @click="modoMartingale = 'fixo'"
-                                >
-                                    Fixo
-                                </button>
                                 <button 
                                     :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
                                     @click="modoMartingale = 'conservador'"
@@ -629,6 +610,14 @@ export default {
             return descriptions[this.mode] || descriptions.veloz;
         },
         
+        strategyDescription() {
+            const descriptions = {
+                'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
+                'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes'
+            };
+            return descriptions[this.selectedStrategy] || descriptions.orion;
+        },
+        
         entryPercent() {
             if (!this.accountBalance || this.accountBalance <= 0) return '0.00';
             return ((this.entryValue / this.accountBalance) * 100).toFixed(2);
@@ -646,7 +635,6 @@ export default {
         
         riskLevelText() {
             const labels = {
-                'fixo': 'Fixo',
                 'conservador': 'Baixo',
                 'moderado': 'Médio',
                 'agressivo': 'Alto'
@@ -656,7 +644,6 @@ export default {
         
         riskBarWidth() {
             const widths = {
-                'fixo': '15%',
                 'conservador': '25%',
                 'moderado': '50%',
                 'agressivo': '75%'
@@ -666,10 +653,9 @@ export default {
         
         riskDescriptionText() {
             const descriptions = {
-                'fixo': 'Valor de entrada fixo sem variação',
-                'conservador': 'Proteção máxima do capital com crescimento estável',
-                'moderado': 'Equilíbrio entre proteção e crescimento',
-                'agressivo': 'Maior exposição para potencial de retorno elevado'
+                'conservador': 'Recuperação limitada (até M5) • Protege capital • Lucros menores mas seguros',
+                'moderado': 'Recuperação ilimitada com +25% de lucro • Equilíbrio entre risco e retorno',
+                'agressivo': 'Recuperação ilimitada com +50% de lucro • Máximo retorno com risco controlado'
             };
             return descriptions[this.modoMartingale] || descriptions.conservador;
         }
