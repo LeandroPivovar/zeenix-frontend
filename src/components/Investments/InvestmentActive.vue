@@ -2218,8 +2218,11 @@ export default {
                     const payload = JSON.parse(event.data);
                     console.log('[InvestmentActive] 📡 Evento de trade recebido:', payload);
                     // Atualizar histórico e logs sob demanda
-                    await this.fetchTradeHistory();
-                    await this.fetchRealtimeLogs();
+                    await Promise.all([
+                        this.fetchTradeHistory(),
+                        this.fetchRealtimeLogs(),
+                        this.fetchDailyStats(),
+                    ]);
                 } catch (e) {
                     console.warn('[InvestmentActive] ⚠️ Evento SSE inválido:', e);
                 }
