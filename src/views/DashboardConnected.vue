@@ -3005,6 +3005,7 @@ export default {
   /* Best IAs Section */
   .dashboard-layout #best-ai-section {
     background-color: #050705;
+    background-image: url('@/assets/background/bestia.svg');
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
@@ -3033,6 +3034,7 @@ export default {
   /* Performance Section */
   .dashboard-layout #performance-section {
     background-color: #0b0b0b;
+    background-image: url('@/assets/background/performance.svg');
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
