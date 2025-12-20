@@ -2527,16 +2527,15 @@ export default {
             // Reverter para ordem cronológica (mais antigos primeiro) para agregação
             const chronologicalTicks = [...ticksToUse].reverse();
 
-            // Calcular timeframe adaptativo baseado na quantidade desejada de velas
-            // Queremos aproximadamente chartPointsVisible velas
-            const timeSpan = chronologicalTicks.length > 1 
-                ? chronologicalTicks[chronologicalTicks.length - 1].time - chronologicalTicks[0].time
-                : timeframeSeconds;
+            // ✅ AJUSTE: Reduzir timeframe para ter mais velas na tela
+            // Usar timeframe fixo menor (1-2 segundos por vela) para ter mais velas visíveis
+            // Isso cria velas menores e mais detalhadas
+            let effectiveTimeframe = 2; // 2 segundos por vela (muito menor que antes)
             
-            // Calcular timeframe ideal para ter aproximadamente chartPointsVisible velas
-            let effectiveTimeframe = timeSpan > 0 
-                ? Math.max(timeframeSeconds, Math.floor(timeSpan / this.chartPointsVisible))
-                : timeframeSeconds;
+            // Se o timeframe solicitado for menor que 2, usar ele
+            if (timeframeSeconds && timeframeSeconds < 2) {
+                effectiveTimeframe = timeframeSeconds;
+            }
 
             const candles = [];
             let bucketStart = null;
@@ -2572,20 +2571,17 @@ export default {
 
             finalizeBucket();
             
-            // ✅ AJUSTE: Aumentar quantidade de velas para mostrar mais histórico
-            // Calcular quantas velas são necessárias para mostrar 15 minutos (aumentado de 10)
-            const candlesFor15Minutes = Math.ceil((15 * 60) / effectiveTimeframe);
-            const minCandles = Math.max(candlesFor15Minutes, this.chartPointsVisible);
-            
-            // Limitar a quantidade final de velas, garantindo pelo menos 15 minutos
-            // Pegar as últimas N velas (mais recentes)
-            const finalCandles = candles.slice(-minCandles);
+            // ✅ AJUSTE: Com timeframe menor (2s), teremos muitas velas
+            // Limitar apenas se exceder muito o chartPointsVisible
+            // Mas manter mais velas para ter mais detalhes
+            const maxCandles = this.chartPointsVisible * 3; // Permitir até 3x mais velas
+            const finalCandles = candles.length > maxCandles 
+                ? candles.slice(-maxCandles) 
+                : candles;
             
             console.log('[InvestmentActive] Velas geradas:', {
                 totalCandles: candles.length,
                 finalCandles: finalCandles.length,
-                candlesFor15Minutes,
-                minCandles,
                 effectiveTimeframe,
                 timeSpanMinutes: finalCandles.length > 0 ? ((finalCandles[finalCandles.length - 1].time - finalCandles[0].time) / 60).toFixed(2) : 0
             });
@@ -2871,21 +2867,25 @@ export default {
                     // Usar o timeframe selecionado com controle de zoom
                     data = this.aggregateTicksToCandles(this.selectedTimeframe, filteredTicks);
                 } else {
-                    // Gráfico de linhas: garantir pelo menos 10 minutos de dados
+                    // Gráfico de linhas: garantir valores válidos (sem null/undefined)
                     const sortedTicks = [...filteredTicks]
-                        .map(tick => ({
-                            time: Math.floor(tick.epoch || tick.time || Date.now() / 1000),
-                            value: Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0),
-                        }))
-                        .filter(point => point.value)
+                        .map(tick => {
+                            const time = Math.floor(tick.epoch || tick.time || Date.now() / 1000);
+                            const value = Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0);
+                            return { time, value };
+                        })
+                        .filter(point => {
+                            // ✅ CORREÇÃO: Filtrar valores null, undefined, NaN, 0 e negativos
+                            return point.value != null && 
+                                   !isNaN(point.value) && 
+                                   isFinite(point.value) && 
+                                   point.value > 0 && 
+                                   point.time > 0;
+                        })
                         .sort((a, b) => a.time - b.time);
                     
-                    // ✅ AJUSTE: Aumentar ticks necessários para mostrar mais histórico
-                    // Calcular quantos ticks são necessários para 15 minutos (900 segundos)
-                    const minTicksFor15Minutes = 900;
-                    const ticksNeeded = Math.max(minTicksFor15Minutes, this.chartPointsVisible);
-                    
-                    // Pegar os últimos N pontos, garantindo pelo menos 10 minutos
+                    // Pegar os últimos N pontos baseado no zoom
+                    const ticksNeeded = Math.min(sortedTicks.length, this.chartPointsVisible * 2);
                     const limitedTicks = sortedTicks.slice(-ticksNeeded);
                     data = limitedTicks;
                     
