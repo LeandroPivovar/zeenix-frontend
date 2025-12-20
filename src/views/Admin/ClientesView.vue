@@ -121,6 +121,7 @@
 								<th>Nome <span class="sort-icon"></span></th>
 								<th>Login ID <span class="sort-icon"></span></th>
 								<th>Email <span class="sort-icon"></span></th>
+								<th>Role</th>
 								<th>Saldo (USD) <span class="sort-icon"></span></th>
 								<th>Tempo gasto <span class="sort-icon"></span></th>
 								<th>Criado em <span class="sort-icon"></span></th>
@@ -133,6 +134,19 @@
 								<td>{{ client.name }}</td>
 								<td>{{ client.loginId }}</td>
 								<td>{{ client.email }}</td>
+								<td>
+									<select 
+										class="role-select" 
+										:value="client.role" 
+										@change="updateRole(client.userId, $event.target.value)"
+										:class="getRoleClass(client.role)"
+									>
+										<option value="user">Usuário</option>
+										<option value="admin">Admin</option>
+										<option value="master_trader">Master Trader</option>
+										<option value="expert">Expert</option>
+									</select>
+								</td>
 								<td :class="{'positive-balance': client.balance > 0, 'zero-balance': client.balance === 0}">
 									{{ formatCurrency(client.balance) }}
 								</td>
@@ -326,6 +340,51 @@ export default {
 		},
 		performSearch() {
 			this.fetchClients();
+		},
+		getRoleClass(role) {
+			const classes = {
+				'admin': 'role-admin',
+				'master_trader': 'role-master',
+				'expert': 'role-expert',
+				'user': 'role-user'
+			};
+			return classes[role] || 'role-user';
+		},
+		async updateRole(userId, newRole) {
+			try {
+				const token = localStorage.getItem('token');
+				const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+				
+				const res = await fetch(`${apiBaseUrl}/clients/${userId}/role`, {
+					method: 'PATCH',
+					headers: {
+						'Content-Type': 'application/json',
+						...(token && { 'Authorization': `Bearer ${token}` })
+					},
+					body: JSON.stringify({ role: newRole })
+				});
+				
+				if (!res.ok) {
+					throw new Error('Erro ao atualizar role');
+				}
+				
+				const data = await res.json();
+				
+				if (data.success) {
+					// Atualizar localmente
+					const client = this.clients.find(c => c.userId === userId);
+					if (client) {
+						client.role = newRole;
+					}
+					console.log(`✅ Role atualizada: ${data.message}`);
+				} else {
+					console.error(`❌ Erro: ${data.message}`);
+					alert(data.message);
+				}
+			} catch (err) {
+				console.error('Erro ao atualizar role:', err);
+				alert('Erro ao atualizar role do usuário');
+			}
 		}
 	}
 }
@@ -594,6 +653,49 @@ p {
 
 .error-message {
 	color: #ff5252;
+}
+
+/* Estilos do Select de Role */
+.role-select {
+	padding: 6px 12px;
+	border-radius: 20px;
+	border: none;
+	font-size: 12px;
+	font-weight: bold;
+	cursor: pointer;
+	appearance: none;
+	text-align: center;
+	min-width: 120px;
+	transition: all 0.2s ease;
+}
+
+.role-select:focus {
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.4);
+}
+
+.role-user {
+	background-color: #2a2a2a;
+	color: #a0a0a0;
+	border: 1px solid #444;
+}
+
+.role-admin {
+	background-color: rgba(244, 67, 54, 0.2);
+	color: #ff5252;
+	border: 1px solid #ff5252;
+}
+
+.role-master {
+	background-color: rgba(255, 193, 7, 0.2);
+	color: #ffc107;
+	border: 1px solid #ffc107;
+}
+
+.role-expert {
+	background-color: rgba(33, 150, 243, 0.2);
+	color: #2196f3;
+	border: 1px solid #2196f3;
 }
 
 @media (min-width: 768px) {
