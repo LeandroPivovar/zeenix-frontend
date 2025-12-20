@@ -2337,9 +2337,86 @@ export default {
 		}
 	},
 
+	// ✅ OTIMIZAÇÃO: Carrega configuração do CACHE LOCAL instantaneamente
+	loadAIConfigFromCache() {
+		try {
+			const cachedConfig = localStorage.getItem('ai_config_cache');
+			if (cachedConfig) {
+				const config = JSON.parse(cachedConfig);
+				const cacheAge = Date.now() - (config._cacheTimestamp || 0);
+				
+				// Usar cache se tiver menos de 5 minutos
+				if (cacheAge < 5 * 60 * 1000) {
+					console.log('[StatsIAsView] ⚡ Carregando config do CACHE LOCAL (instantâneo)');
+					this.tradingConfig.isActive = config.isActive || false;
+					this.aiMonitoring.isActive = !!config.isActive;
+					this.tradingConfig.stakeAmount = config.stakeAmount || 50;
+					this.tradingConfig.mode = config.mode || 'veloz';
+					this.tradingConfig.profitTarget = config.profitTarget || 100;
+					this.tradingConfig.lossLimit = config.lossLimit || 25;
+					
+					if (config.isActive) {
+						console.log('[StatsIAsView] ⚡ IA estava ATIVA no cache - mostrando UI ativa');
+						if (!this.aiPollingInterval) {
+							this.startPolling();
+						}
+						this.startBackgroundPolling();
+					}
+				}
+			}
+		} catch (e) {
+			console.warn('[StatsIAsView] Cache de config inválido:', e);
+		}
+	},
+	
+	// ✅ OTIMIZAÇÃO: Carrega dados da conta do localStorage instantaneamente
+	loadAccountInfoFromLocal() {
+		try {
+			const connectionStr = localStorage.getItem('deriv_connection');
+			if (connectionStr) {
+				const connection = JSON.parse(connectionStr);
+				
+				// Determinar tipo de conta pelo loginid
+				const loginid = connection.loginid || '';
+				const isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT') || connection.isDemo === true;
+				this.accountType = isDemo ? 'Demo' : 'Real';
+				
+				// Buscar saldo correto baseado no tipo de conta
+				let balance = 0;
+				if (isDemo && connection.balancesByCurrencyDemo) {
+					const demoBalances = connection.balancesByCurrencyDemo;
+					balance = demoBalances['USD'] || Object.values(demoBalances)[0] || 0;
+				} else if (!isDemo && connection.balancesByCurrencyReal) {
+					const realBalances = connection.balancesByCurrencyReal;
+					balance = realBalances['USD'] || Object.values(realBalances)[0] || 0;
+				} else {
+					balance = connection.balance || connection.balanceAfter || 0;
+				}
+				this.accountBalance = parseFloat(balance) || 0;
+				
+				console.log('[StatsIAsView] ⚡ Dados da conta carregados do localStorage (instantâneo)');
+			}
+		} catch (e) {
+			console.warn('[StatsIAsView] Erro ao carregar dados locais:', e);
+		}
+	},
+	
+	// ✅ Salva configuração no cache local para próximo carregamento
+	saveAIConfigToCache(config) {
+		try {
+			const cacheData = {
+				...config,
+				_cacheTimestamp: Date.now()
+			};
+			localStorage.setItem('ai_config_cache', JSON.stringify(cacheData));
+		} catch (e) {
+			console.warn('[StatsIAsView] Erro ao salvar cache:', e);
+		}
+	},
+
 	async loadAIConfigOnMount() {
 		try {
-			console.log('[StatsIAsView] Verificando se IA já está ativa...');
+			console.log('[StatsIAsView] Buscando config atualizada da API...');
 			
 			const userId = this.getUserId();
 			if (!userId) {
@@ -2357,8 +2434,12 @@ export default {
 			
 			if (result.success && result.data) {
 				const config = result.data;
+				
+				// ✅ Salvar no cache para próximo carregamento instantâneo
+				this.saveAIConfigToCache(config);
+				
 				this.tradingConfig.isActive = config.isActive || false;
-				this.aiMonitoring.isActive = !!config.isActive; // mostra UI ativa imediatamente se já houver sessão
+				this.aiMonitoring.isActive = !!config.isActive;
 				this.tradingConfig.stakeAmount = config.stakeAmount || 50;
 				this.tradingConfig.mode = config.mode || 'veloz';
 				this.tradingConfig.profitTarget = config.profitTarget || 100;
@@ -2366,10 +2447,7 @@ export default {
 				
 				// Se a IA está ativa, carregar tudo automaticamente
 				if (config.isActive) {
-					console.log('[StatsIAsView] ✅ IA JÁ ESTÁ ATIVA! Carregando dados...');
-					console.log('[StatsIAsView] - Total de trades:', config.totalTrades);
-					console.log('[StatsIAsView] - Vitórias:', config.totalWins);
-					console.log('[StatsIAsView] - Derrotas:', config.totalLosses);
+					console.log('[StatsIAsView] ✅ IA ATIVA confirmada pela API');
 					
 					// Não bloquear a UI: já ativamos flags e começamos os polls sem esperar /ai/start
 					if (!this.aiPollingInterval) {
@@ -2377,9 +2455,11 @@ export default {
 					}
 					this.startBackgroundPolling();
 					
-					// Carregar estatísticas e histórico
-					await this.loadSessionStats();
-					await this.loadTradeHistory();
+					// Carregar estatísticas e histórico em paralelo
+					Promise.all([
+						this.loadSessionStats(),
+						this.loadTradeHistory()
+					]).catch(err => console.warn('[StatsIAsView] Erro ao carregar stats:', err));
 					
 					console.log('[StatsIAsView] ✅ Sistema pronto! IA operando em background.');
 				} else {
@@ -2910,28 +2990,33 @@ async mounted() {
 		return;
 	}
 	
-	// TESTE CRÍTICO - Sempre deve aparecer no console
-	console.log('🚀 TESTE: StatsIAsView mounted() foi chamado!');
 	console.log('[StatsIAsView] ===== COMPONENTE MONTADO =====');
-	
-	// Alerta visual para confirmar execução
-	console.warn('⚠️ SE VOCÊ VÊ ESTA MENSAGEM, O COMPONENTE ESTÁ CARREGANDO!');
 	
 	// Verificar se é mobile e configurar sidebar
 	this.checkMobile();
 	window.addEventListener('resize', this.checkMobile);
 	
-	// Carregar informações da conta
-	this.loadAccountInfo();
+	// ✅ OTIMIZAÇÃO 1: Carregar estado do CACHE LOCAL IMEDIATAMENTE (instantâneo)
+	this.loadAIConfigFromCache();
 	
-	// Carregar configuração da IA ao montar o componente
-	await this.loadAIConfigOnMount();
+	// ✅ OTIMIZAÇÃO 2: Carregar dados do localStorage INSTANTÂNEO
+	this.loadAccountInfoFromLocal();
+	
+	// ✅ OTIMIZAÇÃO 3: Fazer chamadas à API em PARALELO (não bloqueante)
+	// Não usar await - deixar rodar em background enquanto UI já mostra dados do cache
+	Promise.all([
+		this.loadAIConfigOnMount(),
+		this.loadAccountInfo(),
+	]).then(() => {
+		console.log('[StatsIAsView] ✅ Dados da API carregados em background');
+	}).catch(err => {
+		console.warn('[StatsIAsView] Erro ao carregar dados da API:', err);
+	});
 
 	// Assinar eventos de trade para atualizar histórico somente em mudanças
 	this.startTradeEventsStream();
 	
 	// Iniciar carregamento de dados mesmo quando IA está desativada
-	// (somente após tentar detectar sessão ativa para reduzir espera de UI)
 	console.log('[StatsIAsView] Chamando startDataLoading()...');
 	this.startDataLoading();
 	

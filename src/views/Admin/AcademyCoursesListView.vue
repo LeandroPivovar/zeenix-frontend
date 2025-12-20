@@ -1,13 +1,31 @@
 <!-- AcademyCoursesListView.vue -->
 <template>
-    <div class="layout" ref="layoutContainer">
-        <AppSidebar
-            :is-open="isSidebarOpen"
-            :is-collapsed="isSidebarCollapsed"
-            @toggle-collapse="toggleSidebarCollapse"
-        />
-        <main class="layout-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed, 'sidebar-closed': !isSidebarOpen }">
-            <div class="container">
+    <div class="dashboard-layout" ref="layoutContainer">
+        <div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
+        
+        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @toggle-collapse="toggleSidebarCollapse" @close-sidebar="isSidebarOpen = false" />
+        
+        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+            <TopNavbar 
+                v-if="!isMobile"
+                :is-sidebar-collapsed="isSidebarCollapsed"
+                @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
+                @toggle-sidebar-collapse="toggleSidebarCollapse"
+            />
+            
+            <div v-if="isMobile" class="mobile-header-admin">
+                <button class="menu-toggler-btn" @click="isSidebarOpen = true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="mobile-brand">
+                    <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
+                </div>
+            </div>
+
+            <main class="layout-content">
+                <div class="container">
                 <header class="page-header">
                     <div class="header-info">
                         <h1 class="page-title">Zenix Academy - Cursos</h1>
@@ -99,31 +117,46 @@
                     <div class="spinner"></div>
                     <p>Carregando cursos...</p>
                 </div>
-            </div>
-        </main>
+                </div>
+            </main>
+        </div>
     </div>
 </template>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
+import TopNavbar from '../../components/TopNavbar.vue';
 
 export default {
     name: 'AcademyCoursesListView',
     components: {
         AppSidebar,
+        TopNavbar,
     },
     data() {
         return {
             isSidebarOpen: true,
             isSidebarCollapsed: false,
+            isMobile: false,
             courses: [],
             loading: true,
         };
     },
     async mounted() {
+        this.handleResize();
+        window.addEventListener('resize', this.handleResize);
         await this.loadCourses();
     },
+    beforeUnmount() {
+        window.removeEventListener('resize', this.handleResize);
+    },
     methods: {
+        handleResize() {
+            this.isMobile = window.innerWidth < 1024;
+            if (this.isMobile) {
+                this.isSidebarOpen = false;
+            }
+        },
         async loadCourses() {
             this.loading = true;
             try {
@@ -225,6 +258,99 @@ export default {
 </script>
 
 <style scoped>
+/* Layout Base - Padrão Dashboard */
+.dashboard-layout {
+    display: flex;
+    min-height: 100vh;
+    background-color: #0b0b0b;
+    color: #f0f2f5;
+}
+
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.dashboard-content-wrapper {
+    flex-grow: 1;
+    margin-left: 280px;
+    transition: margin-left 0.3s ease;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-content-wrapper.sidebar-collapsed {
+    margin-left: 80px;
+}
+
+.layout-content {
+    flex-grow: 1;
+    padding: 20px;
+    padding-top: 80px;
+    background-color: #0b0b0b;
+}
+
+/* Mobile Header */
+.mobile-header-admin {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: #0b0b0b;
+    z-index: 998;
+    padding: 0 20px;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1C1C1C;
+}
+
+.mobile-brand {
+    display: flex;
+    align-items: center;
+}
+
+.menu-toggler-btn {
+    background-color: #1e1e1e;
+    color: rgb(255, 255, 255);
+    border: 1px solid #333;
+    border-radius: 8px;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.menu-toggler-btn:hover {
+    background-color: #2a2a2a;
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+    .dashboard-content-wrapper {
+        margin-left: 0;
+    }
+    
+    .dashboard-content-wrapper.sidebar-collapsed {
+        margin-left: 0;
+    }
+    
+    .mobile-header-admin {
+        display: flex;
+    }
+    
+    .layout-content {
+        padding-top: 80px;
+    }
+}
+
 .container {
     max-width: 1400px;
     margin: 0 auto;
@@ -243,12 +369,12 @@ export default {
 .header-info h1 {
     font-size: 2rem;
     font-weight: 700;
-    color: #1a1a1a;
+    color: #f0f2f5;
     margin: 0 0 0.5rem 0;
 }
 
 .header-info p {
-    color: #666;
+    color: #8c929a;
     margin: 0;
 }
 
@@ -270,13 +396,13 @@ export default {
 }
 
 .btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: #00ff7f;
+    color: #0f1013;
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 255, 127, 0.4);
 }
 
 .courses-grid {
@@ -287,24 +413,26 @@ export default {
 }
 
 .course-card {
-    background: white;
+    background: #1a1a1a;
     border-radius: 12px;
     overflow: hidden;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
     transition: all 0.3s;
     cursor: pointer;
+    border: 1px solid #2c3038;
 }
 
 .course-card:hover {
     transform: translateY(-4px);
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+    border-color: #00ff7f;
 }
 
 .course-card-image {
     position: relative;
     width: 100%;
     height: 200px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #1a1a1a 0%, #2c3038 100%);
     overflow: hidden;
 }
 
@@ -356,12 +484,12 @@ export default {
 .course-card-title {
     font-size: 1.25rem;
     font-weight: 700;
-    color: #1a1a1a;
+    color: #f0f2f5;
     margin: 0 0 0.5rem 0;
 }
 
 .course-card-description {
-    color: #666;
+    color: #8c929a;
     font-size: 0.9rem;
     line-height: 1.5;
     margin: 0 0 1rem 0;
@@ -372,7 +500,7 @@ export default {
     gap: 1.5rem;
     margin-bottom: 1rem;
     font-size: 0.875rem;
-    color: #666;
+    color: #8c929a;
 }
 
 .course-meta-item {
@@ -386,7 +514,7 @@ export default {
     justify-content: space-between;
     align-items: center;
     padding-top: 1rem;
-    border-top: 1px solid #e5e7eb;
+    border-top: 1px solid #2c3038;
 }
 
 .course-visibility {
@@ -413,29 +541,30 @@ export default {
 
 .course-price {
     font-weight: 700;
-    color: #667eea;
+    color: #00ff7f;
     font-size: 1.1rem;
 }
 
 .course-price.free {
-    color: #10b981;
+    color: #00ff7f;
 }
 
 .empty-state {
     text-align: center;
     padding: 4rem 2rem;
-    color: #666;
+    color: #8c929a;
 }
 
 .empty-state svg {
     margin-bottom: 1rem;
     opacity: 0.5;
+    color: #8c929a;
 }
 
 .empty-state h3 {
     font-size: 1.5rem;
     margin: 1rem 0 0.5rem 0;
-    color: #1a1a1a;
+    color: #f0f2f5;
 }
 
 .empty-state p {
@@ -445,13 +574,14 @@ export default {
 .loading-state {
     text-align: center;
     padding: 4rem 2rem;
+    color: #8c929a;
 }
 
 .spinner {
     width: 48px;
     height: 48px;
-    border: 4px solid #e5e7eb;
-    border-top-color: #667eea;
+    border: 4px solid #2c3038;
+    border-top-color: #00ff7f;
     border-radius: 50%;
     animation: spin 1s linear infinite;
     margin: 0 auto 1rem;
