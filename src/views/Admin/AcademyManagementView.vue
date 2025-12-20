@@ -1,17 +1,30 @@
 <template>
-    <div class="layout" ref="layoutContainer">
-        <AppSidebar
-            :is-open="isSidebarOpen"
-            :is-collapsed="isSidebarCollapsed"
-            @toggle-collapse="toggleSidebarCollapse"
-        />
-        <main class="layout-content" :class="{ 'sidebar-collapsed': isSidebarCollapsed, 'sidebar-closed': !isSidebarOpen }">
-            <button class="hamburger-btn" @click="toggleSidebar" aria-label="Abrir menu">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-            <div class="container">
+    <div class="dashboard-layout" ref="layoutContainer">
+        <div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
+        
+        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @toggle-collapse="toggleSidebarCollapse" @close-sidebar="isSidebarOpen = false" />
+        
+        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+            <TopNavbar 
+                v-if="!isMobile"
+                :is-sidebar-collapsed="isSidebarCollapsed"
+                @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
+                @toggle-sidebar-collapse="toggleSidebarCollapse"
+            />
+            
+            <div v-if="isMobile" class="mobile-header-admin">
+                <button class="menu-toggler-btn" @click="isSidebarOpen = true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="mobile-brand">
+                    <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
+                </div>
+            </div>
+
+            <main class="layout-content">
+                <div class="container">
                 <header class="page-header">
                     <div class="header-info">
                         <h1 class="page-title" color="white">Zenix Academy - Gestão de Cursos</h1>
@@ -319,11 +332,13 @@
                 :materials-list="materialsList"
                 @close="closePreviewModal"
             />
-        </main>
+            </main>
+        </div>
     </div>
 </template>
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
+import TopNavbar from '../../components/TopNavbar.vue';
 import StudentPreview from '../../components/StudentPreview.vue';
 import AcademyModals from '../../components/modals/AcademyModals.vue'; 
 
@@ -331,6 +346,7 @@ export default {
     name: 'AcademyManagementView',
     components: {
         AppSidebar,
+        TopNavbar,
         StudentPreview,
         AcademyModals 
     },
@@ -339,6 +355,7 @@ export default {
             // Layout
             isSidebarOpen: true, // Será ajustado em mounted/checkScreenSize
             isSidebarCollapsed: false,
+            isMobile: false,
             openLessonDropdown: null,
             // ... (Restante do seu estado 'course', 'isPreviewModalOpen', 'courses', etc.)
             course: {
@@ -472,7 +489,8 @@ export default {
         // ** INÍCIO: MÉTODOS DO HAMBÚRGUER/RESPONSIVIDADE **
         checkScreenSize() {
             // Define a Sidebar como fechada (mobile/tablet) ou aberta (desktop)
-            if (window.innerWidth <= 1024) { 
+            this.isMobile = window.innerWidth < 1024;
+            if (this.isMobile) { 
                 this.isSidebarOpen = false; 
             } else {
                 this.isSidebarOpen = true; 

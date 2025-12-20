@@ -1,15 +1,30 @@
 <template>
-	<div class="layout" ref="layoutContainer">
-		<AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" @toggle-collapse="toggleSidebarCollapse" />
+	<div class="dashboard-layout" ref="layoutContainer">
+		<div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
+		
+		<AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @toggle-collapse="toggleSidebarCollapse" @close-sidebar="isSidebarOpen = false" />
 
-		<main class="layout-content">
-			<button class="hamburger-btn" @click="toggleSidebar" aria-label="Abrir menu">
-				<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-					<path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-				</svg>
-			</button>
+		<div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+			<TopNavbar 
+				v-if="!isMobile"
+				:is-sidebar-collapsed="isSidebarCollapsed"
+				@toggle-sidebar="isSidebarOpen = !isSidebarOpen"
+				@toggle-sidebar-collapse="toggleSidebarCollapse"
+			/>
+			
+			<div v-if="isMobile" class="mobile-header-admin">
+				<button class="menu-toggler-btn" @click="isSidebarOpen = true">
+					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+						<path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+					</svg>
+				</button>
+				<div class="mobile-brand">
+					<span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
+				</div>
+			</div>
 
-			<div class="container"> 
+			<main class="layout-content">
+				<div class="container"> 
 				<h1>{{ pageTitle }}</h1>
 				<p>Monitoramento de usuàrios e contas vinculadas à Deriv</p>
 				
@@ -163,23 +178,27 @@
 						</tbody>
 					</table>
 				</div>
-			</div>
-		</main>
+				</div>
+			</main>
+		</div>
 	</div>
 </template>
 
 <script>
-import AppSidebar from '../../components/Sidebar.vue'; 
+import AppSidebar from '../../components/Sidebar.vue';
+import TopNavbar from '../../components/TopNavbar.vue';
 
 export default {
 	name: 'ClientsView',
 	components: {
 		AppSidebar,
+		TopNavbar,
 	},
 	data() {
 		return {
 			isSidebarOpen: true,
 			isSidebarCollapsed: false,
+			isMobile: false,
 			pageTitle: 'Métricas dos Clientes', 
 			loading: true,
 			error: null,
@@ -204,8 +223,19 @@ export default {
 	mounted() {
 		this.fetchMetrics();
 		this.fetchClients();
+		this.handleResize();
+		window.addEventListener('resize', this.handleResize);
+	},
+	beforeUnmount() {
+		window.removeEventListener('resize', this.handleResize);
 	},
 	methods: {
+		handleResize() {
+			this.isMobile = window.innerWidth < 1024;
+			if (this.isMobile) {
+				this.isSidebarOpen = false;
+			}
+		},
 		toggleSidebar() {
 			this.isSidebarOpen = !this.isSidebarOpen;
 		},
@@ -393,21 +423,98 @@ export default {
 <style scoped>
 /* Estilos Essenciais para Recriar o Layout da Imagem (Dark Mode) */
 
-.layout {
+/* Layout Base - Padrão Dashboard */
+.dashboard-layout {
 	display: flex;
 	min-height: 100vh;
-    background-color: #0b0b0b;
-	color: #e0e0e0; /* Texto claro */
+	background-color: #0b0b0b;
+	color: #e0e0e0;
 	font-family: 'Roboto', sans-serif;
-	max-width: calc(100% - 280px);
+}
+
+.sidebar-overlay {
+	position: fixed;
+	inset: 0;
+	background-color: rgba(0, 0, 0, 0.5);
+	z-index: 999;
+}
+
+.dashboard-content-wrapper {
+	flex-grow: 1;
 	margin-left: 280px;
-	padding: 50px 0;
+	transition: margin-left 0.3s ease;
+	min-height: 100vh;
+	display: flex;
+	flex-direction: column;
+}
+
+.dashboard-content-wrapper.sidebar-collapsed {
+	margin-left: 80px;
 }
 
 .layout-content {
-	justify-content: flex-start;
+	flex-grow: 1;
+	padding: 20px;
+	padding-top: 80px;
+	background-color: #0b0b0b;
+}
+
+/* Mobile Header */
+.mobile-header-admin {
+	display: none;
+	position: fixed;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 60px;
+	background-color: #0b0b0b;
+	z-index: 998;
+	padding: 0 20px;
+	align-items: center;
+	justify-content: space-between;
+	border-bottom: 1px solid #1C1C1C;
+}
+
+.mobile-brand {
+	display: flex;
+	align-items: center;
+}
+
+.menu-toggler-btn {
+	background-color: #1e1e1e;
+	color: rgb(255, 255, 255);
+	border: 1px solid #333;
+	border-radius: 8px;
+	width: 40px;
+	height: 40px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	transition: background-color 0.2s;
+}
+
+.menu-toggler-btn:hover {
+	background-color: #2a2a2a;
+}
+
+/* Responsividade */
+@media (max-width: 1024px) {
+	.dashboard-content-wrapper {
+		margin-left: 0;
+	}
 	
-    background-color: #0b0b0b;
+	.dashboard-content-wrapper.sidebar-collapsed {
+		margin-left: 0;
+	}
+	
+	.mobile-header-admin {
+		display: flex;
+	}
+	
+	.layout-content {
+		padding-top: 80px;
+	}
 }
 
 .c-icon{
