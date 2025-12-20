@@ -1095,6 +1095,29 @@ export default {
 			}
 			return `$${formatter.format(value)}`;
 		},
+
+		applySessionStats(data) {
+			if (!data) return;
+			
+			const totalTrades = data.totalTrades ?? 0;
+			const profitLoss = data.profitLoss ?? 0;
+			
+			// Atualizar blocos de estatística
+			this.tradingStats.totalTrades = totalTrades;
+			this.tradingStats.wins = data.wins ?? 0;
+			this.tradingStats.losses = data.losses ?? 0;
+			this.tradingStats.profitLoss = profitLoss;
+			
+			// Atualizar cards principais
+			this.todayTrades = totalTrades;
+			this.todayResult = profitLoss;
+			
+			// Porcentagem baseada no saldo total atual
+			const baseBalance = this.accountBalance > 0
+				? this.accountBalance
+				: (data.sessionBalance ?? 0);
+			this.todayResultPercent = baseBalance > 0 ? (profitLoss / baseBalance) * 100 : 0;
+		},
 		
 		async loadAccountInfo() {
 			try {
@@ -1128,15 +1151,9 @@ export default {
 					});
 					const result = await response.json();
 					
-				if (result.success && result.data) {
-					this.todayTrades = result.data.totalTrades || 0;
-					// ✅ ZENIX v2.0: Usar session_balance do banco (não profitLoss somado)
-					this.todayResult = result.data.sessionBalance || 0;
-					
-					// Calcular percentual baseado no capital inicial da sessão
-					const initialBalance = result.data.stakeAmount || 10000;
-					this.todayResultPercent = (this.todayResult / initialBalance) * 100;
-				}
+					if (result.success && result.data) {
+						this.applySessionStats(result.data);
+					}
 				}
 				
 				// Carregar estatísticas agregadas do StatsIAs
@@ -1144,6 +1161,9 @@ export default {
 				
 				// Carregar parâmetros de trading ajustados
 				await this.loadTradingParams();
+
+				// Carregar últimos logs (para tela padrão)
+				await this.loadRecentLogs();
 				
 				// Atualizar última leitura
 				this.lastReadingTime = new Date().toLocaleTimeString('pt-BR', { 
@@ -2076,10 +2096,7 @@ export default {
 				const result = await response.json();
 
 				if (result.success && result.data) {
-					this.tradingStats.totalTrades = result.data.totalTrades || 0;
-					this.tradingStats.wins = result.data.wins || 0;
-					this.tradingStats.losses = result.data.losses || 0;
-					this.tradingStats.profitLoss = result.data.profitLoss || 0;
+					this.applySessionStats(result.data);
 					console.log('[StatsIAsView] Estatísticas carregadas:', result.data);
 				}
 			} catch (error) {
@@ -2111,6 +2128,44 @@ export default {
 				}
 			} catch (error) {
 				console.error('[StatsIAsView] Erro ao carregar histórico:', error);
+			}
+		},
+
+		async loadRecentLogs(limit = 50) {
+			try {
+				const userId = this.getUserId();
+				if (!userId) return;
+
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const response = await fetch(`${apiBase}/ai/logs/${userId}`, {
+					headers: {
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					}
+				});
+
+				if (!response.ok) {
+					console.warn('[StatsIAsView] ⚠️ Erro ao buscar logs:', response.status, response.statusText);
+					return;
+				}
+
+				const result = await response.json();
+				if (result.success && Array.isArray(result.data)) {
+					this.recentLogs = result.data
+						.slice(0, limit)
+						.map(log => {
+							const timestamp = log.timestamp || log.created_at;
+							const time = timestamp
+								? new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+								: '--:--:--';
+							return {
+								time,
+								message: log.message || '',
+								type: log.type || 'info',
+							};
+						});
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao carregar logs:', error);
 			}
 		},
 
@@ -2159,8 +2214,11 @@ export default {
 				console.log('[StatsIAsView] Evento de trade recebido:', payload);
 
 				// Recarregar histórico e estatísticas apenas quando houver mudança real
-				await this.loadTradeHistory();
-				await this.loadSessionStats();
+				await Promise.all([
+					this.loadTradeHistory(),
+					this.loadSessionStats(),
+					this.loadRecentLogs(),
+				]);
 			} catch (e) {
 				console.warn('[StatsIAsView] Evento de trade inválido:', e);
 			}
