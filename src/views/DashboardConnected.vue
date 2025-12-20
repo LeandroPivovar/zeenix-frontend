@@ -34,7 +34,7 @@
     <!-- Main Content -->
     <main class="main-content bg-zenix-bg noise-bg font-inter overflow-y-auto w-full" style="overflow-x: hidden;">
       <!-- Hero Onboarding Section -->
-      <section id="hero-section" class="w-full mt-16 py-12 px-8 relative overflow-visible group h-[560px]">
+      <section id="hero-section" class="w-full mt-16 py-12 relative overflow-visible group h-[560px]">
       <div class="absolute inset-0 z-0 bg-gradient-to-r from-[#0B0B0B] to-transparent" style="left: -32px; width: calc(100% + 64px);">
         <!-- Video Background - Desktop Only (Dual Video for Seamless Loop) -->
         <video 
@@ -63,7 +63,7 @@
         <div v-if="!localSidebarCollapsed" class="hidden md:block absolute inset-0 bg-gradient-to-r from-[rgb(20_17_17/0.35)] to-transparent">
         </div>
       </div>
-      <div class="relative z-10 h-full w-full px-12">
+      <div class="relative z-10 h-full w-full">
         <div class="flex justify-between items-center h-full gap-20">
           <div class="flex flex-col justify-center space-y-10 flex-shrink-0">
             <div class="space-y-6 text-left">
@@ -92,7 +92,7 @@
       </section>
       
       <!-- Ticker Section -->
-      <section id="ticker-section" class="px-8 py-3 relative overflow-hidden border-t border-[#22C55E]/20 bg-[rgba(11,11,11,0.8)] backdrop-blur-sm w-full">
+      <section id="ticker-section" class="py-3 relative overflow-hidden border-t border-[#22C55E]/20 bg-[rgba(11,11,11,0.8)] backdrop-blur-sm w-full">
         <div class="relative z-10 w-full">
           <div class="relative overflow-hidden w-full">
             <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
@@ -203,7 +203,7 @@
         </div>
       </section>
       
-      <div class="px-8 py-5 w-full">
+      <div class="py-5 w-full" style="padding-left: 0; padding-right: 0;">
         <!-- Mobile Account Summary -->
         <section class="mobile-account-summary">
           <div class="mobile-account-user">
@@ -284,14 +284,14 @@
         </section>
         
         <!-- Best IAs Section -->
-        <section id="best-ai-section" class="px-12 pt-20 pb-0 relative w-full">
+        <section id="best-ai-section" class="pt-20 pb-5 relative w-full" :style="{ backgroundImage: `url(${require('@/assets/best-ia.svg')})`, paddingBottom: '20px' }">
           <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
-          <div class="relative z-10 w-full">
+          <div class="relative z-10 w-full" style="padding: 2rem;">
             <!-- Desktop Header -->
             <div class="text-left mb-8 space-y-2 desktop-ias-header">
-              <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Melhores IA's Agora</h2>
+              <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Melhores IA's <span class="text-[#22C55E]">Agora</span></h2>
               <p class="desktop-description-text text-[17px] text-[#9B9B9B] max-w-3xl leading-[1.75]">
-                Escolha entre as inteligências artificiais mais avançadas do mercado. Cada IA foi otimizada para diferentes estratégias e perfis de risco, garantindo máxima performance em suas operações.
+                Escolha entre as inteligências artificiais mais avançadas do mercado. Cada IA foi otimizada para diferentes estratégias e perfis de risco, <span class="text-[#22C55E]">garantindo máxima performance em suas operações.</span>
               </p>
             </div>
             
@@ -313,17 +313,19 @@
               v-for="(ia, index) in bestIAs" 
               :key="index"
               :id="`ai-card-${index + 1}`"
-              class="relative bg-[#0B0B0B] rounded-[20px] overflow-hidden shadow-[0_12px_48px_rgba(0,0,0,0.6),0_0_0_1px_rgba(34,197,94,0.08),0_0_32px_rgba(34,197,94,0.15),0_8px_20px_rgba(34,197,94,0.12)] hover:shadow-[0_20px_64px_rgba(0,0,0,0.7),0_0_0_1px_rgba(34,197,94,0.25),0_0_48px_rgba(34,197,94,0.25),0_12px_28px_rgba(34,197,94,0.18)] transition-all duration-500 group hover:-translate-y-1.5"
+              class="relative bg-[#0B0B0B] rounded-[20px] overflow-hidden desktop-no-shadow transition-all duration-500 group hover:-translate-y-1.5"
             >
               <div class="absolute -inset-4 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.10)_0%,transparent_70%)] blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
               <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,197,94,0.04)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.02)_0%,transparent_70%)] animate-pulse" :style="{ animationDelay: `${index * 0.5}s`, animationDuration: '4s' }"></div>
-              <div class="h-[182px] w-full overflow-hidden relative">
-                <img :src="ia.image" :alt="ia.alt || ia.name" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-[1.21] group-hover:saturate-[1.30] group-hover:-translate-y-0.5" style="filter: brightness(1.23) saturate(1.3) drop-shadow(0 0 12px rgba(34,197,94,0.18));">
+              <div class="h-[182px] w-full overflow-hidden relative" style="padding-left: 0; padding-right: 0;">
+                <img :src="ia.image" :alt="ia.alt || ia.name" class="w-full h-full object-cover transition-all duration-700 group-hover:scale-110 group-hover:brightness-[1.21] group-hover:saturate-[1.30] group-hover:-translate-y-0.5" style="filter: brightness(1.23) saturate(1.3) drop-shadow(0 0 12px rgba(34,197,94,0.18)); padding-left: 0; padding-right: 0;">
                 <!-- Gradiente da esquerda para direita (similar ao academy) -->
                 <div class="absolute inset-0 bg-gradient-to-r from-[#0B0B0B] via-[rgba(11,11,11,0.98)] via-[rgba(11,11,11,0.95)] via-[rgba(11,11,11,0.85)] via-[rgba(11,11,11,0.75)] via-[rgba(11,11,11,0.65)] via-[rgba(11,11,11,0.5)] via-[rgba(11,11,11,0.35)] via-[rgba(11,11,11,0.25)] via-[rgba(11,11,11,0.15)] via-[rgba(11,11,11,0.1)] to-transparent pointer-events-none z-10"></div>
                 <div class="absolute inset-0 bg-gradient-to-b from-transparent via-[rgba(11,11,11,0.3)] to-[#0B0B0B]"></div>
                 <div class="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent opacity-60"></div>
+                <!-- Sombra de transição entre imagem e título -->
+                <div class="absolute bottom-0 left-0 right-0 h-16 bg-gradient-to-b from-transparent via-[rgba(11,11,11,0.4)] to-[#0B0B0B] pointer-events-none z-20" style="box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.5);"></div>
               </div>
               <div class="p-6 flex flex-col gap-3.5 relative">
                 <div class="flex flex-col gap-2">
@@ -375,16 +377,16 @@
       </section>
       
       <!-- Overall Performance Section -->
-      <section id="performance-section" class="px-12 pt-0 pb-36 relative w-full">
+      <section id="performance-section" class="pt-0 pb-36 relative w-full" :style="{ backgroundImage: `url(${require('@/assets/performance.svg')})` }">
         <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
         <div class="w-full h-[1px] bg-[#1C1C1C] opacity-35 mb-12"></div>
-        <div class="relative z-10 w-full">
+        <div class="relative z-10 w-full" style="padding: 2rem;">
           <!-- Desktop Header -->
           <div class="text-left mb-8 space-y-2 desktop-performance-header">
-            <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Desempenho Geral</h2>
-            <p class="text-[17px] text-[#9B9B9B] max-w-3xl leading-[1.75]">
+            <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)] desktop-performance-title">Desempenho <span class="desktop-green-text">Geral</span></h2>
+            <p class="text-[17px] text-[#9B9B9B] max-w-3xl leading-[1.75] desktop-performance-description">
               Ative agora os recursos que podem aumentar seus resultados automaticamente.<br>
-              Cada ferramenta desligada é lucro não realizado.
+              <span class="desktop-green-text">Cada ferramenta desligada é lucro não realizado.</span>
             </p>
           </div>
           
@@ -397,7 +399,7 @@
               v-for="(perf, index) in performanceData" 
               :key="index"
               :id="`performance-card-${index + 1}`"
-              class="relative bg-gradient-to-br from-[#0E0E0E] to-[#0B0B0B] rounded-[18px] overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.5),0_0_0_1px_rgba(34,197,94,0.12),0_0_40px_rgba(34,197,94,0.18),0_16px_24px_rgba(34,197,94,0.09)] border border-[#1C1C1C] w-full h-auto transition-all duration-[250ms] ease-out hover:scale-[1.02] hover:shadow-[0_12px_48px_rgba(0,0,0,0.65),0_0_0_1px_rgba(34,197,94,0.18),0_0_60px_rgba(34,197,94,0.28),0_20px_32px_rgba(34,197,94,0.12)] hover:bg-gradient-to-br hover:from-[#111111] hover:to-[#0A0A0A] group"
+              class="relative bg-gradient-to-br from-[#0E0E0E] to-[#0B0B0B] rounded-[20px] overflow-hidden desktop-no-shadow desktop-performance-card-border w-full h-auto transition-all duration-[250ms] ease-out hover:scale-[1.02] hover:bg-gradient-to-br hover:from-[#111111] hover:to-[#0A0A0A] group"
             >
               <div class="absolute -inset-4 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.12)_0%,transparent_70%)] blur-[80px] opacity-100 -z-10 transition-opacity duration-[250ms] group-hover:opacity-125"></div>
               <div class="p-6 flex flex-col gap-6">
@@ -2948,22 +2950,54 @@ export default {
   /* Ticker Section (Carrossel de nomes) */
   .dashboard-layout #ticker-section {
     background: #050705 !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
   .dashboard-layout #ticker-section .absolute {
     background: transparent !important;
   }
   
+  /* Hero Section - padding de 3rem no desktop */
+  .dashboard-layout #hero-section {
+    padding: 3rem !important;
+  }
+  
   /* Best IAs Section */
   .dashboard-layout #best-ai-section {
-    background: #050705 !important;
+    background-color: #050705;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    padding-bottom: 20px !important;
   }
   .dashboard-layout #best-ai-section .absolute.inset-0 {
     background: transparent !important;
   }
   
+  /* Padding de 2rem no container interno da seção de Melhores IAs */
+  .dashboard-layout #best-ai-section > .relative.z-10,
+  .dashboard-layout #best-ai-section .relative.z-10.w-full,
+  .dashboard-layout #best-ai-section .relative.z-10 {
+    padding: 2rem !important;
+  }
+  
+  /* Padding de 2rem no container interno da seção de Desempenho Geral */
+  .dashboard-layout #performance-section > .relative.z-10,
+  .dashboard-layout #performance-section .relative.z-10.w-full,
+  .dashboard-layout #performance-section .relative.z-10 {
+    padding: 2rem !important;
+  }
+  
   /* Performance Section */
   .dashboard-layout #performance-section {
-    background: #050705 !important;
+    background-color: #0b0b0b;
+    background-repeat: no-repeat;
+    background-position: center center;
+    background-size: cover;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
   }
   .dashboard-layout #performance-section .absolute.inset-0 {
     background: transparent !important;
@@ -3009,9 +3043,9 @@ export default {
 }
 
 @media (max-width: 768px) {
-  /* Padding zero no dashboard layout mobile */
+  /* Padding de 1rem no dashboard layout mobile */
   .dashboard-layout {
-    padding: 0 !important;
+    padding: 1rem !important;
   }
 
   /* Isolar DashboardConnected dos estilos do layout-home no mobile */
@@ -3038,7 +3072,13 @@ export default {
   .main-content {
     background: linear-gradient(180deg, #0F2416 0%, #0A1C12 15%, #060606 45%, #030303 55%, #050505 75%, #0B0B0B 100%) !important;
     position: relative;
+    padding: 1rem !important;
     padding-bottom: 90px !important;
+  }
+  
+  /* Hero Section - padding de 1rem no mobile */
+  #hero-section {
+    padding: 1rem !important;
   }
 
   .main-content::before {
@@ -3218,7 +3258,14 @@ export default {
     padding-right: 0 !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
+    background: none !important;
+    background-color: transparent !important;
+    background-image: none !important;
     animation: fadeInUp 0.9s ease-out 0.3s backwards;
+  }
+  
+  #best-ai-section .relative.z-10 {
+    padding: 2rem !important;
   }
 
   #performance-section {
@@ -3226,12 +3273,14 @@ export default {
     padding-right: 0 !important;
     padding-top: 0 !important;
     padding-bottom: 0 !important;
+    background: none !important;
+    background-color: transparent !important;
+    background-image: none !important;
     animation: fadeInUp 1s ease-out 0.4s backwards;
   }
 
   #performance-section .relative.z-10 {
-    padding-left: 0 !important;
-    padding-right: 0 !important;
+    padding: 2rem !important;
   }
 
   /* Espaçamento entre seções conforme HTML - sem padding lateral */
@@ -3698,7 +3747,10 @@ export default {
     display: block !important;
     background: transparent !important;
     border-radius: 0 !important;
-    padding: 0 !important;
+    padding-left: 2rem !important;
+    padding-right: 2rem !important;
+    padding-top: 0 !important;
+    padding-bottom: 0 !important;
     margin-bottom: 0 !important;
     border: none !important;
     animation: fadeInUp 0.6s ease-out;
@@ -4001,6 +4053,44 @@ export default {
   .desktop-grid-ias [id^="ai-card-"] > div.p-6 > * {
     position: relative;
     z-index: 2;
+  }
+
+  /* Remover padding lateral da imagem nos cards de IA */
+  .desktop-grid-ias [id^="ai-card-"] > div.h-\[182px\] {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+  
+  .desktop-grid-ias [id^="ai-card-"] > div.h-\[182px\] > img {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+  }
+
+  /* Remover box-shadow dos cards de Melhores IAs e Desempenho Geral apenas no desktop */
+  .desktop-no-shadow {
+    box-shadow: none !important;
+  }
+  
+  .desktop-no-shadow:hover {
+    box-shadow: none !important;
+  }
+  
+  /* Aplicar mesma borda dos cards de IA nos cards de desempenho geral */
+  .desktop-performance-card-border {
+    border: none !important;
+    border-radius: 20px !important;
+  }
+  
+  /* Borda nos cards de IAs e Performance no desktop */
+  .desktop-grid-ias [id^="ai-card-"],
+  .desktop-performance-grid [id^="performance-card-"] {
+    border: 1px solid rgba(34, 197, 94, 0.08) !important;
+  }
+  
+  /* Textos verdes apenas no desktop */
+  .desktop-performance-title .desktop-green-text,
+  .desktop-performance-description .desktop-green-text {
+    color: #22C55E !important;
   }
 }
 
