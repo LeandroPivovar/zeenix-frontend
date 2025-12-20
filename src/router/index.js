@@ -17,6 +17,7 @@ import WebhookView from '../views/Admin/WebhookView.vue'
 import AcademyManagementView from '../views/Admin/AcademyManagementView.vue'
 import AcademyCoursesListView from '../views/Admin/AcademyCoursesListView.vue'
 import AdminView from '@/views/Admin/AdminView.vue'
+import StatsIAsView from '@/views/Admin/StatsIAsView.vue'
 import MasterTraderView from '@/views/MasterTraderView.vue'
 import AgenteAutonomoView from '@/views/AgenteAutonomo.vue'
 import CopyTraders from '@/views/CopyTradersView.vue';
@@ -161,6 +162,12 @@ const routes = [
     path: '/Admin',
     name: 'Admin',
     component: AdminView,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/AdminStatsIAs',
+    name: 'AdminStatsIAs',
+    component: StatsIAsView,
     meta: { requiresAuth: true }
   },
   {
