@@ -2527,15 +2527,11 @@ export default {
             // Reverter para ordem cronológica (mais antigos primeiro) para agregação
             const chronologicalTicks = [...ticksToUse].reverse();
 
-            // ✅ AJUSTE: Reduzir timeframe para ter mais velas na tela
-            // Usar timeframe fixo menor (1-2 segundos por vela) para ter mais velas visíveis
-            // Isso cria velas menores e mais detalhadas
-            let effectiveTimeframe = 2; // 2 segundos por vela (muito menor que antes)
-            
-            // Se o timeframe solicitado for menor que 2, usar ele
-            if (timeframeSeconds && timeframeSeconds < 2) {
-                effectiveTimeframe = timeframeSeconds;
-            }
+            // ✅ Ajuste: voltar a velas com mais ticks (evitar traços) e garantir 30 minutos
+            // Usar timeframe mínimo de 10s ou o informado (ex.: 60/300) para ter corpo de vela
+            let effectiveTimeframe = timeframeSeconds && timeframeSeconds > 0
+                ? Math.max(timeframeSeconds, 10) // mínimo 10s
+                : 60; // fallback 1 minuto
 
             const candles = [];
             let bucketStart = null;
@@ -2571,13 +2567,25 @@ export default {
 
             finalizeBucket();
             
-            // ✅ AJUSTE: Com timeframe menor (2s), teremos muitas velas
-            // Limitar apenas se exceder muito o chartPointsVisible
-            // Mas manter mais velas para ter mais detalhes
-            const maxCandles = this.chartPointsVisible * 3; // Permitir até 3x mais velas
-            const finalCandles = candles.length > maxCandles 
-                ? candles.slice(-maxCandles) 
-                : candles;
+            // ✅ Histórico: garantir ~30 minutos de velas
+            const maxCandles = this.chartPointsVisible * 4; // mais densidade
+            const minSpanSeconds = 30 * 60; // 30 minutos
+            let finalCandles = candles;
+
+            // Cortar excesso mantendo janela mais recente
+            if (finalCandles.length > maxCandles) {
+                finalCandles = finalCandles.slice(-maxCandles);
+            }
+
+            // Se a janela resultante ainda cobre menos de 30 minutos e há mais dados, tentar expandir
+            if (finalCandles.length > 0) {
+                const span = (finalCandles[finalCandles.length - 1].time - finalCandles[0].time);
+                if (span < minSpanSeconds && candles.length > finalCandles.length) {
+                    // pegar mais velas do histórico até cobrir ~30min ou acabar
+                    const need = Math.ceil(minSpanSeconds / effectiveTimeframe);
+                    finalCandles = candles.slice(-Math.max(need, finalCandles.length));
+                }
+            }
             
             console.log('[InvestmentActive] Velas geradas:', {
                 totalCandles: candles.length,
@@ -2861,6 +2869,7 @@ export default {
 
             try {
                 const filteredTicks = this.filterTicksByZoom(this.ticks);
+                if (!filteredTicks.length) return;
 
                 let data = [];
                 if (this.chartType === 'candles') {
