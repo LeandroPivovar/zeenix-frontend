@@ -911,6 +911,7 @@ export default {
             activeTrade: null, // Trade ativo atual (null = analisando mercado, objeto = contrato aberto/fechado)
             tradeStatusPollingInterval: null, // Polling para status do trade
             orderClosedTimer: null, // Timer para voltar ao estado "analisando mercado" após 4s quando contrato fechar
+            hadOpenContract: false, // Flag para garantir que "Contrato fechado" só apareça após "Contrato aberto"
         };
     },
     
@@ -1176,8 +1177,8 @@ export default {
             if (this.activeTrade && (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING')) {
                 return 'Contrato aberto';
             }
-            // Status 3: Contrato fechado (quando contrato acabou de fechar - exibido por 4s se orderClosedTimer estiver ativo)
-            if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null) {
+            // Status 3: Contrato fechado (APENAS se houve "Contrato aberto" antes E timer ativo)
+            if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null && this.hadOpenContract) {
                 return 'Contrato fechado';
             }
             // Status 1: Analisando mercado (quando não há trade ativo ou contrato fechado já passou dos 4s)
@@ -1188,8 +1189,8 @@ export default {
             if (this.activeTrade && (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING')) {
                 return 'Aguardando resultado';
             }
-            // Status 3: Contrato fechado
-            if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null) {
+            // Status 3: Contrato fechado (APENAS se houve "Contrato aberto" antes)
+            if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null && this.hadOpenContract) {
                 const result = this.activeTrade.status === 'WON' ? 'Ganhou' : 'Perdeu';
                 const profit = this.activeTrade.profitLoss || 0;
                 return `${result} ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}`;
@@ -2160,6 +2161,7 @@ export default {
                 // Se não há histórico, não há trade ativo
                 this.activeTrade = null;
                 this.progressState = 1; // Analisando mercado
+                this.hadOpenContract = false; // Resetar flag
                 
                 // Se havia um timer rodando, limpar
                 if (this.orderClosedTimer !== null) {
@@ -2176,6 +2178,7 @@ export default {
                 // Há um contrato aberto
                 const wasActive = this.activeTrade && (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING');
                 this.activeTrade = activeTrade;
+                this.hadOpenContract = true; // Marcar que vimos um contrato aberto
                 
                 // Se havia um timer rodando (contrato fechado anterior), limpar
                 if (this.orderClosedTimer !== null) {
@@ -2199,7 +2202,8 @@ export default {
                                        this.activeTrade.id !== lastTrade.id || 
                                        (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING');
                     
-                    if (wasDifferent) {
+                    // SÓ mostrar "Contrato fechado" se houve um "Contrato aberto" antes
+                    if (wasDifferent && this.hadOpenContract) {
                         // Novo contrato fechado - iniciar timer de 4 segundos
                         this.activeTrade = lastTrade;
                         this.progressState = 3; // Contrato fechado
@@ -2214,10 +2218,16 @@ export default {
                             console.log('[InvestmentActive] ⏰ Timer de 4s expirado, voltando para estado "analisando mercado"');
                             this.activeTrade = null;
                             this.progressState = 1; // Analisando mercado
+                            this.hadOpenContract = false; // Resetar flag
                             this.orderClosedTimer = null;
                         }, 4000);
                         
                         console.log('[InvestmentActive] ✅ Contrato fechado detectado:', lastTrade.id, 'Timer de 4s iniciado');
+                    } else if (wasDifferent && !this.hadOpenContract) {
+                        // Trade fechado mas não vimos ele aberto - ir direto para "Analisando mercado"
+                        console.log('[InvestmentActive] ⏭️ Trade fechado sem ter visto aberto, mantendo "Analisando mercado"');
+                        this.activeTrade = null;
+                        this.progressState = 1; // Analisando mercado
                     }
                     // Se não foi diferente, manter estado atual (timer continua rodando se existir)
                 } else {
@@ -2226,6 +2236,7 @@ export default {
                     if (this.orderClosedTimer === null) {
                         this.activeTrade = null;
                         this.progressState = 1; // Analisando mercado
+                        this.hadOpenContract = false; // Resetar flag
                     }
                 }
             }
