@@ -1,20 +1,42 @@
 <template>
-    <div class="layout">
+    <div class="dashboard-layout">
+        <div
+            v-if="isSidebarOpen && isMobile"
+            class="sidebar-overlay"
+            @click="isSidebarOpen = false"
+        ></div>
+
         <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="isSidebarCollapsed" 
+            :is-mobile="isMobile"
             @toggle-collapse="toggleSidebarCollapse" 
             @close-sidebar="isSidebarOpen = false" 
         />
 
-        <main class="layout-content">
+        <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+            <!-- Top Navbar -->
+            <TopNavbar 
+                v-if="!isMobile"
+                :is-sidebar-collapsed="isSidebarCollapsed"
+                @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
+                @toggle-sidebar-collapse="toggleSidebarCollapse"
+            />
             
-            <button class="menu-toggler-btn" @click="isSidebarOpen = true" v-if="!isSidebarOpen">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-            </button>
-            <div class="admin-dashboard">
+            <!-- Mobile Header -->
+            <div v-if="isMobile" class="mobile-header-admin">
+                <button class="menu-toggler-btn" @click="isSidebarOpen = true">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                </button>
+                <div class="mobile-brand">
+                    <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
+                </div>
+            </div>
+
+            <main class="layout-content">
+                <div class="admin-dashboard">
                 <header class="dashboard-header">
                     <h1>Painel Administrativo</h1>
                     <p>Controle total da operação, permissões e desempenho da plataforma.</p>
@@ -276,8 +298,9 @@
                         <button class="btn-save-config" @click="saveConfigurations">Salvar Configurações</button>
                     </div>
                 </section>
-            </div>
-        </main>
+                            </div>
+            </main>
+        </div>
         
         <transition name="modal-fade">
             <div class="modal-overlay" v-if="showAddAdminModal" @click.self="showAddAdminModal = false">
@@ -320,16 +343,19 @@
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
+import TopNavbar from '../../components/TopNavbar.vue';
 
 export default {
     name: 'AdminView',
     components: {
-        AppSidebar
+        AppSidebar,
+        TopNavbar
     },
     data() {
         return {
             isSidebarOpen: window.innerWidth > 1024,
             isSidebarCollapsed: false,
+            isMobile: window.innerWidth <= 1024,
             
             showAddAdminModal: false, 
             
@@ -546,6 +572,7 @@ export default {
         },
         
         handleResize() {
+            this.isMobile = window.innerWidth <= 1024;
             if (window.innerWidth > 1024) {
                 this.isSidebarOpen = true;
             } else {
@@ -683,20 +710,38 @@ export default {
 }
 </script>
 <style scoped>
-/* --- Layout Base --- */
-.layout {
+/* --- Layout Base (seguindo padrão da Dashboard) --- */
+.dashboard-layout {
     display: flex;
     min-height: 100vh;
     font-family: Arial, sans-serif;
     background-color: #0b0b0b;
-    max-width: calc(100% - 280px);
+}
+
+.sidebar-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+}
+
+.dashboard-content-wrapper {
+    flex-grow: 1;
     margin-left: 280px;
-    padding: 30px 0;
+    transition: margin-left 0.3s ease;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+}
+
+.dashboard-content-wrapper.sidebar-collapsed {
+    margin-left: 80px;
 }
 
 .layout-content {
     flex-grow: 1;
     padding: 20px;
+    padding-top: 80px; /* Espaço para o TopNavbar */
     overflow-y: auto;
     background-color: #0b0b0b;
 }
@@ -705,6 +750,27 @@ export default {
     width: 100%;
     margin: 0 auto;
     padding: 20px;
+}
+
+/* Mobile Header */
+.mobile-header-admin {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background-color: #0b0b0b;
+    z-index: 998;
+    padding: 0 20px;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #1C1C1C;
+}
+
+.mobile-brand {
+    display: flex;
+    align-items: center;
 }
 
 /* --- Cabeçalho --- */
@@ -1336,21 +1402,17 @@ export default {
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
-/* --- NOVO: Estilos do Botão Hambúrguer no AdminView (Apenas Mobile) --- */
+/* --- Estilos do Botão Hambúrguer no AdminView (Apenas Mobile) --- */
 /* ---------------------------------------------------------------------------------------------------- */
 
 .menu-toggler-btn {
-    position: absolute;
-    top: 20px;
-    left: 20px;
-    z-index: 999; /* Abaixo do sidebar (1000) */
     background-color: #1e1e1e;
     color: rgb(255, 255, 255);
     border: 1px solid #333;
     border-radius: 8px;
     width: 40px;
     height: 40px;
-    display: none; /* Oculto por padrão no desktop */
+    display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
@@ -1369,15 +1431,20 @@ export default {
 
 /* Para Tablets e Telas Médias (max-width: 1024px) */
 @media (max-width: 1024px) {
-    /* Mostra o botão de hambúrguer */
-    .menu-toggler-btn {
+    .dashboard-content-wrapper {
+        margin-left: 0;
+    }
+    
+    .dashboard-content-wrapper.sidebar-collapsed {
+        margin-left: 0;
+    }
+    
+    .mobile-header-admin {
         display: flex;
-
     }
     
     .layout-content {
-        /* Adiciona padding para o botão de hambúrguer não cobrir o conteúdo */
-        padding-top: 60px; 
+        padding-top: 80px;
     }
     
     /* Ajusta a grade de KPIs para 3 colunas, se necessário */
@@ -1397,11 +1464,12 @@ export default {
 @media (max-width: 768px) {
     .layout-content {
         padding: 10px;
+        padding-top: 80px;
     }
 
     .admin-dashboard{
         width: 100%;
-        margin-top: 40px;
+        padding: 10px;
     }
     
     /* Ajusta a grade de KPIs para 2 colunas */
