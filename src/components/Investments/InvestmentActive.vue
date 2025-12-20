@@ -226,9 +226,9 @@
                             <div class="mobile-progress-text">
                                 <span class="mobile-progress-dot"></span>
                                 <div class="mobile-progress-labels">
-                                    <span class="mobile-progress-label label-1">Analisando o mercado</span>
-                                    <span class="mobile-progress-label label-2">Ordem aberta</span>
-                                    <span class="mobile-progress-label label-3">Ordem fechada</span>
+                                    <span class="mobile-progress-label label-1">Analisando mercado</span>
+                                    <span class="mobile-progress-label label-2">Contrato aberto</span>
+                                    <span class="mobile-progress-label label-3">Contrato fechado</span>
                                 </div>
                             </div>
                         </div>
@@ -904,13 +904,13 @@ export default {
             ],
             
             // Barra de progresso mobile
-            progressState: 1, // 1 = analisando, 2 = ordem aberta, 3 = ordem fechada
+            progressState: 1, // 1 = analisando mercado, 2 = contrato aberto, 3 = contrato fechado
             progressInterval: null,
             
             // Status do trade ativo
-            activeTrade: null, // Trade ativo atual (null = analisando, objeto = ordem aberta/fechada)
+            activeTrade: null, // Trade ativo atual (null = analisando mercado, objeto = contrato aberto/fechado)
             tradeStatusPollingInterval: null, // Polling para status do trade
-            orderClosedTimer: null, // Timer para voltar ao estado "analisando" após 15s quando ordem fechar
+            orderClosedTimer: null, // Timer para voltar ao estado "analisando mercado" após 4s quando contrato fechar
         };
     },
     
@@ -1172,29 +1172,29 @@ export default {
 
         // Formatted balance
         currentStatusTitle() {
-            // Status 2: Ordem aberta (quando há trade com status ACTIVE)
-            if (this.activeTrade && this.activeTrade.status === 'ACTIVE') {
-                return 'Ordem aberta';
+            // Status 2: Contrato aberto (quando há trade com status ACTIVE ou PENDING)
+            if (this.activeTrade && (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING')) {
+                return 'Contrato aberto';
             }
-            // Status 3: Ordem fechada (quando ordem acabou de fechar - exibido por 15s se orderClosedTimer estiver ativo)
+            // Status 3: Contrato fechado (quando contrato acabou de fechar - exibido por 4s se orderClosedTimer estiver ativo)
             if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null) {
-                return 'Ordem fechada';
+                return 'Contrato fechado';
             }
-            // Status 1: Analisando (quando não há trade ativo ou ordem fechada já passou dos 15s)
-            return 'Analisando...';
+            // Status 1: Analisando mercado (quando não há trade ativo ou contrato fechado já passou dos 4s)
+            return 'Analisando mercado';
         },
         currentStatusDescription() {
-            // Status 2: Ordem aberta
-            if (this.activeTrade && this.activeTrade.status === 'ACTIVE') {
+            // Status 2: Contrato aberto
+            if (this.activeTrade && (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING')) {
                 return 'Aguardando resultado';
             }
-            // Status 3: Ordem fechada
+            // Status 3: Contrato fechado
             if (this.activeTrade && (this.activeTrade.status === 'WON' || this.activeTrade.status === 'LOST') && this.orderClosedTimer !== null) {
                 const result = this.activeTrade.status === 'WON' ? 'Ganhou' : 'Perdeu';
                 const profit = this.activeTrade.profitLoss || 0;
                 return `${result} ${profit >= 0 ? '+' : ''}$${profit.toFixed(2)}`;
             }
-            // Status 1: Analisando
+            // Status 1: Analisando mercado
             return 'Buscando oportunidades';
         },
         formattedBalance() {
@@ -1313,9 +1313,9 @@ export default {
         
         progressText() {
             const texts = {
-                1: 'Analisando o mercado',
-                2: 'Ordem aberta',
-                3: 'Ordem fechada'
+                1: 'Analisando mercado',
+                2: 'Contrato aberto',
+                3: 'Contrato fechado'
             };
             return texts[this.progressState] || texts[1];
         }
@@ -2159,7 +2159,7 @@ export default {
             if (!tradeHistory || tradeHistory.length === 0) {
                 // Se não há histórico, não há trade ativo
                 this.activeTrade = null;
-                this.progressState = 1; // Analisando
+                this.progressState = 1; // Analisando mercado
                 
                 // Se havia um timer rodando, limpar
                 if (this.orderClosedTimer !== null) {
@@ -2169,63 +2169,63 @@ export default {
                 return;
             }
             
-            // Procurar por trade com status ACTIVE (ordem aberta)
-            const activeTrade = tradeHistory.find(trade => trade.status === 'ACTIVE');
+            // Procurar por trade com status ACTIVE ou PENDING (contrato aberto)
+            const activeTrade = tradeHistory.find(trade => trade.status === 'ACTIVE' || trade.status === 'PENDING');
             
             if (activeTrade) {
-                // Há uma ordem aberta
-                const wasActive = this.activeTrade && this.activeTrade.status === 'ACTIVE';
+                // Há um contrato aberto
+                const wasActive = this.activeTrade && (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING');
                 this.activeTrade = activeTrade;
                 
-                // Se havia um timer rodando (ordem fechada anterior), limpar
+                // Se havia um timer rodando (contrato fechado anterior), limpar
                 if (this.orderClosedTimer !== null) {
                     clearTimeout(this.orderClosedTimer);
                     this.orderClosedTimer = null;
                 }
                 
-                // Atualizar progressState para mobile (2 = ordem aberta)
+                // Atualizar progressState para mobile (2 = contrato aberto)
                 this.progressState = 2;
                 
                 if (!wasActive) {
-                    console.log('[InvestmentActive] ✅ Ordem aberta detectada:', activeTrade.id);
+                    console.log('[InvestmentActive] ✅ Contrato aberto detectado:', activeTrade.id);
                 }
             } else {
-                // Não há ordem aberta, verificar se o último trade foi fechado recentemente
+                // Não há contrato aberto, verificar se o último trade foi fechado recentemente
                 const lastTrade = tradeHistory[0]; // Trades vêm ordenados do mais recente para o mais antigo
                 
                 if (lastTrade && (lastTrade.status === 'WON' || lastTrade.status === 'LOST')) {
-                    // Verificar se este trade é diferente do anterior (nova ordem fechada)
+                    // Verificar se este trade é diferente do anterior (novo contrato fechado)
                     const wasDifferent = !this.activeTrade || 
                                        this.activeTrade.id !== lastTrade.id || 
-                                       (this.activeTrade.status === 'ACTIVE');
+                                       (this.activeTrade.status === 'ACTIVE' || this.activeTrade.status === 'PENDING');
                     
                     if (wasDifferent) {
-                        // Nova ordem fechada - iniciar timer de 15 segundos
+                        // Novo contrato fechado - iniciar timer de 4 segundos
                         this.activeTrade = lastTrade;
-                        this.progressState = 3; // Ordem fechada
+                        this.progressState = 3; // Contrato fechado
                         
                         // Limpar timer anterior se existir
                         if (this.orderClosedTimer !== null) {
                             clearTimeout(this.orderClosedTimer);
                         }
                         
-                        // Iniciar timer de 15 segundos para voltar ao estado "analisando"
+                        // Iniciar timer de 4 segundos para voltar ao estado "analisando mercado"
                         this.orderClosedTimer = setTimeout(() => {
-                            console.log('[InvestmentActive] ⏰ Timer de 15s expirado, voltando para estado "analisando"');
+                            console.log('[InvestmentActive] ⏰ Timer de 4s expirado, voltando para estado "analisando mercado"');
                             this.activeTrade = null;
-                            this.progressState = 1; // Analisando
+                            this.progressState = 1; // Analisando mercado
                             this.orderClosedTimer = null;
-                        }, 15000);
+                        }, 4000);
                         
-                        console.log('[InvestmentActive] ✅ Ordem fechada detectada:', lastTrade.id, 'Timer de 15s iniciado');
+                        console.log('[InvestmentActive] ✅ Contrato fechado detectado:', lastTrade.id, 'Timer de 4s iniciado');
                     }
                     // Se não foi diferente, manter estado atual (timer continua rodando se existir)
                 } else {
-                    // Não há ordem ativa nem fechada recente - estado de análise
+                    // Não há contrato ativo nem fechado recente - estado de análise
                     // Só atualizar se não havia timer rodando (timer ainda não expirou)
                     if (this.orderClosedTimer === null) {
                         this.activeTrade = null;
-                        this.progressState = 1; // Analisando
+                        this.progressState = 1; // Analisando mercado
                     }
                 }
             }
