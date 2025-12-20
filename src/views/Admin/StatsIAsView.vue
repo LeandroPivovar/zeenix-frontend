@@ -702,6 +702,28 @@
 							<div class="market-analysis-meta">
 								<span>Volatility 10 • M5 • Última atualização: {{ aiMonitoring.lastUpdate || lastReadingTime }}</span>
 							</div>
+
+							<!-- Controles do gráfico (IA ativa) -->
+							<div class="chart-controls-active">
+								<div class="zoom-buttons">
+									<button
+										@click="setZoomPeriodActive(10)"
+										:class="['zoom-btn', zoomPeriodActive === 10 ? 'active' : '']"
+									>10m</button>
+									<button
+										@click="setZoomPeriodActive(5)"
+										:class="['zoom-btn', zoomPeriodActive === 5 ? 'active' : '']"
+									>5m</button>
+									<button
+										@click="setZoomPeriodActive(3)"
+										:class="['zoom-btn', zoomPeriodActive === 3 ? 'active' : '']"
+									>3m</button>
+								</div>
+								<button class="type-toggle" @click="toggleChartTypeActive">
+									<i :class="chartTypeActive === 'line' ? 'fas fa-chart-line' : 'fas fa-chart-bar'"></i>
+									<span>{{ chartTypeActive === 'line' ? 'Linhas' : 'Velas' }}</span>
+								</button>
+							</div>
 						</div>
 						<div class="market-chart-container">
 							<div ref="marketChartContainerActive" class="market-chart-wrapper"></div>
@@ -1051,6 +1073,10 @@ export default {
 				window: 3,
 				betPercent: 0.005,
 			},
+			
+			// Gráfico IA ativa (market chart)
+			chartTypeActive: 'line', // 'line' ou 'candles'
+			zoomPeriodActive: 10, // minutos: 10 (padrão), 5, 3
 			
 			// Estado para atualização de configuração
 			isUpdatingConfig: false,
@@ -2596,22 +2622,9 @@ export default {
 				},
 			});
 			
-			this.marketLineSeriesActive = this.marketChartActive.addCandlestickSeries({
-				upColor: '#22C55E',
-				downColor: '#FF4747',
-				borderVisible: true,
-				borderUpColor: '#22C55E',
-				borderDownColor: '#FF4747',
-				wickUpColor: '#22C55E',
-				wickDownColor: '#FF4747',
-				priceFormat: {
-					type: 'price',
-					precision: 1,
-					minMove: 0.1,
-				},
-			});
+			this.createMarketSeriesActive();
 			
-			console.log('[StatsIAsView] ✅ Gráfico ativo inicializado com candlestick');
+			console.log('[StatsIAsView] ✅ Gráfico ativo inicializado (linhas por padrão)');
 			this.marketChartInitializedActive = true;
 			
 			// Aguardar um pouco antes de atualizar para garantir que o container está pronto
@@ -2636,20 +2649,103 @@ export default {
 		try {
 			console.log('[StatsIAsView] Atualizando gráfico ativo. Ticks disponíveis:', this.aiMonitoring.ticks.length);
 			
-			// Converter ticks em velas
-			const candles = this.aggregateTicksToCandles(this.aiMonitoring.ticks);
+			const filteredTicks = this.filterTicksByZoomActive(this.aiMonitoring.ticks);
 			
-			if (candles.length > 0) {
-				console.log('[StatsIAsView] Atualizando gráfico com', candles.length, 'velas');
-				this.marketLineSeriesActive.setData(candles);
-				this.marketChartActive.timeScale().fitContent();
+			if (this.chartTypeActive === 'line') {
+				const lineData = filteredTicks
+					.map(tick => {
+						let epoch = Number(tick.epoch || (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : 0));
+						if (epoch > 10000000000) epoch = Math.floor(epoch / 1000);
+						return { time: Math.floor(epoch), value: Number(tick.value || 0) };
+					})
+					.filter(p => p.value > 0 && p.time > 0)
+					.sort((a, b) => a.time - b.time);
+				
+				if (lineData.length > 0) {
+					this.marketLineSeriesActive.setData(lineData);
+					this.marketChartActive.timeScale().fitContent();
+				} else {
+					console.warn('[StatsIAsView] Nenhum ponto para gráfico de linhas');
+				}
 			} else {
-				console.warn('[StatsIAsView] Nenhuma vela gerada para o gráfico ativo');
+				const candles = this.aggregateTicksToCandles(filteredTicks);
+				
+				if (candles.length > 0) {
+					this.marketLineSeriesActive.setData(candles);
+					this.marketChartActive.timeScale().fitContent();
+				} else {
+					console.warn('[StatsIAsView] Nenhuma vela gerada para o gráfico ativo');
+				}
 			}
 		} catch (error) {
 			console.error('[StatsIAsView] Erro ao atualizar gráfico de mercado (ativo):', error);
 			console.error('[StatsIAsView] Stack:', error.stack);
 		}
+	},
+
+	createMarketSeriesActive() {
+		if (!this.marketChartActive) return;
+		
+		// Remover série anterior, se existir
+		if (this.marketLineSeriesActive) {
+			try {
+				this.marketChartActive.removeSeries(this.marketLineSeriesActive);
+			} catch (e) {
+				console.warn('[StatsIAsView] Erro ao remover série anterior:', e);
+			}
+		}
+		
+		if (this.chartTypeActive === 'line') {
+			this.marketLineSeriesActive = this.marketChartActive.addLineSeries({
+				color: '#22C55E',
+				lineWidth: 2,
+			});
+		} else {
+			this.marketLineSeriesActive = this.marketChartActive.addCandlestickSeries({
+				upColor: '#22C55E',
+				downColor: '#FF4747',
+				borderVisible: true,
+				borderUpColor: '#22C55E',
+				borderDownColor: '#FF4747',
+				wickUpColor: '#22C55E',
+				wickDownColor: '#FF4747',
+				priceFormat: {
+					type: 'price',
+					precision: 1,
+					minMove: 0.1,
+				},
+			});
+		}
+	},
+
+	setZoomPeriodActive(minutes) {
+		if (this.zoomPeriodActive === minutes) return;
+		this.zoomPeriodActive = minutes;
+		this.updateMarketChartActive();
+	},
+	
+	toggleChartTypeActive() {
+		this.chartTypeActive = this.chartTypeActive === 'line' ? 'candles' : 'line';
+		this.createMarketSeriesActive();
+		this.updateMarketChartActive();
+	},
+	
+	filterTicksByZoomActive(ticks) {
+		if (!Array.isArray(ticks) || ticks.length === 0) return [];
+		const now = Math.floor(Date.now() / 1000);
+		const minutesAgo = now - (this.zoomPeriodActive * 60);
+		
+		const filtered = ticks.filter(tick => {
+			let epoch = Number(tick.epoch || (tick.timestamp ? new Date(tick.timestamp).getTime() / 1000 : 0));
+			if (epoch > 10000000000) epoch = Math.floor(epoch / 1000);
+			return epoch >= minutesAgo;
+		});
+		
+		if (filtered.length === 0 && ticks.length > 0) {
+			// fallback: últimos 200 ticks
+			return ticks.slice(-200);
+		}
+		return filtered;
 	},
 	
 	/**
@@ -4670,6 +4766,60 @@ tbody tr:hover {
 	font-size: 12px;
 	color: #475569;
 	font-style: italic;
+}
+
+/* Controles do gráfico (IA ativa) */
+.chart-controls-active {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.chart-controls-active .zoom-buttons {
+	display: inline-flex;
+	border: 1px solid #1A1A1A;
+	border-radius: 8px;
+	overflow: hidden;
+}
+
+.chart-controls-active .zoom-btn {
+	padding: 6px 10px;
+	font-size: 12px;
+	color: #DFDFDF;
+	background: #0B0B0B;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.chart-controls-active .zoom-btn:not(.active):hover {
+	background: #1A1A1A;
+}
+
+.chart-controls-active .zoom-btn.active {
+	background: #22C55E;
+	color: #0B0B0B;
+	font-weight: 600;
+}
+
+.chart-controls-active .type-toggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 12px;
+	font-size: 12px;
+	color: #DFDFDF;
+	background: #0B0B0B;
+	border: 1px solid #1A1A1A;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: all 0.2s ease;
+}
+
+.chart-controls-active .type-toggle:hover {
+	border-color: #22C55E;
+	color: #22C55E;
 }
 
 /* Gráfico de Ticks (mantido para compatibilidade) */
