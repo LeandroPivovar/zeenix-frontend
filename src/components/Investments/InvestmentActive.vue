@@ -488,7 +488,7 @@
                         
 
                         <!-- Histórico View (Tabela de Operações Executadas) -->
-                        <div v-show="activeTab === 'logs'" id="logs-view" class="h-[600px] overflow-y-auto mobile-logs-view">
+                        <div v-show="activeTab === 'logs'" id="logs-view" class="flex-1 overflow-y-auto mobile-logs-view min-h-0">
                             <!-- Mobile: Título do Histórico -->
                             <div class="mobile-logs-title">
                                 <h3 class="mobile-logs-title-text">Histórico de Operações</h3>
@@ -571,7 +571,7 @@
                         </div>
 
                         <!-- Registros View (Logs Detalhados em Tempo Real) -->
-                        <div v-show="activeTab === 'register'" id="register-view" class="h-[600px] overflow-hidden flex flex-col mobile-tab-content">
+                        <div v-show="activeTab === 'register'" id="register-view" class="flex-1 overflow-hidden flex flex-col mobile-tab-content min-h-0">
                             <!-- Desktop Header -->
                             <div class="flex items-center justify-between mb-3 px-2 desktop-register-header">
                                 <div class="flex items-center gap-2">
@@ -606,7 +606,7 @@
                             <div 
                                 ref="logsContainer" 
                                 class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar relative desktop-register-list" 
-                                style="scroll-behavior: smooth; max-height: 500px;"
+                                style="scroll-behavior: smooth;"
                             >
                                 <div v-if="realtimeLogs.length === 0" class="text-zenix-secondary text-left py-12 px-4">
                                     <i class="fas fa-info-circle text-2xl mb-2"></i>
@@ -1204,19 +1204,20 @@ export default {
                 const isDemo = this.accountType === 'demo' || 
                               this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
                               (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
-                return isDemo ? 'D$0,00' : '$0,00';
+                return isDemo ? 'D0,00' : '$0,00';
             }
             const formatter = new Intl.NumberFormat('pt-BR', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             });
-            // ✅ Se for conta Demo, usar prefixo D$ (igual ao header)
+            // Se for conta Demo, usar apenas D (sem $)
             const isDemo = this.accountType === 'demo' || 
                           this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
                           (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
             if (isDemo) {
-                return `D$${formatter.format(this.accountBalanceProp)}`;
+                return `D${formatter.format(this.accountBalanceProp)}`;
             }
+            // Se for real, usar apenas $
             return `$${formatter.format(this.accountBalanceProp)}`;
         },
 
@@ -3753,7 +3754,7 @@ button i,
     width: 100%;
 }
 
-#chart-view {
+#chart-view:not([style*="display: none"]):not([style*="display:none"]) {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -3761,6 +3762,16 @@ button i,
     margin: 0;
     padding: 0;
     align-self: stretch;
+}
+
+/* Garantir que elementos escondidos pelo v-show fiquem realmente escondidos */
+#chart-view[style*="display: none"],
+#chart-view[style*="display:none"],
+#logs-view[style*="display: none"],
+#logs-view[style*="display:none"],
+#register-view[style*="display: none"],
+#register-view[style*="display:none"] {
+    display: none !important;
 }
 
 .chart-container {
@@ -4849,7 +4860,7 @@ button i,
         max-height: 80vh;
     }
     
-    #logs-view {
+    #logs-view:not([style*="display: none"]):not([style*="display:none"]) {
         min-height: 600px !important;
         max-height: 80vh !important;
     }
@@ -6715,8 +6726,8 @@ button i,
         border-radius: 12px;
     }
     
-    #logs-view,
-    #register-view {
+    #logs-view:not([style*="display: none"]):not([style*="display:none"]),
+    #register-view:not([style*="display: none"]):not([style*="display:none"]) {
         height: 100% !important;
         min-height: 600px;
         border-radius: 12px;
@@ -6812,7 +6823,17 @@ button i,
             height: 100% !important;
         }
         
-        #market-chart #logs-view {
+        #market-chart #logs-view[style*="display: none"],
+        #market-chart #logs-view[style*="display:none"] {
+            display: none !important;
+        }
+        
+        #market-chart #register-view[style*="display: none"],
+        #market-chart #register-view[style*="display:none"] {
+            display: none !important;
+        }
+        
+        #market-chart #logs-view:not([style*="display: none"]):not([style*="display:none"]) {
             background: transparent !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
@@ -6825,7 +6846,7 @@ button i,
             outline-offset: 0 !important;
         }
         
-        #market-chart #register-view {
+        #market-chart #register-view:not([style*="display: none"]):not([style*="display:none"]) {
             background: transparent !important;
             backdrop-filter: none !important;
             -webkit-backdrop-filter: none !important;
@@ -7199,6 +7220,75 @@ button i,
     /* Desktop: Mostrar grid principal */
     .desktop-main-content {
         display: grid !important;
+        min-height: calc(100vh - 300px) !important;
+    }
+    
+    /* Desktop: Garantir que a coluna do gráfico tenha altura total */
+    .desktop-main-content #ir8sfp {
+        height: 100% !important;
+        min-height: 0 !important;
+    }
+    
+    /* Desktop: Garantir que o card do gráfico ocupe 100% da altura */
+    #market-chart {
+        display: flex !important;
+        flex-direction: column !important;
+        height: 100% !important;
+        min-height: 0 !important;
+        max-height: 800px !important;
+    }
+    
+    /* Desktop: Garantir que apenas o tab ativo seja visível (respeitando v-show do Vue) */
+    #market-chart #chart-view[style*="display: none"],
+    #market-chart #chart-view[style*="display:none"] {
+        display: none !important;
+    }
+    
+    #market-chart #logs-view[style*="display: none"],
+    #market-chart #logs-view[style*="display:none"] {
+        display: none !important;
+    }
+    
+    #market-chart #register-view[style*="display: none"],
+    #market-chart #register-view[style*="display:none"] {
+        display: none !important;
+    }
+    
+    /* Desktop: Garantir que os conteúdos das tabs ocupem 100% da altura com max-height de 800px */
+    #market-chart #chart-view:not([style*="display: none"]):not([style*="display:none"]) {
+        flex: 1 !important;
+        min-height: 0 !important;
+        max-height: 800px !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    #market-chart #logs-view:not([style*="display: none"]):not([style*="display:none"]) {
+        flex: 1 !important;
+        min-height: 0 !important;
+        max-height: 800px !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    #market-chart #logs-view .logs-table-wrapper {
+        flex: 1 !important;
+        overflow-y: auto !important;
+        min-height: 0 !important;
+    }
+    
+    #market-chart #register-view:not([style*="display: none"]):not([style*="display:none"]) {
+        flex: 1 !important;
+        min-height: 0 !important;
+        max-height: 800px !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    #market-chart #register-view .desktop-register-list {
+        flex: 1 !important;
+        min-height: 0 !important;
+        max-height: none !important;
     }
     
     /* Desktop: Mostrar lista de registro, esconder cards */
