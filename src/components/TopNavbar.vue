@@ -484,6 +484,7 @@ export default {
     window.addEventListener('resize', this.checkMobile);
     this.checkMobile();
     this.loadUserProfilePicture();
+    this.loadLoginNotifications();
   },
   beforeUnmount() {
     document.removeEventListener('click', this.handleClickOutside);
@@ -885,6 +886,55 @@ export default {
       } catch (error) {
         console.error('[TopNavbar] Erro ao carregar foto do perfil:', error);
       }
+    },
+    async loadLoginNotifications() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBaseUrl}/notifications/login-summary`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.notifications && data.notifications.length > 0) {
+            // Converter as notificações do backend para o formato esperado pelo frontend
+            const formattedNotifications = data.notifications.map((notif, index) => ({
+              id: `login-notif-${index}`,
+              title: notif.title,
+              message: notif.message,
+              icon: this.getNotificationIcon(notif.type),
+              date: notif.timestamp,
+              type: notif.type
+            }));
+
+            // Adicionar às notificações existentes
+            this.notifications = [...formattedNotifications, ...this.notifications];
+            
+            // Se houver notificações, mostrar o indicador
+            if (this.notifications.length > 0) {
+              this.hasUnreadNotifications = true;
+            }
+          }
+        }
+      } catch (error) {
+        console.error('[TopNavbar] Erro ao carregar notificações de login:', error);
+      }
+    },
+    getNotificationIcon(type) {
+      const iconMap = {
+        'success': 'fa-solid fa-check-circle',
+        'warning': 'fa-solid fa-exclamation-triangle',
+        'error': 'fa-solid fa-times-circle',
+        'info': 'fa-solid fa-info-circle'
+      };
+      return iconMap[type] || 'fa-solid fa-info-circle';
     }
   }
 }
