@@ -1627,12 +1627,56 @@ export default {
 		},
 		
 	/**
+	 * Verifica se há sessão ativa de IA antes de iniciar carregamento de ticks
+	 */
+	async checkActiveAISession() {
+		try {
+			const userId = this.getUserId();
+			if (!userId) {
+				console.log('[StatsIAsView] Usuário não encontrado, não iniciando carregamento de ticks');
+				return false;
+			}
+			
+			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+			const response = await fetch(`${apiBase}/ai/config/${userId}`, {
+				headers: {
+					'Authorization': `Bearer ${localStorage.getItem('token')}`
+				}
+			});
+			
+			const result = await response.json();
+			
+			if (result.success && result.data) {
+				const isActive = result.data.isActive || false;
+				console.log('[StatsIAsView] Sessão de IA:', isActive ? 'ATIVA' : 'INATIVA');
+				return isActive;
+			}
+			
+			return false;
+		} catch (error) {
+			console.error('[StatsIAsView] Erro ao verificar sessão ativa:', error);
+			return false;
+		}
+	},
+
+	/**
 	 * Inicia o carregamento de dados mesmo quando a IA está desativada
 	 * para mostrar o gráfico na tela padrão
+	 * AGORA: Só inicia se houver sessão ativa de IA
 	 */
 	async startDataLoading() {
 		try {
-			console.log('[StatsIAsView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
+			console.log('[StatsIAsView] ===== VERIFICANDO SESSÃO ATIVA ANTES DE CARREGAR TICKS =====');
+			
+			// ✅ Verificar se há sessão ativa antes de iniciar carregamento
+			const hasActiveSession = await this.checkActiveAISession();
+			
+			if (!hasActiveSession) {
+				console.log('[StatsIAsView] ⏸️ Nenhuma sessão ativa de IA encontrada. Ticks não serão carregados.');
+				return;
+			}
+			
+			console.log('[StatsIAsView] ✅ Sessão ativa encontrada. Iniciando carregamento de ticks...');
 			console.log('[StatsIAsView] URL:', 'https://taxafacil.site/api/ai/start');
 			
 			// Iniciar monitoramento no backend (sem ativar a IA)
