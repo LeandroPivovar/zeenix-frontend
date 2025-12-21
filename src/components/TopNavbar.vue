@@ -1162,6 +1162,7 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  text-align: left;
 }
 
 .notification-title {
@@ -1170,6 +1171,7 @@ export default {
   font-weight: 600;
   margin: 0;
   line-height: 1.3;
+  text-align: left;
 }
 
 .notification-message {
@@ -1177,12 +1179,14 @@ export default {
   font-size: 13px;
   margin: 0;
   line-height: 1.4;
+  text-align: left;
 }
 
 .notification-time {
   color: rgba(255, 255, 255, 0.4);
   font-size: 11px;
   margin-top: 4px;
+  text-align: left;
 }
 
 /* Modal de Seleção de Contas */
