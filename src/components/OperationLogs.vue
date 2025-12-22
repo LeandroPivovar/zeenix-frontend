@@ -13,18 +13,38 @@
     </div>
     
     <div class="logs-content" ref="logsContainer">
-      <div 
-        v-for="(log, index) in logs" 
-        :key="index" 
-        :class="['log-entry', `log-${log.type}`]"
-      >
-        <span class="log-timestamp">{{ log.timestamp }}</span>
-        <span class="log-message">{{ log.message }}</span>
-      </div>
-      
       <div v-if="logs.length === 0" class="empty-logs">
         <i class="fas fa-inbox"></i>
         <p>Nenhum log disponível</p>
+      </div>
+      
+      <!-- Desktop Logs -->
+      <div class="desktop-logs-list">
+        <div 
+          v-for="(log, index) in logs" 
+          :key="index" 
+          :class="['log-entry', `log-${log.type}`]"
+        >
+          <span class="log-timestamp">{{ log.timestamp }}</span>
+          <span class="log-message">{{ log.message }}</span>
+        </div>
+      </div>
+      
+      <!-- Mobile Logs Cards -->
+      <div class="mobile-logs-list">
+        <div 
+          v-for="(log, index) in logs" 
+          :key="index" 
+          class="log-card"
+        >
+          <div :class="['log-icon-container', `log-icon-${getLogIconType(log.type)}`]">
+            <i :class="getLogIcon(log.type)"></i>
+          </div>
+          <div class="log-content">
+            <p class="log-title">{{ getLogTitle(log.message) }}</p>
+            <p class="log-details">{{ getLogDetails(log.message, log.timestamp) }}</p>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -226,6 +246,54 @@ export default {
     // Método público para adicionar logs manualmente
     addManualLog(type, message) {
       this.addLog(type, message);
+    },
+    
+    getLogIconType(type) {
+      const iconMap = {
+        'gain': 'success',
+        'loss': 'loss',
+        'purchase': 'purchase',
+        'info': 'info',
+        'strategy': 'analysis'
+      };
+      return iconMap[type] || 'info';
+    },
+    
+    getLogIcon(type) {
+      const iconMap = {
+        'gain': 'fas fa-check-circle',
+        'loss': 'fas fa-times-circle',
+        'purchase': 'fas fa-shopping-cart',
+        'info': 'fas fa-info-circle',
+        'strategy': 'fas fa-chart-line'
+      };
+      return iconMap[type] || 'fas fa-info-circle';
+    },
+    
+    getLogTitle(message) {
+      // Extrair título principal da mensagem
+      if (message.includes('|')) {
+        return message.split('|')[0].trim();
+      }
+      if (message.includes('Ganho') || message.includes('Perda')) {
+        return message.split('|')[0] || message.split(' ').slice(0, 2).join(' ');
+      }
+      return message.length > 50 ? message.substring(0, 50) + '...' : message;
+    },
+    
+    getLogDetails(message, timestamp) {
+      // Extrair detalhes da mensagem
+      if (message.includes('|')) {
+        const parts = message.split('|');
+        if (parts.length > 1) {
+          return parts.slice(1).join(' | ').trim();
+        }
+      }
+      // Se não tiver separador, retornar timestamp ou mensagem completa se for curta
+      if (message.length <= 50) {
+        return timestamp || '';
+      }
+      return message.substring(50);
     }
   },
   mounted() {
@@ -392,6 +460,187 @@ export default {
 .empty-logs p {
   font-size: 0.875rem;
   margin: 0;
+}
+
+/* Mobile Logs Cards - Estilo do Agente Autônomo */
+@media (max-width: 768px) {
+  .operation-logs-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    border-radius: 0 !important;
+    border: none !important;
+    margin: 0 !important;
+    padding: 0 1rem 6rem !important;
+    background: transparent !important;
+  }
+
+  .logs-header {
+    padding: 0 !important;
+    margin-bottom: 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    background: transparent !important;
+    border: none !important;
+  }
+
+  .logs-title {
+    font-size: 1.125rem !important;
+    font-weight: 700 !important;
+    color: #FFFFFF !important;
+    margin: 0 0 0.25rem 0 !important;
+  }
+
+  .clear-logs-btn {
+    padding: 0.375rem 0.75rem;
+    font-size: 0.75rem;
+    box-sizing: border-box;
+  }
+
+  .logs-content {
+    padding: 0 !important;
+    font-size: 0.8125rem;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    margin: 0 !important;
+    background: transparent !important;
+    max-height: 500px !important;
+    min-height: 200px !important;
+  }
+
+  .desktop-logs-list {
+    display: none !important;
+  }
+
+  .mobile-logs-list {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.5rem !important;
+  }
+
+  .log-card {
+    display: flex !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+    padding: 0.75rem !important;
+    background-color: #0E0E0E !important;
+    border: 1px solid #1C1C1C !important;
+    border-radius: 0.75rem !important;
+    animation: fadeIn 0.3s ease !important;
+    text-align: left !important;
+    justify-content: flex-start !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .log-icon-container {
+    width: 1.5rem !important;
+    height: 1.5rem !important;
+    border-radius: 50% !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex-shrink: 0 !important;
+    margin-right: 0 !important;
+  }
+
+  .log-icon-container i {
+    font-size: 0.75rem !important;
+  }
+
+  .log-icon-success {
+    background-color: #22C55E !important;
+    color: #FFFFFF !important;
+  }
+
+  .log-icon-purchase {
+    background-color: #FACC15 !important;
+    color: #FFFFFF !important;
+  }
+
+  .log-icon-analysis {
+    background-color: #1C1C1C !important;
+    color: #3B82F6 !important;
+  }
+
+  .log-icon-waiting {
+    background-color: #1C1C1C !important;
+    color: #9CA3AF !important;
+  }
+
+  .log-icon-loss {
+    background-color: #FF4747 !important;
+    color: #FFFFFF !important;
+  }
+
+  .log-icon-info {
+    background-color: rgba(156, 163, 175, 0.2) !important;
+    color: #9CA3AF !important;
+  }
+
+  .log-content {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 0.125rem !important;
+    text-align: left !important;
+    align-items: flex-start !important;
+  }
+
+  .log-title {
+    font-size: 0.75rem !important;
+    font-weight: 600 !important;
+    color: #FFFFFF !important;
+    margin: 0 !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    width: 100% !important;
+  }
+
+  .log-details {
+    font-size: 0.625rem !important;
+    color: #A1A1A1 !important;
+    margin: 0 !important;
+    line-height: 1.4 !important;
+    text-align: left !important;
+    width: 100% !important;
+  }
+
+  .empty-logs {
+    padding: 3rem 1rem !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .empty-logs i {
+    font-size: 3rem !important;
+    margin-bottom: 1rem !important;
+    opacity: 0.5 !important;
+  }
+
+  .empty-logs p {
+    font-size: 0.875rem !important;
+    margin: 0.25rem 0 !important;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+/* Desktop: Hide mobile elements */
+@media (min-width: 769px) {
+  .mobile-logs-list {
+    display: none !important;
+  }
+
+  .desktop-logs-list {
+    display: block !important;
+  }
 }
 </style>
 

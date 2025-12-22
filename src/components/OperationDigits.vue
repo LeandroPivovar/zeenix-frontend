@@ -13,7 +13,12 @@
                         <div class="semaphore-header">
                             <div class="semaphore-title-group">
                                 <i :class="['fas', semaphoreIcon, 'semaphore-icon']"></i>
-                                <h3 class="semaphore-title">{{ semaphoreTitle }}</h3>
+                                <div class="semaphore-title-wrapper">
+                                    <h3 class="semaphore-title">{{ semaphoreTitle }}</h3>
+                                    <div v-if="semaphoreState === 'AGUARDAR'" class="semaphore-warning-icon mobile-only">
+                                        <i class="fas fa-exclamation-triangle"></i>
+                                    </div>
+                                </div>
                             </div>
                             <div class="relative group">
                                 <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
@@ -31,7 +36,12 @@
                         </div>
                         <div class="semaphore-reason-box">
                             <div class="semaphore-reason-label">Razão</div>
-                            <div class="semaphore-reason">{{ semaphoreReason }}</div>
+                            <div class="semaphore-reason-wrapper">
+                                <div v-if="semaphoreState === 'AGUARDAR'" class="semaphore-warning-icon mobile-only">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="semaphore-reason">{{ semaphoreReason }}</div>
+                            </div>
                         </div>
                     </div>
 
@@ -64,15 +74,15 @@
 
             <!-- Trading Panel -->
             <div class="trading-panel bg-zenix-card border border-zenix-border rounded-xl">
-                    <div class="pb-3 border-b border-zenix-border mb-5">
-                        <h3 class="text-base font-semibold text-zenix-text">Negociação Manual — Dígitos</h3>
+                    <div class="pb-3 mb-5">
+                        <h3 class="text-base font-semibold text-zenix-text" style="text-align: left;">Negociação Manual — Dígitos</h3>
                     </div>
                     <div class="trading-panel-content space-y-4">
                         <div class="input-group">
                             <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
                                 <i class="fas fa-chart-line text-zenix-green mr-2"></i>Mercado
                             </label>
-                            <select v-model="symbol" @change="handleSymbolChange" :disabled="!isAuthorized || isLoadingSymbol" class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors">
+                            <select v-model="symbol" @change="handleSymbolChange" :disabled="isLoadingSymbol" class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors">
                                 <optgroup label="Índices Contínuos">
                                     <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value">
                                         {{ market.label }}
@@ -166,7 +176,7 @@
                                 v-if="!activeContract"
                                 @click="executeBuy" 
                                 class="btn-call" 
-                                :disabled="isTrading || !isAuthorized || !currentProposalId"
+                                :disabled="isTrading || !currentProposalId"
                             >
                                 CALL
                             </button>
@@ -174,7 +184,7 @@
                                 v-if="!activeContract"
                                 @click="executeBuy" 
                                 class="btn-put" 
-                                :disabled="isTrading || !isAuthorized || !currentProposalId"
+                                :disabled="isTrading || !currentProposalId"
                             >
                                 PUT
                             </button>
@@ -191,7 +201,7 @@
                     <!-- Linha 1: Heatmap + DVX -->
                     <div class="heatmap-card">
                     <div class="card-header-with-help">
-                        <h3 class="card-header">Heatmap Estatístico de Dígitos (0–9)</h3>
+                        <h3 class="card-header">Heatmap Estatístico (0-9)</h3>
                         <div class="relative group">
                             <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
                             <div class="tooltip-content">
@@ -212,31 +222,31 @@
                         >
                             <div class="frequency-percentage-label">{{ item.percentage }}%</div>
                             <div 
-                                class="frequency-bar-visual" 
+                                class="frequency-pill-visual" 
                                 :class="item.statusClass"
-                                :style="{ height: item.barHeight + 'px' }"
-                            ></div>
-                            <div class="frequency-digit-number">{{ item.digit }}</div>
+                            >
+                                <span class="frequency-digit-number">{{ item.digit }}</span>
+                            </div>
                             <div class="frequency-status-label">{{ item.statusText }}</div>
-                            <div class="frequency-z-score">Z: {{ item.zScore }}</div>
+                            <div class="frequency-z-score desktop-only">Z: {{ item.zScore }}</div>
                         </div>
                     </div>
                     <div class="heatmap-legend">
                         <div class="legend-item">
                             <div class="legend-dot legend-dot-green"></div>
-                            <span>Subaquecido</span>
+                            <span>Baixo</span>
                         </div>
                         <div class="legend-item">
                             <div class="legend-dot legend-dot-yellow"></div>
-                            <span>Normal</span>
+                            <span>Médio</span>
                         </div>
                         <div class="legend-item">
                             <div class="legend-dot legend-dot-orange"></div>
-                            <span>Aquecido</span>
+                            <span>Alto</span>
                         </div>
                         <div class="legend-item">
                             <div class="legend-dot legend-dot-red"></div>
-                            <span>Sobreaquecido</span>
+                            <span>Crítico</span>
                         </div>
                     </div>
                     </div>
@@ -1144,7 +1154,7 @@ export default {
         subscribeToProposal() {
             this.unsubscribeFromProposal();
             
-            if (!this.isAuthorized || !this.ws || this.ws.readyState !== WebSocket.OPEN) {
+            if (!this.ws || this.ws.readyState !== WebSocket.OPEN) {
                 return;
             }
             
@@ -1196,11 +1206,6 @@ export default {
             }
         },
         executeBuy() {
-            if (!this.isAuthorized) {
-                this.tradeError = 'Conecte-se à Deriv antes de operar.';
-                return;
-            }
-            
             if (!this.currentProposalId || !this.currentProposalPrice) {
                 this.tradeError = 'Aguarde a proposta ser carregada.';
                 return;
@@ -1745,6 +1750,162 @@ export default {
     }
     60% {
         transform: translateY(-10px);
+    }
+}
+
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .main-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden;
+        box-sizing: border-box;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .digits-layout {
+        width: 100% !important;
+        max-width: 100% !important;
+        overflow-x: hidden;
+        box-sizing: border-box;
+        padding: 0 !important;
+        margin: 0 !important;
+    }
+
+    .top-section {
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1rem !important;
+        margin: 0 0 1rem 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .semaphore-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1rem !important;
+        margin: 0 0 1rem 0 !important;
+        box-sizing: border-box;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    .history-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1rem !important;
+        margin: 0 0 1rem 0 !important;
+        box-sizing: border-box;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    .trading-panel {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1rem !important;
+        margin: 0 !important;
+        box-sizing: border-box;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    .main-content-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+        padding: 1rem !important;
+        margin: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .heatmap-card,
+    .dvx-card,
+    .parity-meter-card,
+    .high-low-card {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 1rem !important;
+        margin: 0 0 1rem 0 !important;
+        box-sizing: border-box;
+    }
+
+    .heatmap-grid {
+        grid-template-columns: repeat(5, 1fr);
+        gap: 0.5rem;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .digit-history-grid {
+        grid-template-columns: repeat(10, 1fr);
+        gap: 0.25rem;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .input-group {
+        margin-bottom: 1rem;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .trading-buttons {
+        flex-direction: column;
+        gap: 0.75rem;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .btn-call,
+    .btn-put {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 0.875rem;
+        box-sizing: border-box;
+    }
+
+    .result-notification {
+        width: 95% !important;
+        max-width: 95% !important;
+        box-sizing: border-box;
+    }
+
+    .result-body {
+        padding: 1.5rem 1rem;
+        box-sizing: border-box;
+    }
+
+    .result-icon {
+        font-size: 3rem;
+    }
+
+    .result-profit {
+        font-size: 2rem;
+    }
+
+    /* Standardize all titles */
+    .semaphore-title,
+    .card-header,
+    h3.text-base {
+        font-size: 1rem !important;
+        text-align: left !important;
+        font-weight: 600 !important;
+    }
+
+    * {
+        box-sizing: border-box;
     }
 }
 </style>

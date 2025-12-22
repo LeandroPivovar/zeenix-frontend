@@ -8,14 +8,45 @@
       </div>
       
       <div v-else class="orders-table-container">
-        <div class="orders-header">
+        <div class="orders-header desktop-orders-header">
           <h3 class="orders-title">
             <i class="fas fa-history mr-2" style="color: #22C55E;"></i>Últimas Ordens
           </h3>
           <span class="orders-count">{{ tradeResults.length }} {{ tradeResults.length === 1 ? 'operação' : 'operações' }}</span>
         </div>
         
-        <div class="table-wrapper">
+        <!-- Mobile Cards -->
+        <div class="mobile-history-cards">
+          <div v-for="(order, index) in tradeResults" :key="index" class="mobile-history-card">
+            <div class="mobile-history-card-header">
+              <span class="mobile-history-time">{{ formatTime(order.time) }}</span>
+              <span :class="['mobile-history-badge', (order.direction === 'CALL' || order.type === 'CALL') ? 'badge-call' : 'badge-put']">
+                {{ (order.direction || order.type || 'N/A').toUpperCase() }}
+              </span>
+              <span class="mobile-history-volume">Vol {{ formatPrice(order.buyPrice || order.price || 0) }}</span>
+            </div>
+            <div class="mobile-history-details">
+              <div class="mobile-history-detail-column">
+                <span class="detail-label">Entrada</span>
+                <span class="detail-value">${{ order.entryPrice ? formatPrice(order.entryPrice) : '-' }}</span>
+              </div>
+              <div class="mobile-history-detail-column">
+                <span class="detail-label">Saída</span>
+                <span class="detail-value">${{ order.exitPrice ? formatPrice(order.exitPrice) : '-' }}</span>
+              </div>
+              <div class="mobile-history-detail-column">
+                <span class="detail-label">Resultado</span>
+                <span v-if="order.profit !== null && order.profit !== undefined" :class="['detail-value', order.profit >= 0 ? 'result-positive' : 'result-negative']">
+                  {{ order.profit >= 0 ? '+' : '' }}${{ formatPrice(order.profit) }}
+                </span>
+                <span v-else class="detail-value">-</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Desktop Table -->
+        <div class="table-wrapper desktop-orders-table">
           <table class="orders-table">
             <thead>
               <tr>
@@ -91,6 +122,33 @@ export default {
         return '0.00';
       }
       return numValue.toFixed(2);
+    },
+    formatTime(timeString) {
+      if (!timeString) return 'N/A';
+      // Se já estiver no formato HH:MM:SS, retornar direto
+      if (typeof timeString === 'string' && timeString.match(/^\d{2}:\d{2}:\d{2}$/)) {
+        return timeString;
+      }
+      // Se for uma data completa, extrair apenas a hora
+      if (typeof timeString === 'string' && timeString.includes(' ')) {
+        const timePart = timeString.split(' ')[1];
+        if (timePart) {
+          return timePart.substring(0, 8); // HH:MM:SS
+        }
+      }
+      // Tentar converter timestamp ou data
+      try {
+        const date = new Date(timeString);
+        if (!isNaN(date.getTime())) {
+          const hours = String(date.getHours()).padStart(2, '0');
+          const minutes = String(date.getMinutes()).padStart(2, '0');
+          const seconds = String(date.getSeconds()).padStart(2, '0');
+          return `${hours}:${minutes}:${seconds}`;
+        }
+      } catch (e) {
+        // Ignorar erro
+      }
+      return timeString;
     },
     getStatusDisplay(status) {
       if (!status) return 'PENDING';
@@ -323,10 +381,36 @@ export default {
   color: #fbbf24;
 }
 
-/* Responsive */
+/* Mobile Cards - Histórico */
 @media (max-width: 768px) {
+  .operation-last-orders-container {
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden;
+    box-sizing: border-box;
+    border-radius: 0 !important;
+    border-left: none !important;
+    border-right: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
   .orders-content {
-    padding: 1rem;
+    padding: 0 1rem 6rem !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+    background: transparent !important;
+  }
+
+  .empty-state {
+    padding: 1rem !important;
+    margin: 0 !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    box-sizing: border-box;
   }
 
   .empty-state i {
@@ -339,6 +423,124 @@ export default {
 
   .empty-submessage {
     font-size: 0.8125rem;
+  }
+
+  .desktop-orders-header {
+    display: none !important;
+  }
+
+  .desktop-orders-table {
+    display: none !important;
+  }
+
+  .mobile-history-cards {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 15px !important;
+    max-height: 60vh !important;
+    overflow-y: auto !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .mobile-history-card {
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+    border: 1px solid #1C1C1C !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
+    padding: 15px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .mobile-history-card-header {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    margin-bottom: 12px !important;
+    padding-bottom: 12px !important;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1) !important;
+  }
+
+  .mobile-history-time {
+    font-size: 14px !important;
+    color: #f0f0f0 !important;
+    font-weight: 500 !important;
+  }
+
+  .mobile-history-badge {
+    padding: 4px 10px !important;
+    border-radius: 4px !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+  }
+
+  .badge-call {
+    background: #22C55E !important;
+    color: #000 !important;
+  }
+
+  .badge-put {
+    background: #ff4444 !important;
+    color: #fff !important;
+  }
+
+  .mobile-history-volume {
+    font-size: 12px !important;
+    color: #a09e9e !important;
+    margin-left: auto !important;
+  }
+
+  .mobile-history-details {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr 1fr !important;
+    gap: 10px !important;
+  }
+
+  .mobile-history-detail-column {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 4px !important;
+  }
+
+  .detail-label {
+    font-size: 12px !important;
+    color: #a09e9e !important;
+    text-align: left !important;
+  }
+
+  .detail-value {
+    font-size: 14px !important;
+    font-weight: 500 !important;
+    color: #f0f0f0 !important;
+    text-align: left !important;
+  }
+
+  .detail-value.result-positive {
+    color: #22C55E !important;
+  }
+
+  .detail-value.result-negative {
+    color: #ff4444 !important;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+/* Desktop: Hide mobile elements */
+@media (min-width: 769px) {
+  .mobile-history-cards {
+    display: none !important;
+  }
+
+  .desktop-orders-header {
+    display: flex !important;
+  }
+
+  .desktop-orders-table {
+    display: block !important;
   }
 }
 </style>

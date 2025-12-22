@@ -6,8 +6,8 @@
       <div class="col-chart flex-1 flex flex-col gap-5">
         <!-- Chart Container -->
         <div class="bg-zenix-card border border-zenix-border rounded-xl overflow-hidden flex flex-col shadow-[0_0_8px_rgba(0,0,0,0.25)] chart-container w-full chart-card h-full">
-          <div class="flex items-center justify-between px-6 py-4 border-b border-[#1A1A1A] flex-shrink-0">
-            <h3 class="text-base font-semibold text-zenix-text">Gráfico</h3>
+          <div class="flex items-center justify-between px-6 py-4 flex-shrink-0">
+            <h3 class="text-base font-semibold text-zenix-text" style="text-align: left;">Gráfico</h3>
             <div class="flex items-center gap-2">
               <!-- Botões de Zoom -->
               <div class="flex items-center gap-1 border border-zenix-border rounded-lg overflow-hidden">
@@ -70,10 +70,11 @@
         
         <!-- Signal Area -->
         <div class="border-t-2 bg-gradient-to-b from-[#101010] to-[#0E0E0E] px-6 py-4 rounded-xl shadow-[0_-2px_12px_rgba(34,197,94,0.08)]">
-          <div class="flex items-center justify-between mb-3">
+          <!-- Desktop Header -->
+          <div class="flex items-center justify-between mb-3 desktop-header">
             <div class="flex items-center gap-2">
               <i class="far fa-signal text-[11px] text-zenix-green"></i>
-              <span class="text-xs font-bold text-zenix-text tracking-wide uppercase">Sinal Gerado</span>
+              <span class="text-base font-semibold text-zenix-text" style="text-align: left;">Sinal Gerado</span>
             </div>
             <button 
               @click="toggleAnalysis"
@@ -84,37 +85,64 @@
               <span>{{ isAnalyzing ? 'Parar Análise' : 'Iniciar Análise do Gráfico' }}</span>
             </button>
           </div>
+          <!-- Mobile Header -->
+          <div class="mobile-header-signal">
+            <h3 class="mobile-signal-title">Gerador de Sinais</h3>
+            <p class="mobile-signal-subtitle">Análise automática de padrões</p>
+          </div>
           <div id="signalArea" class="min-h-[80px]">
             <!-- Signal content -->
-            <div v-if="aiRecommendation" class="signal-content">
-              <div class="signal-header">
-                <div class="signal-action" :class="aiRecommendation.action === 'CALL' ? 'signal-call' : 'signal-put'">
-                  <i :class="aiRecommendation.action === 'CALL' ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
-                  <span class="signal-action-text">{{ aiRecommendation.action === 'CALL' ? 'COMPRA (CALL)' : 'VENDA (PUT)' }}</span>
-                </div>
-                <div class="signal-confidence">
-                  <span class="confidence-label">Confiança:</span>
-                  <span class="confidence-value" :class="confidenceClass">
-                    {{ confidenceValue }}%
-                  </span>
+            <div v-if="aiRecommendation" class="signal-content-card">
+              <div class="signal-content">
+                <div class="signal-header">
+                  <div class="signal-action" :class="aiRecommendation.action === 'CALL' ? 'signal-call' : 'signal-put'">
+                    <i :class="aiRecommendation.action === 'CALL' ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
+                    <span class="signal-action-text">{{ aiRecommendation.action === 'CALL' ? 'COMPRA (CALL)' : 'VENDA (PUT)' }}</span>
+                  </div>
+                  <div class="signal-confidence">
+                    <span class="confidence-label">Confiança:</span>
+                    <span class="confidence-value" :class="confidenceClass">
+                      {{ confidenceValue }}%
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
-            <div v-else-if="isAnalyzing" class="signal-loading">
-              <i class="fas fa-spinner fa-spin text-zenix-green mr-2"></i>
-              <span>Analisando gráfico...</span>
+            <div v-else-if="isAnalyzing" class="signal-content-card mobile-signal-empty">
+              <div class="signal-loading signal-row-1">
+                <i class="fas fa-spinner fa-spin text-zenix-green mr-2"></i>
+                <span>Analisando gráfico...</span>
+              </div>
+              <div class="signal-loading signal-row-2">
+                <i class="fas fa-spinner fa-spin text-zenix-green mr-2"></i>
+                <span>Analisando gráfico...</span>
+              </div>
             </div>
-            <div v-else class="signal-placeholder">
-              <span class="text-zenix-secondary">Clique em "Iniciar Análise do Gráfico" para começar</span>
+            <div v-else class="signal-content-card mobile-signal-empty">
+              <div class="signal-placeholder signal-row-1">
+                <span class="text-zenix-secondary"></span>
+              </div>
+              <div class="signal-placeholder signal-row-2">
+                <span class="text-zenix-secondary"></span>
+              </div>
             </div>
           </div>
+          <!-- Mobile button (duplicated for mobile positioning) -->
+          <button 
+            @click="toggleAnalysis"
+            :disabled="!symbol"
+            class="mobile-generate-button inline-flex items-center gap-2 px-4 py-2 bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold rounded-lg text-xs transition-all duration-300 shadow-[0_0_12px_rgba(34,197,94,0.3)] hover:shadow-[0_0_16px_rgba(34,197,94,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <i :class="isAnalyzing ? 'fas fa-stop' : 'far fa-chart-line text-[9px]'"></i>
+            <span>{{ isAnalyzing ? 'Parar Análise' : 'Iniciar Análise do Gráfico' }}</span>
+          </button>
         </div>
       </div>
 
       <!-- Sidebar Panel -->
       <div class="max-w-[420px] w-[420px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto sidebar-panel">
-        <div class="pb-3 border-b border-zenix-border mb-5">
-          <h3 class="text-base font-semibold text-zenix-text">Painel de Negociação Manual</h3>
+        <div class="pb-3 mb-5">
+          <h3 class="text-base font-semibold text-zenix-text" style="text-align: left;">Painel de Negociação Manual</h3>
         </div>
         
         <div class="space-y-4">
@@ -3129,6 +3157,32 @@ export default {
   border-radius: 12px;
 }
 
+/* Signal status info styles - Desktop: hidden */
+.signal-status-info {
+  display: none;
+}
+
+.signal-status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.signal-status-label {
+  font-size: 0.875rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.signal-status-value {
+  font-size: 0.875rem;
+  color: #FFFFFF;
+  font-weight: 500;
+}
+
+.signal-status-waiting {
+  color: #FFD058 !important;
+}
+
 .signal-header {
   display: flex;
   align-items: center;
@@ -3213,6 +3267,519 @@ export default {
   padding: 20px;
   color: rgba(255, 255, 255, 0.4);
   font-size: 13px;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .operation-chart-wrapper {
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto;
+    width: 100% !important;
+    max-width: 100% !important;
+    overflow-x: hidden;
+    box-sizing: border-box;
+  }
+
+  .operation-layout {
+    flex-direction: column;
+    gap: 1rem;
+    min-height: auto;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 1rem 6rem !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .col-chart {
+    min-height: auto;
+    width: 100% !important;
+    max-width: 100% !important;
+    gap: 1rem;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .chart-card {
+    min-height: 400px;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 0 1rem 0 !important;
+    padding: 0 !important;
+    box-sizing: border-box;
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+    border: 1px solid #1C1C1C !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
+    overflow: hidden !important;
+  }
+
+  .chart-container {
+    min-height: 400px;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+
+  .chart-wrapper {
+    min-height: 400px !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  }
+
+  /* Mobile: Controles do gráfico abaixo do título */
+  .chart-card > .flex.items-center {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.75rem !important;
+  }
+
+  .chart-card > .flex.items-center > h3 {
+    width: 100%;
+    margin-bottom: 0;
+  }
+
+  .chart-card > .flex.items-center > .flex.items-center {
+    width: 100%;
+    justify-content: flex-start !important;
+    gap: 0.5rem !important;
+  }
+
+  .sidebar-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    min-height: auto;
+    padding: 1rem !important;
+    margin: 0 0 1rem 0 !important;
+    box-sizing: border-box;
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+    border: 1px solid #1C1C1C !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  .trading-panel {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 1rem !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+    border: 1px solid #1C1C1C !important;
+    border-radius: 0.75rem !important;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
+  }
+
+  .signal-area {
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  /* Signal content card - Mobile only */
+  @media (max-width: 768px) {
+    .signal-content-card {
+      background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+      border: 1px solid #1C1C1C !important;
+      border-radius: 0.75rem !important;
+      box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
+      padding: 1rem !important;
+      margin: 0 !important;
+      box-sizing: border-box;
+    }
+
+    .signal-content-card .signal-content {
+      background: transparent !important;
+      border: none !important;
+      padding: 0 !important;
+    }
+
+    .signal-content-card .signal-loading,
+    .signal-content-card .signal-placeholder {
+      padding: 0 !important;
+    }
+  }
+
+  /* Signal container card style - Mobile only */
+  .border-t-2.bg-gradient-to-b {
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+    border: 1px solid #1C1C1C !important;
+    border-radius: 0.75rem !important;
+    border-top: 1px solid #1C1C1C !important;
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
+    margin: 0 0 1rem 0 !important;
+    position: relative !important;
+  }
+
+  /* Mobile: Transform signal header */
+  .border-t-2.bg-gradient-to-b > .flex.items-center {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .border-t-2.bg-gradient-to-b > .flex.items-center > div:first-child {
+    width: 100% !important;
+  }
+
+  .border-t-2.bg-gradient-to-b > .flex.items-center > div:first-child span {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+  }
+
+  /* Mobile: Hide desktop header */
+  .border-t-2.bg-gradient-to-b > .desktop-header {
+    display: none !important;
+  }
+
+  /* Mobile: Show mobile header */
+  .border-t-2.bg-gradient-to-b > .mobile-header-signal {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 0.5rem !important;
+    margin-bottom: 1rem !important;
+  }
+
+  .mobile-signal-title {
+    font-size: 1rem !important;
+    font-weight: 600 !important;
+    color: #FFFFFF !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .mobile-signal-subtitle {
+    font-size: 0.875rem !important;
+    color: rgba(255, 255, 255, 0.7) !important;
+    font-weight: normal !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+
+  /* Mobile: Show mobile button after signalArea - only on mobile */
+  .mobile-generate-button {
+    display: none !important;
+  }
+
+  @media (max-width: 768px) {
+    .mobile-generate-button {
+      display: flex !important;
+      width: 100% !important;
+      margin-top: 1rem !important;
+      padding: 0.75rem 1rem !important;
+    }
+  }
+
+  /* Mobile: Change button text when not analyzing */
+  .mobile-generate-button:has(.fa-chart-line) span {
+    display: none !important;
+  }
+
+  .mobile-generate-button:has(.fa-chart-line)::after {
+    content: 'Gerar Sinal';
+  }
+
+  .mobile-generate-button:has(.fa-chart-line) i.fa-chart-line {
+    font-family: 'Font Awesome 6 Free' !important;
+    font-weight: 900 !important;
+  }
+
+  .mobile-generate-button:has(.fa-chart-line) i.fa-chart-line::before {
+    content: '\f0e7' !important; /* fa-bolt/lightning icon */
+  }
+
+  /* Desktop: Hide all mobile elements */
+  @media (min-width: 769px) {
+    /* Hide mobile button completely */
+    .mobile-generate-button {
+      display: none !important;
+      visibility: hidden !important;
+      opacity: 0 !important;
+      height: 0 !important;
+      width: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      overflow: hidden !important;
+      position: absolute !important;
+      left: -9999px !important;
+      pointer-events: none !important;
+    }
+
+    /* Hide mobile header */
+    .border-t-2.bg-gradient-to-b > .mobile-header-signal,
+    .mobile-header-signal {
+      display: none !important;
+      visibility: hidden !important;
+      height: 0 !important;
+      overflow: hidden !important;
+    }
+
+    .mobile-signal-title,
+    .mobile-signal-subtitle {
+      display: none !important;
+      visibility: hidden !important;
+    }
+
+    /* Show desktop header */
+    .border-t-2.bg-gradient-to-b > .desktop-header {
+      display: flex !important;
+    }
+  }
+
+  /* Mobile: Change button text when not analyzing (has fa-chart-line icon) */
+  .border-t-2.bg-gradient-to-b > .flex.items-center button:has(.fa-chart-line) span {
+    display: none !important;
+  }
+
+  .border-t-2.bg-gradient-to-b > .flex.items-center button:has(.fa-chart-line)::after {
+    content: 'Gerar Sinal';
+  }
+
+  .border-t-2.bg-gradient-to-b > .flex.items-center button:has(.fa-chart-line) i.fa-chart-line {
+    font-family: 'Font Awesome 6 Free' !important;
+    font-weight: 900 !important;
+  }
+
+  .border-t-2.bg-gradient-to-b > .flex.items-center button:has(.fa-chart-line) i.fa-chart-line::before {
+    content: '\f0e7' !important; /* fa-bolt/lightning icon */
+  }
+
+  /* Mobile: Transform signal card to show status info - 3 rows x 2 columns grid */
+  .mobile-signal-empty {
+    display: grid !important;
+    grid-template-columns: auto 1fr !important;
+    grid-template-rows: repeat(3, 1fr) !important;
+    gap: 0 !important;
+    padding: 1rem !important;
+    position: relative;
+    align-items: stretch;
+  }
+
+  /* Hide original content text/icons but keep elements for structure */
+  .mobile-signal-empty .signal-loading span,
+  .mobile-signal-empty .signal-loading i,
+  .mobile-signal-empty .signal-placeholder span {
+    display: none !important;
+  }
+
+  /* Row 1: Estado da análise */
+  .mobile-signal-empty .signal-row-1 {
+    grid-column: 1 / -1;
+    grid-row: 1;
+    display: grid !important;
+    grid-template-columns: auto 1fr !important;
+    gap: 0 1rem !important;
+    font-size: 0.875rem;
+    margin: 0;
+    padding: 1rem 0;
+    width: 100%;
+    min-height: 3rem;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-signal-empty .signal-row-1::before {
+    content: 'Estado da análise';
+    grid-column: 1;
+    color: rgba(255, 255, 255, 0.7);
+    display: block;
+  }
+
+  .mobile-signal-empty .signal-row-1::after {
+    content: 'Aguardando geração...';
+    grid-column: 2;
+    color: #FFD058;
+    font-weight: 500;
+    text-align: right;
+    display: block;
+  }
+
+  .mobile-signal-empty .signal-row-1 span,
+  .mobile-signal-empty .signal-row-1 i {
+    display: none !important;
+  }
+
+  /* Row 2: Resultado */
+  .mobile-signal-empty .signal-row-2 {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    display: grid !important;
+    grid-template-columns: auto 1fr !important;
+    gap: 0 1rem !important;
+    font-size: 0.875rem;
+    margin: 0;
+    padding: 1rem 0;
+    width: 100%;
+    min-height: 3rem;
+    align-items: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .mobile-signal-empty .signal-row-2::before {
+    content: 'Resultado';
+    grid-column: 1;
+    color: rgba(255, 255, 255, 0.7);
+    display: block;
+  }
+
+  .mobile-signal-empty .signal-row-2::after {
+    content: 'Nenhum sinal gerado';
+    grid-column: 2;
+    color: #FFFFFF;
+    font-weight: 500;
+    text-align: right;
+    display: block;
+  }
+
+  .mobile-signal-empty .signal-row-2 span,
+  .mobile-signal-empty .signal-row-2 i {
+    display: none !important;
+  }
+
+  /* Row 3: Confiança - criar container wrapper usando pseudo-elementos */
+  .mobile-signal-empty {
+    position: relative;
+  }
+
+  /* Criar container para linha 3 usando ::before como wrapper */
+  .mobile-signal-empty::before {
+    content: 'Confiança';
+    grid-column: 1;
+    grid-row: 3;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 1rem 0;
+    min-height: 3rem;
+  }
+
+  .mobile-signal-empty::after {
+    content: '-';
+    grid-column: 2;
+    grid-row: 3;
+    font-size: 0.875rem;
+    color: #FFFFFF;
+    font-weight: 500;
+    text-align: right;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    margin: 0;
+    padding: 1rem 0;
+    min-height: 3rem;
+  }
+
+  /* Remove border-bottom from titles */
+  .chart-card .border-b,
+  .sidebar-panel .border-b {
+    border-bottom: none !important;
+  }
+
+  /* Standardize title styles */
+  h3.text-base {
+    font-size: 1rem !important;
+    text-align: left !important;
+    font-weight: 600 !important;
+  }
+
+  .signal-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start !important;
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .signal-action {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .signal-confidence {
+    width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  .px-6 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+    box-sizing: border-box;
+  }
+
+  .py-4 {
+    padding-top: 0.75rem !important;
+    padding-bottom: 0.75rem !important;
+    box-sizing: border-box;
+  }
+
+  .p-5 {
+    padding: 1rem !important;
+    box-sizing: border-box;
+  }
+
+  .gap-5 {
+    gap: 1rem;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+/* Desktop: Hide all mobile elements */
+@media (min-width: 769px) {
+  .mobile-header-signal,
+  .mobile-generate-button,
+  .mobile-signal-empty {
+    display: none !important;
+  }
+
+  /* Garantir que elementos mobile não apareçam no desktop */
+  .mobile-signal-title,
+  .mobile-signal-subtitle {
+    display: none !important;
+  }
+
+  /* Manter lógica original do sinal gerado no desktop - remover estilos mobile */
+  .signal-content-card:not(.mobile-signal-empty) {
+    display: block !important;
+    background: transparent !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  /* Garantir que o conteúdo do sinal seja exibido normalmente no desktop */
+  .signal-content-card:not(.mobile-signal-empty) .signal-content {
+    background: transparent !important;
+    border: none !important;
+    padding: 0 !important;
+  }
+
+  .signal-content-card:not(.mobile-signal-empty) .signal-header {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+  }
 }
 </style>
 
