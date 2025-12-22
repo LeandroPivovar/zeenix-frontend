@@ -28,6 +28,12 @@
       />
 
       <main class="main-content" style="margin-top: 60px;">
+        <!-- Mobile Header (only visible on mobile) -->
+        <div class="mobile-header mobile-only">
+          <h1 class="mobile-title">{{ mobileTitle }}</h1>
+          <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
+        </div>
+
         <div class="view-toggle-bar-wrapper">
           <div class="view-toggle-bar">
             <button
@@ -35,28 +41,32 @@
               :class="{ 'border-b-2 border-zenix-green text-zenix-text font-semibold shadow-[0_0_8px_rgba(0,0,0,0.25)]': currentView === 'OperationChart', 'border-b-2 border-transparent text-[#7A7A7A]': currentView !== 'OperationChart' }"
               @click="changeView('OperationChart')"
             >
-              Análise gráfica
+              <span class="desktop-text">Análise gráfica</span>
+              <span class="mobile-text">Gráfico</span>
             </button>
             <button
               class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
               :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationDigits', 'border-b-2 border-transparent': currentView !== 'OperationDigits' }"
               @click="changeView('OperationDigits')"
             >
-              Análise de dígitos
+              <span class="desktop-text">Análise de dígitos</span>
+              <span class="mobile-text">Dígitos</span>
             </button>
             <button
               class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
               :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLogs', 'border-b-2 border-transparent': currentView !== 'OperationLogs' }"
               @click="changeView('OperationLogs')"
             >
-              Registro
+              <span class="desktop-text">Registro</span>
+              <span class="mobile-text">Histórico</span>
             </button>
             <button
               class="px-6 py-3 bg-zenix-card text-[#7A7A7A] text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
               :class="{ 'border-b-2 border-zenix-green text-zenix-text': currentView === 'OperationLastOrders', 'border-b-2 border-transparent': currentView !== 'OperationLastOrders' }"
               @click="changeView('OperationLastOrders')"
             >
-              Últimas Ordens
+              <span class="desktop-text">Últimas Ordens</span>
+              <span class="mobile-text">Registros</span>
             </button>
           </div>
         </div>
@@ -75,70 +85,6 @@
           ></component>
         </div>
       </main>
-
-      <!-- Footer -->
-      <footer v-if="!isMobile" id="footer" class="zenix-footer">
-        <div class="footer-content">
-          <div class="footer-grid">
-            <div class="footer-brand">
-              <div class="footer-logo">
-                <span class="footer-logo-main">ZENIX</span>
-                <span class="footer-logo-sub">PRO</span>
-              </div>
-              <p class="footer-description">
-                Plataforma inteligente de investimentos com IA, copy trading e automação.
-              </p>
-              <div class="footer-social">
-                <a href="#" class="social-icon"><i class="fa-brands fa-twitter"></i></a>
-                <a href="#" class="social-icon"><i class="fa-brands fa-linkedin"></i></a>
-                <a href="#" class="social-icon"><i class="fa-brands fa-instagram"></i></a>
-                <a href="#" class="social-icon"><i class="fa-brands fa-youtube"></i></a>
-              </div>
-            </div>
-
-            <div class="footer-column">
-              <h3 class="footer-column-title">Produto</h3>
-              <ul class="footer-links">
-                <li><a href="#">IA de Investimento</a></li>
-                <li><a href="#">Copy Trading</a></li>
-                <li><a href="#">Agente Autônomo</a></li>
-                <li><a href="#">Zenix Academy</a></li>
-              </ul>
-            </div>
-            
-            <div class="footer-column">
-              <h3 class="footer-column-title">Empresa</h3>
-              <ul class="footer-links">
-                <li><a href="#">Sobre Nós</a></li>
-                <li><a href="#">Planos</a></li>
-                <li><a href="#">Blog</a></li>
-                <li><a href="#">Carreiras</a></li>
-              </ul>
-            </div>
-
-            <div class="footer-column">
-              <h3 class="footer-column-title">Suporte</h3>
-              <ul class="footer-links">
-                <li><a href="#">Central de Ajuda</a></li>
-                <li><a href="#">Documentação</a></li>
-                <li><a href="#">Status do Sistema</a></li>
-                <li><a href="#">Contato</a></li>
-              </ul>
-            </div>
-          </div>
-          
-          <div class="footer-bottom">
-            <p class="footer-copyright">© 2025 Zenix Pro. Todos os direitos reservados.</p>
-            <div class="footer-legal">
-              <a href="#">Política de Privacidade</a>
-              <span class="footer-separator">|</span>
-              <a href="#">Termos de Uso</a>
-              <span class="footer-separator">|</span>
-              <a href="#">Cookies</a>
-            </div>
-          </div>
-        </div>
-      </footer>
     </div>
     <DesktopBottomNav />
   </div>
@@ -227,6 +173,24 @@ export default {
           result: order.status || order.result || 'EXECUTED',
         };
       });
+    },
+    mobileTitle() {
+      const titles = {
+        'OperationChart': 'Operação Manual com Sinais',
+        'OperationDigits': 'Operação Manual com Sinais',
+        'OperationLogs': 'Histórico de Operações',
+        'OperationLastOrders': 'Registros'
+      };
+      return titles[this.currentView] || 'Operação Manual com Sinais';
+    },
+    mobileSubtitle() {
+      const subtitles = {
+        'OperationChart': 'Análise gráfica e execução de operações manuais em tempo real.',
+        'OperationDigits': 'Análise gráfica e execução de operações manuais em tempo real.',
+        'OperationLogs': 'Últimas operações realizadas',
+        'OperationLastOrders': 'Últimos eventos do sistema e do usuário'
+      };
+      return subtitles[this.currentView] || 'Análise gráfica e execução de operações manuais em tempo real.';
     },
   },
   methods: {
@@ -1206,170 +1170,82 @@ export default {
   justify-content: flex-start;
 }
 
+.view-toggle-bar .desktop-text {
+  display: inline;
+}
+
+.view-toggle-bar .mobile-text {
+  display: none;
+}
+
+/* Mobile/Desktop visibility classes */
+.mobile-only {
+  display: none;
+}
+
+.desktop-only {
+  display: block;
+}
+
 .operation-content {
   flex: 1;
   overflow: visible;
   padding: 0 20px 20px 20px;
   display: flex;
   flex-direction: column;
-}
-
-/* Footer */
-.zenix-footer {
-  background-color: #0B0B0B;
-  border-top: 1px solid #1C1C1C;
-  margin-top: 3rem;
   width: 100%;
-}
-
-.footer-content {
   max-width: 100%;
-  width: 100%;
-  margin: 0 auto;
-  padding: 3rem 20px;
   box-sizing: border-box;
 }
 
-.footer-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 3rem;
-  margin-bottom: 2rem;
+.operation-content > * {
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
 }
 
-.footer-brand {
-  grid-column: span 1;
-}
-
-.footer-logo {
-  display: flex;
-  align-items: baseline;
-  gap: 0.5rem;
-  margin-bottom: 1rem;
-}
-
-.footer-logo-main {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #DFDFDF;
-}
-
-.footer-logo-sub {
-  font-size: 0.75rem;
-  color: #A1A1A1;
-}
-
-.footer-description {
-  color: #A1A1A1;
-  font-size: 0.75rem;
-  line-height: 1.6;
-  margin-bottom: 1.5rem;
-  opacity: 0.6;
-}
-
-.footer-social {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-}
-
-.social-icon {
-  color: #A1A1A1;
-  transition: color 0.2s;
-  opacity: 0.5;
-}
-
-.social-icon:hover {
-  color: #DFDFDF;
-}
-
-.footer-column-title {
-  color: #DFDFDF;
-  font-weight: 500;
-  font-size: 0.75rem;
-  margin-bottom: 1rem;
-}
-
-.footer-links {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
-}
-
-.footer-links a {
-  color: #A1A1A1;
-  font-size: 0.75rem;
-  text-decoration: none;
-  transition: color 0.2s;
-  opacity: 0.6;
-}
-
-.footer-links a:hover {
-  color: #DFDFDF;
-}
-
-.footer-bottom {
-  border-top: 1px solid #1A1A1A;
-  padding-top: 2rem;
-  opacity: 0.4;
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-@media (min-width: 768px) {
-  .footer-bottom {
-    flex-direction: row;
-    justify-content: space-between;
-    align-items: center;
-  }
-}
-
-.footer-copyright {
-  color: #A1A1A1;
-  font-size: 0.75rem;
-}
-
-.footer-legal {
-  display: flex;
-  align-items: center;
-  gap: 1.5rem;
-  font-size: 0.75rem;
-}
-
-.footer-legal a {
-  color: #A1A1A1;
-  text-decoration: none;
-  transition: color 0.2s;
-}
-
-.footer-legal a:hover {
-  color: #DFDFDF;
-}
-
-.footer-separator {
-  color: #1C1C1C;
-}
-
-/* Responsive Footer */
-@media (max-width: 1024px) {
-  .footer-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-}
 
 @media (max-width: 768px) {
-  .footer-grid {
-    grid-template-columns: 1fr;
+  .mobile-only {
+    display: block !important;
   }
-  
-  .footer-content {
-    padding: 2rem 15px;
+
+  .desktop-only {
+    display: none !important;
   }
-  
+
+  .mobile-header {
+    padding: 20px 16px 16px 16px;
+    background: #0B0B0B;
+    border-bottom: none;
+    width: 100%;
+    box-sizing: border-box;
+    text-align: left;
+  }
+
+  .mobile-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0 0 8px 0;
+    line-height: 1.2;
+    text-align: left;
+  }
+
+  .mobile-subtitle {
+    font-size: 0.8125rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin: 0;
+    line-height: 1.5;
+    text-align: left;
+  }
+
+  .content-wrapper {
+    margin-left: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+  }
+
   .header-content {
     padding: 1rem 15px;
     flex-direction: column;
@@ -1383,6 +1259,104 @@ export default {
   
   .main-content {
     margin-top: 140px;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .view-toggle-bar-wrapper {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+    padding: 0 16px !important;
+    box-sizing: border-box;
+  }
+
+  .view-toggle-bar {
+    width: 100% !important;
+    max-width: 100% !important;
+    display: flex !important;
+    flex-direction: row !important;
+    gap: 0 !important;
+    box-sizing: border-box;
+    overflow-x: hidden;
+    border-bottom: none !important;
+    align-items: stretch !important;
+    padding: 8px 0 !important;
+  }
+
+  .view-toggle-bar button {
+    flex: 1 1 0% !important;
+    min-width: 0 !important;
+    padding: 12px 4px !important;
+    font-size: 0.8125rem !important;
+    border-radius: 8px !important;
+    background-color: transparent !important;
+    border: 1px solid rgba(34, 197, 94, 0.3) !important;
+    color: #7A7A7A !important;
+    margin: 0 2px !important;
+    box-sizing: border-box;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    text-align: center !important;
+  }
+
+  .view-toggle-bar button.border-b-2.border-zenix-green {
+    background-color: rgba(34, 197, 94, 0.2) !important;
+    color: #22C55E !important;
+    border: 1px solid rgba(34, 197, 94, 0.5) !important;
+    font-weight: 600 !important;
+  }
+
+  .view-toggle-bar button:hover {
+    background-color: rgba(255, 255, 255, 0.02) !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+  }
+
+  .view-toggle-bar .desktop-text {
+    display: none !important;
+  }
+
+  .view-toggle-bar .mobile-text {
+    display: inline !important;
+  }
+
+  .operation-content {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .operation-content > * {
+    width: 100% !important;
+    max-width: 100% !important;
+    box-sizing: border-box;
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+}
+
+/* Desktop Styles */
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+
+  .desktop-only {
+    display: block !important;
   }
 }
 </style>
