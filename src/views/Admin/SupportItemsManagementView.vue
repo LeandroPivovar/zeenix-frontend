@@ -75,7 +75,8 @@
                 </button>
             </div>
             
-            <div class="support-items-table">
+            <!-- Desktop Table -->
+            <div v-if="!isMobile" class="support-items-table">
                 <div class="table-content-wrapper">
                     <div class="table-header">
                         <div class="th title">Título</div>
@@ -103,6 +104,29 @@
                                 <button class="action-btn trash" aria-label="Deletar" @click="deleteSupportItem(item.id)"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mobile Cards -->
+            <div v-else class="support-items-cards">
+                <div v-if="isLoading" class="card-loading">
+                    Carregando itens de suporte...
+                </div>
+                <div v-else-if="supportItems.length === 0" class="card-empty">
+                    Nenhum item de suporte cadastrado
+                </div>
+                <div v-else class="support-card" v-for="item in supportItems" :key="item.id">
+                    <div class="card-header">
+                        <h3 class="card-title">{{ item.title }}</h3>
+                        <div class="card-actions">
+                            <button class="action-btn edit" aria-label="Editar" @click="editSupportItem(item)"><i class="fas fa-edit"></i></button>
+                            <button class="action-btn trash" aria-label="Deletar" @click="deleteSupportItem(item.id)"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                    </div>
+                    <div class="card-subtitle" v-html="getSubtitlePreview(item.subtitle)"></div>
+                    <div class="card-footer">
+                        <span class="card-date">{{ formatDate(item.createdAt) }}</span>
                     </div>
                 </div>
             </div>
@@ -737,7 +761,7 @@ export default {
 
         // --- Métodos de Sidebar e Responsividade ---
         checkMobileStatus() {
-            this.isMobile = window.innerWidth <= 768;
+            this.isMobile = window.innerWidth <= 1024;
             
             if (!this.isMobile) {
                 this.isSidebarOpen = true;
@@ -1254,13 +1278,17 @@ body {
     margin-top: 20px;
 }
 
-@media (min-width: 769px) {
+@media (min-width: 1025px) {
     .hamburger-btn {
+        display: none;
+    }
+
+    .support-items-cards {
         display: none;
     }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .hamburger-btn {
         display: block; 
     }
@@ -1312,6 +1340,75 @@ body {
 
     .support-items-table {
         overflow-x: auto;
+    }
+
+    /* Mobile Cards */
+    .support-items-cards {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 0;
+    }
+
+    .support-card {
+        background-color: #1f1f1f;
+        border-radius: 8px;
+        padding: 1rem;
+        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 0.75rem;
+        gap: 0.5rem;
+    }
+
+    .card-title {
+        font-size: 1rem;
+        font-weight: 600;
+        color: #fff;
+        margin: 0;
+        flex: 1;
+    }
+
+    .card-actions {
+        display: flex;
+        gap: 0.5rem;
+        flex-shrink: 0;
+    }
+
+    .card-subtitle {
+        color: #aaa;
+        font-size: 0.85rem;
+        line-height: 1.5;
+        margin-bottom: 0.75rem;
+        overflow: hidden;
+        display: -webkit-box;
+        -webkit-line-clamp: 3;
+        -webkit-box-orient: vertical;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: flex-end;
+        padding-top: 0.75rem;
+        border-top: 1px solid #2a2a2a;
+    }
+
+    .card-date {
+        font-size: 0.8rem;
+        color: #777;
+    }
+
+    .card-loading,
+    .card-empty {
+        text-align: center;
+        padding: 2rem;
+        color: #999;
+        background-color: #1f1f1f;
+        border-radius: 8px;
     }
 }
 
