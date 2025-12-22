@@ -285,7 +285,7 @@
         
         <!-- Best IAs Section -->
         <section id="best-ai-section" class="pt-20 pb-5 relative w-full" style="padding-bottom: 20px">
-          <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
+          <div class="absolute inset-0 bg-gradient-to-b from-[#020302] via-[#030403] to-[#020302] opacity-60 pointer-events-none"></div>
           <div class="relative z-10 w-full" style="padding: 2rem;">
             <!-- Desktop Header -->
             <div class="text-left mb-8 space-y-2 desktop-ias-header">
@@ -3022,7 +3022,7 @@ export default {
   
   /* Best IAs Section */
   .dashboard-layout #best-ai-section {
-    background-color: #050705;
+    background-color: #020302;
     background-image: url('@/assets/background/bestia.svg');
     background-repeat: no-repeat;
     background-position: center center;
@@ -3030,6 +3030,7 @@ export default {
     padding-left: 0 !important;
     padding-right: 0 !important;
     padding-bottom: 20px !important;
+    box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.7);
   }
   .dashboard-layout #best-ai-section .absolute.inset-0 {
     background: transparent !important;
@@ -3051,13 +3052,14 @@ export default {
   
   /* Performance Section */
   .dashboard-layout #performance-section {
-    background-color: #0b0b0b;
+    background-color: #040504;
     background-image: url('@/assets/background/performance.svg');
     background-repeat: no-repeat;
     background-position: center center;
     background-size: cover;
     padding-left: 0 !important;
     padding-right: 0 !important;
+    box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.7);
   }
   .dashboard-layout #performance-section .absolute.inset-0 {
     background: transparent !important;
