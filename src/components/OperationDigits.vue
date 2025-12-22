@@ -13,11 +13,12 @@
                         <div class="semaphore-header">
                             <div class="semaphore-title-group">
                                 <i :class="['fas', semaphoreIcon, 'semaphore-icon']"></i>
+                                <div v-if="semaphoreState === 'AGUARDAR'" class="semaphore-warning-icon mobile-only">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
                                 <div class="semaphore-title-wrapper">
                                     <h3 class="semaphore-title">{{ semaphoreTitle }}</h3>
-                                    <div v-if="semaphoreState === 'AGUARDAR'" class="semaphore-warning-icon mobile-only">
-                                        <i class="fas fa-exclamation-triangle"></i>
-                                    </div>
+                                    <div v-if="semaphoreState === 'AGUARDAR'" class="semaphore-reason mobile-only">{{ semaphoreReason }}</div>
                                 </div>
                             </div>
                             <div class="relative group">
@@ -31,16 +32,12 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="semaphore-status-container">
-                            <div class="semaphore-status">{{ semaphoreStatus }}</div>
-                        </div>
                         <div class="semaphore-reason-box">
-                            <div class="semaphore-reason-label">Razão</div>
                             <div class="semaphore-reason-wrapper">
                                 <div v-if="semaphoreState === 'AGUARDAR'" class="semaphore-warning-icon mobile-only">
                                     <i class="fas fa-exclamation-triangle"></i>
                                 </div>
-                                <div class="semaphore-reason">{{ semaphoreReason }}</div>
+                            <div class="semaphore-reason">{{ semaphoreReason }}</div>
                             </div>
                         </div>
                     </div>
@@ -227,7 +224,7 @@
                             >
                                 <span class="frequency-digit-number">{{ item.digit }}</span>
                             </div>
-                            <div class="frequency-status-label">{{ item.statusText }}</div>
+                            <div class="frequency-status-label" :class="item.statusClass + '-text'">{{ item.statusText }}</div>
                             <div class="frequency-z-score desktop-only">Z: {{ item.zScore }}</div>
                         </div>
                     </div>
@@ -913,6 +910,7 @@ export default {
             this.token = this.getTokenForAccount();
             this.appId = localStorage.getItem('deriv_app_id') || APP_ID;
 
+            // Verificação de acesso - requer token Deriv
             if (!this.token) {
                 console.error('[OperationDigits] ERRO: Nenhum token Deriv encontrado');
                 this.isConnecting = false;
@@ -932,7 +930,8 @@ export default {
                         this.send({ authorize: this.token });
                     } else {
                         this.connectionError = 'Erro ao autorizar conexão. Reconectando automaticamente...';
-                        this.scheduleRetry();
+                        // Comentado - desabilita reconexão automática para evitar loop
+                        // this.scheduleRetry();
                     }
                 }, 50);
             };
@@ -951,13 +950,15 @@ export default {
                 this.connectionError = 'Erro na conexão com a Deriv. Reconectando automaticamente...';
                 this.isConnecting = false;
                 this.isAuthorized = false;
-                this.scheduleRetry();
+                // Comentado - desabilita reconexão automática para evitar loop
+                // this.scheduleRetry();
             };
 
             this.ws.onclose = () => {
                 if (!this.isConnecting) {
                     this.connectionError = 'Conexão com a Deriv encerrada. Reconectando automaticamente...';
-                    this.scheduleRetry();
+                    // Comentado - desabilita reconexão automática para evitar loop
+                    // this.scheduleRetry();
                 }
                 this.isConnecting = false;
                 this.isAuthorized = false;
@@ -1037,7 +1038,8 @@ export default {
             } else {
                 this.connectionError = `${message}. Reconectando automaticamente...`;
                 this.isAuthorized = false;
-                this.scheduleRetry();
+                // Comentado - desabilita reconexão automática para evitar loop
+                // this.scheduleRetry();
             }
         },
         subscribeToSymbol() {
@@ -1108,16 +1110,6 @@ export default {
             // Coletar os últimos 10 ticks e printar no console
             const last10Ticks = this.ticks.slice(-10);
             console.log('[OperationDigits] Últimos 10 ticks:', last10Ticks);
-            
-            // ✅ PREVISÃO: Verificar resultado após receber o próximo tick após a compra
-            if (this.activeContract && !this.activeContract.confirmedStatus) {
-                this.activeContract.ticksReceivedAfterBuy++;
-                
-                // Se já recebemos pelo menos 1 tick após a compra, podemos prever o resultado
-                if (this.activeContract.ticksReceivedAfterBuy >= 1 && !this.activeContract.isPredicted) {
-                    this.predictContractResult(value);
-                }
-            }
             
             this.calculateDigitFrequency();
         },
@@ -1249,26 +1241,15 @@ export default {
             
             this.unsubscribeFromProposal();
             
-            // Armazenar qual foi a aposta para previsão
-            const betType = this.digitType; // 'DIGITEVEN' ou 'DIGITODD'
-            const entryTickValue = this.latestTick?.value || Number(buy.entry_spot || buy.spot || 0);
-            
             this.activeContract = {
                 contract_id: buy.contract_id,
                 symbol: this.symbol,
                 type: this.digitType,
-                entry_spot: Number(buy.entry_spot || buy.spot || entryTickValue),
+                entry_spot: Number(buy.entry_spot || buy.spot || this.latestTick?.value || 0),
                 purchase_time: buy.purchase_time,
                 buy_price: Number(buy.buy_price),
                 currency: this.displayCurrency,
                 digitBarrier: this.needsDigitBarrier ? this.digitBarrier : null,
-                // ✅ Campos para previsão
-                betType: betType, // Armazenar tipo de aposta (DIGITEVEN ou DIGITODD)
-                entryTickValue: entryTickValue, // Valor do tick na compra
-                ticksReceivedAfterBuy: 0, // Contador de ticks após compra
-                predictedStatus: null, // 'WON' ou 'LOST' (previsão)
-                isPredicted: false, // Se o status atual é previsão ou confirmação
-                confirmedStatus: null, // Status confirmado pela Deriv
             };
             
             this.contractStartTime = buy.purchase_time || Math.floor(Date.now() / 1000);
@@ -1331,31 +1312,6 @@ export default {
                 console.log('[OperationDigits] P&L atualizado:', this.realTimeProfit);
             }
             
-            // ✅ VERIFICAÇÃO: Se já tínhamos uma previsão, verificar se bateu
-            if (this.activeContract && this.activeContract.isPredicted && contract.is_sold === 1) {
-                const confirmedProfit = Number(contract.profit || 0);
-                const confirmedStatus = confirmedProfit > 0 ? 'WON' : 'LOST';
-                
-                // Verificar se a previsão bateu com a confirmação
-                if (this.activeContract.predictedStatus !== confirmedStatus) {
-                    console.warn('[OperationDigits] ⚠️ Previsão não bateu! Revertendo...', {
-                        previsto: this.activeContract.predictedStatus,
-                        confirmado: confirmedStatus
-                    });
-                    // Reverter previsão e aplicar resultado correto
-                    this.revertPredictionAndApplyCorrect(contract, confirmedStatus, confirmedProfit);
-                    return;
-                } else {
-                    console.log('[OperationDigits] ✅ Previsão confirmada!', {
-                        status: confirmedStatus,
-                        profit: confirmedProfit
-                    });
-                    // Marcar como confirmado
-                    this.activeContract.confirmedStatus = confirmedStatus;
-                    this.activeContract.isPredicted = false;
-                }
-            }
-            
             if (contract.is_sold === 1) {
                 console.log('[OperationDigits] ✅ Contrato vendido, finalizando...');
                 setTimeout(() => {
@@ -1413,94 +1369,6 @@ export default {
             setTimeout(() => {
                 this.subscribeToProposal();
             }, 500);
-        },
-        /**
-         * ✅ PREVISÃO: Calcula o resultado previsto baseado no próximo tick
-         */
-        predictContractResult(tickValue) {
-            if (!this.activeContract || !this.activeContract.betType) {
-                return;
-            }
-            
-            // Extrair último dígito do tick
-            const lastDigit = Math.floor(tickValue) % 10;
-            const isEven = lastDigit % 2 === 0;
-            
-            // Verificar se corresponde à aposta
-            const betType = this.activeContract.betType;
-            let predictedWon = false;
-            
-            if (betType === 'DIGITEVEN') {
-                predictedWon = isEven;
-            } else if (betType === 'DIGITODD') {
-                predictedWon = !isEven;
-            }
-            
-            // Calcular profit previsto (aproximado)
-            const buyPrice = this.activeContract.buy_price || 0;
-            const payout = 0.95; // Payout aproximado (95%)
-            const predictedProfit = predictedWon 
-                ? (buyPrice * payout) - buyPrice 
-                : -buyPrice;
-            
-            // Atualizar status previsto
-            this.activeContract.predictedStatus = predictedWon ? 'WON' : 'LOST';
-            this.activeContract.isPredicted = true;
-            this.activeContract.predictedProfit = predictedProfit;
-            this.activeContract.predictedExitSpot = tickValue;
-            
-            console.log('[OperationDigits] 🔮 PREVISÃO:', {
-                tickValue,
-                lastDigit,
-                isEven,
-                betType,
-                predictedStatus: this.activeContract.predictedStatus,
-                predictedProfit
-            });
-            
-            // Atualizar visualmente (P&L e status)
-            this.realTimeProfit = predictedProfit;
-            
-            // Emitir evento para atualizar histórico (se necessário)
-            this.$emit('trade-prediction', {
-                contractId: this.activeContract.contract_id,
-                predictedStatus: this.activeContract.predictedStatus,
-                predictedProfit,
-                exitSpot: tickValue,
-                isPredicted: true
-            });
-        },
-        /**
-         * ✅ REVERSÃO: Reverte previsão incorreta e aplica resultado correto
-         */
-        revertPredictionAndApplyCorrect(contract, confirmedStatus, confirmedProfit) {
-            console.log('[OperationDigits] 🔄 Revertendo previsão e aplicando resultado correto...');
-            
-            // Reverter previsão
-            const previousPrediction = this.activeContract.predictedStatus;
-            const previousProfit = this.activeContract.predictedProfit;
-            
-            // Aplicar resultado correto
-            this.activeContract.confirmedStatus = confirmedStatus;
-            this.activeContract.isPredicted = false;
-            this.activeContract.predictedStatus = null;
-            this.realTimeProfit = confirmedProfit;
-            
-            console.log('[OperationDigits] ✅ Reversão aplicada:', {
-                previsaoAnterior: previousPrediction,
-                resultadoCorreto: confirmedStatus,
-                profitAnterior: previousProfit,
-                profitCorreto: confirmedProfit
-            });
-            
-            // Emitir evento para atualizar histórico com correção
-            this.$emit('trade-correction', {
-                contractId: this.activeContract.contract_id,
-                previousPrediction,
-                confirmedStatus,
-                previousProfit,
-                confirmedProfit
-            });
         },
         getTokenForAccount() {
             if (this.accountLoginid) {
