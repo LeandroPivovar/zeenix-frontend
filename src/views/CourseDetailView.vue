@@ -8,41 +8,18 @@
     <!-- Overlay para fechar sidebar em mobile -->
     <div v-if="sidebarOpen" class="sidebar-overlay" @click="closeSidebar"></div>
 
+    <!-- TopNavbar -->
+    <TopNavbar
+        :is-sidebar-collapsed="false"
+        :balance="0"
+        :account-type="'real'"
+        :hide-balance="true"
+        @toggle-sidebar="toggleSidebar"
+        @toggle-sidebar-collapse="() => {}"
+    />
+
     <!-- Main Content Wrapper -->
     <div class="main-wrapper">
-        
-        <!-- Header -->
-        <header class="course-header">
-            <div class="header-inner">
-                <div class="header-left">
-                    <button class="hamburger-btn" @click="toggleSidebar" aria-label="Menu">
-                        <i class="fas fa-bars"></i>
-                    </button>
-                    
-                    <button class="back-btn" @click="$router.push('/academy')" aria-label="Voltar para Academy">
-                        <i class="fas fa-arrow-left"></i>
-                        <span class="back-btn-text">Voltar</span>
-                    </button>
-                    <h1 class="header-title">Zenix Academy</h1>
-                </div>
-                <div class="header-right">
-                    <!-- User Info (Mocked based on example, or dynamic if available) -->
-                    <div class="flex items-center space-x-3" style="display: flex; gap: 0.75rem; align-items: center;">
-                        <div style="text-align: right;">
-                            <div style="font-weight: 500; font-size: 0.875rem; color: #DFDFDF;">{{ userName }}</div>
-                            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 0.25rem; font-size: 0.75rem; color: #8D8D8D;">
-                                <div class="pulse-dot" style="width: 0.5rem; height: 0.5rem; background-color: #22C55E; border-radius: 50%;"></div>
-                                <span>Online</span>
-                            </div>
-                        </div>
-                        <div style="width: 2.5rem; height: 2.5rem; background-color: rgba(34, 197, 94, 0.2); border-radius: 50%; display: flex; align-items: center; justify-content: center;">
-                            <i class="fas fa-user" style="color: #22C55E;"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </header>
-
         <main class="course-main" v-if="!loading && course">
             
             <!-- Center Column - Video & Content -->
@@ -239,10 +216,11 @@
 <script>
 import AppSidebar from '../components/Sidebar.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
+import TopNavbar from '../components/TopNavbar.vue'
 
 export default {
   name: 'CourseDetailView',
-  components: { AppSidebar, DesktopBottomNav },
+  components: { AppSidebar, DesktopBottomNav, TopNavbar },
   data() {
     return {
       course: null,
