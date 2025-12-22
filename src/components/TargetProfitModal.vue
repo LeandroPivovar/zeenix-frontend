@@ -21,11 +21,6 @@
           Parabéns! Você atingiu seu alvo de lucro diário com sucesso.
         </p>
         
-        <div class="result-section">
-          <div class="result-label">RESULTADO DO DIA</div>
-          <div class="result-value" :class="result >= 0 ? 'profit' : 'loss'">{{ formattedResult }}</div>
-        </div>
-        
         <p class="info-message">
           "Disciplina é o que transforma ganhos pontuais em consistência."
         </p>
@@ -55,13 +50,6 @@ export default {
       default: 'USD'
     }
   },
-  computed: {
-    formattedResult() {
-      const sign = this.result >= 0 ? '+' : '-';
-      const absoluteValue = Math.abs(this.result);
-      return `${sign}$${absoluteValue.toFixed(2)}`;
-    }
-  },
   methods: {
     handleClose() {
       // Não permitir fechar clicando fora
@@ -69,7 +57,12 @@ export default {
     handleConfirm() {
       this.$emit('confirm');
       // Navegar para a tela de configurações da IA
-      this.$router.push('/InvestmentIA');
+      this.$router.push('/InvestmentIA').catch(err => {
+        // Ignorar erro de navegação duplicada
+        if (err.name !== 'NavigationDuplicated') {
+          console.error('[TargetProfitModal] Erro ao navegar:', err);
+        }
+      });
     }
   }
 }
@@ -134,32 +127,6 @@ export default {
   line-height: 1.5;
 }
 
-.result-section {
-  background: rgba(34, 197, 94, 0.05);
-  border: 1px solid rgba(34, 197, 94, 0.2);
-  border-radius: 16px;
-  padding: 24px;
-  margin: 0 0 24px 0;
-}
-
-.result-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.result-value {
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.result-value.profit {
-  color: #22C55E;
-}
-
 .info-message {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
@@ -210,10 +177,6 @@ export default {
   
   .modal-title {
     font-size: 20px;
-  }
-  
-  .result-value {
-    font-size: 28px;
   }
 }
 </style>

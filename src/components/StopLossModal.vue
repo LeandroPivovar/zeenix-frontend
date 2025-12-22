@@ -17,11 +17,6 @@
           O sistema interrompeu automaticamente as operações para proteger seu capital.
         </p>
         
-        <div class="result-section">
-          <div class="result-label">RESULTADO DO DIA</div>
-          <div class="result-value" :class="result >= 0 ? 'profit' : 'loss'">{{ formattedResult }}</div>
-        </div>
-        
         <p class="info-message">
           Gestão de risco faz parte da consistência. Um novo ciclo estará disponível no próximo período.
         </p>
@@ -51,13 +46,6 @@ export default {
       default: 'USD'
     }
   },
-  computed: {
-    formattedResult() {
-      const sign = this.result >= 0 ? '+' : '-';
-      const absoluteValue = Math.abs(this.result);
-      return `${sign}$${absoluteValue.toFixed(2)}`;
-    }
-  },
   methods: {
     handleClose() {
       // Não permitir fechar clicando fora
@@ -65,7 +53,12 @@ export default {
     handleConfirm() {
       this.$emit('confirm');
       // Navegar para a tela de configurações da IA
-      this.$router.push('/InvestmentIA');
+      this.$router.push('/InvestmentIA').catch(err => {
+        // Ignorar erro de navegação duplicada
+        if (err.name !== 'NavigationDuplicated') {
+          console.error('[StopLossModal] Erro ao navegar:', err);
+        }
+      });
     }
   }
 }
@@ -129,36 +122,6 @@ export default {
   line-height: 1.5;
 }
 
-.result-section {
-  background: rgba(255, 255, 255, 0.03);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 16px;
-  padding: 24px;
-  margin: 0 0 24px 0;
-}
-
-.result-label {
-  font-size: 12px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-bottom: 12px;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-}
-
-.result-value {
-  font-size: 36px;
-  font-weight: 700;
-  line-height: 1;
-}
-
-.result-value.loss {
-  color: #EF4444;
-}
-
-.result-value.profit {
-  color: #22C55E;
-}
-
 .info-message {
   font-size: 13px;
   color: rgba(255, 255, 255, 0.6);
@@ -209,10 +172,6 @@ export default {
   
   .modal-title {
     font-size: 20px;
-  }
-  
-  .result-value {
-    font-size: 28px;
   }
 }
 </style>
