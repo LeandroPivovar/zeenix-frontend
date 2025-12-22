@@ -733,39 +733,21 @@ export default {
 
                 const preferredCurrency = this.getPreferredCurrency();
                 
-                console.log('[InvestmentIAView] 💰 Verificando saldo da conta...');
+                // ✅ Removida chamada para /ai/deriv-balance - usar saldo já disponível
+                // O saldo já está disponível em this.accountBalance ou pode ser obtido do localStorage
                 let accountBalanceReal = this.accountBalance || 0;
                 
-                try {
-                    const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                    const balanceResponse = await fetch(`${apiBase}/ai/deriv-balance`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        },
-                        body: JSON.stringify({ derivToken: derivToken }),
-                    });
-                    
-                    const balanceResult = await balanceResponse.json();
-                    if (balanceResult.success && balanceResult.data) {
-                        const balance = balanceResult.data.balance;
-                        const currency = balanceResult.data.currency;
-                        const loginid = balanceResult.data.loginid;
-                        
-                        // ✅ Atualizar saldo da conta com o valor real obtido
-                        accountBalanceReal = balance;
-                        this.accountBalance = balance;
-                        
-                        console.log('[InvestmentIAView] 💰 Saldo obtido:', balance, currency);
-                        console.log('[InvestmentIAView] 🔑 LoginID:', loginid);
-                        
-                        if (balance < this.entryValue) {
-                            console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente:', balance, 'necessário:', this.entryValue);
+                // Tentar obter saldo do localStorage se não estiver disponível
+                if (!accountBalanceReal) {
+                    try {
+                        const connectionStr = localStorage.getItem('deriv_connection');
+                        if (connectionStr) {
+                            const connection = JSON.parse(connectionStr);
+                            accountBalanceReal = connection.balance || 0;
                         }
+                    } catch (e) {
+                        console.warn('[InvestmentIAView] ⚠️ Não foi possível obter saldo do localStorage:', e);
                     }
-                } catch (balanceError) {
-                    console.warn('[InvestmentIAView] ⚠️ Não foi possível verificar saldo:', balanceError);
                 }
 
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';

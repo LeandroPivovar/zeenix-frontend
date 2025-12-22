@@ -635,34 +635,8 @@ export default {
 
                 const preferredCurrency = this.getPreferredCurrency();
                 
-                console.log('[InvestmentIAView] 💰 Verificando saldo da conta...');
-                try {
-                    const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                    const balanceResponse = await fetch(`${apiBase}/ai/deriv-balance`, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'Authorization': `Bearer ${localStorage.getItem('token')}`
-                        },
-                        body: JSON.stringify({ derivToken: derivToken }),
-                    });
-                    
-                    const balanceResult = await balanceResponse.json();
-                    if (balanceResult.success && balanceResult.data) {
-                        const balance = balanceResult.data.balance;
-                        const currency = balanceResult.data.currency;
-                        const loginid = balanceResult.data.loginid;
-                        
-                        console.log('[InvestmentIAView] 💰 Saldo:', balance, currency);
-                        console.log('[InvestmentIAView] 🔑 LoginID:', loginid);
-                        
-                        if (balance < this.entryValue) {
-                            console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente:', balance, 'necessário:', this.entryValue);
-                        }
-                    }
-                } catch (balanceError) {
-                    console.warn('[InvestmentIAView] ⚠️ Não foi possível verificar saldo:', balanceError);
-                }
+                // ✅ Removida chamada para /ai/deriv-balance - usar saldo já disponível
+                // O saldo já está disponível em this.accountBalance ou pode ser obtido do localStorage
 
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
                 const response = await fetch(`${apiBase}/ai/activate`, {

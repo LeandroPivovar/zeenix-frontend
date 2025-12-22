@@ -1816,9 +1816,10 @@ export default {
 			if (result.success) {
 				console.log('[StatsIAsView] ✅ Carregamento de dados iniciado (IA desativada)');
 				
-				// Iniciar polling para buscar dados a cada 2 segundos
-				// mas sem ativar o aiMonitoring.isActive
-				this.startPolling();
+				// ✅ NÃO iniciar polling quando IA está desativada
+				// O polling só deve ocorrer quando a IA estiver ativa
+				// Buscar dados apenas uma vez para inicializar o gráfico
+				this.fetchAIData();
 			} else {
 				console.warn('[StatsIAsView] ⚠ Não foi possível iniciar carregamento de dados:', result.message);
 			}
@@ -1853,12 +1854,24 @@ export default {
 		},
 
 		startPolling() {
+			// ✅ Só fazer polling se a IA estiver ativa
+			if (!this.tradingConfig.isActive && !this.aiMonitoring.isActive) {
+				console.log('[StatsIAsView] ⏸️ IA não está ativa, não iniciando polling de ticks');
+				return;
+			}
+			
 			// Buscar dados imediatamente
 			this.fetchAIData();
 
 			// Continuar buscando a cada 2 segundos
 			this.aiPollingInterval = setInterval(() => {
-				this.fetchAIData();
+				// ✅ Verificar novamente se ainda está ativa antes de buscar
+				if (this.tradingConfig.isActive || this.aiMonitoring.isActive) {
+					this.fetchAIData();
+				} else {
+					// Se não estiver mais ativa, parar polling
+					this.stopPolling();
+				}
 			}, 2000);
 		},
 
@@ -1870,6 +1883,12 @@ export default {
 		},
 
 	async fetchAIData() {
+		// ✅ Não buscar ticks se a IA não estiver ativa
+		if (!this.tradingConfig.isActive && !this.aiMonitoring.isActive) {
+			console.log('[StatsIAsView] ⏸️ IA não está ativa, pulando busca de ticks');
+			return;
+		}
+		
 		try {
 			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
 			console.log('[StatsIAsView] Buscando ticks de', `${apiBase}/ai/ticks`);
@@ -2398,12 +2417,24 @@ export default {
 
 	// Polling para atualizar status da IA em background
 	startBackgroundPolling() {
+		// ✅ Só fazer polling se a IA estiver ativa
+		if (!this.tradingConfig.isActive && !this.aiMonitoring.isActive) {
+			console.log('[StatsIAsView] ⏸️ IA não está ativa, não iniciando polling de background');
+			return;
+		}
+		
 		// Buscar status imediatamente
 		this.fetchBackgroundStatus();
 		
 		// Continuar buscando a cada 5 segundos
 		this.tradingInterval = setInterval(() => {
-			this.fetchBackgroundStatus();
+			// ✅ Verificar novamente se ainda está ativa antes de buscar
+			if (this.tradingConfig.isActive || this.aiMonitoring.isActive) {
+				this.fetchBackgroundStatus();
+			} else {
+				// Se não estiver mais ativa, parar polling
+				this.stopBackgroundPolling();
+			}
 		}, 5000);
 	},
 
