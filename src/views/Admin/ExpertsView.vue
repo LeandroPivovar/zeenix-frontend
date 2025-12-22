@@ -6,22 +6,10 @@
         
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
-                v-if="!isMobile"
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
             />
-            
-            <div v-if="isMobile" class="mobile-header-admin">
-                <button class="menu-toggler-btn" @click="isSidebarOpen = true">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-                <div class="mobile-brand">
-                    <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
-                </div>
-            </div>
 
             <main class="layout-content">
             
@@ -133,7 +121,8 @@
                 </div>
             </div>
 
-            <div class="experts-table">
+            <!-- Tabela Desktop -->
+            <div class="experts-table desktop-table">
                 <div class="table-content-wrapper">
                     <div class="table-header">
                         <div class="th email">Email</div>
@@ -171,6 +160,65 @@
                                 </button>
                                 <button class="action-btn edit" aria-label="Editar" @click="editExpert(expert)"><i class="fas fa-edit"></i></button>
                                 <button class="action-btn trash" aria-label="Deletar" @click="deleteExpert(expert.id)"><i class="fas fa-trash-alt"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards Mobile -->
+            <div class="experts-cards-wrapper mobile-cards">
+                <div class="experts-cards">
+                    <div v-if="isLoading" class="expert-card loading-card">
+                        <div class="card-content">
+                            <p style="text-align: center; color: #999; padding: 2rem;">Carregando experts...</p>
+                        </div>
+                    </div>
+                    <div v-else-if="experts.length === 0" class="expert-card empty-card">
+                        <div class="card-content">
+                            <p style="text-align: center; color: #999; padding: 2rem;">Nenhum expert cadastrado</p>
+                        </div>
+                    </div>
+                    <div v-else class="expert-card" v-for="expert in experts" :key="expert.id">
+                        <div class="card-content">
+                            <div class="card-header">
+                                <div class="card-email">{{ expert.email }}</div>
+                                <div class="card-status" :class="getConnectionStatusClass(expert.connectionStatus)">
+                                    <span class="status-dot" :class="getConnectionStatusClass(expert.connectionStatus)"></span>
+                                    {{ expert.connectionStatus || 'Desconectado' }}
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <div class="card-row">
+                                    <span class="card-label">Tipo de Trader:</span>
+                                    <span class="card-value">{{ expert.traderType || '-' }}</span>
+                                </div>
+                                <div class="card-row">
+                                    <span class="card-label">Login Original:</span>
+                                    <span class="card-value">{{ expert.loginOriginal || '-' }}</span>
+                                </div>
+                                <div class="card-row">
+                                    <span class="card-label">Login Alvo:</span>
+                                    <span class="card-value">{{ expert.loginAlvo || '-' }}</span>
+                                </div>
+                                <div class="card-row">
+                                    <span class="card-label">Saldo Alvo:</span>
+                                    <span class="card-value saldo-value">{{ formatCurrency(expert.saldoAlvo || 0) }}</span>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <button v-if="expert.connectionStatus !== 'Ativo'" class="card-action-btn" aria-label="Sincronizar" @click="syncExpert(expert.id)" title="Sincronizar">
+                                    <i class="fas fa-sync-alt"></i>
+                                    <span>Sincronizar</span>
+                                </button>
+                                <button class="card-action-btn edit" aria-label="Editar" @click="editExpert(expert)">
+                                    <i class="fas fa-edit"></i>
+                                    <span>Editar</span>
+                                </button>
+                                <button class="card-action-btn trash" aria-label="Deletar" @click="deleteExpert(expert.id)">
+                                    <i class="fas fa-trash-alt"></i>
+                                    <span>Deletar</span>
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -836,44 +884,13 @@ body {
     justify-content: flex-start;
 }
 
-/* Mobile Header */
-.mobile-header-admin {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background-color: #0b0b0b;
-    z-index: 998;
-    padding: 0 20px;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #1C1C1C;
+@media (max-width: 768px) {
+    .layout-content {
+        padding: 12px;
+        padding-top: 70px;
+    }
 }
 
-.mobile-brand {
-    display: flex;
-    align-items: center;
-}
-
-.menu-toggler-btn {
-    background-color: #1e1e1e;
-    color: rgb(255, 255, 255);
-    border: 1px solid #333;
-    border-radius: 8px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.menu-toggler-btn:hover {
-    background-color: #2a2a2a;
-}
 
 /* Responsividade */
 @media (max-width: 1024px) {
@@ -883,14 +900,6 @@ body {
     
     .dashboard-content-wrapper.sidebar-collapsed {
         margin-left: 0;
-    }
-    
-    .mobile-header-admin {
-        display: flex;
-    }
-    
-    .layout-content {
-        padding-top: 50px;
     }
 }
 
@@ -1129,6 +1138,7 @@ body {
     display: flex;
     gap: 20px;
     width: 100%;
+    justify-content: flex-start;
 }
 
 .card {
@@ -1141,7 +1151,7 @@ body {
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease-out forwards;
     flex-direction: column;
-    justify-content: space-between;
+    justify-content: flex-start;
     position: relative;
     min-height: 80px; 
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
@@ -1152,6 +1162,7 @@ body {
     color: #aaa;
     margin: 0 0 5px 0;
     text-transform: capitalize;
+    text-align: left;
 }
 
 .card-value {
@@ -1159,6 +1170,7 @@ body {
     font-weight: 700;
     margin: 0;
     line-height: 1;
+    text-align: left;
 }
 
 /* Delays escalonados para cada card */
@@ -1170,16 +1182,19 @@ body {
 .active-expert .card-value {
     font-size: 1.5rem;
     font-weight: 500;
+    text-align: left;
 }
 .last-up .card-value {
     font-size: 1.2rem;
     font-weight: 400;
+    text-align: left;
 }
 
 
 .green-text {
     color: #00b862; 
     font-weight: 700;
+    text-align: left;
 }
 
 /* --- 3. Estilos da Tabela (Corrigido para usar Grid nas linhas de dados) --- */
@@ -1194,6 +1209,164 @@ body {
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease-out forwards;
     animation-delay: 0.5s;
+}
+
+/* Cards Mobile */
+.experts-cards-wrapper {
+    display: none;
+    width: 100%;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-out forwards;
+    animation-delay: 0.5s;
+}
+
+.experts-cards {
+    display: flex;
+    width: 100%;
+    gap: 12px;
+    flex-direction: column;
+    max-height: calc(500px + 1rem);
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding-right: 4px;
+}
+
+/* Custom Scrollbar para a lista de cards */
+.experts-cards::-webkit-scrollbar {
+    width: 6px;
+}
+
+.experts-cards::-webkit-scrollbar-track {
+    background: #1a1a1a;
+    border-radius: 10px;
+}
+
+.experts-cards::-webkit-scrollbar-thumb {
+    background-color: #4CAF50;
+    border-radius: 10px;
+}
+
+.experts-cards::-webkit-scrollbar-thumb:hover {
+    background-color: #45a049;
+}
+
+.expert-card {
+    background-color: #1f1f1f;
+    border-radius: 8px;
+    padding: 16px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    border: 1px solid #2a2a2a;
+}
+
+.card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-bottom: 12px;
+    border-bottom: 1px solid #2a2a2a;
+}
+
+.card-email {
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #fff;
+    flex: 1;
+    word-break: break-word;
+}
+
+.card-status {
+    display: flex;
+    align-items: center;
+    font-size: 0.8rem;
+    font-weight: 500;
+    gap: 6px;
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+}
+
+.card-label {
+    color: #aaa;
+    font-weight: 400;
+}
+
+.card-value {
+    color: #fff;
+    font-weight: 500;
+    text-align: left;
+    word-break: break-word;
+}
+
+.card-value.saldo-value {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+.card-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 12px;
+    border-top: 1px solid #2a2a2a;
+    flex-wrap: wrap;
+}
+
+.card-action-btn {
+    flex: 1;
+    min-width: 80px;
+    background-color: #2a2a2a;
+    border: 1px solid #3a3a3a;
+    color: #aaa;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+
+.card-action-btn:hover {
+    background-color: #333;
+    color: #fff;
+    border-color: #444;
+}
+
+.card-action-btn.edit:hover {
+    color: #4CAF50;
+    border-color: #4CAF50;
+}
+
+.card-action-btn.trash {
+    color: #f44336;
+}
+
+.card-action-btn.trash:hover {
+    background-color: rgba(244, 67, 54, 0.1);
+    border-color: #f44336;
+    color: #f44336;
+}
+
+.card-action-btn i {
+    font-size: 0.85rem;
 }
 
 .table-header,
@@ -1318,6 +1491,15 @@ body {
     .hamburger-btn {
         display: none;
     }
+    
+    /* Desktop: mostrar tabela, esconder cards */
+    .desktop-table {
+        display: block;
+    }
+    
+    .mobile-cards {
+        display: none;
+    }
 }
 
 @media (max-width: 768px) {
@@ -1330,9 +1512,19 @@ body {
         width: 100%;
         margin-left: 0;
         padding: 10px;
-        padding-top: 50px;
+        padding-top: 70px;
     }
 
+    /* Reduzir tamanhos de fonte e espaçamentos */
+    .add-expert-button-wrapper {
+        margin-top: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .add-expert-btn {
+        padding: 8px 16px;
+        font-size: 0.875rem;
+    }
 
     .left-footer {
         margin-top: 15px; 
@@ -1340,8 +1532,6 @@ body {
         display: flex;
         flex-direction: column;
         align-items: flex-end;
-
-        
     }
 
     .left-footer button {
@@ -1349,59 +1539,220 @@ body {
         max-width: 190px;
         width: 100%;
         text-align: center;
+        padding: 8px 16px;
+        font-size: 0.875rem;
     }
 
     h3{
         text-align: left;
+        font-size: 0.9rem;
     }
 
     .cancel-btn {
         margin-right: 0;
         margin-bottom: 10px;
     }
+    
     .cards-group {
         flex-direction: column;
-        gap: 10px;
+        gap: 8px;
     }
+    
     .card {
         flex: 1 1 calc(50% - 5px); 
-        padding: 10px 15px;
+        padding: 10px 12px;
+        margin-bottom: 15px;
+        min-height: 70px;
+        justify-content: flex-start;
     }
+    
+    .card-title {
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+        text-align: left;
+    }
+    
     .card-value {
-        font-size: 1.2rem;
+        font-size: 14.4px;
+        text-align: left;
     }
+    
     .active-expert .card-value {
-        font-size: 1.8rem;
+        font-size: 14.4px;
+    }
+    
+    .last-up .card-value {
+        font-size: 14.4px;
     }
 
     .form-container{
         flex-direction: column;
+        gap: 15px;
     }
 
     .form-expert {
-        padding: 15px;
+        padding: 12px;
         max-height: 400px;
-        margin-top: 20px;
+        margin-top: 10px;
+        margin-bottom: 20px;
     }
+    
     .form-expert h1 {
-        font-size: 1.2rem;
+        font-size: 1.1rem;
     }
+    
+    .form-expert > p {
+        font-size: 0.875rem;
+        margin-bottom: 15px;
+    }
+    
     .form-expert .help-link {
         display: none; 
+    }
+    
+    .form-group {
+        flex: 1 1 100%;
+    }
+    
+    .form-group label {
+        font-size: 0.85rem;
+        margin-bottom: 4px;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+        padding: 8px;
+        font-size: 0.875rem;
+    }
+    
+    .form-group textarea {
+        height: 120px;
+    }
+    
+    .form-group .hint-text {
+        font-size: 0.75rem;
+        margin-top: 3px;
     }
 
     p{
         text-align: left;
+        font-size: 0.875rem;
     }
 
     .hint-text{
         text-align: left;
+    }
+    
+    /* Esconder tabela e mostrar cards no mobile */
+    .desktop-table {
+        display: none;
+    }
+    
+    .mobile-cards {
+        display: block;
+    }
+    
+    .experts-cards {
+        max-height: calc(400px + 1rem);
+    }
+    
+    .expert-card {
+        padding: 12px;
+    }
+    
+    .card-email {
+        font-size: 0.85rem;
+    }
+    
+    .card-status {
+        font-size: 0.75rem;
+    }
+    
+    .card-row {
+        font-size: 0.8rem;
+    }
+    
+    .card-action-btn {
+        font-size: 0.75rem;
+        padding: 6px 10px;
+        min-width: 70px;
+    }
+    
+    .card-action-btn span {
+        display: none;
+    }
+    
+    .card-action-btn {
+        min-width: 40px;
+        padding: 8px;
     }
 }
 
 @media (max-width: 480px) {
     .card {
         flex: 1 1 100%; 
+        padding: 8px 10px;
+        margin-bottom: 15px;
+        min-height: 60px;
+        justify-content: flex-start;
+    }
+    
+    .card-title {
+        font-size: 0.8rem;
+        text-align: left;
+    }
+    
+    .card-value {
+        font-size: 14.4px;
+        text-align: left;
+    }
+    
+    .active-expert .card-value {
+        font-size: 14.4px;
+    }
+    
+    .last-up .card-value {
+        font-size: 14.4px;
+    }
+    
+    .add-expert-btn {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+    }
+    
+    .experts-cards {
+        max-height: calc(500px + 1rem);
+        gap: 10px;
+    }
+    
+    .expert-card {
+        padding: 10px;
+    }
+    
+    .card-email {
+        font-size: 0.8rem;
+    }
+    
+    .card-status {
+        font-size: 0.7rem;
+    }
+    
+    .card-row {
+        font-size: 0.75rem;
+    }
+    
+    .card-action-btn {
+        font-size: 0.7rem;
+        padding: 6px 8px;
+    }
+    
+    .form-expert {
+        padding: 10px;
+    }
+    
+    .form-expert h1 {
+        font-size: 1rem;
     }
 }
 

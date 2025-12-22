@@ -7,22 +7,10 @@
         
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
-                v-if="!isMobile"
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
             />
-            
-            <div v-if="isMobile" class="mobile-header-admin">
-                <button class="menu-toggler-btn" @click="isSidebarOpen = true">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-                <div class="mobile-brand">
-                    <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
-                </div>
-            </div>
 
             <main class="layout-content">
                 <div class="container">
@@ -294,44 +282,6 @@ export default {
     background-color: #0b0b0b;
 }
 
-/* Mobile Header */
-.mobile-header-admin {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background-color: #0b0b0b;
-    z-index: 998;
-    padding: 0 20px;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #1C1C1C;
-}
-
-.mobile-brand {
-    display: flex;
-    align-items: center;
-}
-
-.menu-toggler-btn {
-    background-color: #1e1e1e;
-    color: rgb(255, 255, 255);
-    border: 1px solid #333;
-    border-radius: 8px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.menu-toggler-btn:hover {
-    background-color: #2a2a2a;
-}
 
 /* Responsividade */
 @media (max-width: 1024px) {
@@ -342,13 +292,12 @@ export default {
     .dashboard-content-wrapper.sidebar-collapsed {
         margin-left: 0;
     }
-    
-    .mobile-header-admin {
-        display: flex;
-    }
-    
+}
+
+@media (max-width: 768px) {
     .layout-content {
-        padding-top: 80px;
+        padding: 12px;
+        padding-top: 70px;
     }
 }
 
@@ -408,7 +357,7 @@ export default {
 
 .courses-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 2rem;
     margin-top: 2rem;
 }
@@ -612,13 +561,23 @@ export default {
     to { transform: rotate(360deg); }
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
     .courses-grid {
         grid-template-columns: 1fr;
     }
-    
+}
+
+@media (max-width: 768px) {
     .page-header {
         flex-direction: column;
+    }
+    
+    .header-actions {
+        width: 100%;
+    }
+    
+    .header-actions .btn {
+        flex: 1;
     }
 }
 </style>
