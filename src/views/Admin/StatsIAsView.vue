@@ -1169,32 +1169,80 @@ export default {
 		
 		async loadAccountInfo() {
 			try {
-				// Buscar informações da conta Deriv
+				// ✅ OTIMIZAÇÃO: Atualizar saldo da API primeiro (igual outras páginas)
 				const connectionStr = localStorage.getItem('deriv_connection');
-				if (connectionStr) {
-					const connection = JSON.parse(connectionStr);
-					
-					// ✅ CORREÇÃO: Determinar tipo de conta pelo loginid, não pela moeda
-					// Contas demo começam com VRTC ou VRT
-					const loginid = connection.loginid || '';
-					const isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT') || connection.isDemo === true;
-					this.accountType = isDemo ? 'Demo' : 'Real';
-					
-					// Buscar saldo correto baseado no tipo de conta
-					let balance = 0;
-					if (isDemo && connection.balancesByCurrencyDemo) {
-						// Para demo, usar saldo demo
-						const demoBalances = connection.balancesByCurrencyDemo;
-						balance = demoBalances['USD'] || Object.values(demoBalances)[0] || 0;
-					} else if (!isDemo && connection.balancesByCurrencyReal) {
-						// Para real, usar saldo real
-						const realBalances = connection.balancesByCurrencyReal;
-						balance = realBalances['USD'] || Object.values(realBalances)[0] || 0;
-					} else {
-						// Fallback para balance direto
-						balance = connection.balance || connection.balanceAfter || 0;
+				if (!connectionStr) {
+					// Sem conexão salva, usar dados do localStorage se existir
+					this.loadAccountInfoFromLocal();
+					return;
+				}
+				
+				const connection = JSON.parse(connectionStr);
+				const token = localStorage.getItem('deriv_token');
+				const appId = localStorage.getItem('deriv_app_id') || '1089';
+				
+				// Se temos token, atualizar saldo da API
+				if (token) {
+					try {
+						const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+						const response = await fetch(`${apiBase}/broker/deriv/status`, {
+							method: 'POST',
+							headers: {
+								'Content-Type': 'application/json',
+								'Authorization': `Bearer ${localStorage.getItem('token')}`
+							},
+							body: JSON.stringify({
+								token: token,
+								appId: parseInt(appId),
+								currency: connection.currency || 'USD'
+							})
+						});
+						
+						if (response.ok) {
+							const data = await response.json();
+							
+							// Atualizar localStorage com dados atualizados
+							const updatedConnection = {
+								...data,
+								loginid: connection.loginid || data.loginid,
+								currency: connection.currency || data.currency || 'USD',
+								isDemo: connection.isDemo !== undefined ? connection.isDemo : (data.loginid?.startsWith('VRTC') || data.loginid?.startsWith('VRT')),
+								timestamp: Date.now()
+							};
+							localStorage.setItem('deriv_connection', JSON.stringify(updatedConnection));
+							
+							// Processar dados atualizados usando a mesma lógica do loadAccountInfoFromLocal
+							const loginid = updatedConnection.loginid || '';
+							const isDemo = loginid.startsWith('VRTC') || loginid.startsWith('VRT') || updatedConnection.isDemo === true;
+							this.accountType = isDemo ? 'Demo' : 'Real';
+							
+							// Buscar saldo correto baseado no tipo de conta
+							let balance = 0;
+							if (isDemo && updatedConnection.balancesByCurrencyDemo) {
+								const demoBalances = updatedConnection.balancesByCurrencyDemo;
+								balance = demoBalances['USD'] || Object.values(demoBalances)[0] || 0;
+							} else if (!isDemo && updatedConnection.balancesByCurrencyReal) {
+								const realBalances = updatedConnection.balancesByCurrencyReal;
+								balance = realBalances['USD'] || Object.values(realBalances)[0] || 0;
+							} else {
+								balance = updatedConnection.balance || updatedConnection.balanceAfter || 0;
+							}
+							this.accountBalance = parseFloat(balance) || 0;
+							
+							console.log('[StatsIAsView] ✅ Saldo atualizado da API:', this.accountBalance);
+						} else {
+							// Se API falhar, usar dados do localStorage (fallback)
+							console.warn('[StatsIAsView] ⚠️ Erro ao atualizar saldo da API, usando cache local');
+							this.loadAccountInfoFromLocal();
+						}
+					} catch (apiError) {
+						console.warn('[StatsIAsView] ⚠️ Erro ao atualizar saldo da API:', apiError);
+						// Se API falhar, usar dados do localStorage (fallback)
+						this.loadAccountInfoFromLocal();
 					}
-					this.accountBalance = parseFloat(balance) || 0;
+				} else {
+					// Sem token, usar dados do localStorage
+					this.loadAccountInfoFromLocal();
 				}
 				
 				// Buscar estatísticas de hoje
