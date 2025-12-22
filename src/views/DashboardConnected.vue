@@ -260,7 +260,11 @@
           <div class="mobile-account-balance">
             <span v-if="balanceVisible" class="inline-flex items-center gap-2">
               <span v-if="currentAccountType === 'demo'" class="demo-currency-symbol-mobile-wrapper">
-                <span class="demo-currency-symbol-mobile">D</span>
+                <svg class="demo-currency-symbol-mobile-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="16" height="16" fill="#0B0B0B"/>
+                  <path d="M3 2h6c2.5 0 4.5 2 4.5 4.5S11.5 11 9 11H5v3H3V2z" fill="#E6E6E6" opacity="0.9"/>
+                  <path d="M5 4h4c1.5 0 2.5 1 2.5 2.5S10.5 9 9 9H5V4z" fill="#0B0B0B" opacity="0.3"/>
+                </svg>
               </span>
               <span v-else>$</span>
               {{ balanceVisible ? mobileBalanceValue : '' }}
@@ -4694,43 +4698,24 @@ export default {
   }
 }
 
-/* Símbolo D com três linhas para Demo no Mobile - baseado no TopNavbar */
+/* Símbolo D estilizado para Demo no Mobile */
 .demo-currency-symbol-mobile-wrapper {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-right: 4px;
+  width: 16px;
+  height: 16px;
 }
 
-.demo-currency-symbol-mobile {
-  position: relative;
-  display: inline-block;
-  font-weight: bold;
-  font-size: 56px;
-  line-height: 1;
-}
-
-.demo-currency-symbol-mobile::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 0.3em;
-  top: 35%;
-  height: 3px;
-  background-color: currentColor;
-  transform: translateY(-50%);
-  border-radius: 1px;
-}
-
-.demo-currency-symbol-mobile::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 0.3em;
-  top: 65%;
-  height: 3px;
-  background-color: currentColor;
-  transform: translateY(-50%);
-  border-radius: 1px;
+.demo-currency-symbol-mobile-icon {
+  width: 16px;
+  height: 16px;
+  filter: blur(0.5px);
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 

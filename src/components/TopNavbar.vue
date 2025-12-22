@@ -47,7 +47,11 @@
             <span>Saldo:</span>
             <span v-if="!balanceHidden" class="inline-flex items-center gap-1.5">
               <span v-if="accountType === 'demo'" class="demo-currency-symbol-navbar-wrapper">
-                <span class="demo-currency-symbol-navbar">D</span>
+                <svg class="demo-currency-symbol-navbar-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="16" height="16" fill="#0B0B0B"/>
+                  <path d="M3 2h6c2.5 0 4.5 2 4.5 4.5S11.5 11 9 11H5v3H3V2z" fill="#E6E6E6" opacity="0.9"/>
+                  <path d="M5 4h4c1.5 0 2.5 1 2.5 2.5S10.5 9 9 9H5V4z" fill="#0B0B0B" opacity="0.3"/>
+                </svg>
               </span>
               <span v-else>$</span>
               {{ formattedBalance }}
@@ -317,7 +321,11 @@
                           class="w-5 h-5 rounded-full object-cover"
                         />
                         <span v-if="account.isDemo" class="demo-currency-symbol-account-wrapper">
-                          <span class="demo-currency-symbol-account">D</span>
+                          <svg class="demo-currency-symbol-account-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                            <rect width="16" height="16" fill="#0B0B0B"/>
+                            <path d="M3 2h6c2.5 0 4.5 2 4.5 4.5S11.5 11 9 11H5v3H3V2z" fill="#E6E6E6" opacity="0.9"/>
+                            <path d="M5 4h4c1.5 0 2.5 1 2.5 2.5S10.5 9 9 9H5V4z" fill="#0B0B0B" opacity="0.3"/>
+                          </svg>
                         </span>
                         <span v-else-if="!account.isDemo">$</span>
                         {{ formatBalance(account.balance || 0) }}
@@ -1350,82 +1358,42 @@ export default {
   white-space: nowrap;
 }
 
-/* Símbolo D com linhas horizontais para Demo (estilo Deriv) */
+/* Símbolo D estilizado para Demo */
 .demo-currency-symbol-navbar-wrapper {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-right: 2px;
+  width: 16px;
+  height: 16px;
 }
 
-.demo-currency-symbol-navbar {
-  position: relative;
-  display: inline-block;
-  font-weight: bold;
-  font-size: 1rem;
-  line-height: 1;
-  color: currentColor;
-}
-
-.demo-currency-symbol-navbar::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 0.35em;
-  top: 35%;
-  height: 2px;
-  background-color: currentColor;
-  transform: translateY(-50%);
-  border-radius: 1px;
-}
-
-.demo-currency-symbol-navbar::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 0.35em;
-  top: 65%;
-  height: 2px;
-  background-color: currentColor;
-  transform: translateY(-50%);
-  border-radius: 1px;
+.demo-currency-symbol-navbar-icon {
+  width: 16px;
+  height: 16px;
+  filter: blur(0.5px);
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 
 .demo-currency-symbol-account-wrapper {
   position: relative;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   margin-right: 2px;
+  width: 16px;
+  height: 16px;
 }
 
-.demo-currency-symbol-account {
-  position: relative;
-  display: inline-block;
-  font-weight: bold;
-  font-size: 1rem;
-  line-height: 1;
-  color: currentColor;
-}
-
-.demo-currency-symbol-account::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 0.35em;
-  top: 35%;
-  height: 2px;
-  background-color: currentColor;
-  transform: translateY(-50%);
-  border-radius: 1px;
-}
-
-.demo-currency-symbol-account::after {
-  content: '';
-  position: absolute;
-  left: 0;
-  width: 0.35em;
-  top: 65%;
-  height: 2px;
-  background-color: currentColor;
-  transform: translateY(-50%);
-  border-radius: 1px;
+.demo-currency-symbol-account-icon {
+  width: 16px;
+  height: 16px;
+  filter: blur(0.5px);
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
 }
 </style>
