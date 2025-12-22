@@ -756,10 +756,27 @@
             </section>
         </main>
     </div>
+    
+    <!-- Modais de Stop Loss e Target Profit -->
+    <StopLossModal
+        :visible="showStopLossModal"
+        :result="sessionResult"
+        :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
+        @confirm="handleStopLossConfirm"
+    />
+    
+    <TargetProfitModal
+        :visible="showTargetProfitModal"
+        :result="sessionResult"
+        :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
+        @confirm="handleTargetProfitConfirm"
+    />
 </template>
 
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
+import StopLossModal from '../StopLossModal.vue';
+import TargetProfitModal from '../TargetProfitModal.vue';
 
 // TradingView Charting Library - verifique se está disponível globalmente
 const TradingView = window.TradingView || null;
@@ -767,6 +784,10 @@ const Datafeeds = window.Datafeeds || null;
 
 export default {
     name: 'ZenixTradingDashboard',
+    components: {
+        StopLossModal,
+        TargetProfitModal,
+    },
     props: {
         ticks: {
             type: Array,
@@ -885,6 +906,12 @@ export default {
             
             // Estado de desativação
             isDeactivating: false,
+            
+            // Modais de Stop Loss e Target Profit
+            showStopLossModal: false,
+            showTargetProfitModal: false,
+            sessionResult: 0,
+            previousSessionStatus: null,
             
             // Controle de tamanho do gráfico
             chartPointsVisible: 300, // ✅ AJUSTE: Aumentado para 300 pontos para mostrar mais velas
@@ -1963,6 +1990,27 @@ export default {
                 console.log('[InvestmentActive] 📦 Config recebida:', result);
                 
                 if (result.success && result.data) {
+                    const currentSessionStatus = result.data.sessionStatus || 'active';
+                    
+                    // ✅ Detectar mudança de session_status para mostrar modais
+                    if (this.previousSessionStatus !== currentSessionStatus) {
+                        // Se mudou de ativo para stopped_loss ou stopped_profit, mostrar modal
+                        if (this.previousSessionStatus === 'active' || this.previousSessionStatus === null) {
+                            if (currentSessionStatus === 'stopped_loss') {
+                                // Buscar resultado da sessão
+                                this.loadSessionResult().then(() => {
+                                    this.showStopLossModal = true;
+                                });
+                            } else if (currentSessionStatus === 'stopped_profit') {
+                                // Buscar resultado da sessão
+                                this.loadSessionResult().then(() => {
+                                    this.showTargetProfitModal = true;
+                                });
+                            }
+                        }
+                        this.previousSessionStatus = currentSessionStatus;
+                    }
+                    
                     this.sessionConfig = {
                         isActive: result.data.isActive || false,
                         stakeAmount: parseFloat(result.data.stakeAmount) || 0,
@@ -1974,7 +2022,7 @@ export default {
                         lossLimit: result.data.lossLimit ? parseFloat(result.data.lossLimit) : null,
                         currency: result.data.currency || 'USD',
                         sessionBalance: parseFloat(result.data.sessionBalance) || 0,
-                        sessionStatus: result.data.sessionStatus || 'active'
+                        sessionStatus: currentSessionStatus
                     };
                     
                     console.log('[InvestmentActive] ✅ Config atualizada:', this.sessionConfig);
@@ -2009,6 +2057,50 @@ export default {
             } finally {
                 this.isLoadingConfig = false;
             }
+        },
+        
+        /**
+         * Carrega o resultado da sessão para exibir nos modais
+         */
+        async loadSessionResult() {
+            try {
+                const userId = this.getUserId();
+                if (!userId) return;
+                
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/session-stats/${userId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    }
+                });
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    this.sessionResult = result.data.profitLoss || 0;
+                }
+            } catch (error) {
+                console.error('[InvestmentActive] Erro ao carregar resultado da sessão:', error);
+                // Usar resultado atual como fallback
+                this.sessionResult = this.dailyStats.sessionProfitLoss || 0;
+            }
+        },
+        
+        /**
+         * Handler para confirmação do modal de Stop Loss
+         */
+        handleStopLossConfirm() {
+            this.showStopLossModal = false;
+            // Recarregar configuração para atualizar status
+            this.fetchSessionConfig();
+        },
+        
+        /**
+         * Handler para confirmação do modal de Target Profit
+         */
+        handleTargetProfitConfirm() {
+            this.showTargetProfitModal = false;
+            // Recarregar configuração para atualizar status
+            this.fetchSessionConfig();
         },
         
         // 📊 Buscar histórico de operações reais

@@ -990,11 +990,28 @@
 		</main>
 		</div>
 	</div>
+	
+	<!-- Modais de Stop Loss e Target Profit -->
+	<StopLossModal
+		:visible="showStopLossModal"
+		:result="sessionResult"
+		:currency="accountType === 'Demo' ? 'DEMO' : 'USD'"
+		@confirm="handleStopLossConfirm"
+	/>
+	
+	<TargetProfitModal
+		:visible="showTargetProfitModal"
+		:result="sessionResult"
+		:currency="accountType === 'Demo' ? 'DEMO' : 'USD'"
+		@confirm="handleTargetProfitConfirm"
+	/>
 </template>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import StopLossModal from '../../components/StopLossModal.vue';
+import TargetProfitModal from '../../components/TargetProfitModal.vue';
 import { createChart, ColorType } from 'lightweight-charts';
 
 export default {
@@ -1002,6 +1019,8 @@ export default {
 	components: {
 		AppSidebar,
 		TopNavbar,
+		StopLossModal,
+		TargetProfitModal,
 	},
 	data() {
 		const currentDate = '2025-11-18';
@@ -1112,6 +1131,12 @@ export default {
 			marketChartActive: null,
 			marketLineSeriesActive: null,
 			marketChartInitializedActive: false,
+			
+			// Modais de Stop Loss e Target Profit
+			showStopLossModal: false,
+			showTargetProfitModal: false,
+			sessionResult: 0,
+			previousSessionStatus: null,
 		};
 	},
 	computed: {
@@ -1160,11 +1185,58 @@ export default {
 			this.todayTrades = totalTrades;
 			this.todayResult = profitLoss;
 			
+			// Atualizar resultado da sessão para os modais
+			this.sessionResult = profitLoss;
+			
 			// Porcentagem baseada no saldo total atual
 			const baseBalance = this.accountBalance > 0
 				? this.accountBalance
 				: (data.sessionBalance ?? 0);
 			this.todayResultPercent = baseBalance > 0 ? (profitLoss / baseBalance) * 100 : 0;
+		},
+		
+		/**
+		 * Carrega o resultado da sessão para exibir nos modais
+		 */
+		async loadSessionResult() {
+			try {
+				const userId = this.getUserId();
+				if (!userId) return;
+				
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const response = await fetch(`${apiBase}/ai/session-stats/${userId}`, {
+					headers: {
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					}
+				});
+				const result = await response.json();
+				
+				if (result.success && result.data) {
+					this.sessionResult = result.data.profitLoss || 0;
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao carregar resultado da sessão:', error);
+				// Usar resultado atual como fallback
+				this.sessionResult = this.todayResult;
+			}
+		},
+		
+		/**
+		 * Handler para confirmação do modal de Stop Loss
+		 */
+		handleStopLossConfirm() {
+			this.showStopLossModal = false;
+			// Recarregar configuração para atualizar status
+			this.loadAIConfigOnMount();
+		},
+		
+		/**
+		 * Handler para confirmação do modal de Target Profit
+		 */
+		handleTargetProfitConfirm() {
+			this.showTargetProfitModal = false;
+			// Recarregar configuração para atualizar status
+			this.loadAIConfigOnMount();
 		},
 		
 		async loadAccountInfo() {
@@ -2551,6 +2623,26 @@ export default {
 				
 				// ✅ Salvar no cache para próximo carregamento instantâneo
 				this.saveAIConfigToCache(config);
+				
+				// ✅ Detectar mudança de session_status para mostrar modais
+				const currentSessionStatus = config.sessionStatus || config.session_status || null;
+				if (this.previousSessionStatus !== currentSessionStatus) {
+					// Se mudou de ativo para stopped_loss ou stopped_profit, mostrar modal
+					if (this.previousSessionStatus === 'active' || this.previousSessionStatus === null) {
+						if (currentSessionStatus === 'stopped_loss') {
+							// Buscar resultado da sessão
+							this.loadSessionResult().then(() => {
+								this.showStopLossModal = true;
+							});
+						} else if (currentSessionStatus === 'stopped_profit') {
+							// Buscar resultado da sessão
+							this.loadSessionResult().then(() => {
+								this.showTargetProfitModal = true;
+							});
+						}
+					}
+					this.previousSessionStatus = currentSessionStatus;
+				}
 				
 				this.tradingConfig.isActive = config.isActive || false;
 				this.aiMonitoring.isActive = !!config.isActive;
