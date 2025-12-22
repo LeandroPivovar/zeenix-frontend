@@ -1217,9 +1217,8 @@ export default {
     },
     toggleSettingsModal() {
       this.showSettingsModal = !this.showSettingsModal;
-      if (this.showSettingsModal && this.availableAccounts.length === 0) {
-        this.loadAvailableAccounts();
-      }
+      // Não carregar contas automaticamente - o SettingsSidebar vai carregar quando necessário
+      // Isso evita chamadas duplicadas
     },
     closeSettingsModal() {
       this.showSettingsModal = false;
@@ -1233,6 +1232,7 @@ export default {
     },
     toggleAccountsList() {
       this.showAccountsList = !this.showAccountsList;
+      // Carregar apenas se não tiver contas - o cache já será usado automaticamente
       if (this.showAccountsList && this.availableAccounts.length === 0) {
         this.loadAvailableAccounts();
       }
@@ -1251,11 +1251,29 @@ export default {
       }
     },
     async loadAccountsInBackground() {
-      // Carregar contas em background sem bloquear a interface
-      // Se houver tokens armazenados, carregar as contas
+      // Carregar contas em background apenas se não houver cache válido
+      // Isso evita requisições desnecessárias
       const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
       if (tokensByLoginIdStr) {
         try {
+          // Verificar se já há cache válido antes de fazer requisição
+          const cacheKey = 'deriv_available_accounts_cache';
+          const cacheTimestampKey = 'deriv_accounts_cache_timestamp';
+          const CACHE_DURATION = 5 * 60 * 1000; // 5 minutos
+          
+          const cachedStr = localStorage.getItem(cacheKey);
+          const timestampStr = localStorage.getItem(cacheTimestampKey);
+          
+          if (cachedStr && timestampStr) {
+            const timestamp = parseInt(timestampStr);
+            const now = Date.now();
+            // Se cache ainda é válido, não precisa recarregar
+            if (now - timestamp <= CACHE_DURATION) {
+              console.log('[DashboardConnected] Cache válido encontrado, não recarregando em background');
+              return;
+            }
+          }
+          
           // Executar em background sem await para não bloquear a interface
           loadAvailableAccounts().then(() => {
             console.log('[DashboardConnected] Contas carregadas em background');

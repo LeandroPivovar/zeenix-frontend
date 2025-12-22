@@ -328,11 +328,8 @@ export default {
   },
   watch: {
     isOpen(newVal) {
-      if (newVal) {
-        // Sempre tentar carregar contas quando abrir, mesmo se já tiver algumas
-        // Isso garante que as contas estejam atualizadas
-        this.loadAvailableAccounts(false);
-      }
+      // Não carregar automaticamente ao abrir - só carregar quando o usuário clicar em "Minhas Contas"
+      // Isso evita chamadas desnecessárias
     },
     accountType(newType) {
       console.log('[SettingsSidebar] accountType mudou:', newType);
@@ -355,9 +352,8 @@ export default {
   mounted() {
     this.loadUserProfilePicture();
     window.addEventListener('userProfileUpdated', this.handleProfileUpdate);
-    // Carregar contas disponíveis quando o componente montar
-    // Isso garante que as contas estejam disponíveis para calcular o saldo
-    this.loadAvailableAccounts(false);
+    // Não carregar contas automaticamente no mounted - só quando necessário
+    // Isso evita chamadas desnecessárias ao montar o componente
   },
   beforeUnmount() {
     window.removeEventListener('userProfileUpdated', this.handleProfileUpdate);
@@ -390,18 +386,14 @@ export default {
         availableAccounts: this.availableAccounts
       });
       
-      // Sempre tentar carregar quando abrir, mesmo se já tiver contas
-      // Isso garante que as contas estejam atualizadas
-      if (this.showAccountsList) {
-        if (this.availableAccounts.length === 0) {
-          console.log('[SettingsSidebar] Nenhuma conta disponível, carregando...');
-          // Se não tem contas, tentar forçar recarregamento
-          this.loadAvailableAccounts(true);
-        } else {
-          console.log('[SettingsSidebar] Contas já disponíveis:', this.availableAccounts.length);
-          // Mesmo assim, tentar recarregar para garantir que está atualizado
-          this.loadAvailableAccounts(false);
-        }
+      // Carregar contas apenas quando abrir a lista E não tiver contas carregadas
+      // O accountsLoader já usa cache, então não precisa forçar recarregamento
+      if (this.showAccountsList && this.availableAccounts.length === 0) {
+        console.log('[SettingsSidebar] Carregando contas...');
+        this.loadAvailableAccounts(false);
+      } else if (this.showAccountsList && this.availableAccounts.length > 0) {
+        console.log('[SettingsSidebar] Contas já disponíveis:', this.availableAccounts.length);
+        // Não recarregar se já tem contas - o cache já está sendo usado
       }
     },
     async loadAvailableAccounts(forceReload = false) {
