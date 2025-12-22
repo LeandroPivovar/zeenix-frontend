@@ -71,7 +71,7 @@ export async function loadAvailableAccounts(forceReload = false) {
 
     // Criar uma nova promise para o carregamento
     loadingForceReload = forceReload;
-    loadingPromise = loadAccountsFromAPI(loginIds, tokensByLoginId, forceReload);
+    loadingPromise = loadAccountsFromAPI(loginIds, tokensByLoginId);
     
     try {
       const result = await loadingPromise;
@@ -94,7 +94,7 @@ export async function loadAvailableAccounts(forceReload = false) {
  * Função interna para carregar contas da API
  * @private
  */
-async function loadAccountsFromAPI(loginIds, tokensByLoginId, forceReload) {
+async function loadAccountsFromAPI(loginIds, tokensByLoginId) {
 
   // Buscar informações de cada conta
   const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';

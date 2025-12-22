@@ -327,7 +327,7 @@ export default {
     }
   },
   watch: {
-    isOpen(newVal) {
+    isOpen() {
       // Não carregar automaticamente ao abrir - só carregar quando o usuário clicar em "Minhas Contas"
       // Isso evita chamadas desnecessárias
     },
