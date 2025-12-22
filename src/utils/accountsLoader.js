@@ -101,6 +101,9 @@ async function loadAccountsFromAPI(loginIds, tokensByLoginId) {
   const token = localStorage.getItem('token');
   const appId = localStorage.getItem('deriv_app_id') || '1089';
 
+  // ✅ Armazenar respostas completas para reutilizar depois (evitar requisições duplicadas)
+  const responseDataCache = new Map();
+  
   // Carregar todas as contas em paralelo para melhor performance
   const accountPromises = loginIds.map(async (loginid) => {
       try {
@@ -121,6 +124,9 @@ async function loadAccountsFromAPI(loginIds, tokensByLoginId) {
 
         if (response.ok) {
           const data = await response.json();
+          
+          // ✅ Armazenar resposta completa no cache para reutilizar depois
+          responseDataCache.set(loginid, data);
           
           console.log(`[AccountsLoader] Buscando conta ${loginid}, resposta:`, {
             hasAccountsByCurrency: !!data.accountsByCurrency,
@@ -269,27 +275,42 @@ async function loadAccountsFromAPI(loginIds, tokensByLoginId) {
     }
   }
   
-  // Agora, buscar todas as contas do raw.accounts de qualquer resposta que tenha dados completos
+  // ✅ Agora, buscar todas as contas do raw.accounts usando os dados já obtidos
   // Isso garante que encontramos todas as contas disponíveis, mesmo que não estejam nos tokens
   // Usar apenas a primeira resposta que tenha raw.accounts completo (mais eficiente)
+  // ✅ OTIMIZAÇÃO: Usar dados do cache em vez de fazer novas requisições
   for (let i = 0; i < loginIds.length; i++) {
     try {
-      const accountToken = tokensByLoginId[loginIds[i]];
-      const response = await fetch(`${apiBase}/broker/deriv/status`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          token: accountToken,
-          appId: parseInt(appId)
-        })
-      });
+      const loginid = loginIds[i];
+      const accountToken = tokensByLoginId[loginid];
       
-      if (response.ok) {
-        const data = await response.json();
+      // ✅ Usar dados do cache se disponível, senão fazer requisição (fallback)
+      let data = responseDataCache.get(loginid);
+      
+      if (!data) {
+        // Fallback: se não tiver no cache, fazer requisição (não deveria acontecer)
+        console.warn(`[AccountsLoader] ⚠️ Dados não encontrados no cache para ${loginid}, fazendo requisição...`);
+        const response = await fetch(`${apiBase}/broker/deriv/status`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            token: accountToken,
+            appId: parseInt(appId)
+          })
+        });
         
+        if (response.ok) {
+          data = await response.json();
+          responseDataCache.set(loginid, data);
+        } else {
+          continue;
+        }
+      }
+      
+      if (data) {
         // Se a resposta tem raw.accounts, adicionar TODAS as contas encontradas
         if (data.raw && data.raw.accounts) {
           const rawAccountsKeys = Object.keys(data.raw.accounts);
