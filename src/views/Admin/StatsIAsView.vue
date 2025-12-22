@@ -2734,17 +2734,17 @@ export default {
 						console.log('[StatsIAsView] 🔍 IA inativa, mas iniciando polling para detectar mudanças de status...');
 						this.startBackgroundPolling();
 					}
-				}
-					
-					// Carregar estatísticas e histórico em paralelo
-					Promise.all([
-						this.loadSessionStats(),
-						this.loadTradeHistory()
-					]).catch(err => console.warn('[StatsIAsView] Erro ao carregar stats:', err));
-					
-					console.log('[StatsIAsView] ✅ Sistema pronto! IA operando em background.');
-				} else {
 					console.log('[StatsIAsView] IA está inativa. Aguardando ativação do usuário.');
+				}
+				
+				// Carregar estatísticas e histórico em paralelo
+				Promise.all([
+					this.loadSessionStats(),
+					this.loadTradeHistory()
+				]).catch(err => console.warn('[StatsIAsView] Erro ao carregar stats:', err));
+				
+				if (config.isActive) {
+					console.log('[StatsIAsView] ✅ Sistema pronto! IA operando em background.');
 				}
 			}
 		} catch (error) {
