@@ -2478,6 +2478,24 @@ export default {
 				const config = configResult.data;
 				this.tradingConfig.isActive = config.isActive;
 				
+				// ✅ Verificar mudança de session_status para mostrar modais
+				const currentSessionStatus = config.sessionStatus || config.session_status || null;
+				if (this.previousSessionStatus !== currentSessionStatus) {
+					// Se mudou de ativo para stopped_loss ou stopped_profit, mostrar modal
+					if (this.previousSessionStatus === 'active' || this.previousSessionStatus === null) {
+						if (currentSessionStatus === 'stopped_loss') {
+							// Buscar resultado da sessão
+							await this.loadSessionResult();
+							this.showStopLossModal = true;
+						} else if (currentSessionStatus === 'stopped_profit') {
+							// Buscar resultado da sessão
+							await this.loadSessionResult();
+							this.showTargetProfitModal = true;
+						}
+					}
+					this.previousSessionStatus = currentSessionStatus;
+				}
+				
 				// Calcular countdown baseado no nextTradeAt
 				if (config.nextTradeAt) {
 					const now = new Date().getTime();
@@ -2626,21 +2644,25 @@ export default {
 				
 				// ✅ Detectar mudança de session_status para mostrar modais
 				const currentSessionStatus = config.sessionStatus || config.session_status || null;
-				if (this.previousSessionStatus !== currentSessionStatus) {
-					// Se mudou de ativo para stopped_loss ou stopped_profit, mostrar modal
-					if (this.previousSessionStatus === 'active' || this.previousSessionStatus === null) {
+				
+				// Verificar se mudou para stopped_loss ou stopped_profit
+				if (currentSessionStatus === 'stopped_loss' || currentSessionStatus === 'stopped_profit') {
+					// Se é a primeira vez carregando ou mudou de active/null para stopped, mostrar modal
+					if (this.previousSessionStatus === null || this.previousSessionStatus === 'active') {
 						if (currentSessionStatus === 'stopped_loss') {
 							// Buscar resultado da sessão
-							this.loadSessionResult().then(() => {
-								this.showStopLossModal = true;
-							});
+							await this.loadSessionResult();
+							this.showStopLossModal = true;
 						} else if (currentSessionStatus === 'stopped_profit') {
 							// Buscar resultado da sessão
-							this.loadSessionResult().then(() => {
-								this.showTargetProfitModal = true;
-							});
+							await this.loadSessionResult();
+							this.showTargetProfitModal = true;
 						}
 					}
+				}
+				
+				// Sempre atualizar previousSessionStatus
+				if (this.previousSessionStatus !== currentSessionStatus) {
 					this.previousSessionStatus = currentSessionStatus;
 				}
 				
