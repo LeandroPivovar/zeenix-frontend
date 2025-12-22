@@ -2868,16 +2868,38 @@ export default {
         },
         filterTicksByZoom(ticks) {
             if (!Array.isArray(ticks) || ticks.length === 0) return [];
+            
+            // Validar e filtrar ticks inválidos primeiro
+            const validTicks = ticks.filter(tick => {
+                if (!tick || typeof tick !== 'object') return false;
+                
+                // Verificar se tem pelo menos uma propriedade de valor
+                const hasValue = 'value' in tick || 'price' in tick || 'quote' in tick || 'close' in tick;
+                if (!hasValue) return false;
+                
+                // Verificar se tem pelo menos uma propriedade de tempo
+                const hasTime = 'epoch' in tick || 'time' in tick;
+                if (!hasTime) return false;
+                
+                return true;
+            });
+            
+            if (validTicks.length === 0) {
+                console.warn('[InvestmentActive] ⚠️ Nenhum tick válido encontrado após validação');
+                return [];
+            }
+            
             const now = Math.floor(Date.now() / 1000);
             const cutoff = now - (this.chartZoomMinutes * 60);
-            const filtered = ticks.filter(tick => {
+            const filtered = validTicks.filter(tick => {
                 let epoch = Number(tick.epoch || tick.time || 0);
                 if (epoch > 10000000000) epoch = Math.floor(epoch / 1000);
-                return epoch >= cutoff;
+                return epoch >= cutoff && epoch > 0;
             });
-            // Fallback: se vazio, retorna os últimos 300 ticks
+            
+            // Fallback: se vazio, retorna os últimos 300 ticks válidos
             if (filtered.length === 0) {
-                return ticks.slice(-300);
+                return validTicks.slice(-300);
             }
             return filtered;
         },
@@ -3262,8 +3284,25 @@ export default {
             }
 
             try {
+                // Log de debug: verificar estrutura dos ticks
+                if (this.ticks && this.ticks.length > 0) {
+                    const sampleTick = this.ticks[0];
+                    console.log('[InvestmentActive] 🔍 Estrutura do primeiro tick:', {
+                        keys: Object.keys(sampleTick),
+                        tick: sampleTick,
+                        hasValue: 'value' in sampleTick,
+                        hasPrice: 'price' in sampleTick,
+                        hasQuote: 'quote' in sampleTick,
+                        hasEpoch: 'epoch' in sampleTick,
+                        hasTime: 'time' in sampleTick
+                    });
+                }
+                
                 const filteredTicks = this.filterTicksByZoom(this.ticks);
-                if (!filteredTicks.length) return;
+                if (!filteredTicks.length) {
+                    console.warn('[InvestmentActive] ⚠️ Nenhum tick após filtro de zoom');
+                    return;
+                }
 
                 let data = [];
                 if (this.chartType === 'candles') {
@@ -3273,36 +3312,123 @@ export default {
                     // Gráfico de linhas: garantir valores válidos (sem null/undefined)
                     const sortedTicks = [...filteredTicks]
                         .map(tick => {
-                            const time = Math.floor(tick.epoch || tick.time || Date.now() / 1000);
-                            const value = Number(tick.value ?? tick.price ?? tick.quote ?? tick.close ?? 0);
+                            // Extrair time de forma robusta
+                            let time = tick.epoch || tick.time;
+                            if (!time) {
+                                time = Date.now() / 1000;
+                            } else if (time > 10000000000) {
+                                // Se for timestamp em milissegundos, converter para segundos
+                                time = Math.floor(time / 1000);
+                            } else {
+                                time = Math.floor(time);
+                            }
+                            
+                            // Extrair value de forma robusta - tentar todas as propriedades possíveis
+                            let rawValue = tick.value ?? tick.price ?? tick.quote ?? tick.close ?? tick.spot ?? null;
+                            
+                            // Se ainda for null/undefined, pular este tick
+                            if (rawValue == null || rawValue === undefined) {
+                                return null;
+                            }
+                            
+                            // Converter para número
+                            const value = Number(rawValue);
+                            
+                            // Validar antes de retornar
+                            if (isNaN(value) || !isFinite(value) || value <= 0 || time <= 0) {
+                                return null;
+                            }
+                            
                             return { time, value };
                         })
                         .filter(point => {
                             // ✅ CORREÇÃO: Filtrar valores null, undefined, NaN, 0 e negativos
+                            if (!point) return false;
                             return point.value != null && 
                                    !isNaN(point.value) && 
                                    isFinite(point.value) && 
                                    point.value > 0 && 
+                                   point.time != null &&
+                                   !isNaN(point.time) &&
+                                   isFinite(point.time) &&
                                    point.time > 0;
                         })
                         .sort((a, b) => a.time - b.time);
                     
+                    // Validação final: garantir que não há valores null/undefined
+                    const validTicks = sortedTicks.filter(point => {
+                        return point && 
+                               typeof point.time === 'number' && 
+                               typeof point.value === 'number' &&
+                               point.time > 0 && 
+                               point.value > 0 &&
+                               isFinite(point.time) &&
+                               isFinite(point.value);
+                    });
+                    
                     // Pegar os últimos N pontos baseado no zoom
-                    const ticksNeeded = Math.min(sortedTicks.length, this.chartPointsVisible * 2);
-                    const limitedTicks = sortedTicks.slice(-ticksNeeded);
+                    const ticksNeeded = Math.min(validTicks.length, this.chartPointsVisible * 2);
+                    const limitedTicks = validTicks.slice(-ticksNeeded);
                     data = limitedTicks;
                     
                     console.log('[InvestmentActive] Gráfico de linhas:', {
-                        totalTicks: sortedTicks.length,
+                        totalTicks: filteredTicks.length,
+                        validTicks: validTicks.length,
                         ticksUsed: limitedTicks.length,
-                        timeSpanMinutes: limitedTicks.length > 0 ? ((limitedTicks[limitedTicks.length - 1].time - limitedTicks[0].time) / 60).toFixed(2) : 0
+                        timeSpanMinutes: limitedTicks.length > 0 ? ((limitedTicks[limitedTicks.length - 1].time - limitedTicks[0].time) / 60).toFixed(2) : 0,
+                        firstTick: limitedTicks[0] ? { time: limitedTicks[0].time, value: limitedTicks[0].value } : null,
+                        lastTick: limitedTicks.length > 0 ? { time: limitedTicks[limitedTicks.length - 1].time, value: limitedTicks[limitedTicks.length - 1].value } : null
                     });
                 }
 
-                if (!data.length) return;
+                if (!data.length) {
+                    console.warn('[InvestmentActive] ⚠️ Nenhum dado válido para atualizar o gráfico');
+                    return;
+                }
 
-                console.log('[InvestmentActive] Atualizando gráfico com', data.length, this.chartType === 'candles' ? 'velas' : 'pontos');
-                this.currentSeries.setData(data);
+                // Validação final: garantir que todos os pontos são válidos antes de passar para o gráfico
+                const finalData = data.filter(point => {
+                    if (this.chartType === 'candles') {
+                        // Para velas, validar open, high, low, close
+                        return point && 
+                               point.time > 0 &&
+                               typeof point.open === 'number' && isFinite(point.open) && point.open > 0 &&
+                               typeof point.high === 'number' && isFinite(point.high) && point.high > 0 &&
+                               typeof point.low === 'number' && isFinite(point.low) && point.low > 0 &&
+                               typeof point.close === 'number' && isFinite(point.close) && point.close > 0;
+                    } else {
+                        // Para linhas, validar time e value
+                        return point && 
+                               typeof point.time === 'number' && 
+                               typeof point.value === 'number' &&
+                               point.time > 0 && 
+                               point.value > 0 &&
+                               isFinite(point.time) &&
+                               isFinite(point.value) &&
+                               !isNaN(point.time) &&
+                               !isNaN(point.value);
+                    }
+                });
+
+                if (!finalData.length) {
+                    console.error('[InvestmentActive] ❌ Nenhum dado válido após validação final');
+                    return;
+                }
+
+                console.log('[InvestmentActive] Atualizando gráfico com', finalData.length, this.chartType === 'candles' ? 'velas' : 'pontos');
+                
+                try {
+                    this.currentSeries.setData(finalData);
+                } catch (error) {
+                    console.error('[InvestmentActive] ❌ Erro ao atualizar série do gráfico:', error);
+                    console.error('[InvestmentActive] Dados que causaram erro:', {
+                        dataLength: finalData.length,
+                        firstPoint: finalData[0],
+                        lastPoint: finalData[finalData.length - 1],
+                        samplePoints: finalData.slice(0, 3)
+                    });
+                    throw error;
+                }
                 
                 // Ajustar o gráfico para mostrar todos os dados
                 this.chart.timeScale().fitContent();

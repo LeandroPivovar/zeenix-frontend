@@ -52,13 +52,8 @@ export default {
     },
     handleConfirm() {
       this.$emit('confirm');
-      // Navegar para a tela de configurações da IA
-      this.$router.push('/InvestmentIA').catch(err => {
-        // Ignorar erro de navegação duplicada
-        if (err.name !== 'NavigationDuplicated') {
-          console.error('[StopLossModal] Erro ao navegar:', err);
-        }
-      });
+      // Navegar para a tela de configurações da IA e recarregar a página
+      window.location.href = '/InvestmentIA';
     }
   }
 }
