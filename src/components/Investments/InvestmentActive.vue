@@ -2794,8 +2794,16 @@ export default {
                             });
                             
                             if (validMarkers.length > 0) {
-                                this.currentSeries.setMarkers(validMarkers);
-                                console.log('[InvestmentActive] ✅ Marcadores de entradas plotados com sucesso:', validMarkers.length);
+                                // Aguardar um pouco para garantir que o gráfico renderizou os dados
+                                setTimeout(() => {
+                                    try {
+                                        this.currentSeries.setMarkers(validMarkers);
+                                        console.log('[InvestmentActive] ✅ Marcadores de entradas plotados com sucesso:', validMarkers.length);
+                                    } catch (markerError) {
+                                        console.error('[InvestmentActive] ❌ Erro ao plotar marcadores:', markerError);
+                                        // Não quebrar o fluxo, apenas logar o erro
+                                    }
+                                }, 100);
                             } else {
                                 console.warn('[InvestmentActive] ⚠️ Nenhum marcador válido após validação');
                             }
@@ -3055,10 +3063,9 @@ export default {
             }
 
             if (type === 'line') {
-                this.currentSeries = this.chart.addAreaSeries({
-                    lineColor: '#22C55E',
-                    topColor: 'rgba(34, 197, 94, 0.2)',
-                    bottomColor: 'rgba(34, 197, 94, 0.02)',
+                // Usar addLineSeries em vez de addAreaSeries para evitar problemas com valores null
+                this.currentSeries = this.chart.addLineSeries({
+                    color: '#22C55E',
                     lineWidth: 2,
                     priceFormat: { type: 'price', precision: 4, minMove: 0.0001 },
                 });
@@ -3518,23 +3525,39 @@ export default {
                     return;
                 }
 
-                console.log('[InvestmentActive] Atualizando gráfico com', verifiedData.length, this.chartType === 'candles' ? 'velas' : 'pontos');
+                // Garantir que os dados estão ordenados por time e únicos
+                const sortedData = [...verifiedData].sort((a, b) => a.time - b.time);
+                
+                // Remover duplicatas baseadas em time (manter o último)
+                const uniqueDataMap = new Map();
+                for (const point of sortedData) {
+                    uniqueDataMap.set(point.time, point);
+                }
+                const uniqueData = Array.from(uniqueDataMap.values()).sort((a, b) => a.time - b.time);
+
+                if (!uniqueData.length) {
+                    console.error('[InvestmentActive] ❌ Nenhum dado válido após remoção de duplicatas');
+                    return;
+                }
+
+                console.log('[InvestmentActive] Atualizando gráfico com', uniqueData.length, this.chartType === 'candles' ? 'velas' : 'pontos');
                 console.log('[InvestmentActive] 📊 Amostra dos dados:', {
-                    first: verifiedData[0],
-                    last: verifiedData[verifiedData.length - 1],
-                    sample: verifiedData.slice(0, 3),
-                    allValid: verifiedData.every(p => {
+                    first: uniqueData[0],
+                    last: uniqueData[uniqueData.length - 1],
+                    sample: uniqueData.slice(0, 3),
+                    allValid: uniqueData.every(p => {
                         if (this.chartType === 'candles') {
                             return p.time > 0 && p.open > 0 && p.high > 0 && p.low > 0 && p.close > 0;
                         } else {
                             return p.time > 0 && p.value > 0 && !isNaN(p.value) && isFinite(p.value);
                         }
-                    })
+                    }),
+                    duplicatesRemoved: verifiedData.length - uniqueData.length
                 });
                 
                 try {
                     // Adicionar novos dados diretamente (sem limpar antes para evitar problemas)
-                    this.currentSeries.setData(verifiedData);
+                    this.currentSeries.setData(uniqueData);
                 } catch (error) {
                     console.error('[InvestmentActive] ❌ Erro ao atualizar série do gráfico:', error);
                     console.error('[InvestmentActive] Dados que causaram erro:', {
