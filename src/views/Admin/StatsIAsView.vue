@@ -1163,7 +1163,9 @@ export default {
 				maximumFractionDigits: 2
 			});
 			// ✅ Se for conta Demo, usar símbolo Đ (D com barra)
-			if (this.accountType === 'Demo') {
+			// Verificar tanto 'Demo' quanto 'demo' (case insensitive)
+			const isDemo = this.accountType === 'Demo' || this.accountType === 'demo' || this.accountType?.toLowerCase() === 'demo';
+			if (isDemo) {
 				return `Đ${formatter.format(value)}`;
 			}
 			return `$${formatter.format(value)}`;
@@ -2398,6 +2400,29 @@ export default {
 								type: log.type || 'info',
 							};
 						});
+					
+					// ✅ Verificar se há mensagem de meta de lucro atingida nos logs recentes
+					// Isso garante que o modal seja mostrado mesmo se o sessionStatus ainda não foi atualizado
+					const hasTargetProfitMessage = this.recentLogs.some(log => 
+						log.message && log.message.includes('META DE LUCRO ATINGIDA')
+					);
+					
+					if (hasTargetProfitMessage && !this.showTargetProfitModal) {
+						console.log('[StatsIAsView] 🎯 [Logs] Meta de lucro detectada nos logs! Mostrando modal...');
+						await this.loadSessionResult();
+						this.showTargetProfitModal = true;
+					}
+					
+					// ✅ Verificar se há mensagem de stop loss nos logs recentes
+					const hasStopLossMessage = this.recentLogs.some(log => 
+						log.message && log.message.includes('STOP LOSS ATINGIDO')
+					);
+					
+					if (hasStopLossMessage && !this.showStopLossModal) {
+						console.log('[StatsIAsView] 🛑 [Logs] Stop loss detectado nos logs! Mostrando modal...');
+						await this.loadSessionResult();
+						this.showStopLossModal = true;
+					}
 				}
 			} catch (error) {
 				console.error('[StatsIAsView] Erro ao carregar logs:', error);
@@ -2520,6 +2545,8 @@ export default {
 					}
 					this.previousSessionStatus = currentSessionStatus;
 				} else if (currentSessionStatus === 'stopped_profit') {
+					// ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
+					// Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
 					if (!this.showTargetProfitModal) {
 						console.log('[StatsIAsView] 🎯 [Background] Target profit detectado! Mostrando modal...');
 						console.log('[StatsIAsView] 📊 [Background] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
@@ -2533,6 +2560,12 @@ export default {
 					// Se mudou para outro status, atualizar previousSessionStatus
 					console.log('[StatsIAsView] 🔄 [Background] Status mudou para:', currentSessionStatus);
 					this.previousSessionStatus = currentSessionStatus;
+				}
+				
+				// ✅ Verificar também nos logs recentes para garantir detecção imediata
+				// Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
+				if (!this.showTargetProfitModal && !this.showStopLossModal) {
+					await this.loadRecentLogs(10); // Carregar apenas os últimos 10 logs para verificação rápida
 				}
 				
 				// ✅ PRIORIDADE 2: Se a IA foi desativada e não mostramos modal ainda, verificar novamente
@@ -2719,6 +2752,8 @@ export default {
 					}
 					this.previousSessionStatus = currentSessionStatus;
 				} else if (currentSessionStatus === 'stopped_profit') {
+					// ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
+					// Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
 					if (!this.showTargetProfitModal) {
 						console.log('[StatsIAsView] 🎯 [OnMount] Target profit detectado! Mostrando modal...');
 						console.log('[StatsIAsView] 📊 [OnMount] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
@@ -2732,6 +2767,12 @@ export default {
 					// Se mudou para outro status, atualizar previousSessionStatus
 					console.log('[StatsIAsView] 🔄 [OnMount] Status mudou para:', currentSessionStatus);
 					this.previousSessionStatus = currentSessionStatus;
+				}
+				
+				// ✅ Verificar também nos logs recentes para garantir detecção imediata
+				// Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
+				if (!this.showTargetProfitModal && !this.showStopLossModal) {
+					await this.loadRecentLogs(10); // Carregar apenas os últimos 10 logs para verificação rápida
 				}
 				
 				this.tradingConfig.isActive = config.isActive || false;
@@ -3311,8 +3352,13 @@ async mounted() {
 	Promise.all([
 		this.loadAIConfigOnMount(),
 		this.loadAccountInfo(),
-	]).then(() => {
+	]).then(async () => {
 		console.log('[StatsIAsView] ✅ Dados da API carregados em background');
+		// ✅ Verificação final: garantir que modais sejam mostrados se necessário
+		// Isso é uma camada extra de segurança caso a verificação anterior não tenha funcionado
+		await this.fetchBackgroundStatus();
+		// Verificar também nos logs recentes
+		await this.loadRecentLogs(10);
 	}).catch(err => {
 		console.warn('[StatsIAsView] Erro ao carregar dados da API:', err);
 	});
