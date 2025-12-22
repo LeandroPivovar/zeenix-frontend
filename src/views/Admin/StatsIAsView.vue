@@ -2404,24 +2404,19 @@ export default {
 
 	// Polling para atualizar status da IA em background
 	startBackgroundPolling() {
-		// ✅ Só fazer polling se a IA estiver ativa
-		if (!this.tradingConfig.isActive && !this.aiMonitoring.isActive) {
-			console.log('[StatsIAsView] ⏸️ IA não está ativa, não iniciando polling de background');
-			return;
-		}
-		
-		// Buscar status imediatamente
+		// ✅ Buscar status imediatamente (mesmo se inativa, para detectar mudanças de status)
 		this.fetchBackgroundStatus();
 		
 		// Continuar buscando a cada 5 segundos
+		// ✅ IMPORTANTE: Continuar polling mesmo quando inativa para detectar mudanças de session_status
+		// (ex: quando stop loss é atingido e muda para stopped_loss)
+		if (this.tradingInterval) {
+			clearInterval(this.tradingInterval);
+		}
+		
 		this.tradingInterval = setInterval(() => {
-			// ✅ Verificar novamente se ainda está ativa antes de buscar
-			if (this.tradingConfig.isActive || this.aiMonitoring.isActive) {
-				this.fetchBackgroundStatus();
-			} else {
-				// Se não estiver mais ativa, parar polling
-				this.stopBackgroundPolling();
-			}
+			// ✅ Sempre buscar status para detectar mudanças (incluindo stopped_loss/stopped_profit)
+			this.fetchBackgroundStatus();
 		}, 5000);
 	},
 
@@ -2494,24 +2489,49 @@ export default {
 			
 			if (configResult.success && configResult.data) {
 				const config = configResult.data;
+				const wasActive = this.tradingConfig.isActive;
 				this.tradingConfig.isActive = config.isActive;
 				
 				// ✅ Verificar mudança de session_status para mostrar modais
 				const currentSessionStatus = config.sessionStatus || config.session_status || null;
+				
+				// ✅ Log para debug
+				if (this.previousSessionStatus !== currentSessionStatus) {
+					console.log(`[StatsIAsView] 🔄 [Background] Mudança de session_status: ${this.previousSessionStatus} → ${currentSessionStatus}`);
+				}
+				
 				if (this.previousSessionStatus !== currentSessionStatus) {
 					// Se mudou de ativo para stopped_loss ou stopped_profit, mostrar modal
 					if (this.previousSessionStatus === 'active' || this.previousSessionStatus === null) {
 						if (currentSessionStatus === 'stopped_loss') {
+							console.log('[StatsIAsView] 🛑 [Background] Stop loss detectado! Mostrando modal...');
 							// Buscar resultado da sessão
 							await this.loadSessionResult();
 							this.showStopLossModal = true;
 						} else if (currentSessionStatus === 'stopped_profit') {
+							console.log('[StatsIAsView] 🎯 [Background] Target profit detectado! Mostrando modal...');
 							// Buscar resultado da sessão
 							await this.loadSessionResult();
 							this.showTargetProfitModal = true;
 						}
 					}
 					this.previousSessionStatus = currentSessionStatus;
+				}
+				
+				// ✅ Se a IA foi desativada mas ainda não verificamos o status, fazer uma última verificação
+				if (wasActive && !config.isActive && !this.showStopLossModal && !this.showTargetProfitModal) {
+					// Pode ter sido desativada por stop loss ou target profit
+					if (currentSessionStatus === 'stopped_loss') {
+						console.log('[StatsIAsView] 🛑 [Background] IA desativada por stop loss! Mostrando modal...');
+						await this.loadSessionResult();
+						this.showStopLossModal = true;
+						this.previousSessionStatus = currentSessionStatus;
+					} else if (currentSessionStatus === 'stopped_profit') {
+						console.log('[StatsIAsView] 🎯 [Background] IA desativada por target profit! Mostrando modal...');
+						await this.loadSessionResult();
+						this.showTargetProfitModal = true;
+						this.previousSessionStatus = currentSessionStatus;
+					}
 				}
 				
 				// Calcular countdown baseado no nextTradeAt
@@ -2663,15 +2683,22 @@ export default {
 				// ✅ Detectar mudança de session_status para mostrar modais
 				const currentSessionStatus = config.sessionStatus || config.session_status || null;
 				
+				// ✅ Log para debug
+				if (this.previousSessionStatus !== currentSessionStatus) {
+					console.log(`[StatsIAsView] 🔄 [OnMount] Mudança de session_status: ${this.previousSessionStatus} → ${currentSessionStatus}`);
+				}
+				
 				// Verificar se mudou para stopped_loss ou stopped_profit
 				if (currentSessionStatus === 'stopped_loss' || currentSessionStatus === 'stopped_profit') {
 					// Se é a primeira vez carregando ou mudou de active/null para stopped, mostrar modal
 					if (this.previousSessionStatus === null || this.previousSessionStatus === 'active') {
 						if (currentSessionStatus === 'stopped_loss') {
+							console.log('[StatsIAsView] 🛑 [OnMount] Stop loss detectado! Mostrando modal...');
 							// Buscar resultado da sessão
 							await this.loadSessionResult();
 							this.showStopLossModal = true;
 						} else if (currentSessionStatus === 'stopped_profit') {
+							console.log('[StatsIAsView] 🎯 [OnMount] Target profit detectado! Mostrando modal...');
 							// Buscar resultado da sessão
 							await this.loadSessionResult();
 							this.showTargetProfitModal = true;
@@ -2700,6 +2727,14 @@ export default {
 						this.startPolling();
 					}
 					this.startBackgroundPolling();
+				} else {
+					// ✅ Mesmo quando inativa, iniciar polling para detectar mudanças de status
+					// (ex: quando stop loss é atingido e muda para stopped_loss)
+					if (!this.tradingInterval) {
+						console.log('[StatsIAsView] 🔍 IA inativa, mas iniciando polling para detectar mudanças de status...');
+						this.startBackgroundPolling();
+					}
+				}
 					
 					// Carregar estatísticas e histórico em paralelo
 					Promise.all([
