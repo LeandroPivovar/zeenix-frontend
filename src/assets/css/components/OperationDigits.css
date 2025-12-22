@@ -12,14 +12,14 @@
     overflow-y: auto;
 }
 
-    .digits-layout {
-        display: grid;
-        grid-template-columns: 1fr 320px;
-        grid-template-rows: auto 1fr;
-        gap: 16px;
-        align-items: start;
-        grid-auto-flow: row;
-    }
+.digits-layout {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    grid-template-rows: auto 1fr;
+    gap: 16px;
+    align-items: start;
+    grid-auto-flow: row;
+}
 
     @media (max-width: 768px) {
         .digits-layout {
@@ -57,14 +57,14 @@
 }
 
 /* Top Section: Semáforo + Histórico */
-    .top-section {
-        display: grid;
-        grid-template-columns: 300px 1fr;
-        gap: 16px;
-        align-items: stretch;
-        height: 100px;
-        margin-bottom: 24px;
-    }
+.top-section {
+    display: grid;
+    grid-template-columns: 300px 1fr;
+    gap: 16px;
+    align-items: stretch;
+    height: 100px;
+    margin-bottom: 24px;
+}
 
     @media (max-width: 768px) {
         .top-section {
@@ -111,12 +111,15 @@
 .semaphore-title-group {
     display: flex;
     align-items: center;
-    gap: 12px;
+    gap: 8px;
 }
 
 .semaphore-icon {
-    font-size: 24px;
+    font-size: 18px;
     color: #22C55E;
+    border: 1px solid #1C1C1C;
+    padding: 10px;
+    border-radius: 50%;
 }
 
 .semaphore-card.semaphore-aguardar .semaphore-icon {
@@ -137,6 +140,7 @@
 
 .semaphore-card.semaphore-aguardar .semaphore-title {
     color: #FFD058;
+    font-size: 18px;
 }
 
 .semaphore-card.semaphore-stop .semaphore-title {
@@ -167,8 +171,8 @@
 }
 
 .semaphore-reason-box {
-    background: #0B0B0B;
-    border: 1px solid #1C1C1C;
+    background: transparent;
+    border: none;
     border-radius: 8px;
     padding: 12px;
 }
@@ -299,7 +303,6 @@
     justify-content: space-between;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
     transition: all 0.3s ease;
-    margin-top: 40px;
 }
 
 .heatmap-card {
@@ -313,7 +316,6 @@
     justify-content: space-between;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
     transition: all 0.3s ease;
-    margin-top: 40px;
     position: relative;
     overflow: visible;
 }
@@ -402,15 +404,15 @@
     }
 
     .frequency-pill-visual.status-normal {
-        background: linear-gradient(90deg, #22C55E 0%, #FFD058 100%) !important;
+        background: #FFD058 !important;
     }
 
     .frequency-pill-visual.status-heated {
-        background: linear-gradient(90deg, #FFD058 0%, #F4A100 100%) !important;
+        background: #FF9147 !important;
     }
 
     .frequency-pill-visual.status-overheated {
-        background: linear-gradient(90deg, #F4A100 0%, #FF4747 100%) !important;
+        background: #FF4747 !important;
     }
 
     .frequency-digit-number {
@@ -433,6 +435,22 @@
 .frequency-status-label {
     font-size: 10px;
     color: #8A8A8A;
+}
+
+.frequency-status-label.status-underheated-text {
+    color: #22C55E;
+}
+
+.frequency-status-label.status-normal-text {
+    color: #FFD058;
+}
+
+.frequency-status-label.status-heated-text {
+    color: #FF9147;
+}
+
+.frequency-status-label.status-overheated-text {
+    color: #FF4747;
 }
 
 .frequency-z-score {
@@ -503,7 +521,6 @@
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    margin-top: 40px;
 }
 
 .dvx-gauge-container {
@@ -604,7 +621,6 @@
     height: 100%;
     display: flex;
     flex-direction: column;
-    margin-bottom: 40px;
 }
 
 .parity-meter-content,
@@ -1260,15 +1276,12 @@
         padding: 1rem !important;
         margin: 0 !important;
         box-sizing: border-box;
-        border-radius: 0 !important;
-        border-left: none !important;
-        border-right: none !important;
     }
 
     .main-content-grid {
         grid-column: 1;
         grid-row: 3;
-        padding: 0 1rem 1rem 1rem !important;
+        padding: 0rem 1rem 0rem !important;
         margin: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
@@ -1287,9 +1300,9 @@
         order: 1 !important;
         display: flex !important;
         flex-direction: column !important;
-        gap: 1rem !important;
+        gap: 0 !important;
         height: auto !important;
-        margin-bottom: 1rem !important;
+        margin-bottom: 0 !important;
     }
 
     .semaphore-card {
@@ -1319,6 +1332,14 @@
     .dvx-card {
         order: 4 !important;
     }
+    
+    .parity-meter-card {
+        order: 5 !important;
+    }
+    
+    .high-low-card {
+        order: 6 !important;
+    }
 
     .trading-panel {
         order: 3 !important;
@@ -1331,7 +1352,7 @@
     .cards-grid {
         display: flex !important;
         flex-direction: column !important;
-        gap: 1rem !important;
+        gap: 0 !important;
     }
 
     .semaphore-card {
@@ -1359,8 +1380,12 @@
     .semaphore-header {
         display: flex !important;
         align-items: flex-start !important;
-        gap: 0.75rem !important;
-        margin-bottom: 0.75rem !important;
+        gap: 0.5rem !important;
+        margin-bottom: 0 !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-header {
+        margin-bottom: 0.5rem !important;
     }
 
     .semaphore-title-group {
@@ -1369,10 +1394,29 @@
         gap: 0.75rem !important;
         flex: 1 !important;
     }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-title-group {
+        align-items: flex-start !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-icon {
+        display: none !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-title-group .semaphore-warning-icon {
+        display: flex !important;
+        margin-right: 0.75rem !important;
+        margin-top: 0 !important;
+        flex-shrink: 0 !important;
+        align-self: flex-start !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-title-group {
+        align-items: flex-start !important;
+    }
 
     .semaphore-icon {
-        font-size: 1.5rem !important;
-        flex-shrink: 0 !important;
+        display: none !important;
     }
 
     .semaphore-card.semaphore-aguardar .semaphore-icon {
@@ -1382,7 +1426,7 @@
     .semaphore-title-wrapper {
         display: flex !important;
         align-items: center !important;
-        gap: 0.5rem !important;
+        gap: 0.75rem !important;
         flex: 1 !important;
     }
 
@@ -1395,7 +1439,10 @@
     }
 
     .semaphore-card.semaphore-aguardar .semaphore-title {
-        color: #FFFFFF !important;
+        color: #FFD058 !important;
+        font-size: 1.25rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
     }
 
     .mobile-only {
@@ -1403,20 +1450,23 @@
     }
 
     .semaphore-warning-icon {
-        width: 1.5rem !important;
-        height: 1.5rem !important;
-        border-radius: 50% !important;
-        border: 2px solid #FFD058 !important;
         display: flex !important;
         align-items: center !important;
         justify-content: center !important;
-        flex-shrink: 0 !important;
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 50% !important;
+        border: 2px solid #FFD058 !important;
         background: transparent !important;
+        margin-right: 0 !important;
+        box-shadow: 0 0 8px rgba(255, 208, 88, 0.5) !important;
+        flex-shrink: 0 !important;
     }
 
     .semaphore-warning-icon i {
-        color: #FFFFFF !important;
-        font-size: 0.625rem !important;
+        display: block !important;
+        color: #FFD058 !important;
+        font-size: 24px !important;
     }
 
     .semaphore-status-container {
@@ -1429,8 +1479,61 @@
 
     .semaphore-reason-wrapper {
         display: flex !important;
+        flex-direction: column !important;
         align-items: flex-start !important;
-        gap: 0.5rem !important;
+        gap: 0 !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-reason-wrapper .semaphore-warning-icon {
+        display: none !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-reason-box {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-reason-box {
+        display: none !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-title-wrapper .semaphore-reason {
+        font-size: 0.8rem !important;
+        color: #9CA3AF !important;
+        margin-top: 0.125rem !important;
+        line-height: 1.4 !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-header {
+        margin-bottom: 0 !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-reason-box {
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-title-group {
+        flex-wrap: nowrap !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-title-wrapper {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0.125rem !important;
+        flex: 1 !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-title-wrapper {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 0 !important;
+        flex: 1 !important;
+    }
+    
+    .semaphore-card.semaphore-aguardar .semaphore-title-wrapper .semaphore-warning-icon {
+        display: none !important;
     }
 
     .semaphore-reason-box {
@@ -1440,25 +1543,34 @@
         margin-top: 0.5rem !important;
     }
 
+    .semaphore-header .relative.group {
+        display: none !important;
+    }
+
     .semaphore-reason-label {
         display: none !important;
     }
 
     .semaphore-reason {
         font-size: 0.875rem !important;
-        color: rgba(255, 255, 255, 0.7) !important;
+        color: #DFDFDF !important;
         text-align: left !important;
         flex: 1 !important;
+        margin-top: 0.5rem !important;
     }
 
     .history-card {
         width: 100% !important;
         max-width: 100% !important;
         padding: 1rem !important;
-        margin: 0 0 1rem 0 !important;
+        margin: 0 0 0.5rem 0 !important;
         height: auto;
         box-sizing: border-box;
         order: 2 !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
     }
 
     .semaphore-title {
@@ -1470,9 +1582,9 @@
     }
 
     .semaphore-icon {
-        font-size: 20px;
+        font-size: 16px;
     }
-
+    
     .digit-history-grid {
         gap: 4px;
         justify-content: center;
@@ -1489,7 +1601,7 @@
 
     .cards-grid {
         grid-template-columns: 1fr;
-        gap: 1rem;
+        gap: 0 !important;
         width: 100% !important;
         max-width: 100% !important;
         box-sizing: border-box;
@@ -1499,38 +1611,54 @@
         width: 100% !important;
         max-width: 100% !important;
         padding: 1rem !important;
-        margin: 0 0 1rem 0 !important;
+        margin: 0 0rem 0 !important;
         box-sizing: border-box;
-        order: 5 !important;
+        order: 3 !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
     }
 
     .dvx-card {
         width: 100% !important;
         max-width: 100% !important;
         padding: 1rem !important;
-        margin: 0 0 1rem 0 !important;
+        margin: 0 0rem 0 !important;
         box-sizing: border-box;
-        order: 6 !important;
+        order: 4 !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
     }
 
     .parity-meter-card {
         width: 100% !important;
         max-width: 100% !important;
         padding: 1rem !important;
-        margin: 0 0 1rem 0 !important;
+        margin: 0 0rem 0 !important;
         box-sizing: border-box;
-        order: 3 !important;
+        order: 5 !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
     }
 
     .high-low-card {
         width: 100% !important;
         max-width: 100% !important;
         padding: 1rem !important;
-        margin: 0 0 1rem 0 !important;
+        margin: 0 0rem 0 !important;
         box-sizing: border-box;
-        order: 4 !important;
+        order: 6 !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
     }
-
+    
     .frequency-map-grid,
     .heatmap-grid {
         gap: 0.25rem !important;
@@ -1574,15 +1702,15 @@
     }
 
     .frequency-pill-visual.status-normal {
-        background: linear-gradient(90deg, #22C55E 0%, #FFD058 100%) !important;
+        background: #FFD058 !important;
     }
 
     .frequency-pill-visual.status-heated {
-        background: linear-gradient(90deg, #FFD058 0%, #F4A100 100%) !important;
+        background: #FF9147 !important;
     }
 
     .frequency-pill-visual.status-overheated {
-        background: linear-gradient(90deg, #F4A100 0%, #FF4747 100%) !important;
+        background: #FF4747 !important;
     }
 
     .frequency-digit-number {
@@ -1597,6 +1725,22 @@
         margin-top: 0.125rem !important;
         text-align: center !important;
         line-height: 1.2 !important;
+    }
+
+    .frequency-status-label.status-underheated-text {
+        color: #22C55E !important;
+    }
+
+    .frequency-status-label.status-normal-text {
+        color: #FFD058 !important;
+    }
+
+    .frequency-status-label.status-heated-text {
+        color: #FF9147 !important;
+    }
+
+    .frequency-status-label.status-overheated-text {
+        color: #FF4747 !important;
     }
 
     .frequency-z-score {
@@ -1623,9 +1767,15 @@
         top: auto !important;
         grid-column: 1 !important;
         grid-row: auto !important;
-        width: 100% !important;
-        max-width: 100% !important;
-        margin: 0 0 1rem 0 !important;
+        width: calc(100% - 2rem) !important;
+        max-width: calc(100% - 2rem) !important;
+        margin: 1rem 1rem 0 1rem !important;
+        padding: 1rem !important;
+        box-sizing: border-box !important;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 0.75rem !important;
+        box-shadow: 0 0 8px rgba(0, 0, 0, 0.25) !important;
     }
 
     .trading-panel-content {
@@ -1641,7 +1791,8 @@
     }
 
     .trading-buttons {
-        gap: 0.75rem;
+        flex-direction: row !important;
+        gap: 0.75rem !important;
         width: 100% !important;
         box-sizing: border-box;
     }
@@ -1650,8 +1801,9 @@
     .btn-put {
         padding: 12px;
         font-size: 14px;
-        width: 100% !important;
-        max-width: 100% !important;
+        width: 50% !important;
+        max-width: 50% !important;
+        flex: 1 !important;
         box-sizing: border-box;
     }
 
@@ -1707,6 +1859,10 @@
         background: oklch(0.32 0.07 90) !important;
         border-color: #FFD058 !important;
     }
+    
+    .semaphore-title-wrapper .semaphore-reason.mobile-only {
+        display: none !important;
+    }
 
     .semaphore-header {
         display: flex !important;
@@ -1718,12 +1874,15 @@
     .semaphore-title-group {
         display: flex !important;
         align-items: center !important;
-        gap: 12px !important;
+        gap: 8px !important;
     }
 
     .semaphore-icon {
-        font-size: 24px !important;
+        font-size: 18px !important;
         color: #22C55E !important;
+        border: 1px solid #1C1C1C !important;
+        padding: 10px !important;
+        border-radius: 50% !important;
     }
 
     .semaphore-card.semaphore-aguardar .semaphore-icon {
@@ -1740,6 +1899,7 @@
 
     .semaphore-card.semaphore-aguardar .semaphore-title {
         color: #FFD058 !important;
+        font-size: 18px !important;
     }
 
     .semaphore-status-container {
@@ -1762,8 +1922,8 @@
     }
 
     .semaphore-reason-box {
-        background: #0B0B0B !important;
-        border: 1px solid #1C1C1C !important;
+        background: transparent !important;
+        border: none !important;
         border-radius: 8px !important;
         padding: 12px !important;
     }
