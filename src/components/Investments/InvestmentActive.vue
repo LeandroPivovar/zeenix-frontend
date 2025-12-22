@@ -2769,9 +2769,39 @@ export default {
                     }).filter(marker => marker !== null); // Remover marcadores inválidos
                     
                     if (markers.length > 0) {
-                        console.log('[InvestmentActive] 📍 Plotando', markers.length, 'marcadores:', markers);
-                        this.currentSeries.setMarkers(markers);
-                        console.log('[InvestmentActive] ✅ Marcadores de entradas plotados com sucesso:', markers.length);
+                        // Verificar se o gráfico tem dados antes de plotar marcadores
+                        try {
+                            // Tentar obter os dados da série para verificar se está vazia
+                            const seriesData = this.currentSeries.data();
+                            if (!seriesData || seriesData.length === 0) {
+                                console.warn('[InvestmentActive] ⚠️ Gráfico ainda não tem dados, aguardando...');
+                                // Aguardar um pouco e tentar novamente
+                                setTimeout(() => {
+                                    this.plotEntryMarkers();
+                                }, 500);
+                                return;
+                            }
+                            
+                            console.log('[InvestmentActive] 📍 Plotando', markers.length, 'marcadores:', markers.slice(0, 3));
+                            
+                            // Validar cada marcador antes de passar para o gráfico
+                            const validMarkers = markers.filter(marker => {
+                                if (!marker || typeof marker.time !== 'number' || marker.time <= 0) {
+                                    console.warn('[InvestmentActive] ⚠️ Marcador inválido:', marker);
+                                    return false;
+                                }
+                                return true;
+                            });
+                            
+                            if (validMarkers.length > 0) {
+                                this.currentSeries.setMarkers(validMarkers);
+                                console.log('[InvestmentActive] ✅ Marcadores de entradas plotados com sucesso:', validMarkers.length);
+                            } else {
+                                console.warn('[InvestmentActive] ⚠️ Nenhum marcador válido após validação');
+                            }
+                        } catch (error) {
+                            console.error('[InvestmentActive] ❌ Erro ao verificar dados da série antes de plotar marcadores:', error);
+                        }
                     } else {
                         console.log('[InvestmentActive] ⚠️ Nenhum marcador válido para plotar');
                     }
@@ -3387,26 +3417,47 @@ export default {
                 }
 
                 // Validação final: garantir que todos os pontos são válidos antes de passar para o gráfico
-                const finalData = data.filter(point => {
+                const finalData = data.filter((point, index) => {
+                    if (!point) {
+                        console.warn(`[InvestmentActive] ⚠️ Ponto ${index} é null/undefined`);
+                        return false;
+                    }
+                    
                     if (this.chartType === 'candles') {
                         // Para velas, validar open, high, low, close
-                        return point && 
+                        const isValid = point && 
                                point.time > 0 &&
                                typeof point.open === 'number' && isFinite(point.open) && point.open > 0 &&
                                typeof point.high === 'number' && isFinite(point.high) && point.high > 0 &&
                                typeof point.low === 'number' && isFinite(point.low) && point.low > 0 &&
                                typeof point.close === 'number' && isFinite(point.close) && point.close > 0;
+                        if (!isValid) {
+                            console.warn(`[InvestmentActive] ⚠️ Ponto ${index} (vela) inválido:`, point);
+                        }
+                        return isValid;
                     } else {
-                        // Para linhas, validar time e value
-                        return point && 
-                               typeof point.time === 'number' && 
-                               typeof point.value === 'number' &&
-                               point.time > 0 && 
-                               point.value > 0 &&
-                               isFinite(point.time) &&
-                               isFinite(point.value) &&
-                               !isNaN(point.time) &&
-                               !isNaN(point.value);
+                        // Para linhas, validar time e value - VALIDAÇÃO EXTRA RIGOROSA
+                        const hasTime = typeof point.time === 'number';
+                        const hasValue = typeof point.value === 'number';
+                        const timeValid = hasTime && point.time > 0 && isFinite(point.time) && !isNaN(point.time);
+                        const valueValid = hasValue && point.value > 0 && isFinite(point.value) && !isNaN(point.value) && point.value !== null && point.value !== undefined;
+                        
+                        const isValid = point && timeValid && valueValid;
+                        
+                        if (!isValid) {
+                            console.warn(`[InvestmentActive] ⚠️ Ponto ${index} (linha) inválido:`, {
+                                point: point,
+                                hasTime: hasTime,
+                                hasValue: hasValue,
+                                timeValid: timeValid,
+                                valueValid: valueValid,
+                                timeType: typeof point.time,
+                                valueType: typeof point.value,
+                                timeValue: point.time,
+                                valueValue: point.value
+                            });
+                        }
+                        return isValid;
                     }
                 });
 
@@ -3415,19 +3466,87 @@ export default {
                     return;
                 }
 
-                console.log('[InvestmentActive] Atualizando gráfico com', finalData.length, this.chartType === 'candles' ? 'velas' : 'pontos');
+                // Validação EXTRA: verificar cada ponto individualmente antes de passar para o gráfico
+                const verifiedData = finalData.map((point, index) => {
+                    if (this.chartType === 'candles') {
+                        // Para velas
+                        const verified = {
+                            time: Math.floor(point.time),
+                            open: Number(point.open),
+                            high: Number(point.high),
+                            low: Number(point.low),
+                            close: Number(point.close)
+                        };
+                        
+                        // Validar novamente
+                        if (!isFinite(verified.time) || verified.time <= 0 ||
+                            !isFinite(verified.open) || verified.open <= 0 ||
+                            !isFinite(verified.high) || verified.high <= 0 ||
+                            !isFinite(verified.low) || verified.low <= 0 ||
+                            !isFinite(verified.close) || verified.close <= 0) {
+                            console.warn(`[InvestmentActive] ⚠️ Ponto ${index} inválido (vela):`, point);
+                            return null;
+                        }
+                        return verified;
+                    } else {
+                        // Para linhas - garantir que value não seja null/undefined
+                        const verified = {
+                            time: Math.floor(point.time),
+                            value: Number(point.value)
+                        };
+                        
+                        // Validação EXTRA rigorosa
+                        if (!isFinite(verified.time) || verified.time <= 0 ||
+                            !isFinite(verified.value) || verified.value <= 0 ||
+                            isNaN(verified.value) ||
+                            verified.value === null ||
+                            verified.value === undefined) {
+                            console.warn(`[InvestmentActive] ⚠️ Ponto ${index} inválido (linha):`, {
+                                original: point,
+                                verified: verified,
+                                timeValid: isFinite(verified.time) && verified.time > 0,
+                                valueValid: isFinite(verified.value) && verified.value > 0 && !isNaN(verified.value)
+                            });
+                            return null;
+                        }
+                        return verified;
+                    }
+                }).filter(point => point !== null);
+
+                if (!verifiedData.length) {
+                    console.error('[InvestmentActive] ❌ Nenhum dado válido após verificação extra');
+                    return;
+                }
+
+                console.log('[InvestmentActive] Atualizando gráfico com', verifiedData.length, this.chartType === 'candles' ? 'velas' : 'pontos');
+                console.log('[InvestmentActive] 📊 Amostra dos dados:', {
+                    first: verifiedData[0],
+                    last: verifiedData[verifiedData.length - 1],
+                    sample: verifiedData.slice(0, 3),
+                    allValid: verifiedData.every(p => {
+                        if (this.chartType === 'candles') {
+                            return p.time > 0 && p.open > 0 && p.high > 0 && p.low > 0 && p.close > 0;
+                        } else {
+                            return p.time > 0 && p.value > 0 && !isNaN(p.value) && isFinite(p.value);
+                        }
+                    })
+                });
                 
                 try {
-                    this.currentSeries.setData(finalData);
+                    // Adicionar novos dados diretamente (sem limpar antes para evitar problemas)
+                    this.currentSeries.setData(verifiedData);
                 } catch (error) {
                     console.error('[InvestmentActive] ❌ Erro ao atualizar série do gráfico:', error);
                     console.error('[InvestmentActive] Dados que causaram erro:', {
-                        dataLength: finalData.length,
-                        firstPoint: finalData[0],
-                        lastPoint: finalData[finalData.length - 1],
-                        samplePoints: finalData.slice(0, 3)
+                        dataLength: verifiedData.length,
+                        firstPoint: verifiedData[0],
+                        lastPoint: verifiedData[verifiedData.length - 1],
+                        samplePoints: verifiedData.slice(0, 5),
+                        chartType: this.chartType,
+                        seriesType: this.currentSeries ? this.currentSeries.seriesType() : 'unknown'
                     });
-                    throw error;
+                    // Não lançar o erro, apenas logar para não quebrar o fluxo
+                    return;
                 }
                 
                 // Ajustar o gráfico para mostrar todos os dados
