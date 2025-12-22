@@ -994,14 +994,14 @@
 	<!-- Modais de Stop Loss e Target Profit -->
 	<StopLossModal
 		:visible="showStopLossModal"
-		:result="sessionResult"
+		:result="todayResult"
 		:currency="accountType === 'Demo' ? 'DEMO' : 'USD'"
 		@confirm="handleStopLossConfirm"
 	/>
 	
 	<TargetProfitModal
 		:visible="showTargetProfitModal"
-		:result="sessionResult"
+		:result="todayResult"
 		:currency="accountType === 'Demo' ? 'DEMO' : 'USD'"
 		@confirm="handleTargetProfitConfirm"
 	/>

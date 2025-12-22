@@ -19,7 +19,7 @@
         
         <div class="result-section">
           <div class="result-label">RESULTADO DO DIA</div>
-          <div class="result-value loss">{{ formattedResult }}</div>
+          <div class="result-value" :class="result >= 0 ? 'profit' : 'loss'">{{ formattedResult }}</div>
         </div>
         
         <p class="info-message">
@@ -27,7 +27,7 @@
         </p>
         
         <button class="confirm-button" @click="handleConfirm">
-          Confirmar e Encerrar Ciclo
+          Ir para Configurações da IA
         </button>
       </div>
     </div>
@@ -64,6 +64,8 @@ export default {
     },
     handleConfirm() {
       this.$emit('confirm');
+      // Navegar para a tela de configurações da IA
+      this.$router.push('/InvestmentIA');
     }
   }
 }
@@ -151,6 +153,10 @@ export default {
 
 .result-value.loss {
   color: #EF4444;
+}
+
+.result-value.profit {
+  color: #22C55E;
 }
 
 .info-message {

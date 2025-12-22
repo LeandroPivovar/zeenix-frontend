@@ -757,14 +757,14 @@
     <!-- Modais de Stop Loss e Target Profit -->
     <StopLossModal
         :visible="showStopLossModal"
-        :result="sessionResult"
+        :result="dailyStats.profitLoss || 0"
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleStopLossConfirm"
     />
     
     <TargetProfitModal
         :visible="showTargetProfitModal"
-        :result="sessionResult"
+        :result="dailyStats.profitLoss || 0"
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleTargetProfitConfirm"
     />
