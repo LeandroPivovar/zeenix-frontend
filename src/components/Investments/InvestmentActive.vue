@@ -395,7 +395,7 @@
                                 <h2 v-if="activeTab === 'logs'" class="text-lg font-semibold text-zenix-text">Histórico de Operações</h2>
                                 <h2 v-else-if="activeTab === 'register'" class="text-lg font-semibold text-zenix-text">Registro de Eventos em Tempo Real</h2>
                                 <h2 v-else class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
-                                <p v-if="activeTab !== 'register' && activeTab !== 'logs'" class="text-xs text-zenix-secondary mt-1">{{ formattedMarketName }} • M5 • Última atualização: {{ formattedLastUpdate }}</p>
+                                <p v-if="activeTab !== 'register' && activeTab !== 'logs'" class="text-xs text-zenix-secondary mt-1">{{ formattedMarketName }} • Última atualização: {{ formattedLastUpdate }}</p>
                             </div>
                             <div class="flex items-center space-x-6 desktop-tabs">
                                 <button 
@@ -429,6 +429,10 @@
                         <div v-show="activeTab === 'chart'" class="chart-controls-active">
                             <div class="zoom-buttons">
                                 <button
+                                    @click="setZoomMinutes(1)"
+                                    :class="['zoom-btn', chartZoomMinutes === 1 ? 'active' : '']"
+                                >1m</button>
+                                <button
                                     @click="setZoomMinutes(10)"
                                     :class="['zoom-btn', chartZoomMinutes === 10 ? 'active' : '']"
                                 >10m</button>
@@ -441,9 +445,22 @@
                                     :class="['zoom-btn', chartZoomMinutes === 3 ? 'active' : '']"
                                 >3m</button>
                             </div>
-                            <button class="type-toggle" @click="toggleChartType">
+                            <button 
+                                class="type-toggle" 
+                                @click="toggleChartType"
+                                title="Alternar entre Linhas e Velas"
+                            >
                                 <i :class="chartType === 'line' ? 'fas fa-chart-line' : 'fas fa-chart-bar'"></i>
                                 <span>{{ chartType === 'line' ? 'Linhas' : 'Velas' }}</span>
+                            </button>
+                            <button 
+                                class="type-toggle" 
+                                @click="toggleTickView"
+                                :class="{ 'active': showTickView }"
+                                title="Visualizar com 1 tick"
+                            >
+                                <i class="fas fa-chart-area"></i>
+                                <span>1 Tick</span>
                             </button>
                         </div>
 
@@ -660,7 +677,7 @@
                             <div class="pb-5 border-b border-zenix-border/50 text-left">
                                 <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Estratégia</p>
                                 <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ strategyName }}</p>
-                                <p class="text-xs text-zenix-secondary text-left">Alta performance • Sinais avançados</p>
+                                <p class="text-xs text-zenix-secondary text-left">{{ strategyDescriptionText }}</p>
                             </div>
 
                             <!-- Mercado -->
@@ -702,7 +719,7 @@
                                 <div class="flex items-center justify-between">
                                     <div class="text-left">
                                         <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ realRiskLevel }}</p>
-                                        <p class="text-xs text-zenix-secondary text-left">Proteção de capital ativa</p>
+                                        <p class="text-xs text-zenix-secondary text-left">{{ realRiskDescription }}</p>
                                     </div>
                                     <div class="px-3 py-1.5 bg-zenix-green/10 border border-zenix-green/20 rounded-lg">
                                         <p class="text-xs font-bold text-zenix-green">{{ realRiskLabel }}</p>
@@ -734,26 +751,6 @@
                 </div>
             </div>
 
-            <!-- Status Footer -->
-            <section class="status-footer-section">
-                <div class="premium-card status-footer-card">
-                    <div class="status-footer-content">
-                        <div class="status-footer-left">
-                            <div class="status-footer-icon">
-                                <i class="fas fa-robot text-zenix-green text-lg"></i>
-                            </div>
-                            <div>
-                                <h3 class="status-footer-title">IA Operando Normalmente</h3>
-                                <p class="status-footer-subtitle">Monitorando sinais de mercado e executando operações conforme estratégia</p>
-                            </div>
-                        </div>
-                        <div class="status-footer-right">
-                            <div class="ai-pulse-dot"></div>
-                            <span class="status-footer-status text-zenix-green">Online</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
         </main>
     </div>
     
@@ -839,6 +836,7 @@ export default {
             ],
             selectedTimeframe: 300, // 5 minutos (M5) - padrão Médio
             chartZoomMinutes: 10, // zoom padrão (10m)
+            showTickView: false, // Visualização com 1 tick
             
             // Estatísticas do dia
             dailyStats: {
@@ -1041,6 +1039,25 @@ export default {
                 'fast': 'Operação Contínua'
             };
             return descMap[this.mode.toLowerCase()] || 'Alta Performance';
+        },
+        
+        strategyDescriptionText() {
+            const strategy = this.selectedStrategy || 'orion';
+            const descriptions = {
+                'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
+                'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes'
+            };
+            return descriptions[strategy] || descriptions.orion;
+        },
+        
+        realRiskDescription() {
+            const martingale = this.sessionConfig.modoMartingale || 'conservador';
+            const descriptions = {
+                'conservador': 'Recuperação limitada (até M5) • Protege capital • Lucros menores mas seguros',
+                'moderado': 'Recuperação ilimitada com +25% de lucro • Equilíbrio entre risco e retorno',
+                'agressivo': 'Recuperação ilimitada com +50% de lucro • Máximo retorno com risco controlado'
+            };
+            return descriptions[martingale.toLowerCase()] || descriptions.conservador;
         },
         
         // Mapear modo_martingale para gerenciamento
@@ -2763,6 +2780,16 @@ export default {
         toggleChartType() {
             this.chartType = this.chartType === 'line' ? 'candles' : 'line';
         },
+        toggleTickView() {
+            this.showTickView = !this.showTickView;
+            // Quando ativar 1 tick, ajustar o timeframe para 1 segundo
+            if (this.showTickView) {
+                this.selectedTimeframe = 1; // 1 segundo para visualização de 1 tick
+            } else {
+                this.selectedTimeframe = 300; // Voltar para M5 padrão
+            }
+            this.updateChart();
+        },
         filterTicksByZoom(ticks) {
             if (!Array.isArray(ticks) || ticks.length === 0) return [];
             const now = Math.floor(Date.now() / 1000);
@@ -4067,6 +4094,13 @@ button i,
     color: #22C55E;
 }
 
+.chart-controls-active .type-toggle.active {
+    background: #22C55E;
+    color: #0B0B0B;
+    border-color: #22C55E;
+    font-weight: 600;
+}
+
 /* TradingView Chart Container */
 .tradingview-container {
     width: 100%;
@@ -4365,60 +4399,6 @@ button i,
     cursor: not-allowed;
 }
 
-/* Status Footer */
-.status-footer-section {
-    margin-bottom: 1.5rem;
-}
-
-.status-footer-card {
-    padding: 1.5rem;
-    border: 1px solid rgba(34, 197, 94, 0.2);
-}
-
-.status-footer-content {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-}
-
-.status-footer-left {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-}
-
-.status-footer-icon {
-    width: 3rem;
-    height: 3rem;
-    background-color: rgba(34, 197, 94, 0.1);
-    border-radius: 9999px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.status-footer-title {
-    font-size: 1.125rem;
-    font-weight: 600;
-    color: #DFDFDF;
-    margin-bottom: 0.25rem;
-}
-
-.status-footer-subtitle {
-    font-size: 0.875rem;
-    color: #A1A1A1;
-}
-
-.status-footer-right {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.status-footer-status {
-    font-size: 0.875rem;
-    font-weight: 500;
-}
 
 /* Animations */
 @keyframes pulse {
@@ -4462,8 +4442,6 @@ button i,
 .main-content-grid,
 .market-chart-card,
 .config-card-sticky,
-.status-footer-section,
-.status-footer-card,
 #compact-performance-panel,
 #iya1j {
 	width: 100%;
@@ -5533,10 +5511,6 @@ button i,
         }
     }
 
-    /* Status Footer - esconder no mobile */
-    .status-footer-section {
-        display: none !important;
-    }
 }
 
 /* Desktop: esconder barra de progresso mobile (apenas quando está fora do card) */

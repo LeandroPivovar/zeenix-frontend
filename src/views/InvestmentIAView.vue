@@ -47,16 +47,16 @@
                         <!-- Header Desktop -->
                         <div class="mb-6 ai-vision-header-desktop">
                             <div class="text-left">
-                                <h1 class="text-xl font-bold text-zenix-text mb-1">Visão da IA | {{ selectedStrategyName }}</h1>
-                                <p class="text-sm text-zenix-secondary">Configure esta IA para iniciar operações</p>
+                                <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração da IA</h1>
+                                <p class="text-sm text-zenix-secondary">Escolha uma das IA's de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
                             </div>
                         </div>
                         <!-- Header Mobile -->
                         <div class="mb-6 ai-vision-header-mobile">
                             <div class="flex items-center justify-between">
                                 <div class="text-left">
-                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Visão da IA</h1>
-                                    <p class="text-sm text-zenix-secondary">Configure esta IA para iniciar operações</p>
+                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração da IA</h1>
+                                    <p class="text-sm text-zenix-secondary">Escolha uma das IA's de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
                                 </div>
                                 <div class="ai-chip-icon-mobile">
                                     <i class="fas fa-microchip text-[#22C55E] text-2xl"></i>
@@ -150,33 +150,6 @@
                     <!-- Mercado & Estratégia -->
                     <div id="market-strategy-card" class="config-card premium-card">
                         <div class="card-content">
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Selecione o mercado
-                                    <TooltipsCopyTraders position="left"> 
-                                        <p>Escolha o ativo que deseja operar</p>
-                                    </TooltipsCopyTraders>
-                                </label>
-                                <select id="marketSelect" class="form-select" v-model="selectedMarket">
-                                    <option value="vol10">Volatility 10 Index</option>
-                                    <option value="vol25">Volatility 25 Index</option>
-                                    <option value="vol50">Volatility 50 Index</option>
-                                    <option value="vol75">Volatility 75 Index</option>
-                                    <option value="vol100">Volatility 100 Index</option>
-                                    <option value="vol10_1s">Volatility 10 (1s) Index</option>
-                                    <option value="vol25_1s">Volatility 25 (1s) Index</option>
-                                    <option value="vol50_1s">Volatility 50 (1s) Index</option>
-                                    <option value="vol75_1s">Volatility 75 (1s) Index</option>
-                                    <option value="vol100_1s">Volatility 100 (1s) Index</option>
-                                    <option value="jump10">Jump 10 Index</option>
-                                    <option value="jump25">Jump 25 Index</option>
-                                    <option value="jump50">Jump 50 Index</option>
-                                    <option value="jump75">Jump 75 Index</option>
-                                    <option value="jump100">Jump 100 Index</option>
-                                </select>
-                                <p id="marketDescription" class="form-help">{{ marketDescription }}</p>
-                        </div>
-                            
                             <div class="form-group">
                                 <label class="form-label">
                                     Estratégia
@@ -302,9 +275,25 @@
                                     >
                                 </div>
                                 <p class="form-help">{{ lossPercent }}% do saldo</p>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="stoploss-blindado-wrapper">
+                                    <div class="stoploss-blindado-label">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span>Stoploss Blindado</span>
+                                    </div>
+                                    <label class="toggle-switch stoploss-toggle">
+                                        <input 
+                                            type="checkbox" 
+                                            v-model="stoplossBlindado"
+                                        >
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                </div>
 
                     <!-- Gerenciamento de Risco -->
                     <div id="risk-management-card" class="config-card premium-card">
@@ -455,6 +444,7 @@ export default {
             lossLimit: 25,
             mode: 'veloz',
             modoMartingale: 'conservador',
+            stoplossBlindado: false,
 
             selectedMarket: 'vol10',
             selectedStrategy: 'orion',
@@ -2978,8 +2968,8 @@ export default {
 
 /* Risk Buttons */
 .risk-buttons {
-        display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
     margin-bottom: 1rem;
 }
@@ -3054,6 +3044,51 @@ export default {
     font-size: 0.75rem;
     color: #A1A1A1;
     opacity: 0.6;
+}
+
+/* Stoploss Blindado Slider */
+.stoploss-blindado-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+}
+
+.stoploss-blindado-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #DFDFDF;
+}
+
+.stoploss-blindado-label i {
+    font-size: 0.875rem;
+    color: #22C55E;
+}
+
+.stoploss-toggle {
+    flex-shrink: 0;
+    width: 3.5rem;
+    height: 1.75rem;
+}
+
+.stoploss-toggle .toggle-slider {
+    width: 3.5rem;
+    height: 1.75rem;
+}
+
+.stoploss-toggle .toggle-slider::before {
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+.stoploss-toggle input:checked + .toggle-slider::before {
+    transform: translateX(calc(3.5rem - 1.25rem - 6px));
 }
 
 /* AI Control Card */
