@@ -2497,7 +2497,6 @@ export default {
 			
 			if (configResult.success && configResult.data) {
 				const config = configResult.data;
-				const wasActive = this.tradingConfig.isActive;
 				this.tradingConfig.isActive = config.isActive;
 				
 				// ✅ Verificar mudança de session_status para mostrar modais
