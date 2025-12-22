@@ -46,13 +46,7 @@
           <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF] inline-flex items-center gap-2">
             <span>Saldo:</span>
             <span v-if="!balanceHidden" class="inline-flex items-center gap-1.5">
-              <span v-if="accountType === 'demo'" class="demo-currency-symbol-navbar-wrapper">
-                <svg class="demo-currency-symbol-navbar-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="16" height="16" fill="#0B0B0B"/>
-                  <path d="M3 2h6c2.5 0 4.5 2 4.5 4.5S11.5 11 9 11H5v3H3V2z" fill="#E6E6E6" opacity="0.9"/>
-                  <path d="M5 4h4c1.5 0 2.5 1 2.5 2.5S10.5 9 9 9H5V4z" fill="#0B0B0B" opacity="0.3"/>
-                </svg>
-              </span>
+              <span v-if="accountType === 'demo'">Đ</span>
               <span v-else>$</span>
               {{ formattedBalance }}
             </span>
@@ -320,13 +314,7 @@
                           :alt="account.currency"
                           class="w-5 h-5 rounded-full object-cover"
                         />
-                        <span v-if="account.isDemo" class="demo-currency-symbol-account-wrapper">
-                          <svg class="demo-currency-symbol-account-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                            <rect width="16" height="16" fill="#0B0B0B"/>
-                            <path d="M3 2h6c2.5 0 4.5 2 4.5 4.5S11.5 11 9 11H5v3H3V2z" fill="#E6E6E6" opacity="0.9"/>
-                            <path d="M5 4h4c1.5 0 2.5 1 2.5 2.5S10.5 9 9 9H5V4z" fill="#0B0B0B" opacity="0.3"/>
-                          </svg>
-                        </span>
+                        <span v-if="account.isDemo">Đ</span>
                         <span v-else-if="!account.isDemo">$</span>
                         {{ formatBalance(account.balance || 0) }}
                       </p>

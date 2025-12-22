@@ -259,13 +259,7 @@
           </div>
           <div class="mobile-account-balance">
             <span v-if="balanceVisible" class="inline-flex items-center gap-2">
-              <span v-if="currentAccountType === 'demo'" class="demo-currency-symbol-mobile-wrapper">
-                <svg class="demo-currency-symbol-mobile-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="16" height="16" fill="#0B0B0B"/>
-                  <path d="M3 2h6c2.5 0 4.5 2 4.5 4.5S11.5 11 9 11H5v3H3V2z" fill="#E6E6E6" opacity="0.9"/>
-                  <path d="M5 4h4c1.5 0 2.5 1 2.5 2.5S10.5 9 9 9H5V4z" fill="#0B0B0B" opacity="0.3"/>
-                </svg>
-              </span>
+              <span v-if="currentAccountType === 'demo'">Đ</span>
               <span v-else>$</span>
               {{ balanceVisible ? mobileBalanceValue : '' }}
             </span>
@@ -592,9 +586,7 @@
             </div>
             <p class="settings-balance-amount text-left">
               <span v-if="balanceVisible" class="inline-flex items-center gap-2">
-                <span v-if="currentAccountType === 'demo'" class="demo-currency-symbol-wrapper">
-                  <span class="demo-currency-symbol">D</span>
-                </span>
+                <span v-if="currentAccountType === 'demo'">Đ</span>
                 <span v-else>$</span>
                 {{ balanceVisible ? mobileBalanceValue : '' }}
               </span>
@@ -664,9 +656,7 @@
                         :alt="account.currency || 'USD'"
                         class="w-4 h-4 rounded-full object-cover"
                       />
-                      <span v-if="account.isDemo" class="demo-currency-symbol-modal-small-wrapper">
-                        <span class="demo-currency-symbol-modal-small">D</span>
-                      </span>
+                      <span v-if="account.isDemo">Đ</span>
                       <span v-else>$</span>
                       {{ formatBalanceMobile(account.balance || 0) }}
                     </span>

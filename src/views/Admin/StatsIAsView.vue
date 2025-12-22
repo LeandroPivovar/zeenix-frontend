@@ -1162,9 +1162,9 @@ export default {
 				minimumFractionDigits: 2,
 				maximumFractionDigits: 2
 			});
-			// ✅ Se for conta Demo, usar prefixo D$ (igual ao header)
+			// ✅ Se for conta Demo, usar símbolo Đ (D com barra)
 			if (this.accountType === 'Demo') {
-				return `D$${formatter.format(value)}`;
+				return `Đ${formatter.format(value)}`;
 			}
 			return `$${formatter.format(value)}`;
 		},
@@ -1224,19 +1224,27 @@ export default {
 		/**
 		 * Handler para confirmação do modal de Stop Loss
 		 */
-		handleStopLossConfirm() {
+		async handleStopLossConfirm() {
 			this.showStopLossModal = false;
-			// Recarregar configuração para atualizar status
-			this.loadAIConfigOnMount();
+			// Resetar previousSessionStatus para permitir nova detecção se necessário
+			this.previousSessionStatus = null;
+			// Recarregar configuração para atualizar status e garantir que IA está inativa
+			await this.loadAIConfigOnMount();
+			// Forçar atualização do status
+			await this.fetchBackgroundStatus();
 		},
 		
 		/**
 		 * Handler para confirmação do modal de Target Profit
 		 */
-		handleTargetProfitConfirm() {
+		async handleTargetProfitConfirm() {
 			this.showTargetProfitModal = false;
-			// Recarregar configuração para atualizar status
-			this.loadAIConfigOnMount();
+			// Resetar previousSessionStatus para permitir nova detecção se necessário
+			this.previousSessionStatus = null;
+			// Recarregar configuração para atualizar status e garantir que IA está inativa
+			await this.loadAIConfigOnMount();
+			// Forçar atualização do status
+			await this.fetchBackgroundStatus();
 		},
 		
 		async loadAccountInfo() {
@@ -2500,34 +2508,45 @@ export default {
 					console.log(`[StatsIAsView] 🔄 [Background] Mudança de session_status: ${this.previousSessionStatus} → ${currentSessionStatus}`);
 				}
 				
-				if (this.previousSessionStatus !== currentSessionStatus) {
-					// Se mudou de ativo para stopped_loss ou stopped_profit, mostrar modal
-					if (this.previousSessionStatus === 'active' || this.previousSessionStatus === null) {
-						if (currentSessionStatus === 'stopped_loss') {
-							console.log('[StatsIAsView] 🛑 [Background] Stop loss detectado! Mostrando modal...');
-							// Buscar resultado da sessão
-							await this.loadSessionResult();
-							this.showStopLossModal = true;
-						} else if (currentSessionStatus === 'stopped_profit') {
-							console.log('[StatsIAsView] 🎯 [Background] Target profit detectado! Mostrando modal...');
-							// Buscar resultado da sessão
-							await this.loadSessionResult();
-							this.showTargetProfitModal = true;
-						}
+				// ✅ PRIORIDADE 1: Se o status atual é stopped_loss ou stopped_profit, mostrar modal
+				// (independentemente do estado anterior, desde que o modal não esteja já aberto)
+				if (currentSessionStatus === 'stopped_loss') {
+					if (!this.showStopLossModal) {
+						console.log('[StatsIAsView] 🛑 [Background] Stop loss detectado! Mostrando modal...');
+						console.log('[StatsIAsView] 📊 [Background] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
+						// Buscar resultado da sessão
+						await this.loadSessionResult();
+						this.showStopLossModal = true;
+						console.log('[StatsIAsView] ✅ [Background] Modal de stop loss exibido');
 					}
+					this.previousSessionStatus = currentSessionStatus;
+				} else if (currentSessionStatus === 'stopped_profit') {
+					if (!this.showTargetProfitModal) {
+						console.log('[StatsIAsView] 🎯 [Background] Target profit detectado! Mostrando modal...');
+						console.log('[StatsIAsView] 📊 [Background] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
+						// Buscar resultado da sessão
+						await this.loadSessionResult();
+						this.showTargetProfitModal = true;
+						console.log('[StatsIAsView] ✅ [Background] Modal de target profit exibido');
+					}
+					this.previousSessionStatus = currentSessionStatus;
+				} else if (this.previousSessionStatus !== currentSessionStatus) {
+					// Se mudou para outro status, atualizar previousSessionStatus
+					console.log('[StatsIAsView] 🔄 [Background] Status mudou para:', currentSessionStatus);
 					this.previousSessionStatus = currentSessionStatus;
 				}
 				
-				// ✅ Se a IA foi desativada mas ainda não verificamos o status, fazer uma última verificação
-				if (wasActive && !config.isActive && !this.showStopLossModal && !this.showTargetProfitModal) {
+				// ✅ PRIORIDADE 2: Se a IA foi desativada e não mostramos modal ainda, verificar novamente
+				// Esta é uma verificação de segurança caso a PRIORIDADE 1 não tenha capturado
+				if (!config.isActive && !this.showStopLossModal && !this.showTargetProfitModal) {
 					// Pode ter sido desativada por stop loss ou target profit
 					if (currentSessionStatus === 'stopped_loss') {
-						console.log('[StatsIAsView] 🛑 [Background] IA desativada por stop loss! Mostrando modal...');
+						console.log('[StatsIAsView] 🛑 [Background] IA desativada por stop loss (verificação de segurança)! Mostrando modal...');
 						await this.loadSessionResult();
 						this.showStopLossModal = true;
 						this.previousSessionStatus = currentSessionStatus;
 					} else if (currentSessionStatus === 'stopped_profit') {
-						console.log('[StatsIAsView] 🎯 [Background] IA desativada por target profit! Mostrando modal...');
+						console.log('[StatsIAsView] 🎯 [Background] IA desativada por target profit (verificação de segurança)! Mostrando modal...');
 						await this.loadSessionResult();
 						this.showTargetProfitModal = true;
 						this.previousSessionStatus = currentSessionStatus;
@@ -2688,26 +2707,31 @@ export default {
 					console.log(`[StatsIAsView] 🔄 [OnMount] Mudança de session_status: ${this.previousSessionStatus} → ${currentSessionStatus}`);
 				}
 				
-				// Verificar se mudou para stopped_loss ou stopped_profit
-				if (currentSessionStatus === 'stopped_loss' || currentSessionStatus === 'stopped_profit') {
-					// Se é a primeira vez carregando ou mudou de active/null para stopped, mostrar modal
-					if (this.previousSessionStatus === null || this.previousSessionStatus === 'active') {
-						if (currentSessionStatus === 'stopped_loss') {
-							console.log('[StatsIAsView] 🛑 [OnMount] Stop loss detectado! Mostrando modal...');
-							// Buscar resultado da sessão
-							await this.loadSessionResult();
-							this.showStopLossModal = true;
-						} else if (currentSessionStatus === 'stopped_profit') {
-							console.log('[StatsIAsView] 🎯 [OnMount] Target profit detectado! Mostrando modal...');
-							// Buscar resultado da sessão
-							await this.loadSessionResult();
-							this.showTargetProfitModal = true;
-						}
+				// ✅ PRIORIDADE 1: Se o status atual é stopped_loss ou stopped_profit, mostrar modal
+				// (independentemente do estado anterior, desde que o modal não esteja já aberto)
+				if (currentSessionStatus === 'stopped_loss') {
+					if (!this.showStopLossModal) {
+						console.log('[StatsIAsView] 🛑 [OnMount] Stop loss detectado! Mostrando modal...');
+						console.log('[StatsIAsView] 📊 [OnMount] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
+						// Buscar resultado da sessão
+						await this.loadSessionResult();
+						this.showStopLossModal = true;
+						console.log('[StatsIAsView] ✅ [OnMount] Modal de stop loss exibido');
 					}
-				}
-				
-				// Sempre atualizar previousSessionStatus
-				if (this.previousSessionStatus !== currentSessionStatus) {
+					this.previousSessionStatus = currentSessionStatus;
+				} else if (currentSessionStatus === 'stopped_profit') {
+					if (!this.showTargetProfitModal) {
+						console.log('[StatsIAsView] 🎯 [OnMount] Target profit detectado! Mostrando modal...');
+						console.log('[StatsIAsView] 📊 [OnMount] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
+						// Buscar resultado da sessão
+						await this.loadSessionResult();
+						this.showTargetProfitModal = true;
+						console.log('[StatsIAsView] ✅ [OnMount] Modal de target profit exibido');
+					}
+					this.previousSessionStatus = currentSessionStatus;
+				} else if (this.previousSessionStatus !== currentSessionStatus) {
+					// Se mudou para outro status, atualizar previousSessionStatus
+					console.log('[StatsIAsView] 🔄 [OnMount] Status mudou para:', currentSessionStatus);
 					this.previousSessionStatus = currentSessionStatus;
 				}
 				
