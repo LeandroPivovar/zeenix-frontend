@@ -1251,11 +1251,37 @@ export default {
 		
 		async loadAccountInfo() {
 			try {
+				// ✅ OTIMIZAÇÃO: Verificar se já existe uma requisição em andamento
+				if (this._loadingAccountInfo) {
+					console.log('[StatsIAsView] ⏸️ Requisição de account info já em andamento, aguardando...');
+					// Aguardar a requisição anterior terminar
+					while (this._loadingAccountInfo) {
+						await new Promise(resolve => setTimeout(resolve, 100));
+					}
+					return;
+				}
+				
+				// ✅ OTIMIZAÇÃO: Verificar cache recente (últimos 5 segundos)
+				const cacheKey = 'accountInfo_lastFetch';
+				const lastFetch = localStorage.getItem(cacheKey);
+				if (lastFetch) {
+					const timeSinceLastFetch = Date.now() - parseInt(lastFetch);
+					if (timeSinceLastFetch < 5000) {
+						console.log('[StatsIAsView] ⚡ Usando cache de account info (menos de 5s)');
+						this.loadAccountInfoFromLocal();
+						return;
+					}
+				}
+				
+				// Marcar que está carregando
+				this._loadingAccountInfo = true;
+				
 				// ✅ OTIMIZAÇÃO: Atualizar saldo da API primeiro (igual outras páginas)
 				const connectionStr = localStorage.getItem('deriv_connection');
 				if (!connectionStr) {
 					// Sem conexão salva, usar dados do localStorage se existir
 					this.loadAccountInfoFromLocal();
+					this._loadingAccountInfo = false;
 					return;
 				}
 				
@@ -1311,6 +1337,9 @@ export default {
 							}
 							this.accountBalance = parseFloat(balance) || 0;
 							
+							// ✅ Salvar timestamp do cache
+							localStorage.setItem('accountInfo_lastFetch', Date.now().toString());
+							
 							console.log('[StatsIAsView] ✅ Saldo atualizado da API:', this.accountBalance);
 						} else {
 							// Se API falhar, usar dados do localStorage (fallback)
@@ -1321,10 +1350,14 @@ export default {
 						console.warn('[StatsIAsView] ⚠️ Erro ao atualizar saldo da API:', apiError);
 						// Se API falhar, usar dados do localStorage (fallback)
 						this.loadAccountInfoFromLocal();
+					} finally {
+						// Sempre liberar o flag
+						this._loadingAccountInfo = false;
 					}
 				} else {
 					// Sem token, usar dados do localStorage
 					this.loadAccountInfoFromLocal();
+					this._loadingAccountInfo = false;
 				}
 				
 				// Buscar estatísticas de hoje
