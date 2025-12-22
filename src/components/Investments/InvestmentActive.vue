@@ -1734,6 +1734,11 @@ export default {
                             
                             console.log('[InvestmentActive] ✅ Adicionados', logsToAdd.length, 'novos logs. Total agora:', this.realtimeLogs.length);
                             
+                            // ✅ Verificar se há mensagens de stop loss ou target profit nos novos logs
+                            if (logsToAdd.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
+                                this.checkLogsForStopEvents();
+                            }
+                            
                             // Se estava no topo, manter no topo
                             this.$nextTick(() => {
                                 if (container && isAtTop) {
@@ -1747,9 +1752,56 @@ export default {
                             console.log('[InvestmentActive] ℹ️ Nenhum log novo para adicionar');
                         }
                     }
+                    
+                    // ✅ Verificar logs após primeira carga também
+                    if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
+                        this.checkLogsForStopEvents();
+                    }
                 }
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao buscar logs:', error);
+            }
+        },
+        
+        /**
+         * ✅ Verifica os logs recentes para detectar mensagens de stop loss ou target profit
+         * Isso garante que o modal seja mostrado mesmo se o sessionStatus ainda não foi atualizado
+         */
+        checkLogsForStopEvents() {
+            if (!this.realtimeLogs || this.realtimeLogs.length === 0) return;
+            
+            // Verificar os últimos 20 logs (mais recentes)
+            const recentLogs = this.realtimeLogs.slice(0, 20);
+            
+            // ✅ Verificar se há mensagem de meta de lucro atingida nos logs recentes
+            const hasTargetProfitMessage = recentLogs.some(log => 
+                log.message && (
+                    log.message.includes('META DE LUCRO ATINGIDA') ||
+                    log.message.includes('Meta de lucro atingida')
+                )
+            );
+            
+            if (hasTargetProfitMessage && !this.showTargetProfitModal) {
+                console.log('[InvestmentActive] 🎯 [Logs] Meta de lucro detectada nos logs! Mostrando modal...');
+                this.loadSessionResult().then(() => {
+                    this.showTargetProfitModal = true;
+                });
+            }
+            
+            // ✅ Verificar se há mensagem de stop loss nos logs recentes
+            const hasStopLossMessage = recentLogs.some(log => 
+                log.message && (
+                    log.message.includes('STOP LOSS ATINGIDO') ||
+                    log.message.includes('Stop loss atingido') ||
+                    log.message.includes('STOP LOSS REACHED')
+                )
+            );
+            
+            if (hasStopLossMessage && !this.showStopLossModal) {
+                console.log('[InvestmentActive] 🛑 [Logs] Stop loss detectado nos logs! Mostrando modal...');
+                this.loadSessionResult().then(() => {
+                    this.showStopLossModal = true;
+                });
             }
         },
         
@@ -2007,25 +2059,49 @@ export default {
                 console.log('[InvestmentActive] 📦 Config recebida:', result);
                 
                 if (result.success && result.data) {
-                    const currentSessionStatus = result.data.sessionStatus || 'active';
+                    const currentSessionStatus = result.data.sessionStatus || result.data.session_status || 'active';
                     
-                    // ✅ Detectar mudança de session_status para mostrar modais
+                    // ✅ Log para debug
                     if (this.previousSessionStatus !== currentSessionStatus) {
-                        // Se mudou de ativo para stopped_loss ou stopped_profit, mostrar modal
-                        if (this.previousSessionStatus === 'active' || this.previousSessionStatus === null) {
-                            if (currentSessionStatus === 'stopped_loss') {
-                                // Buscar resultado da sessão
-                                this.loadSessionResult().then(() => {
-                                    this.showStopLossModal = true;
-                                });
-                            } else if (currentSessionStatus === 'stopped_profit') {
-                                // Buscar resultado da sessão
-                                this.loadSessionResult().then(() => {
-                                    this.showTargetProfitModal = true;
-                                });
-                            }
+                        console.log(`[InvestmentActive] 🔄 Mudança de session_status: ${this.previousSessionStatus} → ${currentSessionStatus}`);
+                    }
+                    
+                    // ✅ PRIORIDADE 1: Se o status atual é stopped_loss ou stopped_profit, mostrar modal
+                    // (independentemente do estado anterior, desde que o modal não esteja já aberto)
+                    if (currentSessionStatus === 'stopped_loss') {
+                        if (!this.showStopLossModal) {
+                            console.log('[InvestmentActive] 🛑 Stop loss detectado! Mostrando modal...');
+                            console.log('[InvestmentActive] 📊 Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
+                            // Buscar resultado da sessão
+                            this.loadSessionResult().then(() => {
+                                this.showStopLossModal = true;
+                                console.log('[InvestmentActive] ✅ Modal de stop loss exibido');
+                            });
                         }
                         this.previousSessionStatus = currentSessionStatus;
+                    } else if (currentSessionStatus === 'stopped_profit') {
+                        // ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
+                        // Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
+                        if (!this.showTargetProfitModal) {
+                            console.log('[InvestmentActive] 🎯 Target profit detectado! Mostrando modal...');
+                            console.log('[InvestmentActive] 📊 Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
+                            // Buscar resultado da sessão
+                            this.loadSessionResult().then(() => {
+                                this.showTargetProfitModal = true;
+                                console.log('[InvestmentActive] ✅ Modal de target profit exibido');
+                            });
+                        }
+                        this.previousSessionStatus = currentSessionStatus;
+                    } else if (this.previousSessionStatus !== currentSessionStatus) {
+                        // Se mudou para outro status, atualizar previousSessionStatus
+                        console.log('[InvestmentActive] 🔄 Status mudou para:', currentSessionStatus);
+                        this.previousSessionStatus = currentSessionStatus;
+                    }
+                    
+                    // ✅ Verificar também nos logs recentes para garantir detecção imediata
+                    // Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
+                    if (!this.showTargetProfitModal && !this.showStopLossModal && this.realtimeLogs.length > 0) {
+                        this.checkLogsForStopEvents();
                     }
                     
                     this.sessionConfig = {
@@ -3399,16 +3475,36 @@ export default {
         }
         
         // 📊 Buscar configuração primeiro (assíncrono)
-        this.fetchSessionConfig().then(() => {
+        this.fetchSessionConfig().then(async () => {
             // Após config carregada, verificar se IA está ativa
             const isActive = this.sessionConfig.isActive === 1 || this.sessionConfig.isActive === true;
             if (isActive) {
                 console.log('[InvestmentActive] ✅ IA está ativa, inicializando logs...');
                 if (this.realtimeLogs.length === 0) {
                     this.logSystemInit();
+                    // ✅ Aguardar um pouco e então verificar logs após inicialização
+                    setTimeout(() => {
+                        if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
+                            this.checkLogsForStopEvents();
+                        }
+                    }, 1000);
                 } else {
                     // Se já tem logs, apenas iniciar polling
                     this.startLogPolling();
+                    // ✅ Verificar logs imediatamente
+                    if (!this.showStopLossModal && !this.showTargetProfitModal) {
+                        this.checkLogsForStopEvents();
+                    }
+                }
+            } else {
+                // ✅ Mesmo quando inativa, verificar logs para detectar stop loss/target profit
+                // Isso garante que o modal seja mostrado se a IA foi desativada recentemente
+                if (this.realtimeLogs.length === 0) {
+                    // Carregar logs uma vez para verificar
+                    await this.fetchRealtimeLogs();
+                }
+                if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
+                    this.checkLogsForStopEvents();
                 }
             }
         });
