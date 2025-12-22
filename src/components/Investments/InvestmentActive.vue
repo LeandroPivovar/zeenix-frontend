@@ -2052,79 +2052,8 @@ export default {
                     // Armazenar dados originais para uso no OperationLogs
                     this.rawTradeHistory = result.data;
                     
-                    // Transformar dados do backend para o formato do frontend
-                    const defaultStakeAmount = this.sessionConfig.entryValue || this.entryValue || 0.35;
-                    console.log('[InvestmentActive] 📊 Dados recebidos do backend:', result.data);
-                    this.logOperations = result.data.map(trade => {
-                        console.log('[InvestmentActive] 🔍 Trade:', {
-                            id: trade.id,
-                            entryPrice: trade.entryPrice,
-                            exitPrice: trade.exitPrice,
-                            status: trade.status
-                        });
-                        // Usar closedAt ou createdAt para o horário (priorizar closedAt)
-                        // 🕐 TIMESTAMP NO HORÁRIO DE BRASÍLIA (UTC-3)
-                        const tradeDate = new Date(trade.closedAt || trade.createdAt);
-                        const time = tradeDate.toLocaleTimeString('pt-BR', {
-                            timeZone: 'America/Sao_Paulo',
-                            hour: '2-digit',
-                            minute: '2-digit',
-                            second: '2-digit',
-                            hour12: false
-                        });
-                        // Salvar timestamp para plotagem no gráfico
-                        const timestamp = Math.floor(tradeDate.getTime() / 1000);
-                        
-                        // signal pode ser 'CALL' ou 'PUT', contractType também
-                        const direction = (trade.signal || trade.contractType || 'CALL').toUpperCase();
-                        
-                        // profitLoss é o lucro/prejuízo (pode ser null se ainda não finalizou)
-                        const profit = parseFloat(trade.profitLoss || 0);
-                        const pnl = profit >= 0 ? `+$${profit.toFixed(2)}` : `$${profit.toFixed(2)}`;
-                        
-                        // Investimento (stakeAmount) - usar do trade ou do default
-                        const investment = parseFloat(trade.stakeAmount || defaultStakeAmount || 0);
-                        const investmentFormatted = `$${investment.toFixed(2)}`;
-                        
-                        // ✅ Converter entryPrice e exitPrice corretamente (podem vir como string ou number)
-                        let entryPrice = null;
-                        if (trade.entryPrice != null && trade.entryPrice !== undefined && trade.entryPrice !== '') {
-                            const entryValue = typeof trade.entryPrice === 'string' 
-                                ? parseFloat(trade.entryPrice) 
-                                : Number(trade.entryPrice);
-                            entryPrice = !isNaN(entryValue) && entryValue > 0 ? entryValue : null;
-                        }
-                        
-                        let exitPrice = null;
-                        if (trade.exitPrice != null && trade.exitPrice !== undefined && trade.exitPrice !== '') {
-                            const exitValue = typeof trade.exitPrice === 'string' 
-                                ? parseFloat(trade.exitPrice) 
-                                : Number(trade.exitPrice);
-                            exitPrice = !isNaN(exitValue) && exitValue > 0 ? exitValue : null;
-                        }
-                        
-                        console.log('[InvestmentActive] 🔍 Trade processado:', {
-                            id: trade.id,
-                            entryPrice: entryPrice,
-                            exitPrice: exitPrice,
-                            entryPriceRaw: trade.entryPrice,
-                            exitPriceRaw: trade.exitPrice,
-                            entryPriceType: typeof trade.entryPrice,
-                            exitPriceType: typeof trade.exitPrice
-                        });
-                        
-                        return {
-                            time: time,
-                            timestamp: timestamp,
-                            pair: trade.symbol || 'R_10', // Usar symbol do banco
-                            direction: direction,
-                            investment: investmentFormatted,
-                            pnl: pnl,
-                            profit: profit,
-                            entryPrice: entryPrice,
-                            exitPrice: exitPrice
-                        };
-                    });
+                    // ✅ Usar método compartilhado para processar histórico
+                    this.processTradeHistoryToLogOperations(result.data);
                     
                     console.log('[InvestmentActive] ✅ Log formatado:', this.logOperations);
                     console.log('[InvestmentActive] 📊 Primeira operação:', this.logOperations[0]);
@@ -2154,6 +2083,199 @@ export default {
             }
         },
         
+        /**
+         * ✅ ATUALIZAÇÃO IMEDIATA: Atualiza trade específico quando recebe evento SSE
+         */
+        handleTradeEventUpdate(payload) {
+            if (!payload.tradeId) {
+                console.warn('[InvestmentActive] ⚠️ Evento sem tradeId:', payload);
+                return;
+            }
+
+            console.log('[InvestmentActive] 🔄 Atualizando trade localmente:', payload.tradeId, 'Status:', payload.status, 'Tipo:', payload.type);
+
+            // Inicializar rawTradeHistory se não existir
+            if (!this.rawTradeHistory) {
+                this.rawTradeHistory = [];
+            }
+
+            // Buscar trade no histórico local (rawTradeHistory)
+            const tradeIndex = this.rawTradeHistory.findIndex(t => t.id === payload.tradeId);
+            
+            if (tradeIndex >= 0) {
+                // Trade existe - atualizar
+                const trade = this.rawTradeHistory[tradeIndex];
+                
+                // Atualizar campos do trade
+                if (payload.status) {
+                    trade.status = payload.status;
+                }
+                if (payload.exitPrice !== undefined) {
+                    trade.exitPrice = payload.exitPrice;
+                }
+                if (payload.profitLoss !== undefined) {
+                    trade.profitLoss = payload.profitLoss;
+                }
+                if (payload.contractId) {
+                    trade.contractId = payload.contractId;
+                }
+
+                // Se for correção, logar
+                if (payload.type === 'corrected') {
+                    console.log('[InvestmentActive] 🔄 Trade corrigido:', {
+                        tradeId: payload.tradeId,
+                        previous: payload.previousPrediction,
+                        confirmed: payload.confirmedStatus,
+                        previousProfit: payload.previousProfit,
+                        confirmedProfit: payload.confirmedProfit
+                    });
+                }
+
+                // Re-processar logOperations com o trade atualizado
+                this.processTradeHistoryToLogOperations(this.rawTradeHistory);
+                
+                // Atualizar activeTrade se for o trade ativo
+                const updatedTrade = this.rawTradeHistory[tradeIndex];
+                if (this.activeTrade && this.activeTrade.id === payload.tradeId) {
+                    // Atualizar activeTrade com os novos dados
+                    this.activeTrade = {
+                        ...this.activeTrade,
+                        status: updatedTrade.status,
+                        exitPrice: updatedTrade.exitPrice,
+                        profitLoss: updatedTrade.profitLoss,
+                        contractId: updatedTrade.contractId
+                    };
+                    
+                    console.log('[InvestmentActive] 🔄 activeTrade atualizado:', this.activeTrade);
+                    
+                    // Se mudou de PENDING para WON/LOST, atualizar estado visual
+                    if (payload.status === 'WON' || payload.status === 'LOST') {
+                        // Atualizar progressState para mostrar resultado
+                        this.progressState = 3; // Contrato fechado
+                        
+                        // Se havia timer, limpar e reiniciar
+                        if (this.orderClosedTimer !== null) {
+                            clearTimeout(this.orderClosedTimer);
+                        }
+                        
+                        // Iniciar timer de 4 segundos para voltar ao estado "analisando mercado"
+                        this.orderClosedTimer = setTimeout(() => {
+                            console.log('[InvestmentActive] ⏰ Timer de 4s expirado, voltando para estado "analisando mercado"');
+                            this.activeTrade = null;
+                            this.progressState = 1; // Analisando mercado
+                            this.hadOpenContract = false;
+                            this.orderClosedTimer = null;
+                        }, 4000);
+                    }
+                } else if (payload.status === 'PENDING') {
+                    // Novo trade PENDING - atualizar activeTrade
+                    this.updateActiveTrade(this.rawTradeHistory);
+                } else if (payload.status === 'WON' || payload.status === 'LOST') {
+                    // Trade fechado - atualizar lista completa
+                    this.updateActiveTrade(this.rawTradeHistory);
+                }
+
+                console.log('[InvestmentActive] ✅ Trade atualizado localmente:', payload.tradeId);
+            } else if (payload.type === 'created') {
+                // ✅ NOVO TRADE: Adicionar ao histórico se for criação
+                console.log('[InvestmentActive] ➕ Novo trade criado, adicionando ao histórico local:', payload.tradeId);
+                
+                // Criar objeto básico do trade (será preenchido depois)
+                const newTrade = {
+                    id: payload.tradeId,
+                    status: payload.status || 'PENDING',
+                    entryPrice: null, // Será preenchido no próximo evento ou fetch
+                    exitPrice: payload.exitPrice || null,
+                    profitLoss: payload.profitLoss || null,
+                    contractId: payload.contractId || null,
+                    signal: payload.strategy || null,
+                    contractType: payload.contractType || null,
+                    symbol: payload.symbol || 'R_10',
+                    stakeAmount: this.sessionConfig.entryValue || this.entryValue || 0.35,
+                    createdAt: new Date().toISOString(),
+                    closedAt: null
+                };
+                
+                // Adicionar no início do array (trades mais recentes primeiro)
+                this.rawTradeHistory.unshift(newTrade);
+                
+                // Limitar a 20 trades mais recentes
+                if (this.rawTradeHistory.length > 20) {
+                    this.rawTradeHistory = this.rawTradeHistory.slice(0, 20);
+                }
+                
+                // Re-processar logOperations
+                this.processTradeHistoryToLogOperations(this.rawTradeHistory);
+                
+                // Atualizar activeTrade
+                this.updateActiveTrade(this.rawTradeHistory);
+                
+                console.log('[InvestmentActive] ✅ Novo trade adicionado localmente:', payload.tradeId);
+            } else {
+                // Trade não encontrado no histórico local - fazer fetch completo
+                console.log('[InvestmentActive] ⚠️ Trade não encontrado localmente, fazendo fetch completo');
+                this.fetchTradeHistory();
+            }
+        },
+
+        /**
+         * Processa rawTradeHistory para logOperations (extraído de fetchTradeHistory)
+         */
+        processTradeHistoryToLogOperations(tradeHistory) {
+            if (!tradeHistory || tradeHistory.length === 0) {
+                this.logOperations = [];
+                return;
+            }
+
+            const defaultStakeAmount = this.sessionConfig.entryValue || this.entryValue || 0.35;
+            
+            this.logOperations = tradeHistory.map(trade => {
+                const tradeDate = new Date(trade.closedAt || trade.createdAt);
+                const time = tradeDate.toLocaleTimeString('pt-BR', {
+                    timeZone: 'America/Sao_Paulo',
+                    hour: '2-digit',
+                    minute: '2-digit',
+                    second: '2-digit',
+                    hour12: false
+                });
+                const timestamp = Math.floor(tradeDate.getTime() / 1000);
+                
+                const direction = (trade.signal || trade.contractType || 'CALL').toUpperCase();
+                const profit = parseFloat(trade.profitLoss || 0);
+                const pnl = profit >= 0 ? `+$${profit.toFixed(2)}` : `$${profit.toFixed(2)}`;
+                const investment = parseFloat(trade.stakeAmount || defaultStakeAmount || 0);
+                const investmentFormatted = `$${investment.toFixed(2)}`;
+                
+                let entryPrice = null;
+                if (trade.entryPrice != null && trade.entryPrice !== undefined && trade.entryPrice !== '') {
+                    const entryValue = typeof trade.entryPrice === 'string' 
+                        ? parseFloat(trade.entryPrice) 
+                        : Number(trade.entryPrice);
+                    entryPrice = !isNaN(entryValue) && entryValue > 0 ? entryValue : null;
+                }
+                
+                let exitPrice = null;
+                if (trade.exitPrice != null && trade.exitPrice !== undefined && trade.exitPrice !== '') {
+                    const exitValue = typeof trade.exitPrice === 'string' 
+                        ? parseFloat(trade.exitPrice) 
+                        : Number(trade.exitPrice);
+                    exitPrice = !isNaN(exitValue) && exitValue > 0 ? exitValue : null;
+                }
+                
+                return {
+                    time: time,
+                    timestamp: timestamp,
+                    pair: trade.symbol || 'R_10',
+                    direction: direction,
+                    investment: investmentFormatted,
+                    pnl: pnl,
+                    profit: profit,
+                    entryPrice: entryPrice,
+                    exitPrice: exitPrice
+                };
+            });
+        },
+
         /**
          * Atualiza o trade ativo baseado no histórico de trades
          * Procura pelo primeiro trade com status ACTIVE, ou o último trade fechado (WON/LOST)
@@ -2301,12 +2423,28 @@ export default {
                 try {
                     const payload = JSON.parse(event.data);
                     console.log('[InvestmentActive] 📡 Evento de trade recebido:', payload);
-                    // Atualizar histórico e logs sob demanda
-                    await Promise.all([
-                        this.fetchTradeHistory(),
-                        this.fetchRealtimeLogs(),
-                        this.fetchDailyStats(),
-                    ]);
+                    
+                    // ✅ ATUALIZAÇÃO IMEDIATA: Se for uma atualização de trade, atualizar localmente primeiro
+                    if (payload.type === 'updated' || payload.type === 'corrected' || payload.type === 'created') {
+                        this.handleTradeEventUpdate(payload);
+                    }
+                    
+                    // Atualizar histórico e logs sob demanda (mas de forma mais inteligente)
+                    // Se for uma previsão (isPredicted), não fazer fetch completo imediatamente
+                    if (payload.isPredicted) {
+                        // Previsão: apenas atualizar logs e stats, não fazer fetch completo
+                        await Promise.all([
+                            this.fetchRealtimeLogs(),
+                            this.fetchDailyStats(),
+                        ]);
+                    } else {
+                        // Confirmação: fazer fetch completo para sincronizar
+                        await Promise.all([
+                            this.fetchTradeHistory(),
+                            this.fetchRealtimeLogs(),
+                            this.fetchDailyStats(),
+                        ]);
+                    }
                 } catch (e) {
                     console.warn('[InvestmentActive] ⚠️ Evento SSE inválido:', e);
                 }
