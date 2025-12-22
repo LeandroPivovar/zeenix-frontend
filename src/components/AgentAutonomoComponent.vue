@@ -340,36 +340,41 @@ export default {
 					return;
 				}
 				
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-				const response = await fetch(`${apiBase}/ai/deriv-balance`, {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json',
-						'Authorization': `Bearer ${localStorage.getItem('token')}`
-					},
-					body: JSON.stringify({ derivToken: derivToken }),
-				});
+				// ✅ DESATIVADO: Chamada para /ai/deriv-balance (causa erro 500)
+				// Usar saldo já disponível no contexto ou endpoint alternativo /broker/deriv/status
+				console.warn('[AgenteAutonomo] ⚠️ Busca de saldo desativada - usar saldo do contexto');
+				return;
 				
-				const result = await response.json();
-				if (result.success && result.data) {
-					this.accountBalance = result.data.balance;
-					this.accountCurrency = result.data.currency;
-					this.accountLoginid = result.data.loginid;
-					this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+				// const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				// const response = await fetch(`${apiBase}/ai/deriv-balance`, {
+				// 	method: 'POST',
+				// 	headers: {
+				// 		'Content-Type': 'application/json',
+				// 		'Authorization': `Bearer ${localStorage.getItem('token')}`
+				// 	},
+				// 	body: JSON.stringify({ derivToken: derivToken }),
+				// });
+				
+				// const result = await response.json();
+				// if (result.success && result.data) {
+				// 	this.accountBalance = result.data.balance;
+				// 	this.accountCurrency = result.data.currency;
+				// 	this.accountLoginid = result.data.loginid;
+				// 	this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
 					
-					// Atualizar moeda preferida
-					this.preferredCurrency = this.getPreferredCurrency();
+				// 	// Atualizar moeda preferida
+				// 	this.preferredCurrency = this.getPreferredCurrency();
 					
-					console.log('[AgenteAutonomo] ✅ Saldo atualizado:', {
-						balance: this.accountBalance,
-						currency: this.accountCurrency,
-						loginid: this.accountLoginid,
-						isDemo: this.isDemo,
-						preferredCurrency: this.preferredCurrency
-					});
-				} else {
-					console.error('[AgenteAutonomo] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
-				}
+				// 	console.log('[AgenteAutonomo] ✅ Saldo atualizado:', {
+				// 		balance: this.accountBalance,
+				// 		currency: this.accountCurrency,
+				// 		loginid: this.accountLoginid,
+				// 		isDemo: this.isDemo,
+				// 		preferredCurrency: this.preferredCurrency
+				// 	});
+				// } else {
+				// 	console.error('[AgenteAutonomo] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
+				// }
 			} catch (error) {
 				console.error('[AgenteAutonomo] ❌ Erro ao buscar saldo da conta:', error);
 			}

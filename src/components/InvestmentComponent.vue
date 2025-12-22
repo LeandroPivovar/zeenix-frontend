@@ -712,33 +712,38 @@ export default {
                     return;
                 }
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const response = await fetch(`${apiBase}/ai/deriv-balance`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ derivToken: derivToken }),
-                });
+                // ✅ DESATIVADO: Chamada para /ai/deriv-balance (causa erro 500)
+                // Usar saldo já disponível no contexto ou endpoint alternativo /broker/deriv/status
+                console.warn('[InvestmentIAView] ⚠️ Busca de saldo desativada - usar saldo do contexto');
+                return;
 
-                const result = await response.json();
-                if (result.success && result.data) {
-                    this.accountBalance = result.data.balance;
-                    this.accountCurrency = result.data.currency;
-                    this.accountLoginid = result.data.loginid;
-                    this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
-                    this.lastBalanceUpdate = new Date();
+                // const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                // const response = await fetch(`${apiBase}/ai/deriv-balance`, {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //         'Authorization': `Bearer ${localStorage.getItem('token')}`
+                //     },
+                //     body: JSON.stringify({ derivToken: derivToken }),
+                // });
+
+                // const result = await response.json();
+                // if (result.success && result.data) {
+                //     this.accountBalance = result.data.balance;
+                //     this.accountCurrency = result.data.currency;
+                //     this.accountLoginid = result.data.loginid;
+                //     this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
+                //     this.lastBalanceUpdate = new Date();
                     
-                    console.log('[InvestmentIAView] ✅ Saldo atualizado:', {
-                        balance: this.accountBalance,
-                        currency: this.accountCurrency,
-                        loginid: this.accountLoginid,
-                        isDemo: this.isDemo
-                    });
-                } else {
-                    console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
-                }
+                //     console.log('[InvestmentIAView] ✅ Saldo atualizado:', {
+                //         balance: this.accountBalance,
+                //         currency: this.accountCurrency,
+                //         loginid: this.accountLoginid,
+                //         isDemo: this.isDemo
+                //     });
+                // } else {
+                //     console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
+                // }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao buscar saldo da conta:', error);
             }

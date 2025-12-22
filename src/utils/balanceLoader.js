@@ -329,41 +329,41 @@ export async function loadAccountBalance(forceRefresh = false) {
       console.warn('[BalanceLoader] Erro ao buscar saldo via /broker/deriv/status:', error);
     }
     
-    // Fallback: tentar endpoint alternativo
-    try {
-      const response = await fetch(`${apiBase}/ai/deriv-balance`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ derivToken: derivToken })
-      });
+    // ✅ DESATIVADO: Fallback para endpoint /ai/deriv-balance (causa erro 500)
+    // try {
+    //   const response = await fetch(`${apiBase}/ai/deriv-balance`, {
+    //     method: 'POST',
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       'Authorization': `Bearer ${token}`
+    //     },
+    //     body: JSON.stringify({ derivToken: derivToken })
+    //   });
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.success && result.data) {
-          const balanceData = {
-            balance: parseFloat(result.data.balance) || 0,
-            currency: (result.data.currency || 'USD').toUpperCase(),
-            loginid: result.data.loginid || null,
-            isDemo: result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT') || false,
-            // Criar estruturas vazias se não vierem do endpoint
-            balancesByCurrencyReal: result.data.balancesByCurrencyReal || {},
-            balancesByCurrencyDemo: result.data.balancesByCurrencyDemo || {},
-            balanceValue: parseFloat(result.data.balance) || 0
-          };
+    //   if (response.ok) {
+    //     const result = await response.json();
+    //     if (result.success && result.data) {
+    //       const balanceData = {
+    //         balance: parseFloat(result.data.balance) || 0,
+    //         currency: (result.data.currency || 'USD').toUpperCase(),
+    //         loginid: result.data.loginid || null,
+    //         isDemo: result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT') || false,
+    //         // Criar estruturas vazias se não vierem do endpoint
+    //         balancesByCurrencyReal: result.data.balancesByCurrencyReal || {},
+    //         balancesByCurrencyDemo: result.data.balancesByCurrencyDemo || {},
+    //         balanceValue: parseFloat(result.data.balance) || 0
+    //       };
           
-          // Armazenar no cache
-          setCachedBalance(balanceData);
+    //       // Armazenar no cache
+    //       setCachedBalance(balanceData);
           
-          console.log('[BalanceLoader] Saldo carregado via fallback:', balanceData);
-          return balanceData;
-        }
-      }
-    } catch (error) {
-      console.warn('[BalanceLoader] Erro ao buscar saldo via /ai/deriv-balance:', error);
-    }
+    //       console.log('[BalanceLoader] Saldo carregado via fallback:', balanceData);
+    //       return balanceData;
+    //     }
+    //   }
+    // } catch (error) {
+    //   console.warn('[BalanceLoader] Erro ao buscar saldo via /ai/deriv-balance:', error);
+    // }
     
     return null;
   } catch (error) {

@@ -983,117 +983,122 @@ export default {
                     console.warn('[InvestmentIAView] Erro ao buscar do cache:', cacheError);
                 }
                 
+                // ✅ DESATIVADO: Chamada para /ai/deriv-balance (causa erro 500)
+                // Usar saldo já disponível no contexto ou endpoint alternativo /broker/deriv/status
+                console.warn('[InvestmentIAView] ⚠️ Busca de saldo desativada - usar saldo do contexto');
+                return;
+
                 // SEGUNDO: Buscar da API para atualizar com dados mais recentes
-                const derivToken = this.getDerivToken();
-                if (!derivToken) {
-                    console.warn('[InvestmentIAView] ❌ Token não disponível para buscar saldo');
-                    return;
-                }
+                // const derivToken = this.getDerivToken();
+                // if (!derivToken) {
+                //     console.warn('[InvestmentIAView] ❌ Token não disponível para buscar saldo');
+                //     return;
+                // }
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const response = await fetch(`${apiBase}/ai/deriv-balance`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${localStorage.getItem('token')}`
-                    },
-                    body: JSON.stringify({ derivToken: derivToken }),
-                });
+                // const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                // const response = await fetch(`${apiBase}/ai/deriv-balance`, {
+                //     method: 'POST',
+                //     headers: {
+                //         'Content-Type': 'application/json',
+                //         'Authorization': `Bearer ${localStorage.getItem('token')}`
+                //     },
+                //     body: JSON.stringify({ derivToken: derivToken }),
+                // });
 
-                const result = await response.json();
-                if (result.success && result.data) {
-                    // Extrair saldo - pode vir como número, string ou objeto com value
-                    let newBalance = result.data.balance;
-                    if (typeof newBalance === 'object' && newBalance !== null) {
-                        newBalance = newBalance.value || newBalance.balance || 0;
-                    }
-                    // Converter para número
-                    newBalance = parseFloat(newBalance) || 0;
+                // const result = await response.json();
+                // if (result.success && result.data) {
+                //     // Extrair saldo - pode vir como número, string ou objeto com value
+                //     let newBalance = result.data.balance;
+                //     if (typeof newBalance === 'object' && newBalance !== null) {
+                //         newBalance = newBalance.value || newBalance.balance || 0;
+                //     }
+                //     // Converter para número
+                //     newBalance = parseFloat(newBalance) || 0;
                     
-                    const newCurrency = result.data.currency;
-                    const newLoginid = result.data.loginid;
+                //     const newCurrency = result.data.currency;
+                //     const newLoginid = result.data.loginid;
                     
-                    // Verificar isDemo de múltiplas fontes para garantir precisão
-                    let isDemoFromLoginid = newLoginid?.startsWith('VRTC') || newLoginid?.startsWith('VRT');
+                //     // Verificar isDemo de múltiplas fontes para garantir precisão
+                //     let isDemoFromLoginid = newLoginid?.startsWith('VRTC') || newLoginid?.startsWith('VRT');
                     
-                    // Verificar também no localStorage deriv_connection
-                    try {
-                        const connectionStr = localStorage.getItem('deriv_connection');
-                        if (connectionStr) {
-                            const connection = JSON.parse(connectionStr);
-                            if (connection.isDemo !== undefined) {
-                                isDemoFromLoginid = connection.isDemo === true || connection.isDemo === 1;
-                            }
-                        }
-                    } catch (error) {
-                        console.warn('[InvestmentIAView] Erro ao verificar deriv_connection:', error);
-                    }
+                //     // Verificar também no localStorage deriv_connection
+                //     try {
+                //         const connectionStr = localStorage.getItem('deriv_connection');
+                //         if (connectionStr) {
+                //             const connection = JSON.parse(connectionStr);
+                //             if (connection.isDemo !== undefined) {
+                //                 isDemoFromLoginid = connection.isDemo === true || connection.isDemo === 1;
+                //             }
+                //         }
+                //     } catch (error) {
+                //         console.warn('[InvestmentIAView] Erro ao verificar deriv_connection:', error);
+                //     }
                     
-                    console.log('[InvestmentIAView] 🔍 Verificando atualização de saldo:', {
-                        newBalance,
-                        newLoginid,
-                        isDemoFromLoginid,
-                        currentBalance: this.accountBalance,
-                        currentIsDemo: this.isDemo,
-                        accountTypeMatches: isDemoFromLoginid === this.isDemo,
-                        balanceType: typeof newBalance
-                    });
+                //     console.log('[InvestmentIAView] 🔍 Verificando atualização de saldo:', {
+                //         newBalance,
+                //         newLoginid,
+                //         isDemoFromLoginid,
+                //         currentBalance: this.accountBalance,
+                //         currentIsDemo: this.isDemo,
+                //         accountTypeMatches: isDemoFromLoginid === this.isDemo,
+                //         balanceType: typeof newBalance
+                //     });
                     
-                    // Sempre atualizar o saldo se o valor recebido for válido (>= 0 e é um número)
-                    // Mas só atualizar se:
-                    // 1. O novo saldo é válido (> 0) OU
-                    // 2. O novo saldo é 0 mas não temos saldo válido ainda OU
-                    // 3. O novo saldo é >= 0 e não temos saldo válido ainda
-                    const hasValidBalance = this.accountBalance !== null && this.accountBalance !== undefined && this.accountBalance > 0;
+                //     // Sempre atualizar o saldo se o valor recebido for válido (>= 0 e é um número)
+                //     // Mas só atualizar se:
+                //     // 1. O novo saldo é válido (> 0) OU
+                //     // 2. O novo saldo é 0 mas não temos saldo válido ainda OU
+                //     // 3. O novo saldo é >= 0 e não temos saldo válido ainda
+                //     const hasValidBalance = this.accountBalance !== null && this.accountBalance !== undefined && this.accountBalance > 0;
                     
-                    if (!isNaN(newBalance) && newBalance >= 0) {
-                        // Se temos um saldo válido do cache e o novo saldo é 0, não atualizar (manter o cache)
-                        if (hasValidBalance && newBalance === 0) {
-                            console.log('[InvestmentIAView] ⚠️ Mantendo saldo do cache, novo saldo é 0:', {
-                                cachedBalance: this.accountBalance,
-                                newBalance: newBalance
-                            });
-                        } else {
-                            // Atualizar o saldo
-                            this.accountBalance = newBalance;
-                            console.log('[InvestmentIAView] ✅ Saldo atualizado para:', newBalance);
-                        }
-                    } else {
-                        console.warn('[InvestmentIAView] ⚠️ Saldo inválido recebido:', newBalance);
-                        // Se o saldo recebido for inválido, manter o saldo atual do cache (não resetar para 0)
-                        if (!hasValidBalance) {
-                            // Só resetar para 0 se realmente não tivermos saldo válido
-                            this.accountBalance = 0;
-                        }
-                    }
+                //     if (!isNaN(newBalance) && newBalance >= 0) {
+                //         // Se temos um saldo válido do cache e o novo saldo é 0, não atualizar (manter o cache)
+                //         if (hasValidBalance && newBalance === 0) {
+                //             console.log('[InvestmentIAView] ⚠️ Mantendo saldo do cache, novo saldo é 0:', {
+                //                 cachedBalance: this.accountBalance,
+                //                 newBalance: newBalance
+                //             });
+                //         } else {
+                //             // Atualizar o saldo
+                //             this.accountBalance = newBalance;
+                //             console.log('[InvestmentIAView] ✅ Saldo atualizado para:', newBalance);
+                //         }
+                //     } else {
+                //         console.warn('[InvestmentIAView] ⚠️ Saldo inválido recebido:', newBalance);
+                //         // Se o saldo recebido for inválido, manter o saldo atual do cache (não resetar para 0)
+                //         if (!hasValidBalance) {
+                //             // Só resetar para 0 se realmente não tivermos saldo válido
+                //             this.accountBalance = 0;
+                //         }
+                //     }
                     
-                    // Sempre atualizar currency e loginid se disponíveis
-                    if (newCurrency) {
-                        this.accountCurrency = newCurrency;
-                    }
-                    if (newLoginid) {
-                        this.accountLoginid = newLoginid;
-                    }
+                //     // Sempre atualizar currency e loginid se disponíveis
+                //     if (newCurrency) {
+                //         this.accountCurrency = newCurrency;
+                //     }
+                //     if (newLoginid) {
+                //         this.accountLoginid = newLoginid;
+                //     }
                     
-                    // Atualizar isDemo baseado no loginid retornado
-                    this.isDemo = isDemoFromLoginid;
-                    this.lastBalanceUpdate = new Date();
+                //     // Atualizar isDemo baseado no loginid retornado
+                //     this.isDemo = isDemoFromLoginid;
+                //     this.lastBalanceUpdate = new Date();
                     
-                    console.log('[InvestmentIAView] ✅ Saldo atualizado da API:', {
-                        balance: this.accountBalance,
-                        currency: this.accountCurrency,
-                        loginid: this.accountLoginid,
-                        isDemo: this.isDemo,
-                        newBalanceReceived: newBalance,
-                        finalBalance: this.accountBalance
-                    });
-                } else {
-                    console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
-                    // Se houver erro mas já temos um saldo do cache, manter o saldo atual (não resetar)
-                    if (this.accountBalance === null || this.accountBalance === undefined) {
-                        this.accountBalance = 0;
-                    }
-                }
+                //     console.log('[InvestmentIAView] ✅ Saldo atualizado da API:', {
+                //         balance: this.accountBalance,
+                //         currency: this.accountCurrency,
+                //         loginid: this.accountLoginid,
+                //         isDemo: this.isDemo,
+                //         newBalanceReceived: newBalance,
+                //         finalBalance: this.accountBalance
+                //     });
+                // } else {
+                //     console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
+                //     // Se houver erro mas já temos um saldo do cache, manter o saldo atual (não resetar)
+                //     if (this.accountBalance === null || this.accountBalance === undefined) {
+                //         this.accountBalance = 0;
+                //     }
+                // }
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao buscar saldo da conta:', error);
                 // Se houver erro mas já temos um saldo do cache, manter o saldo atual
