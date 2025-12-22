@@ -1722,7 +1722,7 @@ export default {
 					this.aiMonitoring.isActive = true;
 					console.log('[StatsIAsView] Monitoramento iniciado com sucesso');
 					
-					// Iniciar polling para buscar dados a cada 2 segundos
+					// ✅ POOLING DESATIVADO: Buscar dados apenas uma vez (sem polling)
 					this.startPolling();
 					
 					// Inicializar gráfico de mercado ativo
@@ -1854,25 +1854,12 @@ export default {
 		},
 
 		startPolling() {
-			// ✅ Só fazer polling se a IA estiver ativa
-			if (!this.tradingConfig.isActive && !this.aiMonitoring.isActive) {
-				console.log('[StatsIAsView] ⏸️ IA não está ativa, não iniciando polling de ticks');
-				return;
-			}
+			// ✅ POOLING DESATIVADO: Não fazer polling de ticks conforme solicitado
+			// Os ticks são recebidos via WebSocket no backend, não precisam de polling no frontend
+			console.log('[StatsIAsView] ⏸️ Polling de ticks desativado - ticks vêm via WebSocket do backend');
 			
-			// Buscar dados imediatamente
+			// Buscar dados apenas uma vez para inicializar
 			this.fetchAIData();
-
-			// Continuar buscando a cada 2 segundos
-			this.aiPollingInterval = setInterval(() => {
-				// ✅ Verificar novamente se ainda está ativa antes de buscar
-				if (this.tradingConfig.isActive || this.aiMonitoring.isActive) {
-					this.fetchAIData();
-				} else {
-					// Se não estiver mais ativa, parar polling
-					this.stopPolling();
-				}
-			}, 2000);
 		},
 
 		stopPolling() {
