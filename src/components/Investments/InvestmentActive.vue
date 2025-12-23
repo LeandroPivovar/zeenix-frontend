@@ -632,7 +632,7 @@
                                 </div>
                                 
                                 <div v-else class="text-left">
-                                    <div v-for="(log, index) in realtimeLogs.slice(0, 100)" :key="index" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
+                                    <div v-for="(log, index) in realtimeLogs" :key="log.id || log.created_at || index" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
                                         <span class="text-gray-500">[{{ log.timestamp }}]</span>
                                         <span class="ml-1">{{ log.icon }}</span>
                                         <span class="ml-1 log-message">{{ log.message }}</span>
@@ -654,7 +654,7 @@
                                 </div>
                                 
                                 <div v-else class="mobile-register-cards-container">
-                                    <div v-for="(log, index) in realtimeLogs.slice(0, 100)" :key="index" class="mobile-register-card">
+                                    <div v-for="(log, index) in realtimeLogs" :key="log.id || log.created_at || index" class="mobile-register-card">
                                         <span class="mobile-register-time">{{ log.timestamp }}</span>
                                         <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
                                     </div>
@@ -1454,8 +1454,8 @@ export default {
             
             // ✅ Adicionar no INÍCIO do array (topo) - logs mais novos no topo
             // Vue 3: reatividade automática, não precisa de $set
-            // Limitar a 100 logs para performance
-            this.realtimeLogs = [newLog, ...this.realtimeLogs].slice(0, 100);
+            // ✅ Mostrar todos os logs desde o início até o final
+            this.realtimeLogs = [newLog, ...this.realtimeLogs];
             
             // ✅ Auto-scroll para o topo apenas se o usuário já estiver no topo
             this.$nextTick(() => {

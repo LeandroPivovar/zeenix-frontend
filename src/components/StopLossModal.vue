@@ -17,11 +17,6 @@
           O sistema interrompeu automaticamente as operações para proteger seu capital.
         </p>
         
-        <div class="result-section" v-if="lossLimit !== null && lossLimit !== undefined">
-          <p class="result-label">LIMITE CONFIGURADO</p>
-          <p class="result-value loss-value">-{{ currency }} {{ formattedLossLimit }}</p>
-        </div>
-        
         <div class="result-section" v-if="result !== null && result !== undefined">
           <p class="result-label">RESULTADO DO DIA</p>
           <p class="result-value loss-value">{{ formattedResult }}</p>
@@ -66,9 +61,9 @@ export default {
       return Math.abs(this.lossLimit).toFixed(2);
     },
     formattedResult() {
-      if (this.result === null || this.result === undefined) return '0.00';
+      if (this.result === null || this.result === undefined) return '$0.00';
       const sign = this.result >= 0 ? '+' : '-';
-      return `${sign}${this.currency} ${Math.abs(this.result).toFixed(2)}`;
+      return `${sign}$${Math.abs(this.result).toFixed(2)}`;
     }
   },
   methods: {
