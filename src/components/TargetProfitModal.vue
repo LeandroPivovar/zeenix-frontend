@@ -21,6 +21,11 @@
           Parabéns! Você atingiu seu alvo de lucro diário com sucesso.
         </p>
         
+        <div class="result-section" v-if="finalProfit !== null && finalProfit !== undefined">
+          <p class="result-label">RESULTADO DO DIA</p>
+          <p class="result-value profit-value">{{ formattedFinalProfit }}</p>
+        </div>
+        
         <p class="info-message">
           "Disciplina é o que transforma ganhos pontuais em consistência."
         </p>
@@ -45,9 +50,20 @@ export default {
       type: Number,
       default: 0
     },
+    finalProfit: {
+      type: Number,
+      default: null
+    },
     currency: {
       type: String,
       default: 'USD'
+    }
+  },
+  computed: {
+    formattedFinalProfit() {
+      if (this.finalProfit === null || this.finalProfit === undefined) return '0.00';
+      const sign = this.finalProfit >= 0 ? '+' : '';
+      return `${sign}${this.currency} ${this.finalProfit.toFixed(2)}`;
     }
   },
   methods: {
@@ -120,6 +136,37 @@ export default {
   color: rgba(255, 255, 255, 0.8);
   margin: 0 0 32px 0;
   line-height: 1.5;
+}
+
+.result-section {
+  margin: 24px 0;
+  padding: 16px;
+  background: rgba(34, 197, 94, 0.05);
+  border-radius: 12px;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+}
+
+.result-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.result-value {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.profit-value {
+  color: #22C55E;
+}
+
+.loss-value {
+  color: #FF5252;
 }
 
 .info-message {

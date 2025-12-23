@@ -17,12 +17,22 @@
           O sistema interrompeu automaticamente as operações para proteger seu capital.
         </p>
         
+        <div class="result-section" v-if="lossLimit !== null && lossLimit !== undefined">
+          <p class="result-label">LIMITE CONFIGURADO</p>
+          <p class="result-value loss-value">-{{ currency }} {{ formattedLossLimit }}</p>
+        </div>
+        
+        <div class="result-section" v-if="result !== null && result !== undefined">
+          <p class="result-label">RESULTADO DO DIA</p>
+          <p class="result-value loss-value">{{ formattedResult }}</p>
+        </div>
+        
         <p class="info-message">
           Gestão de risco faz parte da consistência. Um novo ciclo estará disponível no próximo período.
         </p>
         
         <button class="confirm-button" @click="handleConfirm">
-          Ir para Configurações da IA
+          Confirmar e Encerrar Ciclo
         </button>
       </div>
     </div>
@@ -41,9 +51,24 @@ export default {
       type: Number,
       default: 0
     },
+    lossLimit: {
+      type: Number,
+      default: null
+    },
     currency: {
       type: String,
       default: 'USD'
+    }
+  },
+  computed: {
+    formattedLossLimit() {
+      if (this.lossLimit === null || this.lossLimit === undefined) return '0.00';
+      return Math.abs(this.lossLimit).toFixed(2);
+    },
+    formattedResult() {
+      if (this.result === null || this.result === undefined) return '0.00';
+      const sign = this.result >= 0 ? '+' : '-';
+      return `${sign}${this.currency} ${Math.abs(this.result).toFixed(2)}`;
     }
   },
   methods: {
@@ -115,6 +140,37 @@ export default {
   color: rgba(255, 255, 255, 0.8);
   margin: 0 0 32px 0;
   line-height: 1.5;
+}
+
+.result-section {
+  margin: 24px 0;
+  padding: 16px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.result-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.result-value {
+  font-size: 28px;
+  font-weight: 700;
+  margin: 0;
+  letter-spacing: 0.5px;
+}
+
+.loss-value {
+  color: #FF5252;
+}
+
+.profit-value {
+  color: #22C55E;
 }
 
 .info-message {

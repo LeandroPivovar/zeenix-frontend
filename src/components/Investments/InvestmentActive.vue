@@ -757,14 +757,16 @@
     <!-- Modais de Stop Loss e Target Profit -->
     <StopLossModal
         :visible="showStopLossModal"
-        :result="dailyStats.profitLoss || 0"
+        :result="sessionResult || dailyStats.profitLoss || 0"
+        :lossLimit="sessionConfig.lossLimit"
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleStopLossConfirm"
     />
     
     <TargetProfitModal
         :visible="showTargetProfitModal"
-        :result="dailyStats.profitLoss || 0"
+        :result="sessionResult || dailyStats.profitLoss || 0"
+        :finalProfit="sessionConfig.sessionBalance || sessionResult || dailyStats.sessionBalance || 0"
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleTargetProfitConfirm"
     />
@@ -2169,12 +2171,18 @@ export default {
                 const result = await response.json();
                 
                 if (result.success && result.data) {
-                    this.sessionResult = result.data.profitLoss || 0;
+                    // Atualizar sessionResult com o lucro/perda da sessão
+                    this.sessionResult = result.data.sessionBalance || result.data.profitLoss || 0;
+                    
+                    // Atualizar sessionConfig.sessionBalance para garantir que está atualizado
+                    if (result.data.sessionBalance !== undefined) {
+                        this.sessionConfig.sessionBalance = parseFloat(result.data.sessionBalance) || 0;
+                    }
                 }
             } catch (error) {
                 console.error('[InvestmentActive] Erro ao carregar resultado da sessão:', error);
                 // Usar resultado atual como fallback
-                this.sessionResult = this.dailyStats.sessionProfitLoss || 0;
+                this.sessionResult = this.dailyStats.sessionBalance || this.dailyStats.sessionProfitLoss || 0;
             }
         },
         
