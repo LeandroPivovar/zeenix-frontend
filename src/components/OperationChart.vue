@@ -684,6 +684,11 @@ export default {
             timeScale: {
               timeVisible: true,
               secondsVisible: false,
+              rightOffset: 0, // ✅ Garantir que o gráfico comece da esquerda
+              barSpacing: 1, // ✅ Espaçamento mínimo entre barras
+              rightBarStaysOnScroll: false, // ✅ Não manter barra direita ao scroll
+              fixLeftEdge: true, // ✅ Fixar borda esquerda (dados começam da esquerda)
+              fixRightEdge: false, // ✅ Não fixar borda direita (permite scroll)
             },
           });
 
@@ -803,7 +808,35 @@ export default {
 
       console.log('[Chart] Atualizando gráfico com', data.length, this.chartType === 'candles' ? 'velas' : 'pontos');
       this.chartSeries.setData(data);
-      this.chart.timeScale().fitContent();
+      
+      // ✅ Ajustar o gráfico para mostrar da esquerda para a direita
+      // Aguardar um frame para garantir que os dados foram aplicados
+      this.$nextTick(() => {
+        try {
+          if (data.length > 0) {
+            // Ordenar dados por tempo (mais antigo primeiro)
+            const sortedData = [...data].sort((a, b) => a.time - b.time);
+            const firstTime = sortedData[0].time;
+            const lastTime = sortedData[sortedData.length - 1].time;
+            
+            // Definir range visível começando da esquerda (primeiro timestamp)
+            this.chart.timeScale().setVisibleRange({
+              from: firstTime,
+              to: lastTime,
+            });
+            
+            // Garantir que o scroll está no início (esquerda)
+            this.chart.timeScale().scrollToPosition(0, false);
+          } else {
+            // Se não houver dados, usar fitContent como fallback
+            this.chart.timeScale().fitContent();
+          }
+        } catch (error) {
+          console.warn('[Chart] Erro ao ajustar range visível:', error);
+          // Fallback para fitContent
+          this.chart.timeScale().fitContent();
+        }
+      });
     },
     aggregateTicksToCandlesForPeriod(ticks, timeframeSeconds) {
       if (!Array.isArray(ticks) || ticks.length === 0) {
@@ -1098,8 +1131,33 @@ export default {
         // Limpar dados anteriores e plotar novos dados
         this.chartSeries.setData(dataToPlot);
         
-        // Ajustar o gráfico para mostrar apenas o intervalo selecionado
-        this.chart.timeScale().fitContent();
+        // ✅ Ajustar o gráfico para mostrar da esquerda para a direita
+        this.$nextTick(() => {
+          try {
+            if (dataToPlot.length > 0) {
+              // Ordenar dados por tempo (mais antigo primeiro)
+              const sortedData = [...dataToPlot].sort((a, b) => a.time - b.time);
+              const firstTime = sortedData[0].time;
+              const lastTime = sortedData[sortedData.length - 1].time;
+              
+              // Definir range visível começando da esquerda (primeiro timestamp)
+              this.chart.timeScale().setVisibleRange({
+                from: firstTime,
+                to: lastTime,
+              });
+              
+              // Garantir que o scroll está no início (esquerda)
+              this.chart.timeScale().scrollToPosition(0, false);
+            } else {
+              // Se não houver dados, usar fitContent como fallback
+              this.chart.timeScale().fitContent();
+            }
+          } catch (error) {
+            console.warn('[Chart] Erro ao ajustar range visível:', error);
+            // Fallback para fitContent
+            this.chart.timeScale().fitContent();
+          }
+        });
         
         console.log('[Chart] ✅ Dados plotados com sucesso:', dataToPlot.length, this.chartType === 'candles' ? 'velas' : 'pontos');
         

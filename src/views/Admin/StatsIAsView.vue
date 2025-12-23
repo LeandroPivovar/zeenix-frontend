@@ -2401,7 +2401,7 @@ export default {
 			}
 		},
 
-		async loadRecentLogs(limit = 50) {
+		async loadRecentLogs() {
 			try {
 				const userId = this.getUserId();
 				if (!userId) return;
@@ -2420,19 +2420,18 @@ export default {
 
 				const result = await response.json();
 				if (result.success && Array.isArray(result.data)) {
-					this.recentLogs = result.data
-						.slice(0, limit)
-						.map(log => {
-							const timestamp = log.timestamp || log.created_at;
-							const time = timestamp
-								? new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
-								: '--:--:--';
-							return {
-								time,
-								message: log.message || '',
-								type: log.type || 'info',
-							};
-						});
+					// ✅ Mostrar todos os logs da sessão atual (sem limite)
+					this.recentLogs = result.data.map(log => {
+						const timestamp = log.timestamp || log.created_at;
+						const time = timestamp
+							? new Date(timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' })
+							: '--:--:--';
+						return {
+							time,
+							message: log.message || '',
+							type: log.type || 'info',
+						};
+					});
 					
 					// ✅ Verificar se há mensagem de meta de lucro atingida nos logs recentes
 					// Isso garante que o modal seja mostrado mesmo se o sessionStatus ainda não foi atualizado
@@ -2598,7 +2597,7 @@ export default {
 				// ✅ Verificar também nos logs recentes para garantir detecção imediata
 				// Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
 				if (!this.showTargetProfitModal && !this.showStopLossModal) {
-					await this.loadRecentLogs(10); // Carregar apenas os últimos 10 logs para verificação rápida
+					await this.loadRecentLogs(); // Carregar todos os logs da sessão atual
 				}
 				
 				// ✅ PRIORIDADE 2: Se a IA foi desativada e não mostramos modal ainda, verificar novamente
@@ -2805,7 +2804,7 @@ export default {
 				// ✅ Verificar também nos logs recentes para garantir detecção imediata
 				// Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
 				if (!this.showTargetProfitModal && !this.showStopLossModal) {
-					await this.loadRecentLogs(10); // Carregar apenas os últimos 10 logs para verificação rápida
+					await this.loadRecentLogs(); // Carregar todos os logs da sessão atual
 				}
 				
 				this.tradingConfig.isActive = config.isActive || false;

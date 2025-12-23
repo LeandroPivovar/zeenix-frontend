@@ -245,7 +245,7 @@ export default {
 				}
 
 				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-				const response = await fetch(`${apiBase}/autonomous-agent/logs/${userId}?limit=2000`, {
+				const response = await fetch(`${apiBase}/autonomous-agent/logs/${userId}`, {
 					headers: {
 						'Authorization': `Bearer ${localStorage.getItem('token')}`
 					}

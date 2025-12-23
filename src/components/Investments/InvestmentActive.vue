@@ -3262,7 +3262,7 @@ export default {
                         barSpacing: 2,
                         minBarSpacing: 0.5,
                         fixLeftEdge: false,
-                        fixRightEdge: true,
+                        fixRightEdge: false, // ✅ CORREÇÃO: Desabilitar fixRightEdge para permitir scroll correto
                         lockVisibleTimeRangeOnResize: false,
                         rightBarStaysOnScroll: true,
                     },
@@ -3572,8 +3572,43 @@ export default {
                     return;
                 }
                 
-                // Ajustar o gráfico para mostrar todos os dados
-                this.chart.timeScale().fitContent();
+                // ✅ CORREÇÃO: Ajustar o gráfico para mostrar dados da esquerda para a direita
+                // Garantir que o gráfico mostre os dados mais recentes à direita, sem espaço em branco
+                this.$nextTick(() => {
+                    try {
+                        if (uniqueData.length > 0) {
+                            // Pegar o primeiro e último timestamp
+                            const firstTime = uniqueData[0].time;
+                            const lastTime = uniqueData[uniqueData.length - 1].time;
+                            
+                            // Calcular o range de tempo dos dados
+                            const timeRange = lastTime - firstTime;
+                            
+                            // Definir um range visível que mostre os últimos dados (ex: últimos 10 minutos ou todos se forem menos)
+                            // Adicionar um pequeno padding à direita para melhor visualização
+                            const paddingSeconds = 30; // 30 segundos de padding
+                            const visibleRange = {
+                                from: firstTime,
+                                to: lastTime + paddingSeconds
+                            };
+                            
+                            // Definir o range visível para mostrar todos os dados da esquerda para a direita
+                            this.chart.timeScale().setVisibleRange(visibleRange, {
+                                applyDefaultRightMargin: true
+                            });
+                            
+                            // Garantir que o scroll está na posição mais recente (direita)
+                            this.chart.timeScale().scrollToPosition(lastTime, false);
+                        } else {
+                            // Se não houver dados, apenas fazer fitContent
+                            this.chart.timeScale().fitContent();
+                        }
+                    } catch (error) {
+                        console.warn('[InvestmentActive] Erro ao ajustar range visível do gráfico:', error);
+                        // Fallback: apenas fitContent
+                        this.chart.timeScale().fitContent();
+                    }
+                });
                 
                 // Atualizar marcadores quando o gráfico for atualizado
                 if (this.logOperations && this.logOperations.length > 0 && this.showEntryMarkers) {

@@ -247,7 +247,7 @@ export default {
         }
         
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-        const url = `${apiBase}/autonomous-agent/logs/${userId}?limit=2000`;
+        const url = `${apiBase}/autonomous-agent/logs/${userId}`;
         
         const response = await fetch(url, {
           method: 'GET',
