@@ -822,7 +822,7 @@ export default {
         },
         selectedMarketProp: {
             type: String,
-            default: 'vol10'
+            default: 'vol100'
         }
     },
     data() {
@@ -831,7 +831,7 @@ export default {
             currentSeries: null,
             chartInitialized: false,
             accountType: 'real',
-            chartType: 'line', // iniciar com linhas
+            chartType: 'line', // iniciar com linhas (padrão solicitado)
             chartTypeOptions: [
                 { label: 'Velas', value: 'candles' },
                 { label: 'Linhas', value: 'line' },
@@ -1003,7 +1003,7 @@ export default {
         // Nome do mercado formatado
         formattedMarketName() {
             // Usar o prop primeiro (vem do componente pai)
-            const marketKey = this.selectedMarketProp || this.selectedMarket || 'vol10';
+            const marketKey = this.selectedMarketProp || this.selectedMarket || 'vol100';
             
             // Se Trinity está ativa, retornar mercado Trinity
             if (this.isTrinityActive) {
@@ -1334,7 +1334,7 @@ export default {
                     closePrice: exitPrice,
                     entryPrice: entryPrice,
                     exitPrice: exitPrice,
-                    symbol: trade.symbol || 'R_10',
+                    symbol: trade.symbol || 'R_100',
                     status: status,
                     time: time,
                     stakeAmount: stakeAmount,
@@ -1379,7 +1379,7 @@ export default {
          * Ex: R_10 → Volatility 10 Index
          */
         getMarketDisplayName(symbol) {
-            if (!symbol) return 'R_10';
+            if (!symbol) return 'R_100';
             
             const marketMap = {
                 'R_10': 'Volatility 10 Index',
@@ -2390,7 +2390,7 @@ export default {
                     contractId: payload.contractId || null,
                     signal: payload.strategy || null,
                     contractType: payload.contractType || null,
-                    symbol: payload.symbol || 'R_10',
+                    symbol: payload.symbol || 'R_100',
                     stakeAmount: this.sessionConfig.entryValue || this.entryValue || 0.35,
                     createdAt: new Date().toISOString(),
                     closedAt: null
@@ -2465,7 +2465,7 @@ export default {
                 return {
                     time: time,
                     timestamp: timestamp,
-                    pair: trade.symbol || 'R_10',
+                    pair: trade.symbol || 'R_100',
                     direction: direction,
                     investment: investmentFormatted,
                     pnl: pnl,
@@ -3125,12 +3125,8 @@ export default {
                 return;
             }
 
-            // Verificar se TradingView está disponível
-            if (TradingView && Datafeeds && this.chartType === 'candles') {
-                this.initTradingViewChart();
-            } else {
-                this.initLightweightChart();
-            }
+            // Usar lightweight-charts para ambos os tipos (candles/line) — mais estável
+            this.initLightweightChart();
         },
 
         /**
@@ -3197,7 +3193,7 @@ export default {
                     locale: 'pt',
                     library_path: libraryPath,
                     datafeed: datafeed,
-                    symbol: 'R_10', // Volatility 10 Index
+                    symbol: 'R_100', // Volatility 100 Index
                     interval: interval,
                     fullscreen: false,
                     autosize: true,
@@ -3234,7 +3230,7 @@ export default {
         initLightweightChart() {
             try {
                 const container = this.$refs.chartContainer;
-                const containerWidth = container.offsetWidth || 1200;
+                const containerWidth = container.clientWidth || container.offsetWidth || (container.parentElement ? container.parentElement.clientWidth : 1200) || 1200;
                 const containerHeight = 600; // Aumentado de 400 para 600
 
                 console.log('[InvestmentActive] Inicializando gráfico lightweight-charts...', {
@@ -3273,8 +3269,8 @@ export default {
                         borderColor: '#363c4e',
                         timeVisible: true,
                         secondsVisible: false,
-                        rightOffset: 12,
-                        barSpacing: 2,
+                        rightOffset: 14, // espaço extra à direita
+                        barSpacing: 4,
                         minBarSpacing: 0.5,
                         fixLeftEdge: false,
                         fixRightEdge: false, // ✅ CORREÇÃO: Desabilitar fixRightEdge para permitir scroll correto
@@ -3587,8 +3583,7 @@ export default {
                     return;
                 }
                 
-                // ✅ CORREÇÃO: Ajustar o gráfico para mostrar dados da esquerda para a direita
-                // Garantir que o gráfico mostre os dados mais recentes à direita, sem espaço em branco
+                // ✅ Ajustar o gráfico: ancorar nos dados mais recentes e deixar espaço à direita
                 this.$nextTick(() => {
                     try {
                         if (uniqueData.length > 0) {
@@ -3596,9 +3591,9 @@ export default {
                             const firstTime = uniqueData[0].time;
                             const lastTime = uniqueData[uniqueData.length - 1].time;
                             
-                            // Definir um range visível que mostre os últimos dados (ex: últimos 10 minutos ou todos se forem menos)
-                            // Adicionar um pequeno padding à direita para melhor visualização
-                            const paddingSeconds = 30; // 30 segundos de padding
+                            // Definir um range visível que mostre do primeiro ao último dado
+                            // Adicionar padding à direita para melhor visualização
+                            const paddingSeconds = 60; // 60s de espaço à direita
                             const visibleRange = {
                                 from: firstTime,
                                 to: lastTime + paddingSeconds
@@ -3610,7 +3605,13 @@ export default {
                             });
                             
                             // Garantir que o scroll está na posição mais recente (direita)
-                            this.chart.timeScale().scrollToPosition(lastTime, false);
+                            this.chart.timeScale().scrollToRealTime();
+
+                            // Ajustar offset e espaçamento para manter espaço em branco à direita
+                            this.chart.timeScale().applyOptions({
+                                rightOffset: 14,
+                                barSpacing: 4,
+                            });
                         } else {
                             // Se não houver dados, apenas fazer fitContent
                             this.chart.timeScale().fitContent();
