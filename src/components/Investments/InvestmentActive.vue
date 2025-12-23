@@ -3270,7 +3270,7 @@ export default {
                         timeVisible: true,
                         secondsVisible: false,
                         rightOffset: 14, // espaço extra à direita
-                        barSpacing: 4,
+                        barSpacing: 3, // spacing menor para exibir mais velas
                         minBarSpacing: 0.5,
                         fixLeftEdge: false,
                         fixRightEdge: false, // ✅ CORREÇÃO: Desabilitar fixRightEdge para permitir scroll correto
@@ -3604,13 +3604,10 @@ export default {
                                 applyDefaultRightMargin: true
                             });
                             
-                            // Garantir que o scroll está na posição mais recente (direita)
-                            this.chart.timeScale().scrollToRealTime();
-
-                            // Ajustar offset e espaçamento para manter espaço em branco à direita
+                            // Ajustar offset e espaçamento para manter espaço em branco à direita (sem mover a origem)
                             this.chart.timeScale().applyOptions({
                                 rightOffset: 14,
-                                barSpacing: 4,
+                                barSpacing: this.chartType === 'candles' ? 3 : 4,
                             });
                         } else {
                             // Se não houver dados, apenas fazer fitContent
