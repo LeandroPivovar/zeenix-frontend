@@ -1,9 +1,11 @@
 <template>
-    <div class="modal-overlay preview-overlay">
-        <div class="student-preview-app">
-            <button class="btn btn-close-preview" @click="$emit('close')">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-                Voltar aos Cursos
+    <div class="modal-overlay preview-overlay" @click.self="$emit('close')">
+        <div class="student-preview-app" @click.stop>
+            <button class="btn btn-close-preview" @click="$emit('close')" title="Fechar">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
             </button>
             <div v-if="courseData && courseData.id" class="preview-grid">
                 <div class="course-sidebar">
@@ -50,12 +52,35 @@
                 <div class="course-content">
                     <div class="content-header">
                         <h2 class="lesson-title">{{ activeLesson.name || 'Selecione uma aula' }}</h2>
-                        <p class="lesson-meta" v-if="activeLesson.name">
-                            Duração: {{ activeLesson.duration }}min <span class="status-dot"></span> {{ activeLesson.id === activeLessonId ? 'Em andamento' : 'Concluída' }}
-                        </p>
-                        <div class="completion-bar" v-if="activeLesson.name"></div>
+                        <div class="lesson-meta-container" v-if="activeLesson.name">
+                            <div class="lesson-badges">
+                                <span class="lesson-badge duration-badge">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="10"></circle>
+                                        <polyline points="12 6 12 12 16 14"></polyline>
+                                    </svg>
+                                    {{ activeLesson.duration }}min
+                                </span>
+                                <span class="lesson-badge status-badge" :class="{ 'status-active': activeLesson.id === activeLessonId, 'status-completed': activeLesson.id !== activeLessonId && completedLessonIds.includes(activeLesson.id) }">
+                                    <span class="status-indicator"></span>
+                                    {{ activeLesson.id === activeLessonId ? 'Em andamento' : completedLessonIds.includes(activeLesson.id) ? 'Concluída' : 'Não iniciada' }}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="completion-bar" v-if="activeLesson.name">
+                            <div class="completion-progress" :style="{ width: '50%' }"></div>
+                        </div>
                     </div>
                     <div class="video-player" v-if="activeLesson.name">
+                        <div class="video-overlay">
+                            <div class="play-button-container">
+                                <div class="play-button">
+                                    <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M8 5v14l11-7z"/>
+                                    </svg>
+                                </div>
+                            </div>
+                        </div>
                         <span class="zenix-logo">ZENIX</span>
                         <h1 class="video-placeholder-text">{{ activeLesson.name }}</h1>
                     </div>
@@ -201,54 +226,87 @@ export default {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100%;
-    height: 100%;
-    background: #000;
-    align-items: flex-start;
-    padding: 50px;
-    width: calc(100% - 240px); /* Ajuste para largura da sidebar, pode ser passado via prop */
-    margin-left: 240px; /* Ajuste para largura da sidebar, pode ser passado via prop */
-    overflow-y: auto; /* Adiciona scroll se necessário */
-    z-index: 1000; /* Garante que fique sobre outros elementos */
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.8) !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 70px 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    z-index: 10001 !important;
+    cursor: pointer;
+    box-sizing: border-box;
 }
 
 .student-preview-app {
     width: 100%;
-    height: 90vh;
+    max-width: 1400px;
+    max-height: calc(100vh - 140px);
     display: flex;
     flex-direction: column;
     background: #1e1e1e;
+    cursor: default;
+    position: relative;
+    z-index: 10002 !important;
+    margin: auto;
+    box-sizing: border-box;
+    border-radius: 12px;
+    overflow-y: auto;
 }
 
 .btn-close-preview {
     position: absolute;
     top: 15px;
-    right: 20px;
-    background: var(--color-secondary, #007bff);
+    right: 15px;
+    background: rgba(255, 255, 255, 0.1);
     color: #fff;
-    padding: 8px 15px;
+    padding: 10px;
     font-size: 0.9rem;
-    z-index: 1001;
-    border-radius: 4px;
-    border: none;
+    z-index: 10003 !important;
+    border-radius: 50%;
+    border: 1px solid rgba(255, 255, 255, 0.2);
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    transition: all 0.2s ease;
+}
+
+.btn-close-preview:hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.btn-close-preview:active {
+    transform: scale(0.95);
+}
+
+.btn-close-preview svg {
+    width: 20px;
+    height: 20px;
 }
 
 .preview-grid {
     display: flex;
-    flex-grow: 1;
-    overflow: hidden;
+    flex: 1;
+    align-items: stretch;
+    min-height: 0;
 }
 
 .course-sidebar {
     width: 350px;
+    min-width: 350px;
     background: #252525;
     padding: 20px 0;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
     border-right: 1px solid #333;
-    min-height: 100%;
+    flex-shrink: 0;
 }
 
 .course-header {
@@ -262,12 +320,14 @@ export default {
     margin-bottom: 10px;
     display: block;
     cursor: pointer;
+    text-align: left;
 }
 
 .course-title {
     font-size: 1.2rem;
     font-weight: 600;
     color: #f0f2f5;
+    text-align: left;
 }
 
 .course-progress {
@@ -412,128 +472,287 @@ export default {
     border-top: 1px solid #333;
 }
 .course-content {
-    flex-grow: 1;
+    flex: 1;
+    min-width: 0;
     background: #1e1e1e;
     display: flex;
     flex-direction: column;
-    overflow-y: auto;
+    align-items: stretch;
 }
 .content-header {
-    padding: 20px 30px;
-    background: #0f1013;
-    border-bottom: 1px solid #333;
+    padding: 24px 32px;
+    background: linear-gradient(135deg, #0f1013 0%, #1a1a1a 100%);
+    border-bottom: 1px solid rgba(34, 197, 94, 0.1);
     position: relative;
+    width: 100%;
+    box-sizing: border-box;
+    align-self: stretch;
 }
 .lesson-title {
-    font-size: 1.5rem;
-    margin-bottom: 5px;
-    font-weight: 600;
+    font-size: 1.75rem;
+    margin-bottom: 16px;
+    font-weight: 700;
     color: #f0f2f5;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
 }
-.lesson-meta {
-    font-size: 0.9rem;
-    color: #8c929a;
+.lesson-meta-container {
+    margin-bottom: 16px;
+}
+.lesson-badges {
     display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+.lesson-badge {
+    display: inline-flex;
     align-items: center;
     gap: 8px;
+    padding: 8px 14px;
+    border-radius: 20px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
 }
-.status-dot {
+.duration-badge {
+    background: rgba(255, 255, 255, 0.05);
+    color: #8c929a;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+.duration-badge svg {
+    width: 14px;
+    height: 14px;
+    color: #8c929a;
+}
+.status-badge {
+    background: rgba(34, 197, 94, 0.1);
+    color: rgb(34, 197, 94);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+}
+.status-badge.status-completed {
+    background: rgba(34, 197, 94, 0.15);
+    color: rgb(34, 197, 94);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+}
+.status-indicator {
     width: 8px;
     height: 8px;
-    background: var(--color-secondary, #007bff);
+    background: rgb(34, 197, 94);
     border-radius: 50%;
+    display: inline-block;
+    animation: pulse 2s infinite;
+}
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
 }
 .completion-bar {
     position: absolute;
     bottom: 0;
     left: 0;
-    height: 4px;
-    width: 50%;
-    background: var(--color-primary, #00ff7f);
+    right: 0;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.05);
+    overflow: hidden;
+}
+.completion-progress {
+    height: 100%;
+    background: linear-gradient(90deg, rgb(34, 197, 94) 0%, rgba(34, 197, 94, 0.6) 100%);
+    transition: width 0.3s ease;
+    box-shadow: 0 0 10px rgba(34, 197, 94, 0.3);
 }
 .video-player {
-    flex-grow: 1;
-    background: #2c3038;
+    background: linear-gradient(135deg, #1a1a1a 0%, #0f0f0f 100%);
     position: relative;
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 400px;
+    height: 400px;
+    aspect-ratio: 16 / 9;
+    border-radius: 12px;
+    margin: 24px auto;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    width: calc(100% - 128px);
+    max-width: 1200px;
+    box-sizing: border-box;
+    align-self: center;
+}
+.video-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    transition: background 0.3s ease;
+    z-index: 1;
+}
+.video-overlay:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+.play-button-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.play-button {
+    width: 80px;
+    height: 80px;
+    background: rgba(34, 197, 94, 0.9);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 20px rgba(34, 197, 94, 0.4);
+    color: #0f0f0f;
+}
+.play-button:hover {
+    transform: scale(1.1);
+    background: rgb(34, 197, 94);
+    box-shadow: 0 6px 30px rgba(34, 197, 94, 0.6);
+}
+.play-button svg {
+    width: 32px;
+    height: 32px;
+    margin-left: 4px;
 }
 .zenix-logo {
     position: absolute;
-    top: 10px;
-    right: 10px;
-    color: #8c929a;
+    top: 20px;
+    right: 20px;
+    color: rgba(34, 197, 94, 0.2);
     font-weight: 700;
-    font-size: 0.8rem;
+    font-size: 1rem;
+    letter-spacing: 0.1em;
+    z-index: 2;
 }
 .video-placeholder-text {
-    font-size: 2.5rem;
-    color: #8c929a;
-    opacity: 0.4;
+    font-size: 2rem;
+    color: rgba(255, 255, 255, 0.1);
     font-weight: 700;
+    letter-spacing: 0.05em;
+    z-index: 0;
+    position: relative;
 }
 .content-actions {
-    padding: 20px 30px;
-    border-bottom: 1px solid #333;
+    padding: 24px 32px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    background: rgba(15, 16, 19, 0.5);
 }
 .action-buttons {
     display: flex;
-    gap: 20px;
+    gap: 12px;
     align-items: center;
+    flex-wrap: wrap;
 }
 .btn-action-download {
-    background: #33363d;
+    background: rgba(255, 255, 255, 0.05);
     color: #f0f2f5;
-    border: 1px solid #444;
-    padding: 10px 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 20px;
     font-size: 0.9rem;
+    font-weight: 500;
     cursor: pointer;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+}
+.btn-action-download:hover {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-1px);
+}
+.btn-action-download svg {
+    width: 18px;
+    height: 18px;
 }
 .btn-action-complete {
-    background: var(--color-primary, #00ff7f);
-    color: #0f1013;
-    padding: 10px 15px;
+    background: rgb(34, 197, 94);
+    color: #0f0f0f;
+    padding: 12px 20px;
     font-size: 0.9rem;
+    font-weight: 600;
     cursor: pointer;
+    border: none;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
+}
+.btn-action-complete:hover {
+    background: rgb(40, 210, 105);
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
+}
+.btn-action-complete svg {
+    width: 18px;
+    height: 18px;
 }
 .btn-action-replay {
     color: #8c929a;
     font-size: 0.9rem;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: all 0.2s ease;
+    padding: 8px 12px;
+    border-radius: 6px;
 }
 .btn-action-replay:hover {
-    color: var(--color-secondary, #007bff);
+    color: rgb(34, 197, 94);
+    background: rgba(34, 197, 94, 0.1);
 }
 .complementary-materials {
-    padding: 30px;
+    padding: 32px;
+    background: rgba(15, 16, 19, 0.3);
 }
 .complementary-materials h3 {
-    font-size: 1.2rem;
-    font-weight: 600;
-    margin-bottom: 15px;
+    font-size: 1.25rem;
+    font-weight: 700;
+    margin-bottom: 20px;
     color: #f0f2f5;
+    letter-spacing: -0.01em;
 }
 .materials-list {
     list-style: none;
     padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
 }
 .materials-list li {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 10px 15px;
-    background: #33363d;
-    border-radius: 4px;
-    margin-bottom: 8px;
-    color: var(--color-primary, #00ff7f);
+    gap: 12px;
+    padding: 14px 18px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    color: rgb(34, 197, 94);
     font-size: 0.95rem;
+    font-weight: 500;
     cursor: pointer;
+    transition: all 0.2s ease;
 }
 .materials-list li:hover {
-    background: #444;
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.3);
+    transform: translateX(4px);
+}
+.materials-list li svg {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    stroke: rgb(34, 197, 94);
 }
 
 .list-placeholder {
@@ -552,35 +771,452 @@ export default {
         width: 100%;
         margin-left: 0;
         padding: 30px;
+        left: 0 !important;
     }
 }
+
+/* Mobile (≤ 768px) - Estilo igual ao CourseDetailView */
 @media (max-width: 768px) {
-    .preview-grid {
-        flex-direction: column-reverse;
-        overflow-y: auto;
+    .preview-overlay {
+        padding: 70px 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        margin-left: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        align-items: flex-start !important;
+        justify-content: center !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
     }
-    .course-content {
-        width: 100%;
-        min-height: auto;
-    }
-    .course-sidebar {
-        width: 100%;
-        min-height: auto;
-        border-right: none;
-        border-top: 1px solid #333;
-    }
+
     .student-preview-app {
         height: auto;
-        min-height: 90vh;
+        min-height: auto;
+        max-height: calc(100vh - 140px);
+        width: 80% !important;
+        max-width: 80% !important;
+        margin: 0 auto !important;
+        background: #0b0b0b !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
     }
-    .preview-overlay {
-        padding: 20px 10px;
+
+    .preview-grid {
+        flex-direction: column;
+        width: 100% !important;
     }
-    .content-header, .content-actions, .complementary-materials {
-        padding: 15px 20px;
+
+    .course-content {
+        width: 100% !important;
+        min-height: auto;
+        background: transparent;
+        padding: 1rem 0.5rem;
+        order: 1;
+        max-width: 100% !important;
+        box-sizing: border-box;
     }
+
+    .course-sidebar {
+        width: 100% !important;
+        min-width: 100% !important;
+        min-height: auto;
+        border-right: none;
+        border-top: 1px solid #1C1C1C;
+        background: transparent;
+        padding: 1.5rem 0.5rem;
+        order: 2;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .content-header {
+        padding: 1.5rem 1rem;
+        background: transparent;
+        border-bottom: none;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .lesson-title {
+        font-size: 1.5rem;
+        margin-bottom: 1rem;
+        width: 100%;
+    }
+    
+    .lesson-badges {
+        gap: 8px;
+    }
+    
+    .lesson-badge {
+        padding: 6px 12px;
+        font-size: 0.8125rem;
+    }
+
     .video-player {
         min-height: 250px;
+        max-height: 400px;
+        border-radius: 0.75rem;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        margin: 1.5rem 1rem;
+        width: calc(100% - 2rem);
+        box-sizing: border-box;
+    }
+    
+    .play-button {
+        width: 64px;
+        height: 64px;
+    }
+    
+    .play-button svg {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .zenix-logo {
+        top: 12px;
+        right: 12px;
+        font-size: 0.75rem;
+    }
+    
+    .video-placeholder-text {
+        font-size: 1.5rem;
+    }
+
+    .content-actions {
+        padding: 0 0.5rem 1.5rem 0.5rem;
+        border-bottom: none;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .action-buttons {
+        display: none;
+    }
+
+    .complementary-materials {
+        padding: 0 0.5rem 1.5rem 0.5rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .complementary-materials h3 {
+        font-size: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .materials-list li {
+        padding: 0.875rem 1rem;
+        font-size: 0.8125rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    /* Estilos do sidebar mobile */
+    .course-header {
+        padding: 1rem 0.5rem;
+        border-bottom: none;
+        width: 100%;
+        box-sizing: border-box;
+        text-align: left;
+    }
+
+    .course-title {
+        font-size: 1.125rem;
+        width: 100%;
+        text-align: left;
+    }
+
+    .back-link {
+        text-align: left;
+    }
+
+    .course-progress {
+        padding: 1rem 0.5rem;
+        background: transparent;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .progress-text {
+        font-size: 0.75rem;
+        width: 100%;
+    }
+
+    .progress-bar-container {
+        width: 100%;
+    }
+
+    .progress-percentage {
+        font-size: 0.75rem;
+    }
+
+    .course-modules-nav {
+        padding-top: 0;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .nav-module {
+        margin-bottom: 0.75rem;
+        background: linear-gradient(to bottom, #0e683118 0%, #0b0b0b 100%) !important;
+        border: 1px solid #1C1C1C;
+        border-radius: 0.5rem;
+        overflow: hidden;
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .nav-module-header {
+        padding: 0.875rem 0.75rem;
+        background: transparent;
+        font-size: 0.875rem;
+        width: 100%;
+        display: flex;
+        align-items: flex-start;
+        justify-content: space-between;
+        box-sizing: border-box;
+    }
+
+    .module-title-nav {
+        font-size: 0.875rem;
+        line-height: 1.3;
+        color: #DFDFDF;
+        font-weight: 600;
+    }
+
+    .nav-lessons-list {
+        padding: 0.75rem 1rem 1rem 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .nav-lesson-item {
+        padding: 0.75rem;
+        border-left: none;
+        border: 1px solid #2A2A2A;
+        border-radius: 0.5rem;
+        background-color: #1C1C1C;
+        margin-bottom: 0.5rem;
+        gap: 0.625rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .nav-lesson-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .nav-lesson-item:hover {
+        background: #252525;
+        border-color: #3A3A3A;
+    }
+
+    .active-lesson {
+        background-color: rgba(34, 197, 94, 0.12);
+        border-color: #22C55E;
+        border-width: 2px;
+    }
+
+    .active-lesson .lesson-name {
+        color: #DFDFDF;
+        font-weight: 500;
+    }
+
+    .nav-lesson-item .lesson-info {
+        font-size: 0.875rem;
+        flex-direction: row;
+        align-items: center;
+        gap: 0.625rem;
+        width: 100%;
+    }
+
+    .nav-lesson-item .lesson-name {
+        font-size: 0.8125rem;
+        color: #8D8D8D;
+    }
+
+    .nav-lesson-item .lesson-duration {
+        font-size: 0.6875rem;
+        color: #525252;
+        background: transparent;
+        padding: 0;
+    }
+
+    .active-lesson .lesson-duration {
+        color: #22C55E;
+    }
+
+    .unlock-tip {
+        padding: 1rem 0.5rem;
+        font-size: 0.6875rem;
+        border-top: 1px solid #1C1C1C;
+        text-align: left;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .btn-close-preview {
+        top: 10px;
+        right: 10px;
+        width: 36px;
+        height: 36px;
+        padding: 8px;
+    }
+
+    .btn-close-preview svg {
+        width: 18px;
+        height: 18px;
+    }
+}
+
+/* Mobile pequeno (≤ 480px) */
+@media (max-width: 480px) {
+    .preview-overlay {
+        padding: 70px 0 !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        overflow-x: hidden !important;
+        box-sizing: border-box !important;
+    }
+
+    .student-preview-app {
+        width: 80% !important;
+        max-width: 80% !important;
+        max-height: calc(100vh - 140px);
+        margin: 0 auto !important;
+        background: #0b0b0b !important;
+        box-sizing: border-box !important;
+        overflow-x: hidden !important;
+    }
+
+    .preview-grid {
+        width: 100% !important;
+    }
+
+    .course-content {
+        padding: 1rem;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .course-sidebar {
+        padding: 1rem;
+        width: 100% !important;
+        max-width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .video-player {
+        max-height: 300px;
+        border-radius: 0.375rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .lesson-title {
+        font-size: 1.125rem;
+        width: 100%;
+    }
+
+    .content-header {
+        padding: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .content-actions {
+        padding: 0 1rem 1.5rem 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .complementary-materials {
+        padding: 0 1rem 1.5rem 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .course-header {
+        padding: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+        text-align: left;
+    }
+
+    .back-link {
+        text-align: left;
+    }
+
+    .course-title {
+        text-align: left;
+    }
+
+    .course-progress {
+        padding: 1rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .nav-module {
+        width: 100% !important;
+        box-sizing: border-box;
+    }
+
+    .nav-module-header {
+        padding: 0.625rem 0.75rem;
+        font-size: 0.8125rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .module-title-nav {
+        font-size: 0.8125rem;
+        line-height: 1.3;
+    }
+
+    .nav-lessons-list {
+        padding: 0.625rem 0.75rem 0.75rem 0.75rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .nav-lesson-item {
+        padding: 0.625rem;
+        gap: 0.625rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .nav-lesson-item .lesson-info {
+        font-size: 0.8125rem;
+        width: 100%;
+    }
+
+    .nav-lesson-item .lesson-name {
+        font-size: 0.8125rem;
+        line-height: 1.3;
+    }
+
+    .nav-lesson-item .lesson-duration {
+        font-size: 0.6875rem;
+        margin-top: 0.125rem;
+    }
+
+    .unlock-tip {
+        padding: 1rem;
+        font-size: 0.6875rem;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    .materials-list li {
+        width: 100%;
+        box-sizing: border-box;
     }
 }
 </style>
