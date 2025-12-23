@@ -766,7 +766,7 @@
     <TargetProfitModal
         :visible="showTargetProfitModal"
         :result="sessionResult || dailyStats.profitLoss || 0"
-        :finalProfit="sessionConfig.sessionBalance || sessionResult || dailyStats.sessionBalance || 0"
+        :finalProfit="sessionConfig.sessionBalance || sessionResult || sessionConfig.profitTarget || dailyStats.sessionBalance || dailyStats.profitLoss || 0"
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleTargetProfitConfirm"
     />

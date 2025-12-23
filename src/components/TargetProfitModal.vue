@@ -61,9 +61,9 @@ export default {
   },
   computed: {
     formattedFinalProfit() {
-      if (this.finalProfit === null || this.finalProfit === undefined) return '0.00';
-      const sign = this.finalProfit >= 0 ? '+' : '';
-      return `${sign}${this.currency} ${this.finalProfit.toFixed(2)}`;
+      if (this.finalProfit === null || this.finalProfit === undefined) return '$0.00';
+      const sign = this.finalProfit >= 0 ? '+' : '-';
+      return `${sign}$${Math.abs(this.finalProfit).toFixed(2)}`;
     }
   },
   methods: {
@@ -129,6 +129,7 @@ export default {
   margin: 0 0 16px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: center;
 }
 
 .modal-message {
