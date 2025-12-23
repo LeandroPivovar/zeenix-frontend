@@ -913,6 +913,8 @@ export default {
             showTargetProfitModal: false,
             sessionResult: 0,
             previousSessionStatus: null,
+            acknowledgedStopProfit: false,
+            acknowledgedStopLoss: false,
             
             // Controle de tamanho do gráfico
             chartPointsVisible: 300, // ✅ AJUSTE: Aumentado para 300 pontos para mostrar mais velas
@@ -2072,7 +2074,7 @@ export default {
                     // ✅ PRIORIDADE 1: Se o status atual é stopped_loss ou stopped_profit, mostrar modal
                     // (independentemente do estado anterior, desde que o modal não esteja já aberto)
                     if (currentSessionStatus === 'stopped_loss') {
-                        if (!this.showStopLossModal) {
+                        if (!this.showStopLossModal && !this.acknowledgedStopLoss) {
                             console.log('[InvestmentActive] 🛑 Stop loss detectado! Mostrando modal...');
                             console.log('[InvestmentActive] 📊 Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
                             // Buscar resultado da sessão
@@ -2085,7 +2087,7 @@ export default {
                     } else if (currentSessionStatus === 'stopped_profit') {
                         // ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
                         // Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
-                        if (!this.showTargetProfitModal) {
+                        if (!this.showTargetProfitModal && !this.acknowledgedStopProfit) {
                             console.log('[InvestmentActive] 🎯 Target profit detectado! Mostrando modal...');
                             console.log('[InvestmentActive] 📊 Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
                             // Buscar resultado da sessão
@@ -2103,7 +2105,7 @@ export default {
                     
                     // ✅ Verificar também nos logs recentes para garantir detecção imediata
                     // Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
-                    if (!this.showTargetProfitModal && !this.showStopLossModal && this.realtimeLogs.length > 0) {
+                    if (!this.showTargetProfitModal && !this.showStopLossModal && this.realtimeLogs.length > 0 && !this.acknowledgedStopProfit && !this.acknowledgedStopLoss) {
                         this.checkLogsForStopEvents();
                     }
                     
@@ -2194,8 +2196,9 @@ export default {
          */
         handleStopLossConfirm() {
             this.showStopLossModal = false;
-            // Recarregar configuração para atualizar status
-            this.fetchSessionConfig();
+            this.acknowledgedStopLoss = true;
+            // Recarregar a página para limpar estado e voltar à tela inicial
+            window.location.reload();
         },
         
         /**
@@ -2203,8 +2206,9 @@ export default {
          */
         handleTargetProfitConfirm() {
             this.showTargetProfitModal = false;
-            // Recarregar configuração para atualizar status
-            this.fetchSessionConfig();
+            this.acknowledgedStopProfit = true;
+            // Recarregar a página para limpar estado e voltar à tela inicial
+            window.location.reload();
         },
         
         // 📊 Buscar histórico de operações reais
