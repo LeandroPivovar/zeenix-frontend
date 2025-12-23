@@ -158,7 +158,8 @@
                 </button>
             </div>
             
-            <div class="plans-table">
+            <!-- Tabela Desktop -->
+            <div class="plans-table desktop-table">
                 <div class="table-content-wrapper">
                     <div class="table-header">
                         <div class="th name">Nome</div>
@@ -207,6 +208,65 @@
                                     <i class="fas fa-trash-alt"></i>
                                 </button>
                             </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Cards Mobile -->
+            <div class="mobile-plans-cards">
+                <div v-if="isLoading" class="mobile-plan-card empty-state">
+                    <p>Carregando planos...</p>
+                </div>
+                <div v-else-if="plans.length === 0" class="mobile-plan-card empty-state">
+                    <p>Nenhum plano cadastrado</p>
+                </div>
+                <div v-else v-for="plan in plans" :key="plan.id" class="mobile-plan-card">
+                    <div class="card-header-plan">
+                        <h3 class="card-plan-name">{{ plan.name }}</h3>
+                        <div class="card-plan-actions">
+                            <button class="action-btn edit" aria-label="Editar" @click="editPlan(plan)">
+                                <i class="fas fa-edit"></i>
+                            </button>
+                            <button class="action-btn trash" aria-label="Deletar" @click="deletePlan(plan.id)">
+                                <i class="fas fa-trash-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body-plan">
+                        <div class="card-row-plan">
+                            <span class="card-label-plan">Slug:</span>
+                            <span class="card-value-plan">{{ plan.slug }}</span>
+                        </div>
+                        <div class="card-row-plan">
+                            <span class="card-label-plan">Preço:</span>
+                            <span class="card-value-plan price-value">{{ formatCurrency(plan.price, plan.currency) }}</span>
+                        </div>
+                        <div class="card-row-plan">
+                            <span class="card-label-plan">Mais Vendido:</span>
+                            <span class="card-value-plan">
+                                <span v-if="plan.isPopular" class="badge badge-popular">SIM</span>
+                                <span v-else class="badge badge-no">NÃO</span>
+                            </span>
+                        </div>
+                        <div class="card-row-plan">
+                            <span class="card-label-plan">Recomendado:</span>
+                            <span class="card-value-plan">
+                                <span v-if="plan.isRecommended" class="badge badge-recommended">SIM</span>
+                                <span v-else class="badge badge-no">NÃO</span>
+                            </span>
+                        </div>
+                        <div class="card-row-plan">
+                            <span class="card-label-plan">Status:</span>
+                            <span class="card-value-plan">
+                                <span :class="plan.isActive ? 'status-active' : 'status-inactive'">
+                                    {{ plan.isActive ? 'Ativo' : 'Inativo' }}
+                                </span>
+                            </span>
+                        </div>
+                        <div class="card-row-plan">
+                            <span class="card-label-plan">Ordem:</span>
+                            <span class="card-value-plan">{{ plan.displayOrder }}</span>
                         </div>
                     </div>
                 </div>
@@ -1199,7 +1259,101 @@ body {
     color: #f44336;
 }
 
+/* Cards Mobile */
+.mobile-plans-cards {
+    display: none;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    padding-bottom: 20px;
+}
+
+.mobile-plan-card {
+    background-color: #1f1f1f;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #333;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.mobile-plan-card.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.card-header-plan {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+    gap: 10px;
+}
+
+.card-plan-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.card-plan-actions {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.card-body-plan {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card-row-plan {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    min-height: 24px;
+}
+
+.card-label-plan {
+    font-size: 14px;
+    color: #999;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.card-value-plan {
+    font-size: 14px;
+    color: #fff;
+    text-align: right;
+    flex: 1;
+    margin-left: 10px;
+    word-break: break-word;
+}
+
+.card-value-plan.price-value {
+    color: #4CAF50;
+    font-weight: 600;
+}
+
+/* Responsividade - Esconder/Mostrar Tabela e Cards */
 @media (max-width: 768px) {
+    .desktop-table {
+        display: none !important;
+    }
+    
+    .mobile-plans-cards {
+        display: flex !important;
+    }
+    
     .hamburger-btn {
         display: block; 
     }
@@ -1208,7 +1362,7 @@ body {
         width: 100%;
         margin-left: 0;
         padding: 10px;
-        padding-top: 50px;
+        padding-top: 70px;
     }
 
     .form-container {
@@ -1219,6 +1373,16 @@ body {
         padding: 15px;
         max-height: 80vh;
         margin-top: 20px;
+    }
+}
+
+@media (min-width: 769px) {
+    .desktop-table {
+        display: block !important;
+    }
+    
+    .mobile-plans-cards {
+        display: none !important;
     }
 }
 

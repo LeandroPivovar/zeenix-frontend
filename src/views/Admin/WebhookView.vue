@@ -6,22 +6,10 @@
 
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
-                v-if="!isMobile"
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
             />
-            
-            <div v-if="isMobile" class="mobile-header-admin">
-                <button class="menu-toggler-btn" @click="isSidebarOpen = true">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-                <div class="mobile-brand">
-                    <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
-                </div>
-            </div>
 
             <main class="layout-content">              
                 <header class=" header-webhook">
@@ -121,7 +109,8 @@
                         </button>
                     </div>
                 </div>
-                <div class="logs-table-container">
+                <!-- Tabela Desktop -->
+                <div class="logs-table-container desktop-table">
                     <table class="logs-table">
                         <thead>
                             <tr>
@@ -170,6 +159,50 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+                <!-- Cards Mobile -->
+                <div class="mobile-webhook-logs-cards">
+                    <div v-if="webhookLogs.length === 0" class="mobile-log-card empty-state">
+                        <div class="empty-content">
+                            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 12H15M12 9V15M21 12C21 16.9706 16.9706 21 12 21C7.02944 21 3 16.9706 3 12C3 7.02944 7.02944 3 12 3C16.9706 3 21 7.02944 21 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <p>Nenhum log registrado ainda</p>
+                            <span>Os logs aparecerão aqui quando o webhook receber eventos</span>
+                        </div>
+                    </div>
+                    <div v-else v-for="log in webhookLogs" :key="log.id" class="mobile-log-card">
+                        <div class="log-card-header">
+                            <div class="log-card-badges">
+                                <span :class="['event-badge', log.eventType]">
+                                    {{ log.eventLabel }}
+                                </span>
+                                <span :class="['status-badge', log.status]">
+                                    {{ log.statusLabel }}
+                                </span>
+                                <button class="btn-icon" @click="viewLogDetails(log)" title="Ver detalhes">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M15 12C15 13.6569 13.6569 15 12 15C10.3431 15 9 13.6569 9 12C9 10.3431 10.3431 9 12 9C13.6569 9 15 10.3431 15 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <path d="M2.45825 12C3.73253 7.94288 7.52281 5 12.0004 5C16.4781 5 20.2684 7.94291 21.5426 12C20.2684 16.0571 16.4781 19 12.0005 19C7.52281 19 3.73251 16.0571 2.45825 12Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="log-card-body">
+                            <div class="log-card-row">
+                                <span class="log-card-label">Data/Hora:</span>
+                                <span class="log-card-value">{{ log.timestamp }}</span>
+                            </div>
+                            <div class="log-card-row">
+                                <span class="log-card-label">Email:</span>
+                                <span class="log-card-value">{{ log.email }}</span>
+                            </div>
+                            <div class="log-card-row">
+                                <span class="log-card-label">Detalhes:</span>
+                                <span class="log-card-value">{{ log.details }}</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </section>
 
@@ -359,43 +392,88 @@ export default {
     background-color: #0B0B0B !important;
 }
 
-/* Mobile Header */
-.mobile-header-admin {
+
+/* Cards Mobile - Logs */
+.mobile-webhook-logs-cards {
     display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background-color: #0b0b0b;
-    z-index: 998;
-    padding: 0 20px;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #1C1C1C;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    padding-bottom: 20px;
+    overflow-y: auto;
+    max-height: 800px;
 }
 
-.mobile-brand {
-    display: flex;
-    align-items: center;
-}
-
-.menu-toggler-btn {
+.mobile-log-card {
     background-color: #1e1e1e;
-    color: rgb(255, 255, 255);
-    border: 1px solid #333;
     border-radius: 8px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    padding: 20px;
+    border: 1px solid #383838;
+    width: 100%;
+    box-sizing: border-box;
 }
 
-.menu-toggler-btn:hover {
-    background-color: #2a2a2a;
+.mobile-log-card.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.log-card-header {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #383838;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.log-card-badges {
+    display: flex;
+    gap: 8px;
+    flex-wrap: nowrap;
+    align-items: center;
+}
+
+.log-card-badges .btn-icon {
+    margin-left: 0;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    padding: 0.25rem;
+    min-width: 32px;
+}
+
+.log-card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.log-card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+    min-height: 24px;
+}
+
+.log-card-label {
+    font-size: 14px;
+    color: #999;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.log-card-value {
+    font-size: 14px;
+    color: #fff;
+    text-align: right;
+    flex: 1;
+    margin-left: 10px;
+    word-break: break-word;
 }
 
 /* Responsividade */
@@ -408,12 +486,8 @@ export default {
         margin-left: 0;
     }
     
-    .mobile-header-admin {
-        display: flex;
-    }
-    
     .layout-content {
-        padding-top: 80px;
+        padding-top: 70px;
     }
 }
 
@@ -464,6 +538,7 @@ export default {
     font-size: 0.9rem;
     color: var(--color-text-muted);
     flex-grow: 1; /* O subtítulo ocupa o espaço restante */
+    text-align: left !important;
 }
 
 .btn-new-connection {
@@ -510,7 +585,7 @@ export default {
     padding: 1.5rem;
     border-radius: 0.5rem;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
-    border: 1px solid var(--color-border);
+    border: 1px solid #383838;
 }
 
 .card-header {
@@ -579,7 +654,7 @@ export default {
     width: 100%;
     padding: 0.5rem;
     background-color: #131213; /* Um tom um pouco mais claro que o card */
-    border: 1px solid var(--color-border);
+    border: 1px solid #383838;
     border-radius: 0.25rem;
     color: var(--color-text-light);
     font-size: 0.875rem;
@@ -606,7 +681,7 @@ export default {
     display: flex;
     gap: 1rem;
     padding-top: 1rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid #383838;
 }
 
 .btn-link {
@@ -740,7 +815,7 @@ export default {
 .btn-secondary {
     background-color: transparent;
     color: var(--color-text-muted);
-    border: 1px solid var(--color-border);
+    border: 1px solid #383838;
     padding: 0.5rem 1rem;
     border-radius: 0.375rem;
     font-size: 0.875rem;
@@ -765,7 +840,7 @@ export default {
 .logs-table-container {
     overflow-x: auto;
     border-radius: 0.5rem;
-    border: 1px solid var(--color-border);
+    border: 1px solid #383838;
 }
 
 .logs-table {
@@ -783,7 +858,7 @@ export default {
     text-align: left;
     font-weight: 600;
     color: var(--color-text-muted);
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid #383838;
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.05em;
@@ -791,8 +866,9 @@ export default {
 
 .logs-table td {
     padding: 1rem;
-    border-bottom: 1px solid var(--color-border);
+    border-bottom: 1px solid #383838;
     color: var(--color-text-light);
+    text-align: left;
 }
 
 .logs-table tbody tr:hover {
@@ -910,7 +986,7 @@ export default {
     justify-content: space-between;
     align-items: flex-end; /* Alinha o gráfico à parte inferior */
     padding-top: 1.5rem;
-    border-top: 1px solid var(--color-border);
+    border-top: 1px solid #383838;
     width: 100%;
 }
 
@@ -1072,16 +1148,29 @@ input:checked + .slider:before {
 }
 
 @media (max-width: 768px) {
+    .layout-content {
+        padding: 10px;
+        padding-top: 70px;
+    }
 
     .header-webhook {
         display: flex;
         gap: 15px;
         margin-bottom: 20px;
         padding-bottom: 15px;
-        border-bottom: 1px solid #2c3038;
+        border-bottom: 1px solid #383838;
         align-items: center;
-        flex-direction: column-reverse;
+        flex-direction: column;
     }
+    
+    .header-info {
+        width: 100%;
+    }
+    
+    .add-webhook {
+        width: 100%;
+    }
+    
     .webhook-cards-grid {
         grid-template-columns: 1fr;
     }
@@ -1097,20 +1186,26 @@ input:checked + .slider:before {
     
     .logs-actions {
         width: 100%;
-        flex-direction: column;
+        flex-direction: row;
+        gap: 0.75rem;
     }
     
     .logs-actions button {
-        width: 100%;
+        flex: 1;
         justify-content: center;
     }
     
-    .logs-table-container {
-        overflow-x: scroll;
+    .mobile-log-card {
+        padding: 30px;
     }
     
-    .logs-table {
-        min-width: 800px;
+    /* Esconder tabela desktop e mostrar cards mobile */
+    .desktop-table {
+        display: none !important;
+    }
+    
+    .mobile-webhook-logs-cards {
+        display: flex !important;
     }
 
     .alert-uptime-footer {
@@ -1122,14 +1217,16 @@ input:checked + .slider:before {
     .alert-destinations input {
         width: 100%;
     }
-    
-    .btn-new-connection {
-        position: static;
-        width: 100%;
-        order: -1; /* Mover para cima em telas pequenas */
-        margin-bottom: 1rem;
-    }
+}
 
+@media (min-width: 769px) {
+    .desktop-table {
+        display: block !important;
+    }
+    
+    .mobile-webhook-logs-cards {
+        display: none !important;
+    }
 }
 
 /* Ajuste para hambúrguer */
