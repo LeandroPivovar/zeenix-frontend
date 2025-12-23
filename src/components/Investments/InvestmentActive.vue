@@ -757,7 +757,7 @@
     <!-- Modais de Stop Loss e Target Profit -->
     <StopLossModal
         :visible="showStopLossModal"
-        :result="sessionResult || dailyStats.profitLoss || 0"
+        :result="sessionConfig.sessionProfitLoss ?? sessionResult ?? dailyStats.sessionProfitLoss ?? dailyStats.profitLoss ?? 0"
         :lossLimit="sessionConfig.lossLimit"
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleStopLossConfirm"
@@ -765,8 +765,8 @@
     
     <TargetProfitModal
         :visible="showTargetProfitModal"
-        :result="sessionResult || dailyStats.profitLoss || 0"
-        :finalProfit="sessionConfig.sessionBalance || sessionResult || sessionConfig.profitTarget || dailyStats.sessionBalance || dailyStats.profitLoss || 0"
+        :result="sessionConfig.sessionProfitLoss ?? sessionResult ?? dailyStats.sessionProfitLoss ?? dailyStats.profitLoss ?? 0"
+        :finalProfit="sessionConfig.sessionProfitLoss ?? sessionResult ?? sessionConfig.profitTarget ?? dailyStats.sessionProfitLoss ?? dailyStats.profitLoss ?? 0"
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleTargetProfitConfirm"
     />
@@ -888,6 +888,7 @@ export default {
                 lossLimit: null,
                 currency: 'USD',
                 sessionBalance: 0,
+                sessionProfitLoss: 0,
                 sessionStatus: 'active'
             },
             isLoadingConfig: true,
@@ -2171,10 +2172,12 @@ export default {
                 const result = await response.json();
                 
                 if (result.success && result.data) {
-                    // Atualizar sessionResult com o lucro/perda da sessão
-                    this.sessionResult = result.data.sessionBalance || result.data.profitLoss || 0;
+                    // Lucro/perda real da sessão
+                    const sessionProfit = result.data.sessionProfitLoss ?? result.data.profitLoss ?? 0;
+                    this.sessionResult = sessionProfit;
+                    this.sessionConfig.sessionProfitLoss = sessionProfit;
                     
-                    // Atualizar sessionConfig.sessionBalance para garantir que está atualizado
+                    // Saldo de sessão (se enviado)
                     if (result.data.sessionBalance !== undefined) {
                         this.sessionConfig.sessionBalance = parseFloat(result.data.sessionBalance) || 0;
                     }
