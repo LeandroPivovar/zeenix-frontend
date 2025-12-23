@@ -3581,9 +3581,6 @@ export default {
                             const firstTime = uniqueData[0].time;
                             const lastTime = uniqueData[uniqueData.length - 1].time;
                             
-                            // Calcular o range de tempo dos dados
-                            const timeRange = lastTime - firstTime;
-                            
                             // Definir um range visível que mostre os últimos dados (ex: últimos 10 minutos ou todos se forem menos)
                             // Adicionar um pequeno padding à direita para melhor visualização
                             const paddingSeconds = 30; // 30 segundos de padding

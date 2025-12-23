@@ -764,6 +764,7 @@ export default {
                         lossLimit: this.lossLimit,
                         modoMartingale: this.modoMartingale || 'conservador',
                         strategy: this.selectedStrategy || 'orion',
+                        stopLossBlindado: this.stoplossBlindado, // ✅ ZENIX v2.0: Stop-Loss Blindado
                     }),
                 });
 

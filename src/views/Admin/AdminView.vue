@@ -17,15 +17,11 @@
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <!-- Top Navbar -->
             <TopNavbar 
-<<<<<<< HEAD
                 v-if="!isMobile"
-=======
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
             />
-<<<<<<< HEAD
             
             <!-- Mobile Header -->
             <div v-if="isMobile" class="mobile-header-admin">
@@ -38,8 +34,6 @@
                     <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
                 </div>
             </div>
-=======
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 
             <main class="layout-content">
                 <div class="admin-dashboard">
@@ -80,12 +74,8 @@
                         <h2>Administradores do Sistema</h2>
                         <button class="btn btn-add-admin" @click="showAddAdminModal = true">+ Adicionar Novo Administrador</button>
                     </div>
-<<<<<<< HEAD
-                    <div class="table-container">
-=======
                     <!-- Tabela Desktop -->
                     <div class="table-container desktop-table">
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
                         <table class="modern-table">
                             <thead>
                                 <tr>
@@ -119,8 +109,6 @@
                             </tbody>
                         </table>
                     </div>
-<<<<<<< HEAD
-=======
                     <!-- Cards Mobile -->
                     <div class="mobile-admins-cards">
                         <div v-for="admin in admins" :key="admin.email" class="mobile-admin-card">
@@ -153,7 +141,6 @@
                             </div>
                         </div>
                     </div>
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
                 </section>
 
 
@@ -168,12 +155,8 @@
                             </button>
                         </div>
                     </div>
-<<<<<<< HEAD
-                    <div class="table-container" :class="{ 'loading': isLoadingLogs }">
-=======
                     <!-- Tabela Desktop -->
                     <div class="table-container desktop-table" :class="{ 'loading': isLoadingLogs }">
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
                         <table class="modern-table">
                             <thead>
                                 <tr>
@@ -209,8 +192,6 @@
                             </tbody>
                         </table>
                     </div>
-<<<<<<< HEAD
-=======
                     <!-- Cards Mobile -->
                     <div class="mobile-logs-cards" :class="{ 'loading': isLoadingLogs }">
                         <div v-if="isLoadingLogs" class="mobile-log-card empty-state">
@@ -242,7 +223,6 @@
                             </div>
                         </div>
                     </div>
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 
                     <!-- Controles de Paginação -->
                     <div class="pagination-controls" v-if="logsPagination.totalPages > 1">
@@ -801,13 +781,10 @@ export default {
     min-height: 100vh;
     font-family: Arial, sans-serif;
     background-color: #0b0b0b;
-<<<<<<< HEAD
-=======
     width: 100%;
     max-width: 100vw;
     overflow-x: hidden;
     box-sizing: border-box;
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .sidebar-overlay {
@@ -824,13 +801,10 @@ export default {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
-<<<<<<< HEAD
-=======
     width: calc(100% - 280px);
     max-width: 100%;
     overflow-x: hidden;
     box-sizing: border-box;
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
@@ -842,21 +816,20 @@ export default {
     padding: 20px;
     padding-top: 80px; /* Espaço para o TopNavbar */
     overflow-y: auto;
-<<<<<<< HEAD
-    background-color: #0b0b0b;
-=======
     overflow-x: hidden;
     background-color: #0b0b0b;
     box-sizing: border-box;
     width: 100%;
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .admin-dashboard {
     width: 100%;
-<<<<<<< HEAD
+    max-width: 100%;
     margin: 0 auto;
     padding: 20px;
+    padding-bottom: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 /* Mobile Header */
@@ -879,16 +852,6 @@ export default {
     display: flex;
     align-items: center;
 }
-=======
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 20px;
-    padding-bottom: 0;
-    box-sizing: border-box;
-    overflow-x: hidden;
-}
-
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 
 /* --- Cabeçalho --- */
 .dashboard-header h1 {
@@ -959,11 +922,7 @@ export default {
 .kpi-value {
     font-size: 1.8em;
     font-weight: bold;
-<<<<<<< HEAD
-    color: rgb(41, 216, 108);
-=======
     color: rgb(34, 197, 94);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 /* --- Seção de Administradores --- */
@@ -985,15 +944,6 @@ export default {
 }
 
 .btn-add-admin {
-<<<<<<< HEAD
-    background-color: rgb(41, 216, 108);
-    color: black;
-    box-shadow: 0px 0px 10px rgba(41, 216, 108, 0.5);
-}
-
-.btn-add-admin:hover {
-    background-color: #00b359;
-=======
     background-color: rgb(34, 197, 94);
     color: black;
     box-shadow: 0px 0px 10px rgba(34, 197, 94, 0.5);
@@ -1001,7 +951,6 @@ export default {
 
 .btn-add-admin:hover {
     background-color: rgb(28, 170, 80);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .btn-secondary {
@@ -1070,11 +1019,7 @@ export default {
 }
 
 .records-per-page select:hover {
-<<<<<<< HEAD
-    border-color: rgb(41, 216, 108);
-=======
     border-color: rgb(34, 197, 94);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .pagination-buttons {
@@ -1095,13 +1040,8 @@ export default {
 }
 
 .btn-pagination:hover:not(:disabled) {
-<<<<<<< HEAD
-    background-color: rgb(41, 216, 108);
-    border-color: rgb(41, 216, 108);
-=======
     background-color: rgb(34, 197, 94);
     border-color: rgb(34, 197, 94);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     color: black;
 }
 
@@ -1133,13 +1073,8 @@ export default {
 }
 
 .btn-page-number.active {
-<<<<<<< HEAD
-    background-color: rgb(41, 216, 108);
-    border-color: rgb(41, 216, 108);
-=======
     background-color: rgb(34, 197, 94);
     border-color: rgb(34, 197, 94);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     color: black;
     font-weight: bold;
 }
@@ -1250,15 +1185,9 @@ export default {
 }
 
 .ativo {
-<<<<<<< HEAD
-    background-color: rgba(0, 230, 119, 0.048);
-    color: #00e676;
-    border: 1px solid #00e676;
-=======
     background-color: rgba(34, 197, 94, 0.048);
     color: rgb(34, 197, 94);
     border: 1px solid rgb(34, 197, 94);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .inativo {
@@ -1300,11 +1229,7 @@ export default {
 }
 
 .result-icon.success {
-<<<<<<< HEAD
-    color: #00e676;
-=======
     color: rgb(34, 197, 94);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .result-icon.failure {
@@ -1312,8 +1237,6 @@ export default {
 }
 
 /* --- Cards de Permissão --- */
-<<<<<<< HEAD
-=======
 .permission-control {
     margin-top: 40px;
 }
@@ -1323,7 +1246,6 @@ export default {
     margin-top: 15px;
 }
 
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 .permission-cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1339,14 +1261,11 @@ export default {
     background-color: #131213;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-<<<<<<< HEAD
-=======
     margin-bottom: 0;
 }
 
 .permission-card:last-child {
     margin-bottom: 30px;
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .card-details {
@@ -1372,22 +1291,14 @@ export default {
 .btn-manage-green {
     padding: 8px 15px;
     font-weight: bold;
-<<<<<<< HEAD
-    background-color: rgb(41, 216, 108);
-=======
     background-color: rgb(34, 197, 94);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     color: black;
     border-radius: 8px;
     transition: background-color 0.2s;
 }
 
 .btn-manage-green:hover {
-<<<<<<< HEAD
-    background-color: #00b359;
-=======
     background-color: rgb(28, 170, 80);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 /* --- Configurações Gerais --- */
@@ -1442,11 +1353,7 @@ export default {
 }
 
 .toggle-switch-admin.active {
-<<<<<<< HEAD
-    background-color: rgb(41, 216, 108);
-=======
     background-color: rgb(34, 197, 94);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 
@@ -1468,11 +1375,7 @@ export default {
     padding: 12px;
     margin-top: 20px;
     font-size: 1em;
-<<<<<<< HEAD
-    background-color: rgb(41, 216, 108);
-=======
     background-color: rgb(34, 197, 94);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     color: black;
     border-radius: 8px;
     font-weight: bold;
@@ -1483,11 +1386,7 @@ export default {
 }
 
 .btn-save-config:hover {
-<<<<<<< HEAD
-    background-color: #00b359;
-=======
     background-color: rgb(28, 170, 80);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
@@ -1628,16 +1527,14 @@ export default {
 @media (max-width: 1024px) {
     .dashboard-content-wrapper {
         margin-left: 0;
-<<<<<<< HEAD
-=======
         width: 100%;
         max-width: 100%;
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     }
     
     .dashboard-content-wrapper.sidebar-collapsed {
         margin-left: 0;
-<<<<<<< HEAD
+        width: 100%;
+        max-width: 100%;
     }
     
     .mobile-header-admin {
@@ -1645,15 +1542,7 @@ export default {
     }
     
     .layout-content {
-        padding-top: 80px;
-=======
-        width: 100%;
-        max-width: 100%;
-    }
-    
-    .layout-content {
         padding-top: 70px;
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     }
     
     /* Ajusta a grade de KPIs para 3 colunas, se necessário */
@@ -1668,8 +1557,6 @@ export default {
     }
 }
 
-<<<<<<< HEAD
-=======
 @media (min-width: 769px) {
     .desktop-table {
         display: block !important;
@@ -1856,42 +1743,29 @@ export default {
     margin-left: 10px;
     word-break: break-word;
 }
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 
 /* Para Celulares e Telas Pequenas (max-width: 768px) */
 @media (max-width: 768px) {
     .layout-content {
         padding: 10px;
-<<<<<<< HEAD
-        padding-top: 80px;
-=======
         padding-top: 70px;
         overflow-x: hidden;
         box-sizing: border-box;
         width: 100%;
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     }
 
     .admin-dashboard{
         width: 100%;
-<<<<<<< HEAD
-        padding: 10px;
-=======
         max-width: 100%;
         padding: 10px;
         padding-bottom: 0;
         box-sizing: border-box;
         overflow-x: hidden;
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     }
     
     /* Ajusta a grade de KPIs para 2 colunas */
     .kpi-grid {
-<<<<<<< HEAD
-        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-=======
         grid-template-columns: repeat(2, 1fr);
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
         gap: 10px;
     }
 
@@ -1917,11 +1791,6 @@ export default {
         gap: 10px;
     }
     
-<<<<<<< HEAD
-    /* Força o overflow para a tabela aparecer em tela pequena */
-    .table-container {
-        overflow-x: auto;
-=======
     /* Esconder tabelas desktop e mostrar cards mobile */
     .desktop-table {
         display: none !important;
@@ -1940,7 +1809,11 @@ export default {
     /* Ajustar configurações */
     .config-card {
         padding: 15px;
->>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
+    }
+    
+    /* Força o overflow para a tabela aparecer em tela pequena */
+    .table-container {
+        overflow-x: auto;
     }
     
     .modern-table {
