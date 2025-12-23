@@ -30,8 +30,8 @@
           "Disciplina é o que transforma ganhos pontuais em consistência."
         </p>
         
-        <button class="confirm-button" @click="handleConfirm">
-          Ir para Configurações da IA
+        <button class="confirm-button" type="button" @click="handleConfirm">
+          Confirmar e Encerrar Ciclo
         </button>
       </div>
     </div>
@@ -72,8 +72,7 @@ export default {
     },
     handleConfirm() {
       this.$emit('confirm');
-      // Navegar para a tela de configurações da IA e recarregar a página
-      window.location.href = '/InvestmentIA';
+      // Apenas emite; o pai decide navegação/fechamento
     }
   }
 }

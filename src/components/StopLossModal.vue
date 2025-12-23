@@ -26,7 +26,7 @@
           Gestão de risco faz parte da consistência. Um novo ciclo estará disponível no próximo período.
         </p>
         
-        <button class="confirm-button" @click="handleConfirm">
+        <button class="confirm-button" type="button" @click="handleConfirm">
           Confirmar e Encerrar Ciclo
         </button>
       </div>
@@ -72,8 +72,7 @@ export default {
     },
     handleConfirm() {
       this.$emit('confirm');
-      // Navegar para a tela de configurações da IA e recarregar a página
-      window.location.href = '/InvestmentIA';
+      // Apenas emite; o pai decide navegação/fechamento
     }
   }
 }
