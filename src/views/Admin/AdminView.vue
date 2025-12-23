@@ -17,11 +17,15 @@
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <!-- Top Navbar -->
             <TopNavbar 
+<<<<<<< HEAD
                 v-if="!isMobile"
+=======
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
             />
+<<<<<<< HEAD
             
             <!-- Mobile Header -->
             <div v-if="isMobile" class="mobile-header-admin">
@@ -34,6 +38,8 @@
                     <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
                 </div>
             </div>
+=======
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 
             <main class="layout-content">
                 <div class="admin-dashboard">
@@ -74,7 +80,12 @@
                         <h2>Administradores do Sistema</h2>
                         <button class="btn btn-add-admin" @click="showAddAdminModal = true">+ Adicionar Novo Administrador</button>
                     </div>
+<<<<<<< HEAD
                     <div class="table-container">
+=======
+                    <!-- Tabela Desktop -->
+                    <div class="table-container desktop-table">
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
                         <table class="modern-table">
                             <thead>
                                 <tr>
@@ -108,6 +119,41 @@
                             </tbody>
                         </table>
                     </div>
+<<<<<<< HEAD
+=======
+                    <!-- Cards Mobile -->
+                    <div class="mobile-admins-cards">
+                        <div v-for="admin in admins" :key="admin.email" class="mobile-admin-card">
+                            <div class="card-header-admin">
+                                <h3 class="card-admin-name">{{ admin.name }}</h3>
+                                <span :class="['status-badge', admin.status.toLowerCase()]">
+                                    {{ admin.status }}
+                                </span>
+                            </div>
+                            <div class="card-body-admin">
+                                <div class="card-row-admin">
+                                    <span class="card-label-admin">Email:</span>
+                                    <span class="card-value-admin">{{ admin.email }}</span>
+                                </div>
+                                <div class="card-row-admin">
+                                    <span class="card-label-admin">Permissão:</span>
+                                    <span class="card-value-admin">{{ admin.permission }}</span>
+                                </div>
+                                <div class="card-row-admin">
+                                    <span class="card-label-admin">Último Login:</span>
+                                    <span class="card-value-admin">{{ admin.lastLogin }}</span>
+                                </div>
+                                <div class="card-actions-admin">
+                                    <button @click="editAdmin(admin)" class="action-link">Editar</button>
+                                    <button @click="toggleStatus(admin)" class="action-link">
+                                        {{ admin.status === 'Ativo' ? 'Desativar' : 'Ativar' }}
+                                    </button>
+                                    <button @click="deleteAdmin(admin)" class="action-link delete">Excluir</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
                 </section>
 
 
@@ -122,7 +168,12 @@
                             </button>
                         </div>
                     </div>
+<<<<<<< HEAD
                     <div class="table-container" :class="{ 'loading': isLoadingLogs }">
+=======
+                    <!-- Tabela Desktop -->
+                    <div class="table-container desktop-table" :class="{ 'loading': isLoadingLogs }">
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
                         <table class="modern-table">
                             <thead>
                                 <tr>
@@ -158,6 +209,40 @@
                             </tbody>
                         </table>
                     </div>
+<<<<<<< HEAD
+=======
+                    <!-- Cards Mobile -->
+                    <div class="mobile-logs-cards" :class="{ 'loading': isLoadingLogs }">
+                        <div v-if="isLoadingLogs" class="mobile-log-card empty-state">
+                            <p>Carregando logs...</p>
+                        </div>
+                        <div v-else-if="logs.length === 0" class="mobile-log-card empty-state">
+                            <p>Nenhum log de atividade encontrado</p>
+                        </div>
+                        <div v-else v-for="(log, index) in logs" :key="log.id || index" class="mobile-log-card">
+                            <div class="card-header-log">
+                                <h3 class="card-log-action">{{ log.action }}</h3>
+                                <span :class="['result-icon', log.result === 'Sucesso' ? 'success' : 'failure']">
+                                    {{ log.result === 'Sucesso' ? '✅' : '❌' }}
+                                </span>
+                            </div>
+                            <div class="card-body-log">
+                                <div class="card-row-log">
+                                    <span class="card-label-log">Data/Hora:</span>
+                                    <span class="card-value-log">{{ log.dateTime }}</span>
+                                </div>
+                                <div class="card-row-log">
+                                    <span class="card-label-log">Usuário:</span>
+                                    <span class="card-value-log">{{ log.user }}</span>
+                                </div>
+                                <div class="card-row-log">
+                                    <span class="card-label-log">IP:</span>
+                                    <span class="card-value-log">{{ log.ip }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 
                     <!-- Controles de Paginação -->
                     <div class="pagination-controls" v-if="logsPagination.totalPages > 1">
@@ -716,6 +801,13 @@ export default {
     min-height: 100vh;
     font-family: Arial, sans-serif;
     background-color: #0b0b0b;
+<<<<<<< HEAD
+=======
+    width: 100%;
+    max-width: 100vw;
+    overflow-x: hidden;
+    box-sizing: border-box;
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .sidebar-overlay {
@@ -732,6 +824,13 @@ export default {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+<<<<<<< HEAD
+=======
+    width: calc(100% - 280px);
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
@@ -743,11 +842,19 @@ export default {
     padding: 20px;
     padding-top: 80px; /* Espaço para o TopNavbar */
     overflow-y: auto;
+<<<<<<< HEAD
     background-color: #0b0b0b;
+=======
+    overflow-x: hidden;
+    background-color: #0b0b0b;
+    box-sizing: border-box;
+    width: 100%;
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .admin-dashboard {
     width: 100%;
+<<<<<<< HEAD
     margin: 0 auto;
     padding: 20px;
 }
@@ -772,6 +879,16 @@ export default {
     display: flex;
     align-items: center;
 }
+=======
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+    padding-bottom: 0;
+    box-sizing: border-box;
+    overflow-x: hidden;
+}
+
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 
 /* --- Cabeçalho --- */
 .dashboard-header h1 {
@@ -842,7 +959,11 @@ export default {
 .kpi-value {
     font-size: 1.8em;
     font-weight: bold;
+<<<<<<< HEAD
     color: rgb(41, 216, 108);
+=======
+    color: rgb(34, 197, 94);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 /* --- Seção de Administradores --- */
@@ -864,6 +985,7 @@ export default {
 }
 
 .btn-add-admin {
+<<<<<<< HEAD
     background-color: rgb(41, 216, 108);
     color: black;
     box-shadow: 0px 0px 10px rgba(41, 216, 108, 0.5);
@@ -871,6 +993,15 @@ export default {
 
 .btn-add-admin:hover {
     background-color: #00b359;
+=======
+    background-color: rgb(34, 197, 94);
+    color: black;
+    box-shadow: 0px 0px 10px rgba(34, 197, 94, 0.5);
+}
+
+.btn-add-admin:hover {
+    background-color: rgb(28, 170, 80);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .btn-secondary {
@@ -939,7 +1070,11 @@ export default {
 }
 
 .records-per-page select:hover {
+<<<<<<< HEAD
     border-color: rgb(41, 216, 108);
+=======
+    border-color: rgb(34, 197, 94);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .pagination-buttons {
@@ -960,8 +1095,13 @@ export default {
 }
 
 .btn-pagination:hover:not(:disabled) {
+<<<<<<< HEAD
     background-color: rgb(41, 216, 108);
     border-color: rgb(41, 216, 108);
+=======
+    background-color: rgb(34, 197, 94);
+    border-color: rgb(34, 197, 94);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     color: black;
 }
 
@@ -993,8 +1133,13 @@ export default {
 }
 
 .btn-page-number.active {
+<<<<<<< HEAD
     background-color: rgb(41, 216, 108);
     border-color: rgb(41, 216, 108);
+=======
+    background-color: rgb(34, 197, 94);
+    border-color: rgb(34, 197, 94);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     color: black;
     font-weight: bold;
 }
@@ -1105,9 +1250,15 @@ export default {
 }
 
 .ativo {
+<<<<<<< HEAD
     background-color: rgba(0, 230, 119, 0.048);
     color: #00e676;
     border: 1px solid #00e676;
+=======
+    background-color: rgba(34, 197, 94, 0.048);
+    color: rgb(34, 197, 94);
+    border: 1px solid rgb(34, 197, 94);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .inativo {
@@ -1149,7 +1300,11 @@ export default {
 }
 
 .result-icon.success {
+<<<<<<< HEAD
     color: #00e676;
+=======
+    color: rgb(34, 197, 94);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .result-icon.failure {
@@ -1157,6 +1312,18 @@ export default {
 }
 
 /* --- Cards de Permissão --- */
+<<<<<<< HEAD
+=======
+.permission-control {
+    margin-top: 40px;
+}
+
+/* --- Logs e Auditoria --- */
+.logs-audit {
+    margin-top: 15px;
+}
+
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 .permission-cards-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -1172,6 +1339,14 @@ export default {
     background-color: #131213;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+<<<<<<< HEAD
+=======
+    margin-bottom: 0;
+}
+
+.permission-card:last-child {
+    margin-bottom: 30px;
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 .card-details {
@@ -1197,14 +1372,22 @@ export default {
 .btn-manage-green {
     padding: 8px 15px;
     font-weight: bold;
+<<<<<<< HEAD
     background-color: rgb(41, 216, 108);
+=======
+    background-color: rgb(34, 197, 94);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     color: black;
     border-radius: 8px;
     transition: background-color 0.2s;
 }
 
 .btn-manage-green:hover {
+<<<<<<< HEAD
     background-color: #00b359;
+=======
+    background-color: rgb(28, 170, 80);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 /* --- Configurações Gerais --- */
@@ -1259,7 +1442,11 @@ export default {
 }
 
 .toggle-switch-admin.active {
+<<<<<<< HEAD
     background-color: rgb(41, 216, 108);
+=======
+    background-color: rgb(34, 197, 94);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 
@@ -1281,7 +1468,11 @@ export default {
     padding: 12px;
     margin-top: 20px;
     font-size: 1em;
+<<<<<<< HEAD
     background-color: rgb(41, 216, 108);
+=======
+    background-color: rgb(34, 197, 94);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     color: black;
     border-radius: 8px;
     font-weight: bold;
@@ -1292,7 +1483,11 @@ export default {
 }
 
 .btn-save-config:hover {
+<<<<<<< HEAD
     background-color: #00b359;
+=======
+    background-color: rgb(28, 170, 80);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 }
 
 /* ---------------------------------------------------------------------------------------------------- */
@@ -1433,10 +1628,16 @@ export default {
 @media (max-width: 1024px) {
     .dashboard-content-wrapper {
         margin-left: 0;
+<<<<<<< HEAD
+=======
+        width: 100%;
+        max-width: 100%;
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     }
     
     .dashboard-content-wrapper.sidebar-collapsed {
         margin-left: 0;
+<<<<<<< HEAD
     }
     
     .mobile-header-admin {
@@ -1445,6 +1646,14 @@ export default {
     
     .layout-content {
         padding-top: 80px;
+=======
+        width: 100%;
+        max-width: 100%;
+    }
+    
+    .layout-content {
+        padding-top: 70px;
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     }
     
     /* Ajusta a grade de KPIs para 3 colunas, se necessário */
@@ -1459,22 +1668,230 @@ export default {
     }
 }
 
+<<<<<<< HEAD
+=======
+@media (min-width: 769px) {
+    .desktop-table {
+        display: block !important;
+    }
+    
+    .mobile-admins-cards,
+    .mobile-logs-cards {
+        display: none !important;
+    }
+}
+
+
+/* Cards Mobile - Administradores */
+.mobile-admins-cards {
+    display: none;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    padding-bottom: 20px;
+    overflow-y: auto;
+    max-height: 800px;
+}
+
+.mobile-admin-card {
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #333;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.card-header-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.card-admin-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+    text-align: left;
+}
+
+.card-body-admin {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card-row-admin {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    min-height: 24px;
+}
+
+.card-label-admin {
+    font-size: 14px;
+    color: #999;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.card-value-admin {
+    font-size: 14px;
+    color: #fff;
+    text-align: right;
+    flex: 1;
+    margin-left: 10px;
+    word-break: break-word;
+}
+
+.card-actions-admin {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #333;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.card-actions-admin .action-link {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+    padding: 8px 4px;
+    word-break: break-word;
+    font-size: 0.85em;
+    box-sizing: border-box;
+}
+
+/* Cards Mobile - Logs */
+.mobile-logs-cards {
+    display: none;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    padding-bottom: 20px;
+    overflow-y: auto;
+    max-height: 800px;
+}
+
+.mobile-logs-cards.loading {
+    opacity: 0.6;
+}
+
+.mobile-log-card {
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #333;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.mobile-log-card.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #999;
+}
+
+.card-header-log {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.card-log-action {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+    text-align: left;
+}
+
+.card-body-log {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card-row-log {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    min-height: 24px;
+}
+
+.card-label-log {
+    font-size: 14px;
+    color: #999;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.card-value-log {
+    font-size: 14px;
+    color: #fff;
+    text-align: right;
+    flex: 1;
+    margin-left: 10px;
+    word-break: break-word;
+}
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
 
 /* Para Celulares e Telas Pequenas (max-width: 768px) */
 @media (max-width: 768px) {
     .layout-content {
         padding: 10px;
+<<<<<<< HEAD
         padding-top: 80px;
+=======
+        padding-top: 70px;
+        overflow-x: hidden;
+        box-sizing: border-box;
+        width: 100%;
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     }
 
     .admin-dashboard{
         width: 100%;
+<<<<<<< HEAD
         padding: 10px;
+=======
+        max-width: 100%;
+        padding: 10px;
+        padding-bottom: 0;
+        box-sizing: border-box;
+        overflow-x: hidden;
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     }
     
     /* Ajusta a grade de KPIs para 2 colunas */
     .kpi-grid {
+<<<<<<< HEAD
         grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+=======
+        grid-template-columns: repeat(2, 1fr);
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
         gap: 10px;
     }
 
@@ -1500,9 +1917,30 @@ export default {
         gap: 10px;
     }
     
+<<<<<<< HEAD
     /* Força o overflow para a tabela aparecer em tela pequena */
     .table-container {
         overflow-x: auto;
+=======
+    /* Esconder tabelas desktop e mostrar cards mobile */
+    .desktop-table {
+        display: none !important;
+    }
+    
+    .mobile-admins-cards,
+    .mobile-logs-cards {
+        display: flex !important;
+    }
+    
+    /* Ajustar grid de permissões */
+    .permission-cards-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    /* Ajustar configurações */
+    .config-card {
+        padding: 15px;
+>>>>>>> 617768bd0e1fefeff4b97e18a83e19865ed00ad5
     }
     
     .modern-table {

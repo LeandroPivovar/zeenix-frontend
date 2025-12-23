@@ -6,22 +6,10 @@
 
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
-                v-if="!isMobile"
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
             />
-            
-            <div v-if="isMobile" class="mobile-header-admin">
-                <button class="menu-toggler-btn" @click="isSidebarOpen = true">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-                    </svg>
-                </button>
-                <div class="mobile-brand">
-                    <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
-                </div>
-            </div>
 
             <main class="layout-content">
                 <div class="main-header header-markup">
@@ -43,13 +31,15 @@
                 </div>
 
                 <div class="filter-controls">
-                    <div class="date-filter">
-                        <span>Data de início</span>
-                        <input type="date" v-model="filterStartDate">
-                    </div>
-                    <div class="date-filter">
-                        <span>Data final</span>
-                        <input type="date" v-model="filterEndDate">
+                    <div class="date-filter-wrapper">
+                        <div class="date-filter">
+                            <span>Data de início</span>
+                            <input type="date" v-model="filterStartDate">
+                        </div>
+                        <div class="date-filter">
+                            <span>Data final</span>
+                            <input type="date" v-model="filterEndDate">
+                        </div>
                     </div>
                     <select v-model="filterSelectedCountry" class="select-country">
                         <option value="">Todos</option>
@@ -66,7 +56,8 @@
                     </p>
                 </div>
 
-                <div class="table-container" id="commission-table">
+                <!-- Tabela Desktop -->
+                <div class="table-container desktop-table" id="commission-table">
                     <table>
                         <thead>
                             <tr>
@@ -111,6 +102,52 @@
                             </tr>
                         </tbody>
                     </table>
+                </div>
+
+                <!-- Cards Mobile -->
+                <div class="mobile-cards-container">
+                    <div v-if="isLoading" class="mobile-card empty-state">
+                        <p>Carregando dados...</p>
+                    </div>
+                    <div v-else-if="error" class="mobile-card empty-state error">
+                        <p>Erro ao carregar dados: {{ error }}</p>
+                    </div>
+                    <div v-else-if="displayedClients.length === 0" class="mobile-card empty-state">
+                        <p>Nenhum dado encontrado para o período selecionado</p>
+                    </div>
+                    <div v-else v-for="client in displayedClients" :key="client.userId" class="mobile-card">
+                        <div class="card-header">
+                            <h3 class="card-name">{{ client.name }}</h3>
+                            <div class="card-commission">
+                                <span class="commission-value">{{ formatCurrency(client.commission) }}</span>
+                            </div>
+                        </div>
+                        <div class="card-body">
+                            <div class="card-row">
+                                <span class="card-label">País:</span>
+                                <span class="card-value">{{ client.country }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Login ID:</span>
+                                <span class="card-value">{{ client.email }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">Transações:</span>
+                                <span class="card-value">{{ client.transactionCount }}</span>
+                            </div>
+                            <div class="card-row">
+                                <span class="card-label">WhatsApp:</span>
+                                <span class="card-value">
+                                    <a v-if="client.whatsapp" :href="`https://wa.me/${client.whatsapp.replace(/\D/g, '')}`" target="_blank" class="whatsapp-icon">
+                                        <img src="../../assets/icons/whattsapp.svg" alt="" width="20px">
+                                    </a>
+                                    <span v-else class="whatsapp-icon" style="opacity: 0.3;">
+                                        <img src="../../assets/icons/whattsapp.svg" alt="" width="20px">
+                                    </span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
             </main>
@@ -158,7 +195,7 @@ export default {
         };
     },
     created() {
-        this.fetchData(); 
+        this.fetchData();
     },
     mounted() {
         this.handleResize();
@@ -398,51 +435,17 @@ export default {
     flex-grow: 1;
     padding: 20px;
     padding-top: 50px;
+    padding-bottom: 40px;
     background-color: #0B0B0B;
     width: 100%;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    overflow-x: hidden;
+    overflow-y: auto;
+    box-sizing: border-box;
 }
 
-/* Mobile Header */
-.mobile-header-admin {
-    display: none;
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 60px;
-    background-color: #0b0b0b;
-    z-index: 998;
-    padding: 0 20px;
-    align-items: center;
-    justify-content: space-between;
-    border-bottom: 1px solid #1C1C1C;
-}
-
-.mobile-brand {
-    display: flex;
-    align-items: center;
-}
-
-.menu-toggler-btn {
-    background-color: #1e1e1e;
-    color: rgb(255, 255, 255);
-    border: 1px solid #333;
-    border-radius: 8px;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: background-color 0.2s;
-}
-
-.menu-toggler-btn:hover {
-    background-color: #2a2a2a;
-}
 
 /* Responsividade */
 @media (max-width: 1024px) {
@@ -454,12 +457,8 @@ export default {
         margin-left: 0;
     }
     
-    .mobile-header-admin {
-        display: flex;
-    }
-    
     .layout-content {
-        padding-top: 50px;
+        padding-top: 70px;
     }
 }
 
@@ -480,6 +479,9 @@ export default {
 
 .main-content {
     width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
 }
 
 .main-header{
@@ -514,17 +516,30 @@ export default {
 .cards-diary {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 15px;
+    gap: 15px 15px;
+    row-gap: 10px;
     margin-bottom: 30px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.card {
+    width: 100%;
+    min-width: 0;
+    box-sizing: border-box;
+    display: flex;
+    flex-direction: column;
 }
 
 .card {
     background-color: #1e1e1e;
-    padding: 15px;
+    padding: 20px;
+    min-height: 100px;
     border-radius: 8px;
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease-out forwards;
+    margin: 0;
 }
 
 /* Delays escalonados para cada card */
@@ -544,6 +559,8 @@ export default {
     color: #00ff88; 
     display: block;
     font-weight: 500;
+    text-align: left;
+    margin-top: 10px;
 }
 
 /* Filtros */
@@ -555,6 +572,13 @@ export default {
     opacity: 0;
     animation: fadeIn 0.6s ease-out forwards;
     animation-delay: 0.6s;
+    flex-wrap: wrap;
+}
+
+.date-filter {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
 }
 
 .date-filter span {
@@ -562,7 +586,7 @@ export default {
     text-align: left;
     font-size: 13px;
     color: #afafaf;
-    margin-bottom: 5px;
+    margin-bottom: 0;
 }
 
 .date-filter input, .select-country {
@@ -571,6 +595,15 @@ export default {
     border: 1px solid #333;
     padding: 8px;
     border-radius: 4px;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.date-filter-wrapper {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    flex-wrap: nowrap;
 }
 
 .btn-search {
@@ -587,9 +620,11 @@ export default {
     font-weight: 55500;
 }
 
-/* Tabela */
+/* Tabela Desktop */
 .table-container {
     overflow-x: auto;
+    overflow-y: auto;
+    max-height: 800px;
     opacity: 0;
     transform: translateY(20px);
     animation: fadeInUp 0.6s ease-out forwards;
@@ -640,6 +675,157 @@ tbody tr:hover {
     color: #00b894;
 }
 
+/* Cards Mobile */
+.mobile-cards-container {
+    display: none;
+    gap: 10px;
+    flex-direction: column;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-out forwards;
+    animation-delay: 0.7s;
+    width: 100%;
+    padding-bottom: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: 800px;
+    align-items: flex-start;
+}
+
+.mobile-card {
+    background-color: #1e1e1e;
+    border-radius: 8px;
+    padding: 20px;
+    border: 1px solid #333;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: visible;
+    word-wrap: break-word;
+}
+
+.mobile-card.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: rgb(182, 182, 182);
+}
+
+.mobile-card.empty-state.error {
+    color: #ff4444;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #333;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.card-name {
+    font-size: 18px;
+    font-weight: 600;
+    color: #fff;
+    margin: 0;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+}
+
+.card-commission .commission-value {
+    font-size: 20px;
+    color: #00b862;
+    font-weight: bold;
+}
+
+.card-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    min-height: 24px;
+}
+
+.card-label {
+    font-size: 14px;
+    color: #999;
+    font-weight: 500;
+    flex-shrink: 0;
+}
+
+.card-value {
+    font-size: 14px;
+    color: rgb(182, 182, 182);
+    text-align: right;
+    flex: 1;
+    margin-left: 10px;
+    word-break: break-word;
+    overflow-wrap: break-word;
+}
+
+.card-value .whatsapp-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-end;
+}
+
+/* Responsividade - Esconder/Mostrar Tabela e Cards */
+@media (max-width: 768px) {
+    .desktop-table {
+        display: none !important;
+    }
+    
+    .mobile-cards-container {
+        display: flex !important;
+    }
+    
+    .layout-content {
+        padding: 15px;
+        padding-top: 70px;
+        padding-bottom: 30px;
+    }
+    
+    .main-content {
+        width: 100%;
+        overflow: visible;
+    }
+    
+    .mobile-card {
+        padding: 15px;
+    }
+    
+    .card-name {
+        font-size: 16px;
+    }
+    
+    .card-commission .commission-value {
+        font-size: 18px;
+    }
+    
+    .card-label,
+    .card-value {
+        font-size: 13px;
+    }
+}
+
+@media (min-width: 769px) {
+    .desktop-table {
+        display: block !important;
+    }
+    
+    .mobile-cards-container {
+        display: none !important;
+    }
+}
+
 @media (min-width: 992px) {
     .pdf-btn {
         width: auto;
@@ -675,7 +861,18 @@ tbody tr:hover {
 		flex-wrap: wrap; 
 	}
 	
-	.date-filter, .select-country {
+	.date-filter-wrapper {
+		display: flex;
+		gap: 15px;
+		width: 100%;
+	}
+	
+	.date-filter {
+		flex: 1;
+		min-width: 0;
+	}
+	
+	.select-country {
 		width: calc(50% - 7.5px); 
 	}
 	
@@ -726,8 +923,20 @@ tbody tr:hover {
 		align-items: stretch; 
 		gap: 10px;
 	}
+	
+	.date-filter-wrapper {
+		display: flex;
+		gap: 10px;
+		width: 100%;
+		flex-direction: row;
+	}
 
-	.date-filter, 
+	.date-filter {
+		flex: 1;
+		min-width: 0;
+		width: auto;
+	}
+	
 	.select-country,
 	.btn-search {
 		width: 100%; 
@@ -740,10 +949,19 @@ tbody tr:hover {
 	
 	.cards-diary {
 		grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+		width: 100%;
+		gap: 10px;
+	}
+	
+	.card {
+		width: 100%;
+		min-width: 0;
 	}
 	
 	.card p strong {
 		font-size: 18px;
+		text-align: left;
+		margin-top: 10px;
 	}
 }
 

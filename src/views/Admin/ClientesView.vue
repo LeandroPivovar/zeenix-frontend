@@ -6,22 +6,10 @@
 
 		<div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
 			<TopNavbar 
-				v-if="!isMobile"
 				:is-sidebar-collapsed="isSidebarCollapsed"
 				@toggle-sidebar="isSidebarOpen = !isSidebarOpen"
 				@toggle-sidebar-collapse="toggleSidebarCollapse"
 			/>
-			
-			<div v-if="isMobile" class="mobile-header-admin">
-				<button class="menu-toggler-btn" @click="isSidebarOpen = true">
-					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-					</svg>
-				</button>
-				<div class="mobile-brand">
-					<span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
-				</div>
-			</div>
 
 			<main class="layout-content">
 				<div class="container"> 
@@ -87,27 +75,26 @@
 				</div>
 
 				<div class="list-controls c-mobile">
-					<div class="controls-left">
-						<button class="filter-btn">Filtrar por saldo</button>
+					<button class="filter-btn">Filtrar por saldo</button>
+					<div class="controls-row-buttons">
 						<button class="export-btn" @click="exportClients">Exportar Lista</button>
 						<button class="update-btn" @click="updateData">Atualizar dados</button>
 					</div>
-					<div class="controls-right">
-						<select class="dropdown" v-model="balanceFilter" @change="fetchClients">
-							<option value="">Todos</option>
-							<option value="less100">Saldo &lt; $100</option>
-							<option value="more500">Saldo &gt; $500</option>
-							<option value="more1000">Saldo &gt; $1000</option>
-							<option value="more5000">Saldo &gt; $5000</option>
-						</select>
-						<div class="search-group"> 
-							<input type="text" v-model="searchQuery" placeholder="Buscar por nome, email ou ID de login" @keyup.enter="performSearch">
-							<button class="search-btn" @click="performSearch">Buscar</button>
-						</div>
+					<div class="search-group"> 
+						<input type="text" v-model="searchQuery" placeholder="Buscar por nome, email ou ID de login" @keyup.enter="performSearch">
+						<button class="search-btn" @click="performSearch">Buscar</button>
 					</div>
+					<select class="dropdown" v-model="balanceFilter" @change="fetchClients">
+						<option value="">Todos</option>
+						<option value="less100">Saldo &lt; $100</option>
+						<option value="more500">Saldo &gt; $500</option>
+						<option value="more1000">Saldo &gt; $1000</option>
+						<option value="more5000">Saldo &gt; $5000</option>
+					</select>
 				</div>
 
-				<div class="c-table">
+				<!-- Tabela Desktop -->
+				<div class="c-table desktop-table">
 					<div class="list-controls c-desk">
 						<div class="controls-left">
 							<button class="filter-btn">Filtrar por saldo</button>
@@ -177,6 +164,71 @@
 							</tr>
 						</tbody>
 					</table>
+				</div>
+
+				<!-- Cards Mobile -->
+				<div class="mobile-clients-cards">
+					<div v-if="loading" class="mobile-client-card empty-state">
+						<p>Carregando clientes...</p>
+					</div>
+					<div v-else-if="error" class="mobile-client-card empty-state error">
+						<p>{{ error }}</p>
+					</div>
+					<div v-else v-for="client in clients" :key="client.userId" class="mobile-client-card">
+						<div class="card-header-client">
+							<h3 class="card-client-name">{{ client.name }}</h3>
+							<div class="card-client-balance" :class="{'positive-balance': client.balance > 0, 'zero-balance': client.balance === 0}">
+								{{ formatCurrency(client.balance) }}
+							</div>
+						</div>
+						<div class="card-body-client">
+							<div class="card-row-client">
+								<span class="card-label-client">Login ID:</span>
+								<span class="card-value-client">{{ client.loginId }}</span>
+							</div>
+							<div class="card-row-client">
+								<span class="card-label-client">Email:</span>
+								<span class="card-value-client">{{ client.email }}</span>
+							</div>
+							<div class="card-row-client">
+								<span class="card-label-client">Role:</span>
+								<span class="card-value-client">
+									<select 
+										class="role-select-mobile" 
+										:value="client.role" 
+										@change="updateRole(client.userId, $event.target.value)"
+										:class="getRoleClass(client.role)"
+									>
+										<option value="user">Usuário</option>
+										<option value="admin">Admin</option>
+										<option value="master_trader">Master Trader</option>
+										<option value="expert">Expert</option>
+									</select>
+								</span>
+							</div>
+							<div class="card-row-client">
+								<span class="card-label-client">Tempo gasto:</span>
+								<span class="card-value-client">{{ client.timeSpent }}</span>
+							</div>
+							<div class="card-row-client">
+								<span class="card-label-client">Criado em:</span>
+								<span class="card-value-client">{{ client.createdAt }}</span>
+							</div>
+							<div class="card-row-client">
+								<span class="card-label-client">Última atividade:</span>
+								<span class="card-value-client">{{ client.lastActivity }}</span>
+							</div>
+							<div class="card-row-client" v-if="client.whatsapp">
+								<span class="card-label-client">WhatsApp:</span>
+								<span class="card-value-client">
+									<button class="whatsapp-btn-mobile">
+										<span class="c-icon"><img src="../../assets/icons/whattsapp.svg" alt="" width="15px" ></span>
+										Conversar
+									</button>
+								</span>
+							</div>
+						</div>
+					</div>
 				</div>
 				</div>
 			</main>
@@ -462,45 +514,6 @@ export default {
 	justify-content: flex-start;
 }
 
-/* Mobile Header */
-.mobile-header-admin {
-	display: none;
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 60px;
-	background-color: #0b0b0b;
-	z-index: 998;
-	padding: 0 20px;
-	align-items: center;
-	justify-content: space-between;
-	border-bottom: 1px solid #1C1C1C;
-}
-
-.mobile-brand {
-	display: flex;
-	align-items: center;
-}
-
-.menu-toggler-btn {
-	background-color: #1e1e1e;
-	color: rgb(255, 255, 255);
-	border: 1px solid #333;
-	border-radius: 8px;
-	width: 40px;
-	height: 40px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	cursor: pointer;
-	transition: background-color 0.2s;
-}
-
-.menu-toggler-btn:hover {
-	background-color: #2a2a2a;
-}
-
 /* Responsividade */
 @media (max-width: 1024px) {
 	.dashboard-content-wrapper {
@@ -511,12 +524,8 @@ export default {
 		margin-left: 0;
 	}
 	
-	.mobile-header-admin {
-		display: flex;
-	}
-	
 	.layout-content {
-		padding-top: 50px;
+		padding-top: 70px;
 	}
 }
 
@@ -585,7 +594,7 @@ p {
 .c-card-value {
 	font-size: 24px;
 	font-weight: bold;
-	color: #4CAF50; /* Cor verde para os valores */
+	color: rgb(34, 197, 94); /* Cor verde para os valores */
 }
 
 .controls-left{
@@ -613,13 +622,22 @@ p {
 }
 
 .update-btn {
-	background-color: #4CAF50; /* Verde */
+	background-color: rgb(34, 197, 94); /* Verde */
 	color: #fff;
 }
 
 @media (max-width: 1400px) {
 	.c-cards {
 		grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+	}
+	.c-cards > :nth-child(n) {
+		grid-column: auto;
+	}
+}
+
+@media (max-width: 768px) {
+	.c-cards {
+		grid-template-columns: repeat(2, 1fr);
 	}
 	.c-cards > :nth-child(n) {
 		grid-column: auto;
@@ -675,7 +693,7 @@ p {
 }
 
 .search-group .search-btn {
-	background-color: #00FF80; 
+	background-color: rgb(34, 197, 94); 
 	color: #121212; 
 	padding: 9px 15px;
 	border: none;
@@ -686,7 +704,7 @@ p {
 }
 
 .search-group .search-btn:hover {
-	background-color: #00e676; 
+	background-color: rgb(28, 170, 80); 
 }
 /* **FIM DA CORREÇÃO** */
 
@@ -728,7 +746,7 @@ p {
 }
 
 .c-table .positive-balance {
-	color: #4CAF50; /* Verde para saldo positivo */
+	color: rgb(34, 197, 94); /* Verde para saldo positivo */
 	font-weight: bold;
 }
 
@@ -738,7 +756,7 @@ p {
 
 /* Botão de Conversar no WhatsApp */
 .whatsapp-btn {
-	background-color: #4CAF50;
+	background-color: rgb(34, 197, 94);
 	color: #fff;
 	border: none;
 	padding: 5px 10px;
@@ -814,29 +832,207 @@ p {
 	}
 }
 
+/* Cards Mobile */
+.mobile-clients-cards {
+	display: none;
+	flex-direction: column;
+	gap: 15px;
+	width: 100%;
+	padding-bottom: 20px;
+	overflow-y: auto;
+	max-height: 800px;
+}
+
+.mobile-client-card {
+	background-color: #1e1e1e;
+	border-radius: 8px;
+	padding: 20px;
+	border: 1px solid #333;
+	width: 100%;
+	box-sizing: border-box;
+}
+
+.mobile-client-card.empty-state {
+	text-align: center;
+	padding: 40px 20px;
+	color: #999;
+}
+
+.mobile-client-card.empty-state.error {
+	color: #ff5252;
+}
+
+.card-header-client {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	margin-bottom: 15px;
+	padding-bottom: 15px;
+	border-bottom: 1px solid #333;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.card-client-name {
+	font-size: 18px;
+	font-weight: 600;
+	color: #fff;
+	margin: 0;
+	flex: 1;
+	min-width: 0;
+	word-break: break-word;
+	text-align: left;
+}
+
+.card-client-balance {
+	font-size: 20px;
+	font-weight: bold;
+	flex-shrink: 0;
+}
+
+.card-client-balance.positive-balance {
+	color: rgb(34, 197, 94);
+}
+
+.card-client-balance.zero-balance {
+	color: #a0a0a0;
+}
+
+.card-body-client {
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+}
+
+.card-row-client {
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	gap: 10px;
+	min-height: 24px;
+}
+
+.card-label-client {
+	font-size: 14px;
+	color: #999;
+	font-weight: 500;
+	flex-shrink: 0;
+}
+
+.card-value-client {
+	font-size: 14px;
+	color: #fff;
+	text-align: right;
+	flex: 1;
+	margin-left: 10px;
+	word-break: break-word;
+}
+
+.role-select-mobile {
+	padding: 6px 12px;
+	border-radius: 20px;
+	border: none;
+	font-size: 12px;
+	font-weight: bold;
+	cursor: pointer;
+	appearance: none;
+	text-align: center;
+	min-width: 120px;
+	transition: all 0.2s ease;
+	width: 100%;
+	max-width: 150px;
+}
+
+.role-select-mobile:focus {
+	outline: none;
+	box-shadow: 0 0 0 2px rgba(76, 175, 80, 0.4);
+}
+
+.whatsapp-btn-mobile {
+	background-color: rgb(34, 197, 94);
+	color: #fff;
+	border: none;
+	padding: 6px 12px;
+	border-radius: 20px;
+	font-size: 12px;
+	font-weight: bold;
+	cursor: pointer;
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+}
+
+/* Responsividade - Esconder/Mostrar Tabela e Cards */
 @media (max-width: 768px) {
+	.desktop-table {
+		display: none !important;
+	}
+	
+	.mobile-clients-cards {
+		display: flex !important;
+	}
 
 	.c-desk{
 		display: none;
 	}
 
-	.controls-left{
+	.list-controls.c-mobile {
 		display: flex;
-		gap: 10px;
-		align-items: center; 	
-		flex-wrap: wrap;
-		width: 100%;
 		flex-direction: column;
-		margin-bottom: 10px;
+		gap: 10px;
+		width: 100%;
 	}
 
-	.controls-left button {
+	.list-controls.c-mobile .filter-btn {
+		width: 100%;
 		padding: 8px 15px;
 		border: none;
 		border-radius: 4px;
 		cursor: pointer;
 		font-weight: bold;
+		background-color: #1e1e1e;
+		color: #e0e0e0;
+		border: 1px solid #555;
+	}
+
+	.controls-row-buttons {
+		display: flex;
+		gap: 10px;
 		width: 100%;
+	}
+
+	.controls-row-buttons button {
+		flex: 1;
+		padding: 8px 15px;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		font-weight: bold;
+	}
+
+	.list-controls.c-mobile .search-group {
+		width: 100%;
+	}
+
+	.list-controls.c-mobile .dropdown {
+		width: 100%;
+		padding: 8px 15px;
+		border-radius: 25px;
+		border: 1px solid #555;
+		background-color: #1e1e1e;
+		color: #e0e0e0;
+		appearance: none;
+		cursor: pointer;
+	}
+}
+
+@media (min-width: 769px) {
+	.desktop-table {
+		display: block !important;
+	}
+	
+	.mobile-clients-cards {
+		display: none !important;
 	}
 }
 </style>
