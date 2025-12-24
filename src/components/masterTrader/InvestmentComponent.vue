@@ -158,8 +158,9 @@
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
                                     <option value="orion">IA Orion</option>
                                     <option value="trinity">IA Trinity</option>
+                                    <option value="atlas">IA Atlas v2.0 - Extrema Alta Frequência</option>
                                 </select>
-                                <p id="strategyDescription" class="form-help">Análise técnica avançada com machine learning</p>
+                                <p id="strategyDescription" class="form-help">{{ strategyDescription }}</p>
                     </div>
 
                             <div class="form-group">
@@ -493,9 +494,19 @@ export default {
         selectedStrategyName() {
             const strategyNames = {
                 'orion': 'Orion',
-                'trinity': 'Trinity'
+                'trinity': 'Trinity',
+                'atlas': 'Atlas v2.0'
             };
             return strategyNames[this.selectedStrategy] || 'Orion';
+        },
+        
+        strategyDescription() {
+            const descriptions = {
+                'orion': 'Análise técnica avançada com machine learning',
+                'trinity': 'Operação multi-ativo (R_10, R_25, R_50) com rotação sequencial',
+                'atlas': 'Extrema alta frequência - milhares de operações por dia (3.000-8.000) com contratos de 1 tick'
+            };
+            return descriptions[this.selectedStrategy] || descriptions.orion;
         },
         
         formattedLastUpdate() {

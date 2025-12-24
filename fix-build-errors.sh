@@ -29,3 +29,4 @@ fi
 echo "✨ Correções aplicadas! Tente executar 'npm run build' novamente."
 
 
+
