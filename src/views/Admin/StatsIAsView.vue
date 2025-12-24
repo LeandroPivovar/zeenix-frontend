@@ -1,15 +1,5 @@
 <template>
-	<div class="layout">
-		<button
-			class="hamburger-btn"
-			@click="toggleMobileSidebar"
-			:class="{ active: isSidebarOpen }"
-		>
-			<span></span>
-			<span></span>
-			<span></span>
-		</button>
-
+	<div class="dashboard-layout">
 		<div
 			v-if="isSidebarOpen && isMobile"
 			class="sidebar-overlay"
@@ -27,27 +17,12 @@
 		<div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
 			<!-- Top Navbar -->
 			<TopNavbar 
-				v-if="!isMobile"
 				:is-sidebar-collapsed="isSidebarCollapsed"
 				@toggle-sidebar="isSidebarOpen = !isSidebarOpen"
 				@toggle-sidebar-collapse="toggleSidebarCollapse"
 			/>
-			
-			<!-- Mobile Header -->
-			<div v-if="isMobile" class="mobile-header-admin">
-				<button class="menu-toggler-btn" @click="isSidebarOpen = true">
-					<svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-						<path d="M4 6H20M4 12H20M4 18H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-					</svg>
-				</button>
-				<div class="mobile-brand">
-					<span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
-				</div>
-			</div>
 
 		<main class="layout-content">
-			<div class="background-glow"></div>
-			<div class="background-grid"></div>
 
 			<div class="main-header">
 				<div class="main-header-left">
@@ -58,355 +33,6 @@
 					<button class="btn pdf-btn" @click="exportReportToPDF">
 						<img src="../../assets/icons/box-down.svg" alt="Exportar PDF" width="20px"> Exportar Relatório
 					</button>
-				</div>
-			</div>
-
-			<!-- Seção Principal - IA Desativada (Padrão) -->
-			<div v-if="!tradingConfig.isActive && !aiMonitoring.isActive" class="ia-inactive-section">
-				<!-- Card de Saldo e Status -->
-				<div class="balance-status-card">
-					<div class="balance-info">
-						<div class="balance-main">
-							<div class="balance-label">Saldo</div>
-							<div class="balance-value">{{ formatBalance(accountBalance) }}</div>
-							<div class="account-type">
-								<span :class="['account-badge', accountType === 'Real' ? 'real' : 'demo']">
-									{{ accountType }}
-								</span>
-							</div>
-						</div>
-						<div class="result-today">
-							<div class="result-label">Resultado Hoje</div>
-							<div :class="['result-value', todayResult >= 0 ? 'positive' : 'negative']">
-								{{ todayResult >= 0 ? '+' : '' }}{{ formatCurrency(todayResult) }}
-							</div>
-							<div :class="['result-percent', todayResultPercent >= 0 ? 'positive' : 'negative']">
-								({{ todayResultPercent >= 0 ? '+' : '' }}{{ todayResultPercent.toFixed(2) }}%)
-							</div>
-						</div>
-						<div class="trades-today">
-							<div class="trades-label">Trades Hoje</div>
-							<div class="trades-value">{{ todayTrades }}</div>
-						</div>
-					</div>
-					<div class="status-actions">
-						<div class="status-info">
-							<div class="status-label">Status</div>
-							<div class="status-value inactive">IA Inativa</div>
-						</div>
-						<button class="btn-activate-ia" @click="activateIAFromDefault">
-							▶ Ativar IA
-						</button>
-						<button class="btn-disconnect">Desconectar</button>
-					</div>
-				</div>
-
-				<!-- Visão da IA | Orion -->
-				<div class="ia-vision-card">
-					<div class="vision-header">
-						<h3>Visão da IA | Orion</h3>
-						<p>Análise em tempo real do mercado</p>
-					</div>
-					<div class="vision-status">
-						<div class="status-item">
-							<span class="status-dot active"></span>
-							<span class="status-text">Operando</span>
-						</div>
-						<div class="status-item">
-							<span class="status-label">IA Orion</span>
-							<span class="status-value" style="display: inline-flex; align-items: center; gap: 4px;">
-								Ativo Atual
-								<div class="tooltip-container">
-									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<circle cx="12" cy="12" r="10"></circle>
-										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-										<line x1="12" y1="17" x2="12.01" y2="17"></line>
-									</svg>
-									<span class="tooltip-text">Ativo que a IA analisa agora.</span>
-								</div>
-							</span>
-						</div>
-					</div>
-					<div class="market-info-grid">
-						<div class="info-item">
-							<div class="info-label">EUR/USD</div>
-							<div class="info-value">Forex</div>
-						</div>
-						<div class="info-item">
-							<div class="info-label">Timeframe</div>
-							<div class="info-value">M5</div>
-						</div>
-						<div class="info-item">
-							<div class="info-label">
-								Probabilidade
-								<div class="tooltip-container">
-									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<circle cx="12" cy="12" r="10"></circle>
-										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-										<line x1="12" y1="17" x2="12.01" y2="17"></line>
-									</svg>
-									<span class="tooltip-text">Chance estimada de acerto do próximo sinal.</span>
-								</div>
-							</div>
-							<div class="info-value high-confidence">82%</div>
-							<div class="info-hint">Alta confiança</div>
-						</div>
-						<div class="info-item">
-							<div class="info-label">
-								Latência
-								<div class="tooltip-container">
-									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<circle cx="12" cy="12" r="10"></circle>
-										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-										<line x1="12" y1="17" x2="12.01" y2="17"></line>
-									</svg>
-									<span class="tooltip-text">Tempo de resposta da IA com o servidor.</span>
-								</div>
-							</div>
-							<div class="info-value excellent">12ms</div>
-							<div class="info-hint">Excelente</div>
-						</div>
-						<div class="info-item">
-							<div class="info-label">
-								Última Leitura
-								<div class="tooltip-container">
-									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<circle cx="12" cy="12" r="10"></circle>
-										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-										<line x1="12" y1="17" x2="12.01" y2="17"></line>
-									</svg>
-									<span class="tooltip-text">Momento da última análise do mercado.</span>
-								</div>
-							</div>
-							<div class="info-value">{{ lastReadingTime }}</div>
-							<div class="info-hint">Agora</div>
-						</div>
-						<div class="info-item">
-							<div class="info-label">
-								Status
-								<div class="tooltip-container">
-									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<circle cx="12" cy="12" r="10"></circle>
-										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-										<line x1="12" y1="17" x2="12.01" y2="17"></line>
-									</svg>
-									<span class="tooltip-text">Situação operacional da IA no momento.</span>
-								</div>
-							</div>
-							<div class="info-value status-active">Ativo</div>
-							<div class="info-hint">Monitorando</div>
-						</div>
-					</div>
-					<div class="precision-info">
-						<div class="precision-item">
-							<div class="precision-label">Precisão</div>
-							<div class="precision-value">78%</div>
-						</div>
-						<div class="precision-item">
-							<div class="precision-label">
-								WinRate
-								<div class="tooltip-container">
-									<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<circle cx="12" cy="12" r="10"></circle>
-										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-										<line x1="12" y1="17" x2="12.01" y2="17"></line>
-									</svg>
-									<span class="tooltip-text">Taxa de acerto recente da IA.</span>
-								</div>
-							</div>
-							<div class="precision-value">{{ winRate }}%</div>
-						</div>
-					</div>
-					
-					<!-- Análise de Mercado -->
-					<div class="market-analysis-section">
-						<div class="market-analysis-header">
-							<h3>Análise de Mercado</h3>
-							<div class="market-analysis-meta">
-								<span>Volatility 10 • M5 • Última atualização: {{ lastReadingTime }}</span>
-							</div>
-						</div>
-						<div class="market-chart-container">
-							<div ref="marketChartContainerInactive" class="market-chart-wrapper"></div>
-							<div v-if="!marketChartInitializedInactive && aiMonitoring.ticks.length === 0" class="chart-placeholder">
-								<p>Gráfico em tempo real (não implementado)</p>
-								<p class="chart-placeholder-hint">Aguardando dados de preço...</p>
-							</div>
-						</div>
-					</div>
-				</div>
-
-				<!-- Configurações -->
-				<div class="config-section-inactive">
-					<!-- Mercado & Estratégia -->
-					<div class="config-group">
-						<div class="config-group-header">
-							<h4>Mercado & Estratégia <span class="info-icon">ⓘ</span></h4>
-						</div>
-						<div class="config-group-content">
-							<div class="config-field">
-								<label>
-									Selecionar o mercado
-									<div class="tooltip-container">
-										<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-											<circle cx="12" cy="12" r="10"></circle>
-											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-											<line x1="12" y1="17" x2="12.01" y2="17"></line>
-										</svg>
-										<span class="tooltip-text">Escolha o ativo que deseja operar.</span>
-									</div>
-								</label>
-								<div class="select-field disabled">
-									<span>EUR/USD - Forex</span>
-								</div>
-							</div>
-							<div class="config-field">
-								<label>
-									Estratégia
-									<div class="tooltip-container">
-										<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-											<circle cx="12" cy="12" r="10"></circle>
-											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-											<line x1="12" y1="17" x2="12.01" y2="17"></line>
-										</svg>
-										<span class="tooltip-text">Modelo de análise usado pela IA</span>
-									</div>
-								</label>
-								<div class="select-field disabled">
-									<span>IA Orion - Alta Performance</span>
-									<small>Análise técnica avançada com machine learning</small>
-								</div>
-							</div>
-						</div>
-					</div>
-
-					<!-- Modo de Negociação -->
-					<div class="config-group">
-						<div class="config-group-header">
-							<h4>Modo de Negociação</h4>
-						</div>
-						<div class="config-group-content">
-							<div class="mode-options">
-								<button class="mode-option active" disabled>
-									⚡ Veloz
-									<span class="mode-hint">Executa sinais imediatamente</span>
-								</button>
-								<button class="mode-option" disabled>⚖️ Moderado</button>
-								<button class="mode-option" disabled>🐢 Devagar</button>
-							</div>
-						</div>
-					</div>
-
-					<!-- Parâmetros de Entrada -->
-					<div class="config-group">
-						<div class="config-group-header">
-							<h4>Parâmetros de Entrada</h4>
-						</div>
-						<div class="config-group-content">
-							<div class="input-group">
-								<label>Valor de Entrada (USD)</label>
-								<span class="input-hint">Valor por operação (mínimo: $0.35)</span>
-								<input 
-									type="number" 
-									v-model.number="tradingConfig.stakeAmount" 
-									min="0.35"
-									step="0.5"
-									placeholder="50"
-									:disabled="tradingConfig.isActive"
-								/>
-								<button 
-									v-if="!tradingConfig.isActive"
-									class="btn-save-config" 
-									@click="updateStakeAmount"
-									:disabled="isUpdatingConfig"
-								>
-									{{ isUpdatingConfig ? 'Salvando...' : '💾 Salvar Alteração' }}
-								</button>
-								<span v-if="configUpdateMessage" :class="['config-message', configUpdateSuccess ? 'success' : 'error']">
-									{{ configUpdateMessage }}
-								</span>
-							</div>
-							<div class="input-group">
-								<label>Alvo de Lucro (USD)</label>
-								<span class="input-hint">Meta diária de lucro</span>
-								<input 
-									type="number" 
-									v-model.number="tradingConfig.profitTarget" 
-									min="0"
-									step="0.01"
-									placeholder="100"
-									disabled
-								/>
-							</div>
-							<div class="input-group">
-								<label>Limite de Perda (USD)</label>
-								<span class="input-hint">Stop loss diário</span>
-								<input 
-									type="number" 
-									v-model.number="tradingConfig.lossLimit" 
-									min="0"
-									step="0.01"
-									placeholder="25"
-									disabled
-								/>
-							</div>
-						</div>
-					</div>
-
-					<!-- Gerenciamento de Risco -->
-					<div class="config-group">
-						<div class="config-group-header">
-							<h4>Gerenciamento de Risco</h4>
-						</div>
-						<div class="config-group-content">
-							<div class="risk-options">
-								<button class="risk-option" disabled>Fixo</button>
-								<button class="risk-option active" disabled>
-									🛡️ Conservador
-									<span class="risk-hint">Nível de Risco: Baixo</span>
-									<span class="risk-description">Proteção máxima do capital com crescimento estável</span>
-								</button>
-								<button class="risk-option" disabled>⚖️ Moderado</button>
-								<button class="risk-option" disabled>⚡ Agressivo</button>
-							</div>
-						</div>
-					</div>
-
-					<!-- Controle da IA -->
-					<div class="config-group">
-						<div class="config-group-header">
-							<h4>Controle da IA</h4>
-						</div>
-						<div class="config-group-content">
-							<div class="control-info">
-								<div class="control-status">
-									<span class="status-label">Status da IA</span>
-									<span class="status-badge inactive">Inativa</span>
-								</div>
-								<p class="control-hint">Quando ativada, a IA executa operações automaticamente</p>
-							</div>
-						</div>
-					</div>
-
-					<!-- Logs Recentes -->
-					<div class="config-group">
-						<div class="config-group-header">
-							<h4>Logs Recentes</h4>
-						</div>
-						<div class="config-group-content">
-							<div class="logs-container">
-								<div v-if="recentLogs.length === 0" class="no-logs">
-									<p>Nenhum log disponível</p>
-								</div>
-								<div v-else class="logs-list">
-									<div v-for="(log, index) in recentLogs" :key="index" class="log-item">
-										<span class="log-time">{{ log.time }}</span>
-										<span class="log-message">{{ log.message }}</span>
-									</div>
-								</div>
-							</div>
-						</div>
-					</div>
 				</div>
 			</div>
 
@@ -907,7 +533,8 @@
 					<button class="btn btn-search" @click="fetchData">Buscar</button>
 				</div>
 
-				<div class="table-container" id="ia-stats-table">
+				<!-- Tabela Desktop -->
+				<div class="table-container desktop-table" id="ia-stats-table">
 					<table>
 						<thead>
 							<tr>
@@ -943,6 +570,58 @@
 							</tr>
 						</tbody>
 					</table>
+				</div>
+
+				<!-- Cards Mobile -->
+				<div class="mobile-cards-container">
+					<div v-for="bot in displayedStats" :key="bot.name" class="mobile-bot-card">
+						<div class="mobile-card-header">
+							<div class="mobile-card-title">
+								<span :class="['status-dot', bot.status]"></span>
+								<h3>{{ bot.name }}</h3>
+							</div>
+						</div>
+						<div class="mobile-card-body">
+							<div class="mobile-card-row">
+								<span class="mobile-card-label">Total de Trades:</span>
+								<span class="mobile-card-value">{{ bot.totalTrades }}</span>
+							</div>
+							<div class="mobile-card-row">
+								<span class="mobile-card-label">Ganho:</span>
+								<span class="mobile-card-value positive">{{ bot.wins }}</span>
+							</div>
+							<div class="mobile-card-row">
+								<span class="mobile-card-label">Perda:</span>
+								<span class="mobile-card-value negative">{{ bot.losses }}</span>
+							</div>
+							<div class="mobile-card-row">
+								<span class="mobile-card-label">Lucro Total:</span>
+								<span :class="['mobile-card-value', bot.profit >= 0 ? 'positive-profit' : 'negative-profit']">
+									{{ formatCurrency(bot.profit) }}
+								</span>
+							</div>
+							<div class="mobile-card-row">
+								<span class="mobile-card-label">Lucro Alcançado:</span>
+								<span class="mobile-card-value">{{ bot.profitReached }}</span>
+							</div>
+							<div class="mobile-card-row">
+								<span class="mobile-card-label">Perda Alcançada:</span>
+								<span class="mobile-card-value">{{ bot.lossReached }}</span>
+							</div>
+							<div class="mobile-card-row">
+								<span class="mobile-card-label">Parada Ativada:</span>
+								<span class="mobile-card-value">{{ bot.activeStop }}</span>
+							</div>
+							<div class="mobile-card-row">
+								<span class="mobile-card-label">Risco Mais Usado:</span>
+								<span class="mobile-card-value">{{ bot.riskMode }}</span>
+							</div>
+							<div class="mobile-card-row">
+								<span class="mobile-card-label">Modo Mais Usado:</span>
+								<span class="mobile-card-value">{{ bot.tradeMode }}</span>
+							</div>
+						</div>
+					</div>
 				</div>
 				
 				<div class="bottom-summary-cards">
@@ -992,7 +671,7 @@
 	</div>
 	
 	<!-- Modais de Stop Loss e Target Profit -->
-	<StopLossModal
+	<!-- <StopLossModal
 		:visible="showStopLossModal"
 		:result="todayResult"
 		:currency="accountType === 'Demo' ? 'DEMO' : 'USD'"
@@ -1004,14 +683,14 @@
 		:result="todayResult"
 		:currency="accountType === 'Demo' ? 'DEMO' : 'USD'"
 		@confirm="handleTargetProfitConfirm"
-	/>
+	/> -->
 </template>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
-import StopLossModal from '../../components/StopLossModal.vue';
-import TargetProfitModal from '../../components/TargetProfitModal.vue';
+// import StopLossModal from '../../components/StopLossModal.vue';
+// import TargetProfitModal from '../../components/TargetProfitModal.vue';
 import { createChart, ColorType } from 'lightweight-charts';
 
 export default {
@@ -1019,8 +698,8 @@ export default {
 	components: {
 		AppSidebar,
 		TopNavbar,
-		StopLossModal,
-		TargetProfitModal,
+		// StopLossModal,
+		// TargetProfitModal,
 	},
 	data() {
 		const currentDate = '2025-11-18';
@@ -1133,8 +812,8 @@ export default {
 			marketChartInitializedActive: false,
 			
 			// Modais de Stop Loss e Target Profit
-			showStopLossModal: false,
-			showTargetProfitModal: false,
+			// showStopLossModal: false,
+			// showTargetProfitModal: false,
 			sessionResult: 0,
 			previousSessionStatus: null,
 		};
@@ -1226,28 +905,28 @@ export default {
 		/**
 		 * Handler para confirmação do modal de Stop Loss
 		 */
-		async handleStopLossConfirm() {
-			this.showStopLossModal = false;
-			// Resetar previousSessionStatus para permitir nova detecção se necessário
-			this.previousSessionStatus = null;
-			// Recarregar configuração para atualizar status e garantir que IA está inativa
-			await this.loadAIConfigOnMount();
-			// Forçar atualização do status
-			await this.fetchBackgroundStatus();
-		},
+		// async handleStopLossConfirm() {
+		// 	this.showStopLossModal = false;
+		// 	// Resetar previousSessionStatus para permitir nova detecção se necessário
+		// 	this.previousSessionStatus = null;
+		// 	// Recarregar configuração para atualizar status e garantir que IA está inativa
+		// 	await this.loadAIConfigOnMount();
+		// 	// Forçar atualização do status
+		// 	await this.fetchBackgroundStatus();
+		// },
 		
 		/**
 		 * Handler para confirmação do modal de Target Profit
 		 */
-		async handleTargetProfitConfirm() {
-			this.showTargetProfitModal = false;
-			// Resetar previousSessionStatus para permitir nova detecção se necessário
-			this.previousSessionStatus = null;
-			// Recarregar configuração para atualizar status e garantir que IA está inativa
-			await this.loadAIConfigOnMount();
-			// Forçar atualização do status
-			await this.fetchBackgroundStatus();
-		},
+		// async handleTargetProfitConfirm() {
+		// 	this.showTargetProfitModal = false;
+		// 	// Resetar previousSessionStatus para permitir nova detecção se necessário
+		// 	this.previousSessionStatus = null;
+		// 	// Recarregar configuração para atualizar status e garantir que IA está inativa
+		// 	await this.loadAIConfigOnMount();
+		// 	// Forçar atualização do status
+		// 	await this.fetchBackgroundStatus();
+		// },
 		
 		async loadAccountInfo() {
 			try {
@@ -1719,12 +1398,6 @@ export default {
 			}
 		},
 		
-		// Ativar IA a partir da tela padrão
-		async activateIAFromDefault() {
-			// Primeiro iniciar o monitoramento
-			await this.startAIMonitoring();
-			// A seção de monitoramento aparecerá automaticamente
-		},
 	
 	async deactivateIAFromActive() {
 		this.isDeactivating = true;
@@ -2435,26 +2108,26 @@ export default {
 					
 					// ✅ Verificar se há mensagem de meta de lucro atingida nos logs recentes
 					// Isso garante que o modal seja mostrado mesmo se o sessionStatus ainda não foi atualizado
-					const hasTargetProfitMessage = this.recentLogs.some(log => 
-						log.message && log.message.includes('META DE LUCRO ATINGIDA')
-					);
+					// const hasTargetProfitMessage = this.recentLogs.some(log => 
+					// 	log.message && log.message.includes('META DE LUCRO ATINGIDA')
+					// );
 					
-					if (hasTargetProfitMessage && !this.showTargetProfitModal) {
-						console.log('[StatsIAsView] 🎯 [Logs] Meta de lucro detectada nos logs! Mostrando modal...');
-						await this.loadSessionResult();
-						this.showTargetProfitModal = true;
-					}
+					// if (hasTargetProfitMessage && !this.showTargetProfitModal) {
+					// 	console.log('[StatsIAsView] 🎯 [Logs] Meta de lucro detectada nos logs! Mostrando modal...');
+					// 	await this.loadSessionResult();
+					// 	this.showTargetProfitModal = true;
+					// }
 					
 					// ✅ Verificar se há mensagem de stop loss nos logs recentes
-					const hasStopLossMessage = this.recentLogs.some(log => 
-						log.message && log.message.includes('STOP LOSS ATINGIDO')
-					);
+					// const hasStopLossMessage = this.recentLogs.some(log => 
+					// 	log.message && log.message.includes('STOP LOSS ATINGIDO')
+					// );
 					
-					if (hasStopLossMessage && !this.showStopLossModal) {
-						console.log('[StatsIAsView] 🛑 [Logs] Stop loss detectado nos logs! Mostrando modal...');
-						await this.loadSessionResult();
-						this.showStopLossModal = true;
-					}
+					// if (hasStopLossMessage && !this.showStopLossModal) {
+					// 	console.log('[StatsIAsView] 🛑 [Logs] Stop loss detectado nos logs! Mostrando modal...');
+					// 	await this.loadSessionResult();
+					// 	this.showStopLossModal = true;
+					// }
 				}
 			} catch (error) {
 				console.error('[StatsIAsView] Erro ao carregar logs:', error);
@@ -2566,29 +2239,35 @@ export default {
 				
 				// ✅ PRIORIDADE 1: Se o status atual é stopped_loss ou stopped_profit, mostrar modal
 				// (independentemente do estado anterior, desde que o modal não esteja já aberto)
-				if (currentSessionStatus === 'stopped_loss') {
-					if (!this.showStopLossModal) {
-						console.log('[StatsIAsView] 🛑 [Background] Stop loss detectado! Mostrando modal...');
-						console.log('[StatsIAsView] 📊 [Background] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
-						// Buscar resultado da sessão
-						await this.loadSessionResult();
-						this.showStopLossModal = true;
-						console.log('[StatsIAsView] ✅ [Background] Modal de stop loss exibido');
-					}
-					this.previousSessionStatus = currentSessionStatus;
-				} else if (currentSessionStatus === 'stopped_profit') {
-					// ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
-					// Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
-					if (!this.showTargetProfitModal) {
-						console.log('[StatsIAsView] 🎯 [Background] Target profit detectado! Mostrando modal...');
-						console.log('[StatsIAsView] 📊 [Background] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
-						// Buscar resultado da sessão
-						await this.loadSessionResult();
-						this.showTargetProfitModal = true;
-						console.log('[StatsIAsView] ✅ [Background] Modal de target profit exibido');
-					}
-					this.previousSessionStatus = currentSessionStatus;
-				} else if (this.previousSessionStatus !== currentSessionStatus) {
+				// if (currentSessionStatus === 'stopped_loss') {
+				// 	if (!this.showStopLossModal) {
+				// 		console.log('[StatsIAsView] 🛑 [Background] Stop loss detectado! Mostrando modal...');
+				// 		console.log('[StatsIAsView] 📊 [Background] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
+				// 		// Buscar resultado da sessão
+				// 		await this.loadSessionResult();
+				// 		this.showStopLossModal = true;
+				// 		console.log('[StatsIAsView] ✅ [Background] Modal de stop loss exibido');
+				// 	}
+				// 	this.previousSessionStatus = currentSessionStatus;
+				// } else if (currentSessionStatus === 'stopped_profit') {
+				// 	// ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
+				// 	// Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
+				// 	if (!this.showTargetProfitModal) {
+				// 		console.log('[StatsIAsView] 🎯 [Background] Target profit detectado! Mostrando modal...');
+				// 		console.log('[StatsIAsView] 📊 [Background] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
+				// 		// Buscar resultado da sessão
+				// 		await this.loadSessionResult();
+				// 		this.showTargetProfitModal = true;
+				// 		console.log('[StatsIAsView] ✅ [Background] Modal de target profit exibido');
+				// 	}
+				// 	this.previousSessionStatus = currentSessionStatus;
+				// } else if (this.previousSessionStatus !== currentSessionStatus) {
+				// 	// Se mudou para outro status, atualizar previousSessionStatus
+				// 	console.log('[StatsIAsView] 🔄 [Background] Status mudou para:', currentSessionStatus);
+				// 	this.previousSessionStatus = currentSessionStatus;
+				// }
+				
+				if (this.previousSessionStatus !== currentSessionStatus) {
 					// Se mudou para outro status, atualizar previousSessionStatus
 					console.log('[StatsIAsView] 🔄 [Background] Status mudou para:', currentSessionStatus);
 					this.previousSessionStatus = currentSessionStatus;
@@ -2596,26 +2275,26 @@ export default {
 				
 				// ✅ Verificar também nos logs recentes para garantir detecção imediata
 				// Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
-				if (!this.showTargetProfitModal && !this.showStopLossModal) {
-					await this.loadRecentLogs(); // Carregar todos os logs da sessão atual
-				}
+				// if (!this.showTargetProfitModal && !this.showStopLossModal) {
+				// 	await this.loadRecentLogs(); // Carregar todos os logs da sessão atual
+				// }
 				
 				// ✅ PRIORIDADE 2: Se a IA foi desativada e não mostramos modal ainda, verificar novamente
 				// Esta é uma verificação de segurança caso a PRIORIDADE 1 não tenha capturado
-				if (!config.isActive && !this.showStopLossModal && !this.showTargetProfitModal) {
-					// Pode ter sido desativada por stop loss ou target profit
-					if (currentSessionStatus === 'stopped_loss') {
-						console.log('[StatsIAsView] 🛑 [Background] IA desativada por stop loss (verificação de segurança)! Mostrando modal...');
-						await this.loadSessionResult();
-						this.showStopLossModal = true;
-						this.previousSessionStatus = currentSessionStatus;
-					} else if (currentSessionStatus === 'stopped_profit') {
-						console.log('[StatsIAsView] 🎯 [Background] IA desativada por target profit (verificação de segurança)! Mostrando modal...');
-						await this.loadSessionResult();
-						this.showTargetProfitModal = true;
-						this.previousSessionStatus = currentSessionStatus;
-					}
-				}
+				// if (!config.isActive && !this.showStopLossModal && !this.showTargetProfitModal) {
+				// 	// Pode ter sido desativada por stop loss ou target profit
+				// 	if (currentSessionStatus === 'stopped_loss') {
+				// 		console.log('[StatsIAsView] 🛑 [Background] IA desativada por stop loss (verificação de segurança)! Mostrando modal...');
+				// 		await this.loadSessionResult();
+				// 		this.showStopLossModal = true;
+				// 		this.previousSessionStatus = currentSessionStatus;
+				// 	} else if (currentSessionStatus === 'stopped_profit') {
+				// 		console.log('[StatsIAsView] 🎯 [Background] IA desativada por target profit (verificação de segurança)! Mostrando modal...');
+				// 		await this.loadSessionResult();
+				// 		this.showTargetProfitModal = true;
+				// 		this.previousSessionStatus = currentSessionStatus;
+				// 	}
+				// }
 				
 				// Calcular countdown baseado no nextTradeAt
 				if (config.nextTradeAt) {
@@ -2773,29 +2452,35 @@ export default {
 				
 				// ✅ PRIORIDADE 1: Se o status atual é stopped_loss ou stopped_profit, mostrar modal
 				// (independentemente do estado anterior, desde que o modal não esteja já aberto)
-				if (currentSessionStatus === 'stopped_loss') {
-					if (!this.showStopLossModal) {
-						console.log('[StatsIAsView] 🛑 [OnMount] Stop loss detectado! Mostrando modal...');
-						console.log('[StatsIAsView] 📊 [OnMount] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
-						// Buscar resultado da sessão
-						await this.loadSessionResult();
-						this.showStopLossModal = true;
-						console.log('[StatsIAsView] ✅ [OnMount] Modal de stop loss exibido');
-					}
-					this.previousSessionStatus = currentSessionStatus;
-				} else if (currentSessionStatus === 'stopped_profit') {
-					// ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
-					// Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
-					if (!this.showTargetProfitModal) {
-						console.log('[StatsIAsView] 🎯 [OnMount] Target profit detectado! Mostrando modal...');
-						console.log('[StatsIAsView] 📊 [OnMount] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
-						// Buscar resultado da sessão
-						await this.loadSessionResult();
-						this.showTargetProfitModal = true;
-						console.log('[StatsIAsView] ✅ [OnMount] Modal de target profit exibido');
-					}
-					this.previousSessionStatus = currentSessionStatus;
-				} else if (this.previousSessionStatus !== currentSessionStatus) {
+				// if (currentSessionStatus === 'stopped_loss') {
+				// 	if (!this.showStopLossModal) {
+				// 		console.log('[StatsIAsView] 🛑 [OnMount] Stop loss detectado! Mostrando modal...');
+				// 		console.log('[StatsIAsView] 📊 [OnMount] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
+				// 		// Buscar resultado da sessão
+				// 		await this.loadSessionResult();
+				// 		this.showStopLossModal = true;
+				// 		console.log('[StatsIAsView] ✅ [OnMount] Modal de stop loss exibido');
+				// 	}
+				// 	this.previousSessionStatus = currentSessionStatus;
+				// } else if (currentSessionStatus === 'stopped_profit') {
+				// 	// ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
+				// 	// Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
+				// 	if (!this.showTargetProfitModal) {
+				// 		console.log('[StatsIAsView] 🎯 [OnMount] Target profit detectado! Mostrando modal...');
+				// 		console.log('[StatsIAsView] 📊 [OnMount] Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
+				// 		// Buscar resultado da sessão
+				// 		await this.loadSessionResult();
+				// 		this.showTargetProfitModal = true;
+				// 		console.log('[StatsIAsView] ✅ [OnMount] Modal de target profit exibido');
+				// 	}
+				// 	this.previousSessionStatus = currentSessionStatus;
+				// } else if (this.previousSessionStatus !== currentSessionStatus) {
+				// 	// Se mudou para outro status, atualizar previousSessionStatus
+				// 	console.log('[StatsIAsView] 🔄 [OnMount] Status mudou para:', currentSessionStatus);
+				// 	this.previousSessionStatus = currentSessionStatus;
+				// }
+				
+				if (this.previousSessionStatus !== currentSessionStatus) {
 					// Se mudou para outro status, atualizar previousSessionStatus
 					console.log('[StatsIAsView] 🔄 [OnMount] Status mudou para:', currentSessionStatus);
 					this.previousSessionStatus = currentSessionStatus;
@@ -2803,9 +2488,9 @@ export default {
 				
 				// ✅ Verificar também nos logs recentes para garantir detecção imediata
 				// Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
-				if (!this.showTargetProfitModal && !this.showStopLossModal) {
-					await this.loadRecentLogs(); // Carregar todos os logs da sessão atual
-				}
+				// if (!this.showTargetProfitModal && !this.showStopLossModal) {
+				// 	await this.loadRecentLogs(); // Carregar todos os logs da sessão atual
+				// }
 				
 				this.tradingConfig.isActive = config.isActive || false;
 				this.aiMonitoring.isActive = !!config.isActive;
@@ -3333,40 +3018,6 @@ export default {
 },
 
 async mounted() {
-	// Verificar se o usuário está conectado com a Deriv
-	console.log('[StatsIAsView] Verificando conexão Deriv...');
-	
-	const hasToken = !!localStorage.getItem('deriv_token');
-	if (!hasToken) {
-		try {
-			const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
-			if (tokensByLoginId) {
-				const parsed = JSON.parse(tokensByLoginId);
-				if (Object.keys(parsed).length === 0) {
-					console.warn('[StatsIAsView] Nenhum token Deriv encontrado, redirecionando para tela de conexão...');
-					this.$router.push('/dashboard');
-					return;
-				}
-			} else {
-				console.warn('[StatsIAsView] Nenhum token Deriv encontrado, redirecionando para tela de conexão...');
-				this.$router.push('/dashboard');
-				return;
-			}
-		} catch (e) {
-			console.warn('[StatsIAsView] Erro ao verificar tokens Deriv, redirecionando para tela de conexão...');
-			this.$router.push('/dashboard');
-			return;
-		}
-	}
-	
-	// Verificar conexão salva
-	const savedConnection = localStorage.getItem('deriv_connection');
-	if (!savedConnection) {
-		console.warn('[StatsIAsView] Nenhuma conexão Deriv encontrada, redirecionando para tela de conexão...');
-		this.$router.push('/dashboard');
-		return;
-	}
-	
 	console.log('[StatsIAsView] ===== COMPONENTE MONTADO =====');
 	
 	// Verificar se é mobile e configurar sidebar
@@ -3432,15 +3083,15 @@ async mounted() {
 </script>
 
 <style scoped>
-.layout {
-	background-color: #0B0B0B;
-	color: #fff;
-	min-height: 100vh;
-	width: 100%;
-	margin-left: 0;
-	padding: 0;
-	font-family: 'Roboto', sans-serif;
+.dashboard-layout {
 	display: flex;
+	min-height: 100vh;
+	font-family: 'Roboto', sans-serif;
+	background-color: #0b0b0b;
+	width: 100%;
+	max-width: 100vw;
+	overflow-x: hidden;
+	box-sizing: border-box;
 }
 
 h1{
@@ -3448,56 +3099,51 @@ h1{
 }
 
 .dashboard-content-wrapper {
-	flex: 1;
+	flex-grow: 1;
 	margin-left: 280px;
 	transition: margin-left 0.3s ease;
 	min-height: 100vh;
-	background-color: #0b0b0b;
 	position: relative;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
+	display: flex;
+	flex-direction: column;
+	overflow-x: hidden;
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
 	margin-left: 80px;
 }
 
-/* Mobile Header */
-.mobile-header-admin {
+/* Sidebar Overlay */
+.sidebar-overlay {
 	display: none;
 	position: fixed;
 	top: 0;
 	left: 0;
 	right: 0;
-	height: 60px;
-	background: #0B0B0B;
-	border-bottom: 2px solid #9333EA;
+	bottom: 0;
+	background-color: rgba(0, 0, 0, 0.5);
 	z-index: 999;
-	align-items: center;
-	padding: 0 1rem;
-	justify-content: space-between;
 }
 
-.menu-toggler-btn {
-	background: transparent;
-	border: none;
-	color: #22C55E;
-	cursor: pointer;
-	padding: 8px;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.mobile-brand {
-	display: flex;
-	align-items: center;
-	gap: 0;
-}
+/* Mobile Header */
 
 .layout-content {
-	margin: 0;
-	justify-content: flex-start;
+	flex-grow: 1;
 	padding: 40px;
-	padding-top: 100px; /* Espaço para o TopNavbar */
+	padding-top: 80px; /* Espaço para o TopNavbar */
+	overflow-y: auto;
+	overflow-x: hidden;
+	background-color: #0b0b0b;
+	box-sizing: border-box;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: flex-start;
 }
 
 .main-header {
@@ -3505,8 +3151,8 @@ h1{
 	justify-content: space-between;
 	width: 100%;
 	align-items: center;
-	margin-bottom: 30px;
-	padding-top: 20px;
+	margin-bottom: 24px;
+	padding-top: 0;
 	opacity: 0;
 	animation: fadeIn 0.5s ease-out forwards;
 }
@@ -3518,8 +3164,8 @@ h1{
 
 .main-content {
 	width: 100%;
-	margin-top: 70px;
-	padding: 4rem 20px 1.5rem 20px;
+	margin-top: 0;
+	padding: 2rem 0 2rem 0;
 	box-sizing: border-box;
 }
 
@@ -3555,37 +3201,81 @@ h1{
 
 .filter-controls {
 	display: flex;
-	gap: 10px; 
+	flex-direction: row;
+	gap: 12px; 
 	align-items: center; 
-	margin-bottom: 20px;
+	margin-bottom: 24px;
 	opacity: 0;
 	animation: fadeIn 0.6s ease-out forwards;
 	animation-delay: 0.1s;
+	flex-wrap: nowrap;
+}
+
+.date-filter {
+	flex: 0 1 auto;
+	min-width: 180px;
+	max-width: 200px;
 }
 
 .date-filter input {
+	width: 100%;
 	background-color: #1e1e1e;
 	color: #fff;
 	border: 1px solid #333;
-	padding: 8px;
-	border-radius: 4px;
+	padding: 10px 12px;
+	border-radius: 6px;
 	font-family: 'Roboto', sans-serif;
+	font-size: 14px;
+	font-weight: 400;
+	transition: all 0.2s ease;
+	box-sizing: border-box;
+}
+
+.date-filter input:focus {
+	outline: none;
+	border-color: #00b862;
+	box-shadow: 0 0 0 3px rgba(0, 184, 98, 0.1);
+}
+
+.date-filter input::-webkit-calendar-picker-indicator {
+	filter: invert(1);
+	cursor: pointer;
 }
 
 .btn-search {
 	background-color: #00b862;
 	color: #fff;
+	padding: 10px 20px;
+	border-radius: 6px;
+	font-family: 'Roboto', sans-serif;
+	font-size: 14px;
+	font-weight: 500;
+	border: none;
+	cursor: pointer;
+	transition: all 0.2s ease;
+	white-space: nowrap;
+	width: fit-content;
+	flex-shrink: 0;
+}
+
+.btn-search:hover {
+	background-color: #00a050;
+	transform: translateY(-1px);
+	box-shadow: 0 4px 8px rgba(0, 184, 98, 0.3);
 }
 
 /* Tabela */
 .table-container {
+	width: 100%;
 	overflow-x: auto;
 	overflow-y: auto;
 	background: #191a19;
+	border-radius: 8px;
 	opacity: 0;
 	transform: translateY(20px);
 	animation: fadeInUp 0.6s ease-out forwards;
 	animation-delay: 0.2s;
+	margin-bottom: 30px;
 }
 
 .table-container::-webkit-scrollbar {
@@ -3610,15 +3300,24 @@ h1{
 
 table {
 	width: 100%;
-	overflow: hidden;
-	margin-bottom: 30px; 
+	border-collapse: collapse;
+	margin: 0;
 }
 
 th, td {
-	padding: 12px 15px;
+	padding: 14px 16px;
 	text-align: left;
 	border-bottom: 1px solid #333;
-	font-size: 13px; 
+	font-size: 13px;
+	white-space: nowrap;
+}
+
+th:first-child, td:first-child {
+	padding-left: 20px;
+}
+
+th:last-child, td:last-child {
+	padding-right: 20px;
 }
 
 thead th {
@@ -3673,20 +3372,25 @@ tbody tr:hover {
 .bottom-summary-cards {
 	display: grid;
 	grid-template-columns: repeat(4, 1fr); 
-	gap: 15px;
-	margin-top: 20px;
+	gap: 16px;
+	margin-top: 24px;
+	width: 100%;
+	box-sizing: border-box;
 }
 
 .bottom-card {
 	background-color: #1e1e1e;
-	padding: 10px;
+	padding: 12px 16px;
 	border-radius: 8px;
 	display: flex;
-	height: 70px; 
+	min-height: 70px;
 	align-items: center;
 	opacity: 0;
 	transform: translateY(20px);
 	animation: fadeInUp 0.6s ease-out forwards;
+	overflow: hidden;
+	box-sizing: border-box;
+	width: 100%;
 }
 
 /* Delays escalonados para cada card */
@@ -3701,8 +3405,10 @@ tbody tr:hover {
 	justify-content: flex-start;
 	align-items: center;
 	text-align: left;
-	gap: 15px;
+	gap: 12px;
 	width: 100%;
+	min-width: 0;
+	overflow: hidden;
 }
 
 .card-content {
@@ -3712,7 +3418,9 @@ tbody tr:hover {
 .card-icon {
 	filter: invert(100%); 
 	width: 30px;
-	margin: 0 10px;
+	height: 30px;
+	flex-shrink: 0;
+	object-fit: contain;
 }
 
 .card-text-group {
@@ -3720,7 +3428,10 @@ tbody tr:hover {
 	flex-direction: column-reverse;
 	align-items: flex-start;
 	justify-content: center;
-	gap: 2px; 
+	gap: 2px;
+	flex: 1;
+	min-width: 0;
+	overflow: hidden;
 }
 
 .bottom-card .card-title {
@@ -3728,549 +3439,134 @@ tbody tr:hover {
 	color: #a7a7a7;
 	margin: 0;
 	text-transform: uppercase;
-	font-weight: 500; 
+	font-weight: 500;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	width: 100%;
+	font-family: 'Roboto', sans-serif;
+	line-height: 1.4;
 }
 
 .bottom-card .card-value {
-	font-size: 18px;
+	font-size: 16px;
 	font-weight: 700; 
 	margin: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	width: 100%;
+	font-family: 'Roboto', sans-serif;
+	line-height: 1.4;
 }
 
-.card-value-white{
+.card-value-white {
 	color: white;
+	font-family: 'Roboto', sans-serif;
 }
 
-@media (min-width: 992px) {
-
-    /* Tabela */
-    .table-container {
-        overflow-x: auto;
-        min-height: 600px;
-        overflow-y: auto;
-        background: #191a19;
-    }
-}
-
-/* Seção Principal - IA Desativada */
-.ia-inactive-section {
-	margin-bottom: 30px;
-	animation: fadeIn 0.5s ease-out 0.1s forwards;
-	opacity: 0;
-}
-
-/* Card de Saldo e Status */
-.balance-status-card {
-	background: rgba(30, 41, 59, 0.4);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 12px;
-	padding: 24px;
-	margin-bottom: 20px;
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
-	gap: 30px;
-}
-
-.balance-info {
-	display: flex;
-	gap: 40px;
-	align-items: center;
-	flex: 1;
-}
-
-.balance-main {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.balance-label {
-	font-size: 12px;
-	color: #94a3b8;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
-
-.balance-value {
-	font-size: 32px;
-	font-weight: 700;
-	color: #f8fafc;
-	font-family: 'Courier New', monospace;
-}
-
-.account-type {
-	margin-top: 4px;
-}
-
-.account-badge {
-	padding: 4px 12px;
-	border-radius: 12px;
-	font-size: 11px;
-	font-weight: 600;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
-
-.account-badge.real {
-	background: rgba(16, 185, 129, 0.2);
+.positive-profit {
 	color: #10b981;
-	border: 1px solid rgba(16, 185, 129, 0.4);
+	font-family: 'Roboto', sans-serif;
 }
 
-.account-badge.demo {
-	background: rgba(59, 130, 246, 0.2);
-	color: #3b82f6;
-	border: 1px solid rgba(59, 130, 246, 0.4);
-}
-
-.result-today, .trades-today {
-	display: flex;
+/* Cards Mobile */
+.mobile-cards-container {
+	display: none;
 	flex-direction: column;
-	gap: 4px;
-}
-
-.result-label, .trades-label {
-	font-size: 12px;
-	color: #94a3b8;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
-
-.result-value {
-	font-size: 24px;
-	font-weight: 700;
-	font-family: 'Courier New', monospace;
-}
-
-.result-value.positive {
-	color: #10b981;
-}
-
-.result-value.negative {
-	color: #ef4444;
-}
-
-.result-percent {
-	font-size: 14px;
-	font-weight: 600;
-}
-
-.result-percent.positive {
-	color: #10b981;
-}
-
-.result-percent.negative {
-	color: #ef4444;
-}
-
-.trades-value {
-	font-size: 24px;
-	font-weight: 700;
-	color: #f8fafc;
-	font-family: 'Courier New', monospace;
-}
-
-.status-actions {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-	align-items: flex-end;
-}
-
-.status-info {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	align-items: flex-end;
-}
-
-.status-label {
-	font-size: 12px;
-	color: #94a3b8;
-	text-transform: uppercase;
-}
-
-.status-value {
-	font-size: 16px;
-	font-weight: 600;
-	padding: 6px 16px;
-	border-radius: 8px;
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	position: relative;
-}
-
-.status-value.inactive {
-	background: rgba(239, 68, 68, 0.2);
-	color: #ef4444;
-	border: 1px solid rgba(239, 68, 68, 0.4);
-}
-
-.btn-activate-ia {
-	background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-	border: none;
-	border-radius: 8px;
-	padding: 12px 24px;
-	color: white;
-	font-weight: 600;
-	font-size: 14px;
-	cursor: pointer;
-	transition: all 0.3s ease;
-	box-shadow: 0 4px 14px rgba(16, 185, 129, 0.3);
-}
-
-.btn-activate-ia:hover {
-	transform: translateY(-2px);
-	box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
-}
-
-.btn-disconnect {
-	background: rgba(30, 41, 59, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 8px;
-	padding: 8px 16px;
-	color: #94a3b8;
-	font-size: 12px;
-	cursor: pointer;
-	transition: all 0.3s ease;
-}
-
-.btn-disconnect:hover {
-	background: rgba(30, 41, 59, 0.8);
-	color: #f8fafc;
-}
-
-/* Visão da IA | Orion */
-.ia-vision-card {
-	background: rgba(30, 41, 59, 0.4);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 12px;
-	padding: 24px;
-	margin-bottom: 20px;
-}
-
-.vision-header {
-	margin-bottom: 20px;
-}
-
-.vision-header h3 {
-	font-size: 20px;
-	font-weight: 700;
-	color: #f8fafc;
-	margin: 0 0 4px 0;
-}
-
-.vision-header p {
-	font-size: 13px;
-	color: #94a3b8;
-	margin: 0;
-}
-
-.vision-status {
-	display: flex;
-	gap: 20px;
-	margin-bottom: 20px;
-	padding-bottom: 20px;
-	border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-}
-
-.status-item {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-}
-
-.status-dot {
-	width: 10px;
-	height: 10px;
-	border-radius: 50%;
-}
-
-.status-dot.active {
-	background: #10b981;
-	box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-	animation: pulse 2s ease-in-out infinite;
-}
-
-.status-text {
-	font-size: 14px;
-	color: #f8fafc;
-	font-weight: 600;
-}
-
-.market-info-grid {
-	display: grid;
-	grid-template-columns: repeat(3, 1fr);
 	gap: 16px;
-	margin-bottom: 20px;
+	margin-bottom: 24px;
 }
 
-.info-item {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	padding: 12px;
-	background: rgba(15, 23, 42, 0.6);
-	border-radius: 8px;
-}
-
-.info-label {
-	font-size: 11px;
-	color: #94a3b8;
-	text-transform: uppercase;
-	letter-spacing: 0.5px;
-}
-
-.info-value {
-	font-size: 16px;
-	font-weight: 700;
-	color: #f8fafc;
-	font-family: 'Courier New', monospace;
-}
-
-.info-value.high-confidence {
-	color: #10b981;
-}
-
-.info-value.excellent {
-	color: #3b82f6;
-}
-
-.info-value.status-active {
-	color: #10b981;
-}
-
-.info-hint {
-	font-size: 10px;
-	color: #64748b;
-	font-style: italic;
-}
-
-.precision-info {
-	display: flex;
-	gap: 30px;
-	padding-top: 20px;
-	border-top: 1px solid rgba(148, 163, 184, 0.1);
-}
-
-.precision-item {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.precision-label {
-	font-size: 11px;
-	color: #94a3b8;
-	text-transform: uppercase;
-}
-
-.precision-value {
-	font-size: 20px;
-	font-weight: 700;
-	color: #10b981;
-	font-family: 'Courier New', monospace;
-}
-
-/* Seção de Configurações */
-.config-section-inactive {
-	display: grid;
-	grid-template-columns: repeat(2, 1fr);
-	gap: 20px;
-	margin-bottom: 20px;
-}
-
-.config-group {
-	background: rgba(30, 41, 59, 0.4);
-	border: 1px solid rgba(148, 163, 184, 0.2);
+.mobile-bot-card {
+	background: #191a19;
 	border-radius: 12px;
 	padding: 20px;
+	border: 1px solid #2a2a2a;
 }
 
-.config-group-header {
+.mobile-card-header {
 	margin-bottom: 16px;
 	padding-bottom: 12px;
-	border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+	border-bottom: 1px solid #333;
 }
 
-.config-group-header h4 {
-	font-size: 16px;
-	font-weight: 600;
-	color: #f8fafc;
-	margin: 0;
+.mobile-card-title {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 12px;
 }
 
-.info-icon {
-	font-size: 14px;
-	color: #64748b;
-	cursor: help;
-}
-
-.config-group-content {
-	display: flex;
-	flex-direction: column;
-	gap: 16px;
-}
-
-.config-field {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.config-field label {
-	font-size: 12px;
-	color: #94a3b8;
-	font-weight: 500;
-}
-
-.select-field {
-	padding: 12px;
-	background: rgba(15, 23, 42, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 8px;
+.mobile-card-title h3 {
+	margin: 0;
+	font-size: 18px;
+	font-weight: 600;
 	color: #f8fafc;
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
+	font-family: 'Roboto', sans-serif;
 }
 
-.select-field.disabled {
-	opacity: 0.7;
-	cursor: not-allowed;
-}
-
-.select-field small {
-	font-size: 11px;
-	color: #64748b;
-	font-style: italic;
-}
-
-.mode-options, .risk-options {
+.mobile-card-body {
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
 }
 
-.mode-option, .risk-option {
-	padding: 14px 16px;
-	background: rgba(15, 23, 42, 0.6);
-	border: 1px solid rgba(148, 163, 184, 0.2);
-	border-radius: 8px;
-	color: #f8fafc;
-	font-size: 14px;
-	font-weight: 500;
-	cursor: pointer;
-	transition: all 0.3s ease;
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	text-align: left;
-}
-
-.mode-option:disabled, .risk-option:disabled {
-	opacity: 0.5;
-	cursor: not-allowed;
-}
-
-.mode-option.active, .risk-option.active {
-	background: rgba(16, 185, 129, 0.2);
-	border-color: rgba(16, 185, 129, 0.4);
-	color: #10b981;
-}
-
-.mode-hint, .risk-hint {
-	font-size: 11px;
-	color: #94a3b8;
-	font-style: italic;
-}
-
-.risk-description {
-	font-size: 11px;
-	color: #64748b;
-	margin-top: 4px;
-}
-
-.control-info {
-	display: flex;
-	flex-direction: column;
-	gap: 12px;
-}
-
-.control-status {
+.mobile-card-row {
 	display: flex;
 	justify-content: space-between;
 	align-items: center;
+	padding: 8px 0;
 }
 
-.control-status .status-label {
-	font-size: 13px;
+.mobile-card-label {
+	font-size: 12px;
 	color: #94a3b8;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.5px;
+	font-family: 'Roboto', sans-serif;
 }
 
-.status-badge {
-	padding: 6px 12px;
-	border-radius: 8px;
-	font-size: 12px;
+.mobile-card-value {
+	font-size: 14px;
 	font-weight: 600;
-}
-
-.status-badge.inactive {
-	background: rgba(239, 68, 68, 0.2);
-	color: #ef4444;
-	border: 1px solid rgba(239, 68, 68, 0.4);
-}
-
-.control-hint {
-	font-size: 12px;
-	color: #64748b;
-	margin: 0;
-	font-style: italic;
-}
-
-.logs-container {
-	max-height: 200px;
-	overflow-y: auto;
-	background: rgba(15, 23, 42, 0.6);
-	border-radius: 8px;
-	padding: 12px;
-}
-
-.no-logs {
-	text-align: center;
-	padding: 20px;
-	color: #64748b;
-	font-size: 13px;
-}
-
-.logs-list {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.log-item {
-	display: flex;
-	gap: 12px;
-	padding: 8px;
-	border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-	font-size: 12px;
-}
-
-.log-time {
-	color: #64748b;
-	font-family: 'Courier New', monospace;
-	min-width: 80px;
-}
-
-.log-message {
 	color: #f8fafc;
+	font-family: 'Roboto', sans-serif;
 }
+
+.mobile-card-value.positive {
+	color: #10b981;
+}
+
+.mobile-card-value.negative {
+	color: #ef4444;
+}
+
+.mobile-card-value.positive-profit {
+	color: #10b981;
+	font-weight: 700;
+}
+
+.mobile-card-value.negative-profit {
+	color: #ef4444;
+	font-weight: 700;
+}
+
+/* Desktop - Esconder cards mobile, mostrar tabela */
+.desktop-table {
+	display: block;
+}
+
+@media (max-width: 1024px) {
+	.desktop-table {
+		display: none;
+	}
+
+	.mobile-cards-container {
+		display: flex;
+	}
+}
+
 
 /* Seção de Monitoramento de IA */
 .ai-monitoring-section {
@@ -5039,56 +4335,86 @@ tbody tr:hover {
     }
 }
 
-@media (max-width: 992px) {
-	.sidebar{
-		display: none;
+@media (max-width: 1024px) {
+	.main-content {
+		padding: 1.5rem 16px 1.5rem 16px;
 	}
-	.layout {
-		margin-left: 0;
-		width: 100%;
-		box-sizing: border-box;
-	}
-	
+
 	.main-header {
 		flex-direction: column;
 		align-items: flex-start;
+		gap: 16px;
+		margin-bottom: 20px;
 	}
 	
 	.main-header-right {
-		margin-top: 15px; 
 		width: 100%;
-		text-align: right;
 	}
 	
 	.filter-controls {
-		flex-direction: row; 
-		flex-wrap: wrap; 
-	}
-	
-	.date-filter, .btn-search {
-		width: calc(50% - 5px); 
-	}
-
-	.bottom-summary-cards {
-		grid-template-columns: repeat(2, 1fr); 
-	}
-
-	.filter-controls {
-		flex-direction: row; 
-		align-items: stretch; 
+		flex-direction: row;
 		gap: 10px;
+		margin-bottom: 20px;
+	}
+	
+	.date-filter {
+		flex: 1;
+		min-width: 140px;
+	}
+
+	.date-filter input {
+		width: 100%;
+	}
+
+	.btn-search {
+		flex-shrink: 0;
+		padding: 10px 16px;
 	}
 
 	.pdf-btn {
 		width: 100%;
+		justify-content: center;
 	}
 
-	th, td {
-		width: 1000px;
+	.bottom-summary-cards {
+		grid-template-columns: repeat(2, 1fr);
+		gap: 12px;
+		margin-top: 20px;
+	}
+}
+
+@media (max-width: 768px) {
+	.main-content {
+		padding: 1rem 12px 1rem 12px;
 	}
 
-	.table-container {
-		height: fit-content;
+	.main-header h1 {
+		font-size: 24px;
+	}
+
+	.main-header p {
+		font-size: 13px;
+	}
+
+	.filter-controls {
+		flex-direction: row;
+		gap: 10px;
+		flex-wrap: wrap;
+	}
+
+	.date-filter {
+		flex: 1 1 auto;
+		min-width: 140px;
+		max-width: none;
+	}
+
+	.btn-search {
+		width: 100%;
+	}
+
+	.bottom-summary-cards {
+		grid-template-columns: 1fr;
+		gap: 12px;
 	}
 }
 
@@ -5389,62 +4715,7 @@ tbody tr:hover {
 	}
 }
 
-@media (max-width: 600px) {
-	.layout {
-		padding: 0 10px; 
-	}
 
-	.filter-controls {
-		flex-direction: column; 
-		align-items: stretch; 
-		gap: 10px;
-	}
-
-	.date-filter, 
-	.btn-search {
-		width: 100%; 
-	}
-	
-	.bottom-summary-cards {
-		grid-template-columns: 1fr; 
-	}
-	
-	.bottom-card .card-content {
-		gap: 10px; 
-	}
-}
-
-.background-glow {
-	position: fixed;
-	inset: 0;
-	background: radial-gradient(circle at 15% 20%, rgba(99, 102, 241, 0.22), transparent 45%),
-		radial-gradient(circle at 80% 15%, rgba(56, 189, 248, 0.18), transparent 50%),
-		radial-gradient(circle at 50% 75%, rgba(16, 185, 129, 0.18), transparent 55%),
-		rgba(9, 10, 12, 0.95);
-	z-index: -2;
-	pointer-events: none;
-}
-
-.background-grid {
-	position: fixed;
-	inset: 0;
-	background-image: linear-gradient(rgba(148, 163, 184, 0.06) 1px, transparent 1px),
-		linear-gradient(90deg, rgba(148, 163, 184, 0.06) 1px, transparent 1px);
-	background-size: 48px 48px;
-	z-index: -1;
-	opacity: 0.6;
-	pointer-events: none;
-	animation: moveGrid 18s linear infinite;
-}
-
-@keyframes moveGrid {
-	0% {
-		background-position: 0 0, 0 0;
-	}
-	100% {
-		background-position: -48px -48px, -48px -48px;
-	}
-}
 
 /* Tooltip Styles */
 .tooltip-container {
@@ -5894,104 +5165,29 @@ tbody tr:hover {
 	}
 }
 
-/* Hamburger Button */
-.hamburger-btn {
-	display: none;
-	position: fixed !important;
-	top: 15px !important;
-	left: 15px !important;
-	z-index: 10001 !important;
-	background-color: #1c1c1c !important;
-	border: 1px solid #2c2c2c !important;
-	border-radius: 8px;
-	width: 45px;
-	height: 45px;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
-	gap: 5px;
-	cursor: pointer;
-	transition: all 0.3s ease;
-	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-}
-
-.hamburger-btn:hover {
-	background-color: #252525;
-	border-color: #3c3c3c;
-}
-
-.hamburger-btn span {
-	display: block;
-	width: 22px;
-	height: 2px;
-	background-color: #dfdfdf;
-	transition: all 0.3s ease;
-	border-radius: 2px;
-}
-
-.hamburger-btn.active span:nth-child(1) {
-	transform: rotate(45deg) translate(5px, 5px);
-}
-
-.hamburger-btn.active span:nth-child(2) {
-	opacity: 0;
-}
-
-.hamburger-btn.active span:nth-child(3) {
-	transform: rotate(-45deg) translate(6px, -6px);
-}
-
-/* Overlay */
-.sidebar-overlay {
-	display: none;
-	position: fixed;
-	top: 0;
-	left: 0;
-	right: 0;
-	bottom: 0;
-	background-color: rgba(0, 0, 0, 0.7);
-	z-index: 998;
-	backdrop-filter: blur(2px);
-}
-
-/* No mobile, overlay fica abaixo da sidebar quando visível */
-@media (max-width: 1024px) {
-	.sidebar-overlay {
-		z-index: 9999;
-	}
-}
 
 /* Mobile Styles */
 @media (max-width: 1024px) {
-	.layout {
-		width: 100%;
-		margin-left: 0;
-		padding: 0;
-		position: relative;
+	.dashboard-layout {
 		flex-direction: column;
 	}
 
 	.dashboard-content-wrapper {
-		margin-left: 0;
+		margin-left: 0 !important;
 		width: 100%;
-	}
-
-	.mobile-header-admin {
-		display: flex;
-	}
-
-	.layout-content {
-		padding-top: 80px; /* Espaço para mobile header */
-	}
-
-	.hamburger-btn {
-		display: flex !important;
-		visibility: visible !important;
-		opacity: 1 !important;
 	}
 
 	.sidebar-overlay {
 		display: block;
+	}
+
+	.layout-content {
+		padding-top: 80px; /* Espaço para TopNavbar mobile */
+		padding: 20px;
+		padding-top: 80px;
+		overflow-x: hidden;
+		box-sizing: border-box;
+		width: 100%;
 	}
 
 	/* Sidebar mobile */
@@ -6011,35 +5207,17 @@ tbody tr:hover {
 	}
 
 	.main-header {
-		padding-left: 70px;
+		padding-left: 0;
 	}
 }
 
 @media (max-width: 480px) {
-	.hamburger-btn {
-		width: 40px;
-		height: 40px;
-		top: 12px;
-		left: 12px;
-	}
-
-	.hamburger-btn span {
-		width: 20px;
-	}
-}
-</style>
-
-<style>
-/* Estilos globais para garantir que o hambúrguer apareça no mobile */
-@media (max-width: 1024px) {
-	.hamburger-btn {
-		display: flex !important;
-		visibility: visible !important;
-		opacity: 1 !important;
-		position: fixed !important;
-		top: 15px !important;
-		left: 15px !important;
-		z-index: 10001 !important;
+	.layout-content {
+		padding: 10px;
+		padding-top: 70px;
+		overflow-x: hidden;
+		box-sizing: border-box;
+		width: 100%;
 	}
 }
 </style>
