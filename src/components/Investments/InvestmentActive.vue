@@ -596,6 +596,18 @@
                                     <span v-if="realtimeLogs.length > 0" class="text-xs text-zenix-green">{{ realtimeLogs.length }} eventos</span>
                                 </div>
                                 <div class="flex gap-2">
+                                    <!-- Select de quantidade de logs -->
+                                    <select 
+                                        v-model="logsLimit" 
+                                        @change="onLogsLimitChange"
+                                        class="px-2 py-1 text-xs bg-zenix-bg border border-zenix-border rounded text-zenix-text focus:outline-none focus:border-zenix-green"
+                                    >
+                                        <option value="100">100</option>
+                                        <option value="200">200</option>
+                                        <option value="500">500</option>
+                                        <option value="1000">1000</option>
+                                        <option value="todos">Todos</option>
+                                    </select>
                                     <button 
                                         @click="exportLogs" 
                                         class="px-3 py-1 text-xs bg-zenix-bg border border-zenix-border rounded hover:bg-zenix-card transition-colors text-zenix-secondary hover:text-zenix-text"
@@ -617,6 +629,21 @@
                             <div class="mobile-register-header">
                                 <h2 class="mobile-register-title">Registro de Operações</h2>
                                 <p class="mobile-register-subtitle">Histórico completo de eventos da sessão</p>
+                                <!-- Select de quantidade de logs (Mobile) -->
+                                <div class="mobile-logs-limit-select">
+                                    <label class="mobile-logs-limit-label">Quantidade:</label>
+                                    <select 
+                                        v-model="logsLimit" 
+                                        @change="onLogsLimitChange"
+                                        class="mobile-logs-limit-select-input"
+                                    >
+                                        <option value="100">100</option>
+                                        <option value="200">200</option>
+                                        <option value="500">500</option>
+                                        <option value="1000">1000</option>
+                                        <option value="todos">Todos</option>
+                                    </select>
+                                </div>
                             </div>
                             
                             <!-- Desktop Logs List -->
@@ -904,6 +931,7 @@ export default {
             historyPollingInterval: null, // Polling para histórico de operações
             lastLogTimestamp: null, // Timestamp do último log recebido (para detectar novos)
             tradeEventsSource: null,
+            logsLimit: '100', // ✅ Limite padrão de logs (100)
             
             // Estado de desativação
             isDeactivating: false,
@@ -1638,6 +1666,15 @@ export default {
         },
         
         /**
+         * ✅ Handler para mudança no limite de logs
+         */
+        onLogsLimitChange() {
+            console.log('[InvestmentActive] 🔄 Limite de logs alterado para:', this.logsLimit);
+            // Buscar logs novamente com o novo limite
+            this.fetchRealtimeLogs();
+        },
+        
+        /**
          * Inicia polling de logs do backend
          */
         async fetchRealtimeLogs() {
@@ -1650,9 +1687,15 @@ export default {
                 }
                 
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const url = `${apiBase}/ai/logs/${userId}`;
+                // ✅ Adicionar parâmetro limit na URL
+                // Se for 'todos', não enviar limit (backend retorna todos)
+                // Se for número, enviar o número
+                // Padrão: 100
+                const limitValue = this.logsLimit === 'todos' ? '' : (this.logsLimit || '100');
+                const limitParam = limitValue ? `?limit=${limitValue}` : '';
+                const url = `${apiBase}/ai/logs/${userId}${limitParam}`;
                 
-                console.log('[InvestmentActive] 📡 Buscando logs em:', url);
+                console.log('[InvestmentActive] 📡 Buscando logs em:', url, `(limite: ${this.logsLimit})`);
                 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -5826,6 +5869,41 @@ button i,
             padding: 0;
             margin-bottom: 1rem;
             margin-top: 0;
+        }
+        
+        /* Mobile: Select de quantidade de logs */
+        .mobile-logs-limit-select {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.75rem;
+        }
+        
+        .mobile-logs-limit-label {
+            font-size: 0.75rem;
+            color: #A1A1A1;
+            font-weight: 500;
+        }
+        
+        .mobile-logs-limit-select-input {
+            padding: 0.375rem 0.75rem;
+            font-size: 0.75rem;
+            background: #0B0B0B;
+            border: 1px solid #1C1C1C;
+            border-radius: 0.375rem;
+            color: #DFDFDF;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .mobile-logs-limit-select-input:focus {
+            border-color: #22C55E;
+            outline: none;
+        }
+        
+        .mobile-logs-limit-select-input:hover {
+            border-color: #22C55E;
         }
         
         .mobile-register-card {
