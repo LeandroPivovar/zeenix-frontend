@@ -159,6 +159,7 @@
                                     <option value="orion">IA Orion</option>
                                     <option value="trinity">IA Trinity</option>
                                     <option value="atlas">IA Atlas v2.0 - Extrema Alta Frequência</option>
+                                    <option value="apollo">☀️ IA Apollo v3</option>
                                 </select>
                                 <p id="strategyDescription" class="form-help">{{ strategyDescription }}</p>
                     </div>
@@ -504,7 +505,8 @@ export default {
             const descriptions = {
                 'orion': 'Análise técnica avançada com machine learning',
                 'trinity': 'Operação multi-ativo (R_10, R_25, R_50) com rotação sequencial',
-                'atlas': 'Extrema alta frequência - milhares de operações por dia (3.000-8.000) com contratos de 1 tick'
+                'atlas': 'Extrema alta frequência - milhares de operações por dia (3.000-8.000) com contratos de 1 tick',
+                'apollo': '☀️ Martingale inteligente com mudança de contrato (Over 5→6→7→8) e gestão de risco avançada'
             };
             return descriptions[this.selectedStrategy] || descriptions.orion;
         },
