@@ -283,6 +283,22 @@
                                 </div>
                                 <p class="form-help">{{ lossPercent }}% do saldo</p>
                         </div>
+
+                            <div class="form-group">
+                                <div class="stoploss-blindado-wrapper">
+                                    <div class="stoploss-blindado-label">
+                                        <i class="fas fa-shield-alt"></i>
+                                        <span>Stoploss Blindado</span>
+                                    </div>
+                                    <label class="toggle-switch stoploss-toggle">
+                                        <input 
+                                            type="checkbox" 
+                                            v-model="stoplossBlindado"
+                                        >
+                                        <span class="toggle-slider"></span>
+                                    </label>
+                                </div>
+                            </div>
                     </div>
                 </div>
 
@@ -422,6 +438,7 @@ export default {
             lossLimit: 25,
             mode: 'veloz',
             modoMartingale: 'conservador',
+            stoplossBlindado: false,
 
             selectedMarket: 'vol10',
             selectedStrategy: 'orion',
@@ -668,6 +685,7 @@ export default {
                         lossLimit: this.lossLimit,
                         modoMartingale: this.modoMartingale || 'conservador',
                         strategy: this.selectedStrategy || 'orion',
+                        stopLossBlindado: this.stoplossBlindado, // ✅ ZENIX v2.0: Stop-Loss Blindado
                     }),
                 });
 
@@ -3280,5 +3298,104 @@ export default {
     #ai-vision-panel .grid.gap-5 {
         gap: 0 !important;
     }
+}
+
+/* Toggle Switch */
+.toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 4rem;
+    height: 2rem;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+.toggle-switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+    position: absolute;
+}
+
+.toggle-slider {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 4rem;
+    height: 2rem;
+    background-color: #0B0B0B;
+    border: 2px solid #1C1C1C;
+    border-radius: 9999px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.toggle-slider::before {
+    content: '';
+    position: absolute;
+    height: 1.5rem;
+    width: 1.5rem;
+    left: 3px;
+    bottom: 2px;
+    background-color: white;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input:checked + .toggle-slider {
+    background-color: #22C55E;
+    border-color: #22C55E;
+}
+
+.toggle-switch input:checked + .toggle-slider::before {
+    transform: translateX(calc(4rem - 1.5rem - 6px));
+}
+
+/* Stoploss Blindado Slider */
+.stoploss-blindado-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.75rem 1rem;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+}
+
+.stoploss-blindado-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #DFDFDF;
+}
+
+.stoploss-blindado-label i {
+    font-size: 0.875rem;
+    color: #22C55E;
+}
+
+.stoploss-toggle {
+    flex-shrink: 0;
+    width: 3.5rem;
+    height: 1.75rem;
+}
+
+.stoploss-toggle .toggle-slider {
+    width: 3.5rem;
+    height: 1.75rem;
+}
+
+.stoploss-toggle .toggle-slider::before {
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+.stoploss-toggle input:checked + .toggle-slider::before {
+    transform: translateX(calc(3.5rem - 1.25rem - 6px));
 }
 </style>

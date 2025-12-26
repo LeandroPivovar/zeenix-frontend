@@ -781,7 +781,7 @@
         </main>
     </div>
     
-    <!-- Modais de Stop Loss e Target Profit -->
+    <!-- Modais de Stop Loss, Target Profit e Stop Loss Blindado -->
     <StopLossModal
         :visible="showStopLossModal"
         :result="sessionConfig.sessionProfitLoss ?? sessionResult ?? dailyStats.sessionProfitLoss ?? dailyStats.profitLoss ?? 0"
@@ -797,12 +797,21 @@
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleTargetProfitConfirm"
     />
+    
+    <StopBlindadoModal
+        :visible="showStopBlindadoModal"
+        :result="sessionConfig.sessionProfitLoss ?? sessionResult ?? dailyStats.sessionProfitLoss ?? dailyStats.profitLoss ?? 0"
+        :protectedInfo="stopBlindadoInfo"
+        :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
+        @confirm="handleStopBlindadoConfirm"
+    />
 </template>
 
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
 import StopLossModal from '../StopLossModal.vue';
 import TargetProfitModal from '../TargetProfitModal.vue';
+import StopBlindadoModal from '../StopBlindadoModal.vue';
 
 // TradingView Charting Library - verifique se está disponível globalmente
 const TradingView = window.TradingView || null;
@@ -813,6 +822,7 @@ export default {
     components: {
         StopLossModal,
         TargetProfitModal,
+        StopBlindadoModal,
     },
     props: {
         ticks: {
@@ -936,13 +946,16 @@ export default {
             // Estado de desativação
             isDeactivating: false,
             
-            // Modais de Stop Loss e Target Profit
+            // Modais de Stop Loss, Target Profit e Stop Loss Blindado
             showStopLossModal: false,
             showTargetProfitModal: false,
+            showStopBlindadoModal: false,
             sessionResult: 0,
             previousSessionStatus: null,
             acknowledgedStopProfit: false,
             acknowledgedStopLoss: false,
+            acknowledgedStopBlindado: false,
+            stopBlindadoInfo: null, // Informações adicionais sobre o stop blindado
             
             // Controle de tamanho do gráfico
             chartPointsVisible: 300, // ✅ AJUSTE: Aumentado para 300 pontos para mostrar mais velas
@@ -1782,8 +1795,8 @@ export default {
                             
                             console.log('[InvestmentActive] ✅ Adicionados', logsToAdd.length, 'novos logs. Total agora:', this.realtimeLogs.length);
                             
-                            // ✅ Verificar se há mensagens de stop loss ou target profit nos novos logs
-                            if (logsToAdd.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
+                            // ✅ Verificar se há mensagens de stop loss, target profit ou stop blindado nos novos logs
+                            if (logsToAdd.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal && !this.showStopBlindadoModal) {
                                 this.checkLogsForStopEvents();
                             }
                             
@@ -1802,7 +1815,7 @@ export default {
                     }
                     
                     // ✅ Verificar logs após primeira carga também
-                    if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
+                    if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal && !this.showStopBlindadoModal) {
                         this.checkLogsForStopEvents();
                     }
                 }
@@ -1812,7 +1825,7 @@ export default {
         },
         
         /**
-         * ✅ Verifica os logs recentes para detectar mensagens de stop loss ou target profit
+         * ✅ Verifica os logs recentes para detectar mensagens de stop loss, target profit ou stop loss blindado
          * Isso garante que o modal seja mostrado mesmo se o sessionStatus ainda não foi atualizado
          */
         checkLogsForStopEvents() {
@@ -1836,7 +1849,27 @@ export default {
                 });
             }
             
-            // ✅ Verificar se há mensagem de stop loss nos logs recentes
+            // ✅ Verificar se há mensagem de stop loss blindado nos logs recentes
+            const stopBlindadoLog = recentLogs.find(log => 
+                log.message && (
+                    log.message.includes('🛡️ STOP-LOSS BLINDADO ATIVADO') ||
+                    log.message.includes('STOP-LOSS BLINDADO ATIVADO') ||
+                    log.message.includes('stop-loss blindado ativado') ||
+                    log.message.includes('Stop-Loss Blindado ativado')
+                )
+            );
+            
+            if (stopBlindadoLog && !this.showStopBlindadoModal) {
+                console.log('[InvestmentActive] 🛡️ [Logs] Stop Loss Blindado detectado nos logs! Mostrando modal...');
+                // Extrair informações do log se disponível
+                this.stopBlindadoInfo = stopBlindadoLog.message || null;
+                this.loadSessionResult().then(() => {
+                    this.showStopBlindadoModal = true;
+                });
+                return; // Priorizar Stop Blindado sobre Stop Loss normal
+            }
+            
+            // ✅ Verificar se há mensagem de stop loss normal nos logs recentes (apenas se não houver stop blindado)
             const hasStopLossMessage = recentLogs.some(log => 
                 log.message && (
                     log.message.includes('STOP LOSS ATINGIDO') ||
@@ -1845,7 +1878,7 @@ export default {
                 )
             );
             
-            if (hasStopLossMessage && !this.showStopLossModal) {
+            if (hasStopLossMessage && !this.showStopLossModal && !this.showStopBlindadoModal) {
                 console.log('[InvestmentActive] 🛑 [Logs] Stop loss detectado nos logs! Mostrando modal...');
                 this.loadSessionResult().then(() => {
                     this.showStopLossModal = true;
@@ -2148,7 +2181,7 @@ export default {
                     
                     // ✅ Verificar também nos logs recentes para garantir detecção imediata
                     // Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
-                    if (!this.showTargetProfitModal && !this.showStopLossModal && this.realtimeLogs.length > 0 && !this.acknowledgedStopProfit && !this.acknowledgedStopLoss) {
+                    if (!this.showTargetProfitModal && !this.showStopLossModal && !this.showStopBlindadoModal && this.realtimeLogs.length > 0 && !this.acknowledgedStopProfit && !this.acknowledgedStopLoss && !this.acknowledgedStopBlindado) {
                         this.checkLogsForStopEvents();
                     }
                     
@@ -2250,6 +2283,16 @@ export default {
         handleTargetProfitConfirm() {
             this.showTargetProfitModal = false;
             this.acknowledgedStopProfit = true;
+            // Recarregar a página para limpar estado e voltar à tela inicial
+            window.location.reload();
+        },
+        
+        /**
+         * Handler para confirmação do modal de Stop Loss Blindado
+         */
+        handleStopBlindadoConfirm() {
+            this.showStopBlindadoModal = false;
+            this.acknowledgedStopBlindado = true;
             // Recarregar a página para limpar estado e voltar à tela inicial
             window.location.reload();
         },
@@ -3840,7 +3883,7 @@ export default {
                     this.logSystemInit();
                     // ✅ Aguardar um pouco e então verificar logs após inicialização
                     setTimeout(() => {
-                        if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
+                        if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal && !this.showStopBlindadoModal) {
                             this.checkLogsForStopEvents();
                         }
                     }, 1000);
@@ -3848,18 +3891,18 @@ export default {
                     // Se já tem logs, apenas iniciar polling
                     this.startLogPolling();
                     // ✅ Verificar logs imediatamente
-                    if (!this.showStopLossModal && !this.showTargetProfitModal) {
+                    if (!this.showStopLossModal && !this.showTargetProfitModal && !this.showStopBlindadoModal) {
                         this.checkLogsForStopEvents();
                     }
                 }
             } else {
-                // ✅ Mesmo quando inativa, verificar logs para detectar stop loss/target profit
+                // ✅ Mesmo quando inativa, verificar logs para detectar stop loss/target profit/stop blindado
                 // Isso garante que o modal seja mostrado se a IA foi desativada recentemente
                 if (this.realtimeLogs.length === 0) {
                     // Carregar logs uma vez para verificar
                     await this.fetchRealtimeLogs();
                 }
-                if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
+                if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal && !this.showStopBlindadoModal) {
                     this.checkLogsForStopEvents();
                 }
             }
