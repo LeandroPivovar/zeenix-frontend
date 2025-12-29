@@ -21,9 +21,9 @@
           Parabéns! Você atingiu seu alvo de lucro diário com sucesso.
         </p>
         
-        <div class="result-section" v-if="finalProfit !== null && finalProfit !== undefined">
-          <p class="result-label">RESULTADO DO DIA</p>
-          <p class="result-value profit-value">{{ formattedFinalProfit }}</p>
+        <div class="result-section" v-if="result !== null && result !== undefined">
+          <p class="result-label">RESULTADO DA SESSÃO</p>
+          <p class="result-value profit-value">{{ formattedResult }}</p>
         </div>
         
         <p class="info-message">
@@ -60,10 +60,10 @@ export default {
     }
   },
   computed: {
-    formattedFinalProfit() {
-      if (this.finalProfit === null || this.finalProfit === undefined) return '$0.00';
-      const sign = this.finalProfit >= 0 ? '+' : '-';
-      return `${sign}$${Math.abs(this.finalProfit).toFixed(2)}`;
+    formattedResult() {
+      if (this.result === null || this.result === undefined) return '$0.00';
+      const sign = this.result >= 0 ? '+' : '-';
+      return `${sign}$${Math.abs(this.result).toFixed(2)}`;
     }
   },
   methods: {

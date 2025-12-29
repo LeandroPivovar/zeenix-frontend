@@ -18,7 +18,7 @@
         </p>
         
         <div class="result-section" v-if="result !== null && result !== undefined">
-          <p class="result-label">RESULTADO DO DIA</p>
+          <p class="result-label">RESULTADO DA SESSÃO</p>
           <p class="result-value loss-value">{{ formattedResult }}</p>
         </div>
         
