@@ -2183,8 +2183,7 @@ export default {
          */
         handleStopLossConfirm() {
             this.showStopLossModal = false;
-            // Recarregar configuração para atualizar status
-            this.fetchSessionConfig();
+            // ✅ Apenas fechar o modal, sem recarregar página ou configuração
         },
         
         /**
@@ -2192,8 +2191,7 @@ export default {
          */
         handleTargetProfitConfirm() {
             this.showTargetProfitModal = false;
-            // Recarregar configuração para atualizar status
-            this.fetchSessionConfig();
+            // ✅ Apenas fechar o modal, sem recarregar página ou configuração
         },
         
         // 📊 Buscar histórico de operações reais
