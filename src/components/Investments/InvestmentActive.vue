@@ -596,18 +596,6 @@
                                     <span v-if="realtimeLogs.length > 0" class="text-xs text-zenix-green">{{ realtimeLogs.length }} eventos</span>
                                 </div>
                                 <div class="flex gap-2">
-                                    <!-- Select de quantidade de logs -->
-                                    <select 
-                                        v-model="logsLimit" 
-                                        @change="onLogsLimitChange"
-                                        class="px-2 py-1 text-xs bg-zenix-bg border border-zenix-border rounded text-zenix-text focus:outline-none focus:border-zenix-green"
-                                    >
-                                        <option value="100">100</option>
-                                        <option value="200">200</option>
-                                        <option value="500">500</option>
-                                        <option value="1000">1000</option>
-                                        <option value="todos">Todos</option>
-                                    </select>
                                     <button 
                                         @click="exportLogs" 
                                         class="px-3 py-1 text-xs bg-zenix-bg border border-zenix-border rounded hover:bg-zenix-card transition-colors text-zenix-secondary hover:text-zenix-text"
@@ -629,21 +617,6 @@
                             <div class="mobile-register-header">
                                 <h2 class="mobile-register-title">Registro de Operações</h2>
                                 <p class="mobile-register-subtitle">Histórico completo de eventos da sessão</p>
-                                <!-- Select de quantidade de logs (Mobile) -->
-                                <div class="mobile-logs-limit-select">
-                                    <label class="mobile-logs-limit-label">Quantidade:</label>
-                                    <select 
-                                        v-model="logsLimit" 
-                                        @change="onLogsLimitChange"
-                                        class="mobile-logs-limit-select-input"
-                                    >
-                                        <option value="100">100</option>
-                                        <option value="200">200</option>
-                                        <option value="500">500</option>
-                                        <option value="1000">1000</option>
-                                        <option value="todos">Todos</option>
-                                    </select>
-                                </div>
                             </div>
                             
                             <!-- Desktop Logs List -->
@@ -659,7 +632,7 @@
                                 </div>
                                 
                                 <div v-else class="text-left">
-                                    <div v-for="(log, index) in realtimeLogs" :key="log.id || log.created_at || index" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
+                                    <div v-for="(log, index) in realtimeLogs.slice(0, 100)" :key="index" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
                                         <span class="text-gray-500">[{{ log.timestamp }}]</span>
                                         <span class="ml-1">{{ log.icon }}</span>
                                         <span class="ml-1 log-message">{{ log.message }}</span>
@@ -681,7 +654,7 @@
                                 </div>
                                 
                                 <div v-else class="mobile-register-cards-container">
-                                    <div v-for="(log, index) in realtimeLogs" :key="log.id || log.created_at || index" class="mobile-register-card">
+                                    <div v-for="(log, index) in realtimeLogs.slice(0, 100)" :key="index" class="mobile-register-card">
                                         <span class="mobile-register-time">{{ log.timestamp }}</span>
                                         <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
                                     </div>
@@ -781,29 +754,19 @@
         </main>
     </div>
     
-    <!-- Modais de Stop Loss, Target Profit e Stop Loss Blindado -->
+    <!-- Modais de Stop Loss e Target Profit -->
     <StopLossModal
         :visible="showStopLossModal"
-        :result="sessionConfig.sessionProfitLoss ?? sessionResult ?? dailyStats.sessionProfitLoss ?? dailyStats.profitLoss ?? 0"
-        :lossLimit="sessionConfig.lossLimit"
+        :result="dailyStats.profitLoss || 0"
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleStopLossConfirm"
     />
     
     <TargetProfitModal
         :visible="showTargetProfitModal"
-        :result="sessionConfig.sessionProfitLoss ?? sessionResult ?? dailyStats.sessionProfitLoss ?? dailyStats.profitLoss ?? 0"
-        :finalProfit="sessionConfig.sessionProfitLoss ?? sessionResult ?? sessionConfig.profitTarget ?? dailyStats.sessionProfitLoss ?? dailyStats.profitLoss ?? 0"
+        :result="dailyStats.profitLoss || 0"
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleTargetProfitConfirm"
-    />
-    
-    <StopBlindadoModal
-        :visible="showStopBlindadoModal"
-        :result="sessionConfig.sessionProfitLoss ?? sessionResult ?? dailyStats.sessionProfitLoss ?? dailyStats.profitLoss ?? 0"
-        :protectedInfo="stopBlindadoInfo"
-        :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
-        @confirm="handleStopBlindadoConfirm"
     />
 </template>
 
@@ -811,7 +774,6 @@
 import { createChart, ColorType } from 'lightweight-charts';
 import StopLossModal from '../StopLossModal.vue';
 import TargetProfitModal from '../TargetProfitModal.vue';
-import StopBlindadoModal from '../StopBlindadoModal.vue';
 
 // TradingView Charting Library - verifique se está disponível globalmente
 const TradingView = window.TradingView || null;
@@ -822,7 +784,6 @@ export default {
     components: {
         StopLossModal,
         TargetProfitModal,
-        StopBlindadoModal,
     },
     props: {
         ticks: {
@@ -859,7 +820,7 @@ export default {
         },
         selectedMarketProp: {
             type: String,
-            default: 'vol100'
+            default: 'vol10'
         }
     },
     data() {
@@ -868,7 +829,7 @@ export default {
             currentSeries: null,
             chartInitialized: false,
             accountType: 'real',
-            chartType: 'line', // iniciar com linhas (padrão solicitado)
+            chartType: 'line', // iniciar com linhas
             chartTypeOptions: [
                 { label: 'Velas', value: 'candles' },
                 { label: 'Linhas', value: 'line' },
@@ -925,7 +886,6 @@ export default {
                 lossLimit: null,
                 currency: 'USD',
                 sessionBalance: 0,
-                sessionProfitLoss: 0,
                 sessionStatus: 'active'
             },
             isLoadingConfig: true,
@@ -941,21 +901,15 @@ export default {
             historyPollingInterval: null, // Polling para histórico de operações
             lastLogTimestamp: null, // Timestamp do último log recebido (para detectar novos)
             tradeEventsSource: null,
-            logsLimit: '100', // ✅ Limite padrão de logs (100)
             
             // Estado de desativação
             isDeactivating: false,
             
-            // Modais de Stop Loss, Target Profit e Stop Loss Blindado
+            // Modais de Stop Loss e Target Profit
             showStopLossModal: false,
             showTargetProfitModal: false,
-            showStopBlindadoModal: false,
             sessionResult: 0,
             previousSessionStatus: null,
-            acknowledgedStopProfit: false,
-            acknowledgedStopLoss: false,
-            acknowledgedStopBlindado: false,
-            stopBlindadoInfo: null, // Informações adicionais sobre o stop blindado
             
             // Controle de tamanho do gráfico
             chartPointsVisible: 300, // ✅ AJUSTE: Aumentado para 300 pontos para mostrar mais velas
@@ -1044,7 +998,7 @@ export default {
         // Nome do mercado formatado
         formattedMarketName() {
             // Usar o prop primeiro (vem do componente pai)
-            const marketKey = this.selectedMarketProp || this.selectedMarket || 'vol100';
+            const marketKey = this.selectedMarketProp || this.selectedMarket || 'vol10';
             
             // Se Trinity está ativa, retornar mercado Trinity
             if (this.isTrinityActive) {
@@ -1375,7 +1329,7 @@ export default {
                     closePrice: exitPrice,
                     entryPrice: entryPrice,
                     exitPrice: exitPrice,
-                    symbol: trade.symbol || 'R_100',
+                    symbol: trade.symbol || 'R_10',
                     status: status,
                     time: time,
                     stakeAmount: stakeAmount,
@@ -1420,7 +1374,7 @@ export default {
          * Ex: R_10 → Volatility 10 Index
          */
         getMarketDisplayName(symbol) {
-            if (!symbol) return 'R_100';
+            if (!symbol) return 'R_10';
             
             const marketMap = {
                 'R_10': 'Volatility 10 Index',
@@ -1498,8 +1452,8 @@ export default {
             
             // ✅ Adicionar no INÍCIO do array (topo) - logs mais novos no topo
             // Vue 3: reatividade automática, não precisa de $set
-            // ✅ Mostrar todos os logs desde o início até o final
-            this.realtimeLogs = [newLog, ...this.realtimeLogs];
+            // Limitar a 100 logs para performance
+            this.realtimeLogs = [newLog, ...this.realtimeLogs].slice(0, 100);
             
             // ✅ Auto-scroll para o topo apenas se o usuário já estiver no topo
             this.$nextTick(() => {
@@ -1679,15 +1633,6 @@ export default {
         },
         
         /**
-         * ✅ Handler para mudança no limite de logs
-         */
-        onLogsLimitChange() {
-            console.log('[InvestmentActive] 🔄 Limite de logs alterado para:', this.logsLimit);
-            // Buscar logs novamente com o novo limite
-            this.fetchRealtimeLogs();
-        },
-        
-        /**
          * Inicia polling de logs do backend
          */
         async fetchRealtimeLogs() {
@@ -1700,15 +1645,9 @@ export default {
                 }
                 
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                // ✅ Adicionar parâmetro limit na URL
-                // Se for 'todos', não enviar limit (backend retorna todos)
-                // Se for número, enviar o número
-                // Padrão: 100
-                const limitValue = this.logsLimit === 'todos' ? '' : (this.logsLimit || '100');
-                const limitParam = limitValue ? `?limit=${limitValue}` : '';
-                const url = `${apiBase}/ai/logs/${userId}${limitParam}`;
+                const url = `${apiBase}/ai/logs/${userId}`;
                 
-                console.log('[InvestmentActive] 📡 Buscando logs em:', url, `(limite: ${this.logsLimit})`);
+                console.log('[InvestmentActive] 📡 Buscando logs em:', url);
                 
                 const response = await fetch(url, {
                     method: 'GET',
@@ -1795,8 +1734,8 @@ export default {
                             
                             console.log('[InvestmentActive] ✅ Adicionados', logsToAdd.length, 'novos logs. Total agora:', this.realtimeLogs.length);
                             
-                            // ✅ Verificar se há mensagens de stop loss, target profit ou stop blindado nos novos logs
-                            if (logsToAdd.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal && !this.showStopBlindadoModal) {
+                            // ✅ Verificar se há mensagens de stop loss ou target profit nos novos logs
+                            if (logsToAdd.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
                                 this.checkLogsForStopEvents();
                             }
                             
@@ -1815,7 +1754,7 @@ export default {
                     }
                     
                     // ✅ Verificar logs após primeira carga também
-                    if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal && !this.showStopBlindadoModal) {
+                    if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
                         this.checkLogsForStopEvents();
                     }
                 }
@@ -1825,7 +1764,7 @@ export default {
         },
         
         /**
-         * ✅ Verifica os logs recentes para detectar mensagens de stop loss, target profit ou stop loss blindado
+         * ✅ Verifica os logs recentes para detectar mensagens de stop loss ou target profit
          * Isso garante que o modal seja mostrado mesmo se o sessionStatus ainda não foi atualizado
          */
         checkLogsForStopEvents() {
@@ -1849,27 +1788,7 @@ export default {
                 });
             }
             
-            // ✅ Verificar se há mensagem de stop loss blindado nos logs recentes
-            const stopBlindadoLog = recentLogs.find(log => 
-                log.message && (
-                    log.message.includes('🛡️ STOP-LOSS BLINDADO ATIVADO') ||
-                    log.message.includes('STOP-LOSS BLINDADO ATIVADO') ||
-                    log.message.includes('stop-loss blindado ativado') ||
-                    log.message.includes('Stop-Loss Blindado ativado')
-                )
-            );
-            
-            if (stopBlindadoLog && !this.showStopBlindadoModal) {
-                console.log('[InvestmentActive] 🛡️ [Logs] Stop Loss Blindado detectado nos logs! Mostrando modal...');
-                // Extrair informações do log se disponível
-                this.stopBlindadoInfo = stopBlindadoLog.message || null;
-                this.loadSessionResult().then(() => {
-                    this.showStopBlindadoModal = true;
-                });
-                return; // Priorizar Stop Blindado sobre Stop Loss normal
-            }
-            
-            // ✅ Verificar se há mensagem de stop loss normal nos logs recentes (apenas se não houver stop blindado)
+            // ✅ Verificar se há mensagem de stop loss nos logs recentes
             const hasStopLossMessage = recentLogs.some(log => 
                 log.message && (
                     log.message.includes('STOP LOSS ATINGIDO') ||
@@ -1878,7 +1797,7 @@ export default {
                 )
             );
             
-            if (hasStopLossMessage && !this.showStopLossModal && !this.showStopBlindadoModal) {
+            if (hasStopLossMessage && !this.showStopLossModal) {
                 console.log('[InvestmentActive] 🛑 [Logs] Stop loss detectado nos logs! Mostrando modal...');
                 this.loadSessionResult().then(() => {
                     this.showStopLossModal = true;
@@ -2150,7 +2069,7 @@ export default {
                     // ✅ PRIORIDADE 1: Se o status atual é stopped_loss ou stopped_profit, mostrar modal
                     // (independentemente do estado anterior, desde que o modal não esteja já aberto)
                     if (currentSessionStatus === 'stopped_loss') {
-                        if (!this.showStopLossModal && !this.acknowledgedStopLoss) {
+                        if (!this.showStopLossModal) {
                             console.log('[InvestmentActive] 🛑 Stop loss detectado! Mostrando modal...');
                             console.log('[InvestmentActive] 📊 Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
                             // Buscar resultado da sessão
@@ -2163,7 +2082,7 @@ export default {
                     } else if (currentSessionStatus === 'stopped_profit') {
                         // ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
                         // Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
-                        if (!this.showTargetProfitModal && !this.acknowledgedStopProfit) {
+                        if (!this.showTargetProfitModal) {
                             console.log('[InvestmentActive] 🎯 Target profit detectado! Mostrando modal...');
                             console.log('[InvestmentActive] 📊 Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
                             // Buscar resultado da sessão
@@ -2181,7 +2100,7 @@ export default {
                     
                     // ✅ Verificar também nos logs recentes para garantir detecção imediata
                     // Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
-                    if (!this.showTargetProfitModal && !this.showStopLossModal && !this.showStopBlindadoModal && this.realtimeLogs.length > 0 && !this.acknowledgedStopProfit && !this.acknowledgedStopLoss && !this.acknowledgedStopBlindado) {
+                    if (!this.showTargetProfitModal && !this.showStopLossModal && this.realtimeLogs.length > 0) {
                         this.checkLogsForStopEvents();
                     }
                     
@@ -2250,20 +2169,12 @@ export default {
                 const result = await response.json();
                 
                 if (result.success && result.data) {
-                    // Lucro/perda real da sessão
-                    const sessionProfit = result.data.sessionProfitLoss ?? result.data.profitLoss ?? 0;
-                    this.sessionResult = sessionProfit;
-                    this.sessionConfig.sessionProfitLoss = sessionProfit;
-                    
-                    // Saldo de sessão (se enviado)
-                    if (result.data.sessionBalance !== undefined) {
-                        this.sessionConfig.sessionBalance = parseFloat(result.data.sessionBalance) || 0;
-                    }
+                    this.sessionResult = result.data.profitLoss || 0;
                 }
             } catch (error) {
                 console.error('[InvestmentActive] Erro ao carregar resultado da sessão:', error);
                 // Usar resultado atual como fallback
-                this.sessionResult = this.dailyStats.sessionBalance || this.dailyStats.sessionProfitLoss || 0;
+                this.sessionResult = this.dailyStats.sessionProfitLoss || 0;
             }
         },
         
@@ -2272,9 +2183,8 @@ export default {
          */
         handleStopLossConfirm() {
             this.showStopLossModal = false;
-            this.acknowledgedStopLoss = true;
-            // Recarregar a página para limpar estado e voltar à tela inicial
-            window.location.reload();
+            // Recarregar configuração para atualizar status
+            this.fetchSessionConfig();
         },
         
         /**
@@ -2282,19 +2192,8 @@ export default {
          */
         handleTargetProfitConfirm() {
             this.showTargetProfitModal = false;
-            this.acknowledgedStopProfit = true;
-            // Recarregar a página para limpar estado e voltar à tela inicial
-            window.location.reload();
-        },
-        
-        /**
-         * Handler para confirmação do modal de Stop Loss Blindado
-         */
-        handleStopBlindadoConfirm() {
-            this.showStopBlindadoModal = false;
-            this.acknowledgedStopBlindado = true;
-            // Recarregar a página para limpar estado e voltar à tela inicial
-            window.location.reload();
+            // Recarregar configuração para atualizar status
+            this.fetchSessionConfig();
         },
         
         // 📊 Buscar histórico de operações reais
@@ -2476,7 +2375,7 @@ export default {
                     contractId: payload.contractId || null,
                     signal: payload.strategy || null,
                     contractType: payload.contractType || null,
-                    symbol: payload.symbol || 'R_100',
+                    symbol: payload.symbol || 'R_10',
                     stakeAmount: this.sessionConfig.entryValue || this.entryValue || 0.35,
                     createdAt: new Date().toISOString(),
                     closedAt: null
@@ -2551,7 +2450,7 @@ export default {
                 return {
                     time: time,
                     timestamp: timestamp,
-                    pair: trade.symbol || 'R_100',
+                    pair: trade.symbol || 'R_10',
                     direction: direction,
                     investment: investmentFormatted,
                     pnl: pnl,
@@ -2709,6 +2608,14 @@ export default {
                 try {
                     const payload = JSON.parse(event.data);
                     console.log('[InvestmentActive] 📡 Evento de trade recebido:', payload);
+                    
+                    // ✅ TRATAMENTO ESPECÍFICO PARA EVENTOS DE LOG
+                    if (payload.status === 'LOG') {
+                        // Evento de log: atualizar apenas logs imediatamente
+                        console.log('[InvestmentActive] 📝 Evento de LOG detectado, atualizando logs...');
+                        await this.fetchRealtimeLogs();
+                        return;
+                    }
                     
                     // ✅ ATUALIZAÇÃO IMEDIATA: Se for uma atualização de trade, atualizar localmente primeiro
                     if (payload.type === 'updated' || payload.type === 'corrected' || payload.type === 'created') {
@@ -3211,8 +3118,12 @@ export default {
                 return;
             }
 
-            // Usar lightweight-charts para ambos os tipos (candles/line) — mais estável
-            this.initLightweightChart();
+            // Verificar se TradingView está disponível
+            if (TradingView && Datafeeds && this.chartType === 'candles') {
+                this.initTradingViewChart();
+            } else {
+                this.initLightweightChart();
+            }
         },
 
         /**
@@ -3279,7 +3190,7 @@ export default {
                     locale: 'pt',
                     library_path: libraryPath,
                     datafeed: datafeed,
-                    symbol: 'R_100', // Volatility 100 Index
+                    symbol: 'R_10', // Volatility 10 Index
                     interval: interval,
                     fullscreen: false,
                     autosize: true,
@@ -3316,7 +3227,7 @@ export default {
         initLightweightChart() {
             try {
                 const container = this.$refs.chartContainer;
-                const containerWidth = container.clientWidth || container.offsetWidth || (container.parentElement ? container.parentElement.clientWidth : 1200) || 1200;
+                const containerWidth = container.offsetWidth || 1200;
                 const containerHeight = 600; // Aumentado de 400 para 600
 
                 console.log('[InvestmentActive] Inicializando gráfico lightweight-charts...', {
@@ -3355,11 +3266,11 @@ export default {
                         borderColor: '#363c4e',
                         timeVisible: true,
                         secondsVisible: false,
-                        rightOffset: 14, // espaço extra à direita
-                        barSpacing: 3, // spacing menor para exibir mais velas
+                        rightOffset: 12,
+                        barSpacing: 2,
                         minBarSpacing: 0.5,
                         fixLeftEdge: false,
-                        fixRightEdge: false, // ✅ CORREÇÃO: Desabilitar fixRightEdge para permitir scroll correto
+                        fixRightEdge: true,
                         lockVisibleTimeRangeOnResize: false,
                         rightBarStaysOnScroll: true,
                     },
@@ -3669,42 +3580,8 @@ export default {
                     return;
                 }
                 
-                // ✅ Ajustar o gráfico: ancorar nos dados mais recentes e deixar espaço à direita
-                this.$nextTick(() => {
-                    try {
-                        if (uniqueData.length > 0) {
-                            // Pegar o primeiro e último timestamp
-                            const firstTime = uniqueData[0].time;
-                            const lastTime = uniqueData[uniqueData.length - 1].time;
-                            
-                            // Definir um range visível que mostre do primeiro ao último dado
-                            // Adicionar padding à direita para melhor visualização
-                            const paddingSeconds = 60; // 60s de espaço à direita
-                            const visibleRange = {
-                                from: firstTime,
-                                to: lastTime + paddingSeconds
-                            };
-                            
-                            // Definir o range visível para mostrar todos os dados da esquerda para a direita
-                            this.chart.timeScale().setVisibleRange(visibleRange, {
-                                applyDefaultRightMargin: true
-                            });
-                            
-                            // Ajustar offset e espaçamento para manter espaço em branco à direita (sem mover a origem)
-                            this.chart.timeScale().applyOptions({
-                                rightOffset: 14,
-                                barSpacing: this.chartType === 'candles' ? 3 : 4,
-                            });
-                        } else {
-                            // Se não houver dados, apenas fazer fitContent
-                            this.chart.timeScale().fitContent();
-                        }
-                    } catch (error) {
-                        console.warn('[InvestmentActive] Erro ao ajustar range visível do gráfico:', error);
-                        // Fallback: apenas fitContent
-                        this.chart.timeScale().fitContent();
-                    }
-                });
+                // Ajustar o gráfico para mostrar todos os dados
+                this.chart.timeScale().fitContent();
                 
                 // Atualizar marcadores quando o gráfico for atualizado
                 if (this.logOperations && this.logOperations.length > 0 && this.showEntryMarkers) {
@@ -3883,7 +3760,7 @@ export default {
                     this.logSystemInit();
                     // ✅ Aguardar um pouco e então verificar logs após inicialização
                     setTimeout(() => {
-                        if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal && !this.showStopBlindadoModal) {
+                        if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
                             this.checkLogsForStopEvents();
                         }
                     }, 1000);
@@ -3891,18 +3768,18 @@ export default {
                     // Se já tem logs, apenas iniciar polling
                     this.startLogPolling();
                     // ✅ Verificar logs imediatamente
-                    if (!this.showStopLossModal && !this.showTargetProfitModal && !this.showStopBlindadoModal) {
+                    if (!this.showStopLossModal && !this.showTargetProfitModal) {
                         this.checkLogsForStopEvents();
                     }
                 }
             } else {
-                // ✅ Mesmo quando inativa, verificar logs para detectar stop loss/target profit/stop blindado
+                // ✅ Mesmo quando inativa, verificar logs para detectar stop loss/target profit
                 // Isso garante que o modal seja mostrado se a IA foi desativada recentemente
                 if (this.realtimeLogs.length === 0) {
                     // Carregar logs uma vez para verificar
                     await this.fetchRealtimeLogs();
                 }
-                if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal && !this.showStopBlindadoModal) {
+                if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
                     this.checkLogsForStopEvents();
                 }
             }
@@ -5912,41 +5789,6 @@ button i,
             padding: 0;
             margin-bottom: 1rem;
             margin-top: 0;
-        }
-        
-        /* Mobile: Select de quantidade de logs */
-        .mobile-logs-limit-select {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            margin-top: 0.75rem;
-        }
-        
-        .mobile-logs-limit-label {
-            font-size: 0.75rem;
-            color: #A1A1A1;
-            font-weight: 500;
-        }
-        
-        .mobile-logs-limit-select-input {
-            padding: 0.375rem 0.75rem;
-            font-size: 0.75rem;
-            background: #0B0B0B;
-            border: 1px solid #1C1C1C;
-            border-radius: 0.375rem;
-            color: #DFDFDF;
-            outline: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-        
-        .mobile-logs-limit-select-input:focus {
-            border-color: #22C55E;
-            outline: none;
-        }
-        
-        .mobile-logs-limit-select-input:hover {
-            border-color: #22C55E;
         }
         
         .mobile-register-card {
