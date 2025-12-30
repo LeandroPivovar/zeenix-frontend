@@ -595,16 +595,7 @@
                                     <span class="text-xs text-zenix-secondary">📋 Registro de Eventos em Tempo Real</span>
                                     <span v-if="realtimeLogs.length > 0" class="text-xs text-zenix-green">{{ realtimeLogs.length }} eventos</span>
                                 </div>
-                                <div class="flex gap-2 items-center">
-                                    <select 
-                                        v-model.number="logsLimit" 
-                                        class="px-2 py-1 text-xs bg-zenix-bg border border-zenix-border rounded text-zenix-secondary hover:bg-zenix-card transition-colors focus:outline-none focus:border-zenix-green"
-                                    >
-                                        <option :value="100">100 logs</option>
-                                        <option :value="200">200 logs</option>
-                                        <option :value="300">300 logs</option>
-                                        <option :value="0">Todos</option>
-                                    </select>
+                                <div class="flex gap-2">
                                     <button 
                                         @click="exportLogs" 
                                         class="px-3 py-1 text-xs bg-zenix-bg border border-zenix-border rounded hover:bg-zenix-card transition-colors text-zenix-secondary hover:text-zenix-text"
@@ -624,35 +615,8 @@
                             
                             <!-- Mobile Header -->
                             <div class="mobile-register-header">
-                                <div>
-                                    <h2 class="mobile-register-title">Registro de Operações</h2>
-                                    <p class="mobile-register-subtitle">Histórico completo de eventos da sessão</p>
-                                </div>
-                                <div class="flex gap-2 items-center mt-2">
-                                    <select 
-                                        v-model.number="logsLimit" 
-                                        class="px-2 py-1 text-xs bg-zenix-bg border border-zenix-border rounded text-zenix-secondary hover:bg-zenix-card transition-colors focus:outline-none focus:border-zenix-green"
-                                    >
-                                        <option :value="100">100 logs</option>
-                                        <option :value="200">200 logs</option>
-                                        <option :value="300">300 logs</option>
-                                        <option :value="0">Todos</option>
-                                    </select>
-                                    <button 
-                                        @click="exportLogs" 
-                                        class="px-3 py-1 text-xs bg-zenix-bg border border-zenix-border rounded hover:bg-zenix-card transition-colors text-zenix-secondary hover:text-zenix-text"
-                                        :disabled="realtimeLogs.length === 0"
-                                    >
-                                        <i class="fas fa-download mr-1"></i> Exportar
-                                    </button>
-                                    <button 
-                                        @click="clearLogs" 
-                                        class="px-3 py-1 text-xs bg-zenix-bg border border-zenix-border rounded hover:bg-red-900/20 transition-colors text-zenix-secondary hover:text-red-400"
-                                        :disabled="realtimeLogs.length === 0"
-                                    >
-                                        <i class="fas fa-trash mr-1"></i> Limpar
-                                    </button>
-                                </div>
+                                <h2 class="mobile-register-title">Registro de Operações</h2>
+                                <p class="mobile-register-subtitle">Histórico completo de eventos da sessão</p>
                             </div>
                             
                             <!-- Desktop Logs List -->
@@ -661,14 +625,14 @@
                                 class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar relative desktop-register-list" 
                                 style="scroll-behavior: smooth;"
                             >
-                                <div v-if="displayedLogs.length === 0" class="text-zenix-secondary text-left py-12 px-4">
+                                <div v-if="realtimeLogs.length === 0" class="text-zenix-secondary text-left py-12 px-4">
                                     <i class="fas fa-info-circle text-2xl mb-2"></i>
                                     <p>Nenhum evento registrado ainda.</p>
                                     <p class="text-xs mt-1">Os logs aparecerão aqui em tempo real quando a IA estiver ativa.</p>
                                 </div>
                                 
                                 <div v-else class="text-left">
-                                    <div v-for="(log, index) in displayedLogs" :key="`desktop-${index}-${log.timestamp}`" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
+                                    <div v-for="(log, index) in realtimeLogs" :key="index" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
                                         <span class="text-gray-500">[{{ log.timestamp }}]</span>
                                         <span class="ml-1">{{ log.icon }}</span>
                                         <span class="ml-1 log-message">{{ log.message }}</span>
@@ -683,14 +647,14 @@
                                 class="flex-1 overflow-y-auto custom-scrollbar relative mobile-register-cards" 
                                 style="scroll-behavior: smooth; max-height: 500px;"
                             >
-                                <div v-if="displayedLogs.length === 0" class="mobile-register-empty">
+                                <div v-if="realtimeLogs.length === 0" class="mobile-register-empty">
                                     <i class="fas fa-info-circle"></i>
                                     <p>Nenhum evento registrado ainda.</p>
                                     <p class="mobile-register-empty-subtitle">Os logs aparecerão aqui em tempo real quando a IA estiver ativa.</p>
                                 </div>
                                 
                                 <div v-else class="mobile-register-cards-container">
-                                    <div v-for="(log, index) in displayedLogs" :key="`mobile-${index}-${log.timestamp}`" class="mobile-register-card">
+                                    <div v-for="(log, index) in realtimeLogs" :key="index" class="mobile-register-card">
                                         <span class="mobile-register-time">{{ log.timestamp }}</span>
                                         <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
                                     </div>
@@ -933,7 +897,6 @@ export default {
             
             // Logs em tempo real (ZENIX v2.0)
             realtimeLogs: [],
-            logsLimit: 200, // Limite de logs exibidos (100, 200, 300, ou null para todos)
             logPollingInterval: null,
             historyPollingInterval: null, // Polling para histórico de operações
             lastLogTimestamp: null, // Timestamp do último log recebido (para detectar novos)
@@ -1405,30 +1368,6 @@ export default {
         }
         },
         
-        // Logs exibidos baseado no limite selecionado
-        displayedLogs() {
-            // Se não há logs, retornar array vazio
-            if (!this.realtimeLogs || this.realtimeLogs.length === 0) {
-                return [];
-            }
-            
-            // Se logsLimit é 0, null ou undefined, retornar todos os logs
-            if (this.logsLimit === 0 || this.logsLimit === null || this.logsLimit === undefined) {
-                return [...this.realtimeLogs]; // Retornar cópia do array
-            }
-            
-            // Converter para número e validar
-            const limit = Number(this.logsLimit);
-            if (isNaN(limit) || limit <= 0) {
-                // Se o limite é inválido, retornar todos os logs
-                return [...this.realtimeLogs];
-            }
-            
-            // Retornar slice dos logs (do início até o limite)
-            // Como os logs mais novos estão no início, slice(0, limit) pega os mais recentes
-            return this.realtimeLogs.slice(0, limit);
-        },
-        
     methods: {
         /**
          * Converte símbolo do mercado para nome amigável
@@ -1513,9 +1452,7 @@ export default {
             
             // ✅ Adicionar no INÍCIO do array (topo) - logs mais novos no topo
             // Vue 3: reatividade automática, não precisa de $set
-            // Limitar logs para performance (usar logsLimit ou 300 como máximo padrão)
-            const maxLogs = this.logsLimit || 300;
-            this.realtimeLogs = [newLog, ...this.realtimeLogs].slice(0, maxLogs);
+            this.realtimeLogs = [newLog, ...this.realtimeLogs];
             
             // ✅ Auto-scroll para o topo apenas se o usuário já estiver no topo
             this.$nextTick(() => {
