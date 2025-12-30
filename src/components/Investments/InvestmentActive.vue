@@ -598,12 +598,13 @@
                                 <div class="flex gap-2 items-center">
                                     <select 
                                         v-model="logsLimit" 
+                                        @change="handleLogsLimitChange"
                                         class="px-2 py-1 text-xs bg-zenix-bg border border-zenix-border rounded text-zenix-secondary hover:bg-zenix-card transition-colors focus:outline-none focus:border-zenix-green"
                                     >
                                         <option :value="100">100 logs</option>
                                         <option :value="200">200 logs</option>
                                         <option :value="300">300 logs</option>
-                                        <option :value="null">Todos</option>
+                                        <option value="null">Todos</option>
                                     </select>
                                     <button 
                                         @click="exportLogs" 
@@ -631,12 +632,13 @@
                                 <div class="flex gap-2 items-center mt-2">
                                     <select 
                                         v-model="logsLimit" 
+                                        @change="handleLogsLimitChange"
                                         class="px-2 py-1 text-xs bg-zenix-bg border border-zenix-border rounded text-zenix-secondary hover:bg-zenix-card transition-colors focus:outline-none focus:border-zenix-green"
                                     >
                                         <option :value="100">100 logs</option>
                                         <option :value="200">200 logs</option>
                                         <option :value="300">300 logs</option>
-                                        <option :value="null">Todos</option>
+                                        <option value="null">Todos</option>
                                     </select>
                                     <button 
                                         @click="exportLogs" 
@@ -933,7 +935,7 @@ export default {
             
             // Logs em tempo real (ZENIX v2.0)
             realtimeLogs: [],
-            logsLimit: 100, // Limite de logs exibidos (100, 200, 300, ou null para todos)
+            logsLimit: 200, // Limite de logs exibidos (100, 200, 300, ou null para todos) - valor numérico
             logPollingInterval: null,
             historyPollingInterval: null, // Polling para histórico de operações
             lastLogTimestamp: null, // Timestamp do último log recebido (para detectar novos)
@@ -1407,10 +1409,26 @@ export default {
         
         // Logs exibidos baseado no limite selecionado
         displayedLogs() {
-            if (this.logsLimit === null) {
+            // Se não há logs, retornar array vazio
+            if (!this.realtimeLogs || this.realtimeLogs.length === 0) {
+                return [];
+            }
+            
+            // Se logsLimit é null, undefined ou string 'null', retornar todos os logs
+            if (this.logsLimit === null || this.logsLimit === undefined || this.logsLimit === 'null') {
                 return this.realtimeLogs;
             }
-            return this.realtimeLogs.slice(0, this.logsLimit);
+            
+            // Converter para número e validar
+            const limit = Number(this.logsLimit);
+            if (isNaN(limit) || limit <= 0) {
+                // Se o limite é inválido, retornar todos os logs
+                return this.realtimeLogs;
+            }
+            
+            // Retornar slice dos logs (do início até o limite)
+            // Como os logs mais novos estão no início, slice(0, limit) pega os mais recentes
+            return this.realtimeLogs.slice(0, limit);
         },
         
     methods: {
@@ -1576,6 +1594,18 @@ export default {
             }
             
             return 'mobile-log-default';
+        },
+        
+        /**
+         * Trata mudança no limite de logs
+         */
+        handleLogsLimitChange(event) {
+            const value = event.target.value;
+            if (value === 'null') {
+                this.logsLimit = null;
+            } else {
+                this.logsLimit = Number(value);
+            }
         },
         
         /**
@@ -5629,12 +5659,12 @@ button i,
     }
     
     .desktop-register-header {
-        display: flex;
+        display: flex !important;
     }
     
     /* Mobile: Register Header - escondido por padrão */
     .mobile-register-header {
-        display: none;
+        display: none !important;
         margin-bottom: 1rem;
         margin-top: 0;
         text-align: left;
