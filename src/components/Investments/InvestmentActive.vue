@@ -597,14 +597,13 @@
                                 </div>
                                 <div class="flex gap-2 items-center">
                                     <select 
-                                        v-model="logsLimit" 
-                                        @change="handleLogsLimitChange"
+                                        v-model.number="logsLimit" 
                                         class="px-2 py-1 text-xs bg-zenix-bg border border-zenix-border rounded text-zenix-secondary hover:bg-zenix-card transition-colors focus:outline-none focus:border-zenix-green"
                                     >
                                         <option :value="100">100 logs</option>
                                         <option :value="200">200 logs</option>
                                         <option :value="300">300 logs</option>
-                                        <option value="null">Todos</option>
+                                        <option :value="0">Todos</option>
                                     </select>
                                     <button 
                                         @click="exportLogs" 
@@ -631,14 +630,13 @@
                                 </div>
                                 <div class="flex gap-2 items-center mt-2">
                                     <select 
-                                        v-model="logsLimit" 
-                                        @change="handleLogsLimitChange"
+                                        v-model.number="logsLimit" 
                                         class="px-2 py-1 text-xs bg-zenix-bg border border-zenix-border rounded text-zenix-secondary hover:bg-zenix-card transition-colors focus:outline-none focus:border-zenix-green"
                                     >
                                         <option :value="100">100 logs</option>
                                         <option :value="200">200 logs</option>
                                         <option :value="300">300 logs</option>
-                                        <option value="null">Todos</option>
+                                        <option :value="0">Todos</option>
                                     </select>
                                     <button 
                                         @click="exportLogs" 
@@ -663,14 +661,14 @@
                                 class="flex-1 bg-black rounded-lg p-4 overflow-y-auto font-mono text-xs leading-relaxed custom-scrollbar relative desktop-register-list" 
                                 style="scroll-behavior: smooth;"
                             >
-                                <div v-if="realtimeLogs.length === 0" class="text-zenix-secondary text-left py-12 px-4">
+                                <div v-if="displayedLogs.length === 0" class="text-zenix-secondary text-left py-12 px-4">
                                     <i class="fas fa-info-circle text-2xl mb-2"></i>
                                     <p>Nenhum evento registrado ainda.</p>
                                     <p class="text-xs mt-1">Os logs aparecerão aqui em tempo real quando a IA estiver ativa.</p>
                                 </div>
                                 
                                 <div v-else class="text-left">
-                                    <div v-for="(log, index) in displayedLogs" :key="index" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
+                                    <div v-for="(log, index) in displayedLogs" :key="`desktop-${index}-${log.timestamp}`" :class="getLogClass(log)" class="mb-1.5 text-left log-entry">
                                         <span class="text-gray-500">[{{ log.timestamp }}]</span>
                                         <span class="ml-1">{{ log.icon }}</span>
                                         <span class="ml-1 log-message">{{ log.message }}</span>
@@ -685,14 +683,14 @@
                                 class="flex-1 overflow-y-auto custom-scrollbar relative mobile-register-cards" 
                                 style="scroll-behavior: smooth; max-height: 500px;"
                             >
-                                <div v-if="realtimeLogs.length === 0" class="mobile-register-empty">
+                                <div v-if="displayedLogs.length === 0" class="mobile-register-empty">
                                     <i class="fas fa-info-circle"></i>
                                     <p>Nenhum evento registrado ainda.</p>
                                     <p class="mobile-register-empty-subtitle">Os logs aparecerão aqui em tempo real quando a IA estiver ativa.</p>
                                 </div>
                                 
                                 <div v-else class="mobile-register-cards-container">
-                                    <div v-for="(log, index) in displayedLogs" :key="index" class="mobile-register-card">
+                                    <div v-for="(log, index) in displayedLogs" :key="`mobile-${index}-${log.timestamp}`" class="mobile-register-card">
                                         <span class="mobile-register-time">{{ log.timestamp }}</span>
                                         <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
                                     </div>
@@ -935,7 +933,7 @@ export default {
             
             // Logs em tempo real (ZENIX v2.0)
             realtimeLogs: [],
-            logsLimit: 200, // Limite de logs exibidos (100, 200, 300, ou null para todos) - valor numérico
+            logsLimit: 200, // Limite de logs exibidos (100, 200, 300, ou null para todos)
             logPollingInterval: null,
             historyPollingInterval: null, // Polling para histórico de operações
             lastLogTimestamp: null, // Timestamp do último log recebido (para detectar novos)
@@ -1414,16 +1412,16 @@ export default {
                 return [];
             }
             
-            // Se logsLimit é null, undefined ou string 'null', retornar todos os logs
-            if (this.logsLimit === null || this.logsLimit === undefined || this.logsLimit === 'null') {
-                return this.realtimeLogs;
+            // Se logsLimit é 0, null ou undefined, retornar todos os logs
+            if (this.logsLimit === 0 || this.logsLimit === null || this.logsLimit === undefined) {
+                return [...this.realtimeLogs]; // Retornar cópia do array
             }
             
             // Converter para número e validar
             const limit = Number(this.logsLimit);
             if (isNaN(limit) || limit <= 0) {
                 // Se o limite é inválido, retornar todos os logs
-                return this.realtimeLogs;
+                return [...this.realtimeLogs];
             }
             
             // Retornar slice dos logs (do início até o limite)
@@ -1594,18 +1592,6 @@ export default {
             }
             
             return 'mobile-log-default';
-        },
-        
-        /**
-         * Trata mudança no limite de logs
-         */
-        handleLogsLimitChange(event) {
-            const value = event.target.value;
-            if (value === 'null') {
-                this.logsLimit = null;
-            } else {
-                this.logsLimit = Number(value);
-            }
         },
         
         /**
@@ -5658,12 +5644,13 @@ button i,
         display: block;
     }
     
-    .desktop-register-header {
+    /* Desktop: Mostrar header desktop */
+    #register-view .desktop-register-header {
         display: flex !important;
     }
     
-    /* Mobile: Register Header - escondido por padrão */
-    .mobile-register-header {
+    /* Mobile: Register Header - escondido por padrão no desktop */
+    #register-view .mobile-register-header {
         display: none !important;
         margin-bottom: 1rem;
         margin-top: 0;
@@ -5818,21 +5805,21 @@ button i,
     
     /* Mobile: Esconder lista e header desktop, mostrar cards e header mobile */
     @media (max-width: 768px) {
-        .desktop-register-list {
+        #register-view .desktop-register-list {
             display: none !important;
         }
         
-        .desktop-register-header {
+        #register-view .desktop-register-header {
             display: none !important;
         }
         
-        .mobile-register-cards {
+        #register-view .mobile-register-cards {
             display: flex !important;
             flex-direction: column;
             background: transparent !important;
         }
         
-        .mobile-register-header {
+        #register-view .mobile-register-header {
             display: block !important;
         }
         
@@ -5859,7 +5846,7 @@ button i,
             border: none !important;
         }
         
-        .mobile-register-header {
+        #register-view .mobile-register-header {
             padding: 0;
             margin-bottom: 1rem;
             margin-top: 0;
