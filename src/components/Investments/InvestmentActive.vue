@@ -1787,12 +1787,14 @@ export default {
                 });
             }
             
-            // ✅ Verificar se há mensagem de stop loss nos logs recentes
+            // ✅ Verificar se há mensagem de stop loss (normal ou blindado) nos logs recentes
             const hasStopLossMessage = recentLogs.some(log => 
                 log.message && (
                     log.message.includes('STOP LOSS ATINGIDO') ||
                     log.message.includes('Stop loss atingido') ||
-                    log.message.includes('STOP LOSS REACHED')
+                    log.message.includes('STOP LOSS REACHED') ||
+                    log.message.includes('STOP-LOSS BLINDADO ATIVADO') ||
+                    log.message.includes('Stop-Loss Blindado ativado')
                 )
             );
             
@@ -2065,16 +2067,17 @@ export default {
                         console.log(`[InvestmentActive] 🔄 Mudança de session_status: ${this.previousSessionStatus} → ${currentSessionStatus}`);
                     }
                     
-                    // ✅ PRIORIDADE 1: Se o status atual é stopped_loss ou stopped_profit, mostrar modal
+                    // ✅ PRIORIDADE 1: Se o status atual é stopped_loss, stopped_blindado ou stopped_profit, mostrar modal
                     // (independentemente do estado anterior, desde que o modal não esteja já aberto)
-                    if (currentSessionStatus === 'stopped_loss') {
+                    if (currentSessionStatus === 'stopped_loss' || currentSessionStatus === 'stopped_blindado') {
                         if (!this.showStopLossModal) {
-                            console.log('[InvestmentActive] 🛑 Stop loss detectado! Mostrando modal...');
+                            const stopType = currentSessionStatus === 'stopped_blindado' ? 'Stop Loss Blindado' : 'Stop Loss';
+                            console.log(`[InvestmentActive] 🛑 ${stopType} detectado! Mostrando modal...`);
                             console.log('[InvestmentActive] 📊 Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
                             // Buscar resultado da sessão
                             this.loadSessionResult().then(() => {
                                 this.showStopLossModal = true;
-                                console.log('[InvestmentActive] ✅ Modal de stop loss exibido');
+                                console.log(`[InvestmentActive] ✅ Modal de ${stopType} exibido`);
                             });
                         }
                         this.previousSessionStatus = currentSessionStatus;
