@@ -13,10 +13,10 @@
           </div>
         </div>
         
-        <h2 class="modal-title">🛡️ STOP LOSS BLINDADO ATIVADO</h2>
+        <h2 class="modal-title">STOPLOSS BLINDADO ATINGIDO</h2>
         
         <p class="modal-message">
-          O sistema protegeu automaticamente seus lucros conquistados, interrompendo as operações para garantir que você mantenha uma porcentagem do lucro obtido.
+          O sistema interrompeu automaticamente as operações protegendo 50% do lucro feito na sessão.
         </p>
         
         <div class="result-section" v-if="result !== null && result !== undefined">
@@ -244,6 +244,7 @@ export default {
   }
 }
 </style>
+
 
 
 

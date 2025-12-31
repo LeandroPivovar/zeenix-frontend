@@ -768,12 +768,20 @@
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleTargetProfitConfirm"
     />
+    
+    <StopBlindadoModal
+        :visible="showStopBlindadoModal"
+        :result="dailyStats.sessionProfitLoss || 0"
+        :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
+        @confirm="handleStopBlindadoConfirm"
+    />
 </template>
 
 <script>
 import { createChart, ColorType } from 'lightweight-charts';
 import StopLossModal from '../StopLossModal.vue';
 import TargetProfitModal from '../TargetProfitModal.vue';
+import StopBlindadoModal from '../StopBlindadoModal.vue';
 
 // TradingView Charting Library - verifique se está disponível globalmente
 const TradingView = window.TradingView || null;
@@ -784,6 +792,7 @@ export default {
     components: {
         StopLossModal,
         TargetProfitModal,
+        StopBlindadoModal,
     },
     props: {
         ticks: {
@@ -907,6 +916,7 @@ export default {
             
             // Modais de Stop Loss e Target Profit
             showStopLossModal: false,
+            showStopBlindadoModal: false,
             showTargetProfitModal: false,
             sessionResult: 0,
             previousSessionStatus: null,
@@ -1787,19 +1797,31 @@ export default {
                 });
             }
             
-            // ✅ Verificar se há mensagem de stop loss (normal ou blindado) nos logs recentes
-            const hasStopLossMessage = recentLogs.some(log => 
+            // ✅ Verificar se há mensagem de STOP LOSS BLINDADO
+            const hasBlindadoMessage = recentLogs.some(log => 
                 log.message && (
-                    log.message.includes('STOP LOSS ATINGIDO') ||
-                    log.message.includes('Stop loss atingido') ||
-                    log.message.includes('STOP LOSS REACHED') ||
                     log.message.includes('STOP-LOSS BLINDADO ATIVADO') ||
-                    log.message.includes('Stop-Loss Blindado ativado')
+                    log.message.includes('Stop-Loss Blindado ativado') ||
+                    log.message.includes('STOP BLINDADO (LUCRO GARANTIDO)') 
                 )
             );
             
-            if (hasStopLossMessage && !this.showStopLossModal) {
-                console.log('[InvestmentActive] 🛑 [Logs] Stop loss detectado nos logs! Mostrando modal...');
+            // ✅ Verificar se há mensagem de STOP LOSS NORMAL
+            const hasNormalStopLossMessage = recentLogs.some(log => 
+                log.message && (
+                    log.message.includes('STOP LOSS ATINGIDO') ||
+                    log.message.includes('Stop loss atingido') ||
+                    log.message.includes('STOP LOSS REACHED')
+                )
+            );
+            
+            if (hasBlindadoMessage && !this.showStopBlindadoModal && !this.showStopLossModal) {
+                console.log('[InvestmentActive] 🛡️ [Logs] Stop Blindado detectado nos logs! Mostrando modal...');
+                this.loadSessionResult().then(() => {
+                    this.showStopBlindadoModal = true;
+                });
+            } else if (hasNormalStopLossMessage && !this.showStopLossModal && !this.showStopBlindadoModal) {
+                console.log('[InvestmentActive] 🛑 [Logs] Stop loss normal detectado nos logs! Mostrando modal...');
                 this.loadSessionResult().then(() => {
                     this.showStopLossModal = true;
                 });
@@ -2186,6 +2208,10 @@ export default {
         handleStopLossConfirm() {
             this.showStopLossModal = false;
             // ✅ Apenas fechar o modal, sem recarregar página ou configuração
+        },
+        
+        handleStopBlindadoConfirm() {
+            this.showStopBlindadoModal = false;
         },
         
         /**
