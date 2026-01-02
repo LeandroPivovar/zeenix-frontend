@@ -403,6 +403,13 @@
         </main>
 
         </div>
+        <InsufficientBalanceModal
+            :visible="showInsufficientBalanceModal"
+            :currentBalance="balanceNumeric"
+            :entryValue="entryValue"
+            :currency="tradeCurrency"
+            @confirm="showInsufficientBalanceModal = false"
+        />
     </div>
     <DesktopBottomNav />
 </template>
@@ -415,6 +422,7 @@ import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
 import accountBalanceMixin from '../mixins/accountBalanceMixin';
+import InsufficientBalanceModal from '../components/InsufficientBalanceModal.vue';
 
 export default {
     name: 'InvestmentIAView',
@@ -425,7 +433,8 @@ export default {
         SettingsSidebar,
         InvestmentActive,
         TooltipsCopyTraders,
-        DesktopBottomNav
+        DesktopBottomNav,
+        InsufficientBalanceModal
     },
     data() {
         return {
@@ -434,7 +443,8 @@ export default {
             isMobile: false,
             isInvestmentActive: false,
             isActivating: false,
-            showSettingsModal: false, 
+            showSettingsModal: false,
+            showInsufficientBalanceModal: false,
 
             ticks: [],
             currentPrice: null,
@@ -655,6 +665,23 @@ export default {
                     return;
                 }
 
+                // ✅ [NOVO] Validação de saldo mínimo (pelo menos 3 entradas)
+                const currentBalance = this.balanceNumeric || 0;
+                const requiredBalance = this.entryValue * 3;
+
+                console.log('[InvestmentIAView] 🔍 Verificando saldo mínimo:', {
+                    current: currentBalance,
+                    required: requiredBalance,
+                    accountType: this.accountType
+                });
+
+                if (currentBalance < requiredBalance) {
+                    console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente para iniciar:', currentBalance, '<', requiredBalance);
+                    this.showInsufficientBalanceModal = true;
+                    this.isActivating = false;
+                    return;
+                }
+
                 const userId = this.getUserId();
                 if (!userId) {
                     console.error('[InvestmentIAView] ❌ Usuário não identificado');
@@ -778,60 +805,57 @@ export default {
         },
 
         getDerivToken() {
-            console.log('[InvestmentIAView] Buscando token Deriv...');
-
-            let accountLoginid = null;
-            let preferredCurrency = null;
+            console.log('[InvestmentIAView] Buscando token Deriv para conta:', this.accountType);
 
             try {
-                const connectionStr = localStorage.getItem('deriv_connection');
-                if (connectionStr) {
-                    const connection = JSON.parse(connectionStr);
-                    accountLoginid = connection.loginid;
-                    preferredCurrency = connection.tradeCurrency;
-                }
-            } catch (error) {
-                console.error('[InvestmentIAView] Erro ao parsear deriv_connection:', error);
-            }
-
-            const isDemoPreferred = preferredCurrency?.toUpperCase() === 'DEMO';
-            if (isDemoPreferred) {
-                try {
-                    const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
-                    const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-
+                const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+                const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+                
+                // Se estivermos em modo demo, procurar especificamente por um token de conta virtual (VRT/VRTC)
+                if (this.accountType === 'demo') {
                     for (const [loginid, token] of Object.entries(tokensByLoginId)) {
                         if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
-                            console.log('[InvestmentIAView] ✓ Token demo encontrado');
+                            console.log('[InvestmentIAView] ✓ Token demo encontrado para loginid:', loginid);
                             return token;
                         }
                     }
-                } catch (error) {
-                    console.error('[InvestmentIAView] Erro ao buscar token demo:', error);
-                }
-            }
-
-            if (accountLoginid) {
-                try {
-                    const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
-                    const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-
-                    const specificToken = tokensByLoginId[accountLoginid];
-                    if (specificToken) {
-                        console.log('[InvestmentIAView] ✓ Token específico encontrado');
-                        return specificToken;
+                } else {
+                    // Se estivermos em modo real, tentar pegar o token associado ao loginid atual no deriv_connection
+                    const connectionStr = localStorage.getItem('deriv_connection');
+                    if (connectionStr) {
+                        const connection = JSON.parse(connectionStr);
+                        const currentLoginid = connection.loginid;
+                        
+                        if (currentLoginid && tokensByLoginId[currentLoginid]) {
+                            // Validar que não é um loginid de demo se estamos no modo real
+                            if (!currentLoginid.startsWith('VRTC') && !currentLoginid.startsWith('VRT')) {
+                                console.log('[InvestmentIAView] ✓ Token real específico encontrado para loginid:', currentLoginid);
+                                return tokensByLoginId[currentLoginid];
+                            }
+                        }
                     }
-                } catch (error) {
-                    console.error('[InvestmentIAView] Erro ao buscar token específico:', error);
+                    
+                    // Fallback para qualquer token real que não comece com VRT
+                    for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+                        if (!loginid.startsWith('VRTC') && !loginid.startsWith('VRT')) {
+                            console.log('[InvestmentIAView] ✓ Token real alternativo encontrado para loginid:', loginid);
+                            return token;
+                        }
+                    }
                 }
+            } catch (error) {
+                console.error('[AccountBalanceMixin] Erro ao buscar token específico:', error);
             }
 
+            // Fallback final para o token padrão
             const defaultToken = localStorage.getItem('deriv_token');
-            if (!defaultToken) {
-                console.error('[InvestmentIAView] ERRO: Nenhum token encontrado!');
+            if (defaultToken) {
+                console.log('[InvestmentIAView] ✓ Usando token padrão (fallback)');
+                return defaultToken;
             }
 
-            return defaultToken;
+            console.error('[InvestmentIAView] ❌ Nenhum token encontrado para o modo:', this.accountType);
+            return null;
         },
 
 

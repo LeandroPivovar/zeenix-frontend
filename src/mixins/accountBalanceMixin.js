@@ -87,7 +87,13 @@ export default {
       return this.getCurrencyPrefix?.(this.info?.currency || 'USD') || '$';
     },
     balanceNumeric() {
-      // Prioridade 1: Saldo USD Real (se existir, mesmo que seja 0)
+      // Se for demo, retornar o saldo demo USD
+      if (this.accountType === 'demo') {
+        const demoBalance = this.balancesByCurrencyDemo['USD'];
+        return demoBalance !== undefined && demoBalance !== null ? Number(demoBalance) : 0;
+      }
+
+      // Se for real, prioridade 1: Saldo USD Real
       const usdReal = this.balancesByCurrencyReal['USD'];
       if (usdReal !== undefined && usdReal !== null) {
         return Number(usdReal);
