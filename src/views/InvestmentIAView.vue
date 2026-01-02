@@ -194,8 +194,8 @@
                                 <p id="modeDescription" class="form-help">{{ modeDescription }}</p>
                             </div>
                             
-                            <!-- Gerenciamento de Risco - Mobile Only -->
-                            <div class="form-group risk-management-mobile">
+                            <!-- Gerenciamento de Risco -->
+                            <div class="form-group risk-management-section">
                                 <label class="form-label">Gerenciamento de Risco</label>
                                 <div class="risk-buttons">
                                     <button 
@@ -217,15 +217,16 @@
                                         Agressivo
                                     </button>
                                 </div>
+                                
                                 <div class="risk-indicator">
                                     <div class="risk-header">
                                         <span class="risk-label">Nível de Risco</span>
-                                        <span id="riskLevelTextMobile" class="risk-level-text">{{ riskLevelText }}</span>
+                                        <span id="riskLevelText" class="risk-level-text">{{ riskLevelText }}</span>
                                     </div>
                                     <div class="risk-bar-container">
-                                        <div id="riskBarMobile" class="risk-bar" :style="{ width: riskBarWidth }"></div>
+                                        <div id="riskBar" class="risk-bar" :style="{ width: riskBarWidth }"></div>
                                     </div>
-                                    <p id="riskDescriptionMobile" class="risk-description">{{ riskDescriptionText }}</p>
+                                    <p id="riskDescription" class="risk-description">{{ riskDescriptionText }}</p>
                                 </div>
                             </div>
                         </div>
@@ -235,7 +236,12 @@
                     <div id="entry-params-card" class="config-card premium-card">
                         <div class="card-content">
                             <div class="form-group">
-                                <label class="form-label">Valor de Entrada (USD)</label>
+                                <label class="form-label">
+                                    Valor de Entrada
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Valor definido para cada operação na moeda da conta.</p>
+                                    </TooltipsCopyTraders>
+                                </label>
                                 <div class="input-wrapper">
                                     <span class="input-prefix">$</span>
                                     <input 
@@ -247,10 +253,15 @@
                                     >
                                 </div>
                                 <p class="form-help">{{ entryPercent }}% do saldo</p>
-                    </div>
+                            </div>
 
                             <div class="form-group">
-                                <label class="form-label">Alvo de Lucro (USD)</label>
+                                <label class="form-label">
+                                    Alvo de Lucro
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Meta de lucro para encerrar as operações automaticamente.</p>
+                                    </TooltipsCopyTraders>
+                                </label>
                                 <div class="input-wrapper">
                                     <span class="input-prefix">$</span>
                                     <input 
@@ -262,126 +273,77 @@
                                     >
                                 </div>
                                 <p class="form-help">{{ profitPercent }}% do saldo</p>
-                    </div>
-
-                            <div class="form-group">
-                                <label class="form-label">Limite de Perda (USD)</label>
-                                <div class="input-wrapper">
-                                    <span class="input-prefix">$</span>
-                                    <input 
-                                        type="number" 
-                                        class="form-input" 
-                                        v-model.number="lossLimit"
-                                        min="0"
-                                        step="0.01"
-                                    >
-                                </div>
-                                <p class="form-help">{{ lossPercent }}% do saldo</p>
                             </div>
-                            
-                            <div class="form-group">
-                                <div class="stoploss-blindado-wrapper">
-                                    <div class="stoploss-blindado-label">
-                                        <i class="fas fa-shield-alt"></i>
-                                        <span>Stoploss Blindado</span>
+
+                            <div class="loss-stoploss-row">
+                                <div class="form-group flex-1">
+                                    <label class="form-label">
+                                        Limite de Perda
+                                        <TooltipsCopyTraders position="left"> 
+                                            <p>Limite máximo de perda total aceitável para a sessão.</p>
+                                        </TooltipsCopyTraders>
+                                    </label>
+                                    <div class="input-wrapper">
+                                        <span class="input-prefix">$</span>
+                                        <input 
+                                            type="number" 
+                                            class="form-input" 
+                                            v-model.number="lossLimit"
+                                            min="0"
+                                            step="0.01"
+                                        >
                                     </div>
-                                    <label class="toggle-switch stoploss-toggle">
-                                        <input 
-                                            type="checkbox" 
-                                            v-model="stoplossBlindado"
-                                        >
-                                        <span class="toggle-slider"></span>
+                                    <p class="form-help">{{ lossPercent }}% do saldo</p>
+                                </div>
+                                
+                                <div class="form-group flex-1">
+                                    <label class="form-label">
+                                        Stoploss Blindado
+                                        <TooltipsCopyTraders position="center"> 
+                                            <p>serve para proteger o lucro, quando atingir 40% do alvo de lucro ele irá iniciar, e apartir dai irá proteger 50% do lucro total, assim caso o mercado vire, você terá esta quantida protegida</p>
+                                        </TooltipsCopyTraders>
                                     </label>
+                                    <div class="stoploss-blindado-wrapper">
+                                        <div class="stoploss-blindado-label">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <span>Ativado</span>
+                                        </div>
+                                        <label class="toggle-switch stoploss-toggle">
+                                            <input 
+                                                type="checkbox" 
+                                                v-model="stoplossBlindado"
+                                            >
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Controle da IA -->
+                            <div class="form-group ai-status-group">
+                                <label class="form-label">Status da IA</label>
+                                <div class="ai-status-control-simple">
+                                    <div class="ai-status-info">
+                                        <p class="ai-status-subtitle">{{ isInvestmentActive ? 'Execução automática' : 'Ative para iniciar' }}</p>
+                                    </div>
+                                    <div class="ai-status-toggle-wrapper">
+                                        <span class="ai-status-text" :class="{ 'active': isInvestmentActive }">
+                                            {{ isInvestmentActive ? 'Ativada' : 'Desativada' }}
+                                        </span>
+                                        <label class="toggle-switch">
+                                            <input 
+                                                type="checkbox" 
+                                                :checked="isInvestmentActive"
+                                                @change="handleToggleChange"
+                                            >
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Gerenciamento de Risco -->
-                    <div id="risk-management-card" class="config-card premium-card">
-                        <h3 class="card-title">Gerenciamento de Risco</h3>
-                        <div class="card-content">
-                            <div class="risk-buttons">
-                                <button 
-                                    :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
-                                    @click="modoMartingale = 'conservador'"
-                                >
-                                    Conservador
-                                </button>
-                                <button 
-                                    :class="['risk-btn', { 'active': modoMartingale === 'moderado' }]"
-                                    @click="modoMartingale = 'moderado'"
-                                >
-                                    Moderado
-                                </button>
-                                <button 
-                                    :class="['risk-btn', { 'active': modoMartingale === 'agressivo' }]"
-                                    @click="modoMartingale = 'agressivo'"
-                                >
-                                    Agressivo
-                    </button>
-                </div>
-                            
-                            <div class="risk-indicator">
-                                <div class="risk-header">
-                                    <span class="risk-label">Nível de Risco</span>
-                                    <span id="riskLevelText" class="risk-level-text">{{ riskLevelText }}</span>
-                                </div>
-                                <div class="risk-bar-container">
-                                    <div id="riskBar" class="risk-bar" :style="{ width: riskBarWidth }"></div>
-                                </div>
-                                <p id="riskDescription" class="risk-description">{{ riskDescriptionText }}</p>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Controle da IA -->
-                    <div id="ai-control-card" class="config-card premium-card ai-control-card">
-                        <div class="ai-control-bg">
-                            <div class="animated-grid-ai"></div>
-                            <div class="particles-ai">
-                                <div class="particle-ai particle-ai-1"></div>
-                                <div class="particle-ai particle-ai-2"></div>
-                                <div class="particle-ai particle-ai-3"></div>
-                                <div class="particle-ai particle-ai-4"></div>
-                            </div>
-                            <div class="data-streams-ai">
-                                <div class="stream-ai stream-ai-1"></div>
-                                <div class="stream-ai stream-ai-2"></div>
-                                <div class="stream-ai stream-ai-3"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="ai-control-content">
-                            <div class="ai-status-control">
-                                <div>
-                                    <p class="ai-status-title">Status da IA</p>
-                                    <p class="ai-status-subtitle">{{ isInvestmentActive ? 'Controle de execução automática' : 'Ative para iniciar operações' }}</p>
-                                </div>
-                                <div class="ai-status-toggle-wrapper">
-                                    <span id="aiStatusText" class="ai-status-text" :class="{ 'active': isInvestmentActive }">
-                                        {{ isInvestmentActive ? 'Ativada' : 'Desativada' }}
-                                    </span>
-                                    <label class="toggle-switch">
-                                        <input 
-                                            type="checkbox" 
-                                            :checked="isInvestmentActive"
-                                            @change="handleToggleChange"
-                                        >
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="ai-status-message" v-if="!isInvestmentActive">
-                                <p class="ai-message-text">
-                                    A IA está <span class="ai-status-inactive">desativada</span>. Ative para começar.
-                                </p>
-                            </div>
-                            <div class="ai-status-note" v-if="isInvestmentActive">
-                                <p class="ai-note-text">Desativação manual pelo usuário</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Chart Section - Only show when IA is active -->
@@ -2400,23 +2362,63 @@ export default {
     order: 4;
 }
 
-/* Gerenciamento de Risco - Desktop: esconder dentro do card, mostrar card separado */
-.risk-management-mobile {
-    display: none;
+/* Gerenciamento de Risco */
+.flex-1 {
+    flex: 1;
 }
 
-#risk-management-card {
-    display: block;
+.loss-stoploss-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.ai-status-group {
+    margin-top: 0.5rem;
+}
+
+.ai-status-control-simple {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.ai-status-info {
+    flex: 1;
+}
+
+.ai-status-subtitle {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    margin: 0;
+    text-align: left;
+}
+
+.ai-status-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ai-status-text {
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: #A1A1A1;
+}
+
+.ai-status-text.active {
+    color: #22C55E;
 }
 
 /* Garantir que no desktop (acima de 768px) as regras sejam aplicadas */
 @media (min-width: 769px) {
     .risk-management-mobile {
         display: none !important;
-    }
-    
-    #risk-management-card {
-        display: block !important;
     }
 }
 
@@ -2642,10 +2644,12 @@ export default {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0.75rem 1rem;
+    padding: 0.625rem 0.75rem;
     background-color: #0B0B0B;
     border: 1px solid #1C1C1C;
     border-radius: 0.5rem;
+    height: 38px; /* Standardize desktop input height */
+    box-sizing: border-box;
 }
 
 .stoploss-blindado-label {
@@ -3257,15 +3261,14 @@ export default {
         order: 3;
     }
     
-    /* Gerenciamento de Risco - Mobile: mostrar dentro do card, esconder card separado */
-    .risk-management-mobile {
+    .risk-management-section {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
     }
     
     /* Mostrar apenas o texto descritivo no mobile, esconder barra e header */
-    .risk-management-mobile .risk-indicator {
+    .risk-management-section .risk-indicator {
         display: block !important;
         background-color: transparent !important;
         border: none !important;
@@ -3273,22 +3276,18 @@ export default {
         margin-top: 0.5rem;
     }
     
-    .risk-management-mobile .risk-header,
-    .risk-management-mobile .risk-bar-container {
+    .risk-management-section .risk-header,
+    .risk-management-section .risk-bar-container {
         display: none !important;
     }
     
-    .risk-management-mobile .risk-description {
+    .risk-management-section .risk-description {
         display: block !important;
         font-size: 0.75rem;
         color: #A1A1A1;
         opacity: 0.8;
         text-align: center;
         margin: 0;
-    }
-    
-    #risk-management-card {
-        display: none !important;
     }
     
     /* Gradiente nos cards de configuração - apenas mobile */
@@ -3376,18 +3375,24 @@ export default {
         font-size: 0.7rem;
     }
     
-    .ai-status-control {
+    .ai-status-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .ai-status-control-simple {
         flex-direction: row;
-        align-items: flex-start;
-        justify-content: space-between;
+        align-items: center;
+        justify-content: flex-start;
         gap: 1rem;
         padding: 1rem;
-        background-color: transparent;
-        border: none;
+        background-color: #000000;
+        border: 1px solid #1C1C1C;
         margin-bottom: 0;
     }
     
-    .ai-status-control > div:first-child {
+    .ai-status-info {
         flex: 1;
     }
     
