@@ -17,7 +17,7 @@
         <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
-                :balance="balanceNumeric"
+                :balance="info?.balance"
                 :account-type="accountType"
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -31,7 +31,7 @@
             <!-- Settings Sidebar -->
             <SettingsSidebar
                 :is-open="showSettingsModal"
-                :balance="balanceNumeric"
+                :balance="info?.balance"
                 :account-type="accountType"
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -393,8 +393,8 @@
                     :profit-target-config="profitTarget"
                     :loss-limit-config="lossLimit"
                     :mode-config="mode"
-                    :account-balance-prop="accountBalance"
-                    :account-currency-prop="tradeCurrency || accountCurrency"
+                    :account-balance-prop="balanceNumeric"
+                    :account-currency-prop="tradeCurrency"
                     :selected-market-prop="selectedMarket"
                         @deactivate="deactivateIA"
                 />
@@ -449,8 +449,6 @@ export default {
 
             selectedMarket: 'vol10',
             selectedStrategy: 'orion',
-            
-            balanceUpdateInterval: null,
             
             dailyStats: {
                 profitLoss: 0,
@@ -519,9 +517,9 @@ export default {
         formattedDailyProfit() {
             const value = this.dailyStats.profitLoss || 0;
             if (value >= 0) {
-                return `+${this.accountCurrency} ${value.toFixed(2)}`;
+                return `+${this.tradeCurrency} ${value.toFixed(2)}`;
             } else {
-                return `-${this.accountCurrency} ${Math.abs(value).toFixed(2)}`;
+                return `-${this.tradeCurrency} ${Math.abs(value).toFixed(2)}`;
             }
         },
         
@@ -558,19 +556,17 @@ export default {
             return descriptions[this.selectedStrategy] || descriptions.orion;
         },
         
-        entryPercent() {
-            if (!this.accountBalance || this.accountBalance <= 0) return '0.00';
-            return ((this.entryValue / this.accountBalance) * 100).toFixed(2);
+        entryValuePercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.entryValue / this.balanceNumeric) * 100).toFixed(2);
         },
-        
-        profitPercent() {
-            if (!this.accountBalance || this.accountBalance <= 0) return '0.00';
-            return ((this.profitTarget / this.accountBalance) * 100).toFixed(2);
+        profitTargetPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.profitTarget / this.balanceNumeric) * 100).toFixed(2);
         },
-        
-        lossPercent() {
-            if (!this.accountBalance || this.accountBalance <= 0) return '0.00';
-            return ((this.lossLimit / this.accountBalance) * 100).toFixed(2);
+        lossLimitPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.lossLimit / this.balanceNumeric) * 100).toFixed(2);
         },
         
         riskLevelText() {
@@ -927,6 +923,10 @@ export default {
         },
         
         
+        handleGlobalAccountChange() {
+            console.log('[InvestmentIAView] Detectada mudança de conta global, recarregando...');
+            this.reloadBalance();
+        },
         async startDataLoading() {
             try {
                 console.log('[InvestmentIAView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
@@ -1128,26 +1128,17 @@ export default {
         this.startBalancePolling(30000);
         
         // Escutar mudanças de conta para atualizar saldo automaticamente
-        window.addEventListener('accountChanged', this.handleAccountChange);
+        window.addEventListener('accountChanged', this.handleGlobalAccountChange);
     },
 
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobile);
-        window.removeEventListener('accountChanged', this.handleAccountChange);
-        console.log('[InvestmentIAView] Limpando polling antes de desmontar...');
-        this.stopPolling();
+        window.removeEventListener('accountChanged', this.handleGlobalAccountChange);
+        console.log('[InvestmentIAView] Limpando intervalos e listeners...');
         
-        console.log('[InvestmentIAView] Parando atualização de saldo...');
-        this.stopBalanceUpdates();
-        
-        console.log('[InvestmentIAView] Parando relógio...');
-        this.stopClock();
-        
-        console.log('[InvestmentIAView] Parando atualização de estatísticas...');
-        this.stopStatsUpdates();
-        
-        // Parar polling de saldo do mixin
-        this.stopBalancePolling();
+        this.stopPolling(); // Para os ticks do gráfico
+        this.stopStatsUpdates(); // Para as estatísticas diárias
+        this.stopBalancePolling(); // Do Mixin
     },
 }
 </script>
