@@ -233,7 +233,7 @@
     min-height: 100vh;
     background-color: #0b0b0a;
     color: #f0f6fc;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Inter', sans-serif;
     padding: 0;
     width: calc(100% - 280px);
     margin-left: 280px;
