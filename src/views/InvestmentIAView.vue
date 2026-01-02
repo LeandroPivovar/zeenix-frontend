@@ -17,7 +17,7 @@
         <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
-                :balance="currentBalance?.balance || info?.balance"
+                :balance="balanceNumeric"
                 :account-type="accountType"
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -31,7 +31,7 @@
             <!-- Settings Sidebar -->
             <SettingsSidebar
                 :is-open="showSettingsModal"
-                :balance="info?.balance"
+                :balance="balanceNumeric"
                 :account-type="accountType"
                 :balances-by-currency-real="balancesByCurrencyReal"
                 :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -451,15 +451,7 @@ export default {
             selectedMarket: 'vol10',
             selectedStrategy: 'orion',
             
-            accountBalance: 0,
-            accountCurrency: 'USD',
-            accountLoginid: null,
-            isDemo: false,
-            tradeCurrency: 'USD', // Usar tradeCurrency como no Dashboard
-            balanceVisible: true,
-            lastBalanceUpdate: null,
             balanceUpdateInterval: null,
-            clockInterval: null,
             
             dailyStats: {
                 profitLoss: 0,
@@ -508,52 +500,6 @@ export default {
         }
     },
     computed: {
-        // Objeto de saldo no formato esperado pelo TopNavbar (igual ao Dashboard)
-        balanceObject() {
-            return {
-                value: this.accountBalance || 0,
-                currency: this.accountCurrency || 'USD'
-            };
-        },
-        
-        // Saldos por moeda - Real (igual ao Dashboard)
-        balancesByCurrencyReal() {
-            if (this.isDemo) {
-                return {};
-            }
-            const balance = this.accountBalance || 0;
-            const currency = this.accountCurrency || 'USD';
-            return {
-                [currency]: balance
-            };
-        },
-        
-        // Saldos por moeda - Demo (igual ao Dashboard)
-        balancesByCurrencyDemo() {
-            if (!this.isDemo) {
-                return {};
-            }
-            const balance = this.accountBalance || 0;
-            const currency = this.accountCurrency || 'USD';
-            return {
-                [currency]: balance
-            };
-        },
-        
-        // Prefixo da moeda (igual ao Dashboard)
-        currencyPrefix() {
-            return this.getCurrencyPrefix(this.accountCurrency || 'USD');
-        },
-        
-        formattedBalance() {
-            if (!this.balanceVisible) {
-                return '••••••';
-            }
-            // Sempre formatar o saldo, mesmo se for 0
-            const balance = this.accountBalance || 0;
-            return `$${balance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        },
-        
         selectedStrategyName() {
             const strategyNames = {
                 'orion': 'Orion',
@@ -726,29 +672,13 @@ export default {
                     return;
                 }
 
-                const preferredCurrency = this.getPreferredCurrency();
+                const preferredCurrency = this.tradeCurrency || 'USD';
                 
-                // ✅ Removida chamada para /ai/deriv-balance - usar saldo já disponível
-                // O saldo já está disponível em this.accountBalance ou pode ser obtido do localStorage
-                let accountBalanceReal = this.accountBalance || 0;
-                
-                // Tentar obter saldo do localStorage se não estiver disponível
-                if (!accountBalanceReal) {
-                    try {
-                        const connectionStr = localStorage.getItem('deriv_connection');
-                        if (connectionStr) {
-                            const connection = JSON.parse(connectionStr);
-                            accountBalanceReal = connection.balance || 0;
-                        }
-                    } catch (e) {
-                        console.warn('[InvestmentIAView] ⚠️ Não foi possível obter saldo do localStorage:', e);
-                    }
-                }
+                // O saldo agora vem do mixin centralizado (balanceNumeric)
+                const accountBalanceReal = this.balanceNumeric || 0;
 
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                // ✅ Usar saldo real da conta como capital inicial, não o valor de entrada
-                // O stakeAmount deve ser o capital total disponível, não o valor por operação
-                const capitalInicial = accountBalanceReal > 0 ? accountBalanceReal : (this.accountBalance || this.entryValue || 0.35);
+                const capitalInicial = accountBalanceReal > 0 ? accountBalanceReal : (this.balanceNumeric || this.entryValue || 0.35);
                 
                 console.log('[InvestmentIAView] 💰 Capital inicial para IA:', capitalInicial, '| Valor de entrada por operação:', this.entryValue);
                 
@@ -909,237 +839,7 @@ export default {
             return defaultToken;
         },
 
-        getPreferredCurrency() {
-            try {
-                const connectionStr = localStorage.getItem('deriv_connection');
-                if (connectionStr) {
-                    const connection = JSON.parse(connectionStr);
-                    if (connection.tradeCurrency) {
-                        const currency = connection.tradeCurrency.toUpperCase();
-                        console.log('[InvestmentIAView] Moeda preferida:', currency);
-                        return currency;
-                    }
-                }
-            } catch (error) {
-                console.error('[InvestmentIAView] Erro ao parsear deriv_connection:', error);
-            }
 
-            return 'USD';
-        },
-
-        async fetchAccountBalance() {
-            try {
-                // PRIMEIRO: Verificar qual tipo de conta está ativa (demo ou real)
-                let preferredIsDemo = false;
-                try {
-                    const connectionStr = localStorage.getItem('deriv_connection');
-                    if (connectionStr) {
-                        const connection = JSON.parse(connectionStr);
-                        if (connection.isDemo !== undefined) {
-                            preferredIsDemo = connection.isDemo === true || connection.isDemo === 1;
-                        }
-                    }
-                } catch (error) {
-                    console.warn('[InvestmentIAView] Erro ao verificar deriv_connection:', error);
-                }
-                
-                // PRIMEIRO: Tentar buscar do cache (como no Dashboard)
-                try {
-                    const cachedAccounts = await loadAvailableAccounts();
-                    if (cachedAccounts && cachedAccounts.length > 0) {
-                        // Buscar a conta que corresponde ao tipo preferido (demo ou real)
-                        let activeAccount = cachedAccounts.find(acc => acc.isDemo === preferredIsDemo);
-                        
-                        // Se não encontrou, tentar o tipo oposto
-                        if (!activeAccount) {
-                            activeAccount = cachedAccounts.find(acc => acc.isDemo !== preferredIsDemo);
-                        }
-                        
-                        // Se ainda não encontrou, usar a primeira disponível
-                        if (!activeAccount) {
-                            activeAccount = cachedAccounts[0];
-                        }
-                        
-                        if (activeAccount && activeAccount.balance !== null && activeAccount.balance !== undefined) {
-                            const cachedBalance = parseFloat(activeAccount.balance) || 0;
-                            // Só atualizar se o saldo do cache for válido (> 0) ou se não temos saldo ainda
-                            if (cachedBalance > 0 || this.accountBalance === 0 || this.accountBalance === null || this.accountBalance === undefined) {
-                                this.accountBalance = cachedBalance;
-                                this.accountCurrency = activeAccount.currency || 'USD';
-                                this.accountLoginid = activeAccount.loginid;
-                                this.isDemo = activeAccount.isDemo || false;
-                                this.lastBalanceUpdate = new Date();
-                                
-                                console.log('[InvestmentIAView] ✅ Saldo carregado do cache:', {
-                                    balance: this.accountBalance,
-                                    currency: this.accountCurrency,
-                                    loginid: this.accountLoginid,
-                                    isDemo: this.isDemo,
-                                    preferredIsDemo: preferredIsDemo,
-                                    cachedBalance: cachedBalance
-                                });
-                            } else {
-                                console.log('[InvestmentIAView] ⚠️ Mantendo saldo atual, cache tem valor inválido:', cachedBalance);
-                            }
-                            
-                            // Continuar para atualizar com dados mais recentes em background
-                        }
-                    }
-                } catch (cacheError) {
-                    console.warn('[InvestmentIAView] Erro ao buscar do cache:', cacheError);
-                }
-                
-                // ✅ DESATIVADO: Chamada para /ai/deriv-balance (causa erro 500)
-                // Usar saldo já disponível no contexto ou endpoint alternativo /broker/deriv/status
-                console.warn('[InvestmentIAView] ⚠️ Busca de saldo desativada - usar saldo do contexto');
-                return;
-
-                // SEGUNDO: Buscar da API para atualizar com dados mais recentes
-                // const derivToken = this.getDerivToken();
-                // if (!derivToken) {
-                //     console.warn('[InvestmentIAView] ❌ Token não disponível para buscar saldo');
-                //     return;
-                // }
-
-                // const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                // const response = await fetch(`${apiBase}/ai/deriv-balance`, {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //         'Authorization': `Bearer ${localStorage.getItem('token')}`
-                //     },
-                //     body: JSON.stringify({ derivToken: derivToken }),
-                // });
-
-                // const result = await response.json();
-                // if (result.success && result.data) {
-                //     // Extrair saldo - pode vir como número, string ou objeto com value
-                //     let newBalance = result.data.balance;
-                //     if (typeof newBalance === 'object' && newBalance !== null) {
-                //         newBalance = newBalance.value || newBalance.balance || 0;
-                //     }
-                //     // Converter para número
-                //     newBalance = parseFloat(newBalance) || 0;
-                    
-                //     const newCurrency = result.data.currency;
-                //     const newLoginid = result.data.loginid;
-                    
-                //     // Verificar isDemo de múltiplas fontes para garantir precisão
-                //     let isDemoFromLoginid = newLoginid?.startsWith('VRTC') || newLoginid?.startsWith('VRT');
-                    
-                //     // Verificar também no localStorage deriv_connection
-                //     try {
-                //         const connectionStr = localStorage.getItem('deriv_connection');
-                //         if (connectionStr) {
-                //             const connection = JSON.parse(connectionStr);
-                //             if (connection.isDemo !== undefined) {
-                //                 isDemoFromLoginid = connection.isDemo === true || connection.isDemo === 1;
-                //             }
-                //         }
-                //     } catch (error) {
-                //         console.warn('[InvestmentIAView] Erro ao verificar deriv_connection:', error);
-                //     }
-                    
-                //     console.log('[InvestmentIAView] 🔍 Verificando atualização de saldo:', {
-                //         newBalance,
-                //         newLoginid,
-                //         isDemoFromLoginid,
-                //         currentBalance: this.accountBalance,
-                //         currentIsDemo: this.isDemo,
-                //         accountTypeMatches: isDemoFromLoginid === this.isDemo,
-                //         balanceType: typeof newBalance
-                //     });
-                    
-                //     // Sempre atualizar o saldo se o valor recebido for válido (>= 0 e é um número)
-                //     // Mas só atualizar se:
-                //     // 1. O novo saldo é válido (> 0) OU
-                //     // 2. O novo saldo é 0 mas não temos saldo válido ainda OU
-                //     // 3. O novo saldo é >= 0 e não temos saldo válido ainda
-                //     const hasValidBalance = this.accountBalance !== null && this.accountBalance !== undefined && this.accountBalance > 0;
-                    
-                //     if (!isNaN(newBalance) && newBalance >= 0) {
-                //         // Se temos um saldo válido do cache e o novo saldo é 0, não atualizar (manter o cache)
-                //         if (hasValidBalance && newBalance === 0) {
-                //             console.log('[InvestmentIAView] ⚠️ Mantendo saldo do cache, novo saldo é 0:', {
-                //                 cachedBalance: this.accountBalance,
-                //                 newBalance: newBalance
-                //             });
-                //         } else {
-                //             // Atualizar o saldo
-                //             this.accountBalance = newBalance;
-                //             console.log('[InvestmentIAView] ✅ Saldo atualizado para:', newBalance);
-                //         }
-                //     } else {
-                //         console.warn('[InvestmentIAView] ⚠️ Saldo inválido recebido:', newBalance);
-                //         // Se o saldo recebido for inválido, manter o saldo atual do cache (não resetar para 0)
-                //         if (!hasValidBalance) {
-                //             // Só resetar para 0 se realmente não tivermos saldo válido
-                //             this.accountBalance = 0;
-                //         }
-                //     }
-                    
-                //     // Sempre atualizar currency e loginid se disponíveis
-                //     if (newCurrency) {
-                //         this.accountCurrency = newCurrency;
-                //     }
-                //     if (newLoginid) {
-                //         this.accountLoginid = newLoginid;
-                //     }
-                    
-                //     // Atualizar isDemo baseado no loginid retornado
-                //     this.isDemo = isDemoFromLoginid;
-                //     this.lastBalanceUpdate = new Date();
-                    
-                //     console.log('[InvestmentIAView] ✅ Saldo atualizado da API:', {
-                //         balance: this.accountBalance,
-                //         currency: this.accountCurrency,
-                //         loginid: this.accountLoginid,
-                //         isDemo: this.isDemo,
-                //         newBalanceReceived: newBalance,
-                //         finalBalance: this.accountBalance
-                //     });
-                // } else {
-                //     console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
-                //     // Se houver erro mas já temos um saldo do cache, manter o saldo atual (não resetar)
-                //     if (this.accountBalance === null || this.accountBalance === undefined) {
-                //         this.accountBalance = 0;
-                //     }
-                // }
-            } catch (error) {
-                console.error('[InvestmentIAView] ❌ Erro ao buscar saldo da conta:', error);
-                // Se houver erro mas já temos um saldo do cache, manter o saldo atual
-                if (this.accountBalance === null || this.accountBalance === undefined) {
-                    this.accountBalance = 0;
-                }
-            }
-        },
-
-        startBalanceUpdates() {
-            this.fetchAccountBalance();
-            this.balanceUpdateInterval = setInterval(() => {
-                this.fetchAccountBalance();
-            }, 30000);
-        },
-
-        stopBalanceUpdates() {
-            if (this.balanceUpdateInterval) {
-                clearInterval(this.balanceUpdateInterval);
-                this.balanceUpdateInterval = null;
-            }
-        },
-
-        startClock() {
-            this.clockInterval = setInterval(() => {
-                this.lastBalanceUpdate = new Date();
-            }, 1000);
-        },
-
-        stopClock() {
-            if (this.clockInterval) {
-                clearInterval(this.clockInterval);
-                this.clockInterval = null;
-            }
-        },
         
         async fetchDailyStats() {
             try {
@@ -1227,134 +927,6 @@ export default {
             this.showSettingsModal = false;
         },
         
-        async loadTradeCurrency() {
-            // Carrega o tradeCurrency do settings (igual ao Dashboard)
-            try {
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const token = localStorage.getItem('token');
-                
-                const response = await fetch(`${apiBase}/settings`, {
-                    method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    }
-                });
-
-                if (response.ok) {
-                    const data = await response.json();
-                    this.tradeCurrency = data.tradeCurrency || 'USD';
-                    // Atualizar isDemo baseado no tradeCurrency (igual ao Dashboard)
-                    this.isDemo = this.tradeCurrency === 'DEMO';
-                    console.log('[InvestmentIAView] TradeCurrency carregado:', {
-                        tradeCurrency: this.tradeCurrency,
-                        isDemo: this.isDemo
-                    });
-                }
-            } catch (error) {
-                console.error('[InvestmentIAView] Erro ao carregar tradeCurrency:', error);
-                // Fallback: tentar pegar do deriv_connection
-                try {
-                    const connectionStr = localStorage.getItem('deriv_connection');
-                    if (connectionStr) {
-                        const connection = JSON.parse(connectionStr);
-                        if (connection.tradeCurrency) {
-                            this.tradeCurrency = connection.tradeCurrency;
-                            this.isDemo = this.tradeCurrency === 'DEMO';
-                        } else {
-                            // Se não tiver tradeCurrency, usar isDemo do connection
-                            const loginid = connection.loginid || '';
-                            this.isDemo = connection.isDemo === true || connection.isDemo === 1 || 
-                                         loginid.startsWith('VRTC') || loginid.startsWith('VRT');
-                            this.tradeCurrency = this.isDemo ? 'DEMO' : 'USD';
-                        }
-                    }
-                } catch (e) {
-                    console.warn('[InvestmentIAView] Erro ao verificar deriv_connection:', e);
-                }
-            }
-        },
-        
-        async updateTradeCurrency(type) {
-            // Atualiza o tradeCurrency no settings (igual ao Dashboard)
-            try {
-                const tradeCurrency = type === 'demo' ? 'DEMO' : 'USD';
-                
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const token = localStorage.getItem('token');
-                
-                const response = await fetch(`${apiBase}/settings`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
-                    },
-                    body: JSON.stringify({
-                        tradeCurrency: tradeCurrency
-                    })
-                });
-
-                if (response.ok) {
-                    // Atualizar tradeCurrency local imediatamente
-                    this.tradeCurrency = tradeCurrency;
-                    this.isDemo = type === 'demo';
-                    console.log('[InvestmentIAView] TradeCurrency atualizado:', {
-                        tradeCurrency: this.tradeCurrency,
-                        isDemo: this.isDemo
-                    });
-                } else {
-                    throw new Error('Erro ao alterar moeda');
-                }
-            } catch (error) {
-                console.error('[InvestmentIAView] Erro ao atualizar tradeCurrency:', error);
-            }
-        },
-        
-        toggleAccountType(type) {
-            // Atualizar tradeCurrency no settings quando trocar de conta
-            this.updateTradeCurrency(type);
-        },
-        
-        handleAccountTypeChangeFromNavbar(newAccountType) {
-            // Alterna entre demo e real quando chamado do navbar
-            // Atualiza tradeCurrency no settings (igual ao Dashboard)
-            this.updateTradeCurrency(newAccountType);
-        },
-        
-        handleAccountChange(event) {
-            console.log('[InvestmentIAView] Conta alterada, atualizando saldo...', event.detail);
-            
-            // Atualizar isDemo e tradeCurrency baseado na nova conta
-            const account = event.detail?.account;
-            if (account) {
-                const isDemoAccount = account.isDemo === true || account.loginid?.startsWith('VRTC') || account.loginid?.startsWith('VRT');
-                this.isDemo = isDemoAccount;
-                this.tradeCurrency = isDemoAccount ? 'DEMO' : 'USD';
-                
-                // Se temos dados da conta no evento, atualizar saldo imediatamente do cache
-                if (account.balance !== null && account.balance !== undefined) {
-                    const balance = parseFloat(account.balance) || 0;
-                    if (balance > 0) {
-                        this.accountBalance = balance;
-                        this.accountCurrency = account.currency || 'USD';
-                        this.accountLoginid = account.loginid;
-                        console.log('[InvestmentIAView] ✅ Saldo atualizado do evento:', {
-                            balance: this.accountBalance,
-                            currency: this.accountCurrency,
-                            loginid: this.accountLoginid,
-                            isDemo: this.isDemo,
-                            tradeCurrency: this.tradeCurrency
-                        });
-                    }
-                }
-                
-                // Atualizar tradeCurrency no settings (igual ao Dashboard)
-                this.updateTradeCurrency(isDemoAccount ? 'demo' : 'real');
-            }
-            
-            // Buscar saldo atualizado da API em background (sem bloquear)
-            this.fetchAccountBalance();
-        },
         
         async startDataLoading() {
             try {
@@ -1541,29 +1113,20 @@ export default {
         window.addEventListener('resize', this.checkMobile);
     },
     async mounted() {
-        console.log('🚀 TESTE: InvestmentIAView mounted() foi chamado!');
-        console.warn('⚠️ SE VOCÊ VÊ ESTA MENSAGEM, O COMPONENTE ESTÁ CARREGANDO!');
+        console.log('[InvestmentIAView] mounted() - Sincronizando com logic do Dashboard');
         
-        // Carregar tradeCurrency do settings (igual ao Dashboard)
-        await this.loadTradeCurrency();
-        
-        // Buscar saldo imediatamente ao montar o componente
-        console.log('[InvestmentIAView] Buscando saldo inicial...');
-        await this.fetchAccountBalance();
+        // O accountBalanceMixin já lida com loadTradeCurrency e loadAccountBalanceInfo no seu mounted()
         
         await this.checkAIStatus();
         
         console.log('[InvestmentIAView] Iniciando carregamento de dados...');
         this.startDataLoading();
         
-        console.log('[InvestmentIAView] Iniciando atualização de saldo...');
-        this.startBalanceUpdates();
-        
-        console.log('[InvestmentIAView] Iniciando relógio em tempo real...');
-        this.startClock();
-        
         console.log('[InvestmentIAView] Iniciando atualização de estatísticas...');
         this.startStatsUpdates();
+        
+        // Iniciar polling de saldo via mixin (ajustado para 30s como Dashboard)
+        this.startBalancePolling(30000);
         
         // Escutar mudanças de conta para atualizar saldo automaticamente
         window.addEventListener('accountChanged', this.handleAccountChange);
@@ -1583,6 +1146,9 @@ export default {
         
         console.log('[InvestmentIAView] Parando atualização de estatísticas...');
         this.stopStatsUpdates();
+        
+        // Parar polling de saldo do mixin
+        this.stopBalancePolling();
     },
 }
 </script>
