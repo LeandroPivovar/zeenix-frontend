@@ -2091,15 +2091,21 @@ export default {
                     
                     // ✅ PRIORIDADE 1: Se o status atual é stopped_loss, stopped_blindado ou stopped_profit, mostrar modal
                     // (independentemente do estado anterior, desde que o modal não esteja já aberto)
-                    if (currentSessionStatus === 'stopped_loss' || currentSessionStatus === 'stopped_blindado') {
+                    if (currentSessionStatus === 'stopped_loss') {
                         if (!this.showStopLossModal) {
-                            const stopType = currentSessionStatus === 'stopped_blindado' ? 'Stop Loss Blindado' : 'Stop Loss';
-                            console.log(`[InvestmentActive] 🛑 ${stopType} detectado! Mostrando modal...`);
-                            console.log('[InvestmentActive] 📊 Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
-                            // Buscar resultado da sessão
+                            console.log('[InvestmentActive] 🛑 Stop Loss detectado! Mostrando modal...');
                             this.loadSessionResult().then(() => {
                                 this.showStopLossModal = true;
-                                console.log(`[InvestmentActive] ✅ Modal de ${stopType} exibido`);
+                                console.log('[InvestmentActive] ✅ Modal de Stop Loss exibido');
+                            });
+                        }
+                        this.previousSessionStatus = currentSessionStatus;
+                    } else if (currentSessionStatus === 'stopped_blindado') {
+                        if (!this.showStopBlindadoModal) {
+                            console.log('[InvestmentActive] 🛡️ Stop Loss Blindado detectado! Mostrando modal...');
+                            this.loadSessionResult().then(() => {
+                                this.showStopBlindadoModal = true;
+                                console.log('[InvestmentActive] ✅ Modal de Stop Loss Blindado exibido');
                             });
                         }
                         this.previousSessionStatus = currentSessionStatus;
@@ -2124,7 +2130,7 @@ export default {
                     
                     // ✅ Verificar também nos logs recentes para garantir detecção imediata
                     // Isso é uma camada extra de segurança caso o sessionStatus ainda não tenha sido atualizado
-                    if (!this.showTargetProfitModal && !this.showStopLossModal && this.realtimeLogs.length > 0) {
+                    if (!this.showTargetProfitModal && !this.showStopLossModal && !this.showStopBlindadoModal && this.realtimeLogs.length > 0) {
                         this.checkLogsForStopEvents();
                     }
                     

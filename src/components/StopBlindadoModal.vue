@@ -20,13 +20,8 @@
         </p>
         
         <div class="result-section" v-if="result !== null && result !== undefined">
-          <p class="result-label">LUCRO PROTEGIDO</p>
+          <p class="result-label">RESULTADO DA SESSÃO</p>
           <p class="result-value profit-value">{{ formattedResult }}</p>
-        </div>
-        
-        <div class="info-box" v-if="protectedInfo">
-          <p class="info-label">Informações da Proteção</p>
-          <p class="info-text">{{ protectedInfo }}</p>
         </div>
         
         <p class="info-message">
