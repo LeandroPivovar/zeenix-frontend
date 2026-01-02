@@ -98,112 +98,20 @@
             <div class="absolute left-0 top-0 bottom-0 w-32 bg-gradient-to-r from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
             <div class="absolute right-0 top-0 bottom-0 w-32 bg-gradient-to-l from-[rgba(11,11,11,0.95)] to-transparent z-10 pointer-events-none"></div>
             <div id="ticker-scroll" class="flex items-center whitespace-nowrap w-full">
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">João lucrou <span class="text-[#22C55E] font-semibold">$101,44</span> operando com a IA ORION</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Marcos sacou <span class="text-[#22C55E] font-semibold">$250</span> de lucro gerado pelo Agente Sentinel</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Rafael ativou a IA TRINITY no modo Normal</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Lucas depositou <span class="text-[#22C55E] font-semibold">$300</span> para escalar suas operações</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Ana lucrou <span class="text-[#22C55E] font-semibold">$187</span> com o Copy Trading</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-trophy text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Pedro bateu a meta diária de <span class="text-[#22C55E] font-semibold">$420</span> com o Agente Apex</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Felipe lucrou <span class="text-[#22C55E] font-semibold">2,3%</span> hoje usando a IA ATLAS</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Bruno sacou <span class="text-[#22C55E] font-semibold">$1.000</span> após 7 dias operando automaticamente</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Carlos iniciou operações com a IA APOLLO</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Daniel lucrou <span class="text-[#22C55E] font-semibold">$96</span> em operações manuais com sinais</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Eduardo depositou <span class="text-[#22C55E] font-semibold">$500</span> para aumentar o volume de operações</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Thiago lucrou <span class="text-[#22C55E] font-semibold">$312</span> com a IA NEXUS</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">André encerrou o dia com <span class="text-[#22C55E] font-semibold">+3,1%</span> usando a IA TITAN</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Victor ativou o Agente Autônomo Sentinel 24/7</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Guilherme sacou <span class="text-[#22C55E] font-semibold">$780</span> de lucro acumulado</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Henrique lucrou <span class="text-[#22C55E] font-semibold">$155</span> com sinais manuais (90% de acerto)</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-cog text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Leandro configurou gestão Moderada na IA OMEGA</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Igor lucrou <span class="text-[#22C55E] font-semibold">$1.240</span> com o Copy Trading</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Matheus aumentou o depósito para <span class="text-[#22C55E] font-semibold">$1.000</span></span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Diego encerrou o dia com <span class="text-[#22C55E] font-semibold">+4,7%</span> no Agente Apex</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Fernando lucrou <span class="text-[#22C55E] font-semibold">$268</span> com a IA SIGMA</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-trophy text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Vinícius bateu a meta semanal de <span class="text-[#22C55E] font-semibold">$2.100</span></span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Renan ativou a IA GENESIS no modo Veloz</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Caio sacou <span class="text-[#22C55E] font-semibold">$540</span> direto da corretora</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Alex lucrou <span class="text-[#22C55E] font-semibold">$89</span> em apenas 3 operações manuais</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-cog text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Samuel configurou perfil Agressivo na IA FALCON</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Leonardo acumulou <span class="text-[#22C55E] font-semibold">+18%</span> no mês com o Agente Autônomo</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Gustavo lucrou <span class="text-[#22C55E] font-semibold">$460</span> hoje com o Copy Trading</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-repeat text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Wesley reinvestiu <span class="text-[#22C55E] font-semibold">$400</span> dos lucros obtidos</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Patrick encerrou o dia positivo com <span class="text-[#22C55E] font-semibold">+2,9%</span></span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Diego lucrou <span class="text-[#22C55E] font-semibold">$670</span> com a IA ORION</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Murilo sacou <span class="text-[#22C55E] font-semibold">$1.500</span> após 30 dias de operação</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Otávio ativou o modo Agressivo na IA TRINITY</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Fábio lucrou <span class="text-[#22C55E] font-semibold">$134</span> em sinais com 85% de acerto</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Jefferson aumentou o capital para <span class="text-[#22C55E] font-semibold">$2.000</span></span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-trophy text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Alan bateu a meta diária de <span class="text-[#22C55E] font-semibold">$350</span></span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Rodrigo lucrou <span class="text-[#22C55E] font-semibold">$980</span> com o Agente Sentinel</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Nicolas encerrou o mês com <span class="text-[#22C55E] font-semibold">+22%</span> de lucro</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Everton ativou o Copy Trading Profissional</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Pablo lucrou <span class="text-[#22C55E] font-semibold">$210</span> com a IA ATLAS</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Sérgio sacou <span class="text-[#22C55E] font-semibold">$600</span> de lucro automático</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Júnior ativou sua primeira IA no ZENIX</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Ricardo lucrou <span class="text-[#22C55E] font-semibold">$1.080</span> operando sem supervisão</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-cog text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Kelvin ajustou gestão para Conservadora e manteve lucro</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Arthur acumulou <span class="text-[#22C55E] font-semibold">$3.400</span> no mês com o Agente Apex</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Douglas lucrou <span class="text-[#22C55E] font-semibold">$74</span> em uma única entrada manual</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-repeat text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Hugo reinvestiu os lucros para escalar resultados</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Bruno encerrou o dia com <span class="text-[#22C55E] font-semibold">+5%</span> de performance</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Victor lucrou <span class="text-[#22C55E] font-semibold">$520</span> hoje usando a IA OMEGA</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Rafael sacou o lucro e já ativou novas operações</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">João lucrou <span class="text-[#22C55E] font-semibold">$101,44</span> operando com a IA ORION</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Marcos sacou <span class="text-[#22C55E] font-semibold">$250</span> de lucro gerado pelo Agente Sentinel</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Rafael ativou a IA TRINITY no modo Normal</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Lucas depositou <span class="text-[#22C55E] font-semibold">$300</span> para escalar suas operações</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Ana lucrou <span class="text-[#22C55E] font-semibold">$187</span> com o Copy Trading</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-trophy text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Pedro bateu a meta diária de <span class="text-[#22C55E] font-semibold">$420</span> com o Agente Apex</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Felipe lucrou <span class="text-[#22C55E] font-semibold">2,3%</span> hoje usando a IA ATLAS</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Bruno sacou <span class="text-[#22C55E] font-semibold">$1.000</span> após 7 dias operando automaticamente</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Carlos iniciou operações com a IA APOLLO</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Daniel lucrou <span class="text-[#22C55E] font-semibold">$96</span> em operações manuais com sinais</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Eduardo depositou <span class="text-[#22C55E] font-semibold">$500</span> para aumentar o volume de operações</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Thiago lucrou <span class="text-[#22C55E] font-semibold">$312</span> com a IA NEXUS</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">André encerrou o dia com <span class="text-[#22C55E] font-semibold">+3,1%</span> usando a IA TITAN</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Victor ativou o Agente Autônomo Sentinel 24/7</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Guilherme sacou <span class="text-[#22C55E] font-semibold">$780</span> de lucro acumulado</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Henrique lucrou <span class="text-[#22C55E] font-semibold">$155</span> com sinais manuais (90% de acerto)</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-cog text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Leandro configurou gestão Moderada na IA OMEGA</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Igor lucrou <span class="text-[#22C55E] font-semibold">$1.240</span> com o Copy Trading</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Matheus aumentou o depósito para <span class="text-[#22C55E] font-semibold">$1.000</span></span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Diego encerrou o dia com <span class="text-[#22C55E] font-semibold">+4,7%</span> no Agente Apex</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Fernando lucrou <span class="text-[#22C55E] font-semibold">$268</span> com a IA SIGMA</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-trophy text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Vinícius bateu a meta semanal de <span class="text-[#22C55E] font-semibold">$2.100</span></span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Renan ativou a IA GENESIS no modo Veloz</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Caio sacou <span class="text-[#22C55E] font-semibold">$540</span> direto da corretora</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Alex lucrou <span class="text-[#22C55E] font-semibold">$89</span> em apenas 3 operações manuais</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-cog text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Samuel configurou perfil Agressivo na IA FALCON</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Leonardo acumulou <span class="text-[#22C55E] font-semibold">+18%</span> no mês com o Agente Autônomo</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Gustavo lucrou <span class="text-[#22C55E] font-semibold">$460</span> hoje com o Copy Trading</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-repeat text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Wesley reinvestiu <span class="text-[#22C55E] font-semibold">$400</span> dos lucros obtidos</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Patrick encerrou o dia positivo com <span class="text-[#22C55E] font-semibold">+2,9%</span></span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Diego lucrou <span class="text-[#22C55E] font-semibold">$670</span> com a IA ORION</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Murilo sacou <span class="text-[#22C55E] font-semibold">$1.500</span> após 30 dias de operação</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Otávio ativou o modo Agressivo na IA TRINITY</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Fábio lucrou <span class="text-[#22C55E] font-semibold">$134</span> em sinais com 85% de acerto</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Jefferson aumentou o capital para <span class="text-[#22C55E] font-semibold">$2.000</span></span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-trophy text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Alan bateu a meta diária de <span class="text-[#22C55E] font-semibold">$350</span></span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Rodrigo lucrou <span class="text-[#22C55E] font-semibold">$980</span> com o Agente Sentinel</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Nicolas encerrou o mês com <span class="text-[#22C55E] font-semibold">+22%</span> de lucro</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Everton ativou o Copy Trading Profissional</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Pablo lucrou <span class="text-[#22C55E] font-semibold">$210</span> com a IA ATLAS</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Sérgio sacou <span class="text-[#22C55E] font-semibold">$600</span> de lucro automático</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-robot text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Júnior ativou sua primeira IA no ZENIX</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Ricardo lucrou <span class="text-[#22C55E] font-semibold">$1.080</span> operando sem supervisão</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-cog text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Kelvin ajustou gestão para Conservadora e manteve lucro</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Arthur acumulou <span class="text-[#22C55E] font-semibold">$3.400</span> no mês com o Agente Apex</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Douglas lucrou <span class="text-[#22C55E] font-semibold">$74</span> em uma única entrada manual</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-repeat text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Hugo reinvestiu os lucros para escalar resultados</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-chart-line text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Bruno encerrou o dia com <span class="text-[#22C55E] font-semibold">+5%</span> de performance</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-bolt text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Victor lucrou <span class="text-[#22C55E] font-semibold">$520</span> hoje usando a IA OMEGA</span></div>
-              <div class="inline-flex items-center space-x-3 px-8"><i class="fas fa-dollar-sign text-[#22C55E] text-sm opacity-100"></i><span class="text-white/95 text-sm font-medium">Rafael sacou o lucro e já ativou novas operações</span></div>
+              <div 
+                v-for="(item, index) in tickerItems" 
+                :key="index" 
+                class="inline-flex items-center space-x-3 px-8"
+              >
+                <i :class="[item.icon, 'text-[#22C55E] text-sm opacity-100']"></i>
+                <span class="text-white/95 text-sm font-medium" v-html="item.text"></span>
+              </div>
             </div>
           </div>
         </div>
       </section>
       
-      <div class="py-5 w-full" style="padding-left: 0; padding-right: 0;">
+      <div class="py-0 w-full" style="padding-left: 0; padding-right: 0;">
         <!-- Mobile Account Summary -->
         <section class="mobile-account-summary">
           <div class="mobile-account-user">
@@ -282,9 +190,9 @@
         </section>
         
         <!-- Best IAs Section -->
-        <section id="best-ai-section" class="pt-20 pb-5 relative w-full" style="padding-bottom: 20px">
+        <section id="best-ai-section" class="pt-0 pb-0 relative w-full">
           <div class="absolute inset-0 bg-gradient-to-b from-[#020302] via-[#030403] to-[#020302] opacity-60 pointer-events-none"></div>
-          <div class="relative z-10 w-full" style="padding: 2rem;">
+          <div class="relative z-10 w-full px-6 md:px-10">
             <!-- Desktop Header -->
             <div class="text-left mb-8 space-y-2 desktop-ias-header">
               <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Melhores IA's <span class="text-[#22C55E]">Agora</span></h2>
@@ -303,7 +211,6 @@
               </div>
             </div>
             
-            <div class="w-full h-[1px] bg-[#1C1C1C] opacity-35 mb-12"></div>
             
             <!-- Desktop Grid -->
             <div class="grid grid-cols-4 gap-6 mb-0 desktop-grid-ias">
@@ -375,10 +282,9 @@
       </section>
       
       <!-- Overall Performance Section -->
-      <section id="performance-section" class="pt-0 pb-36 relative w-full">
+      <section id="performance-section" class="pt-4 pb-36 relative w-full">
         <div class="absolute inset-0 bg-gradient-to-b from-[#0B0B0B] via-[#0E0E0E] to-[#0B0B0B] opacity-40 pointer-events-none"></div>
-        <div class="w-full h-[1px] bg-[#1C1C1C] opacity-35 mb-12"></div>
-        <div class="relative z-10 w-full" style="padding: 2rem;">
+        <div class="relative z-10 w-full px-6 md:px-10">
           <!-- Desktop Header -->
           <div class="text-left mb-8 space-y-2 desktop-performance-header">
             <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)] desktop-performance-title">Desempenho <span class="desktop-green-text">Geral</span></h2>
@@ -753,6 +659,58 @@ export default {
       loadingAccounts: false,
       userProfilePictureUrl: null,
       tradeCurrency: 'USD',
+      tickerItems: [
+        { icon: 'fas fa-bolt', text: 'João lucrou <span class="text-[#22C55E] font-semibold">$101,44</span> operando com a IA ORION' },
+        { icon: 'fas fa-dollar-sign', text: 'Marcos sacou <span class="text-[#22C55E] font-semibold">$250</span> de lucro gerado pelo Agente Sentinel' },
+        { icon: 'fas fa-robot', text: 'Rafael ativou a IA TRINITY no modo Normal' },
+        { icon: 'fas fa-chart-line', text: 'Lucas depositou <span class="text-[#22C55E] font-semibold">$300</span> para escalar suas operações' },
+        { icon: 'fas fa-bolt', text: 'Ana lucrou <span class="text-[#22C55E] font-semibold">$187</span> com o Copy Trading' },
+        { icon: 'fas fa-trophy', text: 'Pedro bateu a meta diária de <span class="text-[#22C55E] font-semibold">$420</span> com o Agente Apex' },
+        { icon: 'fas fa-bolt', text: 'Felipe lucrou <span class="text-[#22C55E] font-semibold">2,3%</span> hoje usando a IA ATLAS' },
+        { icon: 'fas fa-dollar-sign', text: 'Bruno sacou <span class="text-[#22C55E] font-semibold">$1.000</span> após 7 dias operando automaticamente' },
+        { icon: 'fas fa-robot', text: 'Carlos iniciou operações com a IA APOLLO' },
+        { icon: 'fas fa-bolt', text: 'Daniel lucrou <span class="text-[#22C55E] font-semibold">$96</span> em operações manuais com sinais' },
+        { icon: 'fas fa-chart-line', text: 'Eduardo depositou <span class="text-[#22C55E] font-semibold">$500</span> para aumentar o volume de operações' },
+        { icon: 'fas fa-bolt', text: 'Thiago lucrou <span class="text-[#22C55E] font-semibold">$312</span> com a IA NEXUS' },
+        { icon: 'fas fa-chart-line', text: 'André encerrou o dia com <span class="text-[#22C55E] font-semibold">+3,1%</span> usando a IA TITAN' },
+        { icon: 'fas fa-robot', text: 'Victor ativou o Agente Autônomo Sentinel 24/7' },
+        { icon: 'fas fa-dollar-sign', text: 'Guilherme sacou <span class="text-[#22C55E] font-semibold">$780</span> de lucro acumulado' },
+        { icon: 'fas fa-bolt', text: 'Henrique lucrou <span class="text-[#22C55E] font-semibold">$155</span> com sinais manuais (90% de acerto)' },
+        { icon: 'fas fa-cog', text: 'Leandro configurou gestão Moderada na IA OMEGA' },
+        { icon: 'fas fa-bolt', text: 'Igor lucrou <span class="text-[#22C55E] font-semibold">$1.240</span> com o Copy Trading' },
+        { icon: 'fas fa-chart-line', text: 'Matheus aumentou o depósito para <span class="text-[#22C55E] font-semibold">$1.000</span>' },
+        { icon: 'fas fa-chart-line', text: 'Diego encerrou o dia com <span class="text-[#22C55E] font-semibold">+4,7%</span> no Agente Apex' },
+        { icon: 'fas fa-bolt', text: 'Fernando lucrou <span class="text-[#22C55E] font-semibold">$268</span> com a IA SIGMA' },
+        { icon: 'fas fa-trophy', text: 'Vinícius bateu a meta semanal de <span class="text-[#22C55E] font-semibold">$2.100</span>' },
+        { icon: 'fas fa-robot', text: 'Renan ativou a IA GENESIS no modo Veloz' },
+        { icon: 'fas fa-dollar-sign', text: 'Caio sacou <span class="text-[#22C55E] font-semibold">$540</span> direto da corretora' },
+        { icon: 'fas fa-bolt', text: 'Alex lucrou <span class="text-[#22C55E] font-semibold">$89</span> em apenas 3 operações manuais' },
+        { icon: 'fas fa-cog', text: 'Samuel configurou perfil Agressivo na IA FALCON' },
+        { icon: 'fas fa-chart-line', text: 'Leonardo acumulou <span class="text-[#22C55E] font-semibold">+18%</span> no mês com o Agente Autônomo' },
+        { icon: 'fas fa-bolt', text: 'Gustavo lucrou <span class="text-[#22C55E] font-semibold">$460</span> hoje com o Copy Trading' },
+        { icon: 'fas fa-repeat', text: 'Wesley reinvestiu <span class="text-[#22C55E] font-semibold">$400</span> dos lucros obtidos' },
+        { icon: 'fas fa-chart-line', text: 'Patrick encerrou o dia positivo com <span class="text-[#22C55E] font-semibold">+2,9%</span>' },
+        { icon: 'fas fa-bolt', text: 'Diego lucrou <span class="text-[#22C55E] font-semibold">$670</span> com a IA ORION' },
+        { icon: 'fas fa-dollar-sign', text: 'Murilo sacou <span class="text-[#22C55E] font-semibold">$1.500</span> após 30 dias de operação' },
+        { icon: 'fas fa-robot', text: 'Otávio ativou o modo Agressivo na IA TRINITY' },
+        { icon: 'fas fa-bolt', text: 'Fábio lucrou <span class="text-[#22C55E] font-semibold">$134</span> em sinais com 85% de acerto' },
+        { icon: 'fas fa-chart-line', text: 'Jefferson aumentou o capital para <span class="text-[#22C55E] font-semibold">$2.000</span>' },
+        { icon: 'fas fa-trophy', text: 'Alan bateu a meta diária de <span class="text-[#22C55E] font-semibold">$350</span>' },
+        { icon: 'fas fa-bolt', text: 'Rodrigo lucrou <span class="text-[#22C55E] font-semibold">$980</span> com o Agente Sentinel' },
+        { icon: 'fas fa-chart-line', text: 'Nicolas encerrou o mês com <span class="text-[#22C55E] font-semibold">+22%</span> de lucro' },
+        { icon: 'fas fa-robot', text: 'Everton ativou o Copy Trading Profissional' },
+        { icon: 'fas fa-bolt', text: 'Pablo lucrou <span class="text-[#22C55E] font-semibold">$210</span> com a IA ATLAS' },
+        { icon: 'fas fa-dollar-sign', text: 'Sérgio sacou <span class="text-[#22C55E] font-semibold">$600</span> de lucro automático' },
+        { icon: 'fas fa-robot', text: 'Júnior ativou sua primeira IA no ZENIX' },
+        { icon: 'fas fa-bolt', text: 'Ricardo lucrou <span class="text-[#22C55E] font-semibold">$1.080</span> operando sem supervisão' },
+        { icon: 'fas fa-cog', text: 'Kelvin ajustou gestão para Conservadora e manteve lucro' },
+        { icon: 'fas fa-chart-line', text: 'Arthur acumulou <span class="text-[#22C55E] font-semibold">$3.400</span> no mês com o Agente Apex' },
+        { icon: 'fas fa-bolt', text: 'Douglas lucrou <span class="text-[#22C55E] font-semibold">$74</span> em uma única entrada manual' },
+        { icon: 'fas fa-repeat', text: 'Hugo reinvestiu os lucros para escalar resultados' },
+        { icon: 'fas fa-chart-line', text: 'Bruno encerrou o dia com <span class="text-[#22C55E] font-semibold">+5%</span> de performance' },
+        { icon: 'fas fa-bolt', text: 'Victor lucrou <span class="text-[#22C55E] font-semibold">$520</span> hoje usando a IA OMEGA' },
+        { icon: 'fas fa-dollar-sign', text: 'Rafael sacou o lucro e já ativou novas operações' }
+      ],
       notifications: [],
       quickTools: [
         {
@@ -1056,6 +1014,7 @@ export default {
     }
   },
   created() {
+    this.tickerItems = this.shuffleTicker(this.tickerItems);
     this.checkMobile();
     window.addEventListener('resize', this.checkMobile);
   },
@@ -1078,6 +1037,25 @@ export default {
     },
     closeSidebar() {
       this.isSidebarOpen = false;
+    },
+    shuffleTicker(array) {
+      // Cria uma cópia para não mutar o original diretamente
+      let currentIndex = array.length, randomIndex;
+      const newArray = [...array];
+
+      // While there remain elements to shuffle.
+      while (currentIndex != 0) {
+        // Pick a remaining element.
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex--;
+
+        // And swap it with the current element.
+        [newArray[currentIndex], newArray[randomIndex]] = [
+          newArray[randomIndex], newArray[currentIndex]];
+      }
+
+      // Duplicar a lista embaralhada para garantir scroll contínuo suave
+      return [...newArray, ...newArray, ...newArray];
     },
     /**
      * Retorna nome amigável da conta baseado no tipo e moeda
@@ -3034,14 +3012,14 @@ export default {
   .dashboard-layout #best-ai-section > .relative.z-10,
   .dashboard-layout #best-ai-section .relative.z-10.w-full,
   .dashboard-layout #best-ai-section .relative.z-10 {
-    padding: 2rem !important;
+    padding: 2.8rem 2rem!important;
   }
   
   /* Padding de 2rem no container interno da seção de Desempenho Geral */
   .dashboard-layout #performance-section > .relative.z-10,
   .dashboard-layout #performance-section .relative.z-10.w-full,
   .dashboard-layout #performance-section .relative.z-10 {
-    padding: 2rem !important;
+    padding: 0rem 2rem !important;
   }
   
   /* Performance Section */
@@ -3053,6 +3031,7 @@ export default {
     background-size: cover;
     padding-left: 0 !important;
     padding-right: 0 !important;
+    padding-top: 0 !important;
     box-shadow: inset 0 0 0 9999px rgba(0, 0, 0, 0.7);
   }
   .dashboard-layout #performance-section .absolute.inset-0 {

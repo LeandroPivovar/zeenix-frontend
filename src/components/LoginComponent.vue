@@ -37,7 +37,7 @@
                 <input 
                   type="email" 
                   v-model="email"
-                  placeholder="Digite o seu email" 
+                  placeholder="Digite o seu e-mail" 
                   class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors input-email"
                   required
                 >

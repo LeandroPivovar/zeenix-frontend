@@ -23,46 +23,75 @@
             </div>
           </div>
 
-          <!-- Header -->
-          <div class="mb-8 header-section">
-            <h1 class="text-3xl font-semibold text-zenix-text-dark mb-3 header-title">Recuperar senha</h1>
-            <p class="text-sm text-zenix-gray leading-relaxed forgot-text header-subtitle">Digite seu e-mail para receber instruções de recuperação de senha.</p>
-          </div>
-
-          <!-- Forgot Password Form -->
-          <form id="forgot-form" class="space-y-6" @submit.prevent="handleForgotPassword">
-            <!-- Email Input -->
-            <div>
-              <label class="block text-sm font-medium text-zenix-text-dark mb-2">E-mail</label>
-              <div class="relative">
-                <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <path d="M2 4L8 8L14 4M2 4H14V12H2V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-                </svg>
-                <input 
-                  type="email" 
-                  v-model="email"
-                  placeholder="Digite seu e-mail" 
-                  class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
-                  required
-                >
-              </div>
+          <div v-if="!isSent">
+            <!-- Header -->
+            <div class="mb-8 header-section">
+              <h1 class="text-3xl font-semibold text-zenix-text-dark mb-3 header-title">Recuperar senha</h1>
+              <p class="text-sm text-zenix-gray leading-relaxed forgot-text header-subtitle">Digite seu e-mail para receber instruções de recuperação de senha.</p>
             </div>
 
-            <!-- Submit Button -->
-            <button 
-              type="submit" 
-              class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-4 rounded-full transition-colors flex items-center justify-center space-x-2"
-              :disabled="isLoading"
-            >
-              <span v-if="isLoading" class="spinner"></span>
-              <span>{{ isLoading ? 'Enviando...' : 'Enviar instruções' }}</span>
-              <i v-if="!isLoading" class="fa-solid fa-arrow-right text-sm"></i>
-            </button>
-          </form>
+            <!-- Forgot Password Form -->
+            <form id="forgot-form" class="space-y-6" @submit.prevent="handleForgotPassword">
+              <!-- Email Input -->
+              <div>
+                <label class="block text-sm font-medium text-zenix-text-dark mb-2">E-mail</label>
+                <div class="relative">
+                  <svg class="absolute left-4 top-1/2 transform -translate-y-1/2 input-icon" width="16" height="16" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M2 4L8 8L14 4M2 4H14V12H2V4Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  </svg>
+                  <input 
+                    type="email" 
+                    v-model="email"
+                    placeholder="Digite seu e-mail" 
+                    class="w-full bg-zenix-input-bg border border-zenix-input-border rounded-xl pl-10 pr-4 py-4 text-zenix-text-dark placeholder-zenix-gray focus:border-zenix-green focus:outline-none transition-colors"
+                    required
+                  >
+                </div>
+              </div>
 
-          <!-- Links -->
-          <div class="mt-0 space-y-4 text-center">
-            <a @click.prevent="$router.push('/login')" href="/login" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors cursor-pointer">Voltar ao login</a>
+              <!-- Submit Button -->
+              <button 
+                type="submit" 
+                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-4 rounded-full transition-colors flex items-center justify-center space-x-2"
+                :disabled="isLoading"
+              >
+                <span v-if="isLoading" class="spinner"></span>
+                <span>{{ isLoading ? 'Enviando...' : 'Enviar instruções' }}</span>
+                <i v-if="!isLoading" class="fa-solid fa-arrow-right text-sm"></i>
+              </button>
+            </form>
+
+            <!-- Links -->
+            <div class="mt-0 space-y-4 text-center">
+              <a @click.prevent="$router.push('/login')" href="/login" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors cursor-pointer">Voltar ao login</a>
+            </div>
+          </div>
+
+          <div v-else>
+            <!-- Success Message -->
+            <div class="mb-8 header-section">
+              <h1 class="text-3xl font-semibold text-zenix-text-dark mb-6 header-title">Acesse seu E-mail</h1>
+              
+              <div class="space-y-6">
+                <p class="text-sm text-zenix-gray leading-relaxed text-center">
+                  Enviamos e-mail com o link para redefinir sua senha.<br>
+                  Procure na caixa de entrada, spam ou lixo eletrônico.
+                </p>
+                
+                <p class="text-sm text-zenix-gray leading-relaxed text-center">
+                  Se não receber em alguns minutos, tente novamente ou contate o suporte.
+                </p>
+              </div>
+
+              <div class="mt-10 pt-4">
+                <button 
+                  @click="$router.push('/login')"
+                  class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-4 rounded-full transition-colors flex items-center justify-center"
+                >
+                  Voltar ao Login
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Footer -->
@@ -153,6 +182,7 @@ export default {
     return {
       email: '',
       isLoading: false,
+      isSent: false,
       fullTitle: 'ZENIX',
       fullSubtitle: 'A única tecnologia criada para operar com a precisão que o mercado exige.',
       typedTitle: '',
@@ -164,7 +194,8 @@ export default {
       showBenefit1: false,
       showBenefit2: false,
       showBenefit3: false,
-      showBenefit4: false
+      showBenefit4: false,
+      animationSequenceId: 0
     }
   },
   mounted() {
@@ -217,10 +248,13 @@ export default {
       setTimeout(typeChar, 200);
     },
     typeTitle() {
+      const currentId = this.animationSequenceId;
       let index = 0;
       const typingSpeed = 100; // velocidade de digitação em ms
       
       const typeChar = () => {
+        if (this.animationSequenceId !== currentId) return;
+
         if (index < this.fullTitle.length) {
           const char = this.fullTitle.charAt(index);
           if (char === 'X') {
@@ -233,7 +267,9 @@ export default {
         } else {
           // Após terminar o título, inicia o subtítulo
           setTimeout(() => {
-            this.typeSubtitle();
+            if (this.animationSequenceId === currentId) {
+              this.typeSubtitle();
+            }
           }, 300);
         }
       };
@@ -242,21 +278,37 @@ export default {
       setTimeout(typeChar, 300);
     },
     typeSubtitle() {
+      const currentId = this.animationSequenceId;
       let index = 0;
       const typingSpeed = 30; // velocidade de digitação em ms
       
       const typeChar = () => {
+        if (this.animationSequenceId !== currentId) return;
+
         if (index < this.fullSubtitle.length) {
           this.typedSubtitle += this.fullSubtitle.charAt(index);
           index++;
           setTimeout(typeChar, typingSpeed);
         } else {
           // Após terminar o subtítulo, inicia as qualidades
-          this.startBenefitsAnimation();
+          if (this.animationSequenceId === currentId) {
+            this.startBenefitsAnimation();
+          }
         }
       };
       
       typeChar();
+    },
+    restartAnimations() {
+       this.animationSequenceId++;
+       this.typedTitle = '';
+       this.typedSubtitle = '';
+       this.showBenefit1 = false;
+       this.showBenefit2 = false;
+       this.showBenefit3 = false;
+       this.showBenefit4 = false;
+       
+       this.typeTitle();
     },
     startBenefitsAnimation() {
       // 3. Depois cada uma das qualidades em sequência
@@ -296,7 +348,10 @@ export default {
         }
         
         this.$root.$toast.success('Instruções de recuperação enviadas para seu e-mail!');
-        this.$router.push('/login');
+        this.isSent = true;
+        
+        // Reiniciar animação
+        this.restartAnimations();
       } catch (e) {
         this.$root.$toast.error(e.message || 'Erro inesperado. Tente novamente.');
       } finally {
