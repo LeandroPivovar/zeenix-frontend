@@ -9,23 +9,23 @@
           
           <!-- Logo -->
           <div class="mb-8 flex justify-center">
-            <div class="flex items-center space-x-2">
+            <div class="flex items-center space-x-0">
               <div class="text-3xl font-bold text-zenix-text-dark">ZENI</div>
               <div class="text-3xl font-bold text-zenix-green">X</div>
             </div>
           </div>
 
-          <!-- Header -->
-          <div class="mb-8">
-            <h1 class="text-2xl font-semibold text-zenix-text-dark mb-3">Acesse sua conta</h1>
-            <p class="text-sm text-zenix-gray leading-relaxed">Se você já possui uma conta, preencha seus dados para acessar a plataforma.</p>
-          </div>
+          <template v-if="!isSuccess">
+            <!-- Header -->
+            <div class="mb-8">
+              <h1 class="text-2xl font-semibold text-zenix-text-dark mb-3">Redefinir Senha</h1>
+              <p class="text-sm text-zenix-gray leading-relaxed">Crie uma nova senha segura para sua conta.</p>
+            </div>
 
           <!-- Reset Password Form -->
           <form id="reset-form" class="space-y-6" @submit.prevent="handleResetPassword">
             <!-- Password Input -->
             <div>
-              <label class="block text-sm font-medium text-zenix-text-dark mb-2">Nova Senha</label>
               <div class="relative">
                 <input 
                   :type="showPassword ? 'text' : 'password'"
@@ -47,7 +47,6 @@
 
             <!-- Confirm Password Input -->
             <div>
-              <label class="block text-sm font-medium text-zenix-text-dark mb-2">Confirmar Senha</label>
               <div class="relative">
                 <input 
                   :type="showConfirmPassword ? 'text' : 'password'"
@@ -94,6 +93,30 @@
           <div class="mt-4 space-y-4 text-center">
             <a @click.prevent="$router.push('/login')" href="/login" class="block text-sm text-zenix-gray hover:text-zenix-text-dark transition-colors cursor-pointer">Voltar ao login</a>
           </div>
+          </template>
+
+          <template v-else>
+            <!-- Success Message -->
+            <div class="mb-8 header-section">
+              <h1 class="text-3xl font-semibold text-zenix-text-dark mb-6 header-title">Senha Alterada!</h1>
+              
+              <div class="space-y-6">
+                <p class="text-sm text-zenix-gray leading-relaxed text-center">
+                  Sua senha foi redefinida com sucesso.<br>
+                  Agora você já pode acessar a plataforma com sua nova senha.
+                </p>
+              </div>
+
+              <div class="mt-10 pt-4">
+                <button 
+                  @click="$router.push('/login')"
+                  class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-4 rounded-full transition-colors flex items-center justify-center"
+                >
+                  Voltar ao Login
+                </button>
+              </div>
+            </div>
+          </template>
 
           <!-- Footer -->
           <div class="mt-10 pt-6 border-t border-zenix-input-border">
@@ -175,8 +198,8 @@ export default {
       showPassword: false,
       showConfirmPassword: false,
       isLoading: false,
+      isSuccess: false,
       error: '',
-      success: '',
       fullTitle: 'ZENIX',
       fullSubtitle: 'A única tecnologia criada para operar com a precisão que o mercado exige.',
       typedTitle: '',
@@ -313,12 +336,8 @@ export default {
           throw new Error(data.message || 'Erro ao redefinir senha');
         }
         
-        this.success = 'Senha redefinida com sucesso!';
-        
-        // Redirecionar para login após 2 segundos
-        setTimeout(() => {
-          this.$router.push('/login');
-        }, 2000);
+        this.$root.$toast.success('Senha redefinida com sucesso!');
+        this.isSuccess = true;
       } catch (e) {
         this.error = e.message || 'Erro inesperado. Tente novamente.';
       } finally {
