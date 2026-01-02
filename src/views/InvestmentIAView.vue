@@ -414,7 +414,6 @@ import SettingsSidebar from '../components/SettingsSidebar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
-import { loadAvailableAccounts } from '../utils/accountsLoader';
 import accountBalanceMixin from '../mixins/accountBalanceMixin';
 
 export default {
