@@ -694,7 +694,7 @@ export default {
                     return;
                 }
 
-                const preferredCurrency = this.tradeCurrency || 'USD';
+                const preferredCurrency = (this.tradeCurrency === 'DEMO' || !this.tradeCurrency) ? 'USD' : this.tradeCurrency;
                 
                 // O saldo agora vem do mixin centralizado (balanceNumeric)
                 const accountBalanceReal = this.balanceNumeric || 0;
