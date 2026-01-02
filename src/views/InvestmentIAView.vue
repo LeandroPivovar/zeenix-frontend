@@ -2655,7 +2655,7 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: 0.625rem 0.75rem;
-    background-color: #000000;
+    background-color: #0b0b0b;
     border: 1px solid #1C1C1C;
     border-radius: 0.5rem;
     height: 38px; /* Standardize desktop input height */
@@ -3722,6 +3722,7 @@ export default {
     }
 
     .stoploss-blindado-wrapper {
+        background-color: #000000 !important;
         padding: 0.5rem;
         height: auto;
     }
