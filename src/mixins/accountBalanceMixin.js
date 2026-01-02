@@ -214,7 +214,9 @@ export default {
           try {
             const parsed = JSON.parse(saved);
             derivToken = parsed.token || parsed.derivToken;
-          } catch (e) { }
+          } catch (e) {
+            // Ignorar erro de parsing de cache
+          }
         }
 
         const token = localStorage.getItem('token');
@@ -353,7 +355,7 @@ export default {
             }
           }
         } catch (e) {
-          // Ignorar erro
+          // Ignorar erro ao buscar do backup
         }
       }
     },
