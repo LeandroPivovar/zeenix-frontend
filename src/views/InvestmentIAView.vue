@@ -167,7 +167,12 @@
                     </div>
 
                             <div class="form-group">
-                                <label class="form-label">Modo de Negociação</label>
+                                <label class="form-label">
+                                    Modo de Negociação
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Define a frequência e a precisão das operações realizadas pela IA.</p>
+                                    </TooltipsCopyTraders>
+                                </label>
                                 <div class="mode-buttons">
                                     <button 
                                         id="modeVeloz" 
@@ -196,7 +201,12 @@
                             
                             <!-- Gerenciamento de Risco -->
                             <div class="form-group risk-management-section">
-                                <label class="form-label">Gerenciamento de Risco</label>
+                                <label class="form-label">
+                                    Gerenciamento de Risco
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Configura a estratégia de recuperação e o nível de exposição do capital.</p>
+                                    </TooltipsCopyTraders>
+                                </label>
                                 <div class="risk-buttons">
                                     <button 
                                         :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
@@ -300,7 +310,7 @@
                                     <label class="form-label">
                                         Stoploss Blindado
                                         <TooltipsCopyTraders position="center"> 
-                                            <p>serve para proteger o lucro, quando atingir 40% do alvo de lucro ele irá iniciar, e apartir dai irá proteger 50% do lucro total, assim caso o mercado vire, você terá esta quantida protegida</p>
+                                            <p>Protege o lucro automaticamente. Quando 40% do alvo é alcançado, a proteção é ativada, garantindo 50% do lucro total, mesmo em caso de reversão do mercado.</p>
                                         </TooltipsCopyTraders>
                                     </label>
                                     <div class="stoploss-blindado-wrapper">
