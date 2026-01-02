@@ -316,7 +316,7 @@
                                     <div class="stoploss-blindado-wrapper">
                                         <div class="stoploss-blindado-label">
                                             <i class="fas fa-shield-alt"></i>
-                                            <span>Ativado</span>
+                                            <span>{{ stoplossBlindado ? 'Ativado' : 'Desativado' }}</span>
                                         </div>
                                         <label class="toggle-switch stoploss-toggle">
                                             <input 
@@ -2678,12 +2678,10 @@ export default {
 
 .stoploss-toggle {
     flex-shrink: 0;
-    width: 3.5rem;
     height: 1.75rem;
 }
 
 .stoploss-toggle .toggle-slider {
-    width: 3.5rem;
     height: 1.75rem;
 }
 
@@ -2693,7 +2691,7 @@ export default {
 }
 
 .stoploss-toggle input:checked + .toggle-slider::before {
-    transform: translateX(calc(3.5rem - 1.25rem - 6px));
+    transform: translateX(calc(4rem - 1.25rem - 6px));
 }
 
 /* AI Control Card */
