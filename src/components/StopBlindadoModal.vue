@@ -61,7 +61,7 @@ export default {
     formattedResult() {
       if (this.result === null || this.result === undefined) return '$0.00';
       const sign = this.result >= 0 ? '+' : '';
-      return `${sign}${this.currency === 'DEMO' ? 'DEMO' : '$'}${Math.abs(this.result).toFixed(2)}`;
+      return `${sign}$${Math.abs(this.result).toFixed(2)}`;
     }
   },
   methods: {
@@ -125,6 +125,8 @@ export default {
   margin: 0 0 16px 0;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  text-align: center;
+  width: 100%;
 }
 
 .modal-message {
