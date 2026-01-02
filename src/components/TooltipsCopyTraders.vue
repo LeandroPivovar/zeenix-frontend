@@ -83,7 +83,7 @@ export default {
 .tooltip-box.tooltip-center {
   left: 50%;
   transform: translateX(-50%);
-  width: 350px;
+  width: 400px;
   z-index: 9999;
 }
 
@@ -91,15 +91,14 @@ export default {
   left: initial;
   right: 0;
   transform: translateX(0);
-  width: 350px;
+  width: 400px;
   z-index: 9999;
 }
 
 .tooltip-box.tooltip-left {
   left: 0;
   transform: translateX(0);
-
-  width: 300px;
+  width: 400px;
 }
 .tooltip-arrow {
   position: absolute;
