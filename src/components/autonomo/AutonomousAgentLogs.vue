@@ -1,11 +1,6 @@
 <template>
   <div class="operation-logs-container">
-    <div class="logs-header">
-      <div class="logs-title-section">
-        <h2 class="logs-title">Ações do Agente</h2>
-        <p class="logs-subtitle">Registro de atividades em tempo real</p>
-      </div>
-    </div>
+
     
     <div class="logs-content" ref="logsContainer">
       <div v-if="realtimeLogs.length === 0" class="empty-logs">

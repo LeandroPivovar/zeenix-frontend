@@ -91,7 +91,8 @@
 			</div>
 			<div class="progress-card">
 				<div class="metric-label">
-					Progresso até a meta
+					<span>Progresso até a meta</span>
+					<span class="progress-percentage">{{ progressoPorcentagem }}</span>
 				</div>
 				<div class="progress-bar-container">
 					<div class="progress-bar">
@@ -282,19 +283,9 @@
 							</tbody>
 						</table>
 					</div>
-					<!-- Botão Pausar Agente - Histórico -->
-					<button @click="pausarAgenteEIrParaTopo" class="pause-agent-btn history-pause-btn">
-						<i class="fa-solid fa-pause"></i>
-						<span>Pausar Agente</span>
-					</button>
 				</div>
 				<div id="contentRegistro" :class="['register-content', { hidden: abaAtiva !== 'registro' }]">
 					<AutonomousAgentLogs :user-id="userIdComputed" :is-active="true" />
-					<!-- Botão Pausar Agente - Registro -->
-					<button @click="pausarAgenteEIrParaTopo" class="pause-agent-btn register-pause-btn">
-						<i class="fa-solid fa-pause"></i>
-						<span>Pausar Agente</span>
-					</button>
 				</div>
 			</div>
 			<!-- Cards Maior Ganho e Maior Perda - apenas mobile e apenas na aba gráfico -->
@@ -306,32 +297,6 @@
 				<div class="mobile-performance-card">
 					<div class="mobile-performance-label">Maior Perda</div>
 					<div class="mobile-performance-value negative">-${{ maiorPerda.toFixed(2) }}</div>
-				</div>
-			</div>
-			<!-- Botão Pausar Agente - apenas mobile e apenas na aba gráfico -->
-			<button v-if="abaAtiva === 'grafico'" @click="pausarAgenteEIrParaTopo" class="mobile-pause-agent-btn">
-				<span class="mobile-pause-icon">II</span>
-				Pausar Agente
-			</button>
-		</div>
-		<div class="actions-section">
-			<div class="actions-header">
-				<h3>Ações do Agente</h3>
-					<div class="actions-list">
-						<div v-for="(acao, index) in acoesAgenteComputed" :key="index" class="action-item">
-						<div :class="['action-icon', acao.status || acao.classe || 'info']"></div>
-						<div class="action-content">
-							<div class="action-title">{{ acao.title || acao.titulo }}</div>
-							<div class="action-description">{{ acao.description || acao.descricao }}</div>
-						</div>
-					</div>
-						<div v-if="acoesAgenteComputed.length === 0" class="action-item">
-						<div class="action-icon info"></div>
-						<div class="action-content">
-							<div class="action-title">Nenhuma ação registrada</div>
-							<div class="action-description">Aguardando operações do agente...</div>
-						</div>
-					</div>
 				</div>
 			</div>
 		</div>
@@ -1401,7 +1366,7 @@
 		grid-template-columns: 1fr 1fr 2fr;
 		gap: 15px;
 		margin-top: 1.5rem;
-		background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+		background: transparent;
 	}
 
 	.metric-card {
@@ -2015,8 +1980,7 @@
 			background: #0e0e0e !important;
 		}
 		
-		.chart-section,
-		.metrics-grid {
+		.chart-section {
 			background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
 		}
 
