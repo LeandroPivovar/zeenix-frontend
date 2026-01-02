@@ -71,19 +71,20 @@ export default {
   transform: translateX(-50%);
   background-color: #1a1a1a;
   border: 1px solid #333;
-  padding: 16px;
+  padding: 12px 16px;
   border-radius: 6px;
-  font-size: 13px;
+  font-size: 14px;
   z-index: 9999;
   text-align: left;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
   line-height: 1.5;
+  width: max-content;
+  max-width: 380px;
 }
 /* Ajuste de Posição */
 .tooltip-box.tooltip-center {
   left: 50%;
   transform: translateX(-50%);
-  width: 400px;
   z-index: 9999;
 }
 
@@ -91,14 +92,12 @@ export default {
   left: initial;
   right: 0;
   transform: translateX(0);
-  width: 400px;
   z-index: 9999;
 }
 
 .tooltip-box.tooltip-left {
   left: 0;
   transform: translateX(0);
-  width: 400px;
 }
 .tooltip-arrow {
   position: absolute;
@@ -128,9 +127,9 @@ export default {
 
 /* 🎨 ESTILOS DO CONTEÚDO DO SLOT (Para colorir corretamente devido ao scoped CSS) */
 .tooltip-box h4 { margin: 0 0 8px 0; font-size: 14px; color: #fff; font-weight: 600; }
-.tooltip-box p { margin: 0 0 8px 0; color: #aaa; font-size: 13px; }
+.tooltip-box p { margin: 0 0 8px 0; color: #DFDFDF; font-size: 14px; }
 .tooltip-box p:last-child { margin-bottom: 0; }
-.tooltip-box .section-title { font-size: 13px; font-weight: 600; color: #fff; margin-top: 12px; margin-bottom: 6px; }
+.tooltip-box .section-title { font-size: 14px; font-weight: 600; color: #fff; margin-top: 12px; margin-bottom: 6px; }
 .tooltip-box .section-title:first-child { margin-top: 0; }
 .tooltip-box hr { border: none; border-top: 1px solid #333; margin: 12px 0; }
 .tooltip-box .example { color: #888; font-style: italic; margin-top: 8px; }
