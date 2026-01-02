@@ -2392,8 +2392,8 @@ export default {
     align-items: center;
     justify-content: flex-start;
     gap: 1.5rem;
-    background-color: #0B0B0B;
-    border: 1px solid #1C1C1C;
+    background: linear-gradient(135deg, rgba(29, 229, 103, 0.03) 0%, rgba(68, 115, 69, 0.11) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.3);
     border-radius: 0.5rem;
     padding: 0.75rem 1rem;
 }
@@ -2655,7 +2655,7 @@ export default {
     align-items: center;
     justify-content: space-between;
     padding: 0.625rem 0.75rem;
-    background-color: #0B0B0B;
+    background-color: #000000;
     border: 1px solid #1C1C1C;
     border-radius: 0.5rem;
     height: 38px; /* Standardize desktop input height */
@@ -3710,6 +3710,20 @@ export default {
     /* Remove ai-status-title no mobile */
     .ai-status-title {
         display: none !important;
+    }
+
+    .loss-stoploss-row {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+
+    .loss-stoploss-row .flex-1 {
+        width: 100%;
+    }
+
+    .stoploss-blindado-wrapper {
+        padding: 0.5rem;
+        height: auto;
     }
 }
 </style>
