@@ -483,9 +483,6 @@ export default {
         selectedStrategyName() {
             const strategyNames = {
                 'orion': 'Orion',
-                'atlas': 'ATLAS',
-                'titan': 'TITAN',
-                'orion': 'Orion',
                 'apollo': 'Apollo',
                 'atlas': 'ATLAS',
                 'titan': 'TITAN',
@@ -536,9 +533,6 @@ export default {
         
         strategyDescription() {
             const descriptions = {
-                'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
-                'atlas': 'Alta Frequência • Volume Massivo • Lucro no Volume',
-                'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida',
                 'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
                 'apollo': 'Martingale Inteligente • Proteção de Lucro • Recuperação Otimizada',
                 'atlas': 'Alta Frequência • Volume Massivo • Lucro no Volume',
