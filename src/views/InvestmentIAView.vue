@@ -251,7 +251,7 @@
                                 <label class="form-label">
                                     Valor de Entrada
                                     <TooltipsCopyTraders position="left"> 
-                                        <p>Valor definido para cada operação na moeda da conta.</p>
+                                        <p>Defina o valor da sua primeira operação. Todas as estratégias de recuperação e alavancagem (Soros) serão calculadas a partir deste valor base.</p>
                                     </TooltipsCopyTraders>
                                 </label>
                                 <div class="input-wrapper">
@@ -271,7 +271,7 @@
                                 <label class="form-label">
                                     Alvo de Lucro
                                     <TooltipsCopyTraders position="left"> 
-                                        <p>Meta de lucro para encerrar as operações automaticamente.</p>
+                                        <p>Sua meta financeira para a sessão. O sistema encerrará as operações automaticamente assim que este valor for atingido ou superado.</p>
                                     </TooltipsCopyTraders>
                                 </label>
                                 <div class="input-wrapper">
@@ -292,7 +292,7 @@
                                     <label class="form-label">
                                         Limite de Perda
                                         <TooltipsCopyTraders position="left"> 
-                                            <p>Limite máximo de perda total aceitável para a sessão.</p>
+                                            <p>O valor máximo que você aceita arriscar na sessão. Nosso sistema possui Stop de Precisão: ele ajusta automaticamente o valor da última entrada para garantir que você nunca perca mais do que definiu aqui.</p>
                                         </TooltipsCopyTraders>
                                     </label>
                                     <div class="input-wrapper">
@@ -312,7 +312,7 @@
                                     <label class="form-label">
                                         Stoploss Blindado
                                         <TooltipsCopyTraders position="center"> 
-                                            <p>Protege o lucro automaticamente. Quando 40% do alvo é alcançado, a proteção é ativada, garantindo 50% do lucro total, mesmo em caso de reversão do mercado.</p>
+                                            <p>Ative para proteção dinâmica. Quando você atinge 40% da meta, o sistema cria um 'piso de segurança' móvel. Se o mercado virar, o sistema para com lucro garantido (50% do pico), impedindo que você devolva seus ganhos.</p>
                                         </TooltipsCopyTraders>
                                     </label>
                                     <div class="stoploss-blindado-wrapper">
