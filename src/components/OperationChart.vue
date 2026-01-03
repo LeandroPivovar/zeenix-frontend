@@ -368,13 +368,15 @@
                       <circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="2.5"/>
                       <path d="M9 12H15M12 9V15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
                     </svg>
-                    <svg v-else-if="category === 'Metais'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                      <path d="M2 17L12 22L22 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    <svg v-else-if="category === 'Forex Majors' || category === 'Forex Minors' || category === 'Forex Exotics'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="2.5"/>
+                        <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                        <path d="M12 2V22" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
                     </svg>
-                    <svg v-else-if="category === 'Forex Majors'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="2.5"/>
-                      <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                    <svg v-else-if="category === 'Metais'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M6 4L18 4L21 9L12 21L3 9L6 4Z" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M3 9H21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M12 21V9" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
                     </svg>
                     <i v-else class="fas fa-ellipsis-h text-[#22C55E]"></i>
                   </div>
@@ -655,7 +657,25 @@ export default {
   computed: {
     marketsByCategory() {
       const grouped = {};
-      const integratedMarkets = this.getDefaultMarkets().map(m => m.value);
+      const integratedMarkets = [
+        // Índices Contínuos
+        'R_10', 'R_25', 'R_50', 'R_75', 'R_100',
+        '1HZ10V', '1HZ25V', '1HZ50V', '1HZ75V', '1HZ100V',
+        
+        // Criptomoedas
+        'cryBTCUSD', 'cryETHUSD',
+        
+        // Forex (Majors)
+        'frxEURUSD', 'frxUSDJPY', 'frxGBPUSD', 'frxUSDCHF', 
+        'frxAUDUSD', 'frxUSDCAD', 'frxNZDUSD',
+        
+        // Forex (Minors/Exotics)
+        'frxEURGBP', 'frxEURJPY', 'frxGBPJPY', 'frxAUDCAD', 
+        'frxAUDJPY', 'frxCHFJPY', 'frxEURAUD', 'frxGBPAUD', 'frxUSDMXN',
+        
+        // Metais
+        'frxXAUUSD', 'frxXAGUSD', 'frxXPTUSD', 'frxXPDUSD'
+      ];
       
       this.markets.forEach(market => {
         if (integratedMarkets.includes(market.value)) {
@@ -1693,7 +1713,17 @@ export default {
             if (symbolValue.includes('XAU') || symbolValue.includes('XAG') || symbolValue.includes('XPT') || symbolValue.includes('XPD')) {
               category = 'Metais';
             } else {
-              category = 'Forex Majors';
+              // Listas de categorização de Forex
+              const minors = ['frxEURGBP', 'frxEURJPY', 'frxGBPJPY', 'frxAUDCAD', 'frxAUDJPY', 'frxCHFJPY', 'frxEURAUD', 'frxGBPAUD'];
+              const exotics = ['frxUSDMXN'];
+              
+              if (minors.includes(symbolValue)) {
+                category = 'Forex Minors';
+              } else if (exotics.includes(symbolValue)) {
+                category = 'Forex Exotics';
+              } else {
+                category = 'Forex Majors';
+              }
             }
           }
 
@@ -2560,6 +2590,7 @@ export default {
     getDefaultMarkets() {
       // Mercados padrão caso a API não retorne
       return [
+        // Índices Contínuos
         { value: 'R_10', label: 'Volatility 10 Index', category: 'Índices Contínuos' },
         { value: 'R_25', label: 'Volatility 25 Index', category: 'Índices Contínuos' },
         { value: 'R_50', label: 'Volatility 50 Index', category: 'Índices Contínuos' },
@@ -2570,6 +2601,36 @@ export default {
         { value: '1HZ50V', label: 'Volatility 50 (1s) Index', category: 'Índices Contínuos' },
         { value: '1HZ75V', label: 'Volatility 75 (1s) Index', category: 'Índices Contínuos' },
         { value: '1HZ100V', label: 'Volatility 100 (1s) Index', category: 'Índices Contínuos' },
+        
+        // Criptomoedas
+        { value: 'cryBTCUSD', label: 'BTC/USD (Bitcoin)', category: 'Criptomoedas' },
+        { value: 'cryETHUSD', label: 'ETH/USD (Ethereum)', category: 'Criptomoedas' },
+        
+        // Forex (Majors)
+        { value: 'frxEURUSD', label: 'EUR/USD (Euro / Dólar)', category: 'Forex Majors' },
+        { value: 'frxUSDJPY', label: 'USD/JPY (Dólar / Iene)', category: 'Forex Majors' },
+        { value: 'frxGBPUSD', label: 'GBP/USD (Libra / Dólar)', category: 'Forex Majors' },
+        { value: 'frxUSDCHF', label: 'USD/CHF (Dólar / Franco)', category: 'Forex Majors' },
+        { value: 'frxAUDUSD', label: 'AUD/USD (Dólar Australiano)', category: 'Forex Majors' },
+        { value: 'frxUSDCAD', label: 'USD/CAD (Dólar / Dólar Canadense)', category: 'Forex Majors' },
+        { value: 'frxNZDUSD', label: 'NZD/USD (Dólar Neozelandês)', category: 'Forex Majors' },
+        
+        // Forex (Minors/Exotics)
+        { value: 'frxEURGBP', label: 'EUR/GBP (Euro / Libra)', category: 'Forex Minors' },
+        { value: 'frxEURJPY', label: 'EUR/JPY (Euro / Iene)', category: 'Forex Minors' },
+        { value: 'frxGBPJPY', label: 'GBP/JPY (Libra / Iene)', category: 'Forex Minors' },
+        { value: 'frxAUDCAD', label: 'AUD/CAD (Dólar Australiano / Canadense)', category: 'Forex Minors' },
+        { value: 'frxAUDJPY', label: 'AUD/JPY (Dólar Australiano / Iene)', category: 'Forex Minors' },
+        { value: 'frxCHFJPY', label: 'CHF/JPY (Franco / Iene)', category: 'Forex Minors' },
+        { value: 'frxEURAUD', label: 'EUR/AUD (Euro / Dólar Australiano)', category: 'Forex Minors' },
+        { value: 'frxGBPAUD', label: 'GBP/AUD (Libra / Dólar Australiano)', category: 'Forex Minors' },
+        { value: 'frxUSDMXN', label: 'USD/MXN (Dólar / Peso Mexicano)', category: 'Forex Exotics' },
+        
+        // Metais
+        { value: 'frxXAUUSD', label: 'XAU/USD (Ouro / Dólar)', category: 'Metais' },
+        { value: 'frxXAGUSD', label: 'XAG/USD (Prata / Dólar)', category: 'Metais' },
+        { value: 'frxXPTUSD', label: 'XPT/USD (Platina / Dólar)', category: 'Metais' },
+        { value: 'frxXPDUSD', label: 'XPD/USD (Paládio / Dólar)', category: 'Metais' },
       ];
     },
   },

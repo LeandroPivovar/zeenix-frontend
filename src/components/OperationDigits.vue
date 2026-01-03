@@ -5,191 +5,177 @@
             <p>{{ loadingMessage }}</p>
         </div>
             
-        <div v-else class="digits-layout">
-            <!-- Top Section: Semáforo + Histórico -->
-            <div class="top-section">
-                    <!-- Card Semáforo -->
-                    <div id="semaphoreCard" class="semaphore-card semaphore-fade" :class="semaphoreStateClass">
-                        <div class="semaphore-header">
-                            <div class="semaphore-title-group">
-                                <i :class="['fas', semaphoreIcon, 'semaphore-icon']"></i>
-                                <div v-if="semaphoreState === 'AGUARDAR'" class="semaphore-warning-icon mobile-only">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                                <div class="semaphore-title-wrapper">
-                                    <h3 class="semaphore-title">{{ semaphoreTitle }}</h3>
-                                    <div v-if="semaphoreState === 'AGUARDAR'" class="semaphore-reason mobile-only">{{ semaphoreReason }}</div>
-                                </div>
-                            </div>
-                            <div class="relative group">
-                                <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help"></i>
-                                <div class="tooltip-content">
-                                    <div class="tooltip-title">🔵 Como Analisar?</div>
-                                    <div class="tooltip-text">
-                                        Este é o indicador PRINCIPAL. Verde = sinal claro para operar com a estratégia mostrada. Amarelo = aguarde, sem padrão claro ainda. Vermelho = NÃO opere, condições desfavoráveis (alta volatilidade ou sinais contraditórios).<br><br>
-                                        <strong>Exemplo:</strong> Verde mostrando "MATCHES 7, Confiança 78%" = Entre na plataforma Deriv e faça uma operação Matches no dígito 7 por 5 ticks.
+        <div class="digits-layout">
+            <!-- Seção: Porcentagem de frequência de dígitos -->
+            <div class="frequency-unified-card-wrapper">
+                <div class="frequency-unified-card bg-[#000000] border border-white/5 rounded-xl p-8 shadow-2xl">
+                    <h3 class="frequency-section-title text-base font-medium text-white/90 mb-10 text-center tracking-wide">Porcentagem de frequência de dígitos</h3>
+                    <div class="frequency-charts-grid grid grid-cols-1 md:grid-cols-3 gap-16">
+                        <!-- Últimos 25 Dígitos -->
+                        <div class="frequency-chart-container flex flex-col items-center">
+                            <h4 class="frequency-chart-subtitle text-xs font-normal text-white/40 mb-6 tracking-wider">Últimos 25 Dígitos</h4>
+                            <div class="histogram-container flex items-end w-full max-w-[280px]">
+                                <div v-for="item in frequencies25" :key="'freq25-'+item.digit" class="histogram-column flex flex-col items-center flex-1">
+                                    <div class="histogram-bar-wrapper w-full h-[120px] flex items-end justify-center">
+                                        <div 
+                                            class="histogram-bar w-full transition-all duration-700 ease-out relative" 
+                                            :class="getHistogramBarClass(item.digit, item.percentage, frequencies25)"
+                                            :style="{ height: (item.percentage * 4) + 'px' }"
+                                        >
+                                            <div class="histogram-percentage text-[10px] font-bold text-white absolute bottom-full left-1/2 transform -translate-x-1/2">{{ Math.round(item.percentage) }}%</div>
+                                        </div>
                                     </div>
+                                    <div class="histogram-digit text-xs font-bold text-white mt-2">{{ item.digit }}</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="semaphore-reason-box">
-                            <div class="semaphore-reason-wrapper">
-                                <div v-if="semaphoreState === 'AGUARDAR'" class="semaphore-warning-icon mobile-only">
-                                    <i class="fas fa-exclamation-triangle"></i>
-                                </div>
-                            <div class="semaphore-reason">{{ semaphoreReason }}</div>
-                            </div>
-                        </div>
-                    </div>
 
-                    <!-- Card Histórico -->
-                    <div class="history-card">
-                        <div class="card-header-with-help">
-                            <h3 class="card-header">Histórico dos Últimos Dígitos</h3>
-                            <div class="relative group">
-                                <i class="far fa-question-circle text-sm text-[#0099FF] cursor-help opacity-80"></i>
-                                <div class="tooltip-content">
-                                    <div class="tooltip-title">🔵 Como Analisar?</div>
-                                    <div class="tooltip-text">
-                                        Mostra os últimos 20 dígitos recebidos em tempo real. O dígito destacado (azul maior) é o mais recente. Use para validar visualmente os padrões detectados e confirmar os dados do Heat Map.<br><br>
-                                        <strong>Exemplo:</strong> Se você vê 7-7-7-7 no histórico, confirma que há repetição consecutiva do dígito 7.
+                        <!-- Últimos 50 Dígitos -->
+                        <div class="frequency-chart-container flex flex-col items-center">
+                            <h4 class="frequency-chart-subtitle text-xs font-normal text-white/40 mb-6 tracking-wider">Últimos 50 Dígitos</h4>
+                            <div class="histogram-container flex items-end w-full max-w-[280px]">
+                                <div v-for="item in frequencies50" :key="'freq50-'+item.digit" class="histogram-column flex flex-col items-center flex-1">
+                                    <div class="histogram-bar-wrapper w-full h-[120px] flex items-end justify-center">
+                                        <div 
+                                            class="histogram-bar w-full transition-all duration-700 ease-out relative" 
+                                            :class="getHistogramBarClass(item.digit, item.percentage, frequencies50)"
+                                            :style="{ height: (item.percentage * 4) + 'px' }"
+                                        >
+                                            <div class="histogram-percentage text-[10px] font-bold text-white absolute bottom-full left-1/2 transform -translate-x-1/2">{{ Math.round(item.percentage) }}%</div>
+                                        </div>
                                     </div>
+                                    <div class="histogram-digit text-xs font-bold text-white mt-2">{{ item.digit }}</div>
                                 </div>
                             </div>
                         </div>
-                        <div class="digit-history-grid">
-                            <div 
-                                v-for="(digit, index) in last20Digits" 
-                                :key="'hist-'+index" 
-                                :class="['digit-history-item', index === last20Digits.length - 1 ? 'digit-history-active' : '']"
-                            >
-                                {{ digit }}
+
+                        <!-- Últimos 100 Dígitos -->
+                        <div class="frequency-chart-container flex flex-col items-center">
+                            <h4 class="frequency-chart-subtitle text-xs font-normal text-white/40 mb-6 tracking-wider">Últimos 100 Dígitos</h4>
+                            <div class="histogram-container flex items-end w-full max-w-[280px]">
+                                <div v-for="item in frequencies100" :key="'freq100-'+item.digit" class="histogram-column flex flex-col items-center flex-1">
+                                    <div class="histogram-bar-wrapper w-full h-[120px] flex items-end justify-center">
+                                        <div 
+                                            class="histogram-bar w-full transition-all duration-700 ease-out relative" 
+                                            :class="getHistogramBarClass(item.digit, item.percentage, frequencies100)"
+                                            :style="{ height: (item.percentage * 4) + 'px' }"
+                                        >
+                                            <div class="histogram-percentage text-[10px] font-bold text-white absolute bottom-full left-1/2 transform -translate-x-1/2">{{ Math.round(item.percentage) }}%</div>
+                                        </div>
+                                    </div>
+                                    <div class="histogram-digit text-xs font-bold text-white mt-2">{{ item.digit }}</div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                </div>
             </div>
 
-            <!-- Trading Panel -->
-            <div class="trading-panel bg-zenix-card border border-zenix-border rounded-xl">
-                    <div class="pb-3 mb-5">
-                        <h3 class="text-base font-semibold text-zenix-text" style="text-align: left;">Negociação Manual — Dígitos</h3>
+            <!-- Sidebar Panel (Trading) -->
+            <div class="max-w-[400px] w-[400px] flex-shrink-0 bg-[#0D0D0D] border border-white/5 p-8 overflow-y-auto sidebar-panel rounded-xl trading-panel">
+                <div class="pb-8 mb-8 border-b border-white/5">
+                    <h2 class="text-xl font-black text-white text-left leading-tight tracking-wide">
+                        Painel de Negociação Manual
+                    </h2>
+                </div>
+                
+                <div class="trading-panel-content space-y-6 px-1">
+                    <!-- Mercado -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Mercado</label>
+                        <button 
+                            @click="openMarketModal"
+
+                            class="w-full bg-[#080808] border border-white/10 hover:border-zenix-green/50 rounded-xl px-5 py-4 text-sm text-white flex items-center justify-between transition-all font-medium group"
+                        >
+                            <span class="truncate">{{ selectedMarketLabel }}</span>
+                            <i class="fas fa-chevron-right text-[10px] text-white/20 group-hover:text-zenix-green transition-colors"></i>
+                        </button>
                     </div>
-                    <div class="trading-panel-content space-y-4">
-                        <div class="input-group">
-                            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-                                <i class="fas fa-chart-line text-zenix-green mr-2"></i>Mercado
-                            </label>
-                            <select v-model="symbol" @change="handleSymbolChange" :disabled="isLoadingSymbol" class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors">
-                                <optgroup label="Índices Contínuos">
-                                    <option v-for="market in marketsByCategory['Índices Contínuos']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                                <optgroup label="Criptomoedas">
-                                    <option v-for="market in marketsByCategory['Criptomoedas']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                                <optgroup label="Forex Majors">
-                                    <option v-for="market in marketsByCategory['Forex Majors']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                                <optgroup label="Forex Minors">
-                                    <option v-for="market in marketsByCategory['Forex Minors']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                                <optgroup label="Forex Exotics">
-                                    <option v-for="market in marketsByCategory['Forex Exotics']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                                <optgroup label="Metais">
-                                    <option v-for="market in marketsByCategory['Metais']" :key="market.value" :value="market.value">
-                                        {{ market.label }}
-                                    </option>
-                                </optgroup>
-                            </select>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-                                <i class="fas fa-exchange-alt text-zenix-green mr-2"></i>Tipo de Operação
-                            </label>
-                            <select v-model="digitType" class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors" :disabled="isTrading" @change="onDigitTypeChange">
-                                <option value="DIGITMATCH">Dígitos (Último dígito)</option>
-                            </select>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-                                <i class="fas fa-clock text-zenix-green mr-2"></i>Duração
-                            </label>
-                            <div class="flex gap-2">
-                                <select class="flex-1 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors">
-                                    <option>Ticks</option>
-                                </select>
-                                <input type="number" value="5" v-model.number="duration" class="w-20 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors" :disabled="isTrading" @input="subscribeToProposal" />
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="input-label">Previsão</label>
-                            <div class="prediction-buttons">
-                                <button class="prediction-btn">Acima</button>
-                                <button class="prediction-btn">Abaixo</button>
-                            </div>
-                        </div>
-
-                        <div class="input-group">
-                            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-                                <i class="fas fa-dollar-sign text-zenix-green mr-2"></i>Valor de entrada
-                            </label>
-                            <input 
-                                type="number" 
-                                placeholder="Ex: 1.00, 2.50..." 
-                                v-model.number="orderValue" 
-                                class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text placeholder:text-[#DFDFDF40] focus:outline-none focus:border-zenix-green transition-colors" 
-                                :disabled="isTrading" 
-                                @input="subscribeToProposal"
-                            />
-                        </div>
-
-                        <div v-if="currentProposalPrice" class="bg-zenix-bg border border-zenix-border rounded-lg p-3">
-                            <div class="text-xs text-zenix-secondary mb-1">Preço de Compra:</div>
-                            <div class="text-base font-semibold text-zenix-text">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
-                        </div>
-
-                        <div v-if="realTimeProfit !== null && activeContract" class="bg-zenix-bg border rounded-lg p-3" :class="realTimeProfit > 0 ? 'border-zenix-green' : 'border-red-500'">
-                            <div class="text-xs text-zenix-secondary mb-1">P&L em Tempo Real:</div>
-                            <div class="text-base font-semibold" :class="realTimeProfit > 0 ? 'text-zenix-green' : 'text-red-500'">
-                                {{ displayCurrency }} {{ realTimeProfit > 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}
-                            </div>
-                        </div>
-
-                        <div class="trading-buttons">
-                            <button 
-                                v-if="!activeContract"
-                                @click="executeBuy" 
-                                class="btn-call" 
-                                :disabled="isTrading || !currentProposalId"
-                            >
-                                CALL
-                            </button>
-                            <button 
-                                v-if="!activeContract"
-                                @click="executeBuy" 
-                                class="btn-put" 
-                                :disabled="isTrading || !currentProposalId"
-                            >
-                                PUT
-                            </button>
-                        </div>
-
-                        <p v-if="tradeMessage" class="trade-message success">{{ tradeMessage }}</p>
-                        <p v-if="tradeError" class="trade-message error">{{ tradeError }}</p>
+                    
+                    <!-- Tipo de Negociação -->
+                    <div class="space-y-2">
+                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Tipo de Negociação</label>
+                        <button 
+                            @click="openTradeTypeModal"
+                            class="w-full bg-[#080808] border border-white/10 hover:border-zenix-green/50 rounded-xl px-5 py-4 text-sm text-white flex items-center justify-between transition-all font-medium group"
+                        >
+                            <span class="truncate">{{ selectedTradeTypeLabel }}</span>
+                            <i class="fas fa-chevron-right text-[10px] text-white/20 group-hover:text-zenix-green transition-colors"></i>
+                        </button>
                     </div>
+
+                    <!-- Previsão (Dígito) -->
+                    <div v-if="needsDigitBarrier">
+                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Previsão (Dígito)</label>
+                        <select v-model="digitBarrier" @change="subscribeToProposal" class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-medium appearance-none cursor-pointer">
+                            <option v-for="d in 10" :key="d-1" :value="(d-1).toString()">{{ d-1 }}</option>
+                        </select>
+                    </div>
+                    
+                    <!-- Duração -->
+                    <div>
+                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Duração (Ticks)</label>
+                        <input 
+                            type="number" 
+                            v-model.number="duration"
+                            min="1"
+                            max="10"
+                            class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
+                        />
+                    </div>
+                    
+                    <!-- Valor de Entrada -->
+                    <div>
+                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Valor de Entrada</label>
+                        <input 
+                            type="number" 
+                            step="0.01"
+                            v-model.number="orderValue"
+                            class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
+                            @input="subscribeToProposal"
+                        />
+                    </div>
+
+                    <!-- Preço de Compra e P&L -->
+                    <div class="space-y-3">
+                        <div v-if="currentProposalPrice" class="bg-[#080808] border border-white/5 rounded-xl p-4">
+                            <div class="text-xs font-bold text-white/40 mb-1 uppercase tracking-wider">Preço de Compra</div>
+                            <div class="text-lg font-black text-white">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
+                        </div>
+
+                        <div v-if="realTimeProfit !== null && activeContract" class="bg-[#080808] border border-white/5 rounded-xl p-4">
+                            <div class="text-xs font-bold text-white/40 mb-1 uppercase tracking-wider">P&L em Tempo Real</div>
+                            <div class="text-lg font-black" :class="realTimeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                                {{ displayCurrency }} {{ realTimeProfit >= 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Botões de Ação Dinâmicos -->
+                    <div class="grid gap-4 pt-2" :class="availableDirections.length > 1 ? 'grid-cols-2' : 'grid-cols-1'">
+                        <button 
+                            v-for="dir in availableDirections"
+                            :key="dir.value"
+                            @click="setDirectionAndBuy(dir.value)" 
+                            :disabled="isTrading || activeContract || (digitType === dir.value && !currentProposalId) || (digitType !== dir.value && isLoadingProposal)"
+                            :class="[
+                                dir.value.includes('DIFF') || dir.value.includes('PUT') || dir.value.includes('ODD') || dir.value.includes('UNDER') 
+                                    ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20 text-white' 
+                                    : 'bg-zenix-green hover:bg-zenix-green/90 shadow-zenix-green/20 text-black',
+                                { 'opacity-30 cursor-not-allowed': isTrading || activeContract || (digitType !== dir.value && isLoadingProposal) }
+                            ]"
+                            class="flex-1 font-black py-4 rounded-xl transition-all duration-300 shadow-lg uppercase tracking-widest text-sm"
+                        >
+                            {{ dir.label }}
+                        </button>
+                    </div>
+
+                    <div v-if="tradeMessage || tradeError" class="mt-4">
+                        <p v-if="tradeMessage" class="text-xs font-bold text-zenix-green text-center uppercase tracking-wider">{{ tradeMessage }}</p>
+                        <p v-if="tradeError" class="text-xs font-bold text-red-500 text-center uppercase tracking-wider">{{ tradeError }}</p>
+                    </div>
+                </div>
             </div>
 
             <!-- Main Content Grid -->
@@ -396,6 +382,71 @@
                     </div>
                 </div>
                 </div>
+
+                <!-- Signal Generator Card -->
+                <div class="signal-generator-wrapper-digits bg-[#0D0D0D] border border-white/5 p-8 rounded-2xl shadow-xl">
+                    <div class="flex items-center justify-between mb-8">
+                        <div class="flex items-center gap-4">
+                            <div class="w-14 h-14 rounded-full border border-zenix-green bg-zenix-green/10 flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+                                <i class="fas fa-bolt text-zenix-green text-xl"></i>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white tracking-tight text-left">Gerador de Sinais (Dígitos)</h3>
+                                <p class="text-sm text-white/40 font-medium text-left">Análise inteligente de frequências</p>
+                            </div>
+                        </div>
+                        <button 
+                            @click="toggleAnalysis"
+                            :disabled="!symbol"
+                            class="bg-zenix-green hover:bg-zenix-green/90 disabled:opacity-30 disabled:cursor-not-allowed text-black font-black px-8 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-zenix-green/20 uppercase tracking-widest text-xs flex items-center gap-2"
+                        >
+                            <i :class="isAnalyzing ? 'fas fa-stop' : 'fas fa-pencil-alt'"></i>
+                            <span>{{ isAnalyzing ? 'Parar' : 'Gerar Sinal' }}</span>
+                        </button>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i class="fas fa-clock text-white/40 text-xs"></i>
+                                <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Estado de Análise</span>
+                            </div>
+                            <div class="metric-body">
+                                <span v-if="isAnalyzing" class="text-sm text-zenix-green animate-pulse font-bold uppercase tracking-wider">Analisando Mercado...</span>
+                                <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">Aguardando geração...</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i class="fas fa-question-circle text-white/40 text-xs"></i>
+                                <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Estratégia Recomendada</span>
+                            </div>
+                            <div class="metric-body">
+                                <div v-if="aiRecommendation" class="flex items-center gap-2">
+                                    <i class="fas fa-bullseye text-zenix-green"></i>
+                                    <span class="text-sm font-black text-white uppercase tracking-wider">
+                                        {{ aiRecommendation.action }}
+                                    </span>
+                                </div>
+                                <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">Nenhum sinal gerado</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i class="fas fa-chart-bar text-white/40 text-xs"></i>
+                                <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Confiança</span>
+                            </div>
+                            <div class="metric-body text-left">
+                                <span v-if="aiRecommendation" class="text-xl font-black text-zenix-green">
+                                    {{ aiRecommendation.confidence }}%
+                                </span>
+                                <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Resultado da Operação -->
@@ -428,6 +479,109 @@
                 </div>
             </div>
         </div>
+
+        <!-- Market Selection Modal -->
+        <Teleport to="body">
+            <div 
+                v-if="showMarketModal" 
+                class="modal-overlay" 
+                @click.self="closeMarketModal"
+            >
+                <div class="modal-content categorized-modal">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Selecionar Mercado</h3>
+                        <button @click="closeMarketModal" class="modal-close-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="categories-grid">
+                            <div v-for="(markets, category) in marketsByCategory" :key="category" class="category-card">
+                                <div class="category-card-header">
+                                    <div class="category-icon-wrapper">
+                                        <svg v-if="category === 'Índices Contínuos'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <svg v-else-if="category === 'Criptomoedas'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="2.5"/>
+                                            <path d="M9 12H15M12 9V15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                                        </svg>
+                                        <svg v-else-if="category === 'Forex Majors' || category === 'Forex Minors' || category === 'Forex Exotics'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="2.5"/>
+                                            <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                                            <path d="M12 2V22" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                                        </svg>
+                                        <svg v-else-if="category === 'Metais'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M6 4L18 4L21 9L12 21L3 9L6 4Z" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M3 9H21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M12 21V9" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                        <i v-else class="fas fa-chart-line text-[#22C55E] text-lg"></i>
+                                    </div>
+                                    <h4 class="category-card-title">{{ category }}</h4>
+                                </div>
+                                <div class="category-items-list">
+                                    <button
+                                        v-for="market in markets"
+                                        :key="market.value"
+                                        @click="selectMarket(market.value)"
+                                        :class="['category-item-btn', { 'active': symbol === market.value }]"
+                                    >
+                                        {{ market.label }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
+
+        <!-- Trade Type Selection Modal -->
+        <Teleport to="body">
+            <div 
+                v-if="showTradeTypeModal" 
+                class="modal-overlay" 
+                @click.self="closeTradeTypeModal"
+            >
+                <div class="modal-content categorized-modal">
+                    <div class="modal-header">
+                        <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
+                        <button @click="closeTradeTypeModal" class="modal-close-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="categories-grid">
+                            <div v-for="category in digitTradeTypeCategories" :key="category.id" class="category-card">
+                                <div class="category-card-header">
+                                    <div class="category-icon-wrapper">
+                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M4 9H20" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M4 15H20" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M10 3L8 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                            <path d="M16 3L14 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                        </svg>
+                                    </div>
+                                    <h4 class="category-card-title">{{ category.label }}</h4>
+                                </div>
+                                <div class="category-items-list">
+                                    <button
+                                        v-for="item in category.items"
+                                        :key="item.value"
+                                        @click="selectTradeType(item)"
+                                        :class="['category-item-btn', { 'active': selectedTradeTypeGroup === item.value }]"
+                                    >
+                                        {{ item.label }}
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
@@ -450,6 +604,33 @@ export default {
     },
     data() {
         return {
+            showMarketModal: false,
+            showTradeTypeModal: false,
+            selectedTradeTypeGroup: 'digits_match_diff',
+            digitTradeTypeCategories: [
+                {
+                    id: 'digits',
+                    label: 'Dígitos',
+                    icon: 'fas fa-hashtag',
+                    items: [
+                        { value: 'digits_match_diff', label: 'Combina / Difere', directions: [
+                                { value: 'DIGITMATCH', label: 'Combina' },
+                                { value: 'DIGITDIFF', label: 'Difere' }
+                            ]
+                        },
+                        { value: 'digits_even_odd', label: 'Par / Ímpar', directions: [
+                                { value: 'DIGITEVEN', label: 'Par' },
+                                { value: 'DIGITODD', label: 'Ímpar' }
+                            ]
+                        },
+                        { value: 'digits_over_under', label: 'Superior / Inferior', directions: [
+                                { value: 'DIGITOVER', label: 'Superior' },
+                                { value: 'DIGITUNDER', label: 'Inferior' }
+                            ]
+                        }
+                    ]
+                }
+            ],
             ws: null,
             tickSubscriptionId: null,
             token: null,
@@ -457,6 +638,8 @@ export default {
             isConnecting: false,
             isAuthorized: false,
             isLoadingSymbol: false,
+            isLoadingProposal: false,
+            shouldAutoBuy: false,
             connectionError: '',
             tradeMessage: '',
             tradeError: '',
@@ -536,12 +719,41 @@ export default {
                 profit: 0,
                 buyPrice: 0,
                 sellPrice: 0,
-                direction: '',
                 barrier: null,
             },
+            isAnalyzing: false,
+            aiRecommendation: null,
+            analysisTimer: null,
         }
     },
     computed: {
+        selectedMarketLabel() {
+            const market = this.markets.find(m => m.value === this.symbol);
+            if (!market) {
+                for (const cat in this.marketsByCategory) {
+                    const m = this.marketsByCategory[cat].find(x => x.value === this.symbol);
+                    if (m) return m.label;
+                }
+            }
+            return market ? market.label : 'Volatility 100 Index';
+        },
+        selectedTradeTypeLabel() {
+            for (const cat of this.digitTradeTypeCategories) {
+                const item = cat.items.find(i => i.directions.some(d => d.value === this.digitType));
+                if (item) {
+                    const dir = item.directions.find(d => d.value === this.digitType);
+                    return `Dígitos: ${dir ? dir.label : item.label}`;
+                }
+            }
+            return 'Dígitos: Combina';
+        },
+        availableDirections() {
+            for (const cat of this.digitTradeTypeCategories) {
+                const item = cat.items.find(i => i.value === this.selectedTradeTypeGroup);
+                if (item) return item.directions;
+            }
+            return [];
+        },
         marketsByCategory() {
             const grouped = {};
             this.markets.forEach(market => {
@@ -594,10 +806,14 @@ export default {
                 const percentage = totalDigits > 0 ? (count / totalDigits) * 100 : 0;
                 return {
                     digit: index,
-                    percentage: Math.round(percentage)
+                    count,
+                    percentage: Math.round(percentage * 10) / 10
                 };
             });
         },
+        frequencies25() { return this.getFrequenciesForCount(25); },
+        frequencies50() { return this.getFrequenciesForCount(50); },
+        frequencies100() { return this.getFrequenciesForCount(100); },
         currentRepetition() {
             if (this.digitFrequency.digits.length === 0) {
                 return 'Aguardando dados...';
@@ -881,6 +1097,94 @@ export default {
             };
             return labels[type] || type;
         },
+        getFrequenciesForCount(count) {
+            const digits = this.digitFrequency.digits.slice(-count);
+            const total = digits.length;
+            const counts = new Array(10).fill(0);
+            
+            digits.forEach(d => {
+                if (d >= 0 && d <= 9) counts[d]++;
+            });
+
+            return counts.map((c, i) => ({
+                digit: i,
+                count: c,
+                percentage: total > 0 ? (c / total) * 100 : 0
+            }));
+        },
+        toggleAnalysis() {
+            if (this.isAnalyzing) {
+                this.stopAnalysis();
+            } else {
+                this.startAnalysis();
+            }
+        },
+        startAnalysis() {
+            if (!this.symbol) return;
+            this.isAnalyzing = true;
+            this.aiRecommendation = null;
+            
+            setTimeout(() => {
+                this.generateSignal();
+            }, 1500);
+
+            this.analysisTimer = setInterval(() => {
+                this.generateSignal();
+            }, 30000);
+        },
+        stopAnalysis() {
+            this.isAnalyzing = false;
+            if (this.analysisTimer) {
+                clearInterval(this.analysisTimer);
+                this.analysisTimer = null;
+            }
+            this.aiRecommendation = null;
+        },
+        generateSignal() {
+            if (!this.isAnalyzing) return;
+
+            const ticks = this.digitFrequency.digits.slice(-100);
+            if (ticks.length < 20) return;
+
+            const freq = new Array(10).fill(0);
+            ticks.forEach(d => {
+                freq[d]++;
+            });
+
+            let minFreq = 101;
+            let recommendedDigit = 0;
+            freq.forEach((f, i) => {
+                if (f < minFreq) {
+                    minFreq = f;
+                    recommendedDigit = i;
+                }
+            });
+
+            const avgFreq = ticks.length / 10;
+            const disparity = (avgFreq - minFreq) / avgFreq;
+            const confidence = Math.min(Math.round(65 + (disparity * 50)), 98);
+
+            this.aiRecommendation = {
+                action: `MATCH ${recommendedDigit}`,
+                confidence: confidence
+            };
+        },
+        getHistogramBarClass(digit, percentage, frequencies) {
+            if (!frequencies || frequencies.length === 0) return '';
+            
+            // Encontrar max e min baseados na porcentagem
+            let max = -1;
+            let min = 101;
+            
+            frequencies.forEach(f => {
+                if (f.percentage > max) max = f.percentage;
+                if (f.percentage < min) min = f.percentage;
+            });
+
+            if (percentage === max && max > min) return 'bar-rank-highest';
+            if (percentage === min && min < max) return 'bar-rank-lowest';
+            return 'bar-rank-normal';
+        },
         getFrequencyClass(digit, percentage) {
             if (percentage > 15) return 'status-green';
             if (percentage > 10) return 'status-yellow';
@@ -930,8 +1234,7 @@ export default {
                         this.send({ authorize: this.token });
                     } else {
                         this.connectionError = 'Erro ao autorizar conexão. Reconectando automaticamente...';
-                        // Comentado - desabilita reconexão automática para evitar loop
-                        // this.scheduleRetry();
+                        this.scheduleRetry();
                     }
                 }, 50);
             };
@@ -950,15 +1253,13 @@ export default {
                 this.connectionError = 'Erro na conexão com a Deriv. Reconectando automaticamente...';
                 this.isConnecting = false;
                 this.isAuthorized = false;
-                // Comentado - desabilita reconexão automática para evitar loop
-                // this.scheduleRetry();
+                this.scheduleRetry();
             };
 
             this.ws.onclose = () => {
                 if (!this.isConnecting) {
                     this.connectionError = 'Conexão com a Deriv encerrada. Reconectando automaticamente...';
-                    // Comentado - desabilita reconexão automática para evitar loop
-                    // this.scheduleRetry();
+                    this.scheduleRetry();
                 }
                 this.isConnecting = false;
                 this.isAuthorized = false;
@@ -1028,6 +1329,46 @@ export default {
             setTimeout(() => {
                 this.subscribeToProposal();
             }, 500);
+        },
+        openMarketModal() {
+            console.log('[OperationDigits] openMarketModal chamado, showMarketModal:', this.showMarketModal);
+            this.showMarketModal = true;
+            console.log('[OperationDigits] showMarketModal após set:', this.showMarketModal);
+        },
+        closeMarketModal() {
+            this.showMarketModal = false;
+        },
+        selectMarket(symbol) {
+            this.symbol = symbol;
+            this.handleSymbolChange();
+            this.closeMarketModal();
+        },
+        openTradeTypeModal() {
+            this.showTradeTypeModal = true;
+        },
+        closeTradeTypeModal() {
+            this.showTradeTypeModal = false;
+        },
+        selectTradeType(item) {
+            this.selectedTradeTypeGroup = item.value;
+            if (item.directions && item.directions.length > 0) {
+                // Seleciona a primeira direção como padrão (ex: DIGITMATCH)
+                this.digitType = item.directions[0].value;
+                this.onDigitTypeChange();
+            }
+            this.closeTradeTypeModal();
+        },
+        setDirectionAndBuy(dirValue) {
+            if (this.isTrading || this.activeContract) return;
+
+            if (this.digitType === dirValue && this.currentProposalId) {
+                this.executeBuy();
+            } else {
+                this.digitType = dirValue;
+                this.isLoadingProposal = true;
+                this.shouldAutoBuy = true;
+                this.subscribeToProposal();
+            }
         },
         handleDerivError(error) {
             const message = error?.message || 'Erro desconhecido na Deriv';
@@ -1181,6 +1522,7 @@ export default {
             }
             
             console.log('[OperationDigits] Subscribing to proposal:', JSON.stringify(payload, null, 2));
+            this.isLoadingProposal = true;
             this.send(payload);
         },
         unsubscribeFromProposal() {
@@ -1202,6 +1544,12 @@ export default {
             
             this.currentProposalId = proposal.id;
             this.currentProposalPrice = Number(proposal.ask_price);
+            this.isLoadingProposal = false;
+            
+            if (this.shouldAutoBuy && this.currentProposalId) {
+                this.shouldAutoBuy = false;
+                this.executeBuy();
+            }
             
             if (msg.subscription?.id) {
                 this.proposalSubscriptionId = msg.subscription.id;
@@ -1395,6 +1743,14 @@ export default {
             
             this.ws.send(JSON.stringify(payload));
         },
+        simulateInitialData() {
+            console.log('[OperationDigits] Simulando histórico inicial para demonstração');
+            const simulatedDigits = [];
+            for (let i = 0; i < 100; i++) {
+                simulatedDigits.push(Math.floor(Math.random() * 10));
+            }
+            this.digitFrequency.digits = simulatedDigits;
+        },
     },
     mounted() {
         console.log('[OperationDigits] Componente montado');
@@ -1402,6 +1758,7 @@ export default {
             this.orderValue = Number(this.orderConfig.value);
         }
         this.initConnection();
+        this.simulateInitialData();
     },
     beforeUnmount() {
         console.log('[OperationDigits] Componente sendo desmontado');
