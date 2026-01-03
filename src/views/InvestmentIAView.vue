@@ -159,6 +159,7 @@
                                 </label>
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
                                     <option value="orion">IA Orion</option>
+                                    <option value="apollo">IA Apollo</option>
                                     <option value="atlas">IA ATLAS</option>
                                     <option value="titan">IA TITAN</option>
                                     <option value="trinity">IA Trinity</option>
@@ -484,6 +485,10 @@ export default {
                 'orion': 'Orion',
                 'atlas': 'ATLAS',
                 'titan': 'TITAN',
+                'orion': 'Orion',
+                'apollo': 'Apollo',
+                'atlas': 'ATLAS',
+                'titan': 'TITAN',
                 'trinity': 'Trinity'
             };
             return strategyNames[this.selectedStrategy] || 'Orion';
@@ -532,6 +537,10 @@ export default {
         strategyDescription() {
             const descriptions = {
                 'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
+                'atlas': 'Alta Frequência • Volume Massivo • Lucro no Volume',
+                'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida',
+                'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
+                'apollo': 'Martingale Inteligente • Proteção de Lucro • Recuperação Otimizada',
                 'atlas': 'Alta Frequência • Volume Massivo • Lucro no Volume',
                 'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida',
                 'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes'
