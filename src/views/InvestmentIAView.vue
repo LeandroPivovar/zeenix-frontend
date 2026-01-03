@@ -159,6 +159,7 @@
                                 </label>
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
                                     <option value="orion">IA Orion</option>
+                                    <option value="nexus">IA NEXUS</option>
                                     <option value="apollo">IA Apollo</option>
                                     <option value="atlas">IA ATLAS</option>
                                     <option value="titan">IA TITAN</option>
@@ -483,6 +484,7 @@ export default {
         selectedStrategyName() {
             const strategyNames = {
                 'orion': 'Orion',
+                'nexus': 'NEXUS',
                 'apollo': 'Apollo',
                 'atlas': 'ATLAS',
                 'titan': 'TITAN',
@@ -534,6 +536,7 @@ export default {
         strategyDescription() {
             const descriptions = {
                 'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
+                'nexus': 'Price Action Sniper • Barreira Dinâmica • Assertividade Máxima',
                 'apollo': 'Martingale Inteligente • Proteção de Lucro • Recuperação Otimizada',
                 'atlas': 'Alta Frequência • Volume Massivo • Lucro no Volume',
                 'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida',

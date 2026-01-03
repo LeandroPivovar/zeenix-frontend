@@ -988,6 +988,13 @@ export default {
             const isTitan = this.sessionConfig && this.sessionConfig.strategy && 
                            this.sessionConfig.strategy.toLowerCase() === 'titan';
             
+            // ✅ Verificar se é NEXUS baseado na configuração da sessão
+            const isNexus = this.sessionConfig && this.sessionConfig.strategy && 
+                           this.sessionConfig.strategy.toLowerCase() === 'nexus';
+            
+            // Se NEXUS está ativa
+            if (isNexus) return 'IA NEXUS';
+            
             // Se TITAN está ativa
             if (isTitan) return 'IA TITAN';
             
@@ -1007,6 +1014,13 @@ export default {
             const isTitan = this.sessionConfig && this.sessionConfig.strategy && 
                            this.sessionConfig.strategy.toLowerCase() === 'titan';
             if (isTitan) {
+                return 'Volatility 100 Index';
+            }
+            
+            // ✅ Se NEXUS está ativa, retornar Volatility 100 Index
+            const isNexus = this.sessionConfig && this.sessionConfig.strategy && 
+                           this.sessionConfig.strategy.toLowerCase() === 'nexus';
+            if (isNexus) {
                 return 'Volatility 100 Index';
             }
             
@@ -1056,7 +1070,8 @@ export default {
             const descriptions = {
                 'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
                 'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes',
-                'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida'
+                'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida',
+                'nexus': 'Price Action Sniper • Barreira Dinâmica • Assertividade Máxima'
             };
             return descriptions[strategy.toLowerCase()] || descriptions.orion;
         },
