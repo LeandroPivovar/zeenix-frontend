@@ -4,8 +4,7 @@
             <h3 class="card-title">
                 Selecionar Trader
                 <TooltipsCopyTraders position="right">
-                    <h4>Trader</h4>
-                    <p >Mostra o Trader Mestre atualmente selecionado. As operações dele serão replicadas automaticamente após a ativação do Copy.</p>
+                    <p>Mostra o Trader Mestre atualmente selecionado. As operações dele serão replicadas automaticamente após a ativação do Copy.</p>
                 </TooltipsCopyTraders>
             </h3>
             
@@ -28,11 +27,11 @@
                     <div class="empty-icon">
                         <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
                             <circle cx="25" cy="25" r="25" fill="#2a2a2a"/>
-                            <g fill="#22C55E">
+                            <g fill="#22C55E" transform="translate(-3, 0)">
                                 <circle cx="25" cy="18" r="6"/>
                                 <path d="M15 35c0-5.5 4.5-10 10-10s10 4.5 10 10" stroke="#22C55E" stroke-width="2" fill=""/>
-                                <line x1="32" y1="20" x2="38" y2="20" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
-                                <line x1="35" y1="17" x2="35" y2="23" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                                <line x1="37" y1="20" x2="43" y2="20" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                                <line x1="40" y1="17" x2="40" y2="23" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
                             </g>
                         </svg>
                     </div>
@@ -68,15 +67,8 @@
                 <label class="form-label">
                     Tipo de Replicação
                     <TooltipsCopyTraders position="center">
-                        <div class="section-title">Proporção (%)</div>
-                        <p>Replica a mesma porcentagem de risco usada pelo Trader Mestre.</p>
-                        <p class="example">Exemplo: Se o mestre entrar com 2% do saldo dele, você também entra com 2% do seu saldo.</p>
-                        <p class="caution">Recomendado para contas com saldos diferentes do trader.</p>
-                        
-                        <div class="section-title">Valor Fixo ($)</div>
-                        <p>Replica exatamente o mesmo valor financeiro do Trader Mestre.</p>
-                        <p class="example">Exemplo: Se o mestre entrar com $5, sua conta também entra com $5.</p>
-                        <p class="caution">Recomendado para contas com saldo similar ao trader.</p>
+                        <p><strong>Proporção (%):</strong> Replica a mesma porcentagem de risco usada pelo Trader Mestre. Exemplo: Se o mestre entrar com 2% do saldo dele, você também entra com 2% do seu saldo.</p>
+                        <p><strong>Valor Fixo ($):</strong> Replica exatamente o mesmo valor financeiro do Trader Mestre. Exemplo: Se o mestre entrar com $5, sua conta também entra com $5.</p>
                     </TooltipsCopyTraders>
                 </label>
                 <div class="allocation-buttons-group">
@@ -99,11 +91,7 @@
                 <label class="form-label">
                     Alavancagem
                     <TooltipsCopyTraders position="center">
-                        <h4>Alavancagem</h4>
-                        <p>A alavancagem multiplica proporcionalmente o valor das suas operações em relação ao Trader Mestre.</p>
-                        <p class="example">Exemplo:</p>
-                        <p class="">Se o trader abre $10 e sua alavancagem é 2x, sua entrada será $20.</p>
-                        <p class="">Use com cautela — aumenta tanto os ganhos quanto as perdas.</p>
+                        <p>A alavancagem multiplica proporcionalmente o valor das suas operações em relação ao Trader Mestre. Use com cautela, pois aumenta tanto os ganhos quanto as perdas.</p>
                     </TooltipsCopyTraders>
                 </label>
                 <select v-model="leverage">
@@ -117,12 +105,9 @@
             <div class="profit-loss-group">
                 <div class="form-group">
                     <label class="form-label">
-                        Stop Loss
+                        Limite de perda
                         <TooltipsCopyTraders position="center">
-                            <h4>Stop Loss</h4>
-                            <p>Limite máximo de perda permitido dentro do Copy.</p>
-                            <p>Ao atingir esse valor, o Copy pausa automaticamente para proteger o saldo.</p>
-                            <p class="highlight-green">Recomendado: manter sempre configurado.</p>
+                            <p>Limite máximo de perda permitido dentro do Copy. Ao atingir esse valor, o Copy pausa automaticamente para proteger o saldo.</p>
                         </TooltipsCopyTraders>
                     </label>
                     <input type="number" v-model.number="stopLoss" step="0.01" min="0" placeholder="250">
@@ -130,11 +115,9 @@
 
                 <div class="form-group">
                     <label class="form-label">
-                        Take Profit
+                        Alvo de lucro
                         <TooltipsCopyTraders>
-                            <h4>Take Profit</h4>
-                            <p>Meta de lucro para encerrar o Copy automaticamente.</p>
-                            <p>Quando este valor é alcançado, o sistema pausa as operações para preservar o ganho do dia.</p>
+                            <p>Meta de lucro para encerrar o Copy automaticamente. Quando este valor é alcançado, o sistema pausa as operações para preservar o ganho do dia.</p>
                         </TooltipsCopyTraders>
                     </label>
                     <input type="number" v-model.number="takeProfit" step="0.01" min="0" placeholder="500">
@@ -146,10 +129,7 @@
                     <h4>
                         Stop Loss Blindado
                         <TooltipsCopyTraders position="center">
-                            <h4>Stop Loss Blindado</h4>
-                            <p>Proteção avançada contra séries de perdas consecutivas.</p>
-                            <p>Mesmo que o Trader Mestre continue operando, sua conta é bloqueada ao detectar comportamento arriscado.</p>
-                            <p class="highlight-green">Ideal para momentos de alta volatilidade.</p>
+                            <p>Protege o lucro automaticamente. Quando 40% do alvo é alcançado, a proteção é ativada, garantindo 50% do lucro total, mesmo em caso de reversão do mercado.</p>
                         </TooltipsCopyTraders>
                     </h4>
                     <p>Protege contra operações consecutivas fora do padrão</p>
@@ -168,7 +148,6 @@
                 <span class="label">
                     Trader
                     <TooltipsCopyTraders position="left">
-                        <h4>Trader</h4>
                         <p>Mostra o Trader Mestre atualmente selecionado.</p>
                     </TooltipsCopyTraders>
                 </span>
@@ -179,7 +158,6 @@
                 <span class="label">
                     Alocação
                     <TooltipsCopyTraders position="left">
-                        <h4>Alocação</h4>
                         <p>Indica se você está copiando em Porcentagem (%) ou Valor Fixo ($). Isso afeta diretamente o valor das entradas copiadas na sua conta.</p>
                     </TooltipsCopyTraders>
                 </span>
@@ -190,10 +168,7 @@
                 <span class="label">
                     Base de Replicação
                     <TooltipsCopyTraders position="left">
-                        <h4>Base de Replicação</h4>
                         <p>Como o sistema irá replicar as operações do trader.</p>
-                        <p><strong>Proporção:</strong> Mesma % do saldo</p>
-                        <p><strong>Valor Fixo:</strong> Mesmo valor exato</p>
                     </TooltipsCopyTraders>
                 </span>
                 <span class="value">
@@ -205,7 +180,6 @@
                 <span class="label">
                     Alavancagem
                     <TooltipsCopyTraders position="left">
-                        <h4>Alavancagem</h4>
                         <p>A alavancagem multiplica proporcionalmente o valor das suas operações em relação ao Trader Mestre.</p>
                     </TooltipsCopyTraders>
                 </span>
@@ -215,9 +189,8 @@
             <div class="form-group">
                 <div class="summary-item">
                     <span class="label">
-                        Stop Loss
+                        Limite de perda
                         <TooltipsCopyTraders position="left">
-                            <h4>Stop Loss</h4>
                             <p>Valor máximo de perda permitido antes do Copy encerrar as operações automaticamente.</p>
                         </TooltipsCopyTraders>
                     </span>
@@ -227,9 +200,8 @@
 
             <div class="summary-item">
                 <span class="label">
-                    Take Profit
+                    Alvo de lucro
                     <TooltipsCopyTraders position="left">
-                        <h4>Take Profit</h4>
                         <p>Meta diária de lucro. Quando alcançada, o Copy é pausado para garantir o ganho.</p>
                     </TooltipsCopyTraders>
                 </span>
@@ -238,9 +210,8 @@
 
             <div class="summary-item">
                 <span class="label">
-                    Proteção
+                    Stop Loss Blindado
                     <TooltipsCopyTraders position="left"> 
-                        <h4>Proteção</h4>
                         <p>O Stop Loss Blindado protege contra perdas consecutivas.</p>
                     </TooltipsCopyTraders>
                 </span>
@@ -534,14 +505,14 @@ export default {
     border-bottom: 1px solid #222;
 }
 .card-title {
-    font-size: 16px;
+    font-size: 0.875rem;
     font-weight: 600;
-    margin-bottom: 20px;
+    color: #DFDFDF;
+    margin-bottom: 1.25rem;
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: 8px;
-    text-transform: capitalize;
 }
 
 /* --- Form Elements --- */
@@ -633,10 +604,10 @@ select:focus, input[type="text"]:focus, input[type="number"]:focus {
 .form-label {
     display: flex;
     align-items: center;
-    gap: 6px;
-    font-size: 14px;
-    color: #aaa;
-    margin-bottom: 8px;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: #A1A1A1;
+    margin-bottom: 0.5rem;
 }
 
 /* NOVO ESTILO PARA BOTÕES DE ALOCAÇÃO SEPARADOS */
@@ -677,7 +648,7 @@ select:focus, input[type="text"]:focus, input[type="number"]:focus {
 .profit-loss-group {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 0;
 }
 /* Estilo para a mensagem de alocação padrão (REMOVIDA) */
 /* .allocation-info-message {
@@ -742,19 +713,21 @@ select:focus, input[type="text"]:focus, input[type="number"]:focus {
 }
 
 .toggle-info h4 {
-    font-size: 14px;
+    font-size: 0.875rem;
     font-weight: 500;
+    color: #A1A1A1;
     margin-bottom: 4px;
     display: flex;
     align-items: center;
     gap: 6px;
 }
 
-.toggle-info p {
-    font-size: 12px;
-    color: #666;
+.toggle-info > p {
+    font-size: 0.75rem;
+    color: #7A7A7A;
     width: 100%;
     max-width: 200px;
+    margin: 0;
 }
 
 .toggle {

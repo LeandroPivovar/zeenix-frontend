@@ -1,5 +1,6 @@
 <template>
-	<div class="layout-content-agent-autonomo">
+	<Teleport to="#master-trader-portal-target" :disabled="!shouldTeleport">
+		<div class="layout-content-agent-autonomo">
 		<div class="agent-top">
 			<div class="agent-header">
 				<div class="agent-status">
@@ -300,7 +301,8 @@
 				</div>
 			</div>
 		</div>
-	</div>
+		</div>
+	</Teleport>
 </template>
 
 <script>
@@ -356,6 +358,10 @@
 			tradeHistory: {
 				type: Array,
 				default: () => []
+			},
+			shouldTeleport: {
+				type: Boolean,
+				default: false
 			}
 		},
 		emits: ['pausarAgente'],
