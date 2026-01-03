@@ -219,9 +219,7 @@
 					</div>
 				</div>
 				<div id="contentHistorico" :class="['history-content', { hidden: abaAtiva !== 'historico' }]">
-					<div class="history-header">
-						<h3>Histórico de Operações ({{ historicoOperacoesFiltradas.length }})</h3>
-					</div>
+
 					<!-- Título e subtítulo mobile -->
 					<div class="mobile-history-header">
 						<h3 class="mobile-history-title">Histórico de Operações</h3>
