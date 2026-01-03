@@ -159,6 +159,7 @@
                                 </label>
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
                                     <option value="orion">IA Orion</option>
+                                    <option value="titan" selected>🛡️ IA TITAN Master (Persistência)</option>
                                     <option value="trinity">IA Trinity</option>
                                     <option value="atlas">IA Atlas v2.0 - Extrema Alta Frequência</option>
                                     <option value="apollo">☀️ IA Apollo v3</option>
@@ -482,6 +483,7 @@ export default {
         selectedStrategyName() {
             const strategyNames = {
                 'orion': 'Orion',
+                'titan': 'TITAN Master',
                 'trinity': 'Trinity',
                 'atlas': 'Atlas v2.0'
             };
@@ -531,6 +533,7 @@ export default {
         strategyDescription() {
             const descriptions = {
                 'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
+                'titan': '🛡️ Persistência Inabalável • Defesa Automática • Especialista em Recuperação',
                 'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes',
                 'atlas': 'Extrema alta frequência • 3.000-8.000 ops/dia • Volume massivo • Recuperação imediata',
                 'apollo': '☀️ Martingale inteligente • Over 5→6→7→8 • Gestão de risco avançada • Pouso suave e trailing stop'
