@@ -38,10 +38,10 @@
                 <button
                   @click="setZoomPeriod(3)"
                   :class="[
-                    'px-2 py-1.5 text-xs font-medium transition-all duration-200',
-                    zoomPeriod === 3 
-                      ? 'bg-zenix-green text-black' 
-                      : 'bg-zenix-bg text-zenix-text hover:bg-zenix-border'
+                    'px-3 py-1.5 text-xs font-medium transition-all duration-200 rounded-md',
+                    zoomPeriod === 3
+                      ? 'bg-zenix-green text-black'
+                      : 'bg-[#151515] text-zenix-text hover:bg-zenix-border'
                   ]"
                   title="Zoom 3 minutos"
                 >
@@ -68,152 +68,171 @@
           </div>
         </div>
         
-        <!-- Signal Area -->
-        <div class="border-t-2 bg-gradient-to-b from-[#101010] to-[#0E0E0E] px-6 py-4 rounded-xl shadow-[0_-2px_12px_rgba(34,197,94,0.08)]">
-          <!-- Desktop Header -->
-          <div class="flex items-center justify-between mb-3 desktop-header">
-            <div class="flex items-center gap-2">
-              <i class="far fa-signal text-[11px] text-zenix-green"></i>
-              <span class="text-base font-semibold text-zenix-text" style="text-align: left;">Sinal Gerado</span>
+        <!-- Signal Generator Card -->
+        <div class="bg-[#0D0D0D] border border-white/5 p-6 rounded-2xl signal-area-card">
+          <!-- Header -->
+          <div class="flex items-center justify-between mb-8">
+            <div class="flex items-center gap-4">
+              <div class="w-14 h-14 rounded-full border border-zenix-green bg-zenix-green/10 flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.2)]">
+                <i class="fas fa-bolt text-zenix-green text-xl"></i>
+              </div>
+              <div>
+                <h3 class="text-xl font-bold text-white tracking-tight text-left">Gerador de Sinais</h3>
+                <p class="text-sm text-white/40 font-medium text-left">Análise automática de padrões</p>
+              </div>
             </div>
             <button 
               @click="toggleAnalysis"
               :disabled="!symbol"
-              class="inline-flex items-center gap-2 px-4 py-2 bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold rounded-lg text-xs transition-all duration-300 shadow-[0_0_12px_rgba(34,197,94,0.3)] hover:shadow-[0_0_16px_rgba(34,197,94,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
+              class="btn-gerar-sinal"
             >
-              <i :class="isAnalyzing ? 'fas fa-stop' : 'far fa-chart-line text-[9px]'"></i>
-              <span>{{ isAnalyzing ? 'Parar Análise' : 'Iniciar Análise do Gráfico' }}</span>
+              <i :class="isAnalyzing ? 'fas fa-stop' : 'fas fa-pencil-alt'"></i>
+              <span>{{ isAnalyzing ? 'Parar' : 'Gerar Sinal' }}</span>
             </button>
           </div>
-          <!-- Mobile Header -->
-          <div class="mobile-header-signal">
-            <h3 class="mobile-signal-title">Gerador de Sinais</h3>
-            <p class="mobile-signal-subtitle">Análise automática de padrões</p>
-          </div>
-          <div id="signalArea" class="min-h-[80px]">
-            <!-- Signal content -->
-            <div v-if="aiRecommendation" class="signal-content-card">
-              <div class="signal-content">
-                <div class="signal-header">
-                  <div class="signal-action" :class="aiRecommendation.action === 'CALL' ? 'signal-call' : 'signal-put'">
-                    <i :class="aiRecommendation.action === 'CALL' ? 'fas fa-arrow-up' : 'fas fa-arrow-down'"></i>
-                    <span class="signal-action-text">{{ aiRecommendation.action === 'CALL' ? 'COMPRA (CALL)' : 'VENDA (PUT)' }}</span>
-                  </div>
-                  <div class="signal-confidence">
-                    <span class="confidence-label">Confiança:</span>
-                    <span class="confidence-value" :class="confidenceClass">
-                      {{ confidenceValue }}%
-                    </span>
-                  </div>
+
+          <!-- Metrics Grid -->
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <!-- Estado de Análise -->
+            <div class="metric-signal-card">
+              <div class="metric-signal-header">
+                <i class="fas fa-clock text-white/60 text-sm"></i>
+                <span class="text-sm font-bold text-white/90">Estado de Análise</span>
+              </div>
+              <div class="metric-signal-body">
+                <span v-if="isAnalyzing" class="text-sm text-zenix-green animate-pulse font-medium">Analisando Mercado...</span>
+                <span v-else class="text-sm text-white/40 font-medium">Aguardando geração...</span>
+              </div>
+            </div>
+
+            <!-- Resultado do Sinal -->
+            <div class="metric-signal-card">
+              <div class="metric-signal-header">
+                <i class="fas fa-question-circle text-white/60 text-sm"></i>
+                <span class="text-sm font-bold text-white/90">Resultado do Sinal</span>
+              </div>
+              <div class="metric-signal-body">
+                <div v-if="aiRecommendation" class="flex items-center gap-2">
+                  <i :class="aiRecommendation.action === 'CALL' ? 'fas fa-arrow-up text-zenix-green' : 'fas fa-arrow-down text-red-500'"></i>
+                  <span :class="aiRecommendation.action === 'CALL' ? 'text-zenix-green' : 'text-red-500'" class="text-sm font-bold">
+                    {{ aiRecommendation.action === 'CALL' ? 'COMPRA (CALL)' : 'VENDA (PUT)' }}
+                  </span>
                 </div>
+                <span v-else class="text-sm text-white/40 font-medium">Nenhum sinal gerado</span>
               </div>
             </div>
-            <div v-else-if="isAnalyzing" class="signal-content-card mobile-signal-empty">
-              <div class="signal-loading signal-row-1">
-                <i class="fas fa-spinner fa-spin text-zenix-green mr-2"></i>
-                <span>Analisando gráfico...</span>
+
+            <!-- Confiança -->
+            <div class="metric-signal-card">
+              <div class="metric-signal-header">
+                <i class="fas fa-chart-bar text-white/60 text-sm"></i>
+                <span class="text-sm font-bold text-white/90">Confiança</span>
               </div>
-              <div class="signal-loading signal-row-2">
-                <i class="fas fa-spinner fa-spin text-zenix-green mr-2"></i>
-                <span>Analisando gráfico...</span>
-              </div>
-            </div>
-            <div v-else class="signal-content-card mobile-signal-empty">
-              <div class="signal-placeholder signal-row-1">
-                <span class="text-zenix-secondary"></span>
-              </div>
-              <div class="signal-placeholder signal-row-2">
-                <span class="text-zenix-secondary"></span>
+              <div class="metric-signal-body">
+                <span v-if="aiRecommendation" class="text-lg font-black text-zenix-green">
+                  {{ aiRecommendation.confidence }}%
+                </span>
+                <span v-else class="text-sm text-white/40 font-medium">-</span>
               </div>
             </div>
           </div>
-          <!-- Mobile button (duplicated for mobile positioning) -->
-          <button 
-            @click="toggleAnalysis"
-            :disabled="!symbol"
-            class="mobile-generate-button inline-flex items-center gap-2 px-4 py-2 bg-zenix-green hover:bg-zenix-green-hover text-black font-semibold rounded-lg text-xs transition-all duration-300 shadow-[0_0_12px_rgba(34,197,94,0.3)] hover:shadow-[0_0_16px_rgba(34,197,94,0.4)] disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            <i :class="isAnalyzing ? 'fas fa-stop' : 'far fa-chart-line text-[9px]'"></i>
-            <span>{{ isAnalyzing ? 'Parar Análise' : 'Iniciar Análise do Gráfico' }}</span>
-          </button>
         </div>
       </div>
 
       <!-- Sidebar Panel -->
-      <div class="max-w-[420px] w-[420px] flex-shrink-0 bg-zenix-card border border-zenix-border rounded-xl p-5 overflow-y-auto sidebar-panel">
-        <div class="pb-3 mb-5">
-          <h3 class="text-base font-semibold text-zenix-text" style="text-align: left;">Painel de Negociação Manual</h3>
+      <div class="max-w-[400px] w-[400px] flex-shrink-0 bg-[#0D0D0D] border border-white/5 p-8 overflow-y-auto sidebar-panel rounded-xl">
+        <div class="pb-8 mb-8 border-b border-white/5">
+          <h2 class="text-xl font-black text-white text-left leading-tight tracking-wide">
+            Painel de Negociação Manual
+          </h2>
         </div>
         
-        <div class="space-y-4">
-          <!-- Market Select -->
+        <div class="space-y-6 px-1">
+          <!-- Mercado -->
           <div>
-            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-              <i class="fas fa-chart-line text-zenix-green mr-2"></i>Mercado
-            </label>
+            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Mercado</label>
             <button
               @click="openMarketModal"
-              class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors text-left flex items-center justify-between"
+              class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
             >
-              <span>{{ selectedMarketLabel }}</span>
-              <i class="fas fa-chevron-down text-xs"></i>
+              <span class="font-medium">{{ selectedMarketLabel }}</span>
+              <i class="fas fa-chevron-down text-xs opacity-40"></i>
             </button>
           </div>
           
-          <!-- Trade Type Select -->
+          <!-- Tipo de Negociação -->
           <div>
-            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-              <i class="fas fa-exchange-alt text-zenix-green mr-2"></i>Tipo de Negociação
-            </label>
+            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Tipo de Negociação</label>
             <button
               @click="openTradeTypeModal"
-              class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors text-left flex items-center justify-between"
+              class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
             >
-              <span>{{ selectedTradeTypeLabel }}</span>
-              <i class="fas fa-chevron-down text-xs"></i>
+              <span class="font-medium">{{ selectedTradeTypeGroupLabel }}</span>
+              <i class="fas fa-chevron-down text-xs opacity-40"></i>
             </button>
           </div>
-          
-          <!-- Duration -->
-          <div>
-            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-              <i class="fas fa-clock text-zenix-green mr-2"></i>Duração
-            </label>
-            <div class="flex gap-2">
-              <select 
-                v-model="durationUnit"
-                class="flex-1 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
+
+          <!-- Seletor de Direção (Apenas se houver mais de uma direção) -->
+          <div v-if="availableDirections.length > 1">
+            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Direção</label>
+            <div class="flex p-1 bg-[#080808] border border-white/10 rounded-xl">
+              <button
+                v-for="dir in availableDirections"
+                :key="dir.value"
+                @click="tradeType = dir.value"
+                :class="[
+                  'flex-1 py-3 text-sm font-bold rounded-lg transition-all duration-300',
+                  tradeType === dir.value 
+                    ? 'bg-zenix-green text-black shadow-lg' 
+                    : 'text-white/40 hover:text-white'
+                ]"
               >
-                <option value="m">Minutos</option>
-                <option value="t">Ticks</option>
-              </select>
+                {{ dir.label }}
+              </button>
+            </div>
+          </div>
+          
+          <!-- Duração -->
+          <div>
+            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Duração</label>
+            <div class="flex gap-4">
+              <div class="relative flex-1">
+                <select 
+                  v-model="durationUnit"
+                  class="w-full appearance-none bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all cursor-pointer font-medium"
+                >
+                  <option value="m">Minutos</option>
+                  <option value="t">Ticks</option>
+                </select>
+                <i class="fas fa-chevron-down absolute right-4 top-1/2 -translate-y-1/2 text-xs opacity-40 pointer-events-none"></i>
+              </div>
               <input 
                 type="number" 
                 v-model.number="duration"
-                min="1"
-                max="365"
-                class="w-20 bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text focus:outline-none focus:border-zenix-green transition-colors"
+                class="w-24 bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white text-center focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
               />
             </div>
           </div>
           
-          <!-- Entry Value -->
+          <!-- Valor de Entrada -->
           <div>
-            <label class="block text-xs font-medium text-[#DFDFDF88] mb-2">
-              <i class="fas fa-dollar-sign text-zenix-green mr-2"></i>Valor de entrada
-            </label>
+            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Valor de Entrada</label>
             <input 
               type="number" 
               v-model.number="amount"
-              step="0.01" 
-              min="0.35"
-              max="10000"
-              placeholder="Ex: 1.00, 2.50..."
-              class="w-full bg-zenix-bg border border-zenix-border rounded-lg px-3 py-2.5 text-sm text-zenix-text placeholder:text-[#DFDFDF40] focus:outline-none focus:border-zenix-green transition-colors"
+              class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
             />
-            <div class="text-xs text-zenix-secondary mt-1">
-              Min: USD 0.35 | Max: USD 10000.00
-            </div>
+          </div>
+
+          <!-- Multiplicador -->
+          <div>
+            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Multiplicador</label>
+            <input 
+              type="number" 
+              v-model.number="multiplier"
+              placeholder="Ex: 50, 100, 150..."
+              class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white placeholder:text-white/20 focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
+            />
           </div>
           
           <!-- Card de Dígitos de Previsão (apenas para contratos de dígitos) -->
@@ -294,17 +313,18 @@
             </div>
           </div>
           
-          <!-- Action Button -->
+          <!-- Action Buttons -->
           <div class="space-y-3 pt-3">
-            <button 
-              v-if="!activeContract"
-              @click="executeBuy"
-              :disabled="!canExecuteOrder"
-              class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-semibold py-3.5 rounded-lg transition-colors text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              <i class="fas fa-arrow-up"></i>
-              Executar Ordem
-            </button>
+            <template v-if="!activeContract">
+              <button 
+                @click="executeBuy"
+                :disabled="!canExecuteOrder"
+                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-bold py-4 rounded-xl transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
+              >
+                <i class="fas fa-play text-xs"></i>
+                Executar Ordem
+              </button>
+            </template>
           </div>
           
           <!-- Error Message -->
@@ -328,7 +348,7 @@
         data-modal="market" 
         @click.self="closeMarketModal"
       >
-        <div class="modal-content">
+        <div class="modal-content categorized-modal">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Mercado</h3>
             <button @click="closeMarketModal" class="modal-close-btn">
@@ -336,19 +356,38 @@
             </button>
           </div>
           <div class="modal-body">
-            <div class="market-categories">
-              <div v-for="(markets, category) in marketsByCategory" :key="category" class="market-category">
-                <h4 class="category-title">{{ category }}</h4>
-                <div class="market-grid">
+            <div class="categories-grid">
+              <div v-for="(markets, category) in marketsByCategory" :key="category" class="category-card">
+                <div class="category-card-header">
+                  <div class="category-icon-wrapper">
+                    <svg v-if="category === 'Índices Contínuos'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <svg v-else-if="category === 'Criptomoedas'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="2.5"/>
+                      <path d="M9 12H15M12 9V15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                    <svg v-else-if="category === 'Metais'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M2 17L12 22L22 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <svg v-else-if="category === 'Forex Majors'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="2.5"/>
+                      <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                    <i v-else class="fas fa-ellipsis-h text-[#22C55E]"></i>
+                  </div>
+                  <h4 class="category-card-title">{{ category }}</h4>
+                </div>
+                <div class="category-items-list">
                   <button
                     v-for="market in markets"
                     :key="market.value"
                     @click="selectMarket(market.value)"
-                    class="market-item"
-                    :class="{ 'active': symbol === market.value }"
+                    :class="['category-item-btn', { 'active': symbol === market.value }]"
                   >
-                    <span class="market-label">{{ market.label }}</span>
-                    <span class="market-symbol">{{ market.value }}</span>
+                    {{ market.label }}
                   </button>
                 </div>
               </div>
@@ -366,7 +405,7 @@
         data-modal="trade-type" 
         @click.self="closeTradeTypeModal"
       >
-        <div class="modal-content">
+        <div class="modal-content categorized-modal">
           <div class="modal-header">
             <h3 class="modal-title">Selecionar Tipo de Negociação</h3>
             <button @click="closeTradeTypeModal" class="modal-close-btn">
@@ -374,22 +413,48 @@
             </button>
           </div>
           <div class="modal-body">
-            <div class="trade-type-grid">
-              <button
-                v-for="type in availableTradeTypes"
-                :key="type.value"
-                @click="selectTradeType(type.value)"
-                class="trade-type-item"
-                :class="{ 'active': tradeType === type.value }"
-              >
-                <i :class="type.icon"></i>
-                <span class="trade-type-label">{{ type.label }}</span>
-                <span class="trade-type-desc">{{ type.description }}</span>
-              </button>
-            </div>
+            <div class="categories-grid">
+              <div v-for="category in availableTradeTypeGroups" :key="category.id" class="category-card">
+                <div class="category-card-header">
+                  <div class="category-icon-wrapper">
+                    <svg v-if="category.id === 'rising_falling'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M22 11L13.5 15.5L8.5 10.5L2 14" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 11H22V17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <svg v-else-if="category.id === 'digits'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M4 9H20" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M4 15H20" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M10 3L8 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M16 3L14 21" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <svg v-else-if="category.id === 'accumulators'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <path d="M12 2L2 7L12 12L22 7L12 2Z" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M2 17L12 22L22 17" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M2 12L12 17L22 12" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <svg v-else-if="category.id === 'multipliers'" width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                      <circle cx="12" cy="12" r="10" stroke="#22C55E" stroke-width="2.5"/>
+                      <path d="M15 9L9 15M9 9L15 15" stroke="#22C55E" stroke-width="2.5" stroke-linecap="round"/>
+                    </svg>
+                    <i v-else :class="category.icon"></i>
+                  </div>
+                  <h4 class="category-card-title">{{ category.label }}</h4>
+                </div>
+                <div class="category-items-list">
+                  <button
+                    v-for="item in category.items"
+                    :key="item.value"
+                    @click="selectTradeType(item)"
+                    :class="['category-item-btn', { 'active': selectedTradeTypeGroup === item.value }]"
+                  >
+                    {{ item.label }}
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
     </Teleport>
     
     <!-- Trade Result Modal -->
@@ -457,7 +522,7 @@ export default {
       chart: null,
       chartSeries: null,
       symbol: 'R_100',
-      tradeType: '',
+      tradeType: 'CALL',
         duration: 1,
         durationUnit: 'm',
       amount: 10,
@@ -478,6 +543,7 @@ export default {
       activeContract: null,
       purchasePrice: null,
       isTrading: false,
+      multiplier: 100, // Valor padrão do multiplicador
       tradeError: '',
       tradeMessage: '',
       realTimeProfit: null,
@@ -504,6 +570,71 @@ export default {
       allHistoricalTicks: [], // Armazenar todos os ticks históricos recebidos
       selectedTimeframe: 60, // Timeframe padrão para velas (1 minuto em segundos) - velas menores
       chartPointsVisible: 100, // Número de pontos/velas visíveis no gráfico
+      selectedTradeTypeGroup: 'rising_falling_rise_fall',
+      tradeTypeCategories: [
+        {
+          id: 'rising_falling',
+          label: 'Subida / Queda',
+          icon: 'fas fa-chart-line',
+          items: [
+            { value: 'rising_falling_rise_fall', label: 'Subida / Queda', directions: [
+                { value: 'CALL', label: 'Subida' },
+                { value: 'PUT', label: 'Queda' }
+              ] 
+            },
+            { value: 'rising_falling_rise_fall_equal', label: 'Subida / Queda Igual', directions: [
+                { value: 'CALLE', label: 'Subida Igual' },
+                { value: 'PUTE', label: 'Queda Igual' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'digits',
+          label: 'Dígitos',
+          icon: 'fas fa-hashtag',
+          items: [
+            { value: 'digits_match_diff', label: 'Combina / Difere', directions: [
+                { value: 'DIGITMATCH', label: 'Combina' },
+                { value: 'DIGITDIFF', label: 'Difere' }
+              ]
+            },
+            { value: 'digits_even_odd', label: 'Par / Ímpar', directions: [
+                { value: 'DIGITEVEN', label: 'Par' },
+                { value: 'DIGITODD', label: 'Ímpar' }
+              ]
+            },
+            { value: 'digits_over_under', label: 'Superior / Inferior', directions: [
+                { value: 'DIGITOVER', label: 'Superior' },
+                { value: 'DIGITUNDER', label: 'Inferior' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'accumulators',
+          label: 'Acumuladores',
+          icon: 'fas fa-layer-group',
+          items: [
+            { value: 'accumulators_accu', label: 'Acumuladores', directions: [
+                { value: 'ACCU', label: 'Acumuladores' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'multipliers',
+          label: 'Multiplicadores',
+          icon: 'fas fa-times-circle',
+          items: [
+            { value: 'multipliers_mult', label: 'Alta / Baixa', directions: [
+                { value: 'MULTUP', label: 'Alta' },
+                { value: 'MULTDOWN', label: 'Baixa' }
+              ]
+            }
+          ]
+        }
+      ],
       allTradeTypes: [
         { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
         { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
@@ -513,18 +644,27 @@ export default {
         { value: 'DIGITODD', label: 'Dígito Ímpar', description: 'O último dígito será ímpar', icon: 'fas fa-percent' },
         { value: 'DIGITOVER', label: 'Dígito Acima', description: 'O último dígito será maior', icon: 'fas fa-greater-than' },
         { value: 'DIGITUNDER', label: 'Dígito Abaixo', description: 'O último dígito será menor', icon: 'fas fa-less-than' },
+        { value: 'CALLE', label: 'Subida Igual', description: 'Subida com barreira igual', icon: 'fas fa-arrow-up' },
+        { value: 'PUTE', label: 'Queda Igual', description: 'Queda com barreira igual', icon: 'fas fa-arrow-down' },
+        { value: 'ACCU', label: 'Acumuladores', description: 'Contrato de acumuladores', icon: 'fas fa-layer-group' },
+        { value: 'MULTUP', label: 'Multiplicador Alta', description: 'Multiplicador de alta', icon: 'fas fa-chart-line' },
+        { value: 'MULTDOWN', label: 'Multiplicador Baixa', description: 'Multiplicador de baixa', icon: 'fas fa-chart-line' },
       ],
     };
   },
   computed: {
     marketsByCategory() {
       const grouped = {};
+      const integratedMarkets = this.getDefaultMarkets().map(m => m.value);
+      
       this.markets.forEach(market => {
-        const category = market.category || 'Outros';
-        if (!grouped[category]) {
-          grouped[category] = [];
+        if (integratedMarkets.includes(market.value)) {
+          const category = market.category || 'Outros';
+          if (!grouped[category]) {
+            grouped[category] = [];
+          }
+          grouped[category].push(market);
         }
-        grouped[category].push(market);
       });
       return grouped;
     },
@@ -532,12 +672,59 @@ export default {
       const market = this.markets.find(m => m.value === this.symbol);
       return market ? market.label : 'Selecione um mercado';
     },
+    selectedTradeTypeGroupLabel() {
+      for (const cat of this.tradeTypeCategories) {
+        const item = cat.items.find(i => i.value === this.selectedTradeTypeGroup);
+        if (item) return item.label;
+      }
+      return 'Selecionar Tipo';
+    },
+    availableDirections() {
+      for (const cat of this.tradeTypeCategories) {
+        const item = cat.items.find(i => i.value === this.selectedTradeTypeGroup);
+        if (item) return item.directions;
+      }
+      return [];
+    },
     selectedTradeTypeLabel() {
       if (!this.tradeType) {
         return 'Selecione o tipo';
       }
-      const selectedType = this.availableTradeTypes.find(t => t.value === this.tradeType);
-      return selectedType ? selectedType.label : this.tradeType;
+      for (const cat of this.tradeTypeCategories) {
+        const item = cat.items.find(i => i.directions.some(d => d.value === this.tradeType));
+        if (item) {
+          const dir = item.directions.find(d => d.value === this.tradeType);
+          return dir ? dir.label : item.label;
+        }
+      }
+      return this.tradeType;
+    },
+    availableTradeTypeGroups() {
+      // Filtrar categorias e itens baseados nos contratos disponíveis reais da Deriv
+      const availableTypes = this.availableTradeTypes.map(t => t.value.toUpperCase());
+      
+      return this.tradeTypeCategories.map(category => {
+        const filteredItems = category.items.filter(item => {
+          // Um item é exibido se pelo menos uma de suas direções estiver disponível
+          return item.directions.some(dir => availableTypes.includes(dir.value.toUpperCase()));
+        });
+        
+        if (filteredItems.length > 0) {
+          return {
+            ...category,
+            items: filteredItems
+          };
+        }
+        return null;
+      }).filter(Boolean);
+    },
+    currentTradeTypePair() {
+      if (!this.selectedTradeTypeGroup) return null;
+      for (const cat of this.tradeTypeCategories) {
+        const item = cat.items.find(i => i.value === this.selectedTradeTypeGroup);
+        if (item) return item;
+      }
+      return null;
     },
     availableTradeTypes() {
       // Se não houver contratos disponíveis, retornar todos os tipos
@@ -1263,29 +1450,6 @@ export default {
     closeTradeTypeModal() {
       this.showTradeTypeModal = false;
     },
-    async selectTradeType(type) {
-      this.tradeType = type;
-        this.closeTradeTypeModal();
-      
-      // Se mudou para um contrato de dígitos e temos latestTick, calcular dígito
-      const digitTypes = ['DIGITMATCH', 'DIGITDIFF', 'DIGITEVEN', 'DIGITODD', 'DIGITOVER', 'DIGITUNDER'];
-      if (digitTypes.includes(this.tradeType) && this.latestTick && this.latestTick.value) {
-        this.updateDigitInfo(this.latestTick.value);
-      }
-      
-      // Se mudou para DIGITMATCH e temos um último dígito, inicializar digitMatchValue
-      if (this.tradeType === 'DIGITMATCH' && this.lastDigit !== null) {
-        this.digitMatchValue = this.lastDigit;
-      } else if (this.tradeType !== 'DIGITMATCH') {
-        // Limpar digitMatchValue se não for DIGITMATCH
-        this.digitMatchValue = null;
-      }
-      
-      // Carregar valores padrão (duração e valor mínimo) para o tipo selecionado
-      if (this.symbol) {
-        await this.loadDefaultValuesForType(type);
-      }
-    },
     async loadMarketsFromAPI() {
       try {
         this.isLoadingMarkets = true;
@@ -1509,32 +1673,37 @@ export default {
 
       console.log('[Chart] Processando símbolos ativos:', symbols.length);
 
-      // Mapear símbolos para o formato esperado
-      const mappedMarkets = symbols.map(symbol => {
-        const symbolData = typeof symbol === 'string' ? { symbol } : symbol;
-        const symbolValue = symbolData.symbol || symbolData.market || symbol;
-        const displayName = symbolData.display_name || symbolData.name || symbolValue;
-        
-        // Determinar categoria baseado no prefixo do símbolo
-        let category = 'Outros';
-        if (symbolValue.startsWith('R_') || symbolValue.startsWith('1HZ')) {
-          category = 'Índices Contínuos';
-        } else if (symbolValue.startsWith('cry')) {
-          category = 'Criptomoedas';
-        } else if (symbolValue.startsWith('frx')) {
-          if (symbolValue.includes('XAU') || symbolValue.includes('XAG') || symbolValue.includes('XPT') || symbolValue.includes('XPD')) {
-            category = 'Metais';
-          } else {
-            category = 'Forex Majors';
-          }
-        }
+      // Obter lista de símbolos integrados
+      const integratedSymbolsList = this.getDefaultMarkets().map(m => m.value);
 
-        return {
-          value: symbolValue,
-          label: displayName,
-          category: category,
-        };
-      });
+      // Mapear símbolos para o formato esperado
+      const mappedMarkets = symbols
+        .map(symbol => {
+          const symbolData = typeof symbol === 'string' ? { symbol } : symbol;
+          const symbolValue = symbolData.symbol || symbolData.market || symbol;
+          const displayName = symbolData.display_name || symbolData.name || symbolValue;
+          
+          // Determinar categoria baseado no prefixo do símbolo
+          let category = 'Outros';
+          if (symbolValue.startsWith('R_') || symbolValue.startsWith('1HZ')) {
+            category = 'Índices Contínuos';
+          } else if (symbolValue.startsWith('cry')) {
+            category = 'Criptomoedas';
+          } else if (symbolValue.startsWith('frx')) {
+            if (symbolValue.includes('XAU') || symbolValue.includes('XAG') || symbolValue.includes('XPT') || symbolValue.includes('XPD')) {
+              category = 'Metais';
+            } else {
+              category = 'Forex Majors';
+            }
+          }
+
+          return {
+            value: symbolValue,
+            label: displayName,
+            category: category,
+          };
+        })
+        .filter(market => integratedSymbolsList.includes(market.value));
 
       // Ordenar por categoria e depois por label
       mappedMarkets.sort((a, b) => {
@@ -1545,7 +1714,7 @@ export default {
       });
 
       this.markets = mappedMarkets;
-      console.log('[Chart] Mercados carregados:', this.markets.length);
+      console.log('[Chart] Mercados integrados carregados:', this.markets.length);
     },
     async loadAvailableContracts(symbol) {
       if (!symbol) {
@@ -1766,6 +1935,34 @@ export default {
         }
       }
     },
+    isTradeTypeSelected(item) {
+      return this.selectedTradeTypeGroup === item.value;
+    },
+    async selectTradeType(item) {
+      this.selectedTradeTypeGroup = item.value;
+      if (item.directions && item.directions.length > 0) {
+        this.tradeType = item.directions[0].value;
+      }
+      this.showTradeTypeModal = false;
+      this.loadDefaultValuesForType(this.tradeType);
+      
+      // Se for contrato de dígitos e temos latestTick, calcular dígito
+      if (this.isDigitContract && this.latestTick && this.latestTick.value) {
+        this.updateDigitInfo(this.latestTick.value);
+      }
+    },
+    getButtonLabel(type) {
+      const labels = {
+        'CALL': 'CALL', 'PUT': 'PUT',
+        'CALLE': 'CALL (Equal)', 'PUTE': 'PUT (Equal)',
+        'DIGITMATCH': 'IGUAL', 'DIGITDIFF': 'DIFERENTE',
+        'DIGITEVEN': 'PAR', 'DIGITODD': 'ÍMPAR',
+        'DIGITOVER': 'SUPERIOR', 'DIGITUNDER': 'INFERIOR',
+        'ONETOUCH': 'TOCA', 'NOTOUCH': 'NÃO TOCA',
+        'MULTUP': 'ALTA', 'MULTDOWN': 'BAIXA'
+      };
+      return labels[type] || type;
+    },
     async executeBuy() {
       if (!this.canExecuteOrder) {
         return;
@@ -1798,11 +1995,19 @@ export default {
           amount: this.amount,
         };
         
-        // Adicionar barrier para DIGITMATCH
-        if (this.tradeType === 'DIGITMATCH') {
-          buyConfig.barrier = this.digitMatchValue !== null && this.digitMatchValue !== undefined 
-            ? this.digitMatchValue 
-            : (this.lastDigit !== null && this.lastDigit !== undefined ? this.lastDigit : 5);
+        // Adicionar barrier se necessário (ex: DIGITMATCH)
+        if (this.isDigitContract && this.tradeType.includes('DIGIT')) {
+           if (this.tradeType === 'DIGITMATCH' || this.tradeType === 'DIGITDIFF') {
+             buyConfig.barrier = this.digitMatchValue !== null ? this.digitMatchValue : (this.lastDigit !== null ? this.lastDigit : 5);
+           } else if (this.tradeType === 'DIGITOVER' || this.tradeType === 'DIGITUNDER') {
+             // Default barrier for over/under
+             buyConfig.barrier = 5;
+           }
+        }
+        
+        // Adicionar multiplicador se necessário
+        if (this.tradeType.startsWith('MULT')) {
+          buyConfig.multiplier = this.multiplier || 100;
         }
         
         // Enviar compra para o backend
@@ -2365,28 +2570,6 @@ export default {
         { value: '1HZ50V', label: 'Volatility 50 (1s) Index', category: 'Índices Contínuos' },
         { value: '1HZ75V', label: 'Volatility 75 (1s) Index', category: 'Índices Contínuos' },
         { value: '1HZ100V', label: 'Volatility 100 (1s) Index', category: 'Índices Contínuos' },
-        { value: 'cryBTCUSD', label: 'BTC/USD (Bitcoin)', category: 'Criptomoedas' },
-        { value: 'cryETHUSD', label: 'ETH/USD (Ethereum)', category: 'Criptomoedas' },
-        { value: 'frxEURUSD', label: 'EUR/USD (Euro / Dólar)', category: 'Forex Majors' },
-        { value: 'frxUSDJPY', label: 'USD/JPY (Dólar / Iene)', category: 'Forex Majors' },
-        { value: 'frxGBPUSD', label: 'GBP/USD (Libra / Dólar)', category: 'Forex Majors' },
-        { value: 'frxUSDCHF', label: 'USD/CHF (Dólar / Franco)', category: 'Forex Majors' },
-        { value: 'frxAUDUSD', label: 'AUD/USD (Dólar Australiano)', category: 'Forex Majors' },
-        { value: 'frxUSDCAD', label: 'USD/CAD (Dólar / Dólar Canadense)', category: 'Forex Majors' },
-        { value: 'frxNZDUSD', label: 'NZD/USD (Dólar Neozelandês)', category: 'Forex Majors' },
-        { value: 'frxEURGBP', label: 'EUR/GBP (Euro / Libra)', category: 'Forex Majors' },
-        { value: 'frxEURJPY', label: 'EUR/JPY (Euro / Iene)', category: 'Forex Majors' },
-        { value: 'frxGBPJPY', label: 'GBP/JPY (Libra / Iene)', category: 'Forex Majors' },
-        { value: 'frxAUDCAD', label: 'AUD/CAD (Dólar Australiano / Canadense)', category: 'Forex Majors' },
-        { value: 'frxAUDJPY', label: 'AUD/JPY (Dólar Australiano / Iene)', category: 'Forex Majors' },
-        { value: 'frxCHFJPY', label: 'CHF/JPY (Franco / Iene)', category: 'Forex Majors' },
-        { value: 'frxEURAUD', label: 'EUR/AUD (Euro / Dólar Australiano)', category: 'Forex Majors' },
-        { value: 'frxGBPAUD', label: 'GBP/AUD (Libra / Dólar Australiano)', category: 'Forex Majors' },
-        { value: 'frxUSDMXN', label: 'USD/MXN (Dólar / Peso Mexicano)', category: 'Forex Majors' },
-        { value: 'frxXAUUSD', label: 'XAU/USD (Ouro / Dólar)', category: 'Metais' },
-        { value: 'frxXAGUSD', label: 'XAG/USD (Prata / Dólar)', category: 'Metais' },
-        { value: 'frxXPTUSD', label: 'XPT/USD (Platina / Dólar)', category: 'Metais' },
-        { value: 'frxXPDUSD', label: 'XPD/USD (Paládio / Dólar)', category: 'Metais' },
       ];
     },
   },
@@ -2428,9 +2611,8 @@ export default {
 .sidebar-panel {
   display: flex;
   flex-direction: column;
-  align-self: stretch;
-  height: 100%;
-  min-height: 960px;
+  align-self: flex-start;
+  height: fit-content;
 }
 
 .col-chart {
@@ -2838,8 +3020,7 @@ export default {
   width: 100%;
   max-height: 80vh;
   overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8),
-              0 0 0 1px rgba(255, 255, 255, 0.05);
+  box-shadow: none;
   animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -2942,56 +3123,168 @@ export default {
   color: rgba(255, 255, 255, 0.5);
 }
 
-/* Trade Type Selection Modal */
-.trade-type-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 16px;
+.btn-gerar-sinal {
+  background: #22C55E;
+  color: #000;
+  padding: 12px 24px;
+  border-radius: 12px;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: none;
 }
 
-.trade-type-item {
-  background: #0B0B0B;
-  border: 2px solid #1A1A1A;
-  border-radius: 16px;
-  padding: 24px;
-  cursor: pointer;
-  transition: all 0.3s;
+.btn-gerar-sinal:hover {
+  background: #26D466;
+  transform: translateY(-2px);
+  box-shadow: none;
+}
+
+.btn-gerar-sinal:active {
+  transform: translateY(0);
+}
+
+.metric-signal-card {
+  background: #080808;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 14px;
+  padding: 16px 20px;
   display: flex;
   flex-direction: column;
+  gap: 8px;
+  min-height: 90px;
+  transition: all 0.3s ease;
+}
+
+.metric-signal-card:hover {
+  border-color: rgba(34, 197, 94, 0.2);
+  background: #0A0A0A;
+}
+
+.metric-signal-header {
+  display: flex;
   align-items: center;
-  gap: 12px;
-  text-align: center;
+  gap: 8px;
+  opacity: 0.8;
 }
 
-.trade-type-item:hover {
-  background: #151515;
-  border-color: rgba(34, 197, 94, 0.5);
-  transform: translateY(-2px);
+.metric-signal-body {
+  display: flex;
+  align-items: center;
+  min-height: 24px;
 }
 
-.trade-type-item.active {
-  background: rgba(34, 197, 94, 0.1);
-  border-color: #22C55E;
+/* Categorized Modal Styles */
+.categorized-modal {
+  min-width: 900px !important;
+  max-width: 1100px !important;
+  background: #0B0B0B !important;
+  border-radius: 12px !important;
 }
 
-.trade-type-item i {
-  font-size: 32px;
-  color: #22C55E;
+.categories-grid {
+  display: flex;
+  justify-content: flex-start;
+  flex-wrap: wrap;
+  gap: 24px;
 }
 
-.trade-type-item.active i {
-  color: #22C55E;
+.category-card {
+  background: rgba(17, 17, 17, 0.4);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  min-height: 320px;
+  width: 320px; 
 }
 
-.trade-type-label {
-  font-size: 18px;
-  font-weight: 700;
-  color: #f8fafc;
+.category-card-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 8px;
 }
 
-.trade-type-desc {
-  font-size: 12px;
+.category-icon-wrapper {
+  width: 52px;
+  height: 52px;
+  background: rgba(34, 197, 94, 0.15) !important;
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1.5px solid rgba(34, 197, 94, 0.25);
+}
+
+.category-icon-wrapper svg, .category-icon-wrapper svg path {
+  stroke: #22C55E !important;
+}
+
+.category-card-title {
+  font-size: 16px;
+  font-weight: 600;
+  color: #FFFFFF;
+  margin: 0;
+}
+
+.category-items-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.category-item-btn {
+  background: transparent;
+  border: none;
   color: rgba(255, 255, 255, 0.6);
+  text-align: left;
+  padding: 8px 12px;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.category-item-btn:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #FFFFFF;
+}
+
+.category-item-btn.active {
+  background: rgba(34, 197, 94, 0.1);
+  color: #22C55E;
+  font-weight: 500;
+  border-left: 2px solid #22C55E;
+  border-radius: 0 6px 6px 0;
+}
+
+/* Response for 2nd row (2 cards) */
+@media (min-width: 769px) {
+  .categories-grid > div:nth-child(n+4) {
+    grid-column: span 1.5;
+  }
+}
+
+@media (max-width: 1024px) {
+  .categorized-modal {
+    min-width: 95% !important;
+  }
+  .categories-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 768px) {
+  .categories-grid {
+    grid-template-columns: 1fr;
+  }
 }
 
 @keyframes modalSlideIn {
