@@ -984,6 +984,20 @@ export default {
             // ✅ Determinar se é Trinity baseado na configuração da sessão
             const isTrinity = this.isTrinityActive;
             
+            // ✅ Verificar se é TITAN baseado na configuração da sessão
+            const isTitan = this.sessionConfig && this.sessionConfig.strategy && 
+                           this.sessionConfig.strategy.toLowerCase() === 'titan';
+            
+            // Se TITAN está ativa, retornar nome da TITAN
+            if (isTitan) {
+                const modeMap = {
+                    'veloz': 'IA TITAN Veloz',
+                    'normal': 'IA TITAN Normal',
+                    'preciso': 'IA TITAN Preciso'
+                };
+                return modeMap[this.mode.toLowerCase()] || 'IA TITAN';
+            }
+            
             // Se Trinity está ativa, retornar nome da Trinity
             if (isTrinity) {
                 const modeMap = {
@@ -1009,6 +1023,13 @@ export default {
         formattedMarketName() {
             // Usar o prop primeiro (vem do componente pai)
             const marketKey = this.selectedMarketProp || this.selectedMarket || 'vol10';
+            
+            // ✅ Se TITAN está ativa, retornar Volatility 100 Index
+            const isTitan = this.sessionConfig && this.sessionConfig.strategy && 
+                           this.sessionConfig.strategy.toLowerCase() === 'titan';
+            if (isTitan) {
+                return 'Volatility 100 Index';
+            }
             
             // Se Trinity está ativa, retornar mercado Trinity
             if (this.isTrinityActive) {
@@ -1052,12 +1073,13 @@ export default {
         },
         
         strategyDescriptionText() {
-            const strategy = this.selectedStrategy || 'orion';
+            const strategy = this.sessionConfig?.strategy || this.selectedStrategy || 'orion';
             const descriptions = {
                 'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
-                'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes'
+                'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes',
+                'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida'
             };
-            return descriptions[strategy] || descriptions.orion;
+            return descriptions[strategy.toLowerCase()] || descriptions.orion;
         },
         
         realRiskDescription() {
