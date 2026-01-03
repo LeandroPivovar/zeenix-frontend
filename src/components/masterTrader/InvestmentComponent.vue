@@ -1,27 +1,62 @@
 <template>
-    <div class="investment-container">
-        <!-- Full Screen Loader -->
-        <div v-if="isActivating" class="fullscreen-loader">
-            <div class="loader-spinner"></div>
-        </div>
+    <div class="zenix-layout">
+        <!-- Overlay para fechar sidebar ao clicar fora (mobile) -->
+        <div 
+            v-if="isSidebarOpen" 
+            class="sidebar-overlay" 
+            @click="closeSidebar"
+        ></div>
+        
+        <AppSidebar 
+            :is-open="isSidebarOpen" 
+            :is-collapsed="isSidebarCollapsed" 
+            @toggle-collapse="toggleSidebarCollapse"
+            @close-sidebar="closeSidebar"
+        />
 
-        <main class="main-content">
+        <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+            <TopNavbar 
+                :is-sidebar-collapsed="isSidebarCollapsed"
+                :balance="info?.balance"
+                :account-type="accountType"
+                :balances-by-currency-real="balancesByCurrencyReal"
+                :balances-by-currency-demo="balancesByCurrencyDemo"
+                :currency-prefix="preferredCurrencyPrefix"
+                @open-settings="toggleSettingsModal"
+                @account-type-changed="switchAccount"
+                @toggle-sidebar="toggleSidebar"
+                @toggle-sidebar-collapse="toggleSidebarCollapse"
+            />
+            
+            <!-- Settings Sidebar -->
+            <SettingsSidebar
+                :is-open="showSettingsModal"
+                :balance="info?.balance"
+                :account-type="accountType"
+                :balances-by-currency-real="balancesByCurrencyReal"
+                :balances-by-currency-demo="balancesByCurrencyDemo"
+                :currency-prefix="preferredCurrencyPrefix"
+                @close="closeSettingsModal"
+                @account-type-changed="switchAccount"
+            />
+
+            <main class="main-content" style="margin-top: 60px;">
                 <!-- AI Vision Panel - Only show when IA is inactive -->
                 <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
                     <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
                         <!-- Header Desktop -->
                         <div class="mb-6 ai-vision-header-desktop">
                             <div class="text-left">
-                                <h1 class="text-xl font-bold text-zenix-text mb-1">Visão da IA | {{ selectedStrategyName }}</h1>
-                                <p class="text-sm text-zenix-secondary">Configure esta IA para iniciar operações</p>
+                                <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração da IA</h1>
+                                <p class="text-sm text-zenix-secondary">Escolha uma das IA's de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
                             </div>
                         </div>
                         <!-- Header Mobile -->
                         <div class="mb-6 ai-vision-header-mobile">
                             <div class="flex items-center justify-between">
                                 <div class="text-left">
-                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Visão da IA</h1>
-                                    <p class="text-sm text-zenix-secondary">Configure esta IA para iniciar operações</p>
+                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração da IA</h1>
+                                    <p class="text-sm text-zenix-secondary">Escolha uma das IA's de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
                                 </div>
                                 <div class="ai-chip-icon-mobile">
                                     <i class="fas fa-microchip text-[#22C55E] text-2xl"></i>
@@ -114,40 +149,7 @@
                 <div class="config-grid" v-if="!isInvestmentActive">
                     <!-- Mercado & Estratégia -->
                     <div id="market-strategy-card" class="config-card premium-card">
-                        <h3 class="card-title">
-                            Mercado & Estratégia
-                            <TooltipsCopyTraders position="left"> 
-                                <h4>🎯 Mercado & Estratégia</h4>
-                            </TooltipsCopyTraders>
-                        </h3>
                         <div class="card-content">
-                            <div class="form-group">
-                                <label class="form-label">
-                                    Selecione o mercado
-                                    <TooltipsCopyTraders position="left"> 
-                                        <p>Escolha o ativo que deseja operar</p>
-                                    </TooltipsCopyTraders>
-                                </label>
-                                <select id="marketSelect" class="form-select" v-model="selectedMarket">
-                                    <option value="vol10">Volatility 10 Index</option>
-                                    <option value="vol25">Volatility 25 Index</option>
-                                    <option value="vol50">Volatility 50 Index</option>
-                                    <option value="vol75">Volatility 75 Index</option>
-                                    <option value="vol100">Volatility 100 Index</option>
-                                    <option value="vol10_1s">Volatility 10 (1s) Index</option>
-                                    <option value="vol25_1s">Volatility 25 (1s) Index</option>
-                                    <option value="vol50_1s">Volatility 50 (1s) Index</option>
-                                    <option value="vol75_1s">Volatility 75 (1s) Index</option>
-                                    <option value="vol100_1s">Volatility 100 (1s) Index</option>
-                                    <option value="jump10">Jump 10 Index</option>
-                                    <option value="jump25">Jump 25 Index</option>
-                                    <option value="jump50">Jump 50 Index</option>
-                                    <option value="jump75">Jump 75 Index</option>
-                                    <option value="jump100">Jump 100 Index</option>
-                                </select>
-                                <p id="marketDescription" class="form-help">{{ marketDescription }}</p>
-                        </div>
-                            
                             <div class="form-group">
                                 <label class="form-label">
                                     Estratégia
@@ -165,7 +167,12 @@
                     </div>
 
                             <div class="form-group">
-                                <label class="form-label">Modo de Negociação</label>
+                                <label class="form-label">
+                                    Modo de Negociação
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Define a frequência e a precisão das operações realizadas pela IA.</p>
+                                    </TooltipsCopyTraders>
+                                </label>
                                 <div class="mode-buttons">
                                     <button 
                                         id="modeVeloz" 
@@ -179,7 +186,7 @@
                                         :class="['mode-btn', { 'active': mode === 'moderado' }]"
                                         @click="mode = 'moderado'"
                                     >
-                                        Moderado
+                                        Normal
                                     </button>
                                     <button 
                                         id="modeLento" 
@@ -192,16 +199,15 @@
                                 <p id="modeDescription" class="form-help">{{ modeDescription }}</p>
                             </div>
                             
-                            <!-- Gerenciamento de Risco - Mobile Only -->
-                            <div class="form-group risk-management-mobile">
-                                <label class="form-label">Gerenciamento de Risco</label>
+                            <!-- Gerenciamento de Risco -->
+                            <div class="form-group risk-management-section">
+                                <label class="form-label">
+                                    Gerenciamento de Risco
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Configura a estratégia de recuperação e o nível de exposição do capital.</p>
+                                    </TooltipsCopyTraders>
+                                </label>
                                 <div class="risk-buttons">
-                                    <button 
-                                        :class="['risk-btn', { 'active': modoMartingale === 'fixo' }]"
-                                        @click="modoMartingale = 'fixo'"
-                                    >
-                                        Fixo
-                                    </button>
                                     <button 
                                         :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
                                         @click="modoMartingale = 'conservador'"
@@ -221,15 +227,16 @@
                                         Agressivo
                                     </button>
                                 </div>
+                                
                                 <div class="risk-indicator">
                                     <div class="risk-header">
                                         <span class="risk-label">Nível de Risco</span>
-                                        <span id="riskLevelTextMobile" class="risk-level-text">{{ riskLevelText }}</span>
+                                        <span id="riskLevelText" class="risk-level-text">{{ riskLevelText }}</span>
                                     </div>
                                     <div class="risk-bar-container">
-                                        <div id="riskBarMobile" class="risk-bar" :style="{ width: riskBarWidth }"></div>
+                                        <div id="riskBar" class="risk-bar" :style="{ width: riskBarWidth }"></div>
                                     </div>
-                                    <p id="riskDescriptionMobile" class="risk-description">{{ riskDescriptionText }}</p>
+                                    <p id="riskDescription" class="risk-description">{{ riskDescriptionText }}</p>
                                 </div>
                             </div>
                         </div>
@@ -237,10 +244,14 @@
 
                     <!-- Parâmetros de Entrada -->
                     <div id="entry-params-card" class="config-card premium-card">
-                        <h3 class="card-title">Parâmetros de Entrada</h3>
                         <div class="card-content">
                             <div class="form-group">
-                                <label class="form-label">Valor de Entrada (USD)</label>
+                                <label class="form-label">
+                                    Valor de Entrada
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Valor definido para cada operação na moeda da conta.</p>
+                                    </TooltipsCopyTraders>
+                                </label>
                                 <div class="input-wrapper">
                                     <span class="input-prefix">$</span>
                                     <input 
@@ -252,10 +263,15 @@
                                     >
                                 </div>
                                 <p class="form-help">{{ entryPercent }}% do saldo</p>
-                    </div>
+                            </div>
 
                             <div class="form-group">
-                                <label class="form-label">Alvo de Lucro (USD)</label>
+                                <label class="form-label">
+                                    Alvo de Lucro
+                                    <TooltipsCopyTraders position="left"> 
+                                        <p>Meta de lucro para encerrar as operações automaticamente.</p>
+                                    </TooltipsCopyTraders>
+                                </label>
                                 <div class="input-wrapper">
                                     <span class="input-prefix">$</span>
                                     <input 
@@ -267,132 +283,77 @@
                                     >
                                 </div>
                                 <p class="form-help">{{ profitPercent }}% do saldo</p>
-                    </div>
+                            </div>
 
-                            <div class="form-group">
-                                <label class="form-label">Limite de Perda (USD)</label>
-                                <div class="input-wrapper">
-                                    <span class="input-prefix">$</span>
-                                    <input 
-                                        type="number" 
-                                        class="form-input" 
-                                        v-model.number="lossLimit"
-                                        min="0"
-                                        step="0.01"
-                                    >
-                                </div>
-                                <p class="form-help">{{ lossPercent }}% do saldo</p>
-                        </div>
-
-                            <div class="form-group">
-                                <div class="stoploss-blindado-wrapper">
-                                    <div class="stoploss-blindado-label">
-                                        <i class="fas fa-shield-alt"></i>
-                                        <span>Stoploss Blindado</span>
+                            <div class="loss-stoploss-row">
+                                <div class="form-group flex-1">
+                                    <label class="form-label">
+                                        Limite de Perda
+                                        <TooltipsCopyTraders position="left"> 
+                                            <p>Limite máximo de perda total aceitável para a sessão.</p>
+                                        </TooltipsCopyTraders>
+                                    </label>
+                                    <div class="input-wrapper">
+                                        <span class="input-prefix">$</span>
+                                        <input 
+                                            type="number" 
+                                            class="form-input" 
+                                            v-model.number="lossLimit"
+                                            min="0"
+                                            step="0.01"
+                                        >
                                     </div>
-                                    <label class="toggle-switch stoploss-toggle">
-                                        <input 
-                                            type="checkbox" 
-                                            v-model="stoplossBlindado"
-                                        >
-                                        <span class="toggle-slider"></span>
+                                    <p class="form-help">{{ lossPercent }}% do saldo</p>
+                                </div>
+                                
+                                <div class="form-group flex-1">
+                                    <label class="form-label">
+                                        Stoploss Blindado
+                                        <TooltipsCopyTraders position="center"> 
+                                            <p>Protege o lucro automaticamente. Quando 40% do alvo é alcançado, a proteção é ativada, garantindo 50% do lucro total, mesmo em caso de reversão do mercado.</p>
+                                        </TooltipsCopyTraders>
                                     </label>
+                                    <div class="stoploss-blindado-wrapper">
+                                        <div class="stoploss-blindado-label">
+                                            <i class="fas fa-shield-alt"></i>
+                                            <span>{{ stoplossBlindado ? 'Ativado' : 'Desativado' }}</span>
+                                        </div>
+                                        <label class="toggle-switch stoploss-toggle">
+                                            <input 
+                                                type="checkbox" 
+                                                v-model="stoplossBlindado"
+                                            >
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
-                    </div>
-                </div>
 
-                    <!-- Gerenciamento de Risco -->
-                    <div id="risk-management-card" class="config-card premium-card">
-                        <h3 class="card-title">Gerenciamento de Risco</h3>
-                        <div class="card-content">
-                            <div class="risk-buttons">
-                                <button 
-                                    :class="['risk-btn', { 'active': modoMartingale === 'fixo' }]"
-                                    @click="modoMartingale = 'fixo'"
-                                >
-                                    Fixo
-                                </button>
-                                <button 
-                                    :class="['risk-btn', { 'active': modoMartingale === 'conservador' }]"
-                                    @click="modoMartingale = 'conservador'"
-                                >
-                                    Conservador
-                                </button>
-                                <button 
-                                    :class="['risk-btn', { 'active': modoMartingale === 'moderado' }]"
-                                    @click="modoMartingale = 'moderado'"
-                                >
-                                    Moderado
-                                </button>
-                                <button 
-                                    :class="['risk-btn', { 'active': modoMartingale === 'agressivo' }]"
-                                    @click="modoMartingale = 'agressivo'"
-                                >
-                                    Agressivo
-                    </button>
-                </div>
-                            
-                            <div class="risk-indicator">
-                                <div class="risk-header">
-                                    <span class="risk-label">Nível de Risco</span>
-                                    <span id="riskLevelText" class="risk-level-text">{{ riskLevelText }}</span>
+                            <!-- Controle da IA -->
+                            <div class="form-group ai-status-group">
+                                <label class="form-label">Status da IA</label>
+                                <div class="ai-status-control-simple">
+                                    <div class="ai-status-info">
+                                        <p class="ai-status-subtitle">{{ isInvestmentActive ? 'Execução automática' : 'Ative para iniciar' }}</p>
+                                    </div>
+                                    <div class="ai-status-toggle-wrapper">
+                                        <span class="ai-status-text" :class="{ 'active': isInvestmentActive }">
+                                            {{ isInvestmentActive ? 'Ativada' : 'Desativada' }}
+                                        </span>
+                                        <label class="toggle-switch">
+                                            <input 
+                                                type="checkbox" 
+                                                :checked="isInvestmentActive"
+                                                @change="handleToggleChange"
+                                            >
+                                            <span class="toggle-slider"></span>
+                                        </label>
+                                    </div>
                                 </div>
-                                <div class="risk-bar-container">
-                                    <div id="riskBar" class="risk-bar" :style="{ width: riskBarWidth }"></div>
-                                </div>
-                                <p id="riskDescription" class="risk-description">{{ riskDescriptionText }}</p>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Controle da IA -->
-                    <div id="ai-control-card" class="config-card premium-card ai-control-card">
-                        <div class="ai-control-bg">
-                            <div class="animated-grid-ai"></div>
-                            <div class="particles-ai">
-                                <div class="particle-ai particle-ai-1"></div>
-                                <div class="particle-ai particle-ai-2"></div>
-                                <div class="particle-ai particle-ai-3"></div>
-                                <div class="particle-ai particle-ai-4"></div>
-                            </div>
-                            <div class="data-streams-ai">
-                                <div class="stream-ai stream-ai-1"></div>
-                                <div class="stream-ai stream-ai-2"></div>
-                                <div class="stream-ai stream-ai-3"></div>
-                            </div>
-                        </div>
-                        
-                        <div class="ai-control-content">
-                            <div class="ai-status-control">
-                                <div>
-                                    <p class="ai-status-title">Status da IA</p>
-                                    <p class="ai-status-subtitle">{{ isInvestmentActive ? 'Controle de execução automática' : 'Ative para iniciar operações' }}</p>
-                                </div>
-                                <div class="ai-status-toggle-wrapper">
-                                    <span id="aiStatusText" class="ai-status-text" :class="{ 'active': isInvestmentActive }">
-                                        {{ isInvestmentActive ? 'Ativada' : 'Desativada' }}
-                                    </span>
-                                    <label class="toggle-switch">
-                                        <input 
-                                            type="checkbox" 
-                                            :checked="isInvestmentActive"
-                                            @change="handleToggleChange"
-                                        >
-                                        <span class="toggle-slider"></span>
-                                    </label>
-                                </div>
-                            </div>
-                            <div class="ai-status-message" v-if="!isInvestmentActive">
-                                <p class="ai-message-text">
-                                    A IA está <span class="ai-status-inactive">desativada</span>. Ative para começar.
-                                </p>
-                            </div>
-                            <div class="ai-status-note" v-if="isInvestmentActive">
-                                <p class="ai-note-text">Desativação manual pelo usuário</p>
-                            </div>
-                        </div>
-                    </div>
                 </div>
 
                 <!-- Chart Section - Only show when IA is active -->
@@ -404,30 +365,58 @@
                     :profit-target-config="profitTarget"
                     :loss-limit-config="lossLimit"
                     :mode-config="mode"
-                    :account-balance-prop="accountBalance"
-                    :account-currency-prop="accountCurrency"
+                    :account-balance-prop="balanceNumeric"
+                    :account-currency-prop="tradeCurrency"
+                    :selected-market-prop="selectedMarket"
                         @deactivate="deactivateIA"
                 />
                 </section>
 
         </main>
+
+        </div>
+        <InsufficientBalanceModal
+            :visible="showInsufficientBalanceModal"
+            :currentBalance="balanceNumeric"
+            :entryValue="entryValue"
+            :currency="tradeCurrency"
+            @confirm="showInsufficientBalanceModal = false"
+        />
     </div>
+    <DesktopBottomNav />
 </template>
 
 <script>
+import AppSidebar from '../../components/Sidebar.vue';
+import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
-import TooltipsCopyTraders from '@/components/TooltipsCopyTraders.vue';
+import TooltipsCopyTraders from '../../components/TooltipsCopyTraders.vue';
+import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
+import accountBalanceMixin from '../../mixins/accountBalanceMixin';
+import InsufficientBalanceModal from '../../components/InsufficientBalanceModal.vue';
 
 export default {
     name: 'InvestmentIAView',
+    mixins: [accountBalanceMixin],
     components: {
+        AppSidebar,
+        TopNavbar,
+        SettingsSidebar,
         InvestmentActive,
-        TooltipsCopyTraders
+        TooltipsCopyTraders,
+        DesktopBottomNav,
+        InsufficientBalanceModal
     },
     data() {
         return {
+            isSidebarOpen: false,
+            isSidebarCollapsed: false,
+            isMobile: false,
             isInvestmentActive: false,
-            isActivating: false, 
+            isActivating: false,
+            showSettingsModal: false,
+            showInsufficientBalanceModal: false,
 
             ticks: [],
             currentPrice: null,
@@ -442,15 +431,6 @@ export default {
 
             selectedMarket: 'vol10',
             selectedStrategy: 'orion',
-            
-            accountBalance: null,
-            accountCurrency: 'USD',
-            accountLoginid: null,
-            isDemo: false,
-            balanceVisible: true,
-            lastBalanceUpdate: null,
-            balanceUpdateInterval: null,
-            clockInterval: null,
             
             dailyStats: {
                 profitLoss: 0,
@@ -499,16 +479,6 @@ export default {
         }
     },
     computed: {
-        formattedBalance() {
-            if (!this.balanceVisible) {
-                return '••••••';
-            }
-            if (this.accountBalance === null || this.accountBalance === undefined) {
-                return '$0,00';
-            }
-            return `$${this.accountBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
-        },
-        
         selectedStrategyName() {
             const strategyNames = {
                 'orion': 'Orion',
@@ -516,16 +486,6 @@ export default {
                 'atlas': 'Atlas v2.0'
             };
             return strategyNames[this.selectedStrategy] || 'Orion';
-        },
-        
-        strategyDescription() {
-            const descriptions = {
-                'orion': 'Análise técnica avançada com machine learning',
-                'trinity': 'Operação multi-ativo (R_10, R_25, R_50) com rotação sequencial',
-                'atlas': 'Extrema alta frequência - milhares de operações por dia (3.000-8.000) com contratos de 1 tick',
-                'apollo': '☀️ Martingale inteligente com mudança de contrato (Over 5→6→7→8) e gestão de risco avançada'
-            };
-            return descriptions[this.selectedStrategy] || descriptions.orion;
         },
         
         formattedLastUpdate() {
@@ -538,14 +498,17 @@ export default {
         
         formattedDailyProfit() {
             const value = this.dailyStats.profitLoss || 0;
-            const sign = value >= 0 ? '+' : '';
-            return `${sign}${this.accountCurrency} ${Math.abs(value).toFixed(2)}`;
+            if (value >= 0) {
+                return `+${this.tradeCurrency} ${value.toFixed(2)}`;
+            } else {
+                return `-${this.tradeCurrency} ${Math.abs(value).toFixed(2)}`;
+            }
         },
         
         formattedDailyProfitPercent() {
             const value = this.dailyStats.profitLossPercent || 0;
-            const sign = value >= 0 ? '+' : '';
-            return `(${sign}${value.toFixed(2)}%)`;
+            const sign = value >= 0 ? '+' : '-';
+            return `(${sign}${Math.abs(value).toFixed(2)}%)`;
         },
         
         dailyProfitClass() {
@@ -565,24 +528,31 @@ export default {
             return descriptions[this.mode] || descriptions.veloz;
         },
         
-        entryPercent() {
-            if (!this.accountBalance || this.accountBalance <= 0) return '0.00';
-            return ((this.entryValue / this.accountBalance) * 100).toFixed(2);
+        strategyDescription() {
+            const descriptions = {
+                'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
+                'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes',
+                'atlas': 'Extrema alta frequência • 3.000-8.000 ops/dia • Volume massivo • Recuperação imediata',
+                'apollo': '☀️ Martingale inteligente • Over 5→6→7→8 • Gestão de risco avançada • Pouso suave e trailing stop'
+            };
+            return descriptions[this.selectedStrategy] || descriptions.orion;
         },
         
-        profitPercent() {
-            if (!this.accountBalance || this.accountBalance <= 0) return '0.00';
-            return ((this.profitTarget / this.accountBalance) * 100).toFixed(2);
+        entryValuePercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.entryValue / this.balanceNumeric) * 100).toFixed(2);
         },
-        
-        lossPercent() {
-            if (!this.accountBalance || this.accountBalance <= 0) return '0.00';
-            return ((this.lossLimit / this.accountBalance) * 100).toFixed(2);
+        profitTargetPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.profitTarget / this.balanceNumeric) * 100).toFixed(2);
+        },
+        lossLimitPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.lossLimit / this.balanceNumeric) * 100).toFixed(2);
         },
         
         riskLevelText() {
             const labels = {
-                'fixo': 'Fixo',
                 'conservador': 'Baixo',
                 'moderado': 'Médio',
                 'agressivo': 'Alto'
@@ -592,7 +562,6 @@ export default {
         
         riskBarWidth() {
             const widths = {
-                'fixo': '15%',
                 'conservador': '25%',
                 'moderado': '50%',
                 'agressivo': '75%'
@@ -602,15 +571,32 @@ export default {
         
         riskDescriptionText() {
             const descriptions = {
-                'fixo': 'Valor de entrada fixo sem variação',
-                'conservador': 'Proteção máxima do capital com crescimento estável',
-                'moderado': 'Equilíbrio entre proteção e crescimento',
-                'agressivo': 'Maior exposição para potencial de retorno elevado'
+                'conservador': 'Recuperação limitada (até M5) • Protege capital • Lucros menores mas seguros',
+                'moderado': 'Recuperação ilimitada com +25% de lucro • Equilíbrio entre risco e retorno',
+                'agressivo': 'Recuperação ilimitada com +50% de lucro • Máximo retorno com risco controlado'
             };
             return descriptions[this.modoMartingale] || descriptions.conservador;
         }
     },
     methods: {
+        getCurrencyPrefix(currency) {
+            switch ((currency || '').toUpperCase()) {
+                case 'USD':
+                    return '$';
+                case 'EUR':
+                    return '€';
+                case 'BTC':
+                    return '₿';
+                case 'DEMO':
+                    return 'D$';
+                default:
+                    return currency ? `${currency} ` : '$';
+            }
+        },
+        
+        checkMobile() {
+            this.isMobile = window.innerWidth <= 1024;
+        },
         
         async handleToggleChange(event) {
             const isChecked = event.target.checked;
@@ -651,6 +637,23 @@ export default {
                     return;
                 }
 
+                // ✅ [NOVO] Validação de saldo mínimo (pelo menos 3 entradas)
+                const currentBalance = this.balanceNumeric || 0;
+                const requiredBalance = this.entryValue * 3;
+
+                console.log('[InvestmentIAView] 🔍 Verificando saldo mínimo:', {
+                    current: currentBalance,
+                    required: requiredBalance,
+                    accountType: this.accountType
+                });
+
+                if (currentBalance < requiredBalance) {
+                    console.warn('[InvestmentIAView] ⚠️ Saldo insuficiente para iniciar:', currentBalance, '<', requiredBalance);
+                    this.showInsufficientBalanceModal = true;
+                    this.isActivating = false;
+                    return;
+                }
+
                 const userId = this.getUserId();
                 if (!userId) {
                     console.error('[InvestmentIAView] ❌ Usuário não identificado');
@@ -663,12 +666,16 @@ export default {
                     return;
                 }
 
-                const preferredCurrency = this.getPreferredCurrency();
+                const preferredCurrency = (this.tradeCurrency === 'DEMO' || !this.tradeCurrency) ? 'USD' : this.tradeCurrency;
                 
-                // ✅ Removida chamada para /ai/deriv-balance - usar saldo já disponível
-                // O saldo já está disponível em this.accountBalance ou pode ser obtido do localStorage
+                // O saldo agora vem do mixin centralizado (balanceNumeric)
+                const accountBalanceReal = this.balanceNumeric || 0;
 
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const capitalInicial = accountBalanceReal > 0 ? accountBalanceReal : (this.balanceNumeric || this.entryValue || 0.35);
+                
+                console.log('[InvestmentIAView] 💰 Capital inicial para IA:', capitalInicial, '| Valor de entrada por operação:', this.entryValue);
+                
                 const response = await fetch(`${apiBase}/ai/activate`, {
                     method: 'POST',
                     headers: {
@@ -677,7 +684,8 @@ export default {
                     },
                     body: JSON.stringify({
                         userId: userId,
-                        stakeAmount: this.entryValue,
+                        stakeAmount: capitalInicial, // ✅ Capital inicial = saldo real da conta ($9k)
+                        entryValue: this.entryValue || 0.35, // ✅ Valor de entrada por operação (R$ 1.00)
                         derivToken: derivToken,
                         currency: preferredCurrency,
                         mode: this.mode.toLowerCase(),
@@ -769,151 +777,60 @@ export default {
         },
 
         getDerivToken() {
-            console.log('[InvestmentIAView] Buscando token Deriv...');
-
-            let accountLoginid = null;
-            let preferredCurrency = null;
+            console.log('[InvestmentIAView] Buscando token Deriv para conta:', this.accountType);
 
             try {
-                const connectionStr = localStorage.getItem('deriv_connection');
-                if (connectionStr) {
-                    const connection = JSON.parse(connectionStr);
-                    accountLoginid = connection.loginid;
-                    preferredCurrency = connection.tradeCurrency;
-                }
-            } catch (error) {
-                console.error('[InvestmentIAView] Erro ao parsear deriv_connection:', error);
-            }
-
-            const isDemoPreferred = preferredCurrency?.toUpperCase() === 'DEMO';
-            if (isDemoPreferred) {
-                try {
-                    const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
-                    const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-
+                const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
+                const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+                
+                // Se estivermos em modo demo, procurar especificamente por um token de conta virtual (VRT/VRTC)
+                if (this.accountType === 'demo') {
                     for (const [loginid, token] of Object.entries(tokensByLoginId)) {
                         if (loginid.startsWith('VRTC') || loginid.startsWith('VRT')) {
-                            console.log('[InvestmentIAView] ✓ Token demo encontrado');
+                            console.log('[InvestmentIAView] ✓ Token demo encontrado para loginid:', loginid);
                             return token;
                         }
                     }
-                } catch (error) {
-                    console.error('[InvestmentIAView] Erro ao buscar token demo:', error);
-                }
-            }
-
-            if (accountLoginid) {
-                try {
-                    const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';
-                    const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-
-                    const specificToken = tokensByLoginId[accountLoginid];
-                    if (specificToken) {
-                        console.log('[InvestmentIAView] ✓ Token específico encontrado');
-                        return specificToken;
+                } else {
+                    // Se estivermos em modo real, tentar pegar o token associado ao loginid atual no deriv_connection
+                    const connectionStr = localStorage.getItem('deriv_connection');
+                    if (connectionStr) {
+                        const connection = JSON.parse(connectionStr);
+                        const currentLoginid = connection.loginid;
+                        
+                        if (currentLoginid && tokensByLoginId[currentLoginid]) {
+                            // Validar que não é um loginid de demo se estamos no modo real
+                            if (!currentLoginid.startsWith('VRTC') && !currentLoginid.startsWith('VRT')) {
+                                console.log('[InvestmentIAView] ✓ Token real específico encontrado para loginid:', currentLoginid);
+                                return tokensByLoginId[currentLoginid];
+                            }
+                        }
                     }
-                } catch (error) {
-                    console.error('[InvestmentIAView] Erro ao buscar token específico:', error);
-                }
-            }
-
-            const defaultToken = localStorage.getItem('deriv_token');
-            if (!defaultToken) {
-                console.error('[InvestmentIAView] ERRO: Nenhum token encontrado!');
-            }
-
-            return defaultToken;
-        },
-
-        getPreferredCurrency() {
-            try {
-                const connectionStr = localStorage.getItem('deriv_connection');
-                if (connectionStr) {
-                    const connection = JSON.parse(connectionStr);
-                    if (connection.tradeCurrency) {
-                        const currency = connection.tradeCurrency.toUpperCase();
-                        console.log('[InvestmentIAView] Moeda preferida:', currency);
-                        return currency;
-                    }
-                }
-            } catch (error) {
-                console.error('[InvestmentIAView] Erro ao parsear deriv_connection:', error);
-            }
-
-            return 'USD';
-        },
-
-        async fetchAccountBalance() {
-            try {
-                const derivToken = this.getDerivToken();
-                if (!derivToken) {
-                    console.warn('[InvestmentIAView] ❌ Token não disponível para buscar saldo');
-                    return;
-                }
-
-                // ✅ DESATIVADO: Chamada para /ai/deriv-balance (causa erro 500)
-                // Usar saldo já disponível no contexto ou endpoint alternativo /broker/deriv/status
-                console.warn('[InvestmentIAView] ⚠️ Busca de saldo desativada - usar saldo do contexto');
-                return;
-
-                // const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                // const response = await fetch(`${apiBase}/ai/deriv-balance`, {
-                //     method: 'POST',
-                //     headers: {
-                //         'Content-Type': 'application/json',
-                //         'Authorization': `Bearer ${localStorage.getItem('token')}`
-                //     },
-                //     body: JSON.stringify({ derivToken: derivToken }),
-                // });
-
-                // const result = await response.json();
-                // if (result.success && result.data) {
-                //     this.accountBalance = result.data.balance;
-                //     this.accountCurrency = result.data.currency;
-                //     this.accountLoginid = result.data.loginid;
-                //     this.isDemo = result.data.loginid?.startsWith('VRTC') || result.data.loginid?.startsWith('VRT');
-                //     this.lastBalanceUpdate = new Date();
                     
-                //     console.log('[InvestmentIAView] ✅ Saldo atualizado:', {
-                //         balance: this.accountBalance,
-                //         currency: this.accountCurrency,
-                //         loginid: this.accountLoginid,
-                //         isDemo: this.isDemo
-                //     });
-                // } else {
-                //     console.error('[InvestmentIAView] ❌ Erro ao buscar saldo:', result.message || 'Unknown error');
-                // }
+                    // Fallback para qualquer token real que não comece com VRT
+                    for (const [loginid, token] of Object.entries(tokensByLoginId)) {
+                        if (!loginid.startsWith('VRTC') && !loginid.startsWith('VRT')) {
+                            console.log('[InvestmentIAView] ✓ Token real alternativo encontrado para loginid:', loginid);
+                            return token;
+                        }
+                    }
+                }
             } catch (error) {
-                console.error('[InvestmentIAView] ❌ Erro ao buscar saldo da conta:', error);
+                console.error('[AccountBalanceMixin] Erro ao buscar token específico:', error);
             }
-        },
 
-        startBalanceUpdates() {
-            this.fetchAccountBalance();
-            this.balanceUpdateInterval = setInterval(() => {
-                this.fetchAccountBalance();
-            }, 30000);
-        },
-
-        stopBalanceUpdates() {
-            if (this.balanceUpdateInterval) {
-                clearInterval(this.balanceUpdateInterval);
-                this.balanceUpdateInterval = null;
+            // Fallback final para o token padrão
+            const defaultToken = localStorage.getItem('deriv_token');
+            if (defaultToken) {
+                console.log('[InvestmentIAView] ✓ Usando token padrão (fallback)');
+                return defaultToken;
             }
+
+            console.error('[InvestmentIAView] ❌ Nenhum token encontrado para o modo:', this.accountType);
+            return null;
         },
 
-        startClock() {
-            this.clockInterval = setInterval(() => {
-                this.lastBalanceUpdate = new Date();
-            }, 1000);
-        },
 
-        stopClock() {
-            if (this.clockInterval) {
-                clearInterval(this.clockInterval);
-                this.clockInterval = null;
-            }
-        },
         
         async fetchDailyStats() {
             try {
@@ -981,10 +898,31 @@ export default {
             }
         },
 
-        toggleAccountType(type) {
-            this.isDemo = type === 'demo';
+        toggleSidebar() {
+            this.isSidebarOpen = !this.isSidebarOpen;
         },
         
+        closeSidebar() {
+            this.isSidebarOpen = false;
+        },
+        
+        toggleSidebarCollapse() {
+            this.isSidebarCollapsed = !this.isSidebarCollapsed;
+        },
+        
+        toggleSettingsModal() {
+            this.showSettingsModal = !this.showSettingsModal;
+        },
+        
+        closeSettingsModal() {
+            this.showSettingsModal = false;
+        },
+        
+        
+        handleGlobalAccountChange() {
+            console.log('[InvestmentIAView] Detectada mudança de conta global, recarregando...');
+            this.reloadBalance();
+        },
         async startDataLoading() {
             try {
                 console.log('[InvestmentIAView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
@@ -1165,39 +1103,39 @@ export default {
             }
         }
     },
-
+    created() {
+        this.checkMobile();
+        window.addEventListener('resize', this.checkMobile);
+    },
     async mounted() {
-        console.log('🚀 TESTE: InvestmentIAView mounted() foi chamado!');
-        console.warn('⚠️ SE VOCÊ VÊ ESTA MENSAGEM, O COMPONENTE ESTÁ CARREGANDO!');
+        console.log('[InvestmentIAView] mounted() - Sincronizando com logic do Dashboard');
+        
+        // O accountBalanceMixin já lida com loadTradeCurrency e loadAccountBalanceInfo no seu mounted()
         
         await this.checkAIStatus();
         
         console.log('[InvestmentIAView] Iniciando carregamento de dados...');
         this.startDataLoading();
         
-        console.log('[InvestmentIAView] Iniciando atualização de saldo...');
-        this.startBalanceUpdates();
-        
-        console.log('[InvestmentIAView] Iniciando relógio em tempo real...');
-        this.startClock();
-        
         console.log('[InvestmentIAView] Iniciando atualização de estatísticas...');
         this.startStatsUpdates();
+        
+        // Iniciar polling de saldo via mixin (ajustado para 30s como Dashboard)
+        this.startBalancePolling(30000);
+        
+        // Escutar mudanças de conta para atualizar saldo automaticamente
+        window.addEventListener('accountChanged', this.handleGlobalAccountChange);
     },
 
     beforeUnmount() {
-        console.log('[InvestmentIAView] Limpando polling antes de desmontar...');
-        this.stopPolling();
+        window.removeEventListener('resize', this.checkMobile);
+        window.removeEventListener('accountChanged', this.handleGlobalAccountChange);
+        console.log('[InvestmentIAView] Limpando intervalos e listeners...');
         
-        console.log('[InvestmentIAView] Parando atualização de saldo...');
-        this.stopBalanceUpdates();
-        
-        console.log('[InvestmentIAView] Parando relógio...');
-        this.stopClock();
-        
-        console.log('[InvestmentIAView] Parando atualização de estatísticas...');
-        this.stopStatsUpdates();
-    }
+        this.stopPolling(); // Para os ticks do gráfico
+        this.stopStatsUpdates(); // Para as estatísticas diárias
+        this.stopBalancePolling(); // Do Mixin
+    },
 }
 </script>
 
@@ -1210,10 +1148,106 @@ export default {
     box-sizing: border-box;
 }
 
-.investment-container {
-    width: 100%;
+.zenix-layout {
+    min-height: 100vh;
+    background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
     color: #DFDFDF;
-    font-family: 'Inter', sans-serif;
+    width: 100%;
+    margin: 0;
+}
+
+/* Desktop: remover gradiente e aplicar #0e0e0e nos cards */
+@media (min-width: 1025px) {
+    .zenix-layout {
+        background: #0b0b0b;
+    }
+
+    .bg-zenix-card {
+        background: #0e0e0e !important;
+    }
+
+    .bg-zenix-bg {
+        background-color: #0e0e0e !important;
+    }
+
+    .ai-vision-card {
+        background: #0e0e0e !important;
+    }
+
+    .config-card {
+        background: #0e0e0e !important;
+    }
+
+    .ai-control-card {
+        background: #0e0e0e !important;
+    }
+}
+
+.content-wrapper {
+    min-height: 100vh;
+    transition: margin-left 0.3s ease, width 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.content-wrapper.sidebar-collapsed {
+    margin-left: 0;
+    width: 100%;
+}
+
+/* Top Header */
+.top-header {
+    position: fixed;
+    top: 0;
+    right: 0;
+    left: 0;
+    z-index: 40;
+    background-color: #0E0E0E;
+    border-bottom: 1px solid #1C1C1C;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+    transition: left 0.3s ease;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.content-wrapper.sidebar-collapsed .top-header {
+    left: 0;
+    width: 100%;
+}
+
+.header-content {
+    padding: 1rem 20px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.header-left-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    justify-content: center;
+    align-items: flex-start;
+}
+
+.header-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #DFDFDF;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.header-subtitle {
+    font-size: 0.875rem;
+    color: #A1A1A1;
+    margin: 0;
+    line-height: 1.4;
 }
 
 .balance-display-card {
@@ -1301,10 +1335,10 @@ export default {
     color: #DFDFDF;
 }
 
-/* Main Content */
+/* Main Content - Desktop (sem gradiente) */
 .main-content {
-    margin-top: 0;
-    padding: 1rem 20px;
+    margin-top: 90px; /* Margem pequena entre conteúdo e header */
+    padding: 1rem 20px; /* Padding reduzido */
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
@@ -1786,6 +1820,67 @@ export default {
     color: #A1A1A1;
 }
 
+.balance-card-header {
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+}
+
+.balance-header-content {
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+}
+
+.balance-info-header {
+    display: flex;
+    flex-direction: column;
+}
+
+.balance-label-header {
+    font-size: 0.625rem;
+    color: #7A7A7A;
+    font-weight: 500;
+}
+
+.balance-value-row-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.125rem;
+}
+
+.balance-value-header {
+    font-size: 1rem;
+    font-weight: bold;
+    color: #DFDFDF;
+}
+
+.account-type-btn-header {
+    padding: 0.125rem 0.5rem;
+    border-radius: 0.25rem;
+    font-size: 0.625rem;
+    font-weight: 600;
+    border: none;
+}
+
+.real-btn-header {
+    background-color: #22C55E;
+    color: #000;
+}
+
+.demo-btn-header {
+    background-color: #333;
+    color: #A1A1A1;
+}
+
+.eye-toggle-btn-header {
+    background: none;
+    border: none;
+    color: #A1A1A1;
+    cursor: pointer;
+}
 
 /* AI Vision Grid */
 .ai-vision-grid {
@@ -2278,23 +2373,63 @@ export default {
     order: 4;
 }
 
-/* Gerenciamento de Risco - Desktop: esconder dentro do card, mostrar card separado */
-.risk-management-mobile {
-    display: none;
+/* Gerenciamento de Risco */
+.flex-1 {
+    flex: 1;
 }
 
-#risk-management-card {
-    display: block;
+.loss-stoploss-row {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+}
+
+.ai-status-group {
+    margin-top: 0.5rem;
+}
+
+.ai-status-control-simple {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 1.5rem;
+    background: linear-gradient(135deg, rgba(29, 229, 103, 0.03) 0%, rgba(68, 115, 69, 0.11) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    border-radius: 0.5rem;
+    padding: 0.75rem 1rem;
+}
+
+.ai-status-info {
+    flex: 1;
+}
+
+.ai-status-subtitle {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    margin: 0;
+    text-align: left;
+}
+
+.ai-status-toggle-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.ai-status-text {
+    font-size: 0.875rem;
+    font-weight: bold;
+    color: #A1A1A1;
+}
+
+.ai-status-text.active {
+    color: #22C55E;
 }
 
 /* Garantir que no desktop (acima de 768px) as regras sejam aplicadas */
 @media (min-width: 769px) {
     .risk-management-mobile {
         display: none !important;
-    }
-    
-    #risk-management-card {
-        display: block !important;
     }
 }
 
@@ -2437,8 +2572,8 @@ export default {
 
 /* Risk Buttons */
 .risk-buttons {
-        display: grid;
-    grid-template-columns: repeat(4, 1fr);
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 0.5rem;
     margin-bottom: 1rem;
 }
@@ -2513,6 +2648,51 @@ export default {
     font-size: 0.75rem;
     color: #A1A1A1;
     opacity: 0.6;
+}
+
+/* Stoploss Blindado Slider */
+.stoploss-blindado-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.625rem 0.75rem;
+    background-color: #0b0b0b;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    height: 38px; /* Standardize desktop input height */
+    box-sizing: border-box;
+}
+
+.stoploss-blindado-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #DFDFDF;
+}
+
+.stoploss-blindado-label i {
+    font-size: 0.875rem;
+    color: #22C55E;
+}
+
+.stoploss-toggle {
+    flex-shrink: 0;
+    height: 1.75rem;
+}
+
+.stoploss-toggle .toggle-slider {
+    height: 1.75rem;
+}
+
+.stoploss-toggle .toggle-slider::before {
+    height: 1.25rem;
+    width: 1.25rem;
+}
+
+.stoploss-toggle input:checked + .toggle-slider::before {
+    transform: translateX(calc(4rem - 1.25rem - 6px));
 }
 
 /* AI Control Card */
@@ -2788,10 +2968,161 @@ export default {
     box-sizing: border-box;
 }
 
+/* Footer */
+.zenix-footer {
+    background-color: #0B0B0B;
+    border-top: 1px solid #1C1C1C;
+    margin-top: 3rem;
+    width: 100%;
+}
+
+.footer-content {
+    max-width: 100%;
+    width: 100%;
+    margin: 0 auto;
+    padding: 3rem 20px;
+    box-sizing: border-box;
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 3rem;
+    margin-bottom: 2rem;
+}
+
+.footer-brand {
+    grid-column: span 1;
+}
+
+.footer-logo {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.footer-logo-main {
+    font-size: 1.125rem;
+    font-weight: 600;
+    color: #DFDFDF;
+}
+
+.footer-logo-sub {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+}
+
+.footer-description {
+    color: #A1A1A1;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    margin-bottom: 1.5rem;
+    opacity: 0.6;
+}
+
+.footer-social {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.social-icon {
+    color: #A1A1A1;
+    transition: color 0.2s;
+    opacity: 0.5;
+}
+
+.social-icon:hover {
+    color: #DFDFDF;
+}
+
+.footer-column-title {
+    color: #DFDFDF;
+    font-weight: 500;
+    font-size: 0.75rem;
+    margin-bottom: 1rem;
+}
+
+.footer-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.625rem;
+}
+
+.footer-links a {
+    color: #A1A1A1;
+    font-size: 0.75rem;
+    text-decoration: none;
+    transition: color 0.2s;
+    opacity: 0.6;
+}
+
+.footer-links a:hover {
+    color: #DFDFDF;
+}
+
+.footer-bottom {
+    border-top: 1px solid #1A1A1A;
+    padding-top: 2rem;
+    opacity: 0.4;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+@media (min-width: 768px) {
+    .footer-bottom {
+        flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    }
+}
+
+.footer-copyright {
+    color: #A1A1A1;
+    font-size: 0.75rem;
+}
+
+.footer-legal {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    font-size: 0.75rem;
+}
+
+.footer-legal a {
+    color: #A1A1A1;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.footer-legal a:hover {
+    color: #DFDFDF;
+}
+
+.footer-separator {
+    color: #1C1C1C;
+}
+
 /* Responsive */
 @media (max-width: 1024px) {
+    .content-wrapper {
+        margin-left: 0;
+        width: 100%;
+    }
+    
+    .content-wrapper.sidebar-collapsed {
+        margin-left: 0;
+        width: 100%;
+    }
+    
     .main-content {
         padding: 1rem 15px;
+        padding-bottom: 90px !important;
     }
     
     .config-grid {
@@ -2812,6 +3143,10 @@ export default {
         grid-template-columns: repeat(2, 1fr);
     }
     
+    .footer-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+    
     #ai-vision-panel {
         margin-left: 0;
         margin-right: 0;
@@ -2825,11 +3160,47 @@ export default {
 }
 
 @media (max-width: 768px) {
+    .zenix-layout {
+        background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%) !important;
+        background-color: transparent !important;
+        position: relative;
+    }
+    
+    .zenix-layout::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(1, 5, 2, 0.05) 50%, transparent 80%);
+        pointer-events: none;
+        z-index: 0;
+    }
+    
+    .zenix-layout > * {
+        position: relative;
+        z-index: 1;
+    }
+    
+    .content-wrapper {
+        margin-left: 0;
+        width: 100%;
+        background: transparent !important;
+    }
+    
+    .content-wrapper.sidebar-collapsed {
+        margin-left: 0;
+        width: 100%;
+    }
+    
     /* Gradiente no fundo da página - apenas mobile */
     .main-content {
-        margin-top: 0;
+        margin-top: 60px;
+        padding: 1rem 15px;
         background: transparent !important;
         position: relative;
+        min-height: calc(100vh - 60px);
     }
     
     /* Gradiente nos cards de configuração - apenas mobile */
@@ -2899,20 +3270,33 @@ export default {
         order: 3;
     }
     
-    /* Gerenciamento de Risco - Mobile: mostrar dentro do card, esconder card separado */
-    .risk-management-mobile {
+    .risk-management-section {
         display: flex;
         flex-direction: column;
         gap: 0.5rem;
     }
     
-    /* Remover indicador de risco no mobile */
-    .risk-management-mobile .risk-indicator {
+    /* Mostrar apenas o texto descritivo no mobile, esconder barra e header */
+    .risk-management-section .risk-indicator {
+        display: block !important;
+        background-color: transparent !important;
+        border: none !important;
+        padding: 0.5rem 0 !important;
+        margin-top: 0.5rem;
+    }
+    
+    .risk-management-section .risk-header,
+    .risk-management-section .risk-bar-container {
         display: none !important;
     }
     
-    #risk-management-card {
-        display: none !important;
+    .risk-management-section .risk-description {
+        display: block !important;
+        font-size: 0.75rem;
+        color: #A1A1A1;
+        opacity: 0.8;
+        text-align: center;
+        margin: 0;
     }
     
     /* Gradiente nos cards de configuração - apenas mobile */
@@ -3000,18 +3384,24 @@ export default {
         font-size: 0.7rem;
     }
     
-    .ai-status-control {
+    .ai-status-group {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .ai-status-control-simple {
         flex-direction: row;
-        align-items: flex-start;
-        justify-content: space-between;
+        align-items: center;
+        justify-content: flex-start;
         gap: 1rem;
         padding: 1rem;
-        background-color: transparent;
-        border: none;
+        background-color: #000000;
+        border: 1px solid #1C1C1C;
         margin-bottom: 0;
     }
     
-    .ai-status-control > div:first-child {
+    .ai-status-info {
         flex: 1;
     }
     
@@ -3073,6 +3463,11 @@ export default {
         transform: translateX(calc(3.5rem - 1.25rem - 6px));
     }
     
+    .footer-grid {
+        grid-template-columns: 1fr;
+        gap: 2rem;
+    }
+    
     .chart-section {
         margin-left: -15px;
         margin-right: -15px;
@@ -3128,39 +3523,47 @@ export default {
     }
 }
 
-/* Full Screen Loader */
-.fullscreen-loader {
+/* Sidebar Overlay - Fecha ao clicar fora */
+.sidebar-overlay {
     position: fixed;
     top: 0;
     left: 0;
     right: 0;
     bottom: 0;
-    width: 100%;
-    height: 100%;
-    background: #000000;
-    z-index: 10002 !important; /* Acima de tudo, incluindo sidebar (10001) e desktopbottomnav (1000) */
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    padding: 0;
+    background-color: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(2px);
+    z-index: 998;
+    cursor: pointer;
 }
 
-.loader-spinner {
-    width: 60px;
-    height: 60px;
-    border: 4px solid rgba(34, 197, 94, 0.2);
-    border-top-color: #22C55E;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
+/* Ajustes para mobile */
+@media (max-width: 1024px) {
+    .content-wrapper {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    .content-wrapper.sidebar-collapsed {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+    
+    /* Sidebar como drawer no mobile */
+    :deep(.sidebar) {
+        position: fixed;
+        width: 280px !important;
+        height: 100vh;
+        z-index: 999;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease-out;
+    }
+    
+    /* Sidebar aberta no mobile - z-index alto para ficar acima de tudo */
+    :deep(.sidebar.is-open) {
+        transform: translateX(0);
+        z-index: 10000 !important;
     }
 }
-
 
 /* Header Mobile - Escondido no desktop */
 #ai-vision-panel .ai-vision-header-mobile {
@@ -3298,104 +3701,31 @@ export default {
     #ai-vision-panel .grid.gap-5 {
         gap: 0 !important;
     }
-}
+    
+    /* Remove h3 (card-title) no mobile */
+    .config-card .card-title,
+    .config-card h3 {
+        display: none !important;
+    }
+    
+    /* Remove ai-status-title no mobile */
+    .ai-status-title {
+        display: none !important;
+    }
 
-/* Toggle Switch */
-.toggle-switch {
-    position: relative;
-    display: inline-block;
-    width: 4rem;
-    height: 2rem;
-    cursor: pointer;
-    flex-shrink: 0;
-}
+    .loss-stoploss-row {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
 
-.toggle-switch input {
-    opacity: 0;
-    width: 0;
-    height: 0;
-    position: absolute;
-}
+    .loss-stoploss-row .flex-1 {
+        width: 100%;
+    }
 
-.toggle-slider {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    width: 4rem;
-    height: 2rem;
-    background-color: #0B0B0B;
-    border: 2px solid #1C1C1C;
-    border-radius: 9999px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.toggle-slider::before {
-    content: '';
-    position: absolute;
-    height: 1.5rem;
-    width: 1.5rem;
-    left: 3px;
-    bottom: 2px;
-    background-color: white;
-    border-radius: 50%;
-    transition: all 0.3s ease;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
-}
-
-.toggle-switch input:checked + .toggle-slider {
-    background-color: #22C55E;
-    border-color: #22C55E;
-}
-
-.toggle-switch input:checked + .toggle-slider::before {
-    transform: translateX(calc(4rem - 1.5rem - 6px));
-}
-
-/* Stoploss Blindado Slider */
-.stoploss-blindado-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 0.75rem 1rem;
-    background-color: #0B0B0B;
-    border: 1px solid #1C1C1C;
-    border-radius: 0.5rem;
-}
-
-.stoploss-blindado-label {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.875rem;
-    font-weight: 500;
-    color: #DFDFDF;
-}
-
-.stoploss-blindado-label i {
-    font-size: 0.875rem;
-    color: #22C55E;
-}
-
-.stoploss-toggle {
-    flex-shrink: 0;
-    width: 3.5rem;
-    height: 1.75rem;
-}
-
-.stoploss-toggle .toggle-slider {
-    width: 3.5rem;
-    height: 1.75rem;
-}
-
-.stoploss-toggle .toggle-slider::before {
-    height: 1.25rem;
-    width: 1.25rem;
-}
-
-.stoploss-toggle input:checked + .toggle-slider::before {
-    transform: translateX(calc(3.5rem - 1.25rem - 6px));
+    .stoploss-blindado-wrapper {
+        background-color: #000000 !important;
+        padding: 0.5rem;
+        height: auto;
+    }
 }
 </style>

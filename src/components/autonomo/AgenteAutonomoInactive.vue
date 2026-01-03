@@ -1,5 +1,6 @@
 <template>
-	<div class="layout-content-agent-autonomo">
+	<Teleport to="#master-trader-portal-target" :disabled="!shouldTeleport">
+		<div class="layout-content-agent-autonomo">
 		<div class="agent-config-container">
 			<header class="config-header">
 				<h1>
@@ -368,7 +369,8 @@
 			</div>
 		</div>
 		
-	</div>
+		</div>
+	</Teleport>
 </template>
 
 <script>
@@ -379,6 +381,10 @@ export default {
 		accountBalance: {
 			type: Number,
 			default: null
+		},
+		shouldTeleport: {
+			type: Boolean,
+			default: false
 		}
 		// NOTA: Este componente também está recebendo 'estrategia', 'mercado', 'risco', etc.
 		// do 'agenteData' (via v-bind), mas está usando seu próprio 'data()' local.
