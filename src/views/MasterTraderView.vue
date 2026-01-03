@@ -44,7 +44,9 @@
                 <div class="top-status-bar">
                     <div class="status-cards-container">
                         <div class="status-card active-copy-trading">
-                            <i class="status-icon active"></i>
+                            <div class="status-icon-wrapper active">
+                                <i class="fas fa-copy"></i>
+                            </div>
                             <div class="status-text">
                                 <span class="status-label">Copy Trading</span>
                                 <span class="status-value active-label">Ativo</span>
@@ -52,23 +54,43 @@
                         </div>
 
                         <div class="status-card">
-                            <span class="status-label">Copiers</span>
-                            <span class="status-value">25</span>
+                            <div class="status-header">
+                                <span class="status-label">Copiers</span>
+                                <button type="button" class="visibility-toggle-btn" @click.stop="toggleCardVisibility('copiers')">
+                                    <i :class="visibleCards.copiers ? 'fas fa-eye' : 'fas fa-eye-slash'" class="visibility-icon"></i>
+                                </button>
+                            </div>
+                            <span class="status-value">{{ visibleCards.copiers ? '25' : '***' }}</span>
                         </div>
 
                         <div class="status-card">
-                            <span class="status-label">Gerenciado</span>
-                            <span class="status-value">$141.76</span>
+                            <div class="status-header">
+                                <span class="status-label">Gerenciado</span>
+                                <button type="button" class="visibility-toggle-btn" @click.stop="toggleCardVisibility('managed')">
+                                    <i :class="visibleCards.managed ? 'fas fa-eye' : 'fas fa-eye-slash'" class="visibility-icon"></i>
+                                </button>
+                            </div>
+                            <span class="status-value">{{ visibleCards.managed ? '$141.76' : '***' }}</span>
                         </div>
 
                         <div class="status-card">
-                            <span class="status-label">Lucro Hoje</span>
-                            <span class="status-value profit">+$18.60</span>
+                            <div class="status-header">
+                                <span class="status-label">Lucro Hoje</span>
+                                <button type="button" class="visibility-toggle-btn" @click.stop="toggleCardVisibility('profit')">
+                                    <i :class="visibleCards.profit ? 'fas fa-eye' : 'fas fa-eye-slash'" class="visibility-icon"></i>
+                                </button>
+                            </div>
+                            <span class="status-value profit">{{ visibleCards.profit ? '+$18.60' : '***' }}</span>
                         </div>
 
                         <div class="status-card">
-                            <span class="status-label">Volume</span>
-                            <span class="status-value">$450</span>
+                            <div class="status-header">
+                                <span class="status-label">Volume</span>
+                                <button type="button" class="visibility-toggle-btn" @click.stop="toggleCardVisibility('volume')">
+                                    <i :class="visibleCards.volume ? 'fas fa-eye' : 'fas fa-eye-slash'" class="visibility-icon"></i>
+                                </button>
+                            </div>
+                            <span class="status-value">{{ visibleCards.volume ? '$450' : '***' }}</span>
                         </div>
                     </div>
                 </div>
@@ -120,20 +142,40 @@
                     <!-- Seção Superior: Métricas em Grid 2x2 -->
                     <div class="mobile-metrics-grid">
                         <div class="mobile-metric-card">
-                            <span class="mobile-metric-label">Copiers</span>
-                            <span class="mobile-metric-value">25</span>
+                            <div class="mobile-metric-header">
+                                <span class="mobile-metric-label">Copiers</span>
+                                <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('copiers')">
+                                    <i :class="visibleCards.copiers ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
+                                </button>
+                            </div>
+                            <span class="mobile-metric-value">{{ visibleCards.copiers ? '25' : '***' }}</span>
                         </div>
                         <div class="mobile-metric-card">
-                            <span class="mobile-metric-label">Gerenciado</span>
-                            <span class="mobile-metric-value">$141.76</span>
+                            <div class="mobile-metric-header">
+                                <span class="mobile-metric-label">Gerenciado</span>
+                                <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('managed')">
+                                    <i :class="visibleCards.managed ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
+                                </button>
+                            </div>
+                            <span class="mobile-metric-value">{{ visibleCards.managed ? '$141.76' : '***' }}</span>
                         </div>
                         <div class="mobile-metric-card">
-                            <span class="mobile-metric-label">Lucro Hoje</span>
-                            <span class="mobile-metric-value profit">+$18.60</span>
+                            <div class="mobile-metric-header">
+                                <span class="mobile-metric-label">Lucro Hoje</span>
+                                <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('profit')">
+                                    <i :class="visibleCards.profit ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
+                                </button>
+                            </div>
+                            <span class="mobile-metric-value profit">{{ visibleCards.profit ? '+$18.60' : '***' }}</span>
                         </div>
                         <div class="mobile-metric-card">
-                            <span class="mobile-metric-label">Volume</span>
-                            <span class="mobile-metric-value">$450</span>
+                            <div class="mobile-metric-header">
+                                <span class="mobile-metric-label">Volume</span>
+                                <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('volume')">
+                                    <i :class="visibleCards.volume ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
+                                </button>
+                            </div>
+                            <span class="mobile-metric-value">{{ visibleCards.volume ? '$450' : '***' }}</span>
                         </div>
                     </div>
                 </div>
@@ -224,7 +266,7 @@
                 </div>
             </div>
 
-            <main class="master-trader-main-content">
+            <main id="master-trader-portal-target" class="master-trader-main-content">
                 <component :is="currentViewComponent" />
             </main>
         </div>
@@ -272,7 +314,13 @@ export default {
             balanceUpdateInterval: null,
             preferredCurrency: 'USD',
             balancesByCurrencyReal: {},
-            balancesByCurrencyDemo: {}
+            balancesByCurrencyDemo: {},
+            visibleCards: {
+                copiers: true,
+                managed: true,
+                profit: true,
+                volume: true
+            }
         }
     },
     computed: {
@@ -310,6 +358,11 @@ export default {
         // Método para trocar o modo
         selectMode(modeName) {
             this.activeMode = modeName
+        },
+        toggleCardVisibility(cardKey) {
+            console.log(`[MasterTrader] Alterando visibilidade de: ${cardKey}`);
+            this.visibleCards[cardKey] = !this.visibleCards[cardKey];
+            localStorage.setItem('master_trader_cards_visibility', JSON.stringify(this.visibleCards));
         },
         handleAccountTypeChange(newAccountType) {
             this.isDemo = newAccountType === 'demo';
@@ -419,6 +472,17 @@ export default {
         }
     },
     mounted() {
+        const saved = localStorage.getItem('master_trader_cards_visibility');
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed && typeof parsed === 'object') {
+                    Object.assign(this.visibleCards, parsed);
+                }
+            } catch (e) {
+                console.error('[MasterTrader] Erro ao carregar visibilidade:', e);
+            }
+        }
         this.preferredCurrency = this.getPreferredCurrency();
         this.startBalanceUpdates();
     },
@@ -445,13 +509,52 @@ export default {
 .layout-master-trader .content-wrapper {
     overflow-y: auto;
     position: static; 
-    padding: 0 20px 20px 20px; /* Mantém o padding do scoped CSS */
+    padding: 0 !important;
     flex-grow: 1;
 }
 
-/* Esconde o header duplicado (que pode estar vindo do componente Agente Autônomo) */
-.layout-master-trader .agente-autonomo-header {
+/* Esconde componentes internos redundantes quando renderizados dentro do MasterTraderView */
+.layout-master-trader .zenix-layout > .sidebar,
+.layout-master-trader .zenix-layout > .content-wrapper > .top-navbar,
+.layout-master-trader .zenix-layout > .content-wrapper > .top-header,
+.layout-master-trader .layout-agente-autnomo > .sidebar,
+.layout-master-trader .layout-agente-autnomo > .top-navbar,
+.layout-master-trader .layout-agente-autnomo > .top-header,
+.layout-master-trader .agente-autonomo-header,
+.layout-master-trader .top-header {
     display: none !important;
+}
+
+/* Oculta o shell do componente de agente para eliminar o espaço de 100vh vazio */
+.layout-master-trader .layout-agente-autnomo {
+    display: none !important;
+}
+
+/* Remove margens e ajusta largura dos wrappers internos dos componentes filhos */
+.layout-master-trader .content-wrapper,
+.layout-master-trader .layout-agente-autnomo,
+.layout-master-trader .layout-content-agent-autonomo,
+.layout-master-trader .zenix-layout,
+.layout-master-trader .master-trader-main-content,
+.layout-master-trader .container-componentes {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    max-width: none !important;
+}
+
+/* Exceção específica para o Agente Autônomo ter um respiro interno */
+.layout-master-trader .layout-content-agent-autonomo {
+    padding: 20px !important;
+}
+
+/* Garante que o conteúdo principal não tenha margem superior excessiva por causa dos headers ocultos e zera paddings */
+.layout-master-trader .main-content {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    max-width: none !important;
 }
 
 
@@ -480,7 +583,7 @@ export default {
 
 .content-wrapper {
     flex-grow: 1; 
-    padding: 0 20px 20px 20px;
+    padding: 0;
     margin-top: 60px;
 }
 
@@ -501,24 +604,13 @@ export default {
     flex-direction: column; 
     align-items: stretch;
     background-color: #0d0c0c;
-    border-radius: 8px;
-    padding: 10px 20px;
-    margin-bottom: 0; 
+    border-radius: 0;
+    padding: 10px 0;
+    margin: 0; 
     border-bottom: 1px solid #30363d;
-    /* Certifica que o Nav também não tente ser fixo */
     position: sticky; 
     top: 0;
     z-index: 10;
-}
-.master-trader-status-nav {
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    background-color: #0d0c0c;
-    border-radius: 0;
-    margin: 0 -20px 0 -20px; /* Estende para as bordas do content-wrapper */
-    padding: 10px 20px;
-    border-bottom: 1px solid #30363d;
 }
 
 .top-status-bar {
@@ -566,42 +658,93 @@ export default {
     display: flex;
     flex-direction: row;
     align-items: center;
-    gap: 10px;
-    padding: 0 15px;
+    gap: 12px;
+    padding: 10px 15px;
     justify-content: flex-start;
 }
 
 .status-card.active-copy-trading .status-text {
     display: flex;
     flex-direction: column;
-    line-height: 1.2;
+    gap: 2px;
 }
 
-.active-copy-trading .status-icon {
-    width: 20px;
-    height: 20px;
-    background-color: #23863721;
-    border-radius: 12px;
+.active-copy-trading .status-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    background-color: rgba(35, 134, 54, 0.13);
+    border-radius: 50%;
     border: 1px solid #238636;
-    position: relative;
-    padding: 18px;
-    margin-left: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
 }
 
-/* Símbolo de Power/Ligar (Unicode) */
-.active-copy-trading .status-icon::before {
-    content: '⏻'; 
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    font-size: 1.2rem;
-    color: #238636;
+.active-copy-trading .status-icon-wrapper i,
+.active-copy-trading .status-icon-wrapper svg {
+    font-size: 1.1rem;
+    color: #238636 !important;
+}
+
+.status-card {
+    cursor: default;
+}
+
+.visibility-toggle-btn,
+.mobile-visibility-toggle-btn {
+    background: none;
+    border: none;
+    padding: 10px;
+    margin: -10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    outline: none;
+    transition: opacity 0.2s;
+    position: relative;
+    z-index: 10;
+}
+
+.visibility-toggle-btn:hover,
+.mobile-visibility-toggle-btn:hover {
+    opacity: 0.7;
+}
+
+.visibility-icon,
+.mobile-visibility-icon {
+    font-size: 0.8rem;
+    color: #8b949e;
+    pointer-events: none;
 }
 
 .active-label {
     color: #22c55e;
     font-weight: 600;
+}
+
+.status-card.visibility-toggle-card {
+    display: none;
+}
+
+.status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    margin-bottom: 3px;
+}
+
+.visibility-icon {
+    font-size: 0.8rem;
+    color: #8b949e; /* Mesma cor do label */
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.visibility-icon:hover {
+    color: #8b949e;
 }
 
 .profit {
@@ -777,6 +920,19 @@ export default {
 
 .mobile-metric-value.profit {
     color: #22c55e;
+}
+
+.mobile-metric-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    width: 100%;
+}
+
+.mobile-visibility-icon {
+    font-size: 0.85rem;
+    color: #8b949e;
 }
 
 /* Grid de Opções Mobile */
