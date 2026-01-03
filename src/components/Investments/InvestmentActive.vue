@@ -979,7 +979,7 @@ export default {
                    marketKey.startsWith('R_') || marketKey.toLowerCase().includes('trinity');
         },
         
-        // Nome da estratégia baseado na estratégia ativa e modo
+        // Nome da estratégia baseado na estratégia ativa
         strategyName() {
             // ✅ Determinar se é Trinity baseado na configuração da sessão
             const isTrinity = this.isTrinityActive;
@@ -988,35 +988,14 @@ export default {
             const isTitan = this.sessionConfig && this.sessionConfig.strategy && 
                            this.sessionConfig.strategy.toLowerCase() === 'titan';
             
-            // Se TITAN está ativa, retornar nome da TITAN
-            if (isTitan) {
-                const modeMap = {
-                    'veloz': 'IA TITAN Veloz',
-                    'normal': 'IA TITAN Normal',
-                    'preciso': 'IA TITAN Preciso'
-                };
-                return modeMap[this.mode.toLowerCase()] || 'IA TITAN';
-            }
+            // Se TITAN está ativa
+            if (isTitan) return 'IA TITAN';
             
-            // Se Trinity está ativa, retornar nome da Trinity
-            if (isTrinity) {
-                const modeMap = {
-                    'veloz': 'IA Trinity Veloz',
-                    'moderado': 'IA Trinity Moderado',
-                    'preciso': 'IA Trinity Preciso',
-                    'fast': 'IA Trinity Fast'
-                };
-                return modeMap[this.mode.toLowerCase()] || 'IA Trinity';
-            }
+            // Se Trinity está ativa
+            if (isTrinity) return 'IA Trinity';
             
             // Caso contrário, retornar Orion
-            const modeMap = {
-                'veloz': 'IA Orion Veloz',
-                'moderado': 'IA Orion Moderado',
-                'preciso': 'IA Orion Preciso',
-                'fast': 'IA Orion Fast'
-            };
-            return modeMap[this.mode.toLowerCase()] || 'IA Orion';
+            return 'IA Orion';
         },
         
         // Nome do mercado formatado
