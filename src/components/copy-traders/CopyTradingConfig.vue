@@ -107,7 +107,7 @@
                     <label class="form-label">
                         Limite de perda
                         <TooltipsCopyTraders position="center">
-                            <p>Limite máximo de perda permitido dentro do Copy. Ao atingir esse valor, o Copy pausa automaticamente para proteger o saldo.</p>
+                            <p>O valor máximo que você aceita arriscar na sessão. Nosso sistema possui Stop de Precisão: ele ajusta automaticamente o valor da última entrada para garantir que você nunca perca mais do que definiu aqui.</p>
                         </TooltipsCopyTraders>
                     </label>
                     <input type="number" v-model.number="stopLoss" step="0.01" min="0" placeholder="250">
@@ -117,7 +117,7 @@
                     <label class="form-label">
                         Alvo de lucro
                         <TooltipsCopyTraders>
-                            <p>Meta de lucro para encerrar o Copy automaticamente. Quando este valor é alcançado, o sistema pausa as operações para preservar o ganho do dia.</p>
+                            <p>Sua meta financeira para a sessão. O sistema encerrará as operações automaticamente assim que este valor for atingido ou superado.</p>
                         </TooltipsCopyTraders>
                     </label>
                     <input type="number" v-model.number="takeProfit" step="0.01" min="0" placeholder="500">
@@ -129,7 +129,7 @@
                     <h4>
                         Stop Loss Blindado
                         <TooltipsCopyTraders position="center">
-                            <p>Protege o lucro automaticamente. Quando 40% do alvo é alcançado, a proteção é ativada, garantindo 50% do lucro total, mesmo em caso de reversão do mercado.</p>
+                            <p>Ative para proteção dinâmica. Quando você atinge 40% da meta, o sistema cria um 'piso de segurança' móvel. Se o mercado virar, o sistema para com lucro garantido (50% do pico), impedindo que você devolva seus ganhos.</p>
                         </TooltipsCopyTraders>
                     </h4>
                     <p>Protege contra operações consecutivas fora do padrão</p>
@@ -191,7 +191,7 @@
                     <span class="label">
                         Limite de perda
                         <TooltipsCopyTraders position="left">
-                            <p>Valor máximo de perda permitido antes do Copy encerrar as operações automaticamente.</p>
+                            <p>O valor máximo que você aceita arriscar na sessão. Nosso sistema possui Stop de Precisão: ele ajusta automaticamente o valor da última entrada para garantir que você nunca perca mais do que definiu aqui.</p>
                         </TooltipsCopyTraders>
                     </span>
                     <span class="value red">{{ stopLoss }}</span>
@@ -202,7 +202,7 @@
                 <span class="label">
                     Alvo de lucro
                     <TooltipsCopyTraders position="left">
-                        <p>Meta diária de lucro. Quando alcançada, o Copy é pausado para garantir o ganho.</p>
+                        <p>Sua meta financeira para a sessão. O sistema encerrará as operações automaticamente assim que este valor for atingido ou superado.</p>
                     </TooltipsCopyTraders>
                 </span>
                 <span class="value green">{{ takeProfit }}</span>
@@ -211,8 +211,8 @@
             <div class="summary-item">
                 <span class="label">
                     Stop Loss Blindado
-                    <TooltipsCopyTraders position="left"> 
-                        <p>O Stop Loss Blindado protege contra perdas consecutivas.</p>
+                    <TooltipsCopyTraders position="left">
+                        <p>Ative para proteção dinâmica. Quando você atinge 40% da meta, o sistema cria um 'piso de segurança' móvel. Se o mercado virar, o sistema para com lucro garantido (50% do pico), impedindo que você devolva seus ganhos.</p>
                     </TooltipsCopyTraders>
                 </span>
                 <span :class="['value', { green: armoredStopLossActive, red: !armoredStopLossActive }]">
