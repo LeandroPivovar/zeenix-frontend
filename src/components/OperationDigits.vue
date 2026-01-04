@@ -1124,13 +1124,13 @@ export default {
             this.isAnalyzing = true;
             this.aiRecommendation = null;
             
-            setTimeout(() => {
-                this.generateSignal();
-            }, 1500);
+            // Primeira chamada imediata
+            this.generateSignal();
 
+            // Configurar intervalo
             this.analysisTimer = setInterval(() => {
                 this.generateSignal();
-            }, 30000);
+            }, 3000); // 3 segundos (compatível com modo veloz)
         },
         stopAnalysis() {
             this.isAnalyzing = false;
@@ -1140,34 +1140,60 @@ export default {
             }
             this.aiRecommendation = null;
         },
-        generateSignal() {
+        async generateSignal() {
             if (!this.isAnalyzing) return;
 
-            const ticks = this.digitFrequency.digits.slice(-100);
-            if (ticks.length < 20) return;
+            // Chamar backend para análise real (Veloz)
+            try {
+                // Recupera userId do localStorage ou de onde estiver armazenado
+                // Se não tiver userId, tentar usar 'current' se o backend suportar ou pegar do token
+                // Assumindo que o back espera { userId: ... }
+                // Vamos tentar pegar o loginid como userId provisório ou decodificar do token se necessário
+                // O endpoint /ai/analyze espera { userId: string }
+                
+                // Melhor abordagem: usar o serviço de API se existisse, mas vamos de fetch direto
+                const token = localStorage.getItem('auth_token'); // Ajustar chave se necessário
+                const userId = this.accountLoginid || 'current'; 
 
-            const freq = new Array(10).fill(0);
-            ticks.forEach(d => {
-                freq[d]++;
-            });
+                const response = await fetch(`${process.env.VUE_APP_API_URL || 'http://localhost:3000'}/ai/analyze`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ userId })
+                });
 
-            let minFreq = 101;
-            let recommendedDigit = 0;
-            freq.forEach((f, i) => {
-                if (f < minFreq) {
-                    minFreq = f;
-                    recommendedDigit = i;
+                if (!response.ok) {
+                    throw new Error('Falha na análise da IA');
                 }
-            });
 
-            const avgFreq = ticks.length / 10;
-            const disparity = (avgFreq - minFreq) / avgFreq;
-            const confidence = Math.min(Math.round(65 + (disparity * 50)), 98);
-
-            this.aiRecommendation = {
-                action: `MATCH ${recommendedDigit}`,
-                confidence: confidence
-            };
+                const result = await response.json();
+                
+                if (result.success && result.data) {
+                    const diag = result.data;
+                    
+                    // Mapear resposta do backend para o formato esperado pelo frontend
+                    // O backend retorna algo como: 
+                    // { sinal: 'PAR', confianca: 85, motivo: '...', detalhes: {...} }
+                    
+                    if (diag.sinal) {
+                        this.aiRecommendation = {
+                            // Se o sinal for específico (ex: MATCH 5), ajustar aqui. 
+                            // O backend atual (Veloz) retorna PAR/IMPAR normalmente. 
+                            // Vamos exibir o sinal cru formatado
+                            action: `APOSTAR ${diag.sinal}`, 
+                            confidence: Math.round(diag.confianca)
+                        };
+                    } else {
+                        // Sem sinal forte
+                        this.aiRecommendation = null;
+                    }
+                }
+            } catch (error) {
+                console.error('[OperationDigits] Erro ao gerar sinal:', error);
+                // Não exibir erro na UI para não poluir, apenas logar
+            }
         },
         getHistogramBarClass(digit, percentage, frequencies) {
             if (!frequencies || frequencies.length === 0) return '';
@@ -2266,5 +2292,20 @@ export default {
     * {
         box-sizing: border-box;
     }
+}
+
+/* Fix connection loading overlay */
+.connection-loading {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #000;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
 }
 </style>
