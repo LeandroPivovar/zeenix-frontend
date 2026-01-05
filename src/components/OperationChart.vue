@@ -71,7 +71,7 @@
         <!-- Signal Generator Card -->
         <div class="bg-[#0D0D0D] border border-white/5 p-6 rounded-2xl signal-area-card">
           <!-- Header -->
-          <div class="flex items-center justify-between mb-8">
+          <div class="signal-generator-header flex items-center justify-between mb-8">
             <div class="flex items-center gap-4">
               <div class="w-14 h-14 rounded-full border border-zenix-green bg-zenix-green/10 flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.2)]">
                 <i class="fas fa-bolt text-zenix-green text-xl"></i>
@@ -84,7 +84,7 @@
             <button 
               @click="toggleAnalysis"
               :disabled="!symbol"
-              class="btn-gerar-sinal"
+              class="btn-gerar-sinal btn-gerar-sinal-header"
             >
               <i :class="isAnalyzing ? 'fas fa-stop' : 'fas fa-pencil-alt'"></i>
               <span>{{ isAnalyzing ? 'Parar' : 'Gerar Sinal' }}</span>
@@ -3247,9 +3247,8 @@ export default {
 }
 
 .categories-grid {
-  display: flex;
-  justify-content: flex-start;
-  flex-wrap: wrap;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 24px;
 }
 
@@ -3262,7 +3261,7 @@ export default {
   flex-direction: column;
   gap: 20px;
   min-height: 320px;
-  width: 320px; 
+  width: 100%; 
 }
 
 .category-card-header {
@@ -3345,6 +3344,82 @@ export default {
 @media (max-width: 768px) {
   .categories-grid {
     grid-template-columns: 1fr;
+    gap: 16px !important;
+  }
+
+  .modal-overlay {
+    position: fixed !important;
+    padding: 10px !important;
+    align-items: flex-start !important;
+    overflow-y: auto !important;
+  }
+
+  .categorized-modal {
+    min-width: auto !important;
+    max-width: 100% !important;
+    width: 100% !important;
+    margin: 0 !important;
+    max-height: calc(100vh - 20px) !important;
+    border-radius: 16px !important;
+  }
+
+  .modal-header {
+    padding: 16px 20px !important;
+    /* position removed - using default position to prevent overlap when scrolling */
+    background: #0F0F0F !important;
+    z-index: 10 !important;
+    border-bottom: 1px solid #1A1A1A !important;
+  }
+
+  /* Signal area card mobile adjustments */
+  .signal-area-card {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    padding: 1.5rem !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Signal generator header mobile adjustments */
+  .signal-generator-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+    margin-bottom: 1.5rem !important;
+  }
+
+  .btn-gerar-sinal-header {
+    width: 100% !important;
+    justify-content: center !important;
+    margin-top: 0 !important;
+  }
+
+  .modal-title {
+    font-size: 18px !important;
+  }
+
+  .modal-body {
+    padding: 20px 16px !important;
+  }
+
+  .category-card {
+    width: 100% !important;
+    min-height: auto !important;
+    padding: 16px !important;
+  }
+
+  .category-card-header {
+    gap: 12px !important;
+    margin-bottom: 12px !important;
+  }
+
+  .category-icon-wrapper {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .category-card-title {
+    font-size: 15px !important;
   }
 }
 

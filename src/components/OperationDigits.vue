@@ -1,5 +1,6 @@
 <template>
     <div class="main-container">
+        <!-- Tela de carregamento -->
         <div v-if="connectionError || isConnecting" class="connection-loading">
             <div class="loading-spinner"></div>
             <p>{{ loadingMessage }}</p>
@@ -20,7 +21,7 @@
                                         <div 
                                             class="histogram-bar w-full transition-all duration-700 ease-out relative" 
                                             :class="getHistogramBarClass(item.digit, item.percentage, frequencies25)"
-                                            :style="{ height: (item.percentage * 4) + 'px' }"
+                                            :style="{ height: (item.percentage > 0 ? Math.max(4, Math.min((item.percentage * 4), 130)) : 0) + 'px', maxHeight: '130px', minHeight: item.percentage > 0 ? '4px' : '0px' }"
                                         >
                                             <div class="histogram-percentage text-[10px] font-bold text-white absolute bottom-full left-1/2 transform -translate-x-1/2">{{ Math.round(item.percentage) }}%</div>
                                         </div>
@@ -39,7 +40,7 @@
                                         <div 
                                             class="histogram-bar w-full transition-all duration-700 ease-out relative" 
                                             :class="getHistogramBarClass(item.digit, item.percentage, frequencies50)"
-                                            :style="{ height: (item.percentage * 4) + 'px' }"
+                                            :style="{ height: (item.percentage > 0 ? Math.max(4, Math.min((item.percentage * 4), 130)) : 0) + 'px', maxHeight: '130px', minHeight: item.percentage > 0 ? '4px' : '0px' }"
                                         >
                                             <div class="histogram-percentage text-[10px] font-bold text-white absolute bottom-full left-1/2 transform -translate-x-1/2">{{ Math.round(item.percentage) }}%</div>
                                         </div>
@@ -58,7 +59,7 @@
                                         <div 
                                             class="histogram-bar w-full transition-all duration-700 ease-out relative" 
                                             :class="getHistogramBarClass(item.digit, item.percentage, frequencies100)"
-                                            :style="{ height: (item.percentage * 4) + 'px' }"
+                                            :style="{ height: (item.percentage > 0 ? Math.max(4, Math.min((item.percentage * 4), 130)) : 0) + 'px', maxHeight: '130px', minHeight: item.percentage > 0 ? '4px' : '0px' }"
                                         >
                                             <div class="histogram-percentage text-[10px] font-bold text-white absolute bottom-full left-1/2 transform -translate-x-1/2">{{ Math.round(item.percentage) }}%</div>
                                         </div>
@@ -385,7 +386,7 @@
 
                 <!-- Signal Generator Card -->
                 <div class="signal-generator-wrapper-digits bg-[#0D0D0D] border border-white/5 p-8 rounded-2xl shadow-xl">
-                    <div class="flex items-center justify-between mb-8">
+                    <div class="signal-generator-header flex items-center justify-between mb-8">
                         <div class="flex items-center gap-4">
                             <div class="w-14 h-14 rounded-full border border-zenix-green bg-zenix-green/10 flex items-center justify-center shadow-[0_0_15px_rgba(34,197,94,0.2)]">
                                 <i class="fas fa-bolt text-zenix-green text-xl"></i>
@@ -398,7 +399,7 @@
                         <button 
                             @click="toggleAnalysis"
                             :disabled="!symbol"
-                            class="bg-zenix-green hover:bg-zenix-green/90 disabled:opacity-30 disabled:cursor-not-allowed text-black font-black px-8 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-zenix-green/20 uppercase tracking-widest text-xs flex items-center gap-2"
+                            class="btn-gerar-sinal-header bg-zenix-green hover:bg-zenix-green/90 disabled:opacity-30 disabled:cursor-not-allowed text-black font-black px-8 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-zenix-green/20 uppercase tracking-widest text-xs flex items-center gap-2"
                         >
                             <i :class="isAnalyzing ? 'fas fa-stop' : 'fas fa-pencil-alt'"></i>
                             <span>{{ isAnalyzing ? 'Parar' : 'Gerar Sinal' }}</span>
@@ -484,7 +485,7 @@
         <Teleport to="body">
             <div 
                 v-if="showMarketModal" 
-                class="modal-overlay" 
+                class="modal-overlay market-modal-overlay" 
                 @click.self="closeMarketModal"
             >
                 <div class="modal-content categorized-modal">
@@ -1234,6 +1235,7 @@ export default {
             this.ticks = [];
             this.latestTick = null;
             this.isLoadingSymbol = true;
+            // Verificações de conexão Deriv
             this.connectionError = '';
             this.isConnecting = true;
             
@@ -1405,8 +1407,7 @@ export default {
             } else {
                 this.connectionError = `${message}. Reconectando automaticamente...`;
                 this.isAuthorized = false;
-                // Comentado - desabilita reconexão automática para evitar loop
-                // this.scheduleRetry();
+                this.scheduleRetry();
             }
         },
         subscribeToSymbol() {
@@ -1783,8 +1784,8 @@ export default {
         if (this.orderConfig && this.orderConfig.value !== undefined) {
             this.orderValue = Number(this.orderConfig.value);
         }
+        // Inicialização da conexão Deriv
         this.initConnection();
-        this.simulateInitialData();
     },
     beforeUnmount() {
         console.log('[OperationDigits] Componente sendo desmontado');
