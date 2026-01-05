@@ -381,6 +381,7 @@
 				// Dados para gráficos
 				indexChartData: [],
 				priceHistoryInterval: null,
+				pricePollingInterval: null, // ✅ Novo: Intervalo para polling de preços (como na IA)
 				timeUpdateInterval: null, // ✅ Novo: Intervalo para atualizar tempo
 				chartUpdateThrottle: null, // ✅ Novo: Throttle para atualizações do gráfico
 				priceTicks: [],
@@ -390,12 +391,8 @@
 				unidadeTimeframeSelecionada: 'minutos',
 				valorTimeframeSelecionado: 1,
 				tipoGraficoSelecionado: 'Gráfico de Linhas',
-				// WebSocket para ticks em tempo real
-				derivWebSocket: null,
-				derivToken: null,
+				// ✅ REMOVIDO: WebSocket não é mais usado no frontend (backend gerencia)
 				symbol: 'R_75', // Índice do agente autônomo (será atualizado do backend)
-				wsReconnectAttempts: 0, // ✅ Novo: Contador de tentativas de reconexão
-				maxReconnectAttempts: 3, // ✅ Novo: Máximo de tentativas
 				timeframeOptions: {
 					minutos: [1, 2, 3, 5, 10, 15, 30],
 					horas: [1, 2, 4, 8],
@@ -625,12 +622,11 @@
 				immediate: true,
 			},
 			abaAtiva(newAba, oldAba) {
-				// ✅ OTIMIZADO: Gerenciar conexão WebSocket baseado na aba ativa
+				// ✅ OTIMIZADO: Usar polling HTTP como na IA
 				if (newAba === 'grafico') {
-					// Conectar WebSocket apenas quando entrar na aba gráfico
-					if (!this.derivWebSocket || this.derivWebSocket.readyState !== WebSocket.OPEN) {
-						this.connectToDerivWebSocket();
-					}
+					// Buscar histórico e iniciar polling quando entrar na aba gráfico
+					this.fetchPriceHistory();
+					this.startPricePolling();
 					
 					this.$nextTick(() => {
 						setTimeout(() => {
@@ -645,10 +641,10 @@
 						}, 200);
 					});
 				} else {
-					// ✅ OTIMIZADO: Desconectar WebSocket quando sair da aba gráfico para economizar recursos
+					// ✅ OTIMIZADO: Parar polling quando sair da aba gráfico
 					if (oldAba === 'grafico') {
-						this.disconnectDerivWebSocket();
-						console.log('[AgenteAutonomoActive] WebSocket desconectado ao sair da aba gráfico');
+						this.stopPricePolling();
+						console.log('[AgenteAutonomoActive] Polling parado ao sair da aba gráfico');
 					}
 				}
 			},
@@ -810,10 +806,13 @@
 				this.ultimaAtualizacao = new Date().toLocaleTimeString('pt-BR');
 			}, 1000);
 			
-			// ✅ OTIMIZADO: Conectar WebSocket APENAS se estiver na aba gráfico
-			// Não conectar automaticamente no mounted para evitar requisições desnecessárias
+			// ✅ OTIMIZADO: Usar polling HTTP como na IA (backend gerencia WebSocket)
+			// Não usar WebSocket no frontend para evitar requisições travadas
 			if (this.abaAtiva === 'grafico') {
-				this.connectToDerivWebSocket();
+				// Buscar histórico inicial
+				this.fetchPriceHistory();
+				// Iniciar polling
+				this.startPricePolling();
 			}
 			
 			// Inicializar gráfico apenas se estiver na aba gráfico
@@ -835,6 +834,9 @@
 			if (this.priceHistoryInterval) {
 				clearInterval(this.priceHistoryInterval);
 			}
+			if (this.pricePollingInterval) {
+				clearInterval(this.pricePollingInterval);
+			}
 			if (this.timeUpdateInterval) {
 				clearInterval(this.timeUpdateInterval);
 			}
@@ -842,8 +844,8 @@
 				clearTimeout(this.chartUpdateThrottle);
 			}
 			
-			// Desconectar WebSocket
-			this.disconnectDerivWebSocket();
+			// ✅ Removido: WebSocket não é mais usado no frontend
+			// this.disconnectDerivWebSocket();
 			
 			// Destruir gráfico
 			if (this.indexChart) {
@@ -860,232 +862,66 @@
 				console.log(`Exportando histórico. Filtro: ${this.filtroDataSelecionado}. Total de operações: ${this.historicoOperacoesFiltradas.length}`);
 				// Aqui seria a lógica real para gerar e baixar um arquivo CSV/Excel/PDF
 			},
-			getDerivToken() {
-				// Buscar token Deriv do localStorage
+			// ✅ REMOVIDO: WebSocket não é mais usado no frontend
+			// O backend gerencia o WebSocket, o frontend usa polling HTTP como na IA
+			
+			// ✅ NOVO: Buscar histórico de preços do backend (como na IA)
+			async fetchPriceHistory() {
 				try {
-					// Tentar deriv_token direto
-					let token = localStorage.getItem('deriv_token');
-					if (token) return token;
+					const userId = this.getUserId();
+					if (!userId) return;
 					
-					// Tentar deriv_tokens_by_loginid
-					const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
-					if (tokensByLoginId) {
-						const tokens = JSON.parse(tokensByLoginId);
-						const firstToken = Object.values(tokens)[0];
-						if (firstToken) return firstToken;
-					}
-					
-					// Tentar deriv_connection
-					const connection = localStorage.getItem('deriv_connection');
-					if (connection) {
-						const conn = JSON.parse(connection);
-						if (conn.token) return conn.token;
-					}
-					
-					console.warn('[AgenteAutonomoActive] Token Deriv não encontrado');
-					return null;
-				} catch (error) {
-					console.error('[AgenteAutonomoActive] Erro ao buscar token Deriv:', error);
-					return null;
-				}
-			},
-			
-			connectToDerivWebSocket() {
-				// Tentar primeiro com o App ID padrão do agente autônomo (1089)
-				this.connectToDerivWebSocketWithAppId('1089');
-			},
-			
-			connectToDerivWebSocketWithAppId(appId) {
-				// ✅ OTIMIZADO: Verificar se já está conectado antes de criar nova conexão
-				if (this.derivWebSocket && this.derivWebSocket.readyState === WebSocket.OPEN) {
-					console.log('[AgenteAutonomoActive] WebSocket já está conectado, reutilizando conexão');
-					return;
-				}
-				
-				try {
-					this.derivToken = this.getDerivToken();
-					if (!this.derivToken) {
-						console.warn('[AgenteAutonomoActive] Não é possível conectar: token Deriv não encontrado');
-						return;
-					}
-					
-					const wsUrl = `wss://ws.derivws.com/websockets/v3?app_id=${appId}`;
-					
-					console.log('[AgenteAutonomoActive] Conectando ao WebSocket da Deriv com App ID:', appId);
-					
-					// Fechar conexão anterior se existir
-					if (this.derivWebSocket) {
-						this.derivWebSocket.close();
-					}
-					
-					// ✅ Resetar contador de reconexão ao conectar com sucesso
-					this.wsReconnectAttempts = 0;
-					
-					this.derivWebSocket = new WebSocket(wsUrl);
-					
-					this.derivWebSocket.onopen = () => {
-						console.log('[AgenteAutonomoActive] ✅ WebSocket conectado');
-						// ✅ Resetar contador de reconexão ao conectar com sucesso
-						this.wsReconnectAttempts = 0;
-						// Autorizar
-						this.derivWebSocket.send(JSON.stringify({
-							authorize: this.derivToken
-						}));
-					};
-					
-					this.derivWebSocket.onmessage = (event) => {
-						try {
-							const message = JSON.parse(event.data);
-							
-							if (message.error) {
-								console.error('[AgenteAutonomoActive] Erro do WebSocket:', message.error);
-								
-								// Se o erro for de token inválido, tentar com outro App ID
-								if (message.error.code === 'InvalidToken') {
-									const currentAppId = this.derivWebSocket?.url?.match(/app_id=(\d+)/)?.[1] || '1089';
-									if (currentAppId === '1089') {
-										console.warn('[AgenteAutonomoActive] Token inválido para App ID 1089, tentando 111346...');
-										this.disconnectDerivWebSocket();
-										setTimeout(() => {
-											// Tentar com App ID alternativo
-											this.connectToDerivWebSocketWithAppId('111346');
-										}, 1000);
-									} else {
-										console.error('[AgenteAutonomoActive] Token inválido para ambos os App IDs. Verifique o token.');
-									}
-								}
-								return;
-							}
-							
-							if (message.msg_type === 'authorize') {
-								console.log('[AgenteAutonomoActive] ✅ Autorizado na Deriv');
-								// ✅ OTIMIZADO: Usar apenas ticks_history com subscribe (evita duplicação)
-								// ticks_history com subscribe=1 já retorna histórico + ticks em tempo real
-								this.derivWebSocket.send(JSON.stringify({
-									ticks_history: this.symbol,
-									adjust_start_time: 1,
-									count: 100, // ✅ Reduzido de 100 para 50 para economizar dados
-									end: 'latest',
-									subscribe: 1, // ✅ Já inclui ticks em tempo real, não precisa de subscribe separado
-									style: 'ticks'
-								}));
-								// ✅ Removido: subscribe separado de ticks (redundante e causa requisições duplicadas)
-							}
-							
-							if (message.msg_type === 'history') {
-								const history = message.history;
-								if (history && history.prices && Array.isArray(history.prices)) {
-									console.log('[AgenteAutonomoActive] 📊 Histórico recebido:', history.prices.length, 'ticks');
-									
-									const ticks = history.prices.map((price, index) => {
-										const epoch = history.times && history.times[index] 
-											? history.times[index] 
-											: Math.floor(Date.now() / 1000) - (history.prices.length - index);
-										
-										return {
-											value: parseFloat(price) || 0,
-											epoch: epoch,
-											timestamp: new Date(epoch * 1000).toISOString()
-										};
-									}).filter(tick => tick.value > 0 && tick.epoch > 0);
-									
-									this.priceTicks = ticks;
-									console.log('[AgenteAutonomoActive] ✅', ticks.length, 'ticks processados');
-									
-									if (this.indexChartInitialized) {
-										this.updateIndexChart();
-									}
-								}
-							}
-							
-							if (message.msg_type === 'tick') {
-								const tick = message.tick;
-								if (tick && tick.quote !== undefined) {
-									const epoch = tick.epoch || Math.floor(Date.now() / 1000);
-									const value = parseFloat(tick.quote);
-									
-									if (!isNaN(value) && value > 0 && epoch > 0) {
-										const newTick = {
-											value: value,
-											epoch: epoch,
-											timestamp: new Date(epoch * 1000).toISOString()
-										};
-										
-										// Adicionar ao array (manter últimos 200 ticks para economizar memória)
-										this.priceTicks.push(newTick);
-										if (this.priceTicks.length > 200) {
-											this.priceTicks.shift();
-										}
-										
-										// ✅ OTIMIZADO: Throttle para atualizações do gráfico (máximo 1x por segundo)
-										// Evita atualizar o gráfico a cada tick (pode ser centenas por minuto)
-										if (this.indexChartInitialized && this.indexChartSeries) {
-											// Limpar throttle anterior
-											if (this.chartUpdateThrottle) {
-												clearTimeout(this.chartUpdateThrottle);
-											}
-											
-											// Atualizar gráfico com throttle de 1 segundo
-											this.chartUpdateThrottle = setTimeout(() => {
-												try {
-													this.indexChartSeries.update({
-														time: Math.floor(epoch),
-														value: value
-													});
-													// Ajustar escala apenas ocasionalmente (não a cada tick)
-													if (Math.random() < 0.1) { // 10% das vezes
-														this.indexChart.timeScale().scrollToPosition(-1, false);
-													}
-												} catch (error) {
-													console.error('[AgenteAutonomoActive] Erro ao atualizar tick:', error);
-												}
-											}, 1000); // ✅ Throttle de 1 segundo
-										}
-									}
-								}
-							}
-						} catch (error) {
-							console.error('[AgenteAutonomoActive] Erro ao processar mensagem WebSocket:', error);
+					const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+					const response = await fetch(`${apiBase}/autonomous-agent/price-history/${userId}?limit=200`, {
+						headers: {
+							'Authorization': `Bearer ${localStorage.getItem('token')}`
 						}
-					};
+					});
 					
-					this.derivWebSocket.onerror = (error) => {
-						console.error('[AgenteAutonomoActive] ❌ Erro no WebSocket:', error);
-					};
-					
-					this.derivWebSocket.onclose = () => {
-						// ✅ OTIMIZADO: Reconexão inteligente apenas se estiver na aba gráfico
-						// Limitar tentativas para evitar loops infinitos
-						if (this.abaAtiva === 'grafico' && this.wsReconnectAttempts < this.maxReconnectAttempts) {
-							this.wsReconnectAttempts++;
-							console.warn(`[AgenteAutonomoActive] 🔌 WebSocket fechado. Tentando reconectar (${this.wsReconnectAttempts}/${this.maxReconnectAttempts})...`);
-							// Tentar reconectar após 5 segundos
-							setTimeout(() => {
-								if (this.abaAtiva === 'grafico') {
-									this.connectToDerivWebSocket();
-								}
-							}, 5000);
-						} else {
-							console.warn('[AgenteAutonomoActive] 🔌 WebSocket fechado. Não reconectando (limite de tentativas ou aba inativa)');
+					if (response.ok) {
+						const result = await response.json();
+						if (result.success && result.data && Array.isArray(result.data)) {
+							this.priceTicks = result.data.map(tick => ({
+								value: parseFloat(tick.value) || 0,
+								epoch: tick.epoch || Math.floor(new Date(tick.timestamp).getTime() / 1000),
+								timestamp: tick.timestamp
+							})).filter(tick => tick.value > 0 && tick.epoch > 0);
+							
+							console.log('[AgenteAutonomoActive] ✅ Histórico carregado:', this.priceTicks.length, 'ticks');
+							
+							if (this.indexChartInitialized) {
+								this.updateIndexChart();
+							}
 						}
-					};
+					}
 				} catch (error) {
-					console.error('[AgenteAutonomoActive] Erro ao conectar WebSocket:', error);
+					console.error('[AgenteAutonomoActive] Erro ao buscar histórico:', error);
 				}
 			},
 			
-			disconnectDerivWebSocket() {
-				if (this.derivWebSocket) {
-					// ✅ Remover listeners antes de fechar para evitar reconexões indesejadas
-					this.derivWebSocket.onclose = null;
-					this.derivWebSocket.onerror = null;
-					this.derivWebSocket.onmessage = null;
-					this.derivWebSocket.close();
-					this.derivWebSocket = null;
-					// ✅ Resetar contador de reconexão
-					this.wsReconnectAttempts = 0;
+			// ✅ NOVO: Iniciar polling de preços (como na IA - a cada 2 segundos)
+			startPricePolling() {
+				// Buscar imediatamente
+				this.fetchPriceHistory();
+				// Polling a cada 2 segundos (igual à IA)
+				this.pricePollingInterval = setInterval(() => {
+					if (this.abaAtiva === 'grafico') {
+						this.fetchPriceHistory();
+					}
+				}, 2000);
+			},
+			
+			// ✅ NOVO: Parar polling de preços
+			stopPricePolling() {
+				if (this.pricePollingInterval) {
+					clearInterval(this.pricePollingInterval);
+					this.pricePollingInterval = null;
 				}
 			},
+			
+			// ✅ REMOVIDO: Todo o código do WebSocket foi removido
+			// Agora usamos polling HTTP para buscar ticks do backend (como na IA)
+			// O backend gerencia o WebSocket com a Deriv
 			
 			// ============================================
 			// GRÁFICO DO ÍNDICE R_75
