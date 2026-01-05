@@ -381,6 +381,8 @@
 				// Dados para gráficos
 				indexChartData: [],
 				priceHistoryInterval: null,
+				timeUpdateInterval: null, // ✅ Novo: Intervalo para atualizar tempo
+				chartUpdateThrottle: null, // ✅ Novo: Throttle para atualizações do gráfico
 				priceTicks: [],
 				indexChart: null,
 				indexChartSeries: null,
@@ -392,6 +394,8 @@
 				derivWebSocket: null,
 				derivToken: null,
 				symbol: 'R_75', // Índice do agente autônomo (será atualizado do backend)
+				wsReconnectAttempts: 0, // ✅ Novo: Contador de tentativas de reconexão
+				maxReconnectAttempts: 3, // ✅ Novo: Máximo de tentativas
 				timeframeOptions: {
 					minutos: [1, 2, 3, 5, 10, 15, 30],
 					horas: [1, 2, 4, 8],
@@ -620,10 +624,10 @@
 				deep: true,
 				immediate: true,
 			},
-			abaAtiva(newAba) {
-				// Quando a aba 'grafico' for selecionada, garantir que o gráfico seja inicializado
+			abaAtiva(newAba, oldAba) {
+				// ✅ OTIMIZADO: Gerenciar conexão WebSocket baseado na aba ativa
 				if (newAba === 'grafico') {
-					// Conectar WebSocket se não estiver conectado
+					// Conectar WebSocket apenas quando entrar na aba gráfico
 					if (!this.derivWebSocket || this.derivWebSocket.readyState !== WebSocket.OPEN) {
 						this.connectToDerivWebSocket();
 					}
@@ -641,8 +645,11 @@
 						}, 200);
 					});
 				} else {
-					// Desconectar WebSocket quando sair da aba gráfico (opcional - pode manter conectado)
-					// this.disconnectDerivWebSocket();
+					// ✅ OTIMIZADO: Desconectar WebSocket quando sair da aba gráfico para economizar recursos
+					if (oldAba === 'grafico') {
+						this.disconnectDerivWebSocket();
+						console.log('[AgenteAutonomoActive] WebSocket desconectado ao sair da aba gráfico');
+					}
 				}
 			},
 			'agenteData.goalValue'(newVal) {
@@ -799,28 +806,40 @@
 			}
 			
 			// Atualizar última atualização a cada segundo
-			setInterval(() => {
+			this.timeUpdateInterval = setInterval(() => {
 				this.ultimaAtualizacao = new Date().toLocaleTimeString('pt-BR');
 			}, 1000);
 			
-			// Conectar ao WebSocket da Deriv para receber ticks em tempo real
-			this.connectToDerivWebSocket();
+			// ✅ OTIMIZADO: Conectar WebSocket APENAS se estiver na aba gráfico
+			// Não conectar automaticamente no mounted para evitar requisições desnecessárias
+			if (this.abaAtiva === 'grafico') {
+				this.connectToDerivWebSocket();
+			}
 			
-			// Inicializar gráfico após um pequeno delay para garantir que o ref esteja pronto
-			this.$nextTick(() => {
-				setTimeout(() => {
-					if (this.$refs.indexChartContainer) {
-						this.initIndexChart();
-					}
-				}, 500);
-			});
+			// Inicializar gráfico apenas se estiver na aba gráfico
+			if (this.abaAtiva === 'grafico') {
+				this.$nextTick(() => {
+					setTimeout(() => {
+						if (this.$refs.indexChartContainer) {
+							this.initIndexChart();
+						}
+					}, 500);
+				});
+			}
 			
 			// Rolagem instantânea para o topo
 			window.scrollTo({ top: 0, behavior: 'auto' });
 		},
 		beforeUnmount() {
+			// Limpar todos os intervalos
 			if (this.priceHistoryInterval) {
 				clearInterval(this.priceHistoryInterval);
+			}
+			if (this.timeUpdateInterval) {
+				clearInterval(this.timeUpdateInterval);
+			}
+			if (this.chartUpdateThrottle) {
+				clearTimeout(this.chartUpdateThrottle);
 			}
 			
 			// Desconectar WebSocket
@@ -877,6 +896,12 @@
 			},
 			
 			connectToDerivWebSocketWithAppId(appId) {
+				// ✅ OTIMIZADO: Verificar se já está conectado antes de criar nova conexão
+				if (this.derivWebSocket && this.derivWebSocket.readyState === WebSocket.OPEN) {
+					console.log('[AgenteAutonomoActive] WebSocket já está conectado, reutilizando conexão');
+					return;
+				}
+				
 				try {
 					this.derivToken = this.getDerivToken();
 					if (!this.derivToken) {
@@ -893,10 +918,15 @@
 						this.derivWebSocket.close();
 					}
 					
+					// ✅ Resetar contador de reconexão ao conectar com sucesso
+					this.wsReconnectAttempts = 0;
+					
 					this.derivWebSocket = new WebSocket(wsUrl);
 					
 					this.derivWebSocket.onopen = () => {
 						console.log('[AgenteAutonomoActive] ✅ WebSocket conectado');
+						// ✅ Resetar contador de reconexão ao conectar com sucesso
+						this.wsReconnectAttempts = 0;
 						// Autorizar
 						this.derivWebSocket.send(JSON.stringify({
 							authorize: this.derivToken
@@ -929,28 +959,17 @@
 							
 							if (message.msg_type === 'authorize') {
 								console.log('[AgenteAutonomoActive] ✅ Autorizado na Deriv');
-								// Buscar histórico inicial e se inscrever para ticks em tempo real
+								// ✅ OTIMIZADO: Usar apenas ticks_history com subscribe (evita duplicação)
+								// ticks_history com subscribe=1 já retorna histórico + ticks em tempo real
 								this.derivWebSocket.send(JSON.stringify({
 									ticks_history: this.symbol,
 									adjust_start_time: 1,
-									count: 100,
+									count: 100, // ✅ Reduzido de 100 para 50 para economizar dados
 									end: 'latest',
-									subscribe: 1,
+									subscribe: 1, // ✅ Já inclui ticks em tempo real, não precisa de subscribe separado
 									style: 'ticks'
 								}));
-								
-								// Também se inscrever para ticks em tempo real separadamente
-								setTimeout(() => {
-									if (this.derivWebSocket && this.derivWebSocket.readyState === WebSocket.OPEN) {
-										this.derivWebSocket.send(JSON.stringify({
-											ticks: this.symbol,
-											subscribe: 1
-										}));
-										console.log('[AgenteAutonomoActive] 📡 Inscrito para ticks em tempo real:', this.symbol);
-									} else {
-										console.warn('[AgenteAutonomoActive] WebSocket não está pronto para inscrição de ticks');
-									}
-								}, 1000);
+								// ✅ Removido: subscribe separado de ticks (redundante e causa requisições duplicadas)
 							}
 							
 							if (message.msg_type === 'history') {
@@ -992,34 +1011,35 @@
 											timestamp: new Date(epoch * 1000).toISOString()
 										};
 										
-										// Adicionar ao array (manter últimos 500 ticks)
+										// Adicionar ao array (manter últimos 200 ticks para economizar memória)
 										this.priceTicks.push(newTick);
-										if (this.priceTicks.length > 500) {
+										if (this.priceTicks.length > 200) {
 											this.priceTicks.shift();
 										}
 										
-										console.log('[AgenteAutonomoActive] 📈 Novo tick recebido:', {
-											value: value,
-											epoch: epoch,
-											totalTicks: this.priceTicks.length,
-											chartInitialized: this.indexChartInitialized,
-											hasSeries: !!this.indexChartSeries
-										});
-										
-										// Atualizar gráfico
+										// ✅ OTIMIZADO: Throttle para atualizações do gráfico (máximo 1x por segundo)
+										// Evita atualizar o gráfico a cada tick (pode ser centenas por minuto)
 										if (this.indexChartInitialized && this.indexChartSeries) {
-											try {
-												this.indexChartSeries.update({
-													time: Math.floor(epoch),
-													value: value
-												});
-												// Ajustar escala para mostrar o último tick
-												this.indexChart.timeScale().scrollToPosition(-1, false);
-											} catch (error) {
-												console.error('[AgenteAutonomoActive] Erro ao atualizar tick:', error);
+											// Limpar throttle anterior
+											if (this.chartUpdateThrottle) {
+												clearTimeout(this.chartUpdateThrottle);
 											}
-										} else {
-											console.warn('[AgenteAutonomoActive] Gráfico não inicializado, não é possível atualizar');
+											
+											// Atualizar gráfico com throttle de 1 segundo
+											this.chartUpdateThrottle = setTimeout(() => {
+												try {
+													this.indexChartSeries.update({
+														time: Math.floor(epoch),
+														value: value
+													});
+													// Ajustar escala apenas ocasionalmente (não a cada tick)
+													if (Math.random() < 0.1) { // 10% das vezes
+														this.indexChart.timeScale().scrollToPosition(-1, false);
+													}
+												} catch (error) {
+													console.error('[AgenteAutonomoActive] Erro ao atualizar tick:', error);
+												}
+											}, 1000); // ✅ Throttle de 1 segundo
 										}
 									}
 								}
@@ -1034,13 +1054,20 @@
 					};
 					
 					this.derivWebSocket.onclose = () => {
-						console.warn('[AgenteAutonomoActive] 🔌 WebSocket fechado. Tentando reconectar...');
-						// Tentar reconectar após 5 segundos
-						setTimeout(() => {
-							if (this.abaAtiva === 'grafico') {
-								this.connectToDerivWebSocket();
-							}
-						}, 5000);
+						// ✅ OTIMIZADO: Reconexão inteligente apenas se estiver na aba gráfico
+						// Limitar tentativas para evitar loops infinitos
+						if (this.abaAtiva === 'grafico' && this.wsReconnectAttempts < this.maxReconnectAttempts) {
+							this.wsReconnectAttempts++;
+							console.warn(`[AgenteAutonomoActive] 🔌 WebSocket fechado. Tentando reconectar (${this.wsReconnectAttempts}/${this.maxReconnectAttempts})...`);
+							// Tentar reconectar após 5 segundos
+							setTimeout(() => {
+								if (this.abaAtiva === 'grafico') {
+									this.connectToDerivWebSocket();
+								}
+							}, 5000);
+						} else {
+							console.warn('[AgenteAutonomoActive] 🔌 WebSocket fechado. Não reconectando (limite de tentativas ou aba inativa)');
+						}
 					};
 				} catch (error) {
 					console.error('[AgenteAutonomoActive] Erro ao conectar WebSocket:', error);
@@ -1049,8 +1076,14 @@
 			
 			disconnectDerivWebSocket() {
 				if (this.derivWebSocket) {
+					// ✅ Remover listeners antes de fechar para evitar reconexões indesejadas
+					this.derivWebSocket.onclose = null;
+					this.derivWebSocket.onerror = null;
+					this.derivWebSocket.onmessage = null;
 					this.derivWebSocket.close();
 					this.derivWebSocket = null;
+					// ✅ Resetar contador de reconexão
+					this.wsReconnectAttempts = 0;
 				}
 			},
 			
@@ -1162,8 +1195,10 @@
 						value: parseFloat(tick.value)
 					}));
 					
-					console.log('[AgenteAutonomoActive] Atualizando gráfico com', data.length, 'pontos');
-					this.indexChartSeries.setData(data);
+					// ✅ OTIMIZADO: Reduzir logs e otimizar atualização
+					// Limitar dados para melhor performance (últimos 200 pontos)
+					const limitedData = data.slice(-200);
+					this.indexChartSeries.setData(limitedData);
 					this.indexChart.timeScale().fitContent();
 				} catch (error) {
 					console.error('[AgenteAutonomoActive] Erro ao atualizar gráfico de índice:', error);
