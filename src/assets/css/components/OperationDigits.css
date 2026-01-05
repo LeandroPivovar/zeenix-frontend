@@ -93,6 +93,9 @@
     border: 0.5px solid #000000;
     /* Subtle separation if needed, but the image shows them touching */
     transition: height 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    max-height: 130px !important;
+    min-height: 0px !important;
+    display: block !important;
 }
 
 .bar-rank-normal {
@@ -1447,6 +1450,52 @@
         padding: 0 !important;
     }
 
+    .histogram-container {
+        max-width: 100% !important;
+    }
+
+    .histogram-bar-wrapper {
+        height: 110px !important;
+        max-height: 110px !important;
+        min-height: 110px !important;
+        display: flex !important;
+        align-items: flex-end !important;
+        justify-content: center !important;
+    }
+
+    .histogram-bar {
+        max-height: 110px !important;
+        min-height: 2px !important;
+        width: 100% !important;
+        display: block !important;
+        /* Forçar altura máxima de 110px no mobile, mesmo que o inline style seja maior */
+    }
+
+    /* Garantir que barras com porcentagem > 0 sejam visíveis */
+    .histogram-bar[style*="height: 0px"],
+    .histogram-bar[style*="height:0px"] {
+        display: none !important;
+    }
+    
+    .histogram-bar:not([style*="height: 0px"]):not([style*="height:0px"]) {
+        display: block !important;
+    }
+
+    .histogram-container {
+        display: flex !important;
+        align-items: flex-end !important;
+        width: 100% !important;
+        max-width: 100% !important;
+    }
+
+    .histogram-column {
+        display: flex !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        flex: 1 !important;
+        width: 100% !important;
+    }
+
     .main-content-grid {
         order: 2 !important;
     }
@@ -1582,12 +1631,13 @@
 
     .frequency-map-grid,
     .heatmap-grid {
-        gap: 0.25rem !important;
+        gap: 0.5rem !important;
         justify-content: space-between !important;
         width: 100% !important;
         box-sizing: border-box;
         display: grid !important;
-        grid-template-columns: repeat(10, 1fr) !important;
+        grid-template-columns: repeat(5, 1fr) !important;
+        grid-template-rows: repeat(2, auto) !important;
     }
 
     .frequency-digit-block,
@@ -1690,7 +1740,7 @@
         grid-row: auto !important;
         width: calc(100% - 2rem) !important;
         max-width: calc(100% - 2rem) !important;
-        margin: 1rem 1rem 0 1rem !important;
+        margin: 6rem 0 !important;
         padding: 1rem !important;
         box-sizing: border-box !important;
         background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
@@ -2098,6 +2148,12 @@
     pointer-events: auto;
 }
 
+/* Modal "Selecionar Mercado" - position absolute */
+.market-modal-overlay {
+    position: absolute !important;
+    z-index: 9999 !important;
+}
+
 .modal-content {
     position: relative;
     background: #0F0F0F;
@@ -2158,9 +2214,8 @@
 }
 
 .categories-grid {
-    display: flex;
-    justify-content: flex-start;
-    flex-wrap: wrap;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
     gap: 24px;
 }
 
@@ -2173,7 +2228,7 @@
     flex-direction: column;
     gap: 20px;
     min-height: 320px;
-    width: 320px;
+    width: 100%;
 }
 
 .category-card-header {
@@ -2236,6 +2291,116 @@
     font-weight: 500;
     border-left: 2px solid #22C55E;
     border-radius: 0 6px 6px 0;
+}
+
+/* Responsive categories-grid */
+@media (max-width: 1024px) {
+    .categories-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .categories-grid {
+        grid-template-columns: 1fr;
+        gap: 16px !important;
+    }
+
+    .modal-overlay {
+        position: fixed !important;
+        padding: 10px !important;
+        align-items: flex-start !important;
+        overflow-y: auto !important;
+    }
+
+    .categorized-modal {
+        min-width: auto !important;
+        max-width: 100% !important;
+        width: 100% !important;
+        margin: 0 !important;
+        max-height: calc(100vh - 20px) !important;
+        border-radius: 16px !important;
+    }
+
+    .modal-header {
+        padding: 16px 20px !important;
+        /* position removed - using default position to prevent overlap when scrolling */
+        background: #0F0F0F !important;
+        z-index: 10 !important;
+        border-bottom: 1px solid #1A1A1A !important;
+    }
+
+    /* Signal generator wrapper mobile adjustments */
+    .signal-generator-wrapper-digits {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 1.5rem !important;
+        box-sizing: border-box !important;
+    }
+
+    /* Ensure signal generator card takes full width */
+    .main-content-grid .signal-generator-wrapper-digits {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        margin-bottom: 1rem !important;
+    }
+
+    /* Remove padding from main-content-grid on mobile for signal generator */
+    .main-content-grid {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+
+    /* Add padding back to signal generator card */
+    .signal-generator-wrapper-digits {
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+    }
+
+    /* Signal generator header mobile adjustments */
+    .signal-generator-header {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 16px !important;
+        margin-bottom: 1.5rem !important;
+    }
+
+    .btn-gerar-sinal-header {
+        width: 100% !important;
+        justify-content: center !important;
+        margin-top: 0 !important;
+    }
+
+    .modal-title {
+        font-size: 18px !important;
+    }
+
+    .modal-body {
+        padding: 20px 16px !important;
+    }
+
+    .category-card {
+        width: 100% !important;
+        min-height: auto !important;
+        padding: 16px !important;
+    }
+
+    .category-card-header {
+        gap: 12px !important;
+        margin-bottom: 12px !important;
+    }
+
+    .category-icon-wrapper {
+        width: 44px !important;
+        height: 44px !important;
+    }
+
+    .category-card-title {
+        font-size: 15px !important;
+    }
 }
 
 @keyframes modalSlideIn {
