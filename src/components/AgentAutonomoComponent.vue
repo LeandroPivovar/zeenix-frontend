@@ -143,15 +143,125 @@ export default {
 	},
 
 	methods: {
-		toggleAgenteStatus() {
-			this.agenteEstaAtivo = !this.agenteEstaAtivo;
+		getUserId() {
+			try {
+				const token = localStorage.getItem('token');
+				if (!token) {
+					console.warn("[AgentAutonomoComponent] Token não encontrado");
+					return null;
+				}
+				
+				const payload = JSON.parse(atob(token.split('.')[1]));
+				const userId = payload.userId || payload.sub || payload.id || payload.user_id;
+				
+				if (userId) {
+					console.log("[AgentAutonomoComponent] UserId encontrado:", userId);
+					return userId;
+				}
+				
+				console.warn("[AgentAutonomoComponent] Não foi possível obter userId");
+				return null;
+			} catch (error) {
+				console.error("[AgentAutonomoComponent] Erro ao obter userId:", error);
+				return null;
+			}
+		},
 
+		async toggleAgenteStatus() {
 			if (this.agenteEstaAtivo) {
+				// Pausar agente - chamar API
+				await this.deactivateAgent();
+			} else {
+				// Iniciar agente - apenas mudança local (a ativação real deve ser feita via componente inativo)
+				this.agenteEstaAtivo = true;
 				this.startSimulations();
 				this.addSystemAction('Agente Autônomo Iniciado', 'Aguardando padrões de mercado...');
-			} else {
+			}
+		},
+
+		async deactivateAgent() {
+			console.log('[AgentAutonomoComponent] deactivateAgent chamado');
+			try {
+				const userId = this.getUserId();
+				if (!userId) {
+					console.error('[AgentAutonomoComponent] Erro: Usuário não encontrado');
+					if (this.$root && this.$root.$toast) {
+						this.$root.$toast.error('Erro: Usuário não encontrado');
+					}
+					// Mesmo sem userId, atualizar estado local para evitar estado inconsistente
+					this.agenteEstaAtivo = false;
+					this.stopSimulations();
+					return;
+				}
+
+				console.log('[AgentAutonomoComponent] Fazendo requisição para desativar agente...', { userId });
+				const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+				const response = await fetch(`${apiBase}/autonomous-agent/deactivate`, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json",
+						Authorization: `Bearer ${localStorage.getItem("token")}`,
+					},
+					body: JSON.stringify({ userId }),
+				});
+
+				// Verificar se a resposta HTTP está ok
+				if (!response.ok) {
+					const errorText = await response.text();
+					let errorMessage = 'Erro ao desativar agente';
+					try {
+						const errorJson = JSON.parse(errorText);
+						errorMessage = errorJson.message || errorJson.error || errorMessage;
+					} catch (e) {
+						errorMessage = `Erro ${response.status}: ${errorText || 'Falha na comunicação com o servidor'}`;
+					}
+					
+					console.error(`[AgentAutonomoComponent] Erro HTTP ${response.status}:`, errorMessage);
+					if (this.$root && this.$root.$toast) {
+						this.$root.$toast.error(errorMessage);
+					}
+					
+					// Mesmo em caso de erro, tentar atualizar o estado local para evitar estado inconsistente
+					this.agenteEstaAtivo = false;
+					this.stopSimulations();
+					return;
+				}
+
+				const result = await response.json();
+				if (result.success) {
+					this.agenteEstaAtivo = false;
+					this.stopSimulations();
+					this.addSystemAction(
+						"Agente Autônomo Pausado",
+						"O sistema parou de analisar e operar.",
+						"warning"
+					);
+					
+					// Mostrar mensagem de sucesso
+					if (this.$root && this.$root.$toast) {
+						this.$root.$toast.success('Agente pausado com sucesso');
+					}
+				} else {
+					const errorMessage = result.message || 'Falha ao desativar agente';
+					console.error(`[AgentAutonomoComponent] Erro: ${errorMessage}`);
+					if (this.$root && this.$root.$toast) {
+						this.$root.$toast.error(errorMessage);
+					}
+					
+					// Mesmo em caso de erro, tentar atualizar o estado local
+					this.agenteEstaAtivo = false;
+					this.stopSimulations();
+				}
+			} catch (error) {
+				console.error("[AgentAutonomoComponent] Erro ao desativar agente:", error);
+				const errorMessage = error.message || 'Erro ao desativar agente. Tente novamente.';
+				if (this.$root && this.$root.$toast) {
+					this.$root.$toast.error(errorMessage);
+				}
+				
+				// Mesmo em caso de erro, tentar atualizar o estado local
+				this.agenteEstaAtivo = false;
 				this.stopSimulations();
-				this.addSystemAction('Agente Autônomo Pausado', 'O sistema parou de analisar e operar.');
 			}
 		},
 

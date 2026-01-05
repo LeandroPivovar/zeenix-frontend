@@ -374,13 +374,22 @@
       },
       
       async deactivateAgent() {
+        console.log('[AgentAutonomoComponent] deactivateAgent chamado');
         try {
           const userId = this.getUserId();
           if (!userId) {
-            console.error('[AgenteAutonomo] Erro: Usuário não encontrado');
+            console.error('[AgentAutonomoComponent] Erro: Usuário não encontrado');
+            if (this.$root && this.$root.$toast) {
+              this.$root.$toast.error('Erro: Usuário não encontrado');
+            }
+            // Mesmo sem userId, atualizar estado local para evitar estado inconsistente
+            this.agenteEstaAtivo = false;
+            this.stopSimulations();
+            this.stopPolling();
             return;
           }
 
+          console.log('[AgentAutonomoComponent] Fazendo requisição para desativar agente...', { userId });
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
           const response = await fetch(`${apiBase}/autonomous-agent/deactivate`, {
             method: "POST",
@@ -390,6 +399,29 @@
             },
             body: JSON.stringify({ userId }),
           });
+
+          // Verificar se a resposta HTTP está ok
+          if (!response.ok) {
+            const errorText = await response.text();
+            let errorMessage = 'Erro ao desativar agente';
+            try {
+              const errorJson = JSON.parse(errorText);
+              errorMessage = errorJson.message || errorJson.error || errorMessage;
+            } catch (e) {
+              errorMessage = `Erro ${response.status}: ${errorText || 'Falha na comunicação com o servidor'}`;
+            }
+            
+            console.error(`[AgentAutonomoComponent] Erro HTTP ${response.status}:`, errorMessage);
+            if (this.$root && this.$root.$toast) {
+              this.$root.$toast.error(errorMessage);
+            }
+            
+            // Mesmo em caso de erro, tentar atualizar o estado local para evitar estado inconsistente
+            this.agenteEstaAtivo = false;
+            this.stopSimulations();
+            this.stopPolling();
+            return;
+          }
 
           const result = await response.json();
           if (result.success) {
@@ -402,11 +434,34 @@
               "warning"
             );
             this.agentConfig = null;
+            
+            // Mostrar mensagem de sucesso
+            if (this.$root && this.$root.$toast) {
+              this.$root.$toast.success('Agente pausado com sucesso');
+            }
           } else {
-            console.error(`[AgenteAutonomo] Erro: ${result.message || 'Falha ao desativar agente'}`);
+            const errorMessage = result.message || 'Falha ao desativar agente';
+            console.error(`[AgentAutonomoComponent] Erro: ${errorMessage}`);
+            if (this.$root && this.$root.$toast) {
+              this.$root.$toast.error(errorMessage);
+            }
+            
+            // Mesmo em caso de erro, tentar atualizar o estado local
+            this.agenteEstaAtivo = false;
+            this.stopSimulations();
+            this.stopPolling();
           }
         } catch (error) {
-          console.error("[AgenteAutonomo] Erro ao desativar agente:", error);
+          console.error("[AgentAutonomoComponent] Erro ao desativar agente:", error);
+          const errorMessage = error.message || 'Erro ao desativar agente. Tente novamente.';
+          if (this.$root && this.$root.$toast) {
+            this.$root.$toast.error(errorMessage);
+          }
+          
+          // Mesmo em caso de erro, tentar atualizar o estado local
+          this.agenteEstaAtivo = false;
+          this.stopSimulations();
+          this.stopPolling();
         }
       },
       
