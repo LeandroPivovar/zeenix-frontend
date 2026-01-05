@@ -631,11 +631,11 @@
 				immediate: true,
 			},
 			abaAtiva(newAba, oldAba) {
-				// ✅ OTIMIZADO: Usar polling HTTP como na IA
+				// ✅ DESATIVADO: Polling desativado temporariamente para reduzir carga no servidor
 				if (newAba === 'grafico') {
-					// Buscar histórico e iniciar polling quando entrar na aba gráfico
+					// Buscar histórico apenas uma vez (sem polling contínuo)
 					this.fetchPriceHistory();
-					this.startPricePolling();
+					// this.startPricePolling(); // ✅ DESATIVADO
 					
 					this.$nextTick(() => {
 						setTimeout(() => {
@@ -818,13 +818,12 @@
 				this.ultimaAtualizacao = new Date().toLocaleTimeString('pt-BR');
 			}, 1000);
 			
-			// ✅ OTIMIZADO: Usar polling HTTP como na IA (backend gerencia WebSocket)
+			// ✅ DESATIVADO: Polling desativado temporariamente para reduzir carga no servidor
 			// Não usar WebSocket no frontend para evitar requisições travadas
 			if (this.abaAtiva === 'grafico') {
-				// Buscar histórico inicial
+				// Buscar histórico inicial apenas uma vez (sem polling contínuo)
 				this.fetchPriceHistory();
-				// Iniciar polling
-				this.startPricePolling();
+				// this.startPricePolling(); // ✅ DESATIVADO
 			} else if (this.abaAtiva === 'historico') {
 				// Buscar histórico de trades se estiver na aba histórico
 				this.fetchTradeHistory();
@@ -936,16 +935,16 @@
 				}
 			},
 			
-			// ✅ NOVO: Iniciar polling de preços (como na IA - a cada 2 segundos)
+			// ✅ DESATIVADO: Polling de preços desativado temporariamente para reduzir carga no servidor
 			startPricePolling() {
-				// Buscar imediatamente
-				this.fetchPriceHistory();
-				// Polling a cada 2 segundos (igual à IA)
-				this.pricePollingInterval = setInterval(() => {
-					if (this.abaAtiva === 'grafico') {
-						this.fetchPriceHistory();
-					}
-				}, 2000);
+				// Buscar apenas uma vez ao inicializar, sem polling contínuo
+				// this.fetchPriceHistory();
+				// Polling desativado para reduzir requisições pendentes
+				// this.pricePollingInterval = setInterval(() => {
+				// 	if (this.abaAtiva === 'grafico') {
+				// 		this.fetchPriceHistory();
+				// 	}
+				// }, 2000);
 			},
 			
 			// ✅ NOVO: Parar polling de preços
