@@ -409,28 +409,30 @@
 		},
 		computed: {
 			historicoOperacoes() {
-				// Converter tradeHistory da API para o formato esperado
-				if (this.tradeHistory && this.tradeHistory.length > 0) {
+				// ✅ Converter tradeHistory da API para o formato esperado
+				if (this.tradeHistory && Array.isArray(this.tradeHistory) && this.tradeHistory.length > 0) {
+					console.log('[AgenteAutonomoActive] 📊 Convertendo tradeHistory:', this.tradeHistory.length, 'trades');
 					return this.tradeHistory.map(trade => {
-						const date = new Date(trade.createdAt);
+						const date = new Date(trade.createdAt || trade.created_at || Date.now());
 						const dataStr = date.toISOString().split('T')[0];
 						const horaStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-						const profitLoss = trade.profitLoss || 0;
+						const profitLoss = parseFloat(trade.profitLoss || trade.profit_loss || 0);
 						const resultadoStr = profitLoss >= 0 ? `+$${profitLoss.toFixed(2)}` : `-$${Math.abs(profitLoss).toFixed(2)}`;
 						
 						return {
 							data: dataStr,
 							hora: horaStr,
 							ativo: trade.symbol || 'R_75',
-							tipo: trade.signalDirection === 'RISE' ? 'Call' : 'Put',
-							entrada: parseFloat(trade.entryPrice || 0).toFixed(2),
-							saida: trade.exitPrice ? parseFloat(trade.exitPrice).toFixed(2) : '0.00',
+							tipo: (trade.signalDirection || trade.contractType) === 'RISE' || (trade.signalDirection || trade.contractType) === 'HIGHER' ? 'Call' : 'Put',
+							entrada: parseFloat(trade.entryPrice || trade.entry_price || 0).toFixed(2),
+							saida: (trade.exitPrice || trade.exit_price) ? parseFloat(trade.exitPrice || trade.exit_price).toFixed(2) : '0.00',
 							resultado: resultadoStr,
-							volume: parseFloat(trade.stakeAmount || 0).toFixed(2),
+							volume: parseFloat(trade.stakeAmount || trade.stake_amount || 0).toFixed(2),
 						};
 					});
 				}
 				// Se não houver tradeHistory, usar operationHistory do agenteData
+				console.log('[AgenteAutonomoActive] ⚠️ Nenhum tradeHistory disponível. tradeHistory:', this.tradeHistory, 'agenteData.operationHistory:', this.agenteData?.operationHistory);
 				return this.agenteData?.operationHistory || [];
 			},
 			userIdComputed() {
@@ -869,33 +871,55 @@
 			async fetchPriceHistory() {
 				try {
 					const userId = this.getUserId();
-					if (!userId) return;
+					if (!userId) {
+						console.warn('[AgenteAutonomoActive] ⚠️ userId não disponível para buscar histórico');
+						return;
+					}
 					
 					const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-					const response = await fetch(`${apiBase}/autonomous-agent/price-history/${userId}?limit=200`, {
+					const url = `${apiBase}/autonomous-agent/price-history/${userId}?limit=200`;
+					console.log('[AgenteAutonomoActive] 📡 Buscando histórico de preços:', url);
+					
+					const response = await fetch(url, {
 						headers: {
 							'Authorization': `Bearer ${localStorage.getItem('token')}`
 						}
 					});
 					
-					if (response.ok) {
-						const result = await response.json();
-						if (result.success && result.data && Array.isArray(result.data)) {
-							this.priceTicks = result.data.map(tick => ({
-								value: parseFloat(tick.value) || 0,
-								epoch: tick.epoch || Math.floor(new Date(tick.timestamp).getTime() / 1000),
-								timestamp: tick.timestamp
-							})).filter(tick => tick.value > 0 && tick.epoch > 0);
-							
-							console.log('[AgenteAutonomoActive] ✅ Histórico carregado:', this.priceTicks.length, 'ticks');
-							
-							if (this.indexChartInitialized) {
-								this.updateIndexChart();
-							}
+					if (!response.ok) {
+						console.warn(`[AgenteAutonomoActive] ⚠️ Resposta não OK: ${response.status} ${response.statusText}`);
+						return;
+					}
+					
+					const result = await response.json();
+					console.log('[AgenteAutonomoActive] 📦 Resposta recebida:', { success: result.success, dataLength: result.data?.length || 0 });
+					
+					if (result.success && result.data && Array.isArray(result.data)) {
+						const ticks = result.data.map(tick => ({
+							value: parseFloat(tick.value) || 0,
+							epoch: tick.epoch || Math.floor(new Date(tick.timestamp).getTime() / 1000),
+							timestamp: tick.timestamp
+						})).filter(tick => tick.value > 0 && tick.epoch > 0);
+						
+						this.priceTicks = ticks;
+						console.log('[AgenteAutonomoActive] ✅ Histórico carregado:', ticks.length, 'ticks válidos de', result.data.length, 'total');
+						
+						// Atualizar gráfico se já estiver inicializado
+						if (this.indexChartInitialized) {
+							this.updateIndexChart();
+						} else if (ticks.length > 0) {
+							// Se o gráfico ainda não foi inicializado mas temos dados, inicializar
+							this.$nextTick(() => {
+								if (this.$refs.indexChartContainer && !this.indexChartInitialized) {
+									this.initIndexChart();
+								}
+							});
 						}
+					} else {
+						console.warn('[AgenteAutonomoActive] ⚠️ Resposta sem dados válidos:', result);
 					}
 				} catch (error) {
-					console.error('[AgenteAutonomoActive] Erro ao buscar histórico:', error);
+					console.error('[AgenteAutonomoActive] ❌ Erro ao buscar histórico:', error);
 				}
 			},
 			
@@ -996,7 +1020,9 @@
 					if (this.priceTicks.length > 0) {
 						this.updateIndexChart();
 					} else {
-						console.warn('[AgenteAutonomoActive] Nenhum tick disponível para plotar');
+						console.warn('[AgenteAutonomoActive] Nenhum tick disponível para plotar - tentando buscar histórico...');
+						// Tentar buscar histórico se ainda não tiver dados
+						this.fetchPriceHistory();
 					}
 				} catch (error) {
 					console.error('[AgenteAutonomoActive] Erro ao inicializar gráfico de índice:', error);
