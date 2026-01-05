@@ -67,6 +67,42 @@
 					</div>
 				</section>
 
+				<!-- ✅ NOVO: Seção de Seleção de Agente Autônomo -->
+				<section class="config-section hide-on-mobile">
+					<h2 class="section-with-tooltip">
+						Agente Autônomo
+						<div class="tooltip-container">
+							<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+								<circle cx="12" cy="12" r="10"></circle>
+								<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+								<line x1="12" y1="17" x2="12.01" y2="17"></line>
+							</svg>
+							<span class="tooltip-text">Escolha o agente autônomo que deseja usar.</span>
+						</div>
+					</h2>
+					
+					<div class="agent-options options-grid">
+						<div 
+							class="option-card"
+							:class="{ 'selected': selectedAgent === 'sentinel' }"
+							@click="selectAgent('sentinel')"
+							title="Agente SENTINEL - Martingale Inteligente e Soros"
+						>
+							<h3>🛡️ SENTINEL</h3>
+							<p>Agente completo com Martingale Inteligente e Soros Nível 2. Ideal para operações balanceadas.</p>
+						</div>
+						<div 
+							class="option-card"
+							:class="{ 'selected': selectedAgent === 'falcon' }"
+							@click="selectAgent('falcon')"
+							title="Agente FALCON - Alta Precisão e Recuperação Inteligente"
+						>
+							<h3>🦅 FALCON</h3>
+							<p>Agente de alta precisão com recuperação inteligente. Foco em segurança estatística.</p>
+						</div>
+					</div>
+				</section>
+
 				<section class="config-section hide-on-mobile">
 					<h2>Estratégias Disponíveis</h2>
 					
@@ -143,8 +179,31 @@
 					</div>
 				</section>
 
-				<!-- Versão Mobile: Card unificado para Mercado, Estratégia e Risco -->
+				<!-- Versão Mobile: Card unificado para Agente, Mercado, Estratégia e Risco -->
 				<div class="mobile-unified-card premium-card">
+					<!-- ✅ NOVO: Selecione o Agente Autônomo -->
+					<div class="mobile-section">
+						<p class="mobile-section-label">Agente Autônomo</p>
+						<div class="mobile-options-grid">
+							<div 
+								class="mobile-option"
+								:class="{ 'selected': selectedAgent === 'sentinel' }"
+								@click="selectAgent('sentinel')"
+							>
+								<h4>🛡️ SENTINEL</h4>
+								<p>Martingale Inteligente e Soros</p>
+							</div>
+							<div 
+								class="mobile-option"
+								:class="{ 'selected': selectedAgent === 'falcon' }"
+								@click="selectAgent('falcon')"
+							>
+								<h4>🦅 FALCON</h4>
+								<p>Alta Precisão e Recuperação</p>
+							</div>
+						</div>
+					</div>
+					
 					<!-- Selecione o Mercado -->
 					<div class="mobile-section">
 						<p class="mobile-section-label">Selecione o Mercado</p>
@@ -393,6 +452,7 @@ export default {
 		data() {
 		return {
 			// Estado de seleção inicial (Baseado na imagem)
+			selectedAgent: 'sentinel', // ✅ Novo: Agente selecionado (sentinel ou falcon)
 			selectedMarket: 'volatility_75', 
 			selectedStrategy: 'arion',
 			selectedRisk: 'balanced',
@@ -475,6 +535,8 @@ export default {
 		iniciarAgente() {
 			// 1. Coleta os dados configurados
 			const configData = {
+				// ✅ Novo: Tipo de agente selecionado
+				agentType: this.selectedAgent, // 'sentinel' ou 'falcon'
 				// Usa os nomes de prop que o PAI espera
 				estrategia: this.selectedStrategy, // Enviar o ID, não o título
 				mercado: this.selectedMarket, // Enviar o ID, não o título
@@ -502,6 +564,9 @@ export default {
 		},
 
 		// --- Métodos existentes ---
+		selectAgent(agentId) {
+			this.selectedAgent = agentId;
+		},
 		selectMarket(marketId) {
 			this.selectedMarket = marketId;
 		},

@@ -337,6 +337,7 @@
             },
             body: JSON.stringify({
               userId,
+              agentType: configData?.agentType || 'sentinel', // ✅ Novo: Tipo de agente
               initialStake,
               dailyProfitTarget,
               dailyLossLimit,
