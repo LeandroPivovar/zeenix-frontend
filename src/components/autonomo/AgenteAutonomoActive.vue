@@ -388,6 +388,7 @@
 				indexChart: null,
 				indexChartSeries: null,
 				indexChartInitialized: false,
+				localTradeHistory: [], // Histórico de trades buscado localmente
 				unidadeTimeframeSelecionada: 'minutos',
 				valorTimeframeSelecionado: 1,
 				tipoGraficoSelecionado: 'Gráfico de Linhas',
@@ -409,10 +410,16 @@
 		},
 		computed: {
 			historicoOperacoes() {
-				// ✅ Converter tradeHistory da API para o formato esperado
-				if (this.tradeHistory && Array.isArray(this.tradeHistory) && this.tradeHistory.length > 0) {
-					console.log('[AgenteAutonomoActive] 📊 Convertendo tradeHistory:', this.tradeHistory.length, 'trades');
-					return this.tradeHistory.map(trade => {
+				// ✅ Usar localTradeHistory primeiro (dados buscados localmente), depois tradeHistory (prop), depois operationHistory
+				const historyToUse = (this.localTradeHistory && this.localTradeHistory.length > 0) 
+					? this.localTradeHistory 
+					: (this.tradeHistory && Array.isArray(this.tradeHistory) && this.tradeHistory.length > 0)
+						? this.tradeHistory
+						: null;
+				
+				if (historyToUse && historyToUse.length > 0) {
+					console.log('[AgenteAutonomoActive] 📊 Convertendo tradeHistory:', historyToUse.length, 'trades');
+					return historyToUse.map(trade => {
 						const date = new Date(trade.createdAt || trade.created_at || Date.now());
 						const dataStr = date.toISOString().split('T')[0];
 						const horaStr = date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -642,6 +649,9 @@
 							}
 						}, 200);
 					});
+				} else if (newAba === 'historico') {
+					// Buscar histórico de trades quando entrar na aba histórico
+					this.fetchTradeHistory();
 				} else {
 					// ✅ OTIMIZADO: Parar polling quando sair da aba gráfico
 					if (oldAba === 'grafico') {
@@ -815,6 +825,9 @@
 				this.fetchPriceHistory();
 				// Iniciar polling
 				this.startPricePolling();
+			} else if (this.abaAtiva === 'historico') {
+				// Buscar histórico de trades se estiver na aba histórico
+				this.fetchTradeHistory();
 			}
 			
 			// Inicializar gráfico apenas se estiver na aba gráfico
@@ -943,6 +956,45 @@
 				}
 			},
 			
+			// ✅ NOVO: Buscar histórico de trades do backend
+			async fetchTradeHistory() {
+				try {
+					const userId = this.getUserId();
+					if (!userId) {
+						console.warn('[AgenteAutonomoActive] ⚠️ userId não disponível para buscar histórico de trades');
+						return;
+					}
+					
+					const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+					const url = `${apiBase}/autonomous-agent/trade-history/${userId}?limit=50`;
+					console.log('[AgenteAutonomoActive] 📡 Buscando histórico de trades:', url);
+					
+					const response = await fetch(url, {
+						headers: {
+							'Authorization': `Bearer ${localStorage.getItem('token')}`
+						}
+					});
+					
+					if (!response.ok) {
+						console.warn(`[AgenteAutonomoActive] ⚠️ Resposta não OK ao buscar trades: ${response.status} ${response.statusText}`);
+						return;
+					}
+					
+					const result = await response.json();
+					console.log('[AgenteAutonomoActive] 📦 Histórico de trades recebido:', { success: result.success, dataLength: result.data?.length || 0 });
+					
+					if (result.success && result.data && Array.isArray(result.data)) {
+						// Atualizar localTradeHistory (variável local no data)
+						this.localTradeHistory = result.data;
+						console.log('[AgenteAutonomoActive] ✅ Histórico de trades atualizado:', result.data.length, 'trades');
+					} else {
+						console.warn('[AgenteAutonomoActive] ⚠️ Resposta sem dados válidos de trades:', result);
+					}
+				} catch (error) {
+					console.error('[AgenteAutonomoActive] ❌ Erro ao buscar histórico de trades:', error);
+				}
+			},
+			
 			// ✅ REMOVIDO: Todo o código do WebSocket foi removido
 			// Agora usamos polling HTTP para buscar ticks do backend (como na IA)
 			// O backend gerencia o WebSocket com a Deriv
@@ -1067,15 +1119,36 @@
 				}
 			},
 			getUserId() {
+				// Tentar obter do localStorage primeiro
 				const userStr = localStorage.getItem("user");
 				if (userStr) {
 					try {
 						const user = JSON.parse(userStr);
-						return user.id || user.userId;
+						if (user.id || user.userId) {
+							return user.id || user.userId;
+						}
 					} catch (error) {
 						console.error("[AgenteAutonomoActive] Erro ao parsear user:", error);
 					}
 				}
+
+				// Fallback: tentar decodificar do token JWT
+				const token = localStorage.getItem("token");
+				if (token) {
+					try {
+						const payload = JSON.parse(atob(token.split('.')[1]));
+						// Tentar diferentes campos comuns do payload JWT
+						if (payload.userId || payload.sub || payload.id) {
+							const userId = payload.userId || payload.sub || payload.id;
+							console.log("[AgenteAutonomoActive] userId obtido do token JWT:", userId);
+							return userId;
+						}
+					} catch (error) {
+						console.error("[AgenteAutonomoActive] Erro ao decodificar token JWT:", error);
+					}
+				}
+
+				console.warn("[AgenteAutonomoActive] Não foi possível obter userId");
 				return null;
 			},
 			
