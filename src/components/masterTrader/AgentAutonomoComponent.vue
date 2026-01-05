@@ -54,7 +54,7 @@
   import AgenteAutonomoActive from "../../components/autonomo/AgenteAutonomoActive.vue";
   import AgenteAutonomoInactive from "../../components/autonomo/AgenteAutonomoInactive.vue";
   import DesktopBottomNav from "../../components/DesktopBottomNav.vue";
-  import { loadAccountBalance, reloadAccountBalance } from '../../utils/balanceLoader';
+  import { loadAccountBalance } from '../../utils/balanceLoader';
 
   export default {
     name: "AgenteAutonomoView",
@@ -987,9 +987,12 @@
   
       startBalanceUpdates() {
         this.fetchAccountBalance();
+        // ✅ OTIMIZADO: Aumentar intervalo de 30s para 60s e usar loadAccountBalance (com cache) em vez de reloadAccountBalance
+        // Isso evita requisições desnecessárias e reduz carga no servidor
         this.balanceUpdateInterval = setInterval(() => {
-          // Usar reloadAccountBalance para forçar atualização (ignora cache)
-          reloadAccountBalance().then(balanceData => {
+          // ✅ Usar loadAccountBalance (com cache) em vez de reloadAccountBalance para evitar requisições travadas
+          // O cache de 30s já garante que não faremos requisições muito frequentes
+          loadAccountBalance(false).then(balanceData => {
             if (balanceData) {
               const oldBalance = this.accountBalance;
               this.accountBalance = balanceData.balance;
@@ -1008,7 +1011,7 @@
           }).catch(error => {
             console.error('[AgenteAutonomo] Erro ao atualizar saldo:', error);
           });
-        }, 30000);
+        }, 60000); // ✅ Aumentado de 30s para 60s para reduzir carga
       },
   
       stopBalanceUpdates() {

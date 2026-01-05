@@ -97,8 +97,13 @@ export async function loadAccountBalance(forceRefresh = false) {
 
     const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
     
-    // Tentar primeiro o endpoint /broker/deriv/status (mais completo)
+    // ✅ OTIMIZADO: Tentar primeiro o endpoint /broker/deriv/status (mais completo)
+    // Adicionar timeout e AbortController para evitar requisições travadas
     try {
+      // ✅ Criar AbortController com timeout de 10 segundos
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 segundos timeout
+      
       const response = await fetch(`${apiBase}/broker/deriv/status`, {
         method: 'POST',
         headers: {
@@ -108,8 +113,11 @@ export async function loadAccountBalance(forceRefresh = false) {
         body: JSON.stringify({
           token: derivToken,
           appId: parseInt(appId)
-        })
+        }),
+        signal: controller.signal // ✅ Adicionar signal para permitir cancelamento
       });
+      
+      clearTimeout(timeoutId); // ✅ Limpar timeout se a requisição completar
 
       if (response.ok) {
         const data = await response.json();
@@ -324,9 +332,17 @@ export async function loadAccountBalance(forceRefresh = false) {
         
         console.log('[BalanceLoader] Saldo carregado:', balanceData);
         return balanceData;
+      } else {
+        // ✅ Se a resposta não foi OK, logar mas não travar
+        console.warn(`[BalanceLoader] Resposta não OK: ${response.status} ${response.statusText}`);
       }
     } catch (error) {
-      console.warn('[BalanceLoader] Erro ao buscar saldo via /broker/deriv/status:', error);
+      // ✅ Tratar erro de abort (timeout) de forma específica
+      if (error.name === 'AbortError') {
+        console.warn('[BalanceLoader] ⏱️ Requisição cancelada por timeout (10s)');
+      } else {
+        console.warn('[BalanceLoader] Erro ao buscar saldo via /broker/deriv/status:', error);
+      }
     }
     
     // ✅ DESATIVADO: Fallback para endpoint /ai/deriv-balance (causa erro 500)

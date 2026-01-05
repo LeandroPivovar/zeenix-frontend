@@ -889,13 +889,21 @@ export default {
         if (!token) return;
 
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        
+        // ✅ OTIMIZADO: Adicionar timeout e AbortController para evitar requisições travadas
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 segundos timeout
+        
         const res = await fetch(`${apiBaseUrl}/notifications/login-summary`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${token}`
-          }
+          },
+          signal: controller.signal // ✅ Adicionar signal para permitir cancelamento
         });
+        
+        clearTimeout(timeoutId); // ✅ Limpar timeout se a requisição completar
 
         if (res.ok) {
           const data = await res.json();
@@ -918,9 +926,17 @@ export default {
               this.hasUnreadNotifications = true;
             }
           }
+        } else {
+          // ✅ Se a resposta não foi OK, logar mas não travar
+          console.warn(`[TopNavbar] Resposta não OK para login-summary: ${res.status} ${res.statusText}`);
         }
       } catch (error) {
-        console.error('[TopNavbar] Erro ao carregar notificações de login:', error);
+        // ✅ Tratar erro de abort (timeout) de forma específica
+        if (error.name === 'AbortError') {
+          console.warn('[TopNavbar] ⏱️ Requisição login-summary cancelada por timeout (8s)');
+        } else {
+          console.error('[TopNavbar] Erro ao carregar notificações de login:', error);
+        }
       }
     },
     getNotificationIcon(type) {
