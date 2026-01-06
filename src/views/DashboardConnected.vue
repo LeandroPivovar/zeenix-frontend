@@ -618,6 +618,15 @@
           </div>
         </div>
       </div>
+      <div v-if="notifications.length > 0" class="notifications-modal-footer">
+        <button 
+          @click="deleteAllNotifications"
+          class="delete-notifications-btn"
+        >
+          <i class="fas fa-trash-alt"></i>
+          <span>Excluir Notificações</span>
+        </button>
+      </div>
     </div>
   </div>
 </template>
@@ -1201,6 +1210,14 @@ export default {
     },
     closeNotificationsModal() {
       this.showNotificationsModal = false;
+    },
+    deleteAllNotifications() {
+      if (this.notifications.length === 0) return;
+      
+      // Confirmação opcional (pode ser removida se preferir deletar direto)
+      if (confirm('Tem certeza que deseja excluir todas as notificações?')) {
+        this.notifications = [];
+      }
     },
     toggleAccountsList() {
       this.showAccountsList = !this.showAccountsList;
@@ -4586,6 +4603,8 @@ export default {
   overflow-y: auto;
   flex: 1;
   color: #FFFFFF;
+  max-height: calc(100vh - 180px);
+  padding-bottom: 20px;
 }
 
 .notifications-empty {
@@ -4658,6 +4677,53 @@ export default {
   color: rgba(255, 255, 255, 0.4);
   font-size: 11px;
   margin-top: 4px;
+}
+
+.notifications-modal-footer {
+  padding: 20px 24px;
+  background: #0B0B0B;
+}
+
+.delete-notifications-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 20px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  border-radius: 8px;
+  color: #EF4444;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-notifications-btn:hover:not(.disabled):not(:disabled) {
+  background: rgba(239, 68, 68, 0.2);
+  border-color: rgba(239, 68, 68, 0.5);
+  color: #DC2626;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.delete-notifications-btn:active:not(.disabled):not(:disabled) {
+  transform: translateY(0);
+}
+
+.delete-notifications-btn.disabled,
+.delete-notifications-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: rgba(239, 68, 68, 0.05);
+  border-color: rgba(239, 68, 68, 0.1);
+  color: rgba(239, 68, 68, 0.5);
+}
+
+.delete-notifications-btn i {
+  font-size: 14px;
 }
 
 @media (max-width: 768px) {
