@@ -27,6 +27,16 @@
         @account-type-changed="handleAccountTypeChange"
         @toggle-sidebar="toggleMobileMenu"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
+        @open-settings="toggleSettingsModal"
+      />
+      <SettingsSidebar
+        :is-open="isSettingsOpen"
+        :balance="accountBalance"
+        :account-type="isDemo ? 'demo' : 'real'"
+        :balances-by-currency-real="balancesByCurrencyReal"
+        :balances-by-currency-demo="balancesByCurrencyDemo"
+        @close="isSettingsOpen = false"
+        @account-type-changed="handleAccountTypeChange"
       />
       <main class="main-content" style="margin-top: 60px;">
         <!-- Immediate Support Section -->
@@ -182,6 +192,7 @@
 <script>
 import AppSidebar from '../components/Sidebar.vue'
   import TopNavbar from '../components/TopNavbar.vue'
+  import SettingsSidebar from '../components/SettingsSidebar.vue'
   import { loadAccountBalance, reloadAccountBalance } from '../utils/balanceLoader'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 
@@ -190,6 +201,7 @@ export default {
   components: {
     AppSidebar,
     TopNavbar,
+    SettingsSidebar,
     DesktopBottomNav
   },
   data() {
@@ -218,7 +230,8 @@ export default {
         'Copy Trading não inicia',
         'Pagamento / Assinatura',
         'Zenix Academy'
-      ]
+      ],
+      isSettingsOpen: false
     }
   },
   computed: {
@@ -252,6 +265,9 @@ export default {
     },
     toggleSidebarCollapse() {
       this.isSidebarCollapsed = !this.isSidebarCollapsed
+    },
+    toggleSettingsModal() {
+      this.isSettingsOpen = !this.isSettingsOpen
     },
     toggleMobileMenu() {
       this.isMobileMenuOpen = !this.isMobileMenuOpen

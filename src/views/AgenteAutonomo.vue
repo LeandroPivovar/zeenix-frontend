@@ -28,6 +28,17 @@
           @account-type-changed="handleAccountTypeChange"
           @toggle-sidebar="toggleMobileSidebar"
           @toggle-sidebar-collapse="toggleSidebarCollapse"
+          @open-settings="toggleSettingsModal"
+        />
+
+        <SettingsSidebar
+          :is-open="isSettingsOpen"
+          :balance="accountBalance"
+          :account-type="isDemo ? 'demo' : 'real'"
+          :balances-by-currency-real="balancesByCurrencyReal"
+          :balances-by-currency-demo="balancesByCurrencyDemo"
+          @close="isSettingsOpen = false"
+          @account-type-changed="handleAccountTypeChange"
         />
   
         <div class="container-componentes">
@@ -52,6 +63,7 @@
   import TopNavbar from "../components/TopNavbar.vue";
   import AgenteAutonomoActive from "../components/autonomo/AgenteAutonomoActive.vue";
   import AgenteAutonomoInactive from "../components/autonomo/AgenteAutonomoInactive.vue";
+  import SettingsSidebar from "../components/SettingsSidebar.vue";
   import DesktopBottomNav from "../components/DesktopBottomNav.vue";
   import { loadAccountBalance, reloadAccountBalance } from '../utils/balanceLoader';
 
@@ -62,6 +74,7 @@
       AgenteAutonomoInactive,
       AppSidebar,
       TopNavbar,
+      SettingsSidebar,
       DesktopBottomNav,
     },
     data() {
@@ -136,6 +149,7 @@
         preferredCurrency: "USD",
         balancesByCurrencyReal: {},
         balancesByCurrencyDemo: {},
+        isSettingsOpen: false,
       };
     },
     computed: {
@@ -794,6 +808,10 @@
         this.$nextTick(() => {
           window.scrollTo({ top: 0, behavior: "smooth" });
         });
+      },
+
+      toggleSettingsModal() {
+        this.isSettingsOpen = !this.isSettingsOpen;
       },
   
       updateTimeAndMetrics() {

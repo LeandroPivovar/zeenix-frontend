@@ -21,6 +21,17 @@
         :balances-by-currency-demo="balancesByCurrencyDemo"
         @toggle-sidebar="toggleMobileSidebar"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
+        @open-settings="toggleSettingsModal"
+      />
+
+      <SettingsSidebar
+        :is-open="isSettingsOpen"
+        :balance="accountBalance"
+        :account-type="isDemo ? 'demo' : 'real'"
+        :balances-by-currency-real="balancesByCurrencyReal"
+        :balances-by-currency-demo="balancesByCurrencyDemo"
+        @close="isSettingsOpen = false"
+        @account-type-changed="handleAccountTypeChange"
       />
   
       <div class="box" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
@@ -54,6 +65,7 @@
   <script>
   import AppSidebar from '../components/Sidebar.vue';
   import TopNavbar from '../components/TopNavbar.vue';
+  import SettingsSidebar from '../components/SettingsSidebar.vue';
   import CopyTradingConfig from '../components/copy-traders/CopyTradingConfig.vue';
   import CopyTradingMonitor from '../components/copy-traders/CopyTradingMonitor.vue';
   import DesktopBottomNav from '../components/DesktopBottomNav.vue';
@@ -64,6 +76,7 @@
     components: {
       AppSidebar,
       TopNavbar,
+      SettingsSidebar,
       CopyTradingConfig,
       CopyTradingMonitor,
       DesktopBottomNav
@@ -73,6 +86,7 @@
         activeTab: 'config',
         isSidebarOpen: true,
         isSidebarCollapsed: false,
+        isSettingsOpen: false,
         isMobile: false,
         loading: true,
         hasActiveSession: false,
@@ -98,6 +112,17 @@
         if (!this.isMobile) {
           this.isSidebarCollapsed = !this.isSidebarCollapsed;
         }
+      },
+      toggleSettingsModal() {
+        this.isSettingsOpen = !this.isSettingsOpen;
+      },
+      handleAccountTypeChange(type) {
+        // Se receber evento do SettingsSidebar, recarregar a página para efetivar a troca
+        // O próprio SettingsSidebar já faz o gerenciamento do localStorage e reload, 
+        // mas se precisar de lógica extra, pode ser colocada aqui.
+        // Como o SettingsSidebar faz reload, esse método pode nem ser chamado se o reload for imediato.
+        // Se for apenas atualização de estado local:
+        this.isDemo = type === 'demo';
       },
       checkMobile() {
         this.isMobile = window.innerWidth <= 1024;
