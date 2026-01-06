@@ -184,25 +184,15 @@
 					<!-- ✅ NOVO: Selecione o Agente Autônomo -->
 					<div class="mobile-section">
 						<p class="mobile-section-label">Agente Autônomo</p>
-						<div class="mobile-options-grid">
-							<div 
-								class="mobile-option"
-								:class="{ 'selected': selectedAgent === 'sentinel' }"
-								@click="selectAgent('sentinel')"
-							>
-								<h4>🛡️ SENTINEL</h4>
-								<p>Martingale Inteligente e Soros</p>
-							</div>
-							<div 
-								class="mobile-option"
-								:class="{ 'selected': selectedAgent === 'falcon' }"
-								@click="selectAgent('falcon')"
-							>
-								<h4>🦅 FALCON</h4>
-								<p>Alta Precisão e Recuperação</p>
-							</div>
-						</div>
+						<select v-model="selectedAgent" class="mobile-select">
+							<option value="sentinel">🛡️ SENTINEL - Martingale Inteligente e Soros</option>
+							<option value="falcon">🦅 FALCON - Alta Precisão e Recuperação</option>
+						</select>
+						<p class="mobile-section-description">{{ getAgentDescription(selectedAgent) }}</p>
 					</div>
+
+					<!-- Divisor -->
+					<div class="mobile-divider"></div>
 					
 					<!-- Selecione o Mercado -->
 					<div class="mobile-section">
@@ -620,6 +610,15 @@ export default {
 			return map[id] || '';
 		},
 
+		// 🟢 NOVO MÉTODO: Descrição do Agente 🟢
+		getAgentDescription(id) {
+			const map = {
+				'sentinel': 'Agente completo com Martingale Inteligente e Soros Nível 2. Ideal para operações balanceadas.',
+				'falcon': 'Agente de alta precisão com recuperação inteligente. Foco em segurança estatística.'
+			};
+			return map[id] || '';
+		},
+
 		getRiskTitle(id) {
 			const map = {
 				'conservative': 'Conservador',
@@ -902,8 +901,59 @@ span.icon-sumary-risk{
 	width: 100%;
 }
 
+/* Ajustes para telas até 1024px - tamanhos mais iguais */
+@media (max-width: 1024px) {
+	.footer-section {
+		gap: 30px;
+	}
+
+	.daily-params-section {
+		width: 100%;
+		max-width: 100%;
+		flex: 1;
+		padding: 20px;
+	}
+
+	.summary-section {
+		width: 100%;
+		max-width: 100%;
+		flex: 1;
+		padding: 20px;
+	}
+
+	.summary-grid {
+		gap: 15px 20px;
+		margin: 8px;
+	}
+
+	.daily-params-grid {
+		gap: 15px;
+	}
+
+	section {
+		padding: 15px;
+	}
+
+	.config-section h2 {
+		margin-bottom: 12px;
+	}
+
+	.options-grid {
+		gap: 10px;
+	}
+
+	.risk-options {
+		gap: 10px;
+	}
+
+	.option-card {
+		padding: 12px 15px;
+		min-height: 85px;
+	}
+}
+
 /* Ajustes para telas menores que 1400px */
-@media (max-width: 1400px) {
+@media (min-width: 1025px) and (max-width: 1400px) {
 	.footer-section {
 		gap: 40px;
 	}
@@ -914,7 +964,8 @@ span.icon-sumary-risk{
 	}
 
 	.daily-params-section {
-		max-width: 500px;
+		flex: 1;
+		max-width: none;
 	}
 
 	.daily-params-grid {
@@ -926,12 +977,15 @@ span.icon-sumary-risk{
 	}
 
 	.daily-params-section {
+		flex: 1;
+		max-width: none;
 		padding: 20px;
 	}
 
 	.summary-section {
 		padding: 20px;
-		max-width: 800px;
+		flex: 1;
+		max-width: none;
 	}
 
 	.config-section h2 {
@@ -995,12 +1049,16 @@ span.icon-sumary-risk{
 
 @media (min-width: 1600px){
 	.daily-params-section {
-		max-width: 600px;
-		min-width: 600px;
+		flex: 1;
+		max-width: none;
+		min-width: 0;
+		padding: 20px;
 	}
 
 	.summary-section {
-		max-width: 900px;
+		flex: 1;
+		max-width: none;
+		padding: 20px;
 	}
 
 	.footer-text{
@@ -1137,9 +1195,34 @@ span.icon-sumary-risk{
 	justify-content: flex-start;
 }
 
+/* Ajustes para telas até 1024px - tamanhos mais iguais */
+@media (max-width: 1024px) {
+	.footer-section {
+		gap: 30px;
+	}
+	
+	.daily-params-section,
+	.summary-section {
+		flex: 1;
+		min-width: 0;
+	}
+}
+
+@media (min-width: 1025px) and (max-width: 1400px) {
+	.footer-section {
+		gap: 40px;
+	}
+}
+
 @media (min-width: 1400px) {
 	.footer-section {
-		gap: 80px;
+		gap: 60px;
+	}
+	
+	.daily-params-section,
+	.summary-section {
+		flex: 1;
+		max-width: none;
 	}
 }
 
@@ -1187,6 +1270,7 @@ span.icon-sumary-risk{
 	width: 90%;
 	text-align: center;
 	margin-top: 10px;
+	font-size: 1.0em;
 }
 
 @media (max-width: 600px) {
@@ -1203,14 +1287,15 @@ span.icon-sumary-risk{
 .param-percentage-text {
 	font-size: 0.8em;
 	margin-top: 5px;
+	color: #999;
 }
 
 .param-percentage-text.positive {
-	color: #00ff66;
+	color: #22C55E;
 }
 
 .param-percentage-text.negative {
-	color: red;
+	color: #f14d4d;
 }
 
 /* Status do Agente - Apenas Mobile */
@@ -1425,12 +1510,16 @@ span.icon-sumary-risk{
 	text-align: left;
 }
 
+.mobile-param-percentage {
+	color: #999;
+}
+
 .mobile-param-percentage.positive {
-	color: #9CA3AF; /* Cinza para todos */
+	color: #22C55E;
 }
 
 .mobile-param-percentage.negative {
-	color: #9CA3AF; /* Cinza para todos */
+	color: #f14d4d;
 }
 
 .agent-status-mobile .premium-card {
