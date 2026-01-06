@@ -103,49 +103,6 @@
 					</div>
 				</section>
 
-				<section class="config-section hide-on-mobile">
-					<h2>Estratégias Disponíveis</h2>
-					
-					<div class="strategies-options options-grid">
-						<div 
-							class="option-card"
-							:class="{ 'selected': selectedStrategy === 'arion' }"
-							@click="selectStrategy('arion')"
-							title="Selecione uma estratégia de operação."
-						>
-							<h3>Arion</h3>
-							<p>Microtransações rápidas e alta responsabilidade.</p>
-						</div>
-						<div 
-							class="option-card"
-							:class="{ 'selected': selectedStrategy === 'cryptomax' }"
-							@click="selectStrategy('cryptomax')"
-							title="Selecione uma estratégia de operação."
-						>
-							<h3>CryptoMax</h3>
-							<p>Ideal para cripto com volatilidade elevada.</p>
-						</div>
-						<div 
-							class="option-card"
-							:class="{ 'selected': selectedStrategy === 'orion_ultra' }"
-							@click="selectStrategy('orion_ultra')"
-							title="Selecione uma estratégia de operação."
-						>
-							<h3>Orion Ultra</h3>
-							<p>Confirmação tripla com filtros inteligentes.</p>
-						</div>
-						<div 
-							class="option-card"
-							:class="{ 'selected': selectedStrategy === 'metaflow' }"
-							@click="selectStrategy('metaflow')"
-							title="Selecione uma estratégia de operação."
-						>
-							<h3>MetaFlow</h3>
-							<p>Otimizada para os ciclos dos metais.</p>
-						</div>
-					</div>
-				</section>
-
 				<section class="config-section risk-section hide-on-mobile">
 					<h2>Nível de Risco</h2>
 					<div class="risk-options">
@@ -205,21 +162,6 @@
 							<option value="volatility_100">Volatility 100 Index</option>
 						</select>
 						<p class="mobile-section-description">{{ getMarketDescription(selectedMarket) }}</p>
-					</div>
-
-					<!-- Divisor -->
-					<div class="mobile-divider"></div>
-
-					<!-- Estratégia -->
-					<div class="mobile-section">
-						<p class="mobile-section-label">Estratégia</p>
-						<select v-model="selectedStrategy" class="mobile-select">
-							<option value="arion">Arion</option>
-							<option value="cryptomax">CryptoMax</option>
-							<option value="orion_ultra">Orion Ultra</option>
-							<option value="metaflow">MetaFlow</option>
-						</select>
-						<p class="mobile-section-description">{{ getStrategyDescription(selectedStrategy) }}</p>
 					</div>
 
 					<!-- Divisor -->
@@ -311,13 +253,6 @@
 								<div class="summary-item-value">
 									<span>Valor por operação</span>
 									<strong>${{ valorOperacaoNumero.toFixed(2) }}</strong>
-								</div>
-							</div>
-							<div class="summary-item strategy-item">
-								<svg class="icon-summary-strategy" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
-								<div class="summary-item-value">
-									<span>Estratégia</span>
-									<strong>{{ getStrategyTitle(selectedStrategy) }}</strong>
 								</div>
 							</div>
 							<div class="summary-item daily-goal">
@@ -444,7 +379,6 @@ export default {
 			// Estado de seleção inicial (Baseado na imagem)
 			selectedAgent: 'sentinel', // ✅ Novo: Agente selecionado (sentinel ou falcon)
 			selectedMarket: 'volatility_75', 
-			selectedStrategy: 'arion',
 			selectedRisk: 'balanced',
 			selectedTradingMode: 'rapido', // Novo: Modo de Negociação
 
@@ -493,9 +427,6 @@ export default {
 					if (config.symbol) {
 						this.selectedMarket = symbolToMarket[config.symbol] || 'volatility_75';
 					}
-					if (config.strategy) {
-						this.selectedStrategy = config.strategy;
-					}
 					if (config.riskLevel) {
 						this.selectedRisk = config.riskLevel;
 					}
@@ -528,7 +459,6 @@ export default {
 				// ✅ Novo: Tipo de agente selecionado
 				agentType: this.selectedAgent, // 'sentinel' ou 'falcon'
 				// Usa os nomes de prop que o PAI espera
-				estrategia: this.selectedStrategy, // Enviar o ID, não o título
 				mercado: this.selectedMarket, // Enviar o ID, não o título
 				risco: this.selectedRisk, // Enviar o ID, não o título
 				goalValue: this.metaLucroNumero,
@@ -560,9 +490,6 @@ export default {
 		selectMarket(marketId) {
 			this.selectedMarket = marketId;
 		},
-		selectStrategy(strategyId) {
-			this.selectedStrategy = strategyId;
-		},
 		selectRisk(riskId) {
 			this.selectedRisk = riskId;
 		},
@@ -589,26 +516,6 @@ export default {
 			return map[id] || '';
 		},
 
-		getStrategyTitle(id) {
-			const map = {
-				'arion': 'Arion',
-				'cryptomax': 'CryptoMax',
-				'orion_ultra': 'Orion Ultra',
-				'metaflow': 'MetaFlow'
-			};
-			return map[id] || id;
-		},
-
-		// 🟢 NOVO MÉTODO 🟢
-		getStrategyDescription(id) {
-			const map = {
-				'arion': 'Microtransações rápidas e alta responsabilidade.',
-				'cryptomax': 'Ideal para cripto com volatilidade elevada.',
-				'orion_ultra': 'Confirmação tripla com filtros inteligentes.',
-				'metaflow': 'Otimizada para os ciclos dos metais.'
-			};
-			return map[id] || '';
-		},
 
 		// 🟢 NOVO MÉTODO: Descrição do Agente 🟢
 		getAgentDescription(id) {
