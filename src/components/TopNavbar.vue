@@ -252,6 +252,14 @@
             </div>
           </div>
         </div>
+        <div v-if="notifications.length > 0" class="notifications-modal-footer">
+          <button 
+            @click="clearNotifications" 
+            class="clear-notifications-btn"
+          >
+            Excluir Notificações
+          </button>
+        </div>
       </div>
     </div>
 
@@ -503,6 +511,10 @@ export default {
     },
     closeNotificationsModal() {
       this.showNotificationsModal = false;
+    },
+    clearNotifications() {
+      this.notifications = [];
+      this.hasUnreadNotifications = false;
     },
     formatNotificationDate(date) {
       if (!date) return '';
@@ -1122,7 +1134,6 @@ export default {
   overflow-y: auto;
   flex: 1;
   color: #FFFFFF;
-  max-height: calc(100vh - 80px);
 }
 
 .notifications-empty {
@@ -1399,5 +1410,38 @@ export default {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
+}
+
+.notifications-modal-footer {
+  padding: 16px 24px;
+  border-top: none;
+  display: flex;
+  justify-content: flex-end;
+  background: #0B0B0B;
+  flex-shrink: 0;
+}
+
+.clear-notifications-btn {
+  margin: auto;
+  background: transparent;
+  color: #EF4444;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 0.2s ease;
+  padding: 10px 20px;
+  border: 1px solid #EF4444 !important;
+  border-radius: 12px;
+}
+
+.clear-notifications-btn:hover:not(:disabled) {
+  color: #DC2626;
+  text-decoration: underline;
+}
+
+.clear-notifications-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  color: #EF4444;
 }
 </style>
