@@ -756,13 +756,24 @@
               };
             });
             
+            // ✅ Filtrar logs duplicados por ID e ordenar por timestamp (mais recentes primeiro)
+            const uniqueLogs = logEntries.filter((log, index, self) => 
+              index === self.findIndex(l => l.id === log.id)
+            );
+            
             // Adicionar aos agentActions para exibição (mais recentes primeiro)
-            this.agentActions = logEntries.slice(0, 20).map(log => ({
-              status: log.level === 'ERROR' ? 'error' : (log.level === 'WARN' ? 'warning' : (log.type === 'gain' ? 'success' : (log.type === 'loss' ? 'error' : 'info'))),
-              title: log.message.split('.')[0].substring(0, 50) || log.message.substring(0, 50),
-              description: log.message,
-              timestamp: log.timestamp,
-            }));
+            this.agentActions = uniqueLogs.slice(0, 20).map(log => {
+              // Limpar título removendo caracteres especiais e vírgulas
+              let title = log.message.split('.')[0] || log.message;
+              title = title.substring(0, 50).trim();
+              
+              return {
+                status: log.level === 'ERROR' ? 'error' : (log.level === 'WARN' ? 'warning' : (log.type === 'gain' ? 'success' : (log.type === 'loss' ? 'error' : 'info'))),
+                title: title,
+                description: log.message,
+                timestamp: log.timestamp,
+              };
+            });
           }
         } catch (error) {
           console.error("[AgenteAutonomo] Erro ao carregar logs:", error);

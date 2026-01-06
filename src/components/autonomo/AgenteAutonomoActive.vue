@@ -284,7 +284,76 @@
 					</div>
 				</div>
 				<div id="contentRegistro" :class="['register-content', { hidden: abaAtiva !== 'registro' }]">
-					<AutonomousAgentLogs :user-id="userIdComputed" :is-active="true" />
+					<!-- Desktop Header -->
+					<div class="desktop-register-header">
+						<div style="display: flex; align-items: center; gap: 0.5rem;">
+							<span style="font-size: 0.75rem; color: #A1A1A1;">📋 Registro de Eventos em Tempo Real</span>
+							<span v-if="realtimeLogs.length > 0" style="font-size: 0.75rem; color: #22C55E;">{{ realtimeLogs.length }} eventos</span>
+						</div>
+						<div style="display: flex; gap: 0.5rem;">
+							<button 
+								@click="exportLogs" 
+								style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: #0E0E0E; border: 1px solid #1C1C1C; border-radius: 4px; color: #A1A1A1; cursor: pointer; transition: all 0.2s;"
+								:disabled="realtimeLogs.length === 0"
+								:style="{ opacity: realtimeLogs.length === 0 ? 0.5 : 1, cursor: realtimeLogs.length === 0 ? 'not-allowed' : 'pointer' }"
+								@mouseover="$event.target.style.background = realtimeLogs.length === 0 ? '#0E0E0E' : '#1C1C1C'"
+								@mouseout="$event.target.style.background = '#0E0E0E'"
+							>
+								<i class="fas fa-download" style="margin-right: 0.25rem;"></i> Exportar
+							</button>
+							<button 
+								@click="clearLogs" 
+								style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: #0E0E0E; border: 1px solid #1C1C1C; border-radius: 4px; color: #A1A1A1; cursor: pointer; transition: all 0.2s;"
+								:disabled="realtimeLogs.length === 0"
+								:style="{ opacity: realtimeLogs.length === 0 ? 0.5 : 1, cursor: realtimeLogs.length === 0 ? 'not-allowed' : 'pointer' }"
+								@mouseover="$event.target.style.background = realtimeLogs.length === 0 ? '#0E0E0E' : 'rgba(239, 68, 68, 0.1)'; $event.target.style.color = realtimeLogs.length === 0 ? '#A1A1A1' : '#ef4444'"
+								@mouseout="$event.target.style.background = '#0E0E0E'; $event.target.style.color = '#A1A1A1'"
+							>
+								<i class="fas fa-trash" style="margin-right: 0.25rem;"></i> Limpar
+							</button>
+						</div>
+					</div>
+					
+					<!-- Desktop Logs List -->
+					<div 
+						ref="logsContainer" 
+						class="desktop-register-list" 
+						style="scroll-behavior: smooth;"
+					>
+						<div v-if="realtimeLogs.length === 0" style="color: #A1A1A1; text-align: left; padding: 3rem 1rem;">
+							<i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
+							<p style="margin: 0.5rem 0;">Nenhum evento registrado ainda.</p>
+							<p style="font-size: 0.75rem; margin-top: 0.25rem; color: #7D7D7D;">Os logs aparecerão aqui em tempo real quando o agente estiver ativo.</p>
+						</div>
+						
+						<div v-else style="text-align: left;">
+							<div v-for="(log, index) in realtimeLogs" :key="index" :class="getLogClass(log)" class="log-entry">
+								<span style="color: #9ca3af;">[{{ log.timestamp }}]</span>
+								<span style="margin-left: 0.25rem;">{{ log.icon }}</span>
+								<span style="margin-left: 0.25rem;" class="log-message">{{ log.message }}</span>
+							</div>
+						</div>
+					</div>
+					
+					<!-- Mobile: Cards de Registro -->
+					<div 
+						ref="logsContainerMobile" 
+						class="mobile-register-cards" 
+						style="scroll-behavior: smooth; max-height: 500px;"
+					>
+						<div v-if="realtimeLogs.length === 0" class="mobile-register-empty">
+							<i class="fas fa-info-circle"></i>
+							<p>Nenhum evento registrado ainda.</p>
+							<p class="mobile-register-empty-subtitle">Os logs aparecerão aqui em tempo real quando o agente estiver ativo.</p>
+						</div>
+						
+						<div v-else class="mobile-register-cards-container">
+							<div v-for="(log, index) in realtimeLogs" :key="index" class="mobile-register-card">
+								<span class="mobile-register-time">{{ log.timestamp }}</span>
+								<span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
+							</div>
+						</div>
+					</div>
 				</div>
 			</div>
 			<!-- Cards Maior Ganho e Maior Perda - apenas mobile e apenas na aba gráfico -->
@@ -304,14 +373,11 @@
 </template>
 
 <script>
-	import AutonomousAgentLogs from './AutonomousAgentLogs.vue';
 	import { createChart, ColorType } from 'lightweight-charts';
 
 	export default {
 		name: 'AgenteAutonomoPanel',
-		components: {
-			AutonomousAgentLogs
-		},
+		components: {},
 		props: {
 			agenteData: {
 				type: Object,
@@ -637,6 +703,9 @@
 					this.fetchPriceHistory();
 					// this.startPricePolling(); // ✅ DESATIVADO
 					
+					// Parar polling de logs
+					this.stopLogsPolling();
+					
 					this.$nextTick(() => {
 						setTimeout(() => {
 							if (this.$refs.indexChartContainer) {
@@ -652,11 +721,20 @@
 				} else if (newAba === 'historico') {
 					// Buscar histórico de trades quando entrar na aba histórico
 					this.fetchTradeHistory();
+					// Parar polling de logs
+					this.stopLogsPolling();
+				} else if (newAba === 'registro') {
+					// ✅ Iniciar polling de logs quando entrar na aba registro
+					this.startLogsPolling();
 				} else {
 					// ✅ OTIMIZADO: Parar polling quando sair da aba gráfico
 					if (oldAba === 'grafico') {
 						this.stopPricePolling();
 						console.log('[AgenteAutonomoActive] Polling parado ao sair da aba gráfico');
+					}
+					// Parar polling de logs se sair da aba registro
+					if (oldAba === 'registro') {
+						this.stopLogsPolling();
 					}
 				}
 			},
@@ -871,6 +949,11 @@
 						}
 					}, 500);
 				});
+			}
+			
+			// ✅ Iniciar polling de logs se estiver na aba registro
+			if (this.abaAtiva === 'registro') {
+				this.startLogsPolling();
 			}
 			
 			// Rolagem instantânea para o topo
@@ -1285,6 +1368,197 @@
 				this.$nextTick(() => {
 					window.scrollTo({ top: 0, behavior: 'smooth' }); // Ou 'instant'
 				});
+			},
+			
+			// ✅ Métodos para logs (igual à IA)
+			async fetchRealtimeLogs() {
+				try {
+					const userId = this.getUserId();
+					if (!userId) {
+						console.warn('[AgenteAutonomoActive] ⚠️ UserId não disponível para buscar logs');
+						return;
+					}
+					
+					const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+					const url = `${apiBase}/autonomous-agent/logs/${userId}?limit=100`;
+					
+					const response = await fetch(url, {
+						method: 'GET',
+						headers: {
+							'Content-Type': 'application/json',
+							'Authorization': `Bearer ${localStorage.getItem('token')}`
+						}
+					});
+					
+					if (!response.ok) {
+						console.warn('[AgenteAutonomoActive] ⚠️ Erro ao buscar logs:', response.status);
+						return;
+					}
+					
+					const result = await response.json();
+					if (result.success && result.data && Array.isArray(result.data)) {
+						// Converter logs para o formato esperado (igual à IA)
+						const newLogs = result.data.map(log => {
+							// Determinar tipo e ícone baseado no módulo e mensagem
+							let type = 'info';
+							let icon = 'ℹ️';
+							
+							if (log.module === 'TRADER' || log.module === 'API') {
+								if (log.level === 'ERROR' || log.message?.toLowerCase().includes('loss') || 
+									log.message?.toLowerCase().includes('lost') || log.message?.toLowerCase().includes('perda')) {
+									type = 'erro';
+									icon = '🚫';
+								} else if (log.message?.toLowerCase().includes('profit') || log.message?.toLowerCase().includes('won') || 
+									log.message?.toLowerCase().includes('lucro') || log.message?.toLowerCase().includes('ganho')) {
+									type = 'resultado';
+									icon = '✅';
+								} else if (log.message?.toLowerCase().includes('buy') || log.message?.toLowerCase().includes('proposal') || 
+									log.message?.toLowerCase().includes('comprando')) {
+									type = 'operacao';
+									icon = '💰';
+								}
+							} else if (log.module === 'ANALYZER') {
+								type = 'analise';
+								icon = '🔍';
+							} else if (log.module === 'RISK') {
+								type = 'alerta';
+								icon = '⚠️';
+							} else if (log.module === 'CORE') {
+								type = 'info';
+								icon = 'ℹ️';
+							}
+							
+							// Formatar timestamp
+							let timestamp = '--';
+							if (log.timestamp) {
+								try {
+									const date = new Date(log.timestamp);
+									if (!isNaN(date.getTime())) {
+										timestamp = date.toLocaleTimeString('pt-BR', {
+											timeZone: 'America/Sao_Paulo',
+											hour: '2-digit',
+											minute: '2-digit',
+											second: '2-digit',
+											hour12: false
+										});
+									}
+								} catch (error) {
+									timestamp = '--';
+								}
+							}
+							
+							// Limpar mensagem removendo prefixos duplicados
+							let cleanMessage = log.message || '';
+							cleanMessage = cleanMessage.replace(/^\[.*?\]\s*-\s*/g, '');
+							
+							return {
+								id: log.id,
+								timestamp,
+								type,
+								icon,
+								message: cleanMessage,
+								module: log.module,
+								level: log.level || log.logLevel,
+							};
+						});
+						
+						if (this.realtimeLogs.length === 0 || !this.lastLogTimestamp) {
+							this.realtimeLogs = newLogs;
+							if (this.realtimeLogs.length > 0) {
+								this.lastLogTimestamp = this.realtimeLogs[0].timestamp;
+							}
+							
+							this.$nextTick(() => {
+								if (this.$refs.logsContainer) {
+									this.$refs.logsContainer.scrollTop = 0;
+								}
+							});
+						} else {
+							const existingIds = new Set(this.realtimeLogs.map(log => log.id || log.timestamp));
+							const logsToAdd = newLogs.filter(log => {
+								const logId = log.id || log.timestamp;
+								return !existingIds.has(logId);
+							});
+							
+							if (logsToAdd.length > 0) {
+								const container = this.$refs.logsContainer;
+								const isAtTop = container && container.scrollTop <= 50;
+								
+								this.realtimeLogs = [...logsToAdd, ...this.realtimeLogs];
+								this.lastLogTimestamp = this.realtimeLogs[0].timestamp;
+								
+								this.$nextTick(() => {
+									if (container && isAtTop) {
+										container.scrollTop = 0;
+									}
+								});
+							}
+						}
+					}
+				} catch (error) {
+					console.error('[AgenteAutonomoActive] ❌ Erro ao buscar logs:', error);
+				}
+			},
+			
+			getLogClass(log) {
+				const colors = {
+					info: 'text-blue-400',
+					tick: 'text-gray-400',
+					analise: 'text-purple-400',
+					sinal: 'text-yellow-400',
+					operacao: 'text-cyan-400',
+					resultado: 'text-green-400',
+					alerta: 'text-orange-400',
+					erro: 'text-red-500'
+				};
+				
+				return colors[log.type] || 'text-gray-400';
+			},
+			
+			exportLogs() {
+				if (this.realtimeLogs.length === 0) return;
+				
+				const text = this.realtimeLogs.map(log => {
+					return `[${log.timestamp}] ${log.icon} ${log.message}`;
+				}).join('\n');
+				
+				const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+				const url = URL.createObjectURL(blob);
+				const a = document.createElement('a');
+				a.href = url;
+				a.download = `agente-autonomo-logs-${new Date().toISOString().split('T')[0]}.txt`;
+				document.body.appendChild(a);
+				a.click();
+				document.body.removeChild(a);
+				URL.revokeObjectURL(url);
+			},
+			
+			clearLogs() {
+				this.realtimeLogs = [];
+				this.lastLogTimestamp = null;
+			},
+			
+			startLogsPolling() {
+				this.stopLogsPolling();
+				
+				// Buscar logs imediatamente
+				this.fetchRealtimeLogs();
+				
+				// Polling a cada 2 segundos (igual à IA)
+				this.logsPollingInterval = setInterval(() => {
+					if (this.abaAtiva === 'registro') {
+						this.fetchRealtimeLogs();
+					} else {
+						this.stopLogsPolling();
+					}
+				}, 2000);
+			},
+			
+			stopLogsPolling() {
+				if (this.logsPollingInterval) {
+					clearInterval(this.logsPollingInterval);
+					this.logsPollingInterval = null;
+				}
 			}
 		},
 	};
@@ -1841,6 +2115,181 @@
 
 	.register-content.hidden {
 		display: none;
+	}
+	
+	/* ✅ Estilos de logs igual à IA */
+	.desktop-register-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		margin-bottom: 0.75rem;
+		padding: 0 0.5rem;
+	}
+	
+	.desktop-register-list {
+		display: block;
+		flex: 1;
+		background: #000000;
+		border-radius: 0.5rem;
+		padding: 1rem;
+		overflow-y: auto;
+		font-family: monospace;
+		font-size: 0.75rem;
+		line-height: 1.75;
+		scroll-behavior: smooth;
+	}
+	
+	.log-entry {
+		margin-bottom: 0.375rem;
+		text-align: left;
+	}
+	
+	.log-message {
+		word-break: break-word;
+	}
+	
+	/* Mobile: Register Cards - escondido por padrão no desktop */
+	.mobile-register-cards {
+		display: none;
+		flex: 1;
+		overflow-y: auto;
+		max-height: 500px;
+		padding: 0;
+	}
+	
+	.mobile-register-cards-container {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		padding: 0;
+	}
+	
+	.mobile-register-card {
+		background: rgba(0, 0, 0, 0.4);
+		border-radius: 8px;
+		padding: 1rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+		text-align: left;
+	}
+	
+	.mobile-register-time {
+		font-size: 0.75rem;
+		color: #A0A0A0;
+		font-weight: 400;
+		text-align: left;
+		margin-bottom: 0.125rem;
+	}
+	
+	.mobile-register-message {
+		font-size: 0.875rem;
+		color: #FFFFFF;
+		text-align: left;
+		word-break: break-word;
+	}
+	
+	.mobile-register-empty {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		padding: 3rem 1rem;
+		text-align: center;
+		color: #A1A1A1;
+	}
+	
+	.mobile-register-empty i {
+		font-size: 2rem;
+		margin-bottom: 1rem;
+		color: #7D7D7D;
+	}
+	
+	.mobile-register-empty p {
+		font-size: 0.875rem;
+		margin: 0.5rem 0;
+	}
+	
+	.mobile-register-empty-subtitle {
+		font-size: 0.75rem;
+		color: #7D7D7D;
+	}
+	
+	/* Mobile: Mostrar cards, esconder lista desktop */
+	@media (max-width: 768px) {
+		.desktop-register-list {
+			display: none !important;
+		}
+		
+		.desktop-register-header {
+			display: none !important;
+		}
+		
+		.mobile-register-cards {
+			display: block !important;
+		}
+	}
+	
+	/* Desktop: Esconder cards, mostrar lista */
+	@media (min-width: 769px) {
+		.desktop-register-list {
+			display: block !important;
+		}
+		
+		.mobile-register-cards {
+			display: none !important;
+		}
+	}
+	
+	/* Cores para mensagens de log */
+	.mobile-register-message .text-blue-400 {
+		color: #60a5fa;
+	}
+	
+	.mobile-register-message .text-gray-400 {
+		color: #9ca3af;
+	}
+	
+	.mobile-register-message .text-purple-400 {
+		color: #c084fc;
+	}
+	
+	.mobile-register-message .text-yellow-400 {
+		color: #facc15;
+	}
+	
+	.mobile-register-message .text-cyan-400 {
+		color: #22d3ee;
+	}
+	
+	.mobile-register-message .text-green-400 {
+		color: #4ade80;
+	}
+	
+	.mobile-register-message .text-orange-400 {
+		color: #fb923c;
+	}
+	
+	.mobile-register-message .text-red-500 {
+		color: #ef4444;
+	}
+	
+	/* Custom scrollbar */
+	.custom-scrollbar::-webkit-scrollbar {
+		width: 8px;
+	}
+	
+	.custom-scrollbar::-webkit-scrollbar-track {
+		background: transparent;
+	}
+	
+	.custom-scrollbar::-webkit-scrollbar-thumb {
+		background: #2C2C2C;
+		border-radius: 4px;
+	}
+	
+	.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+		background: #3C3C3C;
 	}
 	
 	#contentHistorico.history-content,
