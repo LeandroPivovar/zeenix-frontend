@@ -1200,14 +1200,14 @@
 						.filter(point => {
 							// ✅ CORREÇÃO: Filtrar valores null, undefined, NaN, 0 e negativos (como na IA)
 							if (!point) return false;
-							return point.value != null && 
-							       !isNaN(point.value) && 
-							       isFinite(point.value) && 
-							       point.value > 0 && 
-							       point.time != null &&
-							       !isNaN(point.time) &&
-							       isFinite(point.time) &&
-							       point.time > 0;
+							return point.value != null
+								&& !isNaN(point.value)
+								&& isFinite(point.value)
+								&& point.value > 0
+								&& point.time != null
+								&& !isNaN(point.time)
+								&& isFinite(point.time)
+								&& point.time > 0;
 						})
 						.sort((a, b) => a.time - b.time);
 					
@@ -1218,13 +1218,13 @@
 					
 					// ✅ Validação final: garantir que não há valores null/undefined (como na IA)
 					const validTicks = sortedTicks.filter(point => {
-						return point && 
-						       typeof point.time === 'number' && 
-						       typeof point.value === 'number' &&
-						       point.time > 0 && 
-						       point.value > 0 &&
-						       isFinite(point.time) &&
-						       isFinite(point.value);
+						return point
+							&& typeof point.time === 'number'
+							&& typeof point.value === 'number'
+							&& point.time > 0
+							&& point.value > 0
+							&& isFinite(point.time)
+							&& isFinite(point.value);
 					});
 					
 					if (validTicks.length === 0) {
