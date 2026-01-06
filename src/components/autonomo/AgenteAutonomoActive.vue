@@ -329,8 +329,8 @@
 						<div v-else style="text-align: left;">
 							<div v-for="(log, index) in realtimeLogs" :key="index" :class="getLogClass(log)" class="log-entry">
 								<span style="color: #9ca3af;">[{{ log.timestamp }}]</span>
-								<span style="margin-left: 0.25rem;">{{ log.icon }}</span>
-								<span style="margin-left: 0.25rem;" class="log-message">{{ log.message }}</span>
+								<span style="margin-left: 0.5rem;">{{ log.icon }}</span>
+								<span style="margin-left: 0.5rem;" class="log-message">{{ log.message }}</span>
 							</div>
 						</div>
 					</div>
@@ -339,7 +339,7 @@
 					<div 
 						ref="logsContainerMobile" 
 						class="mobile-register-cards" 
-						style="scroll-behavior: smooth; max-height: 500px;"
+						style="scroll-behavior: smooth;"
 					>
 						<div v-if="!realtimeLogs || realtimeLogs.length === 0" class="mobile-register-empty">
 							<i class="fas fa-info-circle"></i>
@@ -1431,19 +1431,17 @@
 								icon = 'ℹ️';
 							}
 							
-							// Formatar timestamp
+							// Formatar timestamp (HH:mm:ss)
 							let timestamp = '--';
 							if (log.timestamp) {
 								try {
 									const date = new Date(log.timestamp);
 									if (!isNaN(date.getTime())) {
-										timestamp = date.toLocaleTimeString('pt-BR', {
-											timeZone: 'America/Sao_Paulo',
-											hour: '2-digit',
-											minute: '2-digit',
-											second: '2-digit',
-											hour12: false
-										});
+										// Formato: HH:mm:ss
+										const hours = String(date.getHours()).padStart(2, '0');
+										const minutes = String(date.getMinutes()).padStart(2, '0');
+										const seconds = String(date.getSeconds()).padStart(2, '0');
+										timestamp = `${hours}:${minutes}:${seconds}`;
 									}
 								} catch (error) {
 									timestamp = '--';
@@ -2143,6 +2141,8 @@
 		font-size: 0.75rem;
 		line-height: 1.75;
 		scroll-behavior: smooth;
+		/* ✅ Limitar altura para mostrar no máximo 30 linhas */
+		max-height: calc(1.75rem * 30 + 2rem); /* 30 linhas * line-height + padding */
 	}
 	
 	.log-entry {
@@ -2159,7 +2159,8 @@
 		display: none;
 		flex: 1;
 		overflow-y: auto;
-		max-height: 500px;
+		/* ✅ Limitar altura para mostrar no máximo 30 linhas no mobile */
+		max-height: calc(1.75rem * 30 + 2rem); /* 30 linhas * line-height + padding */
 		padding: 0;
 	}
 	
