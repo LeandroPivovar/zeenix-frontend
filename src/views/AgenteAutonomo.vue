@@ -705,16 +705,21 @@
             const logEntries = result.data.map(log => {
               // Determinar tipo de log baseado no módulo e nível
               let logType = 'info';
-              if (log.module === 'TRADER') {
-                if (log.level === 'ERROR' || log.message.includes('loss') || log.message.includes('LOST')) {
+              if (log.module === 'TRADER' || log.module === 'API') {
+                if (log.level === 'ERROR' || log.message.toLowerCase().includes('loss') || log.message.toLowerCase().includes('lost') || log.message.toLowerCase().includes('perda')) {
                   logType = 'loss';
-                } else if (log.message.includes('profit') || log.message.includes('WON')) {
+                } else if (log.message.toLowerCase().includes('profit') || log.message.toLowerCase().includes('won') || log.message.toLowerCase().includes('lucro') || log.message.toLowerCase().includes('ganho')) {
                   logType = 'gain';
-                } else if (log.message.includes('Buy') || log.message.includes('Proposal')) {
+                } else if (log.message.toLowerCase().includes('buy') || log.message.toLowerCase().includes('proposal') || log.message.toLowerCase().includes('comprando')) {
                   logType = 'purchase';
                 }
               } else if (log.module === 'RISK') {
                 logType = 'strategy';
+              } else if (log.module === 'CORE') {
+                // Logs do CORE são informativos sobre o status do agente
+                if (log.message.toLowerCase().includes('ativo') || log.message.toLowerCase().includes('processando')) {
+                  logType = 'info';
+                }
               }
               
               // Formatar timestamp de forma segura
@@ -723,27 +728,38 @@
                 try {
                   const date = new Date(log.timestamp);
                   if (!isNaN(date.getTime())) {
-                    formattedTimestamp = date.toLocaleString('pt-BR');
+                    // Formato: HH:mm:ss
+                    formattedTimestamp = date.toLocaleTimeString('pt-BR', {
+                      hour: '2-digit',
+                      minute: '2-digit',
+                      second: '2-digit',
+                      hour12: false
+                    });
                   }
                 } catch (error) {
                   formattedTimestamp = '--';
                 }
               }
               
+              // Limpar mensagem removendo prefixos duplicados
+              let cleanMessage = log.message || '';
+              // Remover prefixos como [CORE] - se já estiverem na mensagem
+              cleanMessage = cleanMessage.replace(/^\[.*?\]\s*-\s*/g, '');
+              
               return {
                 id: log.id,
                 timestamp: formattedTimestamp,
                 type: logType,
-                message: log.message,
+                message: cleanMessage,
                 module: log.module,
-                level: log.level,
+                level: log.level || log.logLevel,
               };
             });
             
-            // Adicionar aos agentActions para exibição
+            // Adicionar aos agentActions para exibição (mais recentes primeiro)
             this.agentActions = logEntries.slice(0, 20).map(log => ({
-              status: log.level === 'ERROR' ? 'error' : (log.level === 'WARN' ? 'warning' : (log.type === 'gain' ? 'success' : 'info')),
-              title: log.message.split('.')[0] || log.message,
+              status: log.level === 'ERROR' ? 'error' : (log.level === 'WARN' ? 'warning' : (log.type === 'gain' ? 'success' : (log.type === 'loss' ? 'error' : 'info'))),
+              title: log.message.split('.')[0].substring(0, 50) || log.message.substring(0, 50),
               description: log.message,
               timestamp: log.timestamp,
             }));
