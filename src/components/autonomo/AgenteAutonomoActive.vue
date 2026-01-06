@@ -288,15 +288,15 @@
 					<div class="desktop-register-header">
 						<div style="display: flex; align-items: center; gap: 0.5rem;">
 							<span style="font-size: 0.75rem; color: #A1A1A1;">📋 Registro de Eventos em Tempo Real</span>
-							<span v-if="realtimeLogs.length > 0" style="font-size: 0.75rem; color: #22C55E;">{{ realtimeLogs.length }} eventos</span>
+							<span v-if="realtimeLogs && realtimeLogs.length > 0" style="font-size: 0.75rem; color: #22C55E;">{{ realtimeLogs.length }} eventos</span>
 						</div>
 						<div style="display: flex; gap: 0.5rem;">
 							<button 
 								@click="exportLogs" 
 								style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: #0E0E0E; border: 1px solid #1C1C1C; border-radius: 4px; color: #A1A1A1; cursor: pointer; transition: all 0.2s;"
-								:disabled="realtimeLogs.length === 0"
-								:style="{ opacity: realtimeLogs.length === 0 ? 0.5 : 1, cursor: realtimeLogs.length === 0 ? 'not-allowed' : 'pointer' }"
-								@mouseover="$event.target.style.background = realtimeLogs.length === 0 ? '#0E0E0E' : '#1C1C1C'"
+								:disabled="!realtimeLogs || realtimeLogs.length === 0"
+								:style="{ opacity: (!realtimeLogs || realtimeLogs.length === 0) ? 0.5 : 1, cursor: (!realtimeLogs || realtimeLogs.length === 0) ? 'not-allowed' : 'pointer' }"
+								@mouseover="$event.target.style.background = (!realtimeLogs || realtimeLogs.length === 0) ? '#0E0E0E' : '#1C1C1C'"
 								@mouseout="$event.target.style.background = '#0E0E0E'"
 							>
 								<i class="fas fa-download" style="margin-right: 0.25rem;"></i> Exportar
@@ -304,9 +304,9 @@
 							<button 
 								@click="clearLogs" 
 								style="padding: 0.25rem 0.75rem; font-size: 0.75rem; background: #0E0E0E; border: 1px solid #1C1C1C; border-radius: 4px; color: #A1A1A1; cursor: pointer; transition: all 0.2s;"
-								:disabled="realtimeLogs.length === 0"
-								:style="{ opacity: realtimeLogs.length === 0 ? 0.5 : 1, cursor: realtimeLogs.length === 0 ? 'not-allowed' : 'pointer' }"
-								@mouseover="$event.target.style.background = realtimeLogs.length === 0 ? '#0E0E0E' : 'rgba(239, 68, 68, 0.1)'; $event.target.style.color = realtimeLogs.length === 0 ? '#A1A1A1' : '#ef4444'"
+								:disabled="!realtimeLogs || realtimeLogs.length === 0"
+								:style="{ opacity: (!realtimeLogs || realtimeLogs.length === 0) ? 0.5 : 1, cursor: (!realtimeLogs || realtimeLogs.length === 0) ? 'not-allowed' : 'pointer' }"
+								@mouseover="$event.target.style.background = (!realtimeLogs || realtimeLogs.length === 0) ? '#0E0E0E' : 'rgba(239, 68, 68, 0.1)'; $event.target.style.color = (!realtimeLogs || realtimeLogs.length === 0) ? '#A1A1A1' : '#ef4444'"
 								@mouseout="$event.target.style.background = '#0E0E0E'; $event.target.style.color = '#A1A1A1'"
 							>
 								<i class="fas fa-trash" style="margin-right: 0.25rem;"></i> Limpar
@@ -320,7 +320,7 @@
 						class="desktop-register-list" 
 						style="scroll-behavior: smooth;"
 					>
-						<div v-if="realtimeLogs.length === 0" style="color: #A1A1A1; text-align: left; padding: 3rem 1rem;">
+						<div v-if="!realtimeLogs || realtimeLogs.length === 0" style="color: #A1A1A1; text-align: left; padding: 3rem 1rem;">
 							<i class="fas fa-info-circle" style="font-size: 1.5rem; margin-bottom: 0.5rem; display: block;"></i>
 							<p style="margin: 0.5rem 0;">Nenhum evento registrado ainda.</p>
 							<p style="font-size: 0.75rem; margin-top: 0.25rem; color: #7D7D7D;">Os logs aparecerão aqui em tempo real quando o agente estiver ativo.</p>
@@ -341,7 +341,7 @@
 						class="mobile-register-cards" 
 						style="scroll-behavior: smooth; max-height: 500px;"
 					>
-						<div v-if="realtimeLogs.length === 0" class="mobile-register-empty">
+						<div v-if="!realtimeLogs || realtimeLogs.length === 0" class="mobile-register-empty">
 							<i class="fas fa-info-circle"></i>
 							<p>Nenhum evento registrado ainda.</p>
 							<p class="mobile-register-empty-subtitle">Os logs aparecerão aqui em tempo real quando o agente estiver ativo.</p>
@@ -455,6 +455,9 @@
 				indexChartSeries: null,
 				indexChartInitialized: false,
 				localTradeHistory: [], // Histórico de trades buscado localmente
+				realtimeLogs: [], // Logs em tempo real (igual à IA)
+				lastLogTimestamp: null, // Timestamp do último log para polling
+				logsPollingInterval: null, // Intervalo para polling de logs
 				unidadeTimeframeSelecionada: 'minutos',
 				valorTimeframeSelecionado: 1,
 				tipoGraficoSelecionado: 'Gráfico de Linhas',
@@ -1462,9 +1465,9 @@
 							};
 						});
 						
-						if (this.realtimeLogs.length === 0 || !this.lastLogTimestamp) {
+						if (!this.realtimeLogs || this.realtimeLogs.length === 0 || !this.lastLogTimestamp) {
 							this.realtimeLogs = newLogs;
-							if (this.realtimeLogs.length > 0) {
+							if (this.realtimeLogs && this.realtimeLogs.length > 0) {
 								this.lastLogTimestamp = this.realtimeLogs[0].timestamp;
 							}
 							
@@ -1474,6 +1477,9 @@
 								}
 							});
 						} else {
+							if (!this.realtimeLogs) {
+								this.realtimeLogs = [];
+							}
 							const existingIds = new Set(this.realtimeLogs.map(log => log.id || log.timestamp));
 							const logsToAdd = newLogs.filter(log => {
 								const logId = log.id || log.timestamp;
@@ -1516,7 +1522,7 @@
 			},
 			
 			exportLogs() {
-				if (this.realtimeLogs.length === 0) return;
+				if (!this.realtimeLogs || this.realtimeLogs.length === 0) return;
 				
 				const text = this.realtimeLogs.map(log => {
 					return `[${log.timestamp}] ${log.icon} ${log.message}`;
