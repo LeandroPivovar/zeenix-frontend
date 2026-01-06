@@ -1,13 +1,23 @@
 <template>
-  <main class="oauth-callback">
-    <div class="card">
-      <div class="indicator" v-if="!error">
-        <span class="spinner"></span>
-        <p>Concluindo conexão com a Deriv...</p>
-      </div>
-      <p v-else class="error">{{ error }}</p>
+  <div class="layout-home">
+    <!-- Fundo animado: luzes e partículas (Igual HomeView) -->
+    <div class="animated-light-primary"></div>
+    <div class="animated-light-secondary"></div>
+    <div class="particles">
+      <span v-for="n in 12" :key="n" class="particle"></span>
     </div>
-  </main>
+
+    <main class="content loading-content">
+      <div v-if="!error" class="loading-container">
+        <div class="loading-spinner"></div>
+        <p class="loading-text">Concluindo conexão com a Deriv...</p>
+      </div>
+      <div v-else class="error-container">
+         <p class="error">{{ error }}</p>
+         <p class="redirect-text">Redirecionando...</p>
+      </div>
+    </main>
+  </div>
 </template>
 
 <script>
@@ -105,10 +115,8 @@ export default {
       }));
 
       // Carregar contas disponíveis em background e salvar no cache
-      // Isso garante que as contas estejam disponíveis imediatamente após o login
       try {
         const { loadAvailableAccounts } = await import('../utils/accountsLoader');
-        // Carregar em background sem bloquear o redirecionamento
         loadAvailableAccounts().then(() => {
           console.log('[DerivOAuthCallback] Contas carregadas e salvas no cache');
         }).catch(err => {
@@ -132,50 +140,55 @@ export default {
 };
 </script>
 
+<style scoped src="../assets/css/views/homeView.css"></style>
+
 <style scoped>
-.oauth-callback {
-  min-height: 100vh;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background: #0f172a;
-  color: #fff;
+/* Estilos adicionais específicos para o loading se não estiverem no CSS global/home */
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    width: 100%;
 }
 
-.card {
-  background: rgba(15, 23, 42, 0.85);
-  border-radius: 16px;
-  padding: 32px;
-  text-align: center;
-  max-width: 360px;
-  width: 100%;
-  box-shadow: 0 20px 40px rgba(15, 23, 42, 0.45);
+.loading-container, .error-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
 }
 
-.indicator {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    border-top-color: #22c55e;
+    animation: spin 1s ease-in-out infinite;
 }
 
-.spinner {
-  width: 38px;
-  height: 38px;
-  border: 4px solid rgba(255, 255, 255, 0.2);
-  border-top-color: #06d6a0;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
+.loading-text {
+    color: #9ca3af;
+    font-size: 14px;
+    font-weight: 500;
 }
 
 .error {
-  color: #f87171;
-  font-weight: 600;
+    color: #ef4444;
+    font-weight: 600;
+    text-align: center;
+    max-width: 300px;
+}
+
+.redirect-text {
+    color: #6b7280;
+    font-size: 12px;
 }
 
 @keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
+    to { transform: rotate(360deg); }
 }
 </style>
