@@ -781,12 +781,25 @@
 				}
 			},
 			priceTicks: {
-				handler() {
-					if (this.indexChartInitialized && this.abaAtiva === 'grafico') {
-						this.updateIndexChart();
+				handler(newTicks) {
+					console.log('[AgenteAutonomoActive] priceTicks atualizado:', newTicks?.length || 0, 'ticks');
+					if (newTicks && newTicks.length > 0) {
+						if (this.indexChartInitialized && this.abaAtiva === 'grafico') {
+							this.$nextTick(() => {
+								this.updateIndexChart();
+							});
+						} else if (this.abaAtiva === 'grafico') {
+							// Se o gráfico ainda não foi inicializado mas temos dados, inicializar
+							this.$nextTick(() => {
+								if (this.$refs.indexChartContainer) {
+									this.initIndexChart();
+								}
+							});
+						}
 					}
 				},
-				deep: true
+				deep: true,
+				immediate: true
 			},
 			'agenteData.mercado'(newMarket) {
 				// Atualizar símbolo quando o mercado mudar
@@ -927,14 +940,48 @@
 					console.log('[AgenteAutonomoActive] 📦 Resposta recebida:', { success: result.success, dataLength: result.data?.length || 0 });
 					
 					if (result.success && result.data && Array.isArray(result.data)) {
-						const ticks = result.data.map(tick => ({
-							value: parseFloat(tick.value) || 0,
-							epoch: tick.epoch || Math.floor(new Date(tick.timestamp).getTime() / 1000),
-							timestamp: tick.timestamp
-						})).filter(tick => tick.value > 0 && tick.epoch > 0);
+						// ✅ SEGUINDO PADRÃO DA IA: Processamento robusto de ticks
+						const ticks = result.data
+							.map(tick => {
+								// Extrair value de forma robusta (tentar todas as propriedades possíveis)
+								const rawValue = tick.value ?? tick.price ?? tick.quote ?? tick.close ?? tick.spot ?? null;
+								if (!rawValue || rawValue === 0) {
+									return null;
+								}
+								
+								const value = parseFloat(rawValue);
+								if (isNaN(value) || !isFinite(value) || value <= 0) {
+									return null;
+								}
+								
+								// Extrair epoch/time de forma robusta
+								let epoch = tick.epoch || tick.time;
+								if (!epoch && tick.timestamp) {
+									epoch = Math.floor(new Date(tick.timestamp).getTime() / 1000);
+								} else if (epoch > 10000000000) {
+									// Se for timestamp em milissegundos, converter para segundos
+									epoch = Math.floor(epoch / 1000);
+								} else {
+									epoch = Math.floor(epoch);
+								}
+								
+								if (!epoch || epoch <= 0) {
+									return null;
+								}
+								
+								return {
+									value: value,
+									epoch: epoch,
+									timestamp: tick.timestamp || new Date(epoch * 1000).toISOString()
+								};
+							})
+							.filter(tick => tick !== null && tick.value > 0 && tick.epoch > 0);
 						
 						this.priceTicks = ticks;
 						console.log('[AgenteAutonomoActive] ✅ Histórico carregado:', ticks.length, 'ticks válidos de', result.data.length, 'total');
+						if (ticks.length > 0) {
+							console.log('[AgenteAutonomoActive] 📊 Primeiro tick:', ticks[0], 'Último tick:', ticks[ticks.length - 1]);
+						}
 						
 						// Atualizar gráfico se já estiver inicializado
 						if (this.indexChartInitialized) {
@@ -1113,24 +1160,84 @@
 				}
 				
 				try {
-					// Filtrar e ordenar ticks por epoch
+					// ✅ SEGUINDO PADRÃO DA IA: Processamento robusto de ticks
 					const sortedTicks = [...this.priceTicks]
-						.filter(tick => tick.epoch && tick.value && !isNaN(tick.value))
-						.sort((a, b) => a.epoch - b.epoch);
+						.map(tick => {
+							// Extrair time de forma robusta (como na IA)
+							let time = tick.epoch || tick.time;
+							if (!time) {
+								// Tentar extrair de timestamp se disponível
+								if (tick.timestamp) {
+									time = Math.floor(new Date(tick.timestamp).getTime() / 1000);
+								} else {
+									time = Date.now() / 1000;
+								}
+							} else if (time > 10000000000) {
+								// Se for timestamp em milissegundos, converter para segundos
+								time = Math.floor(time / 1000);
+							} else {
+								time = Math.floor(time);
+							}
+							
+							// ✅ Extrair value de forma robusta - tentar todas as propriedades possíveis (como na IA)
+							let rawValue = tick.value ?? tick.price ?? tick.quote ?? tick.close ?? tick.spot ?? null;
+							
+							// Se ainda for null/undefined, pular este tick
+							if (rawValue == null || rawValue === undefined) {
+								return null;
+							}
+							
+							// Converter para número
+							const value = Number(rawValue);
+							
+							// Validar antes de retornar (como na IA)
+							if (isNaN(value) || !isFinite(value) || value <= 0 || time <= 0) {
+								return null;
+							}
+							
+							return { time, value };
+						})
+						.filter(point => {
+							// ✅ CORREÇÃO: Filtrar valores null, undefined, NaN, 0 e negativos (como na IA)
+							if (!point) return false;
+							return point.value != null && 
+								   !isNaN(point.value) && 
+								   isFinite(point.value) && 
+								   point.value > 0 && 
+								   point.time != null &&
+								   !isNaN(point.time) &&
+								   isFinite(point.time) &&
+								   point.time > 0;
+						})
+						.sort((a, b) => a.time - b.time);
 					
 					if (sortedTicks.length === 0) {
 						console.warn('[AgenteAutonomoActive] Nenhum tick válido após filtragem');
 						return;
 					}
 					
-					const data = sortedTicks.map(tick => ({
-						time: Math.floor(tick.epoch),
-						value: parseFloat(tick.value)
-					}));
+					// ✅ Validação final: garantir que não há valores null/undefined (como na IA)
+					const validTicks = sortedTicks.filter(point => {
+						return point && 
+							   typeof point.time === 'number' && 
+							   typeof point.value === 'number' &&
+							   point.time > 0 && 
+							   point.value > 0 &&
+							   isFinite(point.time) &&
+							   isFinite(point.value);
+					});
 					
-					// ✅ OTIMIZADO: Reduzir logs e otimizar atualização
+					if (validTicks.length === 0) {
+						console.warn('[AgenteAutonomoActive] Nenhum tick válido após validação final');
+						return;
+					}
+					
 					// Limitar dados para melhor performance (últimos 200 pontos)
-					const limitedData = data.slice(-200);
+					const limitedData = validTicks.slice(-200);
+					
+					console.log('[AgenteAutonomoActive] Atualizando gráfico com', limitedData.length, 'pontos válidos de', this.priceTicks.length, 'ticks totais');
+					
+					// ✅ Usar setData com dados validados
 					this.indexChartSeries.setData(limitedData);
 					this.indexChart.timeScale().fitContent();
 				} catch (error) {
