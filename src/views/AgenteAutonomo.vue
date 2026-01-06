@@ -394,6 +394,10 @@
               this.agenteEstaAtivo = true;
             }
             
+            // ✅ Forçar atualização dos gráficos com novos ticks (sessão limpa)
+            // O componente AgenteAutonomoActive vai buscar os ticks automaticamente
+            // quando detectar que o agente foi ativado
+            
             this.$nextTick(() => {
               window.scrollTo({ top: 0, behavior: "smooth" });
             });

@@ -724,6 +724,26 @@
 							});
 							this.$forceUpdate();
 						}
+						
+						// ✅ NOVO: Quando agenteData é definido pela primeira vez (nova sessão), buscar ticks atualizados
+						if (!oldVal && this.abaAtiva === 'grafico') {
+							console.log('[AgenteAutonomoActive] Nova sessão detectada, buscando ticks atualizados...');
+							this.$nextTick(() => {
+								setTimeout(() => {
+									this.fetchPriceHistory();
+								}, 1000); // Aguardar 1 segundo para garantir que o backend processou a ativação
+							});
+						}
+					} else if (newVal && !oldVal) {
+						// ✅ Nova sessão detectada (agenteData definido pela primeira vez)
+						if (this.abaAtiva === 'grafico') {
+							console.log('[AgenteAutonomoActive] Nova sessão detectada, buscando ticks atualizados...');
+							this.$nextTick(() => {
+								setTimeout(() => {
+									this.fetchPriceHistory();
+								}, 1000); // Aguardar 1 segundo para garantir que o backend processou a ativação
+							});
+						}
 					}
 				},
 				deep: true,
