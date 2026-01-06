@@ -370,6 +370,7 @@
 
           const result = await response.json();
           if (result.success) {
+            // ✅ Definir como ativo ANTES de carregar config (evita race condition)
             this.agenteEstaAtivo = true;
             this.startSimulations();
             this.startPolling();
@@ -378,7 +379,21 @@
               "Aguardando padrões de mercado...",
               "success"
             );
+            
+            // ✅ Aguardar um pouco antes de carregar config (dar tempo para o banco atualizar)
+            await new Promise(resolve => setTimeout(resolve, 500));
             await this.loadAgentConfig();
+            
+            // ✅ Garantir que agenteEstaAtivo permaneça true após carregar config
+            // (não sobrescrever se já estiver true)
+            if (this.agenteEstaAtivo) {
+              // Se já estava true, manter true mesmo se loadAgentConfig retornar false
+              // (pode ser um delay no banco)
+            } else if (this.agentConfig && this.agentConfig.isActive) {
+              // Se loadAgentConfig confirmou que está ativo, definir como true
+              this.agenteEstaAtivo = true;
+            }
+            
             this.$nextTick(() => {
               window.scrollTo({ top: 0, behavior: "smooth" });
             });
@@ -495,11 +510,20 @@
             // Garantir que agentConfig seja definido de forma segura
             try {
               this.agentConfig = result.data;
-              this.agenteEstaAtivo = result.data.isActive || false;
+              // ✅ Só atualizar agenteEstaAtivo se o valor for explicitamente true
+              // Não sobrescrever para false se já estiver true (pode ser delay no banco)
+              if (result.data.isActive === true) {
+                this.agenteEstaAtivo = true;
+              } else if (result.data.isActive === false) {
+                // Só definir como false se explicitamente for false
+                this.agenteEstaAtivo = false;
+              }
+              // Se isActive não estiver definido, manter o estado atual
             } catch (error) {
               console.error('[AgenteAutonomo] Erro ao definir agentConfig:', error);
               this.agentConfig = {};
-              this.agenteEstaAtivo = false;
+              // Não definir como false automaticamente em caso de erro
+              // Manter o estado atual para evitar desativação acidental
             }
             
             // Debug: logar dados recebidos
