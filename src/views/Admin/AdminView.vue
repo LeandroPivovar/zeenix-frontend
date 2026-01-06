@@ -1250,6 +1250,7 @@ export default {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 20px;
+    margin-bottom: 40px;
 }
 
 .permission-card {
@@ -1257,11 +1258,12 @@ export default {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 15px 20px;
+    padding: 10px 20px;
     background-color: #131213;
     border-radius: 8px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    margin-bottom: 0;
+    height: 100%;
+
 }
 
 .permission-card:last-child {
@@ -1281,6 +1283,7 @@ export default {
     border-bottom: none;
     padding: 0;
     margin: 0;
+    text-align: left;
 }
 
 .card-detail {
