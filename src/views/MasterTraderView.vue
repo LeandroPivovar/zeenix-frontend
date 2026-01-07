@@ -60,7 +60,7 @@
                                     <i :class="visibleCards.copiers ? 'fas fa-eye' : 'fas fa-eye-slash'" class="visibility-icon"></i>
                                 </button>
                             </div>
-                            <span class="status-value">{{ visibleCards.copiers ? '25' : '***' }}</span>
+                            <span class="status-value">{{ visibleCards.copiers ? copiersCount : '***' }}</span>
                         </div>
 
                         <div class="status-card">
@@ -148,7 +148,7 @@
                                     <i :class="visibleCards.copiers ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
                                 </button>
                             </div>
-                            <span class="mobile-metric-value">{{ visibleCards.copiers ? '25' : '***' }}</span>
+                            <span class="mobile-metric-value">{{ visibleCards.copiers ? copiersCount : '***' }}</span>
                         </div>
                         <div class="mobile-metric-card">
                             <div class="mobile-metric-header">
@@ -320,7 +320,8 @@ export default {
                 managed: true,
                 profit: true,
                 volume: true
-            }
+            },
+            copiersCount: 0
         }
     },
     computed: {
@@ -469,6 +470,30 @@ export default {
                 clearInterval(this.balanceUpdateInterval);
                 this.balanceUpdateInterval = null;
             }
+        },
+        async loadCopiersCount() {
+            try {
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const token = localStorage.getItem('token');
+                
+                const response = await fetch(`${apiBase}/copy-trading/copiers`, {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const result = await response.json();
+                if (result.success && result.data) {
+                    this.copiersCount = result.data.length;
+                } else {
+                    this.copiersCount = 0;
+                }
+            } catch (error) {
+                console.error('[MasterTrader] Erro ao carregar contagem de copiadores:', error);
+                this.copiersCount = 0;
+            }
         }
     },
     mounted() {
@@ -485,6 +510,12 @@ export default {
         }
         this.preferredCurrency = this.getPreferredCurrency();
         this.startBalanceUpdates();
+        this.loadCopiersCount();
+        
+        // Atualizar contagem de copiadores a cada 30 segundos
+        setInterval(() => {
+            this.loadCopiersCount();
+        }, 30000);
     },
     beforeUnmount() {
         this.stopBalanceUpdates();
