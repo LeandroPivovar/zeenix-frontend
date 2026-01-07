@@ -10,67 +10,12 @@
 			</header>
 			<div class="container-sections">
 				<!-- Versão Desktop: Seções separadas -->
-				<section class="config-section hide-on-mobile">
-					<h2 class="section-with-tooltip">
-						Mercado
-						<div class="tooltip-container">
-							<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-								<circle cx="12" cy="12" r="10"></circle>
-								<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-								<line x1="12" y1="17" x2="12.01" y2="17"></line>
-							</svg>
-							<span class="tooltip-text">Escolha o ativo que deseja operar.</span>
-						</div>
-					</h2>
-					
-					<div class="market-options options-grid">
-						<div 
-							class="option-card"
-							:class="{ 'selected': selectedMarket === 'volatility_10' }"
-							@click="selectMarket('volatility_10')"
-						>
-							<h3>Volatility 10 Index</h3>
-							<p>Mercado com volatilidade constante de 10%.</p>
-						</div>
-						<div 
-							class="option-card"
-							:class="{ 'selected': selectedMarket === 'volatility_25' }"
-							@click="selectMarket('volatility_25')"
-						>
-							<h3>Volatility 25 Index</h3>
-							<p>Mercado com volatilidade constante de 25%.</p>
-						</div>
-						<div 
-							class="option-card"
-							:class="{ 'selected': selectedMarket === 'volatility_50' }"
-							@click="selectMarket('volatility_50')"
-						>
-							<h3>Volatility 50 Index</h3>
-							<p>Mercado com volatilidade constante de 50%.</p>
-						</div>
-						<div 
-							class="option-card"
-							:class="{ 'selected': selectedMarket === 'volatility_75' }"
-							@click="selectMarket('volatility_75')"
-						>
-							<h3>Volatility 75 Index</h3>
-							<p>Mercado com volatilidade constante de 75%.</p>
-						</div>
-						<div 
-							class="option-card"
-							:class="{ 'selected': selectedMarket === 'volatility_100' }"
-							@click="selectMarket('volatility_100')"
-						>
-							<h3>Volatility 100 Index</h3>
-							<p>Mercado com volatilidade constante de 100%.</p>
-						</div>
-					</div>
-				</section>
+
 
 				<!-- ✅ NOVO: Seção de Seleção de Agente Autônomo -->
 				<section class="config-section hide-on-mobile">
 					<h2 class="section-with-tooltip">
-						Agente Autônomo
+						Agentes Disponíveis
 						<div class="tooltip-container">
 							<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
 								<circle cx="12" cy="12" r="10"></circle>
@@ -224,16 +169,59 @@
 								>
 								<p class="param-percentage-text positive">{{ percentualMetaLucro }}% do capital total</p>
 							</div>
-							<div class="param-input-group">
-								<h3>Limite de perda do dia</h3>
-								<input 
-									type="number" 
-									v-model.number="limitePerda" 
-									class="input-editable"
-									min="0.01"
-									step="0.01"
-								>
-								<p class="param-percentage-text negative">-{{ percentualLimitePerda }}% do capital total</p>
+							<div class="loss-control-row">
+								<div class="param-input-group loss-input-half">
+									<h3 class="section-with-tooltip">
+										Limite de Perda
+										<div class="tooltip-container">
+											<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+												<circle cx="12" cy="12" r="10"></circle>
+												<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+												<line x1="12" y1="17" x2="12.01" y2="17"></line>
+											</svg>
+											<span class="tooltip-text">Valor máximo de perda diária.</span>
+										</div>
+									</h3>
+									<input 
+										type="number" 
+										v-model.number="limitePerda" 
+										class="input-editable"
+										min="0.01"
+										step="0.01"
+									>
+									<p class="param-percentage-text negative">-{{ percentualLimitePerda }}% do saldo</p>
+								</div>
+								
+								<div class="param-input-group loss-input-half">
+									<h3 class="section-with-tooltip">
+										Stoploss Blindado
+										<div class="tooltip-container">
+											<svg class="icon-help" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+												<circle cx="12" cy="12" r="10"></circle>
+												<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+												<line x1="12" y1="17" x2="12.01" y2="17"></line>
+											</svg>
+											<span class="tooltip-text">Proteção extra contra perdas consecutivas.</span>
+										</div>
+									</h3>
+									<div class="blindado-card">
+										<div class="blindado-info">
+											<svg class="icon-shield" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+												<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+											</svg>
+											<span class="blindado-status-text">
+												{{ stopLossBlindado ? 'Ativado' : 'Desativado' }}
+											</span>
+										</div>
+										<label class="toggle-switch-small">
+											<input 
+												type="checkbox" 
+												v-model="stopLossBlindado"
+											>
+											<span class="slider-small"></span>
+										</label>
+									</div>
+								</div>
 							</div>
 						</div>
 					</section>
@@ -276,6 +264,19 @@
 									<strong>${{ limitePerdaNumero.toFixed(2) }}</strong>
 								</div>
 							</div>
+							<div class="summary-item blindado-item">
+								<svg class="icon-summary-risk icon-green" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+									<rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+									<path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+								</svg>
+								<div class="summary-item-value">
+									<span>Stoploss Blindado</span>
+									<strong :class="{ 'text-active': stopLossBlindado, 'text-inactive': !stopLossBlindado }">
+										{{ stopLossBlindado ? 'Ativo' : 'Inativo' }}
+									</strong>
+								</div>
+							</div>
+
 						</div>
 						<button class="start-button" @click="iniciarAgente">
 							INICIAR AGENTE
@@ -379,6 +380,7 @@ export default {
 			// Estado de seleção inicial (Baseado na imagem)
 			selectedAgent: 'sentinel', // ✅ Novo: Agente selecionado (sentinel ou falcon)
 			selectedMarket: 'volatility_75', 
+			stopLossBlindado: false, 
 			selectedRisk: 'balanced',
 			selectedTradingMode: 'rapido', // Novo: Modo de Negociação
 
@@ -1880,5 +1882,143 @@ span.icon-sumary-risk{
 		margin-top: 12px;
 		text-align: left;
 	}
+}
+/* 🟢 NOVOS ESTILOS PARA LAYOUT DO STOP LOSS BLINDADO 🟢 */
+
+.loss-control-row {
+    display: flex;
+    gap: 15px;
+    align-items: flex-start;
+    width: 100%;
+}
+
+.loss-input-half {
+    flex: 1;
+    width: 50%;
+}
+
+/* Card Blindado (estilo igual ao input) */
+.blindado-card {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #1a1a1a;
+    border: 1px solid #333;
+    padding: 0 12px; /* Padding horizontal igual ao input */
+    border-radius: 4px;
+    height: 40px; /* Mesma altura do input-editable */
+    width: 100%;
+    margin-bottom: 5px; /* Alinha com o margin-bottom ou fluxo */
+    transition: border-color 0.2s;
+}
+
+.blindado-card:hover {
+    border-color: #555;
+}
+
+.blindado-info {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icon-shield {
+    color: #fff;
+    width: 14px;
+    height: 14px;
+}
+
+.blindado-status-text {
+    font-size: 0.9em;
+    color: #fff;
+    font-weight: 500;
+}
+
+
+/* Toggle Switch Pequeno */
+.toggle-switch-small {
+    position: relative;
+    display: inline-block;
+    width: 34px;
+    height: 18px;
+    flex-shrink: 0;
+}
+
+.toggle-switch-small input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider-small {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #020303;
+    transition: .4s;
+    border-radius: 20px;
+}
+
+.slider-small:before {
+    position: absolute;
+    content: "";
+    height: 12px;
+    width: 12px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider-small {
+    background-color: #22C55E; /* Slider verde quando ativo */
+}
+
+input:checked + .slider-small:before {
+    transform: translateX(16px);
+    background-color: #FFFFFF; /* Bolinha branca quando ativo */
+}
+
+/* Estilos de Texto do Resumo */
+.text-active {
+    color: #22C55E !important;
+}
+
+.text-inactive {
+    color: #FFFFFF !important;
+}
+
+/* Ajuste dos tooltips na section-with-tooltip */
+.section-with-tooltip {
+    /* Reseta o estilo anterior que tinha margins negativas */
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    padding-top: 0;
+    padding-right: 0;
+    margin-top: 5px;
+    margin-bottom: 8px;
+}
+
+.section-with-tooltip h3 {
+    margin: 0 !important;
+}
+
+
+/* Ajustes Responsivos */
+@media (max-width: 600px) {
+    .loss-control-row {
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .loss-input-half {
+        width: 100%;
+    }
 }
 </style>
