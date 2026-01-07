@@ -101,7 +101,7 @@
                                     type="number" 
                                     class="form-input" 
                                     v-model.number="entryValue"
-                                    min="0.35"
+                                    min="1"
                                     step="0.01"
                                 >
                                 <p class="form-help">{{ entryPercent }}% do saldo</p>
@@ -344,9 +344,9 @@ export default {
             currentPrice: null,
             pollingInterval: null,
 
-            entryValue: 0.35,
+            entryValue: 1,
             profitTarget: 100,
-            lossLimit: 25,
+            lossLimit: 100,
             mode: 'veloz',
             modoMartingale: 'conservador',
             stoplossBlindado: false,
@@ -544,7 +544,7 @@ export default {
                     mode: this.mode
                 });
 
-                if (!this.entryValue || this.entryValue < 0.35) {
+                if (!this.entryValue || this.entryValue < 1) {
                     console.warn('[InvestmentIAView] ⚠️ Valor de entrada inválido:', this.entryValue);
                     return;
                 }

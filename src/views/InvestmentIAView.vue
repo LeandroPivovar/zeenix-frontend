@@ -260,7 +260,7 @@
                                         type="number" 
                                         class="form-input" 
                                         v-model.number="entryValue"
-                                        min="0.35"
+                                        min="1"
                                         step="0.01"
                                     >
                                 </div>
@@ -424,9 +424,9 @@ export default {
             currentPrice: null,
             pollingInterval: null,
 
-            entryValue: 0.35,
+            entryValue: 1,
             profitTarget: 100,
-            lossLimit: 25,
+            lossLimit: 100,
             mode: 'veloz',
             modoMartingale: 'conservador',
             stoplossBlindado: false,
@@ -650,7 +650,7 @@ export default {
                     mode: this.mode
                 });
 
-                if (!this.entryValue || this.entryValue < 0.35) {
+                if (!this.entryValue || this.entryValue < 1) {
                     console.warn('[InvestmentIAView] ⚠️ Valor de entrada inválido:', this.entryValue);
                     this.isActivating = false;
                     return;
@@ -691,7 +691,7 @@ export default {
                 const accountBalanceReal = this.balanceNumeric || 0;
 
                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
-                const capitalInicial = accountBalanceReal > 0 ? accountBalanceReal : (this.balanceNumeric || this.entryValue || 0.35);
+                const capitalInicial = accountBalanceReal > 0 ? accountBalanceReal : (this.balanceNumeric || this.entryValue || 1);
                 
                 console.log('[InvestmentIAView] 💰 Capital inicial para IA:', capitalInicial, '| Valor de entrada por operação:', this.entryValue);
                 
@@ -704,7 +704,7 @@ export default {
                     body: JSON.stringify({
                         userId: userId,
                         stakeAmount: capitalInicial, // ✅ Capital inicial = saldo real da conta ($9k)
-                        entryValue: this.entryValue || 0.35, // ✅ Valor de entrada por operação (R$ 1.00)
+                        entryValue: this.entryValue || 1, // ✅ Valor de entrada por operação ($1.00)
                         derivToken: derivToken,
                         currency: preferredCurrency,
                         mode: this.mode.toLowerCase(),

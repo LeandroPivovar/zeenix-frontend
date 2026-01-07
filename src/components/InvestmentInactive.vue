@@ -300,9 +300,9 @@ export default {
 			mode: "Veloz",
 	
 			// Seção Parâmetros de Entrada
-			entryValue: 0.35, // Valor mínimo da Deriv
+			entryValue: 1, // Valor padrão de entrada
 			profitTarget: 100,
-			lossLimit: 25,
+			lossLimit: 100,
 	
 			// Seção Gerenciamento de Risco (Conservador)
 			riskLevel: "Conservador",
