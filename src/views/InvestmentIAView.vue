@@ -333,9 +333,11 @@
 
                             <!-- Controle da IA -->
                             <div class="form-group ai-status-group">
-                                <label class="form-label">Status da IA</label>
+                                
                                 <div class="ai-status-control-simple">
+                                    
                                     <div class="ai-status-info">
+                                        <label class="form-label">Status da IA</label>
                                         <p class="ai-status-subtitle">{{ isInvestmentActive ? 'Execução automática' : 'Ative para iniciar' }}</p>
                                     </div>
                                     <div class="ai-status-toggle-wrapper">
@@ -2976,6 +2978,14 @@ export default {
     box-sizing: border-box;
 }
 
+    .ai-status-info label{
+        margin: 0 !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        color: #C5C5C5 !important;
+    }
+
 /* Ensure all cards and divs occupy 100% width */
 .ai-vision-card,
 .config-card,
@@ -3731,19 +3741,57 @@ export default {
         display: none !important;
     }
 
+    /* 1. Gerenciamento de Risco: 3 colunas */
+    .risk-buttons {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+    }
+
+    /* 2. Stop Loss e Blindado: Lado a lado com mesma altura */
     .loss-stoploss-row {
-        flex-direction: column;
-        gap: 1.5rem;
+        flex-direction: row !important;
+        gap: 12px !important;
+        align-items: stretch !important;
     }
 
     .loss-stoploss-row .flex-1 {
-        width: 100%;
+        width: 50% !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    .loss-stoploss-row .form-input {
+        height: 100% !important;
+        min-height: 48px !important;
+    }
+    
+    /* Label styling: 0.725rem, uppercase, #C5C5C5 */
+    .form-label {
+        font-size: 0.725rem !important;
+        font-weight: 80 !important;
+        text-transform: uppercase !important;
+        color: #C5C5C5 !important;
     }
 
     .stoploss-blindado-wrapper {
         background-color: #000000 !important;
-        padding: 0.5rem;
-        height: auto;
+        padding: 0rem 0.5rem !important;
+        height: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: 48px !important;
+    }
+
+    .ai-status-info label{
+        margin: 0 !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        color: #C5C5C5 !important;
     }
 }
 </style>
