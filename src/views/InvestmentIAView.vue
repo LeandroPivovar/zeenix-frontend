@@ -333,10 +333,9 @@
 
                             <!-- Controle da IA -->
                             <div class="form-group ai-status-group">
+                                <label class="form-label">Status da IA</label>
                                 <div class="ai-status-control-simple">
-                                    
                                     <div class="ai-status-info">
-                                    <label class="form-label">Status da IA</label>
                                         <p class="ai-status-subtitle">{{ isInvestmentActive ? 'Execução automática' : 'Ative para iniciar' }}</p>
                                     </div>
                                     <div class="ai-status-toggle-wrapper">
@@ -555,6 +554,18 @@ export default {
             return ((this.profitTarget / this.balanceNumeric) * 100).toFixed(2);
         },
         lossLimitPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.lossLimit / this.balanceNumeric) * 100).toFixed(2);
+        },
+        entryPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.entryValue / this.balanceNumeric) * 100).toFixed(2);
+        },
+        profitPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.profitTarget / this.balanceNumeric) * 100).toFixed(2);
+        },
+        lossPercent() {
             if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
             return ((this.lossLimit / this.balanceNumeric) * 100).toFixed(2);
         },
@@ -3720,94 +3731,19 @@ export default {
         display: none !important;
     }
 
-    /* 1. Gerenciamento de Risco: 3 colunas */
-    .risk-buttons {
-        display: grid !important;
-        grid-template-columns: repeat(3, 1fr) !important;
-        gap: 0.5rem !important;
-        width: 100% !important;
-    }
-
-    /* 2. Stop Loss e Blindado: Lado a lado com mesma altura */
     .loss-stoploss-row {
-        flex-direction: row !important;
-        gap: 12px !important;
-        align-items: stretch !important;
+        flex-direction: column;
+        gap: 1.5rem;
     }
 
     .loss-stoploss-row .flex-1 {
-        width: 50% !important;
-        flex: 1 !important;
-        display: flex !important;
-        flex-direction: column !important;
-    }
-    
-    .loss-stoploss-row .form-input {
-        height: 100% !important;
-        min-height: 48px !important;
-    }
-    
-    /* Label styling: uppercase, small, lighter gray */
-    .form-label {
-        font-size: 0.75rem !important;
-        font-weight: 80 !important;
-        text-transform: uppercase !important;
-        color: #C5C5C5 !important;
+        width: 100%;
     }
 
     .stoploss-blindado-wrapper {
         background-color: #000000 !important;
-        padding: 0rem 0.5rem !important;
-        height: auto !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: space-between !important;
-        min-height: 48px !important;
-    }
-    
-    /* 3. Status da IA: Label em cima, subtitle + slider na mesma linha horizontal */
-    .ai-status-control-simple {
-        display: flex !important;
-        flex-direction: row !important;
-        gap: 0.5rem !important;
-    }
-    
-    .ai-status-control-simple .form-label {
-        margin: 0 !important;
-        display: block !important;
-        width: 100% !important;
-        font-size: 1rem!important;
-        font-weight: 700!important;
-    }
-    
-    /* Container horizontal para info + toggle na mesma linha */
-    .ai-status-info {
-        display: inline-block !important;
-        flex: 1 !important;
-        text-align: left !important;
-        align-items: flex-start !important;
-    }
-    
-    .ai-status-toggle-wrapper {
-        display: inline-flex !important;
-        align-items: center !important;
-        gap: 0.5rem !important;
-        float: right !important;
-    }
-    
-    /* Clear float para não afetar outros elementos */
-    .ai-status-control-simple::after {
-        content: "" !important;
-        display: block !important;
-        clear: both !important;
-    }
-    
-    .ai-status-subtitle {
-        font-size: 0.875rem !important;
-        color: #A1A1A1 !important;
-        margin: 0 !important;
-        display: inline-block !important;
-        text-align: left !important;
+        padding: 0.5rem;
+        height: auto;
     }
 }
 </style>

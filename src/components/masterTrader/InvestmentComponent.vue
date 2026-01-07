@@ -550,6 +550,18 @@ export default {
             if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
             return ((this.lossLimit / this.balanceNumeric) * 100).toFixed(2);
         },
+        entryPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.entryValue / this.balanceNumeric) * 100).toFixed(2);
+        },
+        profitPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.profitTarget / this.balanceNumeric) * 100).toFixed(2);
+        },
+        lossPercent() {
+            if (!this.balanceNumeric || this.balanceNumeric <= 0) return '0.00';
+            return ((this.lossLimit / this.balanceNumeric) * 100).toFixed(2);
+        },
         
         riskLevelText() {
             const labels = {
