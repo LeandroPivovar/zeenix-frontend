@@ -1,6 +1,6 @@
 <template>
     <div class="investment-active-wrapper">
-        <main class="investment-active-main">
+        <main class="investment-active-main" style="padding: 1rem !important;">
             <!-- Desktop: Layout Original - Performance Summary Cards -->
             <section id="compact-performance-panel" class="mb-6 desktop-performance-panel">
                 <div id="iya1j" class="grid grid-cols-12 gap-3" style="width: 100%; box-sizing: border-box;">
@@ -61,18 +61,39 @@
                                     <i :class="tradesVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
                                 </button>
                             </div>
-                            <div class="flex items-center space-x-2 text-left">
-                                <span v-if="!isLoadingStats" id="i8cy7b" :class="['text-2xl font-bold text-zenix-green', { 'hidden-value': !tradesVisible }]">
-                                    {{ tradesVisible ? (dailyStats.sessionWins || 0) : '••' }}
-                                </span>
-                                <div class="relative">
-                                    <span class="text-xl font-light text-zenix-secondary/40">|</span>
-                                    <div class="absolute inset-0 bg-zenix-green/20 blur-sm"></div>
+                            <div class="flex items-center justify-between h-full w-full px-1">
+                                <!-- Total Ops -->
+                                <div class="flex flex-col items-center">
+                                    <span v-if="!isLoadingStats" :class="['text-xl font-bold text-white', { 'hidden-value': !tradesVisible }]">
+                                        {{ tradesVisible ? (dailyStats.sessionTrades || 0) : '••' }}
+                                    </span>
+                                    <span v-else class="text-zenix-secondary">--</span>
                                 </div>
-                                <span v-if="!isLoadingStats" id="idsh94" :class="['text-2xl font-bold text-zenix-red', { 'hidden-value': !tradesVisible }]">
-                                    {{ tradesVisible ? (dailyStats.sessionLosses || 0) : '••' }}
-                                </span>
-                                <span v-else class="text-zenix-secondary">--</span>
+                                
+                                <!-- Divisor -->
+                                <div class="h-6 w-px bg-[#1C1C1C]"></div>
+
+                                <!-- Wins / Losses -->
+                                <div class="flex items-center gap-1">
+                                    <span v-if="!isLoadingStats" :class="['text-lg font-bold text-zenix-green', { 'hidden-value': !tradesVisible }]">
+                                        {{ tradesVisible ? (dailyStats.sessionWins || 0) : '•' }}
+                                    </span>
+                                    <span class="text-sm text-zenix-secondary/60">/</span>
+                                    <span v-if="!isLoadingStats" :class="['text-lg font-bold text-zenix-red', { 'hidden-value': !tradesVisible }]">
+                                        {{ tradesVisible ? (dailyStats.sessionLosses || 0) : '•' }}
+                                    </span>
+                                </div>
+
+                                <!-- Divisor -->
+                                <div class="h-6 w-px bg-[#1C1C1C]"></div>
+
+                                <!-- Win Rate -->
+                                <div class="flex flex-col items-center">
+                                    <span v-if="!isLoadingStats" :class="['text-lg font-bold text-white', { 'hidden-value': !tradesVisible }]">
+                                        {{ tradesVisible ? dailyStats.sessionWinrate.toFixed(0) + '%' : '••%' }}
+                                    </span>
+                                    <span v-else class="text-zenix-secondary">--</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -143,16 +164,19 @@
             
             <!-- Mobile: Card Unificado: Header + Saldo + Resultado + Trades + Ordem -->
             <section id="mobile-compact-performance-panel" class="mb-6 mobile-performance-panel">
-                <div class="bg-[#0B0B0B]/80 border-2 border-[#1C1C1C] rounded-2xl p-6 premium-card relative overflow-hidden">
+                <div class="bg-[#0B0B0B]/80 border-2 border-[#1C1C1C] rounded-2xl p-4 premium-card relative overflow-hidden">
                     <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
                     <div class="relative z-10">
                         <!-- Header -->
                         <div class="mobile-ia-header mb-3">
-                            <h1 class="mobile-ia-title">IA ORION</h1>
+                            <h1 class="mobile-ia-title">
+                                <span class="text-zenix-green">IA</span> 
+                                <span class="text-[#DFDFDF] ml-1">{{ strategyName.replace('IA ', '') }}</span>
+                            </h1>
                             <div class="mobile-separator"></div>
                         </div>
                         
-                        <!-- Saldo Total, Lucro do Dia e Trades Hoje -->
+                        <!-- Saldo Total, Resultado Geral e Trades Hoje -->
                         <div class="grid grid-cols-3 gap-3 mb-4">
                             <!-- Saldo Total -->
                             <div class="flex flex-col justify-between">
@@ -170,10 +194,10 @@
                                 </div>
                             </div>
 
-                            <!-- Lucro do Dia -->
+                            <!-- Resultado Geral -->
                             <div class="flex flex-col justify-between">
                                 <div class="flex items-center justify-between mb-1">
-                                    <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide mobile-label-lucro">Lucro do Dia</span>
+                                    <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide mobile-label-lucro">Resultado Geral</span>
                                     <button class="eye-btn" @click="profitVisible = !profitVisible">
                                         <i :class="profitVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[9px]"></i>
                                     </button>
@@ -197,39 +221,105 @@
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
                                     <button class="eye-btn" @click="tradesVisible = !tradesVisible">
-                                        <i :class="tradesVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[9px]"></i>
+                                        <i :class="tradesVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
                                     </button>
                                 </div>
-                                <div class="flex items-center space-x-2 text-left">
-                                    <span v-if="!isLoadingStats" id="i8cy7b" :class="['text-[12px] font-bold text-zenix-green', { 'hidden-value': !tradesVisible }]">
-                                        {{ tradesVisible ? (dailyStats.sessionWins || 0) : '••' }}
-                                    </span>
-                                    <div class="relative">
-                                        <span class="text-[12px] font-light text-zenix-secondary/40">|</span>
-                                        <div class="absolute inset-0 bg-zenix-green/20 blur-sm"></div>
+                                <div class="flex items-center justify-between h-full w-full px-1">
+                                    <!-- Total Ops -->
+                                    <!-- Total Ops (Oculto no Mobile) -->
+                                    <div class="hidden md:flex flex-col items-center justify-center h-full">
+                                        <div v-if="!isLoadingStats" :class="[{ 'hidden-value': !tradesVisible }]">
+                                            <span class="font-bold text-white text-[18px] md:text-[18px] hidden md:block">
+                                                {{ tradesVisible ? (dailyStats.sessionTrades || 0) : '••' }}
+                                            </span>
+                                        </div>
+                                        <span v-else class="text-zenix-secondary">--</span>
                                     </div>
-                                    <span v-if="!isLoadingStats" id="idsh94" :class="['text-[12px] font-bold text-zenix-red', { 'hidden-value': !tradesVisible }]">
-                                        {{ tradesVisible ? (dailyStats.sessionLosses || 0) : '••' }}
-                                    </span>
-                                    <span v-else class="text-[12px] text-zenix-secondary">Carregando...</span>
+                                    
+                                    <!-- Divisor (Oculto no Mobile) -->
+                                    <div class="hidden md:block h-6 w-px bg-[#1C1C1C]"></div>
+
+                                    <!-- Wins / Losses (Visível no Mobile e Desktop) -->
+                                    <div class="flex items-center gap-1">
+                                        <div v-if="!isLoadingStats" :class="[{ 'hidden-value': !tradesVisible }]">
+                                            <!-- Desktop -->
+                                            <div class="hidden md:flex items-center gap-1">
+                                                <span class="font-bold text-zenix-green text-[18px]">
+                                                    {{ tradesVisible ? (dailyStats.sessionWins || 0) : '•' }}
+                                                </span>
+                                                <span class="text-sm text-zenix-secondary/60">/</span>
+                                                <span class="font-bold text-zenix-red text-[18px]">
+                                                    {{ tradesVisible ? (dailyStats.sessionLosses || 0) : '•' }}
+                                                </span>
+                                            </div>
+                                            <!-- Mobile -->
+                                            <div class="flex md:hidden items-center justify-center h-full gap-1">
+                                                <span class="font-bold text-zenix-green text-[14px]">
+                                                    {{ tradesVisible ? (dailyStats.sessionWins || 0) : '•' }}
+                                                </span>
+                                                <span class="text-sm text-zenix-secondary/60">/</span>
+                                                <span class="font-bold text-zenix-red text-[14px]">
+                                                    {{ tradesVisible ? (dailyStats.sessionLosses || 0) : '•' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Divisor (Visível no Mobile agora também, pois temos 2 colunas) -->
+                                    <div class="h-6 w-px bg-[#1C1C1C]"></div>
+
+                                    <!-- Win Rate -->
+                                    <div class="flex flex-col items-center justify-center h-full">
+                                         <div v-if="!isLoadingStats" :class="[{ 'hidden-value': !tradesVisible }]">
+                                            <span class="font-bold text-white text-[18px] md:text-[18px] hidden md:block">
+                                                {{ tradesVisible ? dailyStats.sessionWinrate.toFixed(0) + '%' : '••%' }}
+                                            </span>
+                                            <span class="font-bold text-white text-[14px] md:hidden">
+                                                {{ tradesVisible ? dailyStats.sessionWinrate.toFixed(0) + '%' : '••%' }}
+                                            </span>
+                                        </div>
+                                        <span v-else class="text-zenix-secondary">--</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                         
                         <!-- Ordem (Barra de Progresso) -->
                         <div class="mobile-progress-container" style="padding-top: 0.5rem; border-top: 1px solid #1C1C1C; margin-top: 0.5rem;">
-                            <div class="mobile-progress-bar">
+                            <div class="mobile-progress-bar" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px;">
                                 <div :class="['mobile-progress-segment segment-1', { 'filled': progressState >= 1 }]"></div>
                                 <div :class="['mobile-progress-segment segment-2', { 'filled': progressState >= 2 }]"></div>
                                 <div :class="['mobile-progress-segment segment-3', { 'filled': progressState >= 3 }]"></div>
+                                <div :class="['mobile-progress-segment segment-4', { 'filled': progressState >= 4 }]"></div>
                             </div>
-                            <div class="mobile-progress-text">
-                                <span class="mobile-progress-dot"></span>
-                                <div class="mobile-progress-labels">
-                                    <span class="mobile-progress-label label-1">Analisando mercado</span>
-                                    <span class="mobile-progress-label label-2">Contrato aberto</span>
-                                    <span class="mobile-progress-label label-3">Contrato fechado</span>
+                            
+                            <!-- Status da Ordem (Texto Centralizado) -->
+                            <div class="mt-[0px] mb-4 flex justify-center">
+                                <div class="flex items-center gap-2">
+                                    <div class="w-1.5 h-1.5 rounded-full" :class="statusDotClass" v-if="activeTrade"></div>
+                                    <span class="text-xs text-zenix-secondary font-medium tracking-wide">{{ currentStatusTitle }}</span>
                                 </div>
+                            </div>
+                            
+                            <!-- Status da IA e Botão Pause (Lado a Lado) -->
+                            <div class="grid grid-cols-2 gap-3 items-stretch">
+                                <!-- Status da IA Card (Esquerda) -->
+                                <div class="bg-[#0B0B0B] border border-[#1C1C1C] rounded-xl p-3 flex flex-col justify-center items-start">
+                                    <span class="text-[0.65rem] text-zenix-secondary uppercase tracking-wider mb-1">Status da IA</span>
+                                    <div class="flex items-center gap-1.5">
+                                        <div class="w-1.5 h-1.5 rounded-full bg-zenix-green ai-pulse"></div>
+                                        <span class="text-sm font-bold text-white">Ativa</span>
+                                    </div>
+                                </div>
+
+                                <!-- Botão Pause (Direita) -->
+                                <button 
+                                    class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-full"
+                                    @click="handleDeactivate"
+                                    :disabled="isDeactivating"
+                                >
+                                    {{ isDeactivating ? '...' : 'Pausar IA' }}
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -304,11 +394,7 @@
                         <p class="mobile-config-value">{{ strategyName }}</p>
                         <p class="mobile-config-desc">Estratégia de scalping com análise de padrões em tempo real</p>
                     </div>
-                    <div class="mobile-config-item">
-                        <p class="mobile-config-label">Mercado</p>
-                        <p class="mobile-config-value">{{ formattedMarketName }}</p>
-                        <p class="mobile-config-desc">Ticks de alta frequência</p>
-                    </div>
+
                     <div class="mobile-config-grid">
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Entrada</p>
@@ -331,26 +417,16 @@
                         </div>
                     </div>
                     <div class="mobile-config-item">
+                        <p class="mobile-config-label">Stop Loss Blindado</p>
+                        <p class="mobile-config-value">{{ sessionConfig.lossLimit ? 'Ativo' : 'Inativo' }}</p>
+                    </div>
+                    <div class="mobile-config-item">
                         <p class="mobile-config-label">Gerenciamento</p>
                         <div class="mobile-config-badge">
                             <span class="mobile-config-badge-text">{{ realRiskLabel }}</span>
                         </div>
                     </div>
-                    <div class="mobile-config-item">
-                        <p class="mobile-config-label">Status da IA</p>
-                        <div class="mobile-config-status">
-                            <span class="mobile-config-status-dot"></span>
-                            <span class="mobile-config-status-text">Ativa</span>
-                        </div>
-                    </div>
-                    <button 
-                        class="mobile-pause-btn"
-                        @click="handleDeactivate"
-                        :disabled="isDeactivating"
-                    >
-                        <i class="fas fa-pause"></i>
-                        <span>{{ isDeactivating ? 'Desativando...' : ' PAUSAR IA' }}</span>
-                    </button>
+
                 </div>
             </div>
     
@@ -465,42 +541,10 @@
                         </div>
 
                         <!-- Chart View -->
-                        <div v-show="activeTab === 'chart'" id="chart-view" class="flex-1 flex flex-col min-h-0 -mx-6 -mb-6 px-6" style="margin-top: 0;">
+                        <div v-show="activeTab === 'chart'" id="chart-view" class="flex-1 flex flex-col min-h-[400px] md:min-h-0 -mx-6 -mb-6 px-6" style="margin-top: 0;">
                             <div ref="chartContainer" id="tradingview-chart" class="chart-container tradingview-container flex-1 min-h-0"></div>
                             
-                            <!-- Mobile: Informações do mercado abaixo do gráfico -->
-                            <div class="mobile-market-info mt-4 desktop-hidden">
-                                <!-- Linha superior: Preço/Percentual e Botão Compra -->
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex flex-col text-left">
-                                        <span class="text-2xl font-bold text-zenix-text">{{ currentPrice ? currentPrice.toFixed(5) : '1.08542' }}</span>
-                                        <span class="text-base font-semibold text-zenix-green mt-0.5">+0.24%</span>
-                                    </div>
-                                    <button class="bg-zenix-green/20 hover:bg-zenix-green/30 border border-zenix-green text-zenix-green px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2">
-                                        <i class="fas fa-arrow-up"></i>
-                                        Compra
-                                    </button>
-                                </div>
-                                
-                                <!-- Linha inferior: Volume, Spread, Sinal IA -->
-                                <div class="grid grid-cols-3 gap-4 text-left border-t border-[#1C1C1C] pt-4">
-                                    <div class="flex flex-col text-left">
-                                        <span class="text-xs text-zenix-secondary mb-1">Volume</span>
-                                        <span class="text-sm font-semibold text-zenix-text">2.4M</span>
-                                    </div>
-                                    <div class="flex flex-col text-left">
-                                        <span class="text-xs text-zenix-secondary mb-1">Spread</span>
-                                        <span class="text-sm font-semibold text-zenix-text">0.8</span>
-                                    </div>
-                                    <div class="flex flex-col text-left">
-                                        <span class="text-xs text-zenix-secondary mb-1">Sinal IA</span>
-                                        <div class="flex items-center gap-1.5">
-                                            <span class="w-2 h-2 rounded-full bg-zenix-green"></span>
-                                            <span class="text-sm font-semibold text-zenix-green">Alta</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            
                         </div>
                         
 
@@ -681,11 +725,7 @@
                             </div>
 
                             <!-- Mercado -->
-                            <div class="py-5 border-b border-zenix-border/50 text-left">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Mercado</p>
-                                <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ formattedMarketName }}</p>
-                                <p class="text-xs text-zenix-secondary text-left">Ticks de alta frequência</p>
-                            </div>
+
 
                             <!-- Grid de Parâmetros -->
                             <div class="py-5 border-b border-zenix-border/50 text-left">
@@ -706,7 +746,7 @@
                                         <p class="text-base font-bold text-zenix-green text-left" v-else>Carregando...</p>
                                     </div>
                                     <div class="text-left border border-zenix-border/30 rounded-lg p-2.5">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left">Limite de Perda</p>
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left">Stop Loss Blindado</p>
                                         <p class="text-base font-bold text-zenix-red text-left" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
                                         <p class="text-base font-bold text-zenix-red text-left" v-else>Carregando...</p>
                                     </div>
@@ -714,6 +754,12 @@
                             </div>
 
                             <!-- Gerenciamento -->
+                            <!-- Stop Loss Status -->
+                            <div class="py-5 border-b border-zenix-border/50 text-left">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Stop Loss Blindado</p>
+                                <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ sessionConfig.lossLimit ? 'Ativo' : 'Inativo' }}</p>
+                            </div>
+
                             <div class="py-5 border-b border-zenix-border/50 text-left">
                                 <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Gerenciamento de Risco</p>
                                 <div class="flex items-center justify-between">
@@ -1274,7 +1320,7 @@ export default {
                 const isDemo = this.accountType === 'demo' || 
                               this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
                               (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
-                return isDemo ? 'D0,00' : '$0,00';
+                return isDemo ? 'Đ0,00' : '$0,00';
             }
             const formatter = new Intl.NumberFormat('pt-BR', {
                 minimumFractionDigits: 2,
@@ -1285,7 +1331,7 @@ export default {
                           this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
                           (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
             if (isDemo) {
-                return `D${formatter.format(this.accountBalanceProp)}`;
+                return `Đ${formatter.format(this.accountBalanceProp)}`;
             }
             // Se for real, usar apenas $
             return `$${formatter.format(this.accountBalanceProp)}`;
@@ -1392,8 +1438,10 @@ export default {
             };
             return texts[this.progressState] || texts[1];
         }
-        },
-        
+    },
+
+
+
     methods: {
         /**
          * Converte símbolo do mercado para nome amigável
@@ -3680,11 +3728,28 @@ export default {
             immediate: true
         },
         activeTab(newTab) {
-            if (newTab === 'chart' && this.ticks && this.ticks.length > 0) {
+            if (newTab === 'chart') {
+                console.log('[InvestmentActive] Tab chart ativa, verificando renderização...');
                 this.$nextTick(() => {
+                    // Se o gráfico não foi inicializado, inicializar
                     if (!this.chartInitialized) {
                         this.initChart();
+                    } 
+                    // Se já existe e é lightweight-charts, forçar resize
+                    else if (this.chart && typeof this.chart.resize === 'function' && this.$refs.chartContainer) {
+                        const container = this.$refs.chartContainer;
+                        const width = container.offsetWidth || container.clientWidth || window.innerWidth;
+                        // Altura fixa de 600px conforme CSS desktop, ou min-h-400 no mobile
+                        const isMobile = window.innerWidth <= 768;
+                        const height = isMobile ? 400 : 600; // Forçar altura correta
+                        
+                        console.log(`[InvestmentActive] Forçando resize do gráfico: ${width}x${height}`);
+                        this.chart.resize(width, height);
+                        
+                        // Forçar atualização de dados
+                        this.updateChart();
                     } else {
+                        // Fallback para apenas atualizar
                         this.updateChart();
                     }
                 });
@@ -4999,24 +5064,10 @@ button i,
     }
 
     .mobile-ia-title {
-        font-size: 0; /* Esconder texto original no mobile */
+        font-size: 1.2rem;
         font-weight: 700;
         margin: 0;
         padding: 0;
-        animation: blink-slow 2s ease-in-out infinite;
-    }
-
-    .mobile-ia-title::before {
-        content: "IA ";
-        color: #22C55E;
-        font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
-        animation: blink-slow 2s ease-in-out infinite;
-    }
-
-    .mobile-ia-title::after {
-        content: "ORION";
-        color: #DFDFDF;
-        font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
         animation: blink-slow 2s ease-in-out infinite;
     }
     
@@ -6831,25 +6882,11 @@ button i,
     }
     
     .mobile-ia-title {
-        font-size: 0; /* Esconder texto original no mobile */
+        font-size: 1.2rem;
         font-weight: 700;
         margin: 0;
         text-transform: uppercase;
         letter-spacing: 0.05em;
-        animation: blink-slow 2s ease-in-out infinite;
-    }
-    
-    .mobile-ia-title::before {
-        content: "IA ";
-        color: #22C55E;
-        font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
-        animation: blink-slow 2s ease-in-out infinite;
-    }
-    
-    .mobile-ia-title::after {
-        content: "ORION";
-        color: #DFDFDF;
-        font-size: 1.2rem; /* Restaurar tamanho no pseudo-elemento */
         animation: blink-slow 2s ease-in-out infinite;
     }
     
