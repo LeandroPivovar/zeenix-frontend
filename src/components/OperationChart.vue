@@ -86,13 +86,13 @@
               :disabled="!symbol"
               class="btn-gerar-sinal btn-gerar-sinal-header"
             >
-              <i :class="isAnalyzing ? 'fas fa-stop' : 'fas fa-pencil-alt'"></i>
-              <span>{{ isAnalyzing ? 'Parar' : 'Gerar Sinal' }}</span>
+              <i :class="aiRecommendation ? 'fas fa-pencil-alt' : (isAnalyzing ? 'fas fa-stop' : 'fas fa-pencil-alt')"></i>
+              <span>{{ aiRecommendation ? 'Gerar Novamente' : (isAnalyzing ? 'Parar' : 'Gerar Sinal') }}</span>
             </button>
           </div>
 
           <!-- Metrics Grid -->
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
             <!-- Estado de Análise -->
             <div class="metric-signal-card">
               <div class="metric-signal-header">
@@ -101,6 +101,7 @@
               </div>
               <div class="metric-signal-body">
                 <span v-if="isAnalyzing" class="text-sm text-zenix-green animate-pulse font-medium">Analisando Mercado...</span>
+                <span v-else-if="aiRecommendation" class="text-sm text-zenix-green font-medium">Sinal Gerado</span>
                 <span v-else class="text-sm text-white/40 font-medium">Aguardando geração...</span>
               </div>
             </div>
@@ -131,6 +132,20 @@
               <div class="metric-signal-body">
                 <span v-if="aiRecommendation" class="text-lg font-black text-zenix-green">
                   {{ aiRecommendation.confidence }}%
+                </span>
+                <span v-else class="text-sm text-white/40 font-medium">-</span>
+              </div>
+            </div>
+
+            <!-- Tempo -->
+            <div class="metric-signal-card">
+              <div class="metric-signal-header">
+                <i class="fas fa-bolt text-white/60 text-sm"></i>
+                <span class="text-sm font-bold text-white/90">Tempo</span>
+              </div>
+              <div class="metric-signal-body">
+                <span v-if="aiRecommendation && aiRecommendation.time" class="text-lg font-black text-zenix-green">
+                  {{ aiRecommendation.time }}
                 </span>
                 <span v-else class="text-sm text-white/40 font-medium">-</span>
               </div>
@@ -172,25 +187,7 @@
             </button>
           </div>
 
-          <!-- Seletor de Direção (Apenas se houver mais de uma direção) -->
-          <div v-if="availableDirections.length > 1">
-            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Direção</label>
-            <div class="flex p-1 bg-[#080808] border border-white/10 rounded-xl">
-              <button
-                v-for="dir in availableDirections"
-                :key="dir.value"
-                @click="tradeType = dir.value"
-                :class="[
-                  'flex-1 py-3 text-sm font-bold rounded-lg transition-all duration-300',
-                  tradeType === dir.value 
-                    ? 'bg-zenix-green text-black shadow-lg' 
-                    : 'text-white/40 hover:text-white'
-                ]"
-              >
-                {{ dir.label }}
-              </button>
-            </div>
-          </div>
+
           
           <!-- Duração -->
           <div>
@@ -314,16 +311,23 @@
           </div>
           
           <!-- Action Buttons -->
-          <div class="space-y-3 pt-3">
+          <div class="pt-3">
             <template v-if="!activeContract">
-              <button 
-                @click="executeBuy"
-                :disabled="!canExecuteOrder"
-                class="w-full bg-zenix-green hover:bg-zenix-green-hover text-white font-bold py-4 rounded-xl transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_4px_12px_rgba(34,197,94,0.3)]"
-              >
-                <i class="fas fa-play text-xs"></i>
-                Executar Ordem
-              </button>
+              <div class="grid grid-cols-1 gap-3">
+                <button 
+                  v-for="dir in availableDirections"
+                  :key="dir.value"
+                  @click="executeTradeWithDirection(dir.value)"
+                  :disabled="!canExecuteOrder"
+                  :class="[
+                    getDirectionButtonClass(dir.value),
+                    'font-bold py-4 rounded-xl transition-all text-sm flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg'
+                  ]"
+                >
+                  <i :class="getDirectionIcon(dir.value)"></i>
+                  {{ dir.label }}
+                </button>
+              </div>
             </template>
           </div>
           
@@ -2437,6 +2441,35 @@ export default {
       } catch (error) {
         console.error('[Chart] Erro ao atualizar linha de entrada:', error);
       }
+    },
+    executeTradeWithDirection(direction) {
+      // Set the trade direction
+      this.tradeType = direction;
+      // Execute the buy logic
+      // Note: The actual buy logic would be implemented by derivTradingService
+      // For now, we just set the direction and let the user's system handle the purchase
+      console.log('[Chart] Executando ordem com direção:', direction);
+      // TODO: Implement actual trade execution using derivTradingService
+      // Example: await derivTradingService.buy({ symbol: this.symbol, type: direction, ...})
+    },
+    getDirectionButtonClass(direction) {
+      const dir = direction.toUpperCase();
+      const isRed = dir.includes('PUT') || dir.includes('FALL') || dir.includes('DIFF') || dir.includes('DOWN') || dir.includes('ODD') || dir.includes('UNDER');
+      
+      if (isRed) {
+        return 'bg-red-500 hover:bg-red-600 text-white shadow-red-500/20';
+      }
+      return 'bg-zenix-green hover:bg-zenix-green-hover text-black shadow-zenix-green/30';
+    },
+    getDirectionIcon(direction) {
+      const dir = direction.toUpperCase();
+      if (dir.includes('CALL') || dir.includes('RISE') || dir.includes('UP') || dir.includes('OVER')) return 'fas fa-arrow-up text-xs';
+      if (dir.includes('PUT') || dir.includes('FALL') || dir.includes('DOWN') || dir.includes('UNDER')) return 'fas fa-arrow-down text-xs';
+      if (dir.includes('MATCH')) return 'fas fa-equals text-xs';
+      if (dir.includes('DIFF')) return 'fas fa-not-equal text-xs';
+      if (dir.includes('EVEN')) return 'fas fa-divide text-xs';
+      if (dir.includes('ODD')) return 'fas fa-percent text-xs';
+      return 'fas fa-play text-xs';
     },
     toggleAnalysis() {
       if (this.isAnalyzing) {

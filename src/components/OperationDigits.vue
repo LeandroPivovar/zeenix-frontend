@@ -154,7 +154,7 @@
                     </div>
 
                     <!-- Botões de Ação Dinâmicos -->
-                    <div class="grid gap-4 pt-2" :class="availableDirections.length > 1 ? 'grid-cols-2' : 'grid-cols-1'">
+                    <div class="grid grid-cols-1 gap-4 pt-2">
                         <button 
                             v-for="dir in availableDirections"
                             :key="dir.value"
@@ -401,12 +401,12 @@
                             :disabled="!symbol"
                             class="btn-gerar-sinal-header bg-zenix-green hover:bg-zenix-green/90 disabled:opacity-30 disabled:cursor-not-allowed text-black font-black px-8 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-zenix-green/20 uppercase tracking-widest text-xs flex items-center gap-2"
                         >
-                            <i :class="isAnalyzing ? 'fas fa-stop' : 'fas fa-pencil-alt'"></i>
-                            <span>{{ isAnalyzing ? 'Parar' : 'Gerar Sinal' }}</span>
+                            <i :class="aiRecommendation ? 'fas fa-pencil-alt' : (isAnalyzing ? 'fas fa-stop' : 'fas fa-pencil-alt')"></i>
+                            <span>{{ aiRecommendation ? 'Gerar Novamente' : (isAnalyzing ? 'Parar' : 'Gerar Sinal') }}</span>
                         </button>
                     </div>
 
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
                         <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
                             <div class="flex items-center gap-2 mb-3">
                                 <i class="fas fa-clock text-white/40 text-xs"></i>
@@ -414,6 +414,7 @@
                             </div>
                             <div class="metric-body">
                                 <span v-if="isAnalyzing" class="text-sm text-zenix-green animate-pulse font-bold uppercase tracking-wider">Analisando Mercado...</span>
+                                <span v-else-if="aiRecommendation" class="text-sm text-zenix-green font-bold uppercase tracking-wider">Sinal Gerado</span>
                                 <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">Aguardando geração...</span>
                             </div>
                         </div>
@@ -442,6 +443,19 @@
                             <div class="metric-body text-left">
                                 <span v-if="aiRecommendation" class="text-xl font-black text-zenix-green">
                                     {{ aiRecommendation.confidence }}%
+                                </span>
+                                <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">-</span>
+                            </div>
+                        </div>
+
+                        <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
+                            <div class="flex items-center gap-2 mb-3">
+                                <i class="fas fa-bolt text-white/40 text-xs"></i>
+                                <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Tempo</span>
+                            </div>
+                            <div class="metric-body text-left">
+                                <span v-if="aiRecommendation && aiRecommendation.time" class="text-xl font-black text-zenix-green">
+                                    {{ aiRecommendation.time }}
                                 </span>
                                 <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">-</span>
                             </div>
@@ -2158,6 +2172,25 @@ export default {
         box-sizing: border-box;
         padding: 0 !important;
         margin: 0 !important;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Mobile layout ordering */
+    .frequency-unified-card-wrapper {
+        order: 1;
+    }
+
+    .main-content-grid {
+        order: 2;
+    }
+
+    .signal-generator-wrapper-digits {
+        order: 3;
+    }
+
+    .trading-panel {
+        order: 4;
     }
 
     .top-section {
