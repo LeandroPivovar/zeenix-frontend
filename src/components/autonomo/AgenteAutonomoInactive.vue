@@ -1862,6 +1862,10 @@ span.icon-sumary-risk{
 		font-size: 0.7rem!important;
 	}
 
+	.footer-section{
+		display: none;
+	}
+
 	.container-sections {
 		display: flex;
 		flex-direction: column;

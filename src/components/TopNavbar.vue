@@ -1,7 +1,7 @@
 <template>
   <nav 
     id="top-navbar" 
-    class="fixed top-0 left-0 right-0 h-[60px] z-[1000] mobile-header" 
+    class="fixed top-0 left-0 right-0 h-[60px] z-[1002] mobile-header" 
     style="width: 100%; background: #0B0B0B; padding: 0;"
   >
     <!-- Desktop Layout -->
@@ -1278,7 +1278,7 @@ export default {
     left: 0 !important;
     width: 100% !important;
     background: #0B0B0B !important;
-    z-index: 1000 !important;
+    z-index: 1002 !important;
   }
 
   .desktop-nav {
