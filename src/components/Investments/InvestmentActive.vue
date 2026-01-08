@@ -1027,28 +1027,32 @@ export default {
         
         // Nome da estratégia baseado na estratégia ativa
         strategyName() {
-            // ✅ Determinar se é Trinity baseado na configuração da sessão
+            // ✅ Obter estratégia da configuração da sessão ou do selectedStrategy
+            const strategy = this.sessionConfig?.strategy || this.selectedStrategy || 'orion';
+            const strategyLower = strategy.toLowerCase();
+            
+            // ✅ Mapeamento completo de todas as estratégias disponíveis
+            const strategyNames = {
+                'orion': 'IA Orion',
+                'atlas': 'IA Atlas v2.0',
+                'apollo': 'IA Apollo v3',
+                'titan': 'IA TITAN',
+                'nexus': 'IA NEXUS',
+                'sentinel': 'IA Sentinel',
+                'falcon': 'IA Falcon',
+                'trinity': 'IA Trinity',
+                // Fallbacks para variações
+                'atlas_v2': 'IA Atlas v2.0',
+                'atlas_v2.0': 'IA Atlas v2.0',
+                'apollo_v3': 'IA Apollo v3',
+            };
+            
+            // ✅ Verificar se é Trinity (pode estar em configuração especial)
             const isTrinity = this.isTrinityActive;
-            
-            // ✅ Verificar se é TITAN baseado na configuração da sessão
-            const isTitan = this.sessionConfig && this.sessionConfig.strategy && 
-                           this.sessionConfig.strategy.toLowerCase() === 'titan';
-            
-            // ✅ Verificar se é NEXUS baseado na configuração da sessão
-            const isNexus = this.sessionConfig && this.sessionConfig.strategy && 
-                           this.sessionConfig.strategy.toLowerCase() === 'nexus';
-            
-            // Se NEXUS está ativa
-            if (isNexus) return 'IA NEXUS';
-            
-            // Se TITAN está ativa
-            if (isTitan) return 'IA TITAN';
-            
-            // Se Trinity está ativa
             if (isTrinity) return 'IA Trinity';
             
-            // Caso contrário, retornar Orion
-            return 'IA Orion';
+            // ✅ Retornar nome mapeado ou padrão formatado
+            return strategyNames[strategyLower] || `IA ${strategy.charAt(0).toUpperCase() + strategy.slice(1)}`;
         },
         
         // Nome do mercado formatado
@@ -1113,13 +1117,22 @@ export default {
         
         strategyDescriptionText() {
             const strategy = this.sessionConfig?.strategy || this.selectedStrategy || 'orion';
+            const strategyLower = strategy.toLowerCase();
             const descriptions = {
                 'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
-                'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes',
+                'atlas': 'Extrema Alta Frequência • Análise Ultrarrápida • Máxima Precisão',
+                'apollo': 'Price Action Avançado • Barreira Dinâmica • Alta Assertividade',
                 'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida',
-                'nexus': 'Price Action Sniper • Barreira Dinâmica • Assertividade Máxima'
+                'nexus': 'Price Action Sniper • Barreira Dinâmica • Assertividade Máxima',
+                'sentinel': 'Análise Híbrida • Martingale Inteligente • Soros Avançado',
+                'falcon': 'Análise Técnica Avançada • Recuperação Automática • Lucros Consistentes',
+                'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes',
+                // Fallbacks
+                'atlas_v2': 'Extrema Alta Frequência • Análise Ultrarrápida • Máxima Precisão',
+                'atlas_v2.0': 'Extrema Alta Frequência • Análise Ultrarrápida • Máxima Precisão',
+                'apollo_v3': 'Price Action Avançado • Barreira Dinâmica • Alta Assertividade',
             };
-            return descriptions[strategy.toLowerCase()] || descriptions.orion;
+            return descriptions[strategyLower] || descriptions.orion;
         },
         
         realRiskDescription() {
