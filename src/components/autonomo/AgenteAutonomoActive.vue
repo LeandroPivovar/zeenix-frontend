@@ -584,13 +584,58 @@
 			totalBalance() {
 				// ✅ Saldo total da conta (account balance) - usado para calcular porcentagem do resultado do dia
 				const accountBalance = this.agenteData?.accountBalance;
-				const balanceNum = accountBalance !== null && accountBalance !== undefined 
-					? (typeof accountBalance === 'number' ? accountBalance : parseFloat(String(accountBalance)) || 0) 
-					: 0;
+				let balanceNum = 0;
 				
-				// Se não houver accountBalance, tentar usar totalCapital como fallback
+				if (accountBalance !== null && accountBalance !== undefined) {
+					if (typeof accountBalance === 'number') {
+						balanceNum = accountBalance;
+					} else if (typeof accountBalance === 'string') {
+						// Converter string para número, removendo formatação se necessário
+						// Tratar formato brasileiro: "18.299,07" -> 18299.07
+						// Tratar formato americano: "18299.07" -> 18299.07
+						let cleanBalance = String(accountBalance).trim();
+						
+						// Remover símbolos de moeda e espaços
+						cleanBalance = cleanBalance.replace(/[Đ$R$\s]/g, '');
+						
+						// Se tiver vírgula como separador decimal (formato brasileiro)
+						if (cleanBalance.includes(',') && cleanBalance.includes('.')) {
+							// Formato: "18.299,07" -> remover pontos de milhar, substituir vírgula por ponto
+							cleanBalance = cleanBalance.replace(/\./g, '').replace(',', '.');
+						} else if (cleanBalance.includes(',')) {
+							// Apenas vírgula: "18299,07" -> substituir por ponto
+							cleanBalance = cleanBalance.replace(',', '.');
+						}
+						
+						balanceNum = parseFloat(cleanBalance) || 0;
+					} else {
+						// Tentar converter para número diretamente
+						balanceNum = Number(accountBalance) || 0;
+					}
+				}
+				
+				// Log para debug (apenas quando houver valores significativos)
+				if (this.sessionStats?.netProfit && Math.abs(this.sessionStats.netProfit) > 0.01) {
+					console.log('[AgenteAutonomoActive] 💰 totalBalance computed:', {
+						accountBalance: accountBalance,
+						accountBalanceType: typeof accountBalance,
+						balanceNum: balanceNum,
+						netProfit: this.sessionStats.netProfit,
+						percentage: balanceNum > 0 ? ((this.sessionStats.netProfit / balanceNum) * 100).toFixed(2) : 'N/A',
+						totalCapital: this.totalCapital,
+					});
+				}
+				
+				// Se não houver accountBalance válido, tentar usar totalCapital como fallback
 				if (balanceNum <= 0 && this.totalCapital > 0) {
+					console.log('[AgenteAutonomoActive] ⚠️ Usando totalCapital como fallback:', this.totalCapital);
 					return this.totalCapital;
+				}
+				
+				// Se ainda não houver saldo válido, retornar 0 (evitar divisão por zero)
+				if (balanceNum <= 0) {
+					console.warn('[AgenteAutonomoActive] ⚠️ Saldo total não disponível. accountBalance:', accountBalance, 'balanceNum:', balanceNum, 'totalCapital:', this.totalCapital);
+					return 0;
 				}
 				
 				return balanceNum;
