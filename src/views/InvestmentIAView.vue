@@ -3215,6 +3215,12 @@ export default {
         z-index: 1;
     }
     
+    /* SettingsSidebar não deve ser afetado pelo z-index do zenix-layout */
+    .zenix-layout > :deep(.settings-modal-overlay) {
+        position: fixed !important;
+        z-index: 100000 !important;
+    }
+    
     .content-wrapper {
         margin-left: 0;
         width: 100%;
@@ -3593,6 +3599,27 @@ export default {
     :deep(.sidebar.is-open) {
         transform: translateX(0);
         z-index: 10000 !important;
+    }
+    
+    /* Modal de Settings deve sobrepor tudo no mobile, incluindo TopNavbar */
+    /* Forçar z-index muito alto para garantir que sobreponha o TopNavbar (z-index: 1002) */
+    :deep(.settings-modal-overlay) {
+        z-index: 100000 !important;
+        top: 0 !important;
+        height: 100vh !important;
+        position: fixed !important;
+    }
+    
+    :deep(.settings-modal-content) {
+        z-index: 100000 !important;
+        top: 0 !important;
+        height: 100vh !important;
+        position: fixed !important;
+    }
+    
+    /* Garantir que TopNavbar fique abaixo do modal quando aberto */
+    #top-navbar {
+        z-index: 1002 !important;
     }
 }
 

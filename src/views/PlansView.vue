@@ -26,6 +26,19 @@
                 @account-type-changed="handleAccountTypeChange"
                 @toggle-sidebar="toggleMobileMenu"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
+                @open-settings="toggleSettingsModal"
+            />
+            
+            <!-- Settings Sidebar -->
+            <SettingsSidebar
+              :is-open="showSettingsModal"
+              :balance="accountBalance"
+              :account-type="isDemo ? 'demo' : 'real'"
+              :balances-by-currency-real="balancesByCurrencyReal"
+              :balances-by-currency-demo="balancesByCurrencyDemo"
+              :currency-prefix="isDemo ? 'D' : '$'"
+              @close="closeSettingsModal"
+              @account-type-changed="handleAccountTypeChange"
             />
 
             <main class="plans-content" style="margin-top: 60px;">
@@ -140,12 +153,13 @@
 <script>
 import AppSidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
+import SettingsSidebar from '../components/SettingsSidebar.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import { loadAccountBalance, reloadAccountBalance } from '../utils/balanceLoader'
 
 export default {
     name: 'PlansView',
-    components: { AppSidebar, TopNavbar, DesktopBottomNav },
+    components: { AppSidebar, TopNavbar, SettingsSidebar, DesktopBottomNav },
     data() {
         return {
             plans: [],
@@ -162,6 +176,9 @@ export default {
             // Controle Menu Mobile
             isMobile: false,
             isMobileMenuOpen: false,
+            
+            // Controle Settings Modal
+            showSettingsModal: false,
 
             // Dados da Conta
             accountBalance: 0,
@@ -207,6 +224,12 @@ export default {
         handleAccountTypeChange(newAccountType) {
             this.isDemo = newAccountType === 'demo';
             console.log('[PlansView] Tipo de conta alterado para:', this.isDemo ? 'demo' : 'real');
+        },
+        toggleSettingsModal() {
+            this.showSettingsModal = !this.showSettingsModal;
+        },
+        closeSettingsModal() {
+            this.showSettingsModal = false;
         },
         loadDependencies() {
             if (!document.getElementById('fa-script')) {

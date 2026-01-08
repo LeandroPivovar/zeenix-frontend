@@ -26,6 +26,19 @@
           :balances-by-currency-demo="balancesByCurrencyDemo"
           @toggle-sidebar="toggleSidebar"
           @toggle-sidebar-collapse="toggleSidebarCollapse"
+          @open-settings="toggleSettingsModal"
+        />
+        
+        <!-- Settings Sidebar -->
+        <SettingsSidebar
+          :is-open="showSettingsModal"
+          :balance="balance"
+          :account-type="isDemo ? 'demo' : 'real'"
+          :balances-by-currency-real="balancesByCurrencyReal"
+          :balances-by-currency-demo="balancesByCurrencyDemo"
+          :currency-prefix="isDemo ? 'D' : '$'"
+          @close="closeSettingsModal"
+          @account-type-changed="handleAccountTypeChange"
         />
 
         <main class="main-content academy-content">
@@ -120,12 +133,13 @@
 <script>
 import AppSidebar from '../components/Sidebar.vue'
 import TopNavbar from '../components/TopNavbar.vue'
+import SettingsSidebar from '../components/SettingsSidebar.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import { loadAccountBalance } from '../utils/balanceLoader'
 
 export default {
   name: 'AcademyView',
-  components: { AppSidebar, TopNavbar, DesktopBottomNav },
+  components: { AppSidebar, TopNavbar, SettingsSidebar, DesktopBottomNav },
   data() {
     return {
       courses: [],
@@ -134,6 +148,7 @@ export default {
       courseProgress: {}, 
       isSidebarOpen: window.innerWidth > 768, // Inicia aberto apenas em desktop
       isSidebarCollapsed: false, // Controla menu Desktop mini
+      showSettingsModal: false,
       balance: 0,
       accountCurrency: 'USD',
       isDemo: false,
@@ -199,6 +214,15 @@ export default {
       if (window.innerWidth > 1024) {
         this.isSidebarCollapsed = !this.isSidebarCollapsed
       }
+    },
+    toggleSettingsModal() {
+      this.showSettingsModal = !this.showSettingsModal
+    },
+    closeSettingsModal() {
+      this.showSettingsModal = false
+    },
+    handleAccountTypeChange(newAccountType) {
+      this.isDemo = newAccountType === 'demo'
     },
     navigateToCourse(id) {
         this.$router.push(`/academy/course/${id}`)
