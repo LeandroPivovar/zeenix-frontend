@@ -483,6 +483,7 @@ onMounted(() => {
 .container-copiers {
 	width: 100%;
 	padding: 20px 0;
+	margin-bottom: 80px;
 }
 
 

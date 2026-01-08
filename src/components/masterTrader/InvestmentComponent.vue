@@ -1,46 +1,9 @@
 <template>
     <div class="zenix-layout">
-        <!-- Overlay para fechar sidebar ao clicar fora (mobile) -->
-        <div 
-            v-if="isSidebarOpen" 
-            class="sidebar-overlay" 
-            @click="closeSidebar"
-        ></div>
-        
-        <AppSidebar 
-            :is-open="isSidebarOpen" 
-            :is-collapsed="isSidebarCollapsed" 
-            @toggle-collapse="toggleSidebarCollapse"
-            @close-sidebar="closeSidebar"
-        />
+
 
         <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-            <TopNavbar 
-                :is-sidebar-collapsed="isSidebarCollapsed"
-                :balance="info?.balance"
-                :account-type="accountType"
-                :balances-by-currency-real="balancesByCurrencyReal"
-                :balances-by-currency-demo="balancesByCurrencyDemo"
-                :currency-prefix="preferredCurrencyPrefix"
-                @open-settings="toggleSettingsModal"
-                @account-type-changed="switchAccount"
-                @toggle-sidebar="toggleSidebar"
-                @toggle-sidebar-collapse="toggleSidebarCollapse"
-            />
-            
-            <!-- Settings Sidebar -->
-            <SettingsSidebar
-                :is-open="showSettingsModal"
-                :balance="info?.balance"
-                :account-type="accountType"
-                :balances-by-currency-real="balancesByCurrencyReal"
-                :balances-by-currency-demo="balancesByCurrencyDemo"
-                :currency-prefix="preferredCurrencyPrefix"
-                @close="closeSettingsModal"
-                @account-type-changed="switchAccount"
-            />
-
-            <main class="main-content" style="margin-top: 60px;">
+            <main class="main-content" style="margin-top: 0px;">
                 <!-- AI Vision Panel - Only show when IA is inactive -->
                 <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
                     <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
@@ -159,9 +122,11 @@
                                 </label>
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
                                     <option value="orion">IA Orion</option>
+                                    <option value="nexus">IA NEXUS</option>
+                                    <option value="apollo">IA Apollo</option>
+                                    <option value="atlas">IA ATLAS</option>
+                                    <option value="titan">IA TITAN</option>
                                     <option value="trinity">IA Trinity</option>
-                                    <option value="atlas">IA Atlas v2.0 - Extrema Alta Frequência</option>
-                                    <option value="apollo">☀️ IA Apollo v3</option>
                                 </select>
                                 <p id="strategyDescription" class="form-help">{{ strategyDescription }}</p>
                     </div>
@@ -249,7 +214,7 @@
                                 <label class="form-label">
                                     Valor de Entrada
                                     <TooltipsCopyTraders position="left"> 
-                                        <p>Valor definido para cada operação na moeda da conta.</p>
+                                        <p>Defina o valor da sua primeira operação. Todas as estratégias de recuperação e alavancagem (Soros) serão calculadas a partir deste valor base.</p>
                                     </TooltipsCopyTraders>
                                 </label>
                                 <div class="input-wrapper">
@@ -269,7 +234,7 @@
                                 <label class="form-label">
                                     Alvo de Lucro
                                     <TooltipsCopyTraders position="left"> 
-                                        <p>Meta de lucro para encerrar as operações automaticamente.</p>
+                                        <p>Sua meta financeira para a sessão. O sistema encerrará as operações automaticamente assim que este valor for atingido ou superado.</p>
                                     </TooltipsCopyTraders>
                                 </label>
                                 <div class="input-wrapper">
@@ -290,7 +255,7 @@
                                     <label class="form-label">
                                         Limite de Perda
                                         <TooltipsCopyTraders position="left"> 
-                                            <p>Limite máximo de perda total aceitável para a sessão.</p>
+                                            <p>O valor máximo que você aceita arriscar na sessão. Nosso sistema possui Stop de Precisão: ele ajusta automaticamente o valor da última entrada para garantir que você nunca perca mais do que definiu aqui.</p>
                                         </TooltipsCopyTraders>
                                     </label>
                                     <div class="input-wrapper">
@@ -310,7 +275,7 @@
                                     <label class="form-label">
                                         Stoploss Blindado
                                         <TooltipsCopyTraders position="center"> 
-                                            <p>Protege o lucro automaticamente. Quando 40% do alvo é alcançado, a proteção é ativada, garantindo 50% do lucro total, mesmo em caso de reversão do mercado.</p>
+                                            <p>Ative para proteção dinâmica. Quando você atinge 40% da meta, o sistema cria um 'piso de segurança' móvel. Se o mercado virar, o sistema para com lucro garantido (50% do pico), impedindo que você devolva seus ganhos.</p>
                                         </TooltipsCopyTraders>
                                     </label>
                                     <div class="stoploss-blindado-wrapper">
@@ -331,9 +296,11 @@
 
                             <!-- Controle da IA -->
                             <div class="form-group ai-status-group">
-                                <label class="form-label">Status da IA</label>
+                                
                                 <div class="ai-status-control-simple">
+                                    
                                     <div class="ai-status-info">
+                                        <label class="form-label">Status da IA</label>
                                         <p class="ai-status-subtitle">{{ isInvestmentActive ? 'Execução automática' : 'Ative para iniciar' }}</p>
                                     </div>
                                     <div class="ai-status-toggle-wrapper">
@@ -387,22 +354,16 @@
 </template>
 
 <script>
-import AppSidebar from '../../components/Sidebar.vue';
-import TopNavbar from '../../components/TopNavbar.vue';
-import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
-import TooltipsCopyTraders from '../../components/TooltipsCopyTraders.vue';
-import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
+import TooltipsCopyTraders from '../TooltipsCopyTraders.vue';
+import DesktopBottomNav from '../DesktopBottomNav.vue';
 import accountBalanceMixin from '../../mixins/accountBalanceMixin';
-import InsufficientBalanceModal from '../../components/InsufficientBalanceModal.vue';
+import InsufficientBalanceModal from '../InsufficientBalanceModal.vue';
 
 export default {
     name: 'InvestmentIAView',
     mixins: [accountBalanceMixin],
     components: {
-        AppSidebar,
-        TopNavbar,
-        SettingsSidebar,
         InvestmentActive,
         TooltipsCopyTraders,
         DesktopBottomNav,
@@ -482,8 +443,11 @@ export default {
         selectedStrategyName() {
             const strategyNames = {
                 'orion': 'Orion',
-                'trinity': 'Trinity',
-                'atlas': 'Atlas v2.0'
+                'nexus': 'NEXUS',
+                'apollo': 'Apollo',
+                'atlas': 'ATLAS',
+                'titan': 'TITAN',
+                'trinity': 'Trinity'
             };
             return strategyNames[this.selectedStrategy] || 'Orion';
         },
@@ -531,9 +495,11 @@ export default {
         strategyDescription() {
             const descriptions = {
                 'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
-                'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes',
-                'atlas': 'Extrema alta frequência • 3.000-8.000 ops/dia • Volume massivo • Recuperação imediata',
-                'apollo': '☀️ Martingale inteligente • Over 5→6→7→8 • Gestão de risco avançada • Pouso suave e trailing stop'
+                'nexus': 'Price Action Sniper • Barreira Dinâmica • Assertividade Máxima',
+                'apollo': 'Martingale Inteligente • Proteção de Lucro • Recuperação Otimizada',
+                'atlas': 'Alta Frequência • Volume Massivo • Lucro no Volume',
+                'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida',
+                'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes'
             };
             return descriptions[this.selectedStrategy] || descriptions.orion;
         },
@@ -1162,16 +1128,19 @@ export default {
 
 .zenix-layout {
     min-height: 100vh;
-    background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%);
+    background: transparent;
     color: #DFDFDF;
-    width: 100%;
-    margin: 0;
+    margin-bottom: 80px;
 }
 
 /* Desktop: remover gradiente e aplicar #0e0e0e nos cards */
 @media (min-width: 1025px) {
     .zenix-layout {
         background: #0b0b0b;
+    }
+
+    .main-content {
+        margin-top: 60px!important;
     }
 
     .bg-zenix-card {
@@ -1196,9 +1165,10 @@ export default {
 }
 
 .content-wrapper {
+    margin-left: 280px;
     min-height: 100vh;
     transition: margin-left 0.3s ease, width 0.3s ease;
-    width: 100%;
+    width: calc(100% - 280px);
     box-sizing: border-box;
 }
 
@@ -1212,13 +1182,13 @@ export default {
     position: fixed;
     top: 0;
     right: 0;
-    left: 0;
+    left: 350px;
     z-index: 40;
     background-color: #0E0E0E;
     border-bottom: 1px solid #1C1C1C;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
     transition: left 0.3s ease;
-    width: 100%;
+    width: calc(100% - 350px);
     box-sizing: border-box;
 }
 
@@ -2970,6 +2940,14 @@ export default {
     box-sizing: border-box;
 }
 
+    .ai-status-info label{
+        margin: 0 !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        color: #C5C5C5 !important;
+    }
+
 /* Ensure all cards and divs occupy 100% width */
 .ai-vision-card,
 .config-card,
@@ -3173,7 +3151,7 @@ export default {
 
 @media (max-width: 768px) {
     .zenix-layout {
-        background: linear-gradient(to bottom, #102018 0%, #020403 50%, #000100 100%) !important;
+        background: transparent !important;
         background-color: transparent !important;
         position: relative;
     }
@@ -3185,7 +3163,7 @@ export default {
         left: 0;
         right: 0;
         bottom: 0;
-        background: radial-gradient(ellipse 80% 40% at 50% 0%, rgba(10, 53, 25, 0.15) 0%, rgba(1, 5, 2, 0.05) 50%, transparent 80%);
+        background: transparent;
         pointer-events: none;
         z-index: 0;
     }
@@ -3208,11 +3186,10 @@ export default {
     
     /* Gradiente no fundo da página - apenas mobile */
     .main-content {
-        margin-top: 60px;
-        padding: 1rem 15px;
+        margin-top: 0px;
+        padding: 0rem 15px;
         background: transparent !important;
         position: relative;
-        min-height: calc(100vh - 60px);
     }
     
     /* Gradiente nos cards de configuração - apenas mobile */
@@ -3602,7 +3579,7 @@ export default {
         margin-bottom: 1.5rem;
         background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, 0.3) 0%, rgba(0, 1, 0, 0.1) 70%, transparent 100%);
         border-radius: 0.75rem;
-        padding: 1rem;
+        padding: 0rem 1rem;
     }
     
     #ai-vision-panel .ai-vision-header-mobile h1 {
@@ -3725,19 +3702,57 @@ export default {
         display: none !important;
     }
 
+    /* 1. Gerenciamento de Risco: 3 colunas */
+    .risk-buttons {
+        display: grid !important;
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: 0.5rem !important;
+        width: 100% !important;
+    }
+
+    /* 2. Stop Loss e Blindado: Lado a lado com mesma altura */
     .loss-stoploss-row {
-        flex-direction: column;
-        gap: 1.5rem;
+        flex-direction: row !important;
+        gap: 12px !important;
+        align-items: stretch !important;
     }
 
     .loss-stoploss-row .flex-1 {
-        width: 100%;
+        width: 50% !important;
+        flex: 1 !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+    
+    .loss-stoploss-row .form-input {
+        height: 100% !important;
+        min-height: 48px !important;
+    }
+    
+    /* Label styling: 0.725rem, uppercase, #C5C5C5 */
+    .form-label {
+        font-size: 0.725rem !important;
+        font-weight: 80 !important;
+        text-transform: uppercase !important;
+        color: #C5C5C5 !important;
     }
 
     .stoploss-blindado-wrapper {
         background-color: #000000 !important;
-        padding: 0.5rem;
-        height: auto;
+        padding: 0rem 0.5rem !important;
+        height: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        min-height: 48px !important;
+    }
+
+    .ai-status-info label{
+        margin: 0 !important;
+        font-size: 0.9rem !important;
+        font-weight: 700 !important;
+        text-transform: uppercase !important;
+        color: #C5C5C5 !important;
     }
 }
 </style>

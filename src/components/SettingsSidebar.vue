@@ -904,6 +904,18 @@ export default {
     max-width: 85%;
     min-width: 280px;
   }
+  
+  .settings-modal-overlay {
+    z-index: 99999 !important;
+    top: 0 !important;
+    height: 100vh !important;
+  }
+  
+  .settings-modal-content {
+    z-index: 99999 !important;
+    top: 0 !important;
+    height: 100vh !important;
+  }
 }
 </style>
 

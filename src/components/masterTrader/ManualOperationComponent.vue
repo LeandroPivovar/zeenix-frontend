@@ -12,6 +12,7 @@
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
         :currency-prefix="preferredCurrencyPrefix"
+        @toggle-sidebar="handleHamburgerClick"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
       />
       
@@ -91,14 +92,14 @@
 </template>
 
 <script>
-import AppSidebar from '../../components/Sidebar.vue';
-import TopNavbar from '../../components/TopNavbar.vue';
-import SettingsSidebar from '../../components/SettingsSidebar.vue';
-import OperationChart from '../../components/OperationChart.vue';
-import OperationDigits from '../../components/OperationDigits.vue';
-import OperationLogs from '../../components/OperationLogs.vue';
-import OperationLastOrders from '../../components/OperationLastOrders.vue';
-import DesktopBottomNav from '../../components/DesktopBottomNav.vue';
+import AppSidebar from '../Sidebar.vue';
+import TopNavbar from '../TopNavbar.vue';
+import SettingsSidebar from '../SettingsSidebar.vue';
+import OperationChart from '../OperationChart.vue';
+import OperationDigits from '../OperationDigits.vue';
+import OperationLogs from '../OperationLogs.vue';
+import OperationLastOrders from '../OperationLastOrders.vue';
+import DesktopBottomNav from '../DesktopBottomNav.vue';
 import accountBalanceMixin from '../../mixins/accountBalanceMixin';
 
 export default {
@@ -976,14 +977,16 @@ export default {
   color: #DFDFDF;
   font-family: 'Inter', sans-serif;
   width: 100%;
+  overflow-x: hidden;
 }
 
 .content-wrapper {
   margin: 0;
+  margin-left: 280px;
   padding: 0;
   min-height: 100vh;
   transition: margin-left 0.3s ease, width 0.3s ease;
-  width: 100%;
+  width: calc(100% - 280px);
   box-sizing: border-box;
 }
 
@@ -997,7 +1000,7 @@ export default {
   position: fixed;
   top: 0;
   right: 0;
-  left: 0;
+  left: 28cap;
   z-index: 40;
   background-color: #0E0E0E;
   border-bottom: 1px solid #1C1C1C;
@@ -1344,6 +1347,10 @@ export default {
 
   * {
     box-sizing: border-box;
+  }
+
+  .operation-layout{
+    padding: 0!important;
   }
 }
 
