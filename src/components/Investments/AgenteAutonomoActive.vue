@@ -56,7 +56,7 @@
 			<div class="metric-card">
 				<span class="arrow positive">↑</span>
 				<div class="metric-box">
-					<div class="metric-label">Lucro do dia</div>
+					<div class="metric-label">Resultado do dia</div>
 					<div class="metric-value positive">
 						+${{ progressoMeta.atual.toFixed(2) }}
 					</div>

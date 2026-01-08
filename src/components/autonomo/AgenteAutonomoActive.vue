@@ -63,14 +63,14 @@
 		<div class="metrics-grid">
 			<div class="metric-card">
 				<div class="metric-box">
-					<div class="metric-label">Lucro do dia<i class="fa-solid fa-arrow-trend-up metric-icon positive"></i></div>
+					<div class="metric-label">Resultado do dia<i class="fa-solid fa-arrow-trend-up metric-icon positive"></i></div>
 					<div class="metric-value-row">
 					<div class="metric-value positive">
 						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
 					</div>
 					<div class="metric-change positive">
-						{{ (sessionStats?.netProfit || 0) !== 0 && totalCapital > 0 
-							? (((sessionStats?.netProfit || 0) / totalCapital) * 100).toFixed(2) 
+						{{ (sessionStats?.netProfit || 0) !== 0 && (sessionStats?.initialBalance || totalBalance) > 0 
+							? (((sessionStats?.netProfit || 0) / (sessionStats?.initialBalance || totalBalance)) * 100).toFixed(2) 
 							: '0.00' }}%
 					</div>
 					</div>
@@ -580,6 +580,20 @@
 					console.warn('[AgenteAutonomoActive] ⚠️ totalCapital: nenhum valor disponível. backendCapital:', backendCapitalNum, 'headerBalance:', headerBalanceNum, 'agenteData.accountBalance:', this.agenteData?.accountBalance);
 				}
 				return 0;
+			},
+			totalBalance() {
+				// ✅ Saldo total da conta (account balance) - usado para calcular porcentagem do resultado do dia
+				const accountBalance = this.agenteData?.accountBalance;
+				const balanceNum = accountBalance !== null && accountBalance !== undefined 
+					? (typeof accountBalance === 'number' ? accountBalance : parseFloat(String(accountBalance)) || 0) 
+					: 0;
+				
+				// Se não houver accountBalance, tentar usar totalCapital como fallback
+				if (balanceNum <= 0 && this.totalCapital > 0) {
+					return this.totalCapital;
+				}
+				
+				return balanceNum;
 			},
 			tempoOptions() {
 				return this.timeframeOptions[this.unidadeTimeframeSelecionada] || [];
