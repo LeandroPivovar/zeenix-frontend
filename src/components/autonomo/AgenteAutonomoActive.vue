@@ -394,8 +394,6 @@
 					<button class="modal-btn" @click="showStopLossModal = false">Entendido</button>
 				</div>
 			</div>
-		</div>
-		</div>
 	</Teleport>
 </template>
 
