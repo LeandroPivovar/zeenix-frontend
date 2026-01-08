@@ -230,9 +230,15 @@
           }
         }
         
-        // Log quando accountBalance mudar para debug
-        if (accountBalanceValue > 0 && operacoesHoje > 0) {
-          console.log('[AgenteAutonomo] agenteData computed - accountBalanceValue:', accountBalanceValue, 'this.accountBalance:', this.accountBalance);
+        // Log detalhado para debug (sempre logar quando houver valores ou quando sessionStats existir)
+        if (this.sessionStats && (accountBalanceValue > 0 || this.accountBalance !== null)) {
+          console.log('[AgenteAutonomo] 💰 agenteData computed - accountBalance:', {
+            accountBalance: this.accountBalance,
+            accountBalanceType: typeof this.accountBalance,
+            accountBalanceValue: accountBalanceValue,
+            sessionStatsNetProfit: this.sessionStats?.netProfit,
+            operacoesHoje: operacoesHoje,
+          });
         }
         
         return {

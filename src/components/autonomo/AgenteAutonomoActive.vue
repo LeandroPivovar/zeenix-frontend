@@ -583,6 +583,7 @@
 			},
 			totalBalance() {
 				// ✅ Saldo total da conta (account balance) - usado para calcular porcentagem do resultado do dia
+				// IMPORTANTE: NÃO usar totalCapital (valor inicial) como fallback, sempre usar o saldo atual da conta
 				const accountBalance = this.agenteData?.accountBalance;
 				let balanceNum = 0;
 				
@@ -614,27 +615,35 @@
 					}
 				}
 				
-				// Log para debug (apenas quando houver valores significativos)
-				if (this.sessionStats?.netProfit && Math.abs(this.sessionStats.netProfit) > 0.01) {
+				// Log para debug (sempre logar quando houver netProfit para identificar problemas)
+				if (this.sessionStats?.netProfit !== undefined && this.sessionStats.netProfit !== null) {
+					const netProfit = this.sessionStats.netProfit || 0;
+					const percentage = balanceNum > 0 ? ((netProfit / balanceNum) * 100).toFixed(2) : 'N/A';
+					
 					console.log('[AgenteAutonomoActive] 💰 totalBalance computed:', {
 						accountBalance: accountBalance,
 						accountBalanceType: typeof accountBalance,
 						balanceNum: balanceNum,
-						netProfit: this.sessionStats.netProfit,
-						percentage: balanceNum > 0 ? ((this.sessionStats.netProfit / balanceNum) * 100).toFixed(2) : 'N/A',
-						totalCapital: this.totalCapital,
+						netProfit: netProfit,
+						percentage: percentage,
+						agenteDataExists: !!this.agenteData,
+						// NÃO usar totalCapital como referência aqui
 					});
+					
+					// Aviso se o saldo não estiver disponível mas houver netProfit
+					if (balanceNum <= 0 && Math.abs(netProfit) > 0.01) {
+						console.error('[AgenteAutonomoActive] ❌ ERRO: Saldo total não disponível para calcular porcentagem!', {
+							accountBalance: accountBalance,
+							balanceNum: balanceNum,
+							netProfit: netProfit,
+							agenteData: this.agenteData,
+						});
+					}
 				}
 				
-				// Se não houver accountBalance válido, tentar usar totalCapital como fallback
-				if (balanceNum <= 0 && this.totalCapital > 0) {
-					console.log('[AgenteAutonomoActive] ⚠️ Usando totalCapital como fallback:', this.totalCapital);
-					return this.totalCapital;
-				}
-				
-				// Se ainda não houver saldo válido, retornar 0 (evitar divisão por zero)
+				// ❌ NÃO usar totalCapital como fallback - sempre usar o saldo atual da conta
+				// Se não houver saldo válido, retornar 0 (evitar divisão por zero e cálculos incorretos)
 				if (balanceNum <= 0) {
-					console.warn('[AgenteAutonomoActive] ⚠️ Saldo total não disponível. accountBalance:', accountBalance, 'balanceNum:', balanceNum, 'totalCapital:', this.totalCapital);
 					return 0;
 				}
 				
