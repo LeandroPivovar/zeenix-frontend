@@ -224,7 +224,24 @@
         if (this.accountBalance !== null && this.accountBalance !== undefined) {
           if (typeof this.accountBalance === 'number') {
             accountBalanceValue = this.accountBalance;
+          } else if (typeof this.accountBalance === 'object') {
+            // Se for um objeto (retornado pelo balanceLoader), extrair o valor numérico
+            const balanceObj = this.accountBalance;
+            if (balanceObj.balance !== undefined && balanceObj.balance !== null) {
+              accountBalanceValue = typeof balanceObj.balance === 'number' 
+                ? balanceObj.balance 
+                : parseFloat(String(balanceObj.balance)) || 0;
+            } else if (balanceObj.value !== undefined && balanceObj.value !== null) {
+              accountBalanceValue = typeof balanceObj.value === 'number' 
+                ? balanceObj.value 
+                : parseFloat(String(balanceObj.value)) || 0;
+            } else {
+              // Tentar converter o objeto inteiro para número (improvável, mas tenta)
+              const parsed = parseFloat(String(this.accountBalance));
+              accountBalanceValue = isNaN(parsed) ? 0 : parsed;
+            }
           } else {
+            // String ou outro tipo
             const parsed = parseFloat(String(this.accountBalance));
             accountBalanceValue = isNaN(parsed) ? 0 : parsed;
           }
@@ -1091,7 +1108,13 @@
           const balanceData = await loadAccountBalance();
           if (balanceData) {
             const oldBalance = this.accountBalance;
-            this.accountBalance = balanceData.balance;
+            // ✅ Garantir que accountBalance seja sempre um número
+            let balanceValue = balanceData.balance;
+            if (typeof balanceValue === 'object' && balanceValue !== null) {
+              // Se for objeto, tentar extrair o valor
+              balanceValue = balanceValue.balance || balanceValue.value || 0;
+            }
+            this.accountBalance = typeof balanceValue === 'number' ? balanceValue : (parseFloat(String(balanceValue)) || 0);
             this.accountCurrency = balanceData.currency;
             this.accountLoginid = balanceData.loginid;
             this.isDemo = balanceData.isDemo;
@@ -1101,8 +1124,10 @@
 
             console.log("[AgenteAutonomo] ✅ Saldo atualizado:", {
               balance: this.accountBalance,
-              oldBalance: oldBalance,
               balanceType: typeof this.accountBalance,
+              oldBalance: oldBalance,
+              balanceDataBalance: balanceData.balance,
+              balanceDataBalanceType: typeof balanceData.balance,
               currency: this.accountCurrency,
               loginid: this.accountLoginid,
               isDemo: this.isDemo,
@@ -1112,7 +1137,7 @@
             });
             
             // Forçar atualização do computed agenteData quando o saldo mudar
-            if (oldBalance !== balanceData.balance && balanceData.balance > 0) {
+            if (oldBalance !== this.accountBalance && this.accountBalance > 0) {
               this.$forceUpdate();
             }
           }
@@ -1131,7 +1156,13 @@
           reloadAccountBalance().then(balanceData => {
             if (balanceData) {
               const oldBalance = this.accountBalance;
-              this.accountBalance = balanceData.balance;
+              // ✅ Garantir que accountBalance seja sempre um número
+              let balanceValue = balanceData.balance;
+              if (typeof balanceValue === 'object' && balanceValue !== null) {
+                // Se for objeto, tentar extrair o valor
+                balanceValue = balanceValue.balance || balanceValue.value || 0;
+              }
+              this.accountBalance = typeof balanceValue === 'number' ? balanceValue : (parseFloat(String(balanceValue)) || 0);
               this.accountCurrency = balanceData.currency;
               this.accountLoginid = balanceData.loginid;
               this.isDemo = balanceData.isDemo;

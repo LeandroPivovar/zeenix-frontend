@@ -590,6 +590,20 @@
 				if (accountBalance !== null && accountBalance !== undefined) {
 					if (typeof accountBalance === 'number') {
 						balanceNum = accountBalance;
+					} else if (typeof accountBalance === 'object') {
+						// Se for um objeto (retornado pelo balanceLoader), extrair o valor numérico
+						if (accountBalance.balance !== undefined && accountBalance.balance !== null) {
+							balanceNum = typeof accountBalance.balance === 'number' 
+								? accountBalance.balance 
+								: parseFloat(String(accountBalance.balance)) || 0;
+						} else if (accountBalance.value !== undefined && accountBalance.value !== null) {
+							balanceNum = typeof accountBalance.value === 'number' 
+								? accountBalance.value 
+								: parseFloat(String(accountBalance.value)) || 0;
+						} else {
+							// Tentar converter o objeto inteiro para número (improvável, mas tenta)
+							balanceNum = Number(accountBalance) || 0;
+						}
 					} else if (typeof accountBalance === 'string') {
 						// Converter string para número, removendo formatação se necessário
 						// Tratar formato brasileiro: "18.299,07" -> 18299.07
