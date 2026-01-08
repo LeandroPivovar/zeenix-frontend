@@ -392,7 +392,7 @@
       z-index: 0;
     }
     
-    .layout-copy-traders > * {
+    .box {
       position: relative;
       z-index: 1;
     }
@@ -427,7 +427,7 @@
 
   @media (max-width: 768px) {
     .box {
-      padding: 70px 20px 10px 20px;
+      padding: 80px 20px 10px 20px;
       margin: 0;
     }
 

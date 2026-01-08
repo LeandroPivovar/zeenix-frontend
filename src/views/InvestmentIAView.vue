@@ -14,33 +14,33 @@
             @close-sidebar="closeSidebar"
         />
 
-        <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-            <TopNavbar 
-                :is-sidebar-collapsed="isSidebarCollapsed"
-                :balance="info?.balance"
-                :account-type="accountType"
-                :balances-by-currency-real="balancesByCurrencyReal"
-                :balances-by-currency-demo="balancesByCurrencyDemo"
-                :currency-prefix="preferredCurrencyPrefix"
-                @open-settings="toggleSettingsModal"
-                @account-type-changed="switchAccount"
-                @toggle-sidebar="toggleSidebar"
-                @toggle-sidebar-collapse="toggleSidebarCollapse"
-            />
-            
-            <!-- Settings Sidebar -->
-            <SettingsSidebar
-                :is-open="showSettingsModal"
-                :balance="info?.balance"
-                :account-type="accountType"
-                :balances-by-currency-real="balancesByCurrencyReal"
-                :balances-by-currency-demo="balancesByCurrencyDemo"
-                :currency-prefix="preferredCurrencyPrefix"
-                @close="closeSettingsModal"
-                @account-type-changed="switchAccount"
-            />
+        <TopNavbar 
+            :is-sidebar-collapsed="isSidebarCollapsed"
+            :balance="info?.balance"
+            :account-type="accountType"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
+            :currency-prefix="preferredCurrencyPrefix"
+            @open-settings="toggleSettingsModal"
+            @account-type-changed="switchAccount"
+            @toggle-sidebar="toggleSidebar"
+            @toggle-sidebar-collapse="toggleSidebarCollapse"
+        />
+        
+        <!-- Settings Sidebar -->
+        <SettingsSidebar
+            :is-open="showSettingsModal"
+            :balance="info?.balance"
+            :account-type="accountType"
+            :balances-by-currency-real="balancesByCurrencyReal"
+            :balances-by-currency-demo="balancesByCurrencyDemo"
+            :currency-prefix="preferredCurrencyPrefix"
+            @close="closeSettingsModal"
+            @account-type-changed="switchAccount"
+        />
 
-            <main class="main-content" style="margin-top: 60px;">
+        <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
+            <main class="main-content" style="margin-top: 0px;">
                 <!-- AI Vision Panel - Only show when IA is inactive -->
                 <section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;" v-if="!isInvestmentActive">
                     <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
@@ -1179,6 +1179,10 @@ export default {
 @media (min-width: 1025px) {
     .zenix-layout {
         background: #0b0b0b;
+    }
+
+    .main-content {
+        margin-top: 60px!important;
     }
 
     .bg-zenix-card {
@@ -3224,11 +3228,10 @@ export default {
     
     /* Gradiente no fundo da página - apenas mobile */
     .main-content {
-        margin-top: 60px;
-        padding: 1rem 15px;
+        margin-top: 0px;
+        padding: 0rem 15px;
         background: transparent !important;
         position: relative;
-        min-height: calc(100vh - 60px);
     }
     
     /* Gradiente nos cards de configuração - apenas mobile */
@@ -3618,7 +3621,7 @@ export default {
         margin-bottom: 1.5rem;
         background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, 0.3) 0%, rgba(0, 1, 0, 0.1) 70%, transparent 100%);
         border-radius: 0.75rem;
-        padding: 1rem;
+        padding: 0rem 1rem;
     }
     
     #ai-vision-panel .ai-vision-header-mobile h1 {

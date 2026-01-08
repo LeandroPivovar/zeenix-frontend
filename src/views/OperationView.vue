@@ -12,6 +12,7 @@
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
         :currency-prefix="preferredCurrencyPrefix"
+        @toggle-sidebar="handleHamburgerClick"
         @toggle-sidebar-collapse="toggleSidebarCollapse"
       />
       
