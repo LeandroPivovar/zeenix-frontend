@@ -853,7 +853,7 @@
       iniciarAgente() {
         const configData = {
           estrategia: this.getStrategyTitle(this.selectedStrategy),
-          mercado: this.getMarketTitle(this.selectedMarket),
+          mercado: this.getMarketTitle(),
           risco: this.getRiskTitle(this.selectedRisk),
           goalValue: this.metaLucroNumero,
           stopValue: this.limitePerdaNumero,
@@ -1144,7 +1144,7 @@
         }
       },
   
-      getMarketTitle(symbolOrId) {
+      getMarketTitle() {
         // ✅ Todos os agentes autônomos sempre usam R_100
         return 'Volatility 100 Index';
       },
