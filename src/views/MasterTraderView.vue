@@ -556,18 +556,30 @@ export default {
     display: none !important;
 }
 
-/* Oculta o shell do componente de agente para eliminar o espaço de 100vh vazio */
+/* Ajusta o layout do componente de agente quando renderizado dentro do MasterTraderView */
 .layout-master-trader .layout-agente-autnomo {
-    display: none !important;
+    display: block !important;
+    width: 100% !important;
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    padding: 0 !important;
+    min-height: auto !important;
+    background: transparent !important;
+    position: relative !important;
+}
+
+/* Garante que o conteúdo do agente autônomo seja visível */
+.layout-master-trader .layout-agente-autnomo .container-componentes {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
 }
 
 /* Remove margens e ajusta largura dos wrappers internos dos componentes filhos */
 .layout-master-trader .content-wrapper,
-.layout-master-trader .layout-agente-autnomo,
 .layout-master-trader .layout-content-agent-autonomo,
 .layout-master-trader .zenix-layout,
-.layout-master-trader .master-trader-main-content,
-.layout-master-trader .container-componentes {
+.layout-master-trader .master-trader-main-content {
     margin-left: 0 !important;
     margin-right: 0 !important;
     width: 100% !important;
@@ -575,9 +587,30 @@ export default {
     max-width: none !important;
 }
 
+/* Ajusta o container de componentes do agente autônomo */
+.layout-master-trader .layout-agente-autnomo .container-componentes {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    width: 100% !important;
+    padding: 0 !important;
+    max-width: none !important;
+    margin-top: 0 !important;
+}
+
 /* Exceção específica para o Agente Autônomo ter um respiro interno */
 .layout-master-trader .layout-content-agent-autonomo {
-    padding: 20px !important;
+    padding: 0 !important;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Garante que o master-trader-portal-target seja visível */
+.layout-master-trader #master-trader-portal-target {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    min-height: 100px !important;
 }
 
 /* Garante que o conteúdo principal não tenha margem superior excessiva por causa dos headers ocultos e zera paddings */
@@ -586,6 +619,28 @@ export default {
     padding: 0 !important;
     width: 100% !important;
     max-width: none !important;
+}
+
+/* Remove padding de 6rem do componente de Operação Manual */
+.layout-master-trader .zenix-layout .content-wrapper,
+.layout-master-trader .zenix-layout .operation-content,
+.layout-master-trader .zenix-layout .main-content {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Remove padding de 6rem dos componentes filhos dentro do ManualOperation */
+.layout-master-trader .zenix-layout .operation-content > * {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+/* Remove padding-bottom de 6rem dos componentes de operação */
+.layout-master-trader .zenix-layout .operation-chart,
+.layout-master-trader .zenix-layout .operation-logs,
+.layout-master-trader .zenix-layout .operation-last-orders,
+.layout-master-trader .zenix-layout .operation-digits {
+    padding-bottom: 0 !important;
 }
 
 
@@ -616,6 +671,7 @@ export default {
     flex-grow: 1; 
     padding: 0;
     margin-top: 60px;
+    padding: 20px!important;
 }
 
 .header-master-trader,
@@ -886,8 +942,6 @@ export default {
     position: relative;
     border-radius: 12px;
     padding: 20px;
-    margin-top: 15px;
-    margin-bottom: 16px;
     overflow: hidden;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
 }
@@ -971,6 +1025,7 @@ export default {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 12px;
+    margin-top: 20px!important;
 }
 
 .mobile-option-card {
@@ -1001,7 +1056,7 @@ export default {
     justify-content: center;
     padding: 10px;
     border-radius: 50%;
-    background: rgba(34, 197, 94, 0.15);
+    background: rgb(32 162 80 / 27%);
     transition: all 0.2s ease;
     flex-shrink: 0;
 }
@@ -1100,7 +1155,7 @@ export default {
     }
 
     .master-trader-main-content {
-        padding-bottom: 80px;
+        padding-bottom: 0;
     }
 }
 
