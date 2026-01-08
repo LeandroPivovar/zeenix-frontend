@@ -66,14 +66,14 @@
 				</div>
 			</div>
 			<div class="metric-card">
-				<span class="arrow negative">↓</span>
+				<span class="arrow positive">↑</span>
 				<div class="metric-box">
-					<div class="metric-label">Perda acumulada</div>
-					<div class="metric-value negative">
-						-${{ (5.20).toFixed(2) }}
+					<div class="metric-label">Resultado da sessão</div>
+					<div class="metric-value positive">
+						+${{ progressoMeta.atual.toFixed(2) }}
 					</div>
-					<div class="metric-change negative">
-						-0.34%
+					<div class="metric-change positive">
+						+2.14%
 					</div>
 				</div>
 			</div>

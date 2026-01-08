@@ -76,16 +76,16 @@
 					</div>
 				</div>
 			</div>
-			<div class="metric-card metric-negative">
-				<span class="arrow negative">↓</span>
+			<div class="metric-card" :class="(sessionStats?.netProfit || 0) >= 0 ? 'metric-positive' : 'metric-negative'">
+				<span class="arrow" :class="(sessionStats?.netProfit || 0) >= 0 ? 'positive' : 'negative'">{{ (sessionStats?.netProfit || 0) >= 0 ? '↑' : '↓' }}</span>
 				<div class="metric-box">
-					<div class="metric-label">Perda acumulada</div>
-					<div class="metric-value negative">
-						-${{ Math.abs(sessionStats?.totalLoss || 0).toFixed(2) }}
+					<div class="metric-label">Resultado da sessão</div>
+					<div class="metric-value" :class="(sessionStats?.netProfit || 0) >= 0 ? 'positive' : 'negative'">
+						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
 					</div>
-					<div class="metric-change negative">
-						{{ (sessionStats?.totalLoss || 0) !== 0 && totalCapital > 0 
-							? ((Math.abs(sessionStats?.totalLoss || 0) / totalCapital) * 100).toFixed(2) 
+					<div class="metric-change" :class="(sessionStats?.netProfit || 0) >= 0 ? 'positive' : 'negative'">
+						{{ (sessionStats?.netProfit || 0) !== 0 && totalBalance > 0 
+							? (((sessionStats?.netProfit || 0) / totalBalance) * 100).toFixed(2) 
 							: '0.00' }}%
 					</div>
 				</div>
@@ -369,6 +369,33 @@
 			</div>
 		</div>
 		</div>
+			<!-- Modal de Stop Loss -->
+			<div v-if="showStopLossModal" class="modal-overlay">
+				<div class="modal-content stop-loss-modal">
+					<div class="modal-icon-wrapper">
+						<i class="fas fa-shield-alt modal-icon"></i>
+					</div>
+					<h3 class="modal-title">Limite de Perda Atingido</h3>
+					<p class="modal-message">
+						O Agente Autônomo atingiu o limite de perda diário configurado.
+						<br>
+						<span>As operações foram encerradas por segurança e serão retomadas automaticamente amanhã.</span>
+					</p>
+					<div class="modal-stats">
+						<div class="modal-stat-item">
+							<span class="stat-label">Perda do Dia</span>
+							<span class="stat-value negative">-${{ (sessionStats?.totalLoss ? Math.abs(sessionStats.totalLoss) : 0).toFixed(2) }}</span>
+						</div>
+						<div class="modal-stat-item">
+							<span class="stat-label">Limite Configurado</span>
+							<span class="stat-value text-white">${{ (progressoMeta?.stop || 0).toFixed(2) }}</span>
+						</div>
+					</div>
+					<button class="modal-btn" @click="showStopLossModal = false">Entendido</button>
+				</div>
+			</div>
+		</div>
+		</div>
 	</Teleport>
 </template>
 
@@ -475,6 +502,7 @@
 					{ hora: '14:31:45', classe: 'warning', titulo: 'Volume detectado', descricao: '14:31:45 - Confirmação de padrão' },
 					{ hora: '14:30:00', classe: 'info', titulo: 'Aguardando padrão da estratégia', descricao: '14:30:00 - Análise em andamento' },
 				],
+				showStopLossModal: false,
 			};
 		},
 		computed: {
@@ -1041,6 +1069,13 @@
 				this.startLogsPolling();
 			}
 			
+			if (this.abaAtiva === 'registro') {
+				this.startLogsPolling();
+			}
+
+			// Verificar estado do Stop Loss ao montar
+			this.checkStopLossState();
+			
 			// Rolagem instantânea para o topo
 			window.scrollTo({ top: 0, behavior: 'auto' });
 		},
@@ -1443,7 +1478,22 @@
 				}
 
 				console.warn("[AgenteAutonomoActive] Não foi possível obter userId");
+				console.warn("[AgenteAutonomoActive] Não foi possível obter userId");
 				return null;
+			},
+
+			checkStopLossState() {
+				const lastHit = localStorage.getItem('agent_stop_loss_date');
+				if (lastHit) {
+					const today = new Date().toDateString();
+					if (lastHit === today) {
+						this.showStopLossModal = true;
+					} else {
+						// Novo dia, limpar estado
+						localStorage.removeItem('agent_stop_loss_date');
+						this.showStopLossModal = false;
+					}
+				}
 			},
 			
 			pausarAgenteEIrParaTopo() {
@@ -1544,6 +1594,20 @@
 								level: log.level || log.logLevel,
 							};
 						});
+						
+						// ✅ Verificar logs de Stop Loss
+						const stopLossLog = newLogs.find(l => l.message && (l.message.includes('LIMITE DE PERDA ATINGIDO') || l.message.includes('daily_loss=')));
+						if (stopLossLog) {
+							const today = new Date().toDateString();
+							const lastHit = localStorage.getItem('agent_stop_loss_date');
+							
+							// Se ainda não foi mostrado hoje
+							if (lastHit !== today) {
+								console.log('[AgenteAutonomoActive] ⚠️ Stop Loss detectado: ativando modal');
+								this.showStopLossModal = true;
+								localStorage.setItem('agent_stop_loss_date', today);
+							}
+						}
 						
 						if (!this.realtimeLogs || this.realtimeLogs.length === 0 || !this.lastLogTimestamp) {
 							this.realtimeLogs = newLogs;
@@ -3249,4 +3313,122 @@
 		display: flex;
 	}
 }
+	/* Modal Styles */
+	.modal-overlay {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.85);
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		z-index: 9999;
+		backdrop-filter: blur(5px);
+		padding: 20px;
+	}
+
+	.modal-content.stop-loss-modal {
+		background: #0e0e0e;
+		border: 1px solid #1a1a1a;
+		border-radius: 12px;
+		padding: 30px;
+		width: 100%;
+		max-width: 450px;
+		text-align: center;
+		color: #f0f0f0;
+		box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+		animation: modalFadeIn 0.3s ease-out;
+	}
+
+	.modal-icon-wrapper {
+		width: 60px;
+		height: 60px;
+		background: rgba(239, 68, 68, 0.1);
+		border-radius: 50%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		margin: 0 auto 20px;
+	}
+
+	.modal-icon {
+		font-size: 28px;
+		color: #ef4444;
+	}
+
+	.modal-title {
+		font-size: 20px;
+		font-weight: 700;
+		margin-bottom: 15px;
+		color: #ffffff;
+	}
+
+	.modal-message {
+		color: #a1a1a1;
+		font-size: 14px;
+		line-height: 1.6;
+		margin-bottom: 25px;
+	}
+
+	.modal-stats {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 15px;
+		margin-bottom: 25px;
+		background: #0a0a0a;
+		padding: 15px;
+		border-radius: 8px;
+		border: 1px solid #1a1a1a;
+	}
+
+	.modal-stat-item {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+	}
+
+	.modal-stat-item .stat-label {
+		font-size: 11px;
+		color: #666;
+		text-transform: uppercase;
+		letter-spacing: 0.5px;
+	}
+
+	.modal-stat-item .stat-value {
+		font-size: 16px;
+		font-weight: 700;
+	}
+	
+	.modal-stat-item .stat-value.negative {
+		color: #ef4444;
+	}
+
+	.modal-btn {
+		background: #ef4444;
+		color: white;
+		border: none;
+		width: 100%;
+		padding: 12px;
+		border-radius: 8px;
+		font-weight: 600;
+		cursor: pointer;
+		transition: background 0.2s;
+	}
+
+	.modal-btn:hover {
+		background: #dc2626;
+	}
+	
+	@keyframes modalFadeIn {
+		from {
+			opacity: 0;
+			transform: scale(0.95);
+		}
+		to {
+			opacity: 1;
+			transform: scale(1);
+		}
+	}
 </style>
