@@ -84,7 +84,7 @@ export default {
 
       // Dados de Configuração Estáticos
       estrategia: "IA SENTINEL",
-      mercado: "Volatility 75 Index",
+      mercado: "Volatility 100 Index", // ✅ Todos os agentes autônomos usam R_100
       risco: "Conservador-Adaptativo",
       goalValue: 50.0,
       stopValue: 25.0,
@@ -236,8 +236,12 @@ export default {
       }
       
       return {
-        estrategia: this.agentConfig?.strategy ? this.getStrategyTitle(this.agentConfig.strategy) : this.estrategia,
-        mercado: this.agentConfig?.symbol ? this.getMarketTitle(this.agentConfig.symbol) : this.mercado,
+        // ✅ Usar agentType se disponível, senão usar strategy
+        estrategia: this.agentConfig?.agentType 
+          ? this.getStrategyTitle(this.agentConfig.agentType) 
+          : (this.agentConfig?.strategy ? this.getStrategyTitle(this.agentConfig.strategy) : this.estrategia),
+        // ✅ Mercado sempre é "Volatility 100 Index"
+        mercado: 'Volatility 100 Index',
         risco: this.agentConfig?.riskLevel ? this.getRiskTitle(this.agentConfig.riskLevel) : this.risco,
         goalValue: this.goalValue,
         stopValue: this.stopValue,
@@ -1146,35 +1150,21 @@ export default {
     },
 
     getMarketTitle(symbolOrId) {
-      // Se for símbolo (R_10, R_75, etc), mapear para título
-      const symbolMap = {
-        'R_10': 'Volatility 10 Index',
-        'R_25': 'Volatility 25 Index',
-        'R_50': 'Volatility 50 Index',
-        'R_75': 'Volatility 75 Index',
-        'R_100': 'Volatility 100 Index'
-      };
-      
-      // Se for ID de mercado (volatility_10, etc)
-      const idMap = {
-        'volatility_10': 'Volatility 10 Index',
-        'volatility_25': 'Volatility 25 Index',
-        'volatility_50': 'Volatility 50 Index',
-        'volatility_75': 'Volatility 75 Index',
-        'volatility_100': 'Volatility 100 Index'
-      };
-      
-      return symbolMap[symbolOrId] || idMap[symbolOrId] || symbolOrId;
+      // ✅ Todos os agentes autônomos sempre usam R_100
+      return 'Volatility 100 Index';
     },
     
     getStrategyTitle(id) {
       const map = {
-        'arion': 'Arion',
+        'orion': 'IA Orion',
+        'sentinel': 'IA Sentinel',
+        'falcon': 'IA Falcon',
+        'arion': 'Arion', // Compatibilidade com versões antigas
         'cryptomax': 'CryptoMax',
         'orion_ultra': 'Orion Ultra',
         'metaflow': 'MetaFlow'
       };
-      return map[id] || id;
+      return map[id?.toLowerCase()] || id;
     },
     
     getRiskTitle(id) {

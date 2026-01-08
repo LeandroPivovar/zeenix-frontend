@@ -383,7 +383,7 @@
 				type: Object,
 				default: () => ({
 					estrategia: 'IA SENTINEL',
-					mercado: 'Volatility 75 Index',
+					mercado: 'Volatility 100 Index', // ✅ Todos os agentes autônomos usam R_100
 					risco: 'Conservador-Adaptativo',
 					goalValue: 50.0,
 					stopValue: 25.0,
