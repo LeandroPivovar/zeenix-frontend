@@ -615,9 +615,12 @@
           });
 
           const result = await response.json();
+          console.log('[AgenteAutonomo] 📊 Resposta completa do backend:', result);
           if (result.success && result.data) {
-            console.log('[AgenteAutonomo] Session stats recebidas:', result.data);
+            console.log('[AgenteAutonomo] ✅ Session stats recebidas:', result.data);
             const operationsToday = parseInt(result.data.operationsToday) || 0;
+            const netProfit = parseFloat(result.data.netProfit) || 0;
+            console.log('[AgenteAutonomo] 💰 netProfit recebido:', netProfit, 'tipo:', typeof netProfit);
             this.sessionStats = {
               totalTrades: parseInt(result.data.totalTrades) || 0,
               wins: parseInt(result.data.wins) || 0,
@@ -625,14 +628,18 @@
               winRate: parseFloat(result.data.winRate) || 0,
               totalProfit: parseFloat(result.data.totalProfit) || 0,
               totalLoss: parseFloat(result.data.totalLoss) || 0,
-              netProfit: parseFloat(result.data.netProfit) || 0,
+              netProfit: netProfit,
               totalCapital: parseFloat(result.data.totalCapital) || 0,
               operationsToday: operationsToday,
             };
             // Usar operationsToday que inclui ai_trades + autonomous_agent_trades
             this.operacoesHoje = operationsToday;
-            this.dailyProfit = this.sessionStats.netProfit || 0;
-            console.log('[AgenteAutonomo] Operações hoje definidas:', this.operacoesHoje, 'operationsToday do backend:', operationsToday, 'sessionStats:', this.sessionStats);
+            this.dailyProfit = netProfit;
+            console.log('[AgenteAutonomo] ✅ Operações hoje definidas:', this.operacoesHoje, 'operationsToday do backend:', operationsToday);
+            console.log('[AgenteAutonomo] ✅ sessionStats atualizado:', this.sessionStats);
+            console.log('[AgenteAutonomo] ✅ dailyProfit atualizado:', this.dailyProfit);
+          } else {
+            console.warn('[AgenteAutonomo] ⚠️ Resposta inválida ou sem dados:', result);
           }
         } catch (error) {
           console.error("[AgenteAutonomo] Erro ao carregar estatísticas:", error);
