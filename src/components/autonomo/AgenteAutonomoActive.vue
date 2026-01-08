@@ -1634,11 +1634,11 @@
 		flex-direction: column;
 		gap: 3px;
 		flex-grow: 1;
-		background: #0e0f0f;
-		padding: 10px 10px;
+		background: transparent;
+		padding: 10px 0;
 		margin-right: 20px;
 		border-radius: 8px;
-		border: 1px solid #1a1a1a;
+		border: none;
 		min-height: 55px;
 		justify-content: center;
 	}

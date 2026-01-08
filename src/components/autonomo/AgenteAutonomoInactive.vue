@@ -621,6 +621,9 @@ export default {
 }
 
 .container-sections{
+	display: flex;
+	flex-direction: column;
+	gap: 20px !important;
 	padding: 0px;
 	margin-top: 0;
 }
@@ -801,6 +804,9 @@ span.icon-sumary-risk{
 	display: flex;
 	flex-direction: column;
 	padding: 25px;
+	border: 1px solid #333;
+	border-radius: 6px;
+	background: transparent !important;
 }
 
 .daily-params-grid {
@@ -1024,6 +1030,9 @@ span.icon-sumary-risk{
 	flex-direction: column;
 	max-width: 800px;
 	width: 100%;
+	border: 1px solid #333;
+	border-radius: 6px;
+	background: transparent !important;
 }
 
 .summary-grid {
@@ -1099,9 +1108,10 @@ span.icon-sumary-risk{
 .footer-section{
 	display: flex;
 	width: 100%;
-	gap: 60px;
-	align-items: flex-start;
+	gap: 20px !important;
+	align-items: stretch;
 	justify-content: flex-start;
+	padding: 0 20px 20px 20px;
 }
 
 /* Ajustes para telas até 1024px - tamanhos mais iguais */
