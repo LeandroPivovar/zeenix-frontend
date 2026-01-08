@@ -63,14 +63,14 @@
 		<div class="metrics-grid">
 			<div class="metric-card">
 				<div class="metric-box">
-					<div class="metric-label">Resultado do dia<i class="fa-solid fa-arrow-trend-up metric-icon positive"></i></div>
+					<div class="metric-label">Resultado do dia<i :class="['fa-solid', 'metric-icon', (sessionStats?.netProfit || 0) >= 0 ? 'fa-arrow-trend-up positive' : 'fa-arrow-trend-down negative']"></i></div>
 					<div class="metric-value-row">
-					<div class="metric-value positive">
+					<div :class="['metric-value', (sessionStats?.netProfit || 0) >= 0 ? 'positive' : 'negative']">
 						{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
 					</div>
-					<div class="metric-change positive">
-						{{ (sessionStats?.netProfit || 0) !== 0 && (sessionStats?.initialBalance || totalBalance) > 0 
-							? (((sessionStats?.netProfit || 0) / (sessionStats?.initialBalance || totalBalance)) * 100).toFixed(2) 
+					<div :class="['metric-change', (sessionStats?.netProfit || 0) >= 0 ? 'positive' : 'negative']">
+						{{ (sessionStats?.netProfit || 0) !== 0 && totalBalance > 0 
+							? (((sessionStats?.netProfit || 0) / totalBalance) * 100).toFixed(2) 
 							: '0.00' }}%
 					</div>
 					</div>
@@ -1817,7 +1817,7 @@
 	}
 
 	.metric-icon.negative {
-		color: #ff4444;
+		color: #9CA3AF; /* Cinza quando negativo */
 	}
 
 	.metric-value {
@@ -1851,7 +1851,7 @@
 	}
 
 	.metric-value.negative {
-		color: #ff4444;
+		color: #9CA3AF; /* Cinza quando negativo */
 	}
 
 	.metric-change {
@@ -1863,7 +1863,7 @@
 	}
 
 	.metric-change.negative {
-		color: #ff4444;
+		color: #9CA3AF; /* Cinza quando negativo */
 	}
 
 	.progress-card {
