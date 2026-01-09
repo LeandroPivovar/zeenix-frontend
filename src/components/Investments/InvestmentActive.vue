@@ -415,16 +415,19 @@
                             <p class="mobile-config-param-value mobile-config-loss" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$5.00' }}</p>
                             <p class="mobile-config-param-value mobile-config-loss" v-else>Carregando...</p>
                         </div>
-                    </div>
-                    <div class="mobile-config-item">
-                        <p class="mobile-config-label">Stop Loss Blindado</p>
-                        <p class="mobile-config-value">{{ sessionConfig.lossLimit ? 'Ativo' : 'Inativo' }}</p>
-                    </div>
-                    <div class="mobile-config-item">
-                        <p class="mobile-config-label">Gerenciamento</p>
-                        <div class="mobile-config-badge">
-                            <span class="mobile-config-badge-text">{{ realRiskLabel }}</span>
+                        <div class="mobile-config-param">
+                            <p class="mobile-config-label">Stop Loss Blindado</p>
+                            <p class="mobile-config-value">{{ sessionConfig.lossLimit ? 'Ativo' : 'Inativo' }}</p>
                         </div>
+                        <div class="mobile-config-param">
+                            <p class="mobile-config-label">Gerenciamento</p>
+                            <div class="mobile-config-badge">
+                                <span class="mobile-config-badge-text">{{ realRiskLabel }}</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mobile-config-item">
+
                     </div>
 
                 </div>
