@@ -195,7 +195,10 @@
           <div class="relative z-10 w-full px-6 md:px-10">
             <!-- Desktop Header -->
             <div class="text-left mb-8 space-y-2 desktop-ias-header">
-              <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Melhores IA's <span class="text-[#22C55E]">Agora</span></h2>
+              <div class="flex justify-between items-center mb-2">
+                <h2 class="text-5xl font-bold text-[#E6E6E6] tracking-[-0.02em] drop-shadow-[0_2px_8px_rgba(0,0,0,0.08)]">Melhores IA's <span class="text-[#22C55E]">Agora</span></h2>
+                <a href="#" class="see-all-link-desktop" @click.prevent="navigateToIAs">Ver tudo</a>
+              </div>
               <p class="desktop-description-text text-[17px] text-[#9B9B9B] max-w-3xl leading-[1.75]">
                 Escolha entre as inteligências artificiais mais avançadas do mercado. Cada IA foi otimizada para diferentes estratégias e perfis de risco, <span class="text-[#22C55E]">garantindo máxima performance em suas operações.</span>
               </p>
@@ -205,9 +208,7 @@
             <div class="mobile-ias-header">
               <div class="flex justify-between items-center mb-4">
                 <h2 class="text-[20px] font-bold text-[#E6E6E6]">Melhores IAs</h2>
-                <button class="see-all-btn-mobile" @click="openIAsModal">
-                  Ver todas >
-                </button>
+                <a href="#" class="see-all-link-mobile" @click.prevent="navigateToIAs">Ver tudo</a>
               </div>
             </div>
             
@@ -303,7 +304,8 @@
               v-for="(perf, index) in performanceData" 
               :key="index"
               :id="`performance-card-${index + 1}`"
-              class="relative bg-gradient-to-br from-[#0E0E0E] to-[#0B0B0B] rounded-[20px] overflow-hidden desktop-no-shadow desktop-performance-card-border w-full h-auto transition-all duration-[250ms] ease-out hover:scale-[1.02] hover:bg-gradient-to-br hover:from-[#111111] hover:to-[#0A0A0A] group"
+              class="relative bg-gradient-to-br from-[#0E0E0E] to-[#0B0B0B] rounded-[20px] overflow-hidden desktop-no-shadow desktop-performance-card-border w-full h-auto transition-all duration-[250ms] ease-out hover:scale-[1.02] hover:bg-gradient-to-br hover:from-[#111111] hover:to-[#0A0A0A] group cursor-pointer"
+              @click="handlePerformanceAction(perf)"
             >
               <div class="absolute -inset-4 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.12)_0%,transparent_70%)] blur-[80px] opacity-100 -z-10 transition-opacity duration-[250ms] group-hover:opacity-125"></div>
               <div class="p-6 flex flex-col gap-6">
@@ -379,6 +381,7 @@
               v-for="(perf, index) in performanceData" 
               :key="index"
               class="mobile-performance-card"
+              @click="handlePerformanceAction(perf)"
             >
               <div class="mobile-performance-header">
                 <div class="mobile-performance-icon">
@@ -1190,6 +1193,9 @@ export default {
       // Navega para a página de IAs
       this.$router.push('/InvestmentIA');
     },
+    navigateToIAs() {
+      this.$router.push('/StatsIAs');
+    },
     openIAsModal() {
       this.showIAsModal = true;
     },
@@ -1562,13 +1568,13 @@ export default {
       }).join(' ');
     },
     handlePerformanceAction(perf) {
-      if (perf.title.includes('IA')) {
-        this.$router.push('/InvestmentIA');
+      if (perf.title.includes('IA') || perf.title.includes('Investimento')) {
+        this.$router.push('/StatsIAs');
       } else if (perf.title.includes('Copy')) {
         this.$router.push('/copy-trading');
       } else if (perf.title.includes('Agente')) {
         this.$router.push('/agente-autonomo');
-      } else if (perf.title.includes('Sinais')) {
+      } else if (perf.title.includes('Sinais') || perf.title.includes('Manual')) {
         this.$router.push('/operation');
       }
     },
@@ -3450,25 +3456,20 @@ export default {
     display: none;
   }
 
-  .see-all-btn-mobile {
-    background: none;
-    border: none;
+  .see-all-link-mobile {
     color: #22C55E !important;
-    font-size: 13px !important;
+    font-size: 12px !important;
     font-weight: 500 !important;
+    text-decoration: none !important;
     cursor: pointer;
-    padding: 4px 0;
     transition: opacity 0.3s;
-    display: flex;
-    align-items: center;
-    gap: 6px;
   }
 
-  .see-all-btn-mobile:hover {
+  .see-all-link-mobile:hover {
     opacity: 0.8;
   }
 
-  .see-all-btn-mobile:active {
+  .see-all-link-mobile:active {
     opacity: 0.7;
   }
 
@@ -4079,6 +4080,23 @@ export default {
     display: grid !important;
     grid-template-columns: repeat(4, 1fr) !important;
     gap: 24px !important;
+  }
+
+  .see-all-link-desktop {
+    color: #22C55E !important;
+    font-size: 16px !important;
+    font-weight: 500 !important;
+    text-decoration: none !important;
+    cursor: pointer;
+    transition: opacity 0.3s;
+  }
+
+  .see-all-link-desktop:hover {
+    opacity: 0.8;
+  }
+
+  .see-all-link-desktop:active {
+    opacity: 0.7;
   }
   
   /* Gradiente da esquerda para direita nos cards de IA (similar ao academy) */

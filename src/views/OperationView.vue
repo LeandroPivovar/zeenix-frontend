@@ -38,7 +38,7 @@
         <div class="view-toggle-bar-wrapper">
           <div class="view-toggle-bar">
             <button
-              class="px-6 py-3 bg-zenix-card text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300"
+              class="px-6 py-3 bg-zenix-card text-sm font-medium rounded-t-xl hover:text-zenix-text hover:bg-[#111] transition-all duration-300 desktop-only"
               :class="{ 'border-b-2 border-zenix-green text-zenix-text font-semibold shadow-[0_0_8px_rgba(0,0,0,0.25)]': currentView === 'OperationChart', 'border-b-2 border-transparent text-[#7A7A7A]': currentView !== 'OperationChart' }"
               @click="changeView('OperationChart')"
             >
@@ -74,6 +74,7 @@
 
         <div class="operation-content">
           <component
+            v-if="!isMobile || currentView !== 'OperationChart'"
             :is="currentView"
             :account-balance="accountBalanceFormatted"
             :account-balance-value="accountBalanceValue"
@@ -196,7 +197,16 @@ export default {
   },
   methods: {
     checkMobile() {
+      const wasMobile = this.isMobile;
       this.isMobile = window.innerWidth <= 768;
+      // Se mudou para mobile e está na view de gráfico, mudar para dígitos
+      if (this.isMobile && !wasMobile && this.currentView === 'OperationChart') {
+        this.currentView = 'OperationDigits';
+      }
+      // Se mudou para desktop e estava em dígitos, pode voltar para gráfico
+      if (!this.isMobile && wasMobile && this.currentView === 'OperationDigits') {
+        this.currentView = 'OperationChart';
+      }
     },
     async switchAccount(type) {
       // Usa a mesma lógica do Dashboard - altera o tradeCurrency
@@ -314,6 +324,10 @@ export default {
       }
     },
     changeView(componentName) {
+      // No mobile, não permitir mudar para OperationChart
+      if (this.isMobile && componentName === 'OperationChart') {
+        return;
+      }
       // Verificar se componente ainda está montado antes de mudar view
       if (!this.isComponentMounted()) {
         return;
@@ -892,6 +906,10 @@ export default {
   },
   created() {
     this.checkMobile();
+    // Se for mobile, iniciar com OperationDigits ao invés de OperationChart
+    if (this.isMobile) {
+      this.currentView = 'OperationDigits';
+    }
     window.addEventListener('resize', this.checkMobile);
   },
   beforeUnmount() {
