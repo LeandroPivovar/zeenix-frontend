@@ -585,7 +585,7 @@
                                                 <td>
                                                     <span :class="['direction-badge', (op.direction === 'CALL' || op.direction === 'PAR') ? 'call-badge' : 'put-badge']">
                                                         <i :class="`fas fa-arrow-${(op.direction === 'CALL' || op.direction === 'PAR') ? 'up' : 'down'} text-xs mr-1`"></i>
-                                                        {{ op.direction === 'CALL' ? 'PAR' : op.direction === 'PUT' ? 'IMPAR' : op.direction }}
+                                                        {{ getTradeLabel(op.direction) }}
                                                     </span>
                                                 </td>
                                                 
@@ -618,7 +618,7 @@
                                         <div class="mobile-log-time">{{ op.time }}</div>
                                         <div class="mobile-log-type">
                                             <span v-if="op.pair">{{ getMarketDisplayName(op.pair) }}</span>
-                                            <span v-if="op.direction"> - {{ op.direction === 'CALL' ? 'PAR' : op.direction === 'PUT' ? 'IMPAR' : op.direction }}</span>
+                                            <span v-if="op.direction"> - {{ getTradeLabel(op.direction) }}</span>
                                         </div>
                                         <div class="mobile-log-footer">
                                             <span class="mobile-log-invested">Investido: {{ op.investment }}</span>
@@ -1477,6 +1477,19 @@ export default {
             };
             
             return marketMap[symbol] || symbol;
+        },
+
+        getTradeLabel(direction) {
+            const strategy = this.sessionConfig?.strategy || this.selectedStrategy || '';
+            const isNexus = strategy.toLowerCase() === 'nexus';
+
+            if (direction === 'CALL') {
+                return isNexus ? 'CALL' : 'PAR';
+            }
+            if (direction === 'PUT') {
+                return isNexus ? 'PUT' : 'IMPAR';
+            }
+            return direction;
         },
         
         // Formatar valor PnL para colocar sinal negativo antes do $
