@@ -55,7 +55,7 @@
                         <div class="mb-6 ai-vision-header-mobile">
                             <div class="flex items-center justify-between">
                                 <div class="text-left">
-                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração da IA</h1>
+                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Configuração da IA</h1>
                                     <p class="text-sm text-zenix-secondary">Escolha uma das IA's de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
                                 </div>
                                 <div class="ai-chip-icon-mobile">
