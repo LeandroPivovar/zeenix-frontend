@@ -40,10 +40,10 @@
 				</div>
 				<div class="data-item">
 					<span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/stats-green.svg" alt="" width="20px">
-						Mercado
+						<img src="../../assets/icons/linechart.svg" alt="" width="20px">
+						Operações hoje
 					</span>
-					<div class="data-label">{{ agenteData.mercado }}</div>
+					<div class="data-label">{{ operacoesHojeDisplay }}</div>
 				</div>
 				<div class="data-item">
 					<span class="icon-bullet" style="color: #666;"><img src="../../assets/icons/clock.svg" alt="" width="20px">
@@ -52,11 +52,9 @@
 					<div class="data-label">{{ tempoAtivoDisplay }}</div>
 				</div>
 				<div class="data-item">
-					<span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/linechart.svg" alt="" width="20px">
-						Operações hoje
-					</span>
-					<div class="data-label">{{ operacoesHojeDisplay }}</div>
+					<button @click="pausarAgenteEIrParaTopo" class="pause-agent-data-btn">
+						<span class="pause-icon">II</span> PAUSAR AGENTE
+					</button>
 				</div>
 			</div>
 		</div>
@@ -1885,6 +1883,34 @@
 		text-align: left;
 	}
 
+	.pause-agent-data-btn {
+		background: #FFD700;
+		color: #000;
+		border: none;
+		padding: 10px 16px;
+		border-radius: 8px;
+		cursor: pointer;
+		font-size: 12px;
+		font-weight: 600;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		transition: background 0.2s;
+		width: 100%;
+		height: 100%;
+		min-height: 40px;
+	}
+
+	.pause-agent-data-btn:hover {
+		background: #FFC700;
+	}
+
+	.pause-agent-data-btn .pause-icon {
+		font-size: 12px;
+		font-weight: bold;
+	}
+
 	.metrics-grid {
 		display: grid;
 		grid-template-columns: 1fr 1fr 2fr;
@@ -2009,7 +2035,7 @@
 
 	.progress-bar {
 		width: 100%;
-		height: 10px;
+		height: 16px;
 		background: #1a1a1a;
 		border-radius: 12px;
 		overflow: hidden;
@@ -3007,6 +3033,13 @@
 
 	.data-label{
 		font-size: 14px;
+	}
+
+	.pause-agent-data-btn {
+		width: 100%;
+		min-height: 45px;
+		font-size: 11px;
+		padding: 8px 12px;
 	}
 
 	.pause-btn{

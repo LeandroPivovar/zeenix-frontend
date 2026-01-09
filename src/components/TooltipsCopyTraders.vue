@@ -1,9 +1,14 @@
 <template>
-  <span class="info-icon-wrapper" @mouseenter="showTooltip = true" @mouseleave="showTooltip = false">
+  <span class="info-icon-wrapper" ref="wrapper" @mouseenter="handleMouseEnter" @mouseleave="showTooltip = false">
     <span class="info-icon">?</span>
-    <div :class="['tooltip-box', positionClass]" v-if="showTooltip">
+    <div 
+      :class="['tooltip-box', positionClass]" 
+      v-if="showTooltip"
+      :style="tooltipStyle"
+      ref="tooltip"
+    >
       <slot></slot>
-      <div class="tooltip-arrow"></div>
+      <div class="tooltip-arrow" :style="arrowStyle"></div>
     </div>
   </span>
 </template>
@@ -22,6 +27,8 @@ export default {
   data() {
     return {
       showTooltip: false,
+      tooltipStyle: {},
+      arrowStyle: {}
     };
   },
   computed: {
@@ -29,6 +36,109 @@ export default {
       // Mapeia a prop para uma classe CSS
       return `tooltip-${this.position}`;
     }
+  },
+  methods: {
+    handleMouseEnter() {
+      this.showTooltip = true;
+      this.$nextTick(() => {
+        this.calculatePosition();
+      });
+    },
+    calculatePosition() {
+      if (!this.$refs.wrapper || !this.$refs.tooltip) return;
+      
+      const wrapperRect = this.$refs.wrapper.getBoundingClientRect();
+      const tooltipRect = this.$refs.tooltip.getBoundingClientRect();
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      let left = 0;
+      let top = wrapperRect.bottom + 10;
+      let arrowLeft = '50%';
+      
+      // Calcular posição horizontal baseada na prop position
+      if (this.position === 'left') {
+        left = wrapperRect.left;
+        arrowLeft = '10px';
+      } else if (this.position === 'right') {
+        left = wrapperRect.right - tooltipRect.width;
+        arrowLeft = 'calc(100% - 10px)';
+      } else {
+        // center
+        left = wrapperRect.left + (wrapperRect.width / 2) - (tooltipRect.width / 2);
+        arrowLeft = '50%';
+      }
+      
+      // Ajustar se sair da tela à esquerda
+      if (left < 10) {
+        left = 10;
+        arrowLeft = `${wrapperRect.left + wrapperRect.width / 2 - 10}px`;
+      }
+      
+      // Ajustar se sair da tela à direita
+      if (left + tooltipRect.width > viewportWidth - 10) {
+        left = viewportWidth - tooltipRect.width - 10;
+        arrowLeft = `${wrapperRect.right - left - wrapperRect.width / 2}px`;
+      }
+      
+      let arrowPosition = 'bottom';
+      
+      // Ajustar se sair da tela no topo (mostrar acima)
+      if (top + tooltipRect.height > viewportHeight - 10) {
+        top = wrapperRect.top - tooltipRect.height - 10;
+        arrowPosition = 'top';
+      }
+      
+      this.tooltipStyle = {
+        left: `${left}px`,
+        top: `${top}px`,
+        transform: 'none'
+      };
+      
+      // Calcular posição da seta baseada na posição do tooltip
+      let arrowLeftValue = arrowLeft;
+      if (this.position === 'left') {
+        arrowLeftValue = '10px';
+      } else if (this.position === 'right') {
+        arrowLeftValue = 'calc(100% - 10px)';
+      } else {
+        // center - calcular baseado na posição do wrapper
+        const centerOffset = wrapperRect.left + wrapperRect.width / 2 - left;
+        arrowLeftValue = `${centerOffset}px`;
+      }
+      
+      if (arrowPosition === 'top') {
+        this.arrowStyle = {
+          bottom: 'auto',
+          top: '100%',
+          left: arrowLeftValue,
+          transform: 'translateX(-50%)',
+          borderTop: '6px solid #333',
+          borderBottom: 'none',
+          borderLeft: '6px solid transparent',
+          borderRight: '6px solid transparent'
+        };
+      } else {
+        this.arrowStyle = {
+          bottom: '100%',
+          top: 'auto',
+          left: arrowLeftValue,
+          transform: 'translateX(-50%)',
+          borderBottom: '6px solid #333',
+          borderTop: 'none',
+          borderLeft: '6px solid transparent',
+          borderRight: '6px solid transparent'
+        };
+      }
+    }
+  },
+  mounted() {
+    window.addEventListener('scroll', this.calculatePosition, true);
+    window.addEventListener('resize', this.calculatePosition);
+  },
+  beforeUnmount() {
+    window.removeEventListener('scroll', this.calculatePosition, true);
+    window.removeEventListener('resize', this.calculatePosition);
   }
 };
 </script>
@@ -41,6 +151,7 @@ export default {
   position: relative;
   cursor: pointer;
   margin-left: 4px;
+  z-index: 1;
 }
 
 .info-icon {
@@ -64,7 +175,7 @@ export default {
 
 .tooltip-box {
   display: block;
-  position: absolute;
+  position: fixed;
   /* Posição vertical padrão: ABAIXO */
   top: calc(100% + 10px); 
   left: 50%;
@@ -74,30 +185,27 @@ export default {
   padding: 12px 16px;
   border-radius: 6px;
   font-size: 14px;
-  z-index: 9999;
+  z-index: 99999;
   text-align: left;
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8);
   line-height: 1.5;
   width: max-content;
   max-width: 380px;
+  pointer-events: none;
+  white-space: normal;
+  word-wrap: break-word;
 }
-/* Ajuste de Posição */
+/* Ajuste de Posição - agora controlado via JavaScript */
 .tooltip-box.tooltip-center {
-  left: 50%;
-  transform: translateX(-50%);
-  z-index: 9999;
+  z-index: 99999;
 }
 
 .tooltip-box.tooltip-right {
-  left: initial;
-  right: 0;
-  transform: translateX(0);
-  z-index: 9999;
+  z-index: 99999;
 }
 
 .tooltip-box.tooltip-left {
-  left: 0;
-  transform: translateX(0);
+  z-index: 99999;
 }
 .tooltip-arrow {
   position: absolute;
