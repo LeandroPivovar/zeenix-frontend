@@ -311,7 +311,7 @@
   .header h1 {
     font-size: 24px;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 4px;
   }
   
   .header p {
@@ -427,16 +427,18 @@
 
   @media (max-width: 768px) {
     .box {
-      padding: 80px 20px 10px 20px;
+      padding: 80px 20px 110px 20px;
       margin: 0;
     }
 
     .header {
-      margin-bottom: 20px;
+      margin-bottom: 20px !important;
+      padding: 0 !important;
     }
 
     .header h1 {
       font-size: 20px;
+      margin-bottom: 4px;
     }
 
     .header p {
