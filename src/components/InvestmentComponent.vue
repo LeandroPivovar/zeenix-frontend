@@ -12,17 +12,17 @@
                     <div id="market-strategy-card" class="config-card premium-card">
                         <h3 class="card-title">
                             Mercado & Estratégia
-                            <TooltipsCopyTraders position="left"> 
+                            <ZenixTooltip :offset="20"> 
                                 <h4>🎯 Mercado & Estratégia</h4>
-                            </TooltipsCopyTraders>
+                            </ZenixTooltip>
                         </h3>
                         <div class="card-content">
                             <div class="form-group">
                                 <label class="form-label">
                                     Selecione o mercado
-                                    <TooltipsCopyTraders position="left"> 
+                                    <ZenixTooltip :offset="20"> 
                                         <p>Escolha o ativo que deseja operar</p>
-                                    </TooltipsCopyTraders>
+                                    </ZenixTooltip>
                                 </label>
                                 <select id="marketSelect" class="form-select" v-model="selectedMarket">
                                     <option value="vol10">Volatility 10 Index</option>
@@ -47,9 +47,9 @@
                             <div class="form-group">
                                 <label class="form-label">
                                     Estratégia
-                                    <TooltipsCopyTraders position="left"> 
+                                    <ZenixTooltip :offset="20"> 
                                         <p>Modelo de análise usado pela IA</p>
-                                    </TooltipsCopyTraders>
+                                    </ZenixTooltip>
                                 </label>
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
                                     <option value="orion">IA Orion</option>
@@ -324,14 +324,14 @@
 <script>
 import AppSidebar from '../components/Sidebar.vue';
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
-import TooltipsCopyTraders from '../components/TooltipsCopyTraders.vue';
+import ZenixTooltip from '../components/ZenixTooltip.vue';
 
 export default {
     name: 'InvestmentIAView',
     components: {
         AppSidebar,
         InvestmentActive,
-        TooltipsCopyTraders,
+        ZenixTooltip,
 
     },
     data() {

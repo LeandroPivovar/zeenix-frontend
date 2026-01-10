@@ -116,9 +116,9 @@
                             <div class="form-group">
                                 <label class="form-label">
                                     Estratégia
-                                    <TooltipsCopyTraders position="left"> 
+                                    <ZenixTooltip :offset="20"> 
                                         <p>Modelo de análise usado pela IA</p>
-                                    </TooltipsCopyTraders>
+                                    </ZenixTooltip>
                                 </label>
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
                                     <option value="orion">IA Orion</option>
@@ -134,9 +134,9 @@
                             <div class="form-group">
                                 <label class="form-label">
                                     Modo de Negociação
-                                    <TooltipsCopyTraders position="left"> 
+                                    <ZenixTooltip :offset="20"> 
                                         <p>Define a frequência e a precisão das operações realizadas pela IA.</p>
-                                    </TooltipsCopyTraders>
+                                    </ZenixTooltip>
                                 </label>
                                 <div class="mode-buttons">
                                     <button 
@@ -168,9 +168,9 @@
                             <div class="form-group risk-management-section">
                                 <label class="form-label">
                                     Gerenciamento de Risco
-                                    <TooltipsCopyTraders position="left"> 
+                                    <ZenixTooltip :offset="20"> 
                                         <p>Configura a estratégia de recuperação e o nível de exposição do capital.</p>
-                                    </TooltipsCopyTraders>
+                                    </ZenixTooltip>
                                 </label>
                                 <div class="risk-buttons">
                                     <button 
@@ -213,9 +213,9 @@
                             <div class="form-group">
                                 <label class="form-label">
                                     Valor de Entrada
-                                    <TooltipsCopyTraders position="left"> 
+                                    <ZenixTooltip :offset="20"> 
                                         <p>Defina o valor da sua primeira operação. Todas as estratégias de recuperação e alavancagem (Soros) serão calculadas a partir deste valor base.</p>
-                                    </TooltipsCopyTraders>
+                                    </ZenixTooltip>
                                 </label>
                                 <div class="input-wrapper">
                                     <span class="input-prefix">$</span>
@@ -233,9 +233,9 @@
                             <div class="form-group">
                                 <label class="form-label">
                                     Alvo de Lucro
-                                    <TooltipsCopyTraders position="left"> 
+                                    <ZenixTooltip :offset="20"> 
                                         <p>Sua meta financeira para a sessão. O sistema encerrará as operações automaticamente assim que este valor for atingido ou superado.</p>
-                                    </TooltipsCopyTraders>
+                                    </ZenixTooltip>
                                 </label>
                                 <div class="input-wrapper">
                                     <span class="input-prefix">$</span>
@@ -254,9 +254,9 @@
                                 <div class="form-group flex-1">
                                     <label class="form-label">
                                         Limite de Perda
-                                        <TooltipsCopyTraders position="left"> 
+                                        <ZenixTooltip :offset="20"> 
                                             <p>O valor máximo que você aceita arriscar na sessão. Nosso sistema possui Stop de Precisão: ele ajusta automaticamente o valor da última entrada para garantir que você nunca perca mais do que definiu aqui.</p>
-                                        </TooltipsCopyTraders>
+                                        </ZenixTooltip>
                                     </label>
                                     <div class="input-wrapper">
                                         <span class="input-prefix">$</span>
@@ -274,9 +274,9 @@
                                 <div class="form-group flex-1">
                                     <label class="form-label">
                                         Stoploss Blindado
-                                        <TooltipsCopyTraders position="center"> 
+                                        <ZenixTooltip :offset="20"> 
                                             <p>Ative para proteção dinâmica. Quando você atinge 40% da meta, o sistema cria um 'piso de segurança' móvel. Se o mercado virar, o sistema para com lucro garantido (50% do pico), impedindo que você devolva seus ganhos.</p>
-                                        </TooltipsCopyTraders>
+                                        </ZenixTooltip>
                                     </label>
                                     <div class="stoploss-blindado-wrapper">
                                         <div class="stoploss-blindado-label">
@@ -355,7 +355,7 @@
 
 <script>
 import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
-import TooltipsCopyTraders from '../TooltipsCopyTraders.vue';
+import ZenixTooltip from '../ZenixTooltip.vue';
 import DesktopBottomNav from '../DesktopBottomNav.vue';
 import accountBalanceMixin from '../../mixins/accountBalanceMixin';
 import InsufficientBalanceModal from '../InsufficientBalanceModal.vue';
@@ -365,7 +365,7 @@ export default {
     mixins: [accountBalanceMixin],
     components: {
         InvestmentActive,
-        TooltipsCopyTraders,
+        ZenixTooltip,
         DesktopBottomNav,
         InsufficientBalanceModal
     },

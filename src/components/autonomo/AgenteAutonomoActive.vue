@@ -62,14 +62,9 @@
 					</div>
 				</div>
 				<!-- Novo botão de pause mobile -->
-				<div class="data-item mobile-only order-4-mob">
+				<div class="data-item mobile-only order-4-mob no-padding">
 					<button @click="pausarAgenteEIrParaTopo" class="pause-btn-mobile">
 						<span class="pause-icon">II</span> PAUSAR
-					</button>
-				</div>
-				<div class="data-item desktop-only">
-					<button @click="pausarAgenteEIrParaTopo" class="pause-agent-data-btn">
-						<span class="pause-icon">II</span> PAUSAR AGENTE
 					</button>
 				</div>
 			</div>
@@ -2066,7 +2061,7 @@
 
 	.progress-bar {
 		width: 100%;
-		height: 16px !important;
+		height: 12px !important;
 		background: #1a1a1a;
 		border-radius: 8px;
 		overflow: hidden;
@@ -2085,11 +2080,12 @@
 		top: 0;
 	}
 
-	.progress-percentage-text {
+	.progress-percentage-text,
+	.progress-percentage {
 		position: absolute;
 		font-size: 10px;
 		font-weight: 600;
-		color: #a09e9e;
+		color: #FFFFFF;
 		z-index: 10;
 		text-align: center;
 		width: 100%;
@@ -2749,7 +2745,7 @@
 	}
 	@media (max-width: 768px) {
 	.layout-content-agent-autonomo {
-		padding: 10px;
+		padding: 10px 0;
 	}
 
 	.agent-top {
@@ -3060,6 +3056,10 @@
 		padding: 10px;
 		gap: 0;
 		border-radius: 8px;
+	}
+
+	.data-item.no-padding {
+		padding: 0 !important;
 	}
 
 	.data-label{

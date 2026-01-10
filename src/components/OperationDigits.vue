@@ -83,7 +83,7 @@
                 <div class="trading-panel-content space-y-6 px-1">
                     <!-- Mercado -->
                     <div class="space-y-2">
-                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Mercado</label>
+                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Mercado</label>
                         <button 
                             @click="openMarketModal"
 
@@ -96,7 +96,7 @@
                     
                     <!-- Tipo de Negociação -->
                     <div class="space-y-2">
-                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Tipo de Negociação</label>
+                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Tipo de Negociação</label>
                         <button 
                             @click="openTradeTypeModal"
                             class="w-full bg-[#080808] border border-white/10 hover:border-zenix-green/50 rounded-xl px-5 py-4 text-sm text-white flex items-center justify-between transition-all font-medium group"
@@ -108,7 +108,7 @@
 
                     <!-- Previsão (Dígito) -->
                     <div v-if="needsDigitBarrier">
-                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Previsão (Dígito)</label>
+                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Previsão (Dígito)</label>
                         <select v-model="digitBarrier" @change="subscribeToProposal" class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-medium appearance-none cursor-pointer">
                             <option v-for="d in 10" :key="d-1" :value="(d-1).toString()">{{ d-1 }}</option>
                         </select>
@@ -116,7 +116,7 @@
                     
                     <!-- Duração -->
                     <div>
-                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Duração (Ticks)</label>
+                        <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Duração (Ticks)</label>
                         <input 
                             type="number" 
                             v-model.number="duration"
@@ -173,53 +173,41 @@
                         </div>
                     </div>
                     
-                    <!-- Valor de Entrada -->
-                    <div>
-                        <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Valor de Entrada</label>
-                        <input 
-                            type="number" 
-                            step="0.01"
-                            v-model.number="orderValue"
-                            class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
-                            @input="subscribeToProposal"
-                        />
-                    </div>
-
-                    <!-- Preço de Compra e P&L -->
-                    <div class="space-y-3">
-                        <div v-if="currentProposalPrice" class="bg-[#080808] border border-white/5 rounded-xl p-4">
-                            <div class="text-xs font-bold text-white/40 mb-1 uppercase tracking-wider">Preço de Compra</div>
-                            <div class="text-lg font-black text-white">{{ displayCurrency }} {{ currentProposalPrice.toFixed(2) }}</div>
+                    <!-- Seção de Entrada e Ação -->
+                    <div class="space-y-8">
+                        <!-- Valor de Entrada -->
+                        <div>
+                            <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Valor de Entrada</label>
+                            <input 
+                                type="number" 
+                                step="0.01"
+                                v-model.number="orderValue"
+                                class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
+                                @input="subscribeToProposal"
+                            />
                         </div>
 
-                        <div v-if="realTimeProfit !== null && activeContract" class="bg-[#080808] border border-white/5 rounded-xl p-4">
-                            <div class="text-xs font-bold text-white/40 mb-1 uppercase tracking-wider">P&L em Tempo Real</div>
-                            <div class="text-lg font-black" :class="realTimeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
-                                {{ displayCurrency }} {{ realTimeProfit >= 0 ? '+' : '' }}{{ realTimeProfit.toFixed(2) }}
-                            </div>
+                        <!-- Botões de Ação Dinâmicos -->
+                        <div class="grid grid-cols-1 gap-2">
+                            <button 
+                                v-for="dir in availableDirections"
+                                :key="dir.value"
+                                @click="setDirectionAndBuy(dir.value)" 
+                                :disabled="isTrading || activeContract || (digitType === dir.value && !currentProposalId) || (digitType !== dir.value && isLoadingProposal)"
+                                :class="[
+                                    dir.value.includes('DIFF') || dir.value.includes('PUT') || dir.value.includes('ODD') || dir.value.includes('UNDER') 
+                                        ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20 text-white' 
+                                        : 'bg-zenix-green hover:bg-zenix-green/90 shadow-zenix-green/20 text-black',
+                                    { 'opacity-30 cursor-not-allowed': isTrading || activeContract || (digitType !== dir.value && isLoadingProposal) }
+                                ]"
+                                class="flex-1 font-black py-4 rounded-xl transition-all duration-300 shadow-lg uppercase tracking-widest text-sm"
+                            >
+                                {{ dir.label }}
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Botões de Ação Dinâmicos -->
-                    <div class="grid grid-cols-1 gap-4 pt-2">
-                        <button 
-                            v-for="dir in availableDirections"
-                            :key="dir.value"
-                            @click="setDirectionAndBuy(dir.value)" 
-                            :disabled="isTrading || activeContract || (digitType === dir.value && !currentProposalId) || (digitType !== dir.value && isLoadingProposal)"
-                            :class="[
-                                dir.value.includes('DIFF') || dir.value.includes('PUT') || dir.value.includes('ODD') || dir.value.includes('UNDER') 
-                                    ? 'bg-red-500 hover:bg-red-600 shadow-red-500/20 text-white' 
-                                    : 'bg-zenix-green hover:bg-zenix-green/90 shadow-zenix-green/20 text-black',
-                                { 'opacity-30 cursor-not-allowed': isTrading || activeContract || (digitType !== dir.value && isLoadingProposal) }
-                            ]"
-                            class="flex-1 font-black py-4 rounded-xl transition-all duration-300 shadow-lg uppercase tracking-widest text-sm"
-                        >
-                            {{ dir.label }}
-                        </button>
-                    </div>
-
-                    <div v-if="tradeMessage || tradeError" class="mt-4">
+                    <div v-if="tradeMessage || tradeError" class="mt-2">
                         <p v-if="tradeMessage" class="text-xs font-bold text-zenix-green text-center uppercase tracking-wider">{{ tradeMessage }}</p>
                         <p v-if="tradeError" class="text-xs font-bold text-red-500 text-center uppercase tracking-wider">{{ tradeError }}</p>
                     </div>
@@ -2218,7 +2206,7 @@ export default {
         overflow-x: hidden;
         box-sizing: border-box;
         padding: 0 !important;
-        margin: 0 !important;
+        margin: 0 0 6.5rem !important;
         display: flex;
         flex-direction: column;
     }
@@ -2231,6 +2219,7 @@ export default {
     .main-content-grid {
         order: 2;
     }
+
 
     .signal-generator-wrapper-digits {
         order: 3;

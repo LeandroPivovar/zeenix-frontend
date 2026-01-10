@@ -12,7 +12,7 @@
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Saldo Total</span>
                                     <button class="eye-btn" @click="balanceVisible = !balanceVisible">
-                                        <i :class="balanceVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
+                                        <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[12px]"></i>
                                     </button>
                                 </div>
                                 <div class="text-xl font-bold text-zenix-text text-left">
@@ -33,7 +33,7 @@
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide mobile-label-lucro">Lucro do Dia</span>
                                     <button class="eye-btn" @click="profitVisible = !profitVisible">
-                                        <i :class="profitVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
+                                        <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[12px]"></i>
                                     </button>
                                 </div>
                                 <div class="flex items-baseline space-x-1.5 text-left">
@@ -58,7 +58,7 @@
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
                                 <button class="eye-btn" @click="tradesVisible = !tradesVisible">
-                                    <i :class="tradesVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
+                                    <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[12px]"></i>
                                 </button>
                             </div>
                             <div class="flex items-center justify-between h-full w-full px-1">
@@ -180,10 +180,10 @@
                         <div class="grid grid-cols-3 gap-3 mb-4">
                             <!-- Saldo Total -->
                             <div class="flex flex-col justify-between">
-                                <div class="flex items-center justify-between mb-1">
+                                <div class="flex items-center gap-1.5 mb-1">
                                     <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide">Saldo Total</span>
-                                    <button class="eye-btn" @click="balanceVisible = !balanceVisible">
-                                        <i :class="balanceVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[9px]"></i>
+                                    <button class="eye-btn-mobile" @click="balanceVisible = !balanceVisible">
+                                        <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[14px]"></i>
                                     </button>
                                 </div>
                                 <div class="text-[12px] font-bold text-zenix-text text-left">
@@ -196,10 +196,10 @@
 
                             <!-- Resultado Geral -->
                             <div class="flex flex-col justify-between">
-                                <div class="flex items-center justify-between mb-1">
-                                    <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide mobile-label-lucro">Resultado Geral</span>
-                                    <button class="eye-btn" @click="profitVisible = !profitVisible">
-                                        <i :class="profitVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[9px]"></i>
+                                <div class="flex items-center gap-1.5 mb-1">
+                                    <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide mobile-label-lucro">Lucro do Dia</span>
+                                    <button class="eye-btn-mobile" @click="profitVisible = !profitVisible">
+                                        <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[14px]"></i>
                                     </button>
                                 </div>
                                 <div class="flex items-baseline space-x-1.5 text-left">
@@ -218,10 +218,10 @@
 
                             <!-- Trades Hoje -->
                             <div class="flex flex-col justify-between">
-                                <div class="flex items-center justify-between mb-1">
+                                <div class="flex items-center gap-1.5 mb-1">
                                     <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
-                                    <button class="eye-btn" @click="tradesVisible = !tradesVisible">
-                                        <i :class="tradesVisible ? 'far fa-eye' : 'far fa-eye-slash'" class="text-zenix-green/60 text-[10px]"></i>
+                                    <button class="eye-btn-mobile" @click="tradesVisible = !tradesVisible">
+                                        <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[14px]"></i>
                                     </button>
                                 </div>
                                 <div class="flex items-center justify-between h-full w-full px-1">
@@ -304,11 +304,11 @@
                             <!-- Status da IA e Botão Pause (Lado a Lado) -->
                             <div class="grid grid-cols-2 gap-3 items-stretch">
                                 <!-- Status da IA Card (Esquerda) -->
-                                <div class="bg-[#0B0B0B] border border-[#1C1C1C] rounded-xl p-3 flex flex-col justify-center items-start">
-                                    <span class="text-[0.65rem] text-zenix-secondary uppercase tracking-wider mb-1">Status da IA</span>
+                                <div class="bg-[rgb(223,223,223,0.9)] border border-gray-200 rounded-xl p-3 flex flex-col justify-center items-start shadow-sm">
+                                    <span class="text-[0.65rem] text-[#373737] font-bold uppercase tracking-wider mb-1">Status da IA</span>
                                     <div class="flex items-center gap-1.5">
                                         <div class="w-1.5 h-1.5 rounded-full bg-zenix-green ai-pulse"></div>
-                                        <span class="text-sm font-bold text-white">Ativa</span>
+                                        <span class="text-sm font-bold text-black">Ativa</span>
                                     </div>
                                 </div>
 
@@ -425,9 +425,6 @@
                                 <span class="mobile-config-badge-text">{{ realRiskLabel }}</span>
                             </div>
                         </div>
-                    </div>
-                    <div class="mobile-config-item">
-
                     </div>
 
                 </div>
@@ -6747,12 +6744,38 @@ button i,
 .eye-btn {
     cursor: pointer;
     transition: all 0.2s ease;
-    opacity: 0.6;
+    opacity: 0.8 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2px;
 }
 
 .eye-btn:hover {
-    opacity: 1;
-    color: #22C55E;
+    opacity: 1 !important;
+    color: #7A7A7A !important;
+    transform: scale(1.1);
+}
+
+.eye-btn-mobile {
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    min-width: 20px;
+    min-height: 20px;
+}
+
+.eye-btn-mobile:active {
+    transform: scale(0.9);
+}
+
+.eye-btn-mobile i {
+    text-shadow: 0 0 8px rgba(122, 122, 122, 0.4);
 }
 
 .pause-btn {
@@ -7072,7 +7095,7 @@ button i,
         display: flex;
         gap: 0;
         border-bottom: 1px solid #1C1C1C;
-        margin-bottom: 1.5rem;
+        margin-bottom: 0;
         overflow-x: auto;
     }
     
@@ -7306,7 +7329,7 @@ button i,
         background: #22C55E !important;
         border: none !important;
         border-radius: 8px;
-        margin-top: 0.5rem;
+        margin-top: 0!important;
         text-align: left !important;
     }
     
@@ -7622,7 +7645,7 @@ button i,
     /* Mobile: Mostrar tabs dentro do card */
     .mobile-tabs-container.mobile-tabs-inside {
         display: flex !important;
-        margin-bottom: 1.5rem;
+        margin-bottom: 0.5rem;
         background: transparent;
         border: none;
         border-radius: 0;
@@ -7689,8 +7712,8 @@ button i,
     /* Mobile: Tabs dentro do conteúdo de configuração */
     .mobile-config-content .mobile-tabs-container.mobile-tabs-inside {
         display: flex !important;
-        margin-bottom: 1.5rem;
-        margin-top: 1rem;
+        margin-bottom: 0.5rem;
+        margin-top: 0;
         background: transparent;
         border: none;
         border-radius: 0;

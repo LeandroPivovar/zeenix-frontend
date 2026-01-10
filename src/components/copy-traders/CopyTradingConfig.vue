@@ -3,9 +3,9 @@
         <div class="card card-left">
             <h3 class="card-title">
                 Selecionar Trader
-                <TooltipsCopyTraders position="right">
+                <ZenixTooltip :offset="20">
                     <p>Mostra o Trader Mestre atualmente selecionado. As operações dele serão replicadas automaticamente após a ativação do Copy.</p>
-                </TooltipsCopyTraders>
+                </ZenixTooltip>
             </h3>
             
             <div class="select-wrapper">
@@ -66,10 +66,10 @@
             <div class="form-group">
                 <label class="form-label">
                     Tipo de Replicação
-                    <TooltipsCopyTraders position="center">
+                    <ZenixTooltip :offset="20">
                         <p><strong>Proporção (%):</strong> Replica a mesma porcentagem de risco usada pelo Trader Mestre. Exemplo: Se o mestre entrar com 2% do saldo dele, você também entra com 2% do seu saldo.</p>
                         <p><strong>Valor Fixo ($):</strong> Replica exatamente o mesmo valor financeiro do Trader Mestre. Exemplo: Se o mestre entrar com $5, sua conta também entra com $5.</p>
-                    </TooltipsCopyTraders>
+                    </ZenixTooltip>
                 </label>
                 <div class="allocation-buttons-group">
                     <button 
@@ -90,9 +90,9 @@
             <div class="form-group">
                 <label class="form-label">
                     Alavancagem
-                    <TooltipsCopyTraders position="center">
+                    <ZenixTooltip :offset="20">
                         <p>A alavancagem multiplica proporcionalmente o valor das suas operações em relação ao Trader Mestre. Use com cautela, pois aumenta tanto os ganhos quanto as perdas.</p>
-                    </TooltipsCopyTraders>
+                    </ZenixTooltip>
                 </label>
                 <select v-model="leverage">
                     <option>1x</option>
@@ -106,9 +106,9 @@
                 <div class="form-group">
                     <label class="form-label">
                         Limite de perda
-                        <TooltipsCopyTraders position="center">
+                        <ZenixTooltip :offset="20">
                             <p>O valor máximo que você aceita arriscar na sessão. Nosso sistema possui Stop de Precisão: ele ajusta automaticamente o valor da última entrada para garantir que você nunca perca mais do que definiu aqui.</p>
-                        </TooltipsCopyTraders>
+                        </ZenixTooltip>
                     </label>
                     <input type="number" v-model.number="stopLoss" step="0.01" min="0" placeholder="250">
                 </div>
@@ -116,9 +116,9 @@
                 <div class="form-group">
                     <label class="form-label">
                         Alvo de lucro
-                        <TooltipsCopyTraders>
+                        <ZenixTooltip :offset="20">
                             <p>Sua meta financeira para a sessão. O sistema encerrará as operações automaticamente assim que este valor for atingido ou superado.</p>
-                        </TooltipsCopyTraders>
+                        </ZenixTooltip>
                     </label>
                     <input type="number" v-model.number="takeProfit" step="0.01" min="0" placeholder="500">
                 </div>
@@ -128,9 +128,9 @@
                 <div class="toggle-info">
                     <h4>
                         Stop Loss Blindado
-                        <TooltipsCopyTraders position="center">
+                        <ZenixTooltip :offset="20">
                             <p>Ative para proteção dinâmica. Quando você atinge 40% da meta, o sistema cria um 'piso de segurança' móvel. Se o mercado virar, o sistema para com lucro garantido (50% do pico), impedindo que você devolva seus ganhos.</p>
-                        </TooltipsCopyTraders>
+                        </ZenixTooltip>
                     </h4>
                     <p>Protege contra operações consecutivas fora do padrão</p>
                 </div>
@@ -147,9 +147,9 @@
             <div class="summary-item">
                 <span class="label">
                     Trader
-                    <TooltipsCopyTraders position="left">
+                    <ZenixTooltip :offset="20">
                         <p>Mostra o Trader Mestre atualmente selecionado.</p>
-                    </TooltipsCopyTraders>
+                    </ZenixTooltip>
                 </span>
                 <span class="value">{{ selectedTraderName || 'Nenhum selecionado' }}</span>
             </div>
@@ -157,9 +157,9 @@
             <div class="summary-item">
                 <span class="label">
                     Alocação
-                    <TooltipsCopyTraders position="left">
+                    <ZenixTooltip :offset="20">
                         <p>Indica se você está copiando em Porcentagem (%) ou Valor Fixo ($). Isso afeta diretamente o valor das entradas copiadas na sua conta.</p>
-                    </TooltipsCopyTraders>
+                    </ZenixTooltip>
                 </span>
                 <span class="value">{{ allocationType === 'percentage' ? 'Proporção %' : 'Valor Fixo $' }}</span>
             </div>
@@ -167,9 +167,9 @@
             <div class="summary-item">
                 <span class="label">
                     Base de Replicação
-                    <TooltipsCopyTraders position="left">
+                    <ZenixTooltip :offset="20">
                         <p>Como o sistema irá replicar as operações do trader.</p>
-                    </TooltipsCopyTraders>
+                    </ZenixTooltip>
                 </span>
                 <span class="value">
                     {{ allocationType === 'fixed' ? 'Mesmo Valor do Trader' : 'Mesma % do Trader' }}
@@ -179,9 +179,9 @@
             <div class="summary-item">
                 <span class="label">
                     Alavancagem
-                    <TooltipsCopyTraders position="left">
+                    <ZenixTooltip :offset="20">
                         <p>A alavancagem multiplica proporcionalmente o valor das suas operações em relação ao Trader Mestre.</p>
-                    </TooltipsCopyTraders>
+                    </ZenixTooltip>
                 </span>
                 <span class="value">{{ leverage }}</span>
             </div>
@@ -190,9 +190,9 @@
                 <div class="summary-item">
                     <span class="label">
                         Limite de perda
-                        <TooltipsCopyTraders position="left">
+                        <ZenixTooltip :offset="20">
                             <p>O valor máximo que você aceita arriscar na sessão. Nosso sistema possui Stop de Precisão: ele ajusta automaticamente o valor da última entrada para garantir que você nunca perca mais do que definiu aqui.</p>
-                        </TooltipsCopyTraders>
+                        </ZenixTooltip>
                     </span>
                     <span class="value red">{{ stopLoss }}</span>
                 </div>
@@ -201,9 +201,9 @@
             <div class="summary-item">
                 <span class="label">
                     Alvo de lucro
-                    <TooltipsCopyTraders position="left">
+                    <ZenixTooltip :offset="20">
                         <p>Sua meta financeira para a sessão. O sistema encerrará as operações automaticamente assim que este valor for atingido ou superado.</p>
-                    </TooltipsCopyTraders>
+                    </ZenixTooltip>
                 </span>
                 <span class="value green">{{ takeProfit }}</span>
             </div>
@@ -211,9 +211,9 @@
             <div class="summary-item">
                 <span class="label">
                     Stop Loss Blindado
-                    <TooltipsCopyTraders position="left">
+                    <ZenixTooltip :offset="20">
                         <p>Ative para proteção dinâmica. Quando você atinge 40% da meta, o sistema cria um 'piso de segurança' móvel. Se o mercado virar, o sistema para com lucro garantido (50% do pico), impedindo que você devolva seus ganhos.</p>
-                    </TooltipsCopyTraders>
+                    </ZenixTooltip>
                 </span>
                 <span :class="['value', { green: armoredStopLossActive, red: !armoredStopLossActive }]">
                     {{ armoredStopLossActive ? 'Ativa' : 'Inativa' }}
@@ -225,9 +225,9 @@
                 <div class="status-text">
                     <div class="status-title">
 						<strong>Aguardando Ativação</strong> 
-						<TooltipsCopyTraders position="right">
+						<ZenixTooltip :offset="20">
 							<p>O Copy será iniciado após você confirmar</p>
-						</TooltipsCopyTraders>
+						</ZenixTooltip>
 					</div>
                     <small>O Copy será iniciado após você confirmar</small>
                 </div>
@@ -250,9 +250,9 @@
                 <div class="status-text">
                     <div class="status-title">
 						<strong>Aguardando Ativação</strong> 
-						<TooltipsCopyTraders position="right">
+						<ZenixTooltip :offset="20">
 							<p>O Copy será iniciado após você confirmar</p>
-						</TooltipsCopyTraders>
+						</ZenixTooltip>
 					</div>
                     <small>O Copy será iniciado após você confirmar</small>
                 </div>
@@ -266,12 +266,12 @@
 </template>
 
 <script>
-import TooltipsCopyTraders from '../TooltipsCopyTraders.vue';
+import ZenixTooltip from '../ZenixTooltip.vue';
 
 export default {
     name: 'CopyTradingConfig',
     components: {
-        TooltipsCopyTraders,
+        ZenixTooltip,
     },
     data() {
         return {
@@ -943,6 +943,7 @@ input:checked + .slider:before {
         grid-template-columns: 1fr 1fr 1fr;
         gap: 20px;
     }
+
     
     /* Cor dos cards no desktop */
     .card {
@@ -1000,18 +1001,24 @@ input:checked + .slider:before {
         display: flex;
         flex-direction: column;
         gap: 16px;
-        padding-bottom: 90px;
+    }
+
+    .box{
+        margin-bottom: 6rem;
     }
     
     .card {
         width: 100%;
-        padding: 20px 20px 10px 20px;
+        padding: 20px;
         margin: 0;
         background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
         border: 1px solid #1C1C1C;
         border-radius: 8px;
     }
     
+    .card-title{
+        padding-bottom: 0.2rem;
+    }   
     /* Ocultar status-badge e botão dentro do resumo no mobile */
     .card-right .status-badge-inside {
         display: none;
@@ -1051,7 +1058,7 @@ input:checked + .slider:before {
     
     .card-title {
         font-size: 15px;
-        margin-bottom: 16px;
+        margin-bottom: 5px!important;
     }
     
     .allocation-buttons-group {

@@ -6,9 +6,9 @@
             <div class="card div1">
                 <div class="card-header">
                     <span class="card-title">Resumo do Dia</span>
-                    <TooltipsCopyTraders position="right">
+                    <ZenixTooltip :offset="20">
                         <p>Consolidação das operações do dia.</p>
-                    </TooltipsCopyTraders>
+                    </ZenixTooltip>
                 </div>
                 <div class="summary-row">
                     <div class="profit-box">
@@ -39,9 +39,9 @@
             <div class="card status-card div2">
                 <div class="card-header">
                     <span class="card-title">Status Atual do Copy</span>
-                    <TooltipsCopyTraders position="right">
+                    <ZenixTooltip :offset="20">
                         <p>Indica o estado atual do Copy. Atualiza em tempo real conforme o trader mestre opera.</p>
-                    </TooltipsCopyTraders>
+                    </ZenixTooltip>
                 </div>
                 <div class="status-header">
                     <div class="status-row">
@@ -105,9 +105,9 @@
             <div class="card div4">
                 <div class="card-header">
                     <span class="card-title">Operações Replicadas</span>
-                    <TooltipsCopyTraders position="right">
+                    <ZenixTooltip :offset="20">
                         <p>Todas as operações replicadas automaticamente.</p>
-                    </TooltipsCopyTraders>
+                    </ZenixTooltip>
                 </div>
                 <div class="operations-list">
                     <!-- Cards para mobile -->
@@ -163,9 +163,9 @@
             <div class="card div3">
                 <div class="card-header">
                     <span class="card-title">Exposição &amp; Risco</span>
-                    <TooltipsCopyTraders position="right">
-                        <p class="tooltip-box bottom-right">Seu nível de risco no Copy Trading.</p>
-                    </TooltipsCopyTraders>
+                    <ZenixTooltip :offset="20">
+                        <p>Seu nível de risco no Copy Trading.</p>
+                    </ZenixTooltip>
                 </div>
                 <div class="risk-row">
                     <span class="risk-label">Exposição Atual</span>
@@ -198,9 +198,9 @@
                 <div class="chart-header">
                     <div class="card-header" style="margin-bottom:0">
                         <span class="card-title">Evolução da Performance</span>
-                        <TooltipsCopyTraders position="left">
-                            <p class="tooltip-box bottom-left">Evolução da sua performance com base nas operações replicadas.</p>
-                        </TooltipsCopyTraders>
+                        <ZenixTooltip :offset="20">
+                            <p>Evolução da sua performance com base nas operações replicadas.</p>
+                        </ZenixTooltip>
                     </div>
                     <div class="period-btns">
                         <button v-for="periodo in periodos" :key="periodo.label" :class="['period-btn', { active: periodoAtivo === periodo.label }]" @click="setPeriodo(periodo.label)">
@@ -341,12 +341,12 @@
 </template>
 
 <script>
-import TooltipsCopyTraders from '../TooltipsCopyTraders.vue'; 
+import ZenixTooltip from '../ZenixTooltip.vue';
 
 export default {
     name: 'CopyTradingMonitor',
     components: {
-        TooltipsCopyTraders,
+        ZenixTooltip,
     },
     props: {
         session: {
@@ -697,7 +697,15 @@ export default {
 } 
 
 
-.card { background: #0e0f0f; border: 1px solid #1a1a1a; border-radius: 12px; padding: 20px; width: 100%; box-sizing: border-box; overflow: hidden; }
+.card { 
+    background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important; 
+    border: 1px solid #1C1C1C !important; 
+    border-radius: 8px !important; 
+    padding: 20px; 
+    width: 100%; 
+    box-sizing: border-box; 
+    overflow: hidden; 
+}
 
 .box {
     background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
@@ -1290,7 +1298,7 @@ export default {
     }
     
     #copy-trading-monitor {
-        padding: 12px;
+        padding: 12px 0;
         overflow-x: hidden;
     }
     
@@ -1409,6 +1417,9 @@ export default {
         max-width: 100%;
         box-sizing: border-box;
         overflow: hidden;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 8px !important;
     }
     
     .card-header {
@@ -1906,8 +1917,8 @@ export default {
     /* Background do card de performance no mobile (igual configurações do copy) */
     .performance-card {
         background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
-        border: 1px solid #1a1a1a !important;
-        border-radius: 12px !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 8px !important;
         padding: 20px 15px 10px !important;
         margin: 0 !important;
         width: 100% !important;
@@ -1987,8 +1998,9 @@ export default {
     }
     
     .operation-card {
-        background: #0a0b0a;
-        border-radius: 8px;
+        background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
+        border: 1px solid #1C1C1C !important;
+        border-radius: 8px !important;
         padding: 16px;
         display: flex;
         flex-direction: column;

@@ -69,7 +69,8 @@
         </div>
         
         <!-- Signal Generator Card -->
-        <div class="bg-[#0D0D0D] border border-white/5 p-6 rounded-2xl signal-area-card">
+        <!-- Desktop Signal Generator Card - Hidden on Mobile -->
+        <div class="bg-[#0D0D0D] border border-white/5 p-6 rounded-2xl signal-area-card md:block hidden">
           <!-- Header -->
           <div class="signal-generator-header flex items-center justify-between mb-8">
             <div class="flex items-center gap-4">
@@ -165,7 +166,7 @@
         <div class="space-y-6 px-1">
           <!-- Mercado -->
           <div>
-            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Mercado</label>
+            <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Mercado</label>
             <button
               @click="openMarketModal"
               class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
@@ -177,7 +178,7 @@
           
           <!-- Tipo de Negociação -->
           <div>
-            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Tipo de Negociação</label>
+            <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Tipo de Negociação</label>
             <button
               @click="openTradeTypeModal"
               class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all text-left flex items-center justify-between"
@@ -191,7 +192,7 @@
           
           <!-- Duração -->
           <div>
-            <label class="block text-xs font-bold text-white mb-2 ml-1 uppercase tracking-wider opacity-80">Duração</label>
+            <label class="block text-xs font-bold text-white mb-1 ml-1 uppercase tracking-wider opacity-80">Duração</label>
             <div class="flex gap-4">
               <div class="relative flex-1">
                 <select 
@@ -208,6 +209,58 @@
                 v-model.number="duration"
                 class="w-24 bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white text-center focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
               />
+            </div>
+          </div>
+
+          <!-- Gerador de Sinais Inline (Mobile Only) -->
+          <div class="signal-generator-inline-mobile md:hidden block">
+            <div class="signal-generator-inline-header">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full border border-zenix-green bg-zenix-green/10 flex items-center justify-center">
+                  <i class="fas fa-bolt text-zenix-green text-sm"></i>
+                </div>
+                <div>
+                  <h4 class="text-sm font-bold text-white">Gerador de Sinais</h4>
+                  <p class="text-[10px] text-white/40 uppercase tracking-wider">Automático</p>
+                </div>
+              </div>
+              <button 
+                @click="toggleAnalysis"
+                :disabled="!symbol"
+                class="bg-zenix-green hover:bg-zenix-green/90 disabled:opacity-30 disabled:cursor-not-allowed text-black font-bold px-4 py-2 rounded-lg transition-all text-[10px] uppercase tracking-widest flex items-center gap-2"
+              >
+                <i :class="aiRecommendation ? 'fas fa-pencil-alt' : (isAnalyzing ? 'fas fa-stop' : 'fas fa-pencil-alt')"></i>
+                <span>{{ aiRecommendation ? 'Gerar' : (isAnalyzing ? 'Parar' : 'Gerar') }}</span>
+              </button>
+            </div>
+
+            <div class="signal-generator-inline-metrics">
+              <div class="signal-inline-metric">
+                <span class="signal-inline-label">Estado</span>
+                <span v-if="isAnalyzing" class="text-zenix-green animate-pulse text-xs font-bold">Analisando...</span>
+                <span v-else-if="aiRecommendation" class="text-zenix-green text-xs font-bold">Sinal Gerado</span>
+                <span v-else class="text-white/30 text-xs font-bold">Aguardando</span>
+              </div>
+              <div class="signal-inline-metric">
+                <span class="signal-inline-label">Resultado</span>
+                <div v-if="aiRecommendation" class="flex items-center gap-1">
+                  <i :class="aiRecommendation.action === 'CALL' ? 'fas fa-arrow-up text-zenix-green' : 'fas fa-arrow-down text-red-500'"></i>
+                  <span :class="aiRecommendation.action === 'CALL' ? 'text-zenix-green' : 'text-red-500'" class="text-xs font-bold">
+                    {{ aiRecommendation.action === 'CALL' ? 'CALL' : 'PUT' }}
+                  </span>
+                </div>
+                <span v-else class="text-white/30 text-xs font-bold">-</span>
+              </div>
+              <div class="signal-inline-metric">
+                <span class="signal-inline-label">Confiança</span>
+                <span v-if="aiRecommendation" class="text-zenix-green text-sm font-black">{{ aiRecommendation.confidence }}%</span>
+                <span v-else class="text-white/30 text-xs font-bold">-</span>
+              </div>
+              <div class="signal-inline-metric">
+                <span class="signal-inline-label">Tempo</span>
+                <span v-if="aiRecommendation && aiRecommendation.time" class="text-zenix-green text-sm font-black">{{ aiRecommendation.time }}</span>
+                <span v-else class="text-white/30 text-xs font-bold">-</span>
+              </div>
             </div>
           </div>
           
@@ -4299,6 +4352,43 @@ export default {
     flex-direction: row !important;
     align-items: center !important;
     justify-content: space-between !important;
+  }
+  /* Gerador de Sinais Inline (Mobile) */
+  .signal-generator-inline-mobile {
+    background: #080808;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 1rem;
+  }
+
+  .signal-generator-inline-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+  }
+
+  .signal-generator-inline-metrics {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.75rem;
+  }
+
+  .signal-inline-metric {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    padding: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .signal-inline-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
   }
 }
 </style>

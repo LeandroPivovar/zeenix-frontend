@@ -95,22 +95,6 @@
 
 					<!-- Divisor -->
 					<div class="mobile-divider"></div>
-					
-					<!-- Selecione o Mercado -->
-					<div class="mobile-section">
-						<p class="mobile-section-label">Selecione o Mercado</p>
-						<select v-model="selectedMarket" class="mobile-select">
-							<option value="volatility_10">Volatility 10 Index</option>
-							<option value="volatility_25">Volatility 25 Index</option>
-							<option value="volatility_50">Volatility 50 Index</option>
-							<option value="volatility_75">Volatility 75 Index</option>
-							<option value="volatility_100">Volatility 100 Index</option>
-						</select>
-						<p class="mobile-section-description">{{ getMarketDescription(selectedMarket) }}</p>
-					</div>
-
-					<!-- Divisor -->
-					<div class="mobile-divider"></div>
 
 					<!-- Gerenciamento de Risco -->
 					<div class="mobile-section">
