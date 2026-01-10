@@ -125,6 +125,53 @@
                             class="w-full bg-[#080808] border border-white/10 rounded-xl px-5 py-4 text-sm text-white focus:outline-none focus:border-zenix-green/50 transition-all font-bold"
                         />
                     </div>
+
+                    <!-- Gerador de Sinais Inline (Mobile Only) -->
+                    <div class="signal-generator-inline-mobile">
+                        <div class="signal-generator-inline-header">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full border border-zenix-green bg-zenix-green/10 flex items-center justify-center">
+                                    <i class="fas fa-bolt text-zenix-green text-sm"></i>
+                                </div>
+                                <div>
+                                    <h4 class="text-sm font-bold text-white">Gerador de Sinais</h4>
+                                    <p class="text-xs text-white/40">Análise inteligente</p>
+                                </div>
+                            </div>
+                            <button 
+                                @click="toggleAnalysis"
+                                :disabled="!symbol"
+                                class="bg-zenix-green hover:bg-zenix-green/90 disabled:opacity-30 disabled:cursor-not-allowed text-black font-bold px-4 py-2 rounded-lg transition-all text-xs flex items-center gap-2"
+                            >
+                                <i :class="aiRecommendation ? 'fas fa-sync-alt' : (isAnalyzing ? 'fas fa-stop' : 'fas fa-play')"></i>
+                                <span>{{ aiRecommendation ? 'Novo' : (isAnalyzing ? 'Parar' : 'Gerar') }}</span>
+                            </button>
+                        </div>
+
+                        <div class="signal-generator-inline-metrics">
+                            <div class="signal-inline-metric">
+                                <span class="signal-inline-label">Estado</span>
+                                <span v-if="isAnalyzing" class="text-zenix-green animate-pulse text-xs font-bold">Analisando...</span>
+                                <span v-else-if="aiRecommendation" class="text-zenix-green text-xs font-bold">Sinal Gerado</span>
+                                <span v-else class="text-white/30 text-xs font-bold">Aguardando</span>
+                            </div>
+                            <div class="signal-inline-metric">
+                                <span class="signal-inline-label">Estratégia</span>
+                                <span v-if="aiRecommendation" class="text-white text-xs font-bold">{{ aiRecommendation.action }}</span>
+                                <span v-else class="text-white/30 text-xs font-bold">-</span>
+                            </div>
+                            <div class="signal-inline-metric">
+                                <span class="signal-inline-label">Confiança</span>
+                                <span v-if="aiRecommendation" class="text-zenix-green text-sm font-black">{{ aiRecommendation.confidence }}%</span>
+                                <span v-else class="text-white/30 text-xs font-bold">-</span>
+                            </div>
+                            <div class="signal-inline-metric">
+                                <span class="signal-inline-label">Tempo</span>
+                                <span v-if="aiRecommendation && aiRecommendation.time" class="text-zenix-green text-sm font-black">{{ aiRecommendation.time }}</span>
+                                <span v-else class="text-white/30 text-xs font-bold">-</span>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Valor de Entrada -->
                     <div>
