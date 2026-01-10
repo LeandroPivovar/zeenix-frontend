@@ -1365,6 +1365,7 @@
 }
 
 @media (max-width: 768px) {
+
     /* Mobile: Mostra versão inline no trading panel */
     .signal-generator-inline-mobile {
         display: block !important;
@@ -1372,14 +1373,13 @@
         border: 1px solid rgba(255, 255, 255, 0.08);
         border-radius: 12px;
         padding: 1rem;
-        margin-top: 0.5rem;
     }
 
     .signal-generator-inline-header {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: 1rem;
+        margin-bottom: 0.75rem;
     }
 
     .signal-generator-inline-metrics {
@@ -1532,7 +1532,7 @@
     .histogram-bar[style*="height:0px"] {
         display: none !important;
     }
-    
+
     .histogram-bar:not([style*="height: 0px"]):not([style*="height:0px"]) {
         display: block !important;
     }
