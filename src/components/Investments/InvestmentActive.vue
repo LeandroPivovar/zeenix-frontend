@@ -1,6 +1,6 @@
 <template>
     <div class="investment-active-wrapper">
-        <main class="investment-active-main" style="padding: 1rem !important;">
+        <main class="investment-active-main">
             <!-- Desktop: Layout Original - Performance Summary Cards -->
             <section id="compact-performance-panel" class="mb-6 desktop-performance-panel">
                 <div id="iya1j" class="grid grid-cols-12 gap-3" style="width: 100%; box-sizing: border-box;">
@@ -11,7 +11,7 @@
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Saldo Total</span>
-                                    <button class="eye-btn" @click="balanceVisible = !balanceVisible">
+                                    <button class="eye-btn flex items-center" @click="balanceVisible = !balanceVisible">
                                         <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[12px]"></i>
                                     </button>
                                 </div>
@@ -32,7 +32,7 @@
                             <div class="relative z-10">
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide mobile-label-lucro">Lucro do Dia</span>
-                                    <button class="eye-btn" @click="profitVisible = !profitVisible">
+                                    <button class="eye-btn flex items-center" @click="profitVisible = !profitVisible">
                                         <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[12px]"></i>
                                     </button>
                                 </div>
@@ -57,7 +57,7 @@
                         <div id="i42e4g" class="bg-[#0B0B0B]/80 border-2 border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between" style="width: 100%; box-sizing: border-box;">
                             <div class="flex items-center justify-between mb-1">
                                 <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
-                                <button class="eye-btn" @click="tradesVisible = !tradesVisible">
+                                <button class="eye-btn flex items-center" @click="tradesVisible = !tradesVisible">
                                     <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[12px]"></i>
                                 </button>
                             </div>
@@ -183,7 +183,7 @@
                                 <div class="flex items-center gap-1.5 mb-1">
                                     <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide">Saldo Total</span>
                                     <button class="eye-btn-mobile" @click="balanceVisible = !balanceVisible">
-                                        <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[14px]"></i>
+                                        <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[10px]"></i>
                                     </button>
                                 </div>
                                 <div class="text-[12px] font-bold text-zenix-text text-left">
@@ -199,7 +199,7 @@
                                 <div class="flex items-center gap-1.5 mb-1">
                                     <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide mobile-label-lucro">Lucro do Dia</span>
                                     <button class="eye-btn-mobile" @click="profitVisible = !profitVisible">
-                                        <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[14px]"></i>
+                                        <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[10px]"></i>
                                     </button>
                                 </div>
                                 <div class="flex items-baseline space-x-1.5 text-left">
@@ -221,7 +221,7 @@
                                 <div class="flex items-center gap-1.5 mb-1">
                                     <span class="text-[8px] text-zenix-label font-medium uppercase tracking-wide">Trades Hoje</span>
                                     <button class="eye-btn-mobile" @click="tradesVisible = !tradesVisible">
-                                        <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[14px]"></i>
+                                        <i :class="tradesVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[10px]"></i>
                                     </button>
                                 </div>
                                 <div class="flex items-center justify-between h-full w-full px-1">
@@ -253,7 +253,7 @@
                                                 </span>
                                             </div>
                                             <!-- Mobile -->
-                                            <div class="flex md:hidden items-center justify-center h-full gap-1">
+                                            <div class="flex md:hidden items-center justify-start h-full gap-1">
                                                 <span class="font-bold text-zenix-green text-[14px]">
                                                     {{ tradesVisible ? (dailyStats.sessionWins || 0) : '•' }}
                                                 </span>
@@ -269,7 +269,7 @@
                                     <div class="h-6 w-px bg-[#1C1C1C]"></div>
 
                                     <!-- Win Rate -->
-                                    <div class="flex flex-col items-center justify-center h-full">
+                                    <div class="flex flex-col items-end justify-center h-full pr-1">
                                          <div v-if="!isLoadingStats" :class="[{ 'hidden-value': !tradesVisible }]">
                                             <span class="font-bold text-white text-[18px] md:text-[18px] hidden md:block">
                                                 {{ tradesVisible ? dailyStats.sessionWinrate.toFixed(0) + '%' : '••%' }}
@@ -294,30 +294,21 @@
                             </div>
                             
                             <!-- Status da Ordem (Texto Centralizado) -->
-                            <div class="mt-[0px] mb-4 flex justify-center">
+                            <div class="mb-0 flex justify-center">
                                 <div class="flex items-center gap-2">
                                     <div class="w-1.5 h-1.5 rounded-full" :class="statusDotClass" v-if="activeTrade"></div>
                                     <span class="text-xs text-zenix-secondary font-medium tracking-wide">{{ currentStatusTitle }}</span>
                                 </div>
                             </div>
                             
-                            <!-- Status da IA e Botão Pause (Lado a Lado) -->
-                            <div class="grid grid-cols-2 gap-3 items-stretch">
-                                <!-- Status da IA Card (Esquerda) -->
-                                <div class="bg-[rgb(223,223,223,0.9)] border border-gray-200 rounded-xl p-3 flex flex-col justify-center items-start shadow-sm">
-                                    <span class="text-[0.65rem] text-[#373737] font-bold uppercase tracking-wider mb-1">Status da IA</span>
-                                    <div class="flex items-center gap-1.5">
-                                        <div class="w-1.5 h-1.5 rounded-full bg-zenix-green ai-pulse"></div>
-                                        <span class="text-sm font-bold text-black">Ativa</span>
-                                    </div>
-                                </div>
-
-                                <!-- Botão Pause (Direita) -->
+                            <!-- Botão Pause (100% largura) -->
+                            <div class="flex justify-center mt-2">
                                 <button 
-                                    class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-full"
+                                    class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-[52px] w-full"
                                     @click="handleDeactivate"
                                     :disabled="isDeactivating"
                                 >
+                                    <i class="fas fa-power-off mr-2 text-[14px]"></i>
                                     {{ isDeactivating ? '...' : 'Pausar IA' }}
                                 </button>
                             </div>
@@ -773,25 +764,17 @@
                                 </div>
                             </div>
 
-                            <!-- Status da IA -->
-                            <div class="pt-5">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-3 tracking-wide uppercase">Status da IA</p>
-                                <div class="flex items-center justify-between mb-4">
-                                    <div class="flex items-center space-x-2">
-                                        <div class="w-2 h-2 bg-zenix-green rounded-full ai-pulse"></div>
-                                        <p class="text-base font-bold text-zenix-green">Ativa</p>
-                                    </div>
+                                <!-- Botão Pausar (100% largura) -->
+                                <div class="flex justify-center mt-4">
+                                    <button 
+                                        class="w-full py-3 bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
+                                        @click="handleDeactivate"
+                                        :disabled="isDeactivating"
+                                    >
+                                        <i class="fas fa-power-off text-sm mr-2"></i>
+                                        <span>{{ isDeactivating ? 'Desativando...' : 'Pausar IA' }}</span>
+                                    </button>
                                 </div>
-                                <!-- Botão Pausar -->
-                                <button 
-                                    class="w-full py-3 bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
-                                    @click="handleDeactivate"
-                                    :disabled="isDeactivating"
-                                >
-                                    <i class="fas fa-pause text-sm"></i>
-                                    <span>{{ isDeactivating ? 'Desativando...' : 'Pausar IA' }}</span>
-                                </button>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -5001,7 +4984,7 @@ button i,
 
 @media (max-width: 768px) {
     .investment-active-main {
-        padding: 2rem;
+        padding: 1rem!important;
     }
     
     /* Mobile: Esconder layout desktop, mostrar mobile */
@@ -8012,6 +7995,14 @@ button i,
     
     .mobile-register-cards {
         display: none !important;
+    }
+
+    .investment-active-main {
+        padding: 1.5rem 2rem;
+        max-width: 100%;
+        width: 100%;
+        box-sizing: border-box;
+        justify-content: flex-start;
     }
 }
 </style>
