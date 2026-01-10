@@ -31,27 +31,43 @@
 
 			</div>
 			<div class="data-row-line">
-				<div class="data-item">
+				<div class="data-item order-1-mob">
 					<span class="icon-bullet" style="color: #666;">
 						<img src="../../assets/icons/brain.svg" alt="" width="20px" >
 						Estratégia
 					</span>
 					<div class="data-label">{{ agenteData.estrategia }}</div>
 				</div>
-				<div class="data-item">
+				<div class="data-item desktop-only order-2-mob">
 					<span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/linechart.svg" alt="" width="20px">
-						Operações hoje
+						<img src="../../assets/icons/stats-green.svg" alt="" width="20px">
+						Mercado
 					</span>
-					<div class="data-label">{{ operacoesHojeDisplay }}</div>
+					<div class="data-label">{{ agenteData.mercado }}</div>
 				</div>
-				<div class="data-item">
+				<div class="data-item order-3-mob">
 					<span class="icon-bullet" style="color: #666;"><img src="../../assets/icons/clock.svg" alt="" width="20px">
 						Tempo ativo
 					</span>
 					<div class="data-label">{{ tempoAtivoDisplay }}</div>
 				</div>
-				<div class="data-item">
+				<div class="data-item order-2-mob-replace-market">
+					<span class="icon-bullet" style="color: #666;">
+						<img src="../../assets/icons/linechart.svg" alt="" width="20px">
+						Operações hoje
+					</span>
+					<div class="data-label">
+						{{ operacoesHojeDisplay }}
+						<span class="mobile-stats">({{ statsHoje.wins }}x{{ statsHoje.losses }})</span>
+					</div>
+				</div>
+				<!-- Novo botão de pause mobile -->
+				<div class="data-item mobile-only order-4-mob">
+					<button @click="pausarAgenteEIrParaTopo" class="pause-btn-mobile">
+						<span class="pause-icon">II</span> PAUSAR
+					</button>
+				</div>
+				<div class="data-item desktop-only">
 					<button @click="pausarAgenteEIrParaTopo" class="pause-agent-data-btn">
 						<span class="pause-icon">II</span> PAUSAR AGENTE
 					</button>
@@ -502,6 +518,21 @@
 			};
 		},
 		computed: {
+			statsHoje() {
+				// Considerando 'hoje' como 2025-11-25 (ou data atual da simulação) ou baseado nas ops
+				// Aqui vou pegar do historicoOperacoes para ser consistente
+				const ops = this.historicoOperacoes || [];
+				// Usando data simples mockada se necessário ou a atual
+				const hoje = new Date().toISOString().split('T')[0];
+				
+				// Filtro simplificado, considerando que historicoOperacoes já pode estar filtrado ou não.
+				// Se a aplicação usa dados de "hoje" como padrão, isso basta.
+				const opsHoje = ops.filter(op => op.data === hoje || op.data === '2025-11-25'); 
+				
+				const wins = opsHoje.filter(op => op.resultado.includes('+')).length;
+				const losses = opsHoje.filter(op => op.resultado.includes('-')).length;
+				return { wins, losses };
+			},
 			historicoOperacoes() {
 				// ✅ Usar localTradeHistory primeiro (dados buscados localmente), depois tradeHistory (prop), depois operationHistory
 				const historyToUse = (this.localTradeHistory && this.localTradeHistory.length > 0) 
@@ -3460,6 +3491,94 @@
 		to {
 			opacity: 1;
 			transform: scale(1);
+		}
+	}
+	/* Mobile Customizations */
+	.mobile-only {
+		display: none;
+	}
+
+	.mobile-stats {
+		display: none;
+		font-size: 0.9em;
+		color: #888;
+		margin-left: 5px;
+	}
+	
+	.desktop-only {
+		display: flex; /* Assuming flex based on context, or block */
+	}
+
+	@media (max-width: 768px) {
+		.desktop-only {
+			display: none !important;
+		}
+
+		.mobile-only {
+			display: block; /* Or flex depending on context */
+		}
+
+		.data-row-line {
+			flex-wrap: wrap; /* Ensure items can wrap if needed, though we strictly order */
+			gap: 15px; /* Adjust gap for mobile */
+		}
+
+		.order-1-mob {
+			order: 1;
+			width: 48%; 
+		}
+
+		.order-2-mob {
+			order: 2;
+		}
+
+		.order-3-mob {
+			order: 3;
+			width: 48%;
+		}
+
+		.order-2-mob-replace-market {
+			order: 2;
+			width: 48%; /* Takes the place of Market */
+		}
+		
+		.order-4-mob {
+			order: 4;
+			width: 48%;
+			display: flex;
+			align-items: center; 
+			justify-content: flex-end; 
+		}
+
+		.mobile-stats {
+			display: inline-block;
+		}
+		
+		/* Adjust margins/padding in data-item for mobile if needed */
+		.data-item {
+			margin-bottom: 0; 
+		}
+		
+		/* Pause Button Mobile Styles */
+		.pause-btn-mobile {
+			background: #451312;
+			color: white;
+			border: none;
+			padding: 8px 12px;
+			border-radius: 8px;
+			cursor: pointer;
+			font-size: 11px;
+			font-weight: 600;
+			display: flex;
+			align-items: center;
+			justify-content: center;
+			gap: 5px;
+			transition: background 0.2s;
+			width: 100%; 
+		}
+
+		.pause-btn-mobile:hover {
+			background: #a00000;
 		}
 	}
 </style>
