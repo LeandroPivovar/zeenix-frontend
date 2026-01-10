@@ -2066,9 +2066,9 @@
 
 	.progress-bar {
 		width: 100%;
-		height: 16px;
+		height: 16px !important;
 		background: #1a1a1a;
-		border-radius: 12px;
+		border-radius: 8px;
 		overflow: hidden;
 		position: relative;
 		display: flex;
