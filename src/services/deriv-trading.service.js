@@ -33,7 +33,7 @@ class DerivTradingService {
     // derivToken é o token da Deriv API, não o JWT
     // O JWT de autenticação deve vir do localStorage
     const authToken = localStorage.getItem('token');
-    
+
     if (!authToken) {
       throw new Error('Token de autenticação não encontrado');
     }
@@ -103,7 +103,7 @@ class DerivTradingService {
 
     // EventSource não suporta headers, então usamos token temporário via query
     const url = `${API_BASE_URL}/broker/deriv/trading/stream?token=${encodeURIComponent(sseToken)}${derivToken ? `&derivToken=${encodeURIComponent(derivToken)}` : ''}`;
-    
+
     this.eventSource = new EventSource(url);
 
     this.eventSource.onopen = () => {
@@ -174,7 +174,7 @@ class DerivTradingService {
    */
   async subscribeSymbol(symbol, token, loginid) {
     const authToken = this.token || localStorage.getItem('token');
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/subscribe-symbol`, {
         method: 'POST',
@@ -202,7 +202,7 @@ class DerivTradingService {
    */
   async getTicks(symbol) {
     const token = this.token || localStorage.getItem('token');
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/ticks?symbol=${encodeURIComponent(symbol)}`, {
         method: 'GET',
@@ -297,7 +297,7 @@ class DerivTradingService {
 
   async subscribeProposal(config) {
     const token = this.token || localStorage.getItem('token');
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/subscribe-proposal`, {
         method: 'POST',
@@ -343,6 +343,7 @@ class DerivTradingService {
           durationUnit: config.durationUnit,
           amount: config.amount,
           proposalId: config.proposalId, // Opcional, se não fornecido o backend busca
+          loginid: config.loginid, // Opcional, força o uso desta conta
         }),
       });
 
@@ -358,11 +359,11 @@ class DerivTradingService {
       throw error;
     }
   }
-  
+
   // Método antigo mantido para compatibilidade
   async buyContractOld(proposalId, price) {
     const token = this.token || localStorage.getItem('token');
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/buy`, {
         method: 'POST',
@@ -447,11 +448,11 @@ class DerivTradingService {
       throw error;
     }
   }
-  
+
   // Método antigo mantido para compatibilidade
   async sellContractOld(contractId, price) {
     const token = this.token || localStorage.getItem('token');
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/sell`, {
         method: 'POST',
@@ -479,7 +480,7 @@ class DerivTradingService {
    */
   async getContracts(symbol, currency = 'USD') {
     const token = this.token || localStorage.getItem('token');
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/get-contracts`, {
         method: 'POST',
@@ -507,7 +508,7 @@ class DerivTradingService {
    */
   async cancelSubscription(subscriptionId) {
     const token = this.token || localStorage.getItem('token');
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/cancel-subscription`, {
         method: 'POST',
@@ -535,7 +536,7 @@ class DerivTradingService {
    */
   async cancelTickSubscription() {
     const token = this.token || localStorage.getItem('token');
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/cancel-tick-subscription`, {
         method: 'POST',
@@ -562,7 +563,7 @@ class DerivTradingService {
    */
   async cancelProposalSubscription() {
     const token = this.token || localStorage.getItem('token');
-    
+
     try {
       const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/cancel-proposal-subscription`, {
         method: 'POST',
