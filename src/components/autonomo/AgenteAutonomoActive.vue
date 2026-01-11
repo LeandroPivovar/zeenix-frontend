@@ -3525,7 +3525,7 @@
 
 		.order-1-mob {
 			order: 1;
-			width: 48%; 
+			width: 100%; 
 		}
 
 		.order-2-mob {
@@ -3534,17 +3534,17 @@
 
 		.order-3-mob {
 			order: 3;
-			width: 48%;
+			width: 100%;
 		}
 
 		.order-2-mob-replace-market {
 			order: 2;
-			width: 48%; /* Takes the place of Market */
+			width: 100%; /* Takes the place of Market */
 		}
 		
 		.order-4-mob {
 			order: 4;
-			width: 48%;
+			width: 100%;
 			display: flex;
 			align-items: center; 
 			justify-content: flex-end; 
@@ -3575,6 +3575,7 @@
 			gap: 5px;
 			transition: background 0.2s;
 			width: 100%; 
+			height: 100%;
 		}
 
 		.pause-btn-mobile:hover {

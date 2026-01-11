@@ -8,14 +8,14 @@
                     <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
                         <div id="ie22vl" class="bg-[#0B0B0B]/80 border-2 border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
-                            <div class="relative z-10">
+                            <div class="relative z-10 h-full flex flex-col">
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide">Saldo Total</span>
                                     <button class="eye-btn flex items-center" @click="balanceVisible = !balanceVisible">
                                         <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[12px]"></i>
                                     </button>
                                 </div>
-                                <div class="text-xl font-bold text-zenix-text text-left">
+                                <div class="text-xl font-bold text-zenix-text text-left my-auto">
                                     <span v-if="!isLoadingStats && accountBalanceProp" :class="{ 'hidden-value': !balanceVisible }">
                                         {{ balanceVisible ? formattedBalance : '••••••' }}
                                     </span>
@@ -29,14 +29,14 @@
                     <div class="col-span-2" style="width: 100%; box-sizing: border-box;">
                         <div id="i790gh" class="bg-[#0B0B0B]/80 border-2 border-[#1C1C1C] rounded-2xl p-3 premium-card h-[100px] flex flex-col justify-between relative overflow-hidden" style="width: 100%; box-sizing: border-box;">
                             <div class="absolute inset-0 bg-gradient-to-br from-[#22C55E]/5 to-transparent pointer-events-none"></div>
-                            <div class="relative z-10">
+                            <div class="relative z-10 h-full flex flex-col">
                                 <div class="flex items-center justify-between mb-1">
                                     <span class="text-[9px] text-zenix-label font-medium uppercase tracking-wide mobile-label-lucro">Lucro do Dia</span>
                                     <button class="eye-btn flex items-center" @click="profitVisible = !profitVisible">
                                         <i :class="profitVisible ? 'fas fa-eye' : 'fas fa-eye-slash'" class="text-[#7A7A7A] text-[12px]"></i>
                                     </button>
                                 </div>
-                                <div class="flex items-baseline space-x-1.5 text-left">
+                                <div class="flex items-baseline space-x-1.5 text-left my-auto">
                                     <div v-if="!isLoadingStats" :class="['text-2xl font-bold', sessionProfitLossClass, { 'hidden-value': !profitVisible }]">
                                         {{ profitVisible ? formattedSessionProfitLoss : '••••••' }}
                                     </div>
@@ -294,17 +294,25 @@
                             </div>
                             
                             <!-- Status da Ordem (Texto Centralizado) -->
-                            <div class="mb-0 flex justify-center">
+                            <div class="mb-0 flex flex-col justify-center items-center">
                                 <div class="flex items-center gap-2">
-                                    <div class="w-1.5 h-1.5 rounded-full" :class="statusDotClass" v-if="activeTrade"></div>
-                                    <span class="text-xs text-zenix-secondary font-medium tracking-wide">{{ currentStatusTitle }}</span>
+                                    <div class="w-1.5 h-1.5 rounded-full" :class="statusDotClass" v-if="activeTrade && currentStatusTitle !== 'Contrato fechado'"></div>
+                                    <span class="text-xs text-zenix-secondary font-medium tracking-wide">
+                                        {{ currentStatusTitle }}
+                                        <span v-if="currentStatusTitle === 'Contrato fechado'" :class="activeTrade && activeTrade.status === 'WON' ? 'text-zenix-green' : 'text-zenix-red'" class="ml-1 font-bold">
+                                            {{ currentStatusDescription }}
+                                        </span>
+                                    </span>
                                 </div>
+                                <span v-if="currentStatusTitle !== 'Contrato fechado'" class="text-[10px] text-zenix-secondary/60 mt-0.5 tracking-wide">
+                                    {{ currentStatusDescription }}
+                                </span>
                             </div>
                             
                             <!-- Botão Pause (100% largura) -->
                             <div class="flex justify-center mt-2">
                                 <button 
-                                    class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-[52px] w-full"
+                                    class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-[56px] w-full"
                                     @click="handleDeactivate"
                                     :disabled="isDeactivating"
                                 >
@@ -767,7 +775,7 @@
                                 <!-- Botão Pausar (100% largura) -->
                                 <div class="flex justify-center mt-4">
                                     <button 
-                                        class="w-full py-3 bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
+                                        class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
                                         @click="handleDeactivate"
                                         :disabled="isDeactivating"
                                     >
@@ -968,7 +976,7 @@ export default {
             ],
             
             // Barra de progresso mobile
-            progressState: 1, // 1 = analisando mercado, 2 = contrato aberto, 3 = contrato fechado
+            progressState: 2, // 2 = analisando mercado, 3 = contrato aberto, 4 = contrato fechado
             progressInterval: null,
             
             // Status do trade ativo
@@ -1428,11 +1436,11 @@ export default {
         
         progressText() {
             const texts = {
-                1: 'Analisando mercado',
-                2: 'Contrato aberto',
-                3: 'Contrato fechado'
+                2: 'Analisando mercado',
+                3: 'Contrato aberto',
+                4: 'Contrato fechado'
             };
-            return texts[this.progressState] || texts[1];
+            return texts[this.progressState] || texts[2];
         }
     },
 
@@ -2441,7 +2449,7 @@ export default {
                     // Se mudou de PENDING para WON/LOST, atualizar estado visual
                     if (payload.status === 'WON' || payload.status === 'LOST') {
                         // Atualizar progressState para mostrar resultado
-                        this.progressState = 3; // Contrato fechado
+                        this.progressState = 4; // Contrato fechado
                         
                         // Se havia timer, limpar e reiniciar
                         if (this.orderClosedTimer !== null) {
@@ -2452,7 +2460,7 @@ export default {
                         this.orderClosedTimer = setTimeout(() => {
                             console.log('[InvestmentActive] ⏰ Timer de 4s expirado, voltando para estado "analisando mercado"');
                             this.activeTrade = null;
-                            this.progressState = 1; // Analisando mercado
+                            this.progressState = 2; // Analisando mercado
                             this.hadOpenContract = false;
                             this.orderClosedTimer = null;
                         }, 4000);
@@ -2574,7 +2582,7 @@ export default {
             if (!tradeHistory || tradeHistory.length === 0) {
                 // Se não há histórico, não há trade ativo
                 this.activeTrade = null;
-                this.progressState = 1; // Analisando mercado
+                this.progressState = 2; // Analisando mercado
                 this.hadOpenContract = false;
                 
                 // Se havia um timer rodando, limpar
@@ -2601,8 +2609,8 @@ export default {
                     this.orderClosedTimer = null;
                 }
                 
-                // Atualizar progressState para mobile (2 = contrato aberto)
-                this.progressState = 2;
+                // Atualizar progressState para mobile (3 = contrato aberto)
+                this.progressState = 3;
                 
                 if (!wasActive) {
                     console.log('[InvestmentActive] ✅ Contrato aberto detectado:', activeTrade.id);
@@ -2626,7 +2634,7 @@ export default {
                     if (wasOpenNowClosed || (isNewTrade && this.hadOpenContract)) {
                         // Contrato fechado - iniciar timer de 4 segundos
                         this.activeTrade = lastTrade;
-                        this.progressState = 3; // Contrato fechado
+                        this.progressState = 4; // Contrato fechado
                         this.lastProcessedTradeId = lastTrade.id; // Atualizar ID processado
                         
                         // Limpar timer anterior se existir
@@ -2638,7 +2646,7 @@ export default {
                         this.orderClosedTimer = setTimeout(() => {
                             console.log('[InvestmentActive] ⏰ Timer de 4s expirado, voltando para estado "analisando mercado"');
                             this.activeTrade = null;
-                            this.progressState = 1; // Analisando mercado
+                            this.progressState = 2; // Analisando mercado
                             this.hadOpenContract = false;
                             this.orderClosedTimer = null;
                         }, 4000);
@@ -2648,7 +2656,7 @@ export default {
                         // NOVO: Se é um trade novo e nunca vimos contrato aberto, 
                         // considerar como se tivesse passado pelo estado aberto (trade muito rápido)
                         this.activeTrade = lastTrade;
-                        this.progressState = 3; // Contrato fechado
+                        this.progressState = 4; // Contrato fechado
                         this.lastProcessedTradeId = lastTrade.id;
                         this.hadOpenContract = true; // Marcar para próximos trades
                         
@@ -2661,7 +2669,7 @@ export default {
                         this.orderClosedTimer = setTimeout(() => {
                             console.log('[InvestmentActive] ⏰ Timer de 4s expirado (trade rápido), voltando para "analisando mercado"');
                             this.activeTrade = null;
-                            this.progressState = 1; // Analisando mercado
+                            this.progressState = 2; // Analisando mercado
                             this.hadOpenContract = false;
                             this.orderClosedTimer = null;
                         }, 4000);
@@ -2674,7 +2682,7 @@ export default {
                     // Só atualizar se não havia timer rodando (timer ainda não expirou)
                     if (this.orderClosedTimer === null) {
                         this.activeTrade = null;
-                        this.progressState = 1; // Analisando mercado
+                        this.progressState = 2; // Analisando mercado
                         this.hadOpenContract = false;
                     }
                 }
@@ -3704,11 +3712,8 @@ export default {
         // Animação da barra de progresso mobile
         startProgressAnimation() {
             this.stopProgressAnimation();
-            this.progressState = 1;
-            
-            this.progressInterval = setInterval(() => {
-                this.progressState = (this.progressState % 3) + 1;
-            }, 3000); // Muda de estado a cada 3 segundos
+            this.progressState = 2; // Analisando mercado (estático, 2 barras)
+            // Animação removida conforme solicitado
         },
         
         stopProgressAnimation() {
