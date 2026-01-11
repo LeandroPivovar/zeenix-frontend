@@ -1677,6 +1677,10 @@ export default {
             this.processBuy(data.data);
           } else if (data.type === 'contract' && data.data) {
             this.processContract(data.data);
+          } else if (data.type === 'error' && data.error) {
+            console.error('[Chart] Erro recebido via SSE:', data.error);
+            this.tradeError = data.error.message || 'Erro na operação';
+            this.isTrading = false;
           } else if (data.type === 'tick' && data.data) {
             // Atualizar latestTick e adicionar ao gráfico
             const tickValue = Number(data.data.value);
@@ -2112,6 +2116,20 @@ export default {
           durationUnit: this.durationUnit,
           amount: this.amount,
         };
+
+        // Adicionar loginid da conta ativa (do localStorage)
+        try {
+          const connectionStr = localStorage.getItem('deriv_connection');
+          if (connectionStr) {
+            const connection = JSON.parse(connectionStr);
+            if (connection && connection.loginid) {
+              buyConfig.loginid = connection.loginid;
+              console.log('[Chart] Usando conta específica:', buyConfig.loginid);
+            }
+          }
+        } catch (e) {
+          console.error('[Chart] Erro ao ler loginid do localStorage:', e);
+        }
         
         // Adicionar barrier se necessário (ex: DIGITMATCH)
         if (this.isDigitContract && this.tradeType.includes('DIGIT')) {
