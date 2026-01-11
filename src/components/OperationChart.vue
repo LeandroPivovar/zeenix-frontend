@@ -334,32 +334,40 @@
           </div>
           
           <!-- Purchase Price -->
-          <div v-if="purchasePrice" class="bg-zenix-bg border border-zenix-border rounded-lg p-3">
-            <div class="text-xs text-zenix-secondary mb-1">Preço de Compra:</div>
-            <div class="text-base font-semibold text-zenix-text">$ {{ purchasePrice.toFixed(pricePrecision) }}</div>
+          <div v-if="purchasePrice" class="bg-zenix-bg border border-zenix-border rounded-lg p-3 transition-all duration-300">
+            <div class="text-[10px] uppercase font-bold text-zenix-secondary mb-1 tracking-wider">Preço de Entrada:</div>
+            <div class="text-base font-bold text-zenix-text flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full bg-blue-500"></span>
+              $ {{ purchasePrice.toFixed(pricePrecision) }}
+            </div>
           </div>
           
           <!-- Real-time P&L -->
-          <div v-if="realTimeProfit !== null && activeContract" class="bg-zenix-bg border rounded-lg p-3" :class="realTimeProfitClass">
-            <div class="text-xs text-zenix-secondary mb-1">P&L em Tempo Real:</div>
-            <div class="text-base font-semibold" :class="realTimeProfitTextClass">
+          <div v-if="realTimeProfit !== null && activeContract" class="bg-zenix-bg border rounded-lg p-3 shadow-lg transition-all duration-300 transform hover:scale-[1.02]" :class="realTimeProfitClass">
+            <div class="text-[10px] uppercase font-bold text-zenix-secondary mb-1 tracking-wider">Lucro Atual (Estimado):</div>
+            <div class="text-lg font-black flex items-center gap-2" :class="realTimeProfitTextClass">
+              <i :class="realTimeProfit >= 0 ? 'fas fa-trending-up' : 'fas fa-trending-down'"></i>
               $ {{ realTimeProfit >= 0 ? '+' : '' }}{{ realTimeProfit.toFixed(pricePrecision) }}
             </div>
           </div>
           
           <!-- Tempo/Ticks Restantes -->
-          <div v-if="activeContract && (contractTimeRemaining !== null || contractTicksRemaining !== null)" class="bg-zenix-bg border border-zenix-border rounded-lg p-3">
-            <div class="text-xs text-zenix-secondary mb-1">
-              <i class="fas fa-clock mr-2"></i>
-              {{ isTickBasedContract ? 'Ticks Restantes:' : 'Tempo Restante:' }}
+          <div v-if="activeContract && (contractTimeRemaining !== null || contractTicksRemaining !== null)" class="bg-zenix-bg border border-zenix-border rounded-lg p-3 relative overflow-hidden group">
+            <!-- Barra de progresso sutil no topo -->
+            <div class="absolute top-0 left-0 h-1 bg-zenix-green/30 transition-all duration-1000" :style="{ width: isTickBasedContract ? (100 - (contractTicksRemaining / activeContract.duration * 100)) + '%' : (100 - (contractTimeRemaining / contractDuration * 100)) + '%' }"></div>
+            
+            <div class="text-[10px] uppercase font-bold text-zenix-secondary mb-1 tracking-wider flex items-center justify-between">
+              <span>{{ isTickBasedContract ? 'Ticks Restantes:' : 'Tempo Restante:' }}</span>
+              <i class="fas fa-history text-xs"></i>
             </div>
-            <div class="text-base font-semibold text-zenix-text" :class="getCountdownClass">
+            <div class="text-xl font-black text-zenix-text flex items-baseline gap-1" :class="getCountdownClass">
               <span v-if="isTickBasedContract && contractTicksRemaining !== null">
                 {{ contractTicksRemaining }}
               </span>
               <span v-else-if="!isTickBasedContract && contractTimeRemaining !== null">
                 {{ formatTimeRemaining(contractTimeRemaining) }}
               </span>
+              <span class="text-[10px] text-zenix-secondary font-medium ml-1">RESTANTES</span>
             </div>
           </div>
           
@@ -534,32 +542,53 @@
           <div class="modal-body">
             <div class="trade-result-content">
               <!-- Ícone e Status -->
-              <div class="trade-result-icon" :class="finalTradeProfit >= 0 ? 'trade-result-win' : 'trade-result-loss'">
-                <i :class="finalTradeProfit >= 0 ? 'fas fa-check-circle' : 'fas fa-times-circle'"></i>
+              <div class="trade-result-icon-wrapper" :class="finalTradeProfit >= 0 ? 'win' : 'loss'">
+                <div class="trade-result-icon">
+                  <i :class="finalTradeProfit >= 0 ? 'fas fa-trophy' : 'fas fa-chart-line rotate-180'"></i>
+                </div>
+                <div class="trade-result-particles"></div>
               </div>
               
               <!-- Título -->
-              <h4 class="trade-result-title" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
-                {{ finalTradeProfit >= 0 ? 'Ganho!' : 'Perda' }}
+              <h4 class="trade-result-status" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                {{ finalTradeProfit >= 0 ? 'VITÓRIA' : 'DERROTA' }}
               </h4>
               
               <!-- Valor -->
-              <div class="trade-result-value" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
-                {{ finalTradeProfit >= 0 ? '+' : '' }}${{ finalTradeProfit.toFixed(pricePrecision) }}
+              <div class="trade-result-main-value" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                <span class="currency-symbol">$</span>
+                <span class="profit-amount">{{ Math.abs(finalTradeProfit).toFixed(pricePrecision) }}</span>
               </div>
               
-              <!-- Tipo de Contrato -->
-              <div class="trade-result-type">
-                <span class="text-zenix-secondary">Tipo:</span>
-                <span class="text-zenix-text font-semibold">{{ finalTradeType }}</span>
+              <!-- Detalhes em Grid -->
+              <div class="trade-result-details-grid">
+                <div class="detail-item">
+                  <span class="detail-label">TIPO</span>
+                  <span class="detail-value">{{ finalTradeType }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">ENTRADA</span>
+                  <span class="detail-value">$ {{ finalEntrySpot ? finalEntrySpot.toFixed(pricePrecision) : '---' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">SAÍDA</span>
+                  <span class="detail-value">$ {{ finalExitSpot ? finalExitSpot.toFixed(pricePrecision) : '---' }}</span>
+                </div>
+                <div class="detail-item">
+                  <span class="detail-label">STATUS</span>
+                  <span class="detail-value" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                    {{ finalTradeProfit >= 0 ? 'Profit' : 'Loss' }}
+                  </span>
+                </div>
               </div>
               
               <!-- Botão Fechar -->
               <button 
                 @click="closeTradeResultModal"
-                class="trade-result-close-btn"
+                class="trade-result-confirm-btn"
+                :class="finalTradeProfit >= 0 ? 'bg-zenix-green' : 'bg-red-500'"
               >
-                Fechar
+                ENTENDIDO
               </button>
             </div>
           </div>
@@ -590,6 +619,8 @@ export default {
       showTradeResultModal: false,
       finalTradeProfit: 0,
       finalTradeType: 'CALL',
+      finalEntrySpot: null,
+      finalExitSpot: null,
       markets: [], // Será preenchido pela API
       isLoadingMarkets: false,
       availableContracts: [], // Contratos disponíveis para o símbolo atual
@@ -2241,21 +2272,40 @@ export default {
       const currentPrice = this.latestTick.value;
       const entryPrice = this.purchasePrice;
       
-      // Calcular P&L baseado no tipo de contrato
-      let profit = 0;
-      if (this.activeContract.contract_type === 'CALL') {
-        profit = currentPrice - entryPrice;
-      } else if (this.activeContract.contract_type === 'PUT') {
-        profit = entryPrice - currentPrice;
+      // Se o backend já enviou o profit (via contract_update), priorizar ele
+      if (this.activeContract.profit !== null && this.activeContract.profit !== undefined && this.activeContract.status === 'open') {
+        this.realTimeProfit = Number(this.activeContract.profit);
+      } else {
+        // Calcular P&L baseado no tipo de contrato (fallback/estimativa)
+        let profit = 0;
+        const type = (this.activeContract.contract_type || this.tradeType || '').toUpperCase();
+        
+        if (type === 'CALL' || type === 'RISE' || type === 'CALLE') {
+          profit = currentPrice > entryPrice ? (this.amount * 0.95) : -this.amount;
+        } else if (type === 'PUT' || type === 'FALL' || type === 'PUTE') {
+          profit = currentPrice < entryPrice ? (this.amount * 0.95) : -this.amount;
+        } else if (type === 'DIGITMATCH') {
+          const lastDigit = Math.floor(currentPrice * Math.pow(10, this.pricePrecision)) % 10;
+          profit = lastDigit === this.digitMatchValue ? (this.amount * 8) : -this.amount;
+        } else if (type === 'DIGITDIFF') {
+          const lastDigit = Math.floor(currentPrice * Math.pow(10, this.pricePrecision)) % 10;
+          profit = lastDigit !== this.digitMatchValue ? (this.amount * 0.1) : -this.amount;
+        } else if (type === 'DIGITEVEN') {
+          const lastDigit = Math.floor(currentPrice * Math.pow(10, this.pricePrecision)) % 10;
+          profit = lastDigit % 2 === 0 ? (this.amount * 0.95) : -this.amount;
+        } else if (type === 'DIGITODD') {
+          const lastDigit = Math.floor(currentPrice * Math.pow(10, this.pricePrecision)) % 10;
+          profit = lastDigit % 2 !== 0 ? (this.amount * 0.95) : -this.amount;
+        }
+        
+        this.realTimeProfit = profit;
       }
       
-      this.realTimeProfit = profit;
-      
       // Atualizar classes CSS baseado no P&L
-      if (profit > 0) {
+      if (this.realTimeProfit > 0) {
         this.realTimeProfitClass = 'border-zenix-green';
         this.realTimeProfitTextClass = 'text-zenix-green';
-      } else if (profit < 0) {
+      } else if (this.realTimeProfit < 0) {
         this.realTimeProfitClass = 'border-red-500';
         this.realTimeProfitTextClass = 'text-red-500';
       } else {
@@ -2300,6 +2350,7 @@ export default {
     },
     handleContractExpiration(contractData) {
       console.log('[Chart] ========== CONTRATO EXPIRADO ==========');
+      console.log('[Chart] Dados de expiração:', contractData);
       
       // Parar contador
       this.stopContractCountdown();
@@ -2308,31 +2359,46 @@ export default {
       this.removeEntrySpotLine();
       
       // Determinar resultado
-      const profit = contractData.profit !== undefined && contractData.profit !== null 
-        ? Number(contractData.profit) 
-        : (this.realTimeProfit !== null ? this.realTimeProfit : 0);
+      let profit = 0;
+      if (contractData.profit !== undefined && contractData.profit !== null) {
+        profit = Number(contractData.profit);
+      } else if (contractData.sell_price !== undefined && contractData.sell_price !== null && this.activeContract?.buy_price) {
+        profit = Number(contractData.sell_price) - Number(this.activeContract.buy_price);
+      } else {
+        profit = this.realTimeProfit !== null ? this.realTimeProfit : 0;
+      }
       
       // Atualizar contrato com dados finais
       if (this.activeContract) {
-        this.activeContract.sell_price = contractData.sell_price || this.activeContract.sell_price;
+        this.activeContract.sell_price = contractData.sell_price || contractData.exit_spot || this.activeContract.sell_price;
+        this.activeContract.exit_spot = contractData.exit_spot || contractData.sell_price || this.latestTick?.value;
         this.activeContract.profit = profit;
         this.activeContract.status = contractData.status || (profit > 0 ? 'won' : 'lost');
+        
+        // Se for digital, o profit pode vir como 0 em caso de perda
+        if (this.isDigitContract && profit === 0 && (contractData.status === 'lost' || contractData.status === 'loss')) {
+          profit = -this.amount;
+        }
       }
       
       // Preparar dados para o modal
       this.finalTradeProfit = profit;
       this.finalTradeType = this.activeContract?.contract_type || this.tradeType || 'CALL';
+      this.finalEntrySpot = this.activeContract?.entry_spot || this.purchasePrice;
+      this.finalExitSpot = this.activeContract?.exit_spot || this.latestTick?.value;
       
       // Mostrar modal de resultado
       this.showTradeResultModal = true;
       
-      // Limpar contrato após um tempo
+      // Limpar contrato após um tempo mais longo para o usuário ver o modal
       setTimeout(() => {
-        this.activeContract = null;
-        this.purchasePrice = null;
-        this.realTimeProfit = null;
-        this.tradeMessage = '';
-      }, 5000);
+        if (!this.showTradeResultModal) {
+          this.activeContract = null;
+          this.purchasePrice = null;
+          this.realTimeProfit = null;
+          this.tradeMessage = '';
+        }
+      }, 10000);
     },
     closeTradeResultModal() {
       this.showTradeResultModal = false;
@@ -4390,5 +4456,160 @@ export default {
     letter-spacing: 0.05em;
   }
 }
+  /* Trade Result Modal Premium Styles */
+  .trade-result-modal {
+    max-width: 400px !important;
+    background: linear-gradient(135deg, #1A1C20 0%, #0F1012 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px !important;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .trade-result-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 1.5rem 1rem;
+    text-align: center;
+  }
+
+  .trade-result-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
+
+  .trade-result-icon-wrapper.win {
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0) 70%);
+    border: 2px solid #22C55E;
+    color: #22C55E;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+    animation: pulse-win 2s infinite;
+  }
+
+  .trade-result-icon-wrapper.loss {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0) 70%);
+    border: 2px solid #EF4444;
+    color: #EF4444;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+  }
+
+  .trade-result-icon {
+    font-size: 2.5rem;
+  }
+
+  @keyframes pulse-win {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  }
+
+  .trade-result-status {
+    font-size: 0.875rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    margin-bottom: 0.5rem;
+  }
+
+  .trade-result-main-value {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .currency-symbol {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-right: 2px;
+    opacity: 0.8;
+  }
+
+  .profit-amount {
+    font-size: 3.5rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .trade-result-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .detail-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
+  }
+
+  .detail-value {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #FFFFFF;
+  }
+
+  .trade-result-confirm-btn {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    color: #FFFFFF;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
+
+  .trade-result-confirm-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  }
+
+  .trade-result-confirm-btn:active {
+    transform: translateY(0);
+  }
+
+  /* Tracking UI Enhancements */
+  .countdown-warning {
+    color: #EF4444 !important;
+    animation: blink-red 1s infinite;
+  }
+
+  .countdown-alert {
+    color: #F59E0B !important;
+  }
+
+  @keyframes blink-red {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+
 </style>
 
