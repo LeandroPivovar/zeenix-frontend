@@ -2074,6 +2074,53 @@ export default {
       });
       
       try {
+        // ✅ CORREÇÃO: Buscar token da conta atualmente selecionada
+        const derivConnection = localStorage.getItem('deriv_connection');
+        let derivToken = localStorage.getItem('deriv_token');
+        let loginid = null;
+
+        if (derivConnection) {
+          try {
+            const connection = JSON.parse(derivConnection);
+            loginid = connection.loginid;
+            if (!derivToken) {
+              derivToken = connection.token;
+            }
+          } catch (e) {
+            console.warn('[Chart] Erro ao parsear deriv_connection:', e);
+          }
+        }
+
+        // Se não tiver token, tentar deriv_tokens_by_loginid
+        if (!derivToken) {
+          const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
+          if (tokensByLoginId) {
+            try {
+              const tokens = JSON.parse(tokensByLoginId);
+              if (loginid && tokens[loginid]) {
+                derivToken = tokens[loginid];
+              } else if (Object.keys(tokens).length > 0) {
+                const firstLoginId = Object.keys(tokens)[0];
+                derivToken = tokens[firstLoginId];
+                loginid = firstLoginId;
+              }
+            } catch (e) {
+              console.warn('[Chart] Erro ao parsear deriv_tokens_by_loginid:', e);
+            }
+          }
+        }
+
+        if (!derivToken) {
+          this.tradeError = 'Token Deriv não encontrado. Por favor, reconecte sua conta.';
+          this.isTrading = false;
+          return;
+        }
+
+        console.log('[Chart] Usando token da conta:', loginid);
+
+        // Garantir que está conectado com o token correto
+        await derivTradingService.connect(derivToken, loginid);
+
         const buyConfig = {
           symbol: this.symbol,
           contractType: this.tradeType,
