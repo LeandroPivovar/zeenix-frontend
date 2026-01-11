@@ -833,7 +833,7 @@ export default {
       return digitTypes.includes(this.tradeType);
     },
     canExecuteOrder() {
-      return this.symbol && this.tradeType && this.duration && this.amount && !this.isTrading && !this.activeContract;
+      return this.symbol && this.duration && this.amount && !this.isTrading && !this.activeContract;
     },
     isTickBasedContract() {
       return this.activeContract && this.activeContract.duration_unit === 't';
@@ -2496,14 +2496,13 @@ export default {
       }
     },
     executeTradeWithDirection(direction) {
-      // Set the trade direction
-      this.tradeType = direction;
-      // Execute the buy logic
-      // Note: The actual buy logic would be implemented by derivTradingService
-      // For now, we just set the direction and let the user's system handle the purchase
       console.log('[Chart] Executando ordem com direção:', direction);
-      // TODO: Implement actual trade execution using derivTradingService
-      // Example: await derivTradingService.buy({ symbol: this.symbol, type: direction, ...})
+      this.tradeType = direction;
+      
+      // Pequeno timeout para garantir que tradeType foi reativo antes de executeBuy
+      this.$nextTick(() => {
+        this.executeBuy();
+      });
     },
     getDirectionButtonClass(direction) {
       const dir = direction.toUpperCase();
