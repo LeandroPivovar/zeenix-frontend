@@ -122,6 +122,15 @@ class DerivTradingService {
         if (typeListeners) {
           typeListeners.forEach(listener => listener(data.data || data));
         }
+
+        // Se for do tipo 'log', também notificar quem escuta 'log'
+        if (data.type === 'log') {
+          const logListeners = this.listeners.get('log');
+          if (logListeners) {
+            logListeners.forEach(listener => listener(data.data));
+          }
+        }
+
       } catch (error) {
         console.error('[DerivTrading] Erro ao processar mensagem SSE:', error);
       }
