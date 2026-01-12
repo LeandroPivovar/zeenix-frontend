@@ -3865,6 +3865,11 @@ export default {
     mounted() {
         console.log('[InvestmentActive] Componente montado. Ticks:', this.ticks.length);
         
+        // ✅ Forçar aba de configuração no mobile ao abrir
+        if (window.innerWidth < 1024) {
+            this.activeTab = 'config';
+        }
+        
         // ✅ Inicializar accountType baseado no accountCurrencyProp
         if (this.accountCurrencyProp && (this.accountCurrencyProp.toUpperCase() === 'DEMO' || this.accountCurrencyProp.includes('DEMO'))) {
             this.accountType = 'demo';
