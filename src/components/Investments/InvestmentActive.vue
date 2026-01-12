@@ -2048,7 +2048,7 @@ export default {
         /**
  * Log de operação executada
  */
-logOperacaoExecutada(op) {
+logOperacaoExecutada() {
     // Mantendo logs mínimos para indicar ação, já que o Sinal Gerado contém os detalhes
     // e o Resultado conterá o desfecho.
     // this.addLog('info', `⚡ EXECUTANDO OPERAÇÃO #${op.numero} (${op.direcao})`);
