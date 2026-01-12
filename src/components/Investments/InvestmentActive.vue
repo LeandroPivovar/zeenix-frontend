@@ -1838,6 +1838,7 @@ export default {
                     console.log('[InvestmentActive] 📥 Logs recebidos do backend:', result.data.length, 'logs');
                     // Converter logs recebidos
                     // ✅ INCLUIR id e created_at PARA COMPARAÇÃO CORRETA
+                    const newLogs = result.data.map(log => {
                         // Processar e filtrar logs do backend para o padrão Zenix
                         const processedLog = this.processBackendLog(log);
                         if (!processedLog) return null; // Ignorar logs ruidosos
@@ -1850,7 +1851,7 @@ export default {
                             icon: processedLog.icon || log.icon,
                             message: processedLog.message
                         };
-                    })).filter(log => log !== null); // Remover nulos
+                    }).filter(log => log !== null); // Remover nulos
                     
                     // ✅ Se é a primeira carga, substituir tudo
                     
