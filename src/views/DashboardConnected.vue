@@ -174,7 +174,9 @@
             <span v-else>••••••</span>
           </div>
           <div class="mobile-account-performance">
-            <span class="mobile-account-percentage">+0%</span>
+            <span class="mobile-account-percentage" :class="totalWeeklyPerformance >= 0 ? 'text-[#22C55E]' : 'text-[#FF4747]'">
+              {{ totalWeeklyPerformance >= 0 ? '+' : '' }}{{ totalWeeklyPerformance.toFixed(1) }}%
+            </span>
             <span class="mobile-account-period">esta semana</span>
           </div>
           <div class="mobile-account-actions">
@@ -857,7 +859,8 @@ export default {
       todayProfit: 0,
       todayProfitPercent: 0,
       loadingTodayProfit: true,
-      balanceVisible: true
+      balanceVisible: true,
+      totalWeeklyPerformance: 0
     }
   },
   computed: {
@@ -1063,9 +1066,18 @@ export default {
           const result = await response.json();
           const stats = result.data;
           
-          // 1. Atualizar performanceData no estado reativo
+          // Calcular base para percentual (Saldo Inicial = Saldo Atual - Lucro Total da Semana)
+          const currentBalance = this.balanceNumeric;
+          const initialBalance = currentBalance - stats.netResult;
+          
+          // Evitar divisão por zero
+          const safeInitialBalance = initialBalance || 1;
+          
+          // Calcular percentual total
+          this.totalWeeklyPerformance = (stats.netResult / safeInitialBalance) * 100;
+
+          // 1. Atualizar performanceData no estado reativo com Percentuais
           if (stats && stats.sources) {
-            // Mapping: IA (0), Copy (1), Agente (2), Manual (3)
             const mapping = {
               'ai': 0,
               'copy': 1,
@@ -1076,8 +1088,10 @@ export default {
             Object.entries(stats.sources).forEach(([source, value]) => {
               const index = mapping[source];
               if (index !== undefined && this.performanceData[index]) {
-                const prefix = value >= 0 ? '+' : '';
-                this.performanceData[index].percentage = `${prefix}${value.toFixed(2)}`;
+                const sourcePercent = (value / safeInitialBalance) * 100;
+                const prefix = sourcePercent >= 0 ? '+' : '';
+                this.performanceData[index].percentage = `${prefix}${sourcePercent.toFixed(1)}%`;
+                
                 // Ajustar usage baseado se houve lucro ou não para dar feedback visual
                 if (value !== 0) {
                   this.performanceData[index].usage = Math.min(100, Math.max(30, this.performanceData[index].usage));
