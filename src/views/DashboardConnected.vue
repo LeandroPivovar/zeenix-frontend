@@ -1042,8 +1042,69 @@ export default {
     this.loadAccountsInBackground();
     // Configurar loop imperceptível do vídeo
     this.setupVideoLoop();
+    // Carregar desempenho semanal
+    await this.loadWeeklyPerformance();
   },
   methods: {
+    async loadWeeklyPerformance() {
+      try {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token');
+        
+        const response = await fetch(`${apiBase}/ai/performance/weekly/current`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          const result = await response.json();
+          const stats = result.data;
+          
+          // 1. Atualizar performanceData no estado reativo
+          if (stats && stats.sources) {
+            // Mapping: IA (0), Copy (1), Agente (2), Manual (3)
+            const mapping = {
+              'ai': 0,
+              'copy': 1,
+              'agent': 2,
+              'manual': 3
+            };
+
+            Object.entries(stats.sources).forEach(([source, value]) => {
+              const index = mapping[source];
+              if (index !== undefined && this.performanceData[index]) {
+                const prefix = value >= 0 ? '+' : '';
+                this.performanceData[index].percentage = `${prefix}${value.toFixed(2)}`;
+                // Ajustar usage baseado se houve lucro ou não para dar feedback visual
+                if (value !== 0) {
+                  this.performanceData[index].usage = Math.min(100, Math.max(30, this.performanceData[index].usage));
+                }
+              }
+            });
+          }
+
+          // 2. Logar no console com emojis (Requisito do Usuário)
+          console.log('%c📈 EVOLUÇÃO SEMANAL DE SALDO', 'color: #22C55E; font-weight: bold; font-size: 14px;');
+          console.log(`📅 Período: ${stats.period.start} - ${stats.period.end}`);
+          console.log('');
+          console.log(`🤖 IA: ${stats.sources.ai >= 0 ? '+$' : '-$'}${Math.abs(stats.sources.ai).toFixed(2)}`);
+          console.log(`💼 Agente Autônomo: ${stats.sources.agent >= 0 ? '+$' : '-$'}${Math.abs(stats.sources.agent).toFixed(2)}`);
+          console.log(`👥 Copy Trade: ${stats.sources.copy >= 0 ? '+$' : '-$'}${Math.abs(stats.sources.copy).toFixed(2)}`);
+          console.log(`📊 Operação/Manual: ${stats.sources.manual >= 0 ? '+$' : '-$'}${Math.abs(stats.sources.manual).toFixed(2)}`);
+          console.log('');
+          const totalEmoji = stats.netResult >= 0 ? '🚀' : '🔻';
+          const performanceText = stats.netResult >= 0 ? 'Ótimo desempenho!' : 'Atenção aos riscos.';
+          console.log(`💰 Saldo Total: $${this.balanceNumeric.toFixed(2)}`);
+          console.log(`✨ Resultado Total: ${stats.netResult >= 0 ? '+' : ''}$${stats.netResult.toFixed(2)} (${totalEmoji} ${performanceText})`);
+          console.log('%c──────────────────────────────────', 'color: #333');
+        }
+      } catch (error) {
+        console.error('[Dashboard] Erro ao carregar desempenho semanal:', error);
+      }
+    },
     toggleMobileSidebar() {
       this.isSidebarOpen = !this.isSidebarOpen;
     },
