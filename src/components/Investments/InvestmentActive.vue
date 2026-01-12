@@ -335,7 +335,7 @@
                     Configuração
                 </button>
                 <button 
-                    :class="['mobile-tab', activeTab === 'chart' ? 'mobile-tab-active' : '']"
+                    :class="['mobile-tab hidden md:block', activeTab === 'chart' ? 'mobile-tab-active' : '']"
                     @click="activeTab = 'chart'"
                 >
                     Gráfico
@@ -365,7 +365,7 @@
                         Config
                     </button>
                     <button 
-                        :class="['mobile-tab', activeTab === 'chart' ? 'mobile-tab-active' : '']"
+                        :class="['mobile-tab hidden md:block', activeTab === 'chart' ? 'mobile-tab-active' : '']"
                         @click="activeTab = 'chart'"
                     >
                         Gráfico
@@ -443,7 +443,7 @@
                                 Config
                             </button>
                             <button 
-                                :class="['mobile-tab', activeTab === 'chart' ? 'mobile-tab-active' : '']"
+                                :class="['mobile-tab hidden md:block', activeTab === 'chart' ? 'mobile-tab-active' : '']"
                                 @click="activeTab = 'chart'"
                             >
                                 Gráfico
@@ -908,7 +908,7 @@ export default {
             tradesVisible: true,
             aiActive: true,
             showDisconnectModal: false,
-            activeTab: 'chart', // 'config', 'chart', 'logs', or 'register'
+            activeTab: window.innerWidth < 1024 ? 'config' : 'chart', // 'config', 'chart', 'logs', or 'register'
             showEntryMarkers: true, // Controla visibilidade dos marcadores de entradas da IA
             tradingViewWidget: null, // Widget da TradingView
             
