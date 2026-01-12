@@ -158,14 +158,13 @@
                                     </ZenixTooltip>
                                 </label>
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
-                                    <option value="orion">IA Orion</option>
-                                    <option value="nexus">IA NEXUS</option>
+                                    <option value="atlas">IA Atlas</option>
                                     <option value="apollo">IA Apollo</option>
-                                    <option value="atlas">IA ATLAS</option>
-                                    <option value="titan">IA TITAN</option>
-                                    <option value="trinity">IA Trinity</option>
+                                    <option value="nexus">IA Nexus</option>
+                                    <option value="orion">IA Orion</option>
+                                    <option value="titan">IA Titan</option>
                                 </select>
-                                <p id="strategyDescription" class="form-help">{{ strategyDescription }}</p>
+                                    <p id="strategyDescription" class="form-help" v-html="strategyDescription"></p>
                     </div>
 
                             <div class="form-group">
@@ -485,12 +484,11 @@ export default {
     computed: {
         selectedStrategyName() {
             const strategyNames = {
-                'orion': 'Orion',
-                'nexus': 'NEXUS',
-                'apollo': 'Apollo',
-                'atlas': 'ATLAS',
-                'titan': 'TITAN',
-                'trinity': 'Trinity'
+                'atlas': 'IA Atlas',
+                'apollo': 'IA Apollo',
+                'nexus': 'IA Nexus',
+                'orion': 'IA Orion',
+                'titan': 'IA Titan'
             };
             return strategyNames[this.selectedStrategy] || 'Orion';
         },
@@ -537,12 +535,11 @@ export default {
         
         strategyDescription() {
             const descriptions = {
-                'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
-                'nexus': 'Price Action Sniper • Barreira Dinâmica • Assertividade Máxima',
-                'apollo': 'Martingale Inteligente • Proteção de Lucro • Recuperação Otimizada',
-                'atlas': 'Alta Frequência • Volume Massivo • Lucro no Volume',
-                'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida',
-                'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes'
+                'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 55 a 65% - <strong>Retorno:</strong> 70% / 95%',
+                'apollo': '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 55% a 65% - <strong>Retorno:</strong> 90%',
+                'nexus': '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 57% / 90%',
+                'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 65% / 90%',
+                'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-60% - <strong>Retorno:</strong> 90%'
             };
             return descriptions[this.selectedStrategy] || descriptions.orion;
         },

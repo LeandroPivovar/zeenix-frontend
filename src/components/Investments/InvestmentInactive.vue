@@ -1,4 +1,4 @@
-<<<<<<< HEAD
+
 <template>
 	<div>
 		<!-- Only show old sections when NOT in chart-only mode -->
@@ -3090,4 +3090,3 @@ input:checked + .slider:before {
     }
 }
 </style>
->>>>>>> 38f5a4855fbafa34c8b41132d9c9f641d721518f
