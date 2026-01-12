@@ -752,22 +752,22 @@
                                 </div>
                             </div>
 
-                            <!-- Gerenciamento -->
-                            <!-- Stop Loss Status -->
-                            <div class="py-5 border-b border-zenix-border/50 text-left">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Stop Loss Blindado</p>
-                                <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ sessionConfig.lossLimit ? 'Ativo' : 'Inativo' }}</p>
-                            </div>
+                            <!-- Grid de 2 colunas para Stop Loss e Gerenciamento -->
+                            <div class="grid grid-cols-2 gap-4 py-5 border-b border-zenix-border/50 text-left">
+                                <!-- Stop Loss Blindado -->
+                                <div class="text-left border border-zenix-border/30 rounded-lg p-2.5 h-full flex flex-col justify-center">
+                                    <p class="text-xs text-zenix-secondary mb-0.5 text-left uppercase tracking-wide font-medium">Stop Blindado</p>
+                                    <p class="text-base font-bold text-zenix-text text-left">{{ sessionConfig.lossLimit ? 'Ativo' : 'Inativo' }}</p>
+                                </div>
 
-                            <div class="py-5 border-b border-zenix-border/50 text-left">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Gerenciamento de Risco</p>
-                                <div class="flex items-center justify-between">
-                                    <div class="text-left">
-                                        <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ realRiskLevel }}</p>
-                                        <p class="text-xs text-zenix-secondary text-left">{{ realRiskDescription }}</p>
-                                    </div>
-                                    <div class="px-3 py-1.5 bg-zenix-green/10 border border-zenix-green/20 rounded-lg">
-                                        <p class="text-xs font-bold text-zenix-green">{{ realRiskLabel }}</p>
+                                <!-- Gerenciamento de Risco (Badge) -->
+                                <div class="text-left border border-zenix-border/30 rounded-lg p-2.5 h-full flex flex-col justify-center">
+                                    <p class="text-xs text-zenix-secondary mb-0.5 text-left uppercase tracking-wide font-medium">Gerenciamento</p>
+                                    <div class="flex items-center justify-between">
+                                        <p class="text-base font-bold text-zenix-text text-left">{{ realRiskLabel }}</p>
+                                        <div class="px-2 py-0.5 bg-zenix-green/10 border border-zenix-green/20 rounded text-[10px] font-bold text-zenix-green">
+                                            {{ realRiskLabel }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -1000,7 +1000,7 @@ export default {
             return this.sessionConfig.lossLimit || this.lossLimitConfig || null;
         },
         mode() {
-            return this.sessionConfig.mode || this.modeConfig || 'veloz';
+            return (this.sessionConfig.mode || this.modeConfig || 'veloz').toLowerCase();
         },
         
         // Verificar se Trinity está ativa (baseado no mercado)
@@ -1025,7 +1025,7 @@ export default {
             // ✅ Mapeamento completo de todas as estratégias disponíveis
             const strategyNames = {
                 'orion': 'IA Orion',
-                'atlas': 'IA Atlas v2.0',
+                'atlas': 'IA Atlas',
                 'apollo': 'IA Apollo v3',
                 'titan': 'IA TITAN',
                 'nexus': 'IA NEXUS',
@@ -1033,8 +1033,8 @@ export default {
                 'falcon': 'IA Falcon',
                 'trinity': 'IA Trinity',
                 // Fallbacks para variações
-                'atlas_v2': 'IA Atlas v2.0',
-                'atlas_v2.0': 'IA Atlas v2.0',
+                'atlas_v2': 'IA Atlas',
+                'atlas_v2.0': 'IA Atlas',
                 'apollo_v3': 'IA Apollo v3',
             };
             
@@ -1110,8 +1110,8 @@ export default {
             const strategy = this.sessionConfig?.strategy || this.selectedStrategy || 'orion';
             const strategyLower = strategy.toLowerCase();
             const descriptions = {
-                'orion': 'Especialista em dígitos • Volume alto • Lucros rápidos',
-                'atlas': 'Extrema Alta Frequência • Análise Ultrarrápida • Máxima Precisão',
+                'orion': 'Análise técnica avançada com machine learning',
+                'atlas': 'Análise técnica avançada com machine learning',
                 'apollo': 'Price Action Avançado • Barreira Dinâmica • Alta Assertividade',
                 'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida',
                 'nexus': 'Price Action Sniper • Barreira Dinâmica • Assertividade Máxima',
