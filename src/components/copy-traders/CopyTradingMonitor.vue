@@ -36,6 +36,16 @@
                 </div>
             </div>
 
+            <div class="copy-pause-container">
+                <button 
+                    class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-[56px] w-full"
+                    @click="pauseCopy"
+                >
+                    <i class="fas fa-power-off mr-2 text-[14px]"></i>
+                    PAUSAR COPY
+                </button>
+            </div>
+
             <div class="card status-card div2">
                 <div class="card-header">
                     <span class="card-title">Status Atual do Copy</span>
@@ -295,7 +305,6 @@
                     </div>
                 </div>
             </div>
-            <button class="pause-copy-btn" @click="pauseCopy">II Pausar Copy</button>
         </div>
 
         <div v-if="showAllOperationsModal" class="modal-overlay" @click="closeModal">
@@ -1051,27 +1060,12 @@ export default {
 .footer-item .value.green { color: #22c55e; }
 .footer-item .value.red { color: #ef4444; }
 
-/* Botão Pausar Copy abaixo do card de evolução - escondido no desktop */
-.pause-copy-btn {
+/* Novo container para o botão de pausar copy */
+.copy-pause-container {
+    grid-column: 1 / -1;
     width: 100%;
-    background: #ef4444;
-    border: none;
-    color: white;
-    padding: 16px 20px;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s;
-    margin-top: 0px;
-    display: none;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-}
-
-.pause-copy-btn:hover {
-    background: #dc2626;
+    margin-top: 10px;
+    margin-bottom: 20px;
 }
 
 /* Fundo escuro para o card de performance */
@@ -1817,10 +1811,9 @@ export default {
         background-position: center;
     }
 
-    .pause-copy-btn{
-        display: flex !important;
+    .copy-pause-container {
         margin-top: 0;
-        margin-bottom: 90px;
+        margin-bottom: 0px;
     }
     
     .status-card .status-header .pause-btn {
