@@ -345,7 +345,7 @@ export default {
 	
 			// Seção Mercado & Estratégia
 			market: "EURUSD_Forex",
-			strategy: "Orion_AltaPerformance",
+			strategy: "Atlas",
 			// Modo de Negociação (Veloz)
 			mode: "Veloz",
 	

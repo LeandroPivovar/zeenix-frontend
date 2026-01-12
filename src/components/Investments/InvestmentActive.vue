@@ -745,7 +745,7 @@
                                         <p class="text-base font-bold text-zenix-green text-left" v-else>Carregando...</p>
                                     </div>
                                     <div class="text-left border border-zenix-border/30 rounded-lg p-2.5">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left">Stop Loss Blindado</p>
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left">Limite de Perda</p>
                                         <p class="text-base font-bold text-zenix-red text-left" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
                                         <p class="text-base font-bold text-zenix-red text-left" v-else>Carregando...</p>
                                     </div>
@@ -2045,24 +2045,14 @@ export default {
         /**
          * Log de operação executada
          */
-        logOperacaoExecutada(op) {
-            this.addLog('operacao', `🎯 EXECUTANDO OPERAÇÃO #${op.numero}${op.martingale ? ' (MARTINGALE)' : ''}`);
-            this.addLog('operacao', `Ativo: ${op.ativo}`);
-            this.addLog('operacao', `Direção: ${op.direcao}`);
-            this.addLog('operacao', `Valor: $${op.valor.toFixed(2)}`);
-            this.addLog('operacao', `Payout: 0.95 (95%)`);
-            this.addLog('operacao', `Lucro esperado: $${(op.valor * 0.95).toFixed(2)}`);
-            
-            if (op.martingale) {
-                this.addLog('operacao', `Martingale: SIM (entrada ${op.entradaMartingale})`);
-                this.addLog('operacao', `Objetivo: Recuperar $${op.perdaAcumulada.toFixed(2)}`);
-            } else {
-                this.addLog('operacao', `Martingale: NÃO (operação normal)`);
-            }
-            
-            this.addLog('operacao', `Status: Aguardando resultado...`);
-        },
-        
+        /**
+ * Log de operação executada
+ */
+logOperacaoExecutada(op) {
+    // Mantendo logs mínimos para indicar ação, já que o Sinal Gerado contém os detalhes
+    // e o Resultado conterá o desfecho.
+    // this.addLog('info', `⚡ EXECUTANDO OPERAÇÃO #${op.numero} (${op.direcao})`);
+},        
         /**
          * Log de resultado da operação
          */

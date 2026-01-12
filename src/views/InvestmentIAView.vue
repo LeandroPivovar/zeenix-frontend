@@ -433,7 +433,7 @@ export default {
             stoplossBlindado: false,
 
             selectedMarket: 'vol10',
-            selectedStrategy: 'orion',
+            selectedStrategy: 'atlas',
             
             dailyStats: {
                 profitLoss: 0,
