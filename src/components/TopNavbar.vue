@@ -255,9 +255,10 @@
         <div v-if="notifications.length > 0" class="notifications-modal-footer">
           <button 
             @click="clearNotifications" 
-            class="clear-notifications-btn"
+            class="w-full flex items-center justify-center gap-2 py-3 bg-[#EF4444]/10 hover:bg-[#EF4444]/20 text-[#EF4444] rounded-lg text-sm font-medium transition-all duration-200 border border-transparent hover:border-[#EF4444]/20"
           >
-            Excluir Notificações
+            <i class="fas fa-trash"></i>
+            <span>Excluir Notificações</span>
           </button>
         </div>
       </div>
@@ -512,9 +513,24 @@ export default {
     closeNotificationsModal() {
       this.showNotificationsModal = false;
     },
-    clearNotifications() {
-      this.notifications = [];
-      this.hasUnreadNotifications = false;
+    async clearNotifications() {
+      try {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const token = localStorage.getItem('token');
+        
+        await fetch(`${apiBase}/notifications/clear`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        });
+
+        this.notifications = [];
+        this.hasUnreadNotifications = false;
+      } catch (error) {
+        console.error('[TopNavbar] Erro ao limpar notificações:', error);
+      }
     },
     formatNotificationDate(date) {
       if (!date) return '';
