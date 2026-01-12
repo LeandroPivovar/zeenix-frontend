@@ -1838,20 +1838,14 @@ export default {
                     console.log('[InvestmentActive] 📥 Logs recebidos do backend:', result.data.length, 'logs');
                     // Converter logs recebidos
                     // ✅ INCLUIR id e created_at PARA COMPARAÇÃO CORRETA
-                    const newLogs = result.data.map(log => {
-                        // Processar e filtrar logs do backend para o padrão Zenix
-                        const processedLog = this.processBackendLog(log);
-                        if (!processedLog) return null; // Ignorar logs ruidosos
-
-                        return {
-                            id: log.id,
-                            timestamp: log.timestamp, // Manter timestamp original mas não mostrar no texto
-                            created_at: log.created_at,
-                            type: processedLog.type || log.type,
-                            icon: processedLog.icon || log.icon,
-                            message: processedLog.message
-                        };
-                    }).filter(log => log !== null); // Remover nulos
+                    const newLogs = result.data.map(log => ({
+                        id: log.id,
+                        timestamp: log.timestamp,
+                        created_at: log.created_at,
+                        type: log.type,
+                        icon: log.icon,
+                        message: log.message
+                    }));
                     
                     // ✅ Se é a primeira carga, substituir tudo
                     
@@ -2056,122 +2050,25 @@ export default {
         /**
  * Log de operação executada
  */
-logOperacaoExecutada() {
-    // Mantendo logs mínimos para indicar ação, já que o Sinal Gerado contém os detalhes
-    // e o Resultado conterá o desfecho.
-    // this.addLog('info', `⚡ EXECUTANDO OPERAÇÃO #${op.numero} (${op.direcao})`);
-},        
         /**
-         * Log de resultado da operação
+         * Log de operação executada
          */
-        /**
-         * Processa e padroniza logs vindos do backend
-         */
-        processBackendLog(log) {
-            const msg = log.message;
+        logOperacaoExecutada(op) {
+            this.addLog('operacao', `🎯 EXECUTANDO OPERAÇÃO #${op.numero}${op.martingale ? ' (MARTINGALE)' : ''}`);
+            this.addLog('operacao', `Ativo: ${op.ativo}`);
+            this.addLog('operacao', `Direção: ${op.direcao}`);
+            this.addLog('operacao', `Valor: $${op.valor.toFixed(2)}`);
+            this.addLog('operacao', `Payout: 0.95 (95%)`);
+            this.addLog('operacao', `Lucro esperado: $${(op.valor * 0.95).toFixed(2)}`);
             
-            // 1. Filtrar ruído (Logs que não devem aparecer)
-            if (msg.includes('Contrato criado') || 
-                msg.includes('Contrato finalizado') || 
-                msg.includes('Primeira atualização') || 
-                msg.includes('Payout:') || 
-                msg.includes('Lucro esperado:') ||
-                msg.includes('Aguardando resultado') ||
-                msg.includes('Status: Aguardando') ||
-                msg.includes('Ativo: ') ||
-                msg.includes('Valor: ') || 
-                msg.includes('Aguardando 20 ticks') ||
-                msg.includes('DADOS COLETADOS') ||
-                msg.includes('Coleta inicial iniciada')) {
-                return null;
-            }
-
-            // 2. Padronizar RESULTADO
-            if (msg.includes('GANHOU') || msg.includes('PERDEU')) {
-                const isWin = msg.includes('GANHOU') || msg.includes('VITÓRIA');
-                const plMatch = msg.match(/P&L: ([+\-]\$[\d\.]+)/);
-                const pl = plMatch ? plMatch[1] : (isWin ? '+PROFIT' : '-LOSS');
-                
-                // Extrair saldo se possível do log anterior ou atual (backend as vezes manda separado)
-                // Se não tiver, usar placeholder ou tentar pegar do estado
-                // Formato padrão: 🏁 RESULTADO DA ENTRADA ...
-                return {
-                    type: isWin ? 'success' : 'error',
-                    icon: '🏁',
-                    message: `RESULTADO DA ENTRADA\n• Status: ${isWin ? 'WIN' : 'LOSS'}\n• Lucro/Prejuízo: ${pl}\n• Saldo Atual: $${this.accountBalanceProp || '---'}`
-                };
-            }
-
-            // 3. Padronizar SINAL GERADO
-            if (msg.includes('SINAL GERADO') || (msg.includes('[ANÁLISE') && msg.includes('Critérios atendidos'))) {
-                // Tenta extrair direção
-                const dirMatch = msg.match(/Entrada: (ODD|EVEN|PAR|IMPAR)/i) || msg.match(/SINAL GERADO: (.*)/);
-                const direction = dirMatch ? (dirMatch[1].toUpperCase().includes('ODD') || dirMatch[1].toUpperCase().includes('IMPAR') ? 'ÍMPAR' : 'PAR') : 'SINAL';
-                
-                 return {
-                    type: 'sinal',
-                    icon: '🔍',
-                    message: `ANÁLISE: MODO ${this.mode ? this.mode.toUpperCase() : 'VELOZ'}\n✅ FILTRO 1: Padrão Identificado\n✅ FILTRO 2: Confirmação de Tendência\n✅ GATILHO: Sinal Confirmado\n💪 FORÇA DO SINAL: 85%\n📊 ENTRADA: DIGIT ${direction === 'ÍMPAR' ? 'ODD' : 'EVEN'}\n________________________________________`
-                };
-            }
-
-            // 4. Padronizar SOROS
-            if (msg.includes('SOROS Nível')) {
-                const nivelMatch = msg.match(/Nível (\d+)/);
-                const nivel = nivelMatch ? nivelMatch[1] : '1';
-                return {
-                    type: 'info',
-                    icon: '🚀',
-                    message: `APLICANDO SOROS NÍVEL ${nivel}\n• Reaproveitando lucro da operação anterior.`
-                };
-            }
-
-            // 5. Padronizar MARTINGALE
-            if (msg.includes('MARTINGALE') && (msg.includes('Continuando') || msg.includes('ATIVADO'))) {
-                return {
-                    type: 'warning',
-                    icon: '🔄',
-                    message: `MARTINGALE ATIVADO (${this.modoMartingale ? this.modoMartingale.toUpperCase() : 'AGRESSIVO'})\n• Recuperando perda anterior.`
-                };
+            if (op.martingale) {
+                this.addLog('operacao', `Martingale: SIM (entrada ${op.entradaMartingale})`);
+                this.addLog('operacao', `Objetivo: Recuperar $${op.perdaAcumulada.toFixed(2)}`);
+            } else {
+                this.addLog('operacao', `Martingale: NÃO (operação normal)`);
             }
             
-            // 6. Padronizar STOP LOSS
-            if (msg.includes('STOP LOSS ATINGIDO')) {
-                 return {
-                    type: 'error',
-                    icon: '🛑',
-                    message: `STOP LOSS NORMAL ATINGIDO\n• Motivo: Limite de perda diária alcançado.\n• Ação: Encerrando operações imediatamente.`
-                };
-            }
-
-            // 7. Padronizar META DE LUCRO
-            if (msg.includes('META DE LUCRO ATINGIDA')) {
-                 return {
-                    type: 'success',
-                    icon: '🏆',
-                    message: `META DE LUCRO ATINGIDA!\n• Lucro Total: $${this.sessionConfig.profitTarget || 50}\n• Ação: Parabéns! Encerrando operações por hoje.`
-                };
-            }
-            
-            // 8. Padronizar DEFESA
-            if (msg.includes('DEFESA AUTOMÁTICA ATIVADA')) {
-                return {
-                    type: 'warning',
-                    icon: '🚨',
-                    message: `DEFESA AUTOMÁTICA ATIVADA\n• Motivo: Sequência de perdas detectada.\n• Ação: Mudando para modo de segurança.`
-                };
-            }
-
-            // Se não casar com nada, retorna o log original (com timestamp se o usuário pediu)
-            // Mas para checagem de filtro, removemos o timestamp temporariamente
-            const contentWithoutTimestamp = msg.replace(/^\[\d{2}:\d{2}:\d{2}\]\s*/, '');
-            
-            // Se ainda assim for um log "técnico" que passou pelo filtro, ignorar
-            if (contentWithoutTimestamp.startsWith('⚡') || contentWithoutTimestamp.startsWith('💰')) return null;
-
-            return {
-                message: msg
-            };
+            this.addLog('operacao', `Status: Aguardando resultado...`);
         },
 
         logResultadoOperacao(resultado) {
