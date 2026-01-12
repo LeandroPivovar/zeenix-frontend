@@ -754,18 +754,21 @@
                                         <p class="text-base font-bold text-zenix-red text-left" v-else>Carregando...</p>
                                     </div>
                                     
-                                    <!-- Stop Blindado (Movido para cá) -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2.5 h-full flex flex-col justify-center col-span-2 sm:col-span-1">
+                                    <!-- Stop Blindado -->
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2.5 h-full flex flex-col justify-center">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Stop Blindado</p>
                                         <p class="text-base font-bold text-zenix-text text-left mb-1">{{ sessionConfig.lossLimit ? 'Ativo' : 'Inativo' }}</p>
-                                        <p class="text-[10px] text-zenix-secondary leading-tight">Protege 50% do lucro máximo atingido</p>
                                     </div>
 
-                                    <!-- Gerenciamento (Movido para cá) -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2.5 h-full flex flex-col justify-center col-span-2 sm:col-span-1">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Gerenciamento</p>
+                                    <!-- Gerenciamento de Risco -->
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2.5 h-full flex flex-col justify-center">
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Gerenciamento De Risco</p>
                                         <p class="text-base font-bold text-zenix-text text-left mb-1">{{ realRiskLevel }}</p>
-                                        <p class="text-[10px] text-zenix-secondary leading-tight">{{ realRiskDescription }}</p>
+                                    </div>
+                                    
+                                    <!-- Descrição do Risco (Abaixo dos 2 cards - Full Width) -->
+                                    <div class="col-span-2 text-left mt-1">
+                                         <p class="text-[10px] text-zenix-secondary leading-tight">{{ realRiskDescription }}</p>
                                     </div>
                                 </div>
                             </div>

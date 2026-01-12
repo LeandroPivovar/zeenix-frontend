@@ -55,7 +55,7 @@ html, body, #app {
   .premium-card:hover {
     box-shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
     transform: translateY(-2px);
-    border: 1px solid #22C55E;
+    border: 1px solid #1C1C1C;
   }
   
   .glass-effect {
