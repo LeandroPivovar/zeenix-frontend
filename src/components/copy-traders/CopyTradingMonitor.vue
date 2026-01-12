@@ -36,7 +36,7 @@
                 </div>
             </div>
 
-            <div class="copy-pause-container">
+            <div class="copy-pause-container mobile-only">
                 <button 
                     class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-[56px] w-full"
                     @click="pauseCopy"
@@ -63,7 +63,13 @@
                             <div class="value">{{ statusCopy.status }}</div>
                         </div>
                     </div>
-                    <button class="pause-btn" @click="pauseCopy">PAUSAR COPY</button>
+                    <button 
+                        class="bg-zenix-yellow text-black rounded-xl text-[14px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide px-6 py-2 h-[40px] hidden lg:flex"
+                        @click="pauseCopy"
+                    >
+                        <i class="fas fa-power-off mr-2 text-[12px]"></i>
+                        PAUSAR COPY
+                    </button>
                 </div>
                 <div class="trader-row">
                     <div class="trader-info">
