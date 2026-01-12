@@ -66,7 +66,7 @@
 							@click="selectRisk('balanced')"
 							title="Selecione o seu perfil de risco."
 						>
-							<h3>Conservador</h3>
+							<h3>Moderado</h3>
 							<p>Risco moderado, bom equilíbrio</p>
 						</div>
 						<div 
@@ -114,7 +114,7 @@
 								@click="selectRisk('balanced')"
 							>
 								<span class="mobile-risk-btn-bg" v-if="selectedRisk === 'balanced'"></span>
-								<span class="mobile-risk-btn-text" :class="{ 'active-text': selectedRisk === 'balanced' }">Conservador</span>
+								<span class="mobile-risk-btn-text" :class="{ 'active-text': selectedRisk === 'balanced' }">Moderado</span>
 							</button>
 							<button 
 								class="mobile-risk-btn"
@@ -515,7 +515,7 @@ export default {
 		getRiskTitle(id) {
 			const map = {
 				'conservative': 'Conservador',
-				'balanced': 'Conservador',
+				'balanced': 'Moderado',
 				'aggressive': 'Agressivo',
 				'fixed': 'Fixo'
 			};

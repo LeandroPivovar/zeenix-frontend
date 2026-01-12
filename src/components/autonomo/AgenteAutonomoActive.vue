@@ -1518,9 +1518,8 @@
 			},
 			
 			pausarAgenteEIrParaTopo() {
-				console.log('[AgenteAutonomoActive] Botão pausar clicado, emitindo evento pausarAgente');
-				this.$emit('pausarAgente'); // Emite o evento original para o pai
-				this.$emit('pausar-agente'); // Também emite em kebab-case para garantir compatibilidade
+				console.log('[AgenteAutonomoActive] Botão pausar clicado, emitindo evento pausar-agente');
+				this.$emit('pausar-agente'); // Usa apenas o padrão kebab-case para evitar duplicidade
 				this.$nextTick(() => {
 					window.scrollTo({ top: 0, behavior: 'smooth' }); // Ou 'instant'
 				});
