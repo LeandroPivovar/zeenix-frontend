@@ -1110,18 +1110,18 @@ export default {
             const strategy = this.sessionConfig?.strategy || this.selectedStrategy || 'orion';
             const strategyLower = strategy.toLowerCase();
             const descriptions = {
-                'orion': 'Análise técnica avançada com machine learning',
-                'atlas': 'Análise técnica avançada com machine learning',
-                'apollo': 'Price Action Avançado • Barreira Dinâmica • Alta Assertividade',
-                'titan': 'Persistência inteligente • Alta precisão • Recuperação garantida',
-                'nexus': 'Price Action Sniper • Barreira Dinâmica • Assertividade Máxima',
+                'orion': 'Análise: Estatística de Dígitos (Over 3) com Price Action na Recuperação - Assertividade: 60% a 70% - Retorno: 65% / 90%',
+                'atlas': 'Análise: Híbrida (Fluxo de Dígitos + Price Action) - Assertividade: 55 a 65% - Retorno: 70% / 95%',
+                'apollo': 'Análise: Price Action Puro (Inércia + Força + Tendência) - Assertividade: 55% a 65% - Retorno: 90%',
+                'titan': 'Análise: Dígitos Par/Ímpar com persistência direcional - Assertividade: 50-60% - Retorno: 90%',
+                'nexus': 'Análise: Price Action (Barreira de Segurança) com Troca de Contrato - Assertividade: 60% a 70% - Retorno: 57% / 90%',
                 'sentinel': 'Análise Híbrida • Martingale Inteligente • Soros Avançado',
                 'falcon': 'Análise Técnica Avançada • Recuperação Automática • Lucros Consistentes',
                 'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes',
                 // Fallbacks
-                'atlas_v2': 'Extrema Alta Frequência • Análise Ultrarrápida • Máxima Precisão',
-                'atlas_v2.0': 'Extrema Alta Frequência • Análise Ultrarrápida • Máxima Precisão',
-                'apollo_v3': 'Price Action Avançado • Barreira Dinâmica • Alta Assertividade',
+                'atlas_v2': 'Análise: Híbrida (Fluxo de Dígitos + Price Action) - Assertividade: 55 a 65% - Retorno: 70% / 95%',
+                'atlas_v2.0': 'Análise: Híbrida (Fluxo de Dígitos + Price Action) - Assertividade: 55 a 65% - Retorno: 70% / 95%',
+                'apollo_v3': 'Análise: Price Action Puro (Inércia + Força + Tendência) - Assertividade: 55% a 65% - Retorno: 90%',
             };
             return descriptions[strategyLower] || descriptions.orion;
         },
