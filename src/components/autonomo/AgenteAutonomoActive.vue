@@ -63,8 +63,8 @@
 				</div>
 				<!-- Novo botão de pause mobile -->
 				<div class="data-item mobile-only order-4-mob no-padding">
-					<button @click="pausarAgenteEIrParaTopo" class="pause-btn-mobile">
-						<span class="pause-icon">II</span> PAUSAR
+					<button @click="pausarAgenteEIrParaTopo" class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold transition-all flex items-center justify-center uppercase tracking-wide h-[56px] w-full">
+						<i class="fas fa-power-off mr-2 text-[14px]"></i> PAUSAR
 					</button>
 				</div>
 			</div>
@@ -102,7 +102,6 @@
 			<div class="progress-card">
 				<div class="metric-label">
 					<span>Progresso até a meta</span>
-					<span class="progress-percentage">{{ progressoPorcentagem }}</span>
 				</div>
 				<div class="progress-bar-container">
 					<div class="progress-bar">
@@ -2061,9 +2060,9 @@
 
 	.progress-bar {
 		width: 100%;
-		height: 12px !important;
+		height: 20px !important;
 		background: #1a1a1a;
-		border-radius: 8px;
+		border-radius: 12px;
 		overflow: hidden;
 		position: relative;
 		display: flex;
