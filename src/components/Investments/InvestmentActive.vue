@@ -1706,20 +1706,101 @@ export default {
          * Log de inicialização do sistema
          */
         logSystemInit() {
-            this.realtimeLogs = []; // Limpar sem chamar clearLogs() para evitar loop
-            this.lastLogTimestamp = null; // Resetar timestamp
-            this.addLog('info', '✨ SISTEMA ZENIX v2.0 INICIADO');
-            this.addLog('info', '📋 CONFIGURAÇÃO ATIVA:');
-            this.addLog('info', `Modo: ${this.sessionConfig.mode ? this.sessionConfig.mode.toUpperCase() : 'VELOZ'}`);
-            this.addLog('info', `Entrada: $${this.sessionConfig.entryValue ? this.sessionConfig.entryValue.toFixed(2) : '0.35'}`);
-            this.addLog('info', `Martingale: ${this.sessionConfig.modoMartingale ? this.sessionConfig.modoMartingale.toUpperCase() : 'AGRESSIVO'}`);
-            this.addLog('info', `Alvo de Lucro: $${this.sessionConfig.profitTarget || 25}`);
-            this.addLog('info', `Limite de Perda: $${this.sessionConfig.lossLimit || 20}`);
-            this.addLog('info', '🔌 Conectado à Deriv API (R_10)');
-            this.addLog('info', '📡 Sistema operacional. Aguardando operações reais...');
+            this.realtimeLogs = [];
+            this.lastLogTimestamp = null;
             
-            // Iniciar polling de logs do backend
+            // Log 1: Configurações Iniciais
+            const mode = this.sessionConfig.mode ? this.sessionConfig.mode.toUpperCase() : 'VELOZ';
+            const risk = this.sessionConfig.modoMartingale ? this.sessionConfig.modoMartingale.toUpperCase() : 'MODERADO';
+            const profitTarget = this.sessionConfig.profitTarget ? `$${this.sessionConfig.profitTarget.toFixed(2)}` : '$50.00';
+            const lossLimit = this.sessionConfig.lossLimit ? `$${this.sessionConfig.lossLimit.toFixed(2)}` : '$50.00';
+            
+            this.addLog('info', '⚙️ CONFIGURAÇÕES INICIAIS');
+            this.addLog('info', `• Estratégia: ORION`);
+            this.addLog('info', `• Modo de Negociação: ${mode}`);
+            this.addLog('info', `• Gerenciamento de Risco: ${risk}`);
+            this.addLog('info', `• Meta de Lucro: ${profitTarget}`);
+            this.addLog('info', `• Stop Loss Normal: ${lossLimit}`);
+            this.addLog('info', `• Stop Loss Blindado: ${this.stoplossBlindado ? 'ATIVADO' : 'DESATIVADO'}`);
+            
             this.startLogPolling();
+        },
+
+        logColetaDados(meta, contagem) {
+            this.addLog('info', '📡 COLETANDO DADOS...');
+            this.addLog('info', `• META DE COLETA: ${meta} TICKS (Modo Veloz)`);
+            this.addLog('info', `• CONTAGEM: ${contagem}/${meta}`);
+        },
+
+        logAnaliseIniciada(modo) {
+            this.addLog('analise', ''); // Espaçamento
+            this.addLog('analise', '🧠 ANÁLISE INICIADA...');
+            this.addLog('analise', `• Verificando condições para o modo: ${modo.toUpperCase()}`);
+        },
+
+        logSinalGerado(analise) {
+            this.addLog('sinal', `🔍 ANÁLISE: MODO ${analise.modo.toUpperCase()}`);
+            this.addLog('sinal', `✅ FILTRO 1: Dígito anterior foi ${analise.lastDigit} (${analise.lastDigit % 2 === 0 ? 'Par' : 'Ímpar'})`);
+            this.addLog('sinal', `✅ FILTRO 2: Dígito atual foi ${analise.currentDigit} (${analise.currentDigit % 2 === 0 ? 'Par' : 'Ímpar'})`);
+            this.addLog('sinal', `✅ GATILHO: Sequência de ${analise.sequenceCount} dígitos < 4 detectada.`);
+            this.addLog('sinal', `💪 FORÇA DO SINAL: ${analise.strength}%`);
+            this.addLog('sinal', `📊 ENTRADA: ${analise.entryType}`);
+            this.addLog('sinal', '________________________________________');
+        },
+
+        logSoros(nivel, lucroAnterior, novaStake) {
+            this.addLog('info', `🚀 APLICANDO SOROS NÍVEL ${nivel}`);
+            this.addLog('info', `• Lucro Anterior: $${lucroAnterior.toFixed(2)}`);
+            this.addLog('info', `• Nova Stake (Base + Lucro): $${novaStake.toFixed(2)}`);
+        },
+
+        logDefesa(motivo, acao) {
+            this.addLog('alerta', '🚨 DEFESA AUTOMÁTICA ATIVADA');
+            this.addLog('alerta', `• Motivo: ${motivo}`);
+            this.addLog('alerta', `• Ação: ${acao}`);
+        },
+
+        logResetMartingale() {
+            this.addLog('info', '♻️ LIMITE DE RECUPERAÇÃO ATINGIDO (CONSERVADOR)');
+            this.addLog('info', '• Ação: Aceitando perda e resetando stake.');
+            this.addLog('info', `• Próxima Entrada: Valor Inicial ($${(this.sessionConfig.entryValue || 1).toFixed(2)})`);
+        },
+
+        logAjusteStake(tipo, calculada, restante, acao) {
+            this.addLog('alerta', `⚠️ AJUSTE DE RISCO (${tipo.toUpperCase()})`);
+            this.addLog('alerta', `• Stake Calculada: $${calculada.toFixed(2)}`);
+            this.addLog('alerta', `• ${tipo === 'STOP BLINDADO' ? 'Lucro Protegido Restante' : 'Saldo Restante até Stop'}: $${restante.toFixed(2)}`);
+            this.addLog('alerta', `• Ação: Stake reduzida para $${restante.toFixed(2)} para ${acao}`);
+        },
+        
+        logStatusStopBlindado(lucroAtual, faltaParaAtivar) {
+            this.addLog('info', '🔒 STATUS STOP BLINDADO');
+            this.addLog('info', `• Lucro Atual: $${lucroAtual.toFixed(2)}`);
+            this.addLog('info', `• Falta para Ativar: $${faltaParaAtivar.toFixed(2)}`);
+        },
+
+        logStopBlindadoAtivado(lucroAtingido, protecao) {
+             this.addLog('alerta', '🛡️ STOP BLINDADO ATIVADO!');
+             this.addLog('alerta', `• Lucro Atingido: $${lucroAtingido.toFixed(2)} (40% da Meta)`);
+             this.addLog('alerta', `• Proteção Iniciada: Garantindo $${protecao.toFixed(2)} (50% do Pico)`);
+        },
+        
+        logStopBlindadoAtingido(lucroGarantido) {
+            this.addLog('erro', '🛑 STOP BLINDADO ATINGIDO');
+            this.addLog('erro', '• Motivo: Lucro retornou ao piso de proteção.');
+            this.addLog('erro', `• Ação: Encerrando operações com LUCRO GARANTIDO de $${lucroGarantido.toFixed(2)}.`);
+        },
+
+        logStopLossNormalAtingido() {
+            this.addLog('erro', '🛑 STOP LOSS NORMAL ATINGIDO');
+            this.addLog('erro', '• Motivo: Limite de perda diária alcançado.');
+            this.addLog('erro', '• Ação: Encerrando operações imediatamente.');
+        },
+
+        logMetaLucroAtingida(lucroTotal) {
+            this.addLog('resultado', '🏆 META DE LUCRO ATINGIDA!');
+            this.addLog('resultado', `• Lucro Total: $${lucroTotal.toFixed(2)}`);
+            this.addLog('resultado', '• Ação: Parabéns! Encerrando operações por hoje.');
         },
         
         /**
@@ -1948,33 +2029,17 @@ export default {
         /**
          * Simula log de análise completa (será substituído por dados reais do backend via WebSocket)
          */
+        // Deprecated or Unused - Logic Moved to specific log methods
         logAnaliseCompleta(analise) {
-            this.addLog('analise', 'ANÁLISE INICIADA');
-            this.addLog('analise', `Distribuição: PAR: ${analise.percPar}% | ÍMPAR: ${analise.percImpar}%`);
-            this.addLog('analise', `Desequilíbrio: ${analise.desequilibrio}% ${analise.ladoDeseq} ${analise.desequilibrioOK ? '✅' : '❌'}`);
-            this.addLog('analise', '🔢 ANÁLISE 1: Desequilíbrio Base');
-            this.addLog('analise', `${analise.ladoDeseq}: ${analise.desequilibrio}% → Operar ${analise.operacao}`);
-            this.addLog('analise', `Confiança base: ${analise.confiancaBase}%`);
-            this.addLog('analise', '🔁 ANÁLISE 2: Sequências Repetidas');
-            this.addLog('analise', `Maior sequência: ${analise.sequencia} ticks ${analise.sequencia >= 5 ? '✅' : '❌'}`);
-            this.addLog('analise', `Bônus: +${analise.bonusSeq}%`);
-            this.addLog('analise', '📈 ANÁLISE 3: Micro-Tendências');
-            this.addLog('analise', `Aceleração: ${analise.aceleracao}% ${analise.aceleracao > 10 ? '✅' : '❌'}`);
-            this.addLog('analise', `Bônus: +${analise.bonusMicro}%`);
-            this.addLog('analise', '⚡ ANÁLISE 4: Força do Desequilíbrio');
-            this.addLog('analise', `Velocidade: ${analise.velocidade}% ${analise.velocidade > 5 ? '✅' : '❌'}`);
-            this.addLog('analise', `Bônus: +${analise.bonusForca}%`);
-            this.addLog('analise', '🎯 CONFIANÇA FINAL');
-            this.addLog('analise', `Total: ${analise.confiancaFinal}% (limite: 95%)`);
-            this.addLog('analise', `${analise.confiancaOK ? '✅' : '❌'} ${analise.confiancaFinal}% ${analise.confiancaOK ? '≥' : '<'} ${analise.confianciaMin}%`);
-            
-            if (analise.confiancaOK) {
-                this.addLog('sinal', '✅ SINAL GERADO');
-                this.addLog('sinal', `Direção: ${analise.operacao}`);
-                this.addLog('sinal', `Confiança: ${analise.confiancaFinal}%`);
-            } else {
-                this.addLog('analise', '❌ Confiança insuficiente. Aguardando...');
-            }
+             // Redirecionando para novo padrão se chamado
+             this.logSinalGerado({
+                 modo: 'VELOZ', // Default fallback
+                 lastDigit: 0,
+                 currentDigit: 0,
+                 sequenceCount: 2,
+                 strength: analise.confiancaFinal || 60,
+                 entryType: analise.operacao || 'DIGIT OVER 3'
+             });
         },
         
         /**
@@ -2003,28 +2068,16 @@ export default {
          */
         logResultadoOperacao(resultado) {
             const vitoria = resultado.status === 'WON';
+            const lucro = parseFloat(resultado.lucro || 0);
+            const saldoAtual = parseFloat(resultado.capitalDepois || 0);
             
-            this.addLog('resultado', vitoria ? '🎉 VITÓRIA!' : '❌ DERROTA');
-            this.addLog('resultado', `Operação #${resultado.numero}: ${resultado.direcao}`);
-            this.addLog('resultado', `Resultado: ${resultado.digitoSaida} (${resultado.paridadeSaida}) ${vitoria ? '✅' : '❌'}`);
-            this.addLog('resultado', `Investido: -$${resultado.investido.toFixed(2)}`);
-            this.addLog('resultado', `Retorno: +$${vitoria ? resultado.retorno.toFixed(2) : '0.00'}`);
-            this.addLog('resultado', `${vitoria ? 'Lucro' : 'Perda'}: ${vitoria ? '+' : ''}$${resultado.lucro.toFixed(2)}`);
-            this.addLog('resultado', `Capital: $${resultado.capitalAntes.toFixed(2)} → $${resultado.capitalDepois.toFixed(2)}`);
-            this.addLog('resultado', `ROI sessão: ${resultado.roi >= 0 ? '+' : ''}${resultado.roi.toFixed(2)}%`);
-            this.addLog('resultado', `Vitórias: ${resultado.vitorias} | Derrotas: ${resultado.derrotas}`);
-            this.addLog('resultado', `Taxa acerto: ${resultado.taxaAcerto.toFixed(1)}%`);
+            this.addLog('resultado', '🏁 RESULTADO DA ENTRADA');
+            this.addLog('resultado', `• Status: ${vitoria ? 'WIN' : 'LOSS'}`);
+            this.addLog('resultado', `• Lucro/Prejuízo: ${lucro >= 0 ? '+' : ''}$${Math.abs(lucro).toFixed(2)}`);
+            this.addLog('resultado', `• Saldo Atual: $${saldoAtual.toFixed(2)}`);
             
-            if (vitoria && resultado.martingaleAtivo) {
-                this.addLog('resultado', `Recuperação: +$${resultado.perdaRecuperada.toFixed(2)}`);
-                this.addLog('resultado', `🔄 MARTINGALE RESETADO`);
-            } else if (!vitoria) {
-                this.addLog('resultado', `Perda acumulada: -$${resultado.perdaAcumulada.toFixed(2)}`);
-                this.addLog('resultado', `🔄 MARTINGALE ATIVADO (${resultado.modoMartingale.toUpperCase()})`);
-                this.addLog('resultado', `Próxima aposta: $${resultado.proximaAposta.toFixed(2)}`);
-            }
-            
-            this.addLog('info', '');
+            // Log extra info apenas para debug ou se necessário, mas mantendo o padrão limpo acima
+            // this.addLog('info', `Operação #${resultado.numero}: ${resultado.digitoSaida} (${resultado.paridadeSaida})`);
         },
         
         async fetchDailyStats() {
