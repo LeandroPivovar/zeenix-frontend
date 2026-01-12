@@ -699,7 +699,7 @@
                                 <div v-else class="mobile-register-cards-container">
                                     <div v-for="(log, index) in realtimeLogs" :key="index" class="mobile-register-card">
                                         <span class="mobile-register-time">{{ log.timestamp }}</span>
-                                        <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.message }}</span>
+                                        <span class="mobile-register-message log-message" :class="getLogClass(log)">{{ log.icon }} {{ log.message }}</span>
                                     </div>
                                 </div>
                                 
