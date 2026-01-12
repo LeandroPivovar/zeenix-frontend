@@ -2161,15 +2161,15 @@ logOperacaoExecutada() {
                 };
             }
 
-            // Se não casar com nada, retorna o log original limpo (sem timestamp se possível)
-            // Remove timestamp bracket [HH:MM:SS]
-            const cleanMsg = msg.replace(/^\[\d{2}:\d{2}:\d{2}\]\s*/, '');
+            // Se não casar com nada, retorna o log original (com timestamp se o usuário pediu)
+            // Mas para checagem de filtro, removemos o timestamp temporariamente
+            const contentWithoutTimestamp = msg.replace(/^\[\d{2}:\d{2}:\d{2}\]\s*/, '');
             
             // Se ainda assim for um log "técnico" que passou pelo filtro, ignorar
-            if (cleanMsg.startsWith('⚡') || cleanMsg.startsWith('💰')) return null;
+            if (contentWithoutTimestamp.startsWith('⚡') || contentWithoutTimestamp.startsWith('💰')) return null;
 
             return {
-                message: cleanMsg
+                message: msg
             };
         },
 
