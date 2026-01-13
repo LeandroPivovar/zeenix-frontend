@@ -721,14 +721,14 @@
                             <i class="fas fa-cogs text-zenix-green text-sm mr-2"></i>
                             Configuração Ativa
                         </h3>
-                        <div class="flex-1 flex flex-col justify-between text-left">
+                        <div class="text-left">
                             <!-- Estratégia -->
                             <div class="pb-2 text-left">
                                 <p class="text-[10px] text-[#7D7D7D] font-medium mb-1 tracking-wide uppercase text-left">Estratégia</p>
                                 <div class="mb-1">
                                     <p class="text-base font-bold text-zenix-text text-left leading-none">{{ strategyName }}</p>
                                 </div>
-                                <p class="text-[11px] text-zenix-secondary text-left leading-snug">{{ strategyDescriptionText.replace(/ - Análise:.*$/, '') }}</p>
+                                <p class="text-[11px] text-zenix-secondary text-left leading-snug">{{ (strategyDescriptionText || '').replace(/ - Análise:.*$/, '') }}</p>
                             </div>
 
                             <!-- Mercado -->
@@ -770,7 +770,7 @@
 
                                     <!-- Gerenciamento de Risco -->
                                     <div class="text-left border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Gerenciamento De Risco</p>
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Gestão de Risco</p>
                                         <p class="text-base font-bold text-zenix-text text-left mb-1">{{ realRiskLevel }}</p>
                                     </div>
                                 </div>
