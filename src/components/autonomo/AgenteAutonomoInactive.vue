@@ -1,12 +1,6 @@
 <template>
 	<div class="layout-content-agent-autonomo">
 		<div class="agent-config-container">
-			<header class="config-header">
-				<h1>
-					<span class="hide-on-mobile">Configuração do </span>Agente Autônomo
-				</h1>
-				<p>Configure uma única vez. O agente operará todos os dias até atingir suas metas.</p>
-			</header>
 
 			<!-- AI Vision Panel -->
 			<section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;">
@@ -118,9 +112,14 @@
 						<div class="form-group">
 							<label class="form-label">
 								Agente Autônomo
-								<ZenixTooltip :offset="20"> 
-									<p>Escolha o agente autônomo. Cada agente possui uma estratégia única de operação e recuperação.</p>
-								</ZenixTooltip>
+								<div class="tooltip-container">
+									<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<circle cx="12" cy="12" r="10"></circle>
+										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+										<line x1="12" y1="17" x2="12.01" y2="17"></line>
+									</svg>
+									<span class="tooltip-text">Escolha o agente autônomo que deseja usar.</span>
+								</div>
 							</label>
 							<div class="premium-selector-field" @click="showAgentSelectorModal = true">
 								<div class="selector-content">
@@ -141,9 +140,14 @@
 						<div class="form-group risk-management-section">
 							<label class="form-label">
 								Nível de Risco
-								<ZenixTooltip :offset="20"> 
-									<p>Configura a estratégia de recuperação e o nível de exposição do capital.</p>
-								</ZenixTooltip>
+								<div class="tooltip-container">
+									<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<circle cx="12" cy="12" r="10"></circle>
+										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+										<line x1="12" y1="17" x2="12.01" y2="17"></line>
+									</svg>
+									<span class="tooltip-text">Configura a estratégia de recuperação e o nível de exposição do capital.</span>
+								</div>
 							</label>
 							<div class="risk-buttons">
 								<button 
@@ -209,9 +213,14 @@
 						<div class="form-group">
 							<label class="form-label">
 								Valor por operação
-								<ZenixTooltip :offset="20"> 
-									<p>Valor base de cada entrada realizada pelo agente.</p>
-								</ZenixTooltip>
+								<div class="tooltip-container">
+									<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<circle cx="12" cy="12" r="10"></circle>
+										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+										<line x1="12" y1="17" x2="12.01" y2="17"></line>
+									</svg>
+									<span class="tooltip-text">Defina o valor da sua primeira operação. Todas as estratégias de recuperação e alavancagem (Soros) serão calculadas a partir deste valor base.</span>
+								</div>
 							</label>
 							<div class="input-wrapper">
 								<span class="input-prefix">$</span>
@@ -229,9 +238,14 @@
 						<div class="form-group">
 							<label class="form-label">
 								Meta diária de lucro
-								<ZenixTooltip :offset="20"> 
-									<p>Objetivo financeiro diário. O agente para ao atingir este valor.</p>
-								</ZenixTooltip>
+								<div class="tooltip-container">
+									<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<circle cx="12" cy="12" r="10"></circle>
+										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+										<line x1="12" y1="17" x2="12.01" y2="17"></line>
+									</svg>
+									<span class="tooltip-text">Sua meta financeira para a sessão. O sistema encerrará as operações automaticamente assim que este valor for atingido ou superado.</span>
+								</div>
 							</label>
 							<div class="input-wrapper">
 								<span class="input-prefix">$</span>
@@ -250,9 +264,14 @@
 							<div class="form-group flex-1">
 								<label class="form-label">
 									Limite de Perda
-									<ZenixTooltip :offset="20"> 
-										<p>Valor máximo de perda aceitável para o dia.</p>
-									</ZenixTooltip>
+									<div class="tooltip-container">
+										<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<circle cx="12" cy="12" r="10"></circle>
+											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+											<line x1="12" y1="17" x2="12.01" y2="17"></line>
+										</svg>
+										<span class="tooltip-text">O valor máximo que você aceita arriscar na sessão. Nosso sistema possui Stop de Precisão: ele ajusta automaticamente o valor da última entrada para garantir que você nunca perca mais do que definiu aqui.</span>
+									</div>
 								</label>
 								<div class="input-wrapper">
 									<span class="input-prefix">$</span>
@@ -270,9 +289,14 @@
 							<div class="form-group flex-1">
 								<label class="form-label">
 									Stoploss Blindado
-									<ZenixTooltip :offset="20"> 
-										<p>Proteção extra contra variações bruscas do mercado.</p>
-									</ZenixTooltip>
+									<div class="tooltip-container">
+										<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<circle cx="12" cy="12" r="10"></circle>
+											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+											<line x1="12" y1="17" x2="12.01" y2="17"></line>
+										</svg>
+										<span class="tooltip-text">Ative para proteção dinâmica. Quando você atinge 40% da meta, o sistema cria um 'piso de segurança' móvel. Se o mercado virar, o sistema para com lucro garantido (50% do pico), impedindo que você devolva seus ganhos.</span>
+									</div>
 								</label>
 								<div class="stoploss-blindado-wrapper">
 									<div class="stoploss-blindado-label">
@@ -369,13 +393,11 @@
 </template>
 
 <script>
-import ZenixTooltip from '@/components/ZenixTooltip.vue'
 
 export default {
 	// *** MODIFICAÇÃO 2: Nome do componente corrigido ***
 	name: 'AgenteAutonomoInactive',
 	components: {
-		ZenixTooltip
 	},
 	props: {
 		accountBalance: {
@@ -646,6 +668,55 @@ export default {
 <style scoped>
 /* --- PADRÃO ZENIX v2.0: CONFIGURAÇÕES PREMIUM --- */
 
+/* Tooltip antigo (manual) adaptado ao novo layout */
+.tooltip-container {
+    position: relative; 
+    display: inline-block;
+    cursor: help; 
+    line-height: normal;
+    margin-left: 4px;
+}
+
+.icon-help {
+    width: 14px; 
+    height: 14px;
+    color: #999; 
+    transition: color 0.2s;
+    vertical-align: middle;
+}
+
+.icon-help:hover {
+    color: #fff; 
+}
+
+.tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    background-color: #111;
+    border: 1px solid #333;
+    color: #fff;
+    text-align: center;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    width: 280px; /* Largura fixa maior para textos longos */
+    position: absolute;
+    z-index: 100; 
+    top: 50%;
+    right: 100%; 
+    transform: translateY(-50%) translateX(-12px); 
+    transition: all 0.2s ease;
+    pointer-events: none; 
+    white-space: normal;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+    line-height: 1.4;
+}
+
+.tooltip-container:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+}
+
 .config-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -666,7 +737,7 @@ export default {
 
 .config-card.premium-card {
     position: relative;
-    overflow: hidden;
+    /* overflow: hidden; */ /* Removido para não cortar tooltips */
 }
 
 .card-content {
@@ -688,6 +759,8 @@ export default {
     color: #A1A1A1;
     display: flex;
     align-items: center;
+    justify-content: space-between; /* Empurra o ícone para a direita */
+    width: 100%;
     gap: 0.375rem;
     text-transform: none; /* Mantendo Inter style */
 }
