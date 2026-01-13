@@ -574,7 +574,7 @@
                                                 <th class="text-right">Preço Entrada</th>
                                                 <th class="text-right">Preço Saída</th>
                                                 <th class="text-left">Investimento</th>
-                                                <th class="text-center">Virtual</th>
+
                                                 <th class="text-right">Retorno</th>
                                             </tr>
                                         </thead>
@@ -603,12 +603,7 @@
                                                 <td>
                                                     {{ op.investment }}
                                                 </td>
-                                                <td class="text-center">
-                                                    <span v-if="op.direction === 'DIGITOVER' && op.exitPrice" class="text-xs opacity-80">
-                                                        {{ getLastDigit(op.exitPrice) }} {{ getLastDigit(op.exitPrice) > 3 ? 'win' : 'loss' }} virtual
-                                                    </span>
-                                                    <span v-else>-</span>
-                                                </td>
+
                                                 <td :class="['text-right']" :style="{ color: (op.pnl && op.pnl.toString().includes('-')) ? 'rgba(255, 71, 71, 0.8)' : '#22C55E' }">
                                                     {{ op.pnl }}
                                                 </td>
