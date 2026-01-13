@@ -371,6 +371,7 @@
                     :account-balance-prop="balanceNumeric"
                     :account-currency-prop="tradeCurrency"
                     :selected-market-prop="selectedMarket"
+                    :stoploss-blindado-config="stoplossBlindado"
                         @deactivate="deactivateIA"
                 />
                 </section>

@@ -397,26 +397,26 @@
                     <div class="mobile-config-grid">
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Entrada</p>
-                            <p class="mobile-config-param-value" v-if="!isLoadingConfig">{{ sessionConfig.entryValue ? '$' + sessionConfig.entryValue.toFixed(2) : '$0.35' }}</p>
+                            <p class="mobile-config-param-value" v-if="!isLoadingConfig">{{ entryValueConfig ? '$' + entryValueConfig.toFixed(2) : '$0.35' }}</p>
                             <p class="mobile-config-param-value" v-else>Carregando...</p>
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Modo</p>
-                            <p class="mobile-config-param-value">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
+                            <p class="mobile-config-param-value">{{ modeConfig === 'veloz' ? 'Veloz' : modeConfig === 'moderado' ? 'Moderado' : 'Lento' }}</p>
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Alvo de Lucro</p>
-                            <p class="mobile-config-param-value mobile-config-profit" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$15.00' }}</p>
+                            <p class="mobile-config-param-value mobile-config-profit" v-if="!isLoadingConfig">{{ profitTargetConfig ? '$' + profitTargetConfig.toFixed(2) : '$15.00' }}</p>
                             <p class="mobile-config-param-value mobile-config-profit" v-else>Carregando...</p>
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Limite de Perda</p>
-                            <p class="mobile-config-param-value mobile-config-loss" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$5.00' }}</p>
+                            <p class="mobile-config-param-value mobile-config-loss" v-if="!isLoadingConfig">{{ lossLimitConfig ? '$' + lossLimitConfig.toFixed(2) : '$5.00' }}</p>
                             <p class="mobile-config-param-value mobile-config-loss" v-else>Carregando...</p>
                         </div>
                         <div class="mobile-config-param">
-                            <p class="mobile-config-label">Stop Loss Blindado</p>
-                            <p class="mobile-config-value">{{ sessionConfig.lossLimit ? 'Ativo' : 'Inativo' }}</p>
+                            <p class="mobile-config-param-label">Stop Loss Blindado</p>
+                            <p class="mobile-config-param-value">{{ stoplossBlindadoConfig ? 'Ativo' : 'Inativo' }}</p>
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-label">Gerenciamento</p>
@@ -845,27 +845,31 @@ export default {
         },
         currentPrice: {
             type: Number,
-            default: null
+            default: 0
         },
         entryValueConfig: {
             type: Number,
-            default: 0.35
+            default: 1
         },
         profitTargetConfig: {
             type: Number,
-            default: 100
+            default: 10
         },
         lossLimitConfig: {
             type: Number,
-            default: 25
+            default: 10
         },
         modeConfig: {
             type: String,
             default: 'veloz'
         },
+        stoplossBlindadoConfig: {
+            type: Boolean,
+            default: false
+        },
         accountBalanceProp: {
             type: Number,
-            default: null
+            default: 0
         },
         accountCurrencyProp: {
             type: String,
