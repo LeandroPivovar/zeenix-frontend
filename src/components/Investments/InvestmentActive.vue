@@ -723,7 +723,7 @@
                         </h3>
                         <div class="text-left">
                             <!-- Estratégia -->
-                            <div class="pb-2 text-left">
+                            <div class="mb-[30px] text-left">
                                 <p class="text-[10px] text-[#7D7D7D] font-medium mb-1 tracking-wide uppercase text-left">Estratégia</p>
                                 <div class="mb-1">
                                     <p class="text-base font-bold text-zenix-text text-left leading-none">{{ strategyName }}</p>
@@ -735,7 +735,7 @@
 
 
                             <!-- Grid de Parâmetros Unificado -->
-                            <div class="pt-2 pb-0 text-left">
+                            <div class="pb-0 text-left">
                                 <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Parâmetros & Gerenciamento</p>
                                 <div class="grid grid-cols-2 gap-2">
                                     <!-- Entrada -->
@@ -777,7 +777,7 @@
                             </div>
 
                                 <!-- Botão Pausar (100% largura) -->
-                                <div class="flex justify-center mt-2">
+                                <div class="flex justify-center mt-[30px]">
                                     <button 
                                         class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
                                         @click="handleDeactivate"
@@ -1503,9 +1503,10 @@ export default {
 
         getLastDigit(price) {
             if (price === null || price === undefined) return '-';
-            const priceStr = price.toString();
-            // Pegar o último caractere da string do preço
-            return priceStr.charAt(priceStr.length - 1);
+            // Garantir que seja tratado como string com 2 casas decimais (ex: 1059.8 -> "1059.80")
+            const priceStr = parseFloat(price).toFixed(2);
+            // Pegar o último caractere da string formatada
+            return parseInt(priceStr.charAt(priceStr.length - 1));
         },
         
         // Formatar valor PnL para colocar sinal negativo antes do $
