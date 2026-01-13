@@ -609,7 +609,7 @@
                                                     </span>
                                                     <span v-else>-</span>
                                                 </td>
-                                                <td :class="['text-right', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
+                                                <td :class="['text-right', op.pnl && op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-red-500']">
                                                     {{ op.pnl }}
                                                 </td>
                                             </tr>
@@ -1487,7 +1487,7 @@ export default {
             const isNexus = strategyLower === 'nexus';
             const isOrion = strategyLower === 'orion' || strategyLower.includes('ia orion');
 
-            if (direction === 'DIGITOVER') return 'DIGIT OVER';
+            if (direction === 'DIGITOVER') return 'OVER';
 
             if (direction === 'CALL') {
                 if (isOrion) return 'CALL';
