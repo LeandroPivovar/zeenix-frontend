@@ -574,6 +574,7 @@
                                                 <th class="text-right">Preço Entrada</th>
                                                 <th class="text-right">Preço Saída</th>
                                                 <th class="text-left">Investimento</th>
+                                                <th class="text-center">Virtual</th>
                                                 <th class="text-right">Retorno</th>
                                             </tr>
                                         </thead>
@@ -582,8 +583,8 @@
                                                 <td>{{ op.time }}</td>
                                                 <td>{{ getMarketDisplayName(op.pair) }}</td>
                                                 <td>
-                                                    <span :class="['direction-badge', (op.direction === 'CALL' || op.direction === 'PAR') ? 'call-badge' : 'put-badge']">
-                                                        <i :class="`fas fa-arrow-${(op.direction === 'CALL' || op.direction === 'PAR') ? 'up' : 'down'} text-xs mr-1`"></i>
+                                                    <span :class="['direction-badge', (op.direction === 'CALL' || op.direction === 'PAR' || op.direction === 'DIGITOVER') ? 'call-badge' : 'put-badge']">
+                                                        <i :class="`fas fa-arrow-${(op.direction === 'CALL' || op.direction === 'PAR' || op.direction === 'DIGITOVER') ? 'up' : 'down'} text-xs mr-1`"></i>
                                                         {{ getTradeLabel(op.direction) }}
                                                     </span>
                                                 </td>
@@ -598,10 +599,15 @@
                                                     <span v-if="op.exitPrice != null && op.exitPrice !== undefined && !isNaN(op.exitPrice) && op.exitPrice > 0">
                                                         {{ parseFloat(op.exitPrice).toFixed(2) }}
                                                     </span>
-                                                    <span v-else>-</span>
                                                 </td>
                                                 <td>
                                                     {{ op.investment }}
+                                                </td>
+                                                <td class="text-center">
+                                                    <span v-if="op.direction === 'DIGITOVER' && op.exitPrice" class="text-xs opacity-80">
+                                                        {{ getLastDigit(op.exitPrice) }} {{ getLastDigit(op.exitPrice) > 3 ? 'win' : 'loss' }} virtual
+                                                    </span>
+                                                    <span v-else>-</span>
                                                 </td>
                                                 <td :class="['text-right', op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-zenix-red']">
                                                     {{ op.pnl }}
@@ -1411,7 +1417,11 @@ export default {
                     time: time,
                     stakeAmount: stakeAmount,
                     createdAt: trade.createdAt,
-                    closedAt: trade.closedAt
+                    closedAt: trade.closedAt,
+                    // ✅ FORMATTED PNL (Color Coding Support)
+                    pnl: profitLoss != null 
+                        ? (profitLoss >= 0 ? `+$${Math.abs(profitLoss).toFixed(2)}` : `-$${Math.abs(profitLoss).toFixed(2)}`)
+                        : null
                 };
             });
         },
@@ -1473,15 +1483,28 @@ export default {
 
         getTradeLabel(direction) {
             const strategy = this.sessionConfig?.strategy || this.selectedStrategy || '';
-            const isNexus = strategy.toLowerCase() === 'nexus';
+            const strategyLower = strategy.toLowerCase();
+            const isNexus = strategyLower === 'nexus';
+            const isOrion = strategyLower === 'orion' || strategyLower.includes('ia orion');
+
+            if (direction === 'DIGITOVER') return 'DIGIT OVER';
 
             if (direction === 'CALL') {
+                if (isOrion) return 'CALL';
                 return isNexus ? 'CALL' : 'PAR';
             }
             if (direction === 'PUT') {
+                if (isOrion) return 'PUT';
                 return isNexus ? 'PUT' : 'IMPAR';
             }
             return direction;
+        },
+
+        getLastDigit(price) {
+            if (price === null || price === undefined) return '-';
+            const priceStr = price.toString();
+            // Pegar o último caractere da string do preço
+            return priceStr.charAt(priceStr.length - 1);
         },
         
         // Formatar valor PnL para colocar sinal negativo antes do $
