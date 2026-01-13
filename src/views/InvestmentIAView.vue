@@ -104,41 +104,41 @@
                             </div>
                             <!-- Status Cards -->
                             <div class="col-span-7 grid grid-cols-2 gap-4 status-cards-container">
-                                <!-- Card 1: STATUS -->
+                                <!-- Card 1: ESTRATÉGIAS -->
                                 <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <i class="fas fa-check-circle text-[#22C55E] text-lg"></i>
-                                        <p class="text-[10px] text-white uppercase font-semibold status-label">STATUS</p>
+                                        <i class="fas fa-brain text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">ESTRATÉGIAS</p>
                                     </div>
-                                    <p class="text-base font-bold text-white status-value">Configurando</p>
-                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Configure para ativar esta IA</p>
+                                    <p class="text-base font-bold text-white status-value">5 IAs Especializadas</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Dígitos, Price Action e Híbridas</p>
                                 </div>
-                                <!-- Card 2: ALVO DA IA -->
+                                <!-- Card 2: DESEMPENHO -->
                                 <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <img src="@/assets/icons/target-IA.svg" alt="Alvo da IA" class="asset-icon" style="width: 18px !important; height: 18px !important; display: block !important;">
-                                        <p class="text-[10px] text-white uppercase font-semibold status-label">ALVO DA IA</p>
+                                        <i class="fas fa-chart-line text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">DESEMPENHO</p>
                                     </div>
-                                    <p class="text-base font-bold text-white status-value">Não definido</p>
-                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Defina os parâmetros para revelar</p>
+                                    <p class="text-base font-bold text-white status-value">60% a 75%</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Varia por estratégia e modo</p>
                                 </div>
-                                <!-- Card 3: PARÂMETROS -->
+                                <!-- Card 3: CONTROLE -->
                                 <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <i class="fas fa-eye text-[#22C55E] text-lg"></i>
-                                        <p class="text-[10px] text-white uppercase font-semibold status-label">PARÂMETROS</p>
+                                        <i class="fas fa-sliders-h text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">CONTROLE</p>
                                     </div>
-                                    <p class="text-base font-bold text-white status-value">Não definido</p>
-                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Configure risco e entradas</p>
+                                    <p class="text-base font-bold text-white status-value">Parcial com Supervisão</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Você decide quando operar</p>
                                 </div>
-                                <!-- Card 4: EXECUÇÃO -->
+                                <!-- Card 4: SEGURANÇA -->
                                 <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
                                     <div class="flex items-center gap-2 mb-2">
-                                        <i class="fas fa-bolt text-[#22C55E] text-lg"></i>
-                                        <p class="text-[10px] text-white uppercase font-semibold status-label">EXECUÇÃO</p>
+                                        <i class="fas fa-shield-alt text-[#22C55E] text-lg"></i>
+                                        <p class="text-[10px] text-white uppercase font-semibold status-label">SEGURANÇA</p>
                                     </div>
-                                    <p class="text-base font-bold text-white status-value">Automática</p>
-                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Ativada após configuração</p>
+                                    <p class="text-base font-bold text-white status-value">Stop Loss Duplo</p>
+                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Normal + Blindado automáticos</p>
                                 </div>
                             </div>
                         </div>
@@ -2488,7 +2488,7 @@ export default {
 .card-content {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem; /* Reduzindo gap de 1rem para 0.5rem */
 }
 
 .form-group {
@@ -2519,11 +2519,18 @@ export default {
 
 .input-prefix {
     position: absolute;
-    left: 0.75rem;
+    left: 0;
+    top: 0;
+    width: 2.5rem;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     color: #DFDFDF;
-    font-size: 0.75rem;
+    font-size: 0.95rem;
     z-index: 1;
     pointer-events: none;
+    line-height: normal;
 }
 
 .form-select,
@@ -2532,15 +2539,21 @@ export default {
     background-color: #0B0B0B;
     border: 1px solid #1C1C1C;
     border-radius: 0.5rem;
-    padding: 0.625rem 0.75rem;
-    font-size: 0.75rem;
+    font-size: 0.875rem;
     color: #DFDFDF;
     outline: none;
     transition: border-color 0.2s;
+    height: 45px;
+    box-sizing: border-box;
+}
+
+.form-select {
+    padding: 0.625rem 0.75rem;
 }
 
 .form-input {
-    padding-left: 1.5rem;
+    padding-left: 1.75rem;
+    padding-right: 0.75rem;
 }
 
 .form-select:focus,
@@ -3375,10 +3388,16 @@ export default {
     }
     
     .input-prefix {
-        font-size: 0.875rem;
-        left: 1rem;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 2.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         color: #FFFFFF !important;
         font-weight: 600;
+        line-height: normal;
     }
     
     .form-help {

@@ -1,6 +1,5 @@
 <template>
-	<Teleport to="#master-trader-portal-target" :disabled="!shouldTeleport">
-		<div class="layout-content-agent-autonomo">
+	<div class="layout-content-agent-autonomo">
 		<div class="agent-top">
 			<div class="agent-header">
 				<div class="agent-status">
@@ -17,18 +16,15 @@
 							<h2>Agente Autônomo</h2>
 							<p>Operando automaticamente no mercado</p>
 						</div>
-					<div class="dot"><span>●</span>Ativo</div>
+						<div class="dot"><span>●</span>Ativo</div>
 					</div>
 				</div>
-				<!-- ... (código anterior) -->
+
 				<div class="agent-right">
-					<!-- Mude @click="$emit('pausarAgente')" para @click="pausarAgenteEIrParaTopo" -->
 					<button @click="pausarAgenteEIrParaTopo" class="pause-btn top-pause-btn">
 						<span class="pause-icon">II</span> PAUSAR AGENTE
 					</button>
 				</div>
-				<!-- ... (código posterior) -->
-
 			</div>
 			<div class="data-row-line">
 				<div class="data-item order-1-mob">
@@ -375,8 +371,8 @@
 					<div class="mobile-performance-value negative">-${{ maiorPerda.toFixed(2) }}</div>
 				</div>
 			</div>
-		</div>
-		</div>
+
+
 			<!-- Modal de Stop Loss -->
 			<div v-if="showStopLossModal" class="modal-overlay">
 				<div class="modal-content stop-loss-modal">
@@ -400,9 +396,10 @@
 						</div>
 					</div>
 					<button class="modal-btn" @click="showStopLossModal = false">Entendido</button>
-				</div>
 			</div>
-	</Teleport>
+		</div>
+	</div>
+	</div>
 </template>
 
 <script>
