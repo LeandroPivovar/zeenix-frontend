@@ -609,7 +609,7 @@
                                                     </span>
                                                     <span v-else>-</span>
                                                 </td>
-                                                <td :class="['text-right', op.pnl && op.pnl.startsWith('+') ? 'text-zenix-green' : 'text-red-500']">
+                                                <td :class="['text-right', (op.pnl && op.pnl.includes('-')) ? 'text-red-500' : 'text-zenix-green']">
                                                     {{ op.pnl }}
                                                 </td>
                                             </tr>
@@ -733,54 +733,54 @@
 
 
                             <!-- Grid de Parâmetros Unificado -->
-                            <div class="py-5 border-b border-zenix-border/50 text-left">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-3 tracking-wide uppercase text-left">Parâmetros & Gerenciamento</p>
-                                <div class="grid grid-cols-2 gap-4">
+                            <div class="py-3 border-b border-zenix-border/50 text-left">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Parâmetros & Gerenciamento</p>
+                                <div class="grid grid-cols-2 gap-2">
                                     <!-- Entrada -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2.5">
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Entrada</p>
                                         <p class="text-base font-bold text-zenix-text text-left" v-if="!isLoadingConfig">{{ sessionConfig.entryValue ? '$' + sessionConfig.entryValue.toFixed(2) : '$0.35' }}</p>
                                         <p class="text-base font-bold text-zenix-text text-left" v-else>Carregando...</p>
                                     </div>
                                     <!-- Modo -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2.5">
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Modo</p>
                                         <p class="text-base font-bold text-zenix-text text-left">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
                                     </div>
                                     <!-- Alvo de Lucro -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2.5">
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Alvo De Lucro</p>
                                         <p class="text-base font-bold text-zenix-green text-left" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
                                         <p class="text-base font-bold text-zenix-green text-left" v-else>Carregando...</p>
                                     </div>
                                     <!-- Limite de Perda -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2.5">
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Limite De Perda</p>
                                         <p class="text-base font-bold text-zenix-red text-left" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
                                         <p class="text-base font-bold text-zenix-red text-left" v-else>Carregando...</p>
                                     </div>
                                     
                                     <!-- Stop Blindado -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2.5 h-full flex flex-col justify-center">
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Stop Blindado</p>
-                                        <p class="text-base font-bold text-zenix-text text-left mb-1">{{ sessionConfig.lossLimit ? 'Ativo' : 'Inativo' }}</p>
+                                        <p class="text-base font-bold text-zenix-text text-left mb-1">{{ sessionConfig.stopLossBlindado ? 'Ativo' : 'Inativo' }}</p>
                                     </div>
 
                                     <!-- Gerenciamento de Risco -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2.5 h-full flex flex-col justify-center">
+                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Gerenciamento De Risco</p>
                                         <p class="text-base font-bold text-zenix-text text-left mb-1">{{ realRiskLevel }}</p>
                                     </div>
                                     
                                     <!-- Descrição do Risco (Abaixo dos 2 cards - Full Width) -->
-                                    <div class="col-span-2 text-left mt-1">
+                                    <div class="col-span-2 text-left mt-0.5">
                                          <p class="text-[10px] text-zenix-secondary leading-tight">{{ realRiskDescription }}</p>
                                     </div>
                                 </div>
                             </div>
 
                                 <!-- Botão Pausar (100% largura) -->
-                                <div class="flex justify-center mt-4">
+                                <div class="flex justify-center mt-3">
                                     <button 
                                         class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
                                         @click="handleDeactivate"
