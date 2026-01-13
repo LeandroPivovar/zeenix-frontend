@@ -609,7 +609,7 @@
                                                     </span>
                                                     <span v-else>-</span>
                                                 </td>
-                                                <td :class="['text-right', (op.pnl && op.pnl.includes('-')) ? 'text-red-500' : 'text-zenix-green']">
+                                                <td :class="['text-right']" :style="{ color: (op.pnl && op.pnl.toString().includes('-')) ? 'rgba(255, 71, 71, 0.8)' : '#22C55E' }">
                                                     {{ op.pnl }}
                                                 </td>
                                             </tr>
@@ -723,17 +723,19 @@
                         </h3>
                         <div class="flex-1 flex flex-col justify-between text-left">
                             <!-- Estratégia -->
-                            <div class="pb-5 border-b border-zenix-border/50 text-left">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Estratégia</p>
-                                <p class="text-base font-bold text-zenix-text mb-1 text-left">{{ strategyName }}</p>
-                                <p class="text-xs text-zenix-secondary text-left">{{ strategyDescriptionText }}</p>
+                            <div class="pb-2 text-left">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-1 tracking-wide uppercase text-left">Estratégia</p>
+                                <div class="mb-1">
+                                    <p class="text-base font-bold text-zenix-text text-left leading-none">{{ strategyName }}</p>
+                                </div>
+                                <p class="text-[11px] text-zenix-secondary text-left leading-snug">{{ strategyDescriptionText.replace(/ - Análise:.*$/, '') }}</p>
                             </div>
 
                             <!-- Mercado -->
 
 
                             <!-- Grid de Parâmetros Unificado -->
-                            <div class="py-3 border-b border-zenix-border/50 text-left">
+                            <div class="pt-2 pb-0 text-left">
                                 <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Parâmetros & Gerenciamento</p>
                                 <div class="grid grid-cols-2 gap-2">
                                     <!-- Entrada -->
@@ -771,16 +773,11 @@
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Gerenciamento De Risco</p>
                                         <p class="text-base font-bold text-zenix-text text-left mb-1">{{ realRiskLevel }}</p>
                                     </div>
-                                    
-                                    <!-- Descrição do Risco (Abaixo dos 2 cards - Full Width) -->
-                                    <div class="col-span-2 text-left mt-0.5">
-                                         <p class="text-[10px] text-zenix-secondary leading-tight">{{ realRiskDescription }}</p>
-                                    </div>
                                 </div>
                             </div>
 
                                 <!-- Botão Pausar (100% largura) -->
-                                <div class="flex justify-center mt-3">
+                                <div class="flex justify-center mt-2">
                                     <button 
                                         class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
                                         @click="handleDeactivate"
