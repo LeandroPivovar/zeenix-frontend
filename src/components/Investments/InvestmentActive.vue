@@ -334,12 +334,7 @@
                 >
                     Configuração
                 </button>
-                <button 
-                    :class="['mobile-tab hidden md:block', activeTab === 'chart' ? 'mobile-tab-active' : '']"
-                    @click="activeTab = 'chart'"
-                >
-                    Gráfico
-                </button>
+
                 <button 
                     :class="['mobile-tab', activeTab === 'register' ? 'mobile-tab-active' : '']"
                     @click="activeTab = 'register'"
@@ -364,12 +359,7 @@
                     >
                         Config
                     </button>
-                    <button 
-                        :class="['mobile-tab hidden md:block', activeTab === 'chart' ? 'mobile-tab-active' : '']"
-                        @click="activeTab = 'chart'"
-                    >
-                        Gráfico
-                    </button>
+
                     <button 
                         :class="['mobile-tab', activeTab === 'register' ? 'mobile-tab-active' : '']"
                         @click="activeTab = 'register'"
@@ -2336,7 +2326,7 @@ export default {
                         modoMartingale: result.data.modoMartingale || 'conservador',
                         profitTarget: result.data.profitTarget ? parseFloat(result.data.profitTarget) : null,
                         lossLimit: result.data.lossLimit ? parseFloat(result.data.lossLimit) : null,
-                        stopLossBlindado: result.data.stopBlindadoPercent != null && result.data.stopBlindadoPercent !== undefined,
+                        stopLossBlindado: result.data.stopBlindadoPercent !== null && result.data.stopBlindadoPercent !== undefined,
                         currency: result.data.currency || 'USD',
                         sessionBalance: parseFloat(result.data.sessionBalance) || 0,
                         sessionStatus: currentSessionStatus
