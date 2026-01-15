@@ -1478,14 +1478,14 @@ export default {
 
             // Map RISE to CALL
             if (direction === 'RISE' || direction === 'CALL') {
-                if (isOrion || isNexus) return 'CALL';
-                return 'PAR';  // For Atlas strategy (digits)
+                if (isOrion || isNexus || strategyLower === 'atlas') return 'CALL';
+                return 'PAR';  // For other strategies (digits)
             }
             
             // Map FALL to PUT
             if (direction === 'FALL' || direction === 'PUT') {
-                if (isOrion || isNexus) return 'PUT';
-                return 'IMPAR';  // For Atlas strategy (digits)
+                if (isOrion || isNexus || strategyLower === 'atlas') return 'PUT';
+                return 'IMPAR';  // For other strategies (digits)
             }
             
             return direction;
