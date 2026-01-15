@@ -416,7 +416,7 @@
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Stop Loss Blindado</p>
-                            <p class="mobile-config-param-value">{{ stoplossBlindadoConfig ? 'Ativo' : 'Inativo' }}</p>
+                            <p class="mobile-config-param-value">{{ sessionConfig.stopLossBlindado ? 'Ativo' : 'Inativo' }}</p>
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-label">Gerenciamento</p>
