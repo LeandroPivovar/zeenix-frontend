@@ -2336,6 +2336,7 @@ export default {
                         modoMartingale: result.data.modoMartingale || 'conservador',
                         profitTarget: result.data.profitTarget ? parseFloat(result.data.profitTarget) : null,
                         lossLimit: result.data.lossLimit ? parseFloat(result.data.lossLimit) : null,
+                        stopLossBlindado: result.data.stopBlindadoPercent != null && result.data.stopBlindadoPercent !== undefined,
                         currency: result.data.currency || 'USD',
                         sessionBalance: parseFloat(result.data.sessionBalance) || 0,
                         sessionStatus: currentSessionStatus
