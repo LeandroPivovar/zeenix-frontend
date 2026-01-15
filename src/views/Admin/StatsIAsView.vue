@@ -498,9 +498,9 @@
 										<td>
 											<span :class="['signal-badge', (trade.signal || trade.geminiSignal || '').toLowerCase()]">
 												{{ (trade.signal || trade.geminiSignal || '') === 'RISE' || (trade.signal || trade.geminiSignal || '') === 'CALL' ? '📈 CALL' : 
-												   (trade.signal || trade.geminiSignal || '') === 'FALL' || (trade.signal || trade.geminiSignal || '') === 'PUT' ? '📉 PUT' :
-												   (trade.signal || trade.geminiSignal || '') === 'OVER' ? '📈 OVER' :
-												   (trade.signal || trade.geminiSignal || '') === 'PAR' ? '📈 PAR' : '📉 ÍMPAR' }}
+													(trade.signal || trade.geminiSignal || '') === 'FALL' || (trade.signal || trade.geminiSignal || '') === 'PUT' ? '📉 PUT' :
+													(trade.signal || trade.geminiSignal || '') === 'OVER' ? '📈 OVER' :
+													(trade.signal || trade.geminiSignal || '') === 'PAR' ? '📈 PAR' : '📉 ÍMPAR' }}
 											</span>
 										</td>
 										<td>${{ (trade.entryPrice || trade.entry_price || 0).toFixed(2) }}</td>
