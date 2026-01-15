@@ -91,6 +91,7 @@ export default {
         
         // Detectar operação finalizada com sucesso
         if (message.includes('WON') || message.includes('profit') || message.includes('ganho') || 
+            message.includes('VITÓRIA') || message.includes('✅') ||
             (module === 'TRADER' && level !== 'ERROR' && message.includes('closed'))) {
           logType = 'success';
           icon = 'fa-solid fa-check';
@@ -140,6 +141,7 @@ export default {
         }
         // Detectar perda
         else if (message.includes('LOST') || message.includes('loss') || message.includes('perda') ||
+                 message.includes('DERROTA') || message.includes('❌') ||
                  (module === 'TRADER' && level === 'ERROR')) {
           logType = 'loss';
           icon = 'fa-solid fa-xmark';
