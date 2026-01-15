@@ -583,8 +583,8 @@
                                                 <td>{{ op.time }}</td>
                                                 <td>{{ getMarketDisplayName(op.pair) }}</td>
                                                 <td>
-                                                    <span :class="['direction-badge', (op.direction === 'CALL' || op.direction === 'PAR' || op.direction === 'DIGITOVER') ? 'call-badge' : 'put-badge']">
-                                                        <i :class="`fas fa-arrow-${(op.direction === 'CALL' || op.direction === 'PAR' || op.direction === 'DIGITOVER') ? 'up' : 'down'} text-xs mr-1`"></i>
+                                                    <span :class="['direction-badge', (op.direction === 'CALL' || op.direction === 'RISE' || op.direction === 'PAR' || op.direction === 'DIGITOVER' || op.direction === 'HIGHER' || getTradeLabel(op.direction) === 'OVER' || getTradeLabel(op.direction) === 'CALL') ? 'call-badge' : 'put-badge']">
+                                                        <i :class="`fas fa-arrow-${(op.direction === 'CALL' || op.direction === 'RISE' || op.direction === 'PAR' || op.direction === 'DIGITOVER' || op.direction === 'HIGHER' || getTradeLabel(op.direction) === 'OVER' || getTradeLabel(op.direction) === 'CALL') ? 'up' : 'down'} text-xs mr-1`"></i>
                                                         {{ getTradeLabel(op.direction) }}
                                                     </span>
                                                 </td>
@@ -1483,16 +1483,21 @@ export default {
             const isNexus = strategyLower === 'nexus';
             const isOrion = strategyLower === 'orion' || strategyLower.includes('ia orion');
 
-            if (direction === 'DIGITOVER') return 'OVER';
+            // Map HIGHER to OVER
+            if (direction === 'HIGHER' || direction === 'DIGITOVER') return 'OVER';
 
-            if (direction === 'CALL') {
-                if (isOrion) return 'CALL';
-                return isNexus ? 'CALL' : 'PAR';
+            // Map RISE to CALL
+            if (direction === 'RISE' || direction === 'CALL') {
+                if (isOrion || isNexus) return 'CALL';
+                return 'PAR';  // For Atlas strategy (digits)
             }
-            if (direction === 'PUT') {
-                if (isOrion) return 'PUT';
-                return isNexus ? 'PUT' : 'IMPAR';
+            
+            // Map FALL to PUT
+            if (direction === 'FALL' || direction === 'PUT') {
+                if (isOrion || isNexus) return 'PUT';
+                return 'IMPAR';  // For Atlas strategy (digits)
             }
+            
             return direction;
         },
 
@@ -1591,6 +1596,30 @@ export default {
          * Retorna a classe CSS baseada no tipo do log
          */
         getLogClass(log) {
+            // Check message content for win/loss keywords first
+            const message = log.message || '';
+            const lowerMessage = message.toLowerCase();
+            
+            // Verde para ganho/vitória/sucesso
+            if (lowerMessage.includes('vitória') || 
+                lowerMessage.includes('vitoria') ||
+                lowerMessage.includes('ganho') || 
+                lowerMessage.includes('ganhou') || 
+                lowerMessage.includes('lucro') ||
+                lowerMessage.includes('win')) {
+                return 'text-green-400';
+            }
+            
+            // Vermelho para perda/derrota/erro
+            if (lowerMessage.includes('derrota') || 
+                lowerMessage.includes('perda') || 
+                lowerMessage.includes('perdeu') ||
+                lowerMessage.includes('loss') ||
+                lowerMessage.includes('lost')) {
+                return 'text-red-500';
+            }
+            
+            // Fallback to type-based colors
             const colors = {
                 info: 'text-blue-400',
                 tick: 'text-gray-400',
