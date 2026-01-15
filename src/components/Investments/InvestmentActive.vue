@@ -1660,9 +1660,13 @@ export default {
                 return 'mobile-log-error';
             }
             
-            // Cor padrão baseada no tipo
+            // Cor baseada no tipo e conteúdo da mensagem
             if (log.type === 'resultado') {
-                return 'mobile-log-success';
+                // Detectar se é vitória ou derrota pela mensagem
+                if (log.message && (log.message.includes('DERROTA') || log.message.includes('❌'))) {
+                    return 'mobile-log-error'; // Vermelho para derrota
+                }
+                return 'mobile-log-success'; // Verde para vitória
             }
             
             if (log.type === 'erro') {
