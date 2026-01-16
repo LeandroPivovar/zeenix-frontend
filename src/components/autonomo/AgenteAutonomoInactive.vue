@@ -2,26 +2,16 @@
 	<div class="layout-content-agent-autonomo">
 		<div class="agent-config-container">
 
-			<!-- AI Vision Panel -->
-			<section id="ai-vision-panel" class="fade-in" style="margin-bottom: 1.5rem;">
+			<!-- Header Section -->
+		<section class="fade-in" style="margin-bottom: 1.5rem;">
+			<!-- Desktop: AI Vision Panel -->
+			<div class="ai-vision-panel-desktop">
 				<div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
 					<!-- Header Desktop -->
-					<div class="mb-6 ai-vision-header-desktop">
+					<div class="mb-6">
 						<div class="text-left">
 							<h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração do Agente Autônomo</h1>
 							<p class="text-sm text-zenix-secondary">Defina parâmetros de risco, metas diárias e limites. O agente opera continuamente até atingir objetivos e reinicia no próximo dia.</p>
-						</div>
-					</div>
-					<!-- Header Mobile -->
-					<div class="mb-6 ai-vision-header-mobile">
-						<div class="flex items-center justify-between">
-							<div class="text-left">
-								<h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração do Agente Autônomo</h1>
-								<p class="text-sm text-zenix-secondary">Defina parâmetros de risco, metas diárias e limites. O agente opera continuamente até atingir objetivos e reinicia no próximo dia.</p>
-							</div>
-							<div class="ai-chip-icon-mobile">
-								<i class="fas fa-microchip text-[#22C55E] text-2xl"></i>
-							</div>
 						</div>
 					</div>
 					<div class="grid grid-cols-12 gap-5">
@@ -104,7 +94,14 @@
 						</div>
 					</div>
 				</div>
-			</section>
+			</div>
+			
+			<!-- Mobile: Simple Header -->
+			<div class="mobile-simple-header">
+				<h1 class="mobile-header-title">Configuração do Agente Autônomo</h1>
+				<p class="mobile-header-subtitle">Defina parâmetros de risco, metas diárias e limites. O agente opera continuamente até atingir objetivos e reinicia no próximo dia.</p>
+			</div>
+		</section>
 			<div class="config-grid">
 				<!-- Agente Selecionado -->
 				<div id="agent-selection-card" class="config-card premium-card">
@@ -121,28 +118,29 @@
 									<span class="tooltip-text">Escolha o agente autônomo que deseja usar.</span>
 								</div>
 							</label>
-							<div class="premium-selector-field" @click.stop="openAgentSelector">
-								<div class="selector-content">
-									<div class="selector-icon-wrapper" v-if="selectedAgent">
-										<i v-if="selectedAgent === 'sentinel'" class="fas fa-shield-alt" style="color: white !important"></i>
-										<i v-else-if="selectedAgent === 'falcon'" class="fas fa-rocket" style="color: white !important"></i>
-									</div>
-									<!-- Ícone padrão quando nada selecionado -->
-									<div class="selector-icon-wrapper" v-else>
-										<i class="fas fa-robot" style="color: #666 !important"></i>
-									</div>
-									
-									<div class="selector-text" v-if="selectedAgent">
-										<span class="selector-title">{{ selectedAgent === 'sentinel' ? 'SENTINEL' : 'FALCON' }}</span>
-										<span class="selector-subtitle">{{ getAgentDescription(selectedAgent) }}</span>
-									</div>
-									<div class="selector-text" v-else>
-										<span class="selector-title">Selecione o Agente</span>
-										<span class="selector-subtitle">Escolha qual inteligência irá operar</span>
+							
+							<!-- Dropdown Select -->
+							<select class="form-select" v-model="selectedAgent">
+								<option value="" disabled>Selecione seu agente</option>
+								<option value="sentinel">SENTINEL - Balanceado</option>
+								<option value="falcon">FALCON - Alta Precisão</option>
+							</select>
+							
+							<!-- Agent Description Card (appears when selected) -->
+							<transition name="slide-fade">
+								<div v-if="selectedAgent" class="agent-description-card">
+									<div class="agent-desc-content">
+										<div class="agent-desc-icon">
+											<i v-if="selectedAgent === 'sentinel'" class="fas fa-shield-alt" style="color: white !important;"></i>
+											<i v-else class="fas fa-rocket" style="color: white !important;"></i>
+										</div>
+										<div class="agent-desc-info">
+											<h3>{{ selectedAgent === 'sentinel' ? 'SENTINEL' : 'FALCON' }}</h3>
+											<p>{{ getAgentDescription(selectedAgent) }}</p>
+										</div>
 									</div>
 								</div>
-								<i class="fas fa-chevron-right selector-arrow"></i>
-							</div>
+							</transition>
 						</div>
 
 						<!-- Nível de Risco -->
@@ -191,28 +189,7 @@
 							</div>
 						</div>
 
-						<!-- Resumo da Configuração -->
-						<div class="summary-section-in-card">
-							<label class="form-label mb-3">Resumo da Configuração</label>
-							<div class="summary-grid-new">
-								<div class="summary-item-new">
-									<span class="label">Agente</span>
-									<span class="value">{{ selectedAgent ? selectedAgent.toUpperCase() : '---' }}</span>
-								</div>
-								<div class="summary-item-new">
-									<span class="label">Risco</span>
-									<span class="value">{{ getRiskTitle(selectedRisk) }}</span>
-								</div>
-								<div class="summary-item-new">
-									<span class="label">Entrada</span>
-									<span class="value">${{ valorOperacaoNumero.toFixed(2) }}</span>
-								</div>
-								<div class="summary-item-new">
-									<span class="label">Meta Diária</span>
-									<span class="value green">${{ metaLucroNumero.toFixed(2) }}</span>
-								</div>
-							</div>
-						</div>
+
 					</div>
 				</div>
 
@@ -325,6 +302,29 @@
 							</div>
 						</div>
 
+						<!-- Resumo da Configuração -->
+						<div class="summary-section-in-card">
+							<label class="form-label mb-3">Resumo da Configuração</label>
+							<div class="summary-grid-new">
+								<div class="summary-item-new">
+									<span class="label">Agente</span>
+									<span class="value">{{ selectedAgent ? selectedAgent.toUpperCase() : '---' }}</span>
+								</div>
+								<div class="summary-item-new">
+									<span class="label">Risco</span>
+									<span class="value">{{ getRiskTitle(selectedRisk) }}</span>
+								</div>
+								<div class="summary-item-new">
+									<span class="label">Entrada</span>
+									<span class="value">${{ valorOperacaoNumero.toFixed(2) }}</span>
+								</div>
+								<div class="summary-item-new">
+									<span class="label">Meta Diária</span>
+									<span class="value green">${{ metaLucroNumero.toFixed(2) }}</span>
+								</div>
+							</div>
+						</div>
+
 						<!-- Botão de Iniciar Agente -->
 						<button class="start-agent-btn" @click="iniciarAgente">
 							Iniciar Agente Autônomo
@@ -334,54 +334,6 @@
 
 			</div> <!-- End of config-grid -->
 		</div> <!-- End of agent-config-container -->
-			<div v-if="showAgentSelectorModal" class="modal-overlay" style="z-index: 999999 !important;" @click.self="showAgentSelectorModal = false">
-				<div class="agent-selector-modal premium-card fade-in" style="z-index: 1000000 !important; pointer-events: all !important;">
-					<div class="modal-header">
-						<h2>Selecione o Agente</h2>
-						<button class="close-btn" @click.stop="showAgentSelectorModal = false">
-							<i class="fas fa-times"></i>
-						</button>
-					</div>
-						<div class="agent-modal-list">
-						<div 
-							class="agent-modal-card" 
-							:class="{ 'active': selectedAgent === 'sentinel' }"
-							style="pointer-events: auto !important;"
-							@click.stop="selectAgent('sentinel')"
-						>
-							<div class="agent-modal-icon">
-								<i class="fas fa-shield-alt"></i>
-							</div>
-							<div class="agent-modal-info">
-								<h3>SENTINEL</h3>
-								<p>Equilíbrio perfeito entre segurança e rentabilidade. Utiliza Martingale Inteligente e Soros Nível 2.</p>
-								<div class="agent-modal-tags">
-									<span>Balanceado</span>
-									<span>Soros L2</span>
-								</div>
-							</div>
-						</div>
-						<div 
-							class="agent-modal-card" 
-							:class="{ 'active': selectedAgent === 'falcon' }"
-							style="pointer-events: auto !important;"
-							@click.stop="selectAgent('falcon')"
-						>
-							<div class="agent-modal-icon">
-								<i class="fas fa-rocket"></i>
-							</div>
-							<div class="agent-modal-info">
-								<h3>FALCON</h3>
-								<p>Alta precisão com foco em recuperação rápida. Ideal para traders que buscam velocidade.</p>
-								<div class="agent-modal-tags">
-									<span>Alta Precisão</span>
-									<span>Veloz</span>
-								</div>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
 	</div> <!-- End of layout-content-agent-autonomo -->
 </template>
 
@@ -408,7 +360,7 @@ export default {
 		data() {
 		return {
 			// Estado de seleção inicial (Baseado na imagem)
-			selectedAgent: null, 
+			selectedAgent: '', 
 			selectedMarket: 'volatility_75', 
 			stopLossBlindado: false, 
 			selectedRisk: 'balanced',
@@ -521,22 +473,11 @@ export default {
 			});
 		},
 
-		// 🟢 NOVO MÉTODO 🟢
-		openAgentSelector() {
-			console.log('[AgenteAutonomoInactive] Abrindo seletor de agente');
-			this.showAgentSelectorModal = true;
-		},
-
-		// --- Métodos existentes ---
-		selectAgent(agentId) {
-			console.log('[AgenteAutonomoInactive] Selecionando agente:', agentId);
-			this.showAgentSelectorModal = false; // Fecha o modal primeiro
-			
-			// Atualiza o agente no próximo ciclo para evitar conflitos de renderização
-			this.$nextTick(() => {
-				this.selectedAgent = agentId;
-			});
-		},
+	// --- Métodos existentes ---
+	selectAgent(agentId) {
+		console.log('[AgenteAutonomoInactive] Selecionando agente:', agentId);
+		this.selectedAgent = agentId;
+	},
 		selectMarket(marketId) {
 			this.selectedMarket = marketId;
 		},
@@ -753,6 +694,41 @@ export default {
     gap: 0.5rem; /* Reduzindo gap de 1.25rem (20px) para 0.5rem */
 }
 
+/* Desktop/Mobile Header Visibility */
+.ai-vision-panel-desktop {
+    display: block;
+}
+
+.mobile-simple-header {
+    display: none;
+}
+
+.mobile-header-title {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.5rem;
+    text-align: left;
+}
+
+.mobile-header-subtitle {
+    font-size: 0.875rem;
+    color: #A1A1A1;
+    line-height: 1.5;
+    text-align: left;
+}
+
+@media (max-width: 768px) {
+    .ai-vision-panel-desktop {
+        display: none;
+    }
+    
+    .mobile-simple-header {
+        display: block;
+        padding: 0;
+    }
+}
+
 /* Form Styles */
 .form-group {
     display: flex;
@@ -841,6 +817,125 @@ export default {
 .selector-arrow {
     color: #444;
     font-size: 0.875rem;
+}
+
+/* Form Select Dropdown */
+.form-select {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    color: #fff;
+    font-size: 0.875rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23666' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 1rem center;
+    padding-right: 2.5rem;
+}
+
+.form-select:hover {
+    border-color: #22C55E;
+    background-color: #0d1a10;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #22C55E;
+    box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.1);
+}
+
+.form-select option {
+    background-color: #0B0B0B;
+    color: #fff;
+    padding: 0.5rem;
+}
+
+/* Agent Description Card */
+.agent-description-card {
+    margin-top: 0.75rem;
+    background: linear-gradient(135deg, #0d1a10 0%, #0B0B0B 100%);
+    border: 1px solid #22C55E;
+    border-radius: 0.5rem;
+    padding: 0.75rem;
+    box-shadow: 0 0 12px rgba(34, 197, 94, 0.1);
+}
+
+.agent-desc-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.agent-desc-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 0.5rem;
+    background: linear-gradient(135deg, #22C55E 0%, #16a34a 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.agent-desc-icon i {
+    font-size: 1.25rem;
+    color: #fff !important;
+}
+
+.agent-desc-info {
+    flex: 1;
+    text-align: left;
+}
+
+.agent-desc-info h3 {
+    font-size: 0.875rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 0.25rem 0;
+    letter-spacing: 0.5px;
+}
+
+.agent-desc-info p {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    line-height: 1.5;
+    margin: 0;
+}
+
+/* Slide Fade Transition */
+.slide-fade-enter-active {
+    transition: all 0.3s ease;
+}
+
+.slide-fade-leave-active {
+    transition: all 0.2s ease;
+}
+
+.slide-fade-enter-from {
+    transform: translateY(-10px);
+    opacity: 0;
+}
+
+.slide-fade-leave-to {
+    transform: translateY(-10px);
+    opacity: 0;
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+    .agent-desc-icon {
+        width: 36px;
+        height: 36px;
+    }
+    
+    .agent-desc-icon i {
+        font-size: 1.125rem;
+    }
 }
 
 /* Risk Buttons & Bar (From InvestmentIAView) */
