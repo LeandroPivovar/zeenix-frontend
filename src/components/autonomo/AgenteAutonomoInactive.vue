@@ -121,15 +121,24 @@
 									<span class="tooltip-text">Escolha o agente autônomo que deseja usar.</span>
 								</div>
 							</label>
-							<div class="premium-selector-field" @click="showAgentSelectorModal = true">
+							<div class="premium-selector-field" @click.stop="openAgentSelector">
 								<div class="selector-content">
-									<div 
-										class="selector-icon-wrapper" 
-										v-html="selectedAgent === 'sentinel' ? '<i class=\'fas fa-shield-alt\' style=\'color: white !important\'></i>' : '<i class=\'fas fa-rocket\' style=\'color: white !important\'></i>'"
-									></div>
-									<div class="selector-text">
+									<div class="selector-icon-wrapper" v-if="selectedAgent">
+										<i v-if="selectedAgent === 'sentinel'" class="fas fa-shield-alt" style="color: white !important"></i>
+										<i v-else-if="selectedAgent === 'falcon'" class="fas fa-rocket" style="color: white !important"></i>
+									</div>
+									<!-- Ícone padrão quando nada selecionado -->
+									<div class="selector-icon-wrapper" v-else>
+										<i class="fas fa-robot" style="color: #666 !important"></i>
+									</div>
+									
+									<div class="selector-text" v-if="selectedAgent">
 										<span class="selector-title">{{ selectedAgent === 'sentinel' ? 'SENTINEL' : 'FALCON' }}</span>
 										<span class="selector-subtitle">{{ getAgentDescription(selectedAgent) }}</span>
+									</div>
+									<div class="selector-text" v-else>
+										<span class="selector-title">Selecione o Agente</span>
+										<span class="selector-subtitle">Escolha qual inteligência irá operar</span>
 									</div>
 								</div>
 								<i class="fas fa-chevron-right selector-arrow"></i>
@@ -188,7 +197,7 @@
 							<div class="summary-grid-new">
 								<div class="summary-item-new">
 									<span class="label">Agente</span>
-									<span class="value">{{ selectedAgent.toUpperCase() }}</span>
+									<span class="value">{{ selectedAgent ? selectedAgent.toUpperCase() : '---' }}</span>
 								</div>
 								<div class="summary-item-new">
 									<span class="label">Risco</span>
@@ -210,54 +219,56 @@
 				<!-- Parâmetros Diários -->
 				<div id="entry-params-card" class="config-card premium-card">
 					<div class="card-content">
-						<div class="form-group">
-							<label class="form-label">
-								Valor por operação
-								<div class="tooltip-container">
-									<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<circle cx="12" cy="12" r="10"></circle>
-										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-										<line x1="12" y1="17" x2="12.01" y2="17"></line>
-									</svg>
-									<span class="tooltip-text">Defina o valor da sua primeira operação. Todas as estratégias de recuperação e alavancagem (Soros) serão calculadas a partir deste valor base.</span>
+						<div class="value-goal-row">
+							<div class="form-group flex-1">
+								<label class="form-label">
+									Valor por operação
+									<div class="tooltip-container">
+										<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<circle cx="12" cy="12" r="10"></circle>
+											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+											<line x1="12" y1="17" x2="12.01" y2="17"></line>
+										</svg>
+										<span class="tooltip-text">Defina o valor da sua primeira operação. Todas as estratégias de recuperação e alavancagem (Soros) serão calculadas a partir deste valor base.</span>
+									</div>
+								</label>
+								<div class="input-wrapper">
+									<span class="input-prefix">$</span>
+									<input 
+										type="number" 
+										class="form-input" 
+										v-model.number="valorOperacao"
+										min="0.01"
+										step="0.01"
+									>
 								</div>
-							</label>
-							<div class="input-wrapper">
-								<span class="input-prefix">$</span>
-								<input 
-									type="number" 
-									class="form-input" 
-									v-model.number="valorOperacao"
-									min="0.01"
-									step="0.01"
-								>
+								<p class="form-help">{{ percentualValorOperacao }}% do capital total</p>
 							</div>
-							<p class="form-help">{{ percentualValorOperacao }}% do capital total</p>
-						</div>
 
-						<div class="form-group">
-							<label class="form-label">
-								Meta diária de lucro
-								<div class="tooltip-container">
-									<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-										<circle cx="12" cy="12" r="10"></circle>
-										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-										<line x1="12" y1="17" x2="12.01" y2="17"></line>
-									</svg>
-									<span class="tooltip-text">Sua meta financeira para a sessão. O sistema encerrará as operações automaticamente assim que este valor for atingido ou superado.</span>
+							<div class="form-group flex-1">
+								<label class="form-label">
+									Meta diária de lucro
+									<div class="tooltip-container">
+										<svg class="icon-help" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+											<circle cx="12" cy="12" r="10"></circle>
+											<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+											<line x1="12" y1="17" x2="12.01" y2="17"></line>
+										</svg>
+										<span class="tooltip-text">Sua meta financeira para a sessão. O sistema encerrará as operações automaticamente assim que este valor for atingido ou superado.</span>
+									</div>
+								</label>
+								<div class="input-wrapper">
+									<span class="input-prefix">$</span>
+									<input 
+										type="number" 
+										class="form-input" 
+										v-model.number="metaLucro"
+										min="0.01"
+										step="0.01"
+									>
 								</div>
-							</label>
-							<div class="input-wrapper">
-								<span class="input-prefix">$</span>
-								<input 
-									type="number" 
-									class="form-input" 
-									v-model.number="metaLucro"
-									min="0.01"
-									step="0.01"
-								>
+								<p class="form-help positive">+{{ percentualMetaLucro }}% do capital total</p>
 							</div>
-							<p class="form-help positive">+{{ percentualMetaLucro }}% do capital total</p>
 						</div>
 
 						<div class="loss-stoploss-row">
@@ -314,28 +325,10 @@
 							</div>
 						</div>
 
-						<!-- Controle do Agente -->
-						<div class="form-group status-control-section">
-							<div class="ai-status-control-simple">
-								<div class="ai-status-info">
-									<label class="form-label">Status do Agente</label>
-									<p class="ai-status-subtitle">Defina os parâmetros e inicie o agente</p>
-								</div>
-								<div class="ai-status-toggle-wrapper">
-									<span class="ai-status-text" :class="{ 'active': false }">
-										Desativado
-									</span>
-									<label class="toggle-switch">
-										<input 
-											type="checkbox" 
-											@change="handleToggleChange"
-											:checked="false"
-										>
-										<span class="toggle-slider"></span>
-									</label>
-								</div>
-							</div>
-						</div>
+						<!-- Botão de Iniciar Agente -->
+						<button class="start-agent-btn" @click="iniciarAgente">
+							Iniciar Agente Autônomo
+						</button>
 					</div>
 				</div>
 
@@ -345,16 +338,16 @@
 				<div class="agent-selector-modal premium-card fade-in" style="z-index: 1000000 !important; pointer-events: all !important;">
 					<div class="modal-header">
 						<h2>Selecione o Agente</h2>
-						<button class="close-btn" @click.stop.prevent="showAgentSelectorModal = false">
+						<button class="close-btn" @click.stop="showAgentSelectorModal = false">
 							<i class="fas fa-times"></i>
 						</button>
 					</div>
-					<div class="agent-modal-list">
+						<div class="agent-modal-list">
 						<div 
 							class="agent-modal-card" 
 							:class="{ 'active': selectedAgent === 'sentinel' }"
 							style="pointer-events: auto !important;"
-							@click.stop.prevent="selectAgent('sentinel')"
+							@click.stop="selectAgent('sentinel')"
 						>
 							<div class="agent-modal-icon">
 								<i class="fas fa-shield-alt"></i>
@@ -372,7 +365,7 @@
 							class="agent-modal-card" 
 							:class="{ 'active': selectedAgent === 'falcon' }"
 							style="pointer-events: auto !important;"
-							@click.stop.prevent="selectAgent('falcon')"
+							@click.stop="selectAgent('falcon')"
 						>
 							<div class="agent-modal-icon">
 								<i class="fas fa-rocket"></i>
@@ -387,8 +380,8 @@
 							</div>
 						</div>
 					</div>
+				</div>
 			</div>
-		</div>
 	</div> <!-- End of layout-content-agent-autonomo -->
 </template>
 
@@ -415,7 +408,7 @@ export default {
 		data() {
 		return {
 			// Estado de seleção inicial (Baseado na imagem)
-			selectedAgent: 'sentinel', // ✅ Novo: Agente selecionado (sentinel ou falcon)
+			selectedAgent: null, 
 			selectedMarket: 'volatility_75', 
 			stopLossBlindado: false, 
 			selectedRisk: 'balanced',
@@ -495,6 +488,10 @@ export default {
 		},
 		
 		iniciarAgente() {
+			if (!this.selectedAgent) {
+				alert('Por favor, selecione um agente antes de iniciar.');
+				return;
+			}
 			// 1. Coleta os dados configurados
 			const configData = {
 				// ✅ Novo: Tipo de agente selecionado
@@ -524,11 +521,21 @@ export default {
 			});
 		},
 
+		// 🟢 NOVO MÉTODO 🟢
+		openAgentSelector() {
+			console.log('[AgenteAutonomoInactive] Abrindo seletor de agente');
+			this.showAgentSelectorModal = true;
+		},
+
 		// --- Métodos existentes ---
 		selectAgent(agentId) {
 			console.log('[AgenteAutonomoInactive] Selecionando agente:', agentId);
-			this.selectedAgent = agentId;
-			this.showAgentSelectorModal = false; // Garantir que o modal feche aqui também
+			this.showAgentSelectorModal = false; // Fecha o modal primeiro
+			
+			// Atualiza o agente no próximo ciclo para evitar conflitos de renderização
+			this.$nextTick(() => {
+				this.selectedAgent = agentId;
+			});
 		},
 		selectMarket(marketId) {
 			this.selectedMarket = marketId;
@@ -753,6 +760,10 @@ export default {
     gap: 0.5rem;
 }
 
+.form-group input {
+    margin-bottom: 0;
+}
+
 .form-label {
     font-size: 0.875rem;
     font-weight: 600;
@@ -945,6 +956,11 @@ export default {
 .form-help.negative { color: #EF4444; opacity: 0.9; }
 
 .loss-stoploss-row {
+    display: flex;
+    gap: 1rem;
+}
+
+.value-goal-row {
     display: flex;
     gap: 1rem;
 }
@@ -1276,9 +1292,33 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
         flex-direction: column;
     }
     
+    .value-goal-row {
+        flex-direction: column;
+    }
+    
     .summary-grid-new {
         grid-template-columns: 1fr;
     }
+}
+
+/* Botão de Iniciar Agente */
+.start-agent-btn {
+    width: 100%;
+    padding: 20px;
+    background-color: #22c55e;
+    color: #000;
+    border: none;
+    border-radius: 0.5rem;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.start-agent-btn:hover {
+    background-color: #1eb352;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
 }
 
 .ai-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
