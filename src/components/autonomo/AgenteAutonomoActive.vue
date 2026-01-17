@@ -169,13 +169,13 @@
 					<div class="inline-flex items-center rounded-full border border-green-500/30 bg-green-500/10 text-green-500 font-semibold text-[10px] px-2.5 py-0.5">
 						Melhor dia
 					</div>
-					<span class="text-xs text-[#FAFAFA] tabular-nums">+${{ bestDay.value.toFixed(2) }} ({{ bestDay.date }})</span>
+					<span class="text-xs text-[#FAFAFA] tabular-nums">+${{ bestDay?.value?.toFixed(2) || '0.00' }} ({{ bestDay?.date || '--' }})</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<div class="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 text-red-500 font-semibold text-[10px] px-2.5 py-0.5">
 						Pior dia
 					</div>
-					<span class="text-xs text-[#FAFAFA] tabular-nums">-${{ worstDay.value.toFixed(2) }} ({{ worstDay.date }})</span>
+					<span class="text-xs text-[#FAFAFA] tabular-nums">-${{ worstDay?.value?.toFixed(2) || '0.00' }} ({{ worstDay?.date || '--' }})</span>
 				</div>
 			</div>
 		</div>
@@ -604,22 +604,38 @@
 				return totalProfit / this.dailyData.length;
 			},
 			bestDay() {
-				if (!this.dailyData || this.dailyData.length === 0) {
+				if (!Array.isArray(this.dailyData) || this.dailyData.length === 0) {
 					return { value: 0, date: '--' };
 				}
-				const best = this.dailyData.reduce((max, day) => 
-					day.profit > max.profit ? day : max
-				, this.dailyData[0]);
-				return { value: best.profit, date: best.date };
+				try {
+					const best = this.dailyData.reduce((max, day) => {
+						if (!day || !max) return max || day;
+						return (day.profit ?? 0) > (max.profit ?? 0) ? day : max;
+					}, this.dailyData[0]);
+					
+					if (!best) return { value: 0, date: '--' };
+					return { value: best.profit ?? 0, date: best.date ?? '--' };
+				} catch (e) {
+					console.error('Error calculating bestDay:', e);
+					return { value: 0, date: '--' };
+				}
 			},
 			worstDay() {
-				if (!this.dailyData || this.dailyData.length === 0) {
+				if (!Array.isArray(this.dailyData) || this.dailyData.length === 0) {
 					return { value: 0, date: '--' };
 				}
-				const worst = this.dailyData.reduce((min, day) => 
-					day.profit < min.profit ? day : min
-				, this.dailyData[0]);
-				return { value: Math.abs(worst.profit), date: worst.date };
+				try {
+					const worst = this.dailyData.reduce((min, day) => {
+						if (!day || !min) return min || day;
+						return (day.profit ?? 0) < (min.profit ?? 0) ? day : min;
+					}, this.dailyData[0]);
+
+					if (!worst) return { value: 0, date: '--' };
+					return { value: Math.abs(worst.profit ?? 0), date: worst.date ?? '--' };
+				} catch (e) {
+					console.error('Error calculating worstDay:', e);
+					return { value: 0, date: '--' };
+				}
 			},
 			// Métodos auxiliares legados mantidos para compatibilidade
 			userIdComputed() { return this.getUserId(); },
