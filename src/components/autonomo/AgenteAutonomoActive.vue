@@ -46,7 +46,7 @@
 			<div class="new-metric-card highlight-card">
 				<div class="metric-header">
 					<i class="fas fa-arrow-trend-up metric-icon-small"></i>
-					<span class="metric-label-small">LUCRO DO PERÃODO</span>
+					<span class="metric-label-small">LUCRO DO PERÍODO</span>
 				</div>
 				<div class="metric-value-large positive">+${{ periodProfit.toFixed(2) }}</div>
 				<div class="metric-footer">
@@ -129,7 +129,7 @@
 		<div class="distribution-section">
 			<div class="distribution-header">
 				<i class="fas fa-table"></i>
-				<span>DISTRIBUIÃ‡ÃƒO DIÃRIA DE PERFORMANCE</span>
+				<span>DISTRIBUIÇÃO DIÁRIA DE PERFORMANCE</span>
 			</div>
 
 			<!-- Weekly Summary Table -->
@@ -289,7 +289,7 @@
 				logsPollingInterval: null, // Intervalo para polling de logs
 				unidadeTimeframeSelecionada: 'minutos',
 				valorTimeframeSelecionado: 1,
-				tipoGraficoSelecionado: 'GrÃ¡fico de Linhas',
+				tipoGráfico de Linhas',
 				// âœ… REMOVIDO: WebSocket nÃ£o Ã© mais usado no frontend (backend gerencia)
 				symbol: 'R_75', // Ãndice do agente autÃ´nomo (serÃ¡ atualizado do backend)
 				timeframeOptions: {
@@ -297,7 +297,7 @@
 					horas: [1, 2, 4, 8],
 					Dias: [1, 2, 3, 4, 5, 6, 7],
 				},
-				tiposGrafico: ['GrÃ¡fico de Linhas', 'GrÃ¡fico de Velas'],
+				tiposGráfico de Velas'],
 				acoesAgente: [
 					{ hora: '14:32:15', classe: 'success', titulo: 'OperaÃ§Ã£o finalizada com sucesso', descricao: '14:32:15 - Lucro de $8.50' },
 					{ hora: '14:32:00', classe: 'success', titulo: 'Entrada executada', descricao: '14:32:00 - CALL em Volatility 75' },
@@ -540,7 +540,7 @@
 				return `${this.valorTimeframeSelecionado}${unidadeMap[this.unidadeTimeframeSelecionada] || ''}`;
 			},
 			graficoPlaceholder() {
-				return `Performance do Agente (GrÃ¡fico de ${this.tipoGraficoSelecionado} | ${this.timeframeFinal})`;
+				return `Performance do Agente (Gráfico de ${this.tipoGraficoSelecionado} | ${this.timeframeFinal})`;
 			},
 			dateRangeText() {
 			const today = new Date();
@@ -621,7 +621,7 @@
 						return historicoOperacoes.sort((a, b) => new Date(b.data + 'T' + b.hora) - new Date(a.data + 'T' + a.hora));
 				}
 			},
-			// Transformar dados do histÃ³rico para o formato esperado pelo OperationLogs
+			// Transformar dados do histórico para o formato esperado pelo OperationLogs
 			formattedTradeResults() {
 				if (!this.historicoOperacoes || this.historicoOperacoes.length === 0) {
 					return [];
@@ -1227,7 +1227,7 @@
 						this.fetchPriceHistory();
 					}
 				} catch (error) {
-					console.error('[AgenteAutonomoActive] Erro ao inicializar grÃ¡fico de Ã­ndice:', error);
+					console.error('[AgenteAutonomoActive] Erro ao inicializar Gráfico de Ã­ndice:', error);
 					this.indexChartInitialized = false;
 				}
 			},
@@ -1325,7 +1325,7 @@
 					this.indexChartSeries.setData(limitedData);
 					this.indexChart.timeScale().fitContent();
 				} catch (error) {
-					console.error('[AgenteAutonomoActive] Erro ao atualizar grÃ¡fico de Ã­ndice:', error);
+					console.error('[AgenteAutonomoActive] Erro ao atualizar Gráfico de Ã­ndice:', error);
 				}
 			},
 			getUserId() {
