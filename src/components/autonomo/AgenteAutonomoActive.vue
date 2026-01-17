@@ -40,7 +40,7 @@
 						</div>
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Capital Inicial</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA]">${{ initialCapital.toFixed(2) }}</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">${{ initialCapital.toFixed(2) }}</div>
 					<div class="flex items-center gap-2">
 						<span class="text-[#A1A1AA] text-xs">R$ {{ (initialCapital * 5.19).toFixed(3) }}</span>
 					</div>
@@ -54,7 +54,7 @@
 						</div>
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Capital Final</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500">${{ finalCapital.toFixed(2) }}</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">${{ finalCapital.toFixed(2) }}</div>
 					<div class="flex items-center gap-2">
 						<span class="text-[#A1A1AA] text-xs">R$ {{ (finalCapital * 5.19).toFixed(3) }}</span>
 					</div>
@@ -69,7 +69,7 @@
 						</div>
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Lucro do Período</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 relative z-10">+${{ periodProfit.toFixed(2) }}</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 relative z-10 text-left">+${{ periodProfit.toFixed(2) }}</div>
 					<div class="flex items-center gap-2 relative z-10">
 						<span class="text-[#A1A1AA] text-xs">R$ {{ (periodProfit * 5.19).toFixed(3) }}</span>
 						<div class="inline-flex items-center rounded-full border border-transparent bg-green-500/20 text-green-500 font-semibold text-[10px] px-2 py-0.5">
@@ -86,7 +86,7 @@
 						</div>
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Lucro Médio/Dia</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500">+${{ avgDailyProfit.toFixed(2) }}</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">+${{ avgDailyProfit.toFixed(2) }}</div>
 					<div class="flex items-center gap-2">
 						<span class="text-[#A1A1AA] text-xs">$25,03/op</span>
 					</div>
@@ -105,7 +105,7 @@
 					</div>
 					<div class="text-left">
 						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Estratégia</div>
-						<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA]">
+						<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
 							<span class="text-lg">🦅</span>
 							<span>{{ agenteData.estrategia }}</span>
 							<span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
@@ -120,7 +120,7 @@
 					</div>
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Resultado do dia</div>
-						<div class="text-sm font-medium tabular-nums" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'">
+						<div class="text-sm font-medium tabular-nums text-left" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'">
 							{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
 						</div>
 					</div>
@@ -133,7 +133,7 @@
 					</div>
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">OPERAÇÕES HOJE</div>
-						<div class="text-sm font-medium tabular-nums text-[#FAFAFA]">{{ operacoesHojeDisplay }}</div>
+						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">{{ operacoesHojeDisplay }}</div>
 					</div>
 				</div>
 
@@ -144,7 +144,7 @@
 					</div>
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Tempo ativo</div>
-						<div class="text-sm font-medium tabular-nums text-[#FAFAFA]">{{ tempoAtivoDisplay }}</div>
+						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">{{ tempoAtivoDisplay }}</div>
 					</div>
 				</div>
 			</div>
@@ -189,7 +189,7 @@
 
 			<!-- Weekly Table -->
 			<div class="overflow-x-auto mb-6">
-				<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide">Resumo Semanal</h4>
+				<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide text-left">Resumo Semanal</h4>
 				<table class="w-full text-xs">
 					<thead>
 						<tr class="border-b border-[#27272a]">
@@ -220,7 +220,7 @@
 
 			<!-- Daily Table -->
 			<div>
-				<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide">Detalhamento Diário</h4>
+				<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide text-left">Detalhamento Diário</h4>
 				<div class="relative overflow-hidden h-[400px]"> 
 					<div class="overflow-y-auto custom-scrollbar h-full relative">
 						<table class="w-full text-xs">
