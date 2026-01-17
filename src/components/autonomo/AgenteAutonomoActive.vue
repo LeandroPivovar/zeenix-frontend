@@ -284,7 +284,7 @@
 				indexChartSeries: null,
 				indexChartInitialized: false,
 				localTradeHistory: [], // HistÃ³rico de trades buscado localmente
-				realtimeLogs: [], // Logs em tempo real (igual Ã  IA)
+				realtimeLogs: [], // Logs em tempo real (igual Ã  IA)
 				lastLogTimestamp: null, // Timestamp do Ãºltimo log para polling
 				logsPollingInterval: null, // Intervalo para polling de logs
 				unidadeTimeframeSelecionada: 'minutos',
@@ -373,7 +373,7 @@
 					});
 				}
 				// Se nÃ£o houver tradeHistory, usar operationHistory do agenteData
-				console.log('[AgenteAutonomoActive] âš ï¸ Nenhum tradeHistory disponÃ­vel. tradeHistory:', this.tradeHistory, 'agenteData.operationHistory:', this.agenteData?.operationHistory);
+				console.log('[AgenteAutonomoActive] âš ï¸ Nenhum tradeHistory disponÃ­vel. tradeHistory:', this.tradeHistory, 'agenteData.operationHistory:', this.agenteData?.operationHistory);
 				return this.agenteData?.operationHistory || [];
 			},
 			userIdComputed() {
@@ -442,7 +442,7 @@
 				
 				// Log apenas quando realmente nÃ£o hÃ¡ valor (evitar spam)
 				if (this.sessionStats && this.agenteData && headerBalanceNum === 0 && backendCapitalNum === 0) {
-					console.warn('[AgenteAutonomoActive] âš ï¸ totalCapital: nenhum valor disponÃ­vel. backendCapital:', backendCapitalNum, 'headerBalance:', headerBalanceNum, 'agenteData.accountBalance:', this.agenteData?.accountBalance);
+					console.warn('[AgenteAutonomoActive] âš ï¸ totalCapital: nenhum valor disponÃ­vel. backendCapital:', backendCapitalNum, 'headerBalance:', headerBalanceNum, 'agenteData.accountBalance:', this.agenteData?.accountBalance);
 				}
 				return 0;
 			},
@@ -543,47 +543,60 @@
 				return `Performance do Agente (Gráfico de ${this.tipoGraficoSelecionado} | ${this.timeframeFinal})`;
 			},
 			dateRangeText() {
-			const today = new Date();
-			const startDate = new Date(today);
-			startDate.setDate(today.getDate() - 30);
-			const formatDate = (date) => {
-			const day = date.getDate();
-			const month = date.toLocaleDateString('pt-BR', { month: 'short' });
-			return `${day} ${month}`;
-			};
-			return `${formatDate(startDate)} - ${formatDate(today)} ${today.getFullYear()}`;
+				const today = new Date();
+				const startDate = new Date(today);
+				startDate.setDate(today.getDate() - 30);
+				
+				const formatDate = (date) => {
+					const day = date.getDate();
+					const month = date.toLocaleDateString('pt-BR', { month: 'short' });
+					return `${day} ${month}`;
+				};
+				
+				return `${formatDate(startDate)} - ${formatDate(today)} ${today.getFullYear()}`;
 			},
 			initialCapital() {
-			return this.sessionStats?.totalCapital || this.totalCapital || 27808.68;
+				// Capital inicial da sessão (sessionStats.totalCapital ou fallback)
+				return this.sessionStats?.totalCapital || this.totalCapital || 27808.68;
 			},
 			finalCapital() {
-			return this.initialCapital + this.periodProfit;
+				// Capital final = capital inicial + lucro do período
+				return this.initialCapital + this.periodProfit;
 			},
 			periodProfit() {
-			return this.sessionStats?.netProfit || 0;
+				// Lucro do período (sessionStats.netProfit ou fallback)
+				return this.sessionStats?.netProfit || 0;
 			},
 			periodProfitPercent() {
-			if (this.initialCapital <= 0) return 0;
-			return (this.periodProfit / this.initialCapital) * 100;
+				// Percentual de lucro do período
+				if (this.initialCapital <= 0) return 0;
+				return (this.periodProfit / this.initialCapital) * 100;
 			},
 			avgDailyProfit() {
-			if (!this.dailyData || this.dailyData.length === 0) return 0;
-			const totalProfit = this.dailyData.reduce((sum, day) => sum + day.profit, 0);
-			return totalProfit / this.dailyData.length;
+				// Lucro médio por dia (baseado nos dados diários)
+				if (!this.dailyData || this.dailyData.length === 0) return 0;
+				const totalProfit = this.dailyData.reduce((sum, day) => sum + day.profit, 0);
+				return totalProfit / this.dailyData.length;
 			},
 			bestDay() {
-			if (!this.dailyData || this.dailyData.length === 0) {
-			return { value: 0, date: '--' };
-			}
-			const best = this.dailyData.reduce((max, day) => day.profit > max.profit ? day : max, this.dailyData[0]);
-			return { value: best.profit, date: best.date };
+				// Melhor dia (maior lucro)
+				if (!this.dailyData || this.dailyData.length === 0) {
+					return { value: 0, date: '--' };
+				}
+				const best = this.dailyData.reduce((max, day) => 
+					day.profit > max.profit ? day : max
+				, this.dailyData[0]);
+				return { value: best.profit, date: best.date };
 			},
 			worstDay() {
-			if (!this.dailyData || this.dailyData.length === 0) {
-			return { value: 0, date: '--' };
-			}
-			const worst = this.dailyData.reduce((min, day) => day.profit < min.profit ? day : min, this.dailyData[0]);
-			return { value: Math.abs(worst.profit), date: worst.date };
+				// Pior dia (maior perda)
+				if (!this.dailyData || this.dailyData.length === 0) {
+					return { value: 0, date: '--' };
+				}
+				const worst = this.dailyData.reduce((min, day) => 
+					day.profit < min.profit ? day : min
+				, this.dailyData[0]);
+				return { value: Math.abs(worst.profit), date: worst.date };
 			},
 
 			historicoOperacoesFiltradas() {
@@ -1001,7 +1014,7 @@
 				try {
 					const userId = this.getUserId();
 					if (!userId) {
-						console.warn('[AgenteAutonomoActive] âš ï¸ userId nÃ£o disponÃ­vel para buscar histÃ³rico');
+						console.warn('[AgenteAutonomoActive] âš ï¸ userId nÃ£o disponÃ­vel para buscar histÃ³rico');
 						return;
 					}
 					
@@ -1016,7 +1029,7 @@
 					});
 					
 					if (!response.ok) {
-						console.warn(`[AgenteAutonomoActive] âš ï¸ Resposta nÃ£o OK: ${response.status} ${response.statusText}`);
+						console.warn(`[AgenteAutonomoActive] âš ï¸ Resposta nÃ£o OK: ${response.status} ${response.statusText}`);
 						return;
 					}
 					
@@ -1079,7 +1092,7 @@
 							});
 						}
 					} else {
-						console.warn('[AgenteAutonomoActive] âš ï¸ Resposta sem dados vÃ¡lidos:', result);
+						console.warn('[AgenteAutonomoActive] âš ï¸ Resposta sem dados vÃ¡lidos:', result);
 					}
 				} catch (error) {
 					console.error('[AgenteAutonomoActive] âŒ Erro ao buscar histÃ³rico:', error);
@@ -1111,7 +1124,7 @@
 				try {
 					const userId = this.getUserId();
 					if (!userId) {
-						console.warn('[AgenteAutonomoActive] âš ï¸ userId nÃ£o disponÃ­vel para buscar histÃ³rico de trades');
+						console.warn('[AgenteAutonomoActive] âš ï¸ userId nÃ£o disponÃ­vel para buscar histÃ³rico de trades');
 						return;
 					}
 					
@@ -1126,7 +1139,7 @@
 					});
 					
 					if (!response.ok) {
-						console.warn(`[AgenteAutonomoActive] âš ï¸ Resposta nÃ£o OK ao buscar trades: ${response.status} ${response.statusText}`);
+						console.warn(`[AgenteAutonomoActive] âš ï¸ Resposta nÃ£o OK ao buscar trades: ${response.status} ${response.statusText}`);
 						return;
 					}
 					
@@ -1138,7 +1151,7 @@
 						this.localTradeHistory = result.data;
 						console.log('[AgenteAutonomoActive] âœ… HistÃ³rico de trades atualizado:', result.data.length, 'trades');
 					} else {
-						console.warn('[AgenteAutonomoActive] âš ï¸ Resposta sem dados vÃ¡lidos de trades:', result);
+						console.warn('[AgenteAutonomoActive] âš ï¸ Resposta sem dados vÃ¡lidos de trades:', result);
 					}
 				} catch (error) {
 					console.error('[AgenteAutonomoActive] âŒ Erro ao buscar histÃ³rico de trades:', error);
@@ -1385,12 +1398,12 @@
 				});
 			},
 			
-			// âœ… MÃ©todos para logs (igual Ã  IA)
+			// âœ… MÃ©todos para logs (igual Ã  IA)
 			async fetchRealtimeLogs() {
 				try {
 					const userId = this.getUserId();
 					if (!userId) {
-						console.warn('[AgenteAutonomoActive] âš ï¸ UserId nÃ£o disponÃ­vel para buscar logs');
+						console.warn('[AgenteAutonomoActive] âš ï¸ UserId nÃ£o disponÃ­vel para buscar logs');
 						return;
 					}
 					
@@ -1406,13 +1419,13 @@
 					});
 					
 					if (!response.ok) {
-						console.warn('[AgenteAutonomoActive] âš ï¸ Erro ao buscar logs:', response.status);
+						console.warn('[AgenteAutonomoActive] âš ï¸ Erro ao buscar logs:', response.status);
 						return;
 					}
 					
 					const result = await response.json();
 					if (result.success && result.data && Array.isArray(result.data)) {
-						// Converter logs para o formato esperado (igual Ã  IA)
+						// Converter logs para o formato esperado (igual Ã  IA)
 						const newLogs = result.data.map(log => {
 							// Determinar tipo e Ã­cone baseado no mÃ³dulo e mensagem
 							let type = 'info';
@@ -1437,7 +1450,7 @@
 								icon = 'ðŸ”';
 							} else if (log.module === 'RISK') {
 								type = 'alerta';
-								icon = 'âš ï¸';
+								icon = 'âš ï¸';
 							} else if (log.module === 'CORE') {
 								type = 'info';
 								icon = 'â„¹ï¸';
@@ -1483,7 +1496,7 @@
 							
 							// Se ainda nÃ£o foi mostrado hoje
 							if (lastHit !== today) {
-								console.log('[AgenteAutonomoActive] âš ï¸ Stop Loss detectado: ativando modal');
+								console.log('[AgenteAutonomoActive] âš ï¸ Stop Loss detectado: ativando modal');
 								this.showStopLossModal = true;
 								localStorage.setItem('agent_stop_loss_date', today);
 							}
@@ -1574,7 +1587,7 @@
 				// Buscar logs imediatamente
 				this.fetchRealtimeLogs();
 				
-				// Polling a cada 2 segundos (igual Ã  IA)
+				// Polling a cada 2 segundos (igual Ã  IA)
 				this.logsPollingInterval = setInterval(() => {
 					if (this.abaAtiva === 'registro') {
 						this.fetchRealtimeLogs();
@@ -2176,7 +2189,7 @@
 		display: none;
 	}
 	
-	/* âœ… Estilos de logs igual Ã  IA */
+	/* âœ… Estilos de logs igual Ã  IA */
 	.desktop-register-header {
 		display: flex;
 		align-items: center;
