@@ -31,7 +31,7 @@
 					<span class="metric-label-small">CAPITAL INICIAL</span>
 				</div>
 				<div class="metric-value-large">${{ initialCapital.toFixed(2) }}</div>
-				<div class="metric-secondary">R$ {{ (initialCapital * 5.17).toFixed(2) }}</div>
+				<div class="metric-secondary">R$ {{ (initialCapital * 5.19).toFixed(3) }}</div>
 			</div>
 
 			<div class="new-metric-card">
@@ -40,7 +40,7 @@
 					<span class="metric-label-small">CAPITAL FINAL</span>
 				</div>
 				<div class="metric-value-large positive">${{ finalCapital.toFixed(2) }}</div>
-				<div class="metric-secondary">R$ {{ (finalCapital * 5.17).toFixed(2) }}</div>
+				<div class="metric-secondary">R$ {{ (finalCapital * 5.19).toFixed(3) }}</div>
 			</div>
 
 			<div class="new-metric-card highlight-card">
@@ -50,7 +50,7 @@
 				</div>
 				<div class="metric-value-large positive">+${{ periodProfit.toFixed(2) }}</div>
 				<div class="metric-footer">
-					<span class="metric-secondary">R$ {{ (periodProfit * 5.17).toFixed(2) }}</span>
+					<span class="metric-secondary">R$ {{ (periodProfit * 5.19).toFixed(3) }}</span>
 					<span class="metric-badge positive">+{{ periodProfitPercent.toFixed(2) }}%</span>
 				</div>
 			</div>
@@ -61,7 +61,7 @@
 					<span class="metric-label-small">LUCRO MÉDIO/DIA</span>
 				</div>
 				<div class="metric-value-large positive">+${{ avgDailyProfit.toFixed(2) }}</div>
-				<div class="metric-secondary">R${{ (avgDailyProfit * 5.17).toFixed(2) }}</div>
+				<div class="metric-secondary">$25,03/op</div>
 			</div>
 		</div>
 
@@ -305,22 +305,24 @@
 				// Novas propriedades para o layout redesenhado
 				selectedPeriod: '30d',
 				weeklyData: [
-					{ period: '15/12 - 21/12', profit: 82385.05, finalCapital: 112049.48, percent: 3.32, ops: 64, winRate: 76.0 },
-					{ period: '22/12 - 28/12', profit: -8843.49, finalCapital: 112049.65, percent: -6.30, ops: 271, winRate: 72.3 },
-					{ period: '29/12 - 04/01', profit: 8844.37, finalCapital: 118734.32, percent: 5.95, ops: 268, winRate: 72.8 },
-					{ period: '05/01 - 11/01', profit: 8434.36, finalCapital: 125159.68, percent: 5.41, ops: 262, winRate: 73.4 },
-					{ period: '12/01 - 18/01', profit: 5789.39, finalCapital: 130928.07, percent: 4.61, ops: 249, winRate: 73.9 },
+					{ period: '15/12 - 21/12', profit: 3385.05, finalCapital: 105428.46, percent: 3.32, ops: 84, winRate: 75.0 },
+					{ period: '22/12 - 28/12', profit: 6641.49, finalCapital: 112069.95, percent: 6.30, ops: 271, winRate: 72.3 },
+					{ period: '29/12 - 04/01', profit: 6664.37, finalCapital: 118734.32, percent: 5.95, ops: 268, winRate: 72.8 },
+					{ period: '05/01 - 11/01', profit: 6424.36, finalCapital: 125158.68, percent: 5.41, ops: 282, winRate: 73.4 },
+					{ period: '12/01 - 18/01', profit: 5769.39, finalCapital: 130928.07, percent: 4.61, ops: 249, winRate: 73.9 },
 				],
 				dailyData: [
-					{ date: '19/12', badge: 'HOJE', profit: 42857.82, capital: 104701.23, ops: 43, winRate: 74.4, avgTime: '24min' },
-					{ date: '20/12', badge: '', profit: 2006.41, capital: 106697.83, ops: 20, winRate: 70.0, avgTime: '27min' },
-					{ date: '21/12', badge: '', profit: -3298.18, capital: 105426.46, ops: 21, winRate: 76.2, avgTime: '27min' },
-					{ date: '22/12', badge: '', profit: 61734.67, capital: 107363.03, ops: 54, winRate: 70.4, avgTime: '22min' },
-					{ date: '23/12', badge: '', profit: 41950.53, capital: 108113.65, ops: 41, winRate: 75.6, avgTime: '24min' },
-					{ date: '24/12', badge: '', profit: 41421.06, capital: 110534.61, ops: 56, winRate: 69.6, avgTime: '22min' },
-					{ date: '25/12', badge: '', profit: 41169.77, capital: 111704.38, ops: 38, winRate: 71.0, avgTime: '24min' },
+                    { date: '19/12', badge: 'Melhor', profit: 2657.82, capital: 104701.23, ops: 43, winRate: 74.4, avgTime: '24min' },
+					{ date: '25/12', badge: '', profit: 1169.77, capital: 111704.38, ops: 38, winRate: 71.0, avgTime: '24min' },
 					{ date: '26/12', badge: '', profit: -511.89, capital: 111192.49, ops: 40, winRate: 75.0, avgTime: '24min' },
-					{ date: '27/12', badge: '', profit: 9387.73, capital: 111580.23, ops: 22, winRate: 72.7, avgTime: '27min' },
+					{ date: '27/12', badge: '', profit: 387.73, capital: 111580.23, ops: 22, winRate: 72.7, avgTime: '27min' },
+					{ date: '28/12', badge: '', profit: 489.72, capital: 112069.95, ops: 20, winRate: 75.0, avgTime: '27min' },
+					{ date: '29/12', badge: '', profit: 1678.16, capital: 113749.11, ops: 52, winRate: 71.2, avgTime: '22min' },
+					{ date: '30/12', badge: 'Pior', profit: -584.66, capital: 113163.45, ops: 40, winRate: 72.5, avgTime: '24min' },
+					{ date: '31/12', badge: '', profit: 1210.03, capital: 114373.48, ops: 44, winRate: 75.0, avgTime: '23min' },
+					{ date: '01/01', badge: '', profit: 1318.99, capital: 115692.47, ops: 43, winRate: 74.4, avgTime: '24min' },
+					{ date: '02/01', badge: '', profit: 1966.64, capital: 117659.11, ops: 51, winRate: 70.6, avgTime: '22min' },
+					{ date: '03/01', badge: '', profit: 584.80, capital: 118243.90, ops: 15, winRate: 73.3, avgTime: '28min' },
 				],
 			};
 		},
@@ -842,14 +844,32 @@
 	.negative { color: #EF4444; }
 	
 	.day-badge {
-		background-color: #FACC15;
-		color: #000;
 		font-size: 0.625rem;
 		font-weight: 700;
-		padding: 2px 6px;
-		border-radius: 4px;
+		padding: 2px 8px;
+		border-radius: 12px;
 		margin-right: 8px;
+		text-transform: uppercase;
+        border: 1px solid transparent;
 	}
+
+    .day-badge.Melhor {
+        background-color: rgba(34, 197, 94, 0.1);
+        color: #22C55E;
+        border-color: #22C55E;
+    }
+
+    .day-badge.Pior {
+        background-color: rgba(239, 68, 68, 0.1);
+        color: #EF4444;
+        border-color: #EF4444;
+    }
+
+    .day-badge.HOJE {
+        background-color: #FACC15; 
+        color: #000;
+        border-color: #FACC15;
+    }
 
 	/* Responsividade Basica */
 	@media (max-width: 768px) {
