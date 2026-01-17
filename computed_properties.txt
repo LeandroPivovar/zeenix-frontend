@@ -1,0 +1,44 @@
+﻿// Adicionar após linha 544
+dateRangeText() {
+const today = new Date();
+const startDate = new Date(today);
+startDate.setDate(today.getDate() - 30);
+const formatDate = (date) => {
+const day = date.getDate();
+const month = date.toLocaleDateString('pt-BR', { month: 'short' });
+return ${day} ;
+};
+return ${formatDate(startDate)} -  ;
+},
+initialCapital() {
+return this.sessionStats?.totalCapital || this.totalCapital || 27808.68;
+},
+finalCapital() {
+return this.initialCapital + this.periodProfit;
+},
+periodProfit() {
+return this.sessionStats?.netProfit || 0;
+},
+periodProfitPercent() {
+if (this.initialCapital <= 0) return 0;
+return (this.periodProfit / this.initialCapital) * 100;
+},
+avgDailyProfit() {
+if (!this.dailyData || this.dailyData.length === 0) return 0;
+const totalProfit = this.dailyData.reduce((sum, day) => sum + day.profit, 0);
+return totalProfit / this.dailyData.length;
+},
+bestDay() {
+if (!this.dailyData || this.dailyData.length === 0) {
+return { value: 0, date: '--' };
+}
+const best = this.dailyData.reduce((max, day) => day.profit > max.profit ? day : max, this.dailyData[0]);
+return { value: best.profit, date: best.date };
+},
+worstDay() {
+if (!this.dailyData || this.dailyData.length === 0) {
+return { value: 0, date: '--' };
+}
+const worst = this.dailyData.reduce((min, day) => day.profit < min.profit ? day : min, this.dailyData[0]);
+return { value: Math.abs(worst.profit), date: worst.date };
+},
