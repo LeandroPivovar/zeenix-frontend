@@ -549,9 +549,9 @@
 			const formatDate = (date) => {
 			const day = date.getDate();
 			const month = date.toLocaleDateString('pt-BR', { month: 'short' });
-			return ${day} ;
+			return `${day} ${month}`;
 			};
-			return ${formatDate(startDate)} -  ;
+			return `${formatDate(startDate)} - ${formatDate(today)} ${today.getFullYear()}`;
 			},
 			initialCapital() {
 			return this.sessionStats?.totalCapital || this.totalCapital || 27808.68;
