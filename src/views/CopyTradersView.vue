@@ -48,8 +48,109 @@
           <p>Carregando dados do Copy Trading...</p>
         </div>
       
+        <!-- AI Vision Panel for Copy Trading -->
+        <section v-else-if="activeTab === 'config' && !hasActiveSession" class="fade-in" style="margin-bottom: 1.5rem;">
+          <!-- Desktop: AI Vision Panel -->
+          <div class="ai-vision-panel-desktop">
+            <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
+              <!-- Header Desktop -->
+              <div class="mb-6">
+                <div class="text-left">
+                  <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração do Copy Trading</h1>
+                  <p class="text-sm text-zenix-secondary">Escolha traders e IAs para copiar, configure proporção e filtros, e replique operações automaticamente.</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-12 gap-5">
+                <!-- AI Visualization Area -->
+                <div class="col-span-5 h-[220px] overflow-hidden rounded-xl bg-gradient-to-br from-zenix-green/10 to-transparent border-2 border-zenix-green/30 flex items-center justify-center relative ai-visualization-area">
+                  <div class="absolute inset-0 bg-gradient-to-br from-zenix-green/5 via-transparent to-zenix-green/10"></div>
+                  <!-- Animated Grid Background -->
+                  <div class="absolute inset-0 opacity-20">
+                    <div id="i9dlnn" class="absolute inset-0"></div>
+                  </div>
+                  <!-- Central AI Core -->
+                  <div class="relative z-10 flex items-center justify-center ai-core-mobile" style="width: 100%; height: 100%;">
+                    <!-- Outer Rotating Ring -->
+                    <div id="irazem" class="absolute w-40 h-40 border-2 border-zenix-green/30 rounded-full ai-glow-ring" style="opacity: 1;"></div>
+                    <!-- Middle Rotating Ring -->
+                    <div id="i5uptv" class="absolute w-32 h-32 border-2 border-zenix-green/40 rounded-full" style="opacity: 1;"></div>
+                    <!-- Inner Pulsing Core -->
+                    <div class="absolute w-24 h-24 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1;"></div>
+                    <!-- Central Brain Icon -->
+                    <div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center;">
+                      <i class="fas fa-brain text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3rem !important;"></i>
+                    </div>
+                    <!-- Orbiting Data Nodes -->
+                    <div id="iyljui" class="absolute w-3 h-3 bg-zenix-green rounded-full" style="opacity: 1;"></div>
+                    <div id="isxtjr" class="absolute w-2 h-2 bg-zenix-green/70 rounded-full" style="opacity: 1;"></div>
+                    <div id="ijse57" class="absolute w-2.5 h-2.5 bg-zenix-green/80 rounded-full" style="opacity: 1;"></div>
+                  </div>
+                  <!-- Floating Particles -->
+                  <div class="absolute inset-0 overflow-hidden">
+                    <div id="iw45yh" class="absolute w-1 h-1 bg-zenix-green rounded-full"></div>
+                    <div id="i2cpbj" class="absolute w-1.5 h-1.5 bg-zenix-green/70 rounded-full"></div>
+                    <div id="ispbex" class="absolute w-1 h-1 bg-zenix-green/60 rounded-full"></div>
+                    <div id="i7wi6r" class="absolute w-1.5 h-1.5 bg-zenix-green rounded-full"></div>
+                  </div>
+                  <!-- Data Stream Lines -->
+                  <div class="absolute inset-0 overflow-hidden opacity-30">
+                    <div id="ivhu5o" class="absolute h-px w-20 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                    <div id="iybi4e" class="absolute h-px w-16 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                    <div id="icjipi" class="absolute h-px w-24 bg-gradient-to-r from-transparent via-zenix-green to-transparent"></div>
+                  </div>
+                </div>
+                <!-- Status Cards -->
+                <div class="col-span-7 grid grid-cols-2 gap-4 status-cards-container">
+                  <!-- Card 1: CÓPIA -->
+                  <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
+                    <div class="flex items-center gap-2 mb-2">
+                      <i class="fas fa-copy text-[#22C55E] text-lg"></i>
+                      <p class="text-[10px] text-white uppercase font-semibold status-label">CÓPIA</p>
+                    </div>
+                    <p class="text-base font-bold text-white status-value">Traders e IAs</p>
+                    <p class="text-[10px] text-zenix-label mt-1 status-description">Escolha quem copiar</p>
+                  </div>
+                  <!-- Card 2: DIVERSIFICAR -->
+                  <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
+                    <div class="flex items-center gap-2 mb-2">
+                      <i class="fas fa-layer-group text-[#22C55E] text-lg"></i>
+                      <p class="text-[10px] text-white uppercase font-semibold status-label">DIVERSIFICAR</p>
+                    </div>
+                    <p class="text-base font-bold text-white status-value">Múltiplas Fontes</p>
+                    <p class="text-[10px] text-zenix-label mt-1 status-description">Copie 3+ traders simultaneamente</p>
+                  </div>
+                  <!-- Card 3: AJUSTAR -->
+                  <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
+                    <div class="flex items-center gap-2 mb-2">
+                      <i class="fas fa-sliders-h text-[#22C55E] text-lg"></i>
+                      <p class="text-[10px] text-white uppercase font-semibold status-label">AJUSTAR</p>
+                    </div>
+                    <p class="text-base font-bold text-white status-value">Proporcional ao Saldo</p>
+                    <p class="text-[10px] text-zenix-label mt-1 status-description">Ou valor fixo por operação</p>
+                  </div>
+                  <!-- Card 4: PROTEGER -->
+                  <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
+                    <div class="flex items-center gap-2 mb-2">
+                      <i class="fas fa-shield-alt text-[#22C55E] text-lg"></i>
+                      <p class="text-[10px] text-white uppercase font-semibold status-label">PROTEGER</p>
+                    </div>
+                    <p class="text-base font-bold text-white status-value">Cópia Inteligente</p>
+                    <p class="text-[10px] text-zenix-label mt-1 status-description">Gestão otimizada</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Mobile: Simple Header -->
+          <div class="mobile-simple-header">
+            <h1 class="mobile-header-title">Configuração do Copy Trading</h1>
+            <p class="mobile-header-subtitle">Escolha traders e IAs para copiar, configure proporção e filtros, e replique operações automaticamente.</p>
+          </div>
+        </section>
+
         <CopyTradingConfig 
-          v-else-if="activeTab === 'config' && !hasActiveSession" 
+          v-if="activeTab === 'config' && !hasActiveSession" 
           @copy-activated="handleCopyActivated"
         />
         <CopyTradingMonitor 
@@ -456,5 +557,39 @@
       white-space: nowrap;
     }
 
+    /* Desktop/Mobile Header Visibility */
+    .ai-vision-panel-desktop {
+        display: none;
+    }
+    
+    .mobile-simple-header {
+        display: block;
+        padding: 0;
+    }
   }
+
+  /* Desktop/Mobile Header Visibility */
+  .ai-vision-panel-desktop {
+      display: block;
+  }
+
+  .mobile-simple-header {
+      display: none;
+  }
+
+  .mobile-header-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 0.5rem;
+      text-align: left;
+  }
+
+  .mobile-header-subtitle {
+      font-size: 0.875rem;
+      color: #A1A1A1;
+      line-height: 1.5;
+      text-align: left;
+  }
+  
   </style>

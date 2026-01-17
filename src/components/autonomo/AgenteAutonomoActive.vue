@@ -1,68 +1,200 @@
 <template>
 	<div class="layout-content-agent-autonomo">
-		<div class="agent-top">
-			<div class="agent-header">
-				<div class="agent-status">
-					<div class="agent-title">
-						<h2 class="agente-autonomo-text">Agente Autônomo</h2>
-						<div class="agent-subtitle">
-							<span class="status-badge">ATIVO</span>
-							<span class="status-dot">●</span>
-							<span id="agentStatus">Aguardando oportunidade</span>
-						</div>
-					</div>
-					<div class="agent-title-mobile">
-						<div class="agent-title-header">
-							<h2>Agente Autônomo</h2>
-							<p>Operando automaticamente no mercado</p>
-						</div>
-						<div class="dot"><span>●</span>Ativo</div>
-					</div>
+		<!-- New Header with Date Selector -->
+		<div class="agent-new-header">
+			<div class="header-left">
+				<h1 class="header-title">Agente Autônomo</h1>
+				<p class="header-subtitle">Dados baseados no período selecionado</p>
+			</div>
+			<div class="header-right">
+				<div class="date-selector">
+					<i class="fas fa-calendar-alt"></i>
+					<span>{{ dateRangeText }}</span>
+					<i class="fas fa-chevron-down"></i>
 				</div>
+				<button class="hide-values-btn">
+					<i class="fas fa-eye-slash"></i>
+					Ocultar valores
+				</button>
+				<button @click="pausarAgenteEIrParaTopo" class="pause-btn-new">
+					<i class="fas fa-pause"></i>
+					PAUSAR AGENTE
+				</button>
+			</div>
+		</div>
 
-				<div class="agent-right">
-					<button @click="pausarAgenteEIrParaTopo" class="pause-btn top-pause-btn">
-						<span class="pause-icon">II</span> PAUSAR AGENTE
-					</button>
+		<!-- New Metrics Grid (4 cards) -->
+		<div class="new-metrics-grid">
+			<div class="new-metric-card">
+				<div class="metric-header">
+					<i class="fas fa-wallet metric-icon-small"></i>
+					<span class="metric-label-small">CAPITAL INICIAL</span>
+				</div>
+				<div class="metric-value-large">${{ initialCapital.toFixed(2) }}</div>
+				<div class="metric-secondary">R$ {{ (initialCapital * 5.17).toFixed(2) }}</div>
+			</div>
+
+			<div class="new-metric-card">
+				<div class="metric-header">
+					<i class="fas fa-chart-line metric-icon-small"></i>
+					<span class="metric-label-small">CAPITAL FINAL</span>
+				</div>
+				<div class="metric-value-large positive">${{ finalCapital.toFixed(2) }}</div>
+				<div class="metric-secondary">R$ {{ (finalCapital * 5.17).toFixed(2) }}</div>
+			</div>
+
+			<div class="new-metric-card highlight-card">
+				<div class="metric-header">
+					<i class="fas fa-arrow-trend-up metric-icon-small"></i>
+					<span class="metric-label-small">LUCRO DO PERÍODO</span>
+				</div>
+				<div class="metric-value-large positive">+${{ periodProfit.toFixed(2) }}</div>
+				<div class="metric-footer">
+					<span class="metric-secondary">R$ {{ (periodProfit * 5.17).toFixed(2) }}</span>
+					<span class="metric-badge positive">+{{ periodProfitPercent.toFixed(2) }}%</span>
 				</div>
 			</div>
-			<div class="data-row-line">
-				<div class="data-item order-1-mob">
-					<span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/brain.svg" alt="" width="20px" >
-						Estratégia
-					</span>
-					<div class="data-label">{{ agenteData.estrategia }}</div>
+
+			<div class="new-metric-card">
+				<div class="metric-header">
+					<i class="fas fa-calendar-day metric-icon-small"></i>
+					<span class="metric-label-small">LUCRO MÉDIO/DIA</span>
 				</div>
-				<div class="data-item desktop-only order-2-mob">
-					<span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/stats-green.svg" alt="" width="20px">
-						Mercado
-					</span>
-					<div class="data-label">{{ agenteData.mercado }}</div>
+				<div class="metric-value-large positive">+${{ avgDailyProfit.toFixed(2) }}</div>
+				<div class="metric-secondary">R${{ (avgDailyProfit * 5.17).toFixed(2) }}</div>
+			</div>
+		</div>
+
+		<!-- Additional Metrics Row -->
+		<div class="additional-metrics-row">
+			<div class="additional-metric">
+				<span class="additional-label">
+					<img src="../../assets/icons/brain.svg" alt="" width="16px">
+					Estratégia
+				</span>
+				<span class="additional-value">{{ agenteData.estrategia }}</span>
+			</div>
+			<div class="additional-metric">
+				<span class="additional-label">
+					<i class="fas fa-chart-line"></i>
+					Resultado do Dia
+				</span>
+				<span :class="['additional-value', (sessionStats?.netProfit || 0) >= 0 ? 'positive' : 'negative']">
+					{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
+				</span>
+			</div>
+			<div class="additional-metric">
+				<span class="additional-label">
+					<i class="fas fa-list"></i>
+					Operações Hoje
+				</span>
+				<span class="additional-value">{{ operacoesHojeDisplay }}</span>
+			</div>
+			<div class="additional-metric">
+				<span class="additional-label">
+					<i class="fas fa-clock"></i>
+					Tempo Ativo
+				</span>
+				<span class="additional-value">{{ tempoAtivoDisplay }}</span>
+			</div>
+		</div>
+
+		<!-- Performance Chart Section -->
+		<div class="performance-chart-section">
+			<div class="chart-header">
+				<div class="chart-title-wrapper">
+					<i class="fas fa-chart-area"></i>
+					<span class="chart-title">PERFORMANCE</span>
 				</div>
-				<div class="data-item order-3-mob">
-					<span class="icon-bullet" style="color: #666;"><img src="../../assets/icons/clock.svg" alt="" width="20px">
-						Tempo ativo
-					</span>
-					<div class="data-label">{{ tempoAtivoDisplay }}</div>
+				<div class="chart-period-selector">
+					<button :class="['period-btn', { active: selectedPeriod === '30d' }]" @click="selectedPeriod = '30d'">30 dias</button>
 				</div>
-				<div class="data-item order-2-mob-replace-market">
-					<span class="icon-bullet" style="color: #666;">
-						<img src="../../assets/icons/linechart.svg" alt="" width="20px">
-						Operações hoje
-					</span>
-					<div class="data-label">
-						{{ operacoesHojeDisplay }}
-						<span class="mobile-stats">({{ statsHoje.wins }}x{{ statsHoje.losses }})</span>
-					</div>
+			</div>
+			<div class="chart-container">
+				<div ref="performanceChartContainer" class="performance-chart"></div>
+			</div>
+			<div class="chart-indicators">
+				<div class="indicator positive">
+					<span class="indicator-label">Melhor dia:</span>
+					<span class="indicator-value">+${{ bestDay.value.toFixed(2) }} ({{ bestDay.date }})</span>
 				</div>
-				<!-- Novo botão de pause mobile -->
-				<div class="data-item mobile-only order-4-mob no-padding">
-					<button @click="pausarAgenteEIrParaTopo" class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold transition-all flex items-center justify-center uppercase tracking-wide h-[56px] w-full">
-						<i class="fas fa-power-off mr-2 text-[14px]"></i> PAUSAR
-					</button>
+				<div class="indicator negative">
+					<span class="indicator-label">Pior dia:</span>
+					<span class="indicator-value">-${{ worstDay.value.toFixed(2) }} ({{ worstDay.date }})</span>
 				</div>
+			</div>
+		</div>
+
+		<!-- Distribution Tables Section -->
+		<div class="distribution-section">
+			<div class="distribution-header">
+				<i class="fas fa-table"></i>
+				<span>DISTRIBUIÇÃO DIÁRIA DE PERFORMANCE</span>
+			</div>
+
+			<!-- Weekly Summary Table -->
+			<div class="table-wrapper">
+				<h3 class="table-subtitle">RESUMO SEMANAL</h3>
+				<table class="distribution-table">
+					<thead>
+						<tr>
+							<th>SEMANA</th>
+							<th>LUCRO</th>
+							<th>CAPITAL FINAL</th>
+							<th>%</th>
+							<th>OPS</th>
+							<th>WIN RATE</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="week in weeklyData" :key="week.period">
+							<td>{{ week.period }}</td>
+							<td :class="week.profit >= 0 ? 'positive' : 'negative'">
+								{{ week.profit >= 0 ? '+' : '' }}${{ week.profit.toFixed(2) }}
+							</td>
+							<td>${{ week.finalCapital.toFixed(2) }}</td>
+							<td :class="week.percent >= 0 ? 'positive' : 'negative'">
+								{{ week.percent >= 0 ? '+' : '' }}{{ week.percent.toFixed(2) }}%
+							</td>
+							<td>{{ week.ops }}</td>
+							<td>{{ week.winRate.toFixed(1) }}%</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
+
+			<!-- Daily Detail Table -->
+			<div class="table-wrapper">
+				<h3 class="table-subtitle">DETALHAMENTO DIÁRIO</h3>
+				<table class="distribution-table">
+					<thead>
+						<tr>
+							<th>DIA</th>
+							<th>LUCRO</th>
+							<th>CAPITAL</th>
+							<th>OPS</th>
+							<th>WIN%</th>
+							<th>TEMPO ENTRE OPS</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="day in dailyData" :key="day.date">
+							<td>
+								<span class="day-badge" :class="day.badge">{{ day.badge }}</span>
+								{{ day.date }}
+							</td>
+							<td :class="day.profit >= 0 ? 'positive' : 'negative'">
+								{{ day.profit >= 0 ? '+' : '' }}${{ day.profit.toFixed(2) }}
+							</td>
+							<td>${{ day.capital.toFixed(2) }}</td>
+							<td>{{ day.ops }}</td>
+							<td :class="day.winRate >= 70 ? 'positive' : day.winRate >= 50 ? '' : 'negative'">
+								{{ day.winRate.toFixed(1) }}%
+							</td>
+							<td>{{ day.avgTime }}</td>
+						</tr>
+					</tbody>
+				</table>
 			</div>
 		</div>
 		<div class="metrics-grid">
