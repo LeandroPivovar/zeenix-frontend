@@ -236,8 +236,9 @@
 							</thead>
 							<tbody>
 								<tr v-for="day in dailyData" :key="day.date" 
-									class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors"
-									:class="{'bg-green-500/5 hover:bg-green-500/10': day.badge === 'Melhor', 'bg-red-500/5 hover:bg-red-500/10': day.badge === 'Pior'}">
+									class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors cursor-pointer"
+									:class="{'bg-green-500/5 hover:bg-green-500/10': day.badge === 'Melhor', 'bg-red-500/5 hover:bg-red-500/10': day.badge === 'Pior'}"
+									@click="openDayDetails(day)">
 									<td class="py-3 px-1 font-medium text-[#FAFAFA]">
 										<div class="flex items-center gap-2">
 											<span>{{ day.date }}</span>
@@ -271,6 +272,165 @@
 
 		<div class="text-center mt-8 py-4 border-t border-[#27272a]">
 			<p class="text-[#A1A1AA] text-xs">Sistema operando automaticamente • Dados atualizados em tempo real</p>
+		</div>
+	</div>
+
+	<!-- Daily Details Modal -->
+	<div v-if="selectedDay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 duration-200" @click.self="selectedDay = null">
+		<div role="dialog" class="grid w-full gap-4 border border-[#27272a] p-6 shadow-lg sm:rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto bg-[#09090b] relative animate-in fade-in zoom-in-95 duration-200">
+			
+			<!-- Close Button -->
+			<button type="button" class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none text-[#A1A1AA] hover:text-[#FAFAFA]" @click="selectedDay = null">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-x h-4 w-4"><path d="M18 6 6 18"></path><path d="m6 6 12 12"></path></svg>
+				<span class="sr-only">Close</span>
+			</button>
+
+			<!-- Header -->
+			<div class="flex flex-col space-y-1.5 text-center sm:text-left">
+				<h2 class="text-lg font-semibold leading-none tracking-tight flex items-center justify-between">
+					<span class="text-lg font-semibold text-[#FAFAFA]">Relatório Diário — {{ selectedDay.date }}/2026</span>
+					<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors bg-green-500/10 text-green-500 border-green-500/20">
+						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ selectedDay.profit.toFixed(2) }}
+					</div>
+				</h2>
+			</div>
+
+			<!-- KPI Grid -->
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+				<!-- Lucro do Dia -->
+				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-3">
+					<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide mb-1 text-left">Lucro do Dia</div>
+					<div class="text-xl font-bold tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ selectedDay.profit.toFixed(2) }}
+					</div>
+					<div class="text-[#A1A1AA] text-xs tabular-nums text-left">R$ {{ (selectedDay.profit * 5.19).toFixed(3) }}</div>
+				</div>
+
+				<!-- Capital -->
+				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-3">
+					<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide mb-1 text-left">Capital</div>
+					<!-- Estimating start capital for display logic -->
+					<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
+						${{ (selectedDay.capital - selectedDay.profit).toFixed(2) }} → ${{ selectedDay.capital.toFixed(2) }}
+					</div>
+					<div class="text-xs tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+						{{ selectedDay.profit >= 0 ? '+' : '' }}{{ ((selectedDay.profit / (selectedDay.capital - selectedDay.profit)) * 100).toFixed(2) }}%
+					</div>
+				</div>
+
+				<!-- Meta Diária -->
+				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-3">
+					<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide mb-1 text-left">Meta Diária</div>
+					<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-colors bg-green-500/10 text-green-500 border-green-500/20 text-xs text-left">
+						Atingida
+					</div>
+					<div class="text-[#A1A1AA] text-xs mt-1 text-left">Ativação: 09:01:06</div>
+				</div>
+
+				<!-- Firewall -->
+				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-3">
+					<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide mb-1 text-left">Firewall</div>
+					<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-colors bg-yellow-500/10 text-yellow-500 border-yellow-500/20 text-xs text-left">
+						Ativado
+					</div>
+				</div>
+			</div>
+
+			<!-- Statistics Grid -->
+			<div class="grid grid-cols-3 md:grid-cols-6 gap-3 mt-4">
+				<div class="text-center p-2 bg-[#27272a]/30 rounded">
+					<div class="text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.ops }}</div>
+					<div class="text-[10px] text-[#A1A1AA] uppercase">Operações</div>
+				</div>
+				<div class="text-center p-2 bg-[#27272a]/30 rounded">
+					<!-- Approximating wins based on winrate -->
+					<div class="text-lg font-bold tabular-nums text-green-500">{{ Math.round(selectedDay.ops * (selectedDay.winRate / 100)) }}</div>
+					<div class="text-[10px] text-[#A1A1AA] uppercase">Positivas</div>
+				</div>
+				<div class="text-center p-2 bg-[#27272a]/30 rounded">
+					<div class="text-lg font-bold tabular-nums text-red-500">{{ selectedDay.ops - Math.round(selectedDay.ops * (selectedDay.winRate / 100)) }}</div>
+					<div class="text-[10px] text-[#A1A1AA] uppercase">Negativas</div>
+				</div>
+				<div class="text-center p-2 bg-[#27272a]/30 rounded">
+					<div class="text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.winRate.toFixed(1) }}%</div>
+					<div class="text-[10px] text-[#A1A1AA] uppercase">Win Rate</div>
+				</div>
+				<div class="text-center p-2 bg-[#27272a]/30 rounded">
+					<div class="text-lg font-bold tabular-nums" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ (selectedDay.profit / selectedDay.ops).toFixed(2) }}
+					</div>
+					<div class="text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
+				</div>
+				<div class="text-center p-2 bg-[#27272a]/30 rounded">
+					<div class="text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.avgTime }}</div>
+					<div class="text-[10px] text-[#A1A1AA] uppercase">Intervalo</div>
+				</div>
+			</div>
+
+			<!-- Intraday Operations Table (Static Mock per snippet requirement) -->
+			<div class="mt-4">
+				<h4 class="text-sm font-semibold mb-3 uppercase tracking-wide flex items-center gap-2 text-left text-[#FAFAFA]">
+					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity w-4 h-4 text-green-500"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
+					Operações Intraday
+				</h4>
+				<div class="overflow-x-auto max-h-[300px] overflow-y-auto custom-scrollbar">
+					<table class="w-full text-xs">
+						<thead class="sticky top-0 bg-[#09090b] shadow-sm">
+							<tr class="border-b border-[#27272a]">
+								<th class="text-left py-2 text-[#A1A1AA] font-medium">Hora</th>
+								<th class="text-left py-2 text-[#A1A1AA] font-medium">Mercado</th>
+								<th class="text-right py-2 text-[#A1A1AA] font-medium">Entrada</th>
+								<th class="text-right py-2 text-[#A1A1AA] font-medium">Saída</th>
+								<th class="text-right py-2 text-[#A1A1AA] font-medium">Investimento</th>
+								<th class="text-right py-2 text-[#A1A1AA] font-medium">Resultado</th>
+							</tr>
+						</thead>
+						<tbody>
+							<!-- Using mock rows from snippet, mapped to resemble dynamic feel if possible or just static as requested -->
+							<tr class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
+								<td class="py-2 font-mono text-[#A1A1AA] text-left">06:19:00</td>
+								<td class="py-2 text-[#FAFAFA] text-left">ETH/USD</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$8.209,46</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$8.349,92</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$205,25</td>
+								<td class="py-2 text-right tabular-nums font-medium text-green-500">+$186,05</td>
+							</tr>
+							<tr class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
+								<td class="py-2 font-mono text-[#A1A1AA] text-left">06:38:00</td>
+								<td class="py-2 text-[#FAFAFA] text-left">Índice V75</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$32.252,62</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$32.253,70</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$128,60</td>
+								<td class="py-2 text-right tabular-nums font-medium text-green-500">+$109,87</td>
+							</tr>
+							<tr class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
+								<td class="py-2 font-mono text-[#A1A1AA] text-left">09:45:00</td>
+								<td class="py-2 text-[#FAFAFA] text-left">BTC/USD</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$16.943,85</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$16.846,71</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$247,75</td>
+								<td class="py-2 text-right tabular-nums font-medium text-red-500">-$236,42</td>
+							</tr>
+							<tr class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
+								<td class="py-2 font-mono text-[#A1A1AA] text-left">10:08:00</td>
+								<td class="py-2 text-[#FAFAFA] text-left">BTC/USD</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$41.289,35</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$41.525,65</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$156,85</td>
+								<td class="py-2 text-right tabular-nums font-medium text-green-500">+$117,66</td>
+							</tr>
+							<tr class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
+								<td class="py-2 font-mono text-[#A1A1AA] text-left">12:12:00</td>
+								<td class="py-2 text-[#FAFAFA] text-left">ETH/USD</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$3.321,80</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$3.288,25</td>
+								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$237,71</td>
+								<td class="py-2 text-right tabular-nums font-medium text-red-500">-$212,10</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
+			</div>
 		</div>
 	</div>
 </template>
@@ -334,6 +494,7 @@
 		emits: ['pausarAgente'],
 		data() {
 			return {
+				selectedDay: null,
 				abaAtiva: 'grafico',
 				ultimaAtualizacao: new Date().toLocaleTimeString('pt-BR'),
 				filtroDataSelecionado: 'hoje',
@@ -484,6 +645,9 @@
 			}
 		},
 		methods: {
+			openDayDetails(day) {
+				this.selectedDay = day;
+			},
 			getUserId() {
 				return localStorage.getItem('userId') || localStorage.getItem('user_id');
 			},
