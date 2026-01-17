@@ -1,5 +1,5 @@
 ﻿<template>
-	<div class="p-6 bg-[#09090b] min-h-screen text-[#FAFAFA] font-sans">
+	<div class="min-h-screen text-[#FAFAFA] font-sans">
 		<!-- Header -->
 		<div class="flex items-center justify-between mb-6">
 			<div>
