@@ -1,201 +1,283 @@
 ﻿<template>
-	<div class="layout-content-agent-autonomo">
-		<!-- New Header with Date Selector -->
-		<div class="agent-new-header">
-			<div class="header-left">
-				<h1 class="header-title">Agente Autônomo</h1>
-				<p class="header-subtitle">Dados baseados no período selecionado</p>
+	<div class="p-6 bg-[#09090b] min-h-screen text-[#FAFAFA] font-sans">
+		<!-- Header -->
+		<div class="flex items-center justify-between mb-6">
+			<div>
+				<h2 class="text-xl font-bold mb-1">Agente Autônomo</h2>
+				<p class="text-[#A1A1AA] text-sm">Dados baseados no período selecionado</p>
 			</div>
-			<div class="header-right">
-				<div class="date-selector">
-					<i class="fas fa-calendar-alt"></i>
-					<span>{{ dateRangeText }}</span>
-					<i class="fas fa-chevron-down"></i>
-				</div>
-				<button class="hide-values-btn">
-					<i class="fas fa-eye-slash"></i>
-					Ocultar valores
+			<div class="flex items-center gap-2">
+				<button class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-[#27272a] hover:bg-[#27272a] hover:text-white h-9 px-4 py-2 justify-between gap-2 bg-[#0c0c0c] text-[#FAFAFA] min-w-[240px]" type="button">
+					<div class="flex items-center gap-2">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar text-green-500"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
+						<span class="font-medium">{{ dateRangeText }}</span>
+					</div>
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down text-[#A1A1AA]"><path d="m6 9 6 6 6-6"></path></svg>
 				</button>
-				<button @click="pausarAgenteEIrParaTopo" class="pause-btn-new">
-					<i class="fas fa-pause"></i>
+				
+				<button @click="pausarAgenteEIrParaTopo" class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-[#27272a] hover:bg-[#27272a] h-9 px-4 py-2 bg-[#0c0c0c] text-[#FAFAFA] gap-2 ml-2">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect width="4" height="16" x="6" y="4"></rect><rect width="4" height="16" x="14" y="4"></rect></svg>
 					PAUSAR AGENTE
 				</button>
 			</div>
 		</div>
 
-		<!-- New Metrics Grid (4 cards) -->
-		<div class="new-metrics-grid">
-			<div class="new-metric-card">
-				<div class="metric-header">
-					<i class="fas fa-wallet metric-icon-small"></i>
-					<span class="metric-label-small">CAPITAL INICIAL</span>
-				</div>
-				<div class="metric-value-large">${{ initialCapital.toFixed(2) }}</div>
-				<div class="metric-secondary">R$ {{ (initialCapital * 5.19).toFixed(3) }}</div>
+		<div class="mb-6">
+			<div class="flex justify-end mb-2">
+				<button class="flex items-center gap-1.5 text-[#A1A1AA] hover:text-[#FAFAFA] transition-colors text-xs">
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+					<span>Ocultar valores</span>
+				</button>
 			</div>
+			
+			<!-- Metric Cards -->
+			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+				<!-- Capital Inicial -->
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212]">
+					<div class="flex items-center gap-2 mb-3">
+						<div class="text-green-500">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
+						</div>
+						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Capital Inicial</span>
+					</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA]">${{ initialCapital.toFixed(2) }}</div>
+					<div class="flex items-center gap-2">
+						<span class="text-[#A1A1AA] text-xs">R$ {{ (initialCapital * 5.19).toFixed(3) }}</span>
+					</div>
+				</div>
 
-			<div class="new-metric-card">
-				<div class="metric-header">
-					<i class="fas fa-chart-line metric-icon-small"></i>
-					<span class="metric-label-small">CAPITAL FINAL</span>
+				<!-- Capital Final -->
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212]">
+					<div class="flex items-center gap-2 mb-3">
+						<div class="text-green-500">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
+						</div>
+						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Capital Final</span>
+					</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500">${{ finalCapital.toFixed(2) }}</div>
+					<div class="flex items-center gap-2">
+						<span class="text-[#A1A1AA] text-xs">R$ {{ (finalCapital * 5.19).toFixed(3) }}</span>
+					</div>
 				</div>
-				<div class="metric-value-large positive">${{ finalCapital.toFixed(2) }}</div>
-				<div class="metric-secondary">R$ {{ (finalCapital * 5.19).toFixed(3) }}</div>
-			</div>
 
-			<div class="new-metric-card highlight-card">
-				<div class="metric-header">
-					<i class="fas fa-arrow-trend-up metric-icon-small"></i>
-					<span class="metric-label-small">LUCRO DO PERÍODO</span>
+				<!-- Lucro do Periodo -->
+				<div class="rounded-lg border border-green-500/20 bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212] relative overflow-hidden">
+					<div class="absolute inset-0 bg-green-500/5 pointer-events-none"></div>
+					<div class="flex items-center gap-2 mb-3 relative z-10">
+						<div class="text-green-500">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+						</div>
+						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Lucro do Período</span>
+					</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 relative z-10">+${{ periodProfit.toFixed(2) }}</div>
+					<div class="flex items-center gap-2 relative z-10">
+						<span class="text-[#A1A1AA] text-xs">R$ {{ (periodProfit * 5.19).toFixed(3) }}</span>
+						<div class="inline-flex items-center rounded-full border border-transparent bg-green-500/20 text-green-500 font-semibold text-[10px] px-2 py-0.5">
+							+{{ periodProfitPercent.toFixed(2) }}%
+						</div>
+					</div>
 				</div>
-				<div class="metric-value-large positive">+${{ periodProfit.toFixed(2) }}</div>
-				<div class="metric-footer">
-					<span class="metric-secondary">R$ {{ (periodProfit * 5.19).toFixed(3) }}</span>
-					<span class="metric-badge positive">+{{ periodProfitPercent.toFixed(2) }}%</span>
-				</div>
-			</div>
 
-			<div class="new-metric-card">
-				<div class="metric-header">
-					<i class="fas fa-calendar-day metric-icon-small"></i>
-					<span class="metric-label-small">LUCRO MÉDIO/DIA</span>
-				</div>
-				<div class="metric-value-large positive">+${{ avgDailyProfit.toFixed(2) }}</div>
-				<div class="metric-secondary">$25,03/op</div>
-			</div>
-		</div>
-
-		<!-- Additional Metrics Row -->
-		<div class="additional-metrics-row">
-			<div class="additional-metric">
-				<span class="additional-label">
-					<img src="../../assets/icons/brain.svg" alt="" width="16px">
-					Estratégia
-				</span>
-				<span class="additional-value">{{ agenteData.estrategia }}</span>
-			</div>
-			<div class="additional-metric">
-				<span class="additional-label">
-					<i class="fas fa-chart-line"></i>
-					Resultado do Dia
-				</span>
-				<span :class="['additional-value', (sessionStats?.netProfit || 0) >= 0 ? 'positive' : 'negative']">
-					{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
-				</span>
-			</div>
-			<div class="additional-metric">
-				<span class="additional-label">
-					<i class="fas fa-list"></i>
-					Operações Hoje
-				</span>
-				<span class="additional-value">{{ operacoesHojeDisplay }}</span>
-			</div>
-			<div class="additional-metric">
-				<span class="additional-label">
-					<i class="fas fa-clock"></i>
-					Tempo Ativo
-				</span>
-				<span class="additional-value">{{ tempoAtivoDisplay }}</span>
-			</div>
-		</div>
-
-		<!-- Performance Chart Section -->
-		<div class="performance-chart-section">
-			<div class="chart-header">
-				<div class="chart-title-wrapper">
-					<i class="fas fa-chart-area"></i>
-					<span class="chart-title">PERFORMANCE</span>
-				</div>
-				<div class="chart-period-selector">
-					<button :class="['period-btn', { active: selectedPeriod === '30d' }]" @click="selectedPeriod = '30d'">30 dias</button>
-				</div>
-			</div>
-			<div class="chart-container">
-				<div ref="performanceChartContainer" class="performance-chart"></div>
-			</div>
-			<div class="chart-indicators">
-				<div class="indicator positive">
-					<span class="indicator-label">Melhor dia:</span>
-					<span class="indicator-value">+${{ bestDay.value.toFixed(2) }} ({{ bestDay.date }})</span>
-				</div>
-				<div class="indicator negative">
-					<span class="indicator-label">Pior dia:</span>
-					<span class="indicator-value">-${{ worstDay.value.toFixed(2) }} ({{ worstDay.date }})</span>
+				<!-- Lucro Medio/Dia -->
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212]">
+					<div class="flex items-center gap-2 mb-3">
+						<div class="text-green-500">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-column"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
+						</div>
+						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Lucro Médio/Dia</span>
+					</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500">+${{ avgDailyProfit.toFixed(2) }}</div>
+					<div class="flex items-center gap-2">
+						<span class="text-[#A1A1AA] text-xs">$25,03/op</span>
+					</div>
 				</div>
 			</div>
 		</div>
 
-		<!-- Distribution Tables Section -->
-		<div class="distribution-section">
-			<div class="distribution-header">
-				<i class="fas fa-table"></i>
-				<span>DISTRIBUIÇÃO DIÁRIA DE PERFORMANCE</span>
+		<!-- Additional Stats Row -->
+		<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-4 mb-6">
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+				
+				<!-- Estrategia -->
+				<div class="flex items-center gap-3 hover:bg-[#1a1a1a] rounded-lg p-2 -m-2 transition-colors">
+					<div class="p-2 bg-[#1a1a1a] rounded-md">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot text-green-500"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>
+					</div>
+					<div class="text-left">
+						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Estratégia</div>
+						<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA]">
+							<span class="text-lg">🦅</span>
+							<span>{{ agenteData.estrategia }}</span>
+							<span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+						</div>
+					</div>
+				</div>
+
+				<!-- Resultado do dia -->
+				<div class="flex items-center gap-3">
+					<div class="p-2 bg-[#1a1a1a] rounded-md">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up text-green-500"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+					</div>
+					<div>
+						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Resultado do dia</div>
+						<div class="text-sm font-medium tabular-nums" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'">
+							{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
+						</div>
+					</div>
+				</div>
+
+				<!-- Operacoes Hoje -->
+				<div class="flex items-center gap-3">
+					<div class="p-2 bg-[#1a1a1a] rounded-md">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity text-green-500"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
+					</div>
+					<div>
+						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">OPERAÇÕES HOJE</div>
+						<div class="text-sm font-medium tabular-nums text-[#FAFAFA]">{{ operacoesHojeDisplay }}</div>
+					</div>
+				</div>
+
+				<!-- Tempo Ativo -->
+				<div class="flex items-center gap-3">
+					<div class="p-2 bg-[#1a1a1a] rounded-md">
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock text-green-500"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+					</div>
+					<div>
+						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Tempo ativo</div>
+						<div class="text-sm font-medium tabular-nums text-[#FAFAFA]">{{ tempoAtivoDisplay }}</div>
+					</div>
+				</div>
+			</div>
+		</div>
+
+		<!-- Performance Chart -->
+		<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5 mb-6">
+			<div class="flex items-center justify-between mb-4">
+				<h3 class="text-sm font-semibold flex items-center gap-2 uppercase tracking-wide text-[#FAFAFA]">
+					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up text-green-500"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+					PERFORMANCE
+				</h3>
+				<span class="text-[#A1A1AA] text-xs">30 dias</span>
+			</div>
+			
+			<div class="h-[300px] w-full bg-gradient-to-b from-green-500/5 to-transparent border-b border-[#27272a] mb-4">
+				<div ref="performanceChartContainer" class="w-full h-full"></div>
 			</div>
 
-			<!-- Weekly Summary Table -->
-			<div class="table-wrapper">
-				<h3 class="table-subtitle">RESUMO SEMANAL</h3>
-				<table class="distribution-table">
-					<thead>
-						<tr>
-							<th>SEMANA</th>
-							<th>LUCRO</th>
-							<th>CAPITAL FINAL</th>
-							<th>%</th>
-							<th>OPS</th>
-							<th>WIN RATE</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr v-for="week in weeklyData" :key="week.period">
-							<td>{{ week.period }}</td>
-							<td :class="week.profit >= 0 ? 'positive' : 'negative'">
-								{{ week.profit >= 0 ? '+' : '' }}${{ week.profit.toFixed(2) }}
-							</td>
-							<td>${{ week.finalCapital.toFixed(2) }}</td>
-							<td :class="week.percent >= 0 ? 'positive' : 'negative'">
-								{{ week.percent >= 0 ? '+' : '' }}{{ week.percent.toFixed(2) }}%
-							</td>
-							<td>{{ week.ops }}</td>
-							<td>{{ week.winRate.toFixed(1) }}%</td>
-						</tr>
-					</tbody>
-				</table>
+			<div class="flex justify-between mt-4">
+				<div class="flex items-center gap-2">
+					<div class="inline-flex items-center rounded-full border border-green-500/30 bg-green-500/10 text-green-500 font-semibold text-[10px] px-2.5 py-0.5">
+						Melhor dia
+					</div>
+					<span class="text-xs text-[#FAFAFA] tabular-nums">+${{ bestDay.value.toFixed(2) }} ({{ bestDay.date }})</span>
+				</div>
+				<div class="flex items-center gap-2">
+					<div class="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 text-red-500 font-semibold text-[10px] px-2.5 py-0.5">
+						Pior dia
+					</div>
+					<span class="text-xs text-[#FAFAFA] tabular-nums">-${{ worstDay.value.toFixed(2) }} ({{ worstDay.date }})</span>
+				</div>
 			</div>
+		</div>
 
-			<!-- Daily Detail Table -->
-			<div class="table-wrapper">
-				<h3 class="table-subtitle">DETALHAMENTO DIÁRIO</h3>
-				<table class="distribution-table">
-					<thead>
-						<tr>
-							<th>DIA</th>
-							<th>LUCRO</th>
-							<th>CAPITAL</th>
-							<th>OPS</th>
-							<th>WIN%</th>
-							<th>TEMPO ENTRE OPS</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr v-for="day in dailyData" :key="day.date">
-							<td>
-								<span class="day-badge" :class="day.badge" v-if="day.badge">{{ day.badge }}</span>
-								{{ day.date }}
-							</td>
-							<td :class="day.profit >= 0 ? 'positive' : 'negative'">
-								{{ day.profit >= 0 ? '+' : '' }}${{ day.profit.toFixed(2) }}
-							</td>
-							<td>${{ day.capital.toFixed(2) }}</td>
-							<td>{{ day.ops }}</td>
-							<td :class="day.winRate >= 70 ? 'positive' : day.winRate >= 50 ? '' : 'negative'">
-								{{ day.winRate.toFixed(1) }}%
-							</td>
-							<td>{{ day.avgTime }}</td>
-						</tr>
-					</tbody>
-				</table>
+		<!-- Distribution Tables -->
+		<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5">
+			<h3 class="text-sm font-semibold flex items-center gap-2 mb-4 uppercase tracking-wide text-[#FAFAFA]">
+				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity text-green-500"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
+				Distribuição Diária de Performance
+			</h3>
+
+			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6"> 
+				<!-- Weekly Table -->
+				<div class="overflow-hidden">
+					<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide">Resumo Semanal</h4>
+					<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] overflow-hidden">
+						<div class="overflow-x-auto">
+							<table class="w-full text-xs">
+								<thead>
+									<tr class="border-b border-[#27272a] bg-[#0c0c0c]">
+										<th class="text-left py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Semana</th>
+										<th class="text-right py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Lucro</th>
+										<th class="text-right py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Capital Final</th>
+										<th class="text-right py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">%</th>
+										<th class="text-right py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Ops</th>
+										<th class="text-right py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Win Rate</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr v-for="week in weeklyData" :key="week.period" class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors">
+										<td class="py-2.5 px-3 font-medium">{{ week.period }}</td>
+										<td class="text-right py-2.5 px-3 tabular-nums font-medium" :class="week.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+											{{ week.profit >= 0 ? '+' : '' }}${{ week.profit.toFixed(2) }}
+										</td>
+										<td class="text-right py-2.5 px-3 tabular-nums text-[#FAFAFA]">${{ week.finalCapital.toFixed(2) }}</td>
+										<td class="text-right py-2.5 px-3 tabular-nums" :class="week.percent >= 0 ? 'text-green-500' : 'text-red-500'">
+											{{ week.percent >= 0 ? '+' : '' }}{{ week.percent.toFixed(2) }}%
+										</td>
+										<td class="text-right py-2.5 px-3 tabular-nums text-[#FAFAFA]">{{ week.ops }}</td>
+										<td class="text-right py-2.5 px-3 tabular-nums text-[#FAFAFA]">{{ week.winRate.toFixed(1) }}%</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+				</div>
+
+				<!-- Daily Table -->
+				<div class="overflow-hidden">
+					<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide">Detalhamento Diário</h4>
+					<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] flex flex-col h-[400px]"> 
+						<!-- Scrollable container -->
+						<div class="overflow-y-auto custom-scrollbar flex-1 relative">
+							<table class="w-full text-xs">
+								<thead class="sticky top-0 bg-[#0c0c0c] z-10 box-border shadow-sm border-b border-[#27272a]">
+									<tr>
+										<th class="text-left py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Dia</th>
+										<th class="text-right py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Lucro</th>
+										<th class="text-right py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Capital</th>
+										<th class="text-right py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Ops</th>
+										<th class="text-right py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Win%</th>
+										<th class="text-right py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Tempo Ops</th>
+									</tr>
+								</thead>
+								<tbody>
+									<tr v-for="day in dailyData" :key="day.date" 
+										class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors"
+										:class="{'bg-green-500/5 hover:bg-green-500/10': day.badge === 'Melhor', 'bg-red-500/5 hover:bg-red-500/10': day.badge === 'Pior'}">
+										<td class="py-3 px-3 font-medium text-[#FAFAFA]">
+											<div class="flex items-center gap-2">
+												<span>{{ day.date }}</span>
+												<div v-if="day.badge" 
+													class="inline-flex items-center rounded-full border font-semibold text-[8px] px-1 py-0"
+													:class="day.badge === 'Melhor' ? 'border-green-500 text-green-500 bg-green-500/10' : day.badge === 'Pior' ? 'border-red-500 text-red-500 bg-red-500/10' : 'border-yellow-400 text-yellow-500 bg-yellow-400/10'">
+													<svg v-if="day.badge === 'Melhor'" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up mr-0.5"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+													<svg v-if="day.badge === 'Pior'" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down mr-0.5"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
+													{{ day.badge }}
+												</div>
+											</div>
+										</td>
+										<td class="text-right py-3 px-3 tabular-nums font-semibold" :class="day.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+											{{ day.profit >= 0 ? '+' : '' }}${{ day.profit.toFixed(2) }}
+										</td>
+										<td class="text-right py-3 px-3 tabular-nums text-[#FAFAFA]">${{ day.capital.toFixed(2) }}</td>
+										<td class="text-right py-3 px-3 tabular-nums text-[#FAFAFA]">{{ day.ops }}</td>
+										<td class="text-right py-3 px-3 tabular-nums font-medium" 
+											:class="day.winRate >= 70 ? 'text-green-500' : day.winRate >= 50 ? 'text-[#FAFAFA]' : 'text-red-500'">
+											{{ day.winRate.toFixed(1) }}%
+										</td>
+										<td class="text-right py-3 px-3 tabular-nums text-[#A1A1AA]">{{ day.avgTime }}</td>
+									</tr>
+								</tbody>
+							</table>
+						</div>
+					</div>
+					<p class="text-[#A1A1AA] text-[10px] mt-3">Clique em uma linha para ver detalhes do dia</p>
+				</div>
 			</div>
+		</div>
+
+		<div class="text-center mt-8 py-4 border-t border-[#27272a]">
+			<p class="text-[#A1A1AA] text-xs">Sistema operando automaticamente • Dados atualizados em tempo real</p>
 		</div>
 	</div>
 </template>
@@ -492,251 +574,18 @@
 </script>
 
 <style scoped>
-	/* Novos estilos para o layout redesenhado */
-	.agent-new-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		background-color: #0E0E0E;
-		padding: 20px;
-		border-bottom: 1px solid #1C1C1C;
-		margin-bottom: 20px;
-	}
-
-	.header-left {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-
-	.header-title {
-		font-size: 1.25rem;
-		font-weight: 600;
-		color: #F0F0F0;
-		margin: 0;
-	}
-
-	.header-subtitle {
-		font-size: 0.875rem;
-		color: #A0A0A0;
-		margin: 0;
-	}
-
-	.header-right {
-		display: flex;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.date-selector {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		background-color: #141414;
-		border: 1px solid #333;
-		padding: 8px 12px;
-		border-radius: 6px;
-		color: #F0F0F0;
-		font-size: 0.875rem;
-		cursor: pointer;
-	}
-
-	.date-selector i {
-		color: #22C55E;
-	}
-
-	.hide-values-btn {
-		background: none;
-		border: none;
-		color: #A0A0A0;
-		cursor: pointer;
-		font-size: 0.875rem;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-	}
-
-	.pause-btn-new {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		background-color: transparent;
-		border: 1px solid #333;
-		color: #F0F0F0;
-		padding: 8px 12px;
-		border-radius: 6px;
-		cursor: pointer;
-		font-weight: 500;
-		font-size: 0.875rem;
-		transition: all 0.2s;
-	}
-
-	.pause-btn-new:hover {
-		background-color: rgba(255, 255, 255, 0.05);
-	}
-
-	/* Grid de Métricas */
-	.new-metrics-grid {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 16px;
-		margin-bottom: 20px;
-		padding: 0 20px;
-	}
-
-	.new-metric-card {
-		background-color: #0c0c0c;
-		border: 1px solid #1C1C1C;
-		border-radius: 8px;
-		padding: 16px;
-		display: flex;
-		flex-direction: column;
-		gap: 12px;
-	}
-
-    /* ... omitted existing styles ... */
-
-	/* Tabelas de Distribuição */
-	.distribution-section {
-		padding: 0 20px 40px;
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 20px;
-	}
-
-	.distribution-header {
-        grid-column: 1 / -1;
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		font-size: 0.875rem;
-		font-weight: 600;
-		color: #F0F0F0;
-		text-transform: uppercase;
-		margin-bottom: 20px;
-	}
-	
-	.distribution-header i {
-		color: #22C55E;
-	}
-	
-	.table-wrapper {
-		margin-bottom: 30px;
-        background-color: #0c0c0c;
-        border: 1px solid #1C1C1C;
-        border-radius: 8px;
-        padding: 16px;
-        max-height: 400px;
-        overflow-y: auto;
-	}
-
-    /* Custom Scrollbar for Premium Look */
-    .table-wrapper::-webkit-scrollbar {
-        width: 6px;
-    }
-    .table-wrapper::-webkit-scrollbar-track {
-        background: #0E0E0E; 
-    }
-    .table-wrapper::-webkit-scrollbar-thumb {
-        background: #333; 
-        border-radius: 3px;
-    }
-    .table-wrapper::-webkit-scrollbar-thumb:hover {
-        background: #555; 
-    }
-	
-	.table-subtitle {
-		font-size: 0.75rem;
-		color: #666;
-		margin-bottom: 12px;
-		text-transform: uppercase;
-		font-weight: 500;
-        position: sticky;
-        top: 0;
-        background-color: #0c0c0c;
-        z-index: 1;
-        padding-bottom: 8px;
-        border-bottom: 1px solid #1C1C1C;
-	}
-
-	.distribution-table {
-		width: 100%;
-		border-collapse: collapse;
-		font-size: 0.875rem;
-	}
-
-	.distribution-table th {
-		text-align: left;
-		color: #666;
-		font-weight: 500;
-		padding: 12px 8px;
-		font-size: 0.75rem;
-		text-transform: uppercase;
-        position: sticky;
-        top: 28px; /* Adjust based on subtitle height */
-        background-color: #0c0c0c;
-        z-index: 1;
-	}
-	
-	.distribution-table td {
-		padding: 12px 8px;
-		color: #F0F0F0;
-		border-bottom: 1px solid #141414;
-	}
-	
-	.distribution-table tr:hover td {
-		background-color: #1a1a1a;
-	}
-
-	.positive { color: #22C55E; }
-	.negative { color: #EF4444; }
-	
-	.day-badge {
-		font-size: 0.625rem;
-		font-weight: 700;
-		padding: 2px 8px;
-		border-radius: 12px;
-		margin-right: 8px;
-		text-transform: uppercase;
-        border: 1px solid transparent;
-	}
-
-    .day-badge.Melhor {
-        background-color: rgba(34, 197, 94, 0.1);
-        color: #22C55E;
-        border-color: #22C55E;
-    }
-
-    .day-badge.Pior {
-        background-color: rgba(239, 68, 68, 0.1);
-        color: #EF4444;
-        border-color: #EF4444;
-    }
-
-    .day-badge.HOJE {
-        background-color: #FACC15; 
-        color: #000;
-        border-color: #FACC15;
-    }
-
-	/* Responsividade Basica */
-	@media (max-width: 768px) {
-		.new-metrics-grid,
-		.additional-metrics-row,
-        .distribution-section {
-			grid-template-columns: 1fr;
-		}
-		
-		.agent-new-header {
-			flex-direction: column;
-			align-items: flex-start;
-			gap: 16px;
-		}
-		
-		.header-right {
-			width: 100%;
-			justify-content: space-between;
-			flex-wrap: wrap;
-		}
-	}
+/* Custom sidebar styles for specific internal scrollbars if tailwind classes aren't enough */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #0E0E0E;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #333;
+    border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
 </style>
