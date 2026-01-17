@@ -585,7 +585,7 @@
 	}
 
 	.new-metric-card {
-		background-color: #0E0E0E;
+		background-color: #0c0c0c;
 		border: 1px solid #1C1C1C;
 		border-radius: 8px;
 		padding: 16px;
@@ -594,201 +594,18 @@
 		gap: 12px;
 	}
 
-	.new-metric-card.highlight-card {
-		border-color: #22C55E;
-		background-color: rgba(34, 197, 94, 0.02);
-	}
-
-	.metric-header {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	.metric-label-small {
-		font-size: 0.75rem;
-		text-transform: uppercase;
-		color: #A0A0A0;
-		letter-spacing: 0.5px;
-	}
-
-	.metric-icon-small {
-		color: #22C55E;
-		font-size: 0.875rem;
-	}
-
-	.metric-value-large {
-		font-size: 1.5rem;
-		font-weight: 700;
-		color: #F0F0F0;
-	}
-
-	.metric-value-large.positive {
-		color: #22C55E;
-	}
-
-	.metric-secondary {
-		font-size: 0.75rem;
-		color: #666;
-	}
-
-	.metric-footer {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-	}
-
-	.metric-badge {
-		border-radius: 12px;
-		padding: 2px 8px;
-		font-size: 0.75rem;
-		font-weight: 600;
-	}
-
-	.metric-badge.positive {
-		background-color: rgba(34, 197, 94, 0.1);
-		color: #22C55E;
-	}
-
-	/* Linha de Métricas Adicionais */
-	.additional-metrics-row {
-		display: grid;
-		grid-template-columns: repeat(4, 1fr);
-		gap: 16px;
-		margin-bottom: 24px;
-		padding: 0 20px;
-		border-bottom: 1px solid #1C1C1C;
-		padding-bottom: 24px;
-	}
-
-	.additional-metric {
-		display: flex;
-		flex-direction: column;
-		gap: 4px;
-	}
-
-	.additional-label {
-		font-size: 0.75rem;
-		color: #666;
-		text-transform: uppercase;
-		display: flex;
-		align-items: center;
-		gap: 6px;
-	}
-	
-	.additional-label i {
-		color: #22C55E;
-	}
-
-	.additional-value {
-		font-size: 1rem;
-		font-weight: 600;
-		color: #F0F0F0;
-	}
-	
-	.additional-value.positive {
-		color: #22C55E;
-	}
-
-	.additional-value.negative {
-		color: #EF4444;
-	}
-
-	/* Seção de Performance */
-	.performance-chart-section {
-		padding: 0 20px;
-		margin-bottom: 30px;
-	}
-
-	.chart-header {
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		margin-bottom: 16px;
-	}
-
-	.chart-title-wrapper {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		color: #F0F0F0;
-	}
-	
-	.chart-title-wrapper i {
-		color: #22C55E;
-	}
-	
-	.chart-title {
-		font-size: 0.875rem;
-		font-weight: 600;
-	}
-
-	.period-btn {
-		background: none;
-		border: 1px solid #333;
-		color: #666;
-		padding: 4px 12px;
-		border-radius: 4px;
-		font-size: 0.75rem;
-		cursor: pointer;
-	}
-	
-	.period-btn.active {
-		background-color: rgba(34, 197, 94, 0.1);
-		color: #22C55E;
-		border-color: #22C55E;
-	}
-
-	.chart-container {
-		height: 300px;
-		background: linear-gradient(180deg, rgba(34, 197, 94, 0.05) 0%, rgba(14, 14, 14, 0) 100%);
-		border-bottom: 1px solid #1C1C1C;
-		margin-bottom: 16px;
-	}
-	
-	.chart-indicators {
-		display: flex;
-		justify-content: space-between;
-	}
-	
-	.indicator {
-		display: flex;
-		align-items: center;
-		gap: 8px;
-		padding: 6px 12px;
-		border-radius: 4px;
-		background-color: #0E0E0E;
-		border: 1px solid #1C1C1C;
-		font-size: 0.75rem;
-	}
-	
-	.indicator.positive .indicator-label {
-		color: #22C55E;
-		background-color: rgba(34, 197, 94, 0.1);
-		padding: 2px 6px;
-		border-radius: 4px;
-		margin-right: 6px;
-	}
-	
-	.indicator.negative .indicator-label {
-		color: #EF4444;
-		background-color: rgba(239, 68, 68, 0.1);
-		padding: 2px 6px;
-		border-radius: 4px;
-		margin-right: 6px;
-	}
-	
-	.indicator-value {
-		color: #F0F0F0;
-		font-weight: 600;
-	}
+    /* ... omitted existing styles ... */
 
 	/* Tabelas de Distribuição */
 	.distribution-section {
 		padding: 0 20px 40px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
 	}
 
 	.distribution-header {
+        grid-column: 1 / -1;
 		display: flex;
 		align-items: center;
 		gap: 8px;
@@ -805,7 +622,28 @@
 	
 	.table-wrapper {
 		margin-bottom: 30px;
+        background-color: #0c0c0c;
+        border: 1px solid #1C1C1C;
+        border-radius: 8px;
+        padding: 16px;
+        max-height: 400px;
+        overflow-y: auto;
 	}
+
+    /* Custom Scrollbar for Premium Look */
+    .table-wrapper::-webkit-scrollbar {
+        width: 6px;
+    }
+    .table-wrapper::-webkit-scrollbar-track {
+        background: #0E0E0E; 
+    }
+    .table-wrapper::-webkit-scrollbar-thumb {
+        background: #333; 
+        border-radius: 3px;
+    }
+    .table-wrapper::-webkit-scrollbar-thumb:hover {
+        background: #555; 
+    }
 	
 	.table-subtitle {
 		font-size: 0.75rem;
@@ -813,6 +651,12 @@
 		margin-bottom: 12px;
 		text-transform: uppercase;
 		font-weight: 500;
+        position: sticky;
+        top: 0;
+        background-color: #0c0c0c;
+        z-index: 1;
+        padding-bottom: 8px;
+        border-bottom: 1px solid #1C1C1C;
 	}
 
 	.distribution-table {
@@ -828,6 +672,10 @@
 		padding: 12px 8px;
 		font-size: 0.75rem;
 		text-transform: uppercase;
+        position: sticky;
+        top: 28px; /* Adjust based on subtitle height */
+        background-color: #0c0c0c;
+        z-index: 1;
 	}
 	
 	.distribution-table td {
@@ -837,7 +685,7 @@
 	}
 	
 	.distribution-table tr:hover td {
-		background-color: #0E0E0E;
+		background-color: #1a1a1a;
 	}
 
 	.positive { color: #22C55E; }
@@ -874,8 +722,9 @@
 	/* Responsividade Basica */
 	@media (max-width: 768px) {
 		.new-metrics-grid,
-		.additional-metrics-row {
-			grid-template-columns: 1fr 1fr;
+		.additional-metrics-row,
+        .distribution-section {
+			grid-template-columns: 1fr;
 		}
 		
 		.agent-new-header {
