@@ -187,92 +187,85 @@
 				Distribuição Diária de Performance
 			</h3>
 
-			<div class="grid grid-cols-1 lg:grid-cols-2 gap-6"> 
-				<!-- Weekly Table -->
-				<div class="overflow-hidden">
-					<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide">Resumo Semanal</h4>
-					<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] overflow-hidden">
-						<div class="overflow-x-auto">
-							<table class="w-full text-xs">
-								<thead>
-									<tr class="border-b border-[#27272a] bg-[#0c0c0c]">
-										<th class="text-left py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Semana</th>
-										<th class="text-right py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Lucro</th>
-										<th class="text-right py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Capital Final</th>
-										<th class="text-right py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">%</th>
-										<th class="text-right py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Ops</th>
-										<th class="text-right py-2 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Win Rate</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr v-for="week in weeklyData" :key="week.period" class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors">
-										<td class="py-2.5 px-3 font-medium">{{ week.period }}</td>
-										<td class="text-right py-2.5 px-3 tabular-nums font-medium" :class="week.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-											{{ week.profit >= 0 ? '+' : '' }}${{ week.profit.toFixed(2) }}
-										</td>
-										<td class="text-right py-2.5 px-3 tabular-nums text-[#FAFAFA]">${{ week.finalCapital.toFixed(2) }}</td>
-										<td class="text-right py-2.5 px-3 tabular-nums" :class="week.percent >= 0 ? 'text-green-500' : 'text-red-500'">
-											{{ week.percent >= 0 ? '+' : '' }}{{ week.percent.toFixed(2) }}%
-										</td>
-										<td class="text-right py-2.5 px-3 tabular-nums text-[#FAFAFA]">{{ week.ops }}</td>
-										<td class="text-right py-2.5 px-3 tabular-nums text-[#FAFAFA]">{{ week.winRate.toFixed(1) }}%</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
-					</div>
-				</div>
+			<!-- Weekly Table -->
+			<div class="overflow-x-auto mb-6">
+				<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide">Resumo Semanal</h4>
+				<table class="w-full text-xs">
+					<thead>
+						<tr class="border-b border-[#27272a]">
+							<th class="text-left py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Semana</th>
+							<th class="text-right py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Lucro</th>
+							<th class="text-right py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Capital Final</th>
+							<th class="text-right py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">%</th>
+							<th class="text-right py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Ops</th>
+							<th class="text-right py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Win Rate</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr v-for="week in weeklyData" :key="week.period" class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors">
+							<td class="py-2.5 px-1 font-medium">{{ week.period }}</td>
+							<td class="text-right py-2.5 px-1 tabular-nums font-medium" :class="week.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+								{{ week.profit >= 0 ? '+' : '' }}${{ week.profit.toFixed(2) }}
+							</td>
+							<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">${{ week.finalCapital.toFixed(2) }}</td>
+							<td class="text-right py-2.5 px-1 tabular-nums" :class="week.percent >= 0 ? 'text-green-500' : 'text-red-500'">
+								{{ week.percent >= 0 ? '+' : '' }}{{ week.percent.toFixed(2) }}%
+							</td>
+							<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">{{ week.ops }}</td>
+							<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">{{ week.winRate.toFixed(1) }}%</td>
+						</tr>
+					</tbody>
+				</table>
+			</div>
 
-				<!-- Daily Table -->
-				<div class="overflow-hidden">
-					<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide">Detalhamento Diário</h4>
-					<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] flex flex-col h-[400px]"> 
-						<!-- Scrollable container -->
-						<div class="overflow-y-auto custom-scrollbar flex-1 relative">
-							<table class="w-full text-xs">
-								<thead class="sticky top-0 bg-[#0c0c0c] z-10 box-border shadow-sm border-b border-[#27272a]">
-									<tr>
-										<th class="text-left py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Dia</th>
-										<th class="text-right py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Lucro</th>
-										<th class="text-right py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Capital</th>
-										<th class="text-right py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Ops</th>
-										<th class="text-right py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Win%</th>
-										<th class="text-right py-2.5 px-3 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Tempo Ops</th>
-									</tr>
-								</thead>
-								<tbody>
-									<tr v-for="day in dailyData" :key="day.date" 
-										class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors"
-										:class="{'bg-green-500/5 hover:bg-green-500/10': day.badge === 'Melhor', 'bg-red-500/5 hover:bg-red-500/10': day.badge === 'Pior'}">
-										<td class="py-3 px-3 font-medium text-[#FAFAFA]">
-											<div class="flex items-center gap-2">
-												<span>{{ day.date }}</span>
-												<div v-if="day.badge" 
-													class="inline-flex items-center rounded-full border font-semibold text-[8px] px-1 py-0"
-													:class="day.badge === 'Melhor' ? 'border-green-500 text-green-500 bg-green-500/10' : day.badge === 'Pior' ? 'border-red-500 text-red-500 bg-red-500/10' : 'border-yellow-400 text-yellow-500 bg-yellow-400/10'">
-													<svg v-if="day.badge === 'Melhor'" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up mr-0.5"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
-													<svg v-if="day.badge === 'Pior'" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down mr-0.5"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
-													{{ day.badge }}
-												</div>
+			<!-- Daily Table -->
+			<div>
+				<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide">Detalhamento Diário</h4>
+				<div class="relative overflow-hidden h-[400px]"> 
+					<div class="overflow-y-auto custom-scrollbar h-full relative">
+						<table class="w-full text-xs">
+							<thead class="sticky top-0 bg-[#0c0c0c] z-10 box-border border-b border-[#27272a]">
+								<tr>
+									<th class="text-left py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Dia</th>
+									<th class="text-right py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Lucro</th>
+									<th class="text-right py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Capital</th>
+									<th class="text-right py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Ops</th>
+									<th class="text-right py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Win%</th>
+									<th class="text-right py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Tempo Ops</th>
+								</tr>
+							</thead>
+							<tbody>
+								<tr v-for="day in dailyData" :key="day.date" 
+									class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors"
+									:class="{'bg-green-500/5 hover:bg-green-500/10': day.badge === 'Melhor', 'bg-red-500/5 hover:bg-red-500/10': day.badge === 'Pior'}">
+									<td class="py-3 px-1 font-medium text-[#FAFAFA]">
+										<div class="flex items-center gap-2">
+											<span>{{ day.date }}</span>
+											<div v-if="day.badge" 
+												class="inline-flex items-center rounded-full border font-semibold text-[8px] px-1 py-0"
+												:class="day.badge === 'Melhor' ? 'border-green-500 text-green-500 bg-green-500/10' : day.badge === 'Pior' ? 'border-red-500 text-red-500 bg-red-500/10' : 'border-yellow-400 text-yellow-500 bg-yellow-400/10'">
+												<svg v-if="day.badge === 'Melhor'" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up mr-0.5"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+												<svg v-if="day.badge === 'Pior'" xmlns="http://www.w3.org/2000/svg" width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down mr-0.5"><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
+												{{ day.badge }}
 											</div>
-										</td>
-										<td class="text-right py-3 px-3 tabular-nums font-semibold" :class="day.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-											{{ day.profit >= 0 ? '+' : '' }}${{ day.profit.toFixed(2) }}
-										</td>
-										<td class="text-right py-3 px-3 tabular-nums text-[#FAFAFA]">${{ day.capital.toFixed(2) }}</td>
-										<td class="text-right py-3 px-3 tabular-nums text-[#FAFAFA]">{{ day.ops }}</td>
-										<td class="text-right py-3 px-3 tabular-nums font-medium" 
-											:class="day.winRate >= 70 ? 'text-green-500' : day.winRate >= 50 ? 'text-[#FAFAFA]' : 'text-red-500'">
-											{{ day.winRate.toFixed(1) }}%
-										</td>
-										<td class="text-right py-3 px-3 tabular-nums text-[#A1A1AA]">{{ day.avgTime }}</td>
-									</tr>
-								</tbody>
-							</table>
-						</div>
+										</div>
+									</td>
+									<td class="text-right py-3 px-1 tabular-nums font-semibold" :class="day.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+										{{ day.profit >= 0 ? '+' : '' }}${{ day.profit.toFixed(2) }}
+									</td>
+									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">${{ day.capital.toFixed(2) }}</td>
+									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">{{ day.ops }}</td>
+									<td class="text-right py-3 px-1 tabular-nums font-medium" 
+										:class="day.winRate >= 70 ? 'text-green-500' : day.winRate >= 50 ? 'text-[#FAFAFA]' : 'text-red-500'">
+										{{ day.winRate.toFixed(1) }}%
+									</td>
+									<td class="text-right py-3 px-1 tabular-nums text-[#A1A1AA]">{{ day.avgTime }}</td>
+								</tr>
+							</tbody>
+						</table>
 					</div>
-					<p class="text-[#A1A1AA] text-[10px] mt-3">Clique em uma linha para ver detalhes do dia</p>
 				</div>
+				<p class="text-[#A1A1AA] text-[10px] mt-3">Clique em uma linha para ver detalhes do dia</p>
 			</div>
 		</div>
 
