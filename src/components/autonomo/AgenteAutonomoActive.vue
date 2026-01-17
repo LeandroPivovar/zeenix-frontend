@@ -1,10 +1,10 @@
-<template>
+﻿<template>
 	<div class="layout-content-agent-autonomo">
 		<!-- New Header with Date Selector -->
 		<div class="agent-new-header">
 			<div class="header-left">
-				<h1 class="header-title">Agente Autônomo</h1>
-				<p class="header-subtitle">Dados baseados no período selecionado</p>
+				<h1 class="header-title">Agente AutÃ´nomo</h1>
+				<p class="header-subtitle">Dados baseados no perÃ­odo selecionado</p>
 			</div>
 			<div class="header-right">
 				<div class="date-selector">
@@ -46,7 +46,7 @@
 			<div class="new-metric-card highlight-card">
 				<div class="metric-header">
 					<i class="fas fa-arrow-trend-up metric-icon-small"></i>
-					<span class="metric-label-small">LUCRO DO PERÍODO</span>
+					<span class="metric-label-small">LUCRO DO PERÃODO</span>
 				</div>
 				<div class="metric-value-large positive">+${{ periodProfit.toFixed(2) }}</div>
 				<div class="metric-footer">
@@ -58,7 +58,7 @@
 			<div class="new-metric-card">
 				<div class="metric-header">
 					<i class="fas fa-calendar-day metric-icon-small"></i>
-					<span class="metric-label-small">LUCRO MÉDIO/DIA</span>
+					<span class="metric-label-small">LUCRO MÃ‰DIO/DIA</span>
 				</div>
 				<div class="metric-value-large positive">+${{ avgDailyProfit.toFixed(2) }}</div>
 				<div class="metric-secondary">R${{ (avgDailyProfit * 5.17).toFixed(2) }}</div>
@@ -70,7 +70,7 @@
 			<div class="additional-metric">
 				<span class="additional-label">
 					<img src="../../assets/icons/brain.svg" alt="" width="16px">
-					Estratégia
+					EstratÃ©gia
 				</span>
 				<span class="additional-value">{{ agenteData.estrategia }}</span>
 			</div>
@@ -86,7 +86,7 @@
 			<div class="additional-metric">
 				<span class="additional-label">
 					<i class="fas fa-list"></i>
-					Operações Hoje
+					OperaÃ§Ãµes Hoje
 				</span>
 				<span class="additional-value">{{ operacoesHojeDisplay }}</span>
 			</div>
@@ -129,7 +129,7 @@
 		<div class="distribution-section">
 			<div class="distribution-header">
 				<i class="fas fa-table"></i>
-				<span>DISTRIBUIÇÃO DIÁRIA DE PERFORMANCE</span>
+				<span>DISTRIBUIÃ‡ÃƒO DIÃRIA DE PERFORMANCE</span>
 			</div>
 
 			<!-- Weekly Summary Table -->
@@ -165,7 +165,7 @@
 
 			<!-- Daily Detail Table -->
 			<div class="table-wrapper">
-				<h3 class="table-subtitle">DETALHAMENTO DIÁRIO</h3>
+				<h3 class="table-subtitle">DETALHAMENTO DIÃRIO</h3>
 				<table class="distribution-table">
 					<thead>
 						<tr>
@@ -212,7 +212,7 @@
 				type: Object,
 				default: () => ({
 					estrategia: 'IA SENTINEL',
-					mercado: 'Volatility 100 Index', // ✅ Todos os agentes autônomos usam R_100
+					mercado: 'Volatility 100 Index', // âœ… Todos os agentes autÃ´nomos usam R_100
 					risco: 'Conservador-Adaptativo',
 					goalValue: 50.0,
 					stopValue: 25.0,
@@ -273,36 +273,36 @@
 					meta: 50,
 					stop: 25,
 				},
-				// Dados para gráficos
+				// Dados para grÃ¡ficos
 				indexChartData: [],
 				priceHistoryInterval: null,
-				pricePollingInterval: null, // ✅ Novo: Intervalo para polling de preços (como na IA)
-				timeUpdateInterval: null, // ✅ Novo: Intervalo para atualizar tempo
-				chartUpdateThrottle: null, // ✅ Novo: Throttle para atualizações do gráfico
+				pricePollingInterval: null, // âœ… Novo: Intervalo para polling de preÃ§os (como na IA)
+				timeUpdateInterval: null, // âœ… Novo: Intervalo para atualizar tempo
+				chartUpdateThrottle: null, // âœ… Novo: Throttle para atualizaÃ§Ãµes do grÃ¡fico
 				priceTicks: [],
 				indexChart: null,
 				indexChartSeries: null,
 				indexChartInitialized: false,
-				localTradeHistory: [], // Histórico de trades buscado localmente
-				realtimeLogs: [], // Logs em tempo real (igual à IA)
-				lastLogTimestamp: null, // Timestamp do último log para polling
+				localTradeHistory: [], // HistÃ³rico de trades buscado localmente
+				realtimeLogs: [], // Logs em tempo real (igual Ã  IA)
+				lastLogTimestamp: null, // Timestamp do Ãºltimo log para polling
 				logsPollingInterval: null, // Intervalo para polling de logs
 				unidadeTimeframeSelecionada: 'minutos',
 				valorTimeframeSelecionado: 1,
-				tipoGraficoSelecionado: 'Gráfico de Linhas',
-				// ✅ REMOVIDO: WebSocket não é mais usado no frontend (backend gerencia)
-				symbol: 'R_75', // Índice do agente autônomo (será atualizado do backend)
+				tipoGraficoSelecionado: 'GrÃ¡fico de Linhas',
+				// âœ… REMOVIDO: WebSocket nÃ£o Ã© mais usado no frontend (backend gerencia)
+				symbol: 'R_75', // Ãndice do agente autÃ´nomo (serÃ¡ atualizado do backend)
 				timeframeOptions: {
 					minutos: [1, 2, 3, 5, 10, 15, 30],
 					horas: [1, 2, 4, 8],
 					Dias: [1, 2, 3, 4, 5, 6, 7],
 				},
-				tiposGrafico: ['Gráfico de Linhas', 'Gráfico de Velas'],
+				tiposGrafico: ['GrÃ¡fico de Linhas', 'GrÃ¡fico de Velas'],
 				acoesAgente: [
-					{ hora: '14:32:15', classe: 'success', titulo: 'Operação finalizada com sucesso', descricao: '14:32:15 - Lucro de $8.50' },
+					{ hora: '14:32:15', classe: 'success', titulo: 'OperaÃ§Ã£o finalizada com sucesso', descricao: '14:32:15 - Lucro de $8.50' },
 					{ hora: '14:32:00', classe: 'success', titulo: 'Entrada executada', descricao: '14:32:00 - CALL em Volatility 75' },
-					{ hora: '14:31:45', classe: 'warning', titulo: 'Volume detectado', descricao: '14:31:45 - Confirmação de padrão' },
-					{ hora: '14:30:00', classe: 'info', titulo: 'Aguardando padrão da estratégia', descricao: '14:30:00 - Análise em andamento' },
+					{ hora: '14:31:45', classe: 'warning', titulo: 'Volume detectado', descricao: '14:31:45 - ConfirmaÃ§Ã£o de padrÃ£o' },
+					{ hora: '14:30:00', classe: 'info', titulo: 'Aguardando padrÃ£o da estratÃ©gia', descricao: '14:30:00 - AnÃ¡lise em andamento' },
 				],
 				showStopLossModal: false,
 				// Novas propriedades para o layout redesenhado
@@ -329,14 +329,14 @@
 		},
 		computed: {
 			statsHoje() {
-				// Considerando 'hoje' como 2025-11-25 (ou data atual da simulação) ou baseado nas ops
+				// Considerando 'hoje' como 2025-11-25 (ou data atual da simulaÃ§Ã£o) ou baseado nas ops
 				// Aqui vou pegar do historicoOperacoes para ser consistente
 				const ops = this.historicoOperacoes || [];
-				// Usando data simples mockada se necessário ou a atual
+				// Usando data simples mockada se necessÃ¡rio ou a atual
 				const hoje = new Date().toISOString().split('T')[0];
 				
-				// Filtro simplificado, considerando que historicoOperacoes já pode estar filtrado ou não.
-				// Se a aplicação usa dados de "hoje" como padrão, isso basta.
+				// Filtro simplificado, considerando que historicoOperacoes jÃ¡ pode estar filtrado ou nÃ£o.
+				// Se a aplicaÃ§Ã£o usa dados de "hoje" como padrÃ£o, isso basta.
 				const opsHoje = ops.filter(op => op.data === hoje || op.data === '2025-11-25'); 
 				
 				const wins = opsHoje.filter(op => op.resultado.includes('+')).length;
@@ -344,7 +344,7 @@
 				return { wins, losses };
 			},
 			historicoOperacoes() {
-				// ✅ Usar localTradeHistory primeiro (dados buscados localmente), depois tradeHistory (prop), depois operationHistory
+				// âœ… Usar localTradeHistory primeiro (dados buscados localmente), depois tradeHistory (prop), depois operationHistory
 				const historyToUse = (this.localTradeHistory && this.localTradeHistory.length > 0) 
 					? this.localTradeHistory 
 					: (this.tradeHistory && Array.isArray(this.tradeHistory) && this.tradeHistory.length > 0)
@@ -352,7 +352,7 @@
 						: null;
 				
 				if (historyToUse && historyToUse.length > 0) {
-					console.log('[AgenteAutonomoActive] 📊 Convertendo tradeHistory:', historyToUse.length, 'trades');
+					console.log('[AgenteAutonomoActive] ðŸ“Š Convertendo tradeHistory:', historyToUse.length, 'trades');
 					return historyToUse.map(trade => {
 						const date = new Date(trade.createdAt || trade.created_at || Date.now());
 						const dataStr = date.toISOString().split('T')[0];
@@ -372,8 +372,8 @@
 						};
 					});
 				}
-				// Se não houver tradeHistory, usar operationHistory do agenteData
-				console.log('[AgenteAutonomoActive] ⚠️ Nenhum tradeHistory disponível. tradeHistory:', this.tradeHistory, 'agenteData.operationHistory:', this.agenteData?.operationHistory);
+				// Se nÃ£o houver tradeHistory, usar operationHistory do agenteData
+				console.log('[AgenteAutonomoActive] âš ï¸ Nenhum tradeHistory disponÃ­vel. tradeHistory:', this.tradeHistory, 'agenteData.operationHistory:', this.agenteData?.operationHistory);
 				return this.agenteData?.operationHistory || [];
 			},
 			userIdComputed() {
@@ -391,7 +391,7 @@
 				return '0h 0m 0s';
 			},
 			acoesAgenteComputed() {
-				// Usar agentActions do agenteData se disponível
+				// Usar agentActions do agenteData se disponÃ­vel
 				const actions = this.agenteData?.agentActions || this.acoesAgente || [];
 				return actions;
 			},
@@ -401,7 +401,7 @@
 				return `${Math.min(100, Math.max(0, percentage)).toFixed(0)}%`;
 			},
 			operacoesHojeDisplay() {
-				// Priorizar sessionStats.operationsToday (mais confiável), depois agenteData.operacoesHoje, depois 0
+				// Priorizar sessionStats.operationsToday (mais confiÃ¡vel), depois agenteData.operacoesHoje, depois 0
 				const valor = this.sessionStats?.operationsToday ?? this.agenteData?.operacoesHoje ?? 0;
 				console.log('[AgenteAutonomoActive] operacoesHojeDisplay computed:', valor, 'sessionStats:', this.sessionStats?.operationsToday, 'agenteData:', this.agenteData?.operacoesHoje);
 				return valor;
@@ -411,7 +411,7 @@
 				const backendCapital = this.sessionStats?.totalCapital;
 				const headerBalance = this.agenteData?.accountBalance;
 				
-				// Converter para número se necessário
+				// Converter para nÃºmero se necessÃ¡rio
 				const backendCapitalNum = backendCapital ? (typeof backendCapital === 'number' ? backendCapital : parseFloat(String(backendCapital)) || 0) : 0;
 				const headerBalanceNum = headerBalance !== null && headerBalance !== undefined 
 					? (typeof headerBalance === 'number' ? headerBalance : parseFloat(String(headerBalance)) || 0) 
@@ -436,19 +436,19 @@
 				}
 				
 				if (headerBalanceNum > 0) {
-					console.log('[AgenteAutonomoActive] ✅ totalCapital: usando headerBalance como fallback:', headerBalanceNum);
+					console.log('[AgenteAutonomoActive] âœ… totalCapital: usando headerBalance como fallback:', headerBalanceNum);
 					return headerBalanceNum;
 				}
 				
-				// Log apenas quando realmente não há valor (evitar spam)
+				// Log apenas quando realmente nÃ£o hÃ¡ valor (evitar spam)
 				if (this.sessionStats && this.agenteData && headerBalanceNum === 0 && backendCapitalNum === 0) {
-					console.warn('[AgenteAutonomoActive] ⚠️ totalCapital: nenhum valor disponível. backendCapital:', backendCapitalNum, 'headerBalance:', headerBalanceNum, 'agenteData.accountBalance:', this.agenteData?.accountBalance);
+					console.warn('[AgenteAutonomoActive] âš ï¸ totalCapital: nenhum valor disponÃ­vel. backendCapital:', backendCapitalNum, 'headerBalance:', headerBalanceNum, 'agenteData.accountBalance:', this.agenteData?.accountBalance);
 				}
 				return 0;
 			},
 			totalBalance() {
-				// ✅ Saldo total da conta (account balance) - usado para calcular porcentagem do resultado do dia
-				// IMPORTANTE: NÃO usar totalCapital (valor inicial) como fallback, sempre usar o saldo atual da conta
+				// âœ… Saldo total da conta (account balance) - usado para calcular porcentagem do resultado do dia
+				// IMPORTANTE: NÃƒO usar totalCapital (valor inicial) como fallback, sempre usar o saldo atual da conta
 				const accountBalance = this.agenteData?.accountBalance;
 				let balanceNum = 0;
 				
@@ -456,7 +456,7 @@
 					if (typeof accountBalance === 'number') {
 						balanceNum = accountBalance;
 					} else if (typeof accountBalance === 'object') {
-						// Se for um objeto (retornado pelo balanceLoader), extrair o valor numérico
+						// Se for um objeto (retornado pelo balanceLoader), extrair o valor numÃ©rico
 						if (accountBalance.balance !== undefined && accountBalance.balance !== null) {
 							balanceNum = typeof accountBalance.balance === 'number' 
 								? accountBalance.balance 
@@ -466,30 +466,30 @@
 								? accountBalance.value 
 								: parseFloat(String(accountBalance.value)) || 0;
 						} else {
-							// Tentar converter o objeto inteiro para número (improvável, mas tenta)
+							// Tentar converter o objeto inteiro para nÃºmero (improvÃ¡vel, mas tenta)
 							balanceNum = Number(accountBalance) || 0;
 						}
 					} else if (typeof accountBalance === 'string') {
-						// Converter string para número, removendo formatação se necessário
+						// Converter string para nÃºmero, removendo formataÃ§Ã£o se necessÃ¡rio
 						// Tratar formato brasileiro: "18.299,07" -> 18299.07
 						// Tratar formato americano: "18299.07" -> 18299.07
 						let cleanBalance = String(accountBalance).trim();
 						
-						// Remover símbolos de moeda e espaços
-						cleanBalance = cleanBalance.replace(/[Đ$R$\s]/g, '');
+						// Remover sÃ­mbolos de moeda e espaÃ§os
+						cleanBalance = cleanBalance.replace(/[Ä$R$\s]/g, '');
 						
-						// Se tiver vírgula como separador decimal (formato brasileiro)
+						// Se tiver vÃ­rgula como separador decimal (formato brasileiro)
 						if (cleanBalance.includes(',') && cleanBalance.includes('.')) {
-							// Formato: "18.299,07" -> remover pontos de milhar, substituir vírgula por ponto
+							// Formato: "18.299,07" -> remover pontos de milhar, substituir vÃ­rgula por ponto
 							cleanBalance = cleanBalance.replace(/\./g, '').replace(',', '.');
 						} else if (cleanBalance.includes(',')) {
-							// Apenas vírgula: "18299,07" -> substituir por ponto
+							// Apenas vÃ­rgula: "18299,07" -> substituir por ponto
 							cleanBalance = cleanBalance.replace(',', '.');
 						}
 						
 						balanceNum = parseFloat(cleanBalance) || 0;
 					} else {
-						// Tentar converter para número diretamente
+						// Tentar converter para nÃºmero diretamente
 						balanceNum = Number(accountBalance) || 0;
 					}
 				}
@@ -499,19 +499,19 @@
 					const netProfit = this.sessionStats.netProfit || 0;
 					const percentage = balanceNum > 0 ? ((netProfit / balanceNum) * 100).toFixed(2) : 'N/A';
 					
-					console.log('[AgenteAutonomoActive] 💰 totalBalance computed:', {
+					console.log('[AgenteAutonomoActive] ðŸ’° totalBalance computed:', {
 						accountBalance: accountBalance,
 						accountBalanceType: typeof accountBalance,
 						balanceNum: balanceNum,
 						netProfit: netProfit,
 						percentage: percentage,
 						agenteDataExists: !!this.agenteData,
-						// NÃO usar totalCapital como referência aqui
+						// NÃƒO usar totalCapital como referÃªncia aqui
 					});
 					
-					// Aviso se o saldo não estiver disponível mas houver netProfit
+					// Aviso se o saldo nÃ£o estiver disponÃ­vel mas houver netProfit
 					if (balanceNum <= 0 && Math.abs(netProfit) > 0.01) {
-						console.error('[AgenteAutonomoActive] ❌ ERRO: Saldo total não disponível para calcular porcentagem!', {
+						console.error('[AgenteAutonomoActive] âŒ ERRO: Saldo total nÃ£o disponÃ­vel para calcular porcentagem!', {
 							accountBalance: accountBalance,
 							balanceNum: balanceNum,
 							netProfit: netProfit,
@@ -520,8 +520,8 @@
 					}
 				}
 				
-				// ❌ NÃO usar totalCapital como fallback - sempre usar o saldo atual da conta
-				// Se não houver saldo válido, retornar 0 (evitar divisão por zero e cálculos incorretos)
+				// âŒ NÃƒO usar totalCapital como fallback - sempre usar o saldo atual da conta
+				// Se nÃ£o houver saldo vÃ¡lido, retornar 0 (evitar divisÃ£o por zero e cÃ¡lculos incorretos)
 				if (balanceNum <= 0) {
 					return 0;
 				}
@@ -540,7 +540,7 @@
 				return `${this.valorTimeframeSelecionado}${unidadeMap[this.unidadeTimeframeSelecionada] || ''}`;
 			},
 			graficoPlaceholder() {
-				return `Performance do Agente (Gráfico de ${this.tipoGraficoSelecionado} | ${this.timeframeFinal})`;
+				return `Performance do Agente (GrÃ¡fico de ${this.tipoGraficoSelecionado} | ${this.timeframeFinal})`;
 			},
 			dateRangeText() {
 			const today = new Date();
@@ -621,14 +621,14 @@
 						return historicoOperacoes.sort((a, b) => new Date(b.data + 'T' + b.hora) - new Date(a.data + 'T' + a.hora));
 				}
 			},
-			// Transformar dados do histórico para o formato esperado pelo OperationLogs
+			// Transformar dados do histÃ³rico para o formato esperado pelo OperationLogs
 			formattedTradeResults() {
 				if (!this.historicoOperacoes || this.historicoOperacoes.length === 0) {
 					return [];
 				}
 				
 				return this.historicoOperacoes.map((op, index) => {
-					// Extrair valores numéricos
+					// Extrair valores numÃ©ricos
 					const entrada = parseFloat(op.entrada) || 0;
 					const saida = parseFloat(op.saida) || entrada;
 					
@@ -637,19 +637,19 @@
 					const resultadoMatch = resultadoStr.replace('$', '').replace('+', '').replace(',', '');
 					const profit = parseFloat(resultadoMatch) || 0;
 					
-					// Determinar direção baseado no tipo
+					// Determinar direÃ§Ã£o baseado no tipo
 					const direction = op.tipo === 'Call' ? 'CALL' : (op.tipo === 'Put' ? 'PUT' : 'CALL');
 					
-					// Criar ID único
+					// Criar ID Ãºnico
 					const contractId = `autonomo-${op.data}-${op.hora}-${index}`;
 					
 					// Converter data e hora para timestamp e Date objects
 					const dateTime = new Date(`${op.data}T${op.hora}`);
 					const time = Math.floor(dateTime.getTime() / 1000);
 					
-					// Criar createdAt e closedAt (assumindo que a hora é quando foi fechado)
+					// Criar createdAt e closedAt (assumindo que a hora Ã© quando foi fechado)
 					const createdAt = dateTime.toISOString();
-					const closedAt = dateTime.toISOString(); // Usar mesma data/hora já que não temos separação
+					const closedAt = dateTime.toISOString(); // Usar mesma data/hora jÃ¡ que nÃ£o temos separaÃ§Ã£o
 					
 					return {
 						contractId: contractId,
@@ -691,11 +691,11 @@
 				immediate: true,
 			},
 			abaAtiva(newAba, oldAba) {
-				// ✅ DESATIVADO: Polling desativado temporariamente para reduzir carga no servidor
+				// âœ… DESATIVADO: Polling desativado temporariamente para reduzir carga no servidor
 				if (newAba === 'grafico') {
-					// Buscar histórico apenas uma vez (sem polling contínuo)
+					// Buscar histÃ³rico apenas uma vez (sem polling contÃ­nuo)
 					this.fetchPriceHistory();
-					// this.startPricePolling(); // ✅ DESATIVADO
+					// this.startPricePolling(); // âœ… DESATIVADO
 					
 					// Parar polling de logs
 					this.stopLogsPolling();
@@ -706,25 +706,25 @@
 								if (!this.indexChartInitialized) {
 									this.initIndexChart();
 								} else if (this.priceTicks.length > 0) {
-									// Se já estiver inicializado, atualizar com dados
+									// Se jÃ¡ estiver inicializado, atualizar com dados
 									this.updateIndexChart();
 								}
 							}
 						}, 200);
 					});
 				} else if (newAba === 'historico') {
-					// Buscar histórico de trades quando entrar na aba histórico
+					// Buscar histÃ³rico de trades quando entrar na aba histÃ³rico
 					this.fetchTradeHistory();
 					// Parar polling de logs
 					this.stopLogsPolling();
 				} else if (newAba === 'registro') {
-					// ✅ Iniciar polling de logs quando entrar na aba registro
+					// âœ… Iniciar polling de logs quando entrar na aba registro
 					this.startLogsPolling();
 				} else {
-					// ✅ OTIMIZADO: Parar polling quando sair da aba gráfico
+					// âœ… OTIMIZADO: Parar polling quando sair da aba grÃ¡fico
 					if (oldAba === 'grafico') {
 						this.stopPricePolling();
-						console.log('[AgenteAutonomoActive] Polling parado ao sair da aba gráfico');
+						console.log('[AgenteAutonomoActive] Polling parado ao sair da aba grÃ¡fico');
 					}
 					// Parar polling de logs se sair da aba registro
 					if (oldAba === 'registro') {
@@ -748,16 +748,16 @@
 				}
 			},
 			'agenteData.tempoAtivo'(newVal, oldVal) {
-				// Forçar atualização quando tempoAtivo mudar
+				// ForÃ§ar atualizaÃ§Ã£o quando tempoAtivo mudar
 				if (newVal && newVal !== oldVal) {
 					console.log('[AgenteAutonomoActive] tempoAtivo mudou:', { newVal, oldVal });
 					this.$forceUpdate();
 				}
 			},
 			'agenteData.accountBalance'(newVal, oldVal) {
-				// Forçar atualização quando accountBalance mudar para recalcular porcentagens
+				// ForÃ§ar atualizaÃ§Ã£o quando accountBalance mudar para recalcular porcentagens
 				if (newVal !== oldVal) {
-					console.log('[AgenteAutonomoActive] accountBalance mudou (watch específico):', { 
+					console.log('[AgenteAutonomoActive] accountBalance mudou (watch especÃ­fico):', { 
 						newVal, 
 						oldVal, 
 						newValType: typeof newVal,
@@ -765,14 +765,14 @@
 						agenteDataAccountBalance: this.agenteData?.accountBalance
 					});
 					if (newVal && typeof newVal === 'number' && newVal > 0) {
-						console.log('[AgenteAutonomoActive] Forçando atualização devido a mudança de accountBalance');
+						console.log('[AgenteAutonomoActive] ForÃ§ando atualizaÃ§Ã£o devido a mudanÃ§a de accountBalance');
 						this.$forceUpdate();
 					}
 				}
 			},
 			agenteData: {
 				handler(newVal, oldVal) {
-					// Log de mudanças em agenteData
+					// Log de mudanÃ§as em agenteData
 					if (newVal && typeof newVal === 'object') {
 						console.log('[AgenteAutonomoActive] agenteData mudou:', {
 							operacoesHoje: newVal?.operacoesHoje,
@@ -782,13 +782,13 @@
 							fullAgenteData: newVal
 						});
 						
-						// Forçar atualização quando accountBalance mudar
+						// ForÃ§ar atualizaÃ§Ã£o quando accountBalance mudar
 						if (newVal.accountBalance && newVal.accountBalance !== oldVal?.accountBalance) {
-							console.log('[AgenteAutonomoActive] accountBalance mudou no agenteData, forçando atualização');
+							console.log('[AgenteAutonomoActive] accountBalance mudou no agenteData, forÃ§ando atualizaÃ§Ã£o');
 							this.$forceUpdate();
 						}
 						
-						// Forçar atualização quando agenteData mudar (especialmente tempoAtivo)
+						// ForÃ§ar atualizaÃ§Ã£o quando agenteData mudar (especialmente tempoAtivo)
 						if (newVal.tempoAtivo) {
 							console.log('[AgenteAutonomoActive] agenteData mudou:', {
 								newTempoAtivo: newVal.tempoAtivo,
@@ -797,23 +797,23 @@
 							this.$forceUpdate();
 						}
 						
-						// ✅ NOVO: Quando agenteData é definido pela primeira vez (nova sessão), buscar ticks atualizados
+						// âœ… NOVO: Quando agenteData Ã© definido pela primeira vez (nova sessÃ£o), buscar ticks atualizados
 						if (!oldVal && this.abaAtiva === 'grafico') {
-							console.log('[AgenteAutonomoActive] Nova sessão detectada, buscando ticks atualizados...');
+							console.log('[AgenteAutonomoActive] Nova sessÃ£o detectada, buscando ticks atualizados...');
 							this.$nextTick(() => {
 								setTimeout(() => {
 									this.fetchPriceHistory();
-								}, 1000); // Aguardar 1 segundo para garantir que o backend processou a ativação
+								}, 1000); // Aguardar 1 segundo para garantir que o backend processou a ativaÃ§Ã£o
 							});
 						}
 					} else if (newVal && !oldVal) {
-						// ✅ Nova sessão detectada (agenteData definido pela primeira vez)
+						// âœ… Nova sessÃ£o detectada (agenteData definido pela primeira vez)
 						if (this.abaAtiva === 'grafico') {
-							console.log('[AgenteAutonomoActive] Nova sessão detectada, buscando ticks atualizados...');
+							console.log('[AgenteAutonomoActive] Nova sessÃ£o detectada, buscando ticks atualizados...');
 							this.$nextTick(() => {
 								setTimeout(() => {
 									this.fetchPriceHistory();
-								}, 1000); // Aguardar 1 segundo para garantir que o backend processou a ativação
+								}, 1000); // Aguardar 1 segundo para garantir que o backend processou a ativaÃ§Ã£o
 							});
 						}
 					}
@@ -861,7 +861,7 @@
 								this.updateIndexChart();
 							});
 						} else if (this.abaAtiva === 'grafico') {
-							// Se o gráfico ainda não foi inicializado mas temos dados, inicializar
+							// Se o grÃ¡fico ainda nÃ£o foi inicializado mas temos dados, inicializar
 							this.$nextTick(() => {
 								if (this.$refs.indexChartContainer) {
 									this.initIndexChart();
@@ -874,7 +874,7 @@
 				immediate: true
 			},
 			'agenteData.mercado'(newMarket) {
-				// Atualizar símbolo quando o mercado mudar
+				// Atualizar sÃ­mbolo quando o mercado mudar
 				if (newMarket) {
 					const marketToSymbol = {
 						'Volatility 10 Index': 'R_10',
@@ -886,7 +886,7 @@
 					const newSymbol = marketToSymbol[newMarket] || 'R_75';
 					if (this.symbol !== newSymbol) {
 						this.symbol = newSymbol;
-						// Reconectar WebSocket com novo símbolo
+						// Reconectar WebSocket com novo sÃ­mbolo
 						if (this.derivWebSocket) {
 							this.disconnectDerivWebSocket();
 							setTimeout(() => {
@@ -905,7 +905,7 @@
 				this.progressoMeta.stop = this.agenteData.stopValue || 25;
 				this.ultimaAtualizacao = this.agenteData.lastExecutionTime || new Date().toLocaleTimeString('pt-BR');
 				
-				// Atualizar símbolo baseado no mercado do agenteData
+				// Atualizar sÃ­mbolo baseado no mercado do agenteData
 				if (this.agenteData.mercado) {
 					const marketToSymbol = {
 						'Volatility 10 Index': 'R_10',
@@ -918,23 +918,23 @@
 				}
 			}
 			
-			// Atualizar última atualização a cada segundo
+			// Atualizar Ãºltima atualizaÃ§Ã£o a cada segundo
 			this.timeUpdateInterval = setInterval(() => {
 				this.ultimaAtualizacao = new Date().toLocaleTimeString('pt-BR');
 			}, 1000);
 			
-			// ✅ DESATIVADO: Polling desativado temporariamente para reduzir carga no servidor
-			// Não usar WebSocket no frontend para evitar requisições travadas
+			// âœ… DESATIVADO: Polling desativado temporariamente para reduzir carga no servidor
+			// NÃ£o usar WebSocket no frontend para evitar requisiÃ§Ãµes travadas
 			if (this.abaAtiva === 'grafico') {
-				// Buscar histórico inicial apenas uma vez (sem polling contínuo)
+				// Buscar histÃ³rico inicial apenas uma vez (sem polling contÃ­nuo)
 				this.fetchPriceHistory();
-				// this.startPricePolling(); // ✅ DESATIVADO
+				// this.startPricePolling(); // âœ… DESATIVADO
 			} else if (this.abaAtiva === 'historico') {
-				// Buscar histórico de trades se estiver na aba histórico
+				// Buscar histÃ³rico de trades se estiver na aba histÃ³rico
 				this.fetchTradeHistory();
 			}
 			
-			// Inicializar gráfico apenas se estiver na aba gráfico
+			// Inicializar grÃ¡fico apenas se estiver na aba grÃ¡fico
 			if (this.abaAtiva === 'grafico') {
 				this.$nextTick(() => {
 					setTimeout(() => {
@@ -945,7 +945,7 @@
 				});
 			}
 			
-			// ✅ Iniciar polling de logs se estiver na aba registro
+			// âœ… Iniciar polling de logs se estiver na aba registro
 			if (this.abaAtiva === 'registro') {
 				this.startLogsPolling();
 			}
@@ -957,7 +957,7 @@
 			// Verificar estado do Stop Loss ao montar
 			this.checkStopLossState();
 			
-			// Rolagem instantânea para o topo
+			// Rolagem instantÃ¢nea para o topo
 			window.scrollTo({ top: 0, behavior: 'auto' });
 		},
 		beforeUnmount() {
@@ -975,10 +975,10 @@
 				clearTimeout(this.chartUpdateThrottle);
 			}
 			
-			// ✅ Removido: WebSocket não é mais usado no frontend
+			// âœ… Removido: WebSocket nÃ£o Ã© mais usado no frontend
 			// this.disconnectDerivWebSocket();
 			
-			// Destruir gráfico
+			// Destruir grÃ¡fico
 			if (this.indexChart) {
 				this.indexChart.remove();
 				this.indexChart = null;
@@ -990,24 +990,24 @@
 			},
 			exportarHistorico() {
 				// Removido o alert
-				console.log(`Exportando histórico. Filtro: ${this.filtroDataSelecionado}. Total de operações: ${this.historicoOperacoesFiltradas.length}`);
-				// Aqui seria a lógica real para gerar e baixar um arquivo CSV/Excel/PDF
+				console.log(`Exportando histÃ³rico. Filtro: ${this.filtroDataSelecionado}. Total de operaÃ§Ãµes: ${this.historicoOperacoesFiltradas.length}`);
+				// Aqui seria a lÃ³gica real para gerar e baixar um arquivo CSV/Excel/PDF
 			},
-			// ✅ REMOVIDO: WebSocket não é mais usado no frontend
+			// âœ… REMOVIDO: WebSocket nÃ£o Ã© mais usado no frontend
 			// O backend gerencia o WebSocket, o frontend usa polling HTTP como na IA
 			
-			// ✅ NOVO: Buscar histórico de preços do backend (como na IA)
+			// âœ… NOVO: Buscar histÃ³rico de preÃ§os do backend (como na IA)
 			async fetchPriceHistory() {
 				try {
 					const userId = this.getUserId();
 					if (!userId) {
-						console.warn('[AgenteAutonomoActive] ⚠️ userId não disponível para buscar histórico');
+						console.warn('[AgenteAutonomoActive] âš ï¸ userId nÃ£o disponÃ­vel para buscar histÃ³rico');
 						return;
 					}
 					
 					const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
 					const url = `${apiBase}/autonomous-agent/price-history/${userId}?limit=200`;
-					console.log('[AgenteAutonomoActive] 📡 Buscando histórico de preços:', url);
+					console.log('[AgenteAutonomoActive] ðŸ“¡ Buscando histÃ³rico de preÃ§os:', url);
 					
 					const response = await fetch(url, {
 						headers: {
@@ -1016,18 +1016,18 @@
 					});
 					
 					if (!response.ok) {
-						console.warn(`[AgenteAutonomoActive] ⚠️ Resposta não OK: ${response.status} ${response.statusText}`);
+						console.warn(`[AgenteAutonomoActive] âš ï¸ Resposta nÃ£o OK: ${response.status} ${response.statusText}`);
 						return;
 					}
 					
 					const result = await response.json();
-					console.log('[AgenteAutonomoActive] 📦 Resposta recebida:', { success: result.success, dataLength: result.data?.length || 0 });
+					console.log('[AgenteAutonomoActive] ðŸ“¦ Resposta recebida:', { success: result.success, dataLength: result.data?.length || 0 });
 					
 					if (result.success && result.data && Array.isArray(result.data)) {
-						// ✅ SEGUINDO PADRÃO DA IA: Processamento robusto de ticks
+						// âœ… SEGUINDO PADRÃƒO DA IA: Processamento robusto de ticks
 						const ticks = result.data
 							.map(tick => {
-								// Extrair value de forma robusta (tentar todas as propriedades possíveis)
+								// Extrair value de forma robusta (tentar todas as propriedades possÃ­veis)
 								const rawValue = tick.value ?? tick.price ?? tick.quote ?? tick.close ?? tick.spot ?? null;
 								if (!rawValue || rawValue === 0) {
 									return null;
@@ -1062,16 +1062,16 @@
 							.filter(tick => tick !== null && tick.value > 0 && tick.epoch > 0);
 						
 						this.priceTicks = ticks;
-						console.log('[AgenteAutonomoActive] ✅ Histórico carregado:', ticks.length, 'ticks válidos de', result.data.length, 'total');
+						console.log('[AgenteAutonomoActive] âœ… HistÃ³rico carregado:', ticks.length, 'ticks vÃ¡lidos de', result.data.length, 'total');
 						if (ticks.length > 0) {
-							console.log('[AgenteAutonomoActive] 📊 Primeiro tick:', ticks[0], 'Último tick:', ticks[ticks.length - 1]);
+							console.log('[AgenteAutonomoActive] ðŸ“Š Primeiro tick:', ticks[0], 'Ãšltimo tick:', ticks[ticks.length - 1]);
 						}
 						
-						// Atualizar gráfico se já estiver inicializado
+						// Atualizar grÃ¡fico se jÃ¡ estiver inicializado
 						if (this.indexChartInitialized) {
 							this.updateIndexChart();
 						} else if (ticks.length > 0) {
-							// Se o gráfico ainda não foi inicializado mas temos dados, inicializar
+							// Se o grÃ¡fico ainda nÃ£o foi inicializado mas temos dados, inicializar
 							this.$nextTick(() => {
 								if (this.$refs.indexChartContainer && !this.indexChartInitialized) {
 									this.initIndexChart();
@@ -1079,18 +1079,18 @@
 							});
 						}
 					} else {
-						console.warn('[AgenteAutonomoActive] ⚠️ Resposta sem dados válidos:', result);
+						console.warn('[AgenteAutonomoActive] âš ï¸ Resposta sem dados vÃ¡lidos:', result);
 					}
 				} catch (error) {
-					console.error('[AgenteAutonomoActive] ❌ Erro ao buscar histórico:', error);
+					console.error('[AgenteAutonomoActive] âŒ Erro ao buscar histÃ³rico:', error);
 				}
 			},
 			
-			// ✅ DESATIVADO: Polling de preços desativado temporariamente para reduzir carga no servidor
+			// âœ… DESATIVADO: Polling de preÃ§os desativado temporariamente para reduzir carga no servidor
 			startPricePolling() {
-				// Buscar apenas uma vez ao inicializar, sem polling contínuo
+				// Buscar apenas uma vez ao inicializar, sem polling contÃ­nuo
 				// this.fetchPriceHistory();
-				// Polling desativado para reduzir requisições pendentes
+				// Polling desativado para reduzir requisiÃ§Ãµes pendentes
 				// this.pricePollingInterval = setInterval(() => {
 				// 	if (this.abaAtiva === 'grafico') {
 				// 		this.fetchPriceHistory();
@@ -1098,7 +1098,7 @@
 				// }, 2000);
 			},
 			
-			// ✅ NOVO: Parar polling de preços
+			// âœ… NOVO: Parar polling de preÃ§os
 			stopPricePolling() {
 				if (this.pricePollingInterval) {
 					clearInterval(this.pricePollingInterval);
@@ -1106,18 +1106,18 @@
 				}
 			},
 			
-			// ✅ NOVO: Buscar histórico de trades do backend
+			// âœ… NOVO: Buscar histÃ³rico de trades do backend
 			async fetchTradeHistory() {
 				try {
 					const userId = this.getUserId();
 					if (!userId) {
-						console.warn('[AgenteAutonomoActive] ⚠️ userId não disponível para buscar histórico de trades');
+						console.warn('[AgenteAutonomoActive] âš ï¸ userId nÃ£o disponÃ­vel para buscar histÃ³rico de trades');
 						return;
 					}
 					
 					const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
 					const url = `${apiBase}/autonomous-agent/trade-history/${userId}?limit=50`;
-					console.log('[AgenteAutonomoActive] 📡 Buscando histórico de trades:', url);
+					console.log('[AgenteAutonomoActive] ðŸ“¡ Buscando histÃ³rico de trades:', url);
 					
 					const response = await fetch(url, {
 						headers: {
@@ -1126,31 +1126,31 @@
 					});
 					
 					if (!response.ok) {
-						console.warn(`[AgenteAutonomoActive] ⚠️ Resposta não OK ao buscar trades: ${response.status} ${response.statusText}`);
+						console.warn(`[AgenteAutonomoActive] âš ï¸ Resposta nÃ£o OK ao buscar trades: ${response.status} ${response.statusText}`);
 						return;
 					}
 					
 					const result = await response.json();
-					console.log('[AgenteAutonomoActive] 📦 Histórico de trades recebido:', { success: result.success, dataLength: result.data?.length || 0 });
+					console.log('[AgenteAutonomoActive] ðŸ“¦ HistÃ³rico de trades recebido:', { success: result.success, dataLength: result.data?.length || 0 });
 					
 					if (result.success && result.data && Array.isArray(result.data)) {
-						// Atualizar localTradeHistory (variável local no data)
+						// Atualizar localTradeHistory (variÃ¡vel local no data)
 						this.localTradeHistory = result.data;
-						console.log('[AgenteAutonomoActive] ✅ Histórico de trades atualizado:', result.data.length, 'trades');
+						console.log('[AgenteAutonomoActive] âœ… HistÃ³rico de trades atualizado:', result.data.length, 'trades');
 					} else {
-						console.warn('[AgenteAutonomoActive] ⚠️ Resposta sem dados válidos de trades:', result);
+						console.warn('[AgenteAutonomoActive] âš ï¸ Resposta sem dados vÃ¡lidos de trades:', result);
 					}
 				} catch (error) {
-					console.error('[AgenteAutonomoActive] ❌ Erro ao buscar histórico de trades:', error);
+					console.error('[AgenteAutonomoActive] âŒ Erro ao buscar histÃ³rico de trades:', error);
 				}
 			},
 			
-			// ✅ REMOVIDO: Todo o código do WebSocket foi removido
+			// âœ… REMOVIDO: Todo o cÃ³digo do WebSocket foi removido
 			// Agora usamos polling HTTP para buscar ticks do backend (como na IA)
 			// O backend gerencia o WebSocket com a Deriv
 			
 			// ============================================
-			// GRÁFICO DO ÍNDICE R_75
+			// GRÃFICO DO ÃNDICE R_75
 			// ============================================
 			initIndexChart() {
 				if (this.indexChartInitialized || !this.$refs.indexChartContainer) {
@@ -1160,9 +1160,9 @@
 				try {
 					const container = this.$refs.indexChartContainer;
 					
-					// Verificar se o container tem dimensões válidas
+					// Verificar se o container tem dimensÃµes vÃ¡lidas
 					if (container.offsetWidth === 0 || container.offsetHeight === 0) {
-						console.warn('[AgenteAutonomoActive] Container sem dimensões, tentando novamente...');
+						console.warn('[AgenteAutonomoActive] Container sem dimensÃµes, tentando novamente...');
 						setTimeout(() => this.initIndexChart(), 500);
 						return;
 					}
@@ -1170,7 +1170,7 @@
 					const containerWidth = container.offsetWidth || 800;
 					const containerHeight = container.offsetHeight || 400;
 					
-					console.log('[AgenteAutonomoActive] Inicializando gráfico com dimensões:', containerWidth, 'x', containerHeight);
+					console.log('[AgenteAutonomoActive] Inicializando grÃ¡fico com dimensÃµes:', containerWidth, 'x', containerHeight);
 					
 					this.indexChart = createChart(container, {
 						width: containerWidth,
@@ -1217,40 +1217,40 @@
 					});
 					
 					this.indexChartInitialized = true;
-					console.log('[AgenteAutonomoActive] Gráfico inicializado. Ticks disponíveis:', this.priceTicks.length);
+					console.log('[AgenteAutonomoActive] GrÃ¡fico inicializado. Ticks disponÃ­veis:', this.priceTicks.length);
 					
 					if (this.priceTicks.length > 0) {
 						this.updateIndexChart();
 					} else {
-						console.warn('[AgenteAutonomoActive] Nenhum tick disponível para plotar - tentando buscar histórico...');
-						// Tentar buscar histórico se ainda não tiver dados
+						console.warn('[AgenteAutonomoActive] Nenhum tick disponÃ­vel para plotar - tentando buscar histÃ³rico...');
+						// Tentar buscar histÃ³rico se ainda nÃ£o tiver dados
 						this.fetchPriceHistory();
 					}
 				} catch (error) {
-					console.error('[AgenteAutonomoActive] Erro ao inicializar gráfico de índice:', error);
+					console.error('[AgenteAutonomoActive] Erro ao inicializar grÃ¡fico de Ã­ndice:', error);
 					this.indexChartInitialized = false;
 				}
 			},
 			
 			updateIndexChart() {
 				if (!this.indexChartInitialized || !this.indexChartSeries) {
-					console.warn('[AgenteAutonomoActive] Gráfico não inicializado ou série não disponível');
+					console.warn('[AgenteAutonomoActive] GrÃ¡fico nÃ£o inicializado ou sÃ©rie nÃ£o disponÃ­vel');
 					return;
 				}
 				
 				if (this.priceTicks.length === 0) {
-					console.warn('[AgenteAutonomoActive] Nenhum tick disponível para atualizar gráfico');
+					console.warn('[AgenteAutonomoActive] Nenhum tick disponÃ­vel para atualizar grÃ¡fico');
 					return;
 				}
 				
 				try {
-					// ✅ SEGUINDO PADRÃO DA IA: Processamento robusto de ticks
+					// âœ… SEGUINDO PADRÃƒO DA IA: Processamento robusto de ticks
 					const sortedTicks = [...this.priceTicks]
 						.map(tick => {
 							// Extrair time de forma robusta (como na IA)
 							let time = tick.epoch || tick.time;
 							if (!time) {
-								// Tentar extrair de timestamp se disponível
+								// Tentar extrair de timestamp se disponÃ­vel
 								if (tick.timestamp) {
 									time = Math.floor(new Date(tick.timestamp).getTime() / 1000);
 								} else {
@@ -1263,7 +1263,7 @@
 								time = Math.floor(time);
 							}
 							
-							// ✅ Extrair value de forma robusta - tentar todas as propriedades possíveis (como na IA)
+							// âœ… Extrair value de forma robusta - tentar todas as propriedades possÃ­veis (como na IA)
 							let rawValue = tick.value ?? tick.price ?? tick.quote ?? tick.close ?? tick.spot ?? null;
 							
 							// Se ainda for null/undefined, pular este tick
@@ -1271,7 +1271,7 @@
 								return null;
 							}
 							
-							// Converter para número
+							// Converter para nÃºmero
 							const value = Number(rawValue);
 							
 							// Validar antes de retornar (como na IA)
@@ -1282,7 +1282,7 @@
 							return { time, value };
 						})
 						.filter(point => {
-							// ✅ CORREÇÃO: Filtrar valores null, undefined, NaN, 0 e negativos (como na IA)
+							// âœ… CORREÃ‡ÃƒO: Filtrar valores null, undefined, NaN, 0 e negativos (como na IA)
 							if (!point) return false;
 							return point.value != null
 								&& !isNaN(point.value)
@@ -1296,11 +1296,11 @@
 						.sort((a, b) => a.time - b.time);
 					
 					if (sortedTicks.length === 0) {
-						console.warn('[AgenteAutonomoActive] Nenhum tick válido após filtragem');
+						console.warn('[AgenteAutonomoActive] Nenhum tick vÃ¡lido apÃ³s filtragem');
 						return;
 					}
 					
-					// ✅ Validação final: garantir que não há valores null/undefined (como na IA)
+					// âœ… ValidaÃ§Ã£o final: garantir que nÃ£o hÃ¡ valores null/undefined (como na IA)
 					const validTicks = sortedTicks.filter(point => {
 						return point
 							&& typeof point.time === 'number'
@@ -1312,20 +1312,20 @@
 					});
 					
 					if (validTicks.length === 0) {
-						console.warn('[AgenteAutonomoActive] Nenhum tick válido após validação final');
+						console.warn('[AgenteAutonomoActive] Nenhum tick vÃ¡lido apÃ³s validaÃ§Ã£o final');
 						return;
 					}
 					
-					// Limitar dados para melhor performance (últimos 200 pontos)
+					// Limitar dados para melhor performance (Ãºltimos 200 pontos)
 					const limitedData = validTicks.slice(-200);
 					
-					console.log('[AgenteAutonomoActive] Atualizando gráfico com', limitedData.length, 'pontos válidos de', this.priceTicks.length, 'ticks totais');
+					console.log('[AgenteAutonomoActive] Atualizando grÃ¡fico com', limitedData.length, 'pontos vÃ¡lidos de', this.priceTicks.length, 'ticks totais');
 					
-					// ✅ Usar setData com dados validados
+					// âœ… Usar setData com dados validados
 					this.indexChartSeries.setData(limitedData);
 					this.indexChart.timeScale().fitContent();
 				} catch (error) {
-					console.error('[AgenteAutonomoActive] Erro ao atualizar gráfico de índice:', error);
+					console.error('[AgenteAutonomoActive] Erro ao atualizar grÃ¡fico de Ã­ndice:', error);
 				}
 			},
 			getUserId() {
@@ -1358,8 +1358,8 @@
 					}
 				}
 
-				console.warn("[AgenteAutonomoActive] Não foi possível obter userId");
-				console.warn("[AgenteAutonomoActive] Não foi possível obter userId");
+				console.warn("[AgenteAutonomoActive] NÃ£o foi possÃ­vel obter userId");
+				console.warn("[AgenteAutonomoActive] NÃ£o foi possÃ­vel obter userId");
 				return null;
 			},
 
@@ -1378,19 +1378,19 @@
 			},
 			
 			pausarAgenteEIrParaTopo() {
-				console.log('[AgenteAutonomoActive] Botão pausar clicado, emitindo evento pausar-agente');
-				this.$emit('pausar-agente'); // Usa apenas o padrão kebab-case para evitar duplicidade
+				console.log('[AgenteAutonomoActive] BotÃ£o pausar clicado, emitindo evento pausar-agente');
+				this.$emit('pausar-agente'); // Usa apenas o padrÃ£o kebab-case para evitar duplicidade
 				this.$nextTick(() => {
 					window.scrollTo({ top: 0, behavior: 'smooth' }); // Ou 'instant'
 				});
 			},
 			
-			// ✅ Métodos para logs (igual à IA)
+			// âœ… MÃ©todos para logs (igual Ã  IA)
 			async fetchRealtimeLogs() {
 				try {
 					const userId = this.getUserId();
 					if (!userId) {
-						console.warn('[AgenteAutonomoActive] ⚠️ UserId não disponível para buscar logs');
+						console.warn('[AgenteAutonomoActive] âš ï¸ UserId nÃ£o disponÃ­vel para buscar logs');
 						return;
 					}
 					
@@ -1406,41 +1406,41 @@
 					});
 					
 					if (!response.ok) {
-						console.warn('[AgenteAutonomoActive] ⚠️ Erro ao buscar logs:', response.status);
+						console.warn('[AgenteAutonomoActive] âš ï¸ Erro ao buscar logs:', response.status);
 						return;
 					}
 					
 					const result = await response.json();
 					if (result.success && result.data && Array.isArray(result.data)) {
-						// Converter logs para o formato esperado (igual à IA)
+						// Converter logs para o formato esperado (igual Ã  IA)
 						const newLogs = result.data.map(log => {
-							// Determinar tipo e ícone baseado no módulo e mensagem
+							// Determinar tipo e Ã­cone baseado no mÃ³dulo e mensagem
 							let type = 'info';
-							let icon = 'ℹ️';
+							let icon = 'â„¹ï¸';
 							
 							if (log.module === 'TRADER' || log.module === 'API') {
 								if (log.level === 'ERROR' || log.message?.toLowerCase().includes('loss') || 
 									log.message?.toLowerCase().includes('lost') || log.message?.toLowerCase().includes('perda')) {
 									type = 'erro';
-									icon = '🚫';
+									icon = 'ðŸš«';
 								} else if (log.message?.toLowerCase().includes('profit') || log.message?.toLowerCase().includes('won') || 
 									log.message?.toLowerCase().includes('lucro') || log.message?.toLowerCase().includes('ganho')) {
 									type = 'resultado';
-									icon = '✅';
+									icon = 'âœ…';
 								} else if (log.message?.toLowerCase().includes('buy') || log.message?.toLowerCase().includes('proposal') || 
 									log.message?.toLowerCase().includes('comprando')) {
 									type = 'operacao';
-									icon = '💰';
+									icon = 'ðŸ’°';
 								}
 							} else if (log.module === 'ANALYZER') {
 								type = 'analise';
-								icon = '🔍';
+								icon = 'ðŸ”';
 							} else if (log.module === 'RISK') {
 								type = 'alerta';
-								icon = '⚠️';
+								icon = 'âš ï¸';
 							} else if (log.module === 'CORE') {
 								type = 'info';
-								icon = 'ℹ️';
+								icon = 'â„¹ï¸';
 							}
 							
 							// Formatar timestamp (HH:mm:ss)
@@ -1475,15 +1475,15 @@
 							};
 						});
 						
-						// ✅ Verificar logs de Stop Loss
+						// âœ… Verificar logs de Stop Loss
 						const stopLossLog = newLogs.find(l => l.message && (l.message.includes('LIMITE DE PERDA ATINGIDO') || l.message.includes('daily_loss=')));
 						if (stopLossLog) {
 							const today = new Date().toDateString();
 							const lastHit = localStorage.getItem('agent_stop_loss_date');
 							
-							// Se ainda não foi mostrado hoje
+							// Se ainda nÃ£o foi mostrado hoje
 							if (lastHit !== today) {
-								console.log('[AgenteAutonomoActive] ⚠️ Stop Loss detectado: ativando modal');
+								console.log('[AgenteAutonomoActive] âš ï¸ Stop Loss detectado: ativando modal');
 								this.showStopLossModal = true;
 								localStorage.setItem('agent_stop_loss_date', today);
 							}
@@ -1526,7 +1526,7 @@
 						}
 					}
 				} catch (error) {
-					console.error('[AgenteAutonomoActive] ❌ Erro ao buscar logs:', error);
+					console.error('[AgenteAutonomoActive] âŒ Erro ao buscar logs:', error);
 				}
 			},
 			
@@ -1574,7 +1574,7 @@
 				// Buscar logs imediatamente
 				this.fetchRealtimeLogs();
 				
-				// Polling a cada 2 segundos (igual à IA)
+				// Polling a cada 2 segundos (igual Ã  IA)
 				this.logsPollingInterval = setInterval(() => {
 					if (this.abaAtiva === 'registro') {
 						this.fetchRealtimeLogs();
@@ -2176,7 +2176,7 @@
 		display: none;
 	}
 	
-	/* ✅ Estilos de logs igual à IA */
+	/* âœ… Estilos de logs igual Ã  IA */
 	.desktop-register-header {
 		display: flex;
 		align-items: center;
@@ -2196,7 +2196,7 @@
 		font-size: 0.75rem;
 		line-height: 1.75;
 		scroll-behavior: smooth;
-		/* ✅ Limitar altura para mostrar no máximo 30 linhas */
+		/* âœ… Limitar altura para mostrar no mÃ¡ximo 30 linhas */
 		max-height: calc(1.75rem * 30 + 2rem); /* 30 linhas * line-height + padding */
 	}
 	
@@ -2209,12 +2209,12 @@
 		word-break: break-word;
 	}
 	
-	/* Mobile: Register Cards - escondido por padrão no desktop */
+	/* Mobile: Register Cards - escondido por padrÃ£o no desktop */
 	.mobile-register-cards {
 		display: none;
 		flex: 1;
 		overflow-y: auto;
-		/* ✅ Limitar altura para mostrar no máximo 30 linhas no mobile */
+		/* âœ… Limitar altura para mostrar no mÃ¡ximo 30 linhas no mobile */
 		max-height: calc(1.75rem * 30 + 2rem); /* 30 linhas * line-height + padding */
 		padding: 0;
 	}
@@ -2642,7 +2642,7 @@
 		font-size: 14px;
 	}
 
-	/* 👇 Alteração aqui 👇 */
+	/* ðŸ‘‡ AlteraÃ§Ã£o aqui ðŸ‘‡ */
 	.data-row-line {
 		display: grid;
 		grid-template-columns: 1fr 1fr;
@@ -3058,7 +3058,386 @@
 		display: none;
 	}
 
-	/* Desktop: esconder todos os elementos mobile */
+	/* Novos estilos para o layout redesenhado */
+.agent-new-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+background-color: #0E0E0E;
+padding: 20px;
+border-bottom: 1px solid #1C1C1C;
+margin-bottom: 20px;
+}
+
+.header-left {
+display: flex;
+flex-direction: column;
+gap: 4px;
+}
+
+.header-title {
+font-size: 1.25rem;
+font-weight: 600;
+color: #F0F0F0;
+margin: 0;
+}
+
+.header-subtitle {
+font-size: 0.875rem;
+color: #A0A0A0;
+margin: 0;
+}
+
+.header-right {
+display: flex;
+align-items: center;
+gap: 16px;
+}
+
+.date-selector {
+display: flex;
+align-items: center;
+gap: 8px;
+background-color: #141414;
+border: 1px solid #333;
+padding: 8px 12px;
+border-radius: 6px;
+color: #F0F0F0;
+font-size: 0.875rem;
+cursor: pointer;
+}
+
+.date-selector i {
+color: #22C55E;
+}
+
+.visibility-btn {
+background: none;
+border: none;
+color: #A0A0A0;
+cursor: pointer;
+font-size: 0.875rem;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+.header-pause-btn {
+display: flex;
+align-items: center;
+gap: 8px;
+background-color: transparent;
+border: 1px solid #333;
+color: #F0F0F0;
+padding: 8px 12px;
+border-radius: 6px;
+cursor: pointer;
+font-weight: 500;
+font-size: 0.875rem;
+transition: all 0.2s;
+}
+
+.header-pause-btn:hover {
+background-color: rgba(255, 255, 255, 0.05);
+}
+
+/* Grid de Métricas */
+.new-metrics-grid {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 16px;
+margin-bottom: 20px;
+padding: 0 20px;
+}
+
+.new-metric-card {
+background-color: #0E0E0E;
+border: 1px solid #1C1C1C;
+border-radius: 8px;
+padding: 16px;
+display: flex;
+flex-direction: column;
+gap: 12px;
+}
+
+.new-metric-card.highlight-card {
+border-color: #22C55E;
+background-color: rgba(34, 197, 94, 0.02);
+}
+
+.card-header {
+display: flex;
+align-items: center;
+gap: 8px;
+font-size: 0.75rem;
+text-transform: uppercase;
+color: #A0A0A0;
+letter-spacing: 0.5px;
+}
+
+.card-header i {
+color: #22C55E;
+}
+
+.card-value {
+font-size: 1.5rem;
+font-weight: 700;
+color: #F0F0F0;
+}
+
+.card-value-fiat {
+font-size: 0.75rem;
+color: #666;
+margin-top: -8px;
+}
+
+.card-value.highlight {
+color: #22C55E;
+}
+
+.profit-badge {
+display: inline-flex;
+padding: 2px 8px;
+border-radius: 12px;
+font-size: 0.75rem;
+font-weight: 600;
+margin-left: 8px;
+}
+
+.profit-badge.positive {
+background-color: rgba(34, 197, 94, 0.1);
+color: #22C55E;
+}
+
+.profit-badge.negative {
+background-color: rgba(239, 68, 68, 0.1);
+color: #EF4444;
+}
+
+.per-op {
+font-size: 0.875rem;
+color: #A0A0A0;
+font-weight: normal;
+}
+
+/* Linha de Métricas Adicionais */
+.additional-metrics-row {
+display: grid;
+grid-template-columns: repeat(4, 1fr);
+gap: 16px;
+margin-bottom: 24px;
+padding: 0 20px;
+border-bottom: 1px solid #1C1C1C;
+padding-bottom: 24px;
+}
+
+.add-metric {
+display: flex;
+flex-direction: column;
+gap: 4px;
+}
+
+.add-label {
+font-size: 0.75rem;
+color: #666;
+text-transform: uppercase;
+display: flex;
+align-items: center;
+gap: 6px;
+}
+
+.add-value {
+font-size: 1rem;
+font-weight: 600;
+color: #F0F0F0;
+display: flex;
+align-items: center;
+gap: 8px;
+}
+
+.add-value.positive {
+color: #22C55E;
+}
+
+.strategy-tag {
+display: flex;
+align-items: center;
+gap: 6px;
+color: #F0F0F0;
+}
+
+.strategy-tag i {
+color: #22C55E;
+font-size: 0.75rem;
+}
+
+/* Seção de Performance */
+.performance-chart-section {
+padding: 0 20px;
+margin-bottom: 30px;
+}
+
+.chart-header {
+display: flex;
+justify-content: space-between;
+align-items: center;
+margin-bottom: 16px;
+}
+
+.chart-title {
+display: flex;
+align-items: center;
+gap: 8px;
+font-size: 0.875rem;
+font-weight: 600;
+color: #F0F0F0;
+text-transform: uppercase;
+}
+
+.chart-title i {
+color: #22C55E;
+}
+
+.period-tabs {
+font-size: 0.75rem;
+color: #666;
+}
+
+.performance-chart-container {
+height: 300px;
+background: linear-gradient(180deg, rgba(34, 197, 94, 0.05) 0%, rgba(14, 14, 14, 0) 100%);
+border-bottom: 1px solid #1C1C1C;
+position: relative;
+/* Placeholder temporário até termos o gráfico real */
+display: flex;
+align-items: flex-end;
+justify-content: center;
+}
+
+.chart-footer {
+display: flex;
+justify-content: space-between;
+margin-top: 12px;
+}
+
+.footer-metric {
+display: flex;
+align-items: center;
+gap: 8px;
+background-color: #0E0E0E;
+border: 1px solid #1C1C1C;
+padding: 6px 12px;
+border-radius: 4px;
+font-size: 0.75rem;
+}
+
+.footer-metric.positive .metric-label {
+color: #22C55E;
+background-color: rgba(34, 197, 94, 0.1);
+padding: 2px 6px;
+border-radius: 4px;
+}
+
+.footer-metric.negative .metric-label {
+color: #EF4444;
+background-color: rgba(239, 68, 68, 0.1);
+padding: 2px 6px;
+border-radius: 4px;
+}
+
+.footer-metric .metric-value {
+color: #F0F0F0;
+font-weight: 600;
+}
+
+.metric-date {
+color: #666;
+}
+
+/* Tabelas de Distribuição */
+.distribution-section {
+padding: 0 20px 40px;
+}
+
+.section-title {
+display: flex;
+align-items: center;
+gap: 8px;
+font-size: 0.875rem;
+font-weight: 600;
+color: #F0F0F0;
+text-transform: uppercase;
+margin-bottom: 20px;
+}
+
+.section-title i {
+color: #22C55E;
+}
+
+.tables-container {
+display: flex;
+flex-direction: column;
+gap: 30px;
+}
+
+.table-wrapper {
+width: 100%;
+margin-bottom: 20px;
+}
+
+.table-title {
+font-size: 0.75rem;
+color: #666;
+margin-bottom: 12px;
+text-transform: uppercase;
+}
+
+.distribution-table {
+width: 100%;
+border-collapse: collapse;
+font-size: 0.875rem;
+}
+
+.distribution-table th {
+text-align: left;
+color: #666;
+font-weight: 500;
+padding: 12px 8px;
+font-size: 0.75rem;
+text-transform: uppercase;
+}
+
+.distribution-table th.text-right,
+.distribution-table td.text-right {
+text-align: right;
+}
+
+.distribution-table td {
+padding: 12px 8px;
+color: #F0F0F0;
+border-bottom: 1px solid #141414;
+}
+
+.distribution-table tr:hover td {
+background-color: #0E0E0E;
+}
+
+.text-green { color: #22C55E; }
+.text-red { color: #EF4444; }
+
+.today-badge {
+background-color: #FACC15;
+color: #000;
+font-size: 0.625rem;
+font-weight: 700;
+padding: 2px 6px;
+border-radius: 4px;
+margin-left: 6px;
+text-transform: uppercase;
+}
+
+
+/* Desktop: esconder todos os elementos mobile */
 	@media (min-width: 769px) {
 		.mobile-history-header,
 		.mobile-history-cards,
@@ -3197,7 +3576,7 @@
 		}
 	}
 
-	/* Botão Pausar Agente - Histórico e Registro */
+	/* BotÃ£o Pausar Agente - HistÃ³rico e Registro */
 	.pause-agent-btn {
 		display: flex;
 		align-items: center;
