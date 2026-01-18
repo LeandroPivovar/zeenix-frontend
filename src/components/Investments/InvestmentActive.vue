@@ -760,10 +760,6 @@
                                     </div>
                                 </div>
 
-                                <!-- Descrição da Gestão de Risco (Abaixo do Grid) -->
-                                <div class="mt-3 p-3 bg-zenix-black/40 border border-zenix-border/20 rounded-xl">
-                                    <p class="text-[11px] text-zenix-secondary leading-snug text-justify whitespace-pre-line">{{ realRiskDescription }}</p>
-                                </div>
                             </div>
 
                                 <!-- Divisor Sutil -->
