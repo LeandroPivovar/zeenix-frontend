@@ -119,16 +119,27 @@
 								</div>
 							</label>
 							
-							<!-- Dropdown Select -->
-							<select class="form-select" v-model="selectedAgent">
-								<option value="" disabled>Selecione seu agente</option>
-								<option value="sentinel">SENTINEL - Balanceado</option>
-								<option value="falcon">FALCON - Alta Precisão</option>
-							</select>
+							<!-- Premium Selector Button -->
+							<button 
+								@click="openAgentSelectorModal"
+								class="premium-selector-btn"
+							>
+								<div class="selector-content">
+									<div class="selector-left">
+										<div class="selector-icon-active" v-if="selectedAgent">
+											<i :class="selectedAgent === 'sentinel' ? 'fas fa-shield-alt' : 'fas fa-rocket'"></i>
+										</div>
+										<span :class="{ 'placeholder': !selectedAgent }">
+											{{ selectedAgent ? getAgentTitle(selectedAgent) : 'Selecione seu agente' }}
+										</span>
+									</div>
+									<i class="fas fa-chevron-right selector-arrow"></i>
+								</div>
+							</button>
 							
 							<!-- Agent Description Card (appears when selected) -->
 							<transition name="slide-fade">
-								<div v-if="selectedAgent" class="agent-description-card">
+								<div v-if="selectedAgent" class="agent-description-card mt-3">
 									<div class="agent-desc-content">
 										<div class="agent-desc-icon">
 											<i v-if="selectedAgent === 'sentinel'" class="fas fa-shield-alt" style="color: white !important;"></i>
@@ -314,6 +325,42 @@
 
 			</div> <!-- End of config-grid -->
 		</div> <!-- End of agent-config-container -->
+
+		<!-- Agent Selection Modal (Premium Style) -->
+		<Teleport to="body">
+			<div v-if="showAgentSelectorModal" class="modal-overlay" @click.self="closeAgentSelectorModal">
+				<div class="modal-content categorized-modal">
+					<div class="modal-header-premium">
+						<h3 class="modal-title">Selecionar Agente Autônomo</h3>
+						<button @click="closeAgentSelectorModal" class="modal-close-btn">
+							<i class="fas fa-times"></i>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="agents-modal-list">
+							<div 
+								v-for="agent in availableAgents" 
+								:key="agent.id"
+								class="agent-option-premium"
+								:class="{ 'active': selectedAgent === agent.id }"
+								@click="selectAgent(agent.id)"
+							>
+								<div class="agent-option-icon">
+									<i :class="agent.icon"></i>
+								</div>
+								<div class="agent-option-info">
+									<h4 class="agent-option-title">{{ agent.title }}</h4>
+									<p class="agent-option-desc">{{ agent.description }}</p>
+								</div>
+								<div class="agent-option-check">
+									<i class="fas" :class="selectedAgent === agent.id ? 'fa-check-circle' : 'fa-circle'"></i>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</Teleport>
 	</div> <!-- End of layout-content-agent-autonomo -->
 </template>
 
@@ -350,11 +397,25 @@ export default {
 			valorOperacao: 50.00,
 			metaLucro: 100.00,
 			limitePerda: 50.00,
-			showAgentSelectorModal: false, // Controle do modal premium
+			showAgentSelectorModal: false,
+			availableAgents: [
+				{
+					id: 'sentinel',
+					title: 'SENTINEL',
+					icon: 'fas fa-shield-alt',
+					description: 'Agente focado em operações seguras com gerenciamento de risco conservador.'
+				},
+				{
+					id: 'falcon',
+					title: 'FALCON',
+					icon: 'fas fa-rocket',
+					description: 'Agente de alta performance que busca oportunidades de lucro acelerado com precisão cirúrgica.'
+				}
+			]
 		};
 	},
 	async mounted() {
-		console.log('[AgenteAutonomoInactive] Componente montado. showAgentSelectorModal:', this.showAgentSelectorModal);
+		console.log('[AgenteAutonomoInactive] Componente montado.');
 		// Carregar configurações salvas do backend
 		await this.loadSavedConfig();
 	},
@@ -447,17 +508,27 @@ export default {
 			// 3. Emite o evento 'iniciar-agente' COM o objeto de dados (o payload)
 			this.$emit('iniciar-agente', configData);
 
-			// 🟢 ADICIONE ESTAS LINHAS AQUI para rolar para o topo quando o botão é clicado 🟢
-			this.$nextTick(() => {
-				window.scrollTo({ top: 0, behavior: 'smooth' }); // Ou 'instant' se preferir sem animação
-			});
+			// Rolar para o topo
+			window.scrollTo({ top: 0, behavior: 'smooth' });
 		},
 
-	// --- Métodos existentes ---
-	selectAgent(agentId) {
-		console.log('[AgenteAutonomoInactive] Selecionando agente:', agentId);
-		this.selectedAgent = agentId;
-	},
+		openAgentSelectorModal() {
+			this.showAgentSelectorModal = true;
+		},
+
+		closeAgentSelectorModal() {
+			this.showAgentSelectorModal = false;
+		},
+
+		selectAgent(agentId) {
+			this.selectedAgent = agentId;
+			this.closeAgentSelectorModal();
+		},
+
+		getAgentTitle(id) {
+			const agent = this.availableAgents.find(a => a.id === id);
+			return agent ? agent.title : 'Selecione seu agente';
+		},
 		selectMarket(marketId) {
 			this.selectedMarket = marketId;
 		},
@@ -1166,76 +1237,133 @@ export default {
 }
 
 
-/* Modal Agent Selector */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.85);
-    backdrop-filter: blur(8px);
-    z-index: 9999;
+/* Premium Selector Button */
+.premium-selector-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 45px;
+    box-sizing: border-box;
+}
+
+.premium-selector-btn:hover {
+    border-color: #22C55E;
+    background-color: #0d1a10;
+}
+
+.selector-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.selector-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.selector-icon-active {
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
-    padding: 1rem;
+    color: #22C55E;
 }
 
-.agent-selector-modal {
+.selector-left span {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.selector-left span.placeholder {
+    color: #A1A1A1;
+}
+
+.selector-arrow {
+    font-size: 0.75rem;
+    color: #444;
+}
+
+/* Modal Premium Styles */
+.categorized-modal {
     width: 100%;
     max-width: 500px;
     background: #0D0D0D;
     border: 1px solid #22C55E33;
     padding: 1.5rem;
     border-radius: 1rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
 }
 
-.modal-header {
+.modal-header-premium {
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
 }
 
-.modal-header h2 {
-    font-size: 1.25rem;
+.modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
     color: #fff;
     margin: 0;
 }
 
-.close-btn {
+.modal-close-btn {
     background: none;
     border: none;
     color: #555;
     font-size: 1.25rem;
     cursor: pointer;
+    transition: color 0.2s;
 }
 
-.agent-modal-list {
+.modal-close-btn:hover {
+    color: #fff;
+}
+
+.agents-modal-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.75rem;
 }
 
-.agent-modal-card {
+.agent-option-premium {
     display: flex;
-    padding: 1.25rem;
-    background: #141414;
+    align-items: center;
+    padding: 1rem;
+    background: #111;
     border: 1px solid #1C1C1C;
     border-radius: 0.75rem;
-    gap: 1.25rem;
+    gap: 1rem;
     cursor: pointer;
     transition: all 0.2s;
-    text-align: left;
 }
 
-.agent-modal-card:hover, .agent-modal-card.active {
+.agent-option-premium:hover {
+    border-color: #22C55E66;
+    background: #161616;
+}
+
+.agent-option-premium.active {
     border-color: #22C55E;
     background: #0d1a10;
 }
 
-.agent-modal-icon {
-    width: 3rem;
-    height: 3rem;
-    background: #22C55E11;
+.agent-option-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: rgba(34, 197, 94, 0.1);
     border-radius: 0.5rem;
     display: flex;
     align-items: center;
@@ -1243,36 +1371,37 @@ export default {
     flex-shrink: 0;
 }
 
-.agent-modal-icon i, .agent-modal-icon svg {
-    font-size: 1.5rem;
-    color: #FFFFFF !important;
-    fill: #FFFFFF !important;
+.agent-option-icon i {
+    font-size: 1.25rem;
+    color: #22C55E;
 }
 
-.agent-modal-info h3 {
-    font-size: 1.1rem;
+.agent-option-info {
+    flex: 1;
+    text-align: left;
+}
+
+.agent-option-title {
+    font-size: 0.95rem;
+    font-weight: 700;
     color: #fff;
-    margin: 0 0 0.25rem 0;
+    margin: 0 0 0.125rem 0;
 }
 
-.agent-modal-info p {
-    font-size: 0.8rem;
+.agent-option-desc {
+    font-size: 0.75rem;
     color: #A1A1A1;
-    margin: 0 0 0.75rem 0;
-    line-height: 1.4;
+    margin: 0;
+    line-height: 1.3;
 }
 
-.agent-modal-tags {
-    display: flex;
-    gap: 0.5rem;
+.agent-option-check {
+    color: #333;
+    font-size: 1rem;
 }
 
-.agent-modal-tags span {
-    font-size: 0.65rem;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 2px 8px;
-    border-radius: 99px;
-    color: #777;
+.agent-option-premium.active .agent-option-check {
+    color: #22C55E;
 }
 
 /* Toggle Control */
