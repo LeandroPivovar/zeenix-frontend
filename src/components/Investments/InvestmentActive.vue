@@ -2479,10 +2479,10 @@ export default {
                 this.aiStoppedAutomatically = false;
                 console.log('[InvestmentActive] 🔄 Flag aiStoppedAutomatically resetada');
                 
-                // Emitir evento para o componente pai reativar a IA
-                // O pai (InvestmentIAView) deve chamar activateIA() novamente
-                this.$emit('reactivate');
-                console.log('[InvestmentActive] ✅ Evento de reativação emitido para o pai');
+                // Emitir evento para o componente pai desativar a IA (voltar para config)
+                // Solicitado alteração para voltar à tela de configuração em vez de reiniciar imediatamente
+                this.$emit('deactivate');
+                console.log('[InvestmentActive] ✅ Evento de desativação emitido para o pai (retornando a config)');
                 
                 // Opcional: Se preferir fazer a reativação diretamente aqui
                 // Descomentar o código abaixo e remover o $emit acima
