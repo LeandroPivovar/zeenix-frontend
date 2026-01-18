@@ -300,11 +300,11 @@
 
 	<!-- Daily Details Modal -->
 	<div v-if="selectedDay" 
-		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-300" 
+		class="!fixed !inset-0 !z-[9999] flex items-center justify-center bg-black/95 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-300" 
 		@click.self="selectedDay = null"
 	>
 		<div role="dialog" 
-			class="w-full max-w-[420px] sm:max-w-4xl border border-[#27272a] p-4 sm:p-6 shadow-2xl rounded-xl max-h-[95vh] overflow-y-auto bg-[#09090b] relative flex flex-col scale-in-center animate-in zoom-in-95 duration-200"
+			class="w-full max-w-[95%] sm:max-w-4xl border border-[#27272a] p-3 sm:p-6 shadow-2xl rounded-xl max-h-[90vh] overflow-y-auto bg-[#09090b] relative flex flex-col scale-in-center animate-in zoom-in-95 duration-200"
 		>
 			
 			<!-- Close Button -->
@@ -314,10 +314,10 @@
 			</button>
 
 			<!-- Header -->
-			<div class="flex flex-col space-y-1.5 text-center sm:text-left">
-				<h2 class="text-lg font-semibold leading-none tracking-tight flex items-center justify-between">
-					<span class="text-lg font-semibold text-[#FAFAFA]">Relatório Diário — {{ selectedDay.date }}/2026</span>
-					<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors bg-green-500/10 text-green-500 border-green-500/20 mr-8">
+			<div class="flex flex-col space-y-1.5 text-left mb-2">
+				<h2 class="text-sm sm:text-lg font-semibold leading-none tracking-tight flex items-center justify-between gap-4">
+					<span class="text-[#FAFAFA]">Relatório Diário — {{ selectedDay.date }}/2026</span>
+					<div class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-green-500/10 text-green-500 border-green-500/20">
 						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ selectedDay.profit.toFixed(2) }}
 					</div>
 				</h2>
@@ -326,22 +326,22 @@
 			<!-- KPI Grid -->
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mt-4">
 				<!-- Lucro do Dia -->
-				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-2.5 sm:p-3">
-					<div class="text-[#A1A1AA] text-[9px] sm:text-[10px] uppercase tracking-wide mb-0.5 sm:mb-1 text-left">Lucro do Dia</div>
-					<div class="text-lg sm:text-xl font-bold tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3">
+					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Lucro do Dia</div>
+					<div class="text-base sm:text-xl font-bold tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
 						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ selectedDay.profit.toFixed(2) }}
 					</div>
-					<div class="text-[#A1A1AA] text-[10px] sm:text-xs tabular-nums text-left">R$ {{ (selectedDay.profit * 5.19).toFixed(3) }}</div>
+					<div class="text-[#A1A1AA] text-[9px] sm:text-xs tabular-nums text-left">R$ {{ (selectedDay.profit * 5.19).toFixed(3) }}</div>
 				</div>
 
 				<!-- Capital -->
-				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-2.5 sm:p-3">
-					<div class="text-[#A1A1AA] text-[9px] sm:text-[10px] uppercase tracking-wide mb-0.5 sm:mb-1 text-left">Capital</div>
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3">
+					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Capital</div>
 					<!-- Estimating start capital for display logic -->
-					<div class="text-xs sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
+					<div class="text-[10px] sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
 						${{ (selectedDay.capital - selectedDay.profit).toFixed(2) }} → ${{ selectedDay.capital.toFixed(2) }}
 					</div>
-					<div class="text-[10px] sm:text-xs tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+					<div class="text-[9px] sm:text-xs tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
 						{{ selectedDay.profit >= 0 ? '+' : '' }}{{ ((selectedDay.profit / (selectedDay.capital - selectedDay.profit)) * 100).toFixed(2) }}%
 					</div>
 				</div>
@@ -402,58 +402,31 @@
 					Operações Intraday
 				</h4>
 				<div class="overflow-x-auto max-h-[300px] overflow-y-auto custom-scrollbar">
-					<table class="w-full text-xs">
+					<table class="w-full text-[10px] sm:text-xs">
 						<thead class="sticky top-0 bg-[#09090b] shadow-sm">
 							<tr class="border-b border-[#27272a]">
-								<th class="text-left py-2 text-[#A1A1AA] font-medium">Hora</th>
-								<th class="text-left py-2 text-[#A1A1AA] font-medium">Mercado</th>
-								<th class="text-right py-2 text-[#A1A1AA] font-medium">Entrada</th>
-								<th class="text-right py-2 text-[#A1A1AA] font-medium">Saída</th>
-								<th class="text-right py-2 text-[#A1A1AA] font-medium">Investimento</th>
-								<th class="text-right py-2 text-[#A1A1AA] font-medium">Resultado</th>
+								<th class="text-left py-2 text-[#A1A1AA] font-medium px-1">Hora</th>
+								<th class="text-left py-2 text-[#A1A1AA] font-medium px-1">Mercado</th>
+								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Entrada</th>
+								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Saída</th>
+								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Inv.</th>
+								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Res.</th>
 							</tr>
 						</thead>
 						<tbody>
-							<!-- Using mock rows from snippet, mapped to resemble dynamic feel if possible or just static as requested -->
-							<tr class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
-								<td class="py-2 font-mono text-[#A1A1AA] text-left">06:19:00</td>
-								<td class="py-2 text-[#FAFAFA] text-left">ETH/USD</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$8.209,46</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$8.349,92</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$205,25</td>
-								<td class="py-2 text-right tabular-nums font-medium text-green-500">+$186,05</td>
-							</tr>
-							<tr class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
-								<td class="py-2 font-mono text-[#A1A1AA] text-left">06:38:00</td>
-								<td class="py-2 text-[#FAFAFA] text-left">Índice V75</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$32.252,62</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$32.253,70</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$128,60</td>
-								<td class="py-2 text-right tabular-nums font-medium text-green-500">+$109,87</td>
-							</tr>
-							<tr class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
-								<td class="py-2 font-mono text-[#A1A1AA] text-left">09:45:00</td>
-								<td class="py-2 text-[#FAFAFA] text-left">BTC/USD</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$16.943,85</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$16.846,71</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$247,75</td>
-								<td class="py-2 text-right tabular-nums font-medium text-red-500">-$236,42</td>
-							</tr>
-							<tr class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
-								<td class="py-2 font-mono text-[#A1A1AA] text-left">10:08:00</td>
-								<td class="py-2 text-[#FAFAFA] text-left">BTC/USD</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$41.289,35</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$41.525,65</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$156,85</td>
-								<td class="py-2 text-right tabular-nums font-medium text-green-500">+$117,66</td>
-							</tr>
-							<tr class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
-								<td class="py-2 font-mono text-[#A1A1AA] text-left">12:12:00</td>
-								<td class="py-2 text-[#FAFAFA] text-left">ETH/USD</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$3.321,80</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$3.288,25</td>
-								<td class="py-2 text-right tabular-nums text-[#FAFAFA]">$237,71</td>
-								<td class="py-2 text-right tabular-nums font-medium text-red-500">-$212,10</td>
+							<tr v-for="(op, idx) in [
+								{h:'06:19:00', m:'ETH/USD', e:'8.209,46', s:'8.349,92', i:'205,2', r:'+186,0'},
+								{h:'06:38:00', m:'V75', e:'32.252,6', s:'32.253,7', i:'128,6', r:'+109,8'},
+								{h:'09:45:00', m:'BTC/USD', e:'16.943,8', s:'16.846,7', i:'247,7', r:'-236,4'},
+								{h:'10:08:00', m:'BTC/USD', e:'41.289,3', s:'41.525,6', i:'156,8', r:'+117,6'},
+								{h:'12:12:00', m:'ETH/USD', e:'3.321,80', s:'3.288,25', i:'237,7', r:'-212,1'}
+							]" :key="idx" class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
+								<td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{op.h}}</td>
+								<td class="py-2 px-1 text-[#FAFAFA] text-left truncate max-w-[50px] sm:max-w-none">{{op.m}}</td>
+								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.e}}</td>
+								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.s}}</td>
+								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.i}}</td>
+								<td class="py-2 px-1 text-right tabular-nums font-semibold" :class="op.r.startsWith('+') ? 'text-green-500' : 'text-red-500'">{{op.r}}</td>
 							</tr>
 						</tbody>
 					</table>
