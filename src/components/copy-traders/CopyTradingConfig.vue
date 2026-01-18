@@ -287,7 +287,8 @@
                                 @click="selectTrader(trader.id)"
                             >
                                 <div class="agent-option-icon">
-                                    <i class="fas fa-users"></i>
+                                    <img v-if="trader.image" :src="trader.image" class="w-full h-full object-cover rounded-[0.5rem]" />
+                                    <i v-else class="fas fa-users text-white"></i>
                                 </div>
                                 <div class="agent-option-info">
                                     <h4 class="agent-option-title">{{ trader.name }}</h4>
