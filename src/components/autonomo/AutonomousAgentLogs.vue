@@ -113,7 +113,6 @@ export default {
         
         const message = log.message || '';
         const module = log.module || '';
-        const level = log.level || '';
         
         // Detect Config
         if (message.includes('CONFIG') || module === 'CONFIG') {
