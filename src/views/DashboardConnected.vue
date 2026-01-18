@@ -4267,10 +4267,15 @@ export default {
     display: block !important;
   }
 
-  .desktop-grid-ias,
-  .desktop-performance-grid {
+  .desktop-grid-ias {
     display: grid !important;
     grid-template-columns: repeat(5, 1fr) !important;
+    gap: 24px !important;
+  }
+
+  .desktop-performance-grid {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
     gap: 24px !important;
   }
 
