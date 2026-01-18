@@ -1133,9 +1133,9 @@ export default {
         realRiskDescription() {
             const martingale = this.sessionConfig.modoMartingale || 'conservador';
             const descriptions = {
-                'conservador': 'Recuperação limitada (até M5) • Protege capital • Lucros menores mas seguros',
-                'moderado': 'Recuperação ilimitada com +25% de lucro • Equilíbrio entre risco e retorno',
-                'agressivo': 'Recuperação ilimitada com +50% de lucro • Máximo retorno com risco controlado'
+                'conservador': '• Recuperação limitada (até M5)\n• Protege capital\n• Lucros menores mas seguros',
+                'moderado': '• Recuperação ilimitada com +25% de lucro\n• Equilíbrio entre risco e retorno',
+                'agressivo': '• Recuperação ilimitada com +50% de lucro\n• Máximo retorno com risco controlado'
             };
             return descriptions[martingale.toLowerCase()] || descriptions.conservador;
         },
@@ -2345,7 +2345,12 @@ export default {
                         modoMartingale: result.data.modoMartingale || 'conservador',
                         profitTarget: result.data.profitTarget ? parseFloat(result.data.profitTarget) : null,
                         lossLimit: result.data.lossLimit ? parseFloat(result.data.lossLimit) : null,
-                        stopLossBlindado: result.data.stopLossBlindado === true || result.data.stopLossBlindado === 1 || result.data.stop_loss_blindado === true || result.data.stop_loss_blindado === 1 || (result.data.stopBlindadoPercent !== null && result.data.stopBlindadoPercent !== undefined && result.data.stopBlindadoPercent > 0),
+                        stopLossBlindado: result.data.stopLossBlindado === true || 
+                            result.data.stopLossBlindado === 1 || 
+                            result.data.stop_loss_blindado === true || 
+                            result.data.stop_loss_blindado === 1 || 
+                            (result.data.stopBlindadoPercent !== null && result.data.stopBlindadoPercent !== undefined && result.data.stopBlindadoPercent > 0) ||
+                            (result.data.stop_blindado_percent !== null && result.data.stop_blindado_percent !== undefined && result.data.stop_blindado_percent > 0),
                         currency: result.data.currency || 'USD',
                         sessionBalance: parseFloat(result.data.sessionBalance) || 0,
                         sessionStatus: currentSessionStatus
