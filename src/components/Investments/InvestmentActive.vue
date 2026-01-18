@@ -309,15 +309,15 @@
                                 </span>
                             </div>
                             
-                            <!-- Botão Pause (100% largura) -->
+                            <!-- Botão Pause/Restart (100% largura) -->
                             <div class="flex justify-center mt-2">
                                 <button 
                                     class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-[56px] w-full"
                                     @click="handleDeactivate"
                                     :disabled="isDeactivating"
                                 >
-                                    <i class="fas fa-power-off mr-2 text-[14px]"></i>
-                                    {{ isDeactivating ? '...' : 'Pausar IA' }}
+                                    <i :class="['fas mr-2 text-[14px]', pauseButtonIcon]"></i>
+                                    {{ isDeactivating ? '...' : pauseButtonText }}
                                 </button>
                             </div>
                         </div>
@@ -761,15 +761,15 @@
                                 </div>
                             </div>
 
-                                <!-- Botão Pausar (100% largura) -->
+                                <!-- Botão Pausar/Reiniciar (100% largura) -->
                                 <div class="flex justify-center mt-[30px]">
                                     <button 
                                         class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
                                         @click="handleDeactivate"
                                         :disabled="isDeactivating"
                                     >
-                                        <i class="fas fa-power-off text-sm mr-2"></i>
-                                        <span>{{ isDeactivating ? 'Desativando...' : 'Pausar IA' }}</span>
+                                        <i :class="['fas text-sm mr-2', pauseButtonIcon]"></i>
+                                        <span>{{ isDeactivating ? 'Processando...' : pauseButtonText }}</span>
                                     </button>
                                 </div>
                         </div>
@@ -950,6 +950,9 @@ export default {
             showTargetProfitModal: false,
             sessionResult: 0,
             previousSessionStatus: null,
+            
+            // ✅ Flag para controlar quando IA foi parada automaticamente após atingir meta
+            aiStoppedAutomatically: false,
             
             // Controle de tamanho do gráfico
             chartPointsVisible: 300, // ✅ AJUSTE: Aumentado para 300 pontos para mostrar mais velas
@@ -1349,6 +1352,23 @@ export default {
             const profit = this.dailyStats.sessionProfitLoss || 0;
             return profit >= 0;
         },
+        
+        // ✅ Texto do botão: "Pausar IA" ou "Reiniciar IA"
+        pauseButtonText() {
+            if (this.aiStoppedAutomatically) {
+                return 'Reiniciar IA';
+            }
+            return 'Pausar IA';
+        },
+        
+        // ✅ Ícone do botão: power-off ou play
+        pauseButtonIcon() {
+            if (this.aiStoppedAutomatically) {
+                return 'fa-play'; // Ícone de play para reiniciar
+            }
+            return 'fa-power-off'; // Ícone de power para pausar
+        },
+
 
         // Last update time
         // Transformar dados do backend para o formato esperado pelo OperationLogs
@@ -2282,6 +2302,8 @@ export default {
                                 console.log('[InvestmentActive] ✅ Modal de Stop Loss exibido');
                             });
                         }
+                        // ✅ Forçar atualização do botão para "Reiniciar IA"
+                        this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
                     } else if (currentSessionStatus === 'stopped_blindado') {
                         if (!this.showStopBlindadoModal) {
@@ -2291,6 +2313,8 @@ export default {
                                 console.log('[InvestmentActive] ✅ Modal de Stop Loss Blindado exibido');
                             });
                         }
+                        // ✅ Forçar atualização do botão para "Reiniciar IA"
+                        this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
                     } else if (currentSessionStatus === 'stopped_profit') {
                         // ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
@@ -2304,6 +2328,8 @@ export default {
                                 console.log('[InvestmentActive] ✅ Modal de target profit exibido');
                             });
                         }
+                        // ✅ Forçar atualização do botão para "Reiniciar IA"
+                        this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
                     } else if (this.previousSessionStatus !== currentSessionStatus) {
                         // Se mudou para outro status, atualizar previousSessionStatus
@@ -2397,11 +2423,16 @@ export default {
          */
         handleStopLossConfirm() {
             this.showStopLossModal = false;
-            // ✅ Apenas fechar o modal, sem recarregar página ou configuração
+            // ✅ Marcar que a IA foi parada automaticamente
+            this.aiStoppedAutomatically = true;
+            console.log('[InvestmentActive] ✅ IA parada por Stop Loss - botão mudará para "Reiniciar IA"');
         },
         
         handleStopBlindadoConfirm() {
             this.showStopBlindadoModal = false;
+            // ✅ Marcar que a IA foi parada automaticamente
+            this.aiStoppedAutomatically = true;
+            console.log('[InvestmentActive] ✅ IA parada por Stop Blindado - botão mudará para "Reiniciar IA"');
         },
         
         /**
@@ -2409,8 +2440,114 @@ export default {
          */
         handleTargetProfitConfirm() {
             this.showTargetProfitModal = false;
-            // ✅ Apenas fechar o modal, sem recarregar página ou configuração
+            // ✅ Marcar que a IA foi parada automaticamente
+            this.aiStoppedAutomatically = true;
+            console.log('[InvestmentActive] ✅ IA parada por Target Profit - botão mudará para "Reiniciar IA"');
         },
+        
+        /**
+         * ✅ Handler para o botão Pausar/Reiniciar IA
+         * Se a IA foi parada automaticamente (target profit, stop loss, ou stop blindado),
+         * o botão funcionará como "Reiniciar IA", reativando a IA.
+         * Caso contrário, funciona como "Pausar IA", pausando manualmente.
+         */
+        async handleDeactivate() {
+            if (this.isDeactivating) {
+                console.log('[InvestmentActive] ⏸️ Já está desativando/reativando, ignorando...');
+                return;
+            }
+            
+            // ✅ Se a IA foi parada automaticamente, REINICIAR em vez de pausar
+            if (this.aiStoppedAutomatically) {
+                console.log('[InvestmentActive] 🔄 IA foi parada automaticamente - REINICIANDO...');
+                await this.restartIA();
+            } else {
+                // ✅ IA está ativa normalmente, então PAUSAR
+                console.log('[InvestmentActive] ⏸️ IA está ativa - PAUSANDO...');
+                await this.pauseIA();
+            }
+        },
+        
+        /**
+         * ✅ Pausar a IA manualmente
+         */
+        async pauseIA() {
+            this.isDeactivating = true;
+            try {
+                // Emitir evento para o componente pai desativar a IA
+                this.$emit('deactivate');
+                console.log('[InvestmentActive] ✅ Evento de desativação emitido para o pai');
+            } catch (error) {
+                console.error('[InvestmentActive] ❌ Erro ao pausar IA:', error);
+            } finally {
+                this.isDeactivating = false;
+            }
+        },
+        
+        /**
+         * ✅ Reiniciar a IA (após parada automática)
+         */
+        async restartIA() {
+            this.isDeactivating = true;
+            try {
+                // Resetar flag de parada automática
+                this.aiStoppedAutomatically = false;
+                console.log('[InvestmentActive] 🔄 Flag aiStoppedAutomatically resetada');
+                
+                // Emitir evento para o componente pai reativar a IA
+                // O pai (InvestmentIAView) deve chamar activateIA() novamente
+                this.$emit('reactivate');
+                console.log('[InvestmentActive] ✅ Evento de reativação emitido para o pai');
+                
+                // Opcional: Se preferir fazer a reativação diretamente aqui
+                // Descomentar o código abaixo e remover o $emit acima
+                /*
+                const userId = this.getUserId();
+                if (!userId) {
+                    console.error('[InvestmentActive] ❌ Usuário não identificado');
+                    return;
+                }
+                
+                // Buscar configuração atual para reativar com os mesmos parâmetros
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const response = await fetch(`${apiBase}/ai/activate`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${localStorage.getItem('token')}`
+                    },
+                    body: JSON.stringify({
+                        userId: userId,
+                        stakeAmount: this.sessionConfig.stakeAmount || this.accountBalanceProp,
+                        entryValue: this.sessionConfig.entryValue || 1,
+                        derivToken: this.getDerivToken(),
+                        currency: this.sessionConfig.currency || 'USD',
+                        mode: this.sessionConfig.mode || 'veloz',
+                        profitTarget: this.sessionConfig.profitTarget,
+                        lossLimit: this.sessionConfig.lossLimit,
+                        modoMartingale: this.sessionConfig.modoMartingale || 'conservador',
+                        strategy: this.sessionConfig.strategy || 'orion',
+                        stopLossBlindado: this.sessionConfig.stopLossBlindado || false,
+                    }),
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    console.log('[InvestmentActive] ✅ IA reativada com sucesso!');
+                } else {
+                    console.error('[InvestmentActive] ❌ Erro ao reativar IA:', result.message);
+                }
+                */
+            } catch (error) {
+                console.error('[InvestmentActive] ❌ Erro ao reiniciar IA:', error);
+                // Em caso de erro, restaurar flag
+                this.aiStoppedAutomatically = true;
+            } finally {
+                this.isDeactivating = false;
+            }
+        },
+
         
         // 📊 Buscar histórico de operações reais
         async fetchTradeHistory() {
