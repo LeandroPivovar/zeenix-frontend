@@ -32,7 +32,7 @@
 								<div class="absolute w-24 h-24 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1;"></div>
 								<!-- Central Brain Icon -->
 								<div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center;">
-									<i class="fas fa-brain text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3rem !important;"></i>
+									<i class="fas fa-brain text-zenix-green text-5xl fa-pulse" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3.5rem !important;"></i>
 								</div>
 								<!-- Orbiting Data Nodes -->
 								<div id="iyljui" class="absolute w-3 h-3 bg-zenix-green rounded-full" style="opacity: 1;"></div>
@@ -56,40 +56,40 @@
 						<!-- Status Cards -->
 						<div class="col-span-7 grid grid-cols-2 gap-4 status-cards-container">
 							<!-- Card 1: AUTONOMIA -->
-							<div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
-								<div class="flex items-center gap-2 mb-2">
+							<div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+								<div class="flex items-center justify-center gap-2 mb-2">
 									<i class="fas fa-robot text-[#22C55E] text-lg"></i>
-									<p class="text-[10px] text-white uppercase font-semibold status-label">AUTONOMIA</p>
+									<p class="text-[10px] text-white uppercase font-bold status-label">AUTONOMIA</p>
 								</div>
 								<p class="text-base font-bold text-white status-value">100% Autônomo</p>
-								<p class="text-[10px] text-zenix-label mt-1 status-description">Opera 24/7 sem supervisão</p>
+								<p class="text-xs text-zenix-label mt-1 status-description">Opera 24/7 sem supervisão</p>
 							</div>
 							<!-- Card 2: CONFIGURAÇÃO -->
-							<div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
-								<div class="flex items-center gap-2 mb-2">
+							<div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+								<div class="flex items-center justify-center gap-2 mb-2">
 									<i class="fas fa-cog text-[#22C55E] text-lg"></i>
-									<p class="text-[10px] text-white uppercase font-semibold status-label">CONFIGURAÇÃO</p>
+									<p class="text-[10px] text-white uppercase font-bold status-label">CONFIGURAÇÃO</p>
 								</div>
 								<p class="text-base font-bold text-white status-value">Configure uma vez</p>
-								<p class="text-[10px] text-zenix-label mt-1 status-description">Esqueça e deixe trabalhar</p>
+								<p class="text-xs text-zenix-label mt-1 status-description">Esqueça e deixe trabalhar</p>
 							</div>
 							<!-- Card 3: PROTEÇÃO -->
-							<div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
-								<div class="flex items-center gap-2 mb-2">
+							<div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+								<div class="flex items-center justify-center gap-2 mb-2">
 									<i class="fas fa-shield-alt text-[#22C55E] text-lg"></i>
-									<p class="text-[10px] text-white uppercase font-semibold status-label">PROTEÇÃO</p>
+									<p class="text-[10px] text-white uppercase font-bold status-label">PROTEÇÃO</p>
 								</div>
 								<p class="text-base font-bold text-white status-value">Metas Automáticas</p>
-								<p class="text-[10px] text-zenix-label mt-1 status-description">Para ao atingir lucro ou perda</p>
+								<p class="text-xs text-zenix-label mt-1 status-description">Para ao atingir lucro ou perda</p>
 							</div>
 							<!-- Card 4: CICLO DIÁRIO -->
-							<div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
-								<div class="flex items-center gap-2 mb-2">
+							<div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+								<div class="flex items-center justify-center gap-2 mb-2">
 									<i class="fas fa-sync-alt text-[#22C55E] text-lg"></i>
-									<p class="text-[10px] text-white uppercase font-semibold status-label">CICLO DIÁRIO</p>
+									<p class="text-[10px] text-white uppercase font-bold status-label">CICLO DIÁRIO</p>
 								</div>
 								<p class="text-base font-bold text-white status-value">Reinício Automático</p>
-								<p class="text-[10px] text-zenix-label mt-1 status-description">Volta sozinho no dia seguinte</p>
+								<p class="text-xs text-zenix-label mt-1 status-description">Volta sozinho no dia seguinte</p>
 							</div>
 						</div>
 					</div>
@@ -138,8 +138,8 @@
 							</button>
 							
 							<!-- Agent Description Card (appears when selected) -->
-							<transition name="slide-fade">
-								<div v-if="selectedAgent" class="agent-description-card mt-3">
+							<transition name="slide-fade" mode="out-in">
+								<div v-if="selectedAgent" :key="selectedAgent" class="agent-description-card mt-3">
 									<div class="agent-desc-content">
 										<div class="agent-desc-icon">
 											<i v-if="selectedAgent === 'sentinel'" class="fas fa-shield-alt" style="color: white !important;"></i>
@@ -1373,7 +1373,7 @@ export default {
 
 .agent-option-icon i {
     font-size: 1.25rem;
-    color: #22C55E;
+    color: #FFFFFF;
 }
 
 .agent-option-info {
