@@ -781,7 +781,7 @@
 			toggleDatePicker() {
 				this.showDatePicker = !this.showDatePicker;
 			},
-			closeDatePickerOnClickOutside(e) {
+			closeDatePickerOnClickOutside() {
 				if (this.showDatePicker) {
 					this.showDatePicker = false;
 				}
