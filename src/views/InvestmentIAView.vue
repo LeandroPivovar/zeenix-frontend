@@ -373,6 +373,7 @@
                     :selected-market-prop="selectedMarket"
                     :stoploss-blindado-config="stoplossBlindado"
                         @deactivate="deactivateIA"
+                        @reactivate="activateIA"
                 />
                 </section>
 
@@ -2435,7 +2436,7 @@ export default {
     font-size: 0.75rem;
     color: #A1A1A1;
     margin: 0;
-    text-align: left;
+    text-align: justify;
 }
 
 .ai-status-toggle-wrapper {
@@ -2576,7 +2577,7 @@ export default {
     font-size: 0.8rem;
     color: #A1A1A1;
     opacity: 0.6;
-    text-align: left;
+    text-align: justify;
 }
 
 /* Mode Buttons */
@@ -2689,6 +2690,7 @@ export default {
     font-size: 0.75rem;
     color: #A1A1A1;
     opacity: 0.6;
+    text-align: justify;
 }
 
 /* Stoploss Blindado Slider */

@@ -410,7 +410,7 @@
                         </div>
                         <div class="mobile-config-param col-span-2">
                             <p class="mobile-config-label">Gerenciamento: {{ realRiskLabel }}</p>
-                            <p class="text-[10px] text-zenix-secondary leading-tight">{{ realRiskDescription }}</p>
+                            <p class="text-[11px] text-zenix-secondary text-justify leading-tight">{{ realRiskDescription }}</p>
                         </div>
                     </div>
 
@@ -711,7 +711,7 @@
                                 <div class="mb-1">
                                     <p class="text-base font-bold text-zenix-text text-left leading-none">{{ strategyName }}</p>
                                 </div>
-                                <p class="text-[11px] text-zenix-secondary text-left leading-snug" v-html="strategyDescriptionText"></p>
+                                <p class="text-[11px] text-zenix-secondary text-justify leading-snug" v-html="strategyDescriptionText"></p>
                             </div>
 
                             <!-- Mercado -->
@@ -754,21 +754,23 @@
                                     <!-- Gerenciamento de Risco -->
                                     <div class="text-center border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center col-span-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize font-medium">Gestão de Risco: {{ realRiskLevel }}</p>
-                                        <p class="text-[10px] text-zenix-secondary text-center leading-tight">{{ realRiskDescription }}</p>
+                                        <p class="text-[11px] text-zenix-secondary text-justify leading-tight">{{ realRiskDescription }}</p>
                                     </div>
                                 </div>
                             </div>
 
+                                <!-- Divisor Sutil -->
+                                <div class="h-px w-full bg-[#1C1C1C] my-5 opacity-50"></div>
+
                                 <!-- Botão Pausar/Reiniciar (100% largura) -->
-                                <!-- Botão Pausar/Reiniciar (100% largura) -->
-                                <div class="flex flex-col items-center mt-[20px]">
+                                <div class="flex flex-col items-center mt-0">
                                     <div class="mb-3 text-center" v-if="!aiStoppedAutomatically">
                                         <p class="text-white font-bold text-sm">IA em Funcionamento</p>
-                                        <p class="text-[10px] text-zenix-secondary mt-1">Monitorando o mercado e executando a estratégia automaticamente.</p>
+                                        <p class="text-[11px] text-zenix-secondary mt-1">Monitorando o mercado e executando a estratégia automaticamente.</p>
                                     </div>
                                     <div class="mb-3 text-center" v-else>
                                         <p class="text-white font-bold text-sm">IA Pausada Automaticamente</p>
-                                        <p class="text-[10px] text-zenix-secondary mt-1">Meta atingida ou limite de proteção alcançado.</p>
+                                        <p class="text-[11px] text-zenix-secondary mt-1">Meta atingida ou limite de proteção alcançado.</p>
                                     </div>
                                     <button 
                                         class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
@@ -7500,7 +7502,7 @@ button i,
         color: #A1A1A1;
         margin: 0;
         margin-top: 0.25rem;
-        text-align: left !important;
+        text-align: justify !important;
     }
     
     .mobile-config-grid {
