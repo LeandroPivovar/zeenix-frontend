@@ -720,49 +720,58 @@
 
 
                             <!-- Grid de Parâmetros Unificado -->
-                            <div class="pb-0 text-left">
-                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Parâmetros & Gerenciamento</p>
+                            <div class="pb-0 text-center">
+                                <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-center">Parâmetros & Gerenciamento</p>
                                 <div class="grid grid-cols-2 gap-2">
                                     <!-- Entrada -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Entrada</p>
-                                        <p class="text-base font-bold text-zenix-text text-left" v-if="!isLoadingConfig">{{ sessionConfig.entryValue ? '$' + sessionConfig.entryValue.toFixed(2) : '$0.35' }}</p>
-                                        <p class="text-base font-bold text-zenix-text text-left" v-else>Carregando...</p>
+                                    <div class="text-center border border-zenix-border/30 rounded-lg p-2">
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize">Entrada</p>
+                                        <p class="text-base font-bold text-zenix-text text-center" v-if="!isLoadingConfig">{{ sessionConfig.entryValue ? '$' + sessionConfig.entryValue.toFixed(2) : '$0.35' }}</p>
+                                        <p class="text-base font-bold text-zenix-text text-center" v-else>Carregando...</p>
                                     </div>
                                     <!-- Modo -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Modo</p>
-                                        <p class="text-base font-bold text-zenix-text text-left">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
+                                    <div class="text-center border border-zenix-border/30 rounded-lg p-2">
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize">Modo</p>
+                                        <p class="text-base font-bold text-zenix-text text-center">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
                                     </div>
                                     <!-- Alvo de Lucro -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Alvo De Lucro</p>
-                                        <p class="text-base font-bold text-zenix-green text-left" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
-                                        <p class="text-base font-bold text-zenix-green text-left" v-else>Carregando...</p>
+                                    <div class="text-center border border-zenix-border/30 rounded-lg p-2">
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize">Alvo De Lucro</p>
+                                        <p class="text-base font-bold text-zenix-green text-center" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
+                                        <p class="text-base font-bold text-zenix-green text-center" v-else>Carregando...</p>
                                     </div>
                                     <!-- Limite de Perda -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Limite De Perda</p>
-                                        <p class="text-base font-bold text-zenix-red text-left" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
-                                        <p class="text-base font-bold text-zenix-red text-left" v-else>Carregando...</p>
+                                    <div class="text-center border border-zenix-border/30 rounded-lg p-2">
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize">Limite De Perda</p>
+                                        <p class="text-base font-bold text-zenix-red text-center" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
+                                        <p class="text-base font-bold text-zenix-red text-center" v-else>Carregando...</p>
                                     </div>
                                     
                                     <!-- Stop Blindado -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Stop Blindado</p>
-                                        <p class="text-base font-bold text-zenix-text text-left mb-1">{{ sessionConfig.stopLossBlindado ? 'Ativo' : 'Inativo' }}</p>
+                                    <div class="text-center border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center">
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize font-medium">Stop Blindado</p>
+                                        <p class="text-base font-bold text-zenix-text text-center mb-1">{{ sessionConfig.stopLossBlindado ? 'Ativo' : 'Inativo' }}</p>
                                     </div>
 
                                     <!-- Gerenciamento de Risco -->
-                                    <div class="text-left border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Gestão de Risco</p>
-                                        <p class="text-base font-bold text-zenix-text text-left mb-1">{{ realRiskLevel }}</p>
+                                    <div class="text-center border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center">
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize font-medium">Gestão de Risco</p>
+                                        <p class="text-base font-bold text-zenix-text text-center mb-1">{{ realRiskLevel }}</p>
                                     </div>
                                 </div>
                             </div>
 
                                 <!-- Botão Pausar/Reiniciar (100% largura) -->
-                                <div class="flex justify-center mt-[30px]">
+                                <!-- Botão Pausar/Reiniciar (100% largura) -->
+                                <div class="flex flex-col items-center mt-[20px]">
+                                    <div class="mb-3 text-center" v-if="!aiStoppedAutomatically">
+                                        <p class="text-white font-bold text-sm">IA em Funcionamento</p>
+                                        <p class="text-[10px] text-zenix-secondary mt-1">Monitorando o mercado e executando a estratégia automaticamente.</p>
+                                    </div>
+                                    <div class="mb-3 text-center" v-else>
+                                        <p class="text-white font-bold text-sm">IA Pausada Automaticamente</p>
+                                        <p class="text-[10px] text-zenix-secondary mt-1">Meta atingida ou limite de proteção alcançado.</p>
+                                    </div>
                                     <button 
                                         class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
                                         @click="handleDeactivate"
@@ -2337,7 +2346,7 @@ export default {
                         modoMartingale: result.data.modoMartingale || 'conservador',
                         profitTarget: result.data.profitTarget ? parseFloat(result.data.profitTarget) : null,
                         lossLimit: result.data.lossLimit ? parseFloat(result.data.lossLimit) : null,
-                        stopLossBlindado: result.data.stopBlindadoPercent !== null && result.data.stopBlindadoPercent !== undefined,
+                        stopLossBlindado: result.data.stopLossBlindado || (result.data.stopBlindadoPercent !== null && result.data.stopBlindadoPercent !== undefined),
                         currency: result.data.currency || 'USD',
                         sessionBalance: parseFloat(result.data.sessionBalance) || 0,
                         sessionStatus: currentSessionStatus
