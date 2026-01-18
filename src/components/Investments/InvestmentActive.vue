@@ -2234,22 +2234,7 @@ export default {
             this.showDisconnectModal = false;
         },
 
-        async handleDeactivate() {
-            try {
-                this.isDeactivating = true;
-                console.log('[InvestmentActive] 🛑 Desativando IA...');
-                
-                // Emitir evento para o componente pai desativar a IA
-                this.$emit('deactivate');
-                
-                // Aguardar um pouco para dar feedback visual
-                await new Promise(resolve => setTimeout(resolve, 500));
-            } catch (error) {
-                console.error('[InvestmentActive] ❌ Erro ao desativar IA:', error);
-            } finally {
-                this.isDeactivating = false;
-            }
-        },
+
 
         // 📊 Buscar configuração da sessão ativa
         async fetchSessionConfig() {
