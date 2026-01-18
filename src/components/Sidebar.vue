@@ -41,7 +41,7 @@
                 @click.prevent="navigateAndClose('/copy-trading')"
                 data-text="Copy Trading"
             >
-                <i class="fa-solid fa-copy w-5 opacity-85"></i>
+                <i class="fa-solid fa-users w-5 opacity-85"></i>
                 <span>Copy Trading</span>
             </a>
 

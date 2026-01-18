@@ -734,7 +734,7 @@ export default {
       hasUnreadNotifications: false,
       quickTools: [
         {
-          icon: 'fas fa-brain',
+          icon: 'fas fa-robot',
           title: 'IA de Investimento',
           description: 'Algoritmos inteligentes para maximizar seus lucros',
           buttonText: 'Acessar',
@@ -743,7 +743,7 @@ export default {
           alt: 'abstract futuristic AI neural network glowing green circuits holographic technology dark background'
         },
         {
-          icon: 'fas fa-copy',
+          icon: 'fas fa-users',
           title: 'Copy Trading',
           description: 'Copie estratégias de traders experientes',
           buttonText: 'Acessar',
@@ -834,7 +834,7 @@ export default {
           chartEndY: 15
         },
         {
-          icon: 'fas fa-copy',
+          icon: 'fas fa-users',
           title: 'Copy Trading',
           percentage: '+8.7%',
           usage: 0,

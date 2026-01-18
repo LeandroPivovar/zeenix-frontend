@@ -78,7 +78,7 @@
                     <div class="absolute w-24 h-24 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1;"></div>
                     <!-- Central Brain Icon -->
                     <div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center;">
-                      <i class="fas fa-brain text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3rem !important;"></i>
+                      <i class="fas fa-users text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3rem !important;"></i>
                     </div>
                     <!-- Orbiting Data Nodes -->
                     <div id="iyljui" class="absolute w-3 h-3 bg-zenix-green rounded-full" style="opacity: 1;"></div>
@@ -104,7 +104,7 @@
                   <!-- Card 1: CÓPIA -->
                   <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
                     <div class="flex items-center gap-2 mb-2">
-                      <i class="fas fa-copy text-[#22C55E] text-lg"></i>
+                      <i class="fas fa-users text-[#22C55E] text-lg"></i>
                       <p class="text-[10px] text-white uppercase font-semibold status-label">CÓPIA</p>
                     </div>
                     <p class="text-base font-bold text-white status-value">Traders e IAs</p>

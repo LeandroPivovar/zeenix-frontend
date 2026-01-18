@@ -79,9 +79,9 @@
                                     <div id="i5uptv" class="absolute w-32 h-32 border-2 border-zenix-green/40 rounded-full" style="opacity: 1;"></div>
                                     <!-- Inner Pulsing Core -->
                                     <div class="absolute w-24 h-24 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1;"></div>
-                                    <!-- Central Brain Icon -->
+                                    <!-- Central Robot Icon -->
                                     <div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center;">
-                                        <i class="fas fa-brain text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3rem !important;"></i>
+                                        <i class="fas fa-robot text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3rem !important;"></i>
                                     </div>
                                     <!-- Orbiting Data Nodes -->
                                     <div id="iyljui" class="absolute w-3 h-3 bg-zenix-green rounded-full" style="opacity: 1;"></div>
