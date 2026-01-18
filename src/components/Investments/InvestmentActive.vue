@@ -748,14 +748,21 @@
                                     <!-- Stop Blindado -->
                                     <div class="text-center border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize font-medium">Stop Blindado</p>
-                                        <p class="text-base font-bold text-zenix-text text-center mb-1">{{ sessionConfig.stopLossBlindado ? 'Ativo' : 'Inativo' }}</p>
+                                        <p class="text-base font-bold text-zenix-text text-center mb-1" :class="sessionConfig.stopLossBlindado ? 'text-zenix-green' : ''">
+                                            {{ sessionConfig.stopLossBlindado ? 'Ativado' : 'Inativo' }}
+                                        </p>
                                     </div>
 
                                     <!-- Gerenciamento de Risco -->
-                                    <div class="text-center border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center col-span-2">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize font-medium">Gestão de Risco: {{ realRiskLevel }}</p>
-                                        <p class="text-[11px] text-zenix-secondary text-justify leading-tight">{{ realRiskDescription }}</p>
+                                    <div class="text-center border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center">
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize font-medium">Gestão de Risco</p>
+                                        <p class="text-base font-bold text-zenix-text text-center mb-1">{{ realRiskLevel }}</p>
                                     </div>
+                                </div>
+
+                                <!-- Descrição da Gestão de Risco (Abaixo do Grid) -->
+                                <div class="mt-3 p-3 bg-zenix-black/40 border border-zenix-border/20 rounded-xl">
+                                    <p class="text-[11px] text-zenix-secondary leading-relaxed whitespace-pre-line">{{ realRiskDescription }}</p>
                                 </div>
                             </div>
 
