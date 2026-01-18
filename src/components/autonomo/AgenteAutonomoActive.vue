@@ -299,8 +299,13 @@
 	</div>
 
 	<!-- Daily Details Modal -->
-	<div v-if="selectedDay" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200" @click.self="selectedDay = null">
-		<div role="dialog" class="grid w-full gap-4 border border-[#27272a] p-4 sm:p-6 shadow-lg rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto bg-[#09090b] relative flex flex-col">
+	<div v-if="selectedDay" 
+		class="fixed inset-0 z-[200] flex items-center justify-center bg-black/90 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-300" 
+		@click.self="selectedDay = null"
+	>
+		<div role="dialog" 
+			class="w-full max-w-[420px] sm:max-w-4xl border border-[#27272a] p-4 sm:p-6 shadow-2xl rounded-xl max-h-[95vh] overflow-y-auto bg-[#09090b] relative flex flex-col scale-in-center animate-in zoom-in-95 duration-200"
+		>
 			
 			<!-- Close Button -->
 			<button type="button" class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none text-[#A1A1AA] hover:text-[#FAFAFA]" @click="selectedDay = null">
@@ -319,74 +324,74 @@
 			</div>
 
 			<!-- KPI Grid -->
-			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mt-4">
 				<!-- Lucro do Dia -->
-				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-3">
-					<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide mb-1 text-left">Lucro do Dia</div>
-					<div class="text-xl font-bold tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-2.5 sm:p-3">
+					<div class="text-[#A1A1AA] text-[9px] sm:text-[10px] uppercase tracking-wide mb-0.5 sm:mb-1 text-left">Lucro do Dia</div>
+					<div class="text-lg sm:text-xl font-bold tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
 						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ selectedDay.profit.toFixed(2) }}
 					</div>
-					<div class="text-[#A1A1AA] text-xs tabular-nums text-left">R$ {{ (selectedDay.profit * 5.19).toFixed(3) }}</div>
+					<div class="text-[#A1A1AA] text-[10px] sm:text-xs tabular-nums text-left">R$ {{ (selectedDay.profit * 5.19).toFixed(3) }}</div>
 				</div>
 
 				<!-- Capital -->
-				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-3">
-					<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide mb-1 text-left">Capital</div>
+				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-2.5 sm:p-3">
+					<div class="text-[#A1A1AA] text-[9px] sm:text-[10px] uppercase tracking-wide mb-0.5 sm:mb-1 text-left">Capital</div>
 					<!-- Estimating start capital for display logic -->
-					<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
+					<div class="text-xs sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
 						${{ (selectedDay.capital - selectedDay.profit).toFixed(2) }} → ${{ selectedDay.capital.toFixed(2) }}
 					</div>
-					<div class="text-xs tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+					<div class="text-[10px] sm:text-xs tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
 						{{ selectedDay.profit >= 0 ? '+' : '' }}{{ ((selectedDay.profit / (selectedDay.capital - selectedDay.profit)) * 100).toFixed(2) }}%
 					</div>
 				</div>
 
 				<!-- Meta Diária -->
-				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-3">
-					<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide mb-1 text-left">Meta Diária</div>
-					<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-colors bg-green-500/10 text-green-500 border-green-500/20 text-xs text-left">
+				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-2.5 sm:p-3">
+					<div class="text-[#A1A1AA] text-[9px] sm:text-[10px] uppercase tracking-wide mb-0.5 sm:mb-1 text-left">Meta Diária</div>
+					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors bg-green-500/10 text-green-500 border-green-500/20 text-[10px] sm:text-xs text-left">
 						Atingida
 					</div>
-					<div class="text-[#A1A1AA] text-xs mt-1 text-left">Ativação: 09:01:06</div>
+					<div class="text-[#A1A1AA] text-[9px] sm:text-xs mt-0.5 sm:mt-1 text-left">Ativação: 09:01:06</div>
 				</div>
 
 				<!-- Firewall -->
-				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-3">
-					<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide mb-1 text-left">Firewall</div>
-					<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 font-semibold transition-colors bg-yellow-500/10 text-yellow-500 border-yellow-500/20 text-xs text-left">
+				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-2.5 sm:p-3">
+					<div class="text-[#A1A1AA] text-[9px] sm:text-[10px] uppercase tracking-wide mb-0.5 sm:mb-1 text-left">Firewall</div>
+					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors bg-yellow-500/10 text-yellow-500 border-yellow-500/20 text-[10px] sm:text-xs text-left">
 						Ativado
 					</div>
 				</div>
 			</div>
 
 			<!-- Statistics Grid -->
-			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mt-4">
-				<div class="text-center p-2 bg-[#27272a]/30 rounded">
-					<div class="text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.ops }}</div>
-					<div class="text-[10px] text-[#A1A1AA] uppercase">Operações</div>
+			<div class="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mt-4">
+				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.ops }}</div>
+					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Operações</div>
 				</div>
-				<div class="text-center p-2 bg-[#27272a]/30 rounded">
+				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
 					<!-- Approximating wins based on winrate -->
-					<div class="text-lg font-bold tabular-nums text-green-500">{{ Math.round(selectedDay.ops * (selectedDay.winRate / 100)) }}</div>
-					<div class="text-[10px] text-[#A1A1AA] uppercase">Positivas</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-green-500">{{ Math.round(selectedDay.ops * (selectedDay.winRate / 100)) }}</div>
+					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Positivas</div>
 				</div>
-				<div class="text-center p-2 bg-[#27272a]/30 rounded">
-					<div class="text-lg font-bold tabular-nums text-red-500">{{ selectedDay.ops - Math.round(selectedDay.ops * (selectedDay.winRate / 100)) }}</div>
-					<div class="text-[10px] text-[#A1A1AA] uppercase">Negativas</div>
+				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
+					<div class="text-base sm:text-lg font-bold tabular-nums text-red-500">{{ selectedDay.ops - Math.round(selectedDay.ops * (selectedDay.winRate / 100)) }}</div>
+					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Negativas</div>
 				</div>
-				<div class="text-center p-2 bg-[#27272a]/30 rounded">
-					<div class="text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.winRate.toFixed(1) }}%</div>
-					<div class="text-[10px] text-[#A1A1AA] uppercase">Win Rate</div>
+				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.winRate.toFixed(1) }}%</div>
+					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Win Rate</div>
 				</div>
-				<div class="text-center p-2 bg-[#27272a]/30 rounded">
-					<div class="text-lg font-bold tabular-nums" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
+					<div class="text-base sm:text-lg font-bold tabular-nums" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
 						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ (selectedDay.profit / selectedDay.ops).toFixed(2) }}
 					</div>
-					<div class="text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
+					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
 				</div>
-				<div class="text-center p-2 bg-[#27272a]/30 rounded">
-					<div class="text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.avgTime }}</div>
-					<div class="text-[10px] text-[#A1A1AA] uppercase">Intervalo</div>
+				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.avgTime }}</div>
+					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Intervalo</div>
 				</div>
 			</div>
 
