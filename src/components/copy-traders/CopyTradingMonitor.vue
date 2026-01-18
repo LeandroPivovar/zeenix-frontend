@@ -715,7 +715,7 @@ export default {
 .card { 
     background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important; 
     border: 1px solid #1C1C1C !important; 
-    border-radius: 8px !important; 
+    border-radius: 12px !important; 
     padding: 20px; 
     width: 100%; 
     box-sizing: border-box; 

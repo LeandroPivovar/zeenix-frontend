@@ -9,17 +9,21 @@
             </h3>
             
             <div class="select-wrapper">
-                <select 
-                    v-model="selectedTrader" 
-                    @change="onTraderSelected"
-                    class="trader-select"
+                <button 
+                    class="premium-selector-btn"
+                    @click="openTraderSelectorModal"
                     :disabled="loadingTraders"
                 >
-                    <option value="">{{ loadingTraders ? 'Carregando traders...' : 'Selecione um trader' }}</option>
-                    <option v-for="trader in tradersList" :key="trader.id" :value="trader.id">
-                        {{ trader.name }} (ROI: {{ trader.roi }}%, Win Rate: {{ trader.winRate }}%)
-                    </option>
-                </select>
+                    <div class="selector-content">
+                        <div class="selector-left">
+                            <i v-if="selectedTrader" class="fas fa-users selector-icon-selected"></i>
+                            <span :class="{ 'placeholder': !selectedTrader }">
+                                {{ selectedTraderName || (loadingTraders ? 'Carregando...' : 'Selecione um trader') }}
+                            </span>
+                        </div>
+                        <i class="fas fa-chevron-down selector-arrow"></i>
+                    </div>
+                </button>
             </div>
             
             <div class="trader-info-area">
@@ -262,6 +266,42 @@
                 {{ activating ? 'Ativando...' : 'ATIVAR COPY' }}
             </button>
         </div>
+
+        <!-- Trader Selection Modal (Premium Style) -->
+        <Teleport to="body">
+            <div v-if="showTraderSelectorModal" class="modal-overlay" @click.self="closeTraderSelectorModal">
+                <div class="modal-content categorized-modal">
+                    <div class="modal-header-premium">
+                        <h3 class="modal-title">Selecionar Trader ou IA</h3>
+                        <button @click="closeTraderSelectorModal" class="modal-close-btn">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="agents-modal-list">
+                            <div 
+                                v-for="trader in tradersList" 
+                                :key="trader.id"
+                                class="agent-option-premium"
+                                :class="{ 'active': selectedTrader === trader.id }"
+                                @click="selectTrader(trader.id)"
+                            >
+                                <div class="agent-option-icon">
+                                    <i class="fas fa-users"></i>
+                                </div>
+                                <div class="agent-option-info">
+                                    <h4 class="agent-option-title">{{ trader.name }}</h4>
+                                    <p class="agent-option-desc">ROI: {{ trader.roi }}% | Win Rate: {{ trader.winRate }}% | Seguidores: {{ trader.followers || 0 }}k</p>
+                                </div>
+                                <div class="agent-option-check">
+                                    <i class="fas" :class="selectedTrader === trader.id ? 'fa-check-circle' : 'fa-circle'"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </Teleport>
     </div>
 </template>
 
@@ -286,6 +326,7 @@ export default {
             tradersList: [],
             loadingTraders: false,
             activating: false,
+            showTraderSelectorModal: false,
         };
     },
     computed: {
@@ -295,6 +336,17 @@ export default {
         }
     },
     methods: {
+        openTraderSelectorModal() {
+            this.showTraderSelectorModal = true;
+        },
+        closeTraderSelectorModal() {
+            this.showTraderSelectorModal = false;
+        },
+        selectTrader(traderId) {
+            this.selectedTrader = traderId;
+            this.onTraderSelected();
+            this.closeTraderSelectorModal();
+        },
         async loadTraders() {
             this.loadingTraders = true;
             try {
@@ -488,7 +540,7 @@ export default {
 .card {
     background: #ebebeb;
     border: 1px solid #222;
-    border-radius: 0px;
+    border-radius: 12px;
     padding: 24px;
     display: flex;
     flex-direction: column;
@@ -1013,7 +1065,7 @@ input:checked + .slider:before {
         margin: 0;
         background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
         border: 1px solid #1C1C1C;
-        border-radius: 8px;
+        border-radius: 12px;
     }
     
     .card-title{
@@ -1104,5 +1156,200 @@ input:checked + .slider:before {
     input[type="number"] {
         width: 100%;
     }
+}
+
+/* Premium Selector Button */
+.premium-selector-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 48px;
+    box-sizing: border-box;
+}
+
+.premium-selector-btn:hover {
+    border-color: #22C55E;
+    background-color: #0d1a10;
+}
+
+.selector-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.selector-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.selector-icon-selected {
+    color: #22C55E;
+    font-size: 0.875rem;
+}
+
+.selector-left span {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.selector-left span.placeholder {
+    color: #A1A1A1;
+}
+
+.selector-arrow {
+    font-size: 0.75rem;
+    color: #444;
+}
+
+/* Modal Premium Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.categorized-modal {
+    width: 100%;
+    max-width: 500px;
+    background: #0D0D0D;
+    border: 1px solid #22C55E33;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header-premium {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+    color: #fff;
+}
+
+.agents-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    max-height: 400px;
+    overflow-y: auto;
+    padding-right: 5px;
+}
+
+/* Custom Scrollbar for Modal List */
+.agents-modal-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.agents-modal-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+}
+
+.agents-modal-list::-webkit-scrollbar-thumb {
+    background: #22C55E44;
+    border-radius: 10px;
+}
+
+.agent-option-premium {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: #111;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.agent-option-premium:hover {
+    border-color: #22C55E66;
+    background: #161616;
+}
+
+.agent-option-premium.active {
+    border-color: #22C55E;
+    background: #0d1a10;
+}
+
+.agent-option-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.agent-option-icon i {
+    font-size: 1.1rem;
+    color: #fff !important;
+}
+
+.agent-option-info {
+    flex: 1;
+    text-align: left;
+}
+
+.agent-option-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 0.125rem 0;
+}
+
+.agent-option-desc {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.agent-option-check {
+    color: #333;
+    font-size: 1rem;
+}
+
+.agent-option-premium.active .agent-option-check {
+    color: #22C55E;
 }
 </style>

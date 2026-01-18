@@ -35,13 +35,7 @@
       />
   
       <div class="box" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
-        <div class="header">
-          <h1 v-if="hasActiveSession">Copy Trading — Performance</h1>
-          <h1 v-else>Copy Trading — Configuração</h1>
-          <p v-if="hasActiveSession">Acompanhe a perfomance do seu copy em tempo real</p>
-          <p v-else>Configure risco, alocação e proteção antes de iniciar o Copy automático.</p>
-        </div>
-      
+        <!-- Header removed as per user request - Moving Vision Panel to the top -->
       
         <div v-if="loading" class="loading-container">
           <div class="loading-spinner"></div>
