@@ -241,6 +241,7 @@
                   <h3 class="text-xl font-semibold text-[rgba(255,255,255,0.95)] transition-colors duration-300 group-hover:text-white">{{ ia.name }}</h3>
                   <p class="text-sm text-[rgba(255,255,255,0.78)] leading-relaxed transition-colors duration-300 group-hover:text-[rgba(255,255,255,0.85)]">{{ ia.description || ia.category }}</p>
                 </div>
+                <button 
                   @click.stop="activateIA(ia.id)"
                   class="w-full h-12 bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_6px_20px_rgba(34,197,94,0.38),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_28px_rgba(34,197,94,0.53),inset_0_1px_0_rgba(255,255,255,0.15)] group/btn"
                   style="filter: brightness(1.05) saturate(1.08);"
