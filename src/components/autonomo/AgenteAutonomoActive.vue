@@ -298,6 +298,34 @@
 		<div class="text-center mt-8 py-4 border-t border-[#27272a]">
 			<p class="text-[#A1A1AA] text-xs">Sistema operando automaticamente • Dados atualizados em tempo real</p>
 		</div>
+
+		<!-- Strategy Logs Section -->
+		<div class="mt-8 border-t border-[#27272a] pt-6">
+			<div class="flex items-center justify-between mb-4">
+				<div class="flex items-center gap-2 text-[#FAFAFA]">
+					<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-terminal text-green-500"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" x2="20" y1="19" y2="19"></line></svg>
+					<h3 class="text-sm font-bold uppercase tracking-wider">Logs da Estratégia</h3>
+					<span class="text-[10px] text-[#A1A1AA] font-mono" v-if="realtimeLogs.length">({{ realtimeLogs.length }} registros)</span>
+				</div>
+				<button 
+					@click="showLogs = !showLogs"
+					class="text-xs text-[#A1A1AA] hover:text-[#FAFAFA] transition-colors flex items-center gap-1 group"
+				>
+					<span>{{ showLogs ? 'Ocultar Logs' : 'Mostrar Logs' }}</span>
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-up transition-transform duration-200" :class="{ 'rotate-180': !showLogs }"><path d="m18 15-6-6-6 6"></path></svg>
+				</button>
+			</div>
+
+			<div v-show="showLogs" class="animate-in fade-in slide-in-from-top-2 duration-300">
+				<div class="bg-black/40 border border-[#1c1c1c] rounded-lg overflow-hidden backdrop-blur-sm">
+					<AutonomousAgentLogs 
+						:userId="getUserId()" 
+						:isActive="true"
+						ref="strategyLogs"
+					/>
+				</div>
+			</div>
+		</div>
 	</div>
 
 	<!-- Daily Details Modal -->
@@ -440,10 +468,13 @@
 
 <script>
 	import { createChart, ColorType } from 'lightweight-charts';
+	import AutonomousAgentLogs from './AutonomousAgentLogs.vue';
 
 	export default {
 		name: 'AgenteAutonomoPanel',
-		components: {},
+		components: {
+			AutonomousAgentLogs
+		},
 		props: {
 			agenteData: {
 				type: Object,
@@ -499,6 +530,7 @@
 			return {
 				selectedDay: null,
 				abaAtiva: 'grafico',
+				showLogs: false,
 				ultimaAtualizacao: new Date().toLocaleTimeString('pt-BR'),
 				filtroDataSelecionado: 'hoje',
 				dataInicio: new Date().toISOString().split('T')[0],
