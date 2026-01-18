@@ -122,17 +122,71 @@
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 				
 				<!-- Estrategia -->
-				<div class="flex items-center gap-3 hover:bg-[#1a1a1a] rounded-lg p-2 -m-2 transition-colors">
-					<div class="p-2 bg-[#1a1a1a] rounded-md">
-						<i class="fas fa-atom text-green-500 text-base"></i>
-					</div>
-					<div class="text-left">
-						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Estratégia</div>
-						<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
-							<span class="text-lg">🦅</span>
-							<span>{{ agenteData.estrategia }}</span>
-							<span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+				<div class="relative flex-1">
+					<div 
+						class="flex items-center gap-3 hover:bg-[#1a1a1a] rounded-lg p-2 -m-2 transition-colors cursor-pointer"
+						@click.stop="toggleAgentSwitcher"
+					>
+						<div class="p-2 bg-[#1a1a1a] rounded-md">
+							<i class="fas fa-atom text-green-500 text-base"></i>
 						</div>
+						<div class="text-left">
+							<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide flex items-center gap-1">
+								Estratégia
+								<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
+							</div>
+							<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
+								<span class="text-lg">{{ agenteData.id === 'falcon' ? '🦅' : '⚡' }}</span>
+								<span>{{ agenteData.estrategia }}</span>
+								<span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+							</div>
+						</div>
+					</div>
+
+					<!-- Agent Switcher Dropdown -->
+					<div 
+						v-if="showAgentSwitcher"
+						class="absolute top-full left-0 mt-4 w-[280px] bg-[#0c0c0c] border border-[#27272a] rounded-lg shadow-2xl z-[60] overflow-hidden animate-fade-in"
+					>
+						<div class="p-3 border-b border-[#27272a] bg-[#121212]/50">
+							<h4 class="text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">SELECIONE A IA</h4>
+						</div>
+						
+						<div class="max-h-[300px] overflow-y-auto custom-scrollbar">
+							<div 
+								v-for="agent in runningAgents" 
+								:key="agent.id"
+								@click="selectAgent(agent.id)"
+								class="p-3 flex items-center gap-3 hover:bg-[#1a1a1a] cursor-pointer transition-colors border-b border-[#27272a]/50 last:border-0"
+								:class="{ 'bg-green-500/5': agenteData.id === agent.id }"
+							>
+								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
+									<span>{{ agent.emoji }}</span>
+									<div v-if="agenteData.id === agent.id" class="absolute -top-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-[#0c0c0c] flex items-center justify-center">
+										<i class="fas fa-check text-[8px] text-black"></i>
+									</div>
+								</div>
+								<div class="flex-1 min-w-0">
+									<div class="flex items-center justify-between gap-2">
+										<h5 class="text-xs font-bold text-white truncate">{{ agent.title }}</h5>
+										<span v-if="agenteData.id === agent.id" class="text-[8px] text-green-500 font-bold uppercase tracking-tighter">Ativo</span>
+									</div>
+									<p class="text-[10px] text-[#A1A1AA] mt-0.5">{{ agent.description }}</p>
+									<div class="flex items-center gap-2 mt-1.5">
+										<span class="text-[9px] text-[#A1A1AA]">WR: <span class="text-white">{{ agent.winRate }}%</span></span>
+										<span class="text-[9px] text-[#A1A1AA]">Estilo: <span class="text-white">{{ agent.style }}</span></span>
+									</div>
+								</div>
+							</div>
+						</div>
+
+						<button 
+							@click="goToConfiguration"
+							class="w-full p-4 flex items-center justify-center gap-2 bg-[#1a1a1a] hover:bg-[#222] transition-colors text-white text-xs font-bold"
+						>
+							<i class="fas fa-plus text-[10px] text-green-500"></i>
+							Configurar Novo Agente
+						</button>
 					</div>
 				</div>
 
@@ -604,10 +658,31 @@
 					{ date: '02/01', badge: '', profit: 1966.64, capital: 117659.11, ops: 51, winRate: 70.6, avgTime: '22min' },
 					{ date: '03/01', badge: '', profit: 584.80, capital: 118243.90, ops: 15, winRate: 73.3, avgTime: '28min' },
 				],
+
+				// Agent Switcher
+				showAgentSwitcher: false,
+				runningAgents: [
+					{ 
+						id: 'falcon', 
+						title: 'IA Falcon', 
+						emoji: '🦅', 
+						description: 'Estratégia conservadora com foco em consistência.',
+						winRate: 78,
+						style: 'Conservador'
+					},
+					{ 
+						id: 'zeus', 
+						title: 'IA Zeus', 
+						emoji: '⚡', 
+						description: 'Estratégia agressiva com maior potencial de lucro.',
+						winRate: 66,
+						style: 'Agressivo'
+					}
+				]
 			};
 		},
 		mounted() {
-			window.addEventListener('click', this.closeDatePickerOnClickOutside);
+			window.addEventListener('click', this.closeDropdownsOnClickOutside);
 			
 			if (this.abaAtiva === 'grafico') {
 				this.$nextTick(() => {
@@ -618,7 +693,7 @@
 			}
 		},
 		beforeUnmount() {
-			window.removeEventListener('click', this.closeDatePickerOnClickOutside);
+			window.removeEventListener('click', this.closeDropdownsOnClickOutside);
 		},
 		computed: {
 			dateRangeText() {
@@ -789,14 +864,29 @@
 			stopLogsPolling() {},
 			startLogsPolling() {},
 			
-			// Date Picker Methods
-			toggleDatePicker() {
+			// UI Dropdown Methods
+			toggleDatePicker(event) {
+				if (event) event.stopPropagation();
 				this.showDatePicker = !this.showDatePicker;
+				this.showAgentSwitcher = false;
 			},
-			closeDatePickerOnClickOutside() {
-				if (this.showDatePicker) {
-					this.showDatePicker = false;
-				}
+			toggleAgentSwitcher(event) {
+				if (event) event.stopPropagation();
+				this.showAgentSwitcher = !this.showAgentSwitcher;
+				this.showDatePicker = false;
+			},
+			closeDropdownsOnClickOutside() {
+				this.showDatePicker = false;
+				this.showAgentSwitcher = false;
+			},
+			selectAgent(agentId) {
+				console.log('Switching to agent:', agentId);
+				this.showAgentSwitcher = false;
+				this.$emit('switch-agent', agentId);
+			},
+			goToConfiguration() {
+				this.showAgentSwitcher = false;
+				this.$emit('pausarAgente'); // In AgenteAutonomo.vue, this shows the Inactive component
 			},
 			selectDateRange(option) {
 				this.selectedPeriod = option.value;
