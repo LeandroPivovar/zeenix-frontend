@@ -2345,7 +2345,7 @@ export default {
                         modoMartingale: result.data.modoMartingale || 'conservador',
                         profitTarget: result.data.profitTarget ? parseFloat(result.data.profitTarget) : null,
                         lossLimit: result.data.lossLimit ? parseFloat(result.data.lossLimit) : null,
-                        stopLossBlindado: result.data.stopLossBlindado || (result.data.stopBlindadoPercent !== null && result.data.stopBlindadoPercent !== undefined),
+                        stopLossBlindado: result.data.stopLossBlindado === true || result.data.stopLossBlindado === 1 || result.data.stop_loss_blindado === true || result.data.stop_loss_blindado === 1 || (result.data.stopBlindadoPercent !== null && result.data.stopBlindadoPercent !== undefined && result.data.stopBlindadoPercent > 0),
                         currency: result.data.currency || 'USD',
                         sessionBalance: parseFloat(result.data.sessionBalance) || 0,
                         sessionStatus: currentSessionStatus
