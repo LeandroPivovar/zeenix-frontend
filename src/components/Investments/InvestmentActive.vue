@@ -381,7 +381,7 @@
                     <div class="mobile-config-item">
                         <p class="mobile-config-label">Estratégia</p>
                         <p class="mobile-config-value">{{ strategyName }}</p>
-                        <p class="mobile-config-desc">Estratégia de scalping com análise de padrões em tempo real</p>
+                        <p class="mobile-config-desc" v-html="strategyDescriptionText"></p>
                     </div>
 
                     <div class="mobile-config-grid">
@@ -408,11 +408,9 @@
                             <p class="mobile-config-param-label">Stop Loss Blindado</p>
                             <p class="mobile-config-param-value">{{ sessionConfig.stopLossBlindado ? 'Ativo' : 'Inativo' }}</p>
                         </div>
-                        <div class="mobile-config-param">
-                            <p class="mobile-config-label">Gerenciamento</p>
-                            <div class="mobile-config-badge">
-                                <span class="mobile-config-badge-text">{{ realRiskLabel }}</span>
-                            </div>
+                        <div class="mobile-config-param col-span-2">
+                            <p class="mobile-config-label">Gerenciamento: {{ realRiskLabel }}</p>
+                            <p class="text-[10px] text-zenix-secondary leading-tight">{{ realRiskDescription }}</p>
                         </div>
                     </div>
 
@@ -713,7 +711,7 @@
                                 <div class="mb-1">
                                     <p class="text-base font-bold text-zenix-text text-left leading-none">{{ strategyName }}</p>
                                 </div>
-                                <p class="text-[11px] text-zenix-secondary text-left leading-snug">{{ (strategyDescriptionText || '').replace(/ - Análise:.*$/, '') }}</p>
+                                <p class="text-[11px] text-zenix-secondary text-left leading-snug" v-html="strategyDescriptionText"></p>
                             </div>
 
                             <!-- Mercado -->
@@ -754,9 +752,9 @@
                                     </div>
 
                                     <!-- Gerenciamento de Risco -->
-                                    <div class="text-center border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center">
-                                        <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize font-medium">Gestão de Risco</p>
-                                        <p class="text-base font-bold text-zenix-text text-center mb-1">{{ realRiskLevel }}</p>
+                                    <div class="text-center border border-zenix-border/30 rounded-lg p-2 h-full flex flex-col justify-center col-span-2">
+                                        <p class="text-xs text-zenix-secondary mb-0.5 text-center capitalize font-medium">Gestão de Risco: {{ realRiskLevel }}</p>
+                                        <p class="text-[10px] text-zenix-secondary text-center leading-tight">{{ realRiskDescription }}</p>
                                     </div>
                                 </div>
                             </div>
@@ -1102,31 +1100,30 @@ export default {
         },
         
         strategyDescription() {
-            const descMap = {
-                'veloz': 'Alta Performance',
-                'moderado': 'Performance Balanceada',
-                'preciso': 'Alta Precisão',
-                'fast': 'Operação Contínua'
+            const descriptions = {
+                'veloz': 'Mais negociações, menos precisão',
+                'moderado': 'Negociações e precisão moderado',
+                'lento': 'Menos operações, mais precisão'
             };
-            return descMap[this.mode.toLowerCase()] || 'Alta Performance';
+            return descriptions[this.mode.toLowerCase()] || descriptions.veloz;
         },
         
         strategyDescriptionText() {
             const strategy = this.sessionConfig?.strategy || this.selectedStrategy || 'orion';
             const strategyLower = strategy.toLowerCase();
             const descriptions = {
-                'orion': 'Análise: Estatística de Dígitos (Over 3) com Price Action na Recuperação - Assertividade: 60% a 70% - Retorno: 65% / 90%',
-                'atlas': 'Análise: Híbrida (Fluxo de Dígitos + Price Action) - Assertividade: 55 a 65% - Retorno: 70% / 95%',
-                'apollo': 'Análise: Price Action Puro (Inércia + Força + Tendência) - Assertividade: 55% a 65% - Retorno: 90%',
-                'titan': 'Análise: Dígitos Par/Ímpar com persistência direcional - Assertividade: 50-60% - Retorno: 90%',
-                'nexus': 'Análise: Price Action (Barreira de Segurança) com Troca de Contrato - Assertividade: 60% a 70% - Retorno: 57% / 90%',
+                'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 55 a 65% - <strong>Retorno:</strong> 70% / 95%',
+                'apollo': '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 55% a 65% - <strong>Retorno:</strong> 90%',
+                'nexus': '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 57% / 90%',
+                'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 65% / 90%',
+                'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-60% - <strong>Retorno:</strong> 90%',
                 'sentinel': 'Análise Híbrida • Martingale Inteligente • Soros Avançado',
                 'falcon': 'Análise Técnica Avançada • Recuperação Automática • Lucros Consistentes',
                 'trinity': 'Especialista em tendências • Volume equilibrado • Lucros consistentes',
                 // Fallbacks
-                'atlas_v2': 'Análise: Híbrida (Fluxo de Dígitos + Price Action) - Assertividade: 55 a 65% - Retorno: 70% / 95%',
-                'atlas_v2.0': 'Análise: Híbrida (Fluxo de Dígitos + Price Action) - Assertividade: 55 a 65% - Retorno: 70% / 95%',
-                'apollo_v3': 'Análise: Price Action Puro (Inércia + Força + Tendência) - Assertividade: 55% a 65% - Retorno: 90%',
+                'atlas_v2': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 55 a 65% - <strong>Retorno:</strong> 70% / 95%',
+                'atlas_v2.0': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 55 a 65% - <strong>Retorno:</strong> 70% / 95%',
+                'apollo_v3': '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 55% a 65% - <strong>Retorno:</strong> 90%',
             };
             return descriptions[strategyLower] || descriptions.orion;
         },
@@ -1135,8 +1132,8 @@ export default {
             const martingale = this.sessionConfig.modoMartingale || 'conservador';
             const descriptions = {
                 'conservador': 'Recuperação limitada (até M5) • Protege capital • Lucros menores mas seguros',
-                'moderado': 'Recuperação ilimitada (+25%) • Equilíbrio risco/retorno • Crescimento moderado',
-                'agressivo': 'Recuperação agressiva (+50%) • Maior exposição • Potencial de lucro máximo'
+                'moderado': 'Recuperação ilimitada com +25% de lucro • Equilíbrio entre risco e retorno',
+                'agressivo': 'Recuperação ilimitada com +50% de lucro • Máximo retorno com risco controlado'
             };
             return descriptions[martingale.toLowerCase()] || descriptions.conservador;
         },
