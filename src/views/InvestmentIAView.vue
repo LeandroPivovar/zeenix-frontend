@@ -1129,6 +1129,12 @@ export default {
     async mounted() {
         console.log('[InvestmentIAView] mounted() - Sincronizando com logic do Dashboard');
         
+        // Verificar se há uma estratégia passada via query param
+        if (this.$route.query.strategy) {
+            console.log('[InvestmentIAView] 🎯 Estratégia recebida via query:', this.$route.query.strategy);
+            this.selectedStrategy = this.$route.query.strategy;
+        }
+        
         // O accountBalanceMixin já lida com loadTradeCurrency e loadAccountBalanceInfo no seu mounted()
         
         await this.checkAIStatus();

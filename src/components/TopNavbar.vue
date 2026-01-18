@@ -514,20 +514,24 @@ export default {
       this.showNotificationsModal = false;
     },
     async clearNotifications() {
+      // Solução persistente no frontend: salvar timestamp da limpeza
+      const timestamp = Date.now();
+      localStorage.setItem('zenix_notifications_cleared_at', timestamp);
+      
+      this.notifications = [];
+      this.hasUnreadNotifications = false;
+      
       try {
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
         const token = localStorage.getItem('token');
         
-        await fetch(`${apiBase}/notifications/clear`, {
+        fetch(`${apiBase}/notifications/clear`, {
           method: 'POST',
           headers: {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json'
           }
-        });
-
-        this.notifications = [];
-        this.hasUnreadNotifications = false;
+        }).catch(() => {});
       } catch (error) {
         console.error('[TopNavbar] Erro ao limpar notificações:', error);
       }
@@ -936,8 +940,17 @@ export default {
         if (res.ok) {
           const data = await res.json();
           if (data.notifications && data.notifications.length > 0) {
+            // Pegar timestamp da última limpeza
+            const clearedAt = parseInt(localStorage.getItem('zenix_notifications_cleared_at') || '0');
+            
+            // Filtrar apenas notificações mais recentes que a limpeza
+            const filtered = data.notifications.filter(notif => {
+              const notifDate = new Date(notif.timestamp).getTime();
+              return notifDate > clearedAt;
+            });
+
             // Converter as notificações do backend para o formato esperado pelo frontend
-            const formattedNotifications = data.notifications.map((notif, index) => ({
+            const formattedNotifications = filtered.map((notif, index) => ({
               id: `login-notif-${index}`,
               title: notif.title,
               message: notif.message,
@@ -947,11 +960,13 @@ export default {
             }));
 
             // Adicionar às notificações existentes
-            this.notifications = [...formattedNotifications, ...this.notifications];
+            this.notifications = [...formattedNotifications];
             
             // Se houver notificações, mostrar o indicador
             if (this.notifications.length > 0) {
               this.hasUnreadNotifications = true;
+            } else {
+              this.hasUnreadNotifications = false;
             }
           }
         } else {

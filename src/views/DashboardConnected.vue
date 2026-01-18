@@ -145,7 +145,7 @@
                       class="text-white/45 hover:text-white/80 transition-colors w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/5 active:scale-95 relative"
                     >
                       <i class="fa-solid fa-bell text-[17px]"></i>
-                      <span class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#22C55E] rounded-full"></span>
+                      <span v-if="hasUnreadNotifications" class="absolute top-1.5 right-1.5 w-1.5 h-1.5 bg-[#22C55E] rounded-full"></span>
                     </button>
                     <button 
                       id="settings-btn-mobile"
@@ -184,7 +184,7 @@
               <i class="fas fa-wallet"></i>
               <span>Depositar</span>
             </button>
-            <button class="mobile-action-btn">
+            <button class="mobile-action-btn" @click="activateIA()">
               <i class="fas fa-chart-line"></i>
               <span>Operar</span>
             </button>
@@ -216,12 +216,13 @@
             
             
             <!-- Desktop Grid -->
-            <div class="grid grid-cols-4 gap-6 mb-0 desktop-grid-ias">
+            <div class="grid grid-cols-5 gap-6 mb-0 desktop-grid-ias">
             <div 
               v-for="(ia, index) in bestIAs" 
               :key="index"
               :id="`ai-card-${index + 1}`"
-              class="relative bg-[#0B0B0B] rounded-[20px] overflow-hidden desktop-no-shadow transition-all duration-500 group hover:-translate-y-1.5"
+              class="relative bg-[#0B0B0B] rounded-[20px] overflow-hidden desktop-no-shadow transition-all duration-500 group hover:-translate-y-1.5 cursor-pointer"
+              @click="activateIA(ia.id)"
             >
               <div class="absolute -inset-4 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.10)_0%,transparent_70%)] blur-[60px] opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-10"></div>
               <div class="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(34,197,94,0.04)_0%,transparent_60%)] opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
@@ -240,12 +241,11 @@
                   <h3 class="text-xl font-semibold text-[rgba(255,255,255,0.95)] transition-colors duration-300 group-hover:text-white">{{ ia.name }}</h3>
                   <p class="text-sm text-[rgba(255,255,255,0.78)] leading-relaxed transition-colors duration-300 group-hover:text-[rgba(255,255,255,0.85)]">{{ ia.description || ia.category }}</p>
                 </div>
-                <button 
-                  @click="activateIA()"
+                  @click.stop="activateIA(ia.id)"
                   class="w-full h-12 bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-300 shadow-[0_6px_20px_rgba(34,197,94,0.38),inset_0_1px_0_rgba(255,255,255,0.1)] hover:shadow-[0_8px_28px_rgba(34,197,94,0.53),inset_0_1px_0_rgba(255,255,255,0.15)] group/btn"
                   style="filter: brightness(1.05) saturate(1.08);"
                 >
-                  <span>Ativar IA</span>
+                  <span>Ativar agora</span>
                   <i class="fas fa-arrow-right text-xs transition-transform duration-300 group-hover/btn:translate-x-1"></i>
                 </button>
               </div>
@@ -257,7 +257,8 @@
             <div 
               v-for="(ia, index) in displayedIAs" 
               :key="index"
-              class="ia-card-mobile"
+              class="ia-card-mobile cursor-pointer"
+              @click="activateIA(ia.id)"
             >
               <div class="ia-icon-mobile">
                 <img :src="ia.image" :alt="ia.name" />
@@ -440,7 +441,7 @@
                 <span class="ia-percentage-modal">+{{ getIAPerformance(ia.id) }}%</span>
               </div>
               <button 
-                @click="activateIA()"
+                @click="activateIA(ia.id)"
                 class="ia-activate-btn-modal"
               >
                 Ativar IA
@@ -479,9 +480,12 @@
                 <span class="text-white text-lg font-semibold">{{ userInitials }}</span>
               </div>
             </div>
-            <div class="settings-user-info">
-              <h3 class="settings-user-name">{{ userName }}</h3>
-              <p class="settings-user-status">Conta Ativa</p>
+            <div class="settings-user-info-container">
+              <h3 class="settings-user-name">{{ fullUserName }}</h3>
+              <div class="settings-user-badge">
+                <i class="fa-solid fa-crown text-[#22C55E] text-[10px]"></i>
+                <span>Premium User</span>
+              </div>
             </div>
           </div>
 
@@ -612,13 +616,13 @@
             :key="index"
             class="notification-item"
           >
-            <div class="notification-icon">
-              <i :class="notification.icon || 'fa-solid fa-info-circle'"></i>
+            <div class="notification-icon-wrapper" :class="`type-${notification.type}`">
+              <i :class="notification.icon"></i>
             </div>
             <div class="notification-content">
               <h3 class="notification-title">{{ notification.title }}</h3>
               <p class="notification-message">{{ notification.message }}</p>
-              <span class="notification-time">{{ notification.time }}</span>
+              <span class="notification-time">{{ formatNotificationDate(notification.date) }}</span>
             </div>
           </div>
         </div>
@@ -726,6 +730,7 @@ export default {
         { icon: 'fas fa-dollar-sign', text: 'Rafael sacou o lucro e já ativou novas operações' }
       ],
       notifications: [],
+      hasUnreadNotifications: false,
       quickTools: [
         {
           icon: 'fas fa-brain',
@@ -776,8 +781,8 @@ export default {
           sparklineData: [45, 52, 48, 58, 55, 62, 58, 65, 62, 68]
         },
         {
-          id: 'vega',
-          name: 'IA Vega',
+          id: 'atlas',
+          name: 'IA Atlas',
           category: 'Risco moderado',
           description: 'Consistência diária operando tendências estáveis.',
           consistency: 76,
@@ -786,14 +791,24 @@ export default {
           sparklineData: [40, 45, 42, 48, 50, 47, 52, 55, 53, 58]
         },
         {
-          id: 'pulse',
-          name: 'IA Pulse',
+          id: 'apollo',
+          name: 'IA Apollo',
           category: 'Alta velocidade',
           description: 'Estratégia agressiva para volatilidade intensa.',
           consistency: 91,
           image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/e3205bf243-eec06ca9c726e87c0cc2.png',
           alt: 'continuous neural pulse line with intense electric green energy spikes filling entire frame, fluid movements with glowing particles following pulse rhythm on pure black background, bright neon green peaks, soft ambient glow, zoomed in close-up view',
           sparklineData: [50, 58, 55, 65, 62, 70, 68, 75, 72, 80]
+        },
+        {
+          id: 'nexus',
+          name: 'IA Nexus',
+          category: 'Barreira de segurança',
+          description: 'Price Action com Barreira de Segurança e troca de contrato.',
+          consistency: 85,
+          image: 'https://storage.googleapis.com/uxpilot-auth.appspot.com/3597e3389b-f497a4d7c72b20551d57.png',
+          alt: 'abstract futuristic AI neural network glowing green circuits holographic technology dark background',
+          sparklineData: [42, 48, 45, 55, 50, 60, 55, 65, 60, 70]
         },
         {
           id: 'titan',
@@ -957,8 +972,8 @@ export default {
       return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
     displayedIAs() {
-      // Mobile: mostra apenas as primeiras 4 IAs
-      return this.bestIAs.slice(0, 4);
+      // Mostrar todas as 5 IAs
+      return this.bestIAs.slice(0, 5);
     },
     userProfilePicture() {
       if (!this.userProfilePictureUrl) return null;
@@ -1047,6 +1062,7 @@ export default {
     this.setupVideoLoop();
     // Carregar desempenho semanal
     await this.loadWeeklyPerformance();
+    this.loadLoginNotifications();
   },
   methods: {
     async loadWeeklyPerformance() {
@@ -1260,13 +1276,22 @@ export default {
         this.$router.push(tool.route);
       }
     },
-    activateIA() {
+    activateIA(strategyId) {
       // Fechar modal se estiver aberto
       if (this.showIAsModal) {
         this.closeIAsModal();
       }
-      // Navega para a página de IAs
-      this.$router.push('/InvestmentIA');
+      
+      // Se tiver um ID de estratégia, passar como query param
+      if (strategyId) {
+        this.$router.push({
+          path: '/InvestmentIA',
+          query: { strategy: strategyId }
+        });
+      } else {
+        // Navega para a página de IAs (padrão)
+        this.$router.push('/InvestmentIA');
+      }
     },
     navigateToIAs() {
       this.$router.push('/StatsIAs');
@@ -1288,17 +1313,113 @@ export default {
     },
     toggleNotificationsModal() {
       this.showNotificationsModal = !this.showNotificationsModal;
+      if (this.showNotificationsModal) {
+        this.hasUnreadNotifications = false;
+      }
     },
     closeNotificationsModal() {
       this.showNotificationsModal = false;
     },
-    deleteAllNotifications() {
-      if (this.notifications.length === 0) return;
+    async deleteAllNotifications() {
+      // Solução persistente no frontend sem mudar o banco: salvar timestamp do "limpar"
+      const timestamp = Date.now();
+      localStorage.setItem('zenix_notifications_cleared_at', timestamp);
       
-      // Confirmação opcional (pode ser removida se preferir deletar direto)
-      if (confirm('Tem certeza que deseja excluir todas as notificações?')) {
-        this.notifications = [];
+      this.notifications = [];
+      this.hasUnreadNotifications = false;
+      
+      try {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const token = localStorage.getItem('token');
+        
+        // Chamada ao backend opcional (limpeza real se suportado, senão o local garante)
+        fetch(`${apiBase}/notifications/clear`, {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }).catch(() => {});
+      } catch (error) {
+        console.error('[DashboardConnected] Erro ao limpar notificações:', error);
       }
+    },
+    async loadLoginNotifications() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000);
+        
+        const res = await fetch(`${apiBaseUrl}/notifications/login-summary`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          signal: controller.signal
+        });
+        
+        clearTimeout(timeoutId);
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.notifications && data.notifications.length > 0) {
+            // Pegar timestamp da última limpeza
+            const clearedAt = parseInt(localStorage.getItem('zenix_notifications_cleared_at') || '0');
+            
+            // Filtrar apenas notificações mais recentes que a limpeza
+            const filtered = data.notifications.filter(notif => {
+              const notifDate = new Date(notif.timestamp).getTime();
+              return notifDate > clearedAt;
+            });
+
+            const formattedNotifications = filtered.map((notif, index) => ({
+              id: `login-notif-${index}`,
+              title: notif.title,
+              message: notif.message,
+              icon: this.getNotificationIcon(notif.type),
+              date: notif.timestamp,
+              type: notif.type
+            }));
+
+            this.notifications = [...formattedNotifications];
+            
+            if (this.notifications.length > 0) {
+              this.hasUnreadNotifications = true;
+            } else {
+              this.hasUnreadNotifications = false;
+            }
+          }
+        }
+      } catch (error) {
+        if (error.name !== 'AbortError') {
+          console.error('[DashboardConnected] Erro ao carregar notificações:', error);
+        }
+      }
+    },
+    getNotificationIcon(type) {
+      const iconMap = {
+        'success': 'fa-solid fa-check-circle',
+        'warning': 'fa-solid fa-exclamation-triangle',
+        'error': 'fa-solid fa-times-circle',
+        'info': 'fa-solid fa-info-circle'
+      };
+      return iconMap[type] || 'fa-solid fa-info-circle';
+    },
+    formatNotificationDate(date) {
+      if (!date) return '';
+      const d = new Date(date);
+      return d.toLocaleDateString('pt-BR', { 
+        day: '2-digit', 
+        month: '2-digit', 
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
     },
     toggleAccountsList() {
       this.showAccountsList = !this.showAccountsList;
@@ -1625,8 +1746,9 @@ export default {
       // Retorna performance baseada no ID da IA
       const performances = {
         'orion': '12.4',
-        'vega': '18.7',
-        'pulse': '15.2',
+        'atlas': '18.7',
+        'apollo': '15.2',
+        'nexus': '14.8',
         'titan': '15.2'
       };
       return performances[iaId] || '0.0';
@@ -4381,26 +4503,26 @@ export default {
   transform: scale(0.98);
 }
 
-/* Settings Modal Styles */
+/* Settings Modal Styles - Premium Glassmorphism */
 .settings-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.45);
   z-index: 9999;
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
   padding: 0;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease-out;
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .settings-modal-content {
-  background: #0B0B0B;
-  border-radius: 0;
+  background: rgba(11, 11, 11, 0.82);
   width: 100%;
   max-width: 400px;
   min-width: 320px;
@@ -4408,249 +4530,205 @@ export default {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border-left: 2px solid rgba(255, 255, 255, 0.05);
-  animation: slideInRight 0.3s ease-out;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.5);
+  animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.settings-modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  background: radial-gradient(circle at top right, rgba(34, 197, 94, 0.12), transparent 70%);
+  pointer-events: none;
 }
 
 .settings-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: none;
+  padding: 30px 24px 20px;
+  background: transparent;
+  position: relative;
+  z-index: 2;
 }
 
 .settings-modal-title {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: #fff;
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .settings-modal-close {
-  background: none;
-  border: none;
-  color: #9B9B9B;
-  font-size: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding: 4px;
-  transition: color 0.3s;
+  transition: all 0.3s ease;
 }
 
 .settings-modal-close:hover {
-  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  transform: rotate(90deg);
 }
 
 .settings-modal-body {
-  padding: 24px;
+  padding: 0 24px 30px;
   overflow-y: auto;
   flex: 1;
+  position: relative;
+  z-index: 2;
 }
 
-.settings-modal-section {
-  margin-bottom: 24px;
+.settings-user-info-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
 
-.settings-modal-section:last-child {
-  margin-bottom: 0;
+.settings-user-name {
+  color: #FFFFFF;
+  font-size: 18px;
+  font-weight: 700;
+  margin: 0;
+}
+
+.settings-user-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(34, 197, 94, 0.12);
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  padding: 3px 10px;
+  border-radius: 100px;
+  color: #22C55E;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  width: fit-content;
 }
 
 .settings-modal-section .glass-card {
-  background: #1A1A1A;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  padding: 16px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  padding: 20px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  backdrop-filter: blur(5px);
+}
+
+.settings-balance-label {
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.settings-balance-amount {
+  font-size: 32px;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+  margin: 4px 0 16px;
 }
 
 .settings-account-btn {
   flex: 1;
-  padding: 10px 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  font-weight: 600;
-  transition: all 0.2s ease;
-  border: none;
-  cursor: pointer;
+  padding: 12px;
+  border-radius: 14px;
+  font-size: 14px;
+  font-weight: 700;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid transparent;
 }
 
 .settings-account-btn-active {
   background: #22C55E;
   color: #FFFFFF;
+  box-shadow: 0 8px 20px rgba(34, 197, 94, 0.3);
 }
 
 .settings-account-btn-inactive {
-  background: #2A2A2A;
-  color: #9B9B9B;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.6);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
 .settings-account-btn-inactive:hover {
-  background: #333333;
-  color: #CCCCCC;
+  background: rgba(255, 255, 255, 0.1);
+  color: #fff;
 }
 
 .settings-deposit-btn {
   width: 100%;
   background: linear-gradient(135deg, #22C55E 0%, #16A34A 100%);
   border: none;
-  border-radius: 12px;
-  padding: 14px;
+  border-radius: 16px;
+  padding: 18px;
   color: #FFFFFF;
-  font-size: 14px;
-  font-weight: 600;
+  font-size: 16px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   cursor: pointer;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 12px rgba(34, 197, 94, 0.3);
-  margin-bottom: 0;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 25px rgba(34, 197, 94, 0.35);
 }
 
 .settings-deposit-btn:hover {
-  opacity: 0.9;
-  box-shadow: 0 6px 16px rgba(34, 197, 94, 0.4);
-  transform: translateY(-1px);
-}
-
-.settings-deposit-btn:active {
-  transform: scale(0.98);
-}
-
-.settings-balance-amount {
-  color: #FFFFFF;
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0;
-  line-height: 1.2;
-  text-align: left;
-}
-
-.settings-modal-body {
-  padding: 24px;
-  overflow-y: auto;
-  flex: 1;
-  color: #FFFFFF;
-}
-
-.settings-modal-section {
-  margin-bottom: 24px;
-}
-
-.settings-modal-section:last-child {
-  margin-bottom: 0;
+  transform: translateY(-2px);
+  box-shadow: 0 15px 30px rgba(34, 197, 94, 0.45);
+  filter: brightness(1.1);
 }
 
 .settings-modal-section-with-border {
-  border-top: 2px solid rgba(255, 255, 255, 0.05);
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
   padding-top: 24px;
-  margin-top: 0;
-  margin-left: -24px;
-  margin-right: -24px;
-  padding-left: 24px;
-  padding-right: 24px;
-}
-
-.settings-user-info {
-  text-align: left;
-}
-
-.settings-user-name {
-  color: #FFFFFF;
-  font-size: 15px;
-  font-weight: 600;
-  margin: 0;
-  line-height: 1.3;
-}
-
-.settings-user-status {
-  color: #22C55E;
-  font-size: 12px;
-  font-weight: 500;
-  margin: 2px 0 0 0;
-  line-height: 1.3;
-}
-
-.settings-balance-label {
-  color: rgba(255, 255, 255, 0.6);
-  font-size: 12px;
-  font-weight: 400;
-}
-
-.settings-eye-btn {
-  background: none;
-  border: none;
-  color: rgba(255, 255, 255, 0.6);
-  cursor: pointer;
-  padding: 4px;
-  transition: color 0.2s ease;
-  font-size: 14px;
-}
-
-.settings-eye-btn:hover {
-  color: rgba(255, 255, 255, 0.8);
-}
-
-.accounts-list {
-  margin-top: 8px;
-  border-top: 2px solid rgba(255, 255, 255, 0.05);
-  padding-top: 8px;
 }
 
 .account-item {
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border: 1px solid transparent;
+  margin-bottom: 4px;
 }
 
-.account-item:last-child {
-  border-bottom: none;
+.account-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.05);
 }
 
-@keyframes slideInRight {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@media (max-width: 768px) {
-  .settings-modal-content {
-    max-width: 85%;
-    min-width: 280px;
-  }
-}
-
-/* Notifications Modal Styles */
+/* Notifications Modal Styles - Premium Glassmorphism */
 .notifications-modal-overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  background: rgba(0, 0, 0, 0.45);
   z-index: 9999;
   display: flex;
   align-items: stretch;
   justify-content: flex-end;
   padding: 0;
-  backdrop-filter: blur(4px);
-  animation: fadeIn 0.3s ease-out;
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .notifications-modal-content {
-  background: #0B0B0B;
-  border-radius: 0;
+  background: rgba(11, 11, 11, 0.82);
   width: 100%;
   max-width: 400px;
   min-width: 320px;
@@ -4658,46 +4736,66 @@ export default {
   overflow: hidden;
   display: flex;
   flex-direction: column;
-  border-left: 2px solid rgba(255, 255, 255, 0.05);
-  animation: slideInRight 0.3s ease-out;
+  border-left: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: -20px 0 60px rgba(0, 0, 0, 0.5);
+  animation: slideInRight 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
+
+.notifications-modal-content::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 150px;
+  background: radial-gradient(circle at top right, rgba(34, 197, 94, 0.08), transparent 70%);
+  pointer-events: none;
 }
 
 .notifications-modal-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 20px 24px;
-  border-bottom: none;
+  padding: 30px 24px 20px;
+  background: transparent;
+  position: relative;
+  z-index: 2;
 }
 
 .notifications-modal-title {
-  font-size: 24px;
-  font-weight: 700;
+  font-size: 26px;
+  font-weight: 800;
   color: #fff;
   margin: 0;
+  letter-spacing: -0.02em;
 }
 
 .notifications-modal-close {
-  background: none;
-  border: none;
-  color: #9B9B9B;
-  font-size: 24px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: #fff;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  padding: 4px;
-  transition: color 0.3s;
+  transition: all 0.3s ease;
 }
 
 .notifications-modal-close:hover {
-  color: #fff;
+  background: rgba(255, 255, 255, 0.12);
+  transform: rotate(90deg);
 }
 
 .notifications-modal-body {
-  padding: 24px;
+  padding: 0 24px 20px;
   overflow-y: auto;
   flex: 1;
-  color: #FFFFFF;
-  max-height: calc(100vh - 180px);
-  padding-bottom: 20px;
+  position: relative;
+  z-index: 2;
 }
 
 .notifications-empty {
@@ -4705,124 +4803,112 @@ export default {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 60px 20px;
-  text-align: center;
-}
-
-.notifications-list {
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
+  height: 100%;
+  opacity: 0.6;
 }
 
 .notification-item {
   display: flex;
-  gap: 12px;
-  padding: 16px;
-  background: #1A1A1A;
-  border: 1px solid rgba(255, 255, 255, 0.05);
-  border-radius: 12px;
-  transition: all 0.2s ease;
+  gap: 16px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.035);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 18px;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   cursor: pointer;
+  margin-bottom: 2px;
 }
 
 .notification-item:hover {
-  background: #1F1F1F;
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.15);
+  transform: translateX(-4px);
 }
 
-.notification-icon {
-  width: 40px;
-  height: 40px;
-  min-width: 40px;
+.notification-icon-wrapper {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(34, 197, 94, 0.1);
-  border-radius: 10px;
+  font-size: 20px;
+  position: relative;
+}
+
+.notification-icon-wrapper.type-success {
+  background: rgba(34, 197, 94, 0.15);
   color: #22C55E;
-  font-size: 18px;
+}
+
+.notification-icon-wrapper.type-info {
+  background: rgba(59, 130, 246, 0.15);
+  color: #3B82F6;
+}
+
+.notification-icon-wrapper.type-warning {
+  background: rgba(245, 158, 11, 0.15);
+  color: #F59E11;
 }
 
 .notification-content {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
 }
 
 .notification-title {
-  color: #FFFFFF;
-  font-size: 14px;
-  font-weight: 600;
-  margin: 0;
-  line-height: 1.3;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  margin: 0 0 4px 0;
 }
 
 .notification-message {
-  color: rgba(255, 255, 255, 0.7);
   font-size: 13px;
-  margin: 0;
-  line-height: 1.4;
+  color: rgba(255, 255, 255, 0.6);
+  line-height: 1.5;
+  margin: 0 0 6px 0;
 }
 
 .notification-time {
-  color: rgba(255, 255, 255, 0.4);
   font-size: 11px;
-  margin-top: 4px;
+  color: rgba(255, 255, 255, 0.35);
+  font-weight: 500;
 }
 
 .notifications-modal-footer {
-  padding: 20px 24px;
-  background: #0B0B0B;
+  padding: 20px 24px 30px;
+  background: transparent;
+  position: relative;
+  z-index: 2;
 }
 
 .delete-notifications-btn {
   width: 100%;
+  padding: 14px;
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: 14px;
+  color: #EF4444;
+  font-size: 14px;
+  font-weight: 700;
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 12px 20px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  border-radius: 8px;
-  color: #EF4444;
-  font-size: 14px;
-  font-weight: 600;
+  gap: 10px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.delete-notifications-btn:hover:not(.disabled):not(:disabled) {
+.delete-notifications-btn:hover {
   background: rgba(239, 68, 68, 0.2);
-  border-color: rgba(239, 68, 68, 0.5);
-  color: #DC2626;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
-}
-
-.delete-notifications-btn:active:not(.disabled):not(:disabled) {
-  transform: translateY(0);
-}
-
-.delete-notifications-btn.disabled,
-.delete-notifications-btn:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
-  background: rgba(239, 68, 68, 0.05);
-  border-color: rgba(239, 68, 68, 0.1);
-  color: rgba(239, 68, 68, 0.5);
-}
-
-.delete-notifications-btn i {
-  font-size: 14px;
+  border-color: #EF4444;
 }
 
 @media (max-width: 768px) {
+  .settings-modal-content,
   .notifications-modal-content {
-    max-width: 85%;
-    min-width: 280px;
+    max-width: 90%;
   }
 }
 
