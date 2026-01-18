@@ -203,7 +203,7 @@
 					</thead>
 					<tbody>
 						<tr v-for="week in weeklyData" :key="week.period" class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors">
-							<td class="py-2.5 px-1 font-medium">{{ week.period }}</td>
+							<td class="text-left py-2.5 px-1 font-medium">{{ week.period }}</td>
 							<td class="text-right py-2.5 px-1 tabular-nums font-medium" :class="week.profit >= 0 ? 'text-green-500' : 'text-red-500'">
 								{{ week.profit >= 0 ? '+' : '' }}${{ week.profit.toFixed(2) }}
 							</td>
@@ -289,7 +289,7 @@
 			<div class="flex flex-col space-y-1.5 text-center sm:text-left">
 				<h2 class="text-lg font-semibold leading-none tracking-tight flex items-center justify-between">
 					<span class="text-lg font-semibold text-[#FAFAFA]">Relatório Diário — {{ selectedDay.date }}/2026</span>
-					<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors bg-green-500/10 text-green-500 border-green-500/20">
+					<div class="inline-flex items-center rounded-full border px-2.5 py-0.5 text-xs font-semibold transition-colors bg-green-500/10 text-green-500 border-green-500/20 mr-8">
 						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ selectedDay.profit.toFixed(2) }}
 					</div>
 				</h2>
