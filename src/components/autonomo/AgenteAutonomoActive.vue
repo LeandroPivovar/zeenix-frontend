@@ -1,12 +1,12 @@
 ﻿<template>
 	<div class="min-h-screen text-[#FAFAFA] font-sans">
 		<!-- Header -->
-		<div class="flex items-center justify-between mb-6">
+		<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
 			<div>
 				<p class="text-[#A1A1AA] text-sm mb-1">Dados baseados no período selecionado</p>
 				<h2 class="text-xl font-bold">Agente Autônomo</h2>
 			</div>
-			<div class="flex items-center gap-2">
+			<div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
 				<div class="relative z-[40]">
 					<button 
 						@click.stop="toggleDatePicker"
