@@ -30,7 +30,7 @@
                 @click.prevent="navigateAndClose('/agente-autonomo')"
                 data-text="Agente Autônomo"
             >
-                <i class="fa-solid fa-robot w-5 opacity-85"></i>
+                <i class="fa-solid fa-atom w-5 opacity-85"></i>
                 <span>Agente Autônomo</span>
             </a>
 

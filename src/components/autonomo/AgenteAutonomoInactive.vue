@@ -32,7 +32,7 @@
 								<div class="absolute w-24 h-24 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1;"></div>
 								<!-- Central AI Robot Icon -->
 								<div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center;">
-									<i class="fas fa-robot text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3.5rem !important;"></i>
+									<i class="fas fa-atom text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3.5rem !important;"></i>
 								</div>
 								<!-- Orbiting Data Nodes -->
 								<div id="iyljui" class="absolute w-3 h-3 bg-zenix-green rounded-full" style="opacity: 1;"></div>
@@ -58,7 +58,7 @@
 							<!-- Card 1: AUTONOMIA -->
 							<div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
 								<div class="flex items-center justify-center gap-2 mb-2">
-									<i class="fas fa-robot text-[#22C55E] text-lg"></i>
+									<i class="fas fa-atom text-[#22C55E] text-lg"></i>
 									<p class="text-[10px] text-white uppercase font-bold status-label">AUTONOMIA</p>
 								</div>
 								<p class="text-base font-bold text-white status-value">100% Autônomo</p>
@@ -1520,6 +1520,22 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     100% { transform: rotate(360deg) translateX(3rem) rotate(-360deg); }
 }
 
+@keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes ringPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), 0 0 40px rgba(34, 197, 94, 0.1); }
+    50% { box-shadow: 0 0 40px rgba(34, 197, 94, 0.4), 0 0 80px rgba(34, 197, 94, 0.2); }
+}
+
+.ai-glow-ring {
+    animation: ringPulse 2s ease-in-out infinite;
+}
+
+#irazem { animation: rotate 8s linear infinite; }
+#i5uptv { animation: rotate 6s linear infinite reverse; }
 #iyljui { animation: orbit1 4s linear infinite; }
 #isxtjr { animation: orbit2 5s linear infinite; }
 #ijse57 { animation: orbit3 6s linear infinite; }

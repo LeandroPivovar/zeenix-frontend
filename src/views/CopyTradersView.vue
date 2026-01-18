@@ -472,6 +472,85 @@
     to { transform: rotate(360deg); }
   }
 
+  @keyframes gridMove {
+    0% { background-position: 0 0; }
+    100% { background-position: 20px 20px; }
+  }
+
+  @keyframes rotate {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+
+  @keyframes orbit1 {
+    0% { transform: rotate(0deg) translateX(5rem) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(5rem) rotate(-360deg); }
+  }
+
+  @keyframes orbit2 {
+    0% { transform: rotate(0deg) translateX(4rem) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(4rem) rotate(-360deg); }
+  }
+
+  @keyframes orbit3 {
+    0% { transform: rotate(0deg) translateX(3rem) rotate(0deg); }
+    100% { transform: rotate(360deg) translateX(3rem) rotate(-360deg); }
+  }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-10px); }
+  }
+
+  @keyframes streamRight {
+    0% { left: -20px; opacity: 0; }
+    50% { opacity: 1; }
+    100% { left: 100%; opacity: 0; }
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.5; }
+  }
+
+  @keyframes brainPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.1); opacity: 0.9; }
+  }
+
+  @keyframes ringPulse {
+    0%, 100% { box-shadow: 0 0 20px rgba(34, 197, 94, 0.2), 0 0 40px rgba(34, 197, 94, 0.1); }
+    50% { box-shadow: 0 0 40px rgba(34, 197, 94, 0.4), 0 0 80px rgba(34, 197, 94, 0.2); }
+  }
+
+  .ai-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  }
+
+  .ai-brain-glow {
+    animation: brainPulse 2s ease-in-out infinite;
+    filter: drop-shadow(0 0 20px rgba(34, 197, 94, 0.4));
+  }
+
+  .ai-glow-ring {
+    animation: ringPulse 2s ease-in-out infinite;
+  }
+
+  #irazem { animation: rotate 8s linear infinite; }
+  #i5uptv { animation: rotate 6s linear infinite reverse; }
+  #iyljui { animation: orbit1 4s linear infinite; }
+  #isxtjr { animation: orbit2 5s linear infinite; }
+  #ijse57 { animation: orbit3 6s linear infinite; }
+  
+  #iw45yh { animation: float 3s ease-in-out infinite; }
+  #i2cpbj { animation: float 4s ease-in-out infinite 0.5s; }
+  #ispbex { animation: float 3.5s ease-in-out infinite 1s; }
+  #i7wi6r { animation: float 4.5s ease-in-out infinite 1.5s; }
+
+  #ivhu5o { animation: streamRight 2s linear infinite; }
+  #iybi4e { animation: streamRight 2.5s linear infinite 0.5s; }
+  #icjipi { animation: streamRight 3s linear infinite 1s; }
+
   @media (max-width: 1024px) {
     .layout-copy-traders {
       width: 100% !important;

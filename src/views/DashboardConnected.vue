@@ -761,7 +761,7 @@ export default {
           alt: 'abstract futuristic trading charts holographic financial data visualization glowing green graphs dark technology interface'
         },
         {
-          icon: 'fas fa-robot',
+          icon: 'fas fa-atom',
           title: 'Agente Autônomo',
           description: 'Operações automatizadas 24/7',
           buttonText: 'Acessar',
@@ -844,7 +844,7 @@ export default {
           chartEndY: 25
         },
         {
-          icon: 'fas fa-robot',
+          icon: 'fas fa-atom',
           title: 'Agente Autônomo',
           percentage: '+15.2%',
           usage: 0,
@@ -5033,6 +5033,23 @@ export default {
   transform: translateY(-50%);
   border-radius: 1px;
   z-index: 1;
+}
+
+.animate-icon-pulse {
+  animation: iconPulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+@keyframes iconPulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.2);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+    box-shadow: 0 0 40px rgba(34, 197, 94, 0.4);
+  }
 }
 
 </style>

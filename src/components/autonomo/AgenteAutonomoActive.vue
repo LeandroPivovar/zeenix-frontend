@@ -124,7 +124,7 @@
 				<!-- Estrategia -->
 				<div class="flex items-center gap-3 hover:bg-[#1a1a1a] rounded-lg p-2 -m-2 transition-colors">
 					<div class="p-2 bg-[#1a1a1a] rounded-md">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-bot text-green-500"><path d="M12 8V4H8"></path><rect width="16" height="12" x="4" y="8" rx="2"></rect><path d="M2 14h2"></path><path d="M20 14h2"></path><path d="M15 13v2"></path><path d="M9 13v2"></path></svg>
+						<i class="fas fa-atom text-green-500 text-base"></i>
 					</div>
 					<div class="text-left">
 						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Estratégia</div>
