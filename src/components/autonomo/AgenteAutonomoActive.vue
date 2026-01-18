@@ -213,32 +213,34 @@
 			<!-- Weekly Table -->
 			<div class="overflow-x-auto mb-6">
 				<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide text-left">Resumo Semanal</h4>
-				<table class="w-full text-xs">
-					<thead>
-						<tr class="border-b border-[#27272a]">
-							<th class="text-left py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Semana</th>
-							<th class="text-right py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Lucro</th>
-							<th class="text-right py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Capital Final</th>
-							<th class="text-right py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">%</th>
-							<th class="text-right py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Ops</th>
-							<th class="text-right py-2 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Win Rate</th>
-						</tr>
-					</thead>
-					<tbody>
-						<tr v-for="week in weeklyData" :key="week.period" class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors">
-							<td class="text-left py-2.5 px-1 font-medium">{{ week.period }}</td>
-							<td class="text-right py-2.5 px-1 tabular-nums font-medium" :class="week.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-								{{ week.profit >= 0 ? '+' : '' }}${{ week.profit.toFixed(2) }}
-							</td>
-							<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">${{ week.finalCapital.toFixed(2) }}</td>
-							<td class="text-right py-2.5 px-1 tabular-nums" :class="week.percent >= 0 ? 'text-green-500' : 'text-red-500'">
-								{{ week.percent >= 0 ? '+' : '' }}{{ week.percent.toFixed(2) }}%
-							</td>
-							<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">{{ week.ops }}</td>
-							<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">{{ week.winRate.toFixed(1) }}%</td>
-						</tr>
-					</tbody>
-				</table>
+				<div class="overflow-x-auto">
+					<table class="w-full text-[11px] sm:text-xs md:text-sm">
+						<thead class="border-b border-[#27272a]">
+							<tr class="text-[#A1A1AA] text-[10px] sm:text-xs">
+								<th class="text-left py-2 px-1 font-medium uppercase tracking-wide">Semana</th>
+								<th class="text-right py-2 px-1 font-medium uppercase tracking-wide">Lucro</th>
+								<th class="text-right py-2 px-1 font-medium uppercase tracking-wide">Capital Final</th>
+								<th class="text-right py-2 px-1 font-medium uppercase tracking-wide">%</th>
+								<th class="text-right py-2 px-1 font-medium uppercase tracking-wide">Ops</th>
+								<th class="text-right py-2 px-1 font-medium uppercase tracking-wide">Win Rate</th>
+							</tr>
+						</thead>
+						<tbody>
+							<tr v-for="week in weeklyData" :key="week.period" class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors">
+								<td class="text-left py-2.5 px-1 font-medium">{{ week.period }}</td>
+								<td class="text-right py-2.5 px-1 tabular-nums font-medium" :class="week.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+									{{ week.profit >= 0 ? '+' : '' }}${{ week.profit.toFixed(2) }}
+								</td>
+								<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">${{ week.finalCapital.toFixed(2) }}</td>
+								<td class="text-right py-2.5 px-1 tabular-nums" :class="week.percent >= 0 ? 'text-green-500' : 'text-red-500'">
+									{{ week.percent >= 0 ? '+' : '' }}{{ week.percent.toFixed(2) }}%
+								</td>
+								<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">{{ week.ops }}</td>
+								<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">{{ week.winRate.toFixed(1) }}%</td>
+							</tr>
+						</tbody>
+					</table>
+				</div>
 			</div>
 
 			<!-- Daily Table -->
@@ -246,15 +248,15 @@
 				<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide text-left">Detalhamento Diário</h4>
 				<div class="relative overflow-hidden h-[400px]"> 
 					<div class="overflow-y-auto custom-scrollbar h-full relative">
-						<table class="w-full text-xs">
+						<table class="w-full text-[11px] sm:text-xs md:text-sm">
 							<thead class="sticky top-0 bg-[#0c0c0c] z-10 box-border border-b border-[#27272a]">
-								<tr>
-									<th class="text-left py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Dia</th>
-									<th class="text-right py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Lucro</th>
-									<th class="text-right py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Capital</th>
-									<th class="text-right py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Ops</th>
-									<th class="text-right py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Win%</th>
-									<th class="text-right py-2.5 px-1 text-[#A1A1AA] font-medium uppercase tracking-wide text-[10px]">Tempo Ops</th>
+								<tr class="text-[#A1A1AA] text-[10px] sm:text-xs">
+									<th class="text-left py-2.5 px-1 font-medium uppercase tracking-wide">Dia</th>
+									<th class="text-right py-2.5 px-1 font-medium uppercase tracking-wide">Lucro</th>
+									<th class="text-right py-2.5 px-1 font-medium uppercase tracking-wide">Capital</th>
+									<th class="text-right py-2.5 px-1 font-medium uppercase tracking-wide">Ops</th>
+									<th class="text-right py-2.5 px-1 font-medium uppercase tracking-wide">Win%</th>
+									<th class="text-right py-2.5 px-1 font-medium uppercase tracking-wide">Tempo Ops</th>
 								</tr>
 							</thead>
 							<tbody>
@@ -317,14 +319,14 @@
 			<div class="flex flex-col space-y-1.5 text-left mb-2">
 				<h2 class="text-sm sm:text-lg font-semibold leading-none tracking-tight flex items-center justify-between gap-4">
 					<span class="text-[#FAFAFA]">Relatório Diário — {{ selectedDay.date }}/2026</span>
-					<div class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-green-500/10 text-green-500 border-green-500/20">
+					<div class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-green-500/10 text-green-500 border-green-500/20 mr-8 sm:mr-10">
 						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ selectedDay.profit.toFixed(2) }}
 					</div>
 				</h2>
 			</div>
 
 			<!-- KPI Grid -->
-			<div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mt-4">
+			<div class="grid grid-cols-2 md:grid-cols-4 gap-2 sm:gap-3 mt-4 text-left">
 				<!-- Lucro do Dia -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3">
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Lucro do Dia</div>
@@ -347,8 +349,8 @@
 				</div>
 
 				<!-- Meta Diária -->
-				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-2.5 sm:p-3">
-					<div class="text-[#A1A1AA] text-[9px] sm:text-[10px] uppercase tracking-wide mb-0.5 sm:mb-1 text-left">Meta Diária</div>
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3 flex flex-col items-start">
+					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Meta Diária</div>
 					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors bg-green-500/10 text-green-500 border-green-500/20 text-[10px] sm:text-xs text-left">
 						Atingida
 					</div>
@@ -356,8 +358,8 @@
 				</div>
 
 				<!-- Firewall -->
-				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-2.5 sm:p-3">
-					<div class="text-[#A1A1AA] text-[9px] sm:text-[10px] uppercase tracking-wide mb-0.5 sm:mb-1 text-left">Firewall</div>
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3 flex flex-col items-start">
+					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Firewall</div>
 					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors bg-yellow-500/10 text-yellow-500 border-yellow-500/20 text-[10px] sm:text-xs text-left">
 						Ativado
 					</div>
