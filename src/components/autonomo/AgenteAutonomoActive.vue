@@ -1,10 +1,10 @@
 ﻿<template>
 	<div class="min-h-screen text-[#FAFAFA] font-sans">
 		<!-- Header -->
-		<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4">
+		<div class="flex flex-col md:flex-row md:items-center md:justify-between mb-6 gap-4 mt-8">
 			<div>
-				<p class="text-[#A1A1AA] text-sm mb-1">Dados baseados no período selecionado</p>
-				<h2 class="text-xl font-bold">Agente Autônomo</h2>
+				<h2 class="text-xl font-bold mb-1">Agente Autônomo</h2>
+				<p class="text-[#A1A1AA] text-xs">Dados baseados no período selecionado</p>
 			</div>
 			<div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
 				<div class="relative z-[40]">
