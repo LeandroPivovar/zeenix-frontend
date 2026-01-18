@@ -3,17 +3,40 @@
 		<!-- Header -->
 		<div class="flex items-center justify-between mb-6">
 			<div>
-				<h2 class="text-xl font-bold mb-1">Agente Autônomo</h2>
-				<p class="text-[#A1A1AA] text-sm">Dados baseados no período selecionado</p>
+				<p class="text-[#A1A1AA] text-sm mb-1">Dados baseados no período selecionado</p>
+				<h2 class="text-xl font-bold">Agente Autônomo</h2>
 			</div>
 			<div class="flex items-center gap-2">
-				<button class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-[#27272a] hover:bg-[#27272a] hover:text-white h-9 px-4 py-2 justify-between gap-2 bg-[#0c0c0c] text-[#FAFAFA] min-w-[240px]" type="button">
-					<div class="flex items-center gap-2">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar text-green-500"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
-						<span class="font-medium">{{ dateRangeText }}</span>
+				<div class="relative z-[40]">
+					<button 
+						@click.stop="toggleDatePicker"
+						class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-[#27272a] hover:bg-[#27272a] hover:text-white h-9 px-4 py-2 justify-between gap-2 bg-[#0c0c0c] text-[#FAFAFA] min-w-[240px]" 
+						type="button"
+					>
+						<div class="flex items-center gap-2">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-calendar text-green-500"><path d="M8 2v4"></path><path d="M16 2v4"></path><rect width="18" height="18" x="3" y="4" rx="2"></rect><path d="M3 10h18"></path></svg>
+							<span class="font-medium">{{ dateRangeText }}</span>
+						</div>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down text-[#A1A1AA] transition-transform duration-200" :class="{ 'rotate-180': showDatePicker }"><path d="m6 9 6 6 6-6"></path></svg>
+					</button>
+
+					<!-- Dropdown Menu -->
+					<div 
+						v-if="showDatePicker"
+						class="absolute top-full left-0 mt-1 w-full rounded-md border border-[#27272a] bg-[#0c0c0c] shadow-lg z-[50] py-1"
+					>
+						<button 
+							v-for="option in dateOptions" 
+							:key="option.value"
+							@click="selectDateRange(option)"
+							class="w-full text-left px-4 py-2 text-sm text-[#A1A1AA] hover:text-[#FAFAFA] hover:bg-[#27272a] transition-colors flex items-center justify-between group"
+							:class="{ 'text-green-500 bg-[#27272a]': selectedPeriod === option.value }"
+						>
+							<span>{{ option.label }}</span>
+							<svg v-if="selectedPeriod === option.value" xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-check text-green-500"><polyline points="20 6 9 17 4 12"></polyline></svg>
+						</button>
 					</div>
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chevron-down text-[#A1A1AA]"><path d="m6 9 6 6 6-6"></path></svg>
-				</button>
+				</div>
 				
 				<button @click="pausarAgenteEIrParaTopo" class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors border border-[#27272a] hover:bg-[#27272a] h-9 px-4 py-2 bg-[#0c0c0c] text-[#FAFAFA] gap-2 ml-2">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect width="4" height="16" x="6" y="4"></rect><rect width="4" height="16" x="14" y="4"></rect></svg>
@@ -276,8 +299,8 @@
 	</div>
 
 	<!-- Daily Details Modal -->
-	<div v-if="selectedDay" class="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 duration-200" @click.self="selectedDay = null">
-		<div role="dialog" class="grid w-full gap-4 border border-[#27272a] p-6 shadow-lg sm:rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto bg-[#09090b] relative animate-in fade-in zoom-in-95 duration-200">
+	<div v-if="selectedDay" class="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-200" @click.self="selectedDay = null">
+		<div role="dialog" class="grid w-full gap-4 border border-[#27272a] p-4 sm:p-6 shadow-lg rounded-lg max-w-4xl max-h-[90vh] overflow-y-auto bg-[#09090b] relative flex flex-col">
 			
 			<!-- Close Button -->
 			<button type="button" class="absolute right-4 top-4 rounded-sm opacity-70 ring-offset-background transition-opacity hover:opacity-100 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:pointer-events-none text-[#A1A1AA] hover:text-[#FAFAFA]" @click="selectedDay = null">
@@ -296,7 +319,7 @@
 			</div>
 
 			<!-- KPI Grid -->
-			<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mt-4">
+			<div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mt-4">
 				<!-- Lucro do Dia -->
 				<div class="rounded-lg border border-[#27272a] shadow-sm bg-[#0c0c0c] p-3">
 					<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide mb-1 text-left">Lucro do Dia</div>
@@ -337,7 +360,7 @@
 			</div>
 
 			<!-- Statistics Grid -->
-			<div class="grid grid-cols-3 md:grid-cols-6 gap-3 mt-4">
+			<div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3 mt-4">
 				<div class="text-center p-2 bg-[#27272a]/30 rounded">
 					<div class="text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.ops }}</div>
 					<div class="text-[10px] text-[#A1A1AA] uppercase">Operações</div>
@@ -539,7 +562,16 @@
 				showStopLossModal: false,
 				
 				// Novas propriedades para o layout redesenhado
+				showDatePicker: false,
 				selectedPeriod: '30d',
+				dateOptions: [
+					{ label: 'Hoje', value: 'today' },
+					{ label: 'Ontem', value: 'yesterday' },
+					{ label: 'Últimos 7 dias', value: '7d' },
+					{ label: 'Últimos 30 dias', value: '30d' },
+					{ label: 'Mês Atual', value: 'thisMonth' },
+					{ label: 'Mês Passado', value: 'lastMonth' },
+				],
 				weeklyData: [
 					{ period: '15/12 - 21/12', profit: 3385.05, finalCapital: 105428.46, percent: 3.32, ops: 84, winRate: 75.0 },
 					{ period: '22/12 - 28/12', profit: 6641.49, finalCapital: 112069.95, percent: 6.30, ops: 271, winRate: 72.3 },
@@ -563,6 +595,8 @@
 			};
 		},
 		mounted() {
+			window.addEventListener('click', this.closeDatePickerOnClickOutside);
+			
 			if (this.abaAtiva === 'grafico') {
 				this.$nextTick(() => {
 					this.initIndexChart();
@@ -570,6 +604,9 @@
 					this.fetchPriceHistory();
 				});
 			}
+		},
+		beforeUnmount() {
+			window.removeEventListener('click', this.closeDatePickerOnClickOutside);
 		},
 		computed: {
 			dateRangeText() {
@@ -739,6 +776,22 @@
 			stopPricePolling() {},
 			stopLogsPolling() {},
 			startLogsPolling() {},
+			
+			// Date Picker Methods
+			toggleDatePicker() {
+				this.showDatePicker = !this.showDatePicker;
+			},
+			closeDatePickerOnClickOutside(e) {
+				if (this.showDatePicker) {
+					this.showDatePicker = false;
+				}
+			},
+			selectDateRange(option) {
+				this.selectedPeriod = option.value;
+				this.showDatePicker = false;
+				// Aqui você pode adicionar lógica para filtrar os dados baseado no período
+				console.log('[AgenteAutonomo] Período selecionado:', option.label);
+			},
 		},
 		watch: {
 			'agenteData.accountBalance'() { this.$forceUpdate(); }
