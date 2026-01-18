@@ -762,22 +762,22 @@
 
                                 <!-- Descrição da Gestão de Risco (Abaixo do Grid) -->
                                 <div class="mt-3 p-3 bg-zenix-black/40 border border-zenix-border/20 rounded-xl">
-                                    <p class="text-[11px] text-zenix-secondary leading-relaxed whitespace-pre-line">{{ realRiskDescription }}</p>
+                                    <p class="text-[11px] text-zenix-secondary leading-snug text-justify whitespace-pre-line">{{ realRiskDescription }}</p>
                                 </div>
                             </div>
 
                                 <!-- Divisor Sutil -->
-                                <div class="h-px w-full bg-[#1C1C1C] my-5 opacity-50"></div>
+                                <div class="h-px w-full bg-zenix-border/20 my-6"></div>
 
                                 <!-- Botão Pausar/Reiniciar (100% largura) -->
                                 <div class="flex flex-col items-center mt-0">
                                     <div class="mb-3 text-center" v-if="!aiStoppedAutomatically">
                                         <p class="text-white font-bold text-sm">IA em Funcionamento</p>
-                                        <p class="text-[11px] text-zenix-secondary mt-1">Monitorando o mercado e executando a estratégia automaticamente.</p>
+                                        <p class="text-[11px] text-zenix-secondary mt-1 text-justify leading-snug">Monitorando o mercado e executando a estratégia automaticamente.</p>
                                     </div>
                                     <div class="mb-3 text-center" v-else>
                                         <p class="text-white font-bold text-sm">IA Pausada Automaticamente</p>
-                                        <p class="text-[11px] text-zenix-secondary mt-1">Meta atingida ou limite de proteção alcançado.</p>
+                                        <p class="text-[11px] text-zenix-secondary mt-1 text-justify leading-snug">Meta atingida ou limite de proteção alcançado.</p>
                                     </div>
                                     <button 
                                         class="w-full h-[56px] bg-zenix-yellow text-black rounded-xl text-sm font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center pause-btn"
