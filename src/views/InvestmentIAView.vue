@@ -105,40 +105,40 @@
                             <!-- Status Cards -->
                             <div class="col-span-7 grid grid-cols-2 gap-4 status-cards-container">
                                 <!-- Card 1: ESTRATÉGIAS -->
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
-                                    <div class="flex items-center gap-2 mb-2">
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+                                    <div class="flex items-center justify-center gap-2 mb-2">
                                         <i class="fas fa-brain text-[#22C55E] text-lg"></i>
-                                        <p class="text-[10px] text-white uppercase font-semibold status-label">ESTRATÉGIAS</p>
+                                        <p class="text-[10px] text-white uppercase font-bold status-label">ESTRATÉGIAS</p>
                                     </div>
                                     <p class="text-base font-bold text-white status-value">5 IAs Especializadas</p>
-                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Dígitos, Price Action e Híbridas</p>
+                                    <p class="text-xs text-zenix-label mt-1 status-description">Dígitos, Price Action e Híbridas</p>
                                 </div>
                                 <!-- Card 2: DESEMPENHO -->
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
-                                    <div class="flex items-center gap-2 mb-2">
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+                                    <div class="flex items-center justify-center gap-2 mb-2">
                                         <i class="fas fa-chart-line text-[#22C55E] text-lg"></i>
-                                        <p class="text-[10px] text-white uppercase font-semibold status-label">DESEMPENHO</p>
+                                        <p class="text-[10px] text-white uppercase font-bold status-label">DESEMPENHO</p>
                                     </div>
                                     <p class="text-base font-bold text-white status-value">60% a 75%</p>
-                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Varia por estratégia e modo</p>
+                                    <p class="text-xs text-zenix-label mt-1 status-description">Varia por estratégia e modo</p>
                                 </div>
                                 <!-- Card 3: CONTROLE -->
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
-                                    <div class="flex items-center gap-2 mb-2">
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+                                    <div class="flex items-center justify-center gap-2 mb-2">
                                         <i class="fas fa-sliders-h text-[#22C55E] text-lg"></i>
-                                        <p class="text-[10px] text-white uppercase font-semibold status-label">CONTROLE</p>
+                                        <p class="text-[10px] text-white uppercase font-bold status-label">CONTROLE</p>
                                     </div>
                                     <p class="text-base font-bold text-white status-value">Parcial com Supervisão</p>
-                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Você decide quando operar</p>
+                                    <p class="text-xs text-zenix-label mt-1 status-description">Você decide quando operar</p>
                                 </div>
                                 <!-- Card 4: SEGURANÇA -->
-                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile">
-                                    <div class="flex items-center gap-2 mb-2">
+                                <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
+                                    <div class="flex items-center justify-center gap-2 mb-2">
                                         <i class="fas fa-shield-alt text-[#22C55E] text-lg"></i>
-                                        <p class="text-[10px] text-white uppercase font-semibold status-label">SEGURANÇA</p>
+                                        <p class="text-[10px] text-white uppercase font-bold status-label">SEGURANÇA</p>
                                     </div>
                                     <p class="text-base font-bold text-white status-value">Stop Loss Duplo</p>
-                                    <p class="text-[10px] text-zenix-label mt-1 status-description">Normal + Blindado automáticos</p>
+                                    <p class="text-xs text-zenix-label mt-1 status-description">Normal + Blindado automáticos</p>
                                 </div>
                             </div>
                         </div>

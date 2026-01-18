@@ -97,39 +97,39 @@
                 <div class="col-span-7 grid grid-cols-2 gap-4 status-cards-container">
                   <!-- Card 1: CÓPIA -->
                   <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center justify-center text-center">
-                    <div class="flex items-center justify-center gap-2 mb-3">
+                    <div class="flex items-center justify-center gap-2 mb-2">
                       <i class="fas fa-users text-[#22C55E] text-lg"></i>
-                      <p class="text-[10px] text-white uppercase font-semibold status-label">CÓPIA</p>
+                      <p class="text-[10px] text-white uppercase font-bold status-label">CÓPIA</p>
                     </div>
                     <p class="text-base font-bold text-white status-value">Traders e IAs</p>
-                    <p class="text-base font-bold text-white mt-1 status-description">Escolha quem copiar</p>
+                    <p class="text-xs text-zenix-label mt-1 status-description">Escolha quem copiar</p>
                   </div>
                   <!-- Card 2: DIVERSIFICAR -->
                   <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center justify-center text-center">
-                    <div class="flex items-center justify-center gap-2 mb-3">
+                    <div class="flex items-center justify-center gap-2 mb-2">
                       <i class="fas fa-layer-group text-[#22C55E] text-lg"></i>
-                      <p class="text-[10px] text-white uppercase font-semibold status-label">DIVERSIFICAR</p>
+                      <p class="text-[10px] text-white uppercase font-bold status-label">DIVERSIFICAR</p>
                     </div>
                     <p class="text-base font-bold text-white status-value">Múltiplas Fontes</p>
-                    <p class="text-base font-bold text-white mt-1 status-description">Copie 3+ traders simultaneamente</p>
+                    <p class="text-xs text-zenix-label mt-1 status-description">Copie 3+ traders simultaneamente</p>
                   </div>
                   <!-- Card 3: AJUSTAR -->
                   <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center justify-center text-center">
-                    <div class="flex items-center justify-center gap-2 mb-3">
+                    <div class="flex items-center justify-center gap-2 mb-2">
                       <i class="fas fa-sliders-h text-[#22C55E] text-lg"></i>
-                      <p class="text-[10px] text-white uppercase font-semibold status-label">AJUSTAR</p>
+                      <p class="text-[10px] text-white uppercase font-bold status-label">AJUSTAR</p>
                     </div>
                     <p class="text-base font-bold text-white status-value">Proporcional ao Saldo</p>
-                    <p class="text-base font-bold text-white mt-1 status-description">Ou valor fixo por operação</p>
+                    <p class="text-xs text-zenix-label mt-1 status-description">Ou valor fixo por operação</p>
                   </div>
                   <!-- Card 4: PROTEGER -->
                   <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center justify-center text-center">
-                    <div class="flex items-center justify-center gap-2 mb-3">
+                    <div class="flex items-center justify-center gap-2 mb-2">
                       <i class="fas fa-shield-alt text-[#22C55E] text-lg"></i>
-                      <p class="text-[10px] text-white uppercase font-semibold status-label">PROTEGER</p>
+                      <p class="text-[10px] text-white uppercase font-bold status-label">PROTEGER</p>
                     </div>
                     <p class="text-base font-bold text-white status-value">Cópia Inteligente</p>
-                    <p class="text-base font-bold text-white mt-1 status-description">Gestão otimizada</p>
+                    <p class="text-xs text-zenix-label mt-1 status-description">Gestão otimizada</p>
                   </div>
                 </div>
               </div>
