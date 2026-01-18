@@ -302,33 +302,13 @@
 							</div>
 						</div>
 
-						<!-- Resumo da Configuração -->
-						<div class="summary-section-in-card">
-							<label class="form-label mb-3">Resumo da Configuração</label>
-							<div class="summary-grid-new">
-								<div class="summary-item-new">
-									<span class="label">Agente</span>
-									<span class="value">{{ selectedAgent ? selectedAgent.toUpperCase() : '---' }}</span>
-								</div>
-								<div class="summary-item-new">
-									<span class="label">Risco</span>
-									<span class="value">{{ getRiskTitle(selectedRisk) }}</span>
-								</div>
-								<div class="summary-item-new">
-									<span class="label">Entrada</span>
-									<span class="value">${{ valorOperacaoNumero.toFixed(2) }}</span>
-								</div>
-								<div class="summary-item-new">
-									<span class="label">Meta Diária</span>
-									<span class="value green">${{ metaLucroNumero.toFixed(2) }}</span>
-								</div>
-							</div>
-						</div>
 
 						<!-- Botão de Iniciar Agente -->
-						<button class="start-agent-btn" @click="iniciarAgente">
-							Iniciar Agente Autônomo
-						</button>
+						<div class="mt-auto">
+							<button class="start-agent-btn" @click="iniciarAgente">
+								Iniciar Agente Autônomo
+							</button>
+						</div>
 					</div>
 				</div>
 
@@ -676,22 +656,25 @@ export default {
     background: linear-gradient(135deg, rgb(9 20 9 / 0%) 0%, rgb(13 20 13) 50%, #00000066 100%) !important;
     border: 2px solid #1C1C1C;
     border-radius: 0.75rem;
-    padding: 1.25rem;
+    padding: 1rem;
     box-shadow: 0 0 8px rgba(0, 0, 0, 0.25);
     width: 100%;
     box-sizing: border-box;
     transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
 }
 
 .config-card.premium-card {
     position: relative;
-    /* overflow: hidden; */ /* Removido para não cortar tooltips */
 }
 
 .card-content {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem; /* Reduzindo gap de 1.25rem (20px) para 0.5rem */
+    gap: 1rem;
+    height: 100%;
+    flex: 1;
 }
 
 /* Desktop/Mobile Header Visibility */
@@ -1126,45 +1109,6 @@ export default {
 
 .ai-status-text.active { color: #22C55E; }
 
-/* Summary Card Style */
-.summary-grid-new {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-}
-
-.summary-item-new {
-    display: flex;
-    flex-direction: column;
-    background: rgba(255, 255, 255, 0.02);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-    padding: 0.75rem;
-    border-radius: 0.5rem;
-    text-align: left;
-}
-
-.summary-item-new .label {
-    font-size: 0.65rem;
-    text-transform: uppercase;
-    color: #777;
-    margin-bottom: 2px;
-}
-
-.summary-item-new .value {
-    font-size: 1rem;
-    font-weight: 700;
-    color: #fff;
-}
-
-.summary-item-new .value.green { color: #22C55E; }
-
-/* New Refinements */
-.summary-section-in-card {
-    margin-top: 1rem;
-    padding-top: 1rem;
-    border-top: 1px dashed rgba(255, 255, 255, 0.1);
-}
 
 .start-action-container {
     max-width: 100%;
