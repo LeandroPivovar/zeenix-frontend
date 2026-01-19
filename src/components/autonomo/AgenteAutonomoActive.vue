@@ -111,7 +111,7 @@
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">+${{ avgDailyProfit.toFixed(2) }}</div>
 					<div class="flex items-center gap-2">
-						<span class="text-[#A1A1AA] text-xs">$25,03/op</span>
+						<span class="text-[#A1A1AA] text-xs">${{ Math.abs(avgProfitPerOp).toFixed(2) }}/op</span>
 					</div>
 				</div>
 			</div>
@@ -648,6 +648,8 @@
 					{ period: '12/01 - 18/01', profit: 5769.39, finalCapital: 130928.07, percent: 4.61, ops: 249, winRate: 73.9 },
 				],
 				dailyData: [],
+			dailyTrades: [],
+			agentConfig: null,
 
 				// Agent Switcher
 				showAgentSwitcher: false,
@@ -678,6 +680,7 @@
 				this.$nextTick(() => {
 					this.initIndexChart();
 					// Buscar dados iniciais
+					this.fetchAgentConfig(); // Fetch agent configuration for initialBalance
 					this.fetchProfitEvolution();
 					this.fetchDailyStats();
 				});
@@ -701,7 +704,8 @@
 				return `${formatDate(startDate)} - ${formatDate(today)} ${today.getFullYear()}`;
 			},
 			initialCapital() {
-				return this.sessionStats?.totalCapital || this.totalCapital || 27808.68;
+				// Priority: 1. Agent config initial balance, 2. Account balance, 3. Fallback to  0
+			return this.agentConfig?.initialBalance || this.agenteData?.accountBalance || 0;
 			},
 			finalCapital() {
 				return this.initialCapital + this.periodProfit;
@@ -718,6 +722,12 @@
 				const totalProfit = this.dailyData.reduce((sum, day) => sum + day.profit, 0);
 				return totalProfit / this.dailyData.length;
 			},
+	avgProfitPerOp() {
+		// Calculate average profit per operation
+		const totalOps = this.sessionStats?.totalTrades || 0;
+		if (totalOps === 0) return 0;
+		return this.periodProfit / totalOps;
+	},
 			bestDay() {
 				if (!Array.isArray(this.dailyData) || this.dailyData.length === 0) {
 					return { value: 0, date: '--' };
@@ -964,6 +974,45 @@
                     }
 				} catch (error) {
 					console.error("[AgenteAutonomo] Erro ao buscar estatísticas diárias:", error);
+				}
+			},
+
+			async fetchAgentConfig() {
+				const userId = this.getUserId();
+				console.log('[AgenteAutonomo] fetchAgentConfig chamado para user:', userId);
+				if (!userId) return;
+
+				try {
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					const url = `${apiBase}/autonomous-agent/config/${userId}`;
+					console.log('[AgenteAutonomo] Buscando config do agente em:', url);
+					
+					const response = await fetch(url, {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${localStorage.getItem("token")}`,
+						},
+					});
+
+					console.log('[AgenteAutonomo] Agent Config Response Status:', response.status);
+
+					if (response.ok) {
+						const result = await response.json();
+						console.log('[AgenteAutonomo] agent-config resultado:', result);
+						if (result.success && result.data) {
+							this.agentConfig = result.data;
+							console.log('[AgenteAutonomo] ✅ Agent config carregado:', {
+								initialBalance: this.agentConfig.initialBalance,
+								isActive: this.agentConfig.isActive,
+								sessionDate: this.agentConfig.sessionDate
+							});
+						}
+					} else {
+						console.error('[AgenteAutonomo] Erro na resposta de agent-config:', response.status);
+					}
+				} catch (error) {
+					console.error("[AgenteAutonomo] Erro ao buscar config do agente:", error);
 				}
 			},
 
