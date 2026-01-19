@@ -1580,9 +1580,9 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
     .ai-vision-header-mobile { display: none; }
 
     .agents-modal-list {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem !important;
     }
 }
 </style>

@@ -1036,12 +1036,6 @@ input:checked + .slider:before {
     }
 }
 
-@media (min-width: 769px) {
-    .agents-modal-list {
-        display: grid;
-        grid-template-columns: 1fr 1fr;
-        gap: 1rem;
-    }
 }
 
 /* Tablet */
@@ -1360,5 +1354,13 @@ input:checked + .slider:before {
 
 .agent-option-premium.active .agent-option-check {
     color: #22C55E;
+}
+
+@media (min-width: 769px) {
+    .agents-modal-list {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem !important;
+    }
 }
 </style>
