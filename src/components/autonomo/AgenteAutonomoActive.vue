@@ -572,6 +572,10 @@
 				type: Array,
 				default: () => []
 			},
+			userId: {
+				type: String,
+				default: null
+			},
 			shouldTeleport: {
 				type: Boolean,
 				default: false
@@ -774,7 +778,7 @@
 		methods: {
 
 			getUserId() {
-				return localStorage.getItem('userId') || localStorage.getItem('user_id');
+				return this.userId || localStorage.getItem('userId') || localStorage.getItem('user_id');
 			},
 			pausarAgenteEIrParaTopo() {
 				this.$emit('pausarAgente');
@@ -879,13 +883,20 @@
                     console.log('[AgenteAutonomo] Buscando daily-trades para:', dateQuery);
                     
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
-					const response = await fetch(`${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateQuery}`, {
+                    const url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateQuery}`;
+                    const options = {
 						method: "GET",
 						headers: {
 							"Content-Type": "application/json",
 							Authorization: `Bearer ${localStorage.getItem("token")}`,
 						},
-					});
+					};
+                    console.log('[AgenteAutonomo] Sending GET request to:', url);
+                    console.log('[AgenteAutonomo] Request Options:', options);
+
+					const response = await fetch(url, options);
+
+                    console.log('[AgenteAutonomo] Daily Details Response Status:', response.status);
 
 					if (response.ok) {
 						const result = await response.json();
@@ -908,13 +919,20 @@
 				try {
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
 					console.log('[AgenteAutonomo] Buscando stats diários em:', `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30`);
-					const response = await fetch(`${apiBase}/autonomous-agent/daily-stats/${userId}?days=30`, {
+					const url = `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30`;
+					const options = {
 						method: "GET",
 						headers: {
 							"Content-Type": "application/json",
 							Authorization: `Bearer ${localStorage.getItem("token")}`,
 						},
-					});
+					};
+					console.log('[AgenteAutonomo] Sending GET request to:', url);
+					console.log('[AgenteAutonomo] Request Options:', options);
+					
+					const response = await fetch(url, options);
+
+					console.log('[AgenteAutonomo] Daily Stats Response Status:', response.status);
 
 					if (response.ok) {
 						const result = await response.json();
@@ -963,13 +981,20 @@
 				try {
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
                     console.log('[AgenteAutonomo] Buscando profit-evolution em:', `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`);
-					const response = await fetch(`${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`, {
+					const url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`;
+					const options = {
 						method: "GET",
 						headers: {
 							"Content-Type": "application/json",
 							Authorization: `Bearer ${localStorage.getItem("token")}`,
 						},
-					});
+					};
+                    console.log('[AgenteAutonomo] Sending GET request to:', url);
+					console.log('[AgenteAutonomo] Request Options:', options);
+
+					const response = await fetch(url, options);
+
+					console.log('[AgenteAutonomo] Profit Evolution Response Status:', response.status);
 
 					if (response.ok) {
 						const result = await response.json();

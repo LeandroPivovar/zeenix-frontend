@@ -48,6 +48,7 @@
             :tempo-ativo="agenteData.tempoAtivo"
             :session-stats="sessionStats"
             :trade-history="tradeHistoryData"
+            :user-id="currentUserId"
             @pausar-agente="toggleAgenteStatus('componenteAtivo')"
             @iniciar-agente="(configData) => toggleAgenteStatus('componenteInativo', configData)"
           />
@@ -301,6 +302,9 @@
       currencyPrefix() {
         return this.getCurrencyPrefix(this.preferredCurrency);
       },
+      currentUserId() {
+          return this.getUserId();
+      },
     },
     methods: {
       handleAccountTypeChange(newAccountType) {
@@ -374,15 +378,10 @@
             : 0;
 
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
-          const response = await fetch(`${apiBase}/autonomous-agent/activate`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
-            body: JSON.stringify({
+          const url = `${apiBase}/autonomous-agent/activate`;
+          const body = {
               userId,
-              agentType: configData?.agentType || 'sentinel', // ✅ Novo: Tipo de agente
+              agentType: configData?.agentType || 'sentinel',
               initialStake,
               dailyProfitTarget,
               dailyLossLimit,
@@ -392,8 +391,20 @@
               symbol,
               strategy,
               riskLevel,
-            }),
+            };
+          console.log('[AgenteAutonomo] Sending POST request to:', url);
+          console.log('[AgenteAutonomo] Request Body:', body);
+
+          const response = await fetch(url, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify(body),
           });
+
+          console.log('[AgenteAutonomo] Activation Response Status:', response.status);
 
           const result = await response.json();
           if (result.success) {
@@ -450,7 +461,11 @@
 
           console.log('[AgenteAutonomo] Fazendo requisição para desativar agente...', { userId });
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
-          const response = await fetch(`${apiBase}/autonomous-agent/deactivate`, {
+          const url = `${apiBase}/autonomous-agent/deactivate`;
+          console.log('[AgenteAutonomo] Sending POST request to:', url);
+          console.log('[AgenteAutonomo] Request Body:', { userId });
+
+          const response = await fetch(url, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -458,6 +473,8 @@
             },
             body: JSON.stringify({ userId }),
           });
+          
+          console.log('[AgenteAutonomo] Deactivation Response Status:', response.status);
 
           // Verificar se a resposta HTTP está ok
           if (!response.ok) {
@@ -530,11 +547,15 @@
           if (!userId) return;
 
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
-          const response = await fetch(`${apiBase}/autonomous-agent/config/${userId}`, {
+          const url = `${apiBase}/autonomous-agent/config/${userId}`;
+          console.log('[AgenteAutonomo] Fetching config from:', url);
+
+          const response = await fetch(url, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           });
+          console.log('[AgenteAutonomo] Config Response Status:', response.status);
 
           const result = await response.json();
           if (result.success && result.data && typeof result.data === 'object' && result.data !== null) {
@@ -631,11 +652,15 @@
           if (!userId) return;
 
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
-          const response = await fetch(`${apiBase}/autonomous-agent/session-stats/${userId}`, {
+          const url = `${apiBase}/autonomous-agent/session-stats/${userId}`;
+          console.log('[AgenteAutonomo] Fetching session stats from:', url);
+
+          const response = await fetch(url, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           });
+          console.log('[AgenteAutonomo] Session Stats Response Status:', response.status);
 
           const result = await response.json();
           console.log('[AgenteAutonomo] 📊 Resposta completa do backend:', result);
@@ -675,11 +700,15 @@
           if (!userId) return;
 
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
-          const response = await fetch(`${apiBase}/autonomous-agent/trade-history/${userId}?limit=50`, {
+          const url = `${apiBase}/autonomous-agent/trade-history/${userId}?limit=50`;
+          console.log('[AgenteAutonomo] Fetching trade history from:', url);
+          
+          const response = await fetch(url, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           });
+          console.log('[AgenteAutonomo] Trade History Response Status:', response.status);
 
           const result = await response.json();
           if (result.success && result.data && Array.isArray(result.data)) {
@@ -722,11 +751,15 @@
           if (!userId) return;
 
           const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
-          const response = await fetch(`${apiBase}/autonomous-agent/logs/${userId}?limit=100`, {
+          const url = `${apiBase}/autonomous-agent/logs/${userId}?limit=100`;
+          console.log('[AgenteAutonomo] Fetching logs from:', url);
+          
+          const response = await fetch(url, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
           });
+          console.log('[AgenteAutonomo] Logs Response Status:', response.status);
 
           const result = await response.json();
           if (result.success && result.data && Array.isArray(result.data)) {
