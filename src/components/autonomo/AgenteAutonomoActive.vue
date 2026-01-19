@@ -61,7 +61,7 @@
 						<div class="text-green-500">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Capital Inicial</span>
+						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Entrada Inicial</span>
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">${{ initialCapital.toFixed(2) }}</div>
 					<div class="flex items-center gap-2">
@@ -707,18 +707,18 @@
 				return `${formatDate(startDate)} - ${formatDate(today)} ${today.getFullYear()}`;
 			},
 			initialCapital() {
-				// Capital inicial representa apenas o valor das entradas, então deve ser 0 como solicitado
-				return 0;
+				return this.agentConfig?.initialStake || 0;
 			},
 			finalCapital() {
-				return this.initialCapital + this.periodProfit;
+				return (this.agentConfig?.initialBalance || 0) + this.periodProfit;
 			},
 			periodProfit() {
 				return this.sessionStats?.netProfit || 0;
 			},
 			periodProfitPercent() {
-				if (this.initialCapital <= 0) return 0;
-				return (this.periodProfit / this.initialCapital) * 100;
+				const startBalance = this.agentConfig?.initialBalance || 0;
+				if (startBalance <= 0) return 0;
+				return (this.periodProfit / startBalance) * 100;
 			},
 			avgDailyProfit() {
 				// Lucro médio por dia referente à sessão atual: lucro da sessão / dias executando
