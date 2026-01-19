@@ -722,24 +722,24 @@
                                 <p class="text-[10px] text-[#7D7D7D] font-medium mb-2 tracking-wide uppercase text-left">Parâmetros & Gerenciamento</p>
                                 <div class="grid grid-cols-2 gap-2">
                                     <!-- Entrada -->
-                                    <div class="text-left border border-zenix-border/60 rounded-lg p-2">
+                                    <div class="text-left border border-zenix-border rounded-lg p-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Entrada</p>
                                         <p class="text-base font-bold text-zenix-text text-left" v-if="!isLoadingConfig">{{ sessionConfig.entryValue ? '$' + sessionConfig.entryValue.toFixed(2) : '$0.35' }}</p>
                                         <p class="text-base font-bold text-zenix-text text-left" v-else>Carregando...</p>
                                     </div>
                                     <!-- Modo -->
-                                    <div class="text-left border border-zenix-border/60 rounded-lg p-2">
+                                    <div class="text-left border border-zenix-border rounded-lg p-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Modo</p>
                                         <p class="text-base font-bold text-zenix-text text-left">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
                                     </div>
                                     <!-- Alvo de Lucro -->
-                                    <div class="text-left border border-zenix-border/60 rounded-lg p-2">
+                                    <div class="text-left border border-zenix-border rounded-lg p-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Alvo De Lucro</p>
                                         <p class="text-base font-bold text-zenix-green text-left" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
                                         <p class="text-base font-bold text-zenix-green text-left" v-else>Carregando...</p>
                                     </div>
                                     <!-- Limite de Perda -->
-                                    <div class="text-left border border-zenix-border/60 rounded-lg p-2">
+                                    <div class="text-left border border-zenix-border rounded-lg p-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Limite De Perda</p>
                                         <p class="text-base font-bold text-zenix-red text-left" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
                                         <p class="text-base font-bold text-zenix-red text-left" v-else>Carregando...</p>
@@ -763,7 +763,7 @@
                             </div>
 
                                 <!-- Divisor Sutil -->
-                                <div class="h-0 w-full border-t border-dashed border-zenix-border/30 my-6"></div>
+                                <div class="h-0 w-full border-t border-dashed border-zenix-border/60 my-6"></div>
 
                                 <!-- Botão Pausar/Reiniciar (100% largura) -->
                                 <div class="flex flex-col items-start mt-0">
