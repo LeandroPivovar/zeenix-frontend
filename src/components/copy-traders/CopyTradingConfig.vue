@@ -1036,8 +1036,6 @@ input:checked + .slider:before {
     }
 }
 
-}
-
 /* Tablet */
 @media (max-width: 1200px) and (min-width: 769px) {
     .copy-trading-config {
