@@ -1034,6 +1034,12 @@ input:checked + .slider:before {
     .activate-btn-mobile {
         display: none;
     }
+
+    .agents-modal-list {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
 }
 
 /* Tablet */
@@ -1227,7 +1233,7 @@ input:checked + .slider:before {
 
 .categorized-modal {
     width: 100%;
-    max-width: 500px;
+    max-width: 800px;
     background: #0D0D0D;
     border: 1px solid #22C55E33;
     padding: 1.5rem;

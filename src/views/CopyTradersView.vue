@@ -597,6 +597,16 @@
     :deep(.sidebar.is-open) {
       transform: translateX(0);
     }
+
+    /* Desktop/Mobile Header Visibility */
+    .ai-vision-panel-desktop {
+        display: none;
+    }
+    
+    .mobile-simple-header {
+        display: block;
+        padding: 0;
+    }
   }
 
   @media (max-width: 768px) {
@@ -628,16 +638,6 @@
       padding: 10px 16px;
       font-size: 14px;
       white-space: nowrap;
-    }
-
-    /* Desktop/Mobile Header Visibility */
-    .ai-vision-panel-desktop {
-        display: none;
-    }
-    
-    .mobile-simple-header {
-        display: block;
-        padding: 0;
     }
   }
 
