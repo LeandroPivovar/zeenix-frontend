@@ -748,7 +748,7 @@
                                     <!-- Stop Blindado -->
                                     <div class="text-left border border-zenix-border/60 rounded-lg p-2 h-full flex flex-col justify-center">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize font-medium">Stop Blindado</p>
-                                        <p class="text-base font-bold text-zenix-text text-left mb-1" :class="sessionConfig.stopLossBlindado ? 'text-zenix-green' : ''">
+                                        <p class="text-base font-bold text-zenix-text text-left mb-1">
                                             {{ sessionConfig.stopLossBlindado ? 'Ativado' : 'Inativo' }}
                                         </p>
                                     </div>
@@ -1034,16 +1034,16 @@ export default {
             const strategyNames = {
                 'orion': 'IA Orion',
                 'atlas': 'IA Atlas',
-                'apollo': 'IA Apollo v3',
-                'titan': 'IA TITAN',
-                'nexus': 'IA NEXUS',
+                'apollo': 'IA Apollo',
+                'titan': 'IA Titan',
+                'nexus': 'IA Nexus',
                 'sentinel': 'IA Sentinel',
                 'falcon': 'IA Falcon',
                 'trinity': 'IA Trinity',
                 // Fallbacks para variações
                 'atlas_v2': 'IA Atlas',
                 'atlas_v2.0': 'IA Atlas',
-                'apollo_v3': 'IA Apollo v3',
+                'apollo_v3': 'IA Apollo',
             };
             
             // ✅ Verificar se é Trinity (pode estar em configuração especial)

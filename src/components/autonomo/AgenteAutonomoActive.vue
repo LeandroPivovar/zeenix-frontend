@@ -169,7 +169,7 @@
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center justify-between gap-2">
 										<h5 class="text-xs font-bold text-white truncate">{{ agent.title }}</h5>
-										<span v-if="agenteData.id === agent.id" class="text-[8px] text-green-500 font-bold uppercase tracking-tighter">Ativo</span>
+										<span v-if="agenteData.id === agent.id" class="text-[8px] text-white font-bold uppercase tracking-tighter">Ativo</span>
 									</div>
 									<p class="text-[10px] text-[#A1A1AA] mt-0.5">{{ agent.description }}</p>
 									<div class="flex items-center gap-2 mt-1.5">
