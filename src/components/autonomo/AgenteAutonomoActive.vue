@@ -889,6 +889,27 @@
                     console.error("[AgenteAutonomo] Erro ao buscar detalhes diários:", error);
                 }
             },
+            async fetchProfitEvolution() {
+				const userId = this.getUserId();
+				if (!userId) return;
+
+				// Determinar dias baseado no filtro selecionado
+				let days = 30;
+				if (this.selectedPeriod === '7d') days = 7;
+				if (this.selectedPeriod === 'today') days = 1;
+				if (this.selectedPeriod === 'yesterday') days = 1;
+
+				try {
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					const response = await fetch(`${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`, {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${localStorage.getItem("token")}`,
+						},
+					});
+
+					if (response.ok) {
 						const result = await response.json();
 						if (result.success && result.data) {
 							// Se days <= 1, time vem como timestamp number. Se > 1, vem como string YYYY-MM-DD
