@@ -772,9 +772,7 @@
 			}
 		},
 		methods: {
-			openDayDetails(day) {
-				this.selectedDay = day;
-			},
+
 			getUserId() {
 				return localStorage.getItem('userId') || localStorage.getItem('user_id');
 			},
