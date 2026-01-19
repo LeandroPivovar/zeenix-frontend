@@ -498,21 +498,19 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="(op, idx) in [
-								{h:'06:19:00', m:'ETH/USD', e:'8.209,46', s:'8.349,92', i:'205,2', r:'+186,0'},
-								{h:'06:38:00', m:'V75', e:'32.252,6', s:'32.253,7', i:'128,6', r:'+109,8'},
-								{h:'09:45:00', m:'BTC/USD', e:'16.943,8', s:'16.846,7', i:'247,7', r:'-236,4'},
-								{h:'10:08:00', m:'BTC/USD', e:'41.289,3', s:'41.525,6', i:'156,8', r:'+117,6'},
-								{h:'12:12:00', m:'ETH/USD', e:'3.321,80', s:'3.288,25', i:'237,7', r:'-212,1'}
-							]" :key="idx" class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
-								<td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{op.h}}</td>
-								<td class="py-2 px-1 text-[#FAFAFA] text-left truncate max-w-[50px] sm:max-w-none">{{op.m}}</td>
-								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.e}}</td>
-								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.s}}</td>
-								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.i}}</td>
-								<td class="py-2 px-1 text-right tabular-nums font-semibold" :class="op.r.startsWith('+') ? 'text-green-500' : 'text-red-500'">{{op.r}}</td>
+							<tr v-for="(op, idx) in dailyTrades" :key="idx" class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
+								<td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{op.time}}</td>
+								<td class="py-2 px-1 text-[#FAFAFA] text-left truncate max-w-[50px] sm:max-w-none">{{op.market}}</td>
+								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.entry}}</td>
+								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.exit}}</td>
+								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.stake.toFixed(2)}}</td>
+								<td class="py-2 px-1 text-right tabular-nums font-semibold" :class="op.profit >= 0 ? 'text-green-500' : 'text-red-500'">{{op.result}}</td>
 							</tr>
+                            <tr v-if="dailyTrades.length === 0">
+                                <td colspan="6" class="py-8 text-center text-[#A1A1AA] text-xs">Nenhuma operação neste dia.</td>
+                            </tr>
 						</tbody>
+
 					</table>
 				</div>
 			</div>
@@ -808,13 +806,28 @@
 						timeVisible: true,
 						secondsVisible: false,
 					},
+                    crosshair: {
+                        mode: 1, // CrosshairMode.Normal
+                        vertLine: {
+                            color: 'rgba(34, 197, 94, 0.5)',
+                            width: 1,
+                            style: 3,
+                            labelBackgroundColor: '#22c55e',
+                        },
+                        horzLine: {
+                            color: 'rgba(34, 197, 94, 0.5)',
+                            width: 1,
+                            style: 3,
+                            labelBackgroundColor: '#22c55e',
+                        },
+                    },
 				});
 
-				this.indexChartSeries = this.indexChart.addAreaSeries({
-					topColor: 'rgba(34, 197, 94, 0.56)',
-					bottomColor: 'rgba(34, 197, 94, 0.04)',
-					lineColor: 'rgba(34, 197, 94, 1)',
+				this.indexChartSeries = this.indexChart.addLineSeries({
+					color: 'rgba(34, 197, 94, 1)',
 					lineWidth: 2,
+                    crosshairMarkerVisible: true,
+                    crosshairMarkerRadius: 4,
 				});
 
 				this.indexChartInitialized = true;
@@ -824,73 +837,41 @@
 					if (entries.length === 0 || !entries[0].target) return;
 					if (this.indexChart) {
 						this.indexChart.resize(entries[0].contentRect.width, 300);
+                        this.indexChart.timeScale().fitContent();
 					}
 				});
 				resizeObserver.observe(this.$refs.performanceChartContainer);
 			},
-			fetchPriceHistory() {
-				// Mock data generator for performance visualization
-				const data = [];
-				let price = 1000;
-				const now = new Date();
-				for (let i = 0; i < 100; i++) {
-					// 1 minute intervals, 100 points
-					const time = new Date(now.getTime() - (100 - i) * 60000); 
-					// Random walk price
-					price += (Math.random() - 0.5) * 10;
-					data.push({ time: time.getTime() / 1000, value: price });
-				}
-				this.updateIndexChart(data);
-			},
+			
+			// ... (existing methods)
+
 			updateIndexChart(data) {
 				if (this.indexChartSeries && data) {
 					this.indexChartSeries.setData(data);
+                    if(data.length > 0) {
+                        this.indexChart.timeScale().fitContent();
+                    }
 				}
 			},
 
-			// Métodos placeholder
-			stopPricePolling() {},
-			stopLogsPolling() {},
-			startLogsPolling() {},
-			
-			// UI Dropdown Methods
-			toggleDatePicker(event) {
-				if (event) event.stopPropagation();
-				this.showDatePicker = !this.showDatePicker;
-				this.showAgentSwitcher = false;
-			},
-			toggleAgentSwitcher(event) {
-				if (event) event.stopPropagation();
-				this.showAgentSwitcher = !this.showAgentSwitcher;
-				this.showDatePicker = false;
-			},
-			closeDropdownsOnClickOutside() {
-				this.showDatePicker = false;
-				this.showAgentSwitcher = false;
-			},
-			selectAgent(agentId) {
-				console.log('Switching to agent:', agentId);
-				this.showAgentSwitcher = false;
-				this.$emit('switch-agent', agentId);
-			},
-			goToConfiguration() {
-				this.showAgentSwitcher = false;
-				this.$emit('pausarAgente'); // In AgenteAutonomo.vue, this shows the Inactive component
-			},
-			selectDateRange(option) {
-				this.selectedPeriod = option.value;
-				this.showDatePicker = false;
-				// Aqui você pode adicionar lógica para filtrar os dados baseado no período
-				console.log('[AgenteAutonomo] Período selecionado:', option.label);
+            async openDayDetails(day) {
+				this.selectedDay = day;
+                await this.fetchDailyDetails(day);
 			},
 
-			async fetchDailyStats() {
-				const userId = this.getUserId();
-				if (!userId) return;
+            async fetchDailyDetails(day) {
+                const userId = this.getUserId();
+                if (!userId || !day) return;
+                
+                // Limpar trades anteriores enquanto carrega
+                this.dailyTrades = [];
 
-				try {
+                try {
+                    // Use fullDate if available (YYYY-MM-DD), otherwise fallback (might fail if not standard)
+                    const dateQuery = day.fullDate || 'today';
+                    
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
-					const response = await fetch(`${apiBase}/autonomous-agent/daily-stats/${userId}?days=30`, {
+					const response = await fetch(`${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateQuery}`, {
 						method: "GET",
 						headers: {
 							"Content-Type": "application/json",
@@ -901,53 +882,13 @@
 					if (response.ok) {
 						const result = await response.json();
 						if (result.success) {
-							this.dailyData = result.data.map(day => ({
-								...day,
-								// Recalcula badges no front se necessário, ou usa o que vem do back
-								badge: day.badge || '' 
-							}));
-							
-							// Calcular badges de Melhor/Pior dia
-							if (this.dailyData.length > 0) {
-								let best = this.dailyData[0];
-								let worst = this.dailyData[0];
-								
-								this.dailyData.forEach(day => {
-									if (day.profit > best.profit) best = day;
-									if (day.profit < worst.profit) worst = day;
-								});
-								
-								if (best.profit > 0) best.badge = 'Melhor';
-								if (worst.profit < 0) worst.badge = 'Pior';
-							}
-						}
-					}
-				} catch (error) {
-					console.error("[AgenteAutonomo] Erro ao buscar estatísticas diárias:", error);
-				}
-			},
-
-			async fetchProfitEvolution() {
-				const userId = this.getUserId();
-				if (!userId) return;
-
-				// Determinar dias baseado no filtro selecionado (simplificado para 30d por enquanto)
-				let days = 30;
-				if (this.selectedPeriod === '7d') days = 7;
-				if (this.selectedPeriod === 'today') days = 1;
-				if (this.selectedPeriod === 'yesterday') days = 1; // Backend logica deve tratar inicio/fim
-
-				try {
-					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
-					const response = await fetch(`${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`, {
-						method: "GET",
-						headers: {
-							"Content-Type": "application/json",
-							Authorization: `Bearer ${localStorage.getItem("token")}`,
-						},
-					});
-
-					if (response.ok) {
+                            this.dailyTrades = result.data;
+                        }
+                    }
+                } catch(error) {
+                    console.error("[AgenteAutonomo] Erro ao buscar detalhes diários:", error);
+                }
+            },
 						const result = await response.json();
 						if (result.success && result.data) {
 							// Se days <= 1, time vem como timestamp number. Se > 1, vem como string YYYY-MM-DD
