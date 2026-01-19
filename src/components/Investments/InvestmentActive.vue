@@ -1497,19 +1497,29 @@ export default {
             const strategyLower = strategy.toLowerCase();
             const isNexus = strategyLower === 'nexus';
             const isOrion = strategyLower === 'orion' || strategyLower.includes('ia orion');
+            const isAtlas = strategyLower === 'atlas';
 
-            // Map HIGHER to OVER
-            if (direction === 'HIGHER' || direction === 'DIGITOVER') return 'OVER';
+            // Map HIGHER to OVER (except for Nexus/Orion/Atlas)
+            if (direction === 'HIGHER' || direction === 'DIGITOVER') {
+                if (isNexus || isOrion || isAtlas) return 'CALL';
+                return 'OVER';
+            }
 
-            // Map RISE to CALL
-            if (direction === 'RISE' || direction === 'CALL') {
-                if (isOrion || isNexus || strategyLower === 'atlas') return 'CALL';
+            // Map LOWER to UNDER (except for Nexus/Orion/Atlas)
+            if (direction === 'LOWER' || direction === 'DIGITUNDER') {
+                if (isNexus || isOrion || isAtlas) return 'PUT';
+                return 'UNDER';
+            }
+
+            // Map RISE/PAR to CALL
+            if (direction === 'RISE' || direction === 'CALL' || direction === 'PAR') {
+                if (isOrion || isNexus || isAtlas) return 'CALL';
                 return 'PAR';  // For other strategies (digits)
             }
             
-            // Map FALL to PUT
-            if (direction === 'FALL' || direction === 'PUT') {
-                if (isOrion || isNexus || strategyLower === 'atlas') return 'PUT';
+            // Map FALL/IMPAR to PUT
+            if (direction === 'FALL' || direction === 'PUT' || direction === 'IMPAR') {
+                if (isOrion || isNexus || isAtlas) return 'PUT';
                 return 'IMPAR';  // For other strategies (digits)
             }
             
