@@ -32,7 +32,7 @@
 								<div class="absolute w-24 h-24 bg-zenix-green/20 rounded-full blur-xl ai-pulse" style="opacity: 1;"></div>
 								<!-- Central AI Robot Icon -->
 								<div class="relative z-30 ai-brain-glow" style="display: flex; align-items: center; justify-content: center;">
-									<i class="fas fa-atom text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3.5rem !important;"></i>
+									<i class="fas fa-microchip text-zenix-green text-5xl" style="opacity: 1 !important; display: block !important; visibility: visible !important; font-size: 3.5rem !important;"></i>
 								</div>
 								<!-- Orbiting Data Nodes -->
 								<div id="iyljui" class="absolute w-3 h-3 bg-zenix-green rounded-full" style="opacity: 1;"></div>
@@ -58,7 +58,7 @@
 							<!-- Card 1: AUTONOMIA -->
 							<div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
 								<div class="flex items-center justify-center gap-2 mb-2">
-									<i class="fas fa-atom text-[#22C55E] text-lg"></i>
+									<i class="fas fa-microchip text-[#22C55E] text-lg"></i>
 									<p class="text-[10px] text-white uppercase font-bold status-label">AUTONOMIA</p>
 								</div>
 								<p class="text-base font-bold text-white status-value">100% Autônomo</p>
