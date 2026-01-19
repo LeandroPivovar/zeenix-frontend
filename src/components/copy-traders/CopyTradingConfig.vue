@@ -1,6 +1,7 @@
 <template>
     <div class="copy-trading-config">
-        <div class="card card-left">
+        <div class="config-main">
+            <div class="card card-left">
             <h3 class="card-title">
                 Selecionar Trader
                 <ZenixTooltip :offset="20">
@@ -142,6 +143,7 @@
                     <input type="checkbox" v-model="armoredStopLossActive">
                     <span class="slider"></span>
                 </label>
+            </div>
             </div>
         </div>
 
@@ -533,8 +535,15 @@ export default {
 <style scoped>
 .copy-trading-config {
     display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 20px;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    align-items: start;
+}
+
+.config-main {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
 }
 
 /* --- Card --- */
@@ -993,7 +1002,7 @@ input:checked + .slider:before {
 /* Responsividade - Desktop mantém layout grid de 3 colunas */
 @media (min-width: 1025px) {
     .copy-trading-config {
-        grid-template-columns: 1fr 1fr 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 20px;
     }
 
@@ -1034,11 +1043,38 @@ input:checked + .slider:before {
     .activate-btn-mobile {
         display: none;
     }
+}
 
+@media (min-width: 769px) {
     .agents-modal-list {
         display: grid;
         grid-template-columns: 1fr 1fr;
         gap: 1rem;
+    }
+}
+
+/* Tablet - Switch to single column for side area if needed, but 2-col layout should hold until 1024px */
+@media (max-width: 1200px) and (min-width: 1025px) {
+     .copy-trading-config {
+        grid-template-columns: 1fr 320px;
+        gap: 16px;
+    }
+}
+
+@media (max-width: 1024px) and (min-width: 769px) {
+    .copy-trading-config {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .config-main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+    }
+    
+    .card-right {
+        grid-column: 1 / -1;
     }
 }
 
