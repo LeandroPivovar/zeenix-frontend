@@ -691,6 +691,9 @@
 		},
 		computed: {
 			dateRangeText() {
+				const option = this.dateOptions.find(o => o.value === this.selectedPeriod);
+				if (option) return option.label;
+				
 				const today = new Date();
 				const startDate = new Date(today);
 				startDate.setDate(today.getDate() - 30);
@@ -704,8 +707,8 @@
 				return `${formatDate(startDate)} - ${formatDate(today)} ${today.getFullYear()}`;
 			},
 			initialCapital() {
-				// Priority: 1. Agent config initial balance, 2. Account balance, 3. Fallback to  0
-			return this.agentConfig?.initialBalance || this.agenteData?.accountBalance || 0;
+				// Capital inicial representa apenas o valor das entradas, então deve ser 0 como solicitado
+				return 0;
 			},
 			finalCapital() {
 				return this.initialCapital + this.periodProfit;
@@ -718,9 +721,21 @@
 				return (this.periodProfit / this.initialCapital) * 100;
 			},
 			avgDailyProfit() {
-				if (!this.dailyData || this.dailyData.length === 0) return 0;
-				const totalProfit = this.dailyData.reduce((sum, day) => sum + day.profit, 0);
-				return totalProfit / this.dailyData.length;
+				// Lucro médio por dia referente à sessão atual: lucro da sessão / dias executando
+				if (!this.agentConfig || !this.agentConfig.sessionDate) {
+					// Fallback se não tiver sessionDate
+					return this.periodProfit; 
+				}
+				
+				const sessionStart = new Date(this.agentConfig.sessionDate);
+				const now = new Date();
+				
+				// Diferença em milissegundos
+				const diffTime = Math.abs(now - sessionStart);
+				// Converter para dias (arredondando para cima, mínimo 1 dia)
+				const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
+				
+				return this.periodProfit / diffDays;
 			},
 	avgProfitPerOp() {
 		// Calculate average profit per operation
@@ -950,6 +965,8 @@
 						if (result.success) {
 							this.dailyData = result.data.map(day => ({
 								...day,
+								// Ensure fullDate is present for querying details
+                                fullDate: day.fullDate || day.date, // Backend might send fullDate, otherwise use date (if it is YYYY-MM-DD)
 								// Recalcula badges no front se necessário, ou usa o que vem do back
 								badge: day.badge || '' 
 							}));
@@ -1025,7 +1042,9 @@
 				let days = 30;
 				if (this.selectedPeriod === '7d') days = 7;
 				if (this.selectedPeriod === 'today') days = 1;
-				if (this.selectedPeriod === 'yesterday') days = 1;
+				if (this.selectedPeriod === 'yesterday') days = 2;
+				if (this.selectedPeriod === 'thisMonth') days = new Date().getDate();
+				if (this.selectedPeriod === 'lastMonth') days = 60; // Approximate fallback
 
 				try {
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
@@ -1062,6 +1081,36 @@
 				} catch (error) {
 					console.error("[AgenteAutonomo] Erro ao buscar evolução do lucro:", error);
 				}
+			},
+			toggleDatePicker() {
+				this.showDatePicker = !this.showDatePicker;
+				if (this.showDatePicker) this.showAgentSwitcher = false;
+			},
+			closeDropdownsOnClickOutside(event) {
+				if (this.showDatePicker && !event.target.closest('.relative.z-\\[40\\]')) {
+					this.showDatePicker = false;
+				}
+				if (this.showAgentSwitcher && !event.target.closest('.relative.flex-1')) {
+					this.showAgentSwitcher = false;
+				}
+			},
+			selectDateRange(option) {
+				this.selectedPeriod = option.value;
+				this.showDatePicker = false;
+			},
+			toggleAgentSwitcher() {
+				this.showAgentSwitcher = !this.showAgentSwitcher;
+				if (this.showAgentSwitcher) this.showDatePicker = false;
+			},
+			selectAgent(agentId) {
+				console.log('Switching to agent:', agentId);
+				this.showAgentSwitcher = false;
+				// Implementation would go here - likely emitting an event or navigating
+			},
+			goToConfiguration() {
+				// Navigate to configuration page
+				this.$router.push('/autonomous-agent/config');
+				this.showAgentSwitcher = false;
 			},
 		},
 		watch: {
