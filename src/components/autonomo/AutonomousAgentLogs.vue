@@ -227,6 +227,7 @@ export default {
         if (response.ok) {
           const result = await response.json();
           if (result.success && result.data) {
+            console.log('[AutonomousAgentLogs] Logs recebidos:', result.data.length);
             this.realtimeLogs = result.data;
             this.$emit('update-logs', this.realtimeLogs);
           }

@@ -783,12 +783,17 @@
 			
 			// Métodos do Gráfico
 			initIndexChart() {
-				if (!this.$refs.performanceChartContainer) return;
+                console.log('[AgenteAutonomo] initIndexChart iniciado');
+				if (!this.$refs.performanceChartContainer) {
+                    console.warn('[AgenteAutonomo] performanceChartContainer não encontrado');
+                    return;
+                }
 
 				// Limpar container se já tiver algo
 				this.$refs.performanceChartContainer.innerHTML = '';
 
 				this.indexChart = createChart(this.$refs.performanceChartContainer, {
+                    // ... (options omitted for brevity, keeping existing)
 					layout: {
 						background: { type: ColorType.Solid, color: 'transparent' },
 						textColor: '#A0A0A0',
@@ -821,6 +826,8 @@
                     },
 				});
 
+                console.log('[AgenteAutonomo] Gráfico criado');
+
 				this.indexChartSeries = this.indexChart.addLineSeries({
 					color: 'rgba(34, 197, 94, 1)',
 					lineWidth: 2,
@@ -844,6 +851,7 @@
 			// ... (existing methods)
 
 			updateIndexChart(data) {
+                console.log('[AgenteAutonomo] updateIndexChart chamado com', data ? data.length : 0, 'pontos');
 				if (this.indexChartSeries && data) {
 					this.indexChartSeries.setData(data);
                     if(data.length > 0) {
@@ -853,6 +861,7 @@
 			},
 
             async openDayDetails(day) {
+                console.log('[AgenteAutonomo] openDayDetails:', day);
 				this.selectedDay = day;
                 await this.fetchDailyDetails(day);
 			},
@@ -867,6 +876,7 @@
                 try {
                     // Use fullDate if available (YYYY-MM-DD), otherwise fallback (might fail if not standard)
                     const dateQuery = day.fullDate || 'today';
+                    console.log('[AgenteAutonomo] Buscando daily-trades para:', dateQuery);
                     
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
 					const response = await fetch(`${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateQuery}`, {
@@ -879,16 +889,69 @@
 
 					if (response.ok) {
 						const result = await response.json();
+                        console.log('[AgenteAutonomo] daily-trades resultado:', result);
 						if (result.success) {
                             this.dailyTrades = result.data;
                         }
+                    } else {
+                        console.error('[AgenteAutonomo] Erro na resposta de daily-trades:', response.status);
                     }
-                } catch(error) {
-                    console.error("[AgenteAutonomo] Erro ao buscar detalhes diários:", error);
-                }
-            },
+				} catch(error) {
+					console.error("[AgenteAutonomo] Erro ao buscar detalhes diários:", error);
+				}
+			},
+            async fetchDailyStats() {
+				const userId = this.getUserId();
+				console.log('[AgenteAutonomo] fetchDailyStats chamado para user:', userId);
+				if (!userId) return;
+
+				try {
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					console.log('[AgenteAutonomo] Buscando stats diários em:', `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30`);
+					const response = await fetch(`${apiBase}/autonomous-agent/daily-stats/${userId}?days=30`, {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${localStorage.getItem("token")}`,
+						},
+					});
+
+					if (response.ok) {
+						const result = await response.json();
+						console.log('[AgenteAutonomo] daily-stats resultado:', result);
+						if (result.success) {
+							this.dailyData = result.data.map(day => ({
+								...day,
+								// Recalcula badges no front se necessário, ou usa o que vem do back
+								badge: day.badge || '' 
+							}));
+							
+							// Calcular badges de Melhor/Pior dia
+							if (this.dailyData.length > 0) {
+								let best = this.dailyData[0];
+								let worst = this.dailyData[0];
+								
+								this.dailyData.forEach(day => {
+									if (day.profit > best.profit) best = day;
+									if (day.profit < worst.profit) worst = day;
+								});
+								
+								if (best.profit > 0) best.badge = 'Melhor';
+								if (worst.profit < 0) worst.badge = 'Pior';
+							}
+                            console.log('[AgenteAutonomo] dailyData atualizado:', this.dailyData);
+						}
+					} else {
+                        console.error('[AgenteAutonomo] Erro na resposta de daily-stats:', response.status, response.statusText);
+                    }
+				} catch (error) {
+					console.error("[AgenteAutonomo] Erro ao buscar estatísticas diárias:", error);
+				}
+			},
+
             async fetchProfitEvolution() {
 				const userId = this.getUserId();
+                console.log('[AgenteAutonomo] fetchProfitEvolution chamado para user:', userId);
 				if (!userId) return;
 
 				// Determinar dias baseado no filtro selecionado
@@ -899,6 +962,7 @@
 
 				try {
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+                    console.log('[AgenteAutonomo] Buscando profit-evolution em:', `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`);
 					const response = await fetch(`${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`, {
 						method: "GET",
 						headers: {
@@ -909,6 +973,7 @@
 
 					if (response.ok) {
 						const result = await response.json();
+                        console.log('[AgenteAutonomo] profit-evolution resultado:', result);
 						if (result.success && result.data) {
 							// Se days <= 1, time vem como timestamp number. Se > 1, vem como string YYYY-MM-DD
 							const formattedData = result.data.map(point => ({
@@ -917,7 +982,9 @@
 							}));
 							this.updateIndexChart(formattedData);
 						}
-					}
+					} else {
+                        console.error('[AgenteAutonomo] Erro na resposta de profit-evolution:', response.status, response.statusText);
+                    }
 				} catch (error) {
 					console.error("[AgenteAutonomo] Erro ao buscar evolução do lucro:", error);
 				}
