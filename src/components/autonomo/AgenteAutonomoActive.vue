@@ -645,19 +645,7 @@
 					{ period: '05/01 - 11/01', profit: 6424.36, finalCapital: 125158.68, percent: 5.41, ops: 282, winRate: 73.4 },
 					{ period: '12/01 - 18/01', profit: 5769.39, finalCapital: 130928.07, percent: 4.61, ops: 249, winRate: 73.9 },
 				],
-				dailyData: [
-                    { date: '19/12', badge: 'Melhor', profit: 2657.82, capital: 104701.23, ops: 43, winRate: 74.4, avgTime: '24min' },
-					{ date: '25/12', badge: '', profit: 1169.77, capital: 111704.38, ops: 38, winRate: 71.0, avgTime: '24min' },
-					{ date: '26/12', badge: '', profit: -511.89, capital: 111192.49, ops: 40, winRate: 75.0, avgTime: '24min' },
-					{ date: '27/12', badge: '', profit: 387.73, capital: 111580.23, ops: 22, winRate: 72.7, avgTime: '27min' },
-					{ date: '28/12', badge: '', profit: 489.72, capital: 112069.95, ops: 20, winRate: 75.0, avgTime: '27min' },
-					{ date: '29/12', badge: '', profit: 1678.16, capital: 113749.11, ops: 52, winRate: 71.2, avgTime: '22min' },
-					{ date: '30/12', badge: 'Pior', profit: -584.66, capital: 113163.45, ops: 40, winRate: 72.5, avgTime: '24min' },
-					{ date: '31/12', badge: '', profit: 1210.03, capital: 114373.48, ops: 44, winRate: 75.0, avgTime: '23min' },
-					{ date: '01/01', badge: '', profit: 1318.99, capital: 115692.47, ops: 43, winRate: 74.4, avgTime: '24min' },
-					{ date: '02/01', badge: '', profit: 1966.64, capital: 117659.11, ops: 51, winRate: 70.6, avgTime: '22min' },
-					{ date: '03/01', badge: '', profit: 584.80, capital: 118243.90, ops: 15, winRate: 73.3, avgTime: '28min' },
-				],
+				dailyData: [],
 
 				// Agent Switcher
 				showAgentSwitcher: false,
@@ -687,8 +675,9 @@
 			if (this.abaAtiva === 'grafico') {
 				this.$nextTick(() => {
 					this.initIndexChart();
-					// Mock data inicial
-					this.fetchPriceHistory();
+					// Buscar dados iniciais
+					this.fetchProfitEvolution();
+					this.fetchDailyStats();
 				});
 			}
 		},
@@ -894,9 +883,92 @@
 				// Aqui você pode adicionar lógica para filtrar os dados baseado no período
 				console.log('[AgenteAutonomo] Período selecionado:', option.label);
 			},
+
+			async fetchDailyStats() {
+				const userId = this.getUserId();
+				if (!userId) return;
+
+				try {
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					const response = await fetch(`${apiBase}/autonomous-agent/daily-stats/${userId}?days=30`, {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${localStorage.getItem("token")}`,
+						},
+					});
+
+					if (response.ok) {
+						const result = await response.json();
+						if (result.success) {
+							this.dailyData = result.data.map(day => ({
+								...day,
+								// Recalcula badges no front se necessário, ou usa o que vem do back
+								badge: day.badge || '' 
+							}));
+							
+							// Calcular badges de Melhor/Pior dia
+							if (this.dailyData.length > 0) {
+								let best = this.dailyData[0];
+								let worst = this.dailyData[0];
+								
+								this.dailyData.forEach(day => {
+									if (day.profit > best.profit) best = day;
+									if (day.profit < worst.profit) worst = day;
+								});
+								
+								if (best.profit > 0) best.badge = 'Melhor';
+								if (worst.profit < 0) worst.badge = 'Pior';
+							}
+						}
+					}
+				} catch (error) {
+					console.error("[AgenteAutonomo] Erro ao buscar estatísticas diárias:", error);
+				}
+			},
+
+			async fetchProfitEvolution() {
+				const userId = this.getUserId();
+				if (!userId) return;
+
+				// Determinar dias baseado no filtro selecionado (simplificado para 30d por enquanto)
+				let days = 30;
+				if (this.selectedPeriod === '7d') days = 7;
+				if (this.selectedPeriod === 'today') days = 1;
+				if (this.selectedPeriod === 'yesterday') days = 1; // Backend logica deve tratar inicio/fim
+
+				try {
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					const response = await fetch(`${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`, {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${localStorage.getItem("token")}`,
+						},
+					});
+
+					if (response.ok) {
+						const result = await response.json();
+						if (result.success && result.data) {
+							// Se days <= 1, time vem como timestamp number. Se > 1, vem como string YYYY-MM-DD
+							const formattedData = result.data.map(point => ({
+								time: point.time,
+								value: point.value
+							}));
+							this.updateIndexChart(formattedData);
+						}
+					}
+				} catch (error) {
+					console.error("[AgenteAutonomo] Erro ao buscar evolução do lucro:", error);
+				}
+			},
 		},
 		watch: {
-			'agenteData.accountBalance'() { this.$forceUpdate(); }
+			'agenteData.accountBalance'() { this.$forceUpdate(); },
+			selectedPeriod() {
+				// Atualizar dados quando o filtro mudar
+				this.fetchProfitEvolution();
+			}
 		}
 	}
 </script>
