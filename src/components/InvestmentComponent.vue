@@ -54,9 +54,9 @@
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
                                     <option value="orion">IA Orion</option>
                                     <option value="trinity">IA Trinity</option>
-                                    <option value="atlas">IA Atlas v2.0 - Extrema Alta Frequência</option>
-                                    <option value="apollo">☀️ IA Apollo v3</option>
-                                    <option value="nexus">🛡️ IA NEXUS - Price Action Sniper</option>
+                                    <option value="atlas">IA Atlas</option>
+                                    <option value="apollo">IA Apollo</option>
+                                    <option value="nexus">IA Nexus</option>
                                 </select>
                                 <p id="strategyDescription" class="form-help">{{ strategyDescription }}</p>
                     </div>
@@ -502,10 +502,10 @@ export default {
             const descriptions = {
                 'orion': 'Análise técnica avançada com machine learning',
                 'trinity': 'Operação multi-ativo (R_10, R_25, R_50) com rotação sequencial',
-                'atlas': 'Extrema alta frequência - milhares de operações por dia (3.000-8.000) com contratos de 1 tick',
-                'apollo': '☀️ Martingale inteligente com mudança de contrato (Over 5→6→7→8) e gestão de risco avançada',
-                'nexus': '🛡️ IA NEXUS - Price Action com Barreira Dinâmica e Foco em Assertividade Elevada',
-                'titan': '🛡️ IA TITAN - Estratégia de Persistência com Recuperação Inteligente'
+                'atlas': 'Análise Híbrida (Fluxo de Dígitos + Price Action)',
+                'apollo': 'Martingale inteligente com mudança de contrato e gestão de risco avançada',
+                'nexus': 'Price Action com Barreira Dinâmica e Foco em Assertividade Elevada',
+                'titan': 'Estratégia de Persistência com Recuperação Inteligente'
             };
             return descriptions[this.selectedStrategy] || descriptions.orion;
         }
