@@ -1295,7 +1295,7 @@ export default {
 /* Modal Premium Styles */
 .categorized-modal {
     width: 100%;
-    max-width: 500px;
+    max-width: 800px;
     background: #0D0D0D;
     border: 1px solid #22C55E33;
     padding: 1.5rem;
@@ -1578,5 +1578,11 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 
 @media (min-width: 769px) {
     .ai-vision-header-mobile { display: none; }
+
+    .agents-modal-list {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem !important;
+    }
 }
 </style>

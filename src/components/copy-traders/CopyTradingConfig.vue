@@ -1227,7 +1227,7 @@ input:checked + .slider:before {
 
 .categorized-modal {
     width: 100%;
-    max-width: 500px;
+    max-width: 800px;
     background: #0D0D0D;
     border: 1px solid #22C55E33;
     padding: 1.5rem;
@@ -1352,5 +1352,13 @@ input:checked + .slider:before {
 
 .agent-option-premium.active .agent-option-check {
     color: #22C55E;
+}
+
+@media (min-width: 769px) {
+    .agents-modal-list {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem !important;
+    }
 }
 </style>
