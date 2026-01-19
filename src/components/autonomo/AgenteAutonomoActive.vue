@@ -1067,7 +1067,20 @@
 					if (response.ok) {
 						const result = await response.json();
                         console.log('[AgenteAutonomo] profit-evolution resultado:', result);
+
 						if (result.success && result.data) {
+                            // Log chart data in readable format for inspection
+                            const debugData = result.data.map(d => {
+                                // Convert timestamp/string to readable time
+                                let timeStr = d.time;
+                                if (typeof d.time === 'number') {
+                                    // Timestamp
+                                    const date = new Date(d.time * 1000);
+                                    timeStr = date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
+                                }
+                                return `${timeStr}: ${d.value}`;
+                            });
+                            console.log('[AgenteAutonomo] 📊 Dados do Gráfico (Time: Value):', debugData.join(' | '));
 							// Se days <= 1, time vem como timestamp number. Se > 1, vem como string YYYY-MM-DD
 							const formattedData = result.data.map(point => ({
 								time: point.time,
