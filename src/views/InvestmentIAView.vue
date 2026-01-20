@@ -177,7 +177,7 @@
                                 
                                 <!-- Strategy Description Card (appears when selected) -->
                                 <transition name="slide-fade" mode="out-in">
-                                    <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card mt-3">
+                                    <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card mt-6">
                                         <div class="agent-desc-content">
                                             <div class="agent-desc-icon">
                                                 <i :class="getStrategyIcon(selectedStrategy)" style="color: white !important;"></i>
@@ -3781,6 +3781,7 @@ export default {
     font-size: 0.75rem;
     color: #A1A1A1;
     line-height: 1.4;
+    text-align: left;
 }
 
 /* Modal Premium Styles */
@@ -3879,9 +3880,11 @@ export default {
     flex-shrink: 0;
 }
 
-.agent-option-icon i {
+.agent-option-icon i,
+.agent-option-icon svg {
     font-size: 1.25rem;
     color: #FFFFFF !important;
+    fill: #FFFFFF !important;
 }
 
 .agent-option-info {
@@ -4005,10 +4008,10 @@ export default {
     
     #ai-vision-panel .ai-vision-header-mobile {
         display: block !important;
-        margin-bottom: 1.5rem;
+        margin-bottom: 0;
         background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, .3) 0, rgba(0, 1, 0, .1) 70%, transparent 100%);
         border-radius: .75rem;
-        padding: 0;
+        padding: 1rem 0 0;
     }
     
     #ai-vision-panel .ai-vision-header-mobile h1 {
