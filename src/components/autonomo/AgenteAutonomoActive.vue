@@ -237,8 +237,8 @@
 				<span class="text-[#A1A1AA] text-xs">{{ dateRangeText }}</span>
 			</div>
 			
-			<div class="h-[300px] w-full bg-gradient-to-b from-green-500/5 to-transparent border-b border-[#27272a] mb-4">
-				<div ref="performanceChartContainer" class="w-full h-full"></div>
+			<div class="h-[300px] w-full bg-gradient-to-b from-green-500/5 to-transparent border-b border-[#27272a] mb-4 relative">
+				<canvas ref="performanceChartCanvas"></canvas>
 			</div>
 
 			<div class="flex justify-between mt-4">
@@ -519,7 +519,7 @@
 </template>
 
 <script>
-	import { createChart, ColorType } from 'lightweight-charts';
+	import Chart from 'chart.js/auto';
 	import AutonomousAgentLogs from './AutonomousAgentLogs.vue';
 
 	export default {
@@ -604,9 +604,10 @@
 				timeUpdateInterval: null,
 				chartUpdateThrottle: null,
 				priceTicks: [],
-				indexChart: null,
-				indexChartSeries: null,
-				indexChartInitialized: false,
+				
+				// Chart.js instance
+				chartInstance: null,
+				
 				localTradeHistory: [],
 				realtimeLogs: [],
 				lastLogTimestamp: null,
