@@ -705,31 +705,33 @@ export default {
 		// TargetProfitModal,
 	},
 	data() {
-		const currentDate = '2025-11-18';
-		const startOfWeek = '2025-11-10'; 
+		// Definir datas padrão (últimos 7 dias)
+		const today = new Date();
+		const sevenDaysAgo = new Date();
+		sevenDaysAgo.setDate(today.getDate() - 7);
+		
+		const formatDate = (date) => {
+			const year = date.getFullYear();
+			const month = String(date.getMonth() + 1).padStart(2, '0');
+			const day = String(date.getDate()).padStart(2, '0');
+			return `${year}-${month}-${day}`;
+		};
 	
-		const botStats = [
-			{ name: 'IA Zenix 2', status: 'active', totalTrades: 1320, wins: 1073, losses: 646, profit: 3848.93, profitReached: 399, lossReached: 0, activeStop: 71, riskMode: 'Conservador', tradeMode: 'Veloz' },
-			{ name: 'IA Zenix 3', status: 'active', totalTrades: 2034, wins: 1456, losses: 845, profit: 1129.70, profitReached: 245, lossReached: 22, activeStop: 57, riskMode: 'Moderado', tradeMode: 'Veloz' },
-			{ name: 'IA Orion V2', status: 'warning', totalTrades: 890, wins: 512, losses: 378, profit: 990.50, profitReached: 150, lossReached: 15, activeStop: 30, riskMode: 'Balanceado', tradeMode: 'Moderado' },
-			{ name: 'IA Centauri', status: 'inactive', totalTrades: 315, wins: 150, losses: 165, profit: -210.00, profitReached: 40, lossReached: 55, activeStop: 25, riskMode: 'Agressivo', tradeMode: 'Lento' },
-		];
-
 		return {
 			isSidebarOpen: false, 
 			isSidebarCollapsed: false,
 			isMobile: false,
 			
-			filterStartDate: startOfWeek, 
-			filterEndDate: currentDate,  
+			filterStartDate: formatDate(sevenDaysAgo), 
+			filterEndDate: formatDate(today),  
 
-			allStats: botStats,
-			displayedStats: botStats, 
+			allStats: [],
+			displayedStats: [], 
 
-			totalActiveIAs: 12,
-			combinedProfit7Days: 5481.20,
-			globalAccuracy: 72.4,
-			topProfitIA: 'IA Zenix 2 (+3,848.93)',
+			totalActiveIAs: 0,
+			combinedProfit7Days: 0,
+			globalAccuracy: 0,
+			topProfitIA: '',
 
 			// Monitoramento de IA
 			aiMonitoring: {
@@ -1075,6 +1077,67 @@ export default {
 				});
 			} catch (error) {
 				console.error('[StatsIAsView] Erro ao carregar informações da conta:', error);
+			}
+		},
+		
+		/**
+		 * Busca dados gerais das IAs com filtros de data
+		 */
+		async fetchData() {
+			try {
+				console.log('[StatsIAsView] Buscando estatísticas gerais...', {
+					startDate: this.filterStartDate,
+					endDate: this.filterEndDate
+				});
+				
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const params = new URLSearchParams();
+				
+				if (this.filterStartDate) {
+					params.append('startDate', this.filterStartDate);
+				}
+				if (this.filterEndDate) {
+					params.append('endDate', this.filterEndDate);
+				}
+				
+				const url = `${apiBase}/autonomous-agent/general-stats?${params.toString()}`;
+				console.log('[StatsIAsView] URL:', url);
+				
+				const response = await fetch(url, {
+					headers: {
+						'Authorization': `Bearer ${localStorage.getItem('token')}`
+					}
+				});
+				
+				if (!response.ok) {
+					throw new Error(`HTTP error! status: ${response.status}`);
+				}
+				
+				const result = await response.json();
+				console.log('[StatsIAsView] Resultado:', result);
+				
+				if (result.success && result.data) {
+					const { strategies, summary } = result.data;
+					
+					// Atualizar tabela de estratégias
+					this.allStats = strategies;
+					this.displayedStats = strategies;
+					
+					// Atualizar cards de resumo
+					this.totalActiveIAs = summary.totalActiveIAs;
+					this.combinedProfit7Days = summary.combinedProfit;
+					this.globalAccuracy = summary.globalAccuracy;
+					this.topProfitIA = `${summary.topPerformer.name} (+${summary.topPerformer.profit.toFixed(2)})`;
+					
+					console.log('[StatsIAsView] ✅ Estatísticas carregadas com sucesso');
+				} else {
+					console.error('[StatsIAsView] Resposta inválida:', result);
+				}
+			} catch (error) {
+				console.error('[StatsIAsView] Erro ao buscar estatísticas gerais:', error);
+				// Manter valores zerados em caso de erro
+				this.allStats = [];
+				this.displayedStats = [];
 			}
 		},
 		
@@ -3020,14 +3083,12 @@ export default {
 	},
 },
 
-async mounted() {
-	console.log('[StatsIAsView] ===== COMPONENTE MONTADO =====');
-	
-	// Verificar se é mobile e configurar sidebar
+mounted() {
 	this.checkMobile();
 	window.addEventListener('resize', this.checkMobile);
-	
-	// ✅ OTIMIZAÇÃO 1: Carregar estado do CACHE LOCAL IMEDIATAMENTE (instantâneo)
+	this.loadAIConfigOnMount();
+	// Carregar dados gerais das IAs
+	this.fetchData();
 	this.loadAIConfigFromCache();
 	
 	// ✅ OTIMIZAÇÃO 2: Carregar dados do localStorage INSTANTÂNEO
