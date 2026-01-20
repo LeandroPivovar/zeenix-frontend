@@ -1,5 +1,5 @@
 ﻿<template>
-	<div class="min-h-screen text-[#FAFAFA] font-sans">
+	<div class="min-h-screen text-[#FAFAFA] font-sans" style="padding-top: 2rem;">
 		<!-- Header -->
 		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 mt-8">
 			<div>
@@ -210,7 +210,7 @@
 										<h5 class="text-xs font-bold text-white truncate text-left">{{ agent.title }}</h5>
 										<span v-if="agenteData.id === agent.id" class="text-[8px] text-white font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
-									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line">{{ agent.description }}</p>
+									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line" v-html="formatAgentDescription(agent.description)"></p>
 									<div class="flex items-center gap-2 mt-1.5 text-left">
 										<span class="text-[9px] text-[#A1A1AA]">WR: <span class="text-white">{{ agent.winRate }}%</span></span>
 										<span class="text-[9px] text-[#A1A1AA]">Estilo: <span class="text-white">{{ agent.style }}</span></span>
@@ -840,6 +840,14 @@
 			}
 		},
 		methods: {
+			formatAgentDescription(description) {
+				if (!description) return '';
+				// Destacar palavras-chave em branco e negrito
+				return description
+					.replace(/Análise:/g, '<span style="color: white; font-weight: bold;">Análise:</span>')
+					.replace(/Assertividade:/g, '<span style="color: white; font-weight: bold;">Assertividade:</span>')
+					.replace(/Retorno:/g, '<span style="color: white; font-weight: bold;">Retorno:</span>');
+			},
 
 			getUserId() {
 				return this.userId || localStorage.getItem('userId') || localStorage.getItem('user_id');
