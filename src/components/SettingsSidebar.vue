@@ -473,6 +473,29 @@ export default {
             timestamp: Date.now()
           }));
 
+          // ✅ NOVO: Salvar token selecionado no banco de dados
+          try {
+            const saveTokenResponse = await fetch(`${apiBase}/settings/deriv-token`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                token: account.token
+              })
+            });
+
+            if (saveTokenResponse.ok) {
+              console.log('[SettingsSidebar] ✅ Token da conta selecionada salvo no banco de dados');
+            } else {
+              console.warn('[SettingsSidebar] ⚠️ Erro ao salvar token no banco, mas continuando...');
+            }
+          } catch (saveError) {
+            console.error('[SettingsSidebar] ❌ Erro ao salvar token no banco:', saveError);
+            // Continuar mesmo se falhar ao salvar no banco
+          }
+
           const accountType = account.isDemo ? 'demo' : 'real';
           this.$emit('account-type-changed', accountType);
           
@@ -497,8 +520,89 @@ export default {
         return false;
       }
     },
-    switchAccount(type) {
-      this.$emit('account-type-changed', type);
+    async switchAccount(type) {
+      try {
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const token = localStorage.getItem('token');
+        
+        // ✅ NOVO: Encontrar o token correto baseado no tipo de conta
+        let selectedToken = null;
+        
+        // Buscar informações da conexão Deriv
+        const derivConnectionStr = localStorage.getItem('deriv_connection');
+        if (derivConnectionStr) {
+          try {
+            const derivConnection = JSON.parse(derivConnectionStr);
+            const accountsByCurrency = derivConnection.accountsByCurrency;
+            const tokensByLoginId = derivConnection.tokensByLoginId;
+            
+            // Procurar a conta do tipo solicitado (demo ou real)
+            const isDemo = type === 'demo';
+            
+            if (accountsByCurrency && tokensByLoginId) {
+              // Iterar por todas as moedas
+              for (const currency in accountsByCurrency) {
+                const accounts = accountsByCurrency[currency];
+                if (Array.isArray(accounts)) {
+                  // Procurar conta do tipo correto
+                  const targetAccount = accounts.find(acc => acc.isDemo === isDemo);
+                  if (targetAccount && targetAccount.loginid) {
+                    // Pegar token do loginid encontrado
+                    selectedToken = tokensByLoginId[targetAccount.loginid];
+                    if (selectedToken) {
+                      console.log('[SettingsSidebar] Token encontrado para', type, ':', targetAccount.loginid);
+                      break;
+                    }
+                  }
+                }
+              }
+            }
+          } catch (parseError) {
+            console.error('[SettingsSidebar] Erro ao parsear deriv_connection:', parseError);
+          }
+        }
+
+        if (!selectedToken) {
+          console.warn('[SettingsSidebar] Token não encontrado para tipo:', type);
+          this.$emit('account-type-changed', type);
+          return;
+        }
+
+        // ✅ NOVO: Salvar token selecionado no banco de dados
+        try {
+          const saveTokenResponse = await fetch(`${apiBase}/settings/deriv-token`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              token: selectedToken
+            })
+          });
+
+          if (saveTokenResponse.ok) {
+            console.log('[SettingsSidebar] ✅ Token da conta selecionada salvo no banco de dados (tipo:', type, ')');
+            
+            // ✅ Atualizar localStorage com o novo token
+            localStorage.setItem('deriv_token', selectedToken);
+            console.log('[SettingsSidebar] ✅ localStorage atualizado com novo token');
+          } else {
+            console.warn('[SettingsSidebar] ⚠️ Erro ao salvar token no banco, mas continuando...');
+          }
+        } catch (saveError) {
+          console.error('[SettingsSidebar] ❌ Erro ao salvar token no banco:', saveError);
+          // Continuar mesmo se falhar ao salvar no banco
+        }
+
+        this.$emit('account-type-changed', type);
+        
+        // ✅ Recarregar página para aplicar mudanças
+        window.location.reload();
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao trocar conta:', error);
+        this.$emit('account-type-changed', type);
+      }
     },
     openDepositFlow() {
       this.close();
