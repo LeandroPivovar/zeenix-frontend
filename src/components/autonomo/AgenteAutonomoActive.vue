@@ -176,10 +176,6 @@
 								</div>
 							</div>
 						</div>
-						
-						<div class="p-2 opacity-40 group-hover:opacity-100 transition-opacity">
-							<i class="fas fa-right-left text-xs text-green-500"></i>
-						</div>
 					</div>
 
 					<!-- Agent Switcher Dropdown -->
@@ -197,7 +193,7 @@
 								:key="agent.id"
 								@click="selectAgent(agent.id)"
 								class="p-3 flex items-center gap-3 hover:bg-[#1a1a1a] cursor-pointer transition-colors border-b border-[#27272a]/50 last:border-0"
-								:class="{ 'bg-green-500/20 border-green-500/40 shadow-[inset_0_0_15px_rgba(34,197,94,0.15)]': agenteData.id === agent.id }"
+								:class="{ 'bg-green-500/[0.01] border-green-500/40 shadow-[inset_0_0_15px_rgba(34,197,94,0.27)]': agenteData.id === agent.id }"
 							>
 								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
 									<span>{{ agent.emoji }}</span>

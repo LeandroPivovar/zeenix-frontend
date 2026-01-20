@@ -1518,6 +1518,17 @@
      }
   }
   /* Responsividade Tablet */
+  .container-componentes {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-bottom: 20px;
+    margin: 20px 0;
+    background: transparent;
+    position: relative;
+    z-index: 1;
+  }
+  
+  /* Responsividade Tablet */
   @media screen and (max-width: 1024px) {
     .layout-agente-autnomo {
       width: 100% !important;
@@ -1535,9 +1546,8 @@
     }
   
     .container-componentes {
-      padding: 0 2rem 20px 2rem;
+      padding: 0 1rem 20px 1rem;
       margin-top: 50px;
-
     }
   
     .top-header {
@@ -1578,8 +1588,8 @@
     }
 
     .container-componentes {
-      padding: 0px 1rem 20px 1rem !important;
-      margin-top: 0px;
+      padding: 40px 1rem 20px 1rem !important;
+      margin-top: 0;
       background: linear-gradient(180deg, transparent 50%, #000100) !important;
       background-blend-mode: normal;
       position: relative;
