@@ -157,15 +157,75 @@
                                         <p>Modelo de análise usado pela IA</p>
                                     </ZenixTooltip>
                                 </label>
-                                <select id="strategySelect" class="form-select" v-model="selectedStrategy">
-                                    <option value="atlas">IA Atlas</option>
-                                    <option value="apollo">IA Apollo</option>
-                                    <option value="nexus">IA Nexus</option>
-                                    <option value="orion">IA Orion</option>
-                                    <option value="titan">IA Titan</option>
-                                </select>
-                                    <p id="strategyDescription" class="form-help" v-html="strategyDescription"></p>
+                                <!-- Premium Selector Button -->
+                                <button 
+                                    @click="openStrategyModal"
+                                    class="premium-selector-btn"
+                                >
+                                    <div class="selector-content">
+                                        <div class="selector-left">
+                                            <div class="selector-icon-active">
+                                                <i :class="getStrategyIcon(selectedStrategy)"></i>
+                                            </div>
+                                            <span :class="{ 'placeholder': !selectedStrategy }">
+                                                {{ selectedStrategyName }}
+                                            </span>
+                                        </div>
+                                        <i class="fas fa-chevron-right selector-arrow"></i>
+                                    </div>
+                                </button>
+                                
+                                <!-- Strategy Description Card (appears when selected) -->
+                                <transition name="slide-fade" mode="out-in">
+                                    <div v-if="selectedStrategy" :key="selectedStrategy" class="agent-description-card mt-3">
+                                        <div class="agent-desc-content">
+                                            <div class="agent-desc-icon">
+                                                <i :class="getStrategyIcon(selectedStrategy)" style="color: white !important;"></i>
+                                            </div>
+                                            <div class="agent-desc-info">
+                                                <h3>{{ selectedStrategyName }}</h3>
+                                                <p v-html="strategyDescription"></p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </transition>
                     </div>
+
+                    <!-- Strategy Selection Modal (Premium Style) -->
+                    <Teleport to="body">
+                        <div v-if="showStrategyModal" class="modal-overlay" @click.self="closeStrategyModal">
+                            <div class="modal-content categorized-modal">
+                                <div class="modal-header-premium">
+                                    <h3 class="modal-title">Selecionar Estratégia</h3>
+                                    <button @click="closeStrategyModal" class="modal-close-btn">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
+                                <div class="modal-body">
+                                    <div class="agents-modal-list">
+                                        <div 
+                                            v-for="strategy in availableStrategies" 
+                                            :key="strategy.id"
+                                            class="agent-option-premium"
+                                            :class="{ 'active': selectedStrategy === strategy.id }"
+                                            @click="selectStrategy(strategy.id)"
+                                        >
+                                            <div class="agent-option-icon">
+                                                <i :class="strategy.icon"></i>
+                                            </div>
+                                            <div class="agent-option-info">
+                                                <h4 class="agent-option-title">{{ strategy.title }}</h4>
+                                                <p class="agent-option-desc" v-html="strategy.description"></p>
+                                            </div>
+                                            <div class="agent-option-check">
+                                                <i class="fas" :class="selectedStrategy === strategy.id ? 'fa-check-circle' : 'fa-circle'"></i>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </Teleport>
 
                             <div class="form-group">
                                 <label class="form-label">
@@ -436,6 +496,14 @@ export default {
 
             selectedMarket: 'vol10',
             selectedStrategy: 'atlas',
+            showStrategyModal: false,
+            availableStrategies: [
+                { id: 'atlas', title: 'IA Atlas', icon: 'fas fa-brain', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 37% / 92%' },
+                { id: 'apollo', title: 'IA Apollo', icon: 'fas fa-rocket', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 55% a 65% - <strong>Retorno:</strong> 92%' },
+                { id: 'nexus', title: 'IA Nexus', icon: 'fas fa-project-diagram', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 57% / 90%' },
+                { id: 'orion', title: 'IA Orion', icon: 'fas fa-star', description: '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 60% / 90%' },
+                { id: 'titan', title: 'IA Titan', icon: 'fas fa-shield-alt', description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-60% - <strong>Retorno:</strong> 92%' }
+            ],
             
             dailyStats: {
                 profitLoss: 0,
@@ -599,6 +667,24 @@ export default {
         }
     },
     methods: {
+        getStrategyIcon(id) {
+            const strategy = this.availableStrategies.find(s => s.id === id);
+            return strategy ? strategy.icon : 'fas fa-brain';
+        },
+
+        openStrategyModal() {
+            this.showStrategyModal = true;
+        },
+
+        closeStrategyModal() {
+            this.showStrategyModal = false;
+        },
+
+        selectStrategy(strategyId) {
+            this.selectedStrategy = strategyId;
+            this.closeStrategyModal();
+        },
+        
         getCurrencyPrefix(currency) {
             switch ((currency || '').toUpperCase()) {
                 case 'USD':
@@ -3596,6 +3682,255 @@ export default {
     backdrop-filter: blur(2px);
     z-index: 998;
     cursor: pointer;
+}
+
+/* Premium Selector Button */
+.premium-selector-btn {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    background-color: #0B0B0B;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.5rem;
+    color: #fff;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    height: 45px;
+    box-sizing: border-box;
+}
+
+.premium-selector-btn:hover {
+    border-color: #22C55E;
+    background-color: #0d1a10;
+}
+
+.selector-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+}
+
+.selector-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.selector-icon-active {
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #22C55E;
+}
+
+.selector-left span {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+.selector-left span.placeholder {
+    color: #A1A1A1;
+}
+
+.selector-arrow {
+    font-size: 0.75rem;
+    color: #444;
+}
+
+/* Agent Description Card */
+.agent-description-card {
+    background: linear-gradient(135deg, rgba(34, 197, 94, 0.05) 0%, rgba(0, 0, 0, 0) 100%);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 0.75rem;
+    padding: 1rem;
+    animation: fadeIn 0.3s ease-out;
+}
+
+.agent-desc-content {
+    display: flex;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.agent-desc-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.agent-desc-icon i {
+    font-size: 1.25rem;
+}
+
+.agent-desc-info h3 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1rem;
+    font-weight: 700;
+    color: #fff;
+}
+
+.agent-desc-info p {
+    margin: 0;
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    line-height: 1.4;
+}
+
+/* Modal Premium Styles */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.8);
+    backdrop-filter: blur(4px);
+    z-index: 10000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.categorized-modal {
+    width: 100%;
+    max-width: 800px;
+    background: #0D0D0D;
+    border: 1px solid #22C55E33;
+    padding: 1.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+    max-height: 90vh;
+    overflow-y: auto;
+}
+
+.modal-header-premium {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.modal-title {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0;
+}
+
+.modal-close-btn {
+    background: none;
+    border: none;
+    color: #555;
+    font-size: 1.25rem;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-close-btn:hover {
+    color: #fff;
+}
+
+.agents-modal-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.agent-option-premium {
+    display: flex;
+    align-items: center;
+    padding: 1rem;
+    background: #111;
+    border: 1px solid #1C1C1C;
+    border-radius: 0.75rem;
+    gap: 1rem;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.agent-option-premium:hover {
+    border-color: #22C55E66;
+    background: #161616;
+}
+
+.agent-option-premium.active {
+    border-color: #22C55E;
+    background: #0d1a10;
+}
+
+.agent-option-icon {
+    width: 2.5rem;
+    height: 2.5rem;
+    background: rgba(34, 197, 94, 0.1);
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.agent-option-icon i {
+    font-size: 1.25rem;
+    color: #FFFFFF !important;
+}
+
+.agent-option-info {
+    flex: 1;
+    text-align: left;
+}
+
+.agent-option-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 0.125rem 0;
+}
+
+.agent-option-desc {
+    font-size: 0.75rem;
+    color: #A1A1A1;
+    margin: 0;
+    line-height: 1.3;
+}
+
+.agent-option-check {
+    color: #333;
+    font-size: 1rem;
+}
+
+.agent-option-premium.active .agent-option-check {
+    color: #22C55E;
+}
+
+/* Animations */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: all 0.3s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  transform: translateY(-10px);
+  opacity: 0;
+}
+
+/* Responsive */
+@media (min-width: 769px) {
+    .agents-modal-list {
+        display: grid !important;
+        grid-template-columns: 1fr 1fr !important;
+        gap: 1rem !important;
+    }
 }
 
 /* Ajustes para mobile */
