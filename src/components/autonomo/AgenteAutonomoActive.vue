@@ -237,8 +237,8 @@
 				<span class="text-[#A1A1AA] text-xs">{{ dateRangeText }}</span>
 			</div>
 			
-			<div class="h-[300px] w-full bg-gradient-to-b from-green-500/5 to-transparent border-b border-[#27272a] mb-4 relative">
-				<canvas ref="performanceChartCanvas"></canvas>
+			<div ref="performanceChartContainer" class="h-[300px] w-full bg-gradient-to-b from-green-500/5 to-transparent border-b border-[#27272a] mb-4 relative">
+				<!-- Lightweight Charts will inject here -->
 			</div>
 
 			<div class="flex justify-between mt-4">
@@ -829,9 +829,81 @@
 			initIndexChart() {
                 console.log('[AgenteAutonomo] initIndexChart iniciado');
 				if (!this.$refs.performanceChartContainer) {
-                    console.warn('[AgenteAutonomo] performanceChartContainer não encontrado');
+                    console.warn('[AgenteAutonomo] performanceChartContainer não encontrado, tentativa de recuperar...');
+                    // Se não encontrar, tentar novamente no nextTick
+                    this.$nextTick(() => {
+                        if (this.$refs.performanceChartContainer) {
+                            this.initIndexChart();
+                        }
+                    });
                     return;
                 }
+
+                // Se já existe chart, remover
+                if (this.indexChart) {
+                    try {
+                        this.indexChart.remove();
+                    } catch (e) { console.error('Error removing chart', e); }
+                    this.indexChart = null;
+                }
+
+				// Limpar container 
+				this.$refs.performanceChartContainer.innerHTML = '';
+
+				this.indexChart = createChart(this.$refs.performanceChartContainer, {
+					layout: {
+						background: { type: ColorType.Solid, color: 'transparent' },
+						textColor: '#A0A0A0',
+					},
+					grid: {
+						vertLines: { color: 'rgba(42, 46, 57, 0)' },
+						horzLines: { color: 'rgba(42, 46, 57, 0.2)' },
+					},
+					width: this.$refs.performanceChartContainer.clientWidth,
+					height: 300,
+					timeScale: {
+						borderColor: 'rgba(197, 203, 206, 0.2)',
+						timeVisible: true,
+						secondsVisible: false,
+					},
+                    crosshair: {
+                        mode: 1, // CrosshairMode.Normal
+                        vertLine: {
+                            color: 'rgba(34, 197, 94, 0.5)',
+                            width: 1,
+                            style: 3,
+                            labelBackgroundColor: '#22c55e',
+                        },
+                        horzLine: {
+                            color: 'rgba(34, 197, 94, 0.5)',
+                            width: 1,
+                            style: 3,
+                            labelBackgroundColor: '#22c55e',
+                        },
+                    },
+				});
+
+                console.log('[AgenteAutonomo] Gráfico criado com sucesso');
+
+				this.indexChartSeries = this.indexChart.addLineSeries({
+					color: 'rgba(34, 197, 94, 1)',
+					lineWidth: 2,
+                    crosshairMarkerVisible: true,
+                    crosshairMarkerRadius: 4,
+				});
+
+				this.indexChartInitialized = true;
+
+				// Responsividade
+				const resizeObserver = new ResizeObserver(entries => {
+					if (entries.length === 0 || !entries[0].target) return;
+					if (this.indexChart) {
+						this.indexChart.resize(entries[0].contentRect.width, 300);
+                        this.indexChart.timeScale().fitContent();
+					}
+				});
+				resizeObserver.observe(this.$refs.performanceChartContainer);
+			},
 
 				// Limpar container se já tiver algo
 				this.$refs.performanceChartContainer.innerHTML = '';
