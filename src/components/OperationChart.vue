@@ -2109,40 +2109,76 @@ export default {
       });
       
       try {
-        // ✅ CORREÇÃO: Buscar token da conta atualmente selecionada
-        const derivConnection = localStorage.getItem('deriv_connection');
-        let derivToken = localStorage.getItem('deriv_token');
+        // ✅ CORREÇÃO: Buscar token e loginid com lógica robusta (espelho do Agente Autônomo)
+        let derivToken = null;
         let loginid = null;
+        let preferredCurrency = null;
 
-        if (derivConnection) {
+        try {
+          // 1. Verificar preferência de moeda (DEMO vs REAL)
+          const connectionStr = localStorage.getItem('deriv_connection');
+          if (connectionStr) {
+            const connection = JSON.parse(connectionStr);
+            preferredCurrency = connection.tradeCurrency;
+            // Tentar usar o loginid salvo como ponto de partida
+            if (connection.loginid) loginid = connection.loginid;
+          }
+        } catch (e) {
+          console.warn('[Chart] Erro ao parsear deriv_connection:', e);
+        }
+
+        const isDemoPreferred = preferredCurrency?.toUpperCase() === 'DEMO';
+        const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+        let tokensByLoginId = {};
+        
+        if (tokensByLoginIdStr) {
           try {
-            const connection = JSON.parse(derivConnection);
-            loginid = connection.loginid;
-            if (!derivToken) {
-              derivToken = connection.token;
-            }
+            tokensByLoginId = JSON.parse(tokensByLoginIdStr);
           } catch (e) {
-            console.warn('[Chart] Erro ao parsear deriv_connection:', e);
+            console.error('[Chart] Erro ao parsear tokens:', e);
           }
         }
 
-        // Se não tiver token, tentar deriv_tokens_by_loginid
-        if (!derivToken) {
-          const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
-          if (tokensByLoginId) {
-            try {
-              const tokens = JSON.parse(tokensByLoginId);
-              if (loginid && tokens[loginid]) {
-                derivToken = tokens[loginid];
-              } else if (Object.keys(tokens).length > 0) {
-                const firstLoginId = Object.keys(tokens)[0];
-                derivToken = tokens[firstLoginId];
-                loginid = firstLoginId;
-              }
-            } catch (e) {
-              console.warn('[Chart] Erro ao parsear deriv_tokens_by_loginid:', e);
+        // 2. Lógica Inteligente de Seleção de Token (Igual ao AI)
+        if (isDemoPreferred) {
+          // SE FOR DEMO: Procurar ativamente por uma conta VRTC/VRT
+          console.log('[Chart] Modo DEMO detectado. Buscando token VRTC...');
+          for (const [id, token] of Object.entries(tokensByLoginId)) {
+            if (id.startsWith('VRTC') || id.startsWith('VRT')) {
+              derivToken = token;
+              loginid = id; // ✅ Atualizar loginid para corresponder ao token encontrado
+              console.log('[Chart] ✓ Token DEMO encontrado:', id);
+              break;
             }
           }
+        } else {
+          // SE FOR REAL: Tentar usar o loginid específico ou fallback
+          if (loginid && tokensByLoginId[loginid]) {
+            derivToken = tokensByLoginId[loginid];
+            console.log('[Chart] ✓ Token REAL específico encontrado:', loginid);
+          }
+        }
+
+        // 3. Fallback: Se ainda não tiver token, tentar o padrão ou o primeiro disponível
+        if (!derivToken) {
+           console.warn('[Chart] Token não encontrado pela lógica principal. Tentando fallbacks...');
+           derivToken = localStorage.getItem('deriv_token');
+           
+           // Tentar encontrar o loginid para esse token padrão (reverse lookup)
+           if (derivToken && !loginid) {
+              for (const [id, token] of Object.entries(tokensByLoginId)) {
+                if (token === derivToken) {
+                  loginid = id;
+                  break;
+                }
+              }
+           }
+
+           if (!derivToken && Object.keys(tokensByLoginId).length > 0) {
+              // Último caso: pegar o primeiro que aparecer
+              loginid = Object.keys(tokensByLoginId)[0];
+              derivToken = tokensByLoginId[loginid];
+           }
         }
 
         if (!derivToken) {
