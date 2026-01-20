@@ -546,9 +546,6 @@
 								<th>Ganho</th>
 								<th>Perda</th>
 								<th class="profit-col">Lucro Total</th>
-								<th>Lucro Alcançado</th>
-								<th>Perda Alcançada</th>
-								<th>Parada Ativada</th>
 								<th>Risco Mais Usado</th>
 								<th>Modo Mais Usado</th>
 							</tr>
@@ -565,9 +562,6 @@
 								<td :class="['profit-col', bot.profit >= 0 ? 'positive-profit' : 'negative-profit']">
 									{{ formatCurrency(bot.profit) }}
 								</td>
-								<td>{{ bot.profitReached }}</td>
-								<td>{{ bot.lossReached }}</td>
-								<td>{{ bot.activeStop }}</td>
 								<td>{{ bot.riskMode }}</td>
 								<td>{{ bot.tradeMode }}</td>
 							</tr>
@@ -603,18 +597,7 @@
 									{{ formatCurrency(bot.profit) }}
 								</span>
 							</div>
-							<div class="mobile-card-row">
-								<span class="mobile-card-label">Lucro Alcançado:</span>
-								<span class="mobile-card-value">{{ bot.profitReached }}</span>
-							</div>
-							<div class="mobile-card-row">
-								<span class="mobile-card-label">Perda Alcançada:</span>
-								<span class="mobile-card-value">{{ bot.lossReached }}</span>
-							</div>
-							<div class="mobile-card-row">
-								<span class="mobile-card-label">Parada Ativada:</span>
-								<span class="mobile-card-value">{{ bot.activeStop }}</span>
-							</div>
+
 							<div class="mobile-card-row">
 								<span class="mobile-card-label">Risco Mais Usado:</span>
 								<span class="mobile-card-value">{{ bot.riskMode }}</span>
