@@ -905,64 +905,7 @@
 				resizeObserver.observe(this.$refs.performanceChartContainer);
 			},
 
-				// Limpar container se já tiver algo
-				this.$refs.performanceChartContainer.innerHTML = '';
 
-				this.indexChart = createChart(this.$refs.performanceChartContainer, {
-                    // ... (options omitted for brevity, keeping existing)
-					layout: {
-						background: { type: ColorType.Solid, color: 'transparent' },
-						textColor: '#A0A0A0',
-					},
-					grid: {
-						vertLines: { color: 'rgba(42, 46, 57, 0)' },
-						horzLines: { color: 'rgba(42, 46, 57, 0.2)' },
-					},
-					width: this.$refs.performanceChartContainer.clientWidth,
-					height: 300,
-					timeScale: {
-						borderColor: 'rgba(197, 203, 206, 0.2)',
-						timeVisible: true,
-						secondsVisible: false,
-					},
-                    crosshair: {
-                        mode: 1, // CrosshairMode.Normal
-                        vertLine: {
-                            color: 'rgba(34, 197, 94, 0.5)',
-                            width: 1,
-                            style: 3,
-                            labelBackgroundColor: '#22c55e',
-                        },
-                        horzLine: {
-                            color: 'rgba(34, 197, 94, 0.5)',
-                            width: 1,
-                            style: 3,
-                            labelBackgroundColor: '#22c55e',
-                        },
-                    },
-				});
-
-                console.log('[AgenteAutonomo] Gráfico criado');
-
-				this.indexChartSeries = this.indexChart.addLineSeries({
-					color: 'rgba(34, 197, 94, 1)',
-					lineWidth: 2,
-                    crosshairMarkerVisible: true,
-                    crosshairMarkerRadius: 4,
-				});
-
-				this.indexChartInitialized = true;
-
-				// Responsividade
-				const resizeObserver = new ResizeObserver(entries => {
-					if (entries.length === 0 || !entries[0].target) return;
-					if (this.indexChart) {
-						this.indexChart.resize(entries[0].contentRect.width, 300);
-                        this.indexChart.timeScale().fitContent();
-					}
-				});
-				resizeObserver.observe(this.$refs.performanceChartContainer);
-			},
 			
 			// ... (existing methods)
 
