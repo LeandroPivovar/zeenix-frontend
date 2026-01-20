@@ -519,7 +519,7 @@
 </template>
 
 <script>
-	import Chart from 'chart.js/auto';
+	import { createChart, ColorType } from 'lightweight-charts';
 	import AutonomousAgentLogs from './AutonomousAgentLogs.vue';
 
 	export default {
