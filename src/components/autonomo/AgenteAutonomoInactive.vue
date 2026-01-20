@@ -61,7 +61,7 @@
 									<i class="fas fa-microchip text-[#22C55E] text-lg"></i>
 									<p class="text-[10px] text-white uppercase font-bold status-label">AUTONOMIA</p>
 								</div>
-								<p class="text-base font-bold text-white status-value">100% Autônomo</p>
+								<p class="text-xs text-white status-value">100% Autônomo</p>
 								<p class="text-xs text-zenix-label mt-1 status-description">Opera 24/7 sem supervisão</p>
 							</div>
 							<!-- Card 2: CONFIGURAÇÃO -->
@@ -70,7 +70,7 @@
 									<i class="fas fa-cog text-[#22C55E] text-lg"></i>
 									<p class="text-[10px] text-white uppercase font-bold status-label">CONFIGURAÇÃO</p>
 								</div>
-								<p class="text-base font-bold text-white status-value">Configure uma vez</p>
+								<p class="text-xs text-white status-value">Configure uma vez</p>
 								<p class="text-xs text-zenix-label mt-1 status-description">Esqueça e deixe trabalhar</p>
 							</div>
 							<!-- Card 3: PROTEÇÃO -->
@@ -79,7 +79,7 @@
 									<i class="fas fa-shield-alt text-[#22C55E] text-lg"></i>
 									<p class="text-[10px] text-white uppercase font-bold status-label">PROTEÇÃO</p>
 								</div>
-								<p class="text-base font-bold text-white status-value">Metas Automáticas</p>
+								<p class="text-xs text-white status-value">Metas Automáticas</p>
 								<p class="text-xs text-zenix-label mt-1 status-description">Para ao atingir lucro ou perda</p>
 							</div>
 							<!-- Card 4: CICLO DIÁRIO -->
@@ -88,7 +88,7 @@
 									<i class="fas fa-sync-alt text-[#22C55E] text-lg"></i>
 									<p class="text-[10px] text-white uppercase font-bold status-label">CICLO DIÁRIO</p>
 								</div>
-								<p class="text-base font-bold text-white status-value">Reinício Automático</p>
+								<p class="text-xs text-white status-value">Reinício Automático</p>
 								<p class="text-xs text-zenix-label mt-1 status-description">Volta sozinho no dia seguinte</p>
 							</div>
 						</div>

@@ -110,8 +110,8 @@
                                         <i class="fas fa-brain text-[#22C55E] text-lg"></i>
                                         <p class="text-[10px] text-white uppercase font-bold status-label">ESTRATÉGIAS</p>
                                     </div>
-                                    <p class="text-base font-bold text-white status-value">5 IAs Especializadas</p>
-                                    <p class="text-xs text-zenix-label mt-1 status-description">Dígitos, Price Action e Híbridas</p>
+                                    <p class="text-xs text-white status-value">5 IAs Especializadas</p>
+                                    <p class="text-xs text-zenix-label mt-1 status-description">IAs para diferentes perfis</p>
                                 </div>
                                 <!-- Card 2: DESEMPENHO -->
                                 <div class="bg-zenix-bg border-2 border-zenix-border rounded-xl p-4 hover-lift status-card-mobile flex flex-col items-center text-center">
@@ -119,7 +119,7 @@
                                         <i class="fas fa-chart-line text-[#22C55E] text-lg"></i>
                                         <p class="text-[10px] text-white uppercase font-bold status-label">DESEMPENHO</p>
                                     </div>
-                                    <p class="text-base font-bold text-white status-value">60% a 75%</p>
+                                    <p class="text-xs text-white status-value">60% a 75%</p>
                                     <p class="text-xs text-zenix-label mt-1 status-description">Varia por estratégia e modo</p>
                                 </div>
                                 <!-- Card 3: CONTROLE -->
@@ -128,7 +128,7 @@
                                         <i class="fas fa-sliders-h text-[#22C55E] text-lg"></i>
                                         <p class="text-[10px] text-white uppercase font-bold status-label">CONTROLE</p>
                                     </div>
-                                    <p class="text-base font-bold text-white status-value">Parcial com Supervisão</p>
+                                    <p class="text-xs text-white status-value">Parcial com Supervisão</p>
                                     <p class="text-xs text-zenix-label mt-1 status-description">Você decide quando operar</p>
                                 </div>
                                 <!-- Card 4: SEGURANÇA -->
@@ -137,7 +137,7 @@
                                         <i class="fas fa-shield-alt text-[#22C55E] text-lg"></i>
                                         <p class="text-[10px] text-white uppercase font-bold status-label">SEGURANÇA</p>
                                     </div>
-                                    <p class="text-base font-bold text-white status-value">Stop Loss Duplo</p>
+                                    <p class="text-xs text-white status-value">Stop Loss Duplo</p>
                                     <p class="text-xs text-zenix-label mt-1 status-description">Normal + Blindado automáticos</p>
                                 </div>
                             </div>

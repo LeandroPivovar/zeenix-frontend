@@ -43,14 +43,14 @@
         </div>
       
         <!-- AI Vision Panel for Copy Trading -->
-        <section v-else-if="activeTab === 'config' && !hasActiveSession" class="fade-in" style="margin-bottom: 1.5rem;">
+        <section v-else-if="activeTab === 'config' && !hasActiveSession && !isMobile" class="fade-in" style="margin-bottom: 1.5rem;">
           <!-- Desktop: AI Vision Panel -->
           <div class="ai-vision-panel-desktop">
             <div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
               <!-- Header Desktop -->
               <div class="mb-6">
                 <div class="text-left">
-                  <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração do Copy Trading</h1>
+                  <h1 class="text-xl font-bold text-zenix-text mb-1">Configuração do Copy Trading</h1>
                   <p class="text-sm text-zenix-secondary">Escolha traders e IAs para copiar, configure proporção e filtros, e replique operações automaticamente.</p>
                 </div>
               </div>
@@ -101,7 +101,7 @@
                       <i class="fas fa-users text-[#22C55E] text-lg"></i>
                       <p class="text-[10px] text-white uppercase font-bold status-label">CÓPIA</p>
                     </div>
-                    <p class="text-base font-bold text-white status-value">Traders e IAs</p>
+                    <p class="text-xs text-white status-value">Traders e IAs</p>
                     <p class="text-xs text-zenix-label mt-1 status-description">Escolha quem copiar</p>
                   </div>
                   <!-- Card 2: DIVERSIFICAR -->
@@ -110,7 +110,7 @@
                       <i class="fas fa-layer-group text-[#22C55E] text-lg"></i>
                       <p class="text-[10px] text-white uppercase font-bold status-label">DIVERSIFICAR</p>
                     </div>
-                    <p class="text-base font-bold text-white status-value">Múltiplas Fontes</p>
+                    <p class="text-xs text-white status-value">Múltiplas Fontes</p>
                     <p class="text-xs text-zenix-label mt-1 status-description">Copie 3+ traders simultaneamente</p>
                   </div>
                   <!-- Card 3: AJUSTAR -->
@@ -119,7 +119,7 @@
                       <i class="fas fa-sliders-h text-[#22C55E] text-lg"></i>
                       <p class="text-[10px] text-white uppercase font-bold status-label">AJUSTAR</p>
                     </div>
-                    <p class="text-base font-bold text-white status-value">Proporcional ao Saldo</p>
+                    <p class="text-xs text-white status-value">Proporcional ao Saldo</p>
                     <p class="text-xs text-zenix-label mt-1 status-description">Ou valor fixo por operação</p>
                   </div>
                   <!-- Card 4: PROTEGER -->
@@ -128,7 +128,7 @@
                       <i class="fas fa-shield-alt text-[#22C55E] text-lg"></i>
                       <p class="text-[10px] text-white uppercase font-bold status-label">PROTEGER</p>
                     </div>
-                    <p class="text-base font-bold text-white status-value">Cópia Inteligente</p>
+                    <p class="text-xs text-white status-value">Cópia Inteligente</p>
                     <p class="text-xs text-zenix-label mt-1 status-description">Gestão otimizada</p>
                   </div>
                 </div>
