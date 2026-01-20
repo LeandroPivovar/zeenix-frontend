@@ -640,13 +640,7 @@
 					{ label: 'Mês Atual', value: 'thisMonth' },
 					{ label: 'Mês Passado', value: 'lastMonth' },
 				],
-				weeklyData: [
-					{ period: '15/12 - 21/12', profit: 3385.05, finalCapital: 105428.46, percent: 3.32, ops: 84, winRate: 75.0 },
-					{ period: '22/12 - 28/12', profit: 6641.49, finalCapital: 112069.95, percent: 6.30, ops: 271, winRate: 72.3 },
-					{ period: '29/12 - 04/01', profit: 6664.37, finalCapital: 118734.32, percent: 5.95, ops: 268, winRate: 72.8 },
-					{ period: '05/01 - 11/01', profit: 6424.36, finalCapital: 125158.68, percent: 5.41, ops: 282, winRate: 73.4 },
-					{ period: '12/01 - 18/01', profit: 5769.39, finalCapital: 130928.07, percent: 4.61, ops: 249, winRate: 73.9 },
-				],
+				weeklyData: [],
 				dailyData: [],
 			dailyTrades: [],
 			agentConfig: null,
@@ -683,6 +677,7 @@
 					this.fetchAgentConfig(); // Fetch agent configuration for initialBalance
 					this.fetchProfitEvolution();
 					this.fetchDailyStats();
+					this.fetchWeeklyStats();
 				});
 			}
 		},
@@ -1030,6 +1025,40 @@
 					}
 				} catch (error) {
 					console.error("[AgenteAutonomo] Erro ao buscar config do agente:", error);
+				}
+			},
+
+			async fetchWeeklyStats() {
+				const userId = this.getUserId();
+				console.log('[AgenteAutonomo] fetchWeeklyStats chamado para user:', userId);
+				if (!userId) return;
+
+				try {
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					const url = `${apiBase}/autonomous-agent/weekly-stats/${userId}?weeks=10`;
+					console.log('[AgenteAutonomo] Buscando stats semanais em:', url);
+					
+					const response = await fetch(url, {
+						method: "GET",
+						headers: {
+							"Content-Type": "application/json",
+							Authorization: `Bearer ${localStorage.getItem("token")}`,
+						},
+					});
+
+					console.log('[AgenteAutonomo] Weekly Stats Response Status:', response.status);
+
+					if (response.ok) {
+						const result = await response.json();
+						console.log('[AgenteAutonomo] weekly-stats resultado:', result);
+						if (result.success && result.data) {
+							this.weeklyData = result.data;
+						}
+					} else {
+						console.error('[AgenteAutonomo] Erro na resposta de weekly-stats:', response.status);
+					}
+				} catch (error) {
+					console.error("[AgenteAutonomo] Erro ao buscar stats semanais:", error);
 				}
 			},
 
