@@ -3092,26 +3092,6 @@ mounted() {
 	this.fetchData();
 },
 
-	// Atualizar última leitura a cada segundo
-	setInterval(() => {
-		this.lastReadingTime = new Date().toLocaleTimeString('pt-BR', { 
-			hour: '2-digit', 
-			minute: '2-digit', 
-			second: '2-digit' 
-		});
-	}, 1000);
-	
-	// Inicializar gráfico de mercado após o componente ser montado
-	this.$nextTick(() => {
-		setTimeout(() => {
-			if (!this.aiMonitoring.isActive && this.$refs.marketChartContainerInactive) {
-				console.log('[StatsIAsView] Tentando inicializar gráfico de mercado inativo...');
-				this.initMarketChartInactive();
-			}
-		}, 500);
-	});
-},
-
 	beforeUnmount() {
 		window.removeEventListener('resize', this.checkMobile);
 		this.stopPolling();
