@@ -632,7 +632,7 @@
 						<div class="card-content">
 							<img src="../../assets/icons/robot.svg" alt="Total de IAs Ativas" class="card-icon" >
 							<div class="card-text-group"> 
-								<p class="card-value card-value-white">12</p>
+								<p class="card-value card-value-white">{{ totalActiveIAs }}</p>
 								<h3 class="card-title">Total de IAs Ativas</h3>
 							</div>
 						</div>
@@ -642,7 +642,9 @@
 						<div class="card-content">
 							<img src="../../assets/icons/stats.svg" alt="Lucro Combinado (7 dias)" class="card-icon">
 							<div class="card-text-group"> 
-								<p class="card-value positive-profit">+U$ 5.481,20</p>
+								<p :class="['card-value', combinedProfit7Days >= 0 ? 'positive-profit' : 'negative-profit']">
+									{{ formatCurrency(combinedProfit7Days) }}
+								</p>
 								<h3 class="card-title">Lucro Combinado (7 dias)</h3>
 							</div>
 						</div>
@@ -652,7 +654,7 @@
 						<div class="card-content">
 							<img src="../../assets/icons/target-IA.svg" alt="Média de Acerto Global" class="card-icon">
 							<div class="card-text-group"> 
-								<p class="card-value card-value-white">72,4%</p>
+								<p class="card-value card-value-white">{{ globalAccuracy.toFixed(1) }}%</p>
 								<h3 class="card-title">Média de Acerto Global</h3>
 							</div>
 						</div>
@@ -662,7 +664,7 @@
 						<div class="card-content">
 							<img src="../../assets/icons/trophy.svg" alt="IA com Maior Lucro" class="card-icon">
 							<div class="card-text-group"> 
-								<p class="card-value positive-profit">IA Zenix 2 <span class="card-value-white">(+3,848.93)</span></p>
+								<p class="card-value positive-profit">{{ topProfitIA || 'N/A' }}</p>
 								<h3 class="card-title">IA com Maior Lucro</h3>
 							</div>
 						</div>
