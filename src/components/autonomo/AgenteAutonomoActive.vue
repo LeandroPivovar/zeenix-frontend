@@ -170,7 +170,7 @@
 									<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
 								</div>
 								<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
-									<span class="text-lg">{{ agenteData.id === 'falcon' ? '🦅' : '⚡' }}</span>
+									<span class="text-lg">{{ runningAgents.find(a => a.id === agenteData.id)?.emoji || '⚡' }}</span>
 									<span>{{ agenteData.estrategia.replace('IA ', '') }}</span>
 									<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
 								</div>

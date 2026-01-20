@@ -260,12 +260,15 @@
         }
         
         return {
-        // ✅ Usar agentType se disponível, senão usar strategy
-        estrategia: this.agentConfig?.agentType 
-          ? this.getStrategyTitle(this.agentConfig.agentType) 
-          : (this.agentConfig?.strategy ? this.getStrategyTitle(this.agentConfig.strategy) : this.estrategia),
-        // ✅ Mercado sempre é "Volatility 100 Index"
-        mercado: 'Volatility 100 Index',
+          id: this.agentConfig?.agentType 
+            ? this.agentConfig.agentType.toLowerCase() 
+            : (this.agentConfig?.strategy ? this.agentConfig.strategy.toLowerCase() : (this.selectedStrategy?.toLowerCase() || 'sentinel')),
+          // ✅ Usar agentType se disponível, senão usar strategy
+          estrategia: this.agentConfig?.agentType 
+            ? this.getStrategyTitle(this.agentConfig.agentType) 
+            : (this.agentConfig?.strategy ? this.getStrategyTitle(this.agentConfig.strategy) : this.estrategia),
+          // ✅ Mercado sempre é "Volatility 100 Index"
+          mercado: 'Volatility 100 Index',
           risco: this.agentConfig?.riskLevel ? this.getRiskTitle(this.agentConfig.riskLevel) : this.risco,
           goalValue: this.goalValue,
           stopValue: this.stopValue,
