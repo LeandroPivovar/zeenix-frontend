@@ -1378,7 +1378,7 @@ export default {
 #ai-vision-panel {
     margin-left: 0;
     margin-right: 0;
-    margin-top: 1.5rem;
+    margin-top: 0;
     width: 100%;
     box-sizing: border-box;
 }
