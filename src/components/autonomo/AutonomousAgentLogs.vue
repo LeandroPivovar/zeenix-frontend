@@ -13,21 +13,21 @@
             <div 
               v-for="(log, index) in formattedLogs" 
               :key="log.id || index"
-              :class="['space-y-0.5 animate-in fade-in slide-in-from-left-1 duration-200 p-2 rounded-md', index % 2 === 0 ? 'bg-white/[0.03]' : '']"
+              :class="['space-y-0.5 animate-in fade-in slide-in-from-left-1 duration-200 p-2 border-b border-white/[0.05]']"
             >
               <div class="flex items-start gap-2">
-                <span :class="['shrink-0 font-mono transition-colors', index % 2 === 0 ? 'text-[#FAFAFA]' : 'text-[#A1A1AA]']">[{{ formatTimestamp(log.timestamp) }}]</span>
+                <span class="shrink-0 font-mono transition-colors text-[#A1A1AA]">[{{ formatTimestamp(log.timestamp) }}]</span>
                 <div :class="['space-y-0.5', getLogColorClass(log.logType)]">
                   <div class="font-bold flex items-center gap-1.5 uppercase tracking-wider text-[10px] sm:text-[11px]">
                     <span>{{ getLogEmoji(log.logType) }}</span>
-                    <span :class="index % 2 === 0 ? 'brightness-125' : ''">{{ log.title }}</span>
+                    <span>{{ log.title }}</span>
                   </div>
-                  <div v-if="log.details" :class="['pl-5 text-[10px] leading-relaxed transition-colors', index % 2 === 0 ? 'text-[#FAFAFA]' : 'text-[#A1A1AA]']">
+                  <div v-if="log.details" class="pl-5 text-[10px] leading-relaxed transition-colors text-[#A1A1AA]">
                     {{ log.details }}
                   </div>
                   <!-- Special handling for multi-line analysis or config if available -->
                    <div v-if="log.message && log.message.includes('\n')" class="pl-5 space-y-0.5">
-                      <div v-for="(line, lIdx) in log.message.split('\n').slice(1)" :key="lIdx" :class="['text-[10px] leading-relaxed transition-colors', index % 2 === 0 ? 'text-[#FAFAFA]' : 'text-[#A1A1AA]']">
+                      <div v-for="(line, lIdx) in log.message.split('\n').slice(1)" :key="lIdx" class="text-[10px] leading-relaxed transition-colors text-[#A1A1AA]">
                         • {{ line.trim() }}
                       </div>
                    </div>

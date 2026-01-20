@@ -92,34 +92,54 @@
 				</div>
 
 				<!-- Lucro do Periodo -->
-				<div class="rounded-lg border border-green-500/20 bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212] relative overflow-hidden">
-					<div class="absolute inset-0 bg-green-500/5 pointer-events-none"></div>
+				<div 
+					class="rounded-lg border bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212] relative overflow-hidden"
+					:class="periodProfit >= 0 ? 'border-green-500/20' : 'border-red-500/20'"
+				>
+					<div 
+						class="absolute inset-0 pointer-events-none"
+						:class="periodProfit >= 0 ? 'bg-green-500/5' : 'bg-red-500/5'"
+					></div>
 					<div class="flex items-center gap-2 mb-3 relative z-10">
-						<div class="text-green-500">
-							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+						<div :class="periodProfit >= 0 ? 'text-green-500' : 'text-red-500'">
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up" v-if="periodProfit >= 0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down" v-else><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
 						</div>
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Lucro do Período</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 relative z-10 text-left">
+					<div 
+						class="text-2xl font-bold mb-1 tabular-nums relative z-10 text-left"
+						:class="periodProfit >= 0 ? 'text-green-500' : 'text-red-500'"
+					>
 						{{ hideValues ? '••••' : (periodProfit >= 0 ? '+' : '') + '$' + periodProfit.toFixed(2) }}
 					</div>
 					<div class="flex items-center gap-2 relative z-10">
 						<span class="text-[#A1A1AA] text-xs">R$ {{ hideValues ? '••••' : (periodProfit * 5.19).toFixed(3) }}</span>
-						<div class="inline-flex items-center rounded-full border border-transparent bg-green-500/20 text-green-500 font-semibold text-[10px] px-2 py-0.5" v-if="!hideValues">
-							+{{ periodProfitPercent.toFixed(2) }}%
+						<div 
+							class="inline-flex items-center rounded-full border border-transparent font-semibold text-[10px] px-2 py-0.5" 
+							:class="periodProfit >= 0 ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'"
+							v-if="!hideValues"
+						>
+							{{ periodProfit >= 0 ? '+' : '' }}{{ periodProfitPercent.toFixed(2) }}%
 						</div>
 					</div>
 				</div>
 
 				<!-- Lucro Medio/Dia -->
-				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212]">
+				<div 
+					class="rounded-lg border bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212]"
+					:class="avgDailyProfit >= 0 ? 'border-[#27272a]' : 'border-red-500/20'"
+				>
 					<div class="flex items-center gap-2 mb-3">
-						<div class="text-green-500">
+						<div :class="avgDailyProfit >= 0 ? 'text-green-500' : 'text-red-500'">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-column"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
 						</div>
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Lucro Médio/Dia</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">
+					<div 
+						class="text-2xl font-bold mb-1 tabular-nums text-left"
+						:class="avgDailyProfit >= 0 ? 'text-green-500' : 'text-red-500'"
+					>
 						{{ hideValues ? '••••' : (avgDailyProfit >= 0 ? '+' : '') + '$' + avgDailyProfit.toFixed(2) }}
 					</div>
 					<div class="flex items-center gap-2">
@@ -131,7 +151,8 @@
 		</div>
 
 		<!-- Additional Stats Row -->
-		<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-4 mb-6">
+		<div class="rounded-lg border border-green-500/20 bg-[#0c0c0c] p-4 mb-6 relative overflow-hidden">
+			<div class="absolute inset-0 bg-green-500/5 pointer-events-none"></div>
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 				
 				<!-- Estrategia -->
@@ -190,7 +211,7 @@
 										<h5 class="text-xs font-bold text-white truncate text-left">{{ agent.title }}</h5>
 										<span v-if="agenteData.id === agent.id" class="text-[8px] text-white font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
-									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2">{{ agent.description }}</p>
+									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2 whitespace-pre-line">{{ agent.description }}</p>
 									<div class="flex items-center gap-2 mt-1.5 text-left">
 										<span class="text-[9px] text-[#A1A1AA]">WR: <span class="text-white">{{ agent.winRate }}%</span></span>
 										<span class="text-[9px] text-[#A1A1AA]">Estilo: <span class="text-white">{{ agent.style }}</span></span>
@@ -672,7 +693,7 @@
 				runningAgents: [
 					{ 
 						id: 'falcon', 
-						title: 'IA Falcon', 
+						title: 'Falcon', 
 						emoji: '🦅', 
 						description: 'Análise: Momentum Direcional (Rise/Fall) - Assertividade: 53% a 65% - Retorno: 92%',
 						winRate: 53,
@@ -680,9 +701,9 @@
 					},
 					{ 
 						id: 'zeus', 
-						title: 'IA Zeus', 
+						title: 'Zeus', 
 						emoji: '⚡', 
-						description: 'Análise: Probabilidade com Troca de Contrato - Assertividade: 65% a 75% Retorno: 60% / 92%',
+						description: 'Análise\nAssertividade\nRetorno',
 						winRate: 65,
 						style: 'Probabilístico'
 					}

@@ -5,7 +5,7 @@
 		<section class="metric-section">
 			<div class="metric-header">
 				<div class="header-left">
-					<h1 class="header-title">Visão da IA | Orion</h1>
+					<h1 class="header-title">Visão do Agente | Orion</h1>
 					<p class="header-subtitle">Análise em tempo real do mercado</p>
 				</div>
 				<div class="header-status">
@@ -68,8 +68,8 @@
 
 				<label class="input-label">Estratégia</label>
 				<select class="input-select" v-model="strategy">
-					<option value="Orion_AltaPerformance">IA Orion - Alta Performance</option>
-					<option value="nexus">IA NEXUS - Price Action</option>
+					<option value="Orion_AltaPerformance">Orion - Alta Performance</option>
+					<option value="nexus">NEXUS - Price Action</option>
 				</select>
 				<p class="strategy-description">Análise técnica avançada com machine learning</p>
 
@@ -173,18 +173,18 @@
 				</div>
 			</section>
 
-			<!-- Bloco 4: Controle da IA -->
+			<!-- Bloco 4: Controle do Agente -->
 			<section class="section ai-control-section">
-				<h3 class="section-title">Controle da IA</h3>
+				<h3 class="section-title">Controle do Agente</h3>
 
 				<div class="ai-status-toggle">
-					<span class="status-label">Status da IA</span>
+					<span class="status-label">Status do Agente</span>
 					<label class="switch">
 						<input type="checkbox" v-model="aiEnabled" />
 						<span class="slider round"></span>
 					</label>
 				</div>
-				<p class="ai-toggle-tip">Quando ativada, a IA executa operações automaticamente</p>
+				<p class="ai-toggle-tip">Quando ativada, o Agente executa operações automaticamente</p>
 
 				<div class="log-section">
 					<div v-if="isLoadingSessions" class="loading-sessions">
