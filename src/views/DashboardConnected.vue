@@ -624,6 +624,9 @@
             :key="notification.id"
             class="notification-item"
           >
+            <div class="notification-icon">
+              <i :class="notification.icon || 'fa-solid fa-info-circle'"></i>
+            </div>
             <div class="notification-content">
               <h3 class="notification-title">{{ notification.title }}</h3>
               <p class="notification-message">{{ notification.message }}</p>
