@@ -1350,10 +1350,10 @@
   }
   
   .container-componentes {
-    padding-left: 60px;
-    padding-right: 60px;
+    padding-left: 10px;
+    padding-right: 10px;
     padding-bottom: 20px;
-    margin-top: 60px;
+    margin: 0px;
   }
   
   /* Overlay */

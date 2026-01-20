@@ -665,6 +665,10 @@ export default {
 </script>
 
 <style scoped>
+.layout-content-agent-autonomo {
+    margin: 50px 0px;
+}
+
 /* --- PADRÃO ZENIX v2.0: CONFIGURAÇÕES PREMIUM --- */
 
 /* Tooltip antigo (manual) adaptado ao novo layout */
