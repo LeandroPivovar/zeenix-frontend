@@ -377,7 +377,7 @@
             ? this.accountBalance 
             : 0;
 
-          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
           const url = `${apiBase}/autonomous-agent/activate`;
           const body = {
               userId,
@@ -460,7 +460,7 @@
           }
 
           console.log('[AgenteAutonomo] Fazendo requisição para desativar agente...', { userId });
-          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
           const url = `${apiBase}/autonomous-agent/deactivate`;
           console.log('[AgenteAutonomo] Sending POST request to:', url);
           console.log('[AgenteAutonomo] Request Body:', { userId });
@@ -546,7 +546,7 @@
           const userId = this.getUserId();
           if (!userId) return;
 
-          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
           const url = `${apiBase}/autonomous-agent/config/${userId}`;
           console.log('[AgenteAutonomo] Fetching config from:', url);
 
@@ -651,7 +651,7 @@
           const userId = this.getUserId();
           if (!userId) return;
 
-          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
           const url = `${apiBase}/autonomous-agent/session-stats/${userId}`;
           console.log('[AgenteAutonomo] Fetching session stats from:', url);
 
@@ -699,7 +699,7 @@
           const userId = this.getUserId();
           if (!userId) return;
 
-          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
           const url = `${apiBase}/autonomous-agent/trade-history/${userId}?limit=50`;
           console.log('[AgenteAutonomo] Fetching trade history from:', url);
           
@@ -750,7 +750,7 @@
           const userId = this.getUserId();
           if (!userId) return;
 
-          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+          const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
           const url = `${apiBase}/autonomous-agent/logs/${userId}?limit=100`;
           console.log('[AgenteAutonomo] Fetching logs from:', url);
           

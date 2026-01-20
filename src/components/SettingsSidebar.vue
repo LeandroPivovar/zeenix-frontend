@@ -444,7 +444,7 @@ export default {
     },
     async selectAccount(account) {
       try {
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const token = localStorage.getItem('token');
         const appId = localStorage.getItem('deriv_app_id') || '1089';
 
@@ -523,7 +523,7 @@ export default {
     },
     async switchAccount(type) {
       try {
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const token = localStorage.getItem('token');
         
         // ✅ NOVO: Encontrar o token correto baseado no tipo de conta

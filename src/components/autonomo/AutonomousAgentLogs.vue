@@ -226,7 +226,7 @@ export default {
         let userId = this.userId || localStorage.getItem('userId');
         if (!userId) return;
         
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const response = await fetch(`${apiBase}/autonomous-agent/logs/${userId}`, {
           headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
         });

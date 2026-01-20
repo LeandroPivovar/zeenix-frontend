@@ -249,7 +249,7 @@ export default {
                 this.loading = true;
                 this.error = null;
                 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/plans`);
                 
                 if (!response.ok) {

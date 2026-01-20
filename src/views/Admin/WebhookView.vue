@@ -255,7 +255,7 @@ export default {
 
             // 1. Cards de Webhooks
             connections: [
-                { id: 2, name: 'KiwiFy', endpoint: 'https://taxafacil.site/api/webhook', status: 'active', lastEvent: 'há 2 minutos' },
+                { id: 2, name: 'KiwiFy', endpoint: 'https://iazenix.com/api/webhook', status: 'active', lastEvent: 'há 2 minutos' },
             ],
 
             // 2. Eventos Disponíveis

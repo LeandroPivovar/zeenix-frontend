@@ -387,7 +387,7 @@ export default {
 
                 const selectedTraderData = this.tradersList.find(t => t.id === this.selectedTrader);
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/copy-trading/activate`, {
                     method: 'POST',
                     headers: {
@@ -489,7 +489,7 @@ export default {
         },
         async togglePause() {
             try {
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const token = localStorage.getItem('token');
 
                 if (this.sessionStatus === 'paused') {
@@ -549,7 +549,7 @@ export default {
         async loadAvailableTraders() {
             try {
                 this.isLoadingTraders = true;
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 
                 const response = await fetch(`${apiBase}/copy-trading/traders`);
                 const result = await response.json();
@@ -579,7 +579,7 @@ export default {
         async loadCopyTradingConfig() {
             try {
                 this.isLoadingConfig = true;
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const token = localStorage.getItem('token');
 
                 const response = await fetch(`${apiBase}/copy-trading/config`, {
@@ -616,7 +616,7 @@ export default {
         },
         async loadActiveSession() {
             try {
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const token = localStorage.getItem('token');
 
                 const response = await fetch(`${apiBase}/copy-trading/session/active`, {

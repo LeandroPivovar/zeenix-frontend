@@ -199,7 +199,7 @@ export default {
 				}
 
 				console.log('[AgentAutonomoComponent] Fazendo requisição para desativar agente...', { userId });
-				const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+				const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
 				const response = await fetch(`${apiBase}/autonomous-agent/deactivate`, {
 					method: "POST",
 					headers: {
@@ -459,7 +459,7 @@ export default {
 				console.warn('[AgenteAutonomo] ⚠️ Busca de saldo desativada - usar saldo do contexto');
 				return;
 				
-				// const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				// const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				// const response = await fetch(`${apiBase}/ai/deriv-balance`, {
 				// 	method: 'POST',
 				// 	headers: {

@@ -363,7 +363,7 @@ export default {
       this.error = '';
 
       try {
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const response = await fetch(`${apiBase}/broker/deriv/verify-email`, {
           method: 'POST',
           headers: {
@@ -478,7 +478,7 @@ export default {
       this.loading = true;
       
       try {
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const response = await fetch(`${apiBase}/broker/deriv/create-account`, {
           method: 'POST',
           headers: {

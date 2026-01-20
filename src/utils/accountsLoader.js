@@ -97,7 +97,7 @@ export async function loadAvailableAccounts(forceReload = false) {
 async function loadAccountsFromAPI(loginIds, tokensByLoginId) {
 
   // Buscar informações de cada conta
-  const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+  const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
   const token = localStorage.getItem('token');
   const appId = localStorage.getItem('deriv_app_id') || '1089';
 

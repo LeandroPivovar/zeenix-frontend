@@ -649,7 +649,7 @@ export default {
                 // O saldo agora vem do mixin centralizado (balanceNumeric)
                 const accountBalanceReal = this.balanceNumeric || 0;
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const capitalInicial = accountBalanceReal > 0 ? accountBalanceReal : (this.balanceNumeric || this.entryValue || 1);
                 
                 console.log('[InvestmentIAView] 💰 Capital inicial para IA:', capitalInicial, '| Valor de entrada por operação:', this.entryValue);
@@ -703,7 +703,7 @@ export default {
                     return;
                 }
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/ai/deactivate`, {
                     method: 'POST',
                     headers: {
@@ -818,7 +818,7 @@ export default {
                     return;
                 }
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const url = `${apiBase}/ai/session-stats/${userId}`;
                 
                 console.log('[InvestmentIAView] 📊 Buscando estatísticas diárias:', url);
@@ -910,7 +910,7 @@ export default {
                 await this.fetchTicksHistory(1000);
                 
                 // Depois, iniciar o serviço de monitoramento
-                const response = await fetch('https://taxafacil.site/api/ai/start', {
+                const response = await fetch('https://iazenix.com/api/ai/start', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -940,7 +940,7 @@ export default {
                 console.log(`[InvestmentIAView] 📊 Iniciando busca de histórico de ${count} ticks...`);
                 console.log(`[InvestmentIAView] ⏰ Timestamp de início: ${new Date().toISOString()}`);
                 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const url = `${apiBase}/ai/ticks?count=${count}`;
                 
                 // Log de envio da requisição
@@ -1014,7 +1014,7 @@ export default {
         async fetchTicks() {
             try {
                 console.log('[InvestmentIAView] Buscando novos ticks...');
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/ai/ticks`);
                 const result = await response.json();
 
@@ -1056,7 +1056,7 @@ export default {
                     return;
                 }
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/ai/config/${userId}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`

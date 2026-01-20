@@ -522,7 +522,7 @@ export default {
       this.hasUnreadNotifications = false;
       
       try {
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const token = localStorage.getItem('token');
         
         fetch(`${apiBase}/notifications/clear`, {
@@ -630,7 +630,7 @@ export default {
 
         // Buscar informações de cada conta
         const accounts = [];
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const token = localStorage.getItem('token');
         const appId = localStorage.getItem('deriv_app_id') || '1089';
 
@@ -771,7 +771,7 @@ export default {
     },
     async selectAccount(account) {
       try {
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const token = localStorage.getItem('token');
         const appId = localStorage.getItem('deriv_app_id') || '1089';
 

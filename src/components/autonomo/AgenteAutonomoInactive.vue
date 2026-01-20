@@ -430,7 +430,7 @@ export default {
 				const userId = payload.userId || payload.sub || payload.id;
 				if (!userId) return;
 
-				const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+				const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
 				const response = await fetch(`${apiBase}/autonomous-agent/config/${userId}`, {
 					headers: {
 						Authorization: `Bearer ${token}`,

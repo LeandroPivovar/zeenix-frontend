@@ -246,7 +246,7 @@
       async checkActiveSession() {
         this.loading = true;
         try {
-          const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+          const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
           const response = await fetch(`${apiBase}/copy-trading/session/active`, {
             method: 'GET',
             headers: {
@@ -313,7 +313,7 @@
       async handlePauseCopy() {
         // Pausar copy e atualizar estado
         try {
-          const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+          const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
           const response = await fetch(`${apiBase}/copy-trading/pause`, {
             method: 'POST',
             headers: {

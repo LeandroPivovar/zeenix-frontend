@@ -980,7 +980,7 @@
                     const dateQuery = day.fullDate || 'today';
                     console.log('[AgenteAutonomo] Buscando daily-trades para:', dateQuery);
                     
-					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
                     const url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateQuery}`;
                     const options = {
 						method: "GET",
@@ -1015,7 +1015,7 @@
 				if (!userId) return;
 
 				try {
-					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
 					console.log('[AgenteAutonomo] Buscando stats diários em:', `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30`);
 					const url = `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30`;
 					const options = {
@@ -1073,7 +1073,7 @@
 				if (!userId) return;
 
 				try {
-					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
 					const url = `${apiBase}/autonomous-agent/config/${userId}`;
 					console.log('[AgenteAutonomo] Buscando config do agente em:', url);
 					
@@ -1112,7 +1112,7 @@
 				if (!userId) return;
 
 				try {
-					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
 					const url = `${apiBase}/autonomous-agent/weekly-stats/${userId}?weeks=10`;
 					console.log('[AgenteAutonomo] Buscando stats semanais em:', url);
 					
@@ -1154,7 +1154,7 @@
 				if (this.selectedPeriod === 'lastMonth') days = 60; // Approximate fallback
 
 				try {
-					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
                     console.log('[AgenteAutonomo] Buscando profit-evolution em:', `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`);
 					const url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`;
 					const options = {

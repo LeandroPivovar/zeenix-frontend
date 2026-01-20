@@ -350,7 +350,7 @@ export default {
           ? this.accountBalance 
           : 0;
 
-        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
         const response = await fetch(`${apiBase}/autonomous-agent/activate`, {
           method: "POST",
           headers: {
@@ -426,7 +426,7 @@ export default {
         }
 
         console.log('[AgenteAutonomo] Fazendo requisição para desativar agente...', { userId });
-        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
         const response = await fetch(`${apiBase}/autonomous-agent/deactivate`, {
           method: "POST",
           headers: {
@@ -506,7 +506,7 @@ export default {
         const userId = this.getUserId();
         if (!userId) return;
 
-        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
         const response = await fetch(`${apiBase}/autonomous-agent/config/${userId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -612,7 +612,7 @@ export default {
         const userId = this.getUserId();
         if (!userId) return;
 
-        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
         const response = await fetch(`${apiBase}/autonomous-agent/session-stats/${userId}`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -656,7 +656,7 @@ export default {
         const userId = this.getUserId();
         if (!userId) return;
 
-        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
         const response = await fetch(`${apiBase}/autonomous-agent/trade-history/${userId}?limit=50`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -703,7 +703,7 @@ export default {
         const userId = this.getUserId();
         if (!userId) return;
 
-        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://taxafacil.site/api";
+        const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
         const response = await fetch(`${apiBase}/autonomous-agent/logs/${userId}?limit=100`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,

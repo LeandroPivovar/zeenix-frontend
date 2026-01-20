@@ -244,7 +244,7 @@ export default {
 					return;
 				}
 
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				const response = await fetch(`${apiBase}/autonomous-agent/logs/${userId}`, {
 					headers: {
 						'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -373,7 +373,7 @@ export default {
 				}
 
 				// Carregar logs históricos primeiro
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				const response = await fetch(`${apiBase}/autonomous-agent/console-logs/${userId}?limit=500`, {
 					headers: {
 						'Authorization': `Bearer ${localStorage.getItem('token')}`

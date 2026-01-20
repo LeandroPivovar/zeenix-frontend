@@ -567,7 +567,7 @@ export default {
                 // O saldo já está disponível em this.accountBalance ou pode ser obtido do localStorage
                 // A verificação de saldo pode ser feita depois, se necessário
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/ai/activate`, {
                     method: 'POST',
                     headers: {
@@ -611,7 +611,7 @@ export default {
                     return;
                 }
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/ai/deactivate`, {
                     method: 'POST',
                     headers: {
@@ -750,7 +750,7 @@ export default {
                 console.warn('[InvestmentIAView] ⚠️ Busca de saldo desativada - usar saldo do contexto');
                 return;
 
-                // const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                // const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 // const response = await fetch(`${apiBase}/ai/deriv-balance`, {
                 //     method: 'POST',
                 //     headers: {
@@ -817,7 +817,7 @@ export default {
                     return;
                 }
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const url = `${apiBase}/ai/session-stats/${userId}`;
                 
                 console.log('[InvestmentIAView] 📊 Buscando estatísticas diárias:', url);
@@ -887,7 +887,7 @@ export default {
             try {
                 console.log('[InvestmentIAView] ===== INICIANDO CARREGAMENTO DE DADOS =====');
                 
-                const response = await fetch('https://taxafacil.site/api/ai/start', {
+                const response = await fetch('https://iazenix.com/api/ai/start', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -927,7 +927,7 @@ export default {
         async fetchTicks() {
             try {
                 console.log('[InvestmentIAView] Buscando ticks...');
-                const response = await fetch('https://taxafacil.site/api/ai/ticks');
+                const response = await fetch('https://iazenix.com/api/ai/ticks');
                 const result = await response.json();
 
                 console.log('[InvestmentIAView] Ticks recebidos:', {
@@ -954,7 +954,7 @@ export default {
                     return;
                 }
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/ai/config/${userId}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`

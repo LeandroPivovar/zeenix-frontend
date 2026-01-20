@@ -2786,7 +2786,7 @@ export default {
           throw new Error('Token de autenticação não encontrado');
         }
         
-        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const response = await fetch(`${apiBaseUrl}/gemini/recommendation`, {
           method: 'POST',
           headers: {

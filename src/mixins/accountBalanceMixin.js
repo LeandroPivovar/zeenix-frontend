@@ -236,7 +236,7 @@ export default {
           return;
         }
 
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const response = await fetch(`${apiBase}/broker/deriv/status`, {
           method: 'POST',
           headers: {
@@ -319,7 +319,7 @@ export default {
      */
     async loadTradeCurrency() {
       try {
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const token = localStorage.getItem('token');
 
         if (!token) {
@@ -374,7 +374,7 @@ export default {
         const isDemo = type === 'demo';
         const tradeCurrency = isDemo ? 'DEMO' : 'USD';
 
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const token = localStorage.getItem('token');
 
         if (!token) {

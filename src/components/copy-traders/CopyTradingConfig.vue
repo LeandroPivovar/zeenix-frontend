@@ -351,7 +351,7 @@ export default {
         async loadTraders() {
             this.loadingTraders = true;
             try {
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/copy-trading/traders`, {
                     method: 'GET',
                     headers: {
@@ -429,7 +429,7 @@ export default {
 
                 console.log('🚀 Ativando copy trading via API...');
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/copy-trading/activate`, {
                     method: 'POST',
                     headers: {

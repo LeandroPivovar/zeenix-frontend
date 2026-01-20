@@ -1748,7 +1748,7 @@ export default {
                 }
                 
                 // Construir URL da API
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const url = `${apiBase}/ai/logs/${userId}`;
                 
                 console.log('[InvestmentActive] 🗑️ Deletando logs em:', url);
@@ -1896,7 +1896,7 @@ export default {
                     return;
                 }
                 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const url = `${apiBase}/ai/logs/${userId}`;
                 
                 console.log('[InvestmentActive] 📡 Buscando logs em:', url);
@@ -2194,7 +2194,7 @@ export default {
                     return;
                 }
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const url = `${apiBase}/ai/session-stats/${userId}`;
                 
                 console.log('[InvestmentActive] 📡 Requisitando stats:', url);
@@ -2283,7 +2283,7 @@ export default {
                     return;
                 }
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const url = `${apiBase}/ai/config/${userId}`;
                 
                 console.log('[InvestmentActive] 📡 Requisitando config:', url);
@@ -2424,7 +2424,7 @@ export default {
                 const userId = this.getUserId();
                 if (!userId) return;
                 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/ai/session-stats/${userId}`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -2533,7 +2533,7 @@ export default {
                 }
                 
                 // Buscar configuração atual para reativar com os mesmos parâmetros
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const response = await fetch(`${apiBase}/ai/activate`, {
                     method: 'POST',
                     headers: {
@@ -2587,7 +2587,7 @@ export default {
                     return;
                 }
 
-                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
                 const url = `${apiBase}/ai/trade-history/${userId}?limit=20`;
                 
                 console.log('[InvestmentActive] 📡 Fazendo requisição para:', url);
@@ -2976,7 +2976,7 @@ export default {
             // Fechar conexão anterior se existir
             this.stopTradeEventsStream();
 
-            const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+            const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
             const url = `${apiBase}/ai/trade-events/${userId}`;
             const source = new EventSource(url);
             this.tradeEventsSource = source;
@@ -3483,7 +3483,7 @@ export default {
             }
 
             // Criar datafeed UDF compatível
-            const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+            const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
             const datafeed = new Datafeeds.UDFCompatibleDatafeed(`${apiBase}/ai/tradingview`, false);
             
             return datafeed;

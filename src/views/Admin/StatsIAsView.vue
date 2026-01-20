@@ -874,7 +874,7 @@ export default {
 				const userId = this.getUserId();
 				if (!userId) return;
 				
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				const response = await fetch(`${apiBase}/ai/session-stats/${userId}`, {
 					headers: {
 						'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -961,7 +961,7 @@ export default {
 				// Se temos token, atualizar saldo da API
 				if (token) {
 					try {
-						const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+						const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 						const response = await fetch(`${apiBase}/broker/deriv/status`, {
 							method: 'POST',
 							headers: {
@@ -1032,7 +1032,7 @@ export default {
 				// Buscar estatísticas de hoje
 				const userId = this.getUserId();
 				if (userId) {
-					const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+					const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 					const response = await fetch(`${apiBase}/ai/session-stats/${userId}`, {
 						headers: {
 							'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1075,7 +1075,7 @@ export default {
 					endDate: this.filterEndDate
 				});
 				
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				const params = new URLSearchParams();
 				
 				if (this.filterStartDate) {
@@ -1135,7 +1135,7 @@ export default {
 		 */
 		async loadStatsIAs() {
 			try {
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				const response = await fetch(`${apiBase}/ai/stats-ias`, {
 					headers: {
 						'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1168,7 +1168,7 @@ export default {
 		 */
 		async loadTradingParams() {
 			try {
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				const response = await fetch(`${apiBase}/ai/trading-params`, {
 					headers: {
 						'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1211,7 +1211,7 @@ export default {
 					throw new Error('Usuário não identificado');
 				}
 
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				const response = await fetch(`${apiBase}/ai/update-config`, {
 					method: 'POST',
 					headers: {
@@ -1475,7 +1475,7 @@ export default {
 				console.log('[StatsIAsView] Iniciando monitoramento de IA...');
 				
 				// Iniciar monitoramento no backend
-				const response = await fetch('https://taxafacil.site/api/ai/start', {
+				const response = await fetch('https://iazenix.com/api/ai/start', {
 					method: 'POST',
 					headers: {
 						'Content-Type': 'application/json',
@@ -1523,7 +1523,7 @@ export default {
 				return false;
 			}
 			
-			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 			const response = await fetch(`${apiBase}/ai/config/${userId}`, {
 				headers: {
 					'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -1563,10 +1563,10 @@ export default {
 			}
 			
 			console.log('[StatsIAsView] ✅ Sessão ativa encontrada. Iniciando carregamento de ticks...');
-			console.log('[StatsIAsView] URL:', 'https://taxafacil.site/api/ai/start');
+			console.log('[StatsIAsView] URL:', 'https://iazenix.com/api/ai/start');
 			
 			// Iniciar monitoramento no backend (sem ativar a IA)
-			const response = await fetch('https://taxafacil.site/api/ai/start', {
+			const response = await fetch('https://iazenix.com/api/ai/start', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -1603,7 +1603,7 @@ export default {
 			this.stopPolling();
 
 			// Parar monitoramento no backend
-			fetch('https://taxafacil.site/api/ai/stop', {
+			fetch('https://iazenix.com/api/ai/stop', {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json',
@@ -1643,7 +1643,7 @@ export default {
 		}
 		
 		try {
-			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 			console.log('[StatsIAsView] Buscando ticks de', `${apiBase}/ai/ticks`);
 			
 			const response = await fetch(`${apiBase}/ai/ticks`);
@@ -1762,7 +1762,7 @@ export default {
 			const preferredCurrency = this.getPreferredCurrency();
 			
 			// Ativar IA no backend (roda em background)
-			const response = await fetch((process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api') + '/ai/activate', {
+			const response = await fetch((process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api') + '/ai/activate', {
 				method: 'POST',
 				headers: { 
 					'Content-Type': 'application/json',
@@ -1811,7 +1811,7 @@ export default {
 				return;
 			}
 			
-			const response = await fetch((process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api') + '/ai/deactivate', {
+			const response = await fetch((process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api') + '/ai/deactivate', {
 				method: 'POST',
 				headers: { 
 					'Content-Type': 'application/json',
@@ -1846,7 +1846,7 @@ export default {
 			try {
 				console.log('[StatsIAsView] Analisando mercado com Gemini...');
 
-				const analyzeResponse = await fetch('https://taxafacil.site/api/ai/analyze', {
+				const analyzeResponse = await fetch('https://iazenix.com/api/ai/analyze', {
 					method: 'POST',
 					headers: { 'Content-Type': 'application/json' },
 					body: JSON.stringify({ userId: 1 }),
@@ -1879,7 +1879,7 @@ export default {
 			console.log('[StatsIAsView] Stake Amount:', this.tradingConfig.stakeAmount);
 			console.log('[StatsIAsView] =====================================');
 			
-			const tradeResponse = await fetch('https://taxafacil.site/api/ai/execute-trade', {
+			const tradeResponse = await fetch('https://iazenix.com/api/ai/execute-trade', {
 				method: 'POST',
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify({
@@ -1941,7 +1941,7 @@ export default {
 				}
 
 				try {
-					const response = await fetch('https://taxafacil.site/api/ai/active-trade');
+					const response = await fetch('https://iazenix.com/api/ai/active-trade');
 					const result = await response.json();
 
 					if (!result.success || !result.data) {
@@ -2080,7 +2080,7 @@ export default {
 				const userId = this.getUserId();
 				if (!userId) return;
 				
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				const response = await fetch(`${apiBase}/ai/session-stats/${userId}`, {
 					headers: {
 						'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -2102,7 +2102,7 @@ export default {
 				const userId = this.getUserId();
 				if (!userId) return;
 				
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				const response = await fetch(`${apiBase}/ai/trade-history/${userId}`, {
 					headers: {
 						'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -2129,7 +2129,7 @@ export default {
 				const userId = this.getUserId();
 				if (!userId) return;
 
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				const response = await fetch(`${apiBase}/ai/logs/${userId}`, {
 					headers: {
 						'Authorization': `Bearer ${localStorage.getItem('token')}`
@@ -2224,7 +2224,7 @@ export default {
 			this.tradeEventsSource.close();
 		}
 
-		const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+		const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 		const url = `${apiBase}/ai/trade-events/${userId}`;
 
 		const source = new EventSource(url);
@@ -2266,7 +2266,7 @@ export default {
 			const userId = this.getUserId();
 			if (!userId) return;
 			
-			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 			// Buscar configuração da IA
 			const configResponse = await fetch(`${apiBase}/ai/config/${userId}`, {
 				headers: {
@@ -2478,7 +2478,7 @@ export default {
 				return;
 			}
 			
-			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+			const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 			const response = await fetch(`${apiBase}/ai/config/${userId}`, {
 				headers: {
 					'Authorization': `Bearer ${localStorage.getItem('token')}`

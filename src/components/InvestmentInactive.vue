@@ -479,7 +479,7 @@ export default {
 					return;
 				}
 				
-				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
+				const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
 				const url = `${apiBase}/ai/sessions/${userId}?limit=1`;
 				
 				console.log('[InvestmentInactive] 📊 Buscando última sessão:', url);
