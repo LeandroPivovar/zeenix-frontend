@@ -353,6 +353,7 @@ class DerivTradingService {
           amount: config.amount,
           proposalId: config.proposalId, // Opcional, se não fornecido o backend busca
           loginid: config.loginid, // Opcional, força o uso desta conta
+          token: config.token, // ✅ CRUCIAL: Passar token para o backend
         }),
       });
 
