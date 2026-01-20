@@ -47,9 +47,13 @@
 
 		<div class="mb-6">
 			<div class="flex justify-end mb-2">
-				<button class="flex items-center gap-1.5 text-[#A1A1AA] hover:text-[#FAFAFA] transition-colors text-xs">
-					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
-					<span>Ocultar valores</span>
+				<button 
+					@click="hideValues = !hideValues"
+					class="flex items-center gap-1.5 text-[#A1A1AA] hover:text-[#FAFAFA] transition-colors text-xs"
+				>
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye" v-if="!hideValues"><path d="M2.062 12.348a1 1 0 0 1 0-.696 10.75 10.75 0 0 1 19.876 0 1 1 0 0 1 0 .696 10.75 10.75 0 0 1-19.876 0"></path><circle cx="12" cy="12" r="3"></circle></svg>
+					<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-eye-off" v-else><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.52 13.52 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" x2="22" y1="2" y2="22"></line></svg>
+					<span>{{ hideValues ? 'Mostrar valores' : 'Ocultar valores' }}</span>
 				</button>
 			</div>
 			
@@ -63,9 +67,11 @@
 						</div>
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Entrada Inicial</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">${{ initialCapital.toFixed(2) }}</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">
+						{{ hideValues ? '••••' : '$' + initialCapital.toFixed(2) }}
+					</div>
 					<div class="flex items-center gap-2">
-						<span class="text-[#A1A1AA] text-xs">R$ {{ (initialCapital * 5.19).toFixed(3) }}</span>
+						<span class="text-[#A1A1AA] text-xs">R$ {{ hideValues ? '••••' : (initialCapital * 5.19).toFixed(3) }}</span>
 					</div>
 				</div>
 
@@ -77,9 +83,11 @@
 						</div>
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Capital Final</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">${{ finalCapital.toFixed(2) }}</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">
+						{{ hideValues ? '••••' : '$' + finalCapital.toFixed(2) }}
+					</div>
 					<div class="flex items-center gap-2">
-						<span class="text-[#A1A1AA] text-xs">R$ {{ (finalCapital * 5.19).toFixed(3) }}</span>
+						<span class="text-[#A1A1AA] text-xs">R$ {{ hideValues ? '••••' : (finalCapital * 5.19).toFixed(3) }}</span>
 					</div>
 				</div>
 
@@ -92,10 +100,12 @@
 						</div>
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Lucro do Período</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 relative z-10 text-left">+${{ periodProfit.toFixed(2) }}</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 relative z-10 text-left">
+						{{ hideValues ? '••••' : (periodProfit >= 0 ? '+' : '') + '$' + periodProfit.toFixed(2) }}
+					</div>
 					<div class="flex items-center gap-2 relative z-10">
-						<span class="text-[#A1A1AA] text-xs">R$ {{ (periodProfit * 5.19).toFixed(3) }}</span>
-						<div class="inline-flex items-center rounded-full border border-transparent bg-green-500/20 text-green-500 font-semibold text-[10px] px-2 py-0.5">
+						<span class="text-[#A1A1AA] text-xs">R$ {{ hideValues ? '••••' : (periodProfit * 5.19).toFixed(3) }}</span>
+						<div class="inline-flex items-center rounded-full border border-transparent bg-green-500/20 text-green-500 font-semibold text-[10px] px-2 py-0.5" v-if="!hideValues">
 							+{{ periodProfitPercent.toFixed(2) }}%
 						</div>
 					</div>
@@ -109,9 +119,12 @@
 						</div>
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Lucro Médio/Dia</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">+${{ avgDailyProfit.toFixed(2) }}</div>
+					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">
+						{{ hideValues ? '••••' : (avgDailyProfit >= 0 ? '+' : '') + '$' + avgDailyProfit.toFixed(2) }}
+					</div>
 					<div class="flex items-center gap-2">
-						<span class="text-[#A1A1AA] text-xs">${{ Math.abs(avgProfitPerOp).toFixed(2) }}/op</span>
+						<span class="text-[#A1A1AA] text-xs" v-if="!hideValues">${{ Math.abs(avgProfitPerOp).toFixed(2) }}/op</span>
+						<span class="text-[#A1A1AA] text-xs" v-else>••••/op</span>
 					</div>
 				</div>
 			</div>
@@ -132,13 +145,14 @@
 						</div>
 						<div class="text-left">
 							<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide flex items-center gap-1">
-								Estratégia
+								Agente Ativo
 								<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
 							</div>
 							<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
 								<span class="text-lg">{{ agenteData.id === 'falcon' ? '🦅' : '⚡' }}</span>
 								<span>{{ agenteData.estrategia }}</span>
-								<span class="w-1.5 h-1.5 rounded-full bg-green-500 animate-pulse"></span>
+								<i class="fas fa-right-left text-[10px] text-green-500 animate-pulse ml-1 opacity-70"></i>
+								<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
 							</div>
 						</div>
 					</div>
@@ -149,7 +163,7 @@
 						class="absolute top-full left-0 mt-4 w-[280px] bg-[#0c0c0c] border border-[#27272a] rounded-lg shadow-2xl z-[60] overflow-hidden animate-fade-in"
 					>
 						<div class="p-3 border-b border-[#27272a] bg-[#121212]/50">
-							<h4 class="text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider">SELECIONE A IA</h4>
+							<h4 class="text-[10px] font-bold text-[#A1A1AA] uppercase tracking-wider text-left">SELECIONE O AGENTE</h4>
 						</div>
 						
 						<div class="max-h-[300px] overflow-y-auto custom-scrollbar">
@@ -168,11 +182,11 @@
 								</div>
 								<div class="flex-1 min-w-0">
 									<div class="flex items-center justify-between gap-2">
-										<h5 class="text-xs font-bold text-white truncate">{{ agent.title }}</h5>
-										<span v-if="agenteData.id === agent.id" class="text-[8px] text-white font-bold uppercase tracking-tighter">Ativo</span>
+										<h5 class="text-xs font-bold text-white truncate text-left">{{ agent.title }}</h5>
+										<span v-if="agenteData.id === agent.id" class="text-[8px] text-white font-bold uppercase tracking-tighter shrink-0">Ativo</span>
 									</div>
-									<p class="text-[10px] text-[#A1A1AA] mt-0.5">{{ agent.description }}</p>
-									<div class="flex items-center gap-2 mt-1.5">
+									<p class="text-[10px] text-[#A1A1AA] mt-0.5 text-left leading-tight pr-2">{{ agent.description }}</p>
+									<div class="flex items-center gap-2 mt-1.5 text-left">
 										<span class="text-[9px] text-[#A1A1AA]">WR: <span class="text-white">{{ agent.winRate }}%</span></span>
 										<span class="text-[9px] text-[#A1A1AA]">Estilo: <span class="text-white">{{ agent.style }}</span></span>
 									</div>
@@ -198,7 +212,7 @@
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Resultado do dia</div>
 						<div class="text-sm font-medium tabular-nums text-left" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'">
-							{{ (sessionStats?.netProfit || 0) >= 0 ? '+' : '' }}${{ (sessionStats?.netProfit || 0).toFixed(2) }}
+							{{ hideValues ? '••••' : ((sessionStats?.netProfit || 0) >= 0 ? '+' : '') + '$' + (sessionStats?.netProfit || 0).toFixed(2) }}
 						</div>
 					</div>
 				</div>
@@ -246,13 +260,15 @@
 					<div class="inline-flex items-center rounded-full border border-green-500/30 bg-green-500/10 text-green-500 font-semibold text-[10px] px-2.5 py-0.5">
 						Melhor dia
 					</div>
-					<span class="text-xs text-[#FAFAFA] tabular-nums">+${{ bestDay?.value?.toFixed(2) || '0.00' }} ({{ bestDay?.date || '--' }})</span>
+					<span class="text-xs text-[#FAFAFA] tabular-nums" v-if="!hideValues">+${{ bestDay?.value?.toFixed(2) || '0.00' }} ({{ bestDay?.date || '--' }})</span>
+					<span class="text-xs text-[#FAFAFA] tabular-nums" v-else>•••• ({{ bestDay?.date || '--' }})</span>
 				</div>
 				<div class="flex items-center gap-2">
 					<div class="inline-flex items-center rounded-full border border-red-500/30 bg-red-500/10 text-red-500 font-semibold text-[10px] px-2.5 py-0.5">
 						Pior dia
 					</div>
-					<span class="text-xs text-[#FAFAFA] tabular-nums">-${{ worstDay?.value?.toFixed(2) || '0.00' }} ({{ worstDay?.date || '--' }})</span>
+					<span class="text-xs text-[#FAFAFA] tabular-nums" v-if="!hideValues">-${{ worstDay?.value?.toFixed(2) || '0.00' }} ({{ worstDay?.date || '--' }})</span>
+					<span class="text-xs text-[#FAFAFA] tabular-nums" v-else>•••• ({{ worstDay?.date || '--' }})</span>
 				</div>
 			</div>
 		</div>
@@ -358,7 +374,7 @@
 			>
 				<div class="flex items-center gap-2">
 					<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-terminal w-4 h-4 text-green-500"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" x2="20" y1="19" y2="19"></line></svg>
-					<span class="text-sm font-semibold uppercase tracking-wide text-[#FAFAFA]">Logs da Estratégia</span>
+					<span class="text-sm font-semibold uppercase tracking-wide text-[#FAFAFA] text-left">Logs do Agente Selecionado</span>
 					<span class="text-xs text-[#A1A1AA]" v-if="realtimeLogs.length">({{ realtimeLogs.length }} registros)</span>
 				</div>
 				<div class="flex items-center gap-2">
@@ -653,19 +669,20 @@
 						id: 'falcon', 
 						title: 'IA Falcon', 
 						emoji: '🦅', 
-						description: 'Estratégia conservadora com foco em consistência.',
-						winRate: 78,
-						style: 'Conservador'
+						description: 'Análise: Momentum Direcional (Rise/Fall) - Assertividade: 53% a 65% - Retorno: 92%',
+						winRate: 53,
+						style: 'Momentum'
 					},
 					{ 
 						id: 'zeus', 
 						title: 'IA Zeus', 
 						emoji: '⚡', 
-						description: 'Estratégia agressiva com maior potencial de lucro.',
-						winRate: 66,
-						style: 'Agressivo'
+						description: 'Análise: Probabilidade com Troca de Contrato - Assertividade: 65% a 75% Retorno: 60% / 92%',
+						winRate: 65,
+						style: 'Probabilístico'
 					}
-				]
+				],
+				hideValues: false
 			};
 		},
 		mounted() {

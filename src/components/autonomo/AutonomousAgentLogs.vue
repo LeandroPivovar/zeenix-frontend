@@ -4,7 +4,7 @@
     <div class="hidden md:block">
       <div dir="ltr" class="relative overflow-hidden h-[400px] border-border bg-black/40">
         <div class="h-full w-full overflow-y-auto custom-scrollbar" ref="desktopLogsContainer">
-          <div class="p-4 font-mono text-xs space-y-4">
+          <div class="p-4 font-mono text-xs space-y-4 text-left">
             <div v-if="realtimeLogs.length === 0" class="flex flex-col items-center justify-center h-[300px] text-muted-foreground opacity-50">
               <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-2"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m7 15 5-5 5 5"/></svg>
               <p>Aguardando atividade do agente...</p>
