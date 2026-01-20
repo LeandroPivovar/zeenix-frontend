@@ -598,27 +598,34 @@
   </div>
 
   <!-- Modal de Notificações -->
-  <div v-if="showNotificationsModal" class="notifications-modal-overlay" @click="closeNotificationsModal">
-    <div class="notifications-modal-content" @click.stop>
+  <div 
+    v-if="showNotificationsModal" 
+    class="notifications-modal-overlay"
+    @click.self="closeNotificationsModal"
+  >
+    <div class="notifications-modal-content">
       <div class="notifications-modal-header">
         <h2 class="notifications-modal-title">Notificações</h2>
-        <button class="notifications-modal-close" @click="closeNotificationsModal">
+        <button 
+          @click="closeNotificationsModal"
+          class="notifications-modal-close"
+        >
           <i class="fas fa-times"></i>
         </button>
       </div>
       <div class="notifications-modal-body">
         <div v-if="notifications.length === 0" class="notifications-empty">
-          <i class="fa-solid fa-bell-slash text-[48px] text-white/20 mb-4"></i>
+          <i class="fas fa-bell-slash text-[48px] text-white/20 mb-4"></i>
           <p class="text-white/40 text-[14px]">Nenhuma notificação</p>
         </div>
         <div v-else class="notifications-list">
           <div 
-            v-for="(notification, index) in notifications" 
-            :key="index"
+            v-for="notification in notifications" 
+            :key="notification.id"
             class="notification-item"
           >
-            <div class="notification-icon-wrapper" :class="`type-${notification.type}`">
-              <i :class="notification.icon"></i>
+            <div class="notification-icon">
+              <i :class="notification.icon || 'fa-solid fa-info-circle'"></i>
             </div>
             <div class="notification-content">
               <h3 class="notification-title">{{ notification.title }}</h3>
@@ -630,10 +637,10 @@
       </div>
       <div v-if="notifications.length > 0" class="notifications-modal-footer">
         <button 
-          @click="deleteAllNotifications"
-          class="delete-notifications-btn"
+          @click="deleteAllNotifications" 
+          class="w-full flex items-center justify-center gap-2 py-3 bg-[#EF4444]/10 hover:bg-[#EF4444]/20 text-[#EF4444] rounded-lg text-sm font-medium transition-all duration-200 border border-transparent hover:border-[#EF4444]/20"
         >
-          <i class="fas fa-trash-alt"></i>
+          <i class="fas fa-trash"></i>
           <span>Excluir Notificações</span>
         </button>
       </div>
