@@ -4321,7 +4321,7 @@ button i,
 }
 
 .investment-active-main {
-    padding: 1.5rem 2rem;
+    padding: 0 100%;
     max-width: 100%;
     width: 100%;
     box-sizing: border-box;
