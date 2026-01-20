@@ -563,7 +563,7 @@ export default {
 		getAgentDescription(id) {
 			const map = {
 				'sentinel': 'Agente completo com Martingale Inteligente e Soros Nível 2. Ideal para operações balanceadas.',
-				'falcon': 'Agente de alta precisão com recuperação inteligente. Foco em segurança estatística.'
+				'falcon': 'Análise: Momentum Direcional (Rise/Fall) - Assertividade: 53% a 65% - Retorno: 92%'
 			};
 			return map[id] || '';
 		},

@@ -441,11 +441,11 @@ export default {
 		riskDescription() {
 			const descriptions = {
 				'Fixo': 'Valor fixo por operação sem variação',
-				'Conservador': 'Proteção máxima do capital com crescimento estável',
-				'Moderado': 'Equilíbrio entre risco e retorno',
-				'Agressivo': 'Maior exposição para potencial de ganhos elevados'
+				'Conservador': 'Recupera o valor perdido até o M5 (sexta perda). Se não conseguir, assume a perda e reseta para o valor da entrada inicial.',
+				'Moderado': 'Recuperação ilimitada com +15% de lucro sobre as perdas totais',
+				'Agressivo': 'Recuperação ilimitada com +30% de lucro sobre as perdas totais'
 			};
-			return descriptions[this.riskLevel] || 'Proteção máxima do capital com crescimento estável';
+			return descriptions[this.riskLevel] || 'Recupera o valor perdido até o M5 (sexta perda). Se não conseguir, assume a perda e reseta para o valor da entrada inicial.';
 		}
 	},
 	methods: {

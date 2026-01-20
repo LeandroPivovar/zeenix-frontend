@@ -537,11 +537,11 @@ export default {
         
         strategyDescription() {
             const descriptions = {
-                'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 55 a 65% - <strong>Retorno:</strong> 70% / 95%',
-                'apollo': '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 55% a 65% - <strong>Retorno:</strong> 90%',
+                'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 37% / 92%',
+                'apollo': '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 55% a 65% - <strong>Retorno:</strong> 92%',
                 'nexus': '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 57% / 90%',
-                'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 65% / 90%',
-                'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-60% - <strong>Retorno:</strong> 90%'
+                'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 60% / 90%',
+                'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-60% - <strong>Retorno:</strong> 92%'
             };
             return descriptions[this.selectedStrategy] || descriptions.orion;
         },
@@ -591,9 +591,9 @@ export default {
         
         riskDescriptionText() {
             const descriptions = {
-                'conservador': 'Recuperação limitada (até M5) • Protege capital • Lucros menores mas seguros',
-                'moderado': 'Recuperação ilimitada com +25% de lucro • Equilíbrio entre risco e retorno',
-                'agressivo': 'Recuperação ilimitada com +50% de lucro • Máximo retorno com risco controlado'
+                'conservador': 'Recupera o valor perdido até o M5 (sexta perda). Se não conseguir, assume a perda e reseta para o valor da entrada inicial.',
+                'moderado': 'Recuperação ilimitada com +15% de lucro sobre as perdas totais',
+                'agressivo': 'Recuperação ilimitada com +30% de lucro sobre as perdas totais'
             };
             return descriptions[this.modoMartingale] || descriptions.conservador;
         }
