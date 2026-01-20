@@ -3087,37 +3087,11 @@ export default {
 mounted() {
 	this.checkMobile();
 	window.addEventListener('resize', this.checkMobile);
-	this.loadAIConfigOnMount();
-	// Carregar dados gerais das IAs
+	
+	// Carregar dados gerais das IAs (única chamada necessária para esta página)
 	this.fetchData();
-	this.loadAIConfigFromCache();
-	
-	// ✅ OTIMIZAÇÃO 2: Carregar dados do localStorage INSTANTÂNEO
-	this.loadAccountInfoFromLocal();
-	
-	// ✅ OTIMIZAÇÃO 3: Fazer chamadas à API em PARALELO (não bloqueante)
-	// Não usar await - deixar rodar em background enquanto UI já mostra dados do cache
-	Promise.all([
-		this.loadAIConfigOnMount(),
-		this.loadAccountInfo(),
-	]).then(async () => {
-		console.log('[StatsIAsView] ✅ Dados da API carregados em background');
-		// ✅ Verificação final: garantir que modais sejam mostrados se necessário
-		// Isso é uma camada extra de segurança caso a verificação anterior não tenha funcionado
-		await this.fetchBackgroundStatus();
-		// Verificar também nos logs recentes
-		await this.loadRecentLogs(10);
-	}).catch(err => {
-		console.warn('[StatsIAsView] Erro ao carregar dados da API:', err);
-	});
+},
 
-	// Assinar eventos de trade para atualizar histórico somente em mudanças
-	this.startTradeEventsStream();
-	
-	// Iniciar carregamento de dados mesmo quando IA está desativada
-	console.log('[StatsIAsView] Chamando startDataLoading()...');
-	this.startDataLoading();
-	
 	// Atualizar última leitura a cada segundo
 	setInterval(() => {
 		this.lastReadingTime = new Date().toLocaleTimeString('pt-BR', { 
