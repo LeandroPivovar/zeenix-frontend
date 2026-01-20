@@ -499,7 +499,7 @@
 						</thead>
 						<tbody>
 							<tr v-for="(op, idx) in dailyTrades" :key="idx" class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
-								<td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{op.time}}</td>
+								<td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{ formatToSPTime(op.time) }}</td>
 								<td class="py-2 px-1 text-[#FAFAFA] text-left truncate max-w-[50px] sm:max-w-none">{{op.market}}</td>
 								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.entry}}</td>
 								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.exit}}</td>
@@ -801,6 +801,25 @@
 			getUserId() {
 				return this.userId || localStorage.getItem('userId') || localStorage.getItem('user_id');
 			},
+            formatToSPTime(ts) {
+                if (!ts) return '--:--:--';
+                try {
+                    // Se já for apenas horário HH:mm:ss, tentar devolver como está ou processar se tiver data
+                    // Mas assumindo que o backend mande ISO ou Timestamp completo em 'time' ou 'created_at'
+                    // Se 'ts' for apenas horário, new Date() falha ou pega data atual.
+                    // Verificamos se parece data completa
+                    if (String(ts).includes('T') || String(ts).includes('-') || typeof ts === 'number') {
+                        const d = new Date(ts);
+                        return d.toLocaleTimeString('pt-BR', { 
+                            hour12: false,
+                            timeZone: 'America/Sao_Paulo'
+                        });
+                    }
+                    return ts; // Retorna original se não for parseável como data completa
+                } catch (e) {
+                    return ts;
+                }
+            },
 			pausarAgenteEIrParaTopo() {
 				this.$emit('pausarAgente');
 				window.scrollTo({ top: 0, behavior: 'smooth' });

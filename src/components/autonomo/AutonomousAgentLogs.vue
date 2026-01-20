@@ -211,8 +211,15 @@ export default {
     },
     formatTimestamp(ts) {
       if (!ts) return '--:--:--';
-      const d = new Date(ts);
-      return d.toLocaleTimeString('pt-BR', { hour12: false });
+      try {
+        const d = new Date(ts);
+        return d.toLocaleTimeString('pt-BR', { 
+          hour12: false,
+          timeZone: 'America/Sao_Paulo'
+        });
+      } catch (e) {
+        return ts;
+      }
     },
     async fetchRealtimeLogs() {
       try {
