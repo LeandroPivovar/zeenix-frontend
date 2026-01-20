@@ -584,6 +584,26 @@ export default {
         const token = localStorage.getItem('token')
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000'
 
+        // Tentar encontrar um token compatível com a moeda selecionada
+        let selectedDerivToken = undefined;
+        try {
+          const isDemo = this.settings.tradeCurrency === 'DEMO';
+          const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+          if (tokensByLoginIdStr) {
+            const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+            const loginIds = Object.keys(tokensByLoginId);
+            const matchingLoginId = loginIds.find(id => {
+              const isIdDemo = id.startsWith('VRTC') || id.startsWith('VRT');
+              return isIdDemo === isDemo;
+            });
+            if (matchingLoginId) {
+              selectedDerivToken = tokensByLoginId[matchingLoginId];
+            }
+          }
+        } catch (e) {
+          console.warn('[SettingsView] Erro ao buscar token para salvar:', e);
+        }
+
         const res = await fetch(`${apiBaseUrl}/settings`, {
           method: 'PUT',
           headers: {
@@ -595,7 +615,8 @@ export default {
             timezone: this.settings.timezone,
             emailNotifications: this.settings.emailNotifications,
             pushNotifications: this.settings.pushNotifications,
-            tradeCurrency: this.settings.tradeCurrency
+            tradeCurrency: this.settings.tradeCurrency,
+            selectedDerivToken: selectedDerivToken
           })
         })
 

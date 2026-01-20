@@ -482,7 +482,8 @@ export default {
                 'Authorization': `Bearer ${token}`
               },
               body: JSON.stringify({
-                token: account.token
+                token: account.token,
+                tradeCurrency: account.isDemo ? 'DEMO' : (account.currency || 'USD')
               })
             });
 
@@ -577,7 +578,8 @@ export default {
               'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-              token: selectedToken
+              token: selectedToken,
+              tradeCurrency: type === 'demo' ? 'DEMO' : 'USD'
             })
           });
 

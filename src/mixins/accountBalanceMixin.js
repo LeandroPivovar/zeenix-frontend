@@ -371,7 +371,8 @@ export default {
      */
     async switchAccount(type) {
       try {
-        const tradeCurrency = type === 'demo' ? 'DEMO' : 'USD';
+        const isDemo = type === 'demo';
+        const tradeCurrency = isDemo ? 'DEMO' : 'USD';
 
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://taxafacil.site/api';
         const token = localStorage.getItem('token');
@@ -381,6 +382,55 @@ export default {
           return;
         }
 
+        // Tentar encontrar um token correspondente no localStorage
+        let matchingToken = null;
+        try {
+          const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+          if (tokensByLoginIdStr) {
+            const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+            const loginIds = Object.keys(tokensByLoginId);
+
+            // Encontrar o primeiro loginId que corresponde ao tipo solicitado
+            const matchingLoginId = loginIds.find(id => {
+              const isIdDemo = id.startsWith('VRTC') || id.startsWith('VRT');
+              return isIdDemo === isDemo;
+            });
+
+            if (matchingLoginId) {
+              matchingToken = tokensByLoginId[matchingLoginId];
+              console.log(`[AccountBalanceMixin] Token encontrado para ${type}: ${matchingLoginId}`);
+            }
+          }
+        } catch (e) {
+          console.error('[AccountBalanceMixin] Erro ao buscar token no localStorage:', e);
+        }
+
+        if (matchingToken) {
+          // Usar o endpoint unificado para salvar token E moeda
+          const response = await fetch(`${apiBase}/settings/deriv-token`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              token: matchingToken,
+              tradeCurrency: tradeCurrency
+            })
+          });
+
+          if (response.ok) {
+            localStorage.setItem('deriv_token', matchingToken);
+            this.accountType = type;
+            this.tradeCurrency = tradeCurrency;
+            console.log('[AccountBalanceMixin] ✅ Conta e token sincronizados com sucesso');
+            window.location.reload();
+            return;
+          }
+        }
+
+        // Fallback: carregar apenas a moeda se não encontrar token
+        console.warn('[AccountBalanceMixin] ⚠️ Token não encontrado ou falha no sync, salvando apenas moeda...');
         const response = await fetch(`${apiBase}/settings`, {
           method: 'PUT',
           headers: {
@@ -393,30 +443,11 @@ export default {
         });
 
         if (response.ok) {
-          // Atualizar tradeCurrency e accountType local imediatamente ANTES do reload
-          // IMPORTANTE: Atualizar accountType primeiro para garantir sincronização
           this.accountType = type;
           this.tradeCurrency = tradeCurrency;
-
-          console.log('[AccountBalanceMixin] switchAccount - Atualizado:', {
-            type,
-            tradeCurrency,
-            accountType: this.accountType,
-            tradeCurrencyValue: this.tradeCurrency
-          });
-
-          // Forçar atualização reativa para garantir que os componentes vejam a mudança
-          if (this.$forceUpdate) {
-            this.$forceUpdate();
-          }
-
-          // Pequeno delay para garantir que a atualização seja processada antes do reload
-          await new Promise(resolve => setTimeout(resolve, 100));
-
-          // Recarregar página para aplicar mudanças em todos os componentes
           window.location.reload();
         } else {
-          throw new Error('Erro ao alterar moeda');
+          throw new Error('Erro ao alterar conta');
         }
       } catch (error) {
         console.error('[AccountBalanceMixin] Erro ao alterar moeda:', error);

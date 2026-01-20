@@ -802,7 +802,6 @@ export default {
             timestamp: Date.now()
           }));
 
-          // ✅ NOVO: Salvar token selecionado no banco de dados
           try {
             const saveTokenResponse = await fetch(`${apiBase}/settings/deriv-token`, {
               method: 'POST',
@@ -811,7 +810,8 @@ export default {
                 'Authorization': `Bearer ${token}`
               },
               body: JSON.stringify({
-                token: account.token
+                token: account.token,
+                tradeCurrency: account.isDemo ? 'DEMO' : (account.currency || 'USD')
               })
             });
 

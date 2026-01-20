@@ -1201,13 +1201,47 @@ export default {
       return titleMap[title] || title;
     },
     async switchAccount(type) {
-      // Usa a mesma lógica do Settings - altera o tradeCurrency
       try {
-        const tradeCurrency = type === 'demo' ? 'DEMO' : 'USD';
+        const isDemo = type === 'demo';
+        const tradeCurrency = isDemo ? 'DEMO' : 'USD';
+        
+        // Tentar encontrar uma conta correspondente no cache de contas disponíveis
+        const matchingAccount = this.availableAccounts.find(acc => acc.isDemo === isDemo);
         
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
         const token = localStorage.getItem('token');
         
+        if (matchingAccount) {
+          console.log(`[Dashboard] Sincronizando conta ${type} com token: ${matchingAccount.loginid}`);
+          
+          // Usar o endpoint unificado que salva token E moeda
+          const response = await fetch(`${apiBase}/settings/deriv-token`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              token: matchingAccount.token,
+              tradeCurrency: tradeCurrency
+            })
+          });
+
+          if (response.ok) {
+            // Atualizar localStorage local para manter consistência imediata
+            localStorage.setItem('deriv_token', matchingAccount.token);
+            
+            this.tradeCurrency = tradeCurrency;
+            this.accountType = type;
+            
+            console.log('[Dashboard] ✅ Conta e token sincronizados com sucesso');
+            window.location.reload();
+            return;
+          }
+        }
+
+        // Fallback: se não encontrar conta específica ou falhar, tentar atualizar apenas a moeda
+        console.warn('[Dashboard] ⚠️ Nenhuma conta correspondente encontrada ou falha no sync, tentando apenas moeda...');
         const response = await fetch(`${apiBase}/settings`, {
           method: 'PUT',
           headers: {
@@ -1220,15 +1254,11 @@ export default {
         });
 
         if (response.ok) {
-          // Atualizar tradeCurrency local imediatamente
           this.tradeCurrency = tradeCurrency;
           this.accountType = type;
-          
-          // Recarregar página para aplicar mudanças em todos os componentes
-          // Force refresh especialmente no mobile
           window.location.reload();
         } else {
-          throw new Error('Erro ao alterar moeda');
+          throw new Error('Erro ao alterar conta');
         }
       } catch (error) {
         console.error('[Dashboard] Erro ao alterar moeda:', error);
