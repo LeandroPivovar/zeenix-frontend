@@ -802,6 +802,29 @@ export default {
             timestamp: Date.now()
           }));
 
+          // ✅ NOVO: Salvar token selecionado no banco de dados
+          try {
+            const saveTokenResponse = await fetch(`${apiBase}/settings/deriv-token`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({
+                token: account.token
+              })
+            });
+
+            if (saveTokenResponse.ok) {
+              console.log('[TopNavbar] ✅ Token da conta selecionada salvo no banco de dados');
+            } else {
+              console.warn('[TopNavbar] ⚠️ Erro ao salvar token no banco, mas continuando...');
+            }
+          } catch (saveError) {
+            console.error('[TopNavbar] ❌ Erro ao salvar token no banco:', saveError);
+            // Continuar mesmo se falhar ao salvar no banco
+          }
+
           // Emitir evento para atualizar o componente pai
           const accountType = account.isDemo ? 'demo' : 'real';
           this.$emit('account-type-changed', accountType);
