@@ -1444,11 +1444,6 @@ export default {
 			return 'USD';
 		},
 		
-		fetchData() {
-			console.log(`Buscando dados de ${this.filterStartDate} a ${this.filterEndDate}`);
-			this.displayedStats = this.allStats; 
-		},
-
 		exportReportToPDF() {
 			this.$root.$toast.success(`Download do PDF de Estatísticas iniciado! (Arquivo: Relatorio_IAs_${this.filterStartDate}_a_${this.filterEndDate}.pdf)`);
 		},
