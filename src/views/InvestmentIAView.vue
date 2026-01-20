@@ -55,8 +55,8 @@
                         <div class="mb-6 ai-vision-header-mobile">
                             <div class="flex items-center justify-between">
                                 <div class="text-left">
-                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Configuração do Agente</h1>
-                                    <p class="text-sm text-zenix-secondary">Escolha um dos Agentes de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
+                                    <h1 class="text-xl font-bold text-zenix-text mb-1">Configuração da IA</h1>
+                                    <p class="text-sm text-zenix-secondary">Escolha uma das IAs de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
                                 </div>
                                 <div class="ai-chip-icon-mobile">
                                     <i class="fas fa-microchip text-[#22C55E] text-2xl"></i>
@@ -3671,9 +3671,9 @@ export default {
     #ai-vision-panel .ai-vision-header-mobile {
         display: block !important;
         margin-bottom: 1.5rem;
-        background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, 0.3) 0%, rgba(0, 1, 0, 0.1) 70%, transparent 100%);
-        border-radius: 0.75rem;
-        padding: 0rem 1rem;
+        background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, .3) 0, rgba(0, 1, 0, .1) 70%, transparent 100%);
+        border-radius: .75rem;
+        padding: 0;
     }
     
     #ai-vision-panel .ai-vision-header-mobile h1 {
@@ -3715,8 +3715,7 @@ export default {
     
     /* Modifica os cards de status para mobile */
     #ai-vision-panel .status-cards-container {
-        grid-template-columns: 1fr 1fr !important;
-        gap: 0.75rem;
+        display: none !important;
     }
     
     #ai-vision-panel .status-card-mobile {

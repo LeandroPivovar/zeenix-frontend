@@ -2212,8 +2212,12 @@ export default {
     }
 
     /* Mobile layout ordering */
-    .frequency-unified-card-wrapper {
-        order: 1;
+    .frequency-unified-card-wrapper,
+    .heatmap-card,
+    .dvx-card,
+    .parity-meter-card,
+    .high-low-card {
+        display: none !important;
     }
 
     .main-content-grid {
