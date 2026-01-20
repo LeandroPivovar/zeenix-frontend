@@ -2152,6 +2152,7 @@ export default {
         }
 
         console.log('[Chart] Usando token da conta:', loginid);
+        console.log('[Chart] Token sendo enviado:', derivToken ? `${derivToken.substring(0, 5)}...` : 'Nenhum');
 
         // Garantir que está conectado com o token correto
         await derivTradingService.connect(derivToken, loginid);
@@ -2162,21 +2163,9 @@ export default {
           duration: this.duration,
           durationUnit: this.durationUnit,
           amount: this.amount,
+          token: derivToken, // ✅ CRUCIAL: Passar token explicitamente
+          loginid: loginid
         };
-
-        // Adicionar loginid da conta ativa (do localStorage)
-        try {
-          const connectionStr = localStorage.getItem('deriv_connection');
-          if (connectionStr) {
-            const connection = JSON.parse(connectionStr);
-            if (connection && connection.loginid) {
-              buyConfig.loginid = connection.loginid;
-              console.log('[Chart] Usando conta específica:', buyConfig.loginid);
-            }
-          }
-        } catch (e) {
-          console.error('[Chart] Erro ao ler loginid do localStorage:', e);
-        }
         
         // Adicionar barrier se necessário (ex: DIGITMATCH)
         if (this.isDigitContract && this.tradeType.includes('DIGIT')) {
