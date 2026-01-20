@@ -2031,7 +2031,9 @@ export default {
             const hasTargetProfitMessage = recentLogs.some(log => 
                 log.message && (
                     log.message.includes('META DE LUCRO ATINGIDA') ||
-                    log.message.includes('Meta de lucro atingida')
+                    log.message.includes('Meta de lucro atingida') ||
+                    log.message.includes('[META APOLLO]') || // Apollo-specific
+                    log.message.includes('META ATINGIDA')
                 )
             );
             
@@ -2047,7 +2049,8 @@ export default {
                 log.message && (
                     log.message.includes('STOP-LOSS BLINDADO ATIVADO') ||
                     log.message.includes('Stop-Loss Blindado ativado') ||
-                    log.message.includes('STOP BLINDADO (LUCRO GARANTIDO)') 
+                    log.message.includes('STOP BLINDADO (LUCRO GARANTIDO)') ||
+                    log.message.includes('[STOP BLINDADO]') // Apollo-specific
                 )
             );
             
@@ -2056,7 +2059,8 @@ export default {
                 log.message && (
                     log.message.includes('STOP LOSS ATINGIDO') ||
                     log.message.includes('Stop loss atingido') ||
-                    log.message.includes('STOP LOSS REACHED')
+                    log.message.includes('STOP LOSS REACHED') ||
+                    log.message.includes('[STOP LOSS]') // Apollo-specific
                 )
             );
             
