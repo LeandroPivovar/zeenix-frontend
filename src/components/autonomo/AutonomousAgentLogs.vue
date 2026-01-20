@@ -75,7 +75,8 @@ export default {
   name: 'AutonomousAgentLogs',
   props: {
     userId: { type: String, default: null },
-    isActive: { type: Boolean, default: false }
+    isActive: { type: Boolean, default: false },
+    agentName: { type: String, default: 'AGENTE' }
   },
   data() {
     return {
@@ -163,6 +164,12 @@ export default {
         if (!details) {
           const firstLine = message.split('\n')[0];
           details = firstLine.length > 80 ? firstLine.substring(0, 80) + '...' : firstLine;
+        }
+
+        // Apply Zenix v2.0 Standardization
+        const zenixPrefix = `❄️ Zenix v2.0 | ${this.agentName.toUpperCase()} | `;
+        if (!title.startsWith('❄️')) {
+          title = zenixPrefix + title;
         }
 
         return { ...log, logType, icon, title, details };
