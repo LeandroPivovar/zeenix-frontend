@@ -1459,6 +1459,11 @@ export default {
         minute: '2-digit'
       });
     },
+    removeEmojis(text) {
+      if (!text) return '';
+      // Remove emojis usando regex
+      return text.replace(/[\u{1F300}-\u{1F9FF}]|[\u{2600}-\u{26FF}]|[\u{2700}-\u{27BF}]/gu, '').trim();
+    },
     toggleAccountsList() {
       this.showAccountsList = !this.showAccountsList;
       // Carregar apenas se não tiver contas - o cache já será usado automaticamente
