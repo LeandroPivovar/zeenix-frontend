@@ -628,7 +628,7 @@
               <i :class="notification.icon || 'fa-solid fa-info-circle'"></i>
             </div>
             <div class="notification-content">
-              <h3 class="notification-title">{{ notification.title }}</h3>
+              <h3 class="notification-title">{{ removeEmojis(notification.title) }}</h3>
               <p class="notification-message">{{ notification.message }}</p>
               <span class="notification-time">{{ formatNotificationDate(notification.date) }}</span>
             </div>
