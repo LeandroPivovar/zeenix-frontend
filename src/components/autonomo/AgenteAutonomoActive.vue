@@ -171,7 +171,7 @@
 								</div>
 								<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
 									<span class="text-lg">{{ agenteData.id === 'falcon' ? '🦅' : '⚡' }}</span>
-									<span>{{ agenteData.estrategia }}</span>
+									<span>{{ agenteData.estrategia.replace('IA ', '') }}</span>
 									<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
 								</div>
 							</div>
@@ -695,7 +695,7 @@
 						id: 'falcon', 
 						title: 'Falcon', 
 						emoji: '🦅', 
-						description: 'Análise\nAssertividade\nRetorno',
+						description: 'Análise: Momentum Direcional (Rise/Fall)\nAssertividade: 53% a 65%\nRetorno: 92%',
 						winRate: 53,
 						style: 'Momentum'
 					},
@@ -703,7 +703,7 @@
 						id: 'zeus', 
 						title: 'Zeus', 
 						emoji: '⚡', 
-						description: 'Análise\nAssertividade\nRetorno',
+						description: 'Análise: Probabilidade com Troca de Contrato\nAssertividade: 65% a 75%\nRetorno: 60% / 92%',
 						winRate: 65,
 						style: 'Probabilístico'
 					}
