@@ -1116,10 +1116,13 @@ export default {
 				}
 				
 				const result = await response.json();
-				console.log('[StatsIAsView] Resultado:', result);
+				console.log('[StatsIAsView] Resultado completo:', JSON.stringify(result, null, 2));
 				
 				if (result.success && result.data) {
 					const { strategies, summary } = result.data;
+					
+					console.log('[StatsIAsView] Strategies:', strategies);
+					console.log('[StatsIAsView] Summary:', summary);
 					
 					// Atualizar tabela de estratégias
 					this.allStats = strategies;
@@ -1132,6 +1135,7 @@ export default {
 					this.topProfitIA = `${summary.topPerformer.name} (+${summary.topPerformer.profit.toFixed(2)})`;
 					
 					console.log('[StatsIAsView] ✅ Estatísticas carregadas com sucesso');
+					console.log('[StatsIAsView] displayedStats:', this.displayedStats);
 				} else {
 					console.error('[StatsIAsView] Resposta inválida:', result);
 				}
