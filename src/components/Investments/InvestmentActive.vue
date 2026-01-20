@@ -2027,19 +2027,26 @@ export default {
             // Verificar os últimos 20 logs (mais recentes)
             const recentLogs = this.realtimeLogs.slice(0, 20);
             
+            console.log('[InvestmentActive] 🔍 Verificando logs para eventos de stop...', recentLogs.length, 'logs recentes');
+            
             // ✅ Verificar se há mensagem de meta de lucro atingida nos logs recentes
             const hasTargetProfitMessage = recentLogs.some(log => 
                 log.message && (
                     log.message.includes('META DE LUCRO ATINGIDA') ||
-                    log.message.includes('Meta de lucro atingida')
+                    log.message.includes('Meta de lucro atingida') ||
+                    log.message.includes('[META APOLLO]') || // Apollo-specific
+                    log.message.includes('META ATINGIDA')
                 )
             );
             
-            if (hasTargetProfitMessage && !this.showTargetProfitModal) {
-                console.log('[InvestmentActive] 🎯 [Logs] Meta de lucro detectada nos logs! Mostrando modal...');
-                this.loadSessionResult().then(() => {
-                    this.showTargetProfitModal = true;
-                });
+            if (hasTargetProfitMessage) {
+                console.log('[InvestmentActive] 🎯 Meta de lucro detectada nos logs!');
+                if (!this.showTargetProfitModal) {
+                    console.log('[InvestmentActive] 🎯 [Logs] Meta de lucro detectada nos logs! Mostrando modal...');
+                    this.loadSessionResult().then(() => {
+                        this.showTargetProfitModal = true;
+                    });
+                }
             }
             
             // ✅ Verificar se há mensagem de STOP LOSS BLINDADO
@@ -2047,29 +2054,39 @@ export default {
                 log.message && (
                     log.message.includes('STOP-LOSS BLINDADO ATIVADO') ||
                     log.message.includes('Stop-Loss Blindado ativado') ||
-                    log.message.includes('STOP BLINDADO (LUCRO GARANTIDO)') 
+                    log.message.includes('STOP BLINDADO (LUCRO GARANTIDO)') ||
+                    log.message.includes('[STOP BLINDADO]') // Apollo-specific
                 )
             );
+            
+            if (hasBlindadoMessage) {
+                console.log('[InvestmentActive] 🛡️ Stop Blindado detectado nos logs!');
+                if (!this.showStopBlindadoModal && !this.showStopLossModal) {
+                    console.log('[InvestmentActive] 🛡️ [Logs] Stop Blindado detectado nos logs! Mostrando modal...');
+                    this.loadSessionResult().then(() => {
+                        this.showStopBlindadoModal = true;
+                    });
+                }
+            }
             
             // ✅ Verificar se há mensagem de STOP LOSS NORMAL
             const hasNormalStopLossMessage = recentLogs.some(log => 
                 log.message && (
                     log.message.includes('STOP LOSS ATINGIDO') ||
                     log.message.includes('Stop loss atingido') ||
-                    log.message.includes('STOP LOSS REACHED')
+                    log.message.includes('STOP LOSS REACHED') ||
+                    log.message.includes('[STOP LOSS]') // Apollo-specific
                 )
             );
             
-            if (hasBlindadoMessage && !this.showStopBlindadoModal && !this.showStopLossModal) {
-                console.log('[InvestmentActive] 🛡️ [Logs] Stop Blindado detectado nos logs! Mostrando modal...');
-                this.loadSessionResult().then(() => {
-                    this.showStopBlindadoModal = true;
-                });
-            } else if (hasNormalStopLossMessage && !this.showStopLossModal && !this.showStopBlindadoModal) {
-                console.log('[InvestmentActive] 🛑 [Logs] Stop loss normal detectado nos logs! Mostrando modal...');
-                this.loadSessionResult().then(() => {
-                    this.showStopLossModal = true;
-                });
+            if (hasNormalStopLossMessage) {
+                console.log('[InvestmentActive] 🛑 Stop Loss normal detectado nos logs!');
+                if (!this.showStopLossModal && !this.showStopBlindadoModal) {
+                    console.log('[InvestmentActive] 🛑 [Logs] Stop loss normal detectado nos logs! Mostrando modal...');
+                    this.loadSessionResult().then(() => {
+                        this.showStopLossModal = true;
+                    });
+                }
             }
         },
         
