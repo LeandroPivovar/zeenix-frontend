@@ -119,7 +119,7 @@ const routes = [
     path: '/markup',
     name: 'Markup',
     component: MarkupView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/StatsIAs',
@@ -131,57 +131,57 @@ const routes = [
     path: '/Experts',
     name: 'Experts',
     component: ExpertsView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/Clientes',
     name: 'Clientes',
     component: ClientesView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/Webhooks',
     name: 'Webhooks',
-    component: WebhookView, 
-    meta: { requiresAuth: true }
+    component: WebhookView,
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
 
   {
     path: '/AcademyManagement',
     name: 'AcademyCoursesList',
     component: AcademyCoursesListView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/AcademyManagement/:id',
     name: 'AcademyManagement',
     component: AcademyManagementView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/Admin',
     name: 'Admin',
     component: AdminView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/AdminStatsIAs',
     name: 'AdminStatsIAs',
     component: StatsIAsView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/InvestmentIA',
     name: 'InvestmentIAView',
     component: InvestmentIAView,
     meta: { requiresAuth: true }
-  
+
   },
   {
     path: '/MasterTrader',
     name: 'MasterTraderView',
-    component: MasterTraderView,  
-    meta: { requiresAuth: true }  
+    component: MasterTraderView,
+    meta: { requiresAuth: true }
   },
   {
     path: '/agente-autonomo',
@@ -198,20 +198,20 @@ const routes = [
   {
     path: '/copy-trader',
     name: 'CopyTradersView',
-    component: CopyTraders,  
+    component: CopyTraders,
     meta: { requiresAuth: true }
   },
   {
     path: '/SupportItems',
     name: 'SupportItemsManagement',
     component: SupportItemsManagementView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   },
   {
     path: '/PlansManagement',
     name: 'PlansManagement',
     component: PlansManagementView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
   }
 
 ]
@@ -225,30 +225,38 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth) {
     const token = localStorage.getItem('token')
     if (!token) return next({ path: '/login' })
-    
-    // Verificação de role desabilitada - acesso liberado para todos
-    // if (to.meta.requiresRole && Array.isArray(to.meta.requiresRole)) {
-    //   try {
-    //     const payload = JSON.parse(atob(token.split('.')[1]))
-    //     const role = payload.role || payload.roles || payload.userRole || payload.user_role
-    //     
-    //     if (!role) {
-    //       return next({ path: '/dashboard' })
-    //     }
-    //     
-    //     const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase()
-    //     const hasAccess = to.meta.requiresRole.some(allowedRole => 
-    //       roleStr === allowedRole.toLowerCase() || roleStr.includes(allowedRole.toLowerCase())
-    //     )
-    //     
-    //     if (!hasAccess) {
-    //       return next({ path: '/dashboard' })
-    //     }
-    //   } catch (error) {
-    //     console.error('[Router] Erro ao verificar role:', error)
-    //     return next({ path: '/dashboard' })
-    //   }
-    // }
+
+    // Verificação de role habilitada - acesso apenas para admins
+    if (to.meta.requiresRole && Array.isArray(to.meta.requiresRole)) {
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]))
+        const role = payload.role || payload.roles || payload.userRole || payload.user_role
+        const isAdminFlag = payload.isAdmin || payload.is_admin
+
+        // Se isAdminFlag for true, libera acesso
+        if (isAdminFlag === true || isAdminFlag === 'true') {
+          return next()
+        }
+
+        if (!role) {
+          console.warn('[Router] Usuário sem role tentando acessar área restrita')
+          return next({ path: '/dashboard' })
+        }
+
+        const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase()
+        const hasAccess = to.meta.requiresRole.some(allowedRole =>
+          roleStr === allowedRole.toLowerCase() || roleStr.includes(allowedRole.toLowerCase())
+        )
+
+        if (!hasAccess) {
+          console.warn(`[Router] Acesso negado para role "${roleStr}" na rota "${to.path}"`)
+          return next({ path: '/dashboard' })
+        }
+      } catch (error) {
+        console.error('[Router] Erro ao verificar role:', error)
+        return next({ path: '/dashboard' })
+      }
+    }
   }
   next()
 })
