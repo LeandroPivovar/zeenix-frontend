@@ -973,14 +973,20 @@ export default {
             });
 
             // Converter as notificações do backend para o formato esperado pelo frontend
-            const formattedNotifications = filtered.map((notif, index) => ({
-              id: `login-notif-${index}`,
-              title: notif.title,
-              message: notif.message,
-              icon: this.getNotificationIcon(notif.type),
-              date: notif.timestamp,
-              type: notif.type
-            }));
+            const formattedNotifications = filtered.map((notif, index) => {
+              // Limpar emojis/ícones do início do título
+              const cleanTitle = notif.title.replace(/^[\u{1F300}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]\s*/u, '')
+                                          .replace(/^[^a-zA-Z0-9À-ÿ\s]+\s*/, '');
+              
+              return {
+                id: `login-notif-${index}`,
+                title: cleanTitle,
+                message: notif.message,
+                icon: this.getNotificationIcon(notif.type),
+                date: notif.timestamp,
+                type: notif.type
+              };
+            });
 
             // Adicionar às notificações existentes
             this.notifications = [...formattedNotifications];
@@ -1239,7 +1245,8 @@ export default {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  text-align: left;
+  text-align: left !important;
+  justify-content: flex-start !important;
 }
 
 .notification-title {
@@ -1248,7 +1255,7 @@ export default {
   font-weight: 600;
   margin: 0;
   line-height: 1.3;
-  text-align: left;
+  text-align: left !important;
 }
 
 .notification-message {
@@ -1256,14 +1263,15 @@ export default {
   font-size: 13px;
   margin: 0;
   line-height: 1.4;
-  text-align: left;
+  text-align: left !important;
 }
 
 .notification-time {
   color: rgba(255, 255, 255, 0.4);
   font-size: 11px;
+  font-size: 11px;
   margin-top: 4px;
-  text-align: left;
+  text-align: left !important;
 }
 
 /* Modal de Seleção de Contas */
