@@ -47,7 +47,7 @@
                         <!-- Header Desktop -->
                         <div class="mb-6 ai-vision-header-desktop">
                             <div class="text-left">
-                                <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração do Agente</h1>
+                                <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração da IA</h1>
                                 <p class="text-sm text-zenix-secondary">Escolha um dos Agentes de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
                             </div>
                         </div>
