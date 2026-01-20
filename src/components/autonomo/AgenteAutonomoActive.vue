@@ -496,7 +496,7 @@
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
 					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.avgTime }}</div>
-					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Intervalo</div>
+					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Intervalo/OP</div>
 				</div>
 			</div>
 
