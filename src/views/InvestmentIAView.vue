@@ -56,7 +56,7 @@
                             <div class="flex items-center justify-between">
                                 <div class="text-left">
                                     <h1 class="text-xl font-bold text-zenix-text mb-1">Configuração do Agente</h1>
-                                    <p class="text-sm text-zenix-secondary">Escolha uma das IA's de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
+                                    <p class="text-sm text-zenix-secondary">Escolha um dos Agentes de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
                                 </div>
                                 <div class="ai-chip-icon-mobile">
                                     <i class="fas fa-microchip text-[#22C55E] text-2xl"></i>

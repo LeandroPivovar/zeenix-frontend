@@ -151,8 +151,7 @@
 		</div>
 
 		<!-- Additional Stats Row -->
-		<div class="rounded-lg border border-green-500/20 bg-[#0c0c0c] p-4 mb-6 relative overflow-hidden">
-			<div class="absolute inset-0 bg-green-500/5 pointer-events-none"></div>
+		<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-4 mb-6 relative">
 			<div class="grid grid-cols-2 md:grid-cols-4 gap-4">
 				
 				<!-- Estrategia -->
@@ -233,7 +232,8 @@
 				<!-- Resultado do dia -->
 				<div class="flex items-center gap-3">
 					<div class="p-2 bg-[#1a1a1a] rounded-md">
-						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up text-green-500"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'" v-if="(sessionStats?.netProfit || 0) >= 0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
+						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'" v-else><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
 					</div>
 					<div>
 						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Resultado do dia</div>
