@@ -405,12 +405,12 @@
                             <p class="mobile-config-param-value mobile-config-loss" v-else>Carregando...</p>
                         </div>
                         <div class="mobile-config-param">
-                            <p class="mobile-config-param-label">Stop Loss Blindado</p>
-                            <p class="mobile-config-param-value">{{ sessionConfig.stopLossBlindado ? 'Ativo' : 'Inativo' }}</p>
+                            <p class="mobile-config-param-label">Stop Blindado</p>
+                            <p class="mobile-config-param-value">{{ sessionConfig.stopLossBlindado ? 'Ativado' : 'Inativo' }}</p>
                         </div>
-                        <div class="mobile-config-param col-span-2">
-                            <p class="mobile-config-label">Gerenciamento: {{ realRiskLabel }}</p>
-                            <p class="text-[11px] text-zenix-secondary text-justify leading-tight">{{ realRiskDescription }}</p>
+                        <div class="mobile-config-param">
+                            <p class="mobile-config-param-label">Gestão de Risco</p>
+                            <p class="mobile-config-param-value">{{ realRiskLevel }}</p>
                         </div>
                     </div>
 
