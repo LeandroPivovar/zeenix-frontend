@@ -1578,8 +1578,8 @@
     }
 
     .container-componentes {
-      padding: 23px 1rem 20px 1rem !important;
-      margin-top: 50px;
+      padding: 0px 1rem 20px 1rem !important;
+      margin-top: 0px;
       background: linear-gradient(180deg, transparent 50%, #000100) !important;
       background-blend-mode: normal;
       position: relative;

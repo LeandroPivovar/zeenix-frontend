@@ -1,7 +1,7 @@
 ﻿<template>
 	<div class="min-h-screen text-[#FAFAFA] font-sans" style="padding-top: 2rem;">
 		<!-- Header -->
-		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 mt-8">
+		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 md:mt-8 mt-0">
 			<div>
 				<h2 class="text-xl font-bold mb-1">Agente Autônomo</h2>
 				<p class="text-[#A1A1AA] text-xs">Dados baseados no período selecionado</p>
@@ -38,9 +38,9 @@
 					</div>
 				</div>
 				
-				<button @click="pausarAgenteEIrParaTopo" class="inline-flex items-center whitespace-nowrap rounded-md text-[10px] sm:text-sm font-medium transition-colors border border-[#27272a] hover:bg-[#27272a] h-9 px-3 sm:px-4 py-2 bg-[#0c0c0c] text-[#FAFAFA] gap-2">
-					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-pause"><rect width="4" height="16" x="6" y="4"></rect><rect width="4" height="16" x="14" y="4"></rect></svg>
-					PAUSAR AGENTE
+				<button @click="pausarAgenteEIrParaTopo" class="inline-flex items-center whitespace-nowrap rounded-md text-[10px] sm:text-xs font-bold transition-colors border border-transparent h-9 px-3 sm:px-5 py-2 bg-[#FFBC29] text-black gap-2 shadow-[0_0_15px_rgba(255,188,41,0.2)] hover:bg-[#ffc64d]">
+					<i class="fas fa-power-off text-xs"></i>
+					PAUSAR IA
 				</button>
 			</div>
 		</div>

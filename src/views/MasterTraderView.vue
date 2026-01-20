@@ -603,6 +603,13 @@ export default {
     display: block !important;
     visibility: visible !important;
     opacity: 1 !important;
+    margin: 0 !important;
+}
+
+@media screen and (max-width: 768px) {
+    .layout-master-trader .layout-content-agent-autonomo {
+        margin: 0 !important;
+    }
 }
 
 /* Garante que o master-trader-portal-target seja visível */
