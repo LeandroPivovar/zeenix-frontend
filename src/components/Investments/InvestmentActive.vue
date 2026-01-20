@@ -2049,20 +2049,20 @@ export default {
                 }
             }
             
-            // ✅ Verificar se há mensagem de STOP LOSS BLINDADO
+            // ✅ Verificar se há mensagem de STOP LOSS BLINDADO ATINGIDO (não ATIVADO)
             const hasBlindadoMessage = recentLogs.some(log => 
                 log.message && (
-                    log.message.includes('STOP-LOSS BLINDADO ATIVADO') ||
-                    log.message.includes('Stop-Loss Blindado ativado') ||
+                    log.message.includes('STOP BLINDADO ATINGIDO') ||
+                    log.message.includes('Stop Blindado Atingido') ||
                     log.message.includes('STOP BLINDADO (LUCRO GARANTIDO)') ||
-                    log.message.includes('[STOP BLINDADO]') // Apollo-specific
+                    (log.message.includes('[STOP BLINDADO]') && log.message.includes('ATINGIDO')) // Apollo-specific
                 )
             );
             
             if (hasBlindadoMessage) {
-                console.log('[InvestmentActive] 🛡️ Stop Blindado detectado nos logs!');
+                console.log('[InvestmentActive] 🛡️ Stop Blindado ATINGIDO detectado nos logs!');
                 if (!this.showStopBlindadoModal && !this.showStopLossModal) {
-                    console.log('[InvestmentActive] 🛡️ [Logs] Stop Blindado detectado nos logs! Mostrando modal...');
+                    console.log('[InvestmentActive] 🛡️ [Logs] Stop Blindado ATINGIDO detectado nos logs! Mostrando modal...');
                     this.loadSessionResult().then(() => {
                         this.showStopBlindadoModal = true;
                     });
