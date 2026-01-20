@@ -48,7 +48,7 @@
                         <div class="mb-6 ai-vision-header-desktop">
                             <div class="text-left">
                                 <h1 class="text-xl font-bold text-zenix-text mb-1">Painel de Configuração do Agente</h1>
-                                <p class="text-sm text-zenix-secondary">Escolha uma das IA's de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
+                                <p class="text-sm text-zenix-secondary">Escolha um dos Agentes de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
                             </div>
                         </div>
                         <!-- Header Mobile -->
@@ -158,11 +158,11 @@
                                     </ZenixTooltip>
                                 </label>
                                 <select id="strategySelect" class="form-select" v-model="selectedStrategy">
-                                    <option value="atlas">Atlas</option>
-                                    <option value="apollo">Apollo</option>
-                                    <option value="nexus">Nexus</option>
-                                    <option value="orion">Orion</option>
-                                    <option value="titan">Titan</option>
+                                    <option value="atlas">IA Atlas</option>
+                                    <option value="apollo">IA Apollo</option>
+                                    <option value="nexus">IA Nexus</option>
+                                    <option value="orion">IA Orion</option>
+                                    <option value="titan">IA Titan</option>
                                 </select>
                                     <p id="strategyDescription" class="form-help" v-html="strategyDescription"></p>
                     </div>
@@ -486,11 +486,11 @@ export default {
     computed: {
         selectedStrategyName() {
             const strategyNames = {
-                'atlas': 'Atlas',
-                'apollo': 'Apollo',
-                'nexus': 'Nexus',
-                'orion': 'Orion',
-                'titan': 'Titan'
+                'atlas': 'IA Atlas',
+                'apollo': 'IA Apollo',
+                'nexus': 'IA Nexus',
+                'orion': 'IA Orion',
+                'titan': 'IA Titan'
             };
             return strategyNames[this.selectedStrategy] || 'Orion';
         },

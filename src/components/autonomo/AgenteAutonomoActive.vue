@@ -197,7 +197,7 @@
 								:key="agent.id"
 								@click="selectAgent(agent.id)"
 								class="p-3 flex items-center gap-3 hover:bg-[#1a1a1a] cursor-pointer transition-colors border-b border-[#27272a]/50 last:border-0"
-								:class="{ 'bg-green-500/5': agenteData.id === agent.id }"
+								:class="{ 'bg-green-500/10 border-green-500/20 shadow-[inset_0_0_10px_rgba(34,197,94,0.1)]': agenteData.id === agent.id }"
 							>
 								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
 									<span>{{ agent.emoji }}</span>
@@ -695,7 +695,7 @@
 						id: 'falcon', 
 						title: 'Falcon', 
 						emoji: '🦅', 
-						description: 'Análise: Momentum Direcional (Rise/Fall) - Assertividade: 53% a 65% - Retorno: 92%',
+						description: 'Análise\nAssertividade\nRetorno',
 						winRate: 53,
 						style: 'Momentum'
 					},

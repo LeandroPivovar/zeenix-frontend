@@ -68,8 +68,8 @@
 
 				<label class="input-label">Estratégia</label>
 				<select class="input-select" v-model="strategy">
-					<option value="Orion_AltaPerformance">Orion - Alta Performance</option>
-					<option value="nexus">NEXUS - Price Action</option>
+					<option value="Orion_AltaPerformance">IA Orion - Alta Performance</option>
+					<option value="nexus">IA NEXUS - Price Action</option>
 				</select>
 				<p class="strategy-description">Análise técnica avançada com machine learning</p>
 
