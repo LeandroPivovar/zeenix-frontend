@@ -19,7 +19,7 @@ class TradingViewDatafeed {
       supports_timescale_marks: false,
       supports_time: true,
     };
-    
+
     // Cache de dados
     this.barsCache = new Map();
     this.subscriptions = new Map();
@@ -45,7 +45,7 @@ class TradingViewDatafeed {
   /**
    * Resolve símbolo (obtém informações do símbolo)
    */
-  resolveSymbol(symbolName, onResolveCallback, onErrorCallback) {
+  resolveSymbol(symbolName, onResolveCallback) {
     const symbolInfo = {
       name: symbolName || this.symbol,
       ticker: symbolName || this.symbol,
@@ -73,7 +73,7 @@ class TradingViewDatafeed {
    */
   getBars(symbolInfo, resolution, periodParams, onResultCallback, onErrorCallback) {
     const { from, to, firstDataRequest } = periodParams;
-    
+
     console.log('[Datafeed] Buscando barras:', {
       symbol: symbolInfo.name,
       resolution,
@@ -101,10 +101,10 @@ class TradingViewDatafeed {
       // Para requisições subsequentes, usar cache ou buscar mais dados
       const cacheKey = `${symbolInfo.name}_${resolution}`;
       const cachedBars = this.barsCache.get(cacheKey);
-      
+
       if (cachedBars) {
         // Filtrar barras no range solicitado
-        const filteredBars = cachedBars.filter(bar => 
+        const filteredBars = cachedBars.filter(bar =>
           bar.time >= from && bar.time <= to
         );
         onResultCallback(filteredBars, { noData: filteredBars.length === 0 });
@@ -121,7 +121,7 @@ class TradingViewDatafeed {
     try {
       // Buscar ticks do backend usando o serviço deriv-trading
       const response = await this.backendService.getTicks(symbol);
-      
+
       if (!response || !response.ticks) {
         console.warn('[Datafeed] Nenhum tick retornado do backend');
         return [];
@@ -158,28 +158,28 @@ class TradingViewDatafeed {
 
     // Agrupar ticks por período baseado na resolução
     const resolutionSeconds = this.getResolutionSeconds(resolution);
-    
+
     // Agrupar ticks
     const grouped = new Map();
-    
+
     ticks.forEach(tick => {
       // Validar tick
-      if (!tick || tick.epoch === null || tick.epoch === undefined || 
-          tick.value === null || tick.value === undefined) {
+      if (!tick || tick.epoch === null || tick.epoch === undefined ||
+        tick.value === null || tick.value === undefined) {
         return;
       }
 
       // Converter epoch para segundos (se estiver em milissegundos)
       const epochSeconds = Math.floor(tick.epoch);
-      
+
       // Agrupar por período
       const time = Math.floor(epochSeconds / resolutionSeconds) * resolutionSeconds;
       const value = Number(tick.value);
-      
+
       if (isNaN(value) || !isFinite(value) || value <= 0) {
         return;
       }
-      
+
       if (!grouped.has(time)) {
         grouped.set(time, {
           time,
@@ -217,7 +217,7 @@ class TradingViewDatafeed {
       '240': 14400,   // 4 horas
       '1D': 86400,    // 1 dia
     };
-    
+
     return resolutionMap[resolution] || 60;
   }
 
@@ -256,12 +256,12 @@ class TradingViewDatafeed {
    */
   updateTick(tick) {
     // Notificar todos os subscribers
-    this.subscriptions.forEach((subscription, uid) => {
+    this.subscriptions.forEach((subscription) => {
       try {
         // Converter tick para bar
         const bar = {
-          time: Math.floor(tick.epoch / this.getResolutionSeconds(subscription.resolution)) * 
-                 this.getResolutionSeconds(subscription.resolution),
+          time: Math.floor(tick.epoch / this.getResolutionSeconds(subscription.resolution)) *
+            this.getResolutionSeconds(subscription.resolution),
           open: tick.value,
           high: tick.value,
           low: tick.value,
