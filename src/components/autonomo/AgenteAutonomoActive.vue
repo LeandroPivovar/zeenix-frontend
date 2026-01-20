@@ -137,23 +137,28 @@
 				<!-- Estrategia -->
 				<div class="relative flex-1">
 					<div 
-						class="flex items-center gap-3 hover:bg-[#1a1a1a] rounded-lg p-2 -m-2 transition-colors cursor-pointer"
+						class="flex items-center justify-between hover:bg-[#1a1a1a] rounded-lg p-2 -m-2 transition-colors cursor-pointer group"
 						@click.stop="toggleAgentSwitcher"
 					>
-						<div class="p-2 bg-[#1a1a1a] rounded-md">
-							<i class="fas fa-microchip text-green-500 text-base"></i>
+						<div class="flex items-center gap-3">
+							<div class="p-2 bg-[#1a1a1a] rounded-md">
+								<i class="fas fa-microchip text-green-500 text-base"></i>
+							</div>
+							<div class="text-left">
+								<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide flex items-center gap-1">
+									Agente Ativo
+									<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
+								</div>
+								<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
+									<span class="text-lg">{{ agenteData.id === 'falcon' ? '🦅' : '⚡' }}</span>
+									<span>{{ agenteData.estrategia }}</span>
+									<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
+								</div>
+							</div>
 						</div>
-						<div class="text-left">
-							<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide flex items-center gap-1">
-								Agente Ativo
-								<i class="fas fa-chevron-down text-[8px] transition-transform duration-200" :class="{ 'rotate-180': showAgentSwitcher }"></i>
-							</div>
-							<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
-								<span class="text-lg">{{ agenteData.id === 'falcon' ? '🦅' : '⚡' }}</span>
-								<span>{{ agenteData.estrategia }}</span>
-								<i class="fas fa-right-left text-[10px] text-green-500 animate-pulse ml-1 opacity-70"></i>
-								<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
-							</div>
+						
+						<div class="p-2 opacity-40 group-hover:opacity-100 transition-opacity">
+							<i class="fas fa-right-left text-xs text-green-500"></i>
 						</div>
 					</div>
 
