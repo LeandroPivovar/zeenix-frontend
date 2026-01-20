@@ -392,7 +392,7 @@
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Modo</p>
-                            <p class="mobile-config-param-value">{{ modeConfig === 'veloz' ? 'Veloz' : modeConfig === 'moderado' ? 'Moderado' : 'Lento' }}</p>
+                            <p class="mobile-config-param-value">{{ modeConfig === 'veloz' ? 'Veloz' : modeConfig === 'moderado' ? 'Normal' : 'Lento' }}</p>
                         </div>
                         <div class="mobile-config-param">
                             <p class="mobile-config-param-label">Alvo de Lucro</p>
@@ -730,7 +730,7 @@
                                     <!-- Modo -->
                                     <div class="text-left border border-[#383838] rounded-lg p-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Modo</p>
-                                        <p class="text-base font-bold text-zenix-text text-left">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Moderado' : 'Lento' }}</p>
+                                        <p class="text-base font-bold text-zenix-text text-left">{{ mode === 'veloz' ? 'Veloz' : mode === 'moderado' ? 'Normal' : 'Lento' }}</p>
                                     </div>
                                     <!-- Alvo de Lucro -->
                                     <div class="text-left border border-[#383838] rounded-lg p-2">
