@@ -14,8 +14,8 @@
                     <div class="profit-box">
                         <div class="profit-label">Lucro da Sessão</div>
                         <div class="profit-content">
-                            <span class="profit-value">{{ resumo.lucroHoje }}</span>
-                            <span class="profit-percent">{{ resumo.percentualHoje }}</span>
+                            <span :class="['profit-value', resumo.lucroHoje.startsWith('-') ? 'red' : '']">{{ resumo.lucroHoje }}</span>
+                            <span :class="['profit-percent', resumo.percentualHoje.startsWith('-') ? 'red' : '']">{{ resumo.percentualHoje }}</span>
                         </div>
                     </div>
                     <div class="stats-row">
@@ -544,7 +544,7 @@ export default {
         },
         formatCurrency(value) {
             if (value === null || value === undefined) return '$0.00';
-            const sign = value >= 0 ? '+' : '';
+            const sign = value >= 0 ? '+' : '-';
             return `${sign}$${Math.abs(value).toFixed(2)}`;
         },
         formatCurrencyNoSign(value) {
@@ -740,7 +740,9 @@ export default {
 .profit-label { font-size: 12px; color: #9e9e9e; margin-bottom: 4px; }
 .profit-content { display: flex; flex-direction: column; gap: 4px; }
 .profit-value { font-size: 38px; font-weight: 700; color: #39D355; }
+.profit-value.red { color: #ef4444 !important; }
 .profit-percent { font-size: 15px; font-weight: 400; color: #39D355; }
+.profit-percent.red { color: #ef4444 !important; }
 .stats-row { display: flex; gap: 24px; width: 100%; box-sizing: border-box; margin-bottom: 16px; }
 .stat-item{
     display: flex;
@@ -1252,6 +1254,10 @@ export default {
     border-bottom: 1px solid #1a1a1a;
     justify-content: flex-end
 }
+.date-inputs-row {
+    display: flex;
+    gap: 10px;
+}
 .date-input-group {
     display: flex;
     align-items: center;
@@ -1353,10 +1359,18 @@ export default {
         color: #20be5b;
     }
     
+    .profit-value.red {
+        color: #ef4444 !important;
+    }
+    
     .profit-percent {
         font-size: 10px;
         white-space: nowrap;
         color: #20be5b;
+    }
+
+    .profit-percent.red {
+        color: #ef4444 !important;
     }
     
     /* Win e Loss no mesmo card no mobile */
