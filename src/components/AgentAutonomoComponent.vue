@@ -576,10 +576,10 @@ export default {
 .container-componentes{
 	/* Padding superior ajustado para compensar o cabeçalho fixo */
 	padding-top: 60px;
-	padding-left: 60px;
-	padding-right: 60px;
+	padding-left: 10px;
+	padding-right: 10px;
 	padding-bottom: 20px;
-	margin-top: 0;
+	margin: 0px;
 }
 
 /* Top Header */
