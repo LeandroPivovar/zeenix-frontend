@@ -482,7 +482,7 @@ export default {
 		
 		iniciarAgente() {
 			if (!this.selectedAgent) {
-				alert('Por favor, selecione um agente antes de iniciar.');
+
 				return;
 			}
 			// 1. Coleta os dados configurados
