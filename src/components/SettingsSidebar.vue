@@ -77,6 +77,40 @@
           </button>
         </div>
 
+        <div v-if="isMasterTrader" class="settings-modal-section settings-modal-section-with-border">
+          <h3 class="text-white text-sm font-semibold mb-3">Modo Criador de Conteúdo</h3>
+          
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-sm text-gray-400">Ativar Saldo Fictício</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" v-model="isFictitiousBalanceActive" @change="saveMasterTraderSettings" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#22C55E]"></div>
+            </label>
+          </div>
+
+          <div v-if="isFictitiousBalanceActive" class="mb-3">
+            <label class="block text-xs text-gray-400 mb-1">Saldo Fictício</label>
+            <div class="relative">
+              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
+              <input 
+                type="number" 
+                v-model="fictitiousBalance" 
+                @change="saveMasterTraderSettings"
+                class="w-full bg-[#1A1A1A] border border-[#333] rounded-lg py-2 pl-7 pr-3 text-white text-sm focus:border-[#22C55E] focus:outline-none transition-colors"
+                step="0.01"
+              />
+            </div>
+          </div>
+
+          <div class="flex items-center justify-between">
+            <span class="text-sm text-gray-400">Exibir cifrão ($) no header</span>
+            <label class="relative inline-flex items-center cursor-pointer">
+              <input type="checkbox" v-model="showDollarSign" @change="saveMasterTraderSettings" class="sr-only peer">
+              <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#22C55E]"></div>
+            </label>
+          </div>
+        </div>
+
         <div class="settings-modal-section settings-modal-section-with-border">
           <div class="mb-4">
             <button 
@@ -180,7 +214,15 @@ export default {
       showAccountsList: false,
       availableAccounts: [],
       loadingAccounts: false,
-      userProfilePictureUrl: null
+      balanceVisible: true,
+      showAccountsList: false,
+      availableAccounts: [],
+      loadingAccounts: false,
+      userProfilePictureUrl: null,
+      isMasterTrader: false,
+      fictitiousBalance: 10000,
+      isFictitiousBalanceActive: false,
+      showDollarSign: false,
     };
   },
   computed: {
@@ -648,19 +690,6 @@ export default {
     },
     async loadUserProfilePicture() {
       try {
-        const userInfo = localStorage.getItem('user');
-        if (userInfo) {
-          try {
-            const user = JSON.parse(userInfo);
-            if (user.profilePictureUrl) {
-              this.userProfilePictureUrl = user.profilePictureUrl;
-              return;
-            }
-          } catch (e) {
-            // Ignorar erro de parsing
-          }
-        }
-
         const token = localStorage.getItem('token');
         if (!token) return;
 
@@ -675,6 +704,13 @@ export default {
 
         if (res.ok) {
           const data = await res.json();
+          
+          // Atualizar dados do Master Trader
+          this.isMasterTrader = !!data.traderMestre;
+          if (data.fictitiousBalance !== undefined) this.fictitiousBalance = parseFloat(data.fictitiousBalance);
+          if (data.isFictitiousBalanceActive !== undefined) this.isFictitiousBalanceActive = data.isFictitiousBalanceActive;
+          if (data.showDollarSign !== undefined) this.showDollarSign = data.showDollarSign;
+
           if (data.profilePictureUrl) {
             this.userProfilePictureUrl = data.profilePictureUrl;
             
@@ -691,9 +727,46 @@ export default {
           }
         }
       } catch (error) {
-        console.error('[SettingsSidebar] Erro ao carregar foto do perfil:', error);
+        console.error('[SettingsSidebar] Erro ao carregar configurações:', error);
+      }
+    },
+    async saveMasterTraderSettings() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBaseUrl}/settings`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            fictitiousBalance: parseFloat(this.fictitiousBalance),
+            isFictitiousBalanceActive: this.isFictitiousBalanceActive,
+            showDollarSign: this.showDollarSign
+          })
+        });
+
+        if (res.ok) {
+          console.log('[SettingsSidebar] Configurações de Master Trader salvas com sucesso');
+          // Emitir evento para atualizar o header
+          window.dispatchEvent(new CustomEvent('masterTraderSettingsUpdated', { 
+            detail: {
+              fictitiousBalance: this.fictitiousBalance,
+              isFictitiousBalanceActive: this.isFictitiousBalanceActive,
+              showDollarSign: this.showDollarSign
+            }
+          }));
+        } else {
+          console.error('[SettingsSidebar] Erro ao salvar configurações');
+        }
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao salvar configurações:', error);
       }
     }
+  }
   }
 };
 </script>

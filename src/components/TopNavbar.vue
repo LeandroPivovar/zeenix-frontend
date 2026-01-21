@@ -46,8 +46,8 @@
           <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF] inline-flex items-center gap-2">
             <span>Saldo:</span>
             <span v-if="!balanceHidden" class="inline-flex items-center gap-1.5">
-              <span v-if="accountType === 'demo'">Đ</span>
-              <span v-else>$</span>
+              <span v-if="isFictitiousBalanceActive || (accountType !== 'demo' || showDollarSign)">$</span>
+              <span v-else>Đ</span>
               {{ formattedBalance }}
             </span>
             <span v-else>••••••</span>
@@ -388,11 +388,20 @@ export default {
       isMobile: false,
       hasUnreadNotifications: false,
       showNotificationsModal: false,
-      notifications: []
+      notifications: [],
+      // Master Trader Settings
+      isFictitiousBalanceActive: false,
+      fictitiousBalance: 0,
+      showDollarSign: false
     }
   },
   computed: {
     formattedBalance() {
+      // Se saldo fictício estiver ativo
+      if (this.isFictitiousBalanceActive) {
+        return this.fictitiousBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      }
+
       // Retorna apenas o valor numérico formatado (sem prefixo, pois o símbolo é adicionado no template)
       if (this.accountType === 'demo') {
         const demo = this.balancesByCurrencyDemo['USD'] || this.balanceNumeric || 0;
@@ -490,8 +499,11 @@ export default {
     this.checkMobile();
     this.loadUserProfilePicture();
     this.loadLoginNotifications();
+    window.addEventListener('masterTraderSettingsUpdated', this.handleMasterTraderSettingsUpdate);
+    this.loadMasterTraderSettings();
   },
   beforeUnmount() {
+    window.removeEventListener('masterTraderSettingsUpdated', this.handleMasterTraderSettingsUpdate);
     document.removeEventListener('click', this.handleClickOutside);
     window.removeEventListener('storage', this.handleStorageChange);
     window.removeEventListener('userProfileUpdated', this.handleProfileUpdate);
@@ -1019,6 +1031,38 @@ export default {
         'info': 'fa-solid fa-info-circle'
       };
       return iconMap[type] || 'fa-solid fa-info-circle';
+    },
+    async loadMasterTraderSettings() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBaseUrl}/settings`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.isFictitiousBalanceActive !== undefined) this.isFictitiousBalanceActive = data.isFictitiousBalanceActive;
+          if (data.fictitiousBalance !== undefined) this.fictitiousBalance = parseFloat(data.fictitiousBalance);
+          if (data.showDollarSign !== undefined) this.showDollarSign = data.showDollarSign;
+        }
+      } catch (error) {
+        console.error('[TopNavbar] Erro ao carregar configurações de Master Trader:', error);
+      }
+    },
+    handleMasterTraderSettingsUpdate(event) {
+      const settings = event.detail;
+      if (settings) {
+        this.fictitiousBalance = settings.fictitiousBalance;
+        this.isFictitiousBalanceActive = settings.isFictitiousBalanceActive;
+        this.showDollarSign = settings.showDollarSign;
+      }
     }
   }
 }
