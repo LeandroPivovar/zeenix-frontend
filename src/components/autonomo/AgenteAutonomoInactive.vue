@@ -97,9 +97,17 @@
 			</div>
 			
 			<!-- Mobile: Simple Header -->
-			<div class="mobile-simple-header">
-				<h1 class="mobile-header-title">Configuração do Agente Autônomo</h1>
-				<p class="mobile-header-subtitle">Defina parâmetros de risco, metas diárias e limites. O agente opera continuamente até atingir objetivos e reinicia no próximo dia.</p>
+			<!-- Mobile: Header Structured -->
+			<div class="mb-6 ai-vision-header-mobile">
+				<div class="flex items-center justify-between">
+					<div class="text-left">
+						<h1 class="text-xl font-bold text-zenix-text mb-1">Configuração do Agente Autônomo</h1>
+						<p class="text-sm text-zenix-secondary">Defina parâmetros de risco, metas diárias e limites. O agente opera continuamente até atingir objetivos e reinicia no próximo dia.</p>
+					</div>
+					<div class="ai-chip-icon-mobile">
+						<i class="fas fa-code text-[#22C55E] text-2xl"></i>
+					</div>
+				</div>
 			</div>
 		</section>
 			<div class="config-grid">
@@ -1587,6 +1595,43 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
         display: grid !important;
         grid-template-columns: 1fr 1fr !important;
         gap: 1rem !important;
+    }
+}
+
+/* Header Mobile Styles - Matching IA View */
+@media (max-width: 768px) {
+    .ai-vision-header-mobile {
+        display: block !important;
+        margin-bottom: 0;
+        background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, .3) 0, rgba(0, 1, 0, .1) 70%, transparent 100%);
+        border-radius: .75rem;
+        padding: 1rem 0 0;
+    }
+
+    .ai-vision-header-mobile h1 {
+        font-size: 20px;
+        font-weight: 700;
+        color: #dfdfdf;
+        margin-bottom: .25rem;
+    }
+
+    .ai-vision-header-mobile p {
+        font-size: 12px;
+        color: #a1a1a1;
+        line-height: 1.5;
+        text-align: left;
+    }
+
+    .ai-chip-icon-mobile {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background-color: rgba(34, 197, 94, 0.15);
+        padding: 15px;
+        border-radius: 50%;
+        width: auto;
+        height: auto;
+        margin-left: 1rem;
     }
 }
 </style>

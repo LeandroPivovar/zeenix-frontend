@@ -59,7 +59,7 @@
                                     <p class="text-sm text-zenix-secondary">Escolha uma das IAs de investimento, defina sua configuração, inicie e acompanhe os resultados.</p>
                                 </div>
                                 <div class="ai-chip-icon-mobile">
-                                    <i class="fas fa-microchip text-[#22C55E] text-2xl"></i>
+                                    <i class="fas fa-brain text-[#22C55E] text-2xl"></i>
                                 </div>
                             </div>
                         </div>
