@@ -750,6 +750,14 @@
 				showAgentSwitcher: false,
 				runningAgents: [
 					{ 
+						id: 'sentinel', 
+						title: 'Sentinel', 
+						emoji: '🛡️', 
+						description: 'Agente completo com Martingale Inteligente e Soros Nível 2. Ideal para operações balanceadas.',
+						winRate: 85,
+						style: 'Conservador'
+					},
+					{ 
 						id: 'falcon', 
 						title: 'Falcon', 
 						emoji: '🦅', 
