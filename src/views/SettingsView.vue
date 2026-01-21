@@ -135,6 +135,42 @@
                   </select>
                 </div>
 
+                <div v-if="settings.isMasterTrader" class="pt-4 border-t border-zenix-border">
+                  <h4 class="text-sm font-bold text-white mb-4">Modo Criador de Conteúdo</h4>
+                  
+                  <div class="space-y-4">
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium text-zenix-text">Ativar Saldo Fictício</span>
+                      <label class="switch">
+                        <input type="checkbox" v-model="settings.isFictitiousBalanceActive">
+                        <span class="slider"></span>
+                      </label>
+                    </div>
+
+                    <div v-if="settings.isFictitiousBalanceActive">
+                      <label class="block text-sm font-medium text-zenix-text mb-2">Saldo Fictício</label>
+                      <div class="relative">
+                        <span class="absolute left-4 top-1/2 -translate-y-1/2 text-zenix-secondary">$</span>
+                        <input 
+                          type="number" 
+                          v-model="settings.fictitiousBalance" 
+                          class="w-full border border-zenix-border rounded-xl px-4 py-3 pl-8 text-zenix-text focus:outline-none focus:border-zenix-green transition-all"
+                          style="background-color: #1d1c1d;"
+                          step="0.01"
+                        />
+                      </div>
+                    </div>
+
+                    <div class="flex items-center justify-between">
+                      <span class="text-sm font-medium text-zenix-text">Exibir cifrão ($) no header</span>
+                      <label class="switch">
+                        <input type="checkbox" v-model="settings.showDollarSign">
+                        <span class="slider"></span>
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
                 <div class="flex items-center justify-between">
                   <span class="text-sm font-medium text-zenix-text">Notificações por e-mail</span>
                   <label class="switch">
@@ -566,7 +602,12 @@ export default {
           emailNotifications: data.emailNotifications !== false,
           pushNotifications: data.pushNotifications !== false,
           twoFactorEnabled: data.twoFactorEnabled || false,
-          tradeCurrency: data.tradeCurrency || 'USD'
+          tradeCurrency: data.tradeCurrency || 'USD',
+          // Content Creator
+          isMasterTrader: !!data.traderMestre, // Read-only from backend role check usually or specific flag
+          fictitiousBalance: data.fictitiousBalance !== undefined ? parseFloat(data.fictitiousBalance) : 10000,
+          isFictitiousBalanceActive: !!data.isFictitiousBalanceActive,
+          showDollarSign: data.showDollarSign !== undefined ? data.showDollarSign : false
         }
         this.lastLogin = data.lastLogin
         this.activeSessions = data.activeSessions || 0
@@ -616,12 +657,35 @@ export default {
             emailNotifications: this.settings.emailNotifications,
             pushNotifications: this.settings.pushNotifications,
             tradeCurrency: this.settings.tradeCurrency,
-            selectedDerivToken: selectedDerivToken
+            selectedDerivToken: selectedDerivToken,
+            // Content Creator Settings
+            fictitiousBalance: this.settings.fictitiousBalance !== undefined ? parseFloat(this.settings.fictitiousBalance) : undefined,
+            isFictitiousBalanceActive: this.settings.isFictitiousBalanceActive,
+            showDollarSign: this.settings.showDollarSign
           })
         })
 
         if (!res.ok) {
           throw new Error('Erro ao salvar configurações')
+        }
+
+        // Emitir eventos para atualização global
+        window.dispatchEvent(new CustomEvent('masterTraderSettingsUpdated', { 
+          detail: {
+            fictitiousBalance: this.settings.fictitiousBalance,
+            isFictitiousBalanceActive: this.settings.isFictitiousBalanceActive,
+            showDollarSign: this.settings.showDollarSign
+          }
+        }));
+
+        if (this.settings.isFictitiousBalanceActive) {
+           window.dispatchEvent(new CustomEvent('fictitiousBalanceChanged', {
+              detail: {
+                enabled: true,
+                amount: this.settings.fictitiousBalance
+              }
+            }));
+            window.dispatchEvent(new Event('refreshDerivBalance'));
         }
 
         await this.fetchSettings()

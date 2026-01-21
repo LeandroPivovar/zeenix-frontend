@@ -77,39 +77,7 @@
           </button>
         </div>
 
-        <div v-if="isMasterTrader" class="settings-modal-section settings-modal-section-with-border">
-          <h3 class="text-white text-sm font-semibold mb-3">Modo Criador de Conteúdo</h3>
-          
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-sm text-gray-400">Ativar Saldo Fictício</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="isFictitiousBalanceActive" @change="saveMasterTraderSettings" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#22C55E]"></div>
-            </label>
-          </div>
 
-          <div v-if="isFictitiousBalanceActive" class="mb-3">
-            <label class="block text-xs text-gray-400 mb-1">Saldo Fictício</label>
-            <div class="relative">
-              <span class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400">$</span>
-              <input 
-                type="number" 
-                v-model="fictitiousBalance" 
-                @change="saveMasterTraderSettings"
-                class="w-full bg-[#1A1A1A] border border-[#333] rounded-lg py-2 pl-7 pr-3 text-white text-sm focus:border-[#22C55E] focus:outline-none transition-colors"
-                step="0.01"
-              />
-            </div>
-          </div>
-
-          <div class="flex items-center justify-between">
-            <span class="text-sm text-gray-400">Exibir cifrão ($) no header</span>
-            <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="showDollarSign" @change="saveMasterTraderSettings" class="sr-only peer">
-              <div class="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#22C55E]"></div>
-            </label>
-          </div>
-        </div>
 
         <div class="settings-modal-section settings-modal-section-with-border">
           <div class="mb-4">
@@ -216,10 +184,6 @@ export default {
       loadingAccounts: false,
 
       userProfilePictureUrl: null,
-      isMasterTrader: false,
-      fictitiousBalance: 10000,
-      isFictitiousBalanceActive: false,
-      showDollarSign: false,
     };
   },
   computed: {
@@ -390,7 +354,6 @@ export default {
   },
   mounted() {
     this.loadUserProfilePicture();
-    this.loadUserSettings();
     window.addEventListener('userProfileUpdated', this.handleProfileUpdate);
     // Não carregar contas automaticamente no mounted - só quando necessário
     // Isso evita chamadas desnecessárias ao montar o componente
@@ -728,49 +691,7 @@ export default {
         console.error('[SettingsSidebar] Erro ao carregar configurações:', error);
       }
     },
-    async loadUserSettings() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
 
-        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-        const res = await fetch(`${apiBaseUrl}/settings`, {
-          method: 'GET',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          
-          this.isMasterTrader = !!data.traderMestre;
-          if (data.fictitiousBalance !== undefined) this.fictitiousBalance = parseFloat(data.fictitiousBalance);
-          if (data.isFictitiousBalanceActive !== undefined) this.isFictitiousBalanceActive = data.isFictitiousBalanceActive;
-          if (data.showDollarSign !== undefined) this.showDollarSign = data.showDollarSign;
-          
-          console.log('[SettingsSidebar] Configurações carregadas:', {
-            isMasterTrader: this.isMasterTrader,
-            fictitiousBalance: this.fictitiousBalance,
-            isFictitiousBalanceActive: this.isFictitiousBalanceActive,
-            showDollarSign: this.showDollarSign
-          });
-          
-          // Se saldo fictício estiver ativo, emitir evento para atualizar a topbar
-          if (this.isFictitiousBalanceActive) {
-            window.dispatchEvent(new CustomEvent('fictitiousBalanceChanged', {
-              detail: {
-                enabled: true,
-                amount: this.fictitiousBalance
-              }
-            }));
-          }
-        }
-      } catch (error) {
-        console.error('[SettingsSidebar] Erro ao carregar configurações do usuário:', error);
-      }
-    },
     async saveMasterTraderSettings() {
       try {
         const token = localStorage.getItem('token');
