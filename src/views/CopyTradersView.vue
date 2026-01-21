@@ -39,9 +39,9 @@
         <!-- Mobile Header Copy Trading (Config Mode) -->
         <div class="mb-6 md:hidden px-1 mt-4" v-if="!hasActiveSession">
           <div class="flex items-center justify-between gap-4">
-            <div class="text-left">
-              <h1 class="text-xl font-bold text-white mb-1">Configuração do Copy Trading</h1>
-              <p class="text-[#A1A1AA] text-sm">Escolha traders e IAs para copiar, configure proporção e filtros, e replique operações automaticamente.</p>
+            <div class="text-left flex flex-col gap-[3px]">
+              <h1 class="text-xl font-bold text-white leading-tight">Configuração do Copy Trading</h1>
+              <p class="text-[#A1A1AA] text-sm leading-tight">Escolha traders e IAs para copiar, configure proporção e filtros, e replique operações automaticamente.</p>
             </div>
             <!-- Icon Removed for Left Alignment -->
           </div>

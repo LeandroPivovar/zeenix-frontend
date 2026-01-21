@@ -100,9 +100,9 @@
 			<!-- Mobile: Header Structured -->
 			<div class="mb-6 ai-vision-header-mobile">
 				<div class="flex items-center justify-between">
-					<div class="text-left">
-						<h1 class="text-xl font-bold text-zenix-text mb-1">Configuração do Agente Autônomo</h1>
-						<p class="text-sm text-zenix-secondary">Defina parâmetros de risco, metas diárias e limites. O agente opera continuamente até atingir objetivos e reinicia no próximo dia.</p>
+					<div class="text-left flex flex-col gap-[3px]">
+						<h1 class="text-xl font-bold text-zenix-text leading-tight">Configuração do Agente Autônomo</h1>
+						<p class="text-sm text-zenix-secondary leading-tight">Defina parâmetros de risco, metas diárias e limites. O agente opera continuamente até atingir objetivos e reinicia no próximo dia.</p>
 					</div>
 					<!-- Icon Removed for Left Alignment -->
 				</div>
@@ -1143,7 +1143,7 @@ export default {
 .stoploss-blindado-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 3px;
     font-size: 0.875rem;
     color: #DFDFDF;
 }
