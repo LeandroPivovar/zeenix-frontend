@@ -375,7 +375,7 @@
 	.layout-content-agent-autonomo {
 		font-family: -apple-system, BlinkMacMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
 		color: #f0f0f0;
-		margin: 50px 0px;
+		margin: 20px 0px;
 	}
 
 	.metric-card,
