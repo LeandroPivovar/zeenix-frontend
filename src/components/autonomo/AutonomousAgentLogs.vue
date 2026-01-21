@@ -65,7 +65,7 @@
                  {{ log.details }}
               </div>
               <div v-if="log.message && log.message.includes('\n')" class="space-y-0.5 mt-1">
-                 <div v-for="(line, lIdx) in log.message.split('\n').slice(1)" :key="lIdx" class="text-[10px] text-[#A1A1AA] leading-snug pl-1 border-l border-[#333]"> 
+                 <div v-for="(line, lIdx) in log.message.split('\n').slice(1)" :key="lIdx" class="text-[10px] text-[#A1A1AA] leading-snug"> 
                    • {{ line.trim() }}
                  </div>
               </div>
