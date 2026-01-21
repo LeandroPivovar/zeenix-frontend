@@ -553,8 +553,6 @@
 				</div>
 			</div>
 		</div>
-			</div>
-		</div>
 	</div>
 
 	<!-- Stop Status Modal -->
@@ -599,6 +597,11 @@
 			</div>
 		</div>
 	</div>
+
+	<!-- Modal de Stop (Novos) -->
+	<StopLossModal v-if="showNewStopLossModal" @close="showNewStopLossModal = false" />
+	<TargetProfitModal v-if="showNewTargetProfitModal" @close="showNewTargetProfitModal = false" />
+	<StopBlindadoModal v-if="showNewStopBlindadoModal" @close="showNewStopBlindadoModal = false" />
 </template>
 
 <script>
@@ -898,6 +901,11 @@
 			}
 		},
 		watch: {
+			'agenteData.accountBalance'() { this.$forceUpdate(); },
+			selectedPeriod() {
+				// Atualizar dados quando o filtro mudar
+				this.fetchProfitEvolution();
+			},
 			'agenteData.sessionStatus': {
 				immediate: true,
 				handler(newStatus) {
@@ -1330,13 +1338,6 @@
 				this.showAgentSwitcher = false;
 			},
 		},
-		watch: {
-			'agenteData.accountBalance'() { this.$forceUpdate(); },
-			selectedPeriod() {
-				// Atualizar dados quando o filtro mudar
-				this.fetchProfitEvolution();
-			}
-		}
 	}
 </script>
 
