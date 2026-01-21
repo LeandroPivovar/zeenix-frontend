@@ -1,5 +1,12 @@
 <template>
     <div id="copy-trading-monitor">
+        <!-- New Header -->
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-2">
+            <div>
+                <h1 class="text-xl md:text-2xl font-bold text-white mb-1">Monitoramento de Copy</h1>
+                <p class="text-[#A1A1AA] text-xs md:text-sm">Monitore em tempo real os resultados das operações replicadas em sua conta. Pause quando quiser.</p>
+            </div>
+        </div>
 
         <div v-if="tabAtiva === 'monitor'" class="grid">
 
@@ -34,16 +41,17 @@
                     <span>Últimos 7 dias</span><br>
                     <span class="weekly-value">{{ resumo.lucroSemana }} ({{ resumo.percentualSemana }})</span>
                 </div>
-            </div>
-
-            <div class="copy-pause-container mobile-only">
-                <button 
-                    class="bg-zenix-yellow text-black rounded-xl text-[16px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-[56px] w-full"
-                    @click="pauseCopy"
-                >
-                    <i class="fas fa-power-off mr-2 text-[14px]"></i>
-                    PAUSAR COPY
-                </button>
+                
+                <!-- Botão Pausar Mobile (Movido para cá) -->
+                <div class="mt-4 mobile-only w-full">
+                    <button 
+                        class="bg-zenix-yellow text-black rounded-xl text-[14px] font-bold hover:bg-[#FFE07A] transition-all flex items-center justify-center uppercase tracking-wide h-[48px] w-full shadow-[0_0_15px_rgba(255,188,41,0.2)]"
+                        @click="pauseCopy"
+                    >
+                        <i class="fas fa-power-off mr-2 text-[12px]"></i>
+                        PAUSAR COPY
+                    </button>
+                </div>
             </div>
 
             <div class="card status-card div2">

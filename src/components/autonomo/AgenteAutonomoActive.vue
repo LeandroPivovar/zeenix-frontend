@@ -3,14 +3,14 @@
 		<!-- Header -->
 		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 md:mt-8 mt-0">
 			<div>
-				<h2 class="text-xl font-bold mb-1">Agente Autônomo</h2>
-				<p class="text-[#A1A1AA] text-xs">Dados baseados no período selecionado</p>
+				<h2 class="text-xl font-bold mb-1">Monitoramento de agentes</h2>
+				<p class="text-[#A1A1AA] text-xs">Acompanhe os resultados dos seus agentes ativos ou configure um novo agente.</p>
 			</div>
 			<div class="flex flex-row items-center gap-2 w-full md:w-auto">
-				<div class="relative z-[40]">
+				<div class="relative z-[40] flex-1 md:flex-none">
 					<button 
 						@click.stop="toggleDatePicker"
-						class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-[#27272a] hover:bg-[#27272a] hover:text-white h-9 px-4 py-2 justify-between gap-2 bg-[#0c0c0c] text-[#FAFAFA] min-w-[140px] sm:min-w-[180px]" 
+						class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-[#27272a] hover:bg-[#27272a] hover:text-white h-9 px-4 py-2 justify-between gap-2 bg-[#0c0c0c] text-[#FAFAFA] w-full md:min-w-[180px]" 
 						type="button"
 					>
 						<div class="flex items-center gap-2">
