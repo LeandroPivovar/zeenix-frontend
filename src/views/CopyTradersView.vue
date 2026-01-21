@@ -43,9 +43,7 @@
               <h1 class="text-xl font-bold text-white mb-1">Configuração do Copy Trading</h1>
               <p class="text-[#A1A1AA] text-sm">Escolha traders e IAs para copiar, configure proporção e filtros, e replique operações automaticamente.</p>
             </div>
-            <div class="shrink-0">
-              <i class="fas fa-users text-[#4ade80] text-2xl"></i>
-            </div>
+            <!-- Icon Removed for Left Alignment -->
           </div>
         </div>
       
@@ -623,7 +621,7 @@
 
   @media (max-width: 768px) {
     .box {
-      padding: 80px 20px 110px 20px;
+      padding: 60px 20px 110px 20px;
       margin: 0;
     }
 

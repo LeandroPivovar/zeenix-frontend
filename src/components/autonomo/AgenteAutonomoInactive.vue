@@ -104,9 +104,7 @@
 						<h1 class="text-xl font-bold text-zenix-text mb-1">Configuração do Agente Autônomo</h1>
 						<p class="text-sm text-zenix-secondary">Defina parâmetros de risco, metas diárias e limites. O agente opera continuamente até atingir objetivos e reinicia no próximo dia.</p>
 					</div>
-					<div class="ai-chip-icon-mobile">
-						<i class="fas fa-microchip text-[#22C55E] text-2xl"></i>
-					</div>
+					<!-- Icon Removed for Left Alignment -->
 				</div>
 			</div>
 		</section>
@@ -1474,7 +1472,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 
 @media (max-width: 600px) {
     .loss-stoploss-row {
-        flex-direction: column;
+        /* Kept horizontal (side-by-side) as requested */
     }
     
     .value-goal-row {
