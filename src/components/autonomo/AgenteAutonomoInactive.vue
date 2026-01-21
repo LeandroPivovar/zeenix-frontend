@@ -5,7 +5,7 @@
 			<!-- Header Section -->
 		<section class="fade-in" style="margin-bottom: 1.5rem;">
 			<!-- Desktop: AI Vision Panel -->
-			<div class="ai-vision-panel-desktop">
+			<div class="ai-vision-panel-desktop" style="margin-top: 2rem;">
 				<div class="bg-zenix-card border-2 border-zenix-border rounded-xl p-6 premium-card glow-green ai-vision-container">
 					<!-- Header Desktop -->
 					<div class="mb-6">
