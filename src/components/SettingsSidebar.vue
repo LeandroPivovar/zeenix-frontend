@@ -214,10 +214,7 @@ export default {
       showAccountsList: false,
       availableAccounts: [],
       loadingAccounts: false,
-      balanceVisible: true,
-      showAccountsList: false,
-      availableAccounts: [],
-      loadingAccounts: false,
+
       userProfilePictureUrl: null,
       isMasterTrader: false,
       fictitiousBalance: 10000,
