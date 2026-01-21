@@ -1311,7 +1311,7 @@ export default {
 
         
         // Inscrever-se no símbolo para receber histórico (isso vai disparar histórico via SSE)
-        await derivTradingService.subscribeSymbol(this.symbol, derivToken, loginid);
+        await derivTradingService.subscribeSymbol(this.symbol, derivToken);
         console.log('[Chart] Inscrição no símbolo enviada, aguardando histórico via SSE...');
         
         // O histórico será recebido via SSE no handler processHistoryFromSSE
