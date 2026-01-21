@@ -105,7 +105,7 @@
 						<p class="text-sm text-zenix-secondary">Defina parâmetros de risco, metas diárias e limites. O agente opera continuamente até atingir objetivos e reinicia no próximo dia.</p>
 					</div>
 					<div class="ai-chip-icon-mobile">
-						<i class="fas fa-code text-[#22C55E] text-2xl"></i>
+						<i class="fas fa-microchip text-[#22C55E] text-2xl"></i>
 					</div>
 				</div>
 			</div>
@@ -1605,7 +1605,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
         margin-bottom: 0;
         background: radial-gradient(ellipse 80% 50% at 50% 50%, rgba(15, 32, 25, .3) 0, rgba(0, 1, 0, .1) 70%, transparent 100%);
         border-radius: .75rem;
-        padding: 1rem 0 0;
+        padding: 0;
     }
 
     .ai-vision-header-mobile h1 {
