@@ -1297,16 +1297,11 @@ export default {
         console.log('[Chart] ========== BUSCANDO HISTÓRICO DE TICKS ==========');
         console.log('[Chart] Símbolo:', this.symbol);
         
-        const derivToken = await this.getTokenForAccount();
-        
-        if (!derivToken) {
-          console.warn('[Chart] Token Deriv não encontrado');
-          return;
-        }
-        
-        // Garantir que está conectado
+        // Inscrever-se no símbolo para receber histórico (via SSE)
+        // A conexão é gerenciada automaticamente pelo backend/service
         if (!derivTradingService.isConnected) {
-          await derivTradingService.connect(derivToken);
+            // Se precisar conectar, o service deve saber como (ou o subscribeSymbol cuida disso)
+            // Mas vamos assumir que o subscribeSymbol faz a conexao se necessario
         }
 
         
@@ -1582,20 +1577,8 @@ export default {
       try {
         this.isLoadingMarkets = true;
         
-        const derivToken = await this.getTokenForAccount();
-
-        if (!derivToken) {
-          console.warn('[Chart] Token Deriv não encontrado, usando mercados padrão');
-          // Usar mercados padrão se não tiver token
-          this.markets = this.getDefaultMarkets();
-          this.isLoadingMarkets = false;
-        return;
-      }
-      
-        // Conectar ao backend
-        await derivTradingService.connect(derivToken);
-
         // Iniciar stream SSE para receber mensagens
+        // O backend resolverá o token automaticamente
         await derivTradingService.startStream((data) => {
           if (data.type === 'active_symbols' && data.data) {
             this.processActiveSymbols(data.data);
@@ -1833,56 +1816,9 @@ export default {
       try {
         this.isLoadingContracts = true;
         
-        // Buscar token e loginid do localStorage
-        const derivConnection = localStorage.getItem('deriv_connection');
-        let derivToken = localStorage.getItem('deriv_token');
-        let loginid = null;
-
-        if (derivConnection) {
-          try {
-            const connection = JSON.parse(derivConnection);
-            loginid = connection.loginid;
-            if (!derivToken) {
-              derivToken = connection.token;
-            }
-          } catch (e) {
-            console.warn('[Chart] Erro ao parsear deriv_connection:', e);
-          }
-        }
-
-        // Se não tiver token, tentar deriv_tokens_by_loginid
-        if (!derivToken) {
-          const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
-          if (tokensByLoginId) {
-            try {
-              const tokens = JSON.parse(tokensByLoginId);
-              if (loginid && tokens[loginid]) {
-                derivToken = tokens[loginid];
-              } else if (Object.keys(tokens).length > 0) {
-                const firstLoginId = Object.keys(tokens)[0];
-                derivToken = tokens[firstLoginId];
-                loginid = firstLoginId;
-              }
-            } catch (e) {
-              console.warn('[Chart] Erro ao parsear deriv_tokens_by_loginid:', e);
-            }
-          }
-        }
-
-        if (!derivToken) {
-          console.warn('[Chart] Token Deriv não encontrado, não é possível buscar contratos');
-          this.availableContracts = [];
-          this.isLoadingContracts = false;
-        return;
-      }
-      
-        // Garantir que está conectado
-        if (!derivTradingService.isConnected) {
-          await derivTradingService.connect(derivToken, loginid);
-        }
-
         // Buscar valores padrão (que incluem contratos disponíveis)
         // Usar CALL como tipo padrão para buscar contratos
+        // O backend resolverá o token automaticamente para buscar contratos
         const defaultValues = await derivTradingService.getDefaultValues(symbol, 'CALL');
         
         console.log('[Chart] Valores padrão recebidos:', defaultValues);
@@ -2094,99 +2030,14 @@ export default {
         amount: this.amount
       });
       
-      try {
-        // ✅ CORREÇÃO: Buscar token e loginid com lógica robusta (espelho do Agente Autônomo)
-        let derivToken = null;
-        let loginid = null;
-        let preferredCurrency = null;
-
-        try {
-          // 1. Verificar preferência de moeda (DEMO vs REAL)
-          const connectionStr = localStorage.getItem('deriv_connection');
-          if (connectionStr) {
-            const connection = JSON.parse(connectionStr);
-            preferredCurrency = connection.tradeCurrency;
-            // Tentar usar o loginid salvo como ponto de partida
-            if (connection.loginid) loginid = connection.loginid;
-          }
-        } catch (e) {
-          console.warn('[Chart] Erro ao parsear deriv_connection:', e);
-        }
-
-        const isDemoPreferred = preferredCurrency?.toUpperCase() === 'DEMO';
-        const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
-        let tokensByLoginId = {};
-        
-        if (tokensByLoginIdStr) {
-          try {
-            tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-          } catch (e) {
-            console.error('[Chart] Erro ao parsear tokens:', e);
-          }
-        }
-
-        // 2. Lógica Inteligente de Seleção de Token (Igual ao AI)
-        if (isDemoPreferred) {
-          // SE FOR DEMO: Procurar ativamente por uma conta VRTC/VRT
-          console.log('[Chart] Modo DEMO detectado. Buscando token VRTC...');
-          for (const [id, token] of Object.entries(tokensByLoginId)) {
-            if (id.startsWith('VRTC') || id.startsWith('VRT')) {
-              derivToken = token;
-              loginid = id; // ✅ Atualizar loginid para corresponder ao token encontrado
-              console.log('[Chart] ✓ Token DEMO encontrado:', id);
-              break;
-            }
-          }
-        } else {
-          // SE FOR REAL: Tentar usar o loginid específico ou fallback
-          if (loginid && tokensByLoginId[loginid]) {
-            derivToken = tokensByLoginId[loginid];
-            console.log('[Chart] ✓ Token REAL específico encontrado:', loginid);
-          }
-        }
-
-        // 3. Fallback: Se ainda não tiver token, tentar o padrão ou o primeiro disponível
-        if (!derivToken) {
-           console.warn('[Chart] Token não encontrado pela lógica principal. Tentando fallbacks...');
-           derivToken = localStorage.getItem('deriv_token');
-           
-           // Tentar encontrar o loginid para esse token padrão (reverse lookup)
-           if (derivToken && !loginid) {
-              for (const [id, token] of Object.entries(tokensByLoginId)) {
-                if (token === derivToken) {
-                  loginid = id;
-                  break;
-                }
-              }
-           }
-
-           if (!derivToken && Object.keys(tokensByLoginId).length > 0) {
-              // Último caso: pegar o primeiro que aparecer
-              loginid = Object.keys(tokensByLoginId)[0];
-              derivToken = tokensByLoginId[loginid];
-           }
-        }
-
-        if (!derivToken) {
-          this.tradeError = 'Token Deriv não encontrado. Por favor, reconecte sua conta.';
-          this.isTrading = false;
-          return;
-        }
-
-        console.log('[Chart] Usando token da conta:', loginid);
-        console.log('[Chart] Token sendo enviado:', derivToken ? `${derivToken.substring(0, 5)}...` : 'Nenhum');
-
-        // Garantir que está conectado com o token correto
-        await derivTradingService.connect(derivToken, loginid);
+        console.log('[Chart] Enviando ordem de compra para o backend...');
 
         const buyConfig = {
           symbol: this.symbol,
           contractType: this.tradeType,
           duration: this.duration,
           durationUnit: this.durationUnit,
-          amount: this.amount,
-          token: derivToken, // ✅ CRUCIAL: Passar token explicitamente
-          loginid: loginid
+          amount: this.amount
         };
         
         // Adicionar barrier se necessário (ex: DIGITMATCH)
