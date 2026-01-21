@@ -3769,11 +3769,17 @@ export default {
     font-size: 1.25rem;
 }
 
+.agent-desc-info {
+    text-align: left !important;
+    flex: 1;
+}
+
 .agent-desc-info h3 {
     margin: 0 0 0.25rem 0;
     font-size: 1rem;
     font-weight: 700;
     color: #fff;
+    text-align: left !important;
 }
 
 .agent-desc-info p {
@@ -3781,7 +3787,7 @@ export default {
     font-size: 0.75rem;
     color: #A1A1A1;
     line-height: 1.4;
-    text-align: left;
+    text-align: left !important;
 }
 
 /* Modal Premium Styles */
