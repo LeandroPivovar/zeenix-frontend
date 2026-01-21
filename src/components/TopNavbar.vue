@@ -500,10 +500,12 @@ export default {
     this.loadUserProfilePicture();
     this.loadLoginNotifications();
     window.addEventListener('masterTraderSettingsUpdated', this.handleMasterTraderSettingsUpdate);
+    window.addEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
     this.loadMasterTraderSettings();
   },
   beforeUnmount() {
     window.removeEventListener('masterTraderSettingsUpdated', this.handleMasterTraderSettingsUpdate);
+    window.removeEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
     document.removeEventListener('click', this.handleClickOutside);
     window.removeEventListener('storage', this.handleStorageChange);
     window.removeEventListener('userProfileUpdated', this.handleProfileUpdate);
@@ -1063,6 +1065,12 @@ export default {
         this.isFictitiousBalanceActive = settings.isFictitiousBalanceActive;
         this.showDollarSign = settings.showDollarSign;
       }
+    },
+    handleFictitiousBalanceChange(event) {
+      const { enabled, amount } = event.detail;
+      this.isFictitiousBalanceActive = enabled;
+      this.fictitiousBalance = amount;
+      console.log('[TopNavbar] Saldo fictício atualizado:', { enabled, amount });
     }
   }
 }

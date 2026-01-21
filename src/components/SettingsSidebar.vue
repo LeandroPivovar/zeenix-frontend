@@ -390,6 +390,7 @@ export default {
   },
   mounted() {
     this.loadUserProfilePicture();
+    this.loadUserSettings();
     window.addEventListener('userProfileUpdated', this.handleProfileUpdate);
     // Não carregar contas automaticamente no mounted - só quando necessário
     // Isso evita chamadas desnecessárias ao montar o componente
@@ -727,6 +728,94 @@ export default {
         console.error('[SettingsSidebar] Erro ao carregar configurações:', error);
       }
     },
+    async loadUserSettings() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBaseUrl}/settings`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          
+          this.isMasterTrader = !!data.traderMestre;
+          if (data.fictitiousBalance !== undefined) this.fictitiousBalance = parseFloat(data.fictitiousBalance);
+          if (data.isFictitiousBalanceActive !== undefined) this.isFictitiousBalanceActive = data.isFictitiousBalanceActive;
+          if (data.showDollarSign !== undefined) this.showDollarSign = data.showDollarSign;
+          
+          console.log('[SettingsSidebar] Configurações carregadas:', {
+            isMasterTrader: this.isMasterTrader,
+            fictitiousBalance: this.fictitiousBalance,
+            isFictitiousBalanceActive: this.isFictitiousBalanceActive,
+            showDollarSign: this.showDollarSign
+          });
+          
+          // Se saldo fictício estiver ativo, emitir evento para atualizar a topbar
+          if (this.isFictitiousBalanceActive) {
+            window.dispatchEvent(new CustomEvent('fictitiousBalanceChanged', {
+              detail: {
+                enabled: true,
+                amount: this.fictitiousBalance
+              }
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao carregar configurações do usuário:', error);
+      }
+    },
+    async saveMasterTraderSettings() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          console.error('[SettingsSidebar] Token não encontrado');
+          return;
+        }
+
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const res = await fetch(`${apiBaseUrl}/settings`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({
+            fictitiousBalance: parseFloat(this.fictitiousBalance) || 10000,
+            isFictitiousBalanceActive: this.isFictitiousBalanceActive,
+            showDollarSign: this.showDollarSign
+          })
+        });
+
+        if (res.ok) {
+          console.log('[SettingsSidebar] Configurações de saldo fictício salvas com sucesso');
+          
+          // Emitir evento para atualizar a topbar
+          window.dispatchEvent(new CustomEvent('fictitiousBalanceChanged', {
+            detail: {
+              enabled: this.isFictitiousBalanceActive,
+              amount: this.fictitiousBalance
+            }
+          }));
+          
+          // Emitir evento global para recarregar dados da Deriv
+          if (this.isFictitiousBalanceActive) {
+            window.dispatchEvent(new Event('refreshDerivBalance'));
+          }
+        } else {
+          console.error('[SettingsSidebar] Erro ao salvar configurações:', await res.text());
+        }
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao salvar configurações do Master Trader:', error);
+      }
+    },
+
     async saveMasterTraderSettings() {
       try {
         const token = localStorage.getItem('token');
