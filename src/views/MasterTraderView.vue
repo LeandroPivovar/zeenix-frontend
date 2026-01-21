@@ -69,6 +69,7 @@
                                 <button type="button" class="visibility-toggle-btn" @click.stop="toggleCardVisibility('managed')">
                                     <i :class="visibleCards.managed ? 'fas fa-eye' : 'fas fa-eye-slash'" class="visibility-icon"></i>
                                 </button>
+                            </div>
                             <span class="status-value">{{ visibleCards.managed ? formatCurrency(copierStats.managedBalance) : '***' }}</span>
                         </div>
 
@@ -78,6 +79,7 @@
                                 <button type="button" class="visibility-toggle-btn" @click.stop="toggleCardVisibility('profit')">
                                     <i :class="visibleCards.profit ? 'fas fa-eye' : 'fas fa-eye-slash'" class="visibility-icon"></i>
                                 </button>
+                            </div>
                             <span class="status-value profit">{{ visibleCards.profit ? formatCurrency(copierStats.todayProfit) : '***' }}</span>
                         </div>
 
@@ -87,6 +89,7 @@
                                 <button type="button" class="visibility-toggle-btn" @click.stop="toggleCardVisibility('volume')">
                                     <i :class="visibleCards.volume ? 'fas fa-eye' : 'fas fa-eye-slash'" class="visibility-icon"></i>
                                 </button>
+                            </div>
                             <span class="status-value">{{ visibleCards.volume ? formatCurrency(copierStats.totalVolume) : '***' }}</span>
                         </div>
                     </div>
@@ -153,6 +156,7 @@
                                 <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('managed')">
                                     <i :class="visibleCards.managed ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
                                 </button>
+                            </div>
                             <span class="mobile-metric-value">{{ visibleCards.managed ? formatCurrency(copierStats.managedBalance) : '***' }}</span>
                         </div>
                         <div class="mobile-metric-card">
@@ -161,6 +165,7 @@
                                 <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('profit')">
                                     <i :class="visibleCards.profit ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
                                 </button>
+                            </div>
                             <span class="mobile-metric-value profit">{{ visibleCards.profit ? formatCurrency(copierStats.todayProfit) : '***' }}</span>
                         </div>
                         <div class="mobile-metric-card">
@@ -169,6 +174,7 @@
                                 <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('volume')">
                                     <i :class="visibleCards.volume ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
                                 </button>
+                            </div>
                             <span class="mobile-metric-value">{{ visibleCards.volume ? formatCurrency(copierStats.totalVolume) : '***' }}</span>
                         </div>
                     </div>
