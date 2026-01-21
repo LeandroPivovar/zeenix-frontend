@@ -61,7 +61,14 @@
                 <p class="text-[11px] font-bold text-white uppercase tracking-tight">{{ log.title }}</p>
                 <span class="text-[9px] text-[#A1A1AA] font-mono">{{ formatTimestamp(log.timestamp) }}</span>
               </div>
-              <p class="text-[10px] text-[#A1A1AA] leading-snug">{{ log.details }}</p>
+              <div v-if="log.details" class="text-[10px] text-[#A1A1AA] leading-snug">
+                 {{ log.details }}
+              </div>
+              <div v-if="log.message && log.message.includes('\n')" class="space-y-0.5 mt-1">
+                 <div v-for="(line, lIdx) in log.message.split('\n').slice(1)" :key="lIdx" class="text-[10px] text-[#A1A1AA] leading-snug"> 
+                   • {{ line.trim() }}
+                 </div>
+              </div>
             </div>
           </div>
         </div>
@@ -166,11 +173,17 @@ export default {
           details = firstLine.length > 80 ? firstLine.substring(0, 80) + '...' : firstLine;
         }
 
-        // Apply Zenix v2.0 Standardization
-        const zenixPrefix = `❄️ Zenix v2.0 | ${this.agentName.toUpperCase()} | `;
-        if (!title.startsWith('❄️')) {
-          title = zenixPrefix + title;
-        }
+        // Standardize Title - Remove prefixes
+        // Remove Zenix prefix
+        title = title.replace(/❄️ Zenix v2\.0\s*\|\s*(\w+\s*\|\s*)?/, '');
+        
+        // Remove Market identifiers like [1HZ100V], [R_100], etc.
+        title = title.replace(/^\s*\[[\w\d]+\]\s*/, '');
+
+        // Remove typical strategy name prefixes if they are just repeating (optional, but clean)
+        // title = title.replace(/^(ATLAS|ORION|APOLLO|NEXUS)\s*\|\s*/, '');
+
+        title = title.trim().toUpperCase();
 
         return { ...log, logType, icon, title, details };
       });

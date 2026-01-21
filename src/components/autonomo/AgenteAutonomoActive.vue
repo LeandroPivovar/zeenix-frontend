@@ -6,11 +6,11 @@
 				<h2 class="text-xl font-bold mb-1">Agente Autônomo</h2>
 				<p class="text-[#A1A1AA] text-xs">Dados baseados no período selecionado</p>
 			</div>
-			<div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+			<div class="flex flex-row items-center gap-2 w-full md:w-auto">
 				<div class="relative z-[40]">
 					<button 
 						@click.stop="toggleDatePicker"
-						class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-[#27272a] hover:bg-[#27272a] hover:text-white h-9 px-4 py-2 justify-between gap-2 bg-[#0c0c0c] text-[#FAFAFA] min-w-[180px]" 
+						class="inline-flex items-center whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 border border-[#27272a] hover:bg-[#27272a] hover:text-white h-9 px-4 py-2 justify-between gap-2 bg-[#0c0c0c] text-[#FAFAFA] min-w-[140px] sm:min-w-[180px]" 
 						type="button"
 					>
 						<div class="flex items-center gap-2">
@@ -38,10 +38,9 @@
 					</div>
 				</div>
 				
-				<button @click="pausarAgenteEIrParaTopo" class="inline-flex items-center whitespace-nowrap rounded-md text-[10px] sm:text-xs font-bold transition-colors border border-transparent h-9 px-3 sm:px-5 py-2 bg-[#FFBC29] text-black gap-2 shadow-[0_0_15px_rgba(255,188,41,0.2)] hover:bg-[#ffc64d]">
-					<i class="fas fa-power-off text-xs"></i>
-					PAUSAR IA
-				</button>
+				<button @click="pausarAgenteEIrParaTopo" class="flex-1 md:flex-none h-9 md:w-auto md:px-5 md:py-2 text-sm md:text-xs font-bold bg-[#FFBC29] text-black rounded-lg md:rounded-md hover:bg-[#ffc64d] transition-colors shadow-[0_0_15px_rgba(255,188,41,0.2)] flex items-center justify-center gap-2 whitespace-nowrap">
+            PAUSAR AGENTE
+          </button>
 			</div>
 		</div>
 
@@ -58,10 +57,10 @@
 			</div>
 			
 			<!-- Metric Cards -->
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+			<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
 				<!-- Capital Inicial -->
-				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212]">
-					<div class="flex items-center gap-2 mb-3">
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212] hidden md:block">
+					<div class="flex items-center justify-between mb-4">
 						<div class="text-green-500">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
 						</div>
@@ -76,12 +75,12 @@
 				</div>
 
 				<!-- Capital Final -->
-				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212]">
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212]">
 					<div class="flex items-center gap-2 mb-3">
 						<div class="text-green-500">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Capital Final</span>
+						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium whitespace-nowrap">Capital Final</span>
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">
 						{{ hideValues ? '••••' : '$' + finalCapital.toFixed(2) }}
@@ -93,7 +92,7 @@
 
 				<!-- Lucro do Periodo -->
 				<div 
-					class="rounded-lg border bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212] relative overflow-hidden"
+					class="rounded-lg border bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212] relative overflow-hidden"
 					:class="periodProfit >= 0 ? 'border-green-500/20' : 'border-red-500/20'"
 				>
 					<div 
@@ -105,7 +104,7 @@
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up" v-if="periodProfit >= 0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down" v-else><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Lucro do Período</span>
+						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium whitespace-nowrap">Lucro do Período</span>
 					</div>
 					<div 
 						class="text-2xl font-bold mb-1 tabular-nums relative z-10 text-left"
@@ -127,7 +126,7 @@
 
 				<!-- Lucro Medio/Dia -->
 				<div 
-					class="rounded-lg border bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212]"
+					class="rounded-lg border bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212] hidden md:block"
 					:class="avgDailyProfit >= 0 ? 'border-[#27272a]' : 'border-red-500/20'"
 				>
 					<div class="flex items-center gap-2 mb-3">
