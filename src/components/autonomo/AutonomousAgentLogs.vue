@@ -173,11 +173,17 @@ export default {
           details = firstLine.length > 80 ? firstLine.substring(0, 80) + '...' : firstLine;
         }
 
-        // Standardize Title - Just the message/title itself, no prefix
-        if (title.startsWith('❄️')) {
-          title = title.replace(/❄️ Zenix v2.0 \| \w+ \| /, '');
-        }
-        title = title.toUpperCase();
+        // Standardize Title - Remove prefixes
+        // Remove Zenix prefix
+        title = title.replace(/❄️ Zenix v2\.0\s*\|\s*(\w+\s*\|\s*)?/, '');
+        
+        // Remove Market identifiers like [1HZ100V], [R_100], etc.
+        title = title.replace(/^\s*\[[\w\d]+\]\s*/, '');
+
+        // Remove typical strategy name prefixes if they are just repeating (optional, but clean)
+        // title = title.replace(/^(ATLAS|ORION|APOLLO|NEXUS)\s*\|\s*/, '');
+
+        title = title.trim().toUpperCase();
 
         return { ...log, logType, icon, title, details };
       });
