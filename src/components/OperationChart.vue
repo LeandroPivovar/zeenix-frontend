@@ -1306,7 +1306,8 @@ export default {
 
         
         // Inscrever-se no símbolo para receber histórico (isso vai disparar histórico via SSE)
-        await derivTradingService.subscribeSymbol(this.symbol, derivToken);
+        // Inscrever-se no símbolo para receber histórico (isso vai disparar histórico via SSE)
+        await derivTradingService.subscribeSymbol(this.symbol);
         console.log('[Chart] Inscrição no símbolo enviada, aguardando histórico via SSE...');
         
         // O histórico será recebido via SSE no handler processHistoryFromSSE
@@ -1720,7 +1721,7 @@ export default {
               }
             }
           }
-        }, derivToken);
+        });
 
         // Solicitar símbolos ativos via endpoint REST
         try {
@@ -2030,6 +2031,7 @@ export default {
         amount: this.amount
       });
       
+      try {
         console.log('[Chart] Enviando ordem de compra para o backend...');
 
         const buyConfig = {
