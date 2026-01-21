@@ -816,42 +816,7 @@ export default {
       }
     },
 
-    async saveMasterTraderSettings() {
-      try {
-        const token = localStorage.getItem('token');
-        if (!token) return;
 
-        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-        const res = await fetch(`${apiBaseUrl}/settings`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            fictitiousBalance: parseFloat(this.fictitiousBalance),
-            isFictitiousBalanceActive: this.isFictitiousBalanceActive,
-            showDollarSign: this.showDollarSign
-          })
-        });
-
-        if (res.ok) {
-          console.log('[SettingsSidebar] Configurações de Master Trader salvas com sucesso');
-          // Emitir evento para atualizar o header
-          window.dispatchEvent(new CustomEvent('masterTraderSettingsUpdated', { 
-            detail: {
-              fictitiousBalance: this.fictitiousBalance,
-              isFictitiousBalanceActive: this.isFictitiousBalanceActive,
-              showDollarSign: this.showDollarSign
-            }
-          }));
-        } else {
-          console.error('[SettingsSidebar] Erro ao salvar configurações');
-        }
-      } catch (error) {
-        console.error('[SettingsSidebar] Erro ao salvar configurações:', error);
-      }
-    }
   }
 };
 </script>
