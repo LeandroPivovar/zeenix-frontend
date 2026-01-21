@@ -133,7 +133,9 @@
 								<div class="selector-content">
 									<div class="selector-left">
 										<div class="selector-icon-active" v-if="selectedAgent">
-											<i :class="selectedAgent === 'sentinel' ? 'fas fa-shield-alt' : 'fas fa-rocket'"></i>
+											<i v-if="selectedAgent === 'sentinel'" class="fas fa-shield-alt"></i>
+											<i v-else-if="selectedAgent === 'falcon'" class="fas fa-rocket"></i>
+											<i v-else class="fas fa-bolt"></i>
 										</div>
 										<span :class="{ 'placeholder': !selectedAgent }">
 											{{ selectedAgent ? getAgentTitle(selectedAgent) : 'Selecione seu agente' }}
@@ -149,10 +151,11 @@
 									<div class="agent-desc-content">
 										<div class="agent-desc-icon">
 											<i v-if="selectedAgent === 'sentinel'" class="fas fa-shield-alt" style="color: white !important;"></i>
-											<i v-else class="fas fa-rocket" style="color: white !important;"></i>
+											<i v-else-if="selectedAgent === 'falcon'" class="fas fa-rocket" style="color: white !important;"></i>
+											<i v-else class="fas fa-bolt" style="color: white !important;"></i>
 										</div>
 										<div class="agent-desc-info">
-											<h3>{{ selectedAgent === 'sentinel' ? 'SENTINEL' : 'FALCON' }}</h3>
+											<h3>{{ getAgentTitle(selectedAgent).toUpperCase() }}</h3>
 											<p>{{ getAgentDescription(selectedAgent) }}</p>
 										</div>
 									</div>
@@ -415,7 +418,13 @@ export default {
 					id: 'falcon',
 					title: 'FALCON',
 					icon: 'fas fa-rocket',
-					description: 'Agente de alta performance que busca oportunidades de lucro acelerado com precisão cirúrgica.'
+					description: 'Análise: Momentum Direcional (Rise/Fall)\nAssertividade: 53% a 65%\nRetorno: 92%'
+				},
+				{
+					id: 'zeus',
+					title: 'ZEUS',
+					icon: 'fas fa-bolt',
+					description: 'Análise: Probabilidade com Troca de Contrato\nAssertividade: 65% a 75%\nRetorno: 60% / 92%'
 				}
 			]
 		};
@@ -569,7 +578,8 @@ export default {
 		getAgentDescription(id) {
 			const map = {
 				'sentinel': 'Agente completo com Martingale Inteligente e Soros Nível 2. Ideal para operações balanceadas.',
-				'falcon': 'Análise: Momentum Direcional (Rise/Fall) - Assertividade: 53% a 65% - Retorno: 92%'
+				'falcon': 'Análise: Momentum Direcional (Rise/Fall)\nAssertividade: 53% a 65%\nRetorno: 92%',
+				'zeus': 'Análise: Probabilidade com Troca de Contrato\nAssertividade: 65% a 75%\nRetorno: 60% / 92%'
 			};
 			return map[id] || '';
 		},
@@ -970,6 +980,7 @@ export default {
     color: #A1A1A1;
     line-height: 1.5;
     margin: 0;
+    white-space: pre-line;
 }
 
 /* Slide Fade Transition */
