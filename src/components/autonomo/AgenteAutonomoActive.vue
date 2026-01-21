@@ -2,9 +2,9 @@
 	<div class="min-h-screen text-[#FAFAFA] font-sans" style="padding-top: 2rem;">
 		<!-- Header -->
 		<div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 md:mt-8 mt-0">
-			<div>
-				<h2 class="text-xl font-bold mb-1">Monitoramento de agentes</h2>
-				<p class="text-[#A1A1AA] text-xs">Acompanhe os resultados dos seus agentes ativos ou configure um novo agente.</p>
+			<div class="text-left flex flex-col gap-[3px]">
+				<h2 class="text-xl font-bold leading-tight">Monitoramento de agentes</h2>
+				<p class="text-[#A1A1AA] text-xs leading-tight">Acompanhe os resultados dos seus agentes ativos ou configure um novo agente.</p>
 			</div>
 			<div class="flex flex-row items-center gap-2 w-full md:w-auto">
 				<div class="relative z-[40] flex-1 md:flex-none">
