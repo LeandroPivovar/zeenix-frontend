@@ -38,10 +38,10 @@
 					</div>
 				</div>
 				
-				<button @click="pausarAgenteEIrParaTopo" class="inline-flex items-center whitespace-nowrap rounded-md text-[10px] sm:text-xs font-bold transition-colors border border-transparent h-9 px-3 sm:px-5 py-2 bg-[#FFBC29] text-black gap-2 shadow-[0_0_15px_rgba(255,188,41,0.2)] hover:bg-[#ffc64d]">
-					<i class="fas fa-power-off text-xs"></i>
-					PAUSAR IA
-				</button>
+				<button @click="pausarAgenteEIrParaTopo" class="w-full h-12 text-sm font-bold bg-[#FFBC29] text-black rounded-lg hover:bg-[#ffc64d] transition-colors shadow-[0_0_15px_rgba(255,188,41,0.2)] flex items-center justify-center gap-2">
+            <i class="fas fa-power-off"></i>
+            PAUSAR IA
+          </button>
 			</div>
 		</div>
 
@@ -58,10 +58,10 @@
 			</div>
 			
 			<!-- Metric Cards -->
-			<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+			<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
 				<!-- Capital Inicial -->
-				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212]">
-					<div class="flex items-center gap-2 mb-3">
+				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212] hidden md:block">
+					<div class="flex items-center justify-between mb-4">
 						<div class="text-green-500">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
 						</div>

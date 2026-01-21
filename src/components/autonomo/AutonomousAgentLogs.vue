@@ -166,11 +166,11 @@ export default {
           details = firstLine.length > 80 ? firstLine.substring(0, 80) + '...' : firstLine;
         }
 
-        // Apply Zenix v2.0 Standardization
-        const zenixPrefix = `❄️ Zenix v2.0 | ${this.agentName.toUpperCase()} | `;
-        if (!title.startsWith('❄️')) {
-          title = zenixPrefix + title;
+        // Standardize Title - Just the message/title itself, no prefix
+        if (title.startsWith('❄️')) {
+          title = title.replace(/❄️ Zenix v2.0 \| \w+ \| /, '');
         }
+        title = title.toUpperCase();
 
         return { ...log, logType, icon, title, details };
       });
