@@ -36,13 +36,16 @@
   
       <div class="box" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
         <!-- Header Copy Trading -->
-        <div class="flex flex-col items-start md:flex-row md:items-center md:justify-between mb-6 gap-4 md:mt-8 mt-4 px-1 md:px-0">
-          <div>
-            <h1 class="text-2xl font-bold text-white mb-1 flex items-center gap-2">
-              <i class="fas fa-users text-[#4ade80]"></i>
-              Copy Trading
-            </h1>
-            <p class="text-[#A1A1AA] text-sm">Gerencie suas cópias de traders e IAs de forma automatizada.</p>
+        <!-- Mobile Header Copy Trading (Config Mode) -->
+        <div class="mb-6 md:hidden px-1 mt-4" v-if="!hasActiveSession">
+          <div class="flex items-center justify-between gap-4">
+            <div class="text-left">
+              <h1 class="text-xl font-bold text-white mb-1">Configuração do Copy Trading</h1>
+              <p class="text-[#A1A1AA] text-sm">Escolha traders e IAs para copiar, configure proporção e filtros, e replique operações automaticamente.</p>
+            </div>
+            <div class="shrink-0">
+              <i class="fas fa-users text-[#4ade80] text-2xl"></i>
+            </div>
           </div>
         </div>
       
