@@ -38,7 +38,7 @@
 					</div>
 				</div>
 				
-				<button @click="pausarAgenteEIrParaTopo" class="w-full h-12 text-sm font-bold bg-[#FFBC29] text-black rounded-lg hover:bg-[#ffc64d] transition-colors shadow-[0_0_15px_rgba(255,188,41,0.2)] flex items-center justify-center gap-2">
+				<button @click="pausarAgenteEIrParaTopo" class="w-full h-12 md:h-9 md:w-auto md:px-5 md:py-2 text-sm md:text-xs font-bold bg-[#FFBC29] text-black rounded-lg md:rounded-md hover:bg-[#ffc64d] transition-colors shadow-[0_0_15px_rgba(255,188,41,0.2)] flex md:inline-flex items-center justify-center gap-2 whitespace-nowrap">
             <i class="fas fa-power-off"></i>
             PAUSAR IA
           </button>
@@ -127,7 +127,7 @@
 
 				<!-- Lucro Medio/Dia -->
 				<div 
-					class="rounded-lg border bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212]"
+					class="rounded-lg border bg-[#0c0c0c] p-5 h-full transition-all duration-200 hover:bg-[#121212] hidden md:block"
 					:class="avgDailyProfit >= 0 ? 'border-[#27272a]' : 'border-red-500/20'"
 				>
 					<div class="flex items-center gap-2 mb-3">

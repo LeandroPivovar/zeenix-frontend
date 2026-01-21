@@ -61,7 +61,14 @@
                 <p class="text-[11px] font-bold text-white uppercase tracking-tight">{{ log.title }}</p>
                 <span class="text-[9px] text-[#A1A1AA] font-mono">{{ formatTimestamp(log.timestamp) }}</span>
               </div>
-              <p class="text-[10px] text-[#A1A1AA] leading-snug">{{ log.details }}</p>
+              <div v-if="log.details" class="text-[10px] text-[#A1A1AA] leading-snug">
+                 {{ log.details }}
+              </div>
+              <div v-if="log.message && log.message.includes('\n')" class="space-y-0.5 mt-1">
+                 <div v-for="(line, lIdx) in log.message.split('\n').slice(1)" :key="lIdx" class="text-[10px] text-[#A1A1AA] leading-snug pl-1 border-l border-[#333]"> 
+                   • {{ line.trim() }}
+                 </div>
+              </div>
             </div>
           </div>
         </div>
