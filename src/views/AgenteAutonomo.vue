@@ -284,6 +284,7 @@
           agentActions: this.agentActions,
           agentStatus: this.agenteEstaAtivo ? "ATIVO" : "PAUSADO",
           accountBalance: accountBalanceValue, // Garantir que sempre seja um número válido
+          sessionStatus: this.agentConfig?.sessionStatus || 'active', // ✅ Passar status da sessão para modais
         };
       },
       
