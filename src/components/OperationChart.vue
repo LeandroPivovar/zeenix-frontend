@@ -926,16 +926,24 @@ export default {
     },
   },
   async mounted() {
-    this.initChart();
-    await this.loadMarketsFromAPI();
+    // 1. Configurar Stream SSE (Crucial para receber dados)
+    await this.setupStream();
     
-    // Se já houver um símbolo selecionado, carregar contratos disponíveis e ticks
+    this.initChart();
+    
+    // 2. Carregar Lista de Mercados (Background - não bloqueia o gráfico)
+    this.loadMarketsFromAPI();
+    
+    // 3. Carregar dados do mercado inicial imediatamente
+    if (!this.symbol) {
+        this.symbol = 'R_100'; // Default
+    }
+
     if (this.symbol) {
-      await this.loadAvailableContracts(this.symbol);
-      // Aguardar um pouco para garantir que o gráfico está pronto
-      setTimeout(() => {
-        this.loadTicksFromBackend();
-      }, 1000);
+      console.log('[Chart] Carregando dados iniciais para:', this.symbol);
+      // Carregar contratos e ticks em paralelo
+      this.loadAvailableContracts(this.symbol);
+      this.loadTicksFromBackend();
     }
   },
   beforeUnmount() {
@@ -1574,10 +1582,8 @@ export default {
     closeTradeTypeModal() {
       this.showTradeTypeModal = false;
     },
-    async loadMarketsFromAPI() {
-      try {
-        this.isLoadingMarkets = true;
-        
+    async setupStream() {
+       try {
         // Iniciar stream SSE para receber mensagens
         // O backend resolverá o token automaticamente
         await derivTradingService.startStream((data) => {
@@ -1604,23 +1610,8 @@ export default {
             // Ordenar por epoch (do mais antigo para o mais recente)
             this.allHistoricalTicks.sort((a, b) => a.epoch - b.epoch);
             
-            // Debug: mostrar informações dos ticks recebidos
-            if (this.allHistoricalTicks.length > 0) {
-              const now = Math.floor(Date.now() / 1000);
-              const firstTick = this.allHistoricalTicks[0];
-              const lastTick = this.allHistoricalTicks[this.allHistoricalTicks.length - 1];
-              const firstTickAge = Math.floor((now - firstTick.epoch) / 60);
-              const lastTickAge = Math.floor((now - lastTick.epoch) / 60);
-              console.log(`[Chart] Range de ticks: primeiro há ${firstTickAge} min, último há ${lastTickAge} min`);
-              console.log(`[Chart] Primeiro tick epoch: ${firstTick.epoch} (${new Date(firstTick.epoch * 1000).toLocaleTimeString('pt-BR')})`);
-              console.log(`[Chart] Último tick epoch: ${lastTick.epoch} (${new Date(lastTick.epoch * 1000).toLocaleTimeString('pt-BR')})`);
-              console.log(`[Chart] Agora: ${now} (${new Date(now * 1000).toLocaleTimeString('pt-BR')})`);
-            }
-            
             // Filtrar ticks pelo período de zoom selecionado
             const filteredTicks = this.filterTicksByZoom(this.allHistoricalTicks);
-            
-            console.log(`[Chart] Ticks filtrados para ${this.zoomPeriod} minutos:`, filteredTicks.length);
             
             // Se estiver analisando, coletar ticks antes de plotar
             if (this.isAnalyzing && filteredTicks.length > 0) {
@@ -1635,11 +1626,9 @@ export default {
             if (filteredTicks.length > 0) {
               this.plotTicks(filteredTicks);
             } else {
-              console.warn(`[Chart] Nenhum tick encontrado para os últimos ${this.zoomPeriod} minutos`);
               // Se não houver ticks filtrados, tentar usar os últimos 100 ticks disponíveis
               if (this.allHistoricalTicks.length > 0) {
                 const last100Ticks = this.allHistoricalTicks.slice(-100);
-                console.log('[Chart] Usando os últimos 100 ticks disponíveis como fallback');
                 this.plotTicks(last100Ticks);
               }
             }
@@ -1722,7 +1711,14 @@ export default {
             }
           }
         });
-
+       } catch (error) {
+         console.error('[Chart] Erro ao configurar stream:', error);
+       }
+    },
+    async loadMarketsFromAPI() {
+      try {
+        this.isLoadingMarkets = true;
+        
         // Solicitar símbolos ativos via endpoint REST
         try {
           await derivTradingService.requestActiveSymbols();
@@ -1740,7 +1736,7 @@ export default {
           }
         }, 5000);
 
-        } catch (error) {
+      } catch (error) {
         console.error('[Chart] Erro ao carregar mercados da API:', error);
         // Usar mercados padrão em caso de erro
         this.markets = this.getDefaultMarkets();
