@@ -74,14 +74,7 @@
 
             <!-- Sidebar Panel (Trading) -->
             <div class="max-w-[400px] w-[400px] flex-shrink-0 bg-[#0D0D0D] border border-white/5 p-8 overflow-y-auto sidebar-panel rounded-xl trading-panel">
-                <div class="pb-6 mb-6 border-b border-white/5">
-                    <h2 class="text-xl font-black text-white text-left leading-tight tracking-wide mb-2">
-                        Sinais inteligente com IA
-                    </h2>
-                    <p class="text-xs text-[#A1A1AA] leading-relaxed">
-                        Você configura, a IA analisa o mercado e gera sinais prontos para executar com 1 clique.
-                    </p>
-                </div>
+
                 
                 <div class="trading-panel-content space-y-3 px-1">
                     <!-- Mercado -->
