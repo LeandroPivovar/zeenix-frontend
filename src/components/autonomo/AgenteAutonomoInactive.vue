@@ -100,13 +100,11 @@
 			<!-- Mobile: Header Structured -->
 			<div class="mb-6 ai-vision-header-mobile">
 				<div class="flex items-center justify-between">
-					<div class="text-left">
-						<h1 class="text-xl font-bold text-zenix-text mb-1">Configuração do Agente Autônomo</h1>
-						<p class="text-sm text-zenix-secondary">Defina parâmetros de risco, metas diárias e limites. O agente opera continuamente até atingir objetivos e reinicia no próximo dia.</p>
+					<div class="text-left flex flex-col gap-[3px]">
+						<h1 class="text-xl font-bold text-zenix-text leading-tight">Configuração do Agente Autônomo</h1>
+						<p class="text-sm text-zenix-secondary leading-tight">Defina parâmetros de risco, metas diárias e limites. O agente opera continuamente até atingir objetivos e reinicia no próximo dia.</p>
 					</div>
-					<div class="ai-chip-icon-mobile">
-						<i class="fas fa-microchip text-[#22C55E] text-2xl"></i>
-					</div>
+					<!-- Icon Removed for Left Alignment -->
 				</div>
 			</div>
 		</section>
@@ -808,7 +806,7 @@ export default {
 }
 
 .form-label {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #A1A1A1;
     display: flex;
@@ -816,7 +814,7 @@ export default {
     justify-content: space-between; /* Empurra o ícone para a direita */
     width: 100%;
     gap: 0.375rem;
-    text-transform: none; /* Mantendo Inter style */
+    text-transform: uppercase; 
 }
 
 /* Premium Selector Field */
@@ -1145,7 +1143,7 @@ export default {
 .stoploss-blindado-label {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: 3px;
     font-size: 0.875rem;
     color: #DFDFDF;
 }
@@ -1474,7 +1472,7 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
 
 @media (max-width: 600px) {
     .loss-stoploss-row {
-        flex-direction: column;
+        /* Kept horizontal (side-by-side) as requested */
     }
     
     .value-goal-row {
