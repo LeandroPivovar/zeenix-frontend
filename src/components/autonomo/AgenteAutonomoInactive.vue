@@ -806,7 +806,7 @@ export default {
 }
 
 .form-label {
-    font-size: 0.875rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #A1A1A1;
     display: flex;
@@ -814,7 +814,7 @@ export default {
     justify-content: space-between; /* Empurra o ícone para a direita */
     width: 100%;
     gap: 0.375rem;
-    text-transform: none; /* Mantendo Inter style */
+    text-transform: uppercase; 
 }
 
 /* Premium Selector Field */
