@@ -674,7 +674,8 @@ export default {
 
 <style scoped>
 .layout-content-agent-autonomo {
-    margin: 50px 0px;
+    margin: 0;
+    padding: 50px 0px;
 }
 
 /* --- PADRÃO ZENIX v2.0: CONFIGURAÇÕES PREMIUM --- */
