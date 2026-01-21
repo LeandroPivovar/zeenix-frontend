@@ -1269,7 +1269,7 @@ export default {
         closeResultNotification() {
             this.showResultNotification = false;
         },
-        initConnection() {
+        async initConnection() {
             console.log('[OperationDigits] initConnection - Iniciando conexão WebSocket');
             
             if (this.retryTimeout) {
@@ -1288,18 +1288,28 @@ export default {
             this.connectionError = '';
             this.isConnecting = true;
             
-            this.token = this.getTokenForAccount();
+            try {
+                this.token = await this.getTokenForAccount();
+            } catch (error) {
+                console.error('[OperationDigits] Erro ao obter token do backend:', error);
+                this.token = null;
+            }
+
             this.appId = localStorage.getItem('deriv_app_id') || APP_ID;
 
             // Verificação de acesso - requer token Deriv
             if (!this.token) {
-                console.error('[OperationDigits] ERRO: Nenhum token Deriv encontrado');
+                console.error('[OperationDigits] ERRO: Nenhum token Deriv encontrado (Backend/Storage)');
                 this.isConnecting = false;
-                localStorage.removeItem('deriv_connection');
-                localStorage.removeItem('deriv_token');
-                localStorage.removeItem('deriv_tokens_by_loginid');
-                this.$router.push('/dashboard');
-                return;
+                // localStorage.removeItem('deriv_connection'); // Evitar limpar storage agressivamente se for erro de rede temporário
+                // mas se for erro de auth, talvez redirecionar?
+                // localStorage.removeItem('deriv_token');
+                
+                // Tentar fallback local apenas se backend falhar? Não, getTokenForAccount já deve lidar com isso ou retornar null
+                if (!this.token) {
+                   this.$router.push('/dashboard');
+                   return;
+                }
             }
 
             const endpoint = `wss://ws.derivws.com/websockets/v3?app_id=${this.appId}`;
@@ -1794,7 +1804,35 @@ export default {
                 this.subscribeToProposal();
             }, 500);
         },
-        getTokenForAccount() {
+        async getTokenForAccount() {
+            // Tentar obter do backend a fonte da verdade (baseado em user_settings.trade_currency)
+            try {
+                const authToken = localStorage.getItem('auth_token') || localStorage.getItem('token');
+                if (authToken) {
+                    const response = await fetch(`${process.env.VUE_APP_API_URL || 'http://localhost:3000'}/api/broker/deriv/trading/token`, {
+                        method: 'GET',
+                        headers: {
+                            'Authorization': `Bearer ${authToken}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        if (data.token) {
+                            console.log('[OperationDigits] Token Deriv resolvido pelo backend (Demo/Real):', data.token.substring(0, 4) + '...');
+                            return data.token;
+                        }
+                        
+                        // NOTA: O backend deve retornar token ou falhar. Se retornar null, é porque não achou.
+                        // Nesse caso, podemos tentar fallback local se quisermos, mas a ideia é usar o backend.
+                    }
+                }
+            } catch (error) {
+                console.warn('[OperationDigits] Falha ao obter token do backend, tentando fallback local:', error);
+            }
+
+            // Fallback: Lógica antiga (Local Storage)
+            console.warn('[OperationDigits] Usando fallback de token do LocalStorage');
             if (this.accountLoginid) {
                 try {
                     const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid') || '{}';

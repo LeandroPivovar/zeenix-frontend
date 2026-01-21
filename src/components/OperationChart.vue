@@ -1231,20 +1231,29 @@ export default {
       
       return finalCandles;
     },
-    async loadTicksFromBackend() {
-      if (!this.chart || !this.chartSeries || !this.symbol) {
-        console.warn('[Chart] Gráfico não inicializado ou símbolo não definido');
-        return;
-      }
-      
-      try {
-        console.log('[Chart] ========== BUSCANDO HISTÓRICO DE TICKS ==========');
-        console.log('[Chart] Símbolo:', this.symbol);
-        
-        // Buscar histórico via subscribeSymbol que solicita ticks_history
-        // Isso vai ativar a subscrição no backend que enviará histórico via SSE
-        
-        // Buscar token e loginid do localStorage (mesma lógica de loadMarketsFromAPI)
+// Helper para obter token
+    async getTokenForAccount() {
+        try {
+            const authToken = localStorage.getItem('auth_token') || localStorage.getItem('token');
+            if (authToken) {
+                const response = await fetch(`${process.env.VUE_APP_API_URL || 'http://localhost:3000'}/api/broker/deriv/trading/token`, {
+                    method: 'GET',
+                    headers: { 'Authorization': `Bearer ${authToken}` }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.token) {
+                        console.log('[Chart] Token Deriv resolvido pelo backend:', data.token.substring(0, 4) + '...');
+                        return data.token;
+                    }
+                }
+            }
+        } catch (error) {
+            console.warn('[Chart] Erro ao obter token do backend:', error);
+        }
+
+        // Fallback Local Storage
         const derivConnection = localStorage.getItem('deriv_connection');
         let derivToken = localStorage.getItem('deriv_token');
         let loginid = null;
@@ -1253,15 +1262,12 @@ export default {
           try {
             const connection = JSON.parse(derivConnection);
             loginid = connection.loginid;
-            if (!derivToken) {
-              derivToken = connection.token;
-            }
+            if (!derivToken) derivToken = connection.token;
           } catch (e) {
             console.warn('[Chart] Erro ao parsear deriv_connection:', e);
           }
         }
 
-        // Se não tiver token, tentar deriv_tokens_by_loginid
         if (!derivToken) {
           const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
           if (tokensByLoginId) {
@@ -1272,13 +1278,26 @@ export default {
               } else if (Object.keys(tokens).length > 0) {
                 const firstLoginId = Object.keys(tokens)[0];
                 derivToken = tokens[firstLoginId];
-                loginid = firstLoginId;
               }
             } catch (e) {
               console.warn('[Chart] Erro ao parsear deriv_tokens_by_loginid:', e);
             }
           }
         }
+        return derivToken;
+    },
+
+    async loadTicksFromBackend() {
+      if (!this.chart || !this.chartSeries || !this.symbol) {
+        console.warn('[Chart] Gráfico não inicializado ou símbolo não definido');
+        return;
+      }
+      
+      try {
+        console.log('[Chart] ========== BUSCANDO HISTÓRICO DE TICKS ==========');
+        console.log('[Chart] Símbolo:', this.symbol);
+        
+        const derivToken = await this.getTokenForAccount();
         
         if (!derivToken) {
           console.warn('[Chart] Token Deriv não encontrado');
@@ -1287,8 +1306,9 @@ export default {
         
         // Garantir que está conectado
         if (!derivTradingService.isConnected) {
-          await derivTradingService.connect(derivToken, loginid);
+          await derivTradingService.connect(derivToken);
         }
+
         
         // Inscrever-se no símbolo para receber histórico (isso vai disparar histórico via SSE)
         await derivTradingService.subscribeSymbol(this.symbol, derivToken, loginid);
@@ -1562,41 +1582,7 @@ export default {
       try {
         this.isLoadingMarkets = true;
         
-        // Buscar token e loginid do localStorage
-        const derivConnection = localStorage.getItem('deriv_connection');
-        let derivToken = localStorage.getItem('deriv_token');
-        let loginid = null;
-
-        if (derivConnection) {
-          try {
-            const connection = JSON.parse(derivConnection);
-            loginid = connection.loginid;
-            if (!derivToken) {
-              derivToken = connection.token;
-            }
-          } catch (e) {
-            console.warn('[Chart] Erro ao parsear deriv_connection:', e);
-          }
-        }
-
-        // Se não tiver token, tentar deriv_tokens_by_loginid
-        if (!derivToken) {
-          const tokensByLoginId = localStorage.getItem('deriv_tokens_by_loginid');
-          if (tokensByLoginId) {
-            try {
-              const tokens = JSON.parse(tokensByLoginId);
-              if (loginid && tokens[loginid]) {
-                derivToken = tokens[loginid];
-              } else if (Object.keys(tokens).length > 0) {
-                const firstLoginId = Object.keys(tokens)[0];
-                derivToken = tokens[firstLoginId];
-                loginid = firstLoginId;
-              }
-            } catch (e) {
-              console.warn('[Chart] Erro ao parsear deriv_tokens_by_loginid:', e);
-            }
-          }
-        }
+        const derivToken = await this.getTokenForAccount();
 
         if (!derivToken) {
           console.warn('[Chart] Token Deriv não encontrado, usando mercados padrão');
@@ -1607,7 +1593,7 @@ export default {
       }
       
         // Conectar ao backend
-        await derivTradingService.connect(derivToken, loginid);
+        await derivTradingService.connect(derivToken);
 
         // Iniciar stream SSE para receber mensagens
         await derivTradingService.startStream((data) => {
