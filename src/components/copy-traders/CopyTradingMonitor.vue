@@ -2,9 +2,9 @@
     <div id="copy-trading-monitor">
         <!-- New Header -->
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-2">
-            <div>
-                <h1 class="text-xl md:text-2xl font-bold text-white mb-1">Monitoramento de Copy</h1>
-                <p class="text-[#A1A1AA] text-xs md:text-sm">Monitore em tempo real os resultados das operações replicadas em sua conta. Pause quando quiser.</p>
+            <div class="text-left flex flex-col gap-[3px]">
+                <h1 class="text-xl md:text-2xl font-bold text-white leading-tight">Monitoramento de Copy</h1>
+                <p class="text-[#A1A1AA] text-xs md:text-sm leading-tight">Monitore em tempo real os resultados das operações replicadas em sua conta. Pause quando quiser.</p>
             </div>
         </div>
 
