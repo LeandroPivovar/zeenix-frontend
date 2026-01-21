@@ -69,8 +69,7 @@
                                 <button type="button" class="visibility-toggle-btn" @click.stop="toggleCardVisibility('managed')">
                                     <i :class="visibleCards.managed ? 'fas fa-eye' : 'fas fa-eye-slash'" class="visibility-icon"></i>
                                 </button>
-                            </div>
-                            <span class="status-value">{{ visibleCards.managed ? '$141.76' : '***' }}</span>
+                            <span class="status-value">{{ visibleCards.managed ? formatCurrency(copierStats.managedBalance) : '***' }}</span>
                         </div>
 
                         <div class="status-card">
@@ -79,8 +78,7 @@
                                 <button type="button" class="visibility-toggle-btn" @click.stop="toggleCardVisibility('profit')">
                                     <i :class="visibleCards.profit ? 'fas fa-eye' : 'fas fa-eye-slash'" class="visibility-icon"></i>
                                 </button>
-                            </div>
-                            <span class="status-value profit">{{ visibleCards.profit ? '+$18.60' : '***' }}</span>
+                            <span class="status-value profit">{{ visibleCards.profit ? formatCurrency(copierStats.todayProfit) : '***' }}</span>
                         </div>
 
                         <div class="status-card">
@@ -89,8 +87,7 @@
                                 <button type="button" class="visibility-toggle-btn" @click.stop="toggleCardVisibility('volume')">
                                     <i :class="visibleCards.volume ? 'fas fa-eye' : 'fas fa-eye-slash'" class="visibility-icon"></i>
                                 </button>
-                            </div>
-                            <span class="status-value">{{ visibleCards.volume ? '$450' : '***' }}</span>
+                            <span class="status-value">{{ visibleCards.volume ? formatCurrency(copierStats.totalVolume) : '***' }}</span>
                         </div>
                     </div>
                 </div>
@@ -156,8 +153,7 @@
                                 <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('managed')">
                                     <i :class="visibleCards.managed ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
                                 </button>
-                            </div>
-                            <span class="mobile-metric-value">{{ visibleCards.managed ? '$141.76' : '***' }}</span>
+                            <span class="mobile-metric-value">{{ visibleCards.managed ? formatCurrency(copierStats.managedBalance) : '***' }}</span>
                         </div>
                         <div class="mobile-metric-card">
                             <div class="mobile-metric-header">
@@ -165,8 +161,7 @@
                                 <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('profit')">
                                     <i :class="visibleCards.profit ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
                                 </button>
-                            </div>
-                            <span class="mobile-metric-value profit">{{ visibleCards.profit ? '+$18.60' : '***' }}</span>
+                            <span class="mobile-metric-value profit">{{ visibleCards.profit ? formatCurrency(copierStats.todayProfit) : '***' }}</span>
                         </div>
                         <div class="mobile-metric-card">
                             <div class="mobile-metric-header">
@@ -174,8 +169,7 @@
                                 <button type="button" class="mobile-visibility-toggle-btn" @click.stop="toggleCardVisibility('volume')">
                                     <i :class="visibleCards.volume ? 'fas fa-eye' : 'fas fa-eye-slash'" class="mobile-visibility-icon"></i>
                                 </button>
-                            </div>
-                            <span class="mobile-metric-value">{{ visibleCards.volume ? '$450' : '***' }}</span>
+                            <span class="mobile-metric-value">{{ visibleCards.volume ? formatCurrency(copierStats.totalVolume) : '***' }}</span>
                         </div>
                     </div>
                 </div>
@@ -321,7 +315,12 @@ export default {
                 profit: true,
                 volume: true
             },
-            copiersCount: 0
+            copiersCount: 0,
+            copierStats: {
+                managedBalance: 0,
+                todayProfit: 0,
+                totalVolume: 0
+            }
         }
     },
     computed: {
@@ -341,6 +340,11 @@ export default {
         }
     },
     methods: {
+        formatCurrency(value) {
+            if (value === undefined || value === null) return '$0.00';
+            const val = parseFloat(value);
+            return '$' + val.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        },
         toggleSidebar() {
             this.isSidebarOpen = !this.isSidebarOpen
         },
@@ -487,12 +491,22 @@ export default {
                 const result = await response.json();
                 if (result.success && result.data) {
                     this.copiersCount = result.data.length;
+                    
+                    if (result.summary) {
+                        this.copierStats = {
+                            managedBalance: result.summary.managedBalance || 0,
+                            todayProfit: result.summary.todayProfit || 0,
+                            totalVolume: result.summary.totalVolume || 0
+                        };
+                    }
                 } else {
                     this.copiersCount = 0;
+                    this.copierStats = { managedBalance: 0, todayProfit: 0, totalVolume: 0 };
                 }
             } catch (error) {
                 console.error('[MasterTrader] Erro ao carregar contagem de copiadores:', error);
                 this.copiersCount = 0;
+                this.copierStats = { managedBalance: 0, todayProfit: 0, totalVolume: 0 };
             }
         }
     },
