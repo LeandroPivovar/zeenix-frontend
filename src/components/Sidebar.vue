@@ -1,5 +1,6 @@
 <template>
-    <aside class="sidebar" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
+    <div class="sidebar-wrapper">
+        <aside class="sidebar" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <nav class="menu">
             <a
                 href="#"
@@ -378,8 +379,9 @@ export default {
         close() { if (this.isOpen) { this.$emit('close-sidebar') } },
         toggleCollapse() { this.$emit('toggle-collapse') },
         openDevModal() {
+            console.log('[Sidebar] Abrindo modal de desenvolvimento...');
             this.showDevModal = true;
-            this.close(); // Fecha sidebar se estiver aberta
+            // NÃO fechar a sidebar automaticamente para não esconder o modal que é filho dela no DOM
         },
         navigateAndClose(route) { 
             // Verificar se router está disponível e componente está montado
