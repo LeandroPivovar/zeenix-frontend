@@ -408,12 +408,7 @@ export default {
 			limitePerda: 50.00,
 			showAgentSelectorModal: false,
 			availableAgents: [
-				{
-					id: 'sentinel',
-					title: 'SENTINEL',
-					icon: 'fas fa-shield-alt',
-					description: 'Agente focado em operações seguras com gerenciamento de risco conservador.'
-				},
+
 				{
 					id: 'falcon',
 					title: 'FALCON',
