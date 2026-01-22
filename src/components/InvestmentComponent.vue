@@ -83,7 +83,7 @@
                                         :class="['mode-btn', { 'active': mode === 'lento' }]"
                                         @click="mode = 'lento'"
                                     >
-                                        {{ selectedStrategy === 'titan' ? 'Preciso' : 'Lento' }}
+                                        Preciso
                                     </button>
                                 </div>
                                 <p id="modeDescription" class="form-help">{{ modeDescription }}</p>
@@ -448,7 +448,7 @@ export default {
             const descriptions = {
                 'veloz': 'Mais negociações, menos precisão',
                 'moderado': 'Negociações e precisão moderado',
-                'lento': this.selectedStrategy === 'titan' ? 'Menos operações, foco em assertividade cirúrgica' : 'Menos operações, mais precisão'
+                'lento': 'Menos operações, foco em assertividade cirúrgica'
             };
             return descriptions[this.mode] || descriptions.veloz;
         },

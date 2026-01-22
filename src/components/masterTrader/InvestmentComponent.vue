@@ -158,7 +158,7 @@
                                         :class="['mode-btn', { 'active': mode === 'lento' }]"
                                         @click="mode = 'lento'"
                                     >
-                                        Lento
+                                        Preciso
                                     </button>
                                 </div>
                                 <p id="modeDescription" class="form-help">{{ modeDescription }}</p>
