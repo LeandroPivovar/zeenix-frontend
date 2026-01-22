@@ -28,38 +28,33 @@
                 href="#"
                 class="menu-item"
                 :class="{ active: isAutonomousAgentActive }"
-                @click.prevent="isAdmin ? navigateAndClose('/agente-autonomo') : openDevModal()"
+                @click.prevent="navigateAndClose('/agente-autonomo')"
                 data-text="Agente Autônomo"
             >
                 <i class="fa-solid fa-microchip w-5 opacity-85"></i>
                 <span>Agente Autônomo</span>
-                <p v-if="!isAdmin" class="ml-auto flex items-center">
-                    <i class="fa-solid fa-lock text-red-500 text-xs"></i>
-                </p>
             </a>
 
             <a
                 href="#"
                 class="menu-item disabled"
                 :title="'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'"
-                @click.prevent="openDevModal"
+                @click.prevent
                 data-text="Copy Trading"
             >
                 <i class="fa-solid fa-users w-5 opacity-85"></i>
                 <span>Copy Trading</span>
-                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <a 
                 href="#"
                 class="menu-item" 
                 :class="{ active: isOperationActive }"
-                @click.prevent="isAdmin ? navigateAndClose('/operation') : openDevModal()"
+                @click.prevent="navigateAndClose('/operation')"
                 data-text="Operação Manual"
             >
                 <i class="fa-solid fa-hand-pointer w-5 opacity-85"></i>
                 <span>Operação Manual</span>
-                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <a
