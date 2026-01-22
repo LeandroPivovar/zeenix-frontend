@@ -66,11 +66,12 @@
                 href="#"
                 class="menu-item"
                 :class="{ active: isMasterTraderActive }"
-                @click.prevent="navigateAndClose('/MasterTrader')"
+                @click.prevent="isAdmin ? navigateAndClose('/MasterTrader') : openDevModal()"
                 data-text="Trader Mestre"
             >
                 <i class="fa-solid fa-user-crown w-5 opacity-85"></i>
                 <span>Trader Mestre</span>
+                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <div class="separator"></div>
@@ -233,7 +234,7 @@
                 </a>
             </template>
 
-        </nav>
+        </aside>
 
         <!-- Modal de Funcionalidade em Desenvolvimento -->
         <div v-if="showDevModal" class="dev-modal-overlay" @click.self="showDevModal = false">
@@ -249,7 +250,7 @@
                 <button class="dev-modal-button" @click="showDevModal = false">Entendi</button>
             </div>
         </div>
-    </aside>
+    </div>
 </template>
 
 <script>
