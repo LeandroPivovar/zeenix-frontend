@@ -1501,36 +1501,26 @@ export default {
             const isNexus = strategyLower === 'nexus';
             const isOrion = strategyLower === 'orion' || strategyLower.includes('ia orion');
             const isAtlas = strategyLower === 'atlas';
-
             const isApollo = strategyLower === 'apollo' || strategyLower.includes('apollo');
 
-            // ✅ Nexus: Se receber RISE/FALL (Recuperação), exibe RISE/FALL
-            if (isNexus && (direction === 'RISE' || direction === 'FALL')) {
-                return direction;
-            }
-
-            // Map HIGHER to OVER (except for Nexus/Orion/Atlas/Apollo)
+            // ✅ Se for DIGITOVER ou HIGHER, exibe OVER (ou CALL se for estratégia de tendência, mas simplificamos para OVER se for contrato de dígito)
             if (direction === 'HIGHER' || direction === 'DIGITOVER') {
-                if (isNexus || isOrion || isAtlas || isApollo) return 'CALL';
                 return 'OVER';
             }
 
-            // Map LOWER to UNDER (except for Nexus/Orion/Atlas/Apollo)
+            // ✅ Se for LOWER ou DIGITUNDER, exibe UNDER
             if (direction === 'LOWER' || direction === 'DIGITUNDER') {
-                if (isNexus || isOrion || isAtlas || isApollo) return 'PUT';
                 return 'UNDER';
             }
 
-            // Map RISE/PAR to CALL
+            // ✅ RISE / CALL / PAR -> CALL
             if (direction === 'RISE' || direction === 'CALL' || direction === 'PAR') {
-                if (isOrion || isNexus || isAtlas || isApollo) return 'CALL';
-                return 'PAR';  // For other strategies (digits)
+                return 'CALL';
             }
             
-            // Map FALL/IMPAR to PUT
+            // ✅ FALL / PUT / IMPAR -> PUT
             if (direction === 'FALL' || direction === 'PUT' || direction === 'IMPAR') {
-                if (isOrion || isNexus || isAtlas || isApollo) return 'PUT';
-                return 'IMPAR';  // For other strategies (digits)
+                return 'PUT';
             }
             
             return direction;
