@@ -135,12 +135,12 @@
                                 </div>
                             </div>
                             <button 
-                                @click="toggleAnalysis"
-                                :disabled="!symbol"
-                                class="bg-zenix-green hover:bg-zenix-green/90 disabled:opacity-30 disabled:cursor-not-allowed text-black font-bold px-4 py-2 rounded-lg transition-all text-xs flex items-center gap-2"
+                                class="bg-zenix-green opacity-30 cursor-not-allowed text-black font-bold px-4 py-2 rounded-lg transition-all text-xs flex items-center gap-2 pointer-events-auto"
+                                style="pointer-events: auto;"
+                                title="Funcionalidade em desenvolvimento. Para seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado."
                             >
-                                <i :class="aiRecommendation ? 'fas fa-sync-alt' : (isAnalyzing ? 'fas fa-stop' : 'fas fa-play')"></i>
-                                <span>{{ aiRecommendation ? 'Novo' : (isAnalyzing ? 'Parar' : 'Gerar') }}</span>
+                                <i class="fas fa-sync-alt"></i>
+                                <span>Gerar</span>
                             </button>
                         </div>
 
@@ -429,12 +429,12 @@
                             </div>
                         </div>
                         <button 
-                            @click="toggleAnalysis"
-                            :disabled="!symbol"
-                            class="btn-gerar-sinal-header bg-zenix-green hover:bg-zenix-green/90 disabled:opacity-30 disabled:cursor-not-allowed text-black font-black px-8 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-zenix-green/20 uppercase tracking-widest text-xs flex items-center gap-2"
+                            class="btn-gerar-sinal-header bg-zenix-green opacity-30 cursor-not-allowed text-black font-black px-8 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-zenix-green/20 uppercase tracking-widest text-xs flex items-center gap-2 pointer-events-auto"
+                            style="pointer-events: auto;"
+                            title="Funcionalidade em desenvolvimento. Para seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado."
                         >
-                            <i :class="aiRecommendation ? 'fas fa-pencil-alt' : (isAnalyzing ? 'fas fa-stop' : 'fas fa-pencil-alt')"></i>
-                            <span>{{ aiRecommendation ? 'Gerar Novamente' : (isAnalyzing ? 'Parar' : 'Gerar Sinal') }}</span>
+                            <i class="fas fa-pencil-alt"></i>
+                            <span>Gerar Sinal</span>
                         </button>
                     </div>
 
