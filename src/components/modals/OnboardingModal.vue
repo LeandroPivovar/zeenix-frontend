@@ -48,6 +48,18 @@
         <p class="step-description">Agora, para sua maior segurança, você deve alterar sua senha temporária para uma senha pessoal e forte.</p>
 
         <form @submit.prevent="handleFinish">
+          <div v-if="needsManualCurrentPassword" class="form-group animate-in">
+            <label>Senha Atual</label>
+            <input 
+              type="password" 
+              v-model="currentPassword" 
+              class="form-input"
+              placeholder="Digite sua senha atual"
+              required
+            />
+            <p class="input-hint">Insira a senha que você recebeu no e-mail ou a que definiu no cadastro.</p>
+          </div>
+
           <div class="form-group">
             <label>Nova Senha</label>
             <div class="password-input-wrapper">
@@ -109,12 +121,18 @@ export default {
       showPassword: false,
       showConfirmPassword: false,
       loading: false,
-      passwordError: ''
+      passwordError: '',
+      currentPassword: 'zeenix2025',
+      needsManualCurrentPassword: false
     }
   },
   computed: {
     isPasswordValid() {
-      return this.newPassword.length >= 6 && this.newPassword === this.confirmPassword;
+      const isNewPasswordValid = this.newPassword.length >= 6 && this.newPassword === this.confirmPassword;
+      if (this.needsManualCurrentPassword) {
+        return isNewPasswordValid && this.currentPassword.length > 0;
+      }
+      return isNewPasswordValid;
     }
   },
   watch: {
@@ -142,7 +160,7 @@ export default {
         const token = localStorage.getItem('token');
         const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
 
-        // Usamos a senha padrão 'zeenix2025' como senha atual para realizar a troca
+        // Tenta realizar a troca
         const res = await fetch(`${apiBaseUrl}/settings/password`, {
           method: 'PUT',
           headers: {
@@ -150,14 +168,23 @@ export default {
             ...(token && { 'Authorization': `Bearer ${token}` })
           },
           body: JSON.stringify({
-            currentPassword: 'zeenix2025',
+            currentPassword: this.currentPassword,
             newPassword: this.newPassword
           })
         });
 
         if (!res.ok) {
           const err = await res.json().catch(() => ({}));
-          throw new Error(err.message || 'Erro ao alterar a senha. Tente novamente.');
+          const errorMessage = err.message || 'Erro ao alterar a senha.';
+          
+          // Se o erro for senha atual incorreta e ainda não estivermos pedindo a senha manual
+          if (errorMessage.includes('Senha atual incorreta') && !this.needsManualCurrentPassword) {
+            this.needsManualCurrentPassword = true;
+            this.currentPassword = '';
+            throw new Error('A senha temporária padrão não funcionou. Por favor, insira a senha que você recebeu no e-mail ou a que você definiu no cadastro.');
+          }
+          
+          throw new Error(errorMessage);
         }
 
         this.$root.$toast.success('Senha atualizada e acesso configurado com sucesso!');
@@ -433,5 +460,20 @@ export default {
 
 .ml-2 {
   margin-left: 8px;
+}
+.animate-in {
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.input-hint {
+  font-size: 11px;
+  color: #6B7280;
+  margin-top: 6px;
+  line-height: 1.4;
 }
 </style>
