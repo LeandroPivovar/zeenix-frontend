@@ -735,8 +735,9 @@
 				
 				// Novas propriedades para o layout redesenhado
 				showDatePicker: false,
-				selectedPeriod: '30d',
+				selectedPeriod: 'session',
 				dateOptions: [
+					{ label: 'Sessão Atual', value: 'session' },
 					{ label: 'Hoje', value: 'today' },
 					{ label: 'Ontem', value: 'yesterday' },
 					{ label: 'Últimos 7 dias', value: '7d' },
@@ -1306,6 +1307,7 @@
 
 				// Determinar dias baseado no filtro selecionado
 				let days = 30;
+                let url = '';
 				if (this.selectedPeriod === '7d') days = 7;
 				if (this.selectedPeriod === 'today') days = 1;
 				if (this.selectedPeriod === 'yesterday') days = 2;
@@ -1314,8 +1316,14 @@
 
 				try {
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
-                    console.log('[AgenteAutonomo] Buscando profit-evolution em:', `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`);
-					const url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`;
+                    
+                    if (this.selectedPeriod === 'session') {
+                        url = `${apiBase}/autonomous-agent/session-evolution/${userId}`;
+                    } else {
+                        url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`;
+                    }
+                    
+                    console.log('[AgenteAutonomo] Buscando evolução em:', url);
 					const options = {
 						method: "GET",
 						headers: {
