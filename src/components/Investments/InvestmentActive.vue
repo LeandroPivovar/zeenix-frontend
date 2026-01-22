@@ -571,8 +571,8 @@
                                                 <td>{{ op.time }}</td>
                                                 <td>{{ getMarketDisplayName(op.pair) }}</td>
                                                 <td>
-                                                    <span :class="['direction-badge', (op.direction === 'CALL' || op.direction === 'RISE' || op.direction === 'PAR' || op.direction === 'DIGITOVER' || op.direction === 'HIGHER' || getTradeLabel(op.direction) === 'OVER' || getTradeLabel(op.direction) === 'CALL') ? 'call-badge' : 'put-badge']">
-                                                        <i :class="`fas fa-arrow-${(op.direction === 'CALL' || op.direction === 'RISE' || op.direction === 'PAR' || op.direction === 'DIGITOVER' || op.direction === 'HIGHER' || getTradeLabel(op.direction) === 'OVER' || getTradeLabel(op.direction) === 'CALL') ? 'up' : 'down'} text-xs mr-1`"></i>
+                                                    <span :class="['direction-badge', isPositiveDirection(op.direction) ? 'call-badge' : 'put-badge']">
+                                                        <i :class="`fas fa-arrow-${isPositiveDirection(op.direction) ? 'up' : 'down'} text-xs mr-1`"></i>
                                                         {{ getTradeLabel(op.direction) }}
                                                     </span>
                                                 </td>
@@ -1496,16 +1496,30 @@ export default {
         },
 
         getTradeLabel(direction) {
-            if (direction === 'HIGHER' || direction === 'DIGITOVER') return 'OVER';
-            if (direction === 'LOWER' || direction === 'DIGITUNDER') return 'UNDER';
-            if (direction === 'RISE') return 'RISE';
-            if (direction === 'FALL') return 'FALL';
-            if (direction === 'CALL') return 'CALL';
-            if (direction === 'PUT') return 'PUT';
-            if (direction === 'PAR') return 'PAR';
-            if (direction === 'IMPAR') return 'IMPAR';
+            const strategy = (this.sessionConfig?.strategy || this.selectedStrategy || 'orion').toLowerCase();
+            const dir = (direction || '').toUpperCase();
             
-            return direction;
+            // ✅ Mapeamento específico por estratégia
+            if (strategy === 'orion') {
+                if (dir === 'CALL') return 'RISE';
+                if (dir === 'PUT') return 'FALL';
+            }
+
+            // ✅ Mapeamento Geral (Fallbacks)
+            if (dir === 'HIGHER' || dir === 'DIGITOVER') return 'OVER';
+            if (dir === 'LOWER' || dir === 'DIGITUNDER') return 'UNDER';
+            if (dir === 'RISE' || dir === 'CALL') return dir; // Retorna o valor original para manter RISE ou CALL
+            if (dir === 'FALL' || dir === 'PUT') return dir;
+            if (dir === 'PAR' || dir === 'DIGITEVEN') return 'PAR';
+            if (dir === 'IMPAR' || dir === 'DIGITODD') return 'IMPAR';
+            
+            return dir;
+        },
+
+        isPositiveDirection(direction) {
+            const label = this.getTradeLabel(direction);
+            const positiveLabels = ['OVER', 'RISE', 'CALL', 'PAR'];
+            return positiveLabels.includes(label);
         },
 
         getLastDigit(price) {
