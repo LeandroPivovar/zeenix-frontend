@@ -1496,26 +1496,14 @@ export default {
         },
 
         getTradeLabel(direction) {
-
-            // ✅ Se for DIGITOVER ou HIGHER, exibe OVER (ou CALL se for estratégia de tendência, mas simplificamos para OVER se for contrato de dígito)
-            if (direction === 'HIGHER' || direction === 'DIGITOVER') {
-                return 'OVER';
-            }
-
-            // ✅ Se for LOWER ou DIGITUNDER, exibe UNDER
-            if (direction === 'LOWER' || direction === 'DIGITUNDER') {
-                return 'UNDER';
-            }
-
-            // ✅ RISE / CALL / PAR -> CALL
-            if (direction === 'RISE' || direction === 'CALL' || direction === 'PAR') {
-                return 'CALL';
-            }
-            
-            // ✅ FALL / PUT / IMPAR -> PUT
-            if (direction === 'FALL' || direction === 'PUT' || direction === 'IMPAR') {
-                return 'PUT';
-            }
+            if (direction === 'HIGHER' || direction === 'DIGITOVER') return 'OVER';
+            if (direction === 'LOWER' || direction === 'DIGITUNDER') return 'UNDER';
+            if (direction === 'RISE') return 'RISE';
+            if (direction === 'FALL') return 'FALL';
+            if (direction === 'CALL') return 'CALL';
+            if (direction === 'PUT') return 'PUT';
+            if (direction === 'PAR') return 'PAR';
+            if (direction === 'IMPAR') return 'IMPAR';
             
             return direction;
         },
