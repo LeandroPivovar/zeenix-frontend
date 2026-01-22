@@ -923,7 +923,16 @@
 				handler(newStatus) {
 					this.checkStopStatus(newStatus);
 				}
-			}
+			},
+            'sessionStats.evolution': {
+                immediate: true,
+                handler(newEvolution) {
+                    if (this.selectedPeriod === 'session' && newEvolution && newEvolution.length > 0) {
+                        console.log('[AgenteAutonomo] 📈 Atualizando gráfico via sessionStats.evolution:', newEvolution.length, 'pontos');
+                        this.updateIndexChart(newEvolution);
+                    }
+                }
+            }
 		},
 		methods: {
 			checkStopStatus(status) {

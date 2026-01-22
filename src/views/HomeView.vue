@@ -108,16 +108,22 @@
       @close="showCreateAccountModal = false"
       @success="handleAccountCreated"
     />
+
+    <OnboardingModal 
+      :visible="showOnboardingModal" 
+      @finish="handleOnboardingFinish"
+    />
   </div>
 </template>
 
 <script>
 import DashboardConnected from './DashboardConnected.vue'
 import CreateDerivAccountModal from '../components/CreateDerivAccountModal.vue'
+import OnboardingModal from '../components/modals/OnboardingModal.vue'
 
 export default {
   name: 'HomeView',
-  components: { DashboardConnected, CreateDerivAccountModal },
+  components: { DashboardConnected, CreateDerivAccountModal, OnboardingModal },
   data() {
     return { 
       connectedInfo: null,
@@ -125,6 +131,7 @@ export default {
       firstName: 'Usuário',
       showCreateAccountModal: false,
       showCreateAccountCard: false,
+      showOnboardingModal: false,
       isMobile: false,
       currentAccountStep: 1
     }
@@ -192,7 +199,16 @@ export default {
                 console.log('[HomeView] Dados do usuário da API:', userData)
                 if (userData.name) {
                   this.firstName = userData.name.split(' ')[0]
-                  localStorage.setItem('user', JSON.stringify({ name: userData.name, email: userData.email }))
+                  localStorage.setItem('user', JSON.stringify({ 
+                    name: userData.name, 
+                    email: userData.email,
+                    firstAccess: userData.firstAccess
+                  }))
+                  
+                  if (userData.firstAccess) {
+                    this.showOnboardingModal = true
+                  }
+                  
                   console.log('[HomeView] Nome definido:', this.firstName)
                   return
                 }
@@ -375,6 +391,16 @@ export default {
     handleCloseAccountCard() {
       this.showCreateAccountCard = false;
       this.currentAccountStep = 1;
+    },
+    handleOnboardingFinish() {
+      this.showOnboardingModal = false;
+      // Atualizar o primeiro acesso no localStorage
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        const user = JSON.parse(userInfo);
+        user.firstAccess = false;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
     }
   },
   async mounted() {

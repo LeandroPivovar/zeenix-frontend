@@ -413,6 +413,10 @@
     </main>
     
     <DesktopBottomNav />
+    <OnboardingModal 
+      :visible="showOnboardingModal" 
+      @finish="handleOnboardingFinish"
+    />
   </div>
 </div>
 
@@ -649,17 +653,17 @@
 </template>
 
 <script>
-import TopNavbar from '../components/TopNavbar.vue'
-import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import AppSidebar from '../components/Sidebar.vue'
 import { loadAvailableAccounts } from '../utils/accountsLoader'
+import OnboardingModal from '../components/modals/OnboardingModal.vue'
 
 export default {
   name: 'DashboardConnected',
   components: {
     TopNavbar,
     DesktopBottomNav,
-    AppSidebar
+    AppSidebar,
+    OnboardingModal
   },
   props: { 
     info: { 
@@ -683,6 +687,7 @@ export default {
       showAccountsList: false,
       availableAccounts: [],
       loadingAccounts: false,
+      showOnboardingModal: false,
       userProfilePictureUrl: null,
       tradeCurrency: 'USD',
       tickerItems: [
@@ -1071,6 +1076,7 @@ export default {
     // Carregar desempenho semanal
     await this.loadWeeklyPerformance();
     this.loadLoginNotifications();
+    this.checkOnboarding();
   },
   methods: {
     async loadWeeklyPerformance() {
@@ -1436,6 +1442,42 @@ export default {
       } catch (error) {
         if (error.name !== 'AbortError') {
           console.error('[DashboardConnected] Erro ao carregar notificações:', error);
+        }
+      }
+    },
+    getIAPerformance(id) {
+      const perfMap = {
+        'orion': 12.4,
+        'atlas': 8.7,
+        'apollo': 15.2,
+        'nexus': 10.9,
+        'titan': 13.5
+      };
+      return perfMap[id] || 10.0;
+    },
+    checkOnboarding() {
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          if (user.firstAccess) {
+            this.showOnboardingModal = true;
+          }
+        } catch (e) {
+          console.error('Erro ao verificar onboarding:', e);
+        }
+      }
+    },
+    handleOnboardingFinish() {
+      this.showOnboardingModal = false;
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          user.firstAccess = false;
+          localStorage.setItem('user', JSON.stringify(user));
+        } catch (e) {
+          console.error('Erro ao atualizar onboarding:', e);
         }
       }
     },

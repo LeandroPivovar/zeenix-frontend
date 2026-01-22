@@ -683,6 +683,7 @@
               netProfit: netProfit,
               totalCapital: parseFloat(result.data.totalCapital) || 0,
               operationsToday: operationsToday,
+              evolution: result.data.evolution || [],
             };
             // Usar operationsToday que inclui ai_trades + autonomous_agent_trades
             this.operacoesHoje = operationsToday;
