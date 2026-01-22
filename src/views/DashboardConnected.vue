@@ -653,6 +653,8 @@
 </template>
 
 <script>
+import TopNavbar from '../components/TopNavbar.vue'
+import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import AppSidebar from '../components/Sidebar.vue'
 import { loadAvailableAccounts } from '../utils/accountsLoader'
 import OnboardingModal from '../components/modals/OnboardingModal.vue'
@@ -1444,16 +1446,6 @@ export default {
           console.error('[DashboardConnected] Erro ao carregar notificações:', error);
         }
       }
-    },
-    getIAPerformance(id) {
-      const perfMap = {
-        'orion': 12.4,
-        'atlas': 8.7,
-        'apollo': 15.2,
-        'nexus': 10.9,
-        'titan': 13.5
-      };
-      return perfMap[id] || 10.0;
     },
     checkOnboarding() {
       const userInfo = localStorage.getItem('user');
