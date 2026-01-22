@@ -33,11 +33,11 @@
 }
 
 .main-content {
-    margin-top: 60px;
-    padding: 2rem 2rem;
     max-width: 1600px;
     margin-left: auto;
     margin-right: auto;
+    align-items: flex-start;
+    justify-content: flex-start;
 }
 
 .main-content.academy-content {
@@ -107,7 +107,7 @@
     opacity: 0.8;
 }
 
-.course-card > * {
+.course-card>* {
     position: relative;
     z-index: 2;
 }
@@ -129,21 +129,21 @@
     left: 0;
     right: 0;
     bottom: 0;
-    background: linear-gradient(to bottom, 
-        rgba(0, 0, 0, 0.1) 0%, 
-        transparent 20%, 
-        transparent 40%, 
-        rgba(11, 11, 11, 0.05) 50%,
-        rgba(11, 11, 11, 0.1) 55%,
-        rgba(11, 11, 11, 0.15) 60%,
-        rgba(11, 11, 11, 0.25) 65%,
-        rgba(11, 11, 11, 0.35) 70%,
-        rgba(11, 11, 11, 0.5) 75%,
-        rgba(11, 11, 11, 0.65) 80%,
-        rgba(11, 11, 11, 0.75) 85%,
-        rgba(11, 11, 11, 0.85) 90%,
-        rgba(11, 11, 11, 0.92) 95%,
-        rgba(11, 11, 11, 0.98) 100%);
+    background: linear-gradient(to bottom,
+            rgba(0, 0, 0, 0.1) 0%,
+            transparent 20%,
+            transparent 40%,
+            rgba(11, 11, 11, 0.05) 50%,
+            rgba(11, 11, 11, 0.1) 55%,
+            rgba(11, 11, 11, 0.15) 60%,
+            rgba(11, 11, 11, 0.25) 65%,
+            rgba(11, 11, 11, 0.35) 70%,
+            rgba(11, 11, 11, 0.5) 75%,
+            rgba(11, 11, 11, 0.65) 80%,
+            rgba(11, 11, 11, 0.75) 85%,
+            rgba(11, 11, 11, 0.85) 90%,
+            rgba(11, 11, 11, 0.92) 95%,
+            rgba(11, 11, 11, 0.98) 100%);
     pointer-events: none;
     z-index: 2;
 }
@@ -185,10 +185,10 @@
     left: 0;
     right: 0;
     height: 100px;
-    background: linear-gradient(to bottom, 
-        rgba(11, 11, 11, 0) 0%,
-        #0c110e,
-        transparent 100%);
+    background: linear-gradient(to bottom,
+            rgba(11, 11, 11, 0) 0%,
+            #0c110e,
+            transparent 100%);
     pointer-events: none;
     z-index: 1;
 }
@@ -224,9 +224,9 @@
     margin-left: 0.5rem;
 }
 
-.tooltip-icon { 
-    color: #555; 
-    cursor: pointer; 
+.tooltip-icon {
+    color: #555;
+    cursor: pointer;
 }
 
 .tooltip-text {
@@ -245,12 +245,12 @@
     opacity: 0;
     transition: opacity 0.3s;
     font-size: 0.75rem;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 }
 
-.tooltip:hover .tooltip-text { 
-    visibility: visible; 
-    opacity: 1; 
+.tooltip:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
 }
 
 /* Meta & Progress */
@@ -262,14 +262,14 @@
     color: #8D8D8D;
 }
 
-.meta-item { 
-    display: flex; 
-    align-items: center; 
-    gap: 0.4rem; 
+.meta-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
 }
 
-.progress-container { 
-    margin-bottom: 1.5rem; 
+.progress-container {
+    margin-bottom: 1.5rem;
 }
 
 .progress-bar {
@@ -318,30 +318,30 @@
     font-size: 0.875rem;
 }
 
-.btn-green { 
-    background: #22C55E; 
-    color: #000; 
+.btn-green {
+    background: #22C55E;
+    color: #000;
 }
 
-.btn-green:hover { 
-    background: #16A34A; 
+.btn-green:hover {
+    background: #16A34A;
 }
 
-.btn-outline { 
-    background: transparent; 
-    border: 1px solid #2C2C2C; 
-    color: #FFF; 
+.btn-outline {
+    background: transparent;
+    border: 1px solid #2C2C2C;
+    color: #FFF;
 }
 
-.btn-outline:hover { 
-    border-color: #22C55E; 
-    color: #22C55E; 
+.btn-outline:hover {
+    border-color: #22C55E;
+    color: #22C55E;
 }
 
-.loading-container { 
-    text-align: center; 
-    padding: 4rem; 
-    color: #444; 
+.loading-container {
+    text-align: center;
+    padding: 4rem;
+    color: #444;
 }
 
 .error-container {
@@ -370,7 +370,7 @@
     cursor: pointer;
     align-items: center;
     justify-content: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
     transition: all 0.3s ease;
 }
 
@@ -402,6 +402,7 @@
 
 /* Tablet & Mobile (< 768px) */
 @media (max-width: 768px) {
+
     /* Mostra hambúrguer */
     .mobile-hamburger-btn {
         display: flex;
@@ -431,7 +432,7 @@
         transform: translateX(-100%);
         transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         width: 280px !important;
-        box-shadow: 4px 0 24px rgba(0,0,0,0.5);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
         background-color: #0B0B0B;
     }
 
@@ -496,7 +497,7 @@
         opacity: 0.8;
     }
 
-    .course-card > * {
+    .course-card>* {
         position: relative;
         z-index: 2;
     }
@@ -514,10 +515,10 @@
         left: 0;
         right: 0;
         height: 100px;
-        background: linear-gradient(to bottom, 
-            rgba(11, 11, 11, 0) 0%,
-            #0c110e,
-            transparent 100%);
+        background: linear-gradient(to bottom,
+                rgba(11, 11, 11, 0) 0%,
+                #0c110e,
+                transparent 100%);
         pointer-events: none;
         z-index: 1;
     }
@@ -666,7 +667,7 @@
     .main-content {
         padding: 1rem;
     }
-    
+
     .course-header-image {
         height: 220px;
         border-radius: 22px 22px 0 0;
@@ -679,15 +680,15 @@
         left: 0;
         right: 0;
         bottom: 0;
-        background: linear-gradient(to bottom, 
-            rgba(0, 0, 0, 0.2) 0%, 
-            transparent 25%, 
-            transparent 45%, 
-            rgba(11, 11, 11, 0.2) 60%,
-            rgba(11, 11, 11, 0.4) 70%,
-            rgba(11, 11, 11, 0.6) 80%,
-            rgba(11, 11, 11, 0.8) 90%,
-            rgba(11, 11, 11, 0.95) 100%);
+        background: linear-gradient(to bottom,
+                rgba(0, 0, 0, 0.2) 0%,
+                transparent 25%,
+                transparent 45%,
+                rgba(11, 11, 11, 0.2) 60%,
+                rgba(11, 11, 11, 0.4) 70%,
+                rgba(11, 11, 11, 0.6) 80%,
+                rgba(11, 11, 11, 0.8) 90%,
+                rgba(11, 11, 11, 0.95) 100%);
         pointer-events: none;
         z-index: 2;
         border-radius: 22px 22px 0 0;
@@ -708,15 +709,15 @@
         gap: 1rem;
     }
 
-    .course-meta{
-        text-align: center!important;
-        justify-content: center!important;
-        margin-bottom: 15px!important;
+    .course-meta {
+        text-align: center !important;
+        justify-content: center !important;
+        margin-bottom: 15px !important;
     }
 
-    .progress-label{
-        text-align: center!important;
-        justify-content: center!important;
+    .progress-label {
+        text-align: center !important;
+        justify-content: center !important;
     }
 
     .academy-header-mobile {
