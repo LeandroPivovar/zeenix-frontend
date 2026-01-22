@@ -1200,9 +1200,9 @@ export default {
                     // ✅ [ZENIX v2.0] Só preencher parâmetros se a IA estiver ativa
                     // Se estiver inativa, manter os padrões para uma nova configuração
                     if (this.isInvestmentActive) {
-                        if (config.entryValue) this.entryValue = config.entryValue;
-                        if (config.profitTarget) this.profitTarget = config.profitTarget;
-                        if (config.lossLimit) this.lossLimit = config.lossLimit;
+                        if (config.entryValue) this.entryValue = Number(config.entryValue);
+                        if (config.profitTarget) this.profitTarget = Number(config.profitTarget);
+                        if (config.lossLimit) this.lossLimit = Number(config.lossLimit);
                         if (config.mode) this.mode = config.mode;
                         if (config.strategy) this.selectedStrategy = config.strategy.toLowerCase();
                         if (config.modoMartingale) this.modoMartingale = config.modoMartingale;
