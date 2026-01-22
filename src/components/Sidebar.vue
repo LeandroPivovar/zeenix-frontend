@@ -36,9 +36,9 @@
 
             <a
                 href="#"
-                class="menu-item"
-                :class="{ active: isCopyTradingActive }"
-                @click.prevent="navigateAndClose('/copy-trading')"
+                class="menu-item disabled"
+                :title="'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'"
+                @click.prevent
                 data-text="Copy Trading"
             >
                 <i class="fa-solid fa-users w-5 opacity-85"></i>

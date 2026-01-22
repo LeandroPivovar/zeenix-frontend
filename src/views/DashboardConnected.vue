@@ -309,7 +309,9 @@
               :key="index"
               :id="`performance-card-${index + 1}`"
               class="relative bg-gradient-to-br from-[#0E0E0E] to-[#0B0B0B] rounded-[20px] overflow-hidden desktop-no-shadow desktop-performance-card-border w-full h-auto transition-all duration-[250ms] ease-out hover:scale-[1.02] hover:bg-gradient-to-br hover:from-[#111111] hover:to-[#0A0A0A] group cursor-pointer"
-              @click="handlePerformanceAction(perf)"
+              :class="{ 'opacity-60 cursor-not-allowed': perf.disabled }"
+              :title="perf.disabled ? perf.tooltip : ''"
+              @click="!perf.disabled && handlePerformanceAction(perf)"
             >
               <div class="absolute -inset-4 bg-[radial-gradient(circle_at_50%_50%,rgba(34,197,94,0.12)_0%,transparent_70%)] blur-[80px] opacity-100 -z-10 transition-opacity duration-[250ms] group-hover:opacity-125"></div>
               <div class="p-6 flex flex-col gap-6">
@@ -368,12 +370,14 @@
                   </div>
                 </div>
                 <button 
-                  @click="handlePerformanceAction(perf)"
+                  @click.stop="!perf.disabled && handlePerformanceAction(perf)"
                   class="w-full h-11 bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white text-sm font-semibold rounded-xl flex items-center justify-center gap-2 transition-all duration-200 shadow-[0_6px_20px_rgba(34,197,94,0.35),0_0_22px_rgba(34,197,94,0.12),0_2px_4px_rgba(0,0,0,0.3)] hover:shadow-[0_8px_28px_rgba(34,197,94,0.45),0_0_30px_rgba(34,197,94,0.25),0_3px_6px_rgba(0,0,0,0.4)] active:scale-[0.97] group/btn"
+                  :class="{ 'from-[#333] to-[#222] hover:from-[#333] hover:to-[#222] cursor-not-allowed shadow-none hover:shadow-none': perf.disabled }"
                   style="filter: brightness(1.1) saturate(1.1);"
                 >
                   <span>{{ perf.buttonText }}</span>
-                  <i class="fas fa-arrow-right text-xs transition-transform duration-200 group-hover/btn:translate-x-[3px]"></i>
+                  <i v-if="!perf.disabled" class="fas fa-arrow-right text-xs transition-transform duration-200 group-hover/btn:translate-x-[3px]"></i>
+                  <i v-else class="fas fa-lock text-xs"></i>
                 </button>
               </div>
             </div>
@@ -385,7 +389,9 @@
               v-for="(perf, index) in performanceData" 
               :key="index"
               class="mobile-performance-card"
-              @click="handlePerformanceAction(perf)"
+              :class="{ 'opacity-60 cursor-not-allowed': perf.disabled }"
+              :title="perf.disabled ? perf.tooltip : ''"
+              @click="!perf.disabled && handlePerformanceAction(perf)"
             >
               <div class="mobile-performance-header">
                 <div class="mobile-performance-icon">
@@ -400,10 +406,11 @@
                 </svg>
               </div>
               <button 
-                @click="handlePerformanceAction(perf)"
+                @click.stop="!perf.disabled && handlePerformanceAction(perf)"
                 class="mobile-performance-btn"
+                :class="{ 'bg-[#333] cursor-not-allowed': perf.disabled }"
               >
-                ATIVAR
+                {{ perf.disabled ? 'EM BREVE' : 'ATIVAR' }}
               </button>
             </div>
           </div>
@@ -852,10 +859,12 @@ export default {
           title: 'Copy Trading',
           percentage: '+8.7%',
           usage: 0,
-          buttonText: 'Ativar agora',
+          buttonText: 'Em breve',
           chartPath: 'M0,22 L20,18 L40,20 L60,16 L80,17 L100,13',
           chartPathFull: 'M0,48 L25,46 L50,44 L75,40 L100,38 L125,35 L150,32 L175,28 L200,25',
-          chartEndY: 25
+          chartEndY: 25,
+          disabled: true,
+          tooltip: 'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'
         },
         {
           icon: 'fas fa-atom',

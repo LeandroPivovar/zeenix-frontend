@@ -343,6 +343,17 @@ aside.sidebar,
 	color: #DFDFDF;
 }
 
+.menu-item.disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+	pointer-events: auto; /* Permitir hover para o title/tooltip */
+}
+
+.menu-item.disabled:hover {
+	background-color: transparent;
+	color: #A1A1A1;
+}
+
 .menu-item i {
 	width: 20px;
 	opacity: 0.85;

@@ -28,17 +28,16 @@
       <span class="nav-label">IA's</span>
     </router-link>
 
-    <router-link 
-      to="/copy-trader" 
-      class="nav-item"
-      :class="{ active: isActive('/copy-trader') || isActive('/copy-trading') }"
+    <div 
+      class="nav-item disabled"
+      :title="'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'"
     >
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="8" y="8" width="13" height="13" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <rect x="3" y="3" width="13" height="13" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <span class="nav-label">Copy</span>
-    </router-link>
+    </div>
 
     <router-link 
       to="/agente-autonomo" 
@@ -114,6 +113,16 @@ export default {
   cursor: pointer;
   padding: 8px 16px;
   border-radius: 8px;
+}
+
+.nav-item.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.nav-item.disabled:hover {
+  background: transparent;
+  color: #8D8D8D;
 }
 
 .nav-item:hover {
