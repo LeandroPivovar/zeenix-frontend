@@ -471,10 +471,13 @@
 				<!-- Meta Diária -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3 flex flex-col items-start">
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Meta Diária</div>
-					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors bg-green-500/10 text-green-500 border-green-500/20 text-[10px] sm:text-xs text-left">
-						Atingida
+					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors text-[10px] sm:text-xs text-left"
+						:class="selectedDay.isMetaAtingida ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'">
+						{{ selectedDay.metaStatus || (selectedDay.isMetaAtingida ? 'Atingida' : 'Pendente') }}
 					</div>
-					<div class="text-[#A1A1AA] text-[9px] sm:text-xs mt-0.5 sm:mt-1 text-left">Ativação: 09:01:06</div>
+					<div class="text-[#A1A1AA] text-[9px] sm:text-xs mt-0.5 sm:mt-1 text-left" v-if="selectedDay.activationTime">
+						Ativação: {{ selectedDay.activationTime }}
+					</div>
 				</div>
 
 				<!-- Firewall -->
@@ -1078,6 +1081,12 @@
             async openDayDetails(day) {
                 console.log('[AgenteAutonomo] openDayDetails:', day);
 				this.selectedDay = day;
+                
+                // Garantir que temos a configuração do agente para calcular metas
+                if (!this.agentConfig) {
+                    await this.fetchAgentConfig();
+                }
+                
                 await this.fetchDailyDetails(day);
 			},
 
@@ -1114,6 +1123,43 @@
                         console.log('[AgenteAutonomo] daily-trades resultado:', result);
 						if (result.success) {
                             this.dailyTrades = result.data;
+                            
+                            // Calcular se a meta foi atingida e quando
+                            const target = this.agentConfig?.dailyProfitTarget || 0;
+                            let cumulativeProfit = 0;
+                            let activationTime = null;
+
+                            // Ordenar do mais antigo para o mais novo para calcular acumulado corretamente
+                            const sortedTrades = [...result.data].sort((a, b) => 
+                                new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+                            );
+
+                            for (const trade of sortedTrades) {
+                                cumulativeProfit += trade.profit;
+                                if (target > 0 && cumulativeProfit >= target && !activationTime) {
+                                    activationTime = this.formatToSPTime(trade.createdAt);
+                                }
+                            }
+
+                            // Recalcular avgTime para ser consistente com os trades exibidos no modal
+                            let avgTime = '--';
+                            if (sortedTrades.length > 1) {
+                                const first = new Date(sortedTrades[0].createdAt).getTime();
+                                const last = new Date(sortedTrades[sortedTrades.length - 1].createdAt).getTime();
+                                const diffMs = last - first;
+                                const diffMin = Math.round(diffMs / (60000 * (sortedTrades.length - 1)));
+                                avgTime = diffMin >= 60 ? `${Math.floor(diffMin / 60)}h ${diffMin % 60}m` : `${diffMin}min`;
+                            } else if (sortedTrades.length === 1) {
+                                avgTime = '0min';
+                            }
+
+                            this.selectedDay = {
+                                ...this.selectedDay,
+                                avgTime: avgTime,
+                                isMetaAtingida: target > 0 && cumulativeProfit >= target,
+                                activationTime: activationTime,
+                                metaStatus: (target > 0 && cumulativeProfit >= target) ? 'Atingida' : (day.fullDate === new Date().toISOString().split('T')[0] ? 'Pendente' : 'Não atingida')
+                            };
                         }
                     } else {
                         console.error('[AgenteAutonomo] Erro na resposta de daily-trades:', response.status);
