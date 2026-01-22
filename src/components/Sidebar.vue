@@ -232,7 +232,8 @@
                 </a>
             </template>
 
-        </aside>
+        </nav>
+    </aside>
 
         <!-- Modal de Funcionalidade em Desenvolvimento -->
         <div v-if="showDevModal" class="dev-modal-overlay" @click.self="showDevModal = false">
