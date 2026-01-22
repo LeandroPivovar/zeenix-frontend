@@ -1496,12 +1496,6 @@ export default {
         },
 
         getTradeLabel(direction) {
-            const strategy = this.sessionConfig?.strategy || this.selectedStrategy || '';
-            const strategyLower = strategy.toLowerCase();
-            const isNexus = strategyLower === 'nexus';
-            const isOrion = strategyLower === 'orion' || strategyLower.includes('ia orion');
-            const isAtlas = strategyLower === 'atlas';
-            const isApollo = strategyLower === 'apollo' || strategyLower.includes('apollo');
 
             // ✅ Se for DIGITOVER ou HIGHER, exibe OVER (ou CALL se for estratégia de tendência, mas simplificamos para OVER se for contrato de dígito)
             if (direction === 'HIGHER' || direction === 'DIGITOVER') {
