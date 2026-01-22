@@ -16,57 +16,60 @@
                 href="#"
                 class="menu-item"
                 :class="{ active: isStatsIAsActive }"
-                @click.prevent="isAdmin ? navigateAndClose('/StatsIAs') : openDevModal()"
+                @click.prevent="navigateAndClose('/StatsIAs')"
                 data-text="IAs de Investimento"
             >
                 <i class="fa-solid fa-brain w-5 opacity-85"></i>
                 <span>IA's de Investimento</span>
-                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <a
                 href="#"
                 class="menu-item"
                 :class="{ active: isAutonomousAgentActive }"
-                @click.prevent="navigateAndClose('/agente-autonomo')"
+                @click.prevent="isAdmin ? navigateAndClose('/agente-autonomo') : openDevModal()"
                 data-text="Agente Autônomo"
             >
                 <i class="fa-solid fa-microchip w-5 opacity-85"></i>
                 <span>Agente Autônomo</span>
+                <p v-if="!isAdmin" class="ml-auto flex items-center">
+                    <i class="fa-solid fa-lock text-red-500 text-xs"></i>
+                </p>
             </a>
 
             <a
                 href="#"
                 class="menu-item disabled"
                 :title="'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'"
-                @click.prevent
+                @click.prevent="openDevModal"
                 data-text="Copy Trading"
             >
                 <i class="fa-solid fa-users w-5 opacity-85"></i>
                 <span>Copy Trading</span>
+                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <a 
                 href="#"
                 class="menu-item" 
                 :class="{ active: isOperationActive }"
-                @click.prevent="navigateAndClose('/operation')"
+                @click.prevent="isAdmin ? navigateAndClose('/operation') : openDevModal()"
                 data-text="Operação Manual"
             >
                 <i class="fa-solid fa-hand-pointer w-5 opacity-85"></i>
                 <span>Operação Manual</span>
+                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <a
                 href="#"
                 class="menu-item"
                 :class="{ active: isMasterTraderActive }"
-                @click.prevent="isAdmin ? navigateAndClose('/MasterTrader') : openDevModal()"
+                @click.prevent="navigateAndClose('/MasterTrader')"
                 data-text="Trader Mestre"
             >
                 <i class="fa-solid fa-user-crown w-5 opacity-85"></i>
                 <span>Trader Mestre</span>
-                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <div class="separator"></div>
