@@ -3,8 +3,8 @@
     <!-- Modal de Novo Módulo -->
     <div v-if="isNewModuleModalOpen" class="modal-overlay" @click.self="closeNewModuleModal">
       <div class="modal-content new-module-card">
-        <h2 class="card-title">Adicionar Módulo</h2>
-        <p class="card-subtitle-modal">Defina o nome e a descrição do novo módulo para este curso.</p>
+        <h2 class="card-title">{{ newModule.id ? 'Editar Módulo' : 'Adicionar Módulo' }}</h2>
+        <p class="card-subtitle-modal">Defina o nome e a descrição do módulo para este curso.</p>
         <div class="create-module-form">
           <div class="form-group">
             <label for="module-name">Nome do Módulo</label>
@@ -15,7 +15,9 @@
             <textarea id="module-description" class="input-textarea" :value="newModule.shortDescription" @input="updateNewModule({ shortDescription: $event.target.value })" placeholder="Breve descrição do módulo..."></textarea>
           </div>
           <div class="modal-actions">
-            <button class="btn btn-save-module" @click="saveNewModule" :disabled="!newModule.name">Adicionar Módulo</button>
+            <button class="btn btn-save-module" @click="saveNewModule" :disabled="!newModule.name">
+              {{ newModule.id ? 'Salvar Alterações' : 'Adicionar Módulo' }}
+            </button>
             <button class="btn btn-cancel" @click="closeNewModuleModal">Cancelar</button>
           </div>
         </div>

@@ -93,8 +93,8 @@
                                         Módulo {{ module.id.toString().slice(-2) }}: {{ module.title.split(' - ')[1] || module.title }}
                                     </span>
                                     <div class="module-actions module-btn-group">
-                                        <button class="btn btn-action-icon edit-btn" title="Editar Módulo">Editar</button>
-                                        <button class="btn btn-action-icon delete-btn" title="Excluir Módulo">Excluir</button>
+                                        <button class="btn btn-action-icon edit-btn" title="Editar Módulo" @click="openEditModule(module)">Editar</button>
+                                        <button class="btn btn-action-icon delete-btn" title="Excluir Módulo" @click="deleteModule(module)">Excluir</button>
                                         <button class="btn btn-secondary add-lesson-btn" title="Adicionar Nova Aula" @click="openNewLessonModal(module.id)">+ Adicionar Aula</button>
                                     </div>
                                 </div>
@@ -867,67 +867,158 @@ export default {
             this.isNewModuleModalOpen = false;
         },
         async saveNewModule() {
-            console.log('🔍 [AcademyManagement] Salvando novo módulo', this.newModule);
+            console.log('🔍 [AcademyManagement] Salvando módulo', this.newModule);
             if (!this.newModule.name) {
                 this.$root.$toast.error('O nome do módulo é obrigatório.');
                 return;
             }
 
             const isNewCourse = !this.course.selectedCourseId || this.course.selectedCourseId === 'new' || this.$route.params.id === 'new';
-            console.log('🔍 [AcademyManagement] É curso novo?', isNewCourse, { selectedCourseId: this.course.selectedCourseId, routeId: this.$route.params.id });
+            const isEditing = !!this.newModule.id;
+            console.log('🔍 [AcademyManagement] É curso novo?', isNewCourse, 'Editando?', isEditing, { selectedCourseId: this.course.selectedCourseId, routeId: this.$route.params.id });
             
-            // Se for curso novo, adiciona localmente
-            if (isNewCourse) {
-                const moduleCount = this.modules.filter(m => m.isLocal || m.courseId === 'temp').length;
-                const tempModuleId = `temp-module-${Date.now()}-${Math.random()}`;
-                const newModuleObject = {
-                    id: tempModuleId,
-                    courseId: 'temp', // ID temporário até salvar o curso
-                    title: `Módulo ${moduleCount + 1} - ${this.newModule.name}`,
-                    shortDescription: this.newModule.shortDescription || '',
-                    status: 'draft',
-                    orderIndex: moduleCount,
-                    isLocal: true, // Flag para identificar módulos locais
-                };
-                console.log('🔍 [AcademyManagement] Adicionando módulo local:', newModuleObject);
-                this.modules.push(newModuleObject);
+            // Se for curso novo ou módulo local, lida localmente
+            if (isNewCourse || (isEditing && this.newModule.id.toString().startsWith('temp-module-'))) {
+                if (isEditing) {
+                    const index = this.modules.findIndex(m => m.id === this.newModule.id);
+                    if (index !== -1) {
+                        // Atualiza o módulo existente preservando o prefixo "Módulo X - " se necessário ou gerando novo
+                        const currentTitle = this.modules[index].title;
+                        const match = currentTitle.match(/^Módulo (\d+) - /);
+                        const prefix = match ? `Módulo ${match[1]} - ` : '';
+                        
+                        this.modules[index].title = `${prefix}${this.newModule.name}`;
+                        this.modules[index].shortDescription = this.newModule.shortDescription || '';
+                        this.$root.$toast.success(`Módulo "${this.newModule.name}" atualizado localmente.`);
+                    }
+                } else {
+                    const moduleCount = this.modules.filter(m => m.isLocal || m.courseId === 'temp').length;
+                    const tempModuleId = `temp-module-${Date.now()}-${Math.random()}`;
+                    const newModuleObject = {
+                        id: tempModuleId,
+                        courseId: 'temp', 
+                        title: `Módulo ${moduleCount + 1} - ${this.newModule.name}`,
+                        shortDescription: this.newModule.shortDescription || '',
+                        status: 'draft',
+                        orderIndex: moduleCount,
+                        isLocal: true,
+                    };
+                    console.log('🔍 [AcademyManagement] Adicionando módulo local:', newModuleObject);
+                    this.modules.push(newModuleObject);
+                    this.$root.$toast.success(`Módulo "${this.newModule.name}" adicionado localmente.`);
+                }
                 this.closeNewModuleModal();
-                console.log('✅ [AcademyManagement] Módulo adicionado localmente. Total de módulos:', this.modules.length);
-                this.$root.$toast.success(`Módulo "${this.newModule.name}" adicionado localmente. Salve o curso para persistir.`);
                 return;
             }
 
-            // Se o curso já existe, salva no backend
+            // Se o curso já existe e não é módulo local, salva no backend
             const courseId = this.course.selectedCourseId || this.$route.params.id;
             try {
                 const apiBaseUrl = this.getApiBaseUrl();
-                const moduleCount = this.modules.filter(m => m.courseId === courseId && !m.isLocal).length;
-                const response = await fetch(`${apiBaseUrl}/courses/modules`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        courseId: courseId,
-                        title: `Módulo ${moduleCount + 1} - ${this.newModule.name}`,
-                        shortDescription: this.newModule.shortDescription,
-                        status: 'draft',
-                        orderIndex: moduleCount,
-                    }),
-                });
+                let response;
+                
+                if (isEditing) {
+                    // Busca o módulo atual para manter o índice/título original se possível
+                    const currentModule = this.modules.find(m => m.id === this.newModule.id);
+                    const match = currentModule?.title?.match(/^Módulo (\d+) - /);
+                    const prefix = match ? `Módulo ${match[1]} - ` : '';
+
+                    response = await fetch(`${apiBaseUrl}/courses/modules/${this.newModule.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            title: `${prefix}${this.newModule.name}`,
+                            shortDescription: this.newModule.shortDescription,
+                            status: currentModule?.status || 'draft',
+                        }),
+                    });
+                } else {
+                    const moduleCount = this.modules.filter(m => m.courseId === courseId && !m.isLocal).length;
+                    response = await fetch(`${apiBaseUrl}/courses/modules`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            courseId: courseId,
+                            title: `Módulo ${moduleCount + 1} - ${this.newModule.name}`,
+                            shortDescription: this.newModule.shortDescription,
+                            status: 'draft',
+                            orderIndex: moduleCount,
+                        }),
+                    });
+                }
+
                 if (response.ok) {
                     await this.loadCourseDetails();
                     this.closeNewModuleModal();
-                    this.$root.$toast.success(`Módulo adicionado com sucesso!`);
+                    this.$root.$toast.success(`Módulo ${isEditing ? 'atualizado' : 'adicionado'} com sucesso!`);
                 } else {
-                    const error = await response.json().catch(() => ({ message: 'Erro ao criar módulo' }));
-                    this.$root.$toast.error(`Erro ao criar módulo: ${error.message}`);
+                    const error = await response.json().catch(() => ({ message: `Erro ao ${isEditing ? 'atualizar' : 'criar'} módulo` }));
+                    this.$root.$toast.error(`Erro: ${error.message}`);
                 }
             } catch (error) {
-                console.error('Erro ao criar módulo:', error);
-                this.$root.$toast.info('Erro ao criar módulo. Verifique sua conexão.');
+                console.error(`Erro ao ${isEditing ? 'atualizar' : 'criar'} módulo:`, error);
+                this.$root.$toast.info('Erro de conexão com o servidor.');
             }
+        },
+        // Aula
+        // Editar e Excluir Módulo
+        openEditModule(module) {
+          // Preenche o formulário de novo módulo com os dados existentes
+          this.isNewModuleModalOpen = true;
+          this.newModule = {
+            id: module.id,
+            courseId: module.courseId,
+            name: module.title.replace(/^Módulo \d+ - /, ''),
+            shortDescription: module.shortDescription || ''
+          };
+        },
+        async deleteModule(module) {
+          const isLocal = !module.id || module.id.toString().startsWith('temp-module-') || module.isLocal;
+          
+          if (!confirm(`Tem certeza que deseja excluir o módulo "${module.title.replace(/^Módulo \d+ - /, '')}"?`)) return;
+
+          if (isLocal) {
+            // Módulo ainda não salvo no backend, remove localmente
+            const index = this.modules.findIndex(m => m.id === module.id);
+            if (index !== -1) {
+              this.modules.splice(index, 1);
+              // Também remove as aulas associadas a este módulo que ainda não foram salvas
+              this.lessons = this.lessons.filter(l => l.moduleId !== module.id);
+              this.$root.$toast.success('Módulo removido localmente.');
+            }
+            return;
+          }
+
+          try {
+            const apiBaseUrl = this.getApiBaseUrl();
+            const response = await fetch(`${apiBaseUrl}/courses/modules/${module.id}`, {
+              method: 'DELETE',
+              headers: {
+                'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                'Content-Type': 'application/json'
+              }
+            });
+            if (response.ok) {
+              // Remove o módulo e suas aulas do estado local
+              const idx = this.modules.findIndex(m => m.id === module.id);
+              if (idx !== -1) this.modules.splice(idx, 1);
+              this.lessons = this.lessons.filter(l => l.moduleId !== module.id);
+              
+              this.$root.$toast.success('Módulo excluído com sucesso.');
+            } else {
+              const err = await response.json().catch(() => ({ message: response.statusText }));
+              this.$root.$toast.error(`Erro ao excluir módulo: ${err.message}`);
+            }
+          } catch (e) {
+            console.error('Erro ao excluir módulo:', e);
+            this.$root.$toast.info('Erro ao excluir módulo. Verifique sua conexão.');
+          }
         },
         // Aula
         openNewLessonModal(moduleId = null) {
