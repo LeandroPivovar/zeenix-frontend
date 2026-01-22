@@ -766,9 +766,9 @@
 						id: 'zeus', 
 						title: 'Zeus', 
 						emoji: '⚡', 
-						description: 'Análise: Probabilidade com Troca de Contrato\nAssertividade: 65% a 75%\nRetorno: 60% / 92%',
-						winRate: 65,
-						style: 'Probabilístico'
+						description: 'Análise: 8 Filtros Estatísticos + Troca de Contrato\nAssertividade: 95% a 98%\nRetorno: 70% / 800%',
+						winRate: 95,
+						style: 'Estatístico'
 					}
 				],
 				hideValues: false
