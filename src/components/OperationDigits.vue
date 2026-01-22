@@ -163,7 +163,8 @@
                             </div>
                             <div class="signal-inline-metric">
                                 <span class="signal-inline-label">Tempo</span>
-                                <span v-if="aiRecommendation && aiRecommendation.time" class="text-zenix-green text-sm font-black">{{ aiRecommendation.time }}</span>
+                                <span v-if="signalCountdown !== null" class="text-zenix-green text-sm font-black">{{ signalCountdown }}s</span>
+                                <span v-else-if="aiRecommendation && aiRecommendation.time" class="text-zenix-green text-sm font-black">{{ aiRecommendation.time }}</span>
                                 <span v-else class="text-white/30 text-xs font-bold">-</span>
                             </div>
                         </div>
@@ -485,7 +486,10 @@
                                 <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Tempo</span>
                             </div>
                             <div class="metric-body text-left">
-                                <span v-if="aiRecommendation && aiRecommendation.time" class="text-xl font-black text-zenix-green">
+                                <span v-if="signalCountdown !== null" class="text-xl font-black text-zenix-green">
+                                    {{ signalCountdown }}s
+                                </span>
+                                <span v-else-if="aiRecommendation && aiRecommendation.time" class="text-xl font-black text-zenix-green">
                                     {{ aiRecommendation.time }}
                                 </span>
                                 <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">-</span>
@@ -770,6 +774,8 @@ export default {
             isAnalyzing: false,
             aiRecommendation: null,
             analysisTimer: null,
+            signalCountdown: null,
+            signalCountdownInterval: null,
         }
     },
     computed: {
@@ -1184,24 +1190,40 @@ export default {
                 clearInterval(this.analysisTimer);
                 this.analysisTimer = null;
             }
+            this.stopSignalCountdown();
             this.aiRecommendation = null;
+        },
+        startSignalCountdown(seconds) {
+            if (this.signalCountdownInterval) {
+                clearInterval(this.signalCountdownInterval);
+            }
+            
+            this.signalCountdown = seconds;
+            
+            this.signalCountdownInterval = setInterval(() => {
+                if (this.signalCountdown > 0) {
+                    this.signalCountdown--;
+                } else {
+                    this.stopSignalCountdown();
+                }
+            }, 1000);
+        },
+        stopSignalCountdown() {
+            if (this.signalCountdownInterval) {
+                clearInterval(this.signalCountdownInterval);
+                this.signalCountdownInterval = null;
+            }
+            this.signalCountdown = null;
         },
         async generateSignal() {
             if (!this.isAnalyzing) return;
 
             // Chamar backend para análise real (Veloz)
             try {
-                // Recupera userId do localStorage ou de onde estiver armazenado
-                // Se não tiver userId, tentar usar 'current' se o backend suportar ou pegar do token
-                // Assumindo que o back espera { userId: ... }
-                // Vamos tentar pegar o loginid como userId provisório ou decodificar do token se necessário
-                // O endpoint /ai/analyze espera { userId: string }
-                
-                // Melhor abordagem: usar o serviço de API se existisse, mas vamos de fetch direto
-                const token = localStorage.getItem('auth_token'); // Ajustar chave se necessário
+                const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
                 const userId = this.accountLoginid || 'current'; 
 
-                const response = await fetch(`${process.env.VUE_APP_API_URL || 'http://localhost:3000'}/ai/analyze`, {
+                const response = await fetch(`${process.env.VUE_APP_API_URL || 'https://iazenix.com/api'}/ai/analyze`, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -1219,26 +1241,25 @@ export default {
                 if (result.success && result.data) {
                     const diag = result.data;
                     
-                    // Mapear resposta do backend para o formato esperado pelo frontend
-                    // O backend retorna algo como: 
-                    // { sinal: 'PAR', confianca: 85, motivo: '...', detalhes: {...} }
-                    
                     if (diag.sinal) {
                         this.aiRecommendation = {
-                            // Se o sinal for específico (ex: MATCH 5), ajustar aqui. 
-                            // O backend atual (Veloz) retorna PAR/IMPAR normalmente. 
-                            // Vamos exibir o sinal cru formatado
                             action: `APOSTAR ${diag.sinal}`, 
-                            confidence: Math.round(diag.confianca)
+                            confidence: Math.round(diag.confianca),
+                            entry_time: diag.entry_time_seconds || 0
                         };
+
+                        if (this.aiRecommendation.entry_time > 0) {
+                            this.startSignalCountdown(this.aiRecommendation.entry_time);
+                        } else {
+                            this.stopSignalCountdown();
+                        }
                     } else {
-                        // Sem sinal forte
                         this.aiRecommendation = null;
+                        this.stopSignalCountdown();
                     }
                 }
             } catch (error) {
                 console.error('[OperationDigits] Erro ao gerar sinal:', error);
-                // Não exibir erro na UI para não poluir, apenas logar
             }
         },
         getHistogramBarClass(digit, percentage, frequencies) {

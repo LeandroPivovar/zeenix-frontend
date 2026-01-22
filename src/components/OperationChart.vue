@@ -145,7 +145,13 @@
                 <span class="text-sm font-bold text-white/90">Tempo</span>
               </div>
               <div class="metric-signal-body">
-                <span v-if="aiRecommendation && aiRecommendation.time" class="text-lg font-black text-zenix-green">
+                <div v-if="signalCountdown !== null" class="flex flex-col items-center">
+                  <span class="text-lg font-black text-zenix-green">
+                    {{ signalCountdown }}s
+                  </span>
+                  <span class="text-[10px] text-white/40 uppercase font-bold tracking-tighter">Entrar em</span>
+                </div>
+                <span v-else-if="aiRecommendation && aiRecommendation.time" class="text-lg font-black text-zenix-green">
                   {{ aiRecommendation.time }}
                 </span>
                 <span v-else class="text-sm text-white/40 font-medium">-</span>
@@ -258,7 +264,8 @@
               </div>
               <div class="signal-inline-metric">
                 <span class="signal-inline-label">Tempo</span>
-                <span v-if="aiRecommendation && aiRecommendation.time" class="text-zenix-green text-sm font-black">{{ aiRecommendation.time }}</span>
+                <span v-if="signalCountdown !== null" class="text-zenix-green text-sm font-black">{{ signalCountdown }}s</span>
+                <span v-else-if="aiRecommendation && aiRecommendation.time" class="text-zenix-green text-sm font-black">{{ aiRecommendation.time }}</span>
                 <span v-else class="text-white/30 text-xs font-bold">-</span>
               </div>
             </div>
@@ -650,6 +657,8 @@ export default {
       isAnalyzing: false,
       analysisInterval: null,
       aiRecommendation: null,
+      signalCountdown: null,
+      signalCountdownInterval: null,
       collectedTicks: [], // Ticks coletados para análise
       // Chart Type
       chartType: 'line', // 'line' ou 'candles'
@@ -2545,19 +2554,6 @@ export default {
       
       console.log('[Chart] Análise iniciada');
     },
-    stopAnalysis() {
-      this.isAnalyzing = false;
-      
-      if (this.analysisInterval) {
-        clearInterval(this.analysisInterval);
-        this.analysisInterval = null;
-      }
-      
-      this.collectedTicks = [];
-      this.aiRecommendation = null;
-      
-      console.log('[Chart] Análise parada');
-    },
     collectInitialTicks() {
       // Coletar ticks dos últimos 10 minutos que já foram plotados
       // Isso será feito quando carregar os ticks do backend
@@ -2655,13 +2651,57 @@ export default {
         this.aiRecommendation = {
           action: recommendation.action || 'CALL',
           confidence: confidenceValue,
-          reasoning: recommendation.reasoning || ''
+          reasoning: recommendation.reasoning || '',
+          entry_time: recommendation.entry_time || 0
         };
+
+        // Iniciar contagem regressiva se houver tempo de entrada
+        if (this.aiRecommendation.entry_time > 0) {
+          this.startSignalCountdown(this.aiRecommendation.entry_time);
+        } else {
+          this.signalCountdown = null;
+        }
         
       } catch (error) {
         console.error('[Chart] Erro ao analisar gráfico:', error);
         this.aiRecommendation = null;
       }
+    },
+    startSignalCountdown(seconds) {
+      if (this.signalCountdownInterval) {
+        clearInterval(this.signalCountdownInterval);
+      }
+      
+      this.signalCountdown = seconds;
+      
+      this.signalCountdownInterval = setInterval(() => {
+        if (this.signalCountdown > 0) {
+          this.signalCountdown--;
+        } else {
+          this.stopSignalCountdown();
+        }
+      }, 1000);
+    },
+    stopSignalCountdown() {
+      if (this.signalCountdownInterval) {
+        clearInterval(this.signalCountdownInterval);
+        this.signalCountdownInterval = null;
+      }
+      this.signalCountdown = null;
+    },
+    stopAnalysis() {
+      this.isAnalyzing = false;
+      
+      if (this.analysisInterval) {
+        clearInterval(this.analysisInterval);
+        this.analysisInterval = null;
+      }
+      
+      this.stopSignalCountdown();
+      this.collectedTicks = [];
+      this.aiRecommendation = null;
+      
+      console.log('[Chart] Análise parada');
     },
     getDefaultMarkets() {
       // Mercados padrão caso a API não retorne
