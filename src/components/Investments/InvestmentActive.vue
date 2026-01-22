@@ -735,13 +735,13 @@
                                     <!-- Alvo de Lucro -->
                                     <div class="text-left border border-[#383838] rounded-lg p-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Alvo De Lucro</p>
-                                        <p class="text-base font-bold text-zenix-green text-left" v-if="!isLoadingConfig">{{ sessionConfig.profitTarget ? '$' + sessionConfig.profitTarget.toFixed(2) : '$100' }}</p>
+                                        <p class="text-base font-bold text-zenix-green text-left" v-if="!isLoadingConfig">{{ profitTarget ? '$' + profitTarget.toFixed(2) : '$100.00' }}</p>
                                         <p class="text-base font-bold text-zenix-green text-left" v-else>Carregando...</p>
                                     </div>
                                     <!-- Limite de Perda -->
                                     <div class="text-left border border-[#383838] rounded-lg p-2">
                                         <p class="text-xs text-zenix-secondary mb-0.5 text-left capitalize">Limite De Perda</p>
-                                        <p class="text-base font-bold text-zenix-red text-left" v-if="!isLoadingConfig">{{ sessionConfig.lossLimit ? '$' + sessionConfig.lossLimit.toFixed(2) : '$25' }}</p>
+                                        <p class="text-base font-bold text-zenix-red text-left" v-if="!isLoadingConfig">{{ lossLimit ? '$' + lossLimit.toFixed(2) : '$25.00' }}</p>
                                         <p class="text-base font-bold text-zenix-red text-left" v-else>Carregando...</p>
                                     </div>
                                     
