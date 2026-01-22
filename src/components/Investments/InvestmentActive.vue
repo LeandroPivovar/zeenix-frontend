@@ -1501,6 +1501,11 @@ export default {
 
             const isApollo = strategyLower === 'apollo' || strategyLower.includes('apollo');
 
+            // ✅ Nexus: Se receber RISE/FALL (Recuperação), exibe RISE/FALL
+            if (isNexus && (direction === 'RISE' || direction === 'FALL')) {
+                return direction;
+            }
+
             // Map HIGHER to OVER (except for Nexus/Orion/Atlas/Apollo)
             if (direction === 'HIGHER' || direction === 'DIGITOVER') {
                 if (isNexus || isOrion || isAtlas || isApollo) return 'CALL';

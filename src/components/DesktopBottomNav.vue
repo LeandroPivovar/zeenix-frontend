@@ -28,18 +28,37 @@
       <span class="nav-label">IA's</span>
     </router-link>
 
-    <div 
-      class="nav-item disabled"
-      :title="'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'"
+    <!-- Copy Trading - Bloqueado ou Admin -->
+    <router-link 
+      v-if="isAdmin"
+      to="/copy-trading" 
+      class="nav-item"
+      :class="{ active: isActive('/copy-trading') }"
     >
       <svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
         <rect x="8" y="8" width="13" height="13" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
         <rect x="3" y="3" width="13" height="13" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
       <span class="nav-label">Copy</span>
+    </router-link>
+
+    <div 
+      v-else
+      class="nav-item disabled"
+      @click="openDevModal"
+      title="Funcionalidade em desenvolvimento"
+    >
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="8" y="8" width="13" height="13" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <rect x="3" y="3" width="13" height="13" rx="1" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="nav-label">Copy</span>
+      <i class="fa-solid fa-lock text-[#EF4444] text-[10px] absolute top-1 right-2"></i>
     </div>
 
+    <!-- Agente Autônomo - Bloqueado ou Admin -->
     <router-link 
+      v-if="isAdmin"
       to="/agente-autonomo" 
       class="nav-item"
       :class="{ active: isActive('/agente-autonomo') }"
@@ -56,7 +75,28 @@
       <span class="nav-label">Agente</span>
     </router-link>
 
+    <div 
+      v-else
+      class="nav-item disabled"
+      @click="openDevModal"
+      title="Funcionalidade em desenvolvimento"
+    >
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect x="7" y="13" width="10" height="8" rx="2" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <circle cx="10" cy="17" r="1" fill="currentColor"/>
+        <circle cx="14" cy="17" r="1" fill="currentColor"/>
+        <circle cx="12" cy="7" r="2.5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <line x1="12" y1="4.5" x2="12" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <line x1="12" y1="9.5" x2="12" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <circle cx="12" cy="4.5" r="0.5" fill="currentColor"/>
+      </svg>
+      <span class="nav-label">Agente</span>
+      <i class="fa-solid fa-lock text-[#EF4444] text-[10px] absolute top-1 right-2"></i>
+    </div>
+
+    <!-- Sinais (Operação Manual) - Bloqueado ou Admin -->
     <router-link 
+      v-if="isAdmin"
       to="/operation" 
       class="nav-item"
       :class="{ active: isActive('/operation') }"
@@ -66,15 +106,82 @@
       </svg>
       <span class="nav-label">Sinais</span>
     </router-link>
+
+    <div 
+      v-else
+      class="nav-item disabled"
+      @click="openDevModal"
+      title="Funcionalidade em desenvolvimento"
+    >
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <polyline points="2 12 4 12 6 8 8 16 10 4 12 20 14 8 16 16 18 12 20 12 22 12" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="nav-label">Sinais</span>
+      <i class="fa-solid fa-lock text-[#EF4444] text-[10px] absolute top-1 right-2"></i>
+    </div>
+
+    <!-- Modal de Funcionalidade em Desenvolvimento -->
+    <div v-if="showDevModal" class="dev-modal-overlay" @click.self="showDevModal = false">
+      <div class="dev-modal-content">
+        <div class="dev-modal-header">
+          <i class="fa-solid fa-screwdriver-wrench text-2xl text-[#22C55E] mb-4"></i>
+          <h2 class="text-white text-lg font-semibold mb-2">Funcionalidade em desenvolvimento</h2>
+        </div>
+        <div class="dev-modal-body">
+          <p class="text-[#A1A1A1] text-sm">Para seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade.</p>
+          <p class="mt-2 text-xs text-[#A1A1A1] opacity-70">Logo quando terminarmos você será avisado!</p>
+        </div>
+        <button class="dev-modal-button" @click="showDevModal = false">Entendi</button>
+      </div>
+    </div>
   </nav>
 </template>
 
 <script>
 export default {
   name: 'DesktopBottomNav',
+  data() {
+    return {
+      showDevModal: false
+    }
+  },
+  computed: {
+    isAdmin() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return false;
+        
+        // Decodificar JWT token
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        
+        // Verificar se o usuário tem role de admin
+        const role = payload.role || payload.roles || payload.userRole || payload.user_role;
+        const isAdminFlag = payload.isAdmin || payload.is_admin;
+        
+        // Verificar se role contém 'admin' ou se isAdmin é true
+        if (isAdminFlag === true || isAdminFlag === 'true') {
+            return true;
+        }
+        
+        if (role) {
+            const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : role.toString().toLowerCase();
+            const result = roleStr.includes('admin') || roleStr === 'admin';
+            return result;
+        }
+        
+        return false;
+      } catch (error) {
+        console.error('[DesktopBottomNav] Erro ao verificar se usuário é admin:', error);
+        return false;
+      }
+    }
+  },
   methods: {
     isActive(path) {
       return this.$route.path === path || this.$route.path.startsWith(path + '/');
+    },
+    openDevModal() {
+      this.showDevModal = true;
     }
   }
 }
@@ -113,6 +220,7 @@ export default {
   cursor: pointer;
   padding: 8px 16px;
   border-radius: 8px;
+  position: relative;
 }
 
 .nav-item.disabled {
@@ -156,6 +264,64 @@ export default {
 .nav-item.active .nav-label {
   color: #22C55E;
   font-weight: 500;
+}
+
+/* Modal Styles */
+.dev-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 999999;
+  padding: 20px;
+}
+
+.dev-modal-content {
+  background: #111;
+  border: 1px solid rgba(34, 197, 94, 0.2);
+  border-radius: 20px;
+  padding: 30px;
+  max-width: 350px;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+  animation: modalAppear 0.3s ease-out;
+}
+
+.dev-modal-button {
+  margin-top: 20px;
+  background: #22C55E;
+  color: #000;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  width: 100%;
+}
+
+.dev-modal-button:hover {
+  background: #1eb054;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(34, 197, 94, 0.3);
+}
+
+@keyframes modalAppear {
+  from {
+    opacity: 0;
+    transform: scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 </style>
 
