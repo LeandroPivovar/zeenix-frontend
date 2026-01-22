@@ -1197,12 +1197,22 @@ export default {
                     const config = result.data;
                     this.isInvestmentActive = config.isActive || false;
                     
-                    if (config.isActive) {
-                        console.log('[InvestmentIAView] ✅ IA JÁ ESTÁ ATIVA!');
+                    // ✅ [ZENIX v2.0] Só preencher parâmetros se a IA estiver ativa
+                    // Se estiver inativa, manter os padrões para uma nova configuração
+                    if (this.isInvestmentActive) {
+                        if (config.entryValue) this.entryValue = Number(config.entryValue);
+                        if (config.profitTarget) this.profitTarget = Number(config.profitTarget);
+                        if (config.lossLimit) this.lossLimit = Number(config.lossLimit);
+                        if (config.mode) this.mode = config.mode;
+                        if (config.strategy) this.selectedStrategy = config.strategy.toLowerCase();
+                        if (config.modoMartingale) this.modoMartingale = config.modoMartingale;
+                        if (config.stoplossBlindado !== undefined) this.stoplossBlindado = config.stoplossBlindado;
+                        
+                        console.log('[InvestmentIAView] ✅ IA JÁ ESTÁ ATIVA! Parâmetros sincronizados.');
                         // Buscar histórico de ticks para construir o gráfico
                         await this.fetchTicksHistory(1000);
                     } else {
-                        console.log('[InvestmentIAView] IA está inativa');
+                        console.log('[InvestmentIAView] IA está inativa, usando padrões de nova configuração.');
                     }
                 }
             } catch (error) {
