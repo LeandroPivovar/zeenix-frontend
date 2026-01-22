@@ -871,20 +871,24 @@ export default {
           title: 'Agente Autônomo',
           percentage: '+15.2%',
           usage: 0,
-          buttonText: 'Ativar agora',
+          buttonText: 'Em breve',
           chartPath: 'M0,18 L20,14 L40,16 L60,10 L80,12 L100,6',
           chartPathFull: 'M0,50 L25,48 L50,45 L75,42 L100,38 L125,33 L150,28 L175,22 L200,18',
-          chartEndY: 18
+          chartEndY: 18,
+          disabled: true,
+          tooltip: 'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'
         },
         {
           icon: 'fas fa-chart-line',
           title: 'Operações com Sinais',
           percentage: '+10.9%',
-          usage: 58,
-          buttonText: 'Operar agora',
+          usage: 0,
+          buttonText: 'Em breve',
           chartPath: 'M0,19 L20,16 L40,17 L60,13 L80,14 L100,10',
           chartPathFull: 'M0,46 L25,44 L50,41 L75,38 L100,35 L125,32 L150,28 L175,24 L200,22',
-          chartEndY: 22
+          chartEndY: 22,
+          disabled: true,
+          tooltip: 'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'
         }
       ],
       recommendedIA: {
