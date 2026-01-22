@@ -16,55 +16,62 @@
                 href="#"
                 class="menu-item"
                 :class="{ active: isStatsIAsActive }"
-                @click.prevent="navigateAndClose('/StatsIAs')"
+                @click.prevent="isAdmin ? navigateAndClose('/StatsIAs') : openDevModal()"
                 data-text="IAs de Investimento"
             >
                 <i class="fa-solid fa-brain w-5 opacity-85"></i>
                 <span>IA's de Investimento</span>
+                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <a
                 href="#"
                 class="menu-item"
                 :class="{ active: isAutonomousAgentActive }"
-                @click.prevent="navigateAndClose('/agente-autonomo')"
+                @click.prevent="isAdmin ? navigateAndClose('/agente-autonomo') : openDevModal()"
                 data-text="Agente Autônomo"
             >
                 <i class="fa-solid fa-microchip w-5 opacity-85"></i>
                 <span>Agente Autônomo</span>
+                <p v-if="!isAdmin" class="ml-auto flex items-center">
+                    <i class="fa-solid fa-lock text-red-500 text-xs"></i>
+                </p>
             </a>
 
             <a
                 href="#"
                 class="menu-item disabled"
                 :title="'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'"
-                @click.prevent
+                @click.prevent="openDevModal"
                 data-text="Copy Trading"
             >
                 <i class="fa-solid fa-users w-5 opacity-85"></i>
                 <span>Copy Trading</span>
+                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <a 
                 href="#"
                 class="menu-item" 
                 :class="{ active: isOperationActive }"
-                @click.prevent="navigateAndClose('/operation')"
+                @click.prevent="isAdmin ? navigateAndClose('/operation') : openDevModal()"
                 data-text="Operação Manual"
             >
                 <i class="fa-solid fa-hand-pointer w-5 opacity-85"></i>
                 <span>Operação Manual</span>
+                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <a
                 href="#"
                 class="menu-item"
                 :class="{ active: isMasterTraderActive }"
-                @click.prevent="navigateAndClose('/MasterTrader')"
+                @click.prevent="isAdmin ? navigateAndClose('/MasterTrader') : openDevModal()"
                 data-text="Trader Mestre"
             >
                 <i class="fa-solid fa-user-crown w-5 opacity-85"></i>
                 <span>Trader Mestre</span>
+                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <div class="separator"></div>
@@ -228,6 +235,21 @@
             </template>
 
         </nav>
+
+        <!-- Modal de Funcionalidade em Desenvolvimento -->
+        <div v-if="showDevModal" class="dev-modal-overlay" @click.self="showDevModal = false">
+            <div class="dev-modal-content">
+                <div class="dev-modal-header">
+                    <i class="fa-solid fa-screwdriver-wrench text-zenix-green text-4xl mb-4"></i>
+                    <h2>Funcionalidade em desenvolvimento</h2>
+                </div>
+                <div class="dev-modal-body">
+                    <p>Para seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade.</p>
+                    <p class="mt-2 text-sm opacity-70">Logo quando terminarmos você será avisado!</p>
+                </div>
+                <button class="dev-modal-button" @click="showDevModal = false">Entendi</button>
+            </div>
+        </div>
     </aside>
 </template>
 
@@ -248,7 +270,8 @@ export default {
     emits: ['close-sidebar', 'toggle-collapse'],
     data() {
         return { 
-            showUserMenu: false
+            showUserMenu: false,
+            showDevModal: false
         }
     },
     computed: {
@@ -356,6 +379,10 @@ export default {
     methods: {
         close() { if (this.isOpen) { this.$emit('close-sidebar') } },
         toggleCollapse() { this.$emit('toggle-collapse') },
+        openDevModal() {
+            this.showDevModal = true;
+            this.close(); // Fecha sidebar se estiver aberta
+        },
         navigateAndClose(route) { 
             // Verificar se router está disponível e componente está montado
             if (this._isDestroyed || !this.$el || !this.$router) {
