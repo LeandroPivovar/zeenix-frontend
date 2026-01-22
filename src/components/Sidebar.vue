@@ -27,15 +27,13 @@
             <a
                 href="#"
                 class="menu-item"
-                :class="{ active: isAutonomousAgentActive }"
+                :class="{ active: isAutonomousAgentActive, disabled: !isAdmin }"
                 @click.prevent="isAdmin ? navigateAndClose('/agente-autonomo') : openDevModal()"
                 data-text="Agente Autônomo"
             >
                 <i class="fa-solid fa-microchip w-5 opacity-85"></i>
                 <span>Agente Autônomo</span>
-                <p v-if="!isAdmin" class="ml-auto flex items-center">
-                    <i class="fa-solid fa-lock text-red-500 text-xs"></i>
-                </p>
+                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <a
@@ -53,7 +51,7 @@
             <a 
                 href="#"
                 class="menu-item" 
-                :class="{ active: isOperationActive }"
+                :class="{ active: isOperationActive, disabled: !isAdmin }"
                 @click.prevent="isAdmin ? navigateAndClose('/operation') : openDevModal()"
                 data-text="Operação Manual"
             >
@@ -63,15 +61,15 @@
             </a>
 
             <a
+                v-if="isAdmin"
                 href="#"
                 class="menu-item"
                 :class="{ active: isMasterTraderActive }"
-                @click.prevent="isAdmin ? navigateAndClose('/MasterTrader') : openDevModal()"
+                @click.prevent="navigateAndClose('/MasterTrader')"
                 data-text="Trader Mestre"
             >
                 <i class="fa-solid fa-user-crown w-5 opacity-85"></i>
                 <span>Trader Mestre</span>
-                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
             </a>
 
             <div class="separator"></div>
