@@ -50,6 +50,15 @@
                                 </svg>
                             </div>
                             <div class="course-card-image-gradient"></div>
+                            <button 
+                                class="course-delete-btn" 
+                                @click.stop="deleteCourse(course.id)"
+                                title="Excluir Curso"
+                            >
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                    <path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </button>
                             <div class="course-card-status" :class="getStatusClass(course.status)">
                                 {{ getStatusLabel(course.status) }}
                             </div>
@@ -109,18 +118,28 @@
                 </div>
             </main>
         </div>
+        
+        <!-- Modal de Confirmação de Exclusão -->
+        <DeleteCourseModal
+            :visible="deleteModal.isOpen"
+            :course-name="deleteModal.courseName"
+            @cancel="closeDeleteModal"
+            @confirm="confirmDelete"
+        />
     </div>
 </template>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import DeleteCourseModal from '../../components/modals/DeleteCourseModal.vue';
 
 export default {
     name: 'AcademyCoursesListView',
     components: {
         AppSidebar,
         TopNavbar,
+        DeleteCourseModal,
     },
     data() {
         return {
@@ -129,6 +148,11 @@ export default {
             isMobile: false,
             courses: [],
             loading: true,
+            deleteModal: {
+                isOpen: false,
+                courseId: null,
+                courseName: ''
+            },
         };
     },
     async mounted() {
@@ -241,6 +265,60 @@ export default {
                 return `${this.getApiBaseUrl()}${path}`;
             }
             return path;
+        },
+        deleteCourse(courseId) {
+            const course = this.courses.find(c => c.id === courseId);
+            if (!course) return;
+            
+            this.deleteModal.isOpen = true;
+            this.deleteModal.courseId = courseId;
+            this.deleteModal.courseName = course.name || course.title || 'este curso';
+        },
+        closeDeleteModal() {
+            this.deleteModal.isOpen = false;
+            this.deleteModal.courseId = null;
+            this.deleteModal.courseName = '';
+        },
+        async confirmDelete() {
+            const courseId = this.deleteModal.courseId;
+            
+            // Fecha o modal imediatamente
+            this.closeDeleteModal();
+            
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const response = await fetch(`${apiBaseUrl}/courses/${courseId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                
+                if (response.ok) {
+                    // Remove o curso da lista localmente
+                    this.courses = this.courses.filter(c => c.id !== courseId);
+                    
+                    // Exibir mensagem de sucesso
+                    if (this.$root.$toast) {
+                        this.$root.$toast.success('Curso excluído com sucesso!');
+                    }
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Erro ao excluir curso' }));
+                    if (this.$root.$toast) {
+                        this.$root.$toast.error(`Erro: ${error.message}`);
+                    } else {
+                        alert(`Erro ao excluir curso: ${error.message}`);
+                    }
+                }
+            } catch (error) {
+                console.error('Erro ao excluir curso:', error);
+                if (this.$root.$toast) {
+                    this.$root.$toast.error('Erro ao excluir curso. Verifique sua conexão.');
+                } else {
+                    alert('Erro ao excluir curso. Verifique sua conexão.');
+                }
+            }
         }
     }
 }
@@ -415,6 +493,42 @@ export default {
     align-items: center;
     justify-content: center;
     color: rgba(255, 255, 255, 0.7);
+}
+
+.course-delete-btn {
+    position: absolute;
+    top: 1rem;
+    left: 1rem;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(239, 68, 68, 0.9);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: scale(0.8);
+    z-index: 3;
+    backdrop-filter: blur(4px);
+}
+
+.course-card:hover .course-delete-btn {
+    opacity: 1;
+    transform: scale(1);
+}
+
+.course-delete-btn:hover {
+    background: rgba(220, 38, 38, 1);
+    transform: scale(1.1);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+}
+
+.course-delete-btn:active {
+    transform: scale(0.95);
 }
 
 .course-card-status {
