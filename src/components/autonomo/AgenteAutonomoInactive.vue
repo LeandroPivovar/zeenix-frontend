@@ -403,9 +403,9 @@ export default {
 			selectedTradingMode: 'rapido', // Novo: Modo de Negociação
 
 			// Parâmetros (Baseado na imagem)
-			valorOperacao: 50.00,
+			valorOperacao: 20.00,
 			metaLucro: 100.00,
-			limitePerda: 50.00,
+			limitePerda: 100.00,
 			showAgentSelectorModal: false,
 			availableAgents: [
 
