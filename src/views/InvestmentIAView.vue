@@ -10,6 +10,7 @@
         <AppSidebar 
             :is-open="isSidebarOpen" 
             :is-collapsed="isSidebarCollapsed" 
+            :is-mobile="isMobile"
             @toggle-collapse="toggleSidebarCollapse"
             @close-sidebar="closeSidebar"
         />
@@ -1258,6 +1259,23 @@ export default {
 * {
     font-family: 'Inter', sans-serif;
     box-sizing: border-box;
+}
+
+/* Sidebar Overlay */
+.sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 9998;
+    backdrop-filter: blur(2px);
+}
+
+/* Force Sidebar Background on Mobile */
+:deep(.sidebar) {
+    background-color: #0B0B0B !important;
 }
 
 .zenix-layout {
