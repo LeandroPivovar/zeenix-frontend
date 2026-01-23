@@ -702,6 +702,9 @@ export default {
           
           this.$root.$toast.success('Configurações salvas com sucesso!')
         } else {
+          const errorData = await res.json().catch(() => ({}));
+          this.$root.$toast.error(errorData.message || 'Erro ao salvar configurações.');
+        }
       } catch (err) {
         console.error('Erro ao salvar:', err)
         this.$root.$toast.error('Erro ao salvar configurações. Tente novamente.')
