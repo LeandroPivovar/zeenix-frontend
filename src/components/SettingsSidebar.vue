@@ -337,9 +337,12 @@ export default {
     }
   },
   watch: {
-    isOpen() {
-      // Não carregar automaticamente ao abrir - só carregar quando o usuário clicar em "Minhas Contas"
-      // Isso evita chamadas desnecessárias
+    isOpen(newVal) {
+      // Recarregar configurações quando o modal abrir
+      if (newVal) {
+        console.log('[SettingsSidebar] Modal aberto, recarregando configurações...');
+        this.loadUserProfilePicture();
+      }
     },
     accountType(newType) {
       console.log('[SettingsSidebar] accountType mudou:', newType);

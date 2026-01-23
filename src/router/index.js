@@ -71,7 +71,7 @@ const routes = [
     path: '/academy/course/:id',
     name: 'CourseDetail',
     component: CourseDetailView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
     path: '/profile',
@@ -89,7 +89,7 @@ const routes = [
     path: '/settings',
     name: 'Settings',
     component: SettingsView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
     path: '/plans',
@@ -101,13 +101,13 @@ const routes = [
     path: '/operation',
     name: 'Operation',
     component: OperationView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
     path: '/copy-trading',
     name: 'CopyTrading',
     component: CopyTraders,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
     path: '/oauth/callback',
@@ -125,7 +125,7 @@ const routes = [
     path: '/StatsIAs',
     name: 'StatsIAs',
     component: InvestmentIAView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
     path: '/Experts',
@@ -181,25 +181,25 @@ const routes = [
     path: '/MasterTrader',
     name: 'MasterTraderView',
     component: MasterTraderView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
     path: '/agente-autonomo',
     name: 'AgenteAutonomoView',
     component: AgenteAutonomoView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
     path: '/agente-autonomo/logs',
     name: 'AutonomousAgentLogsView',
     component: AutonomousAgentLogsView,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
     path: '/copy-trader',
     name: 'CopyTradersView',
     component: CopyTraders,
-    meta: { requiresAuth: true }
+    meta: { requiresAuth: true, requiresDeriv: true }
   },
   {
     path: '/SupportItems',
@@ -225,6 +225,15 @@ router.beforeEach((to, from, next) => {
   if (to.meta.requiresAuth) {
     const token = localStorage.getItem('token')
     if (!token) return next({ path: '/login' })
+
+    // Se a rota requer conexão com a Deriv, verifica se o usuário está conectado
+    if (to.meta.requiresDeriv) {
+      const derivConnection = localStorage.getItem('deriv_connection')
+      if (!derivConnection) {
+        console.warn(`[Router] Redirecionando para dashboard: ${to.path} requer conexão com a Deriv`)
+        return next({ path: '/dashboard' })
+      }
+    }
 
     // Verificação de role habilitada - acesso apenas para admins
     if (to.meta.requiresRole && Array.isArray(to.meta.requiresRole)) {
