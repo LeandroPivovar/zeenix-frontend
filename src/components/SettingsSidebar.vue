@@ -188,6 +188,14 @@ export default {
       fictitiousBalance: 10000,
       isFictitiousBalanceActive: false,
       showDollarSign: false,
+      
+      // Novas colunas do banco de dados para contas
+      tokenReal: null,
+      tokenRealCurrency: 'USD',
+      realAmount: 0,
+      tokenDemo: null,
+      tokenDemoCurrency: 'USD',
+      demoAmount: 0,
     };
   },
   computed: {
@@ -355,20 +363,40 @@ export default {
     },
     toggleAccountsList() {
       this.showAccountsList = !this.showAccountsList;
-      console.log('[SettingsSidebar] toggleAccountsList:', {
-        showAccountsList: this.showAccountsList,
-        availableAccountsCount: this.availableAccounts.length,
-        availableAccounts: this.availableAccounts
-      });
       
-      // Carregar contas apenas quando abrir a lista E não tiver contas carregadas
-      // O accountsLoader já usa cache, então não precisa forçar recarregamento
-      if (this.showAccountsList && this.availableAccounts.length === 0) {
-        console.log('[SettingsSidebar] Carregando contas...');
-        this.loadAvailableAccounts(false);
-      } else if (this.showAccountsList && this.availableAccounts.length > 0) {
-        console.log('[SettingsSidebar] Contas já disponíveis:', this.availableAccounts.length);
-        // Não recarregar se já tem contas - o cache já está sendo usado
+      if (this.showAccountsList) {
+        console.log('[SettingsSidebar] Populando contas via dados do banco...');
+        
+        const accounts = [];
+        
+        // Adicionar Conta Real se existir token
+        if (this.tokenReal) {
+          accounts.push({
+            loginid: 'REAL_ACC', // ID amigável / placeholder
+            token: this.tokenReal,
+            isDemo: false,
+            balance: parseFloat(this.realAmount) || 0,
+            currency: this.tokenRealCurrency || 'USD'
+          });
+        }
+        
+        // Adicionar Conta Demo se existir token
+        if (this.tokenDemo) {
+          accounts.push({
+            loginid: 'DEMO_ACC', // ID amigável / placeholder
+            token: this.tokenDemo,
+            isDemo: true,
+            balance: parseFloat(this.demoAmount) || 0,
+            currency: this.tokenDemoCurrency || 'USD'
+          });
+        }
+        
+        this.availableAccounts = accounts;
+        
+        if (this.availableAccounts.length === 0) {
+          console.log('[SettingsSidebar] Nenhuma conta encontrada nos dados do perfil, tentando carregar via legado...');
+          this.loadAvailableAccounts(false);
+        }
       }
     },
     async loadAvailableAccounts(forceReload = false) {
@@ -671,6 +699,14 @@ export default {
               }
             }
           }
+
+          // Atualizar dados de conta do banco
+          this.tokenReal = data.tokenReal;
+          this.tokenRealCurrency = data.tokenRealCurrency;
+          this.realAmount = data.realAmount;
+          this.tokenDemo = data.tokenDemo;
+          this.tokenDemoCurrency = data.tokenDemoCurrency;
+          this.demoAmount = data.demoAmount;
         }
       } catch (error) {
         console.error('[SettingsSidebar] Erro ao carregar configurações:', error);

@@ -2243,6 +2243,14 @@ export default {
                     };
                     
                     console.log('[InvestmentActive] ✅ Stats atualizadas:', this.dailyStats);
+
+                    // ✅ ZENIX v3.5: Notificar pai para atualizar saldo em tempo real (dashboard + topbar)
+                    // Usamos sessionBalance (capital inicial) + sessionProfitLoss (lucro até o momento)
+                    const currentCalculatedBalance = this.dailyStats.sessionBalance + this.dailyStats.sessionProfitLoss;
+                    if (currentCalculatedBalance > 0) {
+                        console.log(`[InvestmentActive] 💰 Emitindo novo saldo calculado: $${currentCalculatedBalance.toFixed(2)}`);
+                        this.$emit('update-balance', currentCalculatedBalance);
+                    }
                 } else {
                     console.error('[InvestmentActive] ❌ Formato de resposta inválido:', result);
                 }

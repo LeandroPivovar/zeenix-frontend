@@ -392,7 +392,15 @@ export default {
       // Master Trader Settings
       isFictitiousBalanceActive: false,
       fictitiousBalance: 0,
-      showDollarSign: false
+      showDollarSign: false,
+      
+      // Novas colunas do banco de dados para contas
+      tokenReal: null,
+      tokenRealCurrency: 'USD',
+      realAmount: 0,
+      tokenDemo: null,
+      tokenDemoCurrency: 'USD',
+      demoAmount: 0,
     }
   },
   computed: {
@@ -652,21 +660,40 @@ export default {
     async loadAvailableAccounts() {
       this.loadingAccounts = true;
       try {
-        // Buscar tokens armazenados
-        const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
-        if (!tokensByLoginIdStr) {
-          console.warn('[TopNavbar] Nenhum token de conta encontrado');
-          this.availableAccounts = [];
+        console.log('[TopNavbar] Populando contas via dados do banco...');
+        
+        const accounts = [];
+        
+        // Adicionar Conta Real se existir token
+        if (this.tokenReal) {
+          accounts.push({
+            loginid: 'REAL_ACC',
+            token: this.tokenReal,
+            isDemo: false,
+            balance: parseFloat(this.realAmount) || 0,
+            currency: this.tokenRealCurrency || 'USD'
+          });
+        }
+        
+        // Adicionar Conta Demo se existir token
+        if (this.tokenDemo) {
+          accounts.push({
+            loginid: 'DEMO_ACC',
+            token: this.tokenDemo,
+            isDemo: true,
+            balance: parseFloat(this.demoAmount) || 0,
+            currency: this.tokenDemoCurrency || 'USD'
+          });
+        }
+        
+        if (accounts.length > 0) {
+          this.availableAccounts = accounts;
+          this.loadingAccounts = false;
           return;
         }
 
-        const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-        const loginIds = Object.keys(tokensByLoginId);
-        
-        if (loginIds.length === 0) {
-          this.availableAccounts = [];
-          return;
-        }
+        // Fallback para lógica legada se não houver dados no banco
+        console.warn('[TopNavbar] Nenhum dado no banco, usando fallback legado');
 
         // Buscar informações de cada conta
         const accounts = [];
@@ -1082,6 +1109,14 @@ export default {
           if (data.isFictitiousBalanceActive !== undefined) this.isFictitiousBalanceActive = data.isFictitiousBalanceActive;
           if (data.fictitiousBalance !== undefined) this.fictitiousBalance = parseFloat(data.fictitiousBalance);
           if (data.showDollarSign !== undefined) this.showDollarSign = data.showDollarSign;
+          
+          // Atualizar dados de conta do banco
+          this.tokenReal = data.tokenReal;
+          this.tokenRealCurrency = data.tokenRealCurrency;
+          this.realAmount = data.realAmount;
+          this.tokenDemo = data.tokenDemo;
+          this.tokenDemoCurrency = data.tokenDemoCurrency;
+          this.demoAmount = data.demoAmount;
         }
       } catch (error) {
         console.error('[TopNavbar] Erro ao carregar configurações de Master Trader:', error);

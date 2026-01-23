@@ -437,6 +437,7 @@
                     :fictitious-balance="fictitiousBalance"
                         @deactivate="deactivateIA"
                         @reactivate="activateIA"
+                        @update-balance="handleLiveBalanceUpdate"
                 />
                 </section>
 
@@ -677,6 +678,36 @@ export default {
         }
     },
     methods: {
+        /**
+         * ✅ ZENIX v3.5: Atualiza o saldo em tempo real vindo da IA (InvestmentActive)
+         * Evita chamadas extras à API Deriv usando os dados de lucro já disponíveis
+         */
+        handleLiveBalanceUpdate(newBalance) {
+            if (!newBalance || !this.info) return;
+            
+            console.log(`[InvestmentIAView] 💰 Sincronizando saldo real-time: $${newBalance.toFixed(2)}`);
+            
+            // 1. Atualizar o saldo principal
+            this.info.balance = newBalance;
+            
+            // 2. Atualizar campos específicos dependendo do tipo de conta
+            // Isso garante que o accountBalanceMixin e TopNavbar vejam a mudança
+            if (this.accountType === 'demo') {
+                this.info.demo_amount = newBalance;
+                if (this.info.balancesByCurrencyDemo) {
+                    this.info.balancesByCurrencyDemo['USD'] = newBalance;
+                }
+            } else {
+                this.info.real_amount = newBalance;
+                if (this.info.balancesByCurrencyReal) {
+                    this.info.balancesByCurrencyReal['USD'] = newBalance;
+                }
+            }
+            
+            // 3. Forçar reatividade clonando o objeto info
+            this.info = { ...this.info };
+        },
+
         getStrategyIcon(id) {
             const strategy = this.availableStrategies.find(s => s.id === id);
             return strategy ? strategy.icon : 'fas fa-brain';
