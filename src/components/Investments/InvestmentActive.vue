@@ -826,7 +826,6 @@ import StopLossModal from '../StopLossModal.vue';
 import TargetProfitModal from '../TargetProfitModal.vue';
 import StopBlindadoModal from '../StopBlindadoModal.vue';
 import InsufficientBalanceModal from '../InsufficientBalanceModal.vue';
-import accountBalanceMixin from '../../mixins/accountBalanceMixin';
 
 // TradingView Charting Library - verifique se está disponível globalmente
 const TradingView = window.TradingView || null;
@@ -840,7 +839,6 @@ export default {
         StopBlindadoModal,
         InsufficientBalanceModal,
     },
-    mixins: [accountBalanceMixin],
     props: {
         ticks: {
             type: Array,
@@ -923,7 +921,7 @@ export default {
             },
             isLoadingStats: true,
             statsUpdateInterval: null,
-            // balance removido para usar do mixin (balanceNumeric)
+            balance: 18250,
             balanceVisible: true,
             profitVisible: true,
             winrateVisible: true,
@@ -1191,7 +1189,7 @@ export default {
         },
         
         realEstimatedRiskLabel() {
-            const balance = this.balanceNumeric || this.accountBalanceProp || 10000;
+            const balance = this.accountBalanceProp || 10000;
             const entryValue = this.entryValue || 0.35;
             
             if (!balance || balance <= 0) {
@@ -1260,7 +1258,7 @@ export default {
         
         // Risco estimado por operação
         estimatedRiskPercentage() {
-            const balance = this.balanceNumeric || this.accountBalanceProp || 10000; // Fallback se não tiver saldo
+            const balance = this.accountBalanceProp || 10000; // Fallback se não tiver saldo
             const entryValue = this.entryValue || 0.35;
             
             if (!balance || balance <= 0) {
@@ -1280,8 +1278,7 @@ export default {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             });
-            const balance = this.balanceNumeric || this.balance || 0;
-            return this.balanceVisible ? `$${formatter.format(balance)}` : '••••••';
+            return this.balanceVisible ? `$${formatter.format(this.balance)}` : '••••••';
         },
         
         riskLabel() {
@@ -1343,39 +1340,38 @@ export default {
             return 'Buscando oportunidades';
         },
         formattedBalance() {
-            // Usar balanceNumeric do mixin se disponível
-            let rawBalance = 0;
-            if (typeof this.balanceNumeric !== 'undefined') {
-                rawBalance = this.balanceNumeric;
-            } else if (this.accountBalanceProp) {
-                rawBalance = this.accountBalanceProp;
+            if (!this.accountBalanceProp) {
+                const isDemo = this.accountType === 'demo' || 
+                              this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
+                              (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
+                // If fictitious balance is active, always show $ even for demo
+                const shouldMaskAsReal = this.isFictitiousBalanceActive && isDemo;
+                return shouldMaskAsReal ? '$0,00' : (isDemo ? 'Đ0,00' : '$0,00');
             }
-
             const formatter = new Intl.NumberFormat('pt-BR', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             });
-            
-            // Logica de ficitious balance
-             const isDemo = this.accountType === 'demo' || 
+            // Se for conta Demo, usar apenas D (sem $)
+            const isDemo = this.accountType === 'demo' || 
                           this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
                           (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
-
+            
+            // If fictitious balance is active and this is a demo account, mask it as real ($)
             if (this.isFictitiousBalanceActive && isDemo) {
-                return `$${formatter.format(rawBalance)}`;
+                return `$${formatter.format(this.accountBalanceProp)}`;
             }
             
             if (isDemo) {
-                return `Đ${formatter.format(rawBalance)}`;
+                return `Đ${formatter.format(this.accountBalanceProp)}`;
             }
             // Se for real, usar apenas $
-            return `$${formatter.format(rawBalance)}`;
+            return `$${formatter.format(this.accountBalanceProp)}`;
         },
 
         // Profit percentage
         profitPercentage() {
-            const balance = this.balanceNumeric || this.accountBalanceProp || 0;
-            if (!balance || balance <= 0) return null;
+            if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return null;
             const profit = this.dailyStats.sessionProfitLoss || 0;
             const percentage = (profit / this.accountBalanceProp) * 100;
             const sign = percentage >= 0 ? '+' : '';
@@ -1384,8 +1380,7 @@ export default {
         
         // Check if profit is positive
         isProfitPositive() {
-            const balance = this.balanceNumeric || this.accountBalanceProp || 0;
-            if (!balance || balance <= 0) return true;
+            if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return true;
             const profit = this.dailyStats.sessionProfitLoss || 0;
             return profit >= 0;
         },
@@ -1525,14 +1520,29 @@ export default {
         },
 
         getTradeLabel(direction) {
-            // Retornar exatamente como vem do backend
-            return (direction || '').toUpperCase();
+            const strategy = (this.sessionConfig?.strategy || this.selectedStrategy || 'orion').toLowerCase();
+            const dir = (direction || '').toUpperCase();
+            
+            // ✅ Mapeamento específico por estratégia
+            if (strategy === 'orion') {
+                if (dir === 'CALL') return 'RISE';
+                if (dir === 'PUT') return 'FALL';
+            }
+
+            // ✅ Mapeamento Geral (Fallbacks)
+            if (dir === 'HIGHER' || dir === 'DIGITOVER') return 'OVER';
+            if (dir === 'LOWER' || dir === 'DIGITUNDER') return 'UNDER';
+            if (dir === 'RISE' || dir === 'CALL') return dir; // Retorna o valor original para manter RISE ou CALL
+            if (dir === 'FALL' || dir === 'PUT') return dir;
+            if (dir === 'PAR' || dir === 'DIGITEVEN') return 'PAR';
+            if (dir === 'IMPAR' || dir === 'DIGITODD') return 'IMPAR';
+            
+            return dir;
         },
 
         isPositiveDirection(direction) {
-            // Ajustar verificação para os termos crus se necessário, ou manter genérico
             const label = this.getTradeLabel(direction);
-            const positiveLabels = ['OVER', 'RISE', 'CALL', 'PAR', 'DIGITOVER', 'DIGITEVEN', 'HIGHER'];
+            const positiveLabels = ['OVER', 'RISE', 'CALL', 'PAR'];
             return positiveLabels.includes(label);
         },
 
@@ -2260,10 +2270,8 @@ export default {
                     console.log('[InvestmentActive] ✅ Stats atualizadas:', this.dailyStats);
 
                     // ✅ ZENIX v3.5: Notificar pai para atualizar saldo em tempo real (dashboard + topbar)
-                    // Atualizar saldo localmente via mixin para reatividade imediata
-                    this.loadAccountBalanceInfo(true);
-                    
-                    const currentBalance = parseFloat(this.balanceNumeric || this.accountBalanceProp) || 0;
+                    // Usamos apenas o saldo vindo da props para notificar o pai (sem somar lucro)
+                    const currentBalance = parseFloat(this.accountBalanceProp) || 0;
                     if (currentBalance > 0) {
                         console.log(`[InvestmentActive] 💰 Notificando saldo (Sem soma): $${currentBalance.toFixed(2)}`);
                         this.$emit('update-balance', currentBalance);
@@ -2405,18 +2413,8 @@ export default {
                         this.checkLogsForStopEvents();
                     }
                     
-                    // ✅ DETECÇÃO INTELIGENTE DE STATUS
-                    // Se o status for "stopped_...", a IA deve ser considerada INATIVA,
-                    // independentemente do que o campo isActive diz (pois o backend pode não ter atualizado ainda).
-                    let isActiveForce = result.data.isActive || false;
-                    
-                    if (currentSessionStatus && currentSessionStatus.startsWith('stopped_')) {
-                        console.log(`[InvestmentActive] 🛑 Status '${currentSessionStatus}' detectado - Forçando isActive = false`);
-                        isActiveForce = false;
-                    }
-
                     this.sessionConfig = {
-                        isActive: isActiveForce,
+                        isActive: result.data.isActive || false,
                         stakeAmount: parseFloat(result.data.stakeAmount) || 0,
                         entryValue: parseFloat(result.data.entryValue) || 0.35, // ✅ Valor de entrada por operação
                         mode: result.data.mode || 'veloz',
@@ -2455,11 +2453,6 @@ export default {
                             }
                         }
                     } else {
-                        // Se IA não está ativa (ou foi forçada a parar), emitir evento para o pai
-                        if (currentSessionStatus && currentSessionStatus.startsWith('stopped_')) {
-                             this.$emit('deactivate'); // Forçar visual do pai a desligar
-                        }
-
                         // Se IA não está ativa, parar polling
                         console.log('[InvestmentActive] ⏸️ IA não está ativa, parando polling...');
                         this.stopLogPolling();
