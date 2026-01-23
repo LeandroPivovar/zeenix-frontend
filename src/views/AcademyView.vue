@@ -45,7 +45,7 @@
             <!-- Seção Zenix Academy - Apenas Mobile -->
             <div class="academy-header-mobile">
                 <h1 class="academy-title-mobile">Zenix Academy</h1>
-                <p class="academy-description-mobile">Aprenda estratégias de trading e domine o mercado</p>
+                <p class="academy-description-mobile">Área de aprendizado com cursos sobre o Zenix, finanças, investimentos e gestão de risco, focados em decisões conscientes e consistentes.</p>
             </div>
 
             <div v-if="loading" class="loading-container">

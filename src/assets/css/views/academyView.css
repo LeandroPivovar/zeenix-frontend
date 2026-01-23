@@ -727,10 +727,15 @@
 
     .academy-title-mobile {
         font-size: 1.5rem;
+        font-weight: 700;
+        color: #FFFFFF;
+        margin: 0 0 0.5rem 0;
+        line-height: 1.2;
     }
 
     .academy-description-mobile {
         font-size: 0.875rem;
+        margin-top: 5px;
     }
 }
 
