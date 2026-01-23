@@ -813,6 +813,11 @@
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="handleStopBlindadoConfirm"
     />
+
+    <InsufficientBalanceModal
+        :visible="showInsufficientBalanceModal"
+        @confirm="showInsufficientBalanceModal = false"
+    />
 </template>
 
 <script>
@@ -820,6 +825,7 @@ import { createChart, ColorType } from 'lightweight-charts';
 import StopLossModal from '../StopLossModal.vue';
 import TargetProfitModal from '../TargetProfitModal.vue';
 import StopBlindadoModal from '../StopBlindadoModal.vue';
+import InsufficientBalanceModal from '../InsufficientBalanceModal.vue';
 
 // TradingView Charting Library - verifique se está disponível globalmente
 const TradingView = window.TradingView || null;
@@ -831,6 +837,7 @@ export default {
         StopLossModal,
         TargetProfitModal,
         StopBlindadoModal,
+        InsufficientBalanceModal,
     },
     props: {
         ticks: {
@@ -968,6 +975,7 @@ export default {
             showStopLossModal: false,
             showStopBlindadoModal: false,
             showTargetProfitModal: false,
+            showInsufficientBalanceModal: false,
             sessionResult: 0,
             previousSessionStatus: null,
             
@@ -2098,6 +2106,22 @@ export default {
                     });
                 }
             }
+
+            // ✅ [ZENIX v3.4] Verificar se há mensagem de SALDO INSUFICIENTE
+            const hasLowBalanceMessage = recentLogs.some(log => 
+                log.message && (
+                    log.message.includes('SALDO INSUFICIENTE') ||
+                    log.message.includes('IA DESATIVADA. SALDO INSUFICIENTE') ||
+                    log.message.includes('Saldo insuficiente para operação')
+                )
+            );
+            
+            if (hasLowBalanceMessage) {
+                console.log('[InvestmentActive] ❌ Saldo insuficiente detectado nos logs!');
+                if (!this.showInsufficientBalanceModal) {
+                    this.showInsufficientBalanceModal = true;
+                }
+            }
         },
         
         startLogPolling() {
@@ -2367,6 +2391,14 @@ export default {
                             });
                         }
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
+                        this.aiStoppedAutomatically = true;
+                        this.previousSessionStatus = currentSessionStatus;
+                    } else if (currentSessionStatus === 'stopped_insufficient_balance') {
+                        // ✅ [ZENIX v3.4] Suporte para saldo insuficiente
+                        if (!this.showInsufficientBalanceModal) {
+                            console.log('[InvestmentActive] ❌ Saldo insuficiente detectado na session_status!');
+                            this.showInsufficientBalanceModal = true;
+                        }
                         this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
                     } else if (this.previousSessionStatus !== currentSessionStatus) {
