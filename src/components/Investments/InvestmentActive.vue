@@ -872,6 +872,14 @@ export default {
         selectedMarketProp: {
             type: String,
             default: 'vol10'
+        },
+        isFictitiousBalanceActive: {
+            type: Boolean,
+            default: false
+        },
+        fictitiousBalance: {
+            type: Number,
+            default: 0
         }
     },
     data() {
@@ -1328,7 +1336,9 @@ export default {
                 const isDemo = this.accountType === 'demo' || 
                               this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
                               (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
-                return isDemo ? 'Đ0,00' : '$0,00';
+                // If fictitious balance is active, always show $ even for demo
+                const shouldMaskAsReal = this.isFictitiousBalanceActive && isDemo;
+                return shouldMaskAsReal ? '$0,00' : (isDemo ? 'Đ0,00' : '$0,00');
             }
             const formatter = new Intl.NumberFormat('pt-BR', {
                 minimumFractionDigits: 2,
@@ -1338,6 +1348,12 @@ export default {
             const isDemo = this.accountType === 'demo' || 
                           this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
                           (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
+            
+            // If fictitious balance is active and this is a demo account, mask it as real ($)
+            if (this.isFictitiousBalanceActive && isDemo) {
+                return `$${formatter.format(this.accountBalanceProp)}`;
+            }
+            
             if (isDemo) {
                 return `Đ${formatter.format(this.accountBalanceProp)}`;
             }

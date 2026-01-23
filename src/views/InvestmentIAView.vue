@@ -433,6 +433,8 @@
                     :account-currency-prop="tradeCurrency"
                     :selected-market-prop="selectedMarket"
                     :stoploss-blindado-config="stoplossBlindado"
+                    :is-fictitious-balance-active="isFictitiousBalanceActive"
+                    :fictitious-balance="fictitiousBalance"
                         @deactivate="deactivateIA"
                         @reactivate="activateIA"
                 />
