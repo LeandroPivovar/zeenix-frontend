@@ -1280,11 +1280,6 @@ export default {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             });
-        displayBalance() {
-            const formatter = new Intl.NumberFormat('pt-BR', {
-                minimumFractionDigits: 2,
-                maximumFractionDigits: 2,
-            });
             const balance = this.balanceNumeric || this.balance || 0;
             return this.balanceVisible ? `$${formatter.format(balance)}` : '••••••';
         },
