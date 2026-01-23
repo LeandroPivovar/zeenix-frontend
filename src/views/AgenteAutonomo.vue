@@ -151,7 +151,6 @@
         preferredCurrency: "USD",
         balancesByCurrencyReal: {},
         balancesByCurrencyDemo: {},
-        balancesByCurrencyDemo: {},
         isSettingsOpen: false,
         availableAccounts: [],
         loadingAccounts: false,

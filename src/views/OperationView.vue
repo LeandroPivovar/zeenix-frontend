@@ -8,7 +8,6 @@
         :balance="currentBalance?.balance || info?.balance"
         :account-type="accountType"
         @open-settings="toggleSettingsModal"
-        @open-settings="toggleSettingsModal"
         @account-type-changed="handleAccountTypeChange"
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -25,7 +24,6 @@
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
         :currency-prefix="preferredCurrencyPrefix"
-        @close="closeSettingsModal"
         @close="closeSettingsModal"
         @account-type-changed="handleAccountTypeChange"
       />
@@ -102,7 +100,6 @@ import OperationChart from '../components/OperationChart.vue';
 import OperationDigits from '../components/OperationDigits.vue';
 import OperationLogs from '../components/OperationLogs.vue';
 import OperationLastOrders from '../components/OperationLastOrders.vue';
-import DesktopBottomNav from '../components/DesktopBottomNav.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
 import accountBalanceMixin from '../mixins/accountBalanceMixin';
 import { loadAvailableAccounts } from '../utils/accountsLoader';
