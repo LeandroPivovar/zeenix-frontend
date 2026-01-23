@@ -62,7 +62,7 @@
 
           <!-- Gráfico -->
           <div id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%; margin: 0; padding: 0;">
-            <div v-if="showChartPlaceholder" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
+            <div v-if="showChartPlaceholder || isLoading" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
               <p class="text-zenix-secondary">Carregando gráfico...</p>
             </div>
           </div>
@@ -629,7 +629,8 @@ export default {
       finalEntrySpot: null,
       finalExitSpot: null,
       markets: [], // Será preenchido pela API
-      isLoadingMarkets: false,
+      isLoadingMarkets: true,
+      isLoadingTicks: true,
       availableContracts: [], // Contratos disponíveis para o símbolo atual
       isLoadingContracts: false,
       latestTick: null, // Último tick recebido
@@ -752,6 +753,9 @@ export default {
     };
   },
   computed: {
+    isLoading() {
+      return this.isLoadingMarkets || this.isLoadingContracts || this.isLoadingTicks;
+    },
     marketsByCategory() {
       const grouped = {};
       const integratedMarkets = [
@@ -944,6 +948,7 @@ export default {
     this.loadMarketsFromAPI();
     
     // 3. Carregar dados do mercado inicial imediatamente
+    // Forçar R_100 como inicial e carregar 100 ticks
     if (!this.symbol) {
         this.symbol = 'R_100'; // Default
     }
@@ -952,7 +957,7 @@ export default {
       console.log('[Chart] Carregando dados iniciais para:', this.symbol);
       // Carregar contratos e ticks em paralelo
       this.loadAvailableContracts(this.symbol);
-      this.loadTicksFromBackend();
+      this.loadTicksFromBackend(100); // Request specific count: 100 ticks
     }
   },
   beforeUnmount() {
@@ -1304,7 +1309,7 @@ export default {
         return derivToken;
     },
 
-    async loadTicksFromBackend() {
+    async loadTicksFromBackend(count = null) {
       if (!this.chart || !this.chartSeries || !this.symbol) {
         console.warn('[Chart] Gráfico não inicializado ou símbolo não definido');
         return;
@@ -1312,7 +1317,9 @@ export default {
       
       try {
         console.log('[Chart] ========== BUSCANDO HISTÓRICO DE TICKS ==========');
-        console.log('[Chart] Símbolo:', this.symbol);
+        console.log('[Chart] Símbolo:', this.symbol, 'Count:', count);
+        
+        this.isLoadingTicks = true;
         
         // Inscrever-se no símbolo para receber histórico (via SSE)
         // A conexão é gerenciada automaticamente pelo backend/service
@@ -1324,7 +1331,7 @@ export default {
         
         // Inscrever-se no símbolo para receber histórico (isso vai disparar histórico via SSE)
         // Inscrever-se no símbolo para receber histórico (isso vai disparar histórico via SSE)
-        await derivTradingService.subscribeSymbol(this.symbol);
+        await derivTradingService.subscribeSymbol(this.symbol, null, null, count);
         console.log('[Chart] Inscrição no símbolo enviada, aguardando histórico via SSE...');
         
         // O histórico será recebido via SSE no handler processHistoryFromSSE
@@ -1602,6 +1609,7 @@ export default {
           } else if (data.type === 'history' && data.data && data.data.ticks) {
             // Histórico recebido via SSE - armazenar todos os ticks e filtrar pelo zoom
             console.log('[Chart] Histórico recebido via SSE:', data.data.ticks.length, 'ticks');
+            this.isLoadingTicks = false;
             
             // Armazenar todos os ticks históricos (garantir que epoch está em segundos)
             this.allHistoricalTicks = data.data.ticks.map(tick => {

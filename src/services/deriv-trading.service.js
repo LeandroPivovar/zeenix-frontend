@@ -181,7 +181,7 @@ class DerivTradingService {
   /**
    * Inscreve-se em símbolo para receber ticks
    */
-  async subscribeSymbol(symbol, token, loginid) {
+  async subscribeSymbol(symbol, token, loginid, count) {
     const authToken = this.token || localStorage.getItem('token');
 
     try {
@@ -191,7 +191,7 @@ class DerivTradingService {
           'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ symbol, token, loginid }),
+        body: JSON.stringify({ symbol, token, loginid, count }),
       });
 
       if (!response.ok) {
