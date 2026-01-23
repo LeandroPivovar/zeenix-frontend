@@ -11,7 +11,7 @@
           </div>
         </div>
         
-        <h2 class="modal-title">SALDO INSUFICIENTE</h2>
+        <h2 class="modal-title text-center" style="text-align: center; justify-self: center;">SALDO INSUFICIENTE</h2>
         
         <p class="modal-message">
           Seu saldo atual é insuficiente para iniciar as operações. É necessário ter saldo para pelo menos a primeira entrada de <span class="highlight">{{ formattedEntryValue }}</span>.

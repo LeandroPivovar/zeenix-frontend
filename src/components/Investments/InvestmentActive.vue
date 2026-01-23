@@ -2405,8 +2405,18 @@ export default {
                         this.checkLogsForStopEvents();
                     }
                     
+                    // ✅ DETECÇÃO INTELIGENTE DE STATUS
+                    // Se o status for "stopped_...", a IA deve ser considerada INATIVA,
+                    // independentemente do que o campo isActive diz (pois o backend pode não ter atualizado ainda).
+                    let isActiveForce = result.data.isActive || false;
+                    
+                    if (currentSessionStatus && currentSessionStatus.startsWith('stopped_')) {
+                        console.log(`[InvestmentActive] 🛑 Status '${currentSessionStatus}' detectado - Forçando isActive = false`);
+                        isActiveForce = false;
+                    }
+
                     this.sessionConfig = {
-                        isActive: result.data.isActive || false,
+                        isActive: isActiveForce,
                         stakeAmount: parseFloat(result.data.stakeAmount) || 0,
                         entryValue: parseFloat(result.data.entryValue) || 0.35, // ✅ Valor de entrada por operação
                         mode: result.data.mode || 'veloz',
@@ -2445,6 +2455,11 @@ export default {
                             }
                         }
                     } else {
+                        // Se IA não está ativa (ou foi forçada a parar), emitir evento para o pai
+                        if (currentSessionStatus && currentSessionStatus.startsWith('stopped_')) {
+                             this.$emit('deactivate'); // Forçar visual do pai a desligar
+                        }
+
                         // Se IA não está ativa, parar polling
                         console.log('[InvestmentActive] ⏸️ IA não está ativa, parando polling...');
                         this.stopLogPolling();
