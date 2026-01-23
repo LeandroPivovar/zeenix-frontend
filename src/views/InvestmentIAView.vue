@@ -23,7 +23,7 @@
             :balances-by-currency-demo="balancesByCurrencyDemo"
             :currency-prefix="preferredCurrencyPrefix"
             @open-settings="toggleSettingsModal"
-            @account-type-changed="switchAccount"
+            @account-type-changed="handleAccountTypeChange"
             @toggle-sidebar="toggleSidebar"
             @toggle-sidebar-collapse="toggleSidebarCollapse"
         />
@@ -37,7 +37,7 @@
             :balances-by-currency-demo="balancesByCurrencyDemo"
             :currency-prefix="preferredCurrencyPrefix"
             @close="closeSettingsModal"
-            @account-type-changed="switchAccount"
+            @account-type-changed="handleAccountTypeChange"
         />
 
         <div class="content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
@@ -706,6 +706,13 @@ export default {
             
             // 3. Forçar reatividade clonando o objeto info
             this.info = { ...this.info };
+        },
+
+        handleAccountTypeChange(newType) {
+            console.log('[InvestmentIAView] Tipo de conta alterado via componente filho:', newType);
+            this.accountType = newType;
+            // Não chame switchAccount() aqui porque o componente filho (Sidebar/Navbar)
+            // já executou a lógica de troca e vai recarregar a página.
         },
 
         getStrategyIcon(id) {
