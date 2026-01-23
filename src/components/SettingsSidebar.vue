@@ -223,7 +223,7 @@ export default {
         }
         
         // Prioridade 2: Qualquer moeda que tenha saldo > 0
-        for (const [curr, balance] of Object.entries(this.balancesByCurrencyReal)) {
+        for (const balance of Object.values(this.balancesByCurrencyReal)) {
           if (Number(balance) > 0) return Number(balance);
         }
 
