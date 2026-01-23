@@ -50,6 +50,28 @@
                                 </svg>
                             </div>
                             <div class="course-card-image-gradient"></div>
+                            <div class="course-reorder-btns">
+                                <button 
+                                    class="reorder-btn" 
+                                    @click.stop="moveCourse(course, -1)" 
+                                    :disabled="courses.indexOf(course) === 0"
+                                    title="Mover para Cima"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M18 15l-6-6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                                <button 
+                                    class="reorder-btn" 
+                                    @click.stop="moveCourse(course, 1)" 
+                                    :disabled="courses.indexOf(course) === courses.length - 1"
+                                    title="Mover para Baixo"
+                                >
+                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <path d="M6 9l6 6 6-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                    </svg>
+                                </button>
+                            </div>
                             <button 
                                 class="course-delete-btn" 
                                 @click.stop="deleteCourse(course.id)"
@@ -265,6 +287,36 @@ export default {
                 return `${this.getApiBaseUrl()}${path}`;
             }
             return path;
+        },
+        async moveCourse(course, direction) {
+            const index = this.courses.indexOf(course);
+            const newIndex = index + direction;
+
+            if (newIndex >= 0 && newIndex < this.courses.length) {
+                // Swap in frontend
+                const temp = this.courses[index];
+                this.courses[index] = this.courses[newIndex];
+                this.courses[newIndex] = temp;
+                this.courses = [...this.courses]; // Trigger reactivity
+
+                // Persist order
+                const apiBaseUrl = this.getApiBaseUrl();
+                const orders = this.courses.map((c, idx) => ({ id: c.id, orderIndex: idx }));
+
+                try {
+                    await fetch(`${apiBaseUrl}/courses/reorder/all`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ orders }),
+                    });
+                } catch (error) {
+                    console.error('Erro ao reordenar cursos:', error);
+                    // Revert on error if needed, but for now just log
+                }
+            }
         },
         deleteCourse(courseId) {
             const course = this.courses.find(c => c.id === courseId);
@@ -495,10 +547,55 @@ export default {
     color: rgba(255, 255, 255, 0.7);
 }
 
-.course-delete-btn {
+
+/* Layout Base - Padrão Dashboard */
+.course-reorder-btns {
     position: absolute;
     top: 1rem;
     left: 1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    z-index: 3;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.course-card:hover .course-reorder-btns {
+    opacity: 1;
+}
+
+.reorder-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(0, 0, 0, 0.6);
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    backdrop-filter: blur(4px);
+}
+
+.reorder-btn:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.8);
+    transform: scale(1.1);
+    color: #00ff7f;
+}
+
+.reorder-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.course-delete-btn {
+    position: absolute;
+    top: 1rem;
+    right: 1rem; /* Alterado de left para right */
+    left: auto; /* Remove left original */
     width: 40px;
     height: 40px;
     border: none;
@@ -516,24 +613,10 @@ export default {
     backdrop-filter: blur(4px);
 }
 
-.course-card:hover .course-delete-btn {
-    opacity: 1;
-    transform: scale(1);
-}
-
-.course-delete-btn:hover {
-    background: rgba(220, 38, 38, 1);
-    transform: scale(1.1);
-    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
-}
-
-.course-delete-btn:active {
-    transform: scale(0.95);
-}
-
+/* Ajusta o status para não conflitar com o botão de excluir */
 .course-card-status {
     position: absolute;
-    top: 1rem;
+    top: 4rem; /* Move para baixo para não ficar em cima do delete */
     right: 1rem;
     padding: 0.25rem 0.75rem;
     border-radius: 20px;
