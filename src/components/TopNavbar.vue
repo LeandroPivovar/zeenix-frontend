@@ -416,13 +416,16 @@ export default {
       return value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     },
     balanceNumeric() {
-      // Prioridade 1: Saldo Demo + Fictício se ativo
-      if (this.accountType === 'demo' && this.isFictitiousBalanceActive) {
+      // Prioridade 1: Saldo Demo + Fictício se ativo E conta for demo
+      if (this.accountType === 'demo') {
         const demoBalance = this.balancesByCurrencyDemo['USD'] || 0;
-        return Number(demoBalance) + (Number(this.fictitiousBalance) || 0);
+        if (this.isFictitiousBalanceActive) {
+          return Number(demoBalance) + (Number(this.fictitiousBalance) || 0);
+        }
+        return Number(demoBalance);
       }
 
-      // Se for real, prioridade 1: Saldo USD Real
+      // Prioridade 2: Saldo Real (USD preferencial)
       const usdReal = this.balancesByCurrencyReal['USD'];
       if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
         return Number(usdReal);

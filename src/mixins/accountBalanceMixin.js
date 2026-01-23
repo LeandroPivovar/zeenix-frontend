@@ -234,13 +234,15 @@ export default {
               };
 
               // Sincronizar accountType com tradeCurrency
+              this.tradeCurrency = parsed.tradeCurrency || (parsed.isDemo ? 'DEMO' : 'USD');
               this.accountType = this.tradeCurrency === 'DEMO' ? 'demo' : 'real';
 
               console.log('[AccountBalanceMixin] Saldo carregado do cache (como Dashboard):', {
                 balance: this.info.balance,
                 loginid: this.info.loginid,
                 isDemo: this.info.isDemo,
-                accountType: this.accountType
+                accountType: this.accountType,
+                tradeCurrency: this.tradeCurrency
               });
 
               this.loadingBalance = false;
@@ -323,8 +325,9 @@ export default {
 
             console.log('[AccountBalanceMixin] Cache atualizado:', cacheData);
 
-            this.accountType = this.tradeCurrency === 'DEMO' ? 'demo' : 'real';
-            console.log('[AccountBalanceMixin] Saldo carregado da API - LOGINID:', loginid);
+            this.tradeCurrency = localStorage.getItem('trade_currency') || (isDemo ? 'DEMO' : 'USD');
+            this.accountType = isDemo ? 'demo' : 'real';
+            console.log('[AccountBalanceMixin] Saldo carregado da API - LOGINID:', loginid, 'Type:', this.accountType);
           } else {
             console.warn('[AccountBalanceMixin] ⚠️ API retornou status OK mas sem LOGINID:', data);
             this.info = { balance: 0, currency: 'USD', loginid: null, isDemo: false };

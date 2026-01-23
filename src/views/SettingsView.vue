@@ -665,31 +665,43 @@ export default {
           })
         })
 
-        if (!res.ok) {
-          throw new Error('Erro ao salvar configurações')
-        }
-
-        // Emitir eventos para atualização global
-        window.dispatchEvent(new CustomEvent('masterTraderSettingsUpdated', { 
-          detail: {
-            fictitiousBalance: this.settings.fictitiousBalance,
-            isFictitiousBalanceActive: this.settings.isFictitiousBalanceActive,
-            showDollarSign: this.settings.showDollarSign
+        if (res.ok) {
+          // ✅ ATUALIZAÇÃO CRÍTICA: Salvar o token e moeda selecionados no localStorage 
+          // para que o mixin e a Topbar usem a conta correta imediatamente
+          if (selectedDerivToken) {
+            localStorage.setItem('deriv_token', selectedDerivToken);
+            console.log('[SettingsView] deriv_token atualizado no localStorage:', selectedDerivToken);
           }
-        }));
+          
+          localStorage.setItem('trade_currency', this.settings.tradeCurrency);
 
-        if (this.settings.isFictitiousBalanceActive) {
-           window.dispatchEvent(new CustomEvent('fictitiousBalanceChanged', {
-              detail: {
-                enabled: true,
-                amount: this.settings.fictitiousBalance
-              }
-            }));
-            window.dispatchEvent(new Event('refreshDerivBalance'));
-        }
+          // Emitir eventos para atualização global
+          window.dispatchEvent(new CustomEvent('masterTraderSettingsUpdated', { 
+            detail: {
+              fictitiousBalance: this.settings.fictitiousBalance,
+              isFictitiousBalanceActive: this.settings.isFictitiousBalanceActive,
+              showDollarSign: this.settings.showDollarSign
+            }
+          }));
 
-        await this.fetchSettings()
-        this.$root.$toast.success('Configurações salvas com sucesso!')
+          if (this.settings.isFictitiousBalanceActive) {
+             window.dispatchEvent(new CustomEvent('fictitiousBalanceChanged', {
+                detail: {
+                  enabled: true,
+                  amount: this.settings.fictitiousBalance
+                }
+              }));
+              window.dispatchEvent(new Event('refreshDerivBalance'));
+          }
+
+          await this.fetchSettings()
+          
+          // Forçar recarregamento do saldo no dashboard/topbar
+          // Usar reload em vez de apenas fetch para garantir que todos os hooks reiniciem
+          window.location.reload();
+          
+          this.$root.$toast.success('Configurações salvas com sucesso!')
+        } else {
       } catch (err) {
         console.error('Erro ao salvar:', err)
         this.$root.$toast.error('Erro ao salvar configurações. Tente novamente.')
