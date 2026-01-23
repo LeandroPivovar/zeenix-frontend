@@ -51,6 +51,10 @@
 
 .page-title {
     color: rgb(214, 211, 211) !important;
+    font-size: 2rem;
+    /* Aumentado */
+    text-align: left;
+    margin-bottom: 5px;
 }
 
 .layout-content {
@@ -123,6 +127,7 @@
 
 .page-title {
     color: white;
+    font-weight: 700;
 }
 
 .container {
@@ -135,7 +140,8 @@
 .page-header {
     display: flex;
     flex-direction: row;
-    margin-bottom: 30px;
+    margin-bottom: 40px;
+    /* Aumentado margin bottom */
     padding-bottom: 20px;
     border-bottom: 1px solid #2c3038;
     justify-content: space-between;
@@ -146,6 +152,7 @@
     color: #8c929a;
     font-size: 1rem;
     text-align: left;
+    margin-top: 5px;
 }
 
 .header-actions {
@@ -214,6 +221,8 @@
     font-weight: 600;
     margin-bottom: 20px;
     padding-bottom: 15px;
+    text-align: left;
+    /* Alinhado a esquerda */
 }
 
 .form-group input,
