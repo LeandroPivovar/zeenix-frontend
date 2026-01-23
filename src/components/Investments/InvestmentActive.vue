@@ -2633,6 +2633,11 @@ export default {
                 this.aiStoppedAutomatically = false;
                 console.log('[InvestmentActive] 🔄 Flag aiStoppedAutomatically resetada');
                 
+                // ✅ Forçar estado inativo localmente (Segurança extra)
+                if (this.sessionConfig) {
+                    this.sessionConfig.isActive = false;
+                }
+
                 // Emitir evento para o componente pai desativar a IA (voltar para config)
                 // Solicitado alteração para voltar à tela de configuração em vez de reiniciar imediatamente
                 this.$emit('deactivate');
