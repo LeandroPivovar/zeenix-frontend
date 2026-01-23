@@ -249,10 +249,12 @@ export default {
         if (!res.ok) throw new Error(`Erro ao buscar cursos: ${res.statusText}`)
 
         const data = await res.json()
-        this.courses = data.map(course => ({
-          ...course,
-          coverImage: this.resolveImageUrl(course.coverImage)
-        }))
+        this.courses = data
+            .filter(course => course.status === 'published')
+            .map(course => ({
+                ...course,
+                coverImage: this.resolveImageUrl(course.coverImage)
+            }))
         this.calculateProgress()
       } catch (err) {
         console.error('Erro:', err)
