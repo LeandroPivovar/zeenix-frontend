@@ -42,6 +42,7 @@
 
 .main-content.academy-content {
     margin-bottom: 100px;
+    margin-top: 80px;
 }
 
 /* =========================================
@@ -49,7 +50,7 @@
    ========================================= */
 .courses-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    grid-template-columns: repeat(2, 1fr);
     gap: 1.5rem;
     width: 100%;
 }
@@ -630,13 +631,29 @@
     }
 }
 
-/* Seção Zenix Academy - Apenas Mobile */
-.academy-header-mobile {
-    display: none;
+/* Seção Zenix Academy */
+.academy-header {
+    display: block;
+    margin-bottom: 2rem;
+    text-align: left;
+}
+
+.academy-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #FFFFFF;
+    margin: 0 0 0.5rem 0;
+}
+
+.academy-description {
+    font-size: 1rem;
+    color: #A1A1A1;
+    max-width: 800px;
+    line-height: 1.5;
 }
 
 @media (max-width: 1024px) {
-    .academy-header-mobile {
+    .academy-header {
         display: block !important;
         padding: 1.5rem 1rem;
         margin-bottom: 1.5rem;
@@ -646,7 +663,7 @@
         z-index: 5;
     }
 
-    .academy-title-mobile {
+    .academy-title {
         font-size: 1.75rem;
         font-weight: 700;
         color: #FFFFFF;
@@ -655,7 +672,7 @@
         text-align: left;
     }
 
-    .academy-description-mobile {
+    .academy-description {
         font-size: 0.9375rem;
         font-weight: 400;
         color: #A1A1A1;
@@ -722,13 +739,13 @@
         justify-content: center !important;
     }
 
-    .academy-header-mobile {
+    .academy-header {
         display: block !important;
         padding: 0rem 1rem;
         margin-bottom: 1.25rem;
     }
 
-    .academy-title-mobile {
+    .academy-title {
         font-size: 1.5rem;
         font-weight: 700;
         color: #FFFFFF;
@@ -736,7 +753,7 @@
         line-height: 1.2;
     }
 
-    .academy-description-mobile {
+    .academy-description {
         font-size: 0.875rem;
         margin-top: 5px;
     }
