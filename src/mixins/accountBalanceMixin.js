@@ -3,6 +3,7 @@
  * em todas as páginas, igual ao Dashboard
  */
 // Não precisa mais importar balanceLoader, usa a mesma lógica do Dashboard
+import { loadAvailableAccounts } from '../utils/accountsLoader';
 
 export default {
   data() {
@@ -471,8 +472,10 @@ export default {
      */
     async switchAccount(type) {
       try {
-        const isDemo = type === 'demo';
-        const tradeCurrency = isDemo ? 'DEMO' : 'USD';
+        if (this.isFictitiousBalanceActive) {
+          console.log('[AccountBalanceMixin] Saldo fictício ativo - ignorando troca de conta. UI já mostra como Real.');
+          return;
+        }
 
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const token = localStorage.getItem('token');
@@ -482,31 +485,56 @@ export default {
           return;
         }
 
-        // Tentar encontrar um token correspondente no localStorage
-        let matchingToken = null;
+        const isDemo = type === 'demo';
+        let selectedToken = null;
+
+        // Estratégia 1: Tentar encontrar em availableAccounts (se já tiver sido carregado)
+        // O mixin não tem availableAccounts no data, mas podemos tentar carregar
+        console.log('[AccountBalanceMixin] Carregando contas disponíveis para encontrar token...');
         try {
-          const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
-          if (tokensByLoginIdStr) {
-            const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-            const loginIds = Object.keys(tokensByLoginId);
-
-            // Encontrar o primeiro loginId que corresponde ao tipo solicitado
-            const matchingLoginId = loginIds.find(id => {
-              const isIdDemo = id.startsWith('VRTC') || id.startsWith('VRT');
-              return isIdDemo === isDemo;
-            });
-
-            if (matchingLoginId) {
-              matchingToken = tokensByLoginId[matchingLoginId];
-              console.log(`[AccountBalanceMixin] Token encontrado para ${type}: ${matchingLoginId}`);
+          const accounts = await loadAvailableAccounts(false);
+          if (accounts && accounts.length > 0) {
+            const targetAccount = accounts.find(acc => acc.isDemo === isDemo);
+            if (targetAccount && targetAccount.token) {
+              selectedToken = targetAccount.token;
+              console.log('[AccountBalanceMixin] Token encontrado em accountsLoader para', type, ':', targetAccount.loginid);
             }
           }
-        } catch (e) {
-          console.error('[AccountBalanceMixin] Erro ao buscar token no localStorage:', e);
+        } catch (loaderError) {
+          console.error('[AccountBalanceMixin] Erro ao carregar contas via loader:', loaderError);
         }
 
-        if (matchingToken) {
-          // Usar o endpoint unificado para salvar token E moeda
+        // Estratégia 2: Fallback para localStorage legado
+        if (!selectedToken) {
+          console.log('[AccountBalanceMixin] Tentando fallback para localStorage...');
+          const derivConnectionStr = localStorage.getItem('deriv_connection');
+          if (derivConnectionStr) {
+            try {
+              const derivConnection = JSON.parse(derivConnectionStr);
+              const tokensByLoginId = derivConnection.tokensByLoginId;
+              const accountsByCurrency = derivConnection.accountsByCurrency;
+
+              if (accountsByCurrency && tokensByLoginId) {
+                for (const currency in accountsByCurrency) {
+                  const accounts = accountsByCurrency[currency];
+                  if (Array.isArray(accounts)) {
+                    const targetAccount = accounts.find(acc => acc.isDemo === isDemo);
+                    if (targetAccount && targetAccount.loginid && tokensByLoginId[targetAccount.loginid]) {
+                      selectedToken = tokensByLoginId[targetAccount.loginid];
+                      console.log('[AccountBalanceMixin] Token encontrado no cache legado para', type);
+                      break;
+                    }
+                  }
+                }
+              }
+            } catch (e) {
+              // Ignorar erros de parsing
+            }
+          }
+        }
+
+        // Se encontrou token, salvar corretamente
+        if (selectedToken) {
           const response = await fetch(`${apiBase}/settings/deriv-token`, {
             method: 'POST',
             headers: {
@@ -514,23 +542,23 @@ export default {
               'Authorization': `Bearer ${token}`
             },
             body: JSON.stringify({
-              token: matchingToken,
-              tradeCurrency: tradeCurrency
+              token: selectedToken,
+              tradeCurrency: type === 'demo' ? 'DEMO' : 'USD'
             })
           });
 
           if (response.ok) {
-            localStorage.setItem('deriv_token', matchingToken);
+            localStorage.setItem('deriv_token', selectedToken);
             this.accountType = type;
-            this.tradeCurrency = tradeCurrency;
+            this.tradeCurrency = type === 'demo' ? 'DEMO' : 'USD';
             console.log('[AccountBalanceMixin] ✅ Conta e token sincronizados com sucesso');
             window.location.reload();
             return;
           }
         }
 
-        // Fallback: carregar apenas a moeda se não encontrar token
-        console.warn('[AccountBalanceMixin] ⚠️ Token não encontrado ou falha no sync, salvando apenas moeda...');
+        // Fallback final: apenas atualizar moeda
+        console.warn('[AccountBalanceMixin] ⚠️ Token não encontrado, tentando atualizar apenas moeda...');
         const response = await fetch(`${apiBase}/settings`, {
           method: 'PUT',
           headers: {
@@ -538,20 +566,20 @@ export default {
             'Authorization': `Bearer ${token}`
           },
           body: JSON.stringify({
-            tradeCurrency: tradeCurrency
+            tradeCurrency: type === 'demo' ? 'DEMO' : 'USD'
           })
         });
 
         if (response.ok) {
           this.accountType = type;
-          this.tradeCurrency = tradeCurrency;
+          this.tradeCurrency = type === 'demo' ? 'DEMO' : 'USD';
           window.location.reload();
         } else {
           throw new Error('Erro ao alterar conta');
         }
       } catch (error) {
-        console.error('[AccountBalanceMixin] Erro ao alterar moeda:', error);
-        alert('Erro ao alterar moeda. Tente novamente.');
+        console.error('[AccountBalanceMixin] Erro ao alterar conta:', error);
+        alert('Erro ao alterar conta. Tente novamente.');
       }
     },
 
