@@ -325,8 +325,13 @@ export default {
 
             console.log('[AccountBalanceMixin] Cache atualizado:', cacheData);
 
-            this.tradeCurrency = localStorage.getItem('trade_currency') || (isDemo ? 'DEMO' : 'USD');
+            // Corrigido: Usar isDemo da API para determinar tradeCurrency, não o localStorage
+            // O localStorage pode estar desatualizado se a troca de conta foi recente
+            this.tradeCurrency = isDemo ? 'DEMO' : 'USD';
             this.accountType = isDemo ? 'demo' : 'real';
+
+            // Atualizar localStorage para manter sincronia
+            localStorage.setItem('trade_currency', this.tradeCurrency);
             console.log('[AccountBalanceMixin] Saldo carregado da API - LOGINID:', loginid, 'Type:', this.accountType);
           } else {
             console.warn('[AccountBalanceMixin] ⚠️ API retornou status OK mas sem LOGINID:', data);
