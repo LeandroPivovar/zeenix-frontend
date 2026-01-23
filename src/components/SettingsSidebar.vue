@@ -537,6 +537,16 @@ export default {
     },
     async switchAccount(type) {
       try {
+        // ✅ NOVO: Se saldo fictício estiver ativo, apenas ignorar a troca de conta
+        // O saldo fictício já mascara a conta demo como real
+        if (this.isFictitiousBalanceActive) {
+          console.log('[SettingsSidebar] Saldo fictício ativo - ignorando troca de conta. UI já mostra como Real.');
+          // Não fazer nada - o uiAccountType já retorna 'real' quando isFictitiousBalanceActive é true
+          // O saldo já é calculado com fictício em formattedBalance
+          this.close();
+          return;
+        }
+
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const token = localStorage.getItem('token');
         
