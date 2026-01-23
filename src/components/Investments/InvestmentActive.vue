@@ -816,7 +816,12 @@
 
     <InsufficientBalanceModal
         :visible="showInsufficientBalanceModal"
-        @confirm="showInsufficientBalanceModal = false"
+        :current-balance="insufficientBalanceDetails.current"
+        :required-balance="insufficientBalanceDetails.required"
+        :calculated-stake="insufficientBalanceDetails.stake"
+        :entry-value="entryValue"
+        :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
+        @confirm="handleInsufficientBalanceConfirm"
     />
 </template>
 
@@ -826,7 +831,6 @@ import StopLossModal from '../StopLossModal.vue';
 import TargetProfitModal from '../TargetProfitModal.vue';
 import StopBlindadoModal from '../StopBlindadoModal.vue';
 import InsufficientBalanceModal from '../InsufficientBalanceModal.vue';
-import accountBalanceMixin from '../../mixins/accountBalanceMixin';
 
 // TradingView Charting Library - verifique se está disponível globalmente
 const TradingView = window.TradingView || null;
@@ -840,7 +844,6 @@ export default {
         StopBlindadoModal,
         InsufficientBalanceModal,
     },
-    mixins: [accountBalanceMixin],
     props: {
         ticks: {
             type: Array,
@@ -923,7 +926,7 @@ export default {
             },
             isLoadingStats: true,
             statsUpdateInterval: null,
-            // balance removido para usar do mixin (balanceNumeric)
+            balance: 18250,
             balanceVisible: true,
             profitVisible: true,
             winrateVisible: true,
@@ -974,10 +977,13 @@ export default {
             isDeactivating: false,
             
             // Modais de Stop Loss e Target Profit
+
+            // Modais de Stop Loss e Target Profit
             showStopLossModal: false,
             showStopBlindadoModal: false,
             showTargetProfitModal: false,
             showInsufficientBalanceModal: false,
+            insufficientBalanceDetails: { current: 0, required: 0, stake: 0 }, // ✅ Detalhes do erro de saldo
             sessionResult: 0,
             previousSessionStatus: null,
             
@@ -1191,7 +1197,7 @@ export default {
         },
         
         realEstimatedRiskLabel() {
-            const balance = this.balanceNumeric || this.accountBalanceProp || 10000;
+            const balance = this.accountBalanceProp || 10000;
             const entryValue = this.entryValue || 0.35;
             
             if (!balance || balance <= 0) {
@@ -1260,7 +1266,7 @@ export default {
         
         // Risco estimado por operação
         estimatedRiskPercentage() {
-            const balance = this.balanceNumeric || this.accountBalanceProp || 10000; // Fallback se não tiver saldo
+            const balance = this.accountBalanceProp || 10000; // Fallback se não tiver saldo
             const entryValue = this.entryValue || 0.35;
             
             if (!balance || balance <= 0) {
@@ -1280,8 +1286,7 @@ export default {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             });
-            const balance = this.balanceNumeric || this.balance || 0;
-            return this.balanceVisible ? `$${formatter.format(balance)}` : '••••••';
+            return this.balanceVisible ? `$${formatter.format(this.balance)}` : '••••••';
         },
         
         riskLabel() {
@@ -1343,39 +1348,38 @@ export default {
             return 'Buscando oportunidades';
         },
         formattedBalance() {
-            // Usar balanceNumeric do mixin se disponível
-            let rawBalance = 0;
-            if (typeof this.balanceNumeric !== 'undefined') {
-                rawBalance = this.balanceNumeric;
-            } else if (this.accountBalanceProp) {
-                rawBalance = this.accountBalanceProp;
+            if (!this.accountBalanceProp) {
+                const isDemo = this.accountType === 'demo' || 
+                              this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
+                              (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
+                // If fictitious balance is active, always show $ even for demo
+                const shouldMaskAsReal = this.isFictitiousBalanceActive && isDemo;
+                return shouldMaskAsReal ? '$0,00' : (isDemo ? 'Đ0,00' : '$0,00');
             }
-
             const formatter = new Intl.NumberFormat('pt-BR', {
                 minimumFractionDigits: 2,
                 maximumFractionDigits: 2,
             });
-            
-            // Logica de ficitious balance
-             const isDemo = this.accountType === 'demo' || 
+            // Se for conta Demo, usar apenas D (sem $)
+            const isDemo = this.accountType === 'demo' || 
                           this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
                           (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
-
+            
+            // If fictitious balance is active and this is a demo account, mask it as real ($)
             if (this.isFictitiousBalanceActive && isDemo) {
-                return `$${formatter.format(rawBalance)}`;
+                return `$${formatter.format(this.accountBalanceProp)}`;
             }
             
             if (isDemo) {
-                return `Đ${formatter.format(rawBalance)}`;
+                return `Đ${formatter.format(this.accountBalanceProp)}`;
             }
             // Se for real, usar apenas $
-            return `$${formatter.format(rawBalance)}`;
+            return `$${formatter.format(this.accountBalanceProp)}`;
         },
 
         // Profit percentage
         profitPercentage() {
-            const balance = this.balanceNumeric || this.accountBalanceProp || 0;
-            if (!balance || balance <= 0) return null;
+            if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return null;
             const profit = this.dailyStats.sessionProfitLoss || 0;
             const percentage = (profit / this.accountBalanceProp) * 100;
             const sign = percentage >= 0 ? '+' : '';
@@ -1384,8 +1388,7 @@ export default {
         
         // Check if profit is positive
         isProfitPositive() {
-            const balance = this.balanceNumeric || this.accountBalanceProp || 0;
-            if (!balance || balance <= 0) return true;
+            if (!this.accountBalanceProp || this.accountBalanceProp <= 0) return true;
             const profit = this.dailyStats.sessionProfitLoss || 0;
             return profit >= 0;
         },
@@ -2112,8 +2115,10 @@ export default {
                 }
             }
 
+
+
             // ✅ [ZENIX v3.4] Verificar se há mensagem de SALDO INSUFICIENTE
-            const hasLowBalanceMessage = recentLogs.some(log => 
+            const balanceLog = recentLogs.find(log => 
                 log.message && (
                     log.message.includes('SALDO INSUFICIENTE') ||
                     log.message.includes('IA DESATIVADA. SALDO INSUFICIENTE') ||
@@ -2121,8 +2126,44 @@ export default {
                 )
             );
             
-            if (hasLowBalanceMessage) {
-                console.log('[InvestmentActive] ❌ Saldo insuficiente detectado nos logs!');
+            if (balanceLog) {
+                console.log('[InvestmentActive] ❌ Saldo insuficiente detectado nos logs! Analisando detalhes...');
+                
+                // Extrair valores do log se possível
+                // Exemplo: Capital atual ($2097.45 USD) é menor que o necessário ($2200.00 USD) para o stake calculado ($2000.00 USD)
+                let current = 0;
+                let required = 0;
+                let stake = 0;
+                
+                try {
+                    const msg = balanceLog.message;
+                    
+                    // Regex para capturar valores monetários ($123.45 ou D$123.45)
+                    // Procura por: Capital atual ($X) ... necessário ($Y) ... stake calculado ($Z)
+                    // Usamos [^\d]* para ignorar qualquer prefixo de moeda ($, D$, R$, etc)
+                    const currentMatch = msg.match(/Capital atual \([^\d]*([\d.]+)/);
+                    const requiredMatch = msg.match(/necessário \([^\d]*([\d.]+)/);
+                    const stakeMatch = msg.match(/stake calculado \([^\d]*([\d.]+)/);
+                    
+                    if (currentMatch) current = parseFloat(currentMatch[1]);
+                    if (requiredMatch) required = parseFloat(requiredMatch[1]);
+                    if (stakeMatch) stake = parseFloat(stakeMatch[1]);
+                    
+                    console.log('[InvestmentActive] 📊 Detalhes extraídos:', { current, required, stake });
+                } catch (e) {
+                    console.warn('[InvestmentActive] ⚠️ Erro ao fazer parse do log de saldo:', e);
+                }
+
+                // Atualizar detalhes
+                this.insufficientBalanceDetails = {
+                    current: current || this.accountBalanceProp || 0,
+                    required: required || 0,
+                    stake: stake || 0
+                };
+                
+
+                
+                // Mostrar modal (sem forçar parada da IA, deixando o backend gerenciar o status)
                 if (!this.showInsufficientBalanceModal) {
                     this.showInsufficientBalanceModal = true;
                 }
@@ -2275,10 +2316,8 @@ export default {
                     console.log('[InvestmentActive] ✅ Stats atualizadas:', this.dailyStats);
 
                     // ✅ ZENIX v3.5: Notificar pai para atualizar saldo em tempo real (dashboard + topbar)
-                    // Atualizar saldo localmente via mixin para reatividade imediata
-                    this.loadAccountBalanceInfo(true);
-                    
-                    const currentBalance = parseFloat(this.balanceNumeric || this.accountBalanceProp) || 0;
+                    // Usamos apenas o saldo vindo da props para notificar o pai (sem somar lucro)
+                    const currentBalance = parseFloat(this.accountBalanceProp) || 0;
                     if (currentBalance > 0) {
                         console.log(`[InvestmentActive] 💰 Notificando saldo (Sem soma): $${currentBalance.toFixed(2)}`);
                         this.$emit('update-balance', currentBalance);
@@ -2516,6 +2555,20 @@ export default {
             this.aiStoppedAutomatically = true;
             console.log('[InvestmentActive] ✅ IA parada por Stop Blindado - botão mudará para "Reiniciar IA"');
         },
+
+        /**
+         * Handler para confirmação do modal de Saldo Insuficiente
+         */
+        handleInsufficientBalanceConfirm() {
+            this.showInsufficientBalanceModal = false;
+            // ✅ Marcar que a IA foi parada automaticamente para mudar o botão para "Reiniciar"
+            this.aiStoppedAutomatically = true;
+            // ✅ Forçar estado inativo localmente
+            if (this.sessionConfig) {
+                this.sessionConfig.isActive = false;
+            }
+            console.log('[InvestmentActive] ✅ IA parada por Saldo Insuficiente - botão mudará para "Reiniciar IA"');
+        },
         
         /**
          * Handler para confirmação do modal de Target Profit
@@ -2556,6 +2609,11 @@ export default {
         async pauseIA() {
             this.isDeactivating = true;
             try {
+                // ✅ Forçar estado inativo localmente imediatamente (reduz lag visual)
+                if (this.sessionConfig) {
+                    this.sessionConfig.isActive = false;
+                }
+                
                 // Emitir evento para o componente pai desativar a IA
                 this.$emit('deactivate');
                 console.log('[InvestmentActive] ✅ Evento de desativação emitido para o pai');
