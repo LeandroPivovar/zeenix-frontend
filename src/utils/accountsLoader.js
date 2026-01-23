@@ -74,14 +74,6 @@ export async function loadAvailableAccounts(forceReload = false) {
     }
 
 
-    const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
-    const loginIds = Object.keys(tokensByLoginId);
-
-    console.log(`[AccountsLoader] Tokens encontrados: ${loginIds.length}`, loginIds);
-
-    if (loginIds.length === 0) {
-      return [];
-    }
 
     // Se já há uma requisição em andamento, aguardar o resultado dela
     // Isso evita múltiplas requisições simultâneas
