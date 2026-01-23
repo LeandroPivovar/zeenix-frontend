@@ -17,7 +17,7 @@
 
         <TopNavbar 
             :is-sidebar-collapsed="isSidebarCollapsed"
-            :balance="info?.balance"
+            :balance="displayBalanceForTopbar || info?.balance"
             :account-type="accountType"
             :balances-by-currency-real="balancesByCurrencyReal"
             :balances-by-currency-demo="balancesByCurrencyDemo"
@@ -429,7 +429,7 @@
                     :profit-target-config="profitTarget"
                     :loss-limit-config="lossLimit"
                     :mode-config="mode"
-                    :account-balance-prop="balanceNumeric"
+                    :account-balance-prop="info?.balance"
                     :account-currency-prop="tradeCurrency"
                     :selected-market-prop="selectedMarket"
                     :stoploss-blindado-config="stoplossBlindado"
@@ -542,7 +542,8 @@ export default {
                 jump50: 'Volatilidade de 50% com saltos ocasionais de aproximadamente 100%',
                 jump75: 'Volatilidade de 75% com saltos ocasionais de aproximadamente 150%',
                 jump100: 'Volatilidade de 100% com saltos ocasionais de aproximadamente 200%'
-            }
+            },
+            displayBalanceForTopbar: null
         }
     },
     watch: {
@@ -685,27 +686,11 @@ export default {
         handleLiveBalanceUpdate(newBalance) {
             if (!newBalance || !this.info) return;
             
-            console.log(`[InvestmentIAView] 💰 Sincronizando saldo real-time: $${newBalance.toFixed(2)}`);
+            console.log(`[InvestmentIAView] 💰 Sincronizando saldo real-time (Apenas Exibição): $${newBalance.toFixed(2)}`);
             
-            // 1. Atualizar o saldo principal
-            this.info.balance = newBalance;
-            
-            // 2. Atualizar campos específicos dependendo do tipo de conta
-            // Isso garante que o accountBalanceMixin e TopNavbar vejam a mudança
-            if (this.accountType === 'demo') {
-                this.info.demo_amount = newBalance;
-                if (this.info.balancesByCurrencyDemo) {
-                    this.info.balancesByCurrencyDemo['USD'] = newBalance;
-                }
-            } else {
-                this.info.real_amount = newBalance;
-                if (this.info.balancesByCurrencyReal) {
-                    this.info.balancesByCurrencyReal['USD'] = newBalance;
-                }
-            }
-            
-            // 3. Forçar reatividade clonando o objeto info
-            this.info = { ...this.info };
+            // ✅ ZENIX v3.5: Atualizamos apenas uma propriedade de exibição para a TopNavbar
+            // Isso evita loops recursivos mantendo o info.balance como o valor real vindo da API
+            this.displayBalanceForTopbar = newBalance;
         },
 
         getStrategyIcon(id) {
