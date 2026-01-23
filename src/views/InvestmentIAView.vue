@@ -429,7 +429,7 @@
                     :profit-target-config="profitTarget"
                     :loss-limit-config="lossLimit"
                     :mode-config="mode"
-                    :account-balance-prop="info?.balance"
+                    :account-balance-prop="balanceNumeric"
                     :account-currency-prop="tradeCurrency"
                     :selected-market-prop="selectedMarket"
                     :stoploss-blindado-config="stoplossBlindado"
