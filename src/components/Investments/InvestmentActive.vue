@@ -2119,7 +2119,7 @@ export default {
                 }
             }
 
-            }
+
 
             // ✅ [ZENIX v3.4] Verificar se há mensagem de SALDO INSUFICIENTE
             const balanceLog = recentLogs.find(log => 
