@@ -29,8 +29,8 @@
           </div>
           <div class="balance-divider"></div>
           <div class="balance-item">
-            <p class="balance-label">MÍNIMO NECESSÁRIO</p>
-            <p class="balance-value required-value">{{ formattedRequired }}</p>
+            <p class="balance-label">VALOR DA ENTRADA</p>
+            <p class="balance-value required-value">{{ formattedStake }}</p>
           </div>
         </div>
         

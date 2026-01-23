@@ -821,7 +821,7 @@
         :calculated-stake="insufficientBalanceDetails.stake"
         :entry-value="entryValue"
         :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
-        @confirm="showInsufficientBalanceModal = false"
+        @confirm="handleInsufficientBalanceConfirm"
     />
 </template>
 
@@ -2554,6 +2554,20 @@ export default {
             this.aiStoppedAutomatically = true;
             console.log('[InvestmentActive] ✅ IA parada por Stop Blindado - botão mudará para "Reiniciar IA"');
         },
+
+        /**
+         * Handler para confirmação do modal de Saldo Insuficiente
+         */
+        handleInsufficientBalanceConfirm() {
+            this.showInsufficientBalanceModal = false;
+            // ✅ Marcar que a IA foi parada automaticamente para mudar o botão para "Reiniciar"
+            this.aiStoppedAutomatically = true;
+            // ✅ Forçar estado inativo localmente
+            if (this.sessionConfig) {
+                this.sessionConfig.isActive = false;
+            }
+            console.log('[InvestmentActive] ✅ IA parada por Saldo Insuficiente - botão mudará para "Reiniciar IA"');
+        },
         
         /**
          * Handler para confirmação do modal de Target Profit
@@ -2594,6 +2608,11 @@ export default {
         async pauseIA() {
             this.isDeactivating = true;
             try {
+                // ✅ Forçar estado inativo localmente imediatamente (reduz lag visual)
+                if (this.sessionConfig) {
+                    this.sessionConfig.isActive = false;
+                }
+                
                 // Emitir evento para o componente pai desativar a IA
                 this.$emit('deactivate');
                 console.log('[InvestmentActive] ✅ Evento de desativação emitido para o pai');
