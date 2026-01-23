@@ -88,7 +88,14 @@
                             </div>
                             <div v-for="module in filteredModules" :key="module.id" class="module-block">
                                 <div class="module-header">
-                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="drag-handle"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+                                    <div class="module-reorder-btns">
+                                        <button class="btn-reorder" @click="moveModule(module, -1)" :disabled="filteredModules.indexOf(module) === 0">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+                                        </button>
+                                        <button class="btn-reorder" @click="moveModule(module, 1)" :disabled="filteredModules.indexOf(module) === filteredModules.length - 1">
+                                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                                        </button>
+                                    </div>
                                     <span class="module-title-list">
                                         Módulo {{ module.id.toString().slice(-2) }}: {{ module.title.split(' - ')[1] || module.title }}
                                     </span>
@@ -104,6 +111,14 @@
                                             <svg v-if="lesson.contentType === 'Video'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lesson-icon video-icon"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
                                             <svg v-else-if="lesson.contentType === 'Text' || lesson.contentType === 'PDF'" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lesson-icon document-icon"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line></svg>
                                             <span class="lesson-name">{{ lesson.name }}</span>
+                                            <div class="lesson-reorder-btns">
+                                                <button class="btn-reorder-small" @click="moveLesson(module.id, lesson, -1)" :disabled="filteredLessonsForModule(module.id, true).indexOf(lesson) === 0">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 15l-6-6-6 6"/></svg>
+                                                </button>
+                                                <button class="btn-reorder-small" @click="moveLesson(module.id, lesson, 1)" :disabled="filteredLessonsForModule(module.id, true).indexOf(lesson) === filteredLessonsForModule(module.id, true).length - 1">
+                                                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9l6 6 6-6"/></svg>
+                                                </button>
+                                            </div>
                                             <span class="lesson-duration">{{ lesson.duration }} min</span>
                                             <span
                                                 :class="['status-tag', lesson.isActive ? 'active-tag' : 'inactive-tag']"
@@ -213,76 +228,6 @@
                             </div>
                         </form>
                     </section>
-                    <section class="card seo-sharing-section">
-                        <h2 class="card-title">SEO & Compartilhamento</h2>
-                        <div class="form-group">
-                            <label for="slug">Slug/URL</label>
-                            <input type="text" id="slug" class="input-text" v-model="course.slug" placeholder="Ex: mestre-do-day-trade" />
-                        </div>
-                        <div class="form-group">
-                            <label for="seo-title">Título SEO</label>
-                            <input type="text" id="seo-title" class="input-text" v-model="course.seoTitle" placeholder="Ex: Curso Mestre do Day Trade | Zenix Academy" />
-                        </div>
-                        <div class="form-group">
-                            <label for="seo-description">Descrição SEO</label>
-                            <textarea id="seo-description" class="input-textarea" v-model="course.seoDescription" placeholder="Descreva o curso para motores de busca..."></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="keywords">Palavras-chave</label>
-                            <div class="keywords-input-container">
-                                <div class="keyword-tags">
-                                    <span v-for="(keyword, index) in course.keywords" :key="index" class="keyword-tag">
-                                        {{ keyword }}
-                                        <button @click="removeKeyword(index)" class="btn-remove-keyword">×</button>
-                                    </span>
-                                </div>
-                                <input
-                                    type="text"
-                                    id="keywords"
-                                    class="input-text"
-                                    v-model="newKeyword"
-                                    placeholder="Adicionar palavra-chave e pressionar Enter"
-                                    @keyup.enter="addKeyword"
-                                />
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <label for="social-image">Imagem para compartilhamento social</label>
-                            <div class="social-image-upload-area">
-                                <input
-                                    type="file"
-                                    ref="socialImageFileInput"
-                                    @change="handleSocialImageUpload"
-                                    accept="image/*"
-                                    style="display: none;"
-                                />
-                                <div class="cover-upload-area seo-cover-area">
-                                    <div
-                                        class="upload-placeholder social-image-upload-area upload-image"
-                                        @click="$refs.socialImageFileInput.click()"
-                                        :class="{ 'hidden-on-preview': course.socialImagePreview }"
-                                    >
-                                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                                            <polyline points="17 8 12 3 7 8"></polyline>
-                                            <line x1="12" y1="3" x2="12" y2="15"></line>
-                                        </svg>
-                                        <span>Enviar imagem</span>
-                                    </div>
-                                    
-                                    <div class="social-image-preview-box">
-                                        <img
-                                            v-if="course.socialImagePreview"
-                                            :src="course.socialImagePreview"
-                                            alt="Prévia da Imagem Social"
-                                            class="social-image-preview"
-                                        />
-                                        <span v-else>Preview Social</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </section>
                 </div>
             </div>
 
@@ -363,21 +308,12 @@ export default {
                 currency: "R$", 
                 subscription: "1", 
                 discount: "0", 
-                slug: 'mestre-do-day-trade', 
-                seoTitle: 'Curso Mestre do Day Trade | Zenix Academy', 
-                seoDescription: 'Aprenda as melhores estratégias de day trade com a Zenix.', 
-                keywords: ['trading'], 
-                    socialImagePath: '',
-                socialImagePreview: null, 
             },
             // Preview
             isPreviewModalOpen: false,
             previewCourse: {},
             // Cursos
             courses: [],
-            // Novo estado para palavras-chave e imagem social
-            newKeyword: '', 
-            isSocialPreviewModalOpen: false, 
             // Modal Módulo
             isNewModuleModalOpen: false,
             newModule: {
@@ -558,12 +494,7 @@ export default {
                 const courseDataToSave = {
                     title: this.course.name,
                     description: this.course.description,
-                    slug: this.course.slug,
-                    seoTitle: this.course.seoTitle,
-                    seoDescription: this.course.seoDescription,
-                    keywords: this.course.keywords,
                     coverImage: this.course.coverImagePath || null,
-                    socialImage: this.course.socialImagePath || null,
                     access: this.course.access,
                     price: this.course.price,
                     currency: this.course.currency,
@@ -607,6 +538,37 @@ export default {
                 
                 savedCourse = await response.json();
                 const courseId = savedCourse.id;
+
+                // ATUALIZAÇÃO: Salva também módulos e aulas existentes para persistir a nova ordem
+                const existingModules = this.modules.filter(m => !m.isLocal);
+                for (let i = 0; i < existingModules.length; i++) {
+                    const module = existingModules[i];
+                    await fetch(`${apiBaseUrl}/courses/modules/${module.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            orderIndex: i
+                        }),
+                    });
+
+                    const moduleLessons = this.lessons.filter(l => l.moduleId === module.id && !l.isLocal);
+                    for (let j = 0; j < moduleLessons.length; j++) {
+                        const lesson = moduleLessons[j];
+                        await fetch(`${apiBaseUrl}/courses/lessons/${lesson.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                orderIndex: j
+                            }),
+                        });
+                    }
+                }
                 
                 // Se for curso novo, salva módulos, aulas e materiais locais
                 if (isNewCourse) {
@@ -731,35 +693,36 @@ export default {
                 this.$root.$toast.info('Erro ao salvar curso. Verifique sua conexão.');
             }
         },
-        // SEO & Compartilhamento
-        addKeyword() {
-            if (this.newKeyword.trim()) {
-                this.course.keywords.push(this.newKeyword.trim());
-                this.newKeyword = ''; // Limpa o campo
+        moveModule(module, direction) {
+            const index = this.modules.indexOf(module);
+            const newIndex = index + direction;
+            if (newIndex >= 0 && newIndex < this.modules.length) {
+                const temp = this.modules[index];
+                this.modules[index] = this.modules[newIndex];
+                this.modules[newIndex] = temp;
+                // Força reatividade
+                this.modules = [...this.modules];
             }
         },
-        removeKeyword(index) {
-            this.course.keywords.splice(index, 1);
-        },
-        async handleSocialImageUpload(event) {
-            const file = event.target.files[0];
-            if (!file) {
-                this.course.socialImagePath = '';
-                this.course.socialImagePreview = null;
-                return;
+        moveLesson(moduleId, lesson, direction) {
+            const moduleLessons = this.lessons.filter(l => l.moduleId === moduleId);
+            const index = moduleLessons.indexOf(lesson);
+            const newIndex = index + direction;
+
+            if (newIndex >= 0 && newIndex < moduleLessons.length) {
+                // Encontra os índices reais no array principal 'lessons'
+                const actualIndex = this.lessons.indexOf(lesson);
+                const otherLesson = moduleLessons[newIndex];
+                const actualOtherIndex = this.lessons.indexOf(otherLesson);
+
+                // Troca as posições
+                const temp = this.lessons[actualIndex];
+                this.lessons[actualIndex] = this.lessons[actualOtherIndex];
+                this.lessons[actualOtherIndex] = temp;
+                
+                // Força reatividade
+                this.lessons = [...this.lessons];
             }
-            this.course.socialImagePath = '';
-            this.generateLocalImagePreview(file, 'socialImagePreview');
-            const uploadedPath = await this.uploadCourseImage(file, 'social');
-            if (uploadedPath) {
-                this.course.socialImagePath = uploadedPath;
-            } else {
-                this.course.socialImagePreview = null;
-            }
-            event.target.value = '';
-        },
-        openSocialPreviewModal() {
-            this.$root.$toast.info('Funcionalidade de Preview Social ainda não implementada.');
         },
         getApiBaseUrl() {
             return process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
@@ -1444,14 +1407,8 @@ export default {
             this.course.discount = "0";
             this.course.status = "draft";
             this.course.visibility = "public";
-            this.course.slug = '';
-            this.course.seoTitle = '';
-            this.course.seoDescription = '';
-            this.course.keywords = [];
             this.course.coverImagePath = '';
             this.course.coverImagePreview = null;
-            this.course.socialImagePath = '';
-            this.course.socialImagePreview = null;
             this.course.availableFrom = '';
             this.course.availableUntil = '';
             this.modules = [];
@@ -1481,10 +1438,6 @@ export default {
                         name: c.name || c.title,
                         title: c.title,
                         description: c.description,
-                        slug: c.slug,
-                        seoTitle: c.seoTitle,
-                        seoDescription: c.seoDescription,
-                        keywords: c.keywords || [],
                     }));
                 } else {
                     console.error('Erro ao carregar cursos:', response.statusText);
@@ -1522,12 +1475,6 @@ export default {
             this.course.description = courseData.description;
             this.course.coverImagePath = courseData.coverImage || '';
             this.course.coverImagePreview = this.resolveImageUrl(courseData.coverImage) || courseData.imagePlaceholder || null;
-            this.course.slug = courseData.slug || '';
-            this.course.seoTitle = courseData.seoTitle || '';
-            this.course.seoDescription = courseData.seoDescription || '';
-            this.course.keywords = courseData.keywords || [];
-            this.course.socialImagePath = courseData.socialImage || '';
-            this.course.socialImagePreview = this.resolveImageUrl(courseData.socialImage);
             this.course.access = courseData.access || "1";
             this.course.price = courseData.price || 0;
             this.course.currency = courseData.currency || "R$";
