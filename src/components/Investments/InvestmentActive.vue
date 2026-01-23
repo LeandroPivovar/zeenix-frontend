@@ -1525,29 +1525,14 @@ export default {
         },
 
         getTradeLabel(direction) {
-            const strategy = (this.sessionConfig?.strategy || this.selectedStrategy || 'orion').toLowerCase();
-            const dir = (direction || '').toUpperCase();
-            
-            // ✅ Mapeamento específico por estratégia
-            if (strategy === 'orion') {
-                if (dir === 'CALL') return 'RISE';
-                if (dir === 'PUT') return 'FALL';
-            }
-
-            // ✅ Mapeamento Geral (Fallbacks)
-            if (dir === 'HIGHER' || dir === 'DIGITOVER') return 'OVER';
-            if (dir === 'LOWER' || dir === 'DIGITUNDER') return 'UNDER';
-            if (dir === 'RISE' || dir === 'CALL') return dir; // Retorna o valor original para manter RISE ou CALL
-            if (dir === 'FALL' || dir === 'PUT') return dir;
-            if (dir === 'PAR' || dir === 'DIGITEVEN') return 'PAR';
-            if (dir === 'IMPAR' || dir === 'DIGITODD') return 'IMPAR';
-            
-            return dir;
+            // Retornar exatamente como vem do backend
+            return (direction || '').toUpperCase();
         },
 
         isPositiveDirection(direction) {
+            // Ajustar verificação para os termos crus se necessário, ou manter genérico
             const label = this.getTradeLabel(direction);
-            const positiveLabels = ['OVER', 'RISE', 'CALL', 'PAR'];
+            const positiveLabels = ['OVER', 'RISE', 'CALL', 'PAR', 'DIGITOVER', 'DIGITEVEN', 'HIGHER'];
             return positiveLabels.includes(label);
         },
 
