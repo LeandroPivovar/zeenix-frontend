@@ -2235,6 +2235,7 @@ export default {
                         wins: parseInt(result.data.wins) || 0,
                         losses: parseInt(result.data.losses) || 0,
                         sessionBalance: parseFloat(result.data.sessionBalance) || 0,
+                        dayInitialBalance: parseFloat(result.data.dayInitialBalance) || 0, // ✅ [ZENIX v3.5] Saldo inicial do dia
                         sessionProfitLoss: parseFloat(result.data.sessionProfitLoss) || 0,
                         sessionTrades: parseInt(result.data.sessionTrades) || 0,
                         sessionWins: parseInt(result.data.sessionWins) || 0,
@@ -2245,10 +2246,10 @@ export default {
                     console.log('[InvestmentActive] ✅ Stats atualizadas:', this.dailyStats);
 
                     // ✅ ZENIX v3.5: Notificar pai para atualizar saldo em tempo real (dashboard + topbar)
-                    // Usamos sessionBalance (capital inicial) + sessionProfitLoss (lucro até o momento)
-                    const currentCalculatedBalance = this.dailyStats.sessionBalance + this.dailyStats.sessionProfitLoss;
+                    // Usamos dayInitialBalance (capital inicial do dia) + profitLoss (lucro TOTAL acumulado no dia)
+                    const currentCalculatedBalance = this.dailyStats.dayInitialBalance + this.dailyStats.profitLoss;
                     if (currentCalculatedBalance > 0) {
-                        console.log(`[InvestmentActive] 💰 Emitindo novo saldo calculado: $${currentCalculatedBalance.toFixed(2)}`);
+                        console.log(`[InvestmentActive] 💰 Emitindo novo saldo calculado (Dia): $${currentCalculatedBalance.toFixed(2)}`);
                         this.$emit('update-balance', currentCalculatedBalance);
                     }
                 } else {
