@@ -1300,8 +1300,8 @@ export default {
             }
         },
         async saveNewMaterial() {
-            if (!this.newMaterial.name || !this.newMaterial.link) {
-                this.$root.$toast.error('O nome e o link do material são obrigatórios.');
+            if (!this.newMaterial.name || (!this.newMaterial.link && !this.newMaterial.file && !this.newMaterial.filePath)) {
+                this.$root.$toast.error('O nome do material e um arquivo ou link são obrigatórios.');
                 return;
             }
             
