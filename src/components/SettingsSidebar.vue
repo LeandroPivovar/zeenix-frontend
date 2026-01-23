@@ -541,72 +541,109 @@ export default {
         
         // ✅ NOVO: Encontrar o token correto baseado no tipo de conta
         let selectedToken = null;
+        const isDemo = type === 'demo';
         
-        // Buscar informações da conexão Deriv
-        const derivConnectionStr = localStorage.getItem('deriv_connection');
-        if (derivConnectionStr) {
-          try {
-            const derivConnection = JSON.parse(derivConnectionStr);
-            const accountsByCurrency = derivConnection.accountsByCurrency;
-            const tokensByLoginId = derivConnection.tokensByLoginId;
-            
-            // Procurar a conta do tipo solicitado (demo ou real)
-            const isDemo = type === 'demo';
-            
-            if (accountsByCurrency && tokensByLoginId) {
-              // Iterar por todas as moedas
-              for (const currency in accountsByCurrency) {
-                const accounts = accountsByCurrency[currency];
-                if (Array.isArray(accounts)) {
-                  // Procurar conta do tipo correto
-                  const targetAccount = accounts.find(acc => acc.isDemo === isDemo);
-                  if (targetAccount && targetAccount.loginid) {
-                    // Pegar token do loginid encontrado
-                    selectedToken = tokensByLoginId[targetAccount.loginid];
-                    if (selectedToken) {
-                      console.log('[SettingsSidebar] Token encontrado para', type, ':', targetAccount.loginid);
-                      break;
+        // Estratégia 1: Tentar encontrar em availableAccounts (que já carrega do backend)
+        // Isso é mais robusto pois o accountsLoader já trata tokens do backend
+        if (this.availableAccounts && this.availableAccounts.length > 0) {
+           const targetAccount = this.availableAccounts.find(acc => acc.isDemo === isDemo);
+           if (targetAccount && targetAccount.token) {
+              selectedToken = targetAccount.token;
+              console.log('[SettingsSidebar] Token encontrado em availableAccounts para', type, ':', targetAccount.loginid);
+           }
+        }
+
+        // Estratégia 2: Se não achou, tentar no localStorage (deriv_connection) - Fallback legado
+        if (!selectedToken) {
+            const derivConnectionStr = localStorage.getItem('deriv_connection');
+            if (derivConnectionStr) {
+            try {
+                const derivConnection = JSON.parse(derivConnectionStr);
+                const accountsByCurrency = derivConnection.accountsByCurrency;
+                const tokensByLoginId = derivConnection.tokensByLoginId;
+                
+                if (accountsByCurrency && tokensByLoginId) {
+                // Iterar por todas as moedas
+                for (const currency in accountsByCurrency) {
+                    const accounts = accountsByCurrency[currency];
+                    if (Array.isArray(accounts)) {
+                    // Procurar conta do tipo correto
+                    const targetAccount = accounts.find(acc => acc.isDemo === isDemo);
+                    if (targetAccount && targetAccount.loginid) {
+                        // Pegar token do loginid encontrado
+                        const token = tokensByLoginId[targetAccount.loginid];
+                        if (token) {
+                        selectedToken = token;
+                        console.log('[SettingsSidebar] Token encontrado no cache legado para', type, ':', targetAccount.loginid);
+                        break;
+                        }
                     }
-                  }
+                    }
                 }
-              }
+                }
+            } catch (parseError) {
+                console.error('[SettingsSidebar] Erro ao parsear deriv_connection:', parseError);
             }
-          } catch (parseError) {
-            console.error('[SettingsSidebar] Erro ao parsear deriv_connection:', parseError);
-          }
+            }
+        }
+        
+        // Estratégia 3: Tentar carregar contas se ainda não tivermos token e availableAccounts estiver vazio
+        if (!selectedToken && (!this.availableAccounts || this.availableAccounts.length === 0)) {
+           console.log('[SettingsSidebar] Tentando carregar contas para encontrar token...');
+           await this.loadAvailableAccounts(false);
+           // Tentar novamente na lista carregada
+           if (this.availableAccounts && this.availableAccounts.length > 0) {
+               const targetAccount = this.availableAccounts.find(acc => acc.isDemo === isDemo);
+               if (targetAccount && targetAccount.token) {
+                  selectedToken = targetAccount.token;
+                  console.log('[SettingsSidebar] Token encontrado após carregamento para', type, ':', targetAccount.loginid);
+               }
+           }
         }
 
         if (!selectedToken) {
           console.warn('[SettingsSidebar] Token não encontrado para tipo:', type);
-          this.$emit('account-type-changed', type);
-          return;
+          // Mesmo sem token, tentar mudar apenas a moeda no backend (pode ser que o backend já tenha tudo)
+          // Mas vamos avisar o usuário ou tentar o fallback de moeda
         }
 
-        // ✅ NOVO: Salvar token selecionado no banco de dados
+        // ✅ NOVO: Salvar token selecionado no banco de dados (ou apenas moeda se token for null)
         try {
-          const saveTokenResponse = await fetch(`${apiBase}/settings/deriv-token`, {
-            method: 'POST',
+          const payload = {
+              tradeCurrency: type === 'demo' ? 'DEMO' : 'USD'
+          };
+          if (selectedToken) {
+              payload.token = selectedToken;
+          }
+
+          // Usar endpoint correto dependendo se temos token ou não
+          const endpoint = selectedToken ? '/settings/deriv-token' : '/settings';
+          const method = selectedToken ? 'POST' : 'PUT';
+
+          console.log(`[SettingsSidebar] Salvando alteração via ${endpoint}...`);
+
+          const saveResponse = await fetch(`${apiBase}${endpoint}`, {
+            method: method,
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`
             },
-            body: JSON.stringify({
-              token: selectedToken,
-              tradeCurrency: type === 'demo' ? 'DEMO' : 'USD'
-            })
+            body: JSON.stringify(payload)
           });
 
-          if (saveTokenResponse.ok) {
-            console.log('[SettingsSidebar] ✅ Token da conta selecionada salvo no banco de dados (tipo:', type, ')');
+          if (saveResponse.ok) {
+            console.log('[SettingsSidebar] ✅ Configuração salva com sucesso (tipo:', type, ')');
             
-            // ✅ Atualizar localStorage com o novo token
-            localStorage.setItem('deriv_token', selectedToken);
-            console.log('[SettingsSidebar] ✅ localStorage atualizado com novo token');
+            // ✅ Atualizar localStorage com o novo token se tivermos
+            if (selectedToken) {
+                localStorage.setItem('deriv_token', selectedToken);
+                console.log('[SettingsSidebar] ✅ localStorage atualizado com novo token');
+            }
           } else {
-            console.warn('[SettingsSidebar] ⚠️ Erro ao salvar token no banco, mas continuando...');
+            console.warn('[SettingsSidebar] ⚠️ Erro ao salvar no banco, mas continuando...');
           }
         } catch (saveError) {
-          console.error('[SettingsSidebar] ❌ Erro ao salvar token no banco:', saveError);
+          console.error('[SettingsSidebar] ❌ Erro ao salvar no banco:', saveError);
           // Continuar mesmo se falhar ao salvar no banco
         }
 
