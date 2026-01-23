@@ -2160,7 +2160,7 @@ export default {
                     stake: stake || 0
                 };
                 
-                };
+
                 
                 // Mostrar modal (sem forçar parada da IA, deixando o backend gerenciar o status)
                 if (!this.showInsufficientBalanceModal) {
