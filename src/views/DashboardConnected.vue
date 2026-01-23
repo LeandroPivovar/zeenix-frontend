@@ -167,8 +167,7 @@
           </div>
           <div class="mobile-account-balance">
             <span v-if="balanceVisible" class="inline-flex items-center gap-2">
-              <span v-if="currentAccountType === 'demo'">Đ</span>
-              <span v-else>$</span>
+              <span>{{ preferredCurrencyPrefix }}</span>
               {{ balanceVisible ? mobileBalanceValue : '' }}
             </span>
             <span v-else>••••••</span>
@@ -513,8 +512,7 @@
             </div>
             <p class="settings-balance-amount text-left">
               <span v-if="balanceVisible" class="inline-flex items-center gap-2">
-                <span v-if="currentAccountType === 'demo'">Đ</span>
-                <span v-else>$</span>
+                <span>{{ preferredCurrencyPrefix }}</span>
                 {{ balanceVisible ? mobileBalanceValue : '' }}
               </span>
               <span v-else>••••••</span>
@@ -522,14 +520,14 @@
             <div class="flex items-center gap-3 mt-3">
               <button 
                 @click="switchAccount('real')"
-                :class="currentAccountType === 'real' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
+                :class="uiAccountType === 'real' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
                 class="settings-account-btn"
               >
                 Real
               </button>
               <button 
                 @click="switchAccount('demo')"
-                :class="currentAccountType === 'demo' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
+                :class="uiAccountType === 'demo' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
                 class="settings-account-btn"
               >
                 Demo
@@ -665,9 +663,11 @@ import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import AppSidebar from '../components/Sidebar.vue'
 import { loadAvailableAccounts } from '../utils/accountsLoader'
 import OnboardingModal from '../components/modals/OnboardingModal.vue'
+import accountBalanceMixin from '../mixins/accountBalanceMixin'
 
 export default {
   name: 'DashboardConnected',
+  mixins: [accountBalanceMixin],
   components: {
     TopNavbar,
     DesktopBottomNav,
