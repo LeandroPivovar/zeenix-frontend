@@ -8,7 +8,8 @@
         :balance="currentBalance?.balance || info?.balance"
         :account-type="accountType"
         @open-settings="toggleSettingsModal"
-        @account-type-changed="switchAccount"
+        @open-settings="toggleSettingsModal"
+        @account-type-changed="handleAccountTypeChange"
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
         :currency-prefix="preferredCurrencyPrefix"
@@ -25,7 +26,8 @@
         :balances-by-currency-demo="balancesByCurrencyDemo"
         :currency-prefix="preferredCurrencyPrefix"
         @close="closeSettingsModal"
-        @account-type-changed="switchAccount"
+        @close="closeSettingsModal"
+        @account-type-changed="handleAccountTypeChange"
       />
 
       <main class="main-content" style="margin-top: 60px;">
@@ -101,7 +103,9 @@ import OperationDigits from '../components/OperationDigits.vue';
 import OperationLogs from '../components/OperationLogs.vue';
 import OperationLastOrders from '../components/OperationLastOrders.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
+import DesktopBottomNav from '../components/DesktopBottomNav.vue';
 import accountBalanceMixin from '../mixins/accountBalanceMixin';
+import { loadAvailableAccounts } from '../utils/accountsLoader';
 
 export default {
   name: 'OperationView',
@@ -141,6 +145,8 @@ export default {
       balancesByCurrencyReal: {},
       balancesByCurrencyDemo: {},
       tradeCurrency: 'USD', // 'USD' ou 'DEMO'
+      availableAccounts: [],
+      loadingAccounts: false,
     };
   },
   computed: {
@@ -208,42 +214,90 @@ export default {
         this.currentView = 'OperationChart';
       }
     },
-    async switchAccount(type) {
-      // Usa a mesma lógica do Dashboard - altera o tradeCurrency
-      try {
-        const tradeCurrency = type === 'demo' ? 'DEMO' : 'USD';
-        
-        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
-        const token = localStorage.getItem('token');
-        
-        const response = await fetch(`${apiBase}/settings`, {
-          method: 'PUT',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            tradeCurrency: tradeCurrency
-          })
-        });
+    handleAccountTypeChange(newAccountType) {
+        console.log('[OperationView] Tipo de conta alterado via componente filho para:', newAccountType);
+        this.switchAccount(newAccountType);
+    },
 
-        if (response.ok) {
-          // Atualizar tradeCurrency local imediatamente
-          this.tradeCurrency = tradeCurrency;
-          this.accountType = type;
-          
-          // Recarregar conexão para atualizar os dados da conta correta
-          await this.checkConnection(true);
-          
-          // Recarregar página para aplicar mudanças em todos os componentes
-          window.location.reload();
-        } else {
-          throw new Error('Erro ao alterar moeda');
+    async loadAvailableAccounts() {
+        this.loadingAccounts = true;
+        try {
+            const accounts = await loadAvailableAccounts();
+            this.availableAccounts = accounts;
+        } catch (error) {
+            console.error('[OperationView] Erro ao carregar contas:', error);
+            this.availableAccounts = [];
+        } finally {
+            this.loadingAccounts = false;
         }
-      } catch (error) {
-        console.error('[OperationView] Erro ao alterar moeda:', error);
-        alert('Erro ao alterar moeda. Tente novamente.');
-      }
+    },
+
+    async switchAccount(type) {
+        try {
+            const isDemo = type === 'demo';
+            const tradeCurrency = isDemo ? 'DEMO' : 'USD';
+            
+            // Tentar encontrar uma conta correspondente no cache de contas disponíveis
+            const matchingAccount = this.availableAccounts.find(acc => acc.isDemo === isDemo);
+            
+            const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+            const token = localStorage.getItem('token');
+            
+            if (matchingAccount) {
+                console.log(`[OperationView] Sincronizando conta ${type} com token: ${matchingAccount.loginid}`);
+                
+                // Usar o endpoint unificado que salva token E moeda
+                const response = await fetch(`${apiBase}/settings/deriv-token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        token: matchingAccount.token,
+                        tradeCurrency: tradeCurrency
+                    })
+                });
+
+                if (response.ok) {
+                    // Atualizar localStorage local para manter consistência imediata
+                    localStorage.setItem('deriv_token', matchingAccount.token);
+                    localStorage.setItem('trade_currency', tradeCurrency);
+                    
+                    this.tradeCurrency = tradeCurrency;
+                    this.accountType = type;
+                    
+                    console.log('[OperationView] ✅ Conta e token sincronizados com sucesso');
+                    window.location.reload();
+                    return;
+                }
+            }
+
+            // Fallback: se não encontrar conta específica ou falhar, tentar atualizar apenas a moeda
+            console.warn('[OperationView] ⚠️ Nenhuma conta correspondente encontrada ou falha no sync, tentando apenas moeda...');
+            const response = await fetch(`${apiBase}/settings`, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`
+                },
+                body: JSON.stringify({
+                    tradeCurrency: tradeCurrency
+                })
+            });
+
+            if (response.ok) {
+                localStorage.setItem('trade_currency', tradeCurrency);
+                this.tradeCurrency = tradeCurrency;
+                this.accountType = type;
+                window.location.reload();
+            } else {
+                throw new Error('Erro ao alterar conta');
+            }
+        } catch (error) {
+            console.error('[OperationView] Erro ao alterar moeda:', error);
+            alert('Erro ao alterar moeda. Tente novamente.');
+        }
     },
     formatCurrency(value, currency) {
       try {
@@ -927,6 +981,9 @@ export default {
     // (se houver timeouts ou promises pendentes, devem verificar isComponentDestroyed)
   },
   async mounted() {
+    // Carregar contas disponíveis assim que a view montar
+    this.loadAvailableAccounts();
+
     // Carregar tradeCurrency do settings primeiro
     await this.loadTradeCurrency();
     
