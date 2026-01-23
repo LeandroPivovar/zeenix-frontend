@@ -575,6 +575,9 @@ export default {
     getAccountDisplayName(account) {
       if (!account) return 'Conta';
       
+      const type = account.isDemo ? 'Demo' : 'Real';
+      const currency = account.currency || 'USD';
+      
       if (account.isDemo && this.isFictitiousBalanceActive) {
         return `Conta Real (${currency})`;
       }
