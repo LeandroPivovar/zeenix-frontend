@@ -27,8 +27,8 @@
     <!-- Modal de Nova Aula -->
     <div v-if="isNewLessonModalOpen" class="modal-overlay" @click.self="closeNewLessonModal">
       <div class="modal-content new-lesson-card">
-        <h2 class="card-title">Nova Aula no Módulo: {{ selectedModuleForLesson.title || 'Selecione um Módulo' }}</h2>
-        <p class="card-subtitle-modal">Crie o conteúdo da nova aula e defina as configurações de acesso.</p>
+        <h2 class="card-title">{{ newLesson.id ? 'Editar Aula' : 'Nova Aula' }} no Módulo: {{ selectedModuleForLesson.title || 'Selecione um Módulo' }}</h2>
+        <p class="card-subtitle-modal">{{ newLesson.id ? 'Atualize as informações da aula.' : 'Crie o conteúdo da nova aula e defina as configurações de acesso.' }}</p>
         <div class="form-group" v-if="!newLesson.moduleId">
           <label for="modal-select-module">Selecionar Módulo</label>
           <select id="modal-select-module" class="input-select" :value="newLesson.moduleId" @change="updateNewLesson({ moduleId: $event.target.value })">
@@ -122,10 +122,24 @@
           <div class="modal-actions">
             <button class="btn btn-save-lesson" @click="saveNewLesson" :disabled="!newLesson.moduleId || !newLesson.name || isSavingLesson">
               <span v-if="isSavingLesson" class="loader"></span>
-              {{ isSavingLesson ? 'Salvando...' : 'Salvar Aula' }}
+              {{ isSavingLesson ? 'Salvando...' : (newLesson.id ? 'Salvar Alterações' : 'Salvar Aula') }}
             </button>
             <button class="btn btn-cancel" @click="closeNewLessonModal" :disabled="isSavingLesson">Cancelar</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de Exclusão de Aula -->
+    <div v-if="isDeleteLessonModalOpen" class="modal-overlay" @click.self="closeDeleteLessonModal">
+      <div class="modal-content delete-confirmation-card">
+        <h2 class="card-title">Excluir Aula</h2>
+        <p class="card-subtitle-modal">Tem certeza que deseja excluir a aula <strong>"{{ lessonToDelete?.name || lessonToDelete?.title }}"</strong>?</p>
+        <div class="modal-actions">
+          <button class="btn btn-delete-confirm" @click="confirmDeleteLesson">
+            Confirmar Exclusão
+          </button>
+          <button class="btn btn-cancel" @click="closeDeleteLessonModal">Cancelar</button>
         </div>
       </div>
     </div>
@@ -213,6 +227,8 @@ export default {
       type: Boolean,
       default: false,
     },
+    isDeleteLessonModalOpen: Boolean,
+    lessonToDelete: Object,
   },
   emits: [
     'closeNewModuleModal',
@@ -222,6 +238,8 @@ export default {
     'saveNewLesson',
     'saveNewMaterial',
     'deleteMaterial',
+    'closeDeleteLessonModal',
+    'confirmDeleteLesson',
     // Novos eventos para atualizar os objetos no pai
     'update:new-module',
     'update:new-lesson',
@@ -258,6 +276,12 @@ export default {
     },
     closeNewLessonModal() {
       this.$emit('closeNewLessonModal');
+    },
+    closeDeleteLessonModal() {
+      this.$emit('closeDeleteLessonModal');
+    },
+    confirmDeleteLesson() {
+      this.$emit('confirm-delete-lesson');
     },
     closeMaterialsModal() {
       this.$emit('closeMaterialsModal');
@@ -425,9 +449,14 @@ export default {
   opacity: .9;
 }
 
-.btn-primary, .btn-save-module, .btn-save-lesson, .btn-modal-module {
+.btn-primary, .btn-save-module, .btn-save-lesson, .btn-modal-module, .btn-delete-confirm {
   background: #00ff7f;
   color: #0f1013;
+}
+
+.btn-delete-confirm {
+  background: #cc5656;
+  color: white;
 }
 
 .btn-cancel {

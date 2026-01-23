@@ -113,10 +113,10 @@
                                         </div>
                                         
                                         <div class="lesson-actions lesson-btn-group desktop-actions">
-                                            <button class="btn btn-action-icon edit-btn" title="Editar Aula">
+                                            <button class="btn btn-action-icon edit-btn" title="Editar Aula" @click="openEditLesson(lesson)">
                                                 <img src="../../assets/icons/edit-academy.svg" alt="" filter="invert(1)" width="16" height="16">
                                             </button>
-                                            <button class="btn btn-action-icon delete-btn" title="Excluir Aula">
+                                            <button class="btn btn-action-icon delete-btn" title="Excluir Aula" @click="openDeleteLesson(lesson)">
                                                 <img src="../../assets/icons/trash.svg" alt="" width="16" height="16">
                                             </button>
                                             <div class="materials-group">
@@ -130,10 +130,10 @@
                                             </button>
 
                                             <div v-if="openLessonDropdown === lesson.id" class="lesson-dropdown-menu">
-                                                <button class="dropdown-item edit-btn" title="Editar Aula">
+                                                <button class="dropdown-item edit-btn" title="Editar Aula" @click="openEditLesson(lesson)">
                                                     <img src="../../assets/icons/edit-academy.svg" alt="" filter="invert(1)" width="16" height="16"> Editar
                                                 </button>
-                                                <button class="dropdown-item delete-btn" title="Excluir Aula">
+                                                <button class="dropdown-item delete-btn" title="Excluir Aula" @click="openDeleteLesson(lesson)">
                                                     <img src="../../assets/icons/trash.svg" alt="" width="16" height="16"> Excluir
                                                 </button>
                                                 <button class="dropdown-item btn-materials" title="Gerenciar Materiais" @click="openMaterialsModal(lesson.id); openLessonDropdown = null">Materiais</button>
@@ -289,6 +289,8 @@
             <AcademyModals
                 :is-new-module-modal-open="isNewModuleModalOpen"
                 :is-new-lesson-modal-open="isNewLessonModalOpen"
+                :is-delete-lesson-modal-open="isDeleteLessonModalOpen"
+                :lesson-to-delete="lessonToDelete"
                 :is-materials-modal-open="isMaterialsModalOpen"
                 :selected-lesson-id-for-materials="selectedLessonIdForMaterials"
                 :selected-lesson-for-materials="selectedLessonForMaterials"
@@ -302,6 +304,8 @@
                 :is-saving-lesson="isSavingLesson"
                 @close-new-module-modal="closeNewModuleModal"
                 @close-new-lesson-modal="closeNewLessonModal"
+                @close-delete-lesson-modal="closeDeleteLessonModal"
+                @confirm-delete-lesson="confirmDeleteLesson"
                 @close-materials-modal="closeMaterialsModal"
                 @save-new-module="saveNewModule"
                 @save-new-lesson="saveNewLesson"
@@ -385,17 +389,20 @@ export default {
             isNewLessonModalOpen: false,
             isSavingLesson: false,
             newLesson: {
+                id: null,
                 moduleId: null,
                 name: '',
                 contentType: 'Video',
                 duration: 15,
                 contentLink: '',
                 releaseType: 'Imediata',
-                    isActive: true,
-                    videoFile: null,
-                    videoPath: '',
-                    videoFileName: ''
+                isActive: true,
+                videoFile: null,
+                videoPath: '',
+                videoFileName: ''
             },
+            isDeleteLessonModalOpen: false,
+            lessonToDelete: null,
             // Modal Materiais
             isMaterialsModalOpen: false,
             selectedLessonIdForMaterials: null,
@@ -1024,6 +1031,7 @@ export default {
         openNewLessonModal(moduleId = null) {
             this.isNewLessonModalOpen = true;
             this.newLesson = {
+                id: null,
                 moduleId: moduleId,
                 name: '',
                 contentType: 'Video',
@@ -1035,6 +1043,70 @@ export default {
                 videoPath: '',
                 videoFileName: ''
             };
+        },
+        openEditLesson(lesson) {
+            this.isNewLessonModalOpen = true;
+            this.newLesson = {
+                id: lesson.id,
+                moduleId: lesson.moduleId,
+                name: lesson.name || lesson.title,
+                contentType: lesson.contentType || 'Video',
+                duration: parseInt(lesson.duration) || 15,
+                contentLink: lesson.contentLink || '',
+                releaseType: lesson.releaseType || 'Imediata',
+                isActive: lesson.isActive !== undefined ? lesson.isActive : true,
+                videoFile: null,
+                videoPath: lesson.videoUrl || '',
+                videoFileName: lesson.videoUrl ? lesson.videoUrl.split('/').pop() : ''
+            };
+        },
+        openDeleteLesson(lesson) {
+            this.lessonToDelete = lesson;
+            this.isDeleteLessonModalOpen = true;
+        },
+        closeDeleteLessonModal() {
+            this.isDeleteLessonModalOpen = false;
+            this.lessonToDelete = null;
+        },
+        async confirmDeleteLesson() {
+            if (!this.lessonToDelete) return;
+
+            const lesson = this.lessonToDelete;
+            const isLocal = lesson.id && (lesson.id.toString().startsWith('temp-lesson-') || lesson.isLocal);
+
+            if (isLocal) {
+                const index = this.lessons.findIndex(l => l.id === lesson.id);
+                if (index !== -1) {
+                    this.lessons.splice(index, 1);
+                    this.$root.$toast.success('Aula removida localmente.');
+                }
+                this.closeDeleteLessonModal();
+                return;
+            }
+
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const response = await fetch(`${apiBaseUrl}/courses/lessons/${lesson.id}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    const index = this.lessons.findIndex(l => l.id === lesson.id);
+                    if (index !== -1) this.lessons.splice(index, 1);
+                    this.$root.$toast.success('Aula excluída com sucesso.');
+                    this.closeDeleteLessonModal();
+                } else {
+                    const error = await response.json().catch(() => ({ message: 'Erro ao excluir aula' }));
+                    this.$root.$toast.error(`Erro ao excluir aula: ${error.message}`);
+                }
+            } catch (error) {
+                console.error('Erro ao excluir aula:', error);
+                this.$root.$toast.info('Erro ao excluir aula. Verifique sua conexão.');
+            }
         },
         closeNewLessonModal() {
             this.isNewLessonModalOpen = false;
@@ -1073,54 +1145,98 @@ export default {
 
                 // Se for curso novo, adiciona localmente
                 if (isNewCourse || module.isLocal) {
-                    const tempLessonId = `temp-lesson-${Date.now()}-${Math.random()}`;
-                    const newLessonObject = {
-                        id: tempLessonId,
-                        moduleId: this.newLesson.moduleId,
-                        courseId: 'temp',
-                        name: this.newLesson.name,
-                        title: this.newLesson.name,
-                        contentType: this.newLesson.contentType || 'Video',
-                        contentLink: this.newLesson.contentLink || '',
-                        releaseType: this.newLesson.releaseType || 'Imediata',
-                        isActive: this.newLesson.isActive !== undefined ? this.newLesson.isActive : true,
-                        duration: `${this.newLesson.duration || 15} min`,
-                        isLocal: true, // Flag para identificar aulas locais
-                        videoUrl: videoPath,
-                    };
-                    this.lessons.push(newLessonObject);
+                    if (this.newLesson.id) {
+                        // Editando aula local
+                        const index = this.lessons.findIndex(l => l.id === this.newLesson.id);
+                        if (index !== -1) {
+                            this.lessons[index] = {
+                                ...this.lessons[index],
+                                name: this.newLesson.name,
+                                title: this.newLesson.name,
+                                contentType: this.newLesson.contentType || 'Video',
+                                contentLink: this.newLesson.contentLink || '',
+                                releaseType: this.newLesson.releaseType || 'Imediata',
+                                isActive: this.newLesson.isActive !== undefined ? this.newLesson.isActive : true,
+                                duration: `${this.newLesson.duration || 15} min`,
+                                videoUrl: videoPath,
+                            };
+                            this.$root.$toast.info(`Aula "${this.newLesson.name}" atualizada localmente.`);
+                        }
+                    } else {
+                        // Nova aula local
+                        const tempLessonId = `temp-lesson-${Date.now()}-${Math.random()}`;
+                        const newLessonObject = {
+                            id: tempLessonId,
+                            moduleId: this.newLesson.moduleId,
+                            courseId: 'temp',
+                            name: this.newLesson.name,
+                            title: this.newLesson.name,
+                            contentType: this.newLesson.contentType || 'Video',
+                            contentLink: this.newLesson.contentLink || '',
+                            releaseType: this.newLesson.releaseType || 'Imediata',
+                            isActive: this.newLesson.isActive !== undefined ? this.newLesson.isActive : true,
+                            duration: `${this.newLesson.duration || 15} min`,
+                            isLocal: true, // Flag para identificar aulas locais
+                            videoUrl: videoPath,
+                        };
+                        this.lessons.push(newLessonObject);
+                        this.$root.$toast.info(`Aula "${this.newLesson.name}" adicionada localmente. Salve o curso para persistir.`);
+                    }
                     this.closeNewLessonModal();
-                    this.$root.$toast.info(`Aula "${this.newLesson.name}" adicionada localmente. Salve o curso para persistir.`);
                     return;
                 }
 
                 // Se o curso já existe, salva no backend
                 const apiBaseUrl = this.getApiBaseUrl();
-                const response = await fetch(`${apiBaseUrl}/courses/lessons`, {
-                    method: 'POST',
-                    headers: {
-                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        courseId: module.courseId,
-                        moduleId: this.newLesson.moduleId,
-                        title: this.newLesson.name,
-                        contentType: this.newLesson.contentType,
-                        contentLink: this.newLesson.contentLink,
-                        releaseType: this.newLesson.releaseType,
-                        isActive: this.newLesson.isActive,
-                        duration: `${this.newLesson.duration} min`,
-                        videoUrl: videoPath,
-                    }),
-                });
+                let response;
+                
+                if (this.newLesson.id) {
+                    // PUT /courses/lessons/:id
+                    response = await fetch(`${apiBaseUrl}/courses/lessons/${this.newLesson.id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            title: this.newLesson.name,
+                            contentType: this.newLesson.contentType,
+                            contentLink: this.newLesson.contentLink,
+                            releaseType: this.newLesson.releaseType,
+                            isActive: this.newLesson.isActive,
+                            duration: `${this.newLesson.duration} min`,
+                            videoUrl: videoPath,
+                        }),
+                    });
+                } else {
+                    // POST /courses/lessons
+                    response = await fetch(`${apiBaseUrl}/courses/lessons`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            courseId: module.courseId,
+                            moduleId: this.newLesson.moduleId,
+                            title: this.newLesson.name,
+                            contentType: this.newLesson.contentType,
+                            contentLink: this.newLesson.contentLink,
+                            releaseType: this.newLesson.releaseType,
+                            isActive: this.newLesson.isActive,
+                            duration: `${this.newLesson.duration} min`,
+                            videoUrl: videoPath,
+                        }),
+                    });
+                }
+
                 if (response.ok) {
                     await this.loadCourseDetails();
                     this.closeNewLessonModal();
-                    this.$root.$toast.success(`Aula "${this.newLesson.name}" salva com sucesso!`);
+                    this.$root.$toast.success(`Aula "${this.newLesson.name}" ${this.newLesson.id ? 'atualizada' : 'salva'} com sucesso!`);
                 } else {
-                    const error = await response.json().catch(() => ({ message: 'Erro ao criar aula' }));
-                    this.$root.$toast.error(`Erro ao criar aula: ${error.message}`);
+                    const error = await response.json().catch(() => ({ message: `Erro ao ${this.newLesson.id ? 'atualizar' : 'criar'} aula` }));
+                    this.$root.$toast.error(`Erro ao ${this.newLesson.id ? 'atualizar' : 'criar'} aula: ${error.message}`);
                 }
             } catch (error) {
                 console.error('Erro ao criar aula:', error);
