@@ -42,10 +42,10 @@
         />
 
         <main class="main-content academy-content">
-            <!-- Seção Zenix Academy - Apenas Mobile -->
-            <div class="academy-header-mobile">
-                <h1 class="academy-title-mobile">Zenix Academy</h1>
-                <p class="academy-description-mobile">Área de aprendizado com cursos sobre o Zenix, finanças, investimentos e gestão de risco, focados em decisões conscientes e consistentes.</p>
+            <!-- Seção Zenix Academy -->
+            <div class="academy-header">
+                <h1 class="academy-title">Zenix Academy</h1>
+                <p class="academy-description">Área de aprendizado com cursos sobre o Zenix, finanças, investimentos e gestão de risco, focados em decisões conscientes e consistentes.</p>
             </div>
 
             <div v-if="loading" class="loading-container">
