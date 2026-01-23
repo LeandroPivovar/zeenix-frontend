@@ -285,7 +285,7 @@ label {
     align-items: center;
     gap: 30px;
     width: 100%;
-    margin-bottom: px;
+    margin-bottom: 20px;
 }
 
 .upload-placeholder {
@@ -664,13 +664,7 @@ label {
     box-sizing: border-box;
 }
 
-/* --- ESTILIZAÇÃO DA SEÇÃO SEO & COMPARTILHAMENTO --- */
 
-.seo-sharing-section label {
-    margin-top: 10px;
-}
-
-*/
 /* --- AÇÕES DE AULA (Responsividade - Mobile Dropdown) --- */
 
 /* Oculta o dropdown de mobile por padrão */
@@ -921,41 +915,7 @@ label {
         min-width: 30px;
     }
 
-    /* SEO */
-    .input-with-icon {
-        flex-direction: column;
-        gap: 8px;
-    }
 
-    .btn-icon {
-        width: 100%;
-        max-width: none;
-    }
-
-    .seo-sharing-section .keywords-input-container {
-        flex-wrap: wrap;
-        align-items: flex-start;
-    }
-
-    .seo-sharing-section .keyword-tags {
-        width: 100%;
-        margin-bottom: 10px;
-    }
-
-    .seo-sharing-section .keywords-input-container input {
-        width: 100%;
-    }
-
-    .seo-cover-area {
-        flex-direction: column;
-        gap: 15px;
-    }
-
-    .social-image-preview-box,
-    .upload-placeholder.seo-cover-area {
-        max-width: 100%;
-        width: 100%;
-    }
 
     .module-btn-group {
         display: flex;
