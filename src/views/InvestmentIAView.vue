@@ -713,7 +713,8 @@ export default {
 
         handleAccountTypeChange(newType) {
             console.log('[InvestmentIAView] Tipo de conta alterado via componente filho:', newType);
-            this.switchAccount(newType);
+            this.accountType = newType; 
+            // NÃO chamar switchAccount() pois o componente filho (Sidebar/Navbar) já faz o reload.
         },
 
         async loadAvailableAccounts() {

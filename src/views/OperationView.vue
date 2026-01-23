@@ -216,7 +216,8 @@ export default {
     },
     handleAccountTypeChange(newAccountType) {
         console.log('[OperationView] Tipo de conta alterado via componente filho para:', newAccountType);
-        this.switchAccount(newAccountType);
+        this.accountType = newAccountType;
+        // NÃO chamar switchAccount() pois o componente filho (Sidebar/Navbar) já faz o reload.
     },
 
     async loadAvailableAccounts() {

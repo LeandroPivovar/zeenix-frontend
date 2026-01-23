@@ -320,7 +320,8 @@
           "[AgenteAutonomo] Tipo de conta alterado via componente filho para:",
           newAccountType
         );
-        this.switchAccount(newAccountType);
+        this.isDemo = newAccountType === "demo";
+        // NÃO chamar switchAccount() pois o componente filho (Sidebar/Navbar) já faz o reload.
       },
 
       async loadAvailableAccounts() {
@@ -1354,6 +1355,9 @@
       },
     },
     async mounted() {
+        // Carregar contas disponíveis
+        this.loadAvailableAccounts();
+
         this.preferredCurrency = this.getPreferredCurrency();
         this.checkMobile();
 
