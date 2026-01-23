@@ -582,7 +582,7 @@
                         class="w-4 h-4 rounded-full object-cover"
                       />
                       <span v-if="account.isDemo">Đ</span>
-                      <span v-else>$</span>
+                      <span v-else>{{ getCurrencyPrefix(account.currency || 'USD') }}</span>
                       {{ formatBalanceMobile(account.balance || 0) }}
                     </span>
                   </div>
@@ -918,31 +918,7 @@ export default {
     preferredCurrencyPrefix() {
       return this.info?.preferredCurrencyPrefix || this.currencyPrefix;
     },
-    balanceNumeric() {
-      // Mesma lógica do TopNavbar
-      const usdReal = this.balancesByCurrencyReal['USD'];
-      if (usdReal !== undefined && usdReal !== null && usdReal > 0) {
-        return usdReal;
-      }
-      const raw = this.info?.balance;
-      if (typeof raw === 'number') return raw;
-      if (typeof raw === 'string') {
-        const parsed = Number(raw);
-        return isNaN(parsed) ? 0 : parsed;
-      }
-      const val = raw?.value ?? raw?.balance ?? 0;
-      const num = Number(val);
-      return isNaN(num) ? 0 : num;
-    },
-    formattedBalance() {
-      // Retorna apenas o valor numérico formatado (sem prefixo, pois o símbolo é adicionado no template)
-      if (this.tradeCurrency === 'DEMO') {
-        const demo = this.balancesByCurrencyDemo['USD'] || 0;
-        return demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-      const value = this.balanceNumeric;
-      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    },
+    // Removidos balanceNumeric e formattedBalance para usar os do mixin
     balancesByCurrency() {
       return this.info?.balancesByCurrency || {};
     },
@@ -992,12 +968,12 @@ export default {
       return 'Usuário';
     },
     mobileBalanceValue() {
-      if (this.currentAccountType === 'demo') {
-        const demo = this.balancesByCurrencyDemo['USD'] || 0;
-        return demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
       const value = this.balanceNumeric;
-      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+      const currency = this.info?.currency || 'USD';
+      const isCrypto = ['BTC', 'ETH', 'LTC', 'USDC', 'UST'].includes(currency.toUpperCase());
+      const decimals = isCrypto ? (currency === 'BTC' ? 8 : 4) : 2;
+
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     },
     displayedIAs() {
       // Mostrar todas as 5 IAs

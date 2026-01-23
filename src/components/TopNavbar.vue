@@ -46,7 +46,7 @@
           <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF] inline-flex items-center gap-2">
             <span>Saldo:</span>
             <span v-if="!balanceHidden" class="inline-flex items-center gap-1.5">
-              <span v-if="uiAccountType !== 'demo' || showDollarSign">$</span>
+              <span v-if="uiAccountType !== 'demo' || showDollarSign">{{ currencyPrefix }}</span>
               <span v-else>Đ</span>
               {{ formattedBalance }}
             </span>
@@ -404,31 +404,36 @@ export default {
       return this.accountType || 'real';
     },
     formattedBalance() {
-      // Se saldo fictício estiver ativo, o balanceNumeric já contém a soma
-      if (this.isFictitiousBalanceActive) {
-        const value = this.balanceNumeric;
-        return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-
-      // Retorna apenas o valor numérico formatado (sem prefixo, pois o símbolo é adicionado no template)
-      if (this.accountType === 'demo') {
-        const demo = this.balancesByCurrencyDemo['USD'] || this.balanceNumeric || 0;
-        return demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
+      // Valor base
       const value = this.balanceNumeric;
-      return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+      // Determinar decimais
+      const currency = this.currency || 'USD';
+      const isCrypto = ['BTC', 'ETH', 'LTC', 'USDC', 'UST'].includes(currency.toUpperCase()) || this.currencyPrefix === '₿';
+      const decimals = isCrypto ? (currency === 'BTC' ? 8 : 4) : 2;
+
+      // Formatar (sem prefixo aqui, pois o prefixo está no template)
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     },
     balanceNumeric() {
       // Prioridade 1: Saldo Demo + Fictício se ativo
       if (this.accountType === 'demo' && this.isFictitiousBalanceActive) {
         const demoBalance = this.balancesByCurrencyDemo['USD'] || 0;
-        return Number(demoBalance) + this.fictitiousBalance;
+        return Number(demoBalance) + (Number(this.fictitiousBalance) || 0);
       }
 
+      // Se for real, prioridade 1: Saldo USD Real
       const usdReal = this.balancesByCurrencyReal['USD'];
-      if (usdReal !== undefined && usdReal !== null && usdReal > 0) {
-        return usdReal;
+      if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
+        return Number(usdReal);
       }
+
+      // Prioridade 2: Qualquer moeda que tenha saldo > 0
+      for (const [curr, balance] of Object.entries(this.balancesByCurrencyReal)) {
+        if (Number(balance) > 0) return Number(balance);
+      }
+
+      // Fallback para o prop 'balance'
       const raw = this.balance;
       if (typeof raw === 'number') return raw;
       if (typeof raw === 'string') {

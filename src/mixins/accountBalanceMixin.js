@@ -100,32 +100,52 @@ export default {
       return this.getCurrencyPrefix?.(this.info?.currency || 'USD') || '$';
     },
     balanceNumeric() {
-      // Se for demo, retornar o saldo demo USD
+      // Se for demo, prioridade 1: demo_amount do backend, senão fallback para balancesByCurrencyDemo['USD']
       if (this.accountType === 'demo') {
-        const demoBalance = this.balancesByCurrencyDemo['USD'];
-        const baseBalance = demoBalance !== undefined && demoBalance !== null ? Number(demoBalance) : 0;
+        const demoAmountFromBackend = this.info?.demo_amount !== undefined ? Number(this.info.demo_amount) : undefined;
+        const demoBalanceUSD = this.balancesByCurrencyDemo['USD'];
+
+        let baseBalance = 0;
+        if (demoAmountFromBackend !== undefined) {
+          baseBalance = demoAmountFromBackend;
+        } else if (demoBalanceUSD !== undefined && demoBalanceUSD !== null) {
+          baseBalance = Number(demoBalanceUSD);
+        } else {
+          // Último recurso: somar todos os saldos demo
+          baseBalance = Object.values(this.balancesByCurrencyDemo).reduce((acc, val) => acc + (Number(val) || 0), 0);
+        }
 
         // Se saldo fictício estiver ativo, somar ao saldo demo
         if (this.isFictitiousBalanceActive) {
-          return baseBalance + this.fictitiousBalance;
+          return baseBalance + (Number(this.fictitiousBalance) || 0);
         }
 
         return baseBalance;
       }
 
-      // Se for real, prioridade 1: Saldo USD Real
+      // Se for real, prioridade 1: real_amount do backend (calculado no servidor como maior saldo)
+      if (this.info?.real_amount !== undefined && this.info?.real_amount !== null && Number(this.info.real_amount) > 0) {
+        return Number(this.info.real_amount);
+      }
+
+      // Prioridade 2: Saldo USD Real (legado / fallback)
       const usdReal = this.balancesByCurrencyReal['USD'];
-      if (usdReal !== undefined && usdReal !== null) {
+      if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
         return Number(usdReal);
       }
 
-      // Prioridade 2: Saldo BTC Real (fallback comum)
+      // Prioridade 3: Qualquer moeda real que tenha saldo > 0
+      for (const [curr, balance] of Object.entries(this.balancesByCurrencyReal)) {
+        if (Number(balance) > 0) return Number(balance);
+      }
+
+      // Prioridade 4: BTC Real (específico)
       const btcReal = this.balancesByCurrencyReal['BTC'];
       if (btcReal !== undefined && btcReal !== null) {
         return Number(btcReal);
       }
 
-      // Prioridade 3: Saldo principal do objeto info
+      // Prioridade 5: Saldo principal do objeto info
       const raw = this.info?.balance;
       if (typeof raw === 'number') return raw;
       if (typeof raw === 'string') {
@@ -139,24 +159,24 @@ export default {
       return isNaN(num) ? 0 : num;
     },
     formattedBalance() {
-      // Se saldo fictício estiver ativo, o saldo já está somado no balanceNumeric
-      // e o prefixo já é '$' no preferredCurrencyPrefix
+      const value = this.balanceNumeric;
+      const prefix = this.preferredCurrencyPrefix;
+
+      // Se saldo fictício estiver ativo, formatar como real (2 casas)
       if (this.isFictitiousBalanceActive) {
-        const value = this.balanceNumeric;
-        const prefix = this.preferredCurrencyPrefix;
         return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       }
 
       // Mesma lógica do Dashboard - usa tradeCurrency para determinar se é demo
       if (this.tradeCurrency === 'DEMO') {
-        const demo = this.balancesByCurrencyDemo['USD'] || 0;
-        const prefix = this.preferredCurrencyPrefix;
-        return `${prefix}${demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+        return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
       }
-      const value = this.balanceNumeric;
-      const prefix = this.preferredCurrencyPrefix;
-      const isBTC = this.info?.currency === 'BTC' || prefix === '₿';
-      const decimals = isBTC ? 8 : 2;
+
+      // Formatação para Real - detectar se é BTC para usar 8 casas
+      const currency = this.info?.currency || 'USD';
+      const isCrypto = ['BTC', 'ETH', 'LTC', 'USDC', 'UST'].includes(currency.toUpperCase()) || prefix === '₿' || prefix === 'Ξ';
+      const decimals = isCrypto ? (currency === 'BTC' ? 8 : 4) : 2;
+
       return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals })}`;
     }
   },

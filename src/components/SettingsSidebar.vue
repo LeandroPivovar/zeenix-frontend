@@ -42,7 +42,7 @@
             </div>
             <p class="settings-balance-amount text-left">
               <span v-if="balanceVisible" class="inline-flex items-center">
-                <span v-if="(isFictitiousBalanceActive || uiAccountType !== 'demo')">$</span>
+                <span v-if="(isFictitiousBalanceActive || uiAccountType !== 'demo')">{{ currencyPrefix }}</span>
                 <span v-else class="demo-currency-symbol-wrapper">
                   <span class="demo-currency-symbol">D</span>
                 </span>
@@ -119,7 +119,7 @@
                       <span v-if="account.isDemo && !isFictitiousBalanceActive" class="demo-currency-symbol-modal-small-wrapper">
                         <span class="demo-currency-symbol-modal-small">D</span>
                       </span>
-                      <span v-else>$</span>
+                      <span v-else>{{ getCurrencyPrefix?.(account.currency) || '$' }}</span>
                       {{ formatBalance(account.balance || 0, account.isDemo) }}
                     </span>
                   </div>
@@ -202,87 +202,45 @@ export default {
       return this.currentAccountType;
     },
     formattedBalance() {
-      // Retorna apenas o valor numérico formatado (sem prefixo, pois o símbolo é adicionado no template)
-      if (this.accountType === 'demo') {
-        const demo = this.balancesByCurrencyDemo['USD'] || 0;
-        const total = this.isFictitiousBalanceActive ? (demo + this.fictitiousBalance) : demo;
-        return total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-      
-      // Para Real, usar APENAS o saldo Real
-      // Primeiro tentar balancesByCurrencyReal
-      const realFromBalances = this.balancesByCurrencyReal['USD'];
-      if (realFromBalances !== undefined && realFromBalances !== null && realFromBalances >= 0) {
-        return realFromBalances.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-      }
-      
-      // Se não tiver saldo Real nos balancesByCurrency, tentar calcular a partir das contas disponíveis
-      // Buscar todas as contas Real e somar os saldos
-      if (this.availableAccounts && this.availableAccounts.length > 0) {
-        const realAccounts = this.availableAccounts.filter(acc => !acc.isDemo && acc.currency === 'USD');
-        if (realAccounts.length > 0) {
-          const totalReal = realAccounts.reduce((sum, acc) => {
-            const balance = parseFloat(acc.balance || 0);
-            return sum + (isNaN(balance) ? 0 : balance);
-          }, 0);
-          if (totalReal >= 0) {
-            return totalReal.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-          }
-        }
-      }
-      
-      // Se não encontrou saldo Real em lugar nenhum, mostrar 0
-      // NUNCA usar o balance prop como fallback se for Real, pois pode ser saldo Demo
-      return '0,00';
+      // Valor base
+      const value = this.balanceNumeric;
+
+      // Determinar decimais
+      const currency = (this.accountType === 'demo' ? 'USD' : (this.info?.currency || 'USD'));
+      const isCrypto = ['BTC', 'ETH', 'LTC', 'USDC', 'UST'].includes(currency.toUpperCase()) || this.currencyPrefix === '₿';
+      const decimals = isCrypto ? (currency === 'BTC' ? 8 : 4) : 2;
+
+      // Formatar (sem prefixo aqui, pois o prefixo está no template)
+      return value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     },
     balanceNumeric() {
-      // Para Real, usar APENAS balancesByCurrencyReal
+      // Para Real
       if (this.accountType === 'real') {
+        // Prioridade 1: Saldo USD Real
         const usdReal = this.balancesByCurrencyReal['USD'];
-        if (usdReal !== undefined && usdReal !== null && usdReal >= 0) {
-          return usdReal;
+        if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
+          return Number(usdReal);
         }
-        // Se não tiver saldo Real, tentar calcular das contas disponíveis
-        if (this.availableAccounts && this.availableAccounts.length > 0) {
-          const realAccounts = this.availableAccounts.filter(acc => !acc.isDemo && acc.currency === 'USD');
-          if (realAccounts.length > 0) {
-            const totalReal = realAccounts.reduce((sum, acc) => {
-              const balance = parseFloat(acc.balance || 0);
-              return sum + (isNaN(balance) ? 0 : balance);
-            }, 0);
-            if (totalReal >= 0) {
-              return totalReal;
-            }
-          }
+        
+        // Prioridade 2: Qualquer moeda que tenha saldo > 0
+        for (const [curr, balance] of Object.entries(this.balancesByCurrencyReal)) {
+          if (Number(balance) > 0) return Number(balance);
         }
-        // Se não encontrou saldo Real, retornar 0
-        return 0;
+
+        // Fallback para o prop 'balance'
+        const raw = this.balance;
+        if (typeof raw === 'number') return raw;
+        const val = raw?.value ?? raw?.balance ?? raw ?? 0;
+        return Number(val) || 0;
       }
       
-      // Para Demo, usar APENAS balancesByCurrencyDemo
+      // Para Demo
       if (this.accountType === 'demo') {
-        const usdDemo = this.balancesByCurrencyDemo['USD'];
-        if (usdDemo !== undefined && usdDemo !== null && usdDemo >= 0) {
-          return usdDemo;
-        }
-        // Se não tiver saldo Demo, tentar calcular das contas disponíveis
-        if (this.availableAccounts && this.availableAccounts.length > 0) {
-          const demoAccounts = this.availableAccounts.filter(acc => acc.isDemo && acc.currency === 'USD');
-          if (demoAccounts.length > 0) {
-            const totalDemo = demoAccounts.reduce((sum, acc) => {
-              const balance = parseFloat(acc.balance || 0);
-              return sum + (isNaN(balance) ? 0 : balance);
-            }, 0);
-            if (totalDemo >= 0) {
-              return totalDemo;
-            }
-          }
-        }
-        // Se não encontrou saldo Demo, retornar 0
-        return 0;
+        const usdDemo = this.balancesByCurrencyDemo['USD'] || 0;
+        const total = this.isFictitiousBalanceActive ? (Number(usdDemo) + Number(this.fictitiousBalance)) : Number(usdDemo);
+        return total;
       }
       
-      // Fallback genérico (não deveria chegar aqui)
       return 0;
     },
     userName() {
