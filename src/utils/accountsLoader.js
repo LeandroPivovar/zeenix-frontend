@@ -33,12 +33,46 @@ export async function loadAvailableAccounts(forceReload = false) {
       }
     }
 
-    // Verificar se há tokens armazenados
+    // Carregar tokens do backend para garantir que temos os mais recentes
+    // Isso resolve o problema de limpar cache ou login em novo dispositivo
+    const backendTokens = await fetchBackendTokens();
+
+    // Verificar se há tokens armazenados no localStorage
     const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
-    if (!tokensByLoginIdStr) {
-      console.log('[AccountsLoader] Nenhum token de conta encontrado');
+    let tokensByLoginId = {};
+
+    if (tokensByLoginIdStr) {
+      tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+    }
+
+    // Mesclar tokens do backend com os locais (backend tem prioridade se existirem)
+    if (backendTokens) {
+      console.log('[AccountsLoader] Mesclando tokens do backend:', backendTokens);
+      if (backendTokens.tokenReal) {
+        // Não sabemos o loginId ainda, será descoberto ao carregar a conta
+        // Mas podemos adicionar ao mapa se conseguirmos descobrir o loginId pela API depois
+        // Por enquanto, vamos confiar que o backendTokens servirá de fallback se o localStorage estiver vazio
+      }
+
+      // Se não tivermos nenhum token local, mas tivermos do backend, vamos usar os do backend para carregar
+      // O problema é que precisamos do LOGINID para fazer a chave do tokensByLoginId.
+      // A solução é carregar as contas usando os tokens do backend diretamente se não tivermos loginIds.
+    }
+
+    const loginIds = Object.keys(tokensByLoginId);
+
+    // Se temos tokens do backend mas não temos loginIds locais, precisamos tentar carregar usando os tokens do backend
+    const backendTokenList = [];
+    if (backendTokens && backendTokens.tokenReal) backendTokenList.push({ token: backendTokens.tokenReal, type: 'real' });
+    if (backendTokens && backendTokens.tokenDemo) backendTokenList.push({ token: backendTokens.tokenDemo, type: 'demo' });
+
+    console.log(`[AccountsLoader] Tokens locais: ${loginIds.length}, Tokens backend: ${backendTokenList.length}`);
+
+    if (loginIds.length === 0 && backendTokenList.length === 0) {
+      console.log('[AccountsLoader] Nenhum token encontrado (local ou backend)');
       return [];
     }
+
 
     const tokensByLoginId = JSON.parse(tokensByLoginIdStr);
     const loginIds = Object.keys(tokensByLoginId);
@@ -71,7 +105,9 @@ export async function loadAvailableAccounts(forceReload = false) {
 
     // Criar uma nova promise para o carregamento
     loadingForceReload = forceReload;
-    loadingPromise = loadAccountsFromAPI(loginIds, tokensByLoginId);
+    // Criar uma nova promise para o carregamento
+    loadingForceReload = forceReload;
+    loadingPromise = loadAccountsFromAPI(loginIds, tokensByLoginId, backendTokenList);
 
     try {
       const result = await loadingPromise;
@@ -94,7 +130,7 @@ export async function loadAvailableAccounts(forceReload = false) {
  * Função interna para carregar contas da API
  * @private
  */
-async function loadAccountsFromAPI(loginIds, tokensByLoginId) {
+async function loadAccountsFromAPI(loginIds, tokensByLoginId, backendTokensList = []) {
 
   // Buscar informações de cada conta
   const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
@@ -109,7 +145,16 @@ async function loadAccountsFromAPI(loginIds, tokensByLoginId) {
   const allAccountsMap = new Map();
 
   // Carregar todas as contas em paralelo para melhor performance
-  const accountPromises = loginIds.map(async (loginid) => {
+  // Combinar loginIds com tokens do backend que podem não estar no localStorage
+  const requestsToMake = [...loginIds];
+
+  // Adicionar tokens do backend à lista de requisições se não estiverem associados a um loginId conhecido
+  // Como não sabemos o loginId dos tokens do backend, vamos fazer uma request para descobrir
+  const backendRequests = backendTokensList.map(item => ({ token: item.token, isBackend: true }));
+
+  // Carregar todas as contas em paralelo
+  // Para loginIds conhecidos:
+  const knownAccountPromises = requestsToMake.map(async (loginid) => {
     try {
       const accountToken = tokensByLoginId[loginid];
 
@@ -176,7 +221,58 @@ async function loadAccountsFromAPI(loginIds, tokensByLoginId) {
     }
   });
 
-  // Aguardar todas as requisições
+  // Para tokens do backend (desconhecidos):
+  const backendPromises = backendRequests.map(async (item) => {
+    try {
+      const response = await fetch(`${apiBase}/broker/deriv/status`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          token: item.token,
+          appId: parseInt(appId)
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const loginid = data.loginid;
+
+        if (loginid) {
+          // Atualizar cache de resposta
+          responseDataCache.set(loginid, data);
+
+          // Adicionar ao tokensByLoginId se não existir
+          if (!tokensByLoginId[loginid]) {
+            tokensByLoginId[loginid] = item.token;
+            // Salvar no localStorage atualizado
+            localStorage.setItem('deriv_tokens_by_loginid', JSON.stringify(tokensByLoginId));
+          }
+
+          console.log(`[AccountsLoader] Conta descoberta via backend token: ${loginid}`);
+
+          // Retornar estrutura compatível
+          return {
+            loginid: loginid,
+            token: item.token,
+            // Dados preliminares, serão refinados pelo processamento raw
+            isDemo: loginid.toUpperCase().startsWith('VRT'),
+            balance: 0,
+            currency: 'USD'
+          };
+        }
+      }
+      return null;
+    } catch (error) {
+      console.error(`[AccountsLoader] Erro ao buscar token do backend:`, error);
+      return null;
+    }
+  });
+
+  // Aguardar todas as requisições (conhecidas + backend)
+  const accountPromises = [...knownAccountPromises, ...backendPromises];
   const results = await Promise.all(accountPromises);
 
   // Adicionar resultados iniciais ao mapa
@@ -187,8 +283,12 @@ async function loadAccountsFromAPI(loginIds, tokensByLoginId) {
   }
 
   // ✅ Agora, buscar todas as contas do raw.accounts de QUALQUER resposta válida (apenas 1 é suficiente se tiver tudo)
-  for (let i = 0; i < loginIds.length; i++) {
-    const loginid = loginIds[i];
+  // ✅ Agora, buscar todas as contas do raw.accounts de QUALQUER resposta válida (apenas 1 é suficiente se tiver tudo)
+  // Verificar todos os loginIds agora disponíveis (incluindo os descobertos)
+  const allAvailableLoginIds = Array.from(allAccountsMap.keys());
+
+  for (let i = 0; i < allAvailableLoginIds.length; i++) {
+    const loginid = allAvailableLoginIds[i];
     const data = responseDataCache.get(loginid);
 
     if (data && data.raw && data.raw.accounts) {
@@ -291,5 +391,37 @@ export function clearAccountsCache() {
  */
 export async function reloadAvailableAccounts() {
   clearAccountsCache();
-  return await loadAvailableAccounts();
+  return await loadAvailableAccounts(true);
+}
+
+/**
+ * Busca tokens armazenados no backend
+ */
+async function fetchBackendTokens() {
+  try {
+    const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+    const token = localStorage.getItem('token');
+
+    if (!token) return null;
+
+    const response = await fetch(`${apiBase}/settings`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return {
+        tokenReal: data.tokenReal,
+        tokenDemo: data.tokenDemo
+      };
+    }
+    return null;
+  } catch (error) {
+    console.error('[AccountsLoader] Erro ao buscar tokens do backend:', error);
+    return null;
+  }
 }
