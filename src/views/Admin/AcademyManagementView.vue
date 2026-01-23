@@ -399,7 +399,8 @@ export default {
                 isActive: true,
                 videoFile: null,
                 videoPath: '',
-                videoFileName: ''
+                videoFileName: '',
+                videoSource: 'upload'
             },
             isDeleteLessonModalOpen: false,
             lessonToDelete: null,
@@ -1074,6 +1075,14 @@ export default {
         },
         openEditLesson(lesson) {
             this.isNewLessonModalOpen = true;
+            
+            // Detecta se é vídeo externo ou upload
+            const isExternal = lesson.videoUrl && (
+                lesson.videoUrl.includes('youtube.com') || 
+                lesson.videoUrl.includes('youtu.be') || 
+                lesson.videoUrl.includes('vimeo.com')
+            );
+
             this.newLesson = {
                 id: lesson.id,
                 moduleId: lesson.moduleId,
@@ -1085,7 +1094,8 @@ export default {
                 isActive: lesson.isActive !== undefined ? lesson.isActive : true,
                 videoFile: null,
                 videoPath: lesson.videoUrl || '',
-                videoFileName: lesson.videoUrl ? lesson.videoUrl.split('/').pop() : ''
+                videoFileName: !isExternal && lesson.videoUrl ? lesson.videoUrl.split('/').pop() : '',
+                videoSource: isExternal ? 'external' : 'upload'
             };
         },
         openDeleteLesson(lesson) {
@@ -1158,14 +1168,19 @@ export default {
 
                 let videoPath = this.newLesson.videoPath || '';
                 if (this.newLesson.contentType === 'Video') {
-                    if (this.newLesson.videoFile) {
+                    if (this.newLesson.videoSource === 'upload' && this.newLesson.videoFile) {
                         const uploadedVideoPath = await this.uploadLessonVideo(this.newLesson.videoFile);
                         if (!uploadedVideoPath) {
                             return;
                         }
                         videoPath = uploadedVideoPath;
                         this.newLesson.videoPath = uploadedVideoPath;
-                    } else if (!videoPath) {
+                    } else if (this.newLesson.videoSource === 'external') {
+                        if (!videoPath) {
+                            this.$root.$toast.info('Informe a URL do vídeo antes de salvar.');
+                            return;
+                        }
+                    } else if (this.newLesson.videoSource === 'upload' && !videoPath) {
                         this.$root.$toast.info('Envie o vídeo da aula antes de salvar.');
                         return;
                     }

@@ -59,7 +59,16 @@
                 <div class="video-player-section">
                     <div class="video-container">
                         <template v-if="selectedLesson && selectedLesson.videoUrl">
+                            <iframe 
+                                v-if="isExternalVideo(selectedLesson.videoUrl)"
+                                :src="getEmbedUrl(selectedLesson.videoUrl)"
+                                class="video-element"
+                                frameborder="0" 
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                                allowfullscreen
+                            ></iframe>
                             <video
+                                v-else
                                 class="video-element"
                                 controls
                                 :src="resolveMediaUrl(selectedLesson.videoUrl)"
@@ -487,7 +496,23 @@ export default {
       if (currentIndex >= 0 && currentIndex < allLessons.length - 1) {
         this.selectLesson(allLessons[currentIndex + 1])
       }
-    }
+    },
+    isExternalVideo(url) {
+      if (!url) return false;
+      return url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com');
+    },
+    getEmbedUrl(url) {
+      if (!url) return '';
+      if (url.includes('youtube.com') || url.includes('youtu.be')) {
+        const id = url.split('v=')[1]?.split('&')[0] || url.split('/').pop();
+        return `https://www.youtube.com/embed/${id}`;
+      } 
+      else if (url.includes('vimeo.com')) {
+        const id = url.split('/').pop();
+        return `https://player.vimeo.com/video/${id}`;
+      }
+      return url;
+    },
   }
 }
 </script>
@@ -498,6 +523,24 @@ export default {
 <style scoped>
 .main-wrapper {
     width: 100%!important;
+}
+
+.video-container {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 */
+    height: 0;
+    overflow: hidden;
+    background: #000;
+    border-radius: 12px;
+}
+
+.video-container .video-element {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 /* Botão Hambúrguer - apenas mobile */

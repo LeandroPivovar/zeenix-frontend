@@ -70,6 +70,14 @@
             </div>
           </div>
           <div class="form-group" v-if="newLesson.contentType === 'Video'">
+            <label for="video-source">Origem do Vídeo</label>
+            <select id="video-source" class="input-select" :value="newLesson.videoSource || 'upload'" @change="updateNewLesson({ videoSource: $event.target.value })" :disabled="!newLesson.moduleId">
+              <option value="upload">Fazer Upload de Vídeo</option>
+              <option value="external">Vídeo Externo (YouTube/Vimeo)</option>
+            </select>
+          </div>
+
+          <div class="form-group" v-if="newLesson.contentType === 'Video' && (newLesson.videoSource === 'upload' || !newLesson.videoSource)">
             <label for="lesson-video">Upload do Vídeo</label>
             <input
               type="file"
@@ -86,6 +94,19 @@
             <p v-else-if="newLesson.videoPath" class="video-file-info">
               Vídeo enviado: {{ newLesson.videoPath.split('/').pop() }}
             </p>
+          </div>
+
+          <div class="form-group" v-if="newLesson.contentType === 'Video' && newLesson.videoSource === 'external'">
+            <label for="video-url">URL do Vídeo (YouTube ou Vimeo)</label>
+            <input
+              type="url"
+              id="video-url"
+              class="input-text"
+              :value="newLesson.videoPath"
+              @input="updateNewLesson({ videoPath: $event.target.value })"
+              placeholder="Ex: https://www.youtube.com/watch?v=..."
+              :disabled="!newLesson.moduleId"
+            />
           </div>
           <div class="form-group" v-else>
             <label for="content-link">Link do Conteúdo</label>
