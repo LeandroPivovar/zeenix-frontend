@@ -2160,35 +2160,12 @@ export default {
                     stake: stake || 0
                 };
                 
-                // Forçar parada IMEDIATA
-                this.stopAIForInsufficientBalance();
-            }
-        },
-
-        /**
-         * ✅ Para a IA imediatamente devido a saldo insuficiente
-         */
-        stopAIForInsufficientBalance() {
-            if (this.showInsufficientBalanceModal) return; // Já está mostrando
-            
-            console.log('[InvestmentActive] 🛑 FORÇANDO PARADA DA IA POR SALDO INSUFICIENTE');
-            
-            // 1. Mostrar Modal
-            this.showInsufficientBalanceModal = true;
-            
-            // 2. Mudar Botão para "Reiniciar"
-            this.aiStoppedAutomatically = true;
-            
-            // 3. Emitir evento de desativação para o pai (visual)
-            this.$emit('deactivate');
-            
-            // 4. Parar Polling
-            this.stopLogPolling();
-            
-            // 5. Atualizar sessionConfig localmente para refletir estado parado
-            if (this.sessionConfig) {
-                this.sessionConfig.isActive = false;
-                this.sessionConfig.sessionStatus = 'stopped_insufficient_balance';
+                };
+                
+                // Mostrar modal (sem forçar parada da IA, deixando o backend gerenciar o status)
+                if (!this.showInsufficientBalanceModal) {
+                    this.showInsufficientBalanceModal = true;
+                }
             }
         },
         
