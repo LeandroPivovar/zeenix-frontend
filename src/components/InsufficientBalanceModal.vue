@@ -30,7 +30,7 @@
         </div>
         
         <p class="info-message">
-          Por favor, ajuste o valor da sua entrada ou faça um depósito para continuar operando com a IA Orion.
+          Por favor, ajuste o valor da sua entrada ou faça um depósito para continuar operando com nossas ferramentas de IA.
         </p>
         
         <button class="confirm-button" type="button" @click="handleConfirm">
@@ -147,6 +147,7 @@ export default {
   color: rgba(255, 255, 255, 0.8);
   margin: 0 0 32px 0;
   line-height: 1.5;
+  text-align: center;
 }
 
 .highlight {
@@ -205,6 +206,7 @@ export default {
   color: rgba(255, 255, 255, 0.6);
   margin: 0 0 32px 0;
   line-height: 1.6;
+  text-align: center;
 }
 
 .confirm-button {

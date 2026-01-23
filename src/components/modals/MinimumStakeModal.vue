@@ -110,6 +110,7 @@ export default {
   color: rgba(255, 255, 255, 0.9);
   margin: 0 0 24px 0;
   line-height: 1.5;
+  text-align: center;
 }
 
 .info-box {
@@ -141,6 +142,7 @@ export default {
   color: rgba(255, 255, 255, 0.6);
   margin: 0 0 32px 0;
   line-height: 1.6;
+  text-align: center;
 }
 
 .highlight {
