@@ -872,6 +872,10 @@ export default {
             type: Number,
             default: 0
         },
+        baseBalanceProp: {
+            type: Number,
+            default: 0
+        },
         accountCurrencyProp: {
             type: String,
             default: 'USD'
@@ -1357,10 +1361,9 @@ export default {
                           this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
                           (this.accountCurrencyProp && this.accountCurrencyProp.includes('DEMO'));
             
-            // ✅ [ZENIX v3.5] Soma Saldo Total + Lucro do Dia para exibição
-            const baseBalance = parseFloat(this.accountBalanceProp) || 0;
-            const dailyProfit = parseFloat(this.dailyStats.profitLoss) || 0;
-            const displayBalance = baseBalance + dailyProfit;
+            // ✅ [ZENIX v3.5] Agora o prop 'accountBalanceProp' já vem somado do pai (InvestmentIAView)
+            // Não somamos nada localmente para evitar duplicidade. APENAS REPLICAMOS O SALDO DA TOPBAR.
+            const displayBalance = parseFloat(this.accountBalanceProp) || 0;
             
             // If fictitious balance is active and this is a demo account, mask it as real ($)
             if (this.isFictitiousBalanceActive && isDemo) {
@@ -2275,13 +2278,14 @@ export default {
                     console.log('[InvestmentActive] ✅ Stats atualizadas:', this.dailyStats);
 
                     // ✅ ZENIX v3.5: Notificar pai para atualizar saldo em tempo real (dashboard + topbar)
-                    // Usamos o saldo atual do props (vindo da Deriv) + o lucro total do dia (vindo do BD)
-                    const currentBalance = parseFloat(this.accountBalanceProp) || 0;
+                    // Usamos o saldo BASE (vindo da Deriv) + o lucro total do dia (vindo do BD)
+                    // Importante usar 'baseBalanceProp' para não somar lucro sobre lucro
+                    const currentBaseBalance = parseFloat(this.baseBalanceProp) || parseFloat(this.accountBalanceProp) || 0;
                     const dailyProfit = parseFloat(this.dailyStats.profitLoss) || 0;
-                    const currentCalculatedBalance = currentBalance + dailyProfit;
+                    const currentCalculatedBalance = currentBaseBalance + dailyProfit;
                     
                     if (currentCalculatedBalance > 0) {
-                        console.log(`[InvestmentActive] 💰 Emitindo novo saldo calculado (API + Dia): $${currentCalculatedBalance.toFixed(2)}`);
+                        console.log(`[InvestmentActive] 💰 Emitindo novo saldo calculado (Base + Dia): $${currentCalculatedBalance.toFixed(2)}`);
                         this.$emit('update-balance', currentCalculatedBalance);
                     }
                 } else {
