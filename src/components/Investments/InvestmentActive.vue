@@ -977,11 +977,7 @@ export default {
             isDeactivating: false,
             
             // Modais de Stop Loss e Target Profit
-            showStopLossModal: false,
-            showStopBlindadoModal: false,
-            showTargetProfitModal: false,
-            showInsufficientBalanceModal: false,
-            sessionResult: 0,
+
             // Modais de Stop Loss e Target Profit
             showStopLossModal: false,
             showStopBlindadoModal: false,
@@ -2144,9 +2140,9 @@ export default {
                     
                     // Regex para capturar valores monetários ($123.45)
                     // Procura por: Capital atual ($X) ... necessário ($Y) ... stake calculado ($Z)
-                    const currentMatch = msg.match(/Capital atual \(\$([\d\.]+)/);
-                    const requiredMatch = msg.match(/necessário \(\$([\d\.]+)/);
-                    const stakeMatch = msg.match(/stake calculado \(\$([\d\.]+)/);
+                    const currentMatch = msg.match(/Capital atual \(\$([\d.]+)/);
+                    const requiredMatch = msg.match(/necessário \(\$([\d.]+)/);
+                    const stakeMatch = msg.match(/stake calculado \(\$([\d.]+)/);
                     
                     if (currentMatch) current = parseFloat(currentMatch[1]);
                     if (requiredMatch) required = parseFloat(requiredMatch[1]);
