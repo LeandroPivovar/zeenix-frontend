@@ -752,9 +752,9 @@ export default {
                     return;
                 }
 
-                // ✅ [NOVO] Validação de saldo mínimo (pelo menos 3 entradas)
+                // ✅ [NOVO] Validação de saldo mínimo (pelo menos 1 entrada)
                 const currentBalance = this.balanceNumeric || 0;
-                const requiredBalance = this.entryValue * 3;
+                const requiredBalance = this.entryValue;
 
                 console.log('[InvestmentIAView] 🔍 Verificando saldo mínimo:', {
                     current: currentBalance,

@@ -14,7 +14,7 @@
         <h2 class="modal-title">SALDO INSUFICIENTE</h2>
         
         <p class="modal-message">
-          Seu saldo atual é insuficiente para iniciar as operações com segurança. É necessário ter saldo para pelo menos 3 entradas de <span class="highlight">{{ formattedEntryValue }}</span>.
+          Seu saldo atual é insuficiente para iniciar as operações. É necessário ter saldo para pelo menos a primeira entrada de <span class="highlight">{{ formattedEntryValue }}</span>.
         </p>
         
         <div class="result-section">
@@ -64,7 +64,7 @@ export default {
   },
   computed: {
     requiredBalance() {
-      return this.entryValue * 3;
+      return this.entryValue;
     },
     formattedBalance() {
       const prefix = this.currency === 'DEMO' ? 'D$' : '$';
