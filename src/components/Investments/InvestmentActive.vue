@@ -816,6 +816,11 @@
 
     <InsufficientBalanceModal
         :visible="showInsufficientBalanceModal"
+        :current-balance="insufficientBalanceDetails.current"
+        :required-balance="insufficientBalanceDetails.required"
+        :calculated-stake="insufficientBalanceDetails.stake"
+        :entry-value="entryValue"
+        :currency="accountType === 'demo' ? 'DEMO' : 'USD'"
         @confirm="showInsufficientBalanceModal = false"
     />
 </template>
@@ -976,6 +981,13 @@ export default {
             showStopBlindadoModal: false,
             showTargetProfitModal: false,
             showInsufficientBalanceModal: false,
+            sessionResult: 0,
+            // Modais de Stop Loss e Target Profit
+            showStopLossModal: false,
+            showStopBlindadoModal: false,
+            showTargetProfitModal: false,
+            showInsufficientBalanceModal: false,
+            insufficientBalanceDetails: { current: 0, required: 0, stake: 0 }, // ✅ Detalhes do erro de saldo
             sessionResult: 0,
             previousSessionStatus: null,
             
@@ -2107,8 +2119,10 @@ export default {
                 }
             }
 
+            }
+
             // ✅ [ZENIX v3.4] Verificar se há mensagem de SALDO INSUFICIENTE
-            const hasLowBalanceMessage = recentLogs.some(log => 
+            const balanceLog = recentLogs.find(log => 
                 log.message && (
                     log.message.includes('SALDO INSUFICIENTE') ||
                     log.message.includes('IA DESATIVADA. SALDO INSUFICIENTE') ||
@@ -2116,11 +2130,69 @@ export default {
                 )
             );
             
-            if (hasLowBalanceMessage) {
-                console.log('[InvestmentActive] ❌ Saldo insuficiente detectado nos logs!');
-                if (!this.showInsufficientBalanceModal) {
-                    this.showInsufficientBalanceModal = true;
+            if (balanceLog) {
+                console.log('[InvestmentActive] ❌ Saldo insuficiente detectado nos logs! Analisando detalhes...');
+                
+                // Extrair valores do log se possível
+                // Exemplo: Capital atual ($2097.45 USD) é menor que o necessário ($2200.00 USD) para o stake calculado ($2000.00 USD)
+                let current = 0;
+                let required = 0;
+                let stake = 0;
+                
+                try {
+                    const msg = balanceLog.message;
+                    
+                    // Regex para capturar valores monetários ($123.45)
+                    // Procura por: Capital atual ($X) ... necessário ($Y) ... stake calculado ($Z)
+                    const currentMatch = msg.match(/Capital atual \(\$([\d\.]+)/);
+                    const requiredMatch = msg.match(/necessário \(\$([\d\.]+)/);
+                    const stakeMatch = msg.match(/stake calculado \(\$([\d\.]+)/);
+                    
+                    if (currentMatch) current = parseFloat(currentMatch[1]);
+                    if (requiredMatch) required = parseFloat(requiredMatch[1]);
+                    if (stakeMatch) stake = parseFloat(stakeMatch[1]);
+                    
+                    console.log('[InvestmentActive] 📊 Detalhes extraídos:', { current, required, stake });
+                } catch (e) {
+                    console.warn('[InvestmentActive] ⚠️ Erro ao fazer parse do log de saldo:', e);
                 }
+
+                // Atualizar detalhes
+                this.insufficientBalanceDetails = {
+                    current: current || this.accountBalanceProp || 0,
+                    required: required || 0,
+                    stake: stake || 0
+                };
+                
+                // Forçar parada IMEDIATA
+                this.stopAIForInsufficientBalance();
+            }
+        },
+
+        /**
+         * ✅ Para a IA imediatamente devido a saldo insuficiente
+         */
+        stopAIForInsufficientBalance() {
+            if (this.showInsufficientBalanceModal) return; // Já está mostrando
+            
+            console.log('[InvestmentActive] 🛑 FORÇANDO PARADA DA IA POR SALDO INSUFICIENTE');
+            
+            // 1. Mostrar Modal
+            this.showInsufficientBalanceModal = true;
+            
+            // 2. Mudar Botão para "Reiniciar"
+            this.aiStoppedAutomatically = true;
+            
+            // 3. Emitir evento de desativação para o pai (visual)
+            this.$emit('deactivate');
+            
+            // 4. Parar Polling
+            this.stopLogPolling();
+            
+            // 5. Atualizar sessionConfig localmente para refletir estado parado
+            if (this.sessionConfig) {
+                this.sessionConfig.isActive = false;
+                this.sessionConfig.sessionStatus = 'stopped_insufficient_balance';
             }
         },
         

@@ -14,7 +14,12 @@
         <h2 class="modal-title text-center" style="text-align: center; justify-self: center;">SALDO INSUFICIENTE</h2>
         
         <p class="modal-message">
-          Seu saldo atual é insuficiente para iniciar as operações. É necessário ter saldo para pelo menos a primeira entrada de <span class="highlight">{{ formattedEntryValue }}</span>.
+          <span v-if="hasDetailedInfo">
+            Seu saldo atual é insuficiente para cobrir a operação de Martingale calculada.
+          </span>
+          <span v-else>
+            Seu saldo atual é insuficiente para iniciar as operações. É necessário ter saldo para pelo menos a primeira entrada de <span class="highlight">{{ formattedEntryValue }}</span>.
+          </span>
         </p>
         
         <div class="result-section">
@@ -29,7 +34,10 @@
           </div>
         </div>
         
-        <p class="info-message">
+        <p v-if="hasDetailedInfo" class="info-message">
+           Tentativa de entrada: <span class="highlight">{{ formattedStake }}</span>. O sistema de proteção bloqueou a operação para evitar saldo negativo.
+        </p>
+        <p v-else class="info-message">
           Por favor, ajuste o valor da sua entrada ou faça um depósito para continuar operando com nossas ferramentas de IA.
         </p>
         
@@ -61,22 +69,42 @@ export default {
       type: String,
       default: 'USD'
     }
+    },
+    requiredBalance: {
+      type: Number,
+      default: 0
+    },
+    calculatedStake: {
+      type: Number,
+      default: 0
+    }
   },
   computed: {
-    requiredBalance() {
-      return this.entryValue;
+    hasDetailedInfo() {
+      // Se tivermos requiredBalance vindo do log e for maior que 0
+      return this.requiredBalance > 0 && this.requiredBalance !== this.entryValue;
+    },
+    displayRequired() {
+      // Se tiver info detalhada (do log), usa ela. Senão usa entryValue.
+      return this.requiredBalance > 0 ? this.requiredBalance : this.entryValue;
     },
     formattedBalance() {
       const prefix = this.currency === 'DEMO' ? 'D$' : '$';
+      // Se tiver um currentBalance explícito passado via prop (do log), usa ele
+      // Caso contrário, usa this.currentBalance (que pode ser 0)
       return `${prefix}${this.currentBalance.toFixed(2)}`;
     },
     formattedEntryValue() {
       const prefix = this.currency === 'DEMO' ? 'D$' : '$';
       return `${prefix}${this.entryValue.toFixed(2)}`;
     },
+    formattedStake() {
+      const prefix = this.currency === 'DEMO' ? 'D$' : '$';
+      return `${prefix}${this.calculatedStake.toFixed(2)}`;
+    },
     formattedRequired() {
       const prefix = this.currency === 'DEMO' ? 'D$' : '$';
-      return `${prefix}${this.requiredBalance.toFixed(2)}`;
+      return `${prefix}${this.displayRequired.toFixed(2)}`;
     }
   },
   methods: {
