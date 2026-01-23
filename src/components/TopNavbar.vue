@@ -696,10 +696,27 @@ export default {
         console.warn('[TopNavbar] Nenhum dado no banco, usando fallback legado');
 
         // Buscar informações de cada conta
-        const accounts = [];
         const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
         const token = localStorage.getItem('token');
         const appId = localStorage.getItem('deriv_app_id') || '1089';
+
+        // ✅ ZENIX v3.5: Buscar tokens do localStorage
+        const tokensByLoginIdStr = localStorage.getItem('deriv_tokens_by_loginid');
+        if (!tokensByLoginIdStr) {
+          this.loadingAccounts = false;
+          return;
+        }
+        
+        let tokensByLoginId = {};
+        try {
+          tokensByLoginId = JSON.parse(tokensByLoginIdStr);
+        } catch (e) {
+          console.error('[TopNavbar] Erro ao parsear tokensByLoginId:', e);
+          this.loadingAccounts = false;
+          return;
+        }
+
+        const loginIds = Object.keys(tokensByLoginId);
 
         for (const loginid of loginIds) {
           try {
