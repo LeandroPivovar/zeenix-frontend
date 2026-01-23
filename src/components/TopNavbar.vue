@@ -396,6 +396,13 @@ export default {
     }
   },
   computed: {
+    uiAccountType() {
+      // Se saldo fictício estiver ativo, mascarar como 'real'
+      if (this.isFictitiousBalanceActive) {
+        return 'real';
+      }
+      return this.accountType || 'real';
+    },
     formattedBalance() {
       // Se saldo fictício estiver ativo, o balanceNumeric já contém a soma
       if (this.isFictitiousBalanceActive) {
