@@ -125,7 +125,7 @@ const routes = [
     path: '/StatsIAs',
     name: 'StatsIAs',
     component: InvestmentIAView,
-    meta: { requiresAuth: true, requiresDeriv: true }
+    meta: { requiresAuth: true, requiresDeriv: true, requiresRole: ['admin'] }
   },
   {
     path: '/Experts',
