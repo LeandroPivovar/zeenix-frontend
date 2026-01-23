@@ -42,7 +42,7 @@
             </div>
             <p class="settings-balance-amount text-left">
               <span v-if="balanceVisible" class="inline-flex items-center">
-                <span v-if="currentAccountType === 'demo'" class="demo-currency-symbol-wrapper">
+                <span v-if="uiAccountType === 'demo'" class="demo-currency-symbol-wrapper">
                   <span class="demo-currency-symbol">D</span>
                 </span>
                 <span v-else>$</span>
@@ -53,14 +53,14 @@
             <div class="flex items-center gap-3 mt-3">
               <button 
                 @click="switchAccount('real')"
-                :class="currentAccountType === 'real' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
+                :class="uiAccountType === 'real' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
                 class="settings-account-btn"
               >
                 Real
               </button>
               <button 
                 @click="switchAccount('demo')"
-                :class="currentAccountType === 'demo' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
+                :class="uiAccountType === 'demo' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
                 class="settings-account-btn"
               >
                 Demo
@@ -111,16 +111,16 @@
                     <i v-if="isCurrentAccount(account)" class="fa-solid fa-check text-[#22C55E] text-[12px]"></i>
                   </div>
                   <div class="flex items-center gap-2">
-                    <span :class="account.isDemo ? 'text-[#22C55E]/70 text-[12px]' : 'text-[#F59E0B]/70 text-[12px]'">
-                      {{ account.isDemo ? 'Demo' : 'Real' }}
+                    <span :class="account.isDemo ? (isFictitiousBalanceActive ? 'text-[#F59E0B]/70 text-[12px]' : 'text-[#22C55E]/70 text-[12px]') : 'text-[#F59E0B]/70 text-[12px]'">
+                      {{ (account.isDemo && isFictitiousBalanceActive) ? 'Real' : (account.isDemo ? 'Demo' : 'Real') }}
                     </span>
                     <span class="text-white/40 text-[12px]">•</span>
                     <span class="text-white/80 text-[12px] inline-flex items-center">
-                      <span v-if="account.isDemo" class="demo-currency-symbol-modal-small-wrapper">
+                      <span v-if="account.isDemo && !isFictitiousBalanceActive" class="demo-currency-symbol-modal-small-wrapper">
                         <span class="demo-currency-symbol-modal-small">D</span>
                       </span>
                       <span v-else>$</span>
-                      {{ formatBalance(account.balance || 0) }}
+                      {{ formatBalance(account.balance || 0, account.isDemo) }}
                     </span>
                   </div>
                 </div>
@@ -184,22 +184,29 @@ export default {
       loadingAccounts: false,
 
       userProfilePictureUrl: null,
+      isMasterTrader: false,
+      fictitiousBalance: 10000,
+      isFictitiousBalanceActive: false,
+      showDollarSign: false,
     };
   },
   computed: {
     currentAccountType() {
       return this.accountType || 'real';
     },
+    uiAccountType() {
+      // Se saldo fictício estiver ativo, mascarar como 'real'
+      if (this.isFictitiousBalanceActive) {
+        return 'real';
+      }
+      return this.currentAccountType;
+    },
     formattedBalance() {
       // Retorna apenas o valor numérico formatado (sem prefixo, pois o símbolo é adicionado no template)
       if (this.accountType === 'demo') {
-        // Para Demo, usar APENAS o saldo Demo, nunca fallback para Real
-        const demo = this.balancesByCurrencyDemo['USD'];
-        if (demo !== undefined && demo !== null && demo > 0) {
-          return demo.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        }
-        // Se não tiver saldo Demo, mostrar 0
-        return '0,00';
+        const demo = this.balancesByCurrencyDemo['USD'] || 0;
+        const total = this.isFictitiousBalanceActive ? (demo + this.fictitiousBalance) : demo;
+        return total.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
       
       // Para Real, usar APENAS o saldo Real
@@ -355,11 +362,15 @@ export default {
   mounted() {
     this.loadUserProfilePicture();
     window.addEventListener('userProfileUpdated', this.handleProfileUpdate);
+    window.addEventListener('masterTraderSettingsUpdated', this.handleMasterTraderUpdate);
+    window.addEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
     // Não carregar contas automaticamente no mounted - só quando necessário
     // Isso evita chamadas desnecessárias ao montar o componente
   },
   beforeUnmount() {
     window.removeEventListener('userProfileUpdated', this.handleProfileUpdate);
+    window.removeEventListener('masterTraderSettingsUpdated', this.handleMasterTraderUpdate);
+    window.removeEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
   },
   methods: {
     close() {
@@ -621,8 +632,11 @@ export default {
       this.$router.push('/dashboard');
       window.location.reload();
     },
-    formatBalance(balance) {
-      const value = parseFloat(balance) || 0;
+    formatBalance(balance, isDemo = false) {
+      let value = parseFloat(balance) || 0;
+      if (isDemo && this.isFictitiousBalanceActive) {
+        value += this.fictitiousBalance;
+      }
       return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
     getCurrencyIcon(currency, accountType) {
@@ -737,7 +751,20 @@ export default {
       }
     },
 
+    handleMasterTraderUpdate(event) {
+      if (event.detail) {
+        this.fictitiousBalance = event.detail.fictitiousBalance || this.fictitiousBalance;
+        this.isFictitiousBalanceActive = event.detail.isFictitiousBalanceActive !== undefined ? event.detail.isFictitiousBalanceActive : this.isFictitiousBalanceActive;
+        this.showDollarSign = event.detail.showDollarSign !== undefined ? event.detail.showDollarSign : this.showDollarSign;
+      }
+    },
 
+    handleFictitiousBalanceChange(event) {
+      const { enabled, amount } = event.detail;
+      this.isFictitiousBalanceActive = enabled;
+      this.fictitiousBalance = amount;
+      console.log('[SettingsSidebar] Saldo fictício atualizado:', { enabled, amount });
+    }
   }
 };
 </script>

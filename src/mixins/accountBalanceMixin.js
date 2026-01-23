@@ -11,7 +11,9 @@ export default {
       accountType: 'real', // 'real' ou 'demo'
       tradeCurrency: 'USD', // 'USD' ou 'DEMO'
       balanceUpdateInterval: null,
-      loadingBalance: false
+      loadingBalance: false,
+      isFictitiousBalanceActive: false,
+      fictitiousBalance: 10000
     };
   },
   computed: {
@@ -80,7 +82,18 @@ export default {
       // Fallback para o saldo original
       return this.info;
     },
+    uiAccountType() {
+      // Se saldo fictício estiver ativo, mascarar como 'real'
+      if (this.isFictitiousBalanceActive) {
+        return 'real';
+      }
+      return this.accountType;
+    },
     preferredCurrencyPrefix() {
+      // Se saldo fictício estiver ativo, forçar prefixo '$' (mascarar conta Real)
+      if (this.isFictitiousBalanceActive) {
+        return '$';
+      }
       if (this.tradeCurrency === 'DEMO') {
         return 'D$';
       }
@@ -90,7 +103,14 @@ export default {
       // Se for demo, retornar o saldo demo USD
       if (this.accountType === 'demo') {
         const demoBalance = this.balancesByCurrencyDemo['USD'];
-        return demoBalance !== undefined && demoBalance !== null ? Number(demoBalance) : 0;
+        const baseBalance = demoBalance !== undefined && demoBalance !== null ? Number(demoBalance) : 0;
+
+        // Se saldo fictício estiver ativo, somar ao saldo demo
+        if (this.isFictitiousBalanceActive) {
+          return baseBalance + this.fictitiousBalance;
+        }
+
+        return baseBalance;
       }
 
       // Se for real, prioridade 1: Saldo USD Real
@@ -119,6 +139,14 @@ export default {
       return isNaN(num) ? 0 : num;
     },
     formattedBalance() {
+      // Se saldo fictício estiver ativo, o saldo já está somado no balanceNumeric
+      // e o prefixo já é '$' no preferredCurrencyPrefix
+      if (this.isFictitiousBalanceActive) {
+        const value = this.balanceNumeric;
+        const prefix = this.preferredCurrencyPrefix;
+        return `${prefix}${value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+      }
+
       // Mesma lógica do Dashboard - usa tradeCurrency para determinar se é demo
       if (this.tradeCurrency === 'DEMO') {
         const demo = this.balancesByCurrencyDemo['USD'] || 0;
@@ -367,6 +395,50 @@ export default {
     },
 
     /**
+     * Carrega configurações do Master Trader (Saldo Fictício)
+     */
+    async loadMasterTraderSettings() {
+      try {
+        const token = localStorage.getItem('token');
+        if (!token) return;
+
+        const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+        const res = await fetch(`${apiBaseUrl}/settings`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          if (data.isFictitiousBalanceActive !== undefined) this.isFictitiousBalanceActive = data.isFictitiousBalanceActive;
+          if (data.fictitiousBalance !== undefined) this.fictitiousBalance = parseFloat(data.fictitiousBalance);
+          console.log('[AccountBalanceMixin] Configurações Master Trader carregadas:', {
+            active: this.isFictitiousBalanceActive,
+            amount: this.fictitiousBalance
+          });
+        }
+      } catch (error) {
+        console.error('[AccountBalanceMixin] Erro ao carregar configurações de Master Trader:', error);
+      }
+    },
+
+    handleMasterTraderUpdate(event) {
+      if (event.detail) {
+        this.fictitiousBalance = event.detail.fictitiousBalance || this.fictitiousBalance;
+        this.isFictitiousBalanceActive = event.detail.isFictitiousBalanceActive !== undefined ? event.detail.isFictitiousBalanceActive : this.isFictitiousBalanceActive;
+      }
+    },
+
+    handleFictitiousBalanceChange(event) {
+      const { enabled, amount } = event.detail;
+      this.isFictitiousBalanceActive = enabled;
+      this.fictitiousBalance = amount;
+    },
+
+    /**
      * Troca entre conta Real e Demo (igual ao Dashboard)
      */
     async switchAccount(type) {
@@ -520,6 +592,13 @@ export default {
     }
   },
   async mounted() {
+    // Carregar configurações de Master Trader
+    await this.loadMasterTraderSettings();
+
+    // Ouvir eventos de atualização de saldo fictício
+    window.addEventListener('masterTraderSettingsUpdated', (e) => this.handleMasterTraderUpdate(e));
+    window.addEventListener('fictitiousBalanceChanged', (e) => this.handleFictitiousBalanceChange(e));
+
     // Carregar tradeCurrency primeiro para garantir que accountType está correto
     await this.loadTradeCurrency();
 

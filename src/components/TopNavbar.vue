@@ -46,7 +46,7 @@
           <span id="balanceDisplay" class="text-sm font-medium text-[#DFDFDF] inline-flex items-center gap-2">
             <span>Saldo:</span>
             <span v-if="!balanceHidden" class="inline-flex items-center gap-1.5">
-              <span v-if="isFictitiousBalanceActive || (accountType !== 'demo' || showDollarSign)">$</span>
+              <span v-if="uiAccountType !== 'demo' || showDollarSign">$</span>
               <span v-else>Đ</span>
               {{ formattedBalance }}
             </span>
@@ -308,9 +308,9 @@
                     <span class="text-sm font-semibold text-[#DFDFDF]">{{ getAccountDisplayName(account) }}</span>
                     <span 
                       class="px-2 py-0.5 rounded text-xs font-medium"
-                      :class="account.isDemo ? 'bg-[#22C55E]/20 text-[#22C55E]' : 'bg-[#F59E0B]/20 text-[#F59E0B]'"
+                      :class="(account.isDemo && isFictitiousBalanceActive) ? 'bg-[#F59E0B]/20 text-[#F59E0B]' : (account.isDemo ? 'bg-[#22C55E]/20 text-[#22C55E]' : 'bg-[#F59E0B]/20 text-[#F59E0B]')"
                     >
-                      {{ account.isDemo ? 'DEMO' : 'REAL' }}
+                      {{ (account.isDemo && isFictitiousBalanceActive) ? 'REAL' : (account.isDemo ? 'DEMO' : 'REAL') }}
                     </span>
                   </div>
                   <div class="flex items-center gap-4">
@@ -323,9 +323,9 @@
                           :alt="account.currency"
                           class="w-5 h-5 rounded-full object-cover"
                         />
-                        <span v-if="account.isDemo">Đ</span>
-                        <span v-else-if="!account.isDemo">$</span>
-                        {{ formatBalance(account.balance || 0) }}
+                        <span v-if="account.isDemo && !isFictitiousBalanceActive">Đ</span>
+                        <span v-else>$</span>
+                        {{ formatBalance(account.balance || 0, account.isDemo) }}
                       </p>
                     </div>
                   </div>
@@ -397,9 +397,10 @@ export default {
   },
   computed: {
     formattedBalance() {
-      // Se saldo fictício estiver ativo
+      // Se saldo fictício estiver ativo, o balanceNumeric já contém a soma
       if (this.isFictitiousBalanceActive) {
-        return this.fictitiousBalance.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        const value = this.balanceNumeric;
+        return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
       }
 
       // Retorna apenas o valor numérico formatado (sem prefixo, pois o símbolo é adicionado no template)
@@ -411,6 +412,12 @@ export default {
       return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
     balanceNumeric() {
+      // Prioridade 1: Saldo Demo + Fictício se ativo
+      if (this.accountType === 'demo' && this.isFictitiousBalanceActive) {
+        const demoBalance = this.balancesByCurrencyDemo['USD'] || 0;
+        return Number(demoBalance) + this.fictitiousBalance;
+      }
+
       const usdReal = this.balancesByCurrencyReal['USD'];
       if (usdReal !== undefined && usdReal !== null && usdReal > 0) {
         return usdReal;
@@ -568,8 +575,9 @@ export default {
     getAccountDisplayName(account) {
       if (!account) return 'Conta';
       
-      const type = account.isDemo ? 'Demo' : 'Real';
-      const currency = account.currency || 'USD';
+      if (account.isDemo && this.isFictitiousBalanceActive) {
+        return `Conta Real (${currency})`;
+      }
       
       return `Conta ${type} (${currency})`;
     },
@@ -858,9 +866,12 @@ export default {
       this.showAccountModal = false;
       this.availableAccounts = [];
     },
-    formatBalance(balance) {
+    formatBalance(balance, isDemo = false) {
       // Retorna apenas o valor numérico formatado (sem prefixo, pois o símbolo é adicionado no template)
-      const value = parseFloat(balance) || 0;
+      let value = parseFloat(balance) || 0;
+      if (isDemo && this.isFictitiousBalanceActive) {
+        value += this.fictitiousBalance;
+      }
       return value.toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     },
     getCurrencyPrefix(currency, isDemo = false) {
