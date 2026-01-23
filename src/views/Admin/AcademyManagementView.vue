@@ -837,6 +837,34 @@ export default {
                 return null;
             }
         },
+        async uploadMaterialFile(file) {
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const formData = new FormData();
+                formData.append('file', file);
+                const headers = {};
+                const token = localStorage.getItem('token');
+                if (token) {
+                    headers['Authorization'] = `Bearer ${token}`;
+                }
+                const response = await fetch(`${apiBaseUrl}/courses/lessons/upload/material`, {
+                    method: 'POST',
+                    headers,
+                    body: formData,
+                });
+                if (!response.ok) {
+                    const error = await response.json().catch(() => ({ message: 'Erro no upload de material' }));
+                    this.$root.$toast.error(error.message || 'Erro no upload de material.');
+                    return null;
+                }
+                const data = await response.json();
+                return data.path;
+            } catch (error) {
+                console.error('Erro ao enviar material da aula:', error);
+                this.$root.$toast.info('Erro ao enviar material da aula. Verifique sua conexão.');
+                return null;
+            }
+        },
         // Preview
         openPreviewModal() {
             if (!this.course.selectedCourseId) {
@@ -1251,7 +1279,7 @@ export default {
             this.selectedLessonIdForMaterials = normalizedLessonId;
             this.selectedLessonForMaterials = this.lessons.find(l => l.id === normalizedLessonId) || {};
             this.isMaterialsModalOpen = true;
-            this.newMaterial = { name: '', type: 'PDF', link: '' };
+            this.newMaterial = { name: '', type: 'PDF', link: '', file: null, fileName: '', filePath: '' };
             await this.loadMaterialsForLesson(normalizedLessonId);
         },
         closeMaterialsModal() {
@@ -1302,26 +1330,39 @@ export default {
             const isNewCourse = !this.course.selectedCourseId || this.course.selectedCourseId === 'new' || this.$route.params.id === 'new';
             const lesson = this.lessons.find(l => l.id === this.selectedLessonIdForMaterials);
             
-            // Se for curso novo ou aula local, adiciona localmente
-            if (isNewCourse || (lesson && lesson.isLocal)) {
-                const tempMaterialId = `temp-material-${Date.now()}-${Math.random()}`;
-                const newMaterialObject = {
-                    id: tempMaterialId,
-                    lessonId: this.selectedLessonIdForMaterials,
-                    name: this.newMaterial.name,
-                    type: this.newMaterial.type,
-                    link: this.newMaterial.link,
-                    isLocal: true,
-                };
-                this.materialsList.push(newMaterialObject);
-                const materialName = this.newMaterial.name;
-                this.newMaterial = { name: '', type: 'PDF', link: '' };
-                this.$root.$toast.success(`Material "${materialName}" adicionado localmente. Salve o curso para persistir.`);
-                return;
-            }
-            
-            // Se o curso já existe, salva no backend
             try {
+                let filePath = this.newMaterial.filePath || '';
+                
+                // Se houver um arquivo selecionado, faz o upload primeiro
+                if (this.newMaterial.file) {
+                    const uploadedPath = await this.uploadMaterialFile(this.newMaterial.file);
+                    if (uploadedPath) {
+                        filePath = uploadedPath;
+                    } else {
+                        return; // O erro já foi tratado no uploadMaterialFile
+                    }
+                }
+
+                // Se for curso novo ou aula local, adiciona localmente
+                if (isNewCourse || (lesson && lesson.isLocal)) {
+                    const tempMaterialId = `temp-material-${Date.now()}-${Math.random()}`;
+                    const newMaterialObject = {
+                        id: tempMaterialId,
+                        lessonId: this.selectedLessonIdForMaterials,
+                        name: this.newMaterial.name,
+                        type: this.newMaterial.type,
+                        link: this.newMaterial.link,
+                        filePath: filePath,
+                        isLocal: true,
+                    };
+                    this.materialsList.push(newMaterialObject);
+                    const materialName = this.newMaterial.name;
+                    this.newMaterial = { name: '', type: 'PDF', link: '', file: null, fileName: '', filePath: '' };
+                    this.$root.$toast.success(`Material "${materialName}" adicionado localmente. Salve o curso para persistir.`);
+                    return;
+                }
+                
+                // Se o curso já existe, salva no backend
                 const apiBaseUrl = this.getApiBaseUrl();
                 const response = await fetch(`${apiBaseUrl}/courses/materials`, {
                     method: 'POST',
@@ -1334,11 +1375,12 @@ export default {
                         name: this.newMaterial.name,
                         type: this.newMaterial.type,
                         link: this.newMaterial.link,
+                        filePath: filePath,
                     }),
                 });
                 if (response.ok) {
                     const materialName = this.newMaterial.name;
-                    this.newMaterial = { name: '', type: 'PDF', link: '' };
+                    this.newMaterial = { name: '', type: 'PDF', link: '', file: null, fileName: '', filePath: '' };
                     await this.loadMaterialsForLesson(this.selectedLessonIdForMaterials);
                     this.$root.$toast.success(`Material "${materialName}" adicionado com sucesso!`);
                 } else {

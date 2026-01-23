@@ -163,16 +163,29 @@
                 <option value="DOC">Documento (DOC/TXT)</option>
                 <option value="XLS">Planilha (XLS)</option>
                 <option value="PPT">Apresentação (PPT)</option>
-                <option value="LINK">Link Externo</option>
+                <option value="LINK">Link Externo (URL)</option>
+                <option value="OTHER">Outros Arquivos</option>
               </select>
             </div>
             <div class="half-group">
-              <label for="material-link">Link do Arquivo (URL)</label>
-              <input type="url" id="material-link" class="input-text" :value="newMaterial.link" @input="updateNewMaterial({ link: $event.target.value })" placeholder="https://link-para-o-material.com/arquivo" />
+              <label v-if="newMaterial.type === 'LINK'" for="material-link">Link do Arquivo (URL)</label>
+              <label v-else for="material-file">Upload do Arquivo</label>
+              
+              <input v-if="newMaterial.type === 'LINK'" type="url" id="material-link" class="input-text" :value="newMaterial.link" @input="updateNewMaterial({ link: $event.target.value })" placeholder="https://link-para-o-material.com/arquivo" />
+              <div v-else class="file-upload-wrapper">
+                <input type="file" id="material-file" class="input-file" @change="handleMaterialFileUpload" />
+                <p v-if="newMaterial.fileName" class="video-file-info">
+                  Arquivo: {{ newMaterial.fileName }}
+                  <button type="button" class="btn btn-link" @click="removeMaterialFile">Remover</button>
+                </p>
+                <p v-else-if="newMaterial.filePath" class="video-file-info">
+                  Arquivo salvo: {{ newMaterial.filePath.split('/').pop() }}
+                </p>
+              </div>
             </div>
           </div>
           <div class="modal-actions">
-            <button class="btn btn-primary" @click="saveNewMaterial" :disabled="!newMaterial.name || !newMaterial.link">
+            <button class="btn btn-primary" @click="saveNewMaterial" :disabled="!newMaterial.name || (newMaterial.type === 'LINK' ? !newMaterial.link : !newMaterial.file && !newMaterial.filePath)">
               Salvar Material
             </button>
           </div>
@@ -330,6 +343,17 @@ export default {
     },
     removeVideoFile() {
       this.updateNewLesson({ videoFile: null, videoFileName: '', videoPath: '' });
+    },
+    handleMaterialFileUpload(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.updateNewMaterial({ file: file, fileName: file.name, filePath: '', link: '' });
+      } else {
+        this.removeMaterialFile();
+      }
+    },
+    removeMaterialFile() {
+      this.updateNewMaterial({ file: null, fileName: '', filePath: '' });
     },
   },
 };
