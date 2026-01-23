@@ -320,7 +320,7 @@
                                         type="number" 
                                         class="form-input" 
                                         v-model.number="entryValue"
-                                        min="1"
+                                        min="0.35"
                                         step="0.01"
                                     >
                                 </div>
@@ -448,6 +448,10 @@
             :currency="tradeCurrency"
             @confirm="showInsufficientBalanceModal = false"
         />
+        <MinimumStakeModal
+            :visible="showMinimumStakeModal"
+            @confirm="showMinimumStakeModal = false"
+        />
     </div>
     <DesktopBottomNav />
 </template>
@@ -461,6 +465,7 @@ import ZenixTooltip from '@/components/ZenixTooltip.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
 import accountBalanceMixin from '../mixins/accountBalanceMixin';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal.vue';
+import MinimumStakeModal from '../components/modals/MinimumStakeModal.vue';
 
 export default {
     name: 'InvestmentIAView',
@@ -472,7 +477,8 @@ export default {
         InvestmentActive,
         ZenixTooltip,
         DesktopBottomNav,
-        InsufficientBalanceModal
+        InsufficientBalanceModal,
+        MinimumStakeModal
     },
     data() {
         return {
@@ -483,6 +489,7 @@ export default {
             isActivating: false,
             showSettingsModal: false,
             showInsufficientBalanceModal: false,
+            showMinimumStakeModal: false,
 
             ticks: [],
             currentPrice: null,
@@ -738,8 +745,9 @@ export default {
                     mode: this.mode
                 });
 
-                if (!this.entryValue || this.entryValue < 1) {
+                if (!this.entryValue || this.entryValue < 0.35) {
                     console.warn('[InvestmentIAView] ⚠️ Valor de entrada inválido:', this.entryValue);
+                    this.showMinimumStakeModal = true;
                     this.isActivating = false;
                     return;
                 }
