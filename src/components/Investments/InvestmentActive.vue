@@ -2138,11 +2138,12 @@ export default {
                 try {
                     const msg = balanceLog.message;
                     
-                    // Regex para capturar valores monetários ($123.45)
+                    // Regex para capturar valores monetários ($123.45 ou D$123.45)
                     // Procura por: Capital atual ($X) ... necessário ($Y) ... stake calculado ($Z)
-                    const currentMatch = msg.match(/Capital atual \(\$([\d.]+)/);
-                    const requiredMatch = msg.match(/necessário \(\$([\d.]+)/);
-                    const stakeMatch = msg.match(/stake calculado \(\$([\d.]+)/);
+                    // Usamos [^\d]* para ignorar qualquer prefixo de moeda ($, D$, R$, etc)
+                    const currentMatch = msg.match(/Capital atual \([^\d]*([\d.]+)/);
+                    const requiredMatch = msg.match(/necessário \([^\d]*([\d.]+)/);
+                    const stakeMatch = msg.match(/stake calculado \([^\d]*([\d.]+)/);
                     
                     if (currentMatch) current = parseFloat(currentMatch[1]);
                     if (requiredMatch) required = parseFloat(requiredMatch[1]);
@@ -2633,11 +2634,6 @@ export default {
                 this.aiStoppedAutomatically = false;
                 console.log('[InvestmentActive] 🔄 Flag aiStoppedAutomatically resetada');
                 
-                // ✅ Forçar estado inativo localmente (Segurança extra)
-                if (this.sessionConfig) {
-                    this.sessionConfig.isActive = false;
-                }
-
                 // Emitir evento para o componente pai desativar a IA (voltar para config)
                 // Solicitado alteração para voltar à tela de configuração em vez de reiniciar imediatamente
                 this.$emit('deactivate');

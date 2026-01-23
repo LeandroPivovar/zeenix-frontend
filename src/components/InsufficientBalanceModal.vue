@@ -99,7 +99,8 @@ export default {
     },
     formattedStake() {
       const prefix = this.currency === 'DEMO' ? 'D$' : '$';
-      return `${prefix}${this.calculatedStake.toFixed(2)}`;
+      const val = this.calculatedStake > 0 ? this.calculatedStake : this.entryValue;
+      return `${prefix}${val.toFixed(2)}`;
     },
     formattedRequired() {
       const prefix = this.currency === 'DEMO' ? 'D$' : '$';
