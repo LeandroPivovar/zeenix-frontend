@@ -68,7 +68,6 @@ export default {
     currency: {
       type: String,
       default: 'USD'
-    }
     },
     requiredBalance: {
       type: Number,
