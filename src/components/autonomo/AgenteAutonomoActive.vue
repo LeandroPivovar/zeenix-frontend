@@ -532,6 +532,7 @@
 							<tr class="border-b border-[#27272a]">
 								<th class="text-left py-2 text-[#A1A1AA] font-medium px-1">Hora</th>
 								<th class="text-left py-2 text-[#A1A1AA] font-medium px-1">Mercado</th>
+								<th class="text-left py-2 text-[#A1A1AA] font-medium px-1">Tipo</th>
 								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Entrada</th>
 								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Saída</th>
 								<th class="text-right py-2 text-[#A1A1AA] font-medium px-1">Inv.</th>
@@ -542,13 +543,19 @@
 							<tr v-for="(op, idx) in dailyTrades" :key="idx" class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
 								<td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{ formatToSPTime(op.time) }}</td>
 								<td class="py-2 px-1 text-[#FAFAFA] text-left truncate max-w-[50px] sm:max-w-none">{{op.market}}</td>
+								<td class="py-2 px-1 text-left">
+                                    <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold"
+                                        :class="op.contract === 'DIGITMATCH' ? 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'">
+                                        {{ op.contract }}
+                                    </span>
+                                </td>
 								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.entry}}</td>
 								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.exit}}</td>
 								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.stake.toFixed(2)}}</td>
 								<td class="py-2 px-1 text-right tabular-nums font-semibold" :class="op.profit >= 0 ? 'text-green-500' : 'text-red-500'">{{op.result}}</td>
 							</tr>
                             <tr v-if="dailyTrades.length === 0">
-                                <td colspan="6" class="py-8 text-center text-[#A1A1AA] text-xs">Nenhuma operação neste dia.</td>
+                                <td colspan="7" class="py-8 text-center text-[#A1A1AA] text-xs">Nenhuma operação neste dia.</td>
                             </tr>
 						</tbody>
 
