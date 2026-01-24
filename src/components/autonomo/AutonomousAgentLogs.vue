@@ -122,15 +122,22 @@ export default {
         const message = log.message || '';
         const module = log.module || '';
         
+        // Analysis - PRIORIDADE ALTA
+        if (module === 'ANALYZER' || message.includes('ANÁLISE') || message.includes('🧠') || message.includes('🔍')) {
+          logType = 'analysis';
+          icon = 'fa-solid fa-brain';
+          title = 'Análise do Mercado';
+        }
         // Detect Config
-        if (message.includes('CONFIG') || module === 'CONFIG') {
+        else if (message.includes('CONFIG') || module === 'CONFIG') {
           logType = 'config';
           icon = 'fa-solid fa-gear';
           title = 'Configurações Iniciais';
         }
-        // Success / Win
-        else if (message.includes('WON') || message.includes('VITÓRIA') || message.includes('✅') || 
-                 (module === 'TRADER' && message.includes('closed') && !message.includes('lost'))) {
+        // Success / Win - Mais específico para evitar falsos positivos de emojis genéricos
+        else if (message.includes('WON') || message.includes('VITÓRIA') || 
+                 (module === 'TRADER' && message.includes('closed') && !message.includes('lost')) ||
+                 (message.includes('RESULTADO: WIN'))) {
           logType = 'success';
           icon = 'fa-solid fa-check';
           title = 'Resultado: WIN';
@@ -153,12 +160,6 @@ export default {
           logType = 'risk';
           icon = 'fa-solid fa-shield-halved';
           title = 'Guardião de Risco';
-        }
-        // Analysis
-        else if (module === 'ANALYZER' || message.includes('ANÁLISE') || message.includes('🧠') || message.includes('🔍')) {
-          logType = 'analysis';
-          icon = 'fa-solid fa-brain';
-          title = 'Análise do Mercado';
         }
         // Collection / Data
         else if (message.includes('COLETANDO') || message.includes('📡')) {
