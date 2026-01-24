@@ -2080,33 +2080,29 @@ export default {
                 }
             }
             
-            // ✅ Verificar se há mensagem de STOP LOSS BLINDADO ATINGIDO (não ATIVADO)
+            // ✅ Verificar se há mensagem de STOP BLINDADO ATINGIDO (Strict mode)
             const hasBlindadoMessage = recentLogs.some(log => 
                 log.message && (
-                    log.message.includes('STOP BLINDADO ATINGIDO') ||
-                    log.message.includes('Stop Blindado Atingido') ||
-                    log.message.includes('STOP BLINDADO (LUCRO GARANTIDO)') ||
-                    (log.message.includes('[STOP BLINDADO]') && log.message.includes('ATINGIDO')) // Apollo-specific
+                    log.message.includes('STOP BLINDADO ATINGIDO')
                 )
             );
             
             if (hasBlindadoMessage) {
-                console.log('[InvestmentActive] 🛡️ Stop Blindado ATINGIDO detectado nos logs!');
+                console.log('[InvestmentActive] 🛡️ [Logs] Stop Blindado ATINGIDO detectado!');
                 if (!this.showStopBlindadoModal && !this.showStopLossModal) {
-                    console.log('[InvestmentActive] 🛡️ [Logs] Stop Blindado ATINGIDO detectado nos logs! Mostrando modal...');
+                    console.log('[InvestmentActive] 🛡️ [Logs] Mostrando modal de Stop Blindado...');
                     this.loadSessionResult().then(() => {
                         this.showStopBlindadoModal = true;
                     });
                 }
             }
             
-            // ✅ Verificar se há mensagem de STOP LOSS NORMAL
+            // ✅ Verificar se há mensagem de STOP LOSS NORMAL (Avoiding collision with Blindado)
             const hasNormalStopLossMessage = recentLogs.some(log => 
                 log.message && (
                     log.message.includes('STOP LOSS ATINGIDO') ||
-                    log.message.includes('Stop loss atingido') ||
                     log.message.includes('STOP LOSS REACHED') ||
-                    log.message.includes('[STOP LOSS]') // Apollo-specific
+                    (log.message.includes('STOP LOSS') && !log.message.includes('BLINDADO') && log.message.includes('ATINGIDO'))
                 )
             );
             
@@ -3127,6 +3123,7 @@ export default {
                         await Promise.all([
                             this.fetchRealtimeLogs(),
                             this.fetchDailyStats(),
+                            this.fetchSessionConfig(), // ✅ Sincronizar status da sessão
                         ]);
                     } else {
                         // Confirmação: fazer fetch completo para sincronizar
@@ -3134,6 +3131,7 @@ export default {
                             this.fetchTradeHistory(),
                             this.fetchRealtimeLogs(),
                             this.fetchDailyStats(),
+                            this.fetchSessionConfig(), // ✅ Sincronizar status da sessão
                         ]);
                     }
                 } catch (e) {

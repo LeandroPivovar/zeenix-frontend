@@ -932,6 +932,14 @@
                         this.updateIndexChart(newEvolution);
                     }
                 }
+            },
+            realtimeLogs: {
+                deep: true,
+                handler(newLogs) {
+                    if (newLogs && newLogs.length > 0) {
+                        this.checkLogsForStopEvents(newLogs);
+                    }
+                }
             }
 		},
 		methods: {
@@ -1408,6 +1416,62 @@
 				this.$router.push('/autonomous-agent/config');
 				this.showAgentSwitcher = false;
 			},
+            
+            /**
+             * ✅ Verifica os logs recentes para detectar mensagens de stop
+             * Garante que o modal seja mostrado mesmo se o sessionStatus do polling demorar
+             */
+            checkLogsForStopEvents(logs) {
+                if (!logs || logs.length === 0) return;
+                
+                // Verificar os últimos 10 logs (mais recentes)
+                const recentLogs = logs.slice(0, 10);
+                
+                // 1. STOP BLINDADO ATINGIDO (Strict mode)
+                const hasBlindadoMessage = recentLogs.some(log => 
+                    log.message && (
+                        log.message.includes('STOP BLINDADO ATINGIDO')
+                    )
+                );
+                
+                if (hasBlindadoMessage) {
+                    if (!this.showNewStopBlindadoModal && !this.showNewStopLossModal) {
+                        console.log('[AgenteAutonomo] 🛡️ [Logs] Stop Blindado ATINGIDO detectado!');
+                        this.showNewStopBlindadoModal = true;
+                    }
+                }
+                
+                // 2. STOP LOSS NORMAL (Avoiding collision with Blindado)
+                const hasNormalStopLossMessage = recentLogs.some(log => 
+                    log.message && (
+                        log.message.includes('STOP LOSS ATINGIDO') ||
+                        log.message.includes('STOP LOSS REACHED') ||
+                        (log.message.includes('STOP LOSS') && !log.message.includes('BLINDADO') && log.message.includes('ATINGIDO'))
+                    )
+                );
+                
+                if (hasNormalStopLossMessage) {
+                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal) {
+                        console.log('[AgenteAutonomo] 🛑 [Logs] Stop Loss detectado!');
+                        this.showNewStopLossModal = true;
+                    }
+                }
+
+                // 3. META DE LUCRO ATINGIDA
+                const hasProfitMessage = recentLogs.some(log => 
+                    log.message && (
+                        log.message.includes('META DE LUCRO ATINGIDA') ||
+                        log.message.includes('META ATINGIDA')
+                    )
+                );
+
+                if (hasProfitMessage) {
+                    if (!this.showNewTargetProfitModal) {
+                        console.log('[AgenteAutonomo] 🎯 [Logs] Meta de Lucro detectada!');
+                        this.showNewTargetProfitModal = true;
+                    }
+                }
+            },
 		},
 	}
 </script>
