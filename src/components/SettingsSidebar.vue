@@ -360,7 +360,7 @@ export default {
       
       // Se houver um ID real e não for placeholder, exibi-lo
       if (account.loginid && !['REAL_ACC', 'DEMO_ACC'].includes(account.loginid)) {
-        return `${account.loginid} (Conta ${type})`;
+        return `${account.loginid}`;
       }
       
       return `Conta ${type} (${currency})`;
