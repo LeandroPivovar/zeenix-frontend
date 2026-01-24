@@ -23,7 +23,7 @@
         :balance="info?.balance"
         :account-type="accountType"
         @open-settings="toggleSettingsModal"
-        @account-type-changed="switchAccount"
+        @account-type-changed="null"
         :balances-by-currency-real="balancesByCurrencyReal"
         :balances-by-currency-demo="balancesByCurrencyDemo"
         :currency-prefix="preferredCurrencyPrefix"
@@ -474,7 +474,7 @@
     :balances-by-currency-demo="balancesByCurrencyDemo"
     :currency-prefix="preferredCurrencyPrefix"
     @close="closeSettingsModal"
-    @account-type-changed="switchAccount"
+    @account-type-changed="null"
   />
 
   <!-- Modal de Notificações -->
