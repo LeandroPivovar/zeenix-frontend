@@ -1418,16 +1418,16 @@
                 // Verificar os últimos 10 logs (mais recentes)
                 const recentLogs = logs.slice(0, 10);
                 
-                // 1. STOP BLINDADO ATINGIDO (Strict mode)
-                const hasBlindadoMessage = recentLogs.some(log => 
+                // 1. STOP BLINDADO ATINGIDO (Extreme Strict Mode)
+                const hasBlindadoHit = recentLogs.some(log => 
                     log.message && (
-                        log.message.includes('STOP BLINDADO ATINGIDO')
+                        log.message.trim().includes('🛡️ STOP BLINDADO ATINGIDO!')
                     )
                 );
                 
-                if (hasBlindadoMessage) {
+                if (hasBlindadoHit) {
                     if (!this.showNewStopBlindadoModal && !this.showNewStopLossModal) {
-                        console.log('[AgenteAutonomo] 🛡️ [Logs] Stop Blindado ATINGIDO detectado!');
+                        console.log('[AgenteAutonomo] 🛡️ [Logs] Exact Hit detected!');
                         this.showNewStopBlindadoModal = true;
                     }
                 }

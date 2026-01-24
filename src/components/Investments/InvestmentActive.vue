@@ -2080,17 +2080,17 @@ export default {
                 }
             }
             
-            // ✅ Verificar se há mensagem de STOP BLINDADO ATINGIDO (Strict mode)
-            const hasBlindadoMessage = recentLogs.some(log => 
+            // ✅ Verificar se há mensagem de STOP BLINDADO ATINGIDO (Extreme Strict Mode)
+            const hasBlindadoHit = recentLogs.some(log => 
                 log.message && (
-                    log.message.includes('STOP BLINDADO ATINGIDO')
+                    log.message.trim().includes('🛡️ STOP BLINDADO ATINGIDO!')
                 )
             );
             
-            if (hasBlindadoMessage) {
-                console.log('[InvestmentActive] 🛡️ [Logs] Stop Blindado ATINGIDO detectado!');
+            if (hasBlindadoHit) {
+                console.log('[InvestmentActive] 🛡️ [Logs] Exact Hit detected!');
                 if (!this.showStopBlindadoModal && !this.showStopLossModal) {
-                    console.log('[InvestmentActive] 🛡️ [Logs] Mostrando modal de Stop Blindado...');
+                    console.log('[InvestmentActive] 🛡️ [Logs] Triggering Stop Blindado Modal...');
                     this.loadSessionResult().then(() => {
                         this.showStopBlindadoModal = true;
                     });
