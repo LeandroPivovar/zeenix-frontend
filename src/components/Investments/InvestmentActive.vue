@@ -1348,6 +1348,11 @@ export default {
             return 'Buscando oportunidades';
         },
         formattedBalance() {
+            // ✅ SALDO EM TEMPO REAL: Saldo Inicial + Lucro/Perda da Sessão
+            const initialBalance = this.accountBalanceProp || 0;
+            const sessionProfitLoss = this.dailyStats.sessionProfitLoss || 0;
+            const currentBalance = initialBalance + sessionProfitLoss;
+            
             if (!this.accountBalanceProp) {
                 const isDemo = this.accountType === 'demo' || 
                               this.accountCurrencyProp?.toUpperCase() === 'DEMO' ||
@@ -1367,14 +1372,14 @@ export default {
             
             // If fictitious balance is active and this is a demo account, mask it as real ($)
             if (this.isFictitiousBalanceActive && isDemo) {
-                return `$${formatter.format(this.accountBalanceProp)}`;
+                return `$${formatter.format(currentBalance)}`;
             }
             
             if (isDemo) {
-                return `Đ${formatter.format(this.accountBalanceProp)}`;
+                return `Đ${formatter.format(currentBalance)}`;
             }
             // Se for real, usar apenas $
-            return `$${formatter.format(this.accountBalanceProp)}`;
+            return `$${formatter.format(currentBalance)}`;
         },
 
         // Profit percentage
