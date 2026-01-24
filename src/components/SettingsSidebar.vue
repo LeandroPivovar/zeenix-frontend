@@ -196,6 +196,8 @@ export default {
       tokenDemo: null,
       tokenDemoCurrency: 'USD',
       demoAmount: 0,
+      idRealAccount: null,
+      idDemoAccount: null,
     };
   },
   computed: {
@@ -356,6 +358,11 @@ export default {
       const type = account.isDemo ? 'Demo' : 'Real';
       const currency = account.currency || 'USD';
       
+      // Se houver um ID real e não for placeholder, exibi-lo
+      if (account.loginid && !['REAL_ACC', 'DEMO_ACC'].includes(account.loginid)) {
+        return `${account.loginid} (Conta ${type})`;
+      }
+      
       return `Conta ${type} (${currency})`;
     },
     toggleBalanceVisibility() {
@@ -372,7 +379,7 @@ export default {
         // Adicionar Conta Real se existir token
         if (this.tokenReal) {
           accounts.push({
-            loginid: 'REAL_ACC', // ID amigável / placeholder
+            loginid: this.idRealAccount || 'REAL_ACC', // Usar ID real se disponível
             token: this.tokenReal,
             isDemo: false,
             balance: parseFloat(this.realAmount) || 0,
@@ -383,7 +390,7 @@ export default {
         // Adicionar Conta Demo se existir token
         if (this.tokenDemo) {
           accounts.push({
-            loginid: 'DEMO_ACC', // ID amigável / placeholder
+            loginid: this.idDemoAccount || 'DEMO_ACC', // Usar ID real se disponível
             token: this.tokenDemo,
             isDemo: true,
             balance: parseFloat(this.demoAmount) || 0,
@@ -741,9 +748,11 @@ export default {
           this.tokenReal = data.tokenReal;
           this.tokenRealCurrency = data.tokenRealCurrency;
           this.realAmount = data.realAmount;
+          this.idRealAccount = data.idRealAccount;
           this.tokenDemo = data.tokenDemo;
           this.tokenDemoCurrency = data.tokenDemoCurrency;
           this.demoAmount = data.demoAmount;
+          this.idDemoAccount = data.idDemoAccount;
         }
       } catch (error) {
         console.error('[SettingsSidebar] Erro ao carregar configurações:', error);
