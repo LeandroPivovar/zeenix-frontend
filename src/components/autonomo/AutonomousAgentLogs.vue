@@ -2,7 +2,7 @@
   <div class="operation-logs-container">
     <!-- Desktop Terminal View -->
     <div class="hidden md:block">
-      <div dir="ltr" class="relative overflow-hidden h-[400px] border-border bg-black/40">
+      <div dir="ltr" class="relative overflow-hidden h-[500px] border-border bg-black/40">
         <div class="h-full w-full overflow-y-auto custom-scrollbar" ref="desktopLogsContainer">
           <div class="p-4 font-mono text-xs space-y-4 text-left">
             <div v-if="realtimeLogs.length === 0" class="flex flex-col items-center justify-center h-[300px] text-muted-foreground opacity-50">
@@ -41,7 +41,7 @@
 
     <!-- Mobile Card View -->
     <div class="md:hidden">
-      <div class="logs-content h-[400px] overflow-y-auto custom-scrollbar" ref="mobileLogsContainer">
+      <div class="logs-content h-[500px] overflow-y-auto custom-scrollbar" ref="mobileLogsContainer">
         <div v-if="realtimeLogs.length === 0" class="flex flex-col items-center justify-center h-full text-[#A1A1AA] opacity-50 text-center p-8">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="mb-2"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           <p class="text-xs">Nenhum log registrado</p>
@@ -112,7 +112,7 @@ export default {
   },
   computed: {
     formattedLogs() {
-      const limitedLogs = this.realtimeLogs.slice(0, 50);
+      const limitedLogs = this.realtimeLogs.slice(0, 500);
       return limitedLogs.map(log => {
         let logType = 'info';
         let icon = 'fa-solid fa-info-circle';
