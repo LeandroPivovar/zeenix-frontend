@@ -343,6 +343,8 @@
 </template>
 
 <script>
+import { sharedAccountState } from '../store/sharedAccountState';
+
 export default {
   name: 'TopNavbar',
   emits: ['toggle-sidebar', 'toggle-sidebar-collapse', 'open-settings'],
@@ -405,11 +407,11 @@ export default {
   },
   computed: {
     uiAccountType() {
-      // Se saldo fictício estiver ativo, mascarar como 'real'
-      if (this.isFictitiousBalanceActive) {
+      // Prioridade 1: sharedAccountState (Estado Global Reativo)
+      if (sharedAccountState.isFictitiousBalanceActive) {
         return 'real';
       }
-      return this.accountType || 'real';
+      return sharedAccountState.accountType || this.accountType || 'real';
     },
     formattedBalance() {
       // Valor base
@@ -424,36 +426,38 @@ export default {
       return value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     },
     balanceNumeric() {
-      // Prioridade 1: Saldo Demo + Fictício se ativo E conta for demo
-      if (this.accountType === 'demo') {
-        const demoBalance = this.balancesByCurrencyDemo['USD'] || 0;
-        if (this.isFictitiousBalanceActive) {
-          return Number(demoBalance) + (Number(this.fictitiousBalance) || 0);
+      // Prioridade 1: sharedAccountState (Estado Global Reativo)
+      const currentAccountType = sharedAccountState.accountType || this.accountType || 'real';
+      const balancesReal = sharedAccountState.info?.balancesByCurrencyReal || this.balancesByCurrencyReal || {};
+      const balancesDemo = sharedAccountState.info?.balancesByCurrencyDemo || this.balancesByCurrencyDemo || {};
+      const isFictitiousActive = sharedAccountState.isFictitiousBalanceActive;
+      const fictitiousBalanceAmount = sharedAccountState.fictitiousBalance;
+
+      // Se for demo
+      if (currentAccountType === 'demo') {
+        const demoBalance = balancesDemo['USD'] || 0;
+        if (isFictitiousActive) {
+          return Number(demoBalance) + (Number(fictitiousBalanceAmount) || 0);
         }
         return Number(demoBalance);
       }
 
-      // Prioridade 2: Saldo Real (USD preferencial)
-      const usdReal = this.balancesByCurrencyReal['USD'];
+      // Se for real (USD preferencial)
+      const usdReal = balancesReal['USD'];
       if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
         return Number(usdReal);
       }
 
-      // Prioridade 2: Qualquer moeda que tenha saldo > 0
-      for (const balance of Object.values(this.balancesByCurrencyReal)) {
-        if (Number(balance) > 0) return Number(balance);
+      // Próxima moeda real que tenha saldo > 0
+      for (const balanceVal of Object.values(balancesReal)) {
+        if (Number(balanceVal) > 0) return Number(balanceVal);
       }
 
-      // Fallback para o prop 'balance'
-      const raw = this.balance;
+      // Fallback para o prop 'balance' ou info do estado
+      const raw = sharedAccountState.info?.balance ?? this.balance;
       if (typeof raw === 'number') return raw;
-      if (typeof raw === 'string') {
-        const parsed = Number(raw);
-        return isNaN(parsed) ? 0 : parsed;
-      }
       const val = raw?.value ?? raw?.balance ?? 0;
-      const num = Number(val);
-      return isNaN(num) ? 0 : num;
+      return Number(val) || 0;
     },
     userName() {
       const userInfo = localStorage.getItem('user');
