@@ -465,146 +465,17 @@
     </div>
   </div>
 
-<!-- Modal de Settings -->
-  <div v-if="showSettingsModal" class="settings-modal-overlay" @click="closeSettingsModal">
-    <div class="settings-modal-content" @click.stop>
-      <div class="settings-modal-header">
-        <h2 class="settings-modal-title">Configurações</h2>
-        <button class="settings-modal-close" @click="closeSettingsModal">
-          <i class="fas fa-times"></i>
-        </button>
-      </div>
-      <div class="settings-modal-body">
-        <div class="settings-modal-section">
-          <div class="flex items-center gap-3 mb-6">
-            <div class="w-14 h-14 rounded-full overflow-hidden border-2 border-white/10">
-              <img 
-                v-if="userProfilePicture"
-                :src="userProfilePicture"
-                :alt="userName"
-                class="w-full h-full object-cover"
-              />
-              <div 
-                v-else
-                class="w-full h-full bg-[#22C55E]/20 flex items-center justify-center"
-              >
-                <span class="text-white text-lg font-semibold">{{ userInitials }}</span>
-              </div>
-            </div>
-            <div class="settings-user-info-container">
-              <h3 class="settings-user-name">{{ fullUserName }}</h3>
-              <div class="settings-user-badge">
-                <i class="fa-solid fa-crown text-[#22C55E] text-[10px]"></i>
-                <span>Premium User</span>
-              </div>
-            </div>
-          </div>
-
-          <div class="glass-card rounded-xl p-4 mb-4">
-            <div class="flex items-center justify-between mb-3">
-              <span class="settings-balance-label">Saldo Total</span>
-              <button 
-                @click="toggleBalanceVisibility"
-                class="settings-eye-btn"
-              >
-                <i :class="balanceVisible ? 'fas fa-eye' : 'fas fa-eye-slash'"></i>
-              </button>
-            </div>
-            <p class="settings-balance-amount text-left">
-              <span v-if="balanceVisible" class="inline-flex items-center gap-2">
-                <span>{{ preferredCurrencyPrefix }}</span>
-                {{ balanceVisible ? mobileBalanceValue : '' }}
-              </span>
-              <span v-else>••••••</span>
-            </p>
-            <div class="flex items-center gap-3 mt-3">
-              <button 
-                @click="switchAccount('real')"
-                :class="uiAccountType === 'real' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
-                class="settings-account-btn"
-              >
-                Real
-              </button>
-              <button 
-                @click="switchAccount('demo')"
-                :class="uiAccountType === 'demo' ? 'settings-account-btn-active' : 'settings-account-btn-inactive'"
-                class="settings-account-btn"
-              >
-                Demo
-              </button>
-            </div>
-          </div>
-
-          <button 
-            @click="openDepositFlow"
-            class="settings-deposit-btn"
-          >
-            <i class="fa-solid fa-wallet"></i>
-            <span>Depositar</span>
-          </button>
-        </div>
-
-        <div class="settings-modal-section settings-modal-section-with-border">
-          <div class="mb-4">
-            <button 
-              @click="toggleAccountsList"
-              class="w-full flex items-center justify-between py-4 text-white/70 hover:text-white transition-colors"
-            >
-              <div class="flex items-center gap-3">
-                <i class="fa-solid fa-wallet text-[16px]"></i>
-                <span class="text-[14px] font-medium">Minhas Contas</span>
-              </div>
-              <i :class="showAccountsList ? 'fa-solid fa-chevron-up text-[12px]' : 'fa-solid fa-chevron-down text-[12px]'"></i>
-            </button>
-            
-            <div v-if="showAccountsList" class="accounts-list">
-              <div 
-                v-for="account in availableAccounts" 
-                :key="account.loginid"
-                @click="selectAccount(account)"
-                class="account-item flex items-center justify-between py-3 px-4 rounded-lg hover:bg-white/5 transition-colors cursor-pointer"
-              >
-                <div class="flex-1">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="text-white text-[14px] font-medium">{{ getAccountDisplayName(account) }}</span>
-                    <i v-if="isCurrentAccount(account)" class="fa-solid fa-check text-[#22C55E] text-[12px]"></i>
-                  </div>
-                  <div class="flex items-center gap-2">
-                    <span :class="account.isDemo ? 'text-[#22C55E]/70 text-[12px]' : 'text-[#F59E0B]/70 text-[12px]'">
-                      {{ account.isDemo ? 'Demo' : 'Real' }}
-                    </span>
-                    <span class="text-white/40 text-[12px]">•</span>
-                    <span class="text-white/80 text-[12px] inline-flex items-center gap-1">
-                      <img 
-                        v-if="!account.isDemo && getCurrencyIcon(account.currency || 'USD', 'real')" 
-                        :src="getCurrencyIcon(account.currency || 'USD', 'real')" 
-                        :alt="account.currency || 'USD'"
-                        class="w-4 h-4 rounded-full object-cover"
-                      />
-                      <span v-if="account.isDemo">Đ</span>
-                      <span v-else>{{ getCurrencyPrefix(account.currency || 'USD') }}</span>
-                      {{ formatBalanceMobile(account.balance || 0) }}
-                    </span>
-                  </div>
-                </div>
-              </div>
-              <div v-if="availableAccounts.length === 0" class="text-white/40 text-[12px] py-4 text-center">
-                Nenhuma conta encontrada
-              </div>
-            </div>
-          </div>
-
-          <button 
-            @click="logout"
-            class="w-full flex items-center gap-3 py-4 text-[#FF4747] hover:text-[#FF6060] transition-colors"
-          >
-            <i class="fa-solid fa-right-from-bracket text-[16px]"></i>
-            <span class="text-[14px] font-medium">Sair da corretora</span>
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
+<!-- Settings Modal (usando componente SettingsSidebar) -->
+  <SettingsSidebar
+    :is-open="showSettingsModal"
+    :balance="info?.balance"
+    :account-type="accountType"
+    :balances-by-currency-real="balancesByCurrencyReal"
+    :balances-by-currency-demo="balancesByCurrencyDemo"
+    :currency-prefix="preferredCurrencyPrefix"
+    @close="closeSettingsModal"
+    @account-type-changed="switchAccount"
+  />
 
   <!-- Modal de Notificações -->
   <div 
@@ -661,6 +532,7 @@
 import TopNavbar from '../components/TopNavbar.vue'
 import DesktopBottomNav from '../components/DesktopBottomNav.vue'
 import AppSidebar from '../components/Sidebar.vue'
+import SettingsSidebar from '../components/SettingsSidebar.vue'
 import { loadAvailableAccounts } from '../utils/accountsLoader'
 import OnboardingModal from '../components/modals/OnboardingModal.vue'
 import accountBalanceMixin from '../mixins/accountBalanceMixin'
@@ -672,6 +544,7 @@ export default {
     TopNavbar,
     DesktopBottomNav,
     AppSidebar,
+    SettingsSidebar,
     OnboardingModal
   },
   props: { 
@@ -693,9 +566,6 @@ export default {
       showIAsModal: false,
       showSettingsModal: false,
       showNotificationsModal: false,
-      showAccountsList: false,
-      availableAccounts: [],
-      loadingAccounts: false,
       showOnboardingModal: false,
       userProfilePictureUrl: null,
       tradeCurrency: 'USD',
