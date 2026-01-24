@@ -467,6 +467,7 @@ import InvestmentActive from '@/components/Investments/InvestmentActive.vue';
 import ZenixTooltip from '@/components/ZenixTooltip.vue';
 import DesktopBottomNav from '../components/DesktopBottomNav.vue';
 import accountBalanceMixin from '../mixins/accountBalanceMixin';
+import { loadAvailableAccounts } from '../utils/accountsLoader';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal.vue';
 import MinimumStakeModal from '../components/modals/MinimumStakeModal.vue';
 
@@ -493,6 +494,8 @@ export default {
             showSettingsModal: false,
             showInsufficientBalanceModal: false,
             showMinimumStakeModal: false,
+            availableAccounts: [],
+            loadingAccounts: false,
 
             ticks: [],
             currentPrice: null,
@@ -710,9 +713,89 @@ export default {
 
         handleAccountTypeChange(newType) {
             console.log('[InvestmentIAView] Tipo de conta alterado via componente filho:', newType);
-            this.accountType = newType;
-            // Não chame switchAccount() aqui porque o componente filho (Sidebar/Navbar)
-            // já executou a lógica de troca e vai recarregar a página.
+            this.accountType = newType; 
+            // NÃO chamar switchAccount() pois o componente filho (Sidebar/Navbar) já faz o reload.
+        },
+
+        async loadAvailableAccounts() {
+            this.loadingAccounts = true;
+            try {
+                const accounts = await loadAvailableAccounts();
+                this.availableAccounts = accounts;
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao carregar contas:', error);
+                this.availableAccounts = [];
+            } finally {
+                this.loadingAccounts = false;
+            }
+        },
+
+        async switchAccount(type) {
+            try {
+                const isDemo = type === 'demo';
+                const tradeCurrency = isDemo ? 'DEMO' : 'USD';
+                
+                // Tentar encontrar uma conta correspondente no cache de contas disponíveis
+                const matchingAccount = this.availableAccounts.find(acc => acc.isDemo === isDemo);
+                
+                const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                const token = localStorage.getItem('token');
+                
+                if (matchingAccount) {
+                    console.log(`[InvestmentIAView] Sincronizando conta ${type} com token: ${matchingAccount.loginid}`);
+                    
+                    // Usar o endpoint unificado que salva token E moeda
+                    const response = await fetch(`${apiBase}/settings/deriv-token`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: JSON.stringify({
+                            token: matchingAccount.token,
+                            tradeCurrency: tradeCurrency
+                        })
+                    });
+
+                    if (response.ok) {
+                        // Atualizar localStorage local para manter consistência imediata
+                        localStorage.setItem('deriv_token', matchingAccount.token);
+                        localStorage.setItem('trade_currency', tradeCurrency);
+                        
+                        this.tradeCurrency = tradeCurrency;
+                        this.accountType = type;
+                        
+                        console.log('[InvestmentIAView] ✅ Conta e token sincronizados com sucesso');
+                        window.location.reload();
+                        return;
+                    }
+                }
+
+                // Fallback: se não encontrar conta específica ou falhar, tentar atualizar apenas a moeda
+                console.warn('[InvestmentIAView] ⚠️ Nenhuma conta correspondente encontrada ou falha no sync, tentando apenas moeda...');
+                const response = await fetch(`${apiBase}/settings`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({
+                        tradeCurrency: tradeCurrency
+                    })
+                });
+
+                if (response.ok) {
+                    localStorage.setItem('trade_currency', tradeCurrency);
+                    this.tradeCurrency = tradeCurrency;
+                    this.accountType = type;
+                    window.location.reload();
+                } else {
+                    throw new Error('Erro ao alterar conta');
+                }
+            } catch (error) {
+                console.error('[InvestmentIAView] Erro ao alterar moeda:', error);
+                alert('Erro ao alterar moeda. Tente novamente.');
+            }
         },
 
         getStrategyIcon(id) {
@@ -1274,6 +1357,7 @@ export default {
     },
     async mounted() {
         console.log('[InvestmentIAView] mounted() - Sincronizando com logic do Dashboard');
+        await this.loadAvailableAccounts();
         
         // Verificar se há uma estratégia passada via query param
         if (this.$route.query.strategy) {
