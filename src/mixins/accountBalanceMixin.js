@@ -8,32 +8,16 @@ import { loadAvailableAccounts } from '../utils/accountsLoader';
 export default {
   data() {
     return {
+      info: null, // Objeto com balance, balancesByCurrencyReal, balancesByCurrencyDemo
+      accountType: 'real', // 'real' ou 'demo'
+      tradeCurrency: 'USD', // 'USD' ou 'DEMO'
       balanceUpdateInterval: null,
       loadingBalance: false,
+      isFictitiousBalanceActive: false,
+      fictitiousBalance: 10000
     };
   },
   computed: {
-    // Agora o mixin funciona como uma ponte para o Vuex
-    info: {
-      get() { return this.$store.state.accountInfo },
-      set(val) { this.$store.commit('SET_ACCOUNT_INFO', val) }
-    },
-    accountType: {
-      get() { return this.$store.state.accountType },
-      set(val) { this.$store.commit('SET_ACCOUNT_TYPE', val) }
-    },
-    tradeCurrency: {
-      get() { return this.$store.state.tradeCurrency },
-      set(val) { this.$store.commit('SET_TRADE_CURRENCY', val) }
-    },
-    isFictitiousBalanceActive: {
-      get() { return this.$store.state.isFictitiousBalanceActive },
-      set() { /* set via mutation no loadMasterTraderSettings */ }
-    },
-    fictitiousBalance: {
-      get() { return this.$store.state.fictitiousBalance },
-      set() { /* set via mutation no loadMasterTraderSettings */ }
-    },
     balancesByCurrencyReal() {
       if (!this.info) return {};
       // 1. Tentar camelCase direto
@@ -383,7 +367,6 @@ export default {
           this.info = { balance: 0, currency: 'USD', loginid: null, isDemo: false };
         }
       } finally {
-        this.$store.commit('SET_LOADING_BALANCE', false);
         this.loadingBalance = false;
       }
     },
@@ -459,11 +442,12 @@ export default {
 
         if (res.ok) {
           const data = await res.json();
-          this.$store.commit('SET_FICTITIOUS_BALANCE', {
-            active: data.isFictitiousBalanceActive !== undefined ? data.isFictitiousBalanceActive : false,
-            amount: data.fictitiousBalance !== undefined ? parseFloat(data.fictitiousBalance) : 10000
+          if (data.isFictitiousBalanceActive !== undefined) this.isFictitiousBalanceActive = data.isFictitiousBalanceActive;
+          if (data.fictitiousBalance !== undefined) this.fictitiousBalance = parseFloat(data.fictitiousBalance);
+          console.log('[AccountBalanceMixin] Configurações Master Trader carregadas:', {
+            active: this.isFictitiousBalanceActive,
+            amount: this.fictitiousBalance
           });
-          console.log('[AccountBalanceMixin] Configurações Master Trader sincronizadas com Vuex');
         }
       } catch (error) {
         console.error('[AccountBalanceMixin] Erro ao carregar configurações de Master Trader:', error);
@@ -472,19 +456,15 @@ export default {
 
     handleMasterTraderUpdate(event) {
       if (event.detail) {
-        this.$store.commit('SET_FICTITIOUS_BALANCE', {
-          active: event.detail.isFictitiousBalanceActive !== undefined ? event.detail.isFictitiousBalanceActive : this.isFictitiousBalanceActive,
-          amount: event.detail.fictitiousBalance || this.fictitiousBalance
-        });
+        this.fictitiousBalance = event.detail.fictitiousBalance || this.fictitiousBalance;
+        this.isFictitiousBalanceActive = event.detail.isFictitiousBalanceActive !== undefined ? event.detail.isFictitiousBalanceActive : this.isFictitiousBalanceActive;
       }
     },
 
     handleFictitiousBalanceChange(event) {
       const { enabled, amount } = event.detail;
-      this.$store.commit('SET_FICTITIOUS_BALANCE', {
-        active: enabled,
-        amount: amount
-      });
+      this.isFictitiousBalanceActive = enabled;
+      this.fictitiousBalance = amount;
     },
 
     /**
