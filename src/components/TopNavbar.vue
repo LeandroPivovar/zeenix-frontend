@@ -405,7 +405,13 @@ export default {
   },
   computed: {
     uiAccountType() {
-      // Se saldo fictício estiver ativo, mascarar como 'real'
+      // Prioridade 1: Vuex Store (Tempo real)
+      if (this.$store.state.accountInfo) {
+        if (this.$store.state.isFictitiousBalanceActive) return 'real';
+        return this.$store.state.accountType || 'real';
+      }
+      
+      // Fallback: Props
       if (this.isFictitiousBalanceActive) {
         return 'real';
       }
@@ -424,7 +430,12 @@ export default {
       return value.toLocaleString('pt-BR', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
     },
     balanceNumeric() {
-      // Prioridade 1: Saldo Demo + Fictício se ativo E conta for demo
+      // Prioridade 1: Vuex Store (Tempo real)
+      if (this.$store.state.accountInfo) {
+        return this.$store.getters.currentBalance;
+      }
+
+      // Prioridade 2: Saldo Demo + Fictício se ativo E conta for demo (Fallback)
       if (this.accountType === 'demo') {
         const demoBalance = this.balancesByCurrencyDemo['USD'] || 0;
         if (this.isFictitiousBalanceActive) {
@@ -433,13 +444,13 @@ export default {
         return Number(demoBalance);
       }
 
-      // Prioridade 2: Saldo Real (USD preferencial)
+      // Prioridade 3: Saldo Real (USD preferencial)
       const usdReal = this.balancesByCurrencyReal['USD'];
       if (usdReal !== undefined && usdReal !== null && Number(usdReal) > 0) {
         return Number(usdReal);
       }
 
-      // Prioridade 2: Qualquer moeda que tenha saldo > 0
+      // Prioridade 4: Qualquer moeda que tenha saldo > 0
       for (const balance of Object.values(this.balancesByCurrencyReal)) {
         if (Number(balance) > 0) return Number(balance);
       }
