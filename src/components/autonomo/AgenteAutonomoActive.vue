@@ -918,10 +918,10 @@
 				// Atualizar dados quando o filtro mudar
 				this.fetchProfitEvolution();
 			},
-			'agenteData.sessionStatus': {
-				immediate: true,
-				handler(newStatus) {
-					this.checkStopStatus(newStatus);
+			'agenteData.sessionStatus'(newStatus) {
+				// Apenas logar, o modal agora é controlado exclusivamente pelos LOGS (checkLogsForStopEvents)
+				if (newStatus && newStatus !== 'active') {
+					console.log('[AgenteAutonomo] Session Status Inativo detectado:', newStatus);
 				}
 			},
             'sessionStats.evolution': {
@@ -946,20 +946,11 @@
 			checkStopStatus(status) {
 				if (!status || status === 'active' || status === this.lastProcessedStatus) return;
 				
-				// Se status for um dos "stopped", mostrar modal
+				// O modal agora é controlado exclusivamente pelos LOGS para evitar re-trigger redundante.
+				// Este método agora apenas registra que o status mudou para controle de botões se necessário.
 				if (['stopped_profit', 'stopped_loss', 'stopped_blindado'].includes(status)) {
 					this.lastProcessedStatus = status;
-					
-					// Fechar modal legado se aberto
-					this.showStopStatusModal = false;
-
-					if (status === 'stopped_profit') {
-						this.showNewTargetProfitModal = true;
-					} else if (status === 'stopped_loss') {
-						this.showNewStopLossModal = true;
-					} else if (status === 'stopped_blindado') {
-						this.showNewStopBlindadoModal = true;
-					}
+					console.log('[AgenteAutonomo] Mudança de status bloqueada para trigger de modal (usando logs):', status);
 				}
 			},
 			closeStopStatusModal() {

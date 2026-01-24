@@ -2116,6 +2116,25 @@ export default {
                 }
             }
 
+            // 3. META DE LUCRO ATINGIDA
+            const hasProfitMessage = recentLogs.some(log => 
+                log.message && (
+                    log.message.includes('META DE LUCRO ATINGIDA') ||
+                    log.message.includes('META ATINGIDA') ||
+                    log.message.includes('TARGET PROFIT REACHED')
+                )
+            );
+
+            if (hasProfitMessage) {
+                console.log('[InvestmentActive] 🎯 Meta de Lucro detectada nos logs!');
+                if (!this.showTargetProfitModal) {
+                    console.log('[InvestmentActive] 🎯 [Logs] Mostrando modal de Meta de Lucro...');
+                    this.loadSessionResult().then(() => {
+                        this.showTargetProfitModal = true;
+                    });
+                }
+            }
+
 
 
             // ✅ [ZENIX v3.4] Verificar se há mensagem de SALDO INSUFICIENTE
@@ -2404,39 +2423,17 @@ export default {
                     // ✅ PRIORIDADE 1: Se o status atual é stopped_loss, stopped_blindado ou stopped_profit, mostrar modal
                     // (independentemente do estado anterior, desde que o modal não esteja já aberto)
                     if (currentSessionStatus === 'stopped_loss') {
-                        if (!this.showStopLossModal) {
-                            console.log('[InvestmentActive] 🛑 Stop Loss detectado! Mostrando modal...');
-                            this.loadSessionResult().then(() => {
-                                this.showStopLossModal = true;
-                                console.log('[InvestmentActive] ✅ Modal de Stop Loss exibido');
-                            });
-                        }
+                        console.log('[InvestmentActive] 🛑 Stop Loss status detectado!');
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
                     } else if (currentSessionStatus === 'stopped_blindado') {
-                        if (!this.showStopBlindadoModal) {
-                            console.log('[InvestmentActive] 🛡️ Stop Loss Blindado detectado! Mostrando modal...');
-                            this.loadSessionResult().then(() => {
-                                this.showStopBlindadoModal = true;
-                                console.log('[InvestmentActive] ✅ Modal de Stop Loss Blindado exibido');
-                            });
-                        }
+                        console.log('[InvestmentActive] 🛡️ Stop Loss Blindado status detectado!');
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
                     } else if (currentSessionStatus === 'stopped_profit') {
-                        // ✅ IMPORTANTE: Mostrar modal mesmo se previousSessionStatus já for stopped_profit
-                        // Isso garante que o modal seja exibido se a página foi carregada após a meta ser atingida
-                        if (!this.showTargetProfitModal) {
-                            console.log('[InvestmentActive] 🎯 Target profit detectado! Mostrando modal...');
-                            console.log('[InvestmentActive] 📊 Estado anterior:', this.previousSessionStatus, '| Estado atual:', currentSessionStatus);
-                            // Buscar resultado da sessão
-                            this.loadSessionResult().then(() => {
-                                this.showTargetProfitModal = true;
-                                console.log('[InvestmentActive] ✅ Modal de target profit exibido');
-                            });
-                        }
+                        console.log('[InvestmentActive] 🎯 Target profit status detectado!');
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
