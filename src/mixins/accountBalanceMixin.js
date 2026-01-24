@@ -4,40 +4,20 @@
  */
 // Não precisa mais importar balanceLoader, usa a mesma lógica do Dashboard
 import { loadAvailableAccounts } from '../utils/accountsLoader';
-import { sharedAccountState } from '../store/sharedAccountState';
 
 export default {
   data() {
     return {
+      info: null, // Objeto com balance, balancesByCurrencyReal, balancesByCurrencyDemo
+      accountType: 'real', // 'real' ou 'demo'
+      tradeCurrency: 'USD', // 'USD' ou 'DEMO'
       balanceUpdateInterval: null,
+      loadingBalance: false,
+      isFictitiousBalanceActive: false,
+      fictitiousBalance: 10000
     };
   },
   computed: {
-    // Agora o mixin funciona como uma ponte para o estado reativo global
-    info: {
-      get() { return sharedAccountState.info },
-      set(val) { sharedAccountState.info = val }
-    },
-    accountType: {
-      get() { return sharedAccountState.accountType },
-      set(val) { sharedAccountState.accountType = val }
-    },
-    tradeCurrency: {
-      get() { return sharedAccountState.tradeCurrency },
-      set(val) { sharedAccountState.tradeCurrency = val }
-    },
-    loadingBalance: {
-      get() { return sharedAccountState.loadingBalance },
-      set(val) { sharedAccountState.loadingBalance = val }
-    },
-    isFictitiousBalanceActive: {
-      get() { return sharedAccountState.isFictitiousBalanceActive },
-      set(val) { sharedAccountState.isFictitiousBalanceActive = val }
-    },
-    fictitiousBalance: {
-      get() { return sharedAccountState.fictitiousBalance },
-      set(val) { sharedAccountState.fictitiousBalance = val }
-    },
     balancesByCurrencyReal() {
       if (!this.info) return {};
       // 1. Tentar camelCase direto

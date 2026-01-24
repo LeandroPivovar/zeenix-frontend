@@ -2,7 +2,6 @@
  * Serviço para comunicação com backend Deriv Trading
  * Substitui a lógica de WebSocket direto por REST/SSE
  */
-import { sharedAccountState } from '../store/sharedAccountState';
 
 // API_BASE_URL - garantir que termine com /api
 // O backend usa setGlobalPrefix('api'), então todas as rotas precisam de /api
@@ -130,16 +129,6 @@ class DerivTradingService {
           if (logListeners) {
             logListeners.forEach(listener => listener(data.data));
           }
-        }
-
-        // ✅ NOVO: Atualizar sharedAccountState se receber saldo (Real-time)
-        if (data.type === 'balance' && data.data) {
-          console.log('[DerivTrading] 💰 Atualização de saldo via SSE:', data.data);
-          sharedAccountState.updateBalance({
-            currency: data.data.currency || 'USD',
-            amount: parseFloat(data.data.balance || data.data.value),
-            isDemo: data.data.isDemo
-          });
         }
 
       } catch (error) {
