@@ -963,8 +963,8 @@ export default {
     // 1. Inicializar WS Direto (Dados de Mercado)
     this.initDirectConnection();
 
-    // 2. Configurar Stream SSE (Apenas para atualizações de ordens/contratos - Híbrido)
-    await this.setupStream();
+    // 2. (Removido) Stream SSE não é mais necessário para dados ou ordens nesta tela
+    // await this.setupStream();
     
     this.initChart();
     
@@ -1096,8 +1096,16 @@ export default {
     },
 
     handleWSMessage(msg) {
+        // Despachar para listeners one-off (ex: fetchProposal)
+        this.dispatchToListeners(msg);
+
         if (msg.error) {
             console.warn('[Chart] Erro da API Deriv:', msg.error.code, msg.error.message);
+            // Se for erro de compra, exibir
+            if (msg.msg_type === 'buy') {
+                this.tradeError = msg.error.message;
+                this.isTrading = false;
+            }
             return;
         }
 
@@ -1115,6 +1123,13 @@ export default {
                 break;
             case 'tick':
                 this.processWSTick(msg.tick);
+                break;
+            case 'buy':
+                // Compra efetuada via WS
+                this.processWSBuy(msg.buy);
+                break;
+            case 'proposal_open_contract':
+                this.processWSProposalOpenContract(msg.proposal_open_contract);
                 break;
         }
     },
@@ -1193,6 +1208,57 @@ export default {
 
         // Adicionar ao gráfico e processar
         this.handleNewTick(tickData);
+    },
+
+    processWSBuy(buy) {
+        if (!buy || !buy.contract_id) return;
+        
+        console.log('[Chart] Compra WS SUCESSO. ID:', buy.contract_id);
+        
+        const contractId = buy.contract_id;
+        
+        // Inscrever para atualizações do contrato
+        this.wsSend({
+            proposal_open_contract: 1,
+            contract_id: contractId,
+            subscribe: 1
+        });
+        
+        // Reutilizar processBuy existente mas adaptando dados se necessário
+        // processBuy espera { contract_id, buy_price, ... }
+        this.processBuy({
+            contract_id: contractId,
+            buy_price: buy.buy_price,
+            entry_time: buy.start_time,
+            // Outros campos serão preenchidos pelo update do contrato
+        });
+    },
+
+    processWSProposalOpenContract(contract) {
+        if (!this.activeContract || this.activeContract.contract_id !== contract.contract_id) {
+            return;
+        }
+
+        // Converter para formato esperado pelo processContract
+        // A API WS retorna 'exit_tick' ou 'current_spot', backend chama de 'exit_spot' ou 'sell_price'
+        const mappedContract = {
+            ...contract,
+            sell_price: contract.bid_price, // Para opções binarias, bid_price é o valor de venda (payout se ganhou, 0 se perdeu)
+            profit: contract.profit,
+            status: contract.status,
+            exit_spot: contract.exit_tick || contract.current_spot,
+            ticks_remaining: contract.tick_count ? (contract.tick_count - (contract.current_tick_count || 0)) : undefined
+        };
+
+        // Se finalizado, unsubscribe
+        if (contract.is_expired || contract.is_sold) {
+            this.wsSend({
+                forget: contract.id // id da subscription
+            });
+            // processContract vai lidar com expiry
+        }
+
+        this.processContract(mappedContract);
     },
 
     // Refatoração: Lógica comum de processamento de histórico
@@ -2146,59 +2212,121 @@ export default {
         return;
       }
       
-      // Definir preço de compra
-      if (this.latestTick && this.latestTick.value) {
-        this.purchasePrice = this.latestTick.value;
-      }
-      
       this.tradeError = '';
       this.tradeMessage = '';
       this.isTrading = true;
       
-      console.log('[Chart] ========== EXECUTAR COMPRA ==========');
-      console.log('[Chart] Configuração:', {
-        symbol: this.symbol,
-        tradeType: this.tradeType,
-        duration: this.duration,
-        durationUnit: this.durationUnit,
-        amount: this.amount
-      });
+      console.log('[Chart] ========== EXECUTAR COMPRA (FRONTEND) ==========');
       
       try {
-        console.log('[Chart] Enviando ordem de compra para o backend...');
-
-        const buyConfig = {
-          symbol: this.symbol,
-          contractType: this.tradeType,
-          duration: this.duration,
-          durationUnit: this.durationUnit,
-          amount: this.amount
+        // 1. Preparar Payload da Proposta
+        const proposalPayload = {
+            proposal: 1,
+            subscribe: 0, // Apenas uma vez para obter ID
+            amount: Number(this.amount),
+            basis: 'stake', // Por enquanto fixo em stake (valor de entrada)
+            contract_type: this.tradeType,
+            currency: 'USD', // Assumindo USD ou pegar de account
+            symbol: this.symbol,
+            duration: Number(this.duration),
+            duration_unit: this.durationUnit
         };
-        
-        // Adicionar barrier se necessário (ex: DIGITMATCH)
-        if (this.isDigitContract && this.tradeType.includes('DIGIT')) {
+
+        // Adicionar barrier se necessário
+        if (this.isDigitContract) {
            if (this.tradeType === 'DIGITMATCH' || this.tradeType === 'DIGITDIFF') {
-             buyConfig.barrier = this.digitMatchValue !== null ? this.digitMatchValue : (this.lastDigit !== null ? this.lastDigit : 5);
+             proposalPayload.barrier = this.digitMatchValue !== null ? this.digitMatchValue : (this.lastDigit !== null ? this.lastDigit : 5);
            } else if (this.tradeType === 'DIGITOVER' || this.tradeType === 'DIGITUNDER') {
-             // Default barrier for over/under
-             buyConfig.barrier = 5;
+             proposalPayload.barrier = 5; // Default ou input
            }
         }
         
-        // Adicionar multiplicador se necessário
         if (this.tradeType.startsWith('MULT')) {
-          buyConfig.multiplier = this.multiplier || 100;
+             proposalPayload.multiplier = this.multiplier || 100;
         }
+
+        console.log('[Chart] Solicitando proposta:', proposalPayload);
+
+        // 2. Buscar Proposta (Await WS Response)
+        const proposal = await this.fetchProposal(proposalPayload);
         
-        // Enviar compra para o backend
-        await derivTradingService.buyContract(buyConfig);
-        console.log('[Chart] ✅ Compra executada via backend');
-        // A resposta chegará via SSE no evento 'buy'
+        if (!proposal || !proposal.id) {
+            throw new Error('Falha ao obter ID da proposta.');
+        }
+
+        console.log('[Chart] Proposta recebida ID:', proposal.id, 'Preço:', proposal.ask_price);
+        this.purchasePrice = Number(proposal.ask_price);
+
+        // 3. Executar Compra
+        const buyPayload = {
+            buy: proposal.id,
+            price: Number(proposal.ask_price)
+        };
+        
+        console.log('[Chart] Enviando compra:', buyPayload);
+        this.wsSend(buyPayload);
+        
+        // A resposta virá via 'buy' no handleWSMessage
+        
       } catch (error) {
         console.error('[Chart] Erro ao executar compra:', error);
         this.tradeError = error.message || 'Erro ao executar compra';
         this.isTrading = false;
       }
+    },
+
+    // Helper para buscar proposta e esperar resposta (One-off)
+    fetchProposal(payload) {
+        return new Promise((resolve, reject) => {
+            // Timeout de segurança
+            const timeout = setTimeout(() => {
+                this.removeOneTimeListener(listener);
+                reject(new Error('Timeout ao buscar proposta (5s)'));
+            }, 5000);
+
+            const listener = (msg) => {
+                if (msg.msg_type === 'proposal') {
+                     // Verificar se é a resposta para nossa request (pode validar req_id se implementado, mas payload unico ajuda)
+                     // Como simplificação, pegamos a primeira proposal (já que subscribe=0)
+                     clearTimeout(timeout);
+                     this.removeOneTimeListener(listener);
+                     
+                     if (msg.error) {
+                         reject(new Error(msg.error.message));
+                     } else {
+                         resolve(msg.proposal);
+                     }
+                } else if (msg.msg_type === 'error' && msg.error.req_id === payload.req_id) { 
+                    // Se tivesse req_id, mas genérico:
+                    // Se receber erro global logo após envio
+                }
+            };
+            
+            this.addOneTimeListener(listener);
+            this.wsSend(payload);
+        });
+    },
+
+    // Sistema simples de listeners para requests one-off
+    addOneTimeListener(callback) {
+        if (!this.oneTimeListeners) this.oneTimeListeners = [];
+        this.oneTimeListeners.push(callback);
+    },
+
+    removeOneTimeListener(callback) {
+        if (!this.oneTimeListeners) return;
+        const idx = this.oneTimeListeners.indexOf(callback);
+        if (idx !== -1) {
+            this.oneTimeListeners.splice(idx, 1);
+        }
+    },
+    
+    // Atualizar handleWSMessage para chamar os listeners
+    dispatchToListeners(msg) {
+        if (this.oneTimeListeners) {
+            // Clonar array para evitar problemas se listeners se removerem durante iteração
+            [...this.oneTimeListeners].forEach(listener => listener(msg));
+        }
     },
     processBuy(buyData) {
       console.log('[Chart] ========== PROCESSANDO COMPRA ==========');
