@@ -101,7 +101,7 @@
                     href="#"
                     class="menu-item"
                     :class="{ active: isSettingsActive }"
-                    @click.prevent="navigateAndClose('/settings')"
+                    @click.prevent="isAdminFlow ? $emit('open-settings') : navigateAndClose('/settings')"
                     data-text="Configuração"
                 >
                     <i class="fa-solid fa-gear w-5 opacity-85"></i>
@@ -235,7 +235,7 @@
                     href="#"
                     class="menu-item"
                     :class="{ active: isSettingsActive }"
-                    @click.prevent="navigateAndClose('/settings')"
+                    @click.prevent="$emit('open-settings')"
                     data-text="Configuração"
                 >
                     <i class="fa-solid fa-gear w-5 opacity-85"></i>
@@ -288,7 +288,7 @@ export default {
             default: false
         }
     },
-    emits: ['close-sidebar', 'toggle-collapse'],
+    emits: ['close-sidebar', 'toggle-collapse', 'open-settings'],
     data() {
         return { 
             showUserMenu: false,

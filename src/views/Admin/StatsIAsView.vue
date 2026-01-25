@@ -12,6 +12,7 @@
 			:is-mobile="isMobile"
 			@close-sidebar="closeSidebar" 
 			@toggle-collapse="toggleSidebarCollapse" 
+			@open-settings="showSettingsModal = true"
 		/>
 
 		<div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
