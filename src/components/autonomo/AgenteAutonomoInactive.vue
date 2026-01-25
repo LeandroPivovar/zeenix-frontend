@@ -721,6 +721,7 @@ export default {
     padding: 8px 12px;
     border-radius: 6px;
     font-size: 0.75rem;
+    text-transform: none; /* Mantém o texto como está no HTML (Sentence case) */
     width: 280px; /* Largura fixa maior para textos longos */
     position: absolute;
     z-index: 100; 
@@ -970,7 +971,7 @@ export default {
 }
 
 .agent-desc-info h3 {
-    font-size: 0.875rem;
+    font-size: 20px;
     font-weight: 700;
     color: #fff;
     margin: 0 0 0.25rem 0;
@@ -978,7 +979,7 @@ export default {
 }
 
 .agent-desc-info p {
-    font-size: 0.75rem;
+    font-size: 14px;
     color: #A1A1A1;
     line-height: 1.5;
     margin: 0;
