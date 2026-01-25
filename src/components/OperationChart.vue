@@ -1120,12 +1120,24 @@ export default {
             case 'tick':
                 this.processWSTick(msg.tick);
                 break;
-            case 'buy': // Resposta da Compra Direta
+            case 'buy': { // Resposta da Compra Direta
                 console.log('[Chart] Confirmação de compra recebida via WS:', msg.buy);
                 this.processBuy(msg.buy);
                 
                 // NOTIFICAR BACKEND sobre a compra (sync)
-                derivTradingService.notifyBuy(msg.buy);
+                const buyPayload = {
+                    contractId: msg.buy.contract_id,
+                    buyPrice: msg.buy.buy_price,
+                    transactionId: msg.buy.transaction_id,
+                    shortcode: msg.buy.shortcode,
+                    symbol: this.symbol, // msg.buy usually doesn't have symbol
+                    contractType: this.tradeType, // msg.buy usually doesn't have contract_type
+                    duration: this.duration,
+                    durationUnit: this.durationUnit,
+                    entryTime: msg.buy.start_time,
+                    entrySpot: null // Usually entry spot comes later or we take latest tick
+                };
+                derivTradingService.notifyBuy(buyPayload);
 
                 // Inscrever para atualizações do contrato
                 if (msg.buy.contract_id) {
@@ -1136,6 +1148,7 @@ export default {
                     });
                 }
                 break;
+            }
             case 'proposal_open_contract': // Atualizações do Contrato
                 this.processContract(msg.proposal_open_contract);
                 break;
