@@ -827,9 +827,16 @@
 				return this.agentConfig?.initialStake || 0;
 			},
 			finalCapital() {
-				// ✅ Usar saldo real-time da conta (mesmo que TopNavbar) via accountBalanceMixin
-				return this.balanceNumeric || 0;
-			},
+			// ✅ Usar saldo real-time da conta (mesmo que TopNavbar) via accountBalanceMixin
+			// Se o mixin ainda não carregou (balanceNumeric === 0), usar fallback do agentConfig
+			const mixinBalance = this.balanceNumeric || 0;
+			if (mixinBalance > 0) {
+				return mixinBalance;
+			}
+			
+			// Fallback: usar balance do agentConfig ou sessionStats
+			return this.agentConfig?.currentBalance || this.sessionStats?.totalCapital || 0;
+		},
 			periodProfit() {
 				return this.sessionStats?.netProfit || 0;
 			},
