@@ -120,7 +120,7 @@
             </div>
 
             <!-- Page Header -->
-            <div class="page-header-experts" v-if="!isFormVisible" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div class="page-header-experts" v-if="!isFormVisible" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; margin-top: 2rem; width: 100%;">
                 <div class="header-text" style="text-align: left;">
                     <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #ffffff;">Experts</h1>
                     <p style="font-size: 14px; color: #a0a0a0; margin: 0;">Professores, Copy Traders e Influencers cadastrados no sistema</p>
@@ -1414,6 +1414,19 @@ body {
 
 .card-action-btn i {
     font-size: 0.85rem;
+}
+
+.experts-table {
+    background-color: #1f1f1f;
+    border-radius: 8px;
+    padding: 0 20px 20px 20px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+    width: 100%;
+    overflow-x: scroll; 
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease-out forwards;
+    animation-delay: 0.5s;
 }
 
 .table-header,
