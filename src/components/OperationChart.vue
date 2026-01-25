@@ -2788,7 +2788,19 @@ export default {
         // Se não tiver 50 ticks coletados, usar os ticks do gráfico
         let ticksToAnalyze = [...this.collectedTicks];
         
-        // Se não tiver ticks suficientes, tentar buscar do backend
+        // Se não tiver ticks suficientes nos coletados, tentar usar o histórico completo
+        if (ticksToAnalyze.length < 50 && this.allHistoricalTicks && this.allHistoricalTicks.length > 0) {
+          console.log('[Chart] Usando histórico completo para análise');
+          // Pegar os últimos 50 ticks do histórico completo
+          // Ordenar por epoch para garantir ordem cronológica
+          const sortedHistory = [...this.allHistoricalTicks].sort((a, b) => a.epoch - b.epoch);
+          ticksToAnalyze = sortedHistory.slice(-50).map(tick => ({
+            value: tick.value,
+            epoch: tick.epoch
+          }));
+        }
+
+        // Se AINDA não tiver ticks suficientes, tentar buscar do backend (fallback final)
         if (ticksToAnalyze.length < 50) {
           try {
             const response = await derivTradingService.getTicks(this.symbol);
