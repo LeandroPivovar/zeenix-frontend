@@ -829,7 +829,7 @@ export default {
             finalTradeType: 'CALL',
             finalEntrySpot: null,
             finalExitSpot: null,
-            pricePrecision: 2,
+
             
             isAnalyzing: false,
             aiRecommendation: null,
