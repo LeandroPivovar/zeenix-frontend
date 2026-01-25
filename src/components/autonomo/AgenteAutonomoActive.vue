@@ -253,12 +253,25 @@
 
 		<!-- Performance Chart -->
 		<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5 mb-6">
-			<div class="flex items-center justify-between mb-4">
+			<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
 				<h3 class="text-sm font-semibold flex items-center gap-2 uppercase tracking-wide text-[#FAFAFA]">
 					<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up text-green-500"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
 					PERFORMANCE
 				</h3>
-				<span class="text-[#A1A1AA] text-xs">{{ dateRangeText }}</span>
+                
+                <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a]">
+                    <button 
+                        v-for="type in [{id:'7d', label:'Semana'}, {id:'30d', label:'Mes'}, {id:'6m', label:'Semestre'}, {id:'1y', label:'Ano'}]" 
+                        :key="type.id"
+                        @click="selectDateRange({value: type.id})"
+                        class="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all"
+                        :class="selectedPeriod === type.id ? 'bg-[#FAFAFA] text-black shadow-lg shadow-white/5' : 'text-[#A1A1AA] hover:text-white hover:bg-white/5'"
+                    >
+                        {{ type.label }}
+                    </button>
+                </div>
+
+				<span class="text-[#A1A1AA] text-xs font-medium uppercase tracking-tight ml-auto md:ml-0">{{ dateRangeText }}</span>
 			</div>
 			
 			<div ref="performanceChartContainer" class="h-[300px] w-full bg-gradient-to-b from-green-500/5 to-transparent border-b border-[#27272a] mb-4 relative">
