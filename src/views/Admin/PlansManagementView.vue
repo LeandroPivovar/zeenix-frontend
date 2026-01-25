@@ -10,6 +10,7 @@
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
+                @open-settings="showSettingsModal = true"
             />
             
             <div v-if="isMobile" class="mobile-header-admin">
@@ -275,6 +276,12 @@
             <div class="footer-view"></div>
             </main>
         </div>
+
+        <!-- Settings Modal -->
+        <SettingsSidebar
+            :is-open="showSettingsModal"
+            @close="showSettingsModal = false"
+        />
         <ToastNotification ref="toast" />
     </div>
 </template>
@@ -282,6 +289,7 @@
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import ToastNotification from '../../components/Toast.vue';
 
 export default {
@@ -289,6 +297,7 @@ export default {
     components: {
         AppSidebar,
         TopNavbar,
+        SettingsSidebar,
         ToastNotification,
     },
     data() {
@@ -297,6 +306,7 @@ export default {
             isSidebarCollapsed: false,
             isMobile: false,
             
+            showSettingsModal: false,
             // Gerenciamento do Formulário
             isFormVisible: false,
             isEditing: false,

@@ -21,6 +21,7 @@
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
+                @open-settings="showSettingsModal = true"
             />
             
             <!-- Mobile Header -->
@@ -403,18 +404,26 @@
                 </div>
             </div>
         </transition>
+
+        <!-- Settings Modal -->
+        <SettingsSidebar
+            :is-open="showSettingsModal"
+            @close="showSettingsModal = false"
+        />
     </div>
 </template>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 
 export default {
     name: 'AdminView',
     components: {
         AppSidebar,
-        TopNavbar
+        TopNavbar,
+        SettingsSidebar
     },
     data() {
         return {
@@ -422,6 +431,7 @@ export default {
             isSidebarCollapsed: false,
             isMobile: window.innerWidth <= 1024,
             
+            showSettingsModal: false,
             showAddAdminModal: false, 
             
             newAdmin: {

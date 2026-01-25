@@ -10,6 +10,7 @@
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
+                @open-settings="showSettingsModal = true"
             />
             
             <div v-if="isMobile" class="mobile-header-admin">
@@ -136,6 +137,12 @@
             </main>
         </div>
         <ToastNotification ref="toast" />
+
+        <!-- Settings Modal -->
+        <SettingsSidebar
+            :is-open="showSettingsModal"
+            @close="showSettingsModal = false"
+        />
     </div>
 </template>
 
@@ -143,6 +150,7 @@
 /* eslint-disable no-undef */
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import ToastNotification from '../../components/Toast.vue';
 
 // Quill é carregado via CDN no index.html, então é uma variável global
@@ -152,6 +160,7 @@ export default {
     components: {
         AppSidebar,
         TopNavbar,
+        SettingsSidebar,
         ToastNotification,
     },
     data() {
@@ -159,6 +168,7 @@ export default {
             isSidebarOpen: true, 
             isSidebarCollapsed: false,
             isMobile: false,
+            showSettingsModal: false,
             
             // Gerenciamento do Formulário
             isFormVisible: false,

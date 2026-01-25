@@ -9,6 +9,7 @@
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
+                @open-settings="showSettingsModal = true"
             />
 
             <main class="layout-content">              
@@ -231,18 +232,26 @@
             </footer>
             </main>
         </div>
+
+        <!-- Settings Modal -->
+        <SettingsSidebar
+            :is-open="showSettingsModal"
+            @close="showSettingsModal = false"
+        />
     </div>
 </template>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 
 export default {
     name: 'WebhookView',
     components: {
         AppSidebar,
         TopNavbar,
+        SettingsSidebar,
     },
     data() {
         return {
@@ -250,6 +259,7 @@ export default {
             isSidebarOpen: false,
             isMobile: false,
             isSidebarCollapsed: false,
+            showSettingsModal: false,
             
             // --- Dados do Conteúdo da Imagem ---
 

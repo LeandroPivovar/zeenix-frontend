@@ -231,6 +231,17 @@
                     <span>Gerenciar Planos</span>
                 </a>
 
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isSettingsActive }"
+                    @click.prevent="navigateAndClose('/settings')"
+                    data-text="Configuração"
+                >
+                    <i class="fa-solid fa-gear w-5 opacity-85"></i>
+                    <span>Configuração</span>
+                </a>
+
                 <!-- Sair no fluxo de admin fica abaixo de Gerenciar Planos -->
                 <a
                     href="#"
