@@ -492,7 +492,9 @@ export default {
 		
 		iniciarAgente() {
 			if (!this.selectedAgent) {
-
+				if (this.$root && this.$root.$toast) {
+					this.$root.$toast.warning('Por favor, selecione um agente antes de iniciar o Agente Autônomo.');
+				}
 				return;
 			}
 			// 1. Coleta os dados configurados
