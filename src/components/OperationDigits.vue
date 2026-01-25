@@ -1010,8 +1010,8 @@ export default {
                 variance += Math.pow(f.percentage - expected, 2);
             });
             const stdDev = Math.sqrt(variance / 10);
-            // Normalizar para 0-100
-            return Math.min(100, Math.round((stdDev / 10) * 100));
+            // Normalizar para 0-100 com escala mais sensível
+            return Math.min(100, Math.round((stdDev / 18) * 100));
         },
         dvxStatusClass() {
             if (this.dvxValue <= 30) return 'dvx-status-green';
