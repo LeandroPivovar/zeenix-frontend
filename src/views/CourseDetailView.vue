@@ -114,15 +114,27 @@
                         Não há materiais complementares para este vídeo.
                     </div>
                     <div v-else class="materials-list">
-                        <button
-                            v-for="material in lessonMaterials"
-                            :key="material.id"
-                            class="material-item"
-                            @click="openMaterial(material)"
-                        >
-                            <span class="material-name">{{ material.name }}</span>
-                            <i class="fas fa-download download-icon"></i>
-                        </button>
+                        <template v-for="material in lessonMaterials" :key="material.id">
+                            <!-- URL Material: Green Button -->
+                            <button
+                                v-if="isUrlMaterial(material)"
+                                class="material-item-btn-green"
+                                @click="openMaterial(material)"
+                            >
+                                <span class="material-name-btn">{{ material.name }}</span>
+                                <i class="fas fa-external-link-alt"></i>
+                            </button>
+
+                            <!-- File Material: Standard Item -->
+                            <button
+                                v-else
+                                class="material-item"
+                                @click="openMaterial(material)"
+                            >
+                                <span class="material-name">{{ material.name }}</span>
+                                <i class="fas fa-download download-icon"></i>
+                            </button>
+                        </template>
                     </div>
                 </div>
 
@@ -512,6 +524,19 @@ export default {
         return `https://player.vimeo.com/video/${id}`;
       }
       return url;
+    },
+    isUrlMaterial(material) {
+      if (!material) return false;
+      // Se tiver link e não tiver filePath, ou se o link começar com http e não for um caminho local
+      const path = material.filePath || material.link;
+      if (!path) return false;
+      
+      // Se explicitamente tiver um link que não seja um anexo (filePath)
+      if (material.link && !material.filePath) return true;
+      
+      // Verificação extra: se o path começa com http/https e não contém a URL base da API (indicando que é um arquivo local)
+      const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+      return (path.startsWith('http://') || path.startsWith('https://')) && !path.includes(apiBaseUrl) && !path.startsWith('/uploads');
     },
   }
 }
