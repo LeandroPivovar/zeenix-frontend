@@ -596,6 +596,18 @@
 	<StopLossModal v-if="showNewStopLossModal" @close="showNewStopLossModal = false" />
 	<TargetProfitModal v-if="showNewTargetProfitModal" @close="showNewTargetProfitModal = false" />
 	<StopBlindadoModal v-if="showNewStopBlindadoModal" @close="showNewStopBlindadoModal = false" />
+	
+	<!-- Novos Modais de Ajuste de Precisão -->
+	<StopLossAjusteModal 
+		:visible="showStopLossAjusteModal" 
+		:result="sessionStats?.netProfit || 0"
+		@confirm="handleConfirmStopAjuste" 
+	/>
+	<StopBlindadoAjusteModal 
+		:visible="showStopBlindadoAjusteModal" 
+		:result="sessionStats?.netProfit || 0"
+		@confirm="handleConfirmStopAjuste" 
+	/>
 </template>
 
 <script>
@@ -608,7 +620,9 @@
 			AutonomousAgentLogs,
 			StopLossModal: () => import('@/components/StopLossModal.vue'),
 			TargetProfitModal: () => import('@/components/TargetProfitModal.vue'),
-			StopBlindadoModal: () => import('@/components/StopBlindadoModal.vue')
+			StopBlindadoModal: () => import('@/components/StopBlindadoModal.vue'),
+			StopLossAjusteModal: () => import('@/components/StopLossAjusteModal.vue'),
+			StopBlindadoAjusteModal: () => import('@/components/StopBlindadoAjusteModal.vue')
 		},
 		props: {
 			agenteData: {
@@ -683,6 +697,8 @@
 				showNewStopLossModal: false,
 				showNewTargetProfitModal: false,
 				showNewStopBlindadoModal: false,
+				showStopLossAjusteModal: false,
+				showStopBlindadoAjusteModal: false,
 				dataInicio: new Date().toISOString().split('T')[0],
 				dataFim: new Date().toISOString().split('T')[0],
 				periodoMobile: 'hoje',
@@ -1454,9 +1470,19 @@
                 );
                 
                 if (hasBlindadoHit) {
-                    if (!this.showNewStopBlindadoModal && !this.showNewStopLossModal) {
+                    if (!this.showNewStopBlindadoModal && !this.showNewStopLossModal && !this.showStopBlindadoAjusteModal) {
                         console.log('[AgenteAutonomo] 🛡️ [Logs] Exact Hit detected!');
-                        this.showNewStopBlindadoModal = true;
+                        
+                        // Verificar se é por ajuste de entrada
+                        const isAjuste = recentLogs.some(log => 
+                            log.message && log.message.includes('STOP BLINDADO ATINGIDO POR AJUSTE DE ENTRADA!')
+                        );
+                        
+                        if (isAjuste) {
+                            this.showStopBlindadoAjusteModal = true;
+                        } else {
+                            this.showNewStopBlindadoModal = true;
+                        }
                     }
                 }
                 
@@ -1470,9 +1496,19 @@
                 );
                 
                 if (hasNormalStopLossMessage) {
-                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal) {
+                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal) {
                         console.log('[AgenteAutonomo] 🛑 [Logs] Stop Loss detectado!');
-                        this.showNewStopLossModal = true;
+                        
+                        // Verificar se é por ajuste de entrada
+                        const isAjuste = recentLogs.some(log => 
+                            log.message && log.message.includes('STOP LOSS ATINGIDO POR AJUSTE DE ENTRADA!')
+                        );
+                        
+                        if (isAjuste) {
+                            this.showStopLossAjusteModal = true;
+                        } else {
+                            this.showNewStopLossModal = true;
+                        }
                     }
                 }
 
@@ -1492,6 +1528,12 @@
                 }
             },
 
+			},
+			handleConfirmStopAjuste() {
+				this.showStopLossAjusteModal = false;
+				this.showStopBlindadoAjusteModal = false;
+				this.pausarAgenteEIrParaTopo();
+			},
 			fetchAllStats() {
 				this.fetchAgentConfig(); 
 				this.fetchProfitEvolution();

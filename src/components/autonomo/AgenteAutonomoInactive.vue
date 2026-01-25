@@ -325,7 +325,12 @@
 
 						<!-- Botão de Iniciar Agente -->
 						<div class="mt-auto">
-							<button class="start-agent-btn" @click="iniciarAgente">
+							<button 
+								class="start-agent-btn" 
+								@click="iniciarAgente"
+								:disabled="!selectedAgent"
+								:class="{ 'disabled': !selectedAgent }"
+							>
 								Iniciar Agente Autônomo
 							</button>
 						</div>
@@ -1640,5 +1645,13 @@ input:checked + .toggle-slider:before { transform: translateX(1.75rem); }
         height: auto;
         margin-left: 1rem;
     }
+}
+
+.start-agent-btn:disabled, .start-agent-btn.disabled {
+    background-color: #1a3a26 !important;
+    color: #4a4a4a !important;
+    cursor: not-allowed;
+    opacity: 0.6;
+    border-color: #1c1c1c !important;
 }
 </style>
