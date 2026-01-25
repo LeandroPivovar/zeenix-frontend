@@ -1,373 +1,529 @@
 <template>
-  <div class="admin-login-wrapper">
-    <!-- Efeitos de fundo premium idênticos ao LoginComponent -->
+  <div class="auth-wrapper">
     <div class="zenix-animated-bg"></div>
     <div class="zenix-texture-layer"></div>
     <div class="zenix-light-primary"></div>
     <div class="zenix-light-secondary"></div>
     <div class="zenix-particles">
-      <div v-for="i in 20" :key="i" class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
+      <div class="zenix-particle"></div>
     </div>
-
-    <div class="admin-login-card">
-      <div class="logo">
-        <span class="text-white font-bold text-3xl">ZEN</span><span class="text-white font-bold text-3xl">I</span><span class="text-zenix-green font-bold text-3xl">X</span>
-        <div class="admin-badge">ADMIN</div>
-      </div>
-      
-      <h1 class="title">Acesso Administrativo</h1>
-      <p class="subtitle">Entre com suas credenciais de administrador</p>
-
-      <form @submit.prevent="handleLogin" class="login-form">
-        <div class="form-group">
-          <label>E-mail</label>
-          <div class="input-container">
-            <i class="fa-solid fa-envelope input-icon"></i>
-            <input 
-              type="email" 
-              v-model="email" 
-              placeholder="Digite o seu e-mail" 
-              required
-              class="admin-input"
-            >
-          </div>
-        </div>
-
-        <div class="form-group">
-          <label>Senha</label>
-          <div class="input-container">
-            <i class="fa-solid fa-lock input-icon"></i>
-            <input 
-              :type="showPassword ? 'text' : 'password'" 
-              v-model="password" 
-              placeholder="Digite sua senha" 
-              required
-              class="admin-input"
-            >
-            <button type="button" @click="showPassword = !showPassword" class="password-toggle">
-              <i class="fa-solid" :class="showPassword ? 'fa-eye-slash' : 'fa-eye'"></i>
-            </button>
-          </div>
-        </div>
-
-        <button type="submit" class="btn-login" :disabled="isLoading">
-          <span v-if="isLoading" class="spinner"></span>
-          <span>{{ isLoading ? 'Entrando...' : 'Acessar Painel' }}</span>
-          <i v-if="!isLoading" class="fa-solid fa-arrow-right ml-2 text-sm"></i>
-        </button>
-      </form>
-
-      <div class="footer">
-        <router-link to="/login" class="back-link">
-          <i class="fa-solid fa-arrow-left mr-1"></i> Voltar para área do cliente
-        </router-link>
-      </div>
-    </div>
+    <main>
+      <AdminLoginComponent />
+    </main>
   </div>
 </template>
 
 <script>
+import AdminLoginComponent from '../../components/AdminLoginComponent.vue';
+
 export default {
   name: 'AdminLoginView',
-  data() {
-    return {
-      email: '',
-      password: '',
-      isLoading: false,
-      showPassword: false
-    }
-  },
-  methods: {
-    async handleLogin() {
-      if (this.isLoading) return;
-      this.isLoading = true;
-
-      try {
-        const response = await fetch((process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/auth/login', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ email: this.email, password: this.password })
-        });
-
-        if (!response.ok) {
-          const err = await response.json().catch(() => ({}));
-          throw new Error(err?.message || 'Falha no login');
-        }
-
-        const data = await response.json();
-        const token = data.token;
-        
-        // Verificar se é admin
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        const role = payload.role || payload.roles || payload.userRole || payload.user_role;
-        const isAdminFlag = payload.isAdmin || payload.is_admin;
-        
-        const roleStr = Array.isArray(role) ? role.join(',').toLowerCase() : (role ? role.toString().toLowerCase() : '');
-        const hasAdminAccess = isAdminFlag === true || isAdminFlag === 'true' || roleStr.includes('admin');
-
-        if (!hasAdminAccess) {
-          throw new Error('Acesso negado. Esta área é restrita a administradores.');
-        }
-
-        localStorage.setItem('token', token);
-        localStorage.removeItem('deriv_connection');
-        
-        // Redireciona para o markup
-        window.location.href = '/markup';
-      } catch (e) {
-        if (this.$root && this.$root.$toast) {
-          this.$root.$toast.error(e.message);
-        } else {
-          alert(e.message);
-        }
-      } finally {
-        this.isLoading = false;
-      }
-    }
+  components: {
+    AdminLoginComponent
   }
-}
+};
 </script>
 
-<style scoped>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+<style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-.admin-login-wrapper {
+.auth-wrapper {
+  position: relative;
+  width: 100%;
+  min-height: 100vh;
+  overflow: hidden;
+  background: #0B0B0B;
+}
+
+/* Fundo animado apenas no mobile */
+@media (max-width: 640px) {
+  .zenix-animated-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
+    background: linear-gradient(145deg, #0B0B0B 0%, #111111 35%, #0F0F0F 65%, #0B0B0B 100%);
+  }
+
+  .zenix-texture-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1;
+    pointer-events: none;
+    opacity: 0.11;
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 2%),
+      radial-gradient(circle at 80% 70%, rgba(255, 255, 255, 0.02) 0%, transparent 2%),
+      radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.025) 0%, transparent 2%),
+      radial-gradient(circle at 60% 20%, rgba(255, 255, 255, 0.03) 0%, transparent 2%),
+      radial-gradient(circle at 10% 80%, rgba(255, 255, 255, 0.02) 0%, transparent 2%),
+      radial-gradient(circle at 90% 40%, rgba(255, 255, 255, 0.025) 0%, transparent 2%);
+    background-size:
+      200px 200px,
+      180px 180px,
+      220px 220px,
+      190px 190px,
+      210px 210px,
+      175px 175px;
+    background-position:
+      0 0,
+      50px 50px,
+      100px 100px,
+      150px 150px,
+      200px 200px,
+      250px 250px;
+    animation: textureFloat 45s ease-in-out infinite;
+    mix-blend-mode: screen;
+  }
+
+  .zenix-texture-layer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background:
+      repeating-linear-gradient(0deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.008) 2px,
+        rgba(255, 255, 255, 0.008) 4px),
+      repeating-linear-gradient(90deg,
+        transparent,
+        transparent 2px,
+        rgba(255, 255, 255, 0.008) 2px,
+        rgba(255, 255, 255, 0.008) 4px);
+    opacity: 0.4;
+  }
+
+  .zenix-texture-layer::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.35'/%3E%3C/svg%3E");
+    opacity: 0.08;
+    mix-blend-mode: overlay;
+  }
+}
+
+/* Ocultar elementos de fundo no desktop */
+@media (min-width: 641px) {
+  .zenix-animated-bg,
+  .zenix-texture-layer,
+  .zenix-light-primary,
+  .zenix-light-secondary,
+  .zenix-particles {
+    display: none;
+  }
+}
+
+@keyframes textureFloat {
+  0%, 100% {
+    transform: translate(0, 0);
+  }
+  25% {
+    transform: translate(8px, -8px);
+  }
+  50% {
+    transform: translate(-6px, 6px);
+  }
+  75% {
+    transform: translate(6px, 8px);
+  }
+}
+
+/* Luzes animadas apenas no mobile */
+@media (max-width: 640px) {
+  .zenix-light-primary {
+    position: fixed;
+    width: 800px;
+    height: 800px;
+    background: radial-gradient(ellipse at center,
+      rgba(34, 197, 94, 0.22) 0%,
+      rgba(34, 197, 94, 0.18) 20%,
+      rgba(34, 197, 94, 0.15) 40%,
+      rgba(34, 197, 94, 0.10) 60%,
+      rgba(34, 197, 94, 0.05) 80%,
+      transparent 100%);
+    border-radius: 50%;
+    filter: blur(200px);
+    pointer-events: none;
+    z-index: 2;
+    animation: zenixLightMove1 13s ease-in-out infinite;
+  }
+
+  .zenix-light-secondary {
+    position: fixed;
+    width: 650px;
+    height: 650px;
+    background: radial-gradient(ellipse at center,
+      rgba(0, 153, 255, 0.16) 0%,
+      rgba(0, 153, 255, 0.13) 25%,
+      rgba(0, 153, 255, 0.10) 50%,
+      rgba(0, 153, 255, 0.06) 75%,
+      transparent 100%);
+    border-radius: 50%;
+    filter: blur(180px);
+    pointer-events: none;
+    z-index: 2;
+    animation: zenixLightMove2 16s ease-in-out infinite;
+  }
+}
+
+@keyframes zenixLightMove1 {
+  0% {
+    top: -20%;
+    left: -25%;
+    transform: scale(1) rotate(0deg);
+  }
+  20% {
+    top: 12%;
+    left: 40%;
+    transform: scale(1.18) rotate(72deg);
+  }
+  40% {
+    top: 55%;
+    left: 80%;
+    transform: scale(0.88) rotate(144deg);
+  }
+  60% {
+    top: 75%;
+    left: 10%;
+    transform: scale(1.12) rotate(216deg);
+  }
+  80% {
+    top: 30%;
+    left: -15%;
+    transform: scale(0.94) rotate(288deg);
+  }
+  100% {
+    top: -20%;
+    left: -25%;
+    transform: scale(1) rotate(360deg);
+  }
+}
+
+@keyframes zenixLightMove2 {
+  0% {
+    top: 90%;
+    left: 95%;
+    transform: scale(1) rotate(0deg);
+  }
+  20% {
+    top: 60%;
+    left: 5%;
+    transform: scale(0.90) rotate(-72deg);
+  }
+  40% {
+    top: 0%;
+    left: 60%;
+    transform: scale(1.20) rotate(-144deg);
+  }
+  60% {
+    top: 35%;
+    left: 90%;
+    transform: scale(1.10) rotate(-216deg);
+  }
+  80% {
+    top: 75%;
+    left: 35%;
+    transform: scale(0.95) rotate(-288deg);
+  }
+  100% {
+    top: 90%;
+    left: 95%;
+    transform: scale(1) rotate(-360deg);
+  }
+}
+
+/* Partículas apenas no mobile */
+@media (max-width: 640px) {
+  .zenix-particles {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 3;
+  }
+
+  .zenix-particle {
+    position: absolute;
+    background: rgba(255, 255, 255, 0.20);
+    border-radius: 50%;
+  }
+
+  .zenix-particle:nth-child(1) {
+    width: 2px;
+    height: 2px;
+    left: 18%;
+    top: 12%;
+    animation: zenixFloat1 7.5s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(2) {
+    width: 3px;
+    height: 3px;
+    left: 82%;
+    top: 28%;
+    animation: zenixFloat2 8.2s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(3) {
+    width: 2px;
+    height: 2px;
+    left: 52%;
+    top: 58%;
+    animation: zenixFloat3 8.8s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(4) {
+    width: 3px;
+    height: 3px;
+    left: 8%;
+    top: 72%;
+    animation: zenixFloat1 6.4s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(5) {
+    width: 2px;
+    height: 2px;
+    left: 92%;
+    top: 48%;
+    animation: zenixFloat2 9.6s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(6) {
+    width: 2px;
+    height: 2px;
+    left: 33%;
+    top: 82%;
+    animation: zenixFloat3 7.9s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(7) {
+    width: 3px;
+    height: 3px;
+    left: 67%;
+    top: 22%;
+    animation: zenixFloat1 8.3s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(8) {
+    width: 2px;
+    height: 2px;
+    left: 12%;
+    top: 38%;
+    animation: zenixFloat2 9.1s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(9) {
+    width: 2px;
+    height: 2px;
+    left: 78%;
+    top: 68%;
+    animation: zenixFloat3 6.8s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(10) {
+    width: 3px;
+    height: 3px;
+    left: 42%;
+    top: 18%;
+    animation: zenixFloat1 9.8s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(11) {
+    width: 2px;
+    height: 2px;
+    left: 25%;
+    top: 45%;
+    animation: zenixFloat2 7.1s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(12) {
+    width: 2px;
+    height: 2px;
+    left: 88%;
+    top: 15%;
+    animation: zenixFloat3 8.6s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(13) {
+    width: 3px;
+    height: 3px;
+    left: 5%;
+    top: 55%;
+    animation: zenixFloat1 9.4s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(14) {
+    width: 2px;
+    height: 2px;
+    left: 58%;
+    top: 35%;
+    animation: zenixFloat2 6.9s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(15) {
+    width: 2px;
+    height: 2px;
+    left: 72%;
+    top: 88%;
+    animation: zenixFloat3 10.2s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(16) {
+    width: 3px;
+    height: 3px;
+    left: 15%;
+    top: 25%;
+    animation: zenixFloat1 7.7s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(17) {
+    width: 2px;
+    height: 2px;
+    left: 95%;
+    top: 60%;
+    animation: zenixFloat2 8.9s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(18) {
+    width: 2px;
+    height: 2px;
+    left: 48%;
+    top: 8%;
+    animation: zenixFloat3 9.3s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(19) {
+    width: 3px;
+    height: 3px;
+    left: 38%;
+    top: 92%;
+    animation: zenixFloat1 8.5s ease-in-out infinite;
+  }
+
+  .zenix-particle:nth-child(20) {
+    width: 2px;
+    height: 2px;
+    left: 62%;
+    top: 42%;
+    animation: zenixFloat2 7.3s ease-in-out infinite;
+  }
+}
+
+@keyframes zenixFloat1 {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 0.15;
+  }
+  33% {
+    transform: translate(24px, -36px);
+    opacity: 0.25;
+  }
+  66% {
+    transform: translate(-18px, 30px);
+    opacity: 0.20;
+  }
+}
+
+@keyframes zenixFloat2 {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 0.18;
+  }
+  33% {
+    transform: translate(-28px, 32px);
+    opacity: 0.25;
+  }
+  66% {
+    transform: translate(22px, -26px);
+    opacity: 0.20;
+  }
+}
+
+@keyframes zenixFloat3 {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 0.16;
+  }
+  33% {
+    transform: translate(20px, 40px);
+    opacity: 0.23;
+  }
+  66% {
+    transform: translate(-26px, -32px);
+    opacity: 0.25;
+  }
+}
+
+main {
+  position: relative;
+  width: 100%;
   min-height: 100vh;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  background-color: #0b0b0b;
-  position: relative;
-  overflow: hidden;
-  font-family: 'Inter', sans-serif;
-}
-
-/* Background Effects Logic from AuthView.vue */
-.zenix-animated-bg {
-  position: fixed;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  background: linear-gradient(145deg, #0B0B0B 0%, #111111 35%, #0F0F0F 65%, #0B0B0B 100%);
-}
-
-.zenix-texture-layer {
-  position: fixed;
-  inset: 0;
-  z-index: 1;
-  pointer-events: none;
-  opacity: 0.11;
-  background-image: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.03) 0%, transparent 2%);
-  background-size: 200px 200px;
-}
-
-.zenix-light-primary {
-  position: fixed;
-  width: 800px;
-  height: 800px;
-  background: radial-gradient(ellipse at center, rgba(34, 197, 94, 0.15) 0%, transparent 80%);
-  filter: blur(150px);
-  z-index: 2;
-  top: -10%;
-  left: -20%;
-}
-
-.zenix-particles {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 3;
-}
-
-.zenix-particle {
-  position: absolute;
-  background: rgba(255, 255, 255, 0.20);
-  border-radius: 50%;
-  width: 2px;
-  height: 2px;
-}
-
-.admin-login-card {
-  width: 100%;
-  max-width: 440px;
-  background-color: #ffffff;
-  padding: 48px;
-  border-radius: 20px;
-  border: 1px solid #ededed;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
-  z-index: 10;
-  text-align: center;
-}
-
-.logo {
-  display: flex;
   flex-direction: column;
-  align-items: center;
-  margin-bottom: 32px;
-}
-
-.logo span {
-  color: #0B0B0B !important;
-}
-
-.logo span.text-zenix-green {
-  color: #22C55E !important;
-}
-
-.admin-badge {
-  background-color: #22C55E;
-  color: white;
-  font-size: 10px;
-  font-weight: 700;
-  padding: 4px 10px;
-  border-radius: 6px;
-  margin-top: 8px;
-  letter-spacing: 1.5px;
-}
-
-.title {
-  color: #0B0B0B;
-  font-size: 28px;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-
-.subtitle {
-  color: #6A6A6A;
-  font-size: 15px;
-  margin-bottom: 36px;
-  line-height: 1.6;
-}
-
-.login-form {
-  text-align: left;
-}
-
-.form-group {
-  margin-bottom: 24px;
-}
-
-.form-group label {
-  display: block;
-  color: #0B0B0B;
-  font-size: 14px;
-  font-weight: 500;
-  margin-bottom: 10px;
-}
-
-.input-container {
-  position: relative;
-  display: flex;
-  align-items: center;
-}
-
-.input-icon {
-  position: absolute;
-  left: 16px;
-  color: #6A6A6A;
-  font-size: 16px;
-}
-
-.admin-input {
-  width: 100%;
-  background-color: #f5f5f5;
-  border: 1px solid #e5e5e5;
-  border-radius: 12px;
-  padding: 14px 16px 14px 48px;
-  color: #0B0B0B;
-  font-size: 15px;
-  transition: border-color 0.2s, background-color 0.2s;
-}
-
-.admin-input:focus {
-  outline: none;
-  border-color: #22C55E;
-  background-color: #ffffff;
-}
-
-.password-toggle {
-  position: absolute;
-  right: 16px;
-  background: none;
-  border: none;
-  color: #6A6A6A;
-  cursor: pointer;
-  padding: 4px;
-  transition: color 0.2s;
-}
-
-.password-toggle:hover {
-  color: #22C55E;
-}
-
-.btn-login {
-  width: 100%;
-  background-color: #22C55E;
-  color: white;
-  border: none;
-  border-radius: 9999px;
-  padding: 16px;
-  font-size: 16px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background-color 0.2s, transform 0.1s;
-  display: flex;
-  align-items: center;
   justify-content: center;
-  margin-top: 12px;
-}
-
-.btn-login:hover:not(:disabled) {
-  background-color: #16A34A;
-}
-
-.btn-login:active:not(:disabled) {
-  transform: scale(0.99);
-}
-
-.btn-login:disabled {
-  opacity: 0.7;
-  cursor: not-allowed;
-}
-
-.footer {
-  margin-top: 32px;
-  padding-top: 24px;
-  border-top: 1px solid #eee;
-}
-
-.back-link {
-  color: #6A6A6A;
-  font-size: 14px;
-  text-decoration: none;
-  transition: color 0.2s;
-  display: inline-flex;
   align-items: center;
+  padding: 0;
+  z-index: 100;
+  background: transparent;
 }
 
-.back-link:hover {
-  color: #22C55E;
-}
+@media (max-width: 640px) {
+  main {
+    background: transparent !important;
+    background-color: transparent !important;
+    position: relative;
+    z-index: 100;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    height: auto !important;
+    min-height: 100vh !important;
+  }
 
-.spinner {
-  width: 18px;
-  height: 18px;
-  border: 2px solid rgba(255,255,255,0.3);
-  border-top-color: white;
-  border-radius: 50%;
-  animation: spin 0.8s linear infinite;
-  margin-right: 10px;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-@media (max-width: 480px) {
-  .admin-login-card {
-    padding: 32px 24px;
-    margin: 20px;
+  main > * {
+    background: transparent !important;
+    background-color: transparent !important;
   }
 }
 </style>
+
 
