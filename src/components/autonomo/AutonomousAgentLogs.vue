@@ -304,8 +304,6 @@ export default {
         // Get agente name
         const agenteName = this.agentName || 'AGENTE';
         const now = new Date();
-        const dateStr = now.toLocaleDateString('pt-BR').replace(/\//g, '-');
-        const timeStr = now.toLocaleTimeString('pt-BR', { hour12: false }).replace(/:/g, '-');
         
         // Create printable content
         const content = this.formattedLogs.map((log) => {
@@ -323,12 +321,24 @@ export default {
         document.body.appendChild(printFrame);
 
         const doc = printFrame.contentWindow.document;
+        
+        // Format YYYY-MM-DD
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const dateISO = `${yyyy}-${mm}-${dd}`;
+        
+        // Requested format: Logs-2026-01-25-nome-do-agente-ou-ia
+        // sanitize agent name
+        const safeAgentName = agenteName.replace(/[^a-zA-Z0-9-_]/g, '-');
+        const fileName = `Logs-${dateISO}-${safeAgentName}`;
+
         doc.open();
         doc.write(`
           <!DOCTYPE html>
           <html>
           <head>
-            <title>Logs ${agenteName} - ${dateStr} ${timeStr}</title>
+            <title>${fileName}</title>
             <style>
               @page { margin: 2cm; }
               body {
