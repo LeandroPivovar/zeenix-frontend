@@ -2148,15 +2148,6 @@ export default {
         return;
       }
       
-      this.tradeError = '';
-      this.tradeMessage = '';
-      this.isTrading = true;
-      
-    async executeBuy() {
-      if (!this.canExecuteOrder) {
-        return;
-      }
-      
       // Definir preço de compra
       if (this.latestTick && this.latestTick.value) {
         this.purchasePrice = this.latestTick.value;
