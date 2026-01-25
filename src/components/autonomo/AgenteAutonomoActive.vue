@@ -1256,6 +1256,13 @@
 						vertLines: { color: 'rgba(42, 46, 57, 0)' },
 						horzLines: { color: 'rgba(42, 46, 57, 0.2)' },
 					},
+					rightPriceScale: {
+						visible: false,
+					},
+					leftPriceScale: {
+						visible: true,
+						borderColor: 'rgba(197, 203, 206, 0.2)',
+					},
 					width: this.$refs.performanceChartContainer.clientWidth,
 					height: 300,
 					timeScale: {
@@ -1287,6 +1294,7 @@
 					lineWidth: 2,
                     crosshairMarkerVisible: true,
                     crosshairMarkerRadius: 4,
+					priceScaleId: 'left',
 				});
 
 				this.indexChartInitialized = true;
