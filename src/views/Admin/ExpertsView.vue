@@ -119,6 +119,12 @@
                 </form>
             </div>
 
+            <!-- Page Header -->
+            <div class="page-header-experts" v-if="!isFormVisible">
+                <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #ffffff;">Experts</h1>
+                <p style="font-size: 14px; color: #a0a0a0; margin-bottom: 20px;">Professores, Copy Traders e Influencers cadastrados no sistema</p>
+            </div>
+
             <div class="add-expert-button-wrapper" v-if="!isFormVisible">
                 <button class="add-expert-btn" @click="openForm">
                     + Adicionar Novo Expert

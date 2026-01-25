@@ -28,8 +28,8 @@
 
 			<div class="main-header">
 				<div class="main-header-left">
-					<h1>Estatísticas das IAs</h1>
-					<p>Monitoramento de performance e resultados das IAs cadastradas na Deriv.</p>
+					<h1 style="font-size: 20px;">Estatísticas das IAs</h1>
+					<p style="font-size: 14px;">Monitoramento de performance e resultados das IAs cadastradas na Deriv.</p>
 				</div>
 				<div class="main-header-right">
 					<button class="btn pdf-btn" @click="exportReportToPDF">

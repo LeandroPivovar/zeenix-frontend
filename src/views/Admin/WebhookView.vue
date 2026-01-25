@@ -15,8 +15,8 @@
             <main class="layout-content">              
                 <header class=" header-webhook">
                 <div class="header-info">
-                    <h1>Webhooks de Vendas</h1>
-                    <p class="header-subtitle">Integre KiwiFy para sincronizar assinaturas, compras e renovações.</p>
+                    <h1 style="font-size: 20px;">Webhooks de Vendas</h1>
+                    <p class="header-subtitle" style="font-size: 14px;">Integre KiwiFy para sincronizar assinaturas, compras e renovações.</p>
                 </div>
                 <button class="btn add-webhook">
                     + Nova Conexão

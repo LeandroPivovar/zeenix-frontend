@@ -15,8 +15,8 @@
             <main class="layout-content">
                 <div class="main-header header-markup">
                 <div class="main-header-left">
-                    <h1>Markup - Comissões</h1>
-                    <p>Comissão de 3% sobre o payout de cada operação realizada na Deriv</p>
+                    <h1 style="font-size: 20px;">Markup - Comissões</h1>
+                    <p style="font-size: 14px;">Comissão de 3% sobre o payout de cada operação realizada na Deriv</p>
                 </div>
                 <div class="main-header-right">
                     <button class="btn pdf-btn" @click="exportReportToPDF"><img src="../../assets/icons/box-down.svg" alt="" width="20px"> Exportar Relatório</button>

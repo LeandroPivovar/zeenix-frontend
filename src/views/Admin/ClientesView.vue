@@ -14,8 +14,8 @@
 
 			<main class="layout-content">
 				<div class="container"> 
-				<h1>{{ pageTitle }}</h1>
-				<p>Monitoramento de usuàrios e contas vinculadas à Deriv</p>
+				<h1 style="font-size: 20px;">{{ pageTitle }}</h1>
+				<p style="font-size: 14px;">Monitoramento de usuários e contas vinculadas à Deriv</p>
 				
 				<div class="c-cards">
 					<div class="c-card">

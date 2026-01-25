@@ -623,8 +623,12 @@
 				</div>
 
 				<div>
-					<h3 class="text-xl font-bold text-[#FAFAFA] mb-1">{{ stopStatusData.title }}</h3>
-					<p class="text-[#A1A1AA] text-sm">{{ stopStatusData.description }}</p>
+					<h1 class="text-[20px] font-bold text-white mb-1">
+						Agente Autônomo Zenix
+					</h1>
+					<p class="text-[14px] text-white/50">
+						Agente de alta frequência em mercado futuro.
+					</p>
 				</div>
 
 				<div class="w-full bg-[#1a1a1a] rounded-lg p-4 custom-border-card mt-2">
