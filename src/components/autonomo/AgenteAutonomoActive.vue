@@ -1101,15 +1101,7 @@
 				if (!status || status === 'active' || status === this.lastProcessedStatus) return;
 				
 				// O modal agora é controlado exclusivamente pelos LOGS para evitar re-trigger redundante.
-				// Manter formatação de hora
-            formatToSPTime(isoString) {
-                if (!isoString) return '--:--';
-                try {
-                    const date = new Date(isoString);
-                    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
-                } catch (e) { return isoString; }
-            },
- apenas registra que o status mudou para controle de botões se necessário.
+				// Este método agora apenas registra que o status mudou para controle de botões se necessário.
 				if (['stopped_profit', 'stopped_loss', 'stopped_blindado'].includes(status)) {
 					this.lastProcessedStatus = status;
 					console.log('[AgenteAutonomo] Mudança de status bloqueada para trigger de modal (usando logs):', status);
