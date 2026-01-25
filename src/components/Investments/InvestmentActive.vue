@@ -969,6 +969,8 @@ export default {
             // Logs em tempo real (ZENIX v2.0)
             realtimeLogs: [],
             logPollingInterval: null,
+            // ✅ Controle de abertura de modal para evitar duplicidade
+            processingStopEvent: false,
             historyPollingInterval: null, // Polling para histórico de operações
             lastLogTimestamp: null, // Timestamp do último log recebido (para detectar novos)
             tradeEventsSource: null,
@@ -2092,11 +2094,13 @@ export default {
             
             if (hasBlindadoHit) {
                 console.log('[InvestmentActive] 🛡️ [Logs] Exact Hit detected!');
-                if (!this.showStopBlindadoModal && !this.showStopLossModal) {
+                if (!this.showStopBlindadoModal && !this.showStopLossModal && !this.processingStopEvent) {
+                    this.processingStopEvent = true;
                     console.log('[InvestmentActive] 🛡️ [Logs] Triggering Stop Blindado Modal...');
                     this.loadSessionResult().then(() => {
                         this.showStopBlindadoModal = true;
-                    });
+                        this.processingStopEvent = false;
+                    }).catch(() => { this.processingStopEvent = false; });
                 }
             }
             
@@ -2111,11 +2115,13 @@ export default {
             
             if (hasNormalStopLossMessage) {
                 console.log('[InvestmentActive] 🛑 Stop Loss normal detectado nos logs!');
-                if (!this.showStopLossModal && !this.showStopBlindadoModal) {
+                if (!this.showStopLossModal && !this.showStopBlindadoModal && !this.processingStopEvent) {
+                    this.processingStopEvent = true;
                     console.log('[InvestmentActive] 🛑 [Logs] Stop loss normal detectado nos logs! Mostrando modal...');
                     this.loadSessionResult().then(() => {
                         this.showStopLossModal = true;
-                    });
+                         this.processingStopEvent = false;
+                    }).catch(() => { this.processingStopEvent = false; });
                 }
             }
 
@@ -2420,10 +2426,12 @@ export default {
                     if (currentSessionStatus === 'stopped_loss') {
                         console.log('[InvestmentActive] 🛑 Stop Loss status detectado!');
                         // ✅ [FIX] Abrir modal de Stop Loss
-                        if (!this.showStopLossModal && !this.showStopBlindadoModal) {
-                            this.loadSessionResult().then(() => {
+                        if (!this.showStopLossModal && !this.showStopBlindadoModal && !this.processingStopEvent) {
+                             this.processingStopEvent = true;
+                             this.loadSessionResult().then(() => {
                                 this.showStopLossModal = true;
-                            });
+                                this.processingStopEvent = false;
+                            }).catch(() => { this.processingStopEvent = false; });
                         }
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
@@ -2431,10 +2439,12 @@ export default {
                     } else if (currentSessionStatus === 'stopped_blindado') {
                         console.log('[InvestmentActive] 🛡️ Stop Loss Blindado status detectado!');
                         // ✅ [FIX] Abrir modal de Stop Blindado
-                        if (!this.showStopBlindadoModal && !this.showStopLossModal) {
+                        if (!this.showStopBlindadoModal && !this.showStopLossModal && !this.processingStopEvent) {
+                            this.processingStopEvent = true;
                             this.loadSessionResult().then(() => {
                                 this.showStopBlindadoModal = true;
-                            });
+                                this.processingStopEvent = false;
+                            }).catch(() => { this.processingStopEvent = false; });
                         }
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
