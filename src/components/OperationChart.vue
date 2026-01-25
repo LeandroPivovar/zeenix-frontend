@@ -2830,7 +2830,13 @@ export default {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            ticks: last50Ticks
+            ticks: last50Ticks,
+            symbol: this.symbol,
+            tradeType: this.tradeType,
+            duration: this.duration,
+            durationUnit: this.durationUnit,
+            amount: this.amount,
+            multiplier: this.multiplier
           }),
         });
         
