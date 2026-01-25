@@ -613,9 +613,11 @@
 <script>
 	import { createChart, ColorType } from 'lightweight-charts';
 	import AutonomousAgentLogs from './AutonomousAgentLogs.vue';
+	import accountBalanceMixin from '@/mixins/accountBalanceMixin';
 
 	export default {
 		name: 'AgenteAutonomoPanel',
+		mixins: [accountBalanceMixin],
 		components: {
 			AutonomousAgentLogs,
 			StopLossModal: () => import('@/components/StopLossModal.vue'),
@@ -825,7 +827,8 @@
 				return this.agentConfig?.initialStake || 0;
 			},
 			finalCapital() {
-				return (this.agentConfig?.initialBalance || 0) + this.periodProfit;
+				// ✅ Usar saldo real-time da conta (mesmo que TopNavbar) via accountBalanceMixin
+				return this.balanceNumeric || 0;
 			},
 			periodProfit() {
 				return this.sessionStats?.netProfit || 0;
