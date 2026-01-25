@@ -1144,14 +1144,6 @@ export default {
                 return 'Próximo tick: maior probabilidade de BAIXO (UNDER 5)';
             }
         },
-        // DVX Gauge coordinates
-        dvxGaugeX2() {
-            const angle = (this.dvxValue / 100) * Math.PI - Math.PI / 2;
-            return 120 + 70 * Math.cos(angle);
-        },
-        dvxGaugeY2() {
-            const angle = (this.dvxValue / 100) * Math.PI - Math.PI / 2;
-            return 110 + 70 * Math.sin(angle);
         },
         // Offsets para preenchimento dinâmico do gauge
         dvxGreenOffset() {
