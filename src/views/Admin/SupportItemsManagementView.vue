@@ -74,7 +74,7 @@
             </div>
 
             <!-- Page Header -->
-            <div class="page-header-support" v-if="!isFormVisible">
+            <div class="page-header-support" v-if="!isFormVisible" style="text-align: center;">
                 <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #ffffff;">Itens de Suporte</h1>
                 <p style="font-size: 14px; color: #a0a0a0; margin-bottom: 20px;">Tutoriais e materiais de ajuda para os usuários da plataforma</p>
             </div>

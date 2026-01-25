@@ -43,8 +43,8 @@
             <main class="layout-content">
                 <div class="admin-dashboard">
                 <header class="dashboard-header">
-                    <h1>Painel Administrativo</h1>
-                    <p>Controle total da operação, permissões e desempenho da plataforma.</p>
+                    <h1 style="font-size: 20px;">Painel Administrativo</h1>
+                    <p style="font-size: 14px;">Controle total da operação, permissões e desempenho da plataforma.</p>
                 </header>
 
                 <section class="kpi-grid">
