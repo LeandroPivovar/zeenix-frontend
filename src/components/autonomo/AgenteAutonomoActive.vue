@@ -300,7 +300,7 @@
                     
                     <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a]">
                         <button 
-                            v-for="type in [{id:'week', label:'Sema'}, {id:'month', label:'Mes'}, {id:'semester', label:'Semestre'}, {id:'year', label:'Ano'}]" 
+                            v-for="type in [{id:'week', label:'Semana'}, {id:'month', label:'Mes'}, {id:'semester', label:'Semestre'}, {id:'year', label:'Ano'}]" 
                             :key="type.id"
                             @click="selectAggregation(type.id)"
                             class="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all"
