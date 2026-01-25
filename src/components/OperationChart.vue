@@ -2460,6 +2460,12 @@ export default {
       }
     },
     handleContractExpiration(contractData) {
+      // Evitar execução duplicada se o modal já estiver aberto
+      if (this.showTradeResultModal) {
+          console.log('[Chart] Modal já está aberto, ignorando trigger duplicado de expiração.');
+          return;
+      }
+
       console.log('[Chart] ========== CONTRATO EXPIRADO ==========');
       console.log('[Chart] Dados de expiração:', contractData);
       
@@ -2529,6 +2535,15 @@ export default {
       // Limpar dados do resultado
       this.finalTradeProfit = 0;
       this.finalTradeType = 'CALL';
+      
+      // Limpar contrato ativo imediatamente para mostrar os botões de ação
+      if (this.activeContract) {
+        this.activeContract = null;
+        this.purchasePrice = null;
+        this.realTimeProfit = null;
+        this.tradeMessage = '';
+        this.stopContractCountdown();
+      }
     },
     addEntrySpotLine(entrySpot, entryTime) {
       if (!this.chart || !entrySpot) {
