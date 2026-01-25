@@ -312,18 +312,6 @@
                                 :stroke-dasharray="90.2" 
                                 :stroke-dashoffset="dvxRedOffset"
                             ></path>
-
-                            <line 
-                                x1="120" 
-                                y1="110" 
-                                :x2="dvxGaugeX2" 
-                                :y2="dvxGaugeY2" 
-                                stroke="#FFFFFF" 
-                                stroke-width="5" 
-                                stroke-linecap="round"
-                                style="filter: drop-shadow(0 0 2px rgba(0,0,0,0.5)); transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);"
-                            ></line>
-                            <circle cx="120" cy="110" r="6" fill="#FFFFFF"></circle>
                         </svg>
                         <div class="dvx-value-container">
                             <div class="dvx-value">{{ dvxValue }}</div>
