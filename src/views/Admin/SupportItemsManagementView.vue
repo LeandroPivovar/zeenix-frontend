@@ -892,8 +892,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    width: 100%;
-    max-width: none;
+    width: 100% !important;
+    max-width: none !important;
 }
 
 /* Mobile Header */
@@ -1162,7 +1162,8 @@ body {
     border-radius: 8px;
     padding: 0 20px 20px 20px;
     box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
-    width: 100%;
+    width: 100% !important;
+    max-width: none !important;
     overflow-x: scroll; 
     opacity: 0;
     transform: translateY(20px);
@@ -1177,6 +1178,7 @@ body {
 }
 
 .table-content-wrapper {
+    width: 100%;
     min-width: 800px; 
 }
 
