@@ -1348,10 +1348,8 @@ export default {
             return 'Buscando oportunidades';
         },
         formattedBalance() {
-            // ✅ SALDO EM TEMPO REAL: Saldo Inicial + Lucro/Perda da Sessão
-            const initialBalance = this.accountBalanceProp || 0;
-            const sessionProfitLoss = this.dailyStats.sessionProfitLoss || 0;
-            const currentBalance = initialBalance + sessionProfitLoss;
+            // ✅ MOSTRAR APENAS O DADO REAL (Saldo vindo da Corretora)
+            const currentBalance = this.accountBalanceProp || 0;
             
             if (!this.accountBalanceProp) {
                 const isDemo = this.accountType === 'demo' || 
