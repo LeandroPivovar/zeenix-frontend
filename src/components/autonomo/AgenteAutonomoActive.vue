@@ -721,8 +721,6 @@
 				showNewTargetProfitModal: false,
 				showNewStopBlindadoModal: false,
 				showStopLossAjusteModal: false,
-				showNewStopBlindadoModal: false,
-				showStopLossAjusteModal: false,
 				showStopBlindadoAjusteModal: false,
 				dataInicio: new Date().toISOString().split('T')[0],
 				dataFim: new Date().toISOString().split('T')[0],
@@ -780,12 +778,12 @@
 					{ label: 'Todo o Período', value: 'all' },
 				],
 				weeklyData: [],
+                
 				dailyData: [],
-			dailyTrades: [],
-			agentConfig: null,
-				stopStatusData: { type: 'profit', title: '', description: '' },
+                dailyTrades: [],
+                agentConfig: null,
+                
 				selectedPeriodFilter: null, // Novo estado para filtro
-				dailyTrades: [],
 
 				// Agent Switcher
 				showAgentSwitcher: false,

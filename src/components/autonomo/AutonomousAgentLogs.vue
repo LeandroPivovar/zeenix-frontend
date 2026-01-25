@@ -304,8 +304,6 @@ export default {
         // Get agente name
         const agenteName = this.agentName || 'AGENTE';
         const now = new Date();
-        const dateStr = now.toLocaleDateString('pt-BR').replace(/\//g, '-');
-        const timeStr = now.toLocaleTimeString('pt-BR', { hour12: false }).replace(/:/g, '-');
         
         // Create printable content
         const content = this.formattedLogs.map((log) => {
