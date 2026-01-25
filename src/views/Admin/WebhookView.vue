@@ -102,7 +102,7 @@
                             </svg>
                             Atualizar
                         </button>
-                        <button class="btn btn-secondary btn-clear" @click="clearLogs">
+                        <button class="btn btn-secondary btn-clear" @click="requestClearLogs">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                                 <path d="M19 7L18.1327 19.1425C18.0579 20.1891 17.187 21 16.1378 21H7.86224C6.81296 21 5.94208 20.1891 5.86732 19.1425L5 7M10 11V17M14 11V17M15 7V4C15 3.44772 14.5523 3 14 3H10C9.44772 3 9 3.44772 9 4V7M4 7H20" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
                             </svg>
@@ -238,6 +238,17 @@
             :is-open="showSettingsModal"
             @close="showSettingsModal = false"
         />
+
+        <!-- Confirm Modal -->
+        <ConfirmActionModal
+            :visible="confirmModalData.visible"
+            :title="confirmModalData.title"
+            :message="confirmModalData.message"
+            confirm-text="Sim, limpar"
+            cancel-text="Cancelar"
+            @confirm="handleConfirmAction"
+            @cancel="confirmModalData.visible = false"
+        />
     </div>
 </template>
 
@@ -245,6 +256,7 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
+import ConfirmActionModal from '../../components/modals/ConfirmActionModal.vue';
 
 export default {
     name: 'WebhookView',
@@ -252,6 +264,7 @@ export default {
         AppSidebar,
         TopNavbar,
         SettingsSidebar,
+        ConfirmActionModal,
     },
     data() {
         return {
@@ -315,6 +328,14 @@ export default {
             emailAlertsEnabled: true,
             alertDestinations: 'admin@zenix.pro, +5511999999999',
             uptimePercentage: '99.98%',
+            
+            // Modal de Confirmação
+            confirmModalData: {
+                visible: false,
+                title: '',
+                message: '',
+                confirmAction: null
+            }
         }
     },
     mounted() {
@@ -342,9 +363,21 @@ export default {
             // TODO: Implementar chamada à API para buscar logs atualizados
         },
         clearLogs() {
-            if (confirm('Tem certeza que deseja limpar todos os logs?')) {
-                this.webhookLogs = [];
+            this.webhookLogs = [];
+        },
+        requestClearLogs() {
+            this.confirmModalData = {
+                visible: true,
+                title: 'Limpar Logs',
+                message: 'Tem certeza que deseja limpar todos os logs?',
+                confirmAction: this.clearLogs
+            };
+        },
+        handleConfirmAction() {
+            if (this.confirmModalData.confirmAction) {
+                this.confirmModalData.confirmAction();
             }
+            this.confirmModalData.visible = false;
         },
         viewLogDetails(log) {
             console.log('Visualizando detalhes do log:', log);

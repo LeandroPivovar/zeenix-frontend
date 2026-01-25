@@ -136,6 +136,17 @@
                 <a
                     href="#"
                     class="menu-item"
+                    :class="{ active: isMarkupActive }"
+                    @click.prevent="navigateAndClose('/markup')"
+                    data-text="Markup"
+                >
+                    <i class="fa-solid fa-percent w-5 opacity-85"></i>
+                    <span>Markup</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
                     :class="{ active: isAdminViewActive }"
                     @click.prevent="navigateAndClose('/Admin')"
                     data-text="Admin"
@@ -202,6 +213,17 @@
                 <a
                     href="#"
                     class="menu-item"
+                    :class="{ active: false }"
+                    @click.prevent="openDevModal()"
+                    data-text="Criador de Estratégias"
+                >
+                    <i class="fa-solid fa-chess-board w-5 opacity-85"></i>
+                    <span>Criador de Estratégias</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
                     :class="{ active: isSupportItemsActive }"
                     @click.prevent="navigateAndClose('/SupportItems')"
                     data-text="Itens de Suporte"
@@ -210,16 +232,7 @@
                     <span>Itens de Suporte</span>
                 </a>
 
-                <a
-                    href="#"
-                    class="menu-item"
-                    :class="{ active: isMarkupActive }"
-                    @click.prevent="navigateAndClose('/markup')"
-                    data-text="Markup"
-                >
-                    <i class="fa-solid fa-percent w-5 opacity-85"></i>
-                    <span>Markup</span>
-                </a>
+
 
                 <a
                     href="#"
@@ -232,16 +245,7 @@
                     <span>Gerenciar Planos</span>
                 </a>
 
-                <a
-                    href="#"
-                    class="menu-item"
-                    :class="{ active: isSettingsActive }"
-                    @click.prevent="$emit('open-settings')"
-                    data-text="Configuração"
-                >
-                    <i class="fa-solid fa-gear w-5 opacity-85"></i>
-                    <span>Configuração</span>
-                </a>
+
 
                 <!-- Sair no fluxo de admin fica abaixo de Gerenciar Planos -->
                 <a

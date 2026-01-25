@@ -102,7 +102,7 @@
                                     </span>
                                     <div class="module-actions module-btn-group">
                                         <button class="btn btn-action-icon edit-btn" title="Editar Módulo" @click="openEditModule(module)">Editar</button>
-                                        <button class="btn btn-action-icon delete-btn" title="Excluir Módulo" @click="deleteModule(module)">Excluir</button>
+                                        <button class="btn btn-action-icon delete-btn" title="Excluir Módulo" @click="requestDeleteModule(module)">Excluir</button>
                                         <button class="btn btn-secondary add-lesson-btn" title="Adicionar Nova Aula" @click="openNewLessonModal(module.id)">+ Adicionar Aula</button>
                                     </div>
                                 </div>
@@ -258,7 +258,7 @@
                 @save-new-material="saveNewMaterial"
                 @edit-material="openEditMaterial"
                 @cancel-edit-material="cancelEditMaterial"
-                @delete-material="deleteMaterial"
+                @delete-material="requestDeleteMaterial"
                 @update:new-module="newModule = $event"
                 @update:new-lesson="newLesson = $event"
                 @update:new-material="newMaterial = $event"
@@ -278,6 +278,17 @@
                 :is-open="showSettingsModal"
                 @close="showSettingsModal = false"
             />
+            
+            <!-- Confirm Modal -->
+            <ConfirmActionModal
+                :visible="confirmModalData.visible"
+                :title="confirmModalData.title"
+                :message="confirmModalData.message"
+                confirm-text="Sim, excluir"
+                cancel-text="Cancelar"
+                @confirm="handleConfirmAction"
+                @cancel="confirmModalData.visible = false"
+            />
             </main>
         </div>
     </div>
@@ -288,6 +299,7 @@ import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import StudentPreview from '../../components/StudentPreview.vue';
 import AcademyModals from '../../components/modals/AcademyModals.vue'; 
+import ConfirmActionModal from '../../components/modals/ConfirmActionModal.vue'; 
 
 export default {
     name: 'AcademyManagementView',
@@ -296,7 +308,8 @@ export default {
         TopNavbar,
         SettingsSidebar,
         StudentPreview,
-        AcademyModals 
+        AcademyModals,
+        ConfirmActionModal,
     },
     data() {
         return {
@@ -362,6 +375,15 @@ export default {
                 type: 'PDF',
                 link: ''
             },
+            
+            // Modal de Confirmação
+            confirmModalData: {
+                visible: false,
+                title: '',
+                message: '',
+                confirmAction: null
+            },
+            
             // Dados do Backend
             modules: [],
             lessons: []
@@ -989,10 +1011,19 @@ export default {
             shortDescription: module.shortDescription || ''
           };
         },
+        requestDeleteModule(module) {
+            this.confirmModalData = {
+                visible: true,
+                title: 'Excluir Módulo',
+                message: `Tem certeza que deseja excluir o módulo "<strong>${module.title.replace(/^Módulo \d+ - /, '')}</strong>"?`,
+                confirmAction: () => this.deleteModule(module)
+            };
+        },
         async deleteModule(module) {
           const isLocal = !module.id || module.id.toString().startsWith('temp-module-') || module.isLocal;
           
-          if (!confirm(`Tem certeza que deseja excluir o módulo "${module.title.replace(/^Módulo \d+ - /, '')}"?`)) return;
+          // Confirmação já feita pelo modal
+
 
           if (isLocal) {
             // Módulo ainda não salvo no backend, remove localmente
@@ -1446,30 +1477,43 @@ export default {
                 this.$root.$toast.info('Erro ao salvar material. Verifique sua conexão.');
             }
         },
+        requestDeleteMaterial(materialId) {
+            this.confirmModalData = {
+                visible: true,
+                title: 'Excluir Material',
+                message: 'Tem certeza que deseja excluir este material?',
+                confirmAction: () => this.deleteMaterial(materialId)
+            };
+        },
+        handleConfirmAction() {
+            if (this.confirmModalData.confirmAction) {
+                this.confirmModalData.confirmAction();
+            }
+            this.confirmModalData.visible = false;
+        },
         async deleteMaterial(materialId) {
-            if (confirm('Tem certeza que deseja excluir este material?')) {
-                try {
-                    const apiBaseUrl = this.getApiBaseUrl();
-                    const response = await fetch(`${apiBaseUrl}/courses/materials/${materialId}`, {
-                        method: 'DELETE',
-                        headers: {
-                            'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
-                            'Content-Type': 'application/json',
-                        },
-                    });
-                    if (response.ok) {
-                        const index = this.materialsList.findIndex(m => m.id === materialId);
-                        if (index !== -1) {
-                            this.materialsList.splice(index, 1);
-                        }
-                        this.$root.$toast.success('Material excluído.');
-                    } else {
-                        this.$root.$toast.info('Erro ao excluir material.');
+            // Confirmação via modal
+            try {
+                const apiBaseUrl = this.getApiBaseUrl();
+                const response = await fetch(`${apiBaseUrl}/courses/materials/${materialId}`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (response.ok) {
+                    const index = this.materialsList.findIndex(m => m.id === materialId);
+                    if (index !== -1) {
+                        this.materialsList.splice(index, 1);
                     }
-                } catch (error) {
-                    console.error('Erro ao excluir material:', error);
+                    this.$root.$toast.success('Material excluído.');
+                } else {
                     this.$root.$toast.info('Erro ao excluir material.');
                 }
+            } catch (error) {
+                console.error('Erro ao excluir material:', error);
+                this.$root.$toast.info('Erro ao excluir material.');
             }
         },
         goBack() {

@@ -100,6 +100,16 @@
                             <div class="right-footer">
                                 <h3>&nbsp;</h3>
                             </div>
+                            <!-- Confirm Modal -->
+                            <ConfirmActionModal
+                                :visible="confirmModalData.visible"
+                                :title="confirmModalData.title"
+                                :message="confirmModalData.message"
+                                confirm-text="Sim, excluir"
+                                cancel-text="Cancelar"
+                                @confirm="handleConfirmAction"
+                                @cancel="confirmModalData.visible = false"
+                            />
                             <div class="left-footer">
                                 <button class="cancel-btn" type="button" @click="closeForm">Cancelar</button>
                                 <button class="save-btn" type="submit">{{ isEditing ? 'Salvar Alterações' : 'Adicionar Expert' }}</button>
@@ -160,7 +170,7 @@
                                     <i class="fas fa-sync-alt"></i>
                                 </button>
                                 <button class="action-btn edit" aria-label="Editar" @click="editExpert(expert)"><i class="fas fa-edit"></i></button>
-                                <button class="action-btn trash" aria-label="Deletar" @click="deleteExpert(expert.id)"><i class="fas fa-trash-alt"></i></button>
+                                <button class="action-btn trash" aria-label="Deletar" @click="requestDeleteExpert(expert)"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </div>
                     </div>
@@ -216,7 +226,7 @@
                                     <i class="fas fa-edit"></i>
                                     <span>Editar</span>
                                 </button>
-                                <button class="card-action-btn trash" aria-label="Deletar" @click="deleteExpert(expert.id)">
+                                <button class="card-action-btn trash" aria-label="Deletar" @click="requestDeleteExpert(expert)">
                                     <i class="fas fa-trash-alt"></i>
                                     <span>Deletar</span>
                                 </button>
@@ -245,6 +255,7 @@ import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import ToastNotification from '../../components/Toast.vue';
+import ConfirmActionModal from '../../components/modals/ConfirmActionModal.vue';
 
 export default {
     name: 'ExpertsView',
@@ -253,6 +264,7 @@ export default {
         TopNavbar,
         SettingsSidebar,
         ToastNotification,
+        ConfirmActionModal,
     },
     data() {
         return {
@@ -275,6 +287,14 @@ export default {
             ],
             experts: [],
             isLoading: true,
+
+            // Modal de Confirmação
+            confirmModalData: {
+                visible: false,
+                title: '',
+                message: '',
+                confirmAction: null
+            },
         };
     },
     async mounted() {
@@ -714,11 +734,7 @@ export default {
             this.isFormVisible = true;
         },
         async deleteExpert(expertId) {
-            const expert = this.experts.find(e => e.id === expertId);
-            if (!confirm(`Tem certeza que deseja deletar o expert ${expert?.email || expertId}?`)) {
-                return;
-            }
-
+            // Confirmação via Modal
             try {
                 const token = localStorage.getItem('token');
                 
@@ -831,6 +847,20 @@ export default {
             } else {
                 this.toggleSidebarCollapse();
             }
+        },
+        requestDeleteExpert(expert) {
+            this.confirmModalData = {
+                visible: true,
+                title: 'Excluir Expert',
+                message: `Tem certeza que deseja deletar o expert <strong>${expert.email || expert.name}</strong>?`,
+                confirmAction: () => this.deleteExpert(expert.id)
+            };
+        },
+        handleConfirmAction() {
+            if (this.confirmModalData.confirmAction) {
+                this.confirmModalData.confirmAction();
+            }
+            this.confirmModalData.visible = false;
         },
         handleClickOutside(event) {
             if (this.isMobile && this.isSidebarOpen) {

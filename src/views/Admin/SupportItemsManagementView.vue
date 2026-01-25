@@ -105,7 +105,7 @@
                             <div class="td created-at">{{ formatDate(item.createdAt) }}</div>
                             <div class="td actions">
                                 <button class="action-btn edit" aria-label="Editar" @click="editSupportItem(item)"><i class="fas fa-edit"></i></button>
-                                <button class="action-btn trash" aria-label="Deletar" @click="deleteSupportItem(item.id)"><i class="fas fa-trash-alt"></i></button>
+                                <button class="action-btn trash" aria-label="Deletar" @click="requestDeleteSupportItem(item)"><i class="fas fa-trash-alt"></i></button>
                             </div>
                         </div>
                     </div>
@@ -125,7 +125,7 @@
                         <h3 class="card-title">{{ item.title }}</h3>
                         <div class="card-actions">
                             <button class="action-btn edit" aria-label="Editar" @click="editSupportItem(item)"><i class="fas fa-edit"></i></button>
-                            <button class="action-btn trash" aria-label="Deletar" @click="deleteSupportItem(item.id)"><i class="fas fa-trash-alt"></i></button>
+                            <button class="action-btn trash" aria-label="Deletar" @click="requestDeleteSupportItem(item)"><i class="fas fa-trash-alt"></i></button>
                         </div>
                     </div>
                     <div class="card-subtitle" v-html="getSubtitlePreview(item.subtitle)"></div>
@@ -146,6 +146,19 @@
             :is-open="showSettingsModal"
             @close="showSettingsModal = false"
         />
+            @close="showSettingsModal = false"
+        />
+
+        <!-- Confirm Modal -->
+        <ConfirmActionModal
+            :visible="confirmModalData.visible"
+            :title="confirmModalData.title"
+            :message="confirmModalData.message"
+            confirm-text="Sim, excluir"
+            cancel-text="Cancelar"
+            @confirm="handleConfirmAction"
+            @cancel="confirmModalData.visible = false"
+        />
     </div>
 </template>
 
@@ -155,6 +168,7 @@ import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import ToastNotification from '../../components/Toast.vue';
+import ConfirmActionModal from '../../components/modals/ConfirmActionModal.vue';
 
 // Quill é carregado via CDN no index.html, então é uma variável global
 
@@ -165,6 +179,7 @@ export default {
         TopNavbar,
         SettingsSidebar,
         ToastNotification,
+        ConfirmActionModal,
     },
     data() {
         return {
@@ -184,6 +199,14 @@ export default {
             
             // Editor
             quillEditor: null,
+
+            // Modal de Confirmação
+            confirmModalData: {
+                visible: false,
+                title: '',
+                message: '',
+                confirmAction: null
+            }
         };
     },
     async mounted() {
@@ -727,12 +750,22 @@ export default {
                 return null;
             }
         },
-        async deleteSupportItem(itemId) {
-            const item = this.supportItems.find(i => i.id === itemId);
-            if (!confirm(`Tem certeza que deseja deletar o item "${item?.title || itemId}"?`)) {
-                return;
+        requestDeleteSupportItem(item) {
+            this.confirmModalData = {
+                visible: true,
+                title: 'Excluir Item',
+                message: `Tem certeza que deseja deletar o item "<strong>${item.title}</strong>"?`,
+                confirmAction: () => this.deleteSupportItem(item.id)
+            };
+        },
+        handleConfirmAction() {
+            if (this.confirmModalData.confirmAction) {
+                this.confirmModalData.confirmAction();
             }
-
+            this.confirmModalData.visible = false;
+        },
+        async deleteSupportItem(itemId) {
+            // Confirmação movida para o modal ConfirmActionModal
             try {
                 const token = localStorage.getItem('token');
                 

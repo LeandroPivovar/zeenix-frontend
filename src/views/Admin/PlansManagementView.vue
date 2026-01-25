@@ -146,7 +146,17 @@
                         <div class="footer-form">
                             <div class="right-footer">
                                 <h3>&nbsp;</h3>
-                            </div>
+                                <!-- Confirm Modal -->
+        <ConfirmActionModal
+            :visible="confirmModalData.visible"
+            :title="confirmModalData.title"
+            :message="confirmModalData.message"
+            confirm-text="Sim, excluir"
+            cancel-text="Cancelar"
+            @confirm="handleConfirmAction"
+            @cancel="confirmModalData.visible = false"
+        />
+    </div>
                             <div class="left-footer">
                                 <button class="cancel-btn" type="button" @click="closeForm">Cancelar</button>
                                 <button class="save-btn" type="submit">{{ isEditing ? 'Salvar Alterações' : 'Adicionar Plano' }}</button>
@@ -294,6 +304,7 @@ import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import ToastNotification from '../../components/Toast.vue';
+import ConfirmActionModal from '../../components/modals/ConfirmActionModal.vue';
 
 export default {
     name: 'PlansManagementView',
@@ -302,6 +313,7 @@ export default {
         TopNavbar,
         SettingsSidebar,
         ToastNotification,
+        ConfirmActionModal,
     },
     data() {
         return {
@@ -330,6 +342,14 @@ export default {
             // Dados Dinâmicos
             plans: [],
             isLoading: true,
+            
+            // Modal de Confirmação
+            confirmModalData: {
+                visible: false,
+                title: '',
+                message: '',
+                confirmAction: null
+            }
         };
     },
     async mounted() {
@@ -642,11 +662,7 @@ export default {
         },
         
         async deletePlan(planId) {
-            const plan = this.plans.find(p => p.id === planId);
-            if (!confirm(`Tem certeza que deseja deletar o plano "${plan?.name || planId}"?`)) {
-                return;
-            }
-
+            // Confirmação via Modal
             try {
                 const token = localStorage.getItem('token');
                 
@@ -717,6 +733,20 @@ export default {
                 }
             }
         },
+        requestDeletePlan(plan) {
+            this.confirmModalData = {
+                visible: true,
+                title: 'Excluir Plano',
+                message: `Tem certeza que deseja deletar o plano "<strong>${plan.name}</strong>"?`,
+                confirmAction: () => this.deletePlan(plan.id)
+            };
+        },
+        handleConfirmAction() {
+            if (this.confirmModalData.confirmAction) {
+                this.confirmModalData.confirmAction();
+            }
+            this.confirmModalData.visible = false;
+        }
     }
 };
 </script>

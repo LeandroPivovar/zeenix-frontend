@@ -414,6 +414,17 @@
             :is-open="showSettingsModal"
             @close="showSettingsModal = false"
         />
+
+        <!-- Confirm Modal -->
+        <ConfirmActionModal
+            :visible="confirmModalData.visible"
+            :title="confirmModalData.title"
+            :message="confirmModalData.message"
+            confirm-text="Sim, excluir"
+            cancel-text="Cancelar"
+            @confirm="handleConfirmAction"
+            @cancel="confirmModalData.visible = false"
+        />
     </div>
 </template>
 
@@ -421,13 +432,15 @@
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
+import ConfirmActionModal from '../../components/modals/ConfirmActionModal.vue';
 
 export default {
     name: 'AdminView',
     components: {
         AppSidebar,
         TopNavbar,
-        SettingsSidebar
+        SettingsSidebar,
+        ConfirmActionModal
     },
     data() {
         return {
@@ -474,6 +487,14 @@ export default {
                 permitirNovasContas: true,
                 logsDetalhados: false,
                 modoSeguroApi: false,
+            },
+            
+            // Modal de Confirmação
+            confirmModalData: {
+                visible: false,
+                title: '',
+                message: '',
+                confirmAction: null
             }
         };
     },
@@ -695,10 +716,7 @@ export default {
         },
         
         async deleteAdmin(admin) {
-            if (!confirm(`Tem certeza que deseja excluir ${admin.name}?`)) {
-                return;
-            }
-
+            // Confirmação via Modal
             try {
                 const token = localStorage.getItem('token');
                 const response = await fetch(
@@ -784,6 +802,20 @@ export default {
             } finally {
                 this.isLoading = false;
             }
+        }
+        requestDeleteAdmin(admin) {
+            this.confirmModalData = {
+                visible: true,
+                title: 'Excluir Administrador',
+                message: `Tem certeza que deseja excluir <strong>${admin.name}</strong>?`,
+                confirmAction: () => this.deleteAdmin(admin)
+            };
+        },
+        handleConfirmAction() {
+            if (this.confirmModalData.confirmAction) {
+                this.confirmModalData.confirmAction();
+            }
+            this.confirmModalData.visible = false;
         }
     }
 }
