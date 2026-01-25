@@ -235,6 +235,7 @@
                             :key="'heat-'+item.digit" 
                             class="heatmap-digit-block"
                             :class="[item.statusClass, item.isHighlighted ? 'heatmap-highlighted' : '']"
+                            :style="{ height: item.barHeight + 'px' }"
                         >
                             <div class="frequency-percentage-label">{{ item.percentage }}%</div>
                             <div 
