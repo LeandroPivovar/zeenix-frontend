@@ -507,6 +507,9 @@ export default {
             // Continuar mesmo se falhar ao salvar no banco
           }
 
+          // ✅ Desativar qualquer IA ou Agente ativo antes de trocar conta
+          await this.deactivateAllActiveServices();
+
           const accountType = account.isDemo ? 'demo' : 'real';
           this.$emit('account-type-changed', accountType);
           
@@ -653,6 +656,9 @@ export default {
           console.error('[SettingsSidebar] ❌ Erro ao salvar no banco:', saveError);
           // Continuar mesmo se falhar ao salvar no banco
         }
+
+        // ✅ Desativar qualquer IA ou Agente ativo antes de trocar conta
+        await this.deactivateAllActiveServices();
 
         this.$emit('account-type-changed', type);
         
@@ -817,6 +823,78 @@ export default {
       this.isFictitiousBalanceActive = enabled;
       this.fictitiousBalance = amount;
       console.log('[SettingsSidebar] Saldo fictício atualizado:', { enabled, amount });
+    },
+
+    /**
+     * Desativa qualquer IA ou Agente Autônomo ativo antes de trocar de conta
+     * Isso previne que operações continuem sendo executadas com a conta antiga
+     */
+    async deactivateAllActiveServices() {
+      const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+      const token = localStorage.getItem('token');
+      
+      if (!token) {
+        console.warn('[SettingsSidebar] Token não encontrado, pulando desativação de serviços');
+        return;
+      }
+
+      // Obter userId do token
+      let userId = null;
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        userId = payload.userId || payload.sub || payload.id;
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao extrair userId do token:', error);
+      }
+
+      if (!userId) {
+        console.warn('[SettingsSidebar] userId não encontrado, pulando desativação de serviços');
+        return;
+      }
+
+      console.log('[SettingsSidebar] 🛑 Desativando todos os serviços ativos antes de trocar conta...');
+
+      // Desativar IA (se estiver ativa)
+      try {
+        const aiResponse = await fetch(`${apiBase}/ai/deactivate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ userId })
+        });
+
+        if (aiResponse.ok) {
+          console.log('[SettingsSidebar] ✅ IA desativada com sucesso');
+        } else {
+          console.log('[SettingsSidebar] ⚠️ IA não estava ativa ou erro ao desativar');
+        }
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao desativar IA:', error);
+      }
+
+      // Desativar Agente Autônomo (se estiver ativo)
+      try {
+        const agentResponse = await fetch(`${apiBase}/autonomous-agent/deactivate`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ userId })
+        });
+
+        if (agentResponse.ok) {
+          console.log('[SettingsSidebar] ✅ Agente Autônomo desativado com sucesso');
+        } else {
+          console.log('[SettingsSidebar] ⚠️ Agente Autônomo não estava ativo ou erro ao desativar');
+        }
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao desativar Agente Autônomo:', error);
+      }
+
+      console.log('[SettingsSidebar] ✅ Verificação de serviços ativos concluída');
     }
   }
 };
