@@ -67,7 +67,7 @@
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Entrada Inicial</span>
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">
-						{{ hideValues ? '••••' : '$' + initialCapital.toFixed(2) }}
+						{{ hideValues ? '••••' : '$' + formatPrice(initialCapital) }}
 					</div>
 				</div>
 
@@ -80,7 +80,7 @@
 						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium whitespace-nowrap">Capital Final</span>
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">
-						{{ hideValues ? '••••' : '$' + finalCapital.toFixed(2) }}
+						{{ hideValues ? '••••' : '$' + formatPrice(finalCapital) }}
 					</div>
 				</div>
 
@@ -262,7 +262,7 @@
                 <div class="flex items-center gap-4 ml-auto">
                     <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a]">
                         <button 
-                            v-for="type in [{id:'session', label:'HOJE'}, {id:'7d', label:'SEMANA'}, {id:'30d', label:'MES'}, {id:'6m', label:'SEMESTRE'}, {id:'1y', label:'ANO'}]" 
+                            v-for="type in [{id:'session', label:'HOJE'}, {id:'7d', label:'SEMANA'}, {id:'30d', label:'MÊS'}, {id:'6m', label:'SEMESTRE'}, {id:'1y', label:'ANO'}]" 
                             :key="type.id"
                             @click="selectDateRange({value: type.id})"
                             class="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all"
@@ -315,7 +315,7 @@
                     <div class="flex items-center gap-3 ml-auto">
                         <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a]">
                             <button 
-                                v-for="type in [{id:'week', label:'SEMANA'}, {id:'month', label:'MES'}, {id:'semester', label:'SEMESTRE'}, {id:'year', label:'ANO'}]" 
+                                v-for="type in [{id:'week', label:'SEMANA'}, {id:'month', label:'MÊS'}, {id:'semester', label:'SEMESTRE'}, {id:'year', label:'ANO'}]" 
                                 :key="type.id"
                                 @click="selectAggregation(type.id)"
                                 class="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all"
@@ -357,7 +357,7 @@
 								<td class="text-right py-2.5 px-1 tabular-nums font-medium" :class="week.profit >= 0 ? 'text-green-500' : 'text-red-500'">
 									{{ week.profit >= 0 ? '+' : '' }}${{ week.profit.toFixed(2) }}
 								</td>
-								<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">${{ week.finalCapital.toFixed(2) }}</td>
+								<td class="text-right py-2.5 px-1 tabular-nums text-[#FAFAFA]">${{ formatPrice(week.finalCapital) }}</td>
 								<td class="text-right py-2.5 px-1 tabular-nums" :class="week.percent >= 0 ? 'text-green-500' : 'text-red-500'">
 									{{ week.percent >= 0 ? '+' : '' }}{{ week.percent.toFixed(2) }}%
 								</td>
@@ -405,7 +405,7 @@
 									<td class="text-right py-3 px-1 tabular-nums font-semibold" :class="day.profit >= 0 ? 'text-green-500' : 'text-red-500'">
 										{{ day.profit >= 0 ? '+' : '' }}${{ day.profit.toFixed(2) }}
 									</td>
-									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">${{ day.capital.toFixed(2) }}</td>
+									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">${{ formatPrice(day.capital) }}</td>
 									<td class="text-right py-3 px-1 tabular-nums text-[#FAFAFA]">{{ day.ops }}</td>
 									<td class="text-right py-3 px-1 tabular-nums font-medium" 
 										:class="day.winRate >= 70 ? 'text-green-500' : day.winRate >= 50 ? 'text-[#FAFAFA]' : 'text-red-500'">
@@ -799,7 +799,7 @@
 				showDatePicker: false,
 				selectedPeriod: 'session',
 				dateOptions: [
-					{ label: 'Sessão Atual', value: 'session' },
+					{ label: 'Sessão', value: 'session' },
 					{ label: 'Hoje', value: 'today' },
 					{ label: 'Ontem', value: 'yesterday' },
 					{ label: 'Últimos 7 dias', value: '7d' },
@@ -1160,7 +1160,10 @@
 					.replace(/Assertividade:/g, '<span style="color: white; font-weight: bold;">Assertividade:</span>')
 					.replace(/Retorno:/g, '<span style="color: white; font-weight: bold;">Retorno:</span>');
 			},
-
+            formatPrice(value) {
+                if (value === null || value === undefined) return '0,00';
+                return Number(value).toLocaleString('pt-BR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+            },
 			getUserId() {
 				return this.userId || localStorage.getItem('userId') || localStorage.getItem('user_id');
 			},
