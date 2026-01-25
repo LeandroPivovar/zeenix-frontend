@@ -619,6 +619,8 @@
 import { createChart, ColorType } from 'lightweight-charts';
 import derivTradingService from '../services/deriv-trading.service.js';
 
+const APP_ID = process.env.VUE_APP_DERIV_APP_ID || '1089';
+
 export default {
   name: 'OperationChart',
   data() {
@@ -682,6 +684,14 @@ export default {
       selectedTimeframe: 60, // Timeframe padrão para velas (1 minuto em segundos) - velas menores
       chartPointsVisible: 100, // Número de pontos/velas visíveis no gráfico
       selectedTradeTypeGroup: 'rising_falling_rise_fall',
+      // Direct WS State
+      ws: null,
+      wsIsConnecting: false,
+      wsAuthorized: false,
+      wsConnectionError: null,
+      wsRetryTimer: null,
+      wsToken: null,
+      tickSubscriptionId: null,
       tradeTypeCategories: [
         {
           id: 'rising_falling',
@@ -950,36 +960,36 @@ export default {
     },
   },
   async mounted() {
-    // 1. Configurar Stream SSE (Crucial para receber dados)
+    // 1. Inicializar WS Direto (Dados de Mercado)
+    this.initDirectConnection();
+
+    // 2. Configurar Stream SSE (Apenas para atualizações de ordens/contratos - Híbrido)
     await this.setupStream();
     
     this.initChart();
     
-    // 2. Carregar Lista de Mercados (Background - não bloqueia o gráfico)
-    this.loadMarketsFromAPI();
-    
-    // 3. Carregar dados do mercado inicial imediatamente
-    // Forçar R_100 como inicial e carregar 100 ticks
+    // 3. Carregar dados iniciais
     if (!this.symbol) {
         this.symbol = 'R_100'; // Default
     }
 
     if (this.symbol) {
-      console.log('[Chart] Carregando dados iniciais para:', this.symbol);
-      // Carregar contratos e ticks em paralelo
+      console.log('[Chart] Carregando contratos para:', this.symbol);
       this.loadAvailableContracts(this.symbol);
-      this.loadTicksFromBackend(100); // Request specific count: 100 ticks
+      // Ticks são carregados via WS (subscribeWSTicks chamado no onWSConnected)
     }
     
-    // Fallback de segurança para remover o loader após 15s caso não haja resposta
+    // Fallback de segurança para remover o loader
     setTimeout(() => {
       if (this.isGlobalLoading) {
-        console.warn('[Chart] Timeout de carregamento inicial atingido. Removendo loader bloqueante.');
+        console.warn('[Chart] Timeout de carregamento inicial. Removendo loader.');
         this.isGlobalLoading = false;
       }
-    }, 15000);
+    }, 10000);
   },
   beforeUnmount() {
+    this.stopDirectConnection();
+    
     // Parar análise
     this.stopAnalysis();
     
@@ -1000,6 +1010,268 @@ export default {
     }
   },
   methods: {
+    // WebSocket Methods (Refactored)
+    async initDirectConnection() {
+      console.log('[Chart] Iniciando conexão WebSocket direta');
+      this.stopDirectConnection();
+
+      this.wsIsConnecting = true;
+      this.wsConnectionError = null;
+
+      // Obter token (opcional para dados públicos, mas recomendado)
+      try {
+        this.wsToken = await this.getTokenForAccount();
+      } catch (e) {
+        console.warn('[Chart] Erro ao obter token:', e);
+      }
+
+      const appId = localStorage.getItem('deriv_app_id') || APP_ID;
+      const endpoint = `wss://ws.derivws.com/websockets/v3?app_id=${appId}`;
+      
+      this.ws = new WebSocket(endpoint);
+
+      this.ws.onopen = () => {
+        console.log('[Chart] WebSocket conectado!');
+        if (this.wsToken) {
+           this.wsSend({ authorize: this.wsToken });
+        } else {
+           // Sem token, iniciar dados públicos
+           this.onWSConnected();
+        }
+      };
+
+      this.ws.onmessage = (event) => {
+        try {
+            const msg = JSON.parse(event.data);
+            this.handleWSMessage(msg);
+        } catch (e) {
+            console.error('[Chart] Erro JSON WS:', e);
+        }
+      };
+
+      this.ws.onerror = (e) => {
+        console.error('[Chart] Erro WS:', e);
+        this.wsConnectionError = 'Erro de conexão com mercado.';
+      };
+
+      this.ws.onclose = () => {
+        console.warn('[Chart] WebSocket fechado. Reconectando...');
+        this.wsIsConnecting = false;
+        this.wsAuthorized = false;
+        this.scheduleWSRetry();
+      };
+    },
+
+    stopDirectConnection() {
+      if (this.ws) {
+        this.ws.close();
+        this.ws = null;
+      }
+      if (this.wsRetryTimer) {
+        clearTimeout(this.wsRetryTimer);
+        this.wsRetryTimer = null;
+      }
+      this.tickSubscriptionId = null;
+    },
+
+    scheduleWSRetry() {
+      if (this.wsRetryTimer) return;
+      this.wsRetryTimer = setTimeout(() => {
+        this.wsRetryTimer = null;
+        this.initDirectConnection();
+      }, 3000);
+    },
+
+    wsSend(payload) {
+      if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+        this.ws.send(JSON.stringify(payload));
+      } else {
+        console.warn('[Chart] Tentativa de envio com WS fechado:', payload);
+      }
+    },
+
+    onWSConnected() {
+        this.subscribeWSActiveSymbols();
+        this.subscribeWSTicks();
+    },
+
+    handleWSMessage(msg) {
+        if (msg.error) {
+            console.warn('[Chart] Erro da API Deriv:', msg.error.code, msg.error.message);
+            return;
+        }
+
+        switch (msg.msg_type) {
+            case 'authorize':
+                this.wsAuthorized = true;
+                console.log('[Chart] WS Autorizado');
+                this.onWSConnected();
+                break;
+            case 'active_symbols':
+                this.processWSActiveSymbols(msg.active_symbols);
+                break;
+            case 'history':
+                this.processWSHistory(msg);
+                break;
+            case 'tick':
+                this.processWSTick(msg.tick);
+                break;
+        }
+    },
+
+    subscribeWSActiveSymbols() {
+        this.isLoadingMarkets = true;
+        this.wsSend({
+            active_symbols: 'brief',
+            product_type: 'basic'
+        });
+    },
+
+    subscribeWSTicks() {
+        if (!this.symbol) return;
+        
+        console.log('[Chart] Solicitando histórico de ticks via WS para:', this.symbol);
+        this.isLoadingTicks = true;
+        
+        // Cancelar assinatura anterior
+        if (this.tickSubscriptionId) {
+            this.wsSend({ forget: this.tickSubscriptionId });
+            this.tickSubscriptionId = null;
+        }
+
+        // Solicitar histórico + subscribe
+        this.wsSend({
+            ticks_history: this.symbol,
+            end: 'latest',
+            count: 500, // Ajustado para correspondência com Digits para melhor performance
+            style: 'ticks',
+            subscribe: 1
+        });
+    },
+
+    processWSActiveSymbols(symbols) {
+        this.isLoadingMarkets = false;
+        if (symbols && Array.isArray(symbols)) {
+            this.processActiveSymbols(symbols); // Reutilizar lógica existente
+        }
+    },
+
+    processWSHistory(msg) {
+        const history = msg.history;
+        if (!history || !history.prices) return;
+
+        console.log('[Chart] Histórico WS recebido:', history.prices.length, 'ticks');
+        this.isLoadingTicks = false;
+        
+        // Converter formato WS {prices:[], times:[]} para [{value, epoch}]
+        const ticks = history.prices.map((price, i) => ({
+            value: Number(price),
+            epoch: Number(history.times[i])
+        }));
+
+        // Armazenar ID da assinatura para updates futuros
+        if (msg.subscription && msg.subscription.id) {
+            this.tickSubscriptionId = msg.subscription.id;
+        }
+
+        this.processHistoryData(ticks);
+    },
+
+    processWSTick(tick) {
+        if (!tick) return;
+        
+        // Atualizar ID se recebido no tick
+        if (tick.id && !this.tickSubscriptionId) {
+            this.tickSubscriptionId = tick.id;
+        }
+
+        // Converter para formato interno
+        const tickData = {
+            value: Number(tick.quote),
+            epoch: Number(tick.epoch)
+        };
+
+        // Adicionar ao gráfico e processar
+        this.handleNewTick(tickData);
+    },
+
+    // Refatoração: Lógica comum de processamento de histórico
+    processHistoryData(ticks) {
+            // Armazenar todos os ticks históricos (garantir que epoch está em segundos)
+            this.allHistoricalTicks = ticks.map(tick => {
+              let epoch = Number(tick.epoch || tick.time);
+              if (epoch > 10000000000) epoch = Math.floor(epoch / 1000);
+              return { value: Number(tick.value), epoch: epoch };
+            });
+            
+            this.allHistoricalTicks.sort((a, b) => a.epoch - b.epoch);
+            
+            const filteredTicks = this.filterTicksByZoom(this.allHistoricalTicks);
+            
+            if (this.isAnalyzing && filteredTicks.length > 0) {
+              filteredTicks.forEach(tick => {
+                this.collectTickForAnalysis({ value: tick.value, epoch: tick.epoch });
+              });
+            }
+            
+            if (filteredTicks.length > 0) {
+              this.plotTicks(filteredTicks);
+            } else if (this.allHistoricalTicks.length > 0) {
+                const last100Ticks = this.allHistoricalTicks.slice(-100);
+                this.plotTicks(last100Ticks);
+            }
+            
+            this.isGlobalLoading = false;
+    },
+
+    // Refatoração: Lógica comum de processamento de novo tick
+    handleNewTick(tick) {
+            const tickValue = Number(tick.value);
+            const tickEpochOriginal = Math.floor(Number(tick.epoch));
+            const tickEpochBrasilia = tickEpochOriginal - (3 * 60 * 60);
+            
+            if (!isNaN(tickValue) && isFinite(tickValue) && tickValue > 0 &&
+                !isNaN(tickEpochOriginal) && isFinite(tickEpochOriginal) && tickEpochOriginal > 0) {
+              
+              this.latestTick = { value: tickValue, epoch: tickEpochBrasilia };
+              
+              const newTick = { value: tickValue, epoch: tickEpochOriginal };
+              this.allHistoricalTicks.push(newTick);
+              
+              const now = Math.floor(Date.now() / 1000);
+              const maxPeriod = Math.max(this.zoomPeriod * 60, 10 * 60);
+              const cutoffTime = now - maxPeriod;
+              this.allHistoricalTicks = this.allHistoricalTicks.filter(t => t.epoch >= cutoffTime);
+              
+              const zoomCutoff = now - (this.zoomPeriod * 60);
+              if (tickEpochOriginal >= zoomCutoff) {
+                this.addTickToChart({ time: tickEpochBrasilia, value: tickValue });
+              }
+              
+              if (this.entrySpotLine && this.activeContract) this.updateEntrySpotLine();
+              
+              if (this.isAnalyzing) {
+                this.collectTickForAnalysis({ value: tickValue, epoch: tickEpochOriginal });
+              }
+              
+              if (this.isDigitContract) this.updateDigitInfo(tickValue);
+              
+              if (this.activeContract) {
+                this.updateRealTimeProfit();
+                if (this.isTickBasedContract && this.contractTicksRemaining !== null) {
+                  this.contractTickCount++;
+                  this.contractTicksRemaining = Math.max(0, (this.activeContract.duration || this.duration || 1) - this.contractTickCount);
+                  if (this.contractTicksRemaining <= 0) {
+                    this.handleContractExpiration({ status: 'expired' });
+                  }
+                }
+              }
+            }
+            
+            if (this.isGlobalLoading) this.isGlobalLoading = false;
+    },
+
+
     initChart() {
       const container = this.$refs.chartContainer;
       if (!container) return;
@@ -1328,36 +1600,7 @@ export default {
         return derivToken;
     },
 
-    async loadTicksFromBackend(count = null) {
-      if (!this.chart || !this.chartSeries || !this.symbol) {
-        console.warn('[Chart] Gráfico não inicializado ou símbolo não definido');
-        return;
-      }
-      
-      try {
-        console.log('[Chart] ========== BUSCANDO HISTÓRICO DE TICKS ==========');
-        console.log('[Chart] Símbolo:', this.symbol, 'Count:', count);
-        
-        this.isLoadingTicks = true;
-        
-        // Inscrever-se no símbolo para receber histórico (via SSE)
-        // A conexão é gerenciada automaticamente pelo backend/service
-        if (!derivTradingService.isConnected) {
-            // Se precisar conectar, o service deve saber como (ou o subscribeSymbol cuida disso)
-            // Mas vamos assumir que o subscribeSymbol faz a conexao se necessario
-        }
-
-        
-        // Inscrever-se no símbolo para receber histórico (isso vai disparar histórico via SSE)
-        // Inscrever-se no símbolo para receber histórico (isso vai disparar histórico via SSE)
-        await derivTradingService.subscribeSymbol(this.symbol, null, null, count);
-        console.log('[Chart] Inscrição no símbolo enviada, aguardando histórico via SSE...');
-        
-        // O histórico será recebido via SSE no handler processHistoryFromSSE
-      } catch (error) {
-        console.error('[Chart] Erro ao buscar histórico de ticks:', error);
-      }
-    },
+    // Método loadTicksFromBackend removido (substituído por subscribeWSTicks)
     filterTicksByZoom(ticks) {
       if (!ticks || !Array.isArray(ticks) || ticks.length === 0) {
         return [];
@@ -1606,9 +1849,9 @@ export default {
       // Buscar tipos de negociação disponíveis para o mercado selecionado
       await this.loadAvailableContracts(marketValue);
       
-      // Carregar ticks do novo mercado
+      // Carregar ticks do novo mercado via WS
       setTimeout(() => {
-        this.loadTicksFromBackend();
+        this.subscribeWSTicks();
       }, 500);
     },
     openTradeTypeModal() {
@@ -1619,59 +1862,9 @@ export default {
     },
     async setupStream() {
        try {
-        // Iniciar stream SSE para receber mensagens
-        // O backend resolverá o token automaticamente
+        // Iniciar stream SSE para receber atualizações de ORDENS
         await derivTradingService.startStream((data) => {
-          if (data.type === 'active_symbols' && data.data) {
-            this.processActiveSymbols(data.data);
-            this.isLoadingMarkets = false;
-          } else if (data.type === 'history' && data.data && data.data.ticks) {
-            // Histórico recebido via SSE - armazenar todos os ticks e filtrar pelo zoom
-            console.log('[Chart] Histórico recebido via SSE:', data.data.ticks.length, 'ticks');
-            this.isLoadingTicks = false;
-            
-            // Armazenar todos os ticks históricos (garantir que epoch está em segundos)
-            this.allHistoricalTicks = data.data.ticks.map(tick => {
-              let epoch = Number(tick.epoch || tick.time);
-              // Se o epoch parece estar em milissegundos, converter para segundos
-              if (epoch > 10000000000) {
-                epoch = Math.floor(epoch / 1000);
-              }
-              return {
-                value: Number(tick.value),
-                epoch: epoch
-              };
-            });
-            
-            // Ordenar por epoch (do mais antigo para o mais recente)
-            this.allHistoricalTicks.sort((a, b) => a.epoch - b.epoch);
-            
-            // Filtrar ticks pelo período de zoom selecionado
-            const filteredTicks = this.filterTicksByZoom(this.allHistoricalTicks);
-            
-            // Se estiver analisando, coletar ticks antes de plotar
-            if (this.isAnalyzing && filteredTicks.length > 0) {
-              filteredTicks.forEach(tick => {
-                this.collectTickForAnalysis({
-                  value: tick.value,
-                  epoch: tick.epoch
-                });
-              });
-            }
-            
-            if (filteredTicks.length > 0) {
-              this.plotTicks(filteredTicks);
-            } else {
-              // Se não houver ticks filtrados, tentar usar os últimos 100 ticks disponíveis
-              if (this.allHistoricalTicks.length > 0) {
-                const last100Ticks = this.allHistoricalTicks.slice(-100);
-                this.plotTicks(last100Ticks);
-              }
-            }
-            
-            // Dados históricos recebidos, podemos remover o loader bloqueante
-            this.isGlobalLoading = false;
-          } else if (data.type === 'buy' && data.data) {
+          if (data.type === 'buy' && data.data) {
             this.processBuy(data.data);
           } else if (data.type === 'contract' && data.data) {
             this.processContract(data.data);
@@ -1679,114 +1872,14 @@ export default {
             console.error('[Chart] Erro recebido via SSE:', data.error);
             this.tradeError = data.error.message || 'Erro na operação';
             this.isTrading = false;
-          } else if (data.type === 'tick' && data.data) {
-            // Atualizar latestTick e adicionar ao gráfico
-            const tickValue = Number(data.data.value);
-            const tickEpochOriginal = Math.floor(Number(data.data.epoch)); // Epoch original (UTC)
-            const tickEpochBrasilia = tickEpochOriginal - (3 * 60 * 60); // UTC-3 para o gráfico
-            
-            if (!isNaN(tickValue) && isFinite(tickValue) && tickValue > 0 &&
-                !isNaN(tickEpochOriginal) && isFinite(tickEpochOriginal) && tickEpochOriginal > 0) {
-              this.latestTick = {
-                value: tickValue,
-                epoch: tickEpochBrasilia
-              };
-              
-              // Adicionar tick ao histórico (usando epoch original)
-              const newTick = {
-                value: tickValue,
-                epoch: tickEpochOriginal
-              };
-              this.allHistoricalTicks.push(newTick);
-              
-              // Manter apenas os ticks que estão dentro do período de zoom ou um pouco mais
-              const now = Math.floor(Date.now() / 1000);
-              const maxPeriod = Math.max(this.zoomPeriod * 60, 10 * 60); // Manter pelo menos 10 minutos
-              const cutoffTime = now - maxPeriod;
-              this.allHistoricalTicks = this.allHistoricalTicks.filter(tick => tick.epoch >= cutoffTime);
-              
-              // Verificar se o tick está dentro do período de zoom atual
-              const zoomCutoff = now - (this.zoomPeriod * 60);
-              if (tickEpochOriginal >= zoomCutoff) {
-                // Adicionar tick ao gráfico (usando epoch em UTC-3)
-                this.addTickToChart({
-                  time: tickEpochBrasilia,
-                  value: tickValue
-                });
-              }
-              
-              // Atualizar linha de compra se existir
-              if (this.entrySpotLine && this.activeContract) {
-                this.updateEntrySpotLine();
-              }
-              
-              // Coletar tick para análise se estiver analisando (usando epoch original)
-              if (this.isAnalyzing) {
-                this.collectTickForAnalysis({
-                  value: tickValue,
-                  epoch: tickEpochOriginal
-                });
-              }
-              
-              // Calcular último dígito se for contrato de dígitos
-              if (this.isDigitContract) {
-                this.updateDigitInfo(tickValue);
-              }
-              
-              // Atualizar P&L em tempo real se houver contrato ativo
-              if (this.activeContract) {
-                this.updateRealTimeProfit();
-                
-                // Atualizar ticks restantes se for contrato baseado em ticks
-                if (this.isTickBasedContract && this.contractTicksRemaining !== null) {
-                  this.contractTickCount++;
-                  this.contractTicksRemaining = Math.max(0, (this.activeContract.duration || this.duration || 1) - this.contractTickCount);
-                  
-                  if (this.contractTicksRemaining <= 0) {
-                    this.handleContractExpiration({ status: 'expired' });
-                  }
-                }
-              }
-            }
-            
-            // Se recebermos ticks, também remover o loader (caso histórico tenha falhado ou já passado)
-            if (this.isGlobalLoading) {
-               this.isGlobalLoading = false;
-            }
           }
+          // Ignorar active_symbols, history, tick (agora via WS Direto)
         });
        } catch (error) {
          console.error('[Chart] Erro ao configurar stream:', error);
        }
     },
-    async loadMarketsFromAPI() {
-      try {
-        this.isLoadingMarkets = true;
-        
-        // Solicitar símbolos ativos via endpoint REST
-        try {
-          await derivTradingService.requestActiveSymbols();
-          console.log('[Chart] Solicitação de símbolos enviada');
-        } catch (error) {
-          console.warn('[Chart] Erro ao solicitar símbolos:', error);
-        }
-
-        // Aguardar um pouco para receber os símbolos via SSE
-        setTimeout(() => {
-          if (this.markets.length === 0) {
-            console.warn('[Chart] Nenhum símbolo recebido, usando mercados padrão');
-            this.markets = this.getDefaultMarkets();
-            this.isLoadingMarkets = false;
-          }
-        }, 5000);
-
-      } catch (error) {
-        console.error('[Chart] Erro ao carregar mercados da API:', error);
-        // Usar mercados padrão em caso de erro
-        this.markets = this.getDefaultMarkets();
-        this.isLoadingMarkets = false;
-      }
-    },
+    // Método loadMarketsFromAPI removido (substituído por subscribeWSActiveSymbols)
     processActiveSymbols(symbols) {
       if (!symbols || !Array.isArray(symbols)) {
         console.warn('[Chart] active_symbols inválido:', symbols);
