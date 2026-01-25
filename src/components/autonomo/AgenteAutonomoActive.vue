@@ -292,9 +292,25 @@
 
 			<!-- Weekly Table -->
 			<div class="overflow-x-auto mb-6">
-				<div class="flex items-center justify-between mb-3">
-					<h4 class="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wide text-left">Resumo {{ periodLabel }}</h4>
-					<button v-if="selectedPeriodFilter" @click="clearPeriodFilter" class="text-[10px] text-green-500 hover:text-green-400 font-bold uppercase transition-colors flex items-center gap-1">
+				<div class="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-4 gap-3">
+					<h4 class="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wide text-left flex items-center gap-2">
+                        Resumo {{ selectedAggregation === 'week' ? 'Semanal' : selectedAggregation === 'month' ? 'Mensal' : selectedAggregation === 'semester' ? 'Semestral' : 'Anual' }}
+                        <span v-if="selectedPeriodFilter" class="bg-green-500/10 text-green-500 text-[10px] px-2 py-0.5 rounded border border-green-500/20">Filtrado</span>
+                    </h4>
+                    
+                    <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a]">
+                        <button 
+                            v-for="type in [{id:'week', label:'Sema'}, {id:'month', label:'Mes'}, {id:'semester', label:'Semestre'}, {id:'year', label:'Ano'}]" 
+                            :key="type.id"
+                            @click="selectAggregation(type.id)"
+                            class="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all"
+                            :class="selectedAggregation === type.id ? 'bg-[#FAFAFA] text-black shadow-lg shadow-white/5' : 'text-[#A1A1AA] hover:text-white hover:bg-white/5'"
+                        >
+                            {{ type.label }}
+                        </button>
+                    </div>
+
+					<button v-if="selectedPeriodFilter" @click="clearPeriodFilter" class="text-[10px] text-red-500 hover:text-red-400 font-bold uppercase transition-colors flex items-center gap-1 ml-auto">
 						<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-filter-x"><path d="M13.013 17.653 21 21v-3.5a2 2 0 0 1 2-2.13L21 15"/><path d="m3 3 18 18"/><path d="M14.761 2.362A3 3 0 0 1 20 5.337L15 13.5v7l-2.091-2.091"/></svg>
 						Limpar Filtro
 					</button>
@@ -787,6 +803,8 @@
                 
 				selectedPeriodFilter: null, // Novo estado para filtro
 				selectedAgentFilter: 'all', // Novo filtro de agente
+				selectedAggregation: 'week', // week, month, semester, year
+				customDateRange: null, // { start: 'YYYY-MM-DD', end: 'YYYY-MM-DD' }
 
 				// Agent Switcher
 				showAgentSwitcher: false,
@@ -1155,16 +1173,37 @@
 			},
 			
 			// Métodos do Gráfico
-			selectPeriodFilter(week) {
-				if (this.selectedPeriodFilter === week.period) {
-					this.selectedPeriodFilter = null;
-				} else {
-					this.selectedPeriodFilter = week.period;
+			selectPeriodFilter(row) {
+				if (this.selectedPeriodFilter === row.period) {
+					this.clearPeriodFilter();
+					return;
 				}
+				this.selectedPeriodFilter = row.period;
+                
+                // Definir range de datas customizado a partir da linha clicada
+                if (row.startDate && row.endDate) {
+                    this.customDateRange = { start: row.startDate, end: row.endDate };
+                    this.selectedPeriod = 'custom';
+                    
+                    // Buscar detalhes para este período
+                    this.fetchDailyStats();
+                    this.fetchProfitEvolution();
+                }
 			},
 			clearPeriodFilter() {
 				this.selectedPeriodFilter = null;
+                this.customDateRange = null;
+                this.selectedPeriod = 'session'; 
+                
+                this.fetchDailyStats();
+                this.fetchProfitEvolution();
 			},
+            selectAggregation(type) {
+                this.selectedAggregation = type;
+                this.selectedPeriodFilter = null; 
+                this.customDateRange = null; 
+                this.fetchSummaryStats();
+            },
 			initIndexChart() {
                 console.log('[AgenteAutonomo] initIndexChart iniciado');
 				if (!this.$refs.performanceChartContainer) {
@@ -1358,8 +1397,13 @@
 				try {
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
                     const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
-					console.log('[AgenteAutonomo] Buscando stats diários em:', `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30${agentFilter}`);
-					const url = `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30${agentFilter}`;
+                    let dateRangeParams = '';
+                    if (this.selectedPeriod === 'custom' && this.customDateRange) {
+                         dateRangeParams = `&startDate=${this.customDateRange.start}&endDate=${this.customDateRange.end}`;
+                    }
+
+					console.log('[AgenteAutonomo] Buscando stats diários em:', `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30${agentFilter}${dateRangeParams}`);
+					const url = `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30${agentFilter}${dateRangeParams}`;
 					const options = {
 						method: "GET",
 						headers: {
@@ -1448,16 +1492,17 @@
 				}
 			},
 
-			async fetchWeeklyStats() {
+			async fetchSummaryStats() {
 				const userId = this.getUserId();
-				console.log('[AgenteAutonomo] fetchWeeklyStats chamado para user:', userId);
+				console.log('[AgenteAutonomo] fetchSummaryStats chamado para user:', userId);
 				if (!userId) return;
 
 				try {
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
                     const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
-					const url = `${apiBase}/autonomous-agent/weekly-stats/${userId}?weeks=26${agentFilter}`; // Aumentado para 26 semanas (semestre) para cobrir mais histórico
-					console.log('[AgenteAutonomo] Buscando stats semanais em:', url);
+                    const groupFilter = `&groupBy=${this.selectedAggregation}`;
+					const url = `${apiBase}/autonomous-agent/summary-stats/${userId}?v=${Date.now()}${agentFilter}${groupFilter}`; 
+					console.log('[AgenteAutonomo] Buscando stats sumarizados em:', url);
 					
 					const response = await fetch(url, {
 						method: "GET",
@@ -1467,19 +1512,17 @@
 						},
 					});
 
-					console.log('[AgenteAutonomo] Weekly Stats Response Status:', response.status);
-
 					if (response.ok) {
 						const result = await response.json();
-						console.log('[AgenteAutonomo] weekly-stats resultado:', result);
+                        // console.log('[AgenteAutonomo] summary-stats resultado:', result);
 						if (result.success && result.data) {
-							this.weeklyData = result.data;
+							this.weeklyData = result.data; // Reusing weeklyData variable for summary table
 						}
 					} else {
-						console.error('[AgenteAutonomo] Erro na resposta de weekly-stats:', response.status);
+						console.error('[AgenteAutonomo] Erro na resposta de summary-stats:', response.status);
 					}
 				} catch (error) {
-					console.error("[AgenteAutonomo] Erro ao buscar stats semanais:", error);
+					console.error("[AgenteAutonomo] Erro ao buscar stats sumarizados:", error);
 				}
 			},
 
@@ -1522,9 +1565,11 @@
                         if (this.selectedAgentFilter !== 'all') {
                              // Fallback para dia atual se filtrar por agente, pois session-evolution pega SESSÃO ATIVA do config global
                              // e a sessão ativa é GLOBAL do usuário, mas os trades podem ser filtrados.
-                             // Porém, getProfitEvolution(days=1) retorna evolução do dia.
+                        // Porém, getProfitEvolution(days=1) retorna evolução do dia.
                              url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=1${agentFilter}`;
                         }
+                    } else if (this.selectedPeriod === 'custom' && this.customDateRange) {
+                         url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?startDate=${this.customDateRange.start}&endDate=${this.customDateRange.end}${agentFilter}`;
                     } else {
                         url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}${agentFilter}`;
                     }
@@ -1695,7 +1740,7 @@
 				this.fetchAgentConfig(); 
 				this.fetchProfitEvolution();
 				this.fetchDailyStats();
-				this.fetchWeeklyStats();
+				this.fetchSummaryStats();
 				// Se modal aberto, atualiza detalhes
 				if (this.selectedDay && this.selectedDay.fullDate === new Date().toISOString().split('T')[0]) {
 					this.fetchDailyDetails(this.selectedDay);
