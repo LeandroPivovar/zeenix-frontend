@@ -717,7 +717,7 @@ export default {
         {
           icon: 'fas fa-brain',
           title: "IA's de Investimento",
-          percentage: '+12.4%',
+          percentage: '+10.0%',
           usage: 32,
           buttonText: 'Ativar agora',
           chartPath: 'M0,20 L20,15 L40,18 L60,12 L80,14 L100,8',
@@ -727,7 +727,7 @@ export default {
         {
           icon: 'fas fa-users',
           title: 'Copy Trading',
-          percentage: '+8.7%',
+          percentage: '+28.0%',
           usage: 0,
           buttonText: 'Em breve',
           chartPath: 'M0,22 L20,18 L40,20 L60,16 L80,17 L100,13',
@@ -739,7 +739,7 @@ export default {
         {
           icon: 'fas fa-atom',
           title: 'Agente Autônomo',
-          percentage: '+15.2%',
+          percentage: '+8.0%',
           usage: 0,
           buttonText: 'Em breve',
           chartPath: 'M0,18 L20,14 L40,16 L60,10 L80,12 L100,6',
@@ -751,7 +751,7 @@ export default {
         {
           icon: 'fas fa-chart-line',
           title: 'Operações com Sinais',
-          percentage: '+10.9%',
+          percentage: '+7.0%',
           usage: 0,
           buttonText: 'Em breve',
           chartPath: 'M0,19 L20,16 L40,17 L60,13 L80,14 L100,10',
@@ -981,7 +981,7 @@ export default {
               if (index !== undefined && this.performanceData[index]) {
                 const sourcePercent = (value / safeInitialBalance) * 100;
                 const prefix = sourcePercent >= 0 ? '+' : '';
-                this.performanceData[index].percentage = `${prefix}${sourcePercent.toFixed(1)}%`;
+                // this.performanceData[index].percentage = `${prefix}${sourcePercent.toFixed(1)}%`;
                 
                 // Ajustar usage baseado se houve lucro ou não para dar feedback visual
                 if (value !== 0) {
