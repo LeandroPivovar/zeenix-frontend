@@ -1836,7 +1836,7 @@ export default {
             
             this.subscribeToContract(buy.contract_id);
             
-            this.tradeMessage = 'Compra executada com sucesso. Monitorando contrato...';
+            this.tradeMessage = '';
             this.tradeError = '';
             this.isTrading = false;
             
