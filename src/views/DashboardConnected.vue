@@ -76,7 +76,7 @@
             </div>
             <div class="pt-4 self-start">
               <button 
-                @click="$router.push('/settings?tab=deposit')"
+                @click="openDepositFlow"
                 class="relative bg-gradient-to-r from-[#22C55E] to-[#16A34A] hover:from-[#16A34A] hover:to-[#15803D] text-white text-base font-semibold px-10 py-4 rounded-xl transition-all duration-300 overflow-hidden group shadow-[0_0_30px_rgba(34,197,94,0.4)] hover:shadow-[0_0_40px_rgba(34,197,94,0.6)] hover:scale-105"
               >
                 <span class="relative z-10 flex items-center space-x-2">
@@ -1869,7 +1869,8 @@ export default {
       }
     },
     openDepositFlow() {
-      this.$router.push('/settings?tab=deposit');
+      // Redirecionamento externo para a Academy
+      window.location.href = 'https://iazenix.com/academy/course/25054bef-4f7c-4388-b22a-f01374671da3';
     },
     toggleBalanceVisibility() {
       this.balanceVisible = !this.balanceVisible;

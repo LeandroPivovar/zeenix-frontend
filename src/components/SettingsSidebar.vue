@@ -671,7 +671,8 @@ export default {
     },
     openDepositFlow() {
       this.close();
-      this.$router.push('/settings?tab=deposit');
+      // Redirecionamento externo para a Academy
+      window.location.href = 'https://iazenix.com/academy/course/25054bef-4f7c-4388-b22a-f01374671da3';
     },
     logout() {
       localStorage.removeItem('deriv_token');
