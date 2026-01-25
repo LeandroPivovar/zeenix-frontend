@@ -31,22 +31,23 @@
                     </div>
                 </div>
 
-                <div class="filter-controls">
-                    <div class="date-filter-wrapper">
-                        <div class="date-filter">
-                            <span>Data de início</span>
-                            <input type="date" v-model="filterStartDate">
-                        </div>
-                        <div class="date-filter">
-                            <span>Data final</span>
-                            <input type="date" v-model="filterEndDate">
-                        </div>
+                <div class="filter-controls" style="display: flex; gap: 10px; align-items: flex-end; flex-wrap: wrap;">
+                    <div class="date-filter">
+                        <span>Data de início</span>
+                        <input type="date" v-model="filterStartDate">
                     </div>
-                    <select v-model="filterSelectedCountry" class="select-country">
-                        <option value="">Todos</option>
-                        <option v-for="country in availableCountries" :key="country" :value="country">{{ country }}</option>
-                    </select>
-                    <button class="btn btn-search" @click="fetchData">Buscar</button>
+                    <div class="date-filter">
+                        <span>Data final</span>
+                        <input type="date" v-model="filterEndDate">
+                    </div>
+                    <div class="filter-item">
+                        <span style="display: block; font-size: 12px; margin-bottom: 5px; color: #a0a0a0;">País</span>
+                        <select v-model="filterSelectedCountry" class="select-country" style="height: 40px;">
+                            <option value="">Todos</option>
+                            <option v-for="country in availableCountries" :key="country" :value="country">{{ country }}</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-search" @click="fetchData" style="height: 40px; margin-bottom: 0;">Buscar</button>
                 </div>
 
                 <div class="summary-info">
@@ -93,7 +94,7 @@
                                 <td class="commission-value">{{ formatCurrency(client.commission) }}</td>
                                 <td>{{ client.transactionCount }}</td>
                                 <td>
-                                    <a v-if="client.whatsapp" :href="`https://wa.me/${client.whatsapp.replace(/\D/g, '')}`" target="_blank" class="whatsapp-icon">
+                                    <a v-if="client.whatsapp || client.phone || client.phoneNumber" :href="`https://wa.me/${(client.whatsapp || client.phone || client.phoneNumber).replace(/\D/g, '')}`" target="_blank" class="whatsapp-icon">
                                         <img src="../../assets/icons/whattsapp.svg" alt="" width="20px">
                                     </a>
                                     <span v-else class="whatsapp-icon" style="opacity: 0.3;">
@@ -276,8 +277,11 @@ export default {
         async fetchPeriodData(token, apiUrl) {
             try {
                 const today = new Date();
-                const startOfToday = new Date(today.getFullYear(), today.getMonth(), today.getDate()).toISOString().split('T')[0];
-                const endOfToday = today.toISOString().split('T')[0];
+                const year = today.getFullYear();
+                const month = String(today.getMonth() + 1).padStart(2, '0');
+                const day = String(today.getDate()).padStart(2, '0');
+                const startOfToday = `${year}-${month}-${day}`;
+                const endOfToday = startOfToday;
                 
                 // Primeiro dia do mês atual
                 const startOfMonth = new Date(today.getFullYear(), today.getMonth(), 1).toISOString().split('T')[0];

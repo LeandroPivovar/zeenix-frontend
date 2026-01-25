@@ -535,6 +535,13 @@
 					<div class="date-filter">
 						<input type="date" v-model="filterEndDate">
 					</div>
+					<div class="account-filter" style="margin-right: 10px;">
+						<select v-model="selectedAccountFilter" style="padding: 10px; border-radius: 8px; background-color: #1a1a1a; color: #fff; border: 1px solid #333;">
+							<option value="all">Todas as Contas</option>
+							<option value="real">Conta Real</option>
+							<option value="demo">Conta Demo</option>
+						</select>
+					</div>
 					<button class="btn btn-search" @click="fetchData">Buscar</button>
 				</div>
 
@@ -720,6 +727,7 @@ export default {
 			showSettingsModal: false,
 			filterStartDate: formatDate(sevenDaysAgo), 
 			filterEndDate: formatDate(today),  
+			selectedAccountFilter: 'all',
 
 			allStats: [],
 			displayedStats: [], 
@@ -1094,6 +1102,9 @@ export default {
 				}
 				if (this.filterEndDate) {
 					params.append('endDate', this.filterEndDate);
+				}
+				if (this.selectedAccountFilter !== 'all') {
+					params.append('accountType', this.selectedAccountFilter);
 				}
 				
 				const url = `${apiBase}/autonomous-agent/general-stats?${params.toString()}`;

@@ -35,6 +35,9 @@
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
+        <div class="mb-4 pl-4 desktop-only">
+          <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
+        </div>
         <div class="view-toggle-bar-wrapper">
           <div class="view-toggle-bar">
             <button
