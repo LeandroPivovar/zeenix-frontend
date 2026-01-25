@@ -2205,12 +2205,12 @@ export default {
       try {
         // Construir payload para compra direta (Instant Buy)
         const parameters = {
-          amount: this.amount,
+          amount: Number(this.amount),
           basis: 'stake',
           contract_type: this.tradeType,
           currency: this.currency || 'USD',
           symbol: this.symbol,
-          duration: this.duration,
+          duration: Number(this.duration),
           duration_unit: this.durationUnit,
         };
 
@@ -2225,12 +2225,12 @@ export default {
         
         // Adicionar multiplicador se necessário
         if (this.tradeType.startsWith('MULT')) {
-          parameters.multiplier = this.multiplier || 100;
+          parameters.multiplier = Number(this.multiplier || 100);
         }
 
         const buyRequest = {
             buy: 1,
-            price: this.amount, // Limite de preço (stake)
+            price: Number(this.amount), // Limite de preço (stake)
             parameters: parameters
         };
 

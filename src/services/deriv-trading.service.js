@@ -339,7 +339,7 @@ class DerivTradingService {
     }
 
     try {
-      const response = await fetch(`${API_BASE_URL}/broker/deriv/trading/buy`, {
+      const response = await fetch(`${API_BASE_URL}/broker/manual-trade/buy`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -354,6 +354,8 @@ class DerivTradingService {
           proposalId: config.proposalId, // Opcional, se não fornecido o backend busca
           loginid: config.loginid, // Opcional, força o uso desta conta
           token: config.token, // ✅ CRUCIAL: Passar token para o backend
+          barrier: config.barrier,
+          multiplier: config.multiplier,
         }),
       });
 
@@ -603,7 +605,7 @@ class DerivTradingService {
     if (!authToken) return;
 
     try {
-      await fetch(`${API_BASE_URL}/broker/deriv/trading/notify/buy`, {
+      await fetch(`${API_BASE_URL}/broker/manual-trade/notify/buy`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
@@ -625,7 +627,7 @@ class DerivTradingService {
     if (!authToken) return;
 
     try {
-      await fetch(`${API_BASE_URL}/broker/deriv/trading/notify/end`, {
+      await fetch(`${API_BASE_URL}/broker/manual-trade/notify/end`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${authToken}`,
