@@ -878,6 +878,9 @@ body {
     min-height: 100vh;
     display: flex;
     flex-direction: column;
+    width: auto !important;
+    max-width: none !important;
+    min-width: 0 !important;
 }
 
 .dashboard-content-wrapper.sidebar-collapsed {
