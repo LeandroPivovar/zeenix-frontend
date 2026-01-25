@@ -802,7 +802,7 @@ export default {
             } finally {
                 this.isLoading = false;
             }
-        }
+        },
         requestDeleteAdmin(admin) {
             this.confirmModalData = {
                 visible: true,
