@@ -64,7 +64,7 @@
 						<div class="text-green-500">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Entrada Inicial</span>
+						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium">Entrada Inicial</span>
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">
 						{{ hideValues ? '••••' : '$' + formatPrice(initialCapital) }}
@@ -77,7 +77,7 @@
 						<div class="text-green-500">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium whitespace-nowrap">Capital Final</span>
+						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital Final</span>
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">
 						{{ hideValues ? '••••' : '$' + formatPrice(finalCapital) }}
@@ -98,7 +98,7 @@
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-up" v-if="periodProfit >= 0"><polyline points="22 7 13.5 15.5 8.5 10.5 2 17"></polyline><polyline points="16 7 22 7 22 13"></polyline></svg>
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down" v-else><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium whitespace-nowrap">Lucro do Período</span>
+						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Lucro do Período</span>
 					</div>
 					<div 
 						class="text-2xl font-bold mb-1 tabular-nums relative z-10 text-left"
@@ -126,7 +126,7 @@
 						<div :class="avgDailyProfit >= 0 ? 'text-green-500' : 'text-red-500'">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-chart-column"><path d="M3 3v16a2 2 0 0 0 2 2h16"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs uppercase tracking-wide font-medium">Lucro Médio/Dia</span>
+						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium">Lucro Médio/Dia</span>
 					</div>
 					<div 
 						class="text-2xl font-bold mb-1 tabular-nums text-left"
@@ -220,7 +220,7 @@
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trending-down" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'" v-else><polyline points="22 17 13.5 8.5 8.5 13.5 2 7"></polyline><polyline points="16 17 22 17 22 11"></polyline></svg>
 					</div>
 					<div>
-						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Resultado do dia</div>
+						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Resultado do dia</div>
 						<div class="text-sm font-medium tabular-nums text-left" :class="(sessionStats?.netProfit || 0) >= 0 ? 'text-green-500' : 'text-red-500'">
 							{{ hideValues ? '••••' : ((sessionStats?.netProfit || 0) >= 0 ? '+' : '') + '$' + (sessionStats?.netProfit || 0).toFixed(2) }}
 						</div>
@@ -233,7 +233,7 @@
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity text-green-500"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
 					</div>
 					<div>
-						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">OPERAÇÕES HOJE</div>
+						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">OPERAÇÕES HOJE</div>
 						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">{{ operacoesHojeDisplay }}</div>
 					</div>
 				</div>
@@ -244,7 +244,7 @@
 						<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-clock text-green-500"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
 					</div>
 					<div>
-						<div class="text-[#A1A1AA] text-[10px] uppercase tracking-wide">Tempo ativo</div>
+						<div class="text-[#A1A1AA] text-[10px] capitalize tracking-wide">Tempo ativo</div>
 						<div class="text-sm font-medium tabular-nums text-[#FAFAFA] text-left">{{ tempoAtivoDisplay }}</div>
 					</div>
 				</div>

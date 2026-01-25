@@ -457,14 +457,15 @@ export default {
 }
 
 .header-info h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #f0f2f5;
-    margin: 0 0 0.5rem 0;
+    font-size: 20px;
+    font-weight: 600;
+    color: #ffffff;
+    margin: 0 0 4px 0;
 }
 
 .header-info p {
-    color: #8c929a;
+    font-size: 14px;
+    color: #a0a0a0;
     margin: 0;
 }
 

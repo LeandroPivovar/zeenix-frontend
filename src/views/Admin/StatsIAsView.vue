@@ -4774,6 +4774,7 @@ tbody tr:hover {
 	pointer-events: none;
 	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
 	border: 1px solid #334155;
+	text-transform: capitalize;
 }
 
 .tooltip-text::after {

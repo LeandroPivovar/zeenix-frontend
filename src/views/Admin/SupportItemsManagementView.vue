@@ -74,15 +74,16 @@
             </div>
 
             <!-- Page Header -->
-            <div class="page-header-support" v-if="!isFormVisible" style="text-align: center;">
-                <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #ffffff;">Itens de Suporte</h1>
-                <p style="font-size: 14px; color: #a0a0a0; margin-bottom: 20px;">Tutoriais e materiais de ajuda para os usuários da plataforma</p>
-            </div>
-
-            <div class="add-support-item-button-wrapper" v-if="!isFormVisible">
-                <button class="add-support-item-btn" @click="openForm">
-                    + Adicionar Novo Item de Suporte
-                </button>
+            <div class="page-header-support" v-if="!isFormVisible" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div class="header-text" style="text-align: left;">
+                    <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #ffffff;">Itens de Suporte</h1>
+                    <p style="font-size: 14px; color: #a0a0a0; margin: 0;">Tutoriais e materiais de ajuda para os usuários da plataforma</p>
+                </div>
+                <div class="header-actions">
+                    <button class="add-support-item-btn" @click="openForm">
+                        + Adicionar Novo Item de Suporte
+                    </button>
+                </div>
             </div>
             
             <!-- Desktop Table -->

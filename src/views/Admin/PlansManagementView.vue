@@ -167,15 +167,16 @@
             </div>
 
             <!-- Page Header -->
-            <div class="page-header-plans" v-if="!isFormVisible" style="text-align: center;">
-                <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #ffffff;">Gerenciar Planos</h1>
-                <p style="font-size: 14px; color: #a0a0a0; margin-bottom: 20px;">Aqui crie, gerencie ou remova os planos</p>
-            </div>
-
-            <div class="add-plan-button-wrapper" v-if="!isFormVisible">
-                <button class="add-plan-btn" @click="openForm">
-                    + Adicionar Novo Plano
-                </button>
+            <div class="page-header-plans" v-if="!isFormVisible" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+                <div class="header-text" style="text-align: left;">
+                    <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #ffffff;">Gerenciar Planos</h1>
+                    <p style="font-size: 14px; color: #a0a0a0; margin: 0;">Aqui crie, gerencie ou remova os planos</p>
+                </div>
+                <div class="header-actions">
+                    <button class="add-plan-btn" @click="openForm">
+                        + Adicionar Novo Plano
+                    </button>
+                </div>
             </div>
             
             <!-- Tabela Desktop -->
