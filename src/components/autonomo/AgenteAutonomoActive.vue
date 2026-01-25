@@ -511,11 +511,12 @@
 					</div>
 				</div>
 
-				<!-- Firewall -->
+				<!-- Stop Loss -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3 flex flex-col items-start">
-					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Firewall</div>
-					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors bg-yellow-500/10 text-yellow-500 border-yellow-500/20 text-[10px] sm:text-xs text-left">
-						${{ agenteData.stopValue ? agenteData.stopValue.toFixed(2) : '25.00' }}
+					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Stop Loss</div>
+					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors text-[10px] sm:text-xs text-left"
+						:class="(agenteData.stopValue || 0) < 0 ? 'bg-red-500/10 text-red-500 border-red-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'">
+						{{ (agenteData.stopValue || 0) < 0 ? '' : '' }}${{ (agenteData.stopValue || 25).toFixed(2) }}
 					</div>
 				</div>
 			</div>
