@@ -262,7 +262,7 @@
                 <div class="flex items-center gap-4 ml-auto">
                     <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a]">
                         <button 
-                            v-for="type in [{id:'session', label:'Hoje'}, {id:'7d', label:'Semana'}, {id:'30d', label:'Mes'}, {id:'6m', label:'Semestre'}, {id:'1y', label:'Ano'}]" 
+                            v-for="type in [{id:'session', label:'HOJE'}, {id:'7d', label:'SEMANA'}, {id:'30d', label:'MES'}, {id:'6m', label:'SEMESTRE'}, {id:'1y', label:'ANO'}]" 
                             :key="type.id"
                             @click="selectDateRange({value: type.id})"
                             class="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all"
@@ -315,7 +315,7 @@
                     <div class="flex items-center gap-3 ml-auto">
                         <div class="flex items-center gap-1 bg-[#1a1a1a] p-1 rounded-lg border border-[#27272a]">
                             <button 
-                                v-for="type in [{id:'week', label:'Semana'}, {id:'month', label:'Mes'}, {id:'semester', label:'Semestre'}, {id:'year', label:'Ano'}]" 
+                                v-for="type in [{id:'week', label:'SEMANA'}, {id:'month', label:'MES'}, {id:'semester', label:'SEMESTRE'}, {id:'year', label:'ANO'}]" 
                                 :key="type.id"
                                 @click="selectAggregation(type.id)"
                                 class="px-3 py-1.5 rounded-md text-[10px] font-bold uppercase transition-all"
@@ -327,7 +327,7 @@
 
                         <button v-if="selectedPeriodFilter" @click="clearPeriodFilter" class="text-[10px] text-red-500 hover:text-red-400 font-bold uppercase transition-colors flex items-center gap-1">
                             <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-filter-x"><path d="M13.013 17.653 21 21v-3.5a2 2 0 0 1 2-2.13L21 15"/><path d="m3 3 18 18"/><path d="M14.761 2.362A3 3 0 0 1 20 5.337L15 13.5v7l-2.091-2.091"/></svg>
-                            Limpar Filtro
+                            LIMPAR FILTRO
                         </button>
                     </div>
 				</div>
