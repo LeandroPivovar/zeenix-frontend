@@ -516,35 +516,77 @@
                 </div>
             </div>
 
-            <!-- Resultado da Operação -->
-            <div v-if="showResultNotification" class="result-notification-overlay" @click="closeResultNotification">
-                <div class="result-notification" :class="resultNotificationClass" @click.stop>
-                    <div class="result-header">
-                        <h3>{{ resultNotificationTitle }}</h3>
-                        <button @click="closeResultNotification" class="close-btn">✕</button>
-                    </div>
-                    <div class="result-body">
-                        <div class="result-icon">{{ resultNotificationIcon }}</div>
-                        <div class="result-profit">
-                            {{ lastTradeResult.profit >= 0 ? '+' : '' }}{{ displayCurrency }} {{ (lastTradeResult.profit || 0).toFixed(2) }}
+            <!-- Trade Result Modal -->
+            <Teleport to="body">
+                <div 
+                    v-if="showTradeResultModal" 
+                    class="modal-overlay" 
+                    data-modal="trade-result" 
+                    @click.self="closeTradeResultModal"
+                >
+                    <div class="modal-content trade-result-modal">
+                        <div class="modal-header">
+                            <h3 class="modal-title">Resultado da Operação</h3>
+                            <button @click="closeTradeResultModal" class="modal-close-btn">
+                                <i class="fas fa-times"></i>
+                            </button>
                         </div>
-                        <div class="result-details">
-                            <div class="result-detail-item">
-                                <span>Tipo:</span>
-                                <span>{{ getDigitTypeLabel(lastTradeResult.direction) }} {{ lastTradeResult.barrier ? `(${lastTradeResult.barrier})` : '' }}</span>
-                            </div>
-                            <div class="result-detail-item">
-                                <span>Investimento:</span>
-                                <span>{{ displayCurrency }} {{ (lastTradeResult.buyPrice || 0).toFixed(2) }}</span>
-                            </div>
-                            <div class="result-detail-item">
-                                <span>Retorno:</span>
-                                <span>{{ displayCurrency }} {{ (lastTradeResult.sellPrice || 0).toFixed(2) }}</span>
+                        <div class="modal-body">
+                            <div class="trade-result-content">
+                                <!-- Ícone e Status -->
+                                <div class="trade-result-icon-wrapper" :class="finalTradeProfit >= 0 ? 'win' : 'loss'">
+                                    <div class="trade-result-icon">
+                                        <i :class="finalTradeProfit >= 0 ? 'fas fa-trophy' : 'fas fa-chart-line rotate-180'"></i>
+                                    </div>
+                                    <div class="trade-result-particles"></div>
+                                </div>
+                                
+                                <!-- Título -->
+                                <h4 class="trade-result-status" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                                    {{ finalTradeProfit >= 0 ? 'VITÓRIA' : 'DERROTA' }}
+                                </h4>
+                                
+                                <!-- Valor -->
+                                <div class="trade-result-main-value" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                                    <span class="currency-symbol">$</span>
+                                    <span class="profit-amount">{{ Math.abs(finalTradeProfit).toFixed(pricePrecision) }}</span>
+                                </div>
+                                
+                                <!-- Detalhes em Grid -->
+                                <div class="trade-result-details-grid">
+                                    <div class="detail-item">
+                                        <span class="detail-label">TIPO</span>
+                                        <span class="detail-value">{{ finalTradeType }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">ENTRADA</span>
+                                        <span class="detail-value">$ {{ finalEntrySpot ? finalEntrySpot.toFixed(pricePrecision) : '---' }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">SAÍDA</span>
+                                        <span class="detail-value">$ {{ finalExitSpot ? finalExitSpot.toFixed(pricePrecision) : '---' }}</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="detail-label">STATUS</span>
+                                        <span class="detail-value" :class="finalTradeProfit >= 0 ? 'text-zenix-green' : 'text-red-500'">
+                                            {{ finalTradeProfit >= 0 ? 'Profit' : 'Loss' }}
+                                        </span>
+                                    </div>
+                                </div>
+                                
+                                <!-- Botão Fechar -->
+                                <button 
+                                    @click="closeTradeResultModal"
+                                    class="trade-result-confirm-btn"
+                                    :class="finalTradeProfit >= 0 ? 'bg-zenix-green' : 'bg-red-500'"
+                                >
+                                    ENTENDIDO
+                                </button>
                             </div>
                         </div>
                     </div>
                 </div>
-            </div>
+            </Teleport>
         </div>
 
         <!-- Market Selection Modal -->
@@ -781,13 +823,14 @@ export default {
                 frequency: {},
                 parity: { even: 0, odd: 0 },
             },
-            showResultNotification: false,
-            lastTradeResult: {
-                profit: 0,
-                buyPrice: 0,
-                sellPrice: 0,
-                barrier: null,
-            },
+            // Trade Result Modal Data
+            showTradeResultModal: false,
+            finalTradeProfit: 0,
+            finalTradeType: 'CALL',
+            finalEntrySpot: null,
+            finalExitSpot: null,
+            pricePrecision: 2,
+            
             isAnalyzing: false,
             aiRecommendation: null,
             analysisTimer: null,
@@ -796,6 +839,9 @@ export default {
         }
     },
     computed: {
+        finalTradeTypeLabel() {
+             return this.getDigitTypeLabel(this.finalTradeType);
+        },
         selectedMarketLabel() {
             const market = this.markets.find(m => m.value === this.symbol);
             if (!market) {
@@ -1855,6 +1901,12 @@ export default {
             }
         },
         finalizeContract(contract) {
+            // Evitar execução duplicada se o modal já estiver aberto
+            if (this.showTradeResultModal) {
+                 console.log('[OperationDigits] Modal já está aberto, ignorando trigger duplicado de expiração.');
+                 return;
+            }
+
             console.log('[OperationDigits] ========== FINALIZANDO CONTRATO ==========');
             console.log('[OperationDigits] Dados do contrato:', contract);
             
@@ -1867,21 +1919,19 @@ export default {
                 finalProfit = Number(this.realTimeProfit);
             }
             
-            // Armazenar resultado para exibição
-            this.lastTradeResult = {
-                profit: finalProfit,
-                buyPrice: this.activeContract?.buy_price || 0,
-                sellPrice: contract.sell_price ? Number(contract.sell_price) : 0,
-                direction: this.activeContract?.type || '',
-                barrier: this.activeContract?.digitBarrier || null,
-            };
+            // Preparar dados para o modal
+            this.finalTradeProfit = finalProfit;
+            // Usar o tipo do contrato ativo ou o tipo selecionado
+            this.finalTradeType = this.activeContract?.type || this.digitType || 'CALL'; 
+            if (this.activeContract?.digitBarrier) {
+                 this.finalTradeType += ` (${this.activeContract.digitBarrier})`;
+            }
             
-            console.log('[OperationDigits] Resultado armazenado:', this.lastTradeResult);
+            this.finalEntrySpot = this.activeContract?.entry_spot || 0;
+            this.finalExitSpot = contract.exit_spot ? Number(contract.exit_spot) : (contract.sell_spot ? Number(contract.sell_spot) : this.latestTick?.value);
             
-            // Exibir notificação de resultado
-            this.showResultNotification = true;
-            
-            console.log('[OperationDigits] showResultNotification definido como:', this.showResultNotification);
+            // Exibir Modal
+            this.showTradeResultModal = true;
             
             this.$emit('trade-result', {
                 contractId: this.activeContract?.contract_id,
@@ -1894,11 +1944,32 @@ export default {
                 status: 'CLOSED',
             });
             
-            this.activeContract = null;
-            this.realTimeProfit = null;
+            // Limpar contrato após um tempo para garantir que o usuário veja
+            // Mas a limpeza real ocorre no closeTradeResultModal para reativar botões apenas lá
+            setTimeout(() => {
+                if (!this.showTradeResultModal) {
+                    this.activeContract = null;
+                    this.realTimeProfit = null;
+                }
+            }, 10000);
+            
             this.contractStartTime = null;
             this.contractDuration = null;
+        },
+        closeTradeResultModal() {
+            this.showTradeResultModal = false;
+            // Limpar dados do resultado
+            this.finalTradeProfit = 0;
+            this.finalTradeType = 'CALL';
             
+            // Limpar contrato ativo imediatamente para mostrar os botões de ação
+            if (this.activeContract) {
+                this.activeContract = null;
+                this.realTimeProfit = null;
+                this.currentProposalId = null; 
+            }
+            
+            // Reinscrever na proposta para próxima operação
             setTimeout(() => {
                 this.subscribeToProposal();
             }, 500);
@@ -2167,163 +2238,144 @@ export default {
     color: #ef4444;
 }
 
-/* Notificação de Resultado */
-.result-notification-overlay {
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: rgba(0, 0, 0, 0.7);
+/* Trade Result Modal Premium Styles */
+  .trade-result-modal {
+    max-width: 400px !important;
+    background: linear-gradient(135deg, #1A1C20 0%, #0F1012 100%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.1) !important;
+    border-radius: 24px !important;
+    overflow: hidden;
+    position: relative;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5) !important;
+  }
+
+  .trade-result-content {
     display: flex;
+    flex-direction: column;
     align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    animation: fadeIn 0.3s ease;
-}
-
-.result-notification {
-    background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
-    border-radius: 16px;
-    padding: 0;
-    width: 90%;
-    max-width: 500px;
-    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
-    animation: slideUp 0.4s ease;
-    border: 1px solid rgba(148, 163, 184, 0.2);
-}
-
-.result-notification.result-profit {
-    border-color: rgba(16, 185, 129, 0.5);
-}
-
-.result-notification.result-loss {
-    border-color: rgba(239, 68, 68, 0.5);
-}
-
-.result-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 24px;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-}
-
-.result-header h3 {
-    margin: 0;
-    font-size: 1.5rem;
-    font-weight: 700;
-    color: #f8fafc;
-}
-
-.close-btn {
-    background: rgba(148, 163, 184, 0.1);
-    border: none;
-    color: #94a3b8;
-    font-size: 1.5rem;
-    width: 36px;
-    height: 36px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-.close-btn:hover {
-    background: rgba(148, 163, 184, 0.2);
-    color: #f8fafc;
-}
-
-.result-body {
-    padding: 32px 24px;
+    padding: 1.5rem 1rem;
     text-align: center;
-}
+  }
 
-.result-icon {
-    font-size: 4rem;
-    margin-bottom: 16px;
-    animation: bounce 0.6s ease;
-}
-
-.result-profit {
-    font-size: 2.5rem;
-    font-weight: 800;
-    margin-bottom: 24px;
-}
-
-.result-notification.result-profit .result-profit {
-    color: #10b981;
-    text-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
-}
-
-.result-notification.result-loss .result-profit {
-    color: #ef4444;
-    text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
-}
-
-.result-details {
-    background: rgba(15, 23, 42, 0.6);
-    border-radius: 12px;
-    padding: 16px;
-    margin-top: 20px;
-}
-
-.result-detail-item {
+  .trade-result-icon-wrapper {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
-}
+    justify-content: center;
+    margin-bottom: 1.5rem;
+    position: relative;
+    z-index: 1;
+  }
 
-.result-detail-item:last-child {
-    border-bottom: none;
-}
+  .trade-result-icon-wrapper.win {
+    background: radial-gradient(circle, rgba(34, 197, 94, 0.2) 0%, rgba(34, 197, 94, 0) 70%);
+    border: 2px solid #22C55E;
+    color: #22C55E;
+    box-shadow: 0 0 20px rgba(34, 197, 94, 0.3);
+    animation: pulse-win 2s infinite;
+  }
 
-.result-detail-item span:first-child {
-    color: #94a3b8;
-    font-size: 0.9rem;
-}
+  .trade-result-icon-wrapper.loss {
+    background: radial-gradient(circle, rgba(239, 68, 68, 0.2) 0%, rgba(239, 68, 68, 0) 70%);
+    border: 2px solid #EF4444;
+    color: #EF4444;
+    box-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+  }
 
-.result-detail-item span:last-child {
-    color: #f8fafc;
+  .trade-result-icon {
+    font-size: 2.5rem;
+  }
+
+  @keyframes pulse-win {
+    0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.4); }
+    70% { transform: scale(1.05); box-shadow: 0 0 0 15px rgba(34, 197, 94, 0); }
+    100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+  }
+
+  .trade-result-status {
+    font-size: 0.875rem;
+    font-weight: 800;
+    letter-spacing: 0.2em;
+    margin-bottom: 0.5rem;
+  }
+
+  .trade-result-main-value {
+    display: flex;
+    align-items: baseline;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+
+  .currency-symbol {
+    font-size: 1.5rem;
+    font-weight: 500;
+    margin-right: 2px;
+    opacity: 0.8;
+  }
+
+  .profit-amount {
+    font-size: 3.5rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+
+  .trade-result-details-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 16px;
+    padding: 1.25rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+
+  .detail-item {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+  }
+
+  .detail-label {
+    font-size: 0.625rem;
+    font-weight: 700;
+    color: rgba(255, 255, 255, 0.4);
+    letter-spacing: 0.1em;
+    margin-bottom: 0.25rem;
+  }
+
+  .detail-value {
+    font-size: 0.875rem;
     font-weight: 600;
-    font-size: 0.95rem;
-}
+    color: #FFFFFF;
+  }
 
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
-}
+  .trade-result-confirm-btn {
+    width: 100%;
+    padding: 1rem;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    color: #FFFFFF;
+    transition: all 0.3s ease;
+    border: none;
+    cursor: pointer;
+  }
 
-@keyframes slideUp {
-    from {
-        transform: translateY(30px);
-        opacity: 0;
-    }
-    to {
-        transform: translateY(0);
-        opacity: 1;
-    }
-}
+  .trade-result-confirm-btn:hover {
+    transform: translateY(-2px);
+    filter: brightness(1.1);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
+  }
 
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {
-        transform: translateY(0);
-    }
-    40% {
-        transform: translateY(-20px);
-    }
-    60% {
-        transform: translateY(-10px);
-    }
-}
+  .trade-result-confirm-btn:active {
+    transform: translateY(0);
+  }
 
 
 /* Mobile Responsive */
