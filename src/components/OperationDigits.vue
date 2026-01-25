@@ -1144,7 +1144,6 @@ export default {
                 return 'Próximo tick: maior probabilidade de BAIXO (UNDER 5)';
             }
         },
-        },
         // Offsets para preenchimento dinâmico do gauge
         dvxGreenOffset() {
             const len = 90.2;
