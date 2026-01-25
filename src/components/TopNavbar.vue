@@ -88,42 +88,6 @@
             />
             <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
           </button>
-          <div 
-            v-if="showProfileDropdown" 
-            id="profileDropdown" 
-            class="absolute right-0 top-12 w-56 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)]"
-          >
-            <div class="p-3 border-b border-[#1C1C1C]">
-              <p class="text-sm font-semibold text-[#DFDFDF]">{{ userName }}</p>
-              <p class="text-xs text-[#7A7A7A]">{{ userEmail }}</p>
-            </div>
-            <div class="py-2">
-              <a 
-                href="#" 
-                @click.prevent="switchAccount"
-                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-              >
-                <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
-                Trocar de Conta
-              </a>
-              <a 
-                href="#" 
-                @click.prevent="onSettingsClick" 
-                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-              >
-                <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
-                Configurações
-              </a>
-              <a 
-                href="#" 
-                @click.prevent="disconnectAccount" 
-                class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-              >
-                <i class="fas fa-plug text-xs mr-3 text-[#7A7A7A]"></i>
-                Sair da Corretora
-              </a>
-            </div>
-          </div>
         </div>
       </div>
     </div>
@@ -175,42 +139,6 @@
           />
           <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
         </button>
-        <div 
-          v-if="showProfileDropdown" 
-          id="profileDropdownMobile" 
-          class="absolute right-0 top-12 w-56 bg-[#0E0E0E] border border-[#1C1C1C] rounded-xl overflow-hidden shadow-[0_8px_32px_rgba(0,0,0,0.6)] z-50"
-        >
-          <div class="p-3 border-b border-[#1C1C1C]">
-            <p class="text-sm font-semibold text-[#DFDFDF]">{{ userName }}</p>
-            <p class="text-xs text-[#7A7A7A]">{{ userEmail }}</p>
-          </div>
-          <div class="py-2">
-            <a 
-              href="#" 
-              @click.prevent="switchAccount"
-              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-            >
-              <i class="fas fa-exchange-alt text-xs mr-3 text-[#7A7A7A]"></i>
-              Trocar de Conta
-            </a>
-            <a 
-              href="#" 
-              @click.prevent="onSettingsClick" 
-              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-            >
-              <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
-              Configurações
-            </a>
-            <a 
-              href="#" 
-              @click.prevent="disconnectAccount" 
-              class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
-            >
-              <i class="fas fa-plug text-xs mr-3 text-[#7A7A7A]"></i>
-              Sair da Corretora
-            </a>
-          </div>
-        </div>
       </div>
     </div>
 
@@ -608,8 +536,8 @@ export default {
       return `Conta ${type} (${currency})`;
     },
     handleProfileClick() {
-      // Toggle dropdown
-      this.showProfileDropdown = !this.showProfileDropdown;
+      // Redirect directly to settings modal
+      this.onSettingsClick();
     },
     onSettingsClick() {
       // Emit event to open modal

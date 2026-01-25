@@ -60,7 +60,7 @@
 			<div class="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-4">
 				<!-- Capital Inicial -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-[0.8rem] md:p-5 h-full transition-all duration-200 hover:bg-[#121212] hidden md:block">
-					<div class="flex items-center justify-between mb-4">
+					<div class="flex items-center mb-4 gap-2">
 						<div class="text-green-500">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-dollar-sign"><line x1="12" x2="12" y1="2" y2="22"></line><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
 						</div>
@@ -68,9 +68,6 @@
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-[#FAFAFA] text-left">
 						{{ hideValues ? '••••' : '$' + initialCapital.toFixed(2) }}
-					</div>
-					<div class="flex items-center gap-2">
-						<span class="text-[#A1A1AA] text-xs">R$ {{ hideValues ? '••••' : (initialCapital * 5.19).toFixed(3) }}</span>
 					</div>
 				</div>
 
@@ -84,9 +81,6 @@
 					</div>
 					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">
 						{{ hideValues ? '••••' : '$' + finalCapital.toFixed(2) }}
-					</div>
-					<div class="flex items-center gap-2">
-						<span class="text-[#A1A1AA] text-xs">R$ {{ hideValues ? '••••' : (finalCapital * 5.19).toFixed(3) }}</span>
 					</div>
 				</div>
 
@@ -113,7 +107,6 @@
 						{{ hideValues ? '••••' : (periodProfit >= 0 ? '+' : '') + '$' + periodProfit.toFixed(2) }}
 					</div>
 					<div class="flex items-center gap-2 relative z-10">
-						<span class="text-[#A1A1AA] text-xs">R$ {{ hideValues ? '••••' : (periodProfit * 5.19).toFixed(3) }}</span>
 						<div 
 							class="inline-flex items-center rounded-full border border-transparent font-semibold text-[10px] px-2 py-0.5" 
 							:class="periodProfit >= 0 ? 'bg-green-500/20 text-green-500' : 'bg-red-500/20 text-red-500'"
@@ -141,10 +134,6 @@
 					>
 						{{ hideValues ? '••••' : (avgDailyProfit >= 0 ? '+' : '') + '$' + avgDailyProfit.toFixed(2) }}
 					</div>
-					<div class="flex items-center gap-2">
-						<span class="text-[#A1A1AA] text-xs" v-if="!hideValues">${{ Math.abs(avgProfitPerOp).toFixed(2) }}/op</span>
-						<span class="text-[#A1A1AA] text-xs" v-else>••••/op</span>
-					</div>
 				</div>
 			</div>
 		</div>
@@ -170,7 +159,7 @@
 								</div>
 								<div class="text-sm font-medium flex items-center gap-1.5 text-[#FAFAFA] text-left">
 									<span class="text-lg">{{ runningAgents.find(a => a.id === agenteData.id)?.emoji || '⚡' }}</span>
-									<span>{{ agenteData.estrategia.replace('IA ', '') }}</span>
+									<span>{{ agenteData.estrategia.replace('IA ', '').charAt(0).toUpperCase() + agenteData.estrategia.replace('IA ', '').slice(1) }}</span>
 									<span class="w-1.5 h-1.5 rounded-full bg-green-500 ml-1"></span>
 								</div>
 							</div>
@@ -421,6 +410,7 @@
 	</div>
 
 	<!-- Daily Details Modal -->
+    <Teleport to="body">
 	<div v-if="selectedDay" 
 		class="!fixed !inset-0 !z-[9999] flex items-center justify-center bg-black/95 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-300" 
 		@click.self="selectedDay = null"
@@ -438,9 +428,9 @@
 			<!-- Header -->
 			<div class="flex flex-col space-y-1.5 text-left mb-2">
 				<h2 class="text-sm sm:text-lg font-semibold leading-none tracking-tight flex items-center justify-between gap-4">
-					<span class="text-[#FAFAFA]">Relatório Diário — {{ selectedDay.date }}/2026</span>
+					<span class="text-[#FAFAFA]">Relatório Diário — {{ activeDayDetails.date }}/2026</span>
 					<div class="inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] sm:text-xs font-semibold bg-green-500/10 text-green-500 border-green-500/20 mr-8 sm:mr-10">
-						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ selectedDay.profit.toFixed(2) }}
+						{{ activeDayDetails.profit >= 0 ? '+' : '' }}${{ activeDayDetails.profit.toFixed(2) }}
 					</div>
 				</h2>
 			</div>
@@ -450,10 +440,9 @@
 				<!-- Lucro do Dia -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3">
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Lucro do Dia</div>
-					<div class="text-base sm:text-xl font-bold tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ selectedDay.profit.toFixed(2) }}
+					<div class="text-base sm:text-xl font-bold tabular-nums text-left" :class="activeDayDetails.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+						{{ activeDayDetails.profit >= 0 ? '+' : '' }}${{ activeDayDetails.profit.toFixed(2) }}
 					</div>
-					<div class="text-[#A1A1AA] text-[9px] sm:text-xs tabular-nums text-left">R$ {{ (selectedDay.profit * 5.19).toFixed(3) }}</div>
 				</div>
 
 				<!-- Capital -->
@@ -461,22 +450,18 @@
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Capital</div>
 					<!-- Estimating start capital for display logic -->
 					<div class="text-[10px] sm:text-sm font-medium tabular-nums text-[#FAFAFA] text-left">
-						${{ (selectedDay.capital - selectedDay.profit).toFixed(2) }} → ${{ selectedDay.capital.toFixed(2) }}
-					</div>
-					<div class="text-[9px] sm:text-xs tabular-nums text-left" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ selectedDay.profit >= 0 ? '+' : '' }}{{ ((selectedDay.profit / (selectedDay.capital - selectedDay.profit)) * 100).toFixed(2) }}%
+						${{ (activeDayDetails.capital - activeDayDetails.profit).toFixed(2) }} → ${{ activeDayDetails.capital.toFixed(2) }}
 					</div>
 				</div>
 
 				<!-- Meta Diária -->
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3 flex flex-col items-start">
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Meta Diária</div>
-					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors text-[10px] sm:text-xs text-left"
-						:class="selectedDay.isMetaAtingida ? 'bg-green-500/10 text-green-500 border-green-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20'">
-						{{ selectedDay.metaStatus || (selectedDay.isMetaAtingida ? 'Atingida' : 'Pendente') }}
+					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors text-[10px] sm:text-xs text-left bg-green-500/10 text-green-500 border-green-500/20">
+						${{ agenteData.goalValue ? agenteData.goalValue.toFixed(2) : '50.00' }}
 					</div>
-					<div class="text-[#A1A1AA] text-[9px] sm:text-xs mt-0.5 sm:mt-1 text-left" v-if="selectedDay.activationTime">
-						Ativação: {{ selectedDay.activationTime }}
+					<div class="text-[#A1A1AA] text-[9px] sm:text-xs mt-0.5 sm:mt-1 text-left" v-if="activeDayDetails.activationTime">
+						Ativação: {{ activeDayDetails.activationTime }}
 					</div>
 				</div>
 
@@ -484,7 +469,7 @@
 				<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-2 sm:p-3 flex flex-col items-start">
 					<div class="text-[#A1A1AA] text-[8px] sm:text-[10px] uppercase tracking-wide mb-0.5 text-left">Firewall</div>
 					<div class="inline-flex items-center rounded-full border px-2 py-0.5 font-semibold transition-colors bg-yellow-500/10 text-yellow-500 border-yellow-500/20 text-[10px] sm:text-xs text-left">
-						Ativado
+						${{ agenteData.stopValue ? agenteData.stopValue.toFixed(2) : '25.00' }}
 					</div>
 				</div>
 			</div>
@@ -492,31 +477,27 @@
 			<!-- Statistics Grid -->
 			<div class="grid grid-cols-3 md:grid-cols-6 gap-2 sm:gap-3 mt-4">
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.ops }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ activeDayDetails.ops }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Operações</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
 					<!-- Approximating wins based on winrate -->
-					<div class="text-base sm:text-lg font-bold tabular-nums text-green-500">{{ Math.round(selectedDay.ops * (selectedDay.winRate / 100)) }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-green-500">{{ Math.round(activeDayDetails.ops * (activeDayDetails.winRate / 100)) }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Positivas</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-red-500">{{ selectedDay.ops - Math.round(selectedDay.ops * (selectedDay.winRate / 100)) }}</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-red-500">{{ activeDayDetails.ops - Math.round(activeDayDetails.ops * (activeDayDetails.winRate / 100)) }}</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Negativas</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.winRate.toFixed(1) }}%</div>
+					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ activeDayDetails.winRate.toFixed(1) }}%</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Win Rate</div>
 				</div>
 				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums" :class="selectedDay.profit >= 0 ? 'text-green-500' : 'text-red-500'">
-						{{ selectedDay.profit >= 0 ? '+' : '' }}${{ (selectedDay.profit / selectedDay.ops).toFixed(2) }}
+					<div class="text-base sm:text-lg font-bold tabular-nums" :class="activeDayDetails.profit >= 0 ? 'text-green-500' : 'text-red-500'">
+						{{ activeDayDetails.profit >= 0 ? '+' : '' }}${{ (activeDayDetails.profit / (activeDayDetails.ops || 1)).toFixed(2) }}
 					</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
-				</div>
-				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-base sm:text-lg font-bold tabular-nums text-[#FAFAFA]">{{ selectedDay.avgTime }}</div>
-					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Intervalo/OP</div>
 				</div>
 			</div>
 
@@ -564,8 +545,10 @@
 			</div>
 		</div>
 	</div>
+    </Teleport>
 
 	<!-- Stop Status Modal -->
+    <Teleport to="body">
 	<div v-if="showStopStatusModal" 
 		class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300"
 		@click.self="closeStopStatusModal"
@@ -607,6 +590,7 @@
 			</div>
 		</div>
 	</div>
+    </Teleport>
 
 	<!-- Modal de Stop (Novos) -->
 	<StopLossModal v-if="showNewStopLossModal" @close="showNewStopLossModal = false" />
@@ -778,7 +762,8 @@
 						style: 'Estatístico'
 					}
 				],
-				hideValues: false
+				hideValues: false,
+				pollingInterval: null
 			};
 		},
 		mounted() {
@@ -788,15 +773,20 @@
 				this.$nextTick(() => {
 					this.initIndexChart();
 					// Buscar dados iniciais
-					this.fetchAgentConfig(); // Fetch agent configuration for initialBalance
-					this.fetchProfitEvolution();
-					this.fetchDailyStats();
-					this.fetchWeeklyStats();
+					this.fetchAllStats();
+					
+					// Iniciar Polling (5 segundos)
+					this.pollingInterval = setInterval(() => {
+						this.fetchAllStats();
+					}, 5000);
 				});
 			}
 		},
 		beforeUnmount() {
 			window.removeEventListener('click', this.closeDropdownsOnClickOutside);
+			if (this.pollingInterval) {
+				clearInterval(this.pollingInterval);
+			}
 		},
 		computed: {
 			dateRangeText() {
@@ -910,6 +900,44 @@
 			},
 			currentDate() {
 				return new Date().toLocaleDateString('pt-BR');
+			},
+			activeDayDetails() {
+				// Se não houver dia selecionado, retorna objeto vazio seguro
+				if (!this.selectedDay) return {};
+				
+				// Verifica se o dia selecionado é Hoje
+				const todayStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+				// selectedDay.date vem como "24/01" por exemplo
+				
+				if (this.selectedDay.date === todayStr) {
+                    // Tentar encontrar dados atualizados H OJE em dailyData
+                    const todayData = this.dailyData.find(d => {
+                        // Verifica formato DD/MM
+                        const dStr = new Date(d.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                        return dStr === todayStr || d.date === todayStr; // Suporta YYYY-MM-DD se d.date for assim
+                    });
+
+                    if (todayData) {
+                        return {
+                            ...this.selectedDay,
+                            ...todayData, // Sobrescreve com dados frescos do polling
+                            // Recalcular campos derivados se necessário
+                            activeProfit: todayData.profit, // Alias para garantir refresh
+                        };
+                    }
+
+                    // Fallback para sessionStats se dailyData não tiver hoje (menos provável com polling)
+					return {
+						...this.selectedDay,
+						profit: this.sessionStats?.netProfit || 0,
+                        ops: this.sessionStats?.totalTrades || 0,
+                        winRate: this.sessionStats?.winRate || 0,
+                        capital: (this.agentConfig?.initialBalance || 0) + (this.sessionStats?.netProfit || 0),
+					};
+				}
+				
+				// Se não for hoje, retorna dados estáticos
+				return this.selectedDay;
 			}
 		},
 		watch: {
@@ -1463,6 +1491,17 @@
                     }
                 }
             },
+
+			fetchAllStats() {
+				this.fetchAgentConfig(); 
+				this.fetchProfitEvolution();
+				this.fetchDailyStats();
+				this.fetchWeeklyStats();
+				// Se modal aberto, atualiza detalhes
+				if (this.selectedDay && this.selectedDay.fullDate === new Date().toISOString().split('T')[0]) {
+					this.fetchDailyDetails(this.selectedDay);
+				}
+			}
 		},
 	}
 </script>

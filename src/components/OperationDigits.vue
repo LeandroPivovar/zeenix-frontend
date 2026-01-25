@@ -288,19 +288,30 @@
                     </div>
                     <div class="dvx-gauge-container">
                         <svg width="240" height="120" class="dvx-gauge-svg">
-                            <path d="M 30 110 A 90 90 0 0 1 72 35" stroke="#22C55E" stroke-width="16" fill="none" opacity="0.4"></path>
-                            <path d="M 72 35 A 90 90 0 0 1 168 35" stroke="#FFD058" stroke-width="16" fill="none" opacity="0.4"></path>
-                            <path d="M 168 35 A 90 90 0 0 1 210 110" stroke="#FF4747" stroke-width="16" fill="none" opacity="0.4"></path>
-                            <line 
-                                x1="120" 
-                                y1="110" 
-                                :x2="dvxGaugeX2" 
-                                :y2="dvxGaugeY2" 
-                                stroke="#DFDFDF" 
-                                stroke-width="5" 
-                                stroke-linecap="round"
-                            ></line>
-                            <circle cx="120" cy="110" r="6" fill="#DFDFDF"></circle>
+                            <!-- Arcos de Fundo (Baixa Opacidade) -->
+                            <path d="M 30 110 A 90 90 0 0 1 72 35" stroke="#22C55E" stroke-width="16" fill="none" opacity="0.15"></path>
+                            <path d="M 72 35 A 90 90 0 0 1 168 35" stroke="#FFD058" stroke-width="16" fill="none" opacity="0.15"></path>
+                            <path d="M 168 35 A 90 90 0 0 1 210 110" stroke="#FF4747" stroke-width="16" fill="none" opacity="0.15"></path>
+
+                            <!-- Arcos de Progresso (Dinamismo) -->
+                            <path 
+                                d="M 30 110 A 90 90 0 0 1 72 35" 
+                                stroke="#22C55E" stroke-width="16" fill="none" 
+                                :stroke-dasharray="90.2" 
+                                :stroke-dashoffset="dvxGreenOffset"
+                            ></path>
+                            <path 
+                                d="M 72 35 A 90 90 0 0 1 168 35" 
+                                stroke="#FFD058" stroke-width="16" fill="none" 
+                                :stroke-dasharray="102.4" 
+                                :stroke-dashoffset="dvxYellowOffset"
+                            ></path>
+                            <path 
+                                d="M 168 35 A 90 90 0 0 1 210 110" 
+                                stroke="#FF4747" stroke-width="16" fill="none" 
+                                :stroke-dasharray="90.2" 
+                                :stroke-dashoffset="dvxRedOffset"
+                            ></path>
                         </svg>
                         <div class="dvx-value-container">
                             <div class="dvx-value">{{ dvxValue }}</div>
@@ -458,11 +469,16 @@
                                 <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Estratégia Recomendada</span>
                             </div>
                             <div class="metric-body">
-                                <div v-if="aiRecommendation" class="flex items-center gap-2">
-                                    <i class="fas fa-bullseye text-zenix-green"></i>
-                                    <span class="text-sm font-black text-white uppercase tracking-wider">
-                                        {{ aiRecommendation.action }}
-                                    </span>
+                                <div v-if="aiRecommendation" class="flex flex-col gap-1">
+                                    <div class="flex items-center gap-2">
+                                        <i class="fas fa-bullseye text-zenix-green"></i>
+                                        <span class="text-sm font-black text-white uppercase tracking-wider">
+                                            {{ aiRecommendation.action }}
+                                        </span>
+                                    </div>
+                                    <div v-if="aiRecommendation.reason" class="text-[10px] text-white/40 uppercase tracking-tighter italic ml-6">
+                                        {{ aiRecommendation.reason }}
+                                    </div>
                                 </div>
                                 <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">Nenhum sinal gerado</span>
                             </div>
@@ -1128,14 +1144,23 @@ export default {
                 return 'Próximo tick: maior probabilidade de BAIXO (UNDER 5)';
             }
         },
-        // DVX Gauge coordinates
-        dvxGaugeX2() {
-            const angle = (this.dvxValue / 100) * Math.PI - Math.PI / 2;
-            return 120 + 70 * Math.cos(angle);
+        // Offsets para preenchimento dinâmico do gauge
+        dvxGreenOffset() {
+            const len = 90.2;
+            const fill = Math.min(30, this.dvxValue) / 30;
+            return len * (1 - fill);
         },
-        dvxGaugeY2() {
-            const angle = (this.dvxValue / 100) * Math.PI - Math.PI / 2;
-            return 110 + 70 * Math.sin(angle);
+        dvxYellowOffset() {
+            const len = 102.4;
+            const val = Math.max(0, this.dvxValue - 30);
+            const fill = Math.min(30, val) / 30;
+            return len * (1 - fill);
+        },
+        dvxRedOffset() {
+            const len = 90.2;
+            const val = Math.max(0, this.dvxValue - 60);
+            const fill = Math.min(40, val) / 40;
+            return len * (1 - fill);
         },
     },
     methods: {
@@ -1219,7 +1244,70 @@ export default {
         async generateSignal() {
             if (!this.isAnalyzing) return;
 
-            // Chamar backend para análise real (Veloz)
+            // Se o DVX for muito alto, evitamos dar sinais (Mercado Arriscado)
+            if (this.dvxValue > 80) {
+                this.aiRecommendation = {
+                    action: 'AGUARDAR',
+                    message: 'Mercado muito errático para sinais confiáveis.',
+                    confidence: 0,
+                    type: 'wait'
+                };
+                return;
+            }
+
+            // Lógica de Análise Local (Estatística Baseada em Probabilidade)
+            let localSignal = null;
+            let confidence = 0;
+
+            // 1. Checar Paridade (Reversão à Média)
+            const even = this.digitFrequency.parity.even;
+            const odd = this.digitFrequency.parity.odd;
+            if (even > 62) {
+                localSignal = { action: 'ÍMPAR (ODD)', type: 'parity', reason: 'Excesso de pares' };
+                confidence = Math.min(95, 75 + (even - 62) * 2);
+            } else if (odd > 62) {
+                localSignal = { action: 'PAR (EVEN)', type: 'parity', reason: 'Excesso de ímpares' };
+                confidence = Math.min(95, 75 + (odd - 62) * 2);
+            }
+
+            // 2. Checar Alto/Baixo (Se paridade não for forte o suficiente)
+            if (!localSignal || confidence < 80) {
+                const low = this.lowPercentage;
+                const high = this.highPercentage;
+                if (low > 62) {
+                    const signal = { action: 'ALTO (OVER 4)', type: 'highlow', reason: 'Excesso de baixos' };
+                    const conf = Math.min(95, 75 + (low - 62) * 2);
+                    if (conf > confidence) { localSignal = signal; confidence = conf; }
+                } else if (high > 62) {
+                    const signal = { action: 'BAIXO (UNDER 5)', type: 'highlow', reason: 'Excesso de altos' };
+                    const conf = Math.min(95, 75 + (high - 62) * 2);
+                    if (conf > confidence) { localSignal = signal; confidence = conf; }
+                }
+            }
+
+            // 3. Checar Subaquecimento Crítico (Dígitos Faltantes)
+            if (!localSignal || confidence < 85) {
+                const underheated = this.digitFrequenciesWithStats.find(d => parseFloat(d.zScore) < -2.0);
+                if (underheated) {
+                    const signal = { action: `MATCH ${underheated.digit}`, type: 'match', reason: `Dígito ${underheated.digit} muito atrasado` };
+                    const conf = 88;
+                    if (conf > confidence) { localSignal = signal; confidence = conf; }
+                }
+            }
+
+            // Aplicar recomendação local se houver confiança mínima
+            if (localSignal && confidence > 70) {
+                this.aiRecommendation = {
+                    action: localSignal.action,
+                    type: localSignal.type,
+                    reason: localSignal.reason,
+                    confidence: Math.round(confidence),
+                    isLocal: true
+                };
+                return;
+            }
+
+            // Fallback para API do backend se a análise local não for conclusiva
             try {
                 const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
                 const userId = this.accountLoginid || 'current'; 
@@ -1230,37 +1318,30 @@ export default {
                         'Content-Type': 'application/json',
                         'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ userId })
+                    body: JSON.stringify({ userId, stats: { dvx: this.dvxValue, parity: this.digitFrequency.parity } })
                 });
 
-                if (!response.ok) {
-                    throw new Error('Falha na análise da IA');
-                }
-
-                const result = await response.json();
-                
-                if (result.success && result.data) {
-                    const diag = result.data;
-                    
-                    if (diag.sinal) {
+                if (response.ok) {
+                    const result = await response.json();
+                    if (result.success && result.data && result.data.sinal) {
                         this.aiRecommendation = {
-                            action: `APOSTAR ${diag.sinal}`, 
-                            confidence: Math.round(diag.confianca),
-                            entry_time: diag.entry_time_seconds || 0
+                            action: `APOSTAR ${result.data.sinal}`,
+                            confidence: Math.round(result.data.confianca),
+                            entry_time: result.data.entry_time_seconds || 0,
+                            isLocal: false
                         };
-
-                        if (this.aiRecommendation.entry_time > 0) {
-                            this.startSignalCountdown(this.aiRecommendation.entry_time);
-                        } else {
-                            this.stopSignalCountdown();
-                        }
-                    } else {
-                        this.aiRecommendation = null;
-                        this.stopSignalCountdown();
+                        if (this.aiRecommendation.entry_time > 0) this.startSignalCountdown(this.aiRecommendation.entry_time);
                     }
                 }
             } catch (error) {
-                console.error('[OperationDigits] Erro ao gerar sinal:', error);
+                console.warn('[OperationDigits] Backend analysis unavailable, using best local effort.');
+                if (localSignal) {
+                     this.aiRecommendation = {
+                        action: localSignal.action,
+                        confidence: Math.round(confidence),
+                        isLocal: true
+                    };
+                }
             }
         },
         getHistogramBarClass(digit, percentage, frequencies) {
