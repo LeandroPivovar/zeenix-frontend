@@ -235,6 +235,7 @@
                             :key="'heat-'+item.digit" 
                             class="heatmap-digit-block"
                             :class="[item.statusClass, item.isHighlighted ? 'heatmap-highlighted' : '']"
+                            :style="{ height: item.barHeight + 'px' }"
                         >
                             <div class="frequency-percentage-label">{{ item.percentage }}%</div>
                             <div 
@@ -1009,8 +1010,8 @@ export default {
                 variance += Math.pow(f.percentage - expected, 2);
             });
             const stdDev = Math.sqrt(variance / 10);
-            // Normalizar para 0-100
-            return Math.min(100, Math.round((stdDev / 10) * 100));
+            // Normalizar para 0-100 com escala mais sensível
+            return Math.min(100, Math.round((stdDev / 18) * 100));
         },
         dvxStatusClass() {
             if (this.dvxValue <= 30) return 'dvx-status-green';
@@ -1558,7 +1559,7 @@ export default {
             this.calculateDigitFrequency();
         },
         calculateDigitFrequency() {
-            const last20Ticks = this.ticks.slice(-20);
+            const last100Ticks = this.ticks.slice(-100);
             const digits = [];
             const frequency = {};
             
@@ -1566,7 +1567,7 @@ export default {
                 frequency[i] = 0;
             }
             
-            last20Ticks.forEach(tick => {
+            last100Ticks.forEach(tick => {
                 const value = Math.floor(tick.value);
                 const lastDigit = value % 10;
                 digits.push(lastDigit);
