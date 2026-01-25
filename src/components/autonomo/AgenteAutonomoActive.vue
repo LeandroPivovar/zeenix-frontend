@@ -498,9 +498,6 @@
 					</div>
 					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Média/Op</div>
 				</div>
-				<div class="text-center p-1.5 sm:p-2 bg-[#27272a]/30 rounded">
-					<div class="text-[8px] sm:text-[10px] text-[#A1A1AA] uppercase">Intervalo/OP</div>
-				</div>
 			</div>
 
 			<!-- Intraday Operations Table (Static Mock per snippet requirement) -->
@@ -761,7 +758,8 @@
 						style: 'Estatístico'
 					}
 				],
-				hideValues: false
+				hideValues: false,
+				pollingInterval: null
 			};
 		},
 		mounted() {
@@ -771,15 +769,20 @@
 				this.$nextTick(() => {
 					this.initIndexChart();
 					// Buscar dados iniciais
-					this.fetchAgentConfig(); // Fetch agent configuration for initialBalance
-					this.fetchProfitEvolution();
-					this.fetchDailyStats();
-					this.fetchWeeklyStats();
+					this.fetchAllStats();
+					
+					// Iniciar Polling (5 segundos)
+					this.pollingInterval = setInterval(() => {
+						this.fetchAllStats();
+					}, 5000);
 				});
 			}
 		},
 		beforeUnmount() {
 			window.removeEventListener('click', this.closeDropdownsOnClickOutside);
+			if (this.pollingInterval) {
+				clearInterval(this.pollingInterval);
+			}
 		},
 		computed: {
 			dateRangeText() {
@@ -903,14 +906,29 @@
 				// selectedDay.date vem como "24/01" por exemplo
 				
 				if (this.selectedDay.date === todayStr) {
-                    // Se for hoje, mescla dados estáticos com sessionStats em tempo real
+                    // Tentar encontrar dados atualizados H OJE em dailyData
+                    const todayData = this.dailyData.find(d => {
+                        // Verifica formato DD/MM
+                        const dStr = new Date(d.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+                        return dStr === todayStr || d.date === todayStr; // Suporta YYYY-MM-DD se d.date for assim
+                    });
+
+                    if (todayData) {
+                        return {
+                            ...this.selectedDay,
+                            ...todayData, // Sobrescreve com dados frescos do polling
+                            // Recalcular campos derivados se necessário
+                            activeProfit: todayData.profit, // Alias para garantir refresh
+                        };
+                    }
+
+                    // Fallback para sessionStats se dailyData não tiver hoje (menos provável com polling)
 					return {
 						...this.selectedDay,
 						profit: this.sessionStats?.netProfit || 0,
                         ops: this.sessionStats?.totalTrades || 0,
                         winRate: this.sessionStats?.winRate || 0,
                         capital: (this.agentConfig?.initialBalance || 0) + (this.sessionStats?.netProfit || 0),
-                        // Mantém outros campos como activationTime que vem do histórico
 					};
 				}
 				
@@ -1469,6 +1487,17 @@
                     }
                 }
             },
+
+			fetchAllStats() {
+				this.fetchAgentConfig(); 
+				this.fetchProfitEvolution();
+				this.fetchDailyStats();
+				this.fetchWeeklyStats();
+				// Se modal aberto, atualiza detalhes
+				if (this.selectedDay && this.selectedDay.fullDate === new Date().toISOString().split('T')[0]) {
+					this.fetchDailyDetails(this.selectedDay);
+				}
+			}
 		},
 	}
 </script>
