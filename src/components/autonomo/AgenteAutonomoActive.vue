@@ -753,6 +753,8 @@
 					{ label: 'Últimos 30 dias', value: '30d' },
 					{ label: 'Mês Atual', value: 'thisMonth' },
 					{ label: 'Mês Passado', value: 'lastMonth' },
+					{ label: 'Este Ano', value: 'thisYear' },
+					{ label: 'Todo o Período', value: 'all' },
 				],
 				weeklyData: [],
 				dailyData: [],
@@ -1375,6 +1377,13 @@
 				if (this.selectedPeriod === 'yesterday') days = 2;
 				if (this.selectedPeriod === 'thisMonth') days = new Date().getDate();
 				if (this.selectedPeriod === 'lastMonth') days = 60; // Approximate fallback
+				if (this.selectedPeriod === 'thisYear') {
+					const now = new Date();
+					const startOfYear = new Date(now.getFullYear(), 0, 1);
+					const diff = now - startOfYear;
+					days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+				}
+				if (this.selectedPeriod === 'all') days = 3650; // 10 years as "all time"
 
 				try {
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
