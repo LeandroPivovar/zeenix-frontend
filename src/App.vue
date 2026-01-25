@@ -8,12 +8,13 @@
 
 <script>
 import ToastNotification from './components/Toast.vue'
+import GlobalDialog from './components/GlobalDialog.vue'
 
 export default {
   name: 'App',
   components: {
     ToastNotification,
-    GlobalDialog: () => import('./components/GlobalDialog.vue')
+    GlobalDialog
   },
   mounted() {
     // Tornar o toast acessível globalmente
@@ -21,7 +22,7 @@ export default {
       this.$root.$toast = this.$refs.toast
     }
   }
-}
+
 </script>
 
 <style>
@@ -29,9 +30,9 @@ export default {
   font-family: Avenir, Helvetica, Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  text-align: center;
   color: #2c3e50;
 }
+
 
 nav {
   padding: 30px;
