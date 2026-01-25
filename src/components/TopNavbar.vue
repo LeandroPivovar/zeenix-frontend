@@ -139,7 +139,6 @@
           />
           <span v-else class="text-white font-semibold text-sm">{{ userInitials }}</span>
         </button>
-        </button>
       </div>
     </div>
 
