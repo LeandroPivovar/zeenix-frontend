@@ -438,6 +438,7 @@
                         @deactivate="deactivateIA"
                         @reactivate="activateIA"
                         @update-balance="handleLiveBalanceUpdate"
+                        @refresh-balance="reloadBalance"
                 />
                 </section>
 

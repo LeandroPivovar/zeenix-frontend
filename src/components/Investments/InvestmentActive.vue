@@ -2332,14 +2332,6 @@ export default {
                     };
                     
                     console.log('[InvestmentActive] ✅ Stats atualizadas:', this.dailyStats);
-
-                    // ✅ ZENIX v3.5: Notificar pai para atualizar saldo em tempo real (dashboard + topbar)
-                    // Usamos apenas o saldo vindo da props para notificar o pai (sem somar lucro)
-                    const currentBalance = parseFloat(this.accountBalanceProp) || 0;
-                    if (currentBalance > 0) {
-                        console.log(`[InvestmentActive] 💰 Notificando saldo (Sem soma): $${currentBalance.toFixed(2)}`);
-                        this.$emit('update-balance', currentBalance);
-                    }
                 } else {
                     console.error('[InvestmentActive] ❌ Formato de resposta inválido:', result);
                 }
@@ -3130,6 +3122,12 @@ export default {
                     }
                     
                     // Atualizar histórico e logs sob demanda (mas de forma mais inteligente)
+                    // Se for uma atualização de trade, notificar pai para atualizar saldo real
+                    if (payload.type === 'updated' || payload.type === 'corrected' || payload.type === 'created') {
+                        console.log('[InvestmentActive] 🔄 Notificando pai para atualizar saldo real...');
+                        this.$emit('refresh-balance');
+                    }
+
                     // Se for uma previsão (isPredicted), não fazer fetch completo imediatamente
                     if (payload.isPredicted) {
                         // Previsão: apenas atualizar logs e stats, não fazer fetch completo
