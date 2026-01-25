@@ -171,7 +171,10 @@
         <h2 class="card-title">Materiais da Aula: {{ selectedLessonForMaterials.name }}</h2>
         <p class="card-subtitle-modal">Gerencie arquivos, links e materiais de apoio para esta aula.</p>
         <div class="add-material-section card-border-section">
-          <h3 class="form-section-title">Adicionar Novo Material</h3>
+          <div class="section-header-flex">
+            <h3 class="form-section-title">{{ newMaterial.id ? 'Editar Material' : 'Adicionar Novo Material' }}</h3>
+             <button v-if="newMaterial.id" class="btn btn-cancel-small" @click="cancelEditMaterial">Cancelar Edição</button>
+          </div>
           <div class="form-group">
             <label for="material-name">Nome do Arquivo/Material</label>
             <input type="text" id="material-name" class="input-text" :value="newMaterial.name" @input="updateNewMaterial({ name: $event.target.value })" placeholder="Ex: PDF de Exercícios" />
@@ -200,14 +203,15 @@
                   <button type="button" class="btn btn-link" @click="removeMaterialFile">Remover</button>
                 </p>
                 <p v-else-if="newMaterial.filePath" class="video-file-info">
-                  Arquivo salvo: {{ newMaterial.filePath.split('/').pop() }}
+                   Arquivo salvo: {{ newMaterial.filePath.split('/').pop() }}
+                   <span class="file-change-hint">(Envie novo arquivo para substituir)</span>
                 </p>
               </div>
             </div>
           </div>
           <div class="modal-actions">
             <button class="btn btn-primary" @click="saveNewMaterial" :disabled="!newMaterial.name || (newMaterial.type === 'LINK' ? !newMaterial.link : !newMaterial.file && !newMaterial.filePath)">
-              Salvar Material
+               {{ newMaterial.id ? 'Salvar Alterações' : 'Salvar Material' }}
             </button>
           </div>
         </div>
@@ -221,7 +225,10 @@
                 <span class="material-type-tag">{{ material.type }}</span>
               </div>
               <div class="material-actions">
-                <a :href="material.link" target="_blank" class="btn btn-action-icon edit-btn" title="Visualizar Link">Abrir</a>
+                <a :href="material.link" target="_blank" class="btn btn-action-icon edit-btn" title="Visualizar Link" v-if="material.link">Abrir</a>
+                <button class="btn btn-action-icon edit-btn" title="Editar" @click="editMaterial(material)">
+                     <img src="../../assets/icons/edit-academy.svg" alt="" filter="invert(1)" width="14" height="14">
+                </button>
                 <button class="btn btn-action-icon delete-btn" title="Excluir" @click="deleteMaterial(material.id)">Excluir</button>
               </div>
             </li>
@@ -278,6 +285,8 @@ export default {
     'update:new-module',
     'update:new-lesson',
     'update:new-material',
+    'edit-material',
+    'cancel-edit-material',
   ],
   computed: {
     selectedModuleForLesson() {
@@ -328,6 +337,12 @@ export default {
     },
     saveNewMaterial() {
       this.$emit('saveNewMaterial');
+    },
+    editMaterial(material) {
+      this.$emit('edit-material', material);
+    },
+    cancelEditMaterial() {
+      this.$emit('cancel-edit-material');
     },
     deleteMaterial(materialId) {
       this.$emit('deleteMaterial', materialId);
@@ -765,9 +780,39 @@ label {
   vertical-align: middle;
 }
 
-@keyframes spin {
   to {
     transform: rotate(360deg);
   }
+}
+
+.section-header-flex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.section-header-flex .form-section-title {
+  margin-bottom: 0;
+}
+
+.btn-cancel-small {
+  background: transparent;
+  border: 1px solid var(--color-border);
+  color: #cbd5f5;
+  padding: 5px 10px;
+  font-size: 0.8rem;
+}
+
+.btn-cancel-small:hover {
+  background: var(--color-dark-gray-3);
+}
+
+.file-change-hint {
+  display: block;
+  font-size: 0.75rem;
+  color: #8c929a;
+  font-style: italic;
+  margin-top: 2px;
 }
 </style>

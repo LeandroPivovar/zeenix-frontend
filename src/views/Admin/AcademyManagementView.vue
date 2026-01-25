@@ -256,6 +256,8 @@
                 @save-new-module="saveNewModule"
                 @save-new-lesson="saveNewLesson"
                 @save-new-material="saveNewMaterial"
+                @edit-material="openEditMaterial"
+                @cancel-edit-material="cancelEditMaterial"
                 @delete-material="deleteMaterial"
                 @update:new-module="newModule = $event"
                 @update:new-lesson="newLesson = $event"
@@ -1309,6 +1311,17 @@ export default {
                 this.$root.$toast.info('Erro ao carregar materiais. Verifique sua conexão.');
             }
         },
+                openEditMaterial(material) {
+            this.newMaterial = { ...material };
+            // Se for link, garante que o tipo está correto
+            if (this.newMaterial.link && !this.newMaterial.filePath) {
+                this.newMaterial.type = 'LINK';
+            }
+            // Se tiver filePath e não for link, tenta inferir ou mantém
+        },
+        cancelEditMaterial() {
+             this.newMaterial = { name: '', type: 'PDF', link: '', file: null, fileName: '', filePath: '' };
+        },
         async saveNewMaterial() {
             if (!this.newMaterial.name || (!this.newMaterial.link && !this.newMaterial.file && !this.newMaterial.filePath)) {
                 this.$root.$toast.error('O nome do material e um arquivo ou link são obrigatórios.');
@@ -1331,6 +1344,59 @@ export default {
                     }
                 }
 
+                // 1. CASO EDIÇÃO (Se já tem ID)
+                if (this.newMaterial.id) {
+                     // Verifica se é material local (temp)
+                    const isLocalMaterial = this.newMaterial.isLocal || this.newMaterial.id.toString().startsWith('temp-material');
+
+                    if (isNewCourse || isLocalMaterial || (lesson && lesson.isLocal)) {
+                        // ATUALIZAÇÃO LOCAL
+                        const index = this.materialsList.findIndex(m => m.id === this.newMaterial.id);
+                        if (index !== -1) {
+                            this.materialsList[index] = {
+                                ...this.materialsList[index],
+                                name: this.newMaterial.name,
+                                type: this.newMaterial.type,
+                                link: this.newMaterial.link,
+                                filePath: filePath
+                            };
+                             // Força reatividade manualmente se necessário, mas atribuição direta por index em Vue 2 pode não ser reativa.
+                             // Usar splice para garantir reatividade
+                            this.materialsList.splice(index, 1, this.materialsList[index]);
+
+                            this.$root.$toast.success(`Material "${this.newMaterial.name}" atualizado localmente.`);
+                            this.cancelEditMaterial(); // Limpa o form
+                        }
+                    } else {
+                        // ATUALIZAÇÃO NO BACKEND
+                        const apiBaseUrl = this.getApiBaseUrl();
+                        const response = await fetch(`${apiBaseUrl}/courses/materials/${this.newMaterial.id}`, {
+                            method: 'PUT',
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({
+                                name: this.newMaterial.name,
+                                type: this.newMaterial.type,
+                                link: this.newMaterial.link,
+                                filePath: filePath,
+                            }),
+                        });
+
+                        if (response.ok) {
+                            await this.loadMaterialsForLesson(this.selectedLessonIdForMaterials);
+                             this.$root.$toast.success(`Material "${this.newMaterial.name}" atualizado com sucesso!`);
+                             this.cancelEditMaterial();
+                        } else {
+                            const error = await response.json().catch(() => ({ message: 'Erro ao atualizar material' }));
+                            this.$root.$toast.error(`Erro ao atualizar material: ${error.message}`);
+                        }
+                    }
+                    return; // Sai da função após edição
+                }
+
+                // 2. CASO CRIAÇÃO (Sem ID) - Lógica original mantida abaixo
                 // Se for curso novo ou aula local, adiciona localmente
                 if (isNewCourse || (lesson && lesson.isLocal)) {
                     const tempMaterialId = `temp-material-${Date.now()}-${Math.random()}`;
@@ -1376,8 +1442,8 @@ export default {
                     this.$root.$toast.error(`Erro ao criar material: ${error.message}`);
                 }
             } catch (error) {
-                console.error('Erro ao criar material:', error);
-                this.$root.$toast.info('Erro ao criar material. Verifique sua conexão.');
+                console.error('Erro ao salvar material:', error);
+                this.$root.$toast.info('Erro ao salvar material. Verifique sua conexão.');
             }
         },
         async deleteMaterial(materialId) {
