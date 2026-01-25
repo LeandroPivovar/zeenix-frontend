@@ -1,5 +1,31 @@
 <template>
   <div class="operation-logs-container">
+    <!-- Header with Action Buttons -->
+    <div class="flex items-center justify-between mb-3 px-2">
+      <h3 class="text-sm font-semibold text-[#FAFAFA] uppercase tracking-wide">Logs do Agente Selecionado</h3>
+      <div class="flex items-center gap-2">
+        <!-- Clear Logs Button -->
+        <button
+          @click="clearLogs"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-[#27272a] text-[#FAFAFA] hover:bg-[#3f3f46] transition-colors border border-[#3f3f46]"
+          title="Limpar notificações"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-trash-2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/><line x1="10" x2="10" y1="11" y2="17"/><line x1="14" x2="14" y1="11" y2="17"/></svg>
+          <span>Limpar</span>
+        </button>
+        
+        <!-- Export PDF Button -->
+        <button
+          @click="exportToPDF"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md bg-green-600 text-white hover:bg-green-700 transition-colors"
+          title="Exportar para PDF"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-file-down"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M12 18v-6"/><path d="m9 15 3 3 3-3"/></svg>
+          <span>Exportar PDF</span>
+        </button>
+      </div>
+    </div>
+
     <!-- Desktop Terminal View -->
     <div class="hidden md:block">
       <div dir="ltr" class="relative overflow-hidden h-[500px] border-border bg-black/40">
@@ -266,6 +292,95 @@ export default {
       this.stopLogPolling();
       this.fetchRealtimeLogs();
       this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(), 3000);
+    },
+    clearLogs() {
+      if (confirm('Tem certeza que deseja limpar todos os logs?')) {
+        this.realtimeLogs = [];
+        this.$emit('update-logs', []);
+        console.log('[AutonomousAgentLogs] Logs limpos pelo usuário');
+      }
+    },
+    exportToPDF() {
+      try {
+        // Get agente name
+        const agenteName = this.agentName || 'AGENTE';
+        const now = new Date();
+        const dateStr = now.toLocaleDateString('pt-BR').replace(/\//g, '-');
+        const timeStr = now.toLocaleTimeString('pt-BR', { hour12: false }).replace(/:/g, '-');
+        
+        // Create printable content
+        const content = this.formattedLogs.map((log, idx) => {
+          const timestamp = this.formatTimestamp(log.timestamp);
+          const emoji = this.getLogEmoji(log.logType);
+          return `[${timestamp}] ${emoji} ${log.title}\n${log.details || ''}\n${log.message && log.message.includes('\n') ? log.message.split('\n').slice(1).map(l => '  • ' + l.trim()).join('\n') : ''}`;
+        }).join('\n\n');
+
+        // Create a hidden iframe for printing
+        const printFrame = document.createElement('iframe');
+        printFrame.style.position = 'absolute';
+        printFrame.style.width = '0';
+        printFrame.style.height = '0';
+        printFrame.style.border = 'none';
+        document.body.appendChild(printFrame);
+
+        const doc = printFrame.contentWindow.document;
+        doc.open();
+        doc.write(`
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <title>Logs ${agenteName} - ${dateStr} ${timeStr}</title>
+            <style>
+              @page { margin: 2cm; }
+              body {
+                font-family: 'Courier New', monospace;
+                font-size: 10pt;
+                line-height: 1.4;
+                color: #000;
+                white-space: pre-wrap;
+                word-wrap: break-word;
+              }
+              h1 {
+                font-size: 14pt;
+                margin-bottom: 10px;
+                border-bottom: 2px solid #333;
+                padding-bottom: 5px;
+              }
+              .meta {
+                font-size: 9pt;
+                color: #666;
+                margin-bottom: 20px;
+              }
+            </style>
+          </head>
+          <body>
+            <h1>📋 Relatório de Logs - ${agenteName}</h1>
+            <div class="meta">
+              Gerado em: ${now.toLocaleString('pt-BR')}<br>
+              Total de logs: ${this.formattedLogs.length}
+            </div>
+            <pre>${content}</pre>
+          </body>
+          </html>
+        `);
+        doc.close();
+
+        // Wait for content to load then print
+        setTimeout(() => {
+          printFrame.contentWindow.focus();
+          printFrame.contentWindow.print();
+          
+          // Clean up after a delay
+          setTimeout(() => {
+            document.body.removeChild(printFrame);
+          }, 1000);
+        }, 250);
+
+        console.log(`[AutonomousAgentLogs] Exportação PDF iniciada: ${this.formattedLogs.length} logs`);
+      } catch (error) {
+        console.error('[AutonomousAgentLogs] Erro ao exportar PDF:', error);
+        alert('Erro ao exportar PDF. Verifique o console para mais detalhes.');
+      }
     },
     stopLogPolling() {
       if (this.logPollingInterval) clearInterval(this.logPollingInterval);
