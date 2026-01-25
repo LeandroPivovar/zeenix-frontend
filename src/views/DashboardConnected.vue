@@ -979,8 +979,8 @@ export default {
             Object.entries(stats.sources).forEach(([source, value]) => {
               const index = mapping[source];
               if (index !== undefined && this.performanceData[index]) {
-                const sourcePercent = (value / safeInitialBalance) * 100;
-                const prefix = sourcePercent >= 0 ? '+' : '';
+                // const sourcePercent = (value / safeInitialBalance) * 100;
+                // const prefix = sourcePercent >= 0 ? '+' : '';
                 // this.performanceData[index].percentage = `${prefix}${sourcePercent.toFixed(1)}%`;
                 
                 // Ajustar usage baseado se houve lucro ou não para dar feedback visual
