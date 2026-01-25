@@ -309,7 +309,7 @@ export default {
         const timeStr = now.toLocaleTimeString('pt-BR', { hour12: false }).replace(/:/g, '-');
         
         // Create printable content
-        const content = this.formattedLogs.map((log, idx) => {
+        const content = this.formattedLogs.map((log) => {
           const timestamp = this.formatTimestamp(log.timestamp);
           const emoji = this.getLogEmoji(log.logType);
           return `[${timestamp}] ${emoji} ${log.title}\n${log.details || ''}\n${log.message && log.message.includes('\n') ? log.message.split('\n').slice(1).map(l => '  • ' + l.trim()).join('\n') : ''}`;
