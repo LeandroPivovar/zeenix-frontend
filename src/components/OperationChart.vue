@@ -62,8 +62,18 @@
 
           <!-- Gráfico -->
           <div id="tradingviewChart" ref="chartContainer" class="flex-1 chart-wrapper relative" style="background-color: #0B0B0B; min-height: 0; height: 100%; margin: 0; padding: 0;">
-            <div v-if="showChartPlaceholder || isLoading" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
-              <p class="text-zenix-secondary">Carregando gráfico...</p>
+            <!-- Blocking Loader Overlay -->
+            <div v-if="isGlobalLoading" class="absolute inset-0 z-50 flex flex-col items-center justify-center bg-[#0B0B0B]" style="z-index: 50;">
+              <div class="relative w-16 h-16 mb-4">
+                <div class="absolute inset-0 rounded-full border-4 border-white/5"></div>
+                <div class="absolute inset-0 rounded-full border-4 border-zenix-green border-t-transparent animate-spin"></div>
+              </div>
+              <p class="text-zenix-text font-medium text-sm animate-pulse">Carregando dados do mercado...</p>
+            </div>
+            
+            <!-- Placeholder normal (não bloqueante) -->
+            <div v-else-if="showChartPlaceholder || isLoading" class="chart-placeholder absolute inset-0 flex items-center justify-center" style="z-index: 2; pointer-events: none;">
+              <p class="text-zenix-secondary">Atualizando gráfico...</p>
             </div>
           </div>
         </div>
@@ -613,6 +623,7 @@ export default {
   name: 'OperationChart',
   data() {
     return {
+      isGlobalLoading: true, // Iniciar com loader bloqueante
       showChartPlaceholder: false,
       chart: null,
       chartSeries: null,
@@ -959,6 +970,14 @@ export default {
       this.loadAvailableContracts(this.symbol);
       this.loadTicksFromBackend(100); // Request specific count: 100 ticks
     }
+    
+    // Fallback de segurança para remover o loader após 15s caso não haja resposta
+    setTimeout(() => {
+      if (this.isGlobalLoading) {
+        console.warn('[Chart] Timeout de carregamento inicial atingido. Removendo loader bloqueante.');
+        this.isGlobalLoading = false;
+      }
+    }, 15000);
   },
   beforeUnmount() {
     // Parar análise
@@ -1649,6 +1668,9 @@ export default {
                 this.plotTicks(last100Ticks);
               }
             }
+            
+            // Dados históricos recebidos, podemos remover o loader bloqueante
+            this.isGlobalLoading = false;
           } else if (data.type === 'buy' && data.data) {
             this.processBuy(data.data);
           } else if (data.type === 'contract' && data.data) {
@@ -1725,6 +1747,11 @@ export default {
                   }
                 }
               }
+            }
+            
+            // Se recebermos ticks, também remover o loader (caso histórico tenha falhado ou já passado)
+            if (this.isGlobalLoading) {
+               this.isGlobalLoading = false;
             }
           }
         });
