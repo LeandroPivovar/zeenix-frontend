@@ -22,7 +22,7 @@ export default {
       this.$root.$toast = this.$refs.toast
     }
   }
-
+}
 </script>
 
 <style>
