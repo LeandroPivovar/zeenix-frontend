@@ -297,7 +297,7 @@
                                 :x2="dvxGaugeX2" 
                                 :y2="dvxGaugeY2" 
                                 stroke="#DFDFDF" 
-                                stroke-width="3" 
+                                stroke-width="5" 
                                 stroke-linecap="round"
                             ></line>
                             <circle cx="120" cy="110" r="6" fill="#DFDFDF"></circle>
@@ -430,12 +430,12 @@
                             </div>
                         </div>
                         <button 
-                            class="btn-gerar-sinal-header bg-zenix-green opacity-30 cursor-not-allowed text-black font-black px-8 py-3 rounded-xl transition-all duration-300 shadow-lg shadow-zenix-green/20 uppercase tracking-widest text-xs flex items-center gap-2 pointer-events-auto"
-                            style="pointer-events: auto;"
-                            title="Funcionalidade em desenvolvimento. Para seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado."
+                            @click="toggleAnalysis"
+                            class="btn-gerar-sinal-header"
+                            :class="isAnalyzing ? 'bg-red-500 shadow-red-500/20' : 'bg-zenix-green shadow-zenix-green/20'"
                         >
-                            <i class="fas fa-pencil-alt"></i>
-                            <span>Gerar Sinal</span>
+                            <i :class="isAnalyzing ? 'fas fa-stop' : 'fas fa-bolt'"></i>
+                            <span>{{ isAnalyzing ? 'Parar Análise' : 'Gerar Sinal' }}</span>
                         </button>
                     </div>
 
@@ -1010,8 +1010,8 @@ export default {
                 variance += Math.pow(f.percentage - expected, 2);
             });
             const stdDev = Math.sqrt(variance / 10);
-            // Normalizar para 0-100 com escala mais sensível
-            return Math.min(100, Math.round((stdDev / 18) * 100));
+            // Normalizar para 0-100 com escala mais sensível (divisor 25 para mais movimento)
+            return Math.min(100, Math.round((stdDev / 25) * 100));
         },
         dvxStatusClass() {
             if (this.dvxValue <= 30) return 'dvx-status-green';
