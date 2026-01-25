@@ -780,6 +780,7 @@ label {
   vertical-align: middle;
 }
 
+@keyframes spin {
   to {
     transform: rotate(360deg);
   }
