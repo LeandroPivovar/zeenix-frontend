@@ -1098,6 +1098,10 @@ export default {
     handleWSMessage(msg) {
         if (msg.error) {
             console.warn('[Chart] Erro da API Deriv:', msg.error.code, msg.error.message);
+            if (msg.msg_type === 'buy') {
+                this.tradeError = msg.error.message;
+                this.isTrading = false;
+            }
             return;
         }
 
@@ -1115,6 +1119,21 @@ export default {
                 break;
             case 'tick':
                 this.processWSTick(msg.tick);
+                break;
+            case 'buy': // Resposta da Compra Direta
+                console.log('[Chart] Confirmação de compra recebida via WS:', msg.buy);
+                this.processBuy(msg.buy);
+                // Inscrever para atualizações do contrato
+                if (msg.buy.contract_id) {
+                    this.wsSend({
+                        proposal_open_contract: 1,
+                        contract_id: msg.buy.contract_id,
+                        subscribe: 1
+                    });
+                }
+                break;
+            case 'proposal_open_contract': // Atualizações do Contrato
+                this.processContract(msg.proposal_open_contract);
                 break;
         }
     },
@@ -2157,7 +2176,7 @@ export default {
       this.tradeMessage = '';
       this.isTrading = true;
       
-      console.log('[Chart] ========== EXECUTAR COMPRA ==========');
+      console.log('[Chart] ========== EXECUTAR COMPRA (FRONTEND WS) ==========');
       console.log('[Chart] Configuração:', {
         symbol: this.symbol,
         tradeType: this.tradeType,
@@ -2167,41 +2186,40 @@ export default {
       });
       
       try {
-        console.log('[Chart] Enviando ordem de compra para o backend...');
-
-        const buyConfig = {
+        // Construir payload para compra direta (Instant Buy)
+        const parameters = {
+          amount: this.amount,
+          basis: 'stake',
+          contract_type: this.tradeType,
+          currency: this.currency || 'USD',
           symbol: this.symbol,
-          contractType: this.tradeType,
           duration: this.duration,
-          durationUnit: this.durationUnit,
-          amount: this.amount
+          duration_unit: this.durationUnit,
         };
-        
-        // Adicionar barrier se necessário (ex: DIGITMATCH)
+
+        // Adicionar barrier se necessário
         if (this.isDigitContract && this.tradeType.includes('DIGIT')) {
            if (this.tradeType === 'DIGITMATCH' || this.tradeType === 'DIGITDIFF') {
-             buyConfig.barrier = this.digitMatchValue !== null ? this.digitMatchValue : (this.lastDigit !== null ? this.lastDigit : 5);
+             parameters.barrier = String(this.digitMatchValue !== null ? this.digitMatchValue : (this.lastDigit !== null ? this.lastDigit : 5));
            } else if (this.tradeType === 'DIGITOVER' || this.tradeType === 'DIGITUNDER') {
-             // Default barrier for over/under
-             buyConfig.barrier = 5;
+             parameters.barrier = "5";
            }
         }
         
         // Adicionar multiplicador se necessário
         if (this.tradeType.startsWith('MULT')) {
-          buyConfig.multiplier = this.multiplier || 100;
+          parameters.multiplier = this.multiplier || 100;
         }
+
+        const buyRequest = {
+            buy: 1,
+            price: this.amount, // Limite de preço (stake)
+            parameters: parameters
+        };
+
+        console.log('[Chart] Enviando ordem via WebSocket direto:', buyRequest);
+        this.wsSend(buyRequest);
         
-        // Enviar compra para o backend
-        const response = await derivTradingService.buyContract(buyConfig);
-        console.log('[Chart] ✅ Compra executada via backend', response);
-        
-        // Se o backend retornou os dados da operação (Instant Buy + Wait), processar imediatamente
-        if (response && response.tradeData) {
-            console.log('[Chart] Dados da operação recebidos na resposta (Fast Track):', response.tradeData);
-            this.processBuy(response.tradeData);
-        }
-        // A resposta também pode chegar via SSE (redundância), tratada no methodo processBuy
       } catch (error) {
         console.error('[Chart] Erro ao executar compra:', error);
         this.tradeError = error.message || 'Erro ao executar compra';
