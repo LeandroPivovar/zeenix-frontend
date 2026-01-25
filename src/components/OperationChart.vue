@@ -2193,9 +2193,15 @@ export default {
         }
         
         // Enviar compra para o backend
-        await derivTradingService.buyContract(buyConfig);
-        console.log('[Chart] ✅ Compra executada via backend');
-        // A resposta chegará via SSE no evento 'buy'
+        const response = await derivTradingService.buyContract(buyConfig);
+        console.log('[Chart] ✅ Compra executada via backend', response);
+        
+        // Se o backend retornou os dados da operação (Instant Buy + Wait), processar imediatamente
+        if (response && response.tradeData) {
+            console.log('[Chart] Dados da operação recebidos na resposta (Fast Track):', response.tradeData);
+            this.processBuy(response.tradeData);
+        }
+        // A resposta também pode chegar via SSE (redundância), tratada no methodo processBuy
       } catch (error) {
         console.error('[Chart] Erro ao executar compra:', error);
         this.tradeError = error.message || 'Erro ao executar compra';
@@ -2212,6 +2218,12 @@ export default {
         console.error('[Chart] Dados de compra inválidos:', buyData);
         this.tradeError = 'Erro ao processar compra.';
         this.isTrading = false;
+        return;
+      }
+      
+      // Evitar processamento duplicado (via SSE e Resposta direta)
+      if (this.activeContract && String(this.activeContract.contract_id) === String(contractId)) {
+        console.log('[Chart] Contrato já está ativo, ignorando processamento duplicado:', contractId);
         return;
       }
       
