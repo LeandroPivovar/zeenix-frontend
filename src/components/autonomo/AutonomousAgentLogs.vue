@@ -1,8 +1,7 @@
 <template>
   <div class="operation-logs-container">
     <!-- Header with Action Buttons -->
-    <div class="flex items-center justify-between mb-3 px-2">
-      <h3 class="text-sm font-semibold text-[#FAFAFA] uppercase tracking-wide">Logs do Agente Selecionado</h3>
+    <div class="flex items-center justify-end my-3 px-2">
       <div class="flex items-center gap-2">
         <!-- Clear Logs Button -->
         <button
