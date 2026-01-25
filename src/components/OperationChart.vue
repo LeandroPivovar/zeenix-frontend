@@ -162,8 +162,8 @@
                   </span>
                   <span class="text-[10px] text-white/40 uppercase font-bold tracking-tighter">Entrar em</span>
                 </div>
-                <span v-else-if="aiRecommendation && aiRecommendation.time" class="text-lg font-black text-zenix-green">
-                  {{ aiRecommendation.time }}
+                <span v-else-if="aiRecommendation && aiRecommendation.entry_time" class="text-lg font-black text-zenix-green">
+                  {{ aiRecommendation.entry_time }}s
                 </span>
                 <span v-else class="text-sm text-white/40 font-medium">-</span>
               </div>
