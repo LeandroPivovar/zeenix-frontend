@@ -1123,6 +1123,10 @@ export default {
             case 'buy': // Resposta da Compra Direta
                 console.log('[Chart] Confirmação de compra recebida via WS:', msg.buy);
                 this.processBuy(msg.buy);
+                
+                // NOTIFICAR BACKEND sobre a compra (sync)
+                derivTradingService.notifyBuy(msg.buy);
+
                 // Inscrever para atualizações do contrato
                 if (msg.buy.contract_id) {
                     this.wsSend({
@@ -2469,10 +2473,23 @@ export default {
         this.activeContract.profit = profit;
         this.activeContract.status = contractData.status || (profit > 0 ? 'won' : 'lost');
         
-        // Se for digital, o profit pode vir como 0 em caso de perda
         if (this.isDigitContract && profit === 0 && (contractData.status === 'lost' || contractData.status === 'loss')) {
           profit = -this.amount;
         }
+      }
+
+      // NOTIFICAR BACKEND sobre finalização (sync)
+      if (this.activeContract && this.activeContract.contract_id) {
+         const resultData = {
+            contractId: String(this.activeContract.contract_id),
+            status: this.activeContract.status,
+            profit: profit,
+            sellPrice: this.activeContract.sell_price ? Number(this.activeContract.sell_price) : null,
+            exitSpot: this.activeContract.exit_spot ? Number(this.activeContract.exit_spot) : null,
+            entrySpot: this.activeContract.entry_spot ? Number(this.activeContract.entry_spot) : null,
+            symbol: this.activeContract.symbol,
+         };
+         derivTradingService.notifyEnd(resultData);
       }
       
       // Preparar dados para o modal

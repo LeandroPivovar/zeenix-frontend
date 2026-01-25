@@ -596,6 +596,49 @@ class DerivTradingService {
   }
 
   /**
+   * Notifica backend sobre compra realizada no frontend
+   */
+  async notifyBuy(tradeData) {
+    const authToken = this.token || localStorage.getItem('token');
+    if (!authToken) return;
+
+    try {
+      await fetch(`${API_BASE_URL}/broker/deriv/trading/notify/buy`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(tradeData),
+      });
+    } catch (error) {
+      console.warn('[DerivTrading] Erro ao notificar compra:', error);
+      // Não lançar erro para não interromper fluxo frontend
+    }
+  }
+
+  /**
+   * Notifica backend sobre finalização de contrato
+   */
+  async notifyEnd(resultData) {
+    const authToken = this.token || localStorage.getItem('token');
+    if (!authToken) return;
+
+    try {
+      await fetch(`${API_BASE_URL}/broker/deriv/trading/notify/end`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${authToken}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(resultData),
+      });
+    } catch (error) {
+      console.warn('[DerivTrading] Erro ao notificar fim:', error);
+    }
+  }
+
+  /**
    * Desconecta tudo
    */
   disconnect() {
