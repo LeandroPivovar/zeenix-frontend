@@ -410,6 +410,7 @@
 	</div>
 
 	<!-- Daily Details Modal -->
+    <Teleport to="body">
 	<div v-if="selectedDay" 
 		class="!fixed !inset-0 !z-[9999] flex items-center justify-center bg-black/95 backdrop-blur-md p-2 sm:p-4 animate-in fade-in duration-300" 
 		@click.self="selectedDay = null"
@@ -544,8 +545,10 @@
 			</div>
 		</div>
 	</div>
+    </Teleport>
 
 	<!-- Stop Status Modal -->
+    <Teleport to="body">
 	<div v-if="showStopStatusModal" 
 		class="fixed inset-0 z-[9999] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-in fade-in duration-300"
 		@click.self="closeStopStatusModal"
@@ -587,6 +590,7 @@
 			</div>
 		</div>
 	</div>
+    </Teleport>
 
 	<!-- Modal de Stop (Novos) -->
 	<StopLossModal v-if="showNewStopLossModal" @close="showNewStopLossModal = false" />
