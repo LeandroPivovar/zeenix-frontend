@@ -181,7 +181,7 @@
 								:key="agent.id"
 								@click="selectAgent(agent.id)"
 								class="p-3 flex items-center gap-3 hover:bg-[#1a1a1a] cursor-pointer transition-colors border-b border-[#27272a]/50 last:border-0"
-								:class="{ 'bg-green-500/[0.01] border-green-500': agenteData.id === agent.id }"
+								:class="{ 'bg-green-500/[0.01] border-green-500/40 shadow-[inset_0_0_15px_rgba(34,197,94,0.27)]': agenteData.id === agent.id }"
 							>
 								<div class="w-10 h-10 rounded-md bg-[#1a1a1a] flex items-center justify-center text-xl relative">
 									<span>{{ agent.emoji }}</span>
@@ -203,7 +203,13 @@
 							</div>
 						</div>
 
-
+						<button 
+							@click="goToConfiguration"
+							class="w-full p-4 flex items-center justify-center gap-2 bg-[#1a1a1a] hover:bg-[#222] transition-colors text-white text-xs font-bold"
+						>
+							<i class="fas fa-plus text-[10px] text-green-500"></i>
+							Configurar Novo Agente
+						</button>
 					</div>
 				</div>
 
@@ -666,17 +672,18 @@
 	import { createChart, ColorType } from 'lightweight-charts';
 	import AutonomousAgentLogs from './AutonomousAgentLogs.vue';
 	import accountBalanceMixin from '@/mixins/accountBalanceMixin';
+	import { defineAsyncComponent } from 'vue';
 
 	export default {
 		name: 'AgenteAutonomoPanel',
 		mixins: [accountBalanceMixin],
 		components: {
 			AutonomousAgentLogs,
-			StopLossModal: () => import('@/components/StopLossModal.vue'),
-			TargetProfitModal: () => import('@/components/TargetProfitModal.vue'),
-			StopBlindadoModal: () => import('@/components/StopBlindadoModal.vue'),
-			StopLossAjusteModal: () => import('@/components/StopLossAjusteModal.vue'),
-			StopBlindadoAjusteModal: () => import('@/components/StopBlindadoAjusteModal.vue')
+			StopLossModal: defineAsyncComponent(() => import('@/components/StopLossModal.vue')),
+			TargetProfitModal: defineAsyncComponent(() => import('@/components/TargetProfitModal.vue')),
+			StopBlindadoModal: defineAsyncComponent(() => import('@/components/StopBlindadoModal.vue')),
+			StopLossAjusteModal: defineAsyncComponent(() => import('@/components/StopLossAjusteModal.vue')),
+			StopBlindadoAjusteModal: defineAsyncComponent(() => import('@/components/StopBlindadoAjusteModal.vue'))
 		},
 		props: {
 			agenteData: {
