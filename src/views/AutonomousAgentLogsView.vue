@@ -309,8 +309,8 @@ export default {
 			}).length;
 		},
 
-		clearLogs() {
-			if (confirm('Deseja limpar a visualização dos logs? (Isso não apaga os logs do servidor)')) {
+		async clearLogs() {
+			if (await confirm('Deseja limpar a visualização dos logs? (Isso não apaga os logs do servidor)')) {
 				if (this.activeTab === 'database') {
 					this.logs = [];
 				} else {

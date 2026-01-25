@@ -365,10 +365,10 @@ export default {
         this.loading = false
       }
     },
-    handleAccountCreated(result) {
+    async handleAccountCreated(result) {
       console.log('Conta criada com sucesso:', result);
       this.$root.$toast?.success?.('Contas criadas com sucesso! Verifique seu email para as credenciais.') || 
-        alert('✅ Contas criadas com sucesso!\n\nConta DEMO: ' + (result.data?.demoAccountId || 'N/A') + '\nConta REAL: ' + (result.data?.realAccountId || 'N/A') + '\n\nVerifique seu email para as credenciais de acesso.');
+        await alert('✅ Contas criadas com sucesso!\n\nConta DEMO: ' + (result.data?.demoAccountId || 'N/A') + '\nConta REAL: ' + (result.data?.realAccountId || 'N/A') + '\n\nVerifique seu email para as credenciais de acesso.');
       // Fechar card/modal
       this.showCreateAccountCard = false;
       this.showCreateAccountModal = false;

@@ -486,9 +486,9 @@ export default {
             const day = parts[2];
             return `${day}/${month}`;
         },
-        aplicarPeriodoPersonalizado() {
+        async aplicarPeriodoPersonalizado() {
             if (new Date(this.dataFimPersonalizada) < new Date(this.dataInicioPersonalizada)) {
-                alert("A data final não pode ser anterior à data inicial.");
+                await alert("A data final não pode ser anterior à data inicial.");
                 return;
             }
             console.log(`Aplicando período personalizado de ${this.dataInicioPersonalizada} até ${this.dataFimPersonalizada}`);

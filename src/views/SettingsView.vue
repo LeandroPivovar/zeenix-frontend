@@ -824,7 +824,7 @@ export default {
       }
     },
     async endAllSessions() {
-      if (!confirm('Tem certeza que deseja encerrar todas as sessões?')) return
+      if (!await confirm('Tem certeza que deseja encerrar todas as sessões?')) return
 
       try {
         const token = localStorage.getItem('token')
@@ -851,8 +851,8 @@ export default {
     downloadPersonalData() {
       this.$root.$toast.info('Funcionalidade de download de dados pessoais será implementada em breve')
     },
-    openDeleteAccountModal() {
-      if (confirm('Tem certeza que deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.')) {
+    async openDeleteAccountModal() {
+      if (await confirm('Tem certeza que deseja excluir sua conta permanentemente? Esta ação não pode ser desfeita.')) {
         this.$root.$toast.info('Funcionalidade de exclusão de conta será implementada em breve')
       }
     },

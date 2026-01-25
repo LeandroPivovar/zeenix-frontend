@@ -2,6 +2,7 @@
   <div>
     <router-view/>
     <ToastNotification ref="toast" />
+    <GlobalDialog />
   </div>
 </template>
 
@@ -11,7 +12,8 @@ import ToastNotification from './components/Toast.vue'
 export default {
   name: 'App',
   components: {
-    ToastNotification
+    ToastNotification,
+    GlobalDialog: () => import('./components/GlobalDialog.vue')
   },
   mounted() {
     // Tornar o toast acessível globalmente

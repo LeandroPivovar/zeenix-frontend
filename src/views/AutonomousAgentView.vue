@@ -290,7 +290,7 @@ export default {
 				const userId = this.getUserId();
 				const connectionStr = localStorage.getItem('deriv_connection');
 				if (!connectionStr) {
-					alert('Erro: Conexão Deriv não encontrada');
+					await alert('Erro: Conexão Deriv não encontrada');
 					return;
 				}
 
@@ -298,7 +298,7 @@ export default {
 				const derivToken = connection.token || connection.derivToken;
 
 				if (!derivToken) {
-					alert('Erro: Token Deriv não encontrado');
+					await alert('Erro: Token Deriv não encontrado');
 					return;
 				}
 
@@ -321,16 +321,16 @@ export default {
 
 				const result = await response.json();
 				if (result.success) {
-					alert('✅ Agente autônomo ativado com sucesso!');
+					await alert('✅ Agente autônomo ativado com sucesso!');
 					await this.loadAgentConfig();
 					await this.loadSessionStats();
 					await this.loadTradeHistory();
 				} else {
-					alert(`Erro: ${result.message || 'Falha ao ativar agente'}`);
+					await alert(`Erro: ${result.message || 'Falha ao ativar agente'}`);
 				}
 			} catch (error) {
 				console.error('[AutonomousAgentView] Erro ao ativar agente:', error);
-				alert('Erro ao ativar agente autônomo');
+				await alert('Erro ao ativar agente autônomo');
 			} finally {
 				this.isActivating = false;
 			}
@@ -338,7 +338,7 @@ export default {
 
 		async deactivateAgent() {
 			try {
-				if (!confirm('Tem certeza que deseja desativar o agente autônomo?')) {
+				if (!await confirm('Tem certeza que deseja desativar o agente autônomo?')) {
 					return;
 				}
 
@@ -357,7 +357,7 @@ export default {
 
 				const result = await response.json();
 				if (result.success) {
-					alert('✅ Agente autônomo desativado com sucesso!');
+					await alert('✅ Agente autônomo desativado com sucesso!');
 					this.agentConfig = null;
 					this.sessionStats = {
 						totalTrades: 0,
@@ -370,11 +370,11 @@ export default {
 					};
 					this.tradeHistory = [];
 				} else {
-					alert(`Erro: ${result.message || 'Falha ao desativar agente'}`);
+					await alert(`Erro: ${result.message || 'Falha ao desativar agente'}`);
 				}
 			} catch (error) {
 				console.error('[AutonomousAgentView] Erro ao desativar agente:', error);
-				alert('Erro ao desativar agente autônomo');
+				await alert('Erro ao desativar agente autônomo');
 			} finally {
 				this.isDeactivating = false;
 			}

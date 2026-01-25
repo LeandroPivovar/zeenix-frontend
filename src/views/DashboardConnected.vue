@@ -1138,7 +1138,7 @@ export default {
         }
       } catch (error) {
         console.error('[Dashboard] Erro ao alterar moeda:', error);
-        alert('Erro ao alterar moeda. Tente novamente.');
+        await alert('Erro ao alterar moeda. Tente novamente.');
       }
     },
     async loadTradeCurrency() {
@@ -1677,7 +1677,7 @@ export default {
         }
       } catch (error) {
         console.error('[Dashboard] Erro ao selecionar conta:', error);
-        alert('Erro ao trocar de conta. Tente novamente.');
+        await alert('Erro ao trocar de conta. Tente novamente.');
       }
     },
     getIAPerformance(iaId) {

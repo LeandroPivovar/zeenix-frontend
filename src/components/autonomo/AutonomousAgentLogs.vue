@@ -292,14 +292,14 @@ export default {
       this.fetchRealtimeLogs();
       this.logPollingInterval = setInterval(() => this.fetchRealtimeLogs(), 3000);
     },
-    clearLogs() {
-      if (confirm('Tem certeza que deseja limpar todos os logs?')) {
+    async clearLogs() {
+      if (await confirm('Tem certeza que deseja limpar todos os logs?')) {
         this.realtimeLogs = [];
         this.$emit('update-logs', []);
         console.log('[AutonomousAgentLogs] Logs limpos pelo usuário');
       }
     },
-    exportToPDF() {
+    async exportToPDF() {
       try {
         // Get agente name
         const agenteName = this.agentName || 'AGENTE';
@@ -388,7 +388,7 @@ export default {
         console.log(`[AutonomousAgentLogs] Exportação PDF iniciada: ${this.formattedLogs.length} logs`);
       } catch (error) {
         console.error('[AutonomousAgentLogs] Erro ao exportar PDF:', error);
-        alert('Erro ao exportar PDF. Verifique o console para mais detalhes.');
+        await alert('Erro ao exportar PDF. Verifique o console para mais detalhes.');
       }
     },
     stopLogPolling() {

@@ -579,7 +579,7 @@ export default {
         }
       } catch (error) {
         console.error('[AccountBalanceMixin] Erro ao alterar conta:', error);
-        alert('Erro ao alterar conta. Tente novamente.');
+        await alert('Erro ao alterar conta. Tente novamente.');
       }
     },
 

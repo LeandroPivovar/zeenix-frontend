@@ -428,7 +428,7 @@ export default {
       }
       this.formData.cep = value;
     },
-    validateAge() {
+    async validateAge() {
       if (!this.formData.dataNascimento) return;
       const dataNasc = new Date(this.formData.dataNascimento);
       const hoje = new Date();
@@ -440,7 +440,7 @@ export default {
       }
       
       if (idade < 18) {
-        alert('Você deve ter 18 anos ou mais para criar uma conta.');
+        await alert('Você deve ter 18 anos ou mais para criar uma conta.');
         this.formData.dataNascimento = '';
       }
     },

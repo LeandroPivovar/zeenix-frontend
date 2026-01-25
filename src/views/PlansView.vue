@@ -314,7 +314,7 @@ export default {
             if (this.$toast) {
                 this.$toast.info(`Ação para o plano: ${plan.name}`);
             } else {
-                alert(`Ação para o plano: ${plan.name}`);
+                await alert(`Ação para o plano: ${plan.name}`);
             }
         },
         getDerivToken() {

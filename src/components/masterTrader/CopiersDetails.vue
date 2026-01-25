@@ -333,8 +333,8 @@ const addCopier = () => {
 	}
 };
 
-const deleteCopier = (id) => {
-	if (confirm('Tem certeza que deseja remover este copiador?')) {
+const deleteCopier = async (id) => {
+	if (await confirm('Tem certeza que deseja remover este copiador?')) {
 		copiers.value = copiers.value.filter(copier => copier.id !== id);
 	}
 };

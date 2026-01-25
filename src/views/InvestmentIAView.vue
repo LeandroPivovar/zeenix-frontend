@@ -795,7 +795,7 @@ export default {
                 }
             } catch (error) {
                 console.error('[InvestmentIAView] Erro ao alterar moeda:', error);
-                alert('Erro ao alterar moeda. Tente novamente.');
+                await alert('Erro ao alterar moeda. Tente novamente.');
             }
         },
 

@@ -433,7 +433,7 @@ export default {
         
       } catch (err) {
         console.error('Erro ao remover conclusão da aula:', err)
-        this.$root.$toast?.error?.('Não foi possível remover a conclusão da aula.') || alert('Não foi possível remover a conclusão da aula.')
+        this.$root.$toast?.error?.('Não foi possível remover a conclusão da aula.') || await alert('Não foi possível remover a conclusão da aula.')
       } finally {
         this.markingIncomplete = false
       }

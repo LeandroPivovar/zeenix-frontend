@@ -471,11 +471,11 @@ export default {
 					console.log(`✅ Role atualizada: ${data.message}`);
 				} else {
 					console.error(`❌ Erro: ${data.message}`);
-					alert(data.message);
+					await alert(data.message);
 				}
 			} catch (err) {
 				console.error('Erro ao atualizar role:', err);
-				alert('Erro ao atualizar role do usuário');
+				await alert('Erro ao atualizar role do usuário');
 			}
 		}
 	}

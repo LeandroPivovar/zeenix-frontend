@@ -232,7 +232,7 @@ export default {
         }
       } catch (error) {
         console.error('[OperationView] Erro ao alterar moeda:', error);
-        alert('Erro ao alterar moeda. Tente novamente.');
+        await alert('Erro ao alterar moeda. Tente novamente.');
       }
     },
     formatCurrency(value, currency) {

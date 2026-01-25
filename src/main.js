@@ -3,6 +3,11 @@ import App from './App.vue'
 import router from './router'
 import store from './store'
 import './assets/css/global.css'
+import DialogService from './services/DialogService'
+
+// Override native alerts with custom dialogs
+window.alert = DialogService.alert
+window.confirm = DialogService.confirm
 
 const app = createApp(App)
 
@@ -24,13 +29,13 @@ app.config.errorHandler = (err, instance, info) => {
     'nextSibling',
     'Symbol(_vtc)'
   ];
-  
-  const isKnownError = knownErrors.some(errKey => 
-    errorMessage.includes(errKey) || 
+
+  const isKnownError = knownErrors.some(errKey =>
+    errorMessage.includes(errKey) ||
     errorStack.includes(errKey) ||
     info?.includes(errKey)
   );
-  
+
   // Se for erro conhecido, ignorar silenciosamente
   if (!isKnownError) {
     console.error('[Vue] Erro não tratado:', err, info);

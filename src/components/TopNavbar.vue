@@ -865,7 +865,7 @@ export default {
         }
       } catch (error) {
         console.error('[TopNavbar] Erro ao selecionar conta:', error);
-        alert('Erro ao trocar de conta. Tente novamente.');
+        await alert('Erro ao trocar de conta. Tente novamente.');
       }
     },
     closeAccountModal() {

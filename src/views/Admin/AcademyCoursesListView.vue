@@ -370,7 +370,7 @@ export default {
                     if (this.$root.$toast) {
                         this.$root.$toast.error(`Erro: ${error.message}`);
                     } else {
-                        alert(`Erro ao excluir curso: ${error.message}`);
+                        await alert(`Erro ao excluir curso: ${error.message}`);
                     }
                 }
             } catch (error) {
@@ -378,7 +378,7 @@ export default {
                 if (this.$root.$toast) {
                     this.$root.$toast.error('Erro ao excluir curso. Verifique sua conexão.');
                 } else {
-                    alert('Erro ao excluir curso. Verifique sua conexão.');
+                    await alert('Erro ao excluir curso. Verifique sua conexão.');
                 }
             }
         }
