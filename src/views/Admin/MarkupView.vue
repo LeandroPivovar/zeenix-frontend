@@ -2,13 +2,14 @@
     <div class="dashboard-layout">
         <div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
         
-        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @close-sidebar="isSidebarOpen = false" @toggle-collapse="toggleSidebarCollapse" />
+        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @close-sidebar="isSidebarOpen = false" @toggle-collapse="toggleSidebarCollapse" @open-settings="showSettingsModal = true" />
 
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
+                @open-settings="showSettingsModal = true"
             />
 
             <main class="layout-content">
@@ -152,12 +153,19 @@
             </div>
             </main>
         </div>
+
+        <!-- Settings Modal -->
+        <SettingsSidebar
+            :is-open="showSettingsModal"
+            @close="showSettingsModal = false"
+        />
     </div>
 </template>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 
 // NOTA: DESCOMENTE AS LINHAS ABAIXO APÓS INSTALAR AS DEPENDÊNCIAS (npm install jspdf html2canvas)
 // import jsPDF from 'jspdf';
@@ -168,6 +176,7 @@ export default {
     components: {
         AppSidebar,
         TopNavbar,
+        SettingsSidebar,
     },
     data() {
         const currentDate = new Date().toISOString().split('T')[0];
@@ -181,6 +190,7 @@ export default {
             filterStartDate: startOfYear,
             filterEndDate: currentDate,
             filterSelectedCountry: '',
+            showSettingsModal: false,
             displayedClients: [],
             allUsers: [],
             isLoading: false,

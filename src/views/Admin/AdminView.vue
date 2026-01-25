@@ -12,6 +12,7 @@
             :is-mobile="isMobile"
             @toggle-collapse="toggleSidebarCollapse" 
             @close-sidebar="isSidebarOpen = false" 
+            @open-settings="showSettingsModal = true"
         />
 
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
@@ -21,6 +22,7 @@
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
+                @open-settings="showSettingsModal = true"
             />
             
             <!-- Mobile Header -->
@@ -33,6 +35,9 @@
                 <div class="mobile-brand">
                     <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
                 </div>
+                <button class="mobile-profile-btn" @click="showSettingsModal = true">
+                    <i class="fas fa-user-circle text-2xl text-[#DFDFDF]"></i>
+                </button>
             </div>
 
             <main class="layout-content">
@@ -403,18 +408,26 @@
                 </div>
             </div>
         </transition>
+
+        <!-- Settings Modal -->
+        <SettingsSidebar
+            :is-open="showSettingsModal"
+            @close="showSettingsModal = false"
+        />
     </div>
 </template>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 
 export default {
     name: 'AdminView',
     components: {
         AppSidebar,
-        TopNavbar
+        TopNavbar,
+        SettingsSidebar
     },
     data() {
         return {
@@ -422,6 +435,7 @@ export default {
             isSidebarCollapsed: false,
             isMobile: window.innerWidth <= 1024,
             
+            showSettingsModal: false,
             showAddAdminModal: false, 
             
             newAdmin: {

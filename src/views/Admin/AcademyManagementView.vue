@@ -2,13 +2,14 @@
     <div class="dashboard-layout" ref="layoutContainer">
         <div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
         
-        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @toggle-collapse="toggleSidebarCollapse" @close-sidebar="isSidebarOpen = false" />
+        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @toggle-collapse="toggleSidebarCollapse" @close-sidebar="isSidebarOpen = false" @open-settings="showSettingsModal = true" />
         
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
+                @open-settings="showSettingsModal = true"
             />
 
             <main class="layout-content">
@@ -269,6 +270,12 @@
                 :materials-list="materialsList"
                 @close="closePreviewModal"
             />
+
+            <!-- Settings Modal -->
+            <SettingsSidebar
+                :is-open="showSettingsModal"
+                @close="showSettingsModal = false"
+            />
             </main>
         </div>
     </div>
@@ -276,6 +283,7 @@
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import StudentPreview from '../../components/StudentPreview.vue';
 import AcademyModals from '../../components/modals/AcademyModals.vue'; 
 
@@ -284,6 +292,7 @@ export default {
     components: {
         AppSidebar,
         TopNavbar,
+        SettingsSidebar,
         StudentPreview,
         AcademyModals 
     },
@@ -293,6 +302,7 @@ export default {
             isSidebarOpen: true, // Será ajustado em mounted/checkScreenSize
             isSidebarCollapsed: false,
             isMobile: false,
+            showSettingsModal: false,
             openLessonDropdown: null,
             // ... (Restante do seu estado 'course', 'isPreviewModalOpen', 'courses', etc.)
             course: {

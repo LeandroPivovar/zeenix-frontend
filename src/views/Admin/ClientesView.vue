@@ -2,13 +2,14 @@
 	<div class="dashboard-layout" ref="layoutContainer">
 		<div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
 		
-		<AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @toggle-collapse="toggleSidebarCollapse" @close-sidebar="isSidebarOpen = false" />
+		<AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @toggle-collapse="toggleSidebarCollapse" @close-sidebar="isSidebarOpen = false" @open-settings="showSettingsModal = true" />
 
 		<div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
 			<TopNavbar 
 				:is-sidebar-collapsed="isSidebarCollapsed"
 				@toggle-sidebar="isSidebarOpen = !isSidebarOpen"
 				@toggle-sidebar-collapse="toggleSidebarCollapse"
+				@open-settings="showSettingsModal = true"
 			/>
 
 			<main class="layout-content">
@@ -233,24 +234,33 @@
 				</div>
 			</main>
 		</div>
+
+		<!-- Settings Modal -->
+		<SettingsSidebar
+			:is-open="showSettingsModal"
+			@close="showSettingsModal = false"
+		/>
 	</div>
 </template>
 
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 
 export default {
 	name: 'ClientsView',
 	components: {
 		AppSidebar,
 		TopNavbar,
+		SettingsSidebar,
 	},
 	data() {
 		return {
 			isSidebarOpen: true,
 			isSidebarCollapsed: false,
 			isMobile: false,
+			showSettingsModal: false,
 			pageTitle: 'Métricas dos Clientes', 
 			loading: true,
 			error: null,

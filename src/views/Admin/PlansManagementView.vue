@@ -2,7 +2,7 @@
     <div class="dashboard-layout" ref="layoutContainer">
         <div v-if="isSidebarOpen && isMobile" class="sidebar-overlay" @click="isSidebarOpen = false"></div>
         
-        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @toggle-collapse="toggleSidebarCollapse" @close-sidebar="isSidebarOpen = false" />
+        <AppSidebar :is-open="isSidebarOpen" :is-collapsed="isSidebarCollapsed" :is-mobile="isMobile" @toggle-collapse="toggleSidebarCollapse" @close-sidebar="isSidebarOpen = false" @open-settings="showSettingsModal = true" />
         
         <div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
             <TopNavbar 
@@ -10,6 +10,7 @@
                 :is-sidebar-collapsed="isSidebarCollapsed"
                 @toggle-sidebar="isSidebarOpen = !isSidebarOpen"
                 @toggle-sidebar-collapse="toggleSidebarCollapse"
+                @open-settings="showSettingsModal = true"
             />
             
             <div v-if="isMobile" class="mobile-header-admin">
@@ -21,6 +22,9 @@
                 <div class="mobile-brand">
                     <span class="text-white font-bold text-lg">ZEN</span><span class="text-white font-bold text-lg">I</span><span class="text-[#22C55E] font-bold text-lg">X</span>
                 </div>
+                <button class="mobile-profile-btn" @click="showSettingsModal = true">
+                    <i class="fas fa-user-circle text-2xl text-[#DFDFDF]"></i>
+                </button>
             </div>
 
             <main class="layout-content">
@@ -275,6 +279,12 @@
             <div class="footer-view"></div>
             </main>
         </div>
+
+        <!-- Settings Modal -->
+        <SettingsSidebar
+            :is-open="showSettingsModal"
+            @close="showSettingsModal = false"
+        />
         <ToastNotification ref="toast" />
     </div>
 </template>
@@ -282,6 +292,7 @@
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import ToastNotification from '../../components/Toast.vue';
 
 export default {
@@ -289,6 +300,7 @@ export default {
     components: {
         AppSidebar,
         TopNavbar,
+        SettingsSidebar,
         ToastNotification,
     },
     data() {
@@ -297,6 +309,7 @@ export default {
             isSidebarCollapsed: false,
             isMobile: false,
             
+            showSettingsModal: false,
             // Gerenciamento do Formulário
             isFormVisible: false,
             isEditing: false,

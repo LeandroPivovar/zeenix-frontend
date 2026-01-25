@@ -39,14 +39,15 @@
 
                 <a
                     href="#"
-                    class="menu-item disabled"
-                    :title="'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'"
-                    @click.prevent="openDevModal"
+                    class="menu-item"
+                    :class="{ active: isCopyTradingActive, disabled: !canAccessCopyTrader }"
+                    :title="!canAccessCopyTrader ? 'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.' : ''"
+                    @click.prevent="canAccessCopyTrader ? navigateAndClose('/copy-trading') : openDevModal()"
                     data-text="Copy Trading"
                 >
                     <i class="fa-solid fa-users w-5 opacity-85"></i>
                     <span>Copy Trading</span>
-                    <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
+                    <i v-if="!canAccessCopyTrader" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
                 </a>
 
                 <a 
@@ -101,7 +102,7 @@
                     href="#"
                     class="menu-item"
                     :class="{ active: isSettingsActive }"
-                    @click.prevent="navigateAndClose('/settings')"
+                    @click.prevent="isAdminFlow ? $emit('open-settings') : navigateAndClose('/settings')"
                     data-text="Configuração"
                 >
                     <i class="fa-solid fa-gear w-5 opacity-85"></i>
@@ -231,6 +232,17 @@
                     <span>Gerenciar Planos</span>
                 </a>
 
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isSettingsActive }"
+                    @click.prevent="$emit('open-settings')"
+                    data-text="Configuração"
+                >
+                    <i class="fa-solid fa-gear w-5 opacity-85"></i>
+                    <span>Configuração</span>
+                </a>
+
                 <!-- Sair no fluxo de admin fica abaixo de Gerenciar Planos -->
                 <a
                     href="#"
@@ -277,7 +289,7 @@ export default {
             default: false
         }
     },
-    emits: ['close-sidebar', 'toggle-collapse'],
+    emits: ['close-sidebar', 'toggle-collapse', 'open-settings'],
     data() {
         return { 
             showUserMenu: false,

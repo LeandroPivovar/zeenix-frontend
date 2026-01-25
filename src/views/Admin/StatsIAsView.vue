@@ -12,6 +12,7 @@
 			:is-mobile="isMobile"
 			@close-sidebar="closeSidebar" 
 			@toggle-collapse="toggleSidebarCollapse" 
+			@open-settings="showSettingsModal = true"
 		/>
 
 		<div class="dashboard-content-wrapper" :class="{ 'sidebar-collapsed': isSidebarCollapsed }">
@@ -20,6 +21,7 @@
 				:is-sidebar-collapsed="isSidebarCollapsed"
 				@toggle-sidebar="isSidebarOpen = !isSidebarOpen"
 				@toggle-sidebar-collapse="toggleSidebarCollapse"
+				@open-settings="showSettingsModal = true"
 			/>
 
 		<main class="layout-content">
@@ -656,6 +658,12 @@
 			</div>
 		</main>
 		</div>
+
+		<!-- Settings Modal -->
+		<SettingsSidebar
+			:is-open="showSettingsModal"
+			@close="showSettingsModal = false"
+		/>
 	</div>
 	
 	<!-- Modais de Stop Loss e Target Profit -->
@@ -677,6 +685,7 @@
 <script>
 import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
+import SettingsSidebar from '../../components/SettingsSidebar.vue';
 // import StopLossModal from '../../components/StopLossModal.vue';
 // import TargetProfitModal from '../../components/TargetProfitModal.vue';
 import { createChart, ColorType } from 'lightweight-charts';
@@ -686,6 +695,7 @@ export default {
 	components: {
 		AppSidebar,
 		TopNavbar,
+		SettingsSidebar,
 		// StopLossModal,
 		// TargetProfitModal,
 	},
@@ -707,6 +717,7 @@ export default {
 			isSidebarCollapsed: false,
 			isMobile: false,
 			
+			showSettingsModal: false,
 			filterStartDate: formatDate(sevenDaysAgo), 
 			filterEndDate: formatDate(today),  
 

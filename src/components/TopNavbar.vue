@@ -108,7 +108,7 @@
               </a>
               <a 
                 href="#" 
-                @click.prevent="$router.push('/settings')" 
+                @click.prevent="onSettingsClick" 
                 class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
               >
                 <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
@@ -195,7 +195,7 @@
             </a>
             <a 
               href="#" 
-              @click.prevent="$router.push('/settings')" 
+              @click.prevent="onSettingsClick" 
               class="block px-4 py-2.5 text-sm text-[#DFDFDF] hover:bg-[#0B0B0B] hover:text-[#22C55E] transition-colors"
             >
               <i class="fas fa-cog text-xs mr-3 text-[#7A7A7A]"></i>
@@ -608,9 +608,25 @@ export default {
       return `Conta ${type} (${currency})`;
     },
     handleProfileClick() {
-      // Desktop e mobile: sempre abrir o modal de configurações (SettingsSidebar)
+      // Toggle dropdown
+      this.showProfileDropdown = !this.showProfileDropdown;
+    },
+    onSettingsClick() {
+      // Emit event to open modal
       this.$emit('open-settings');
       this.showProfileDropdown = false;
+      
+      // Fallback: if we are not on an admin page (where the modal is handled),
+      // we might want to still navigate. But for now, let's assume the modal
+      // is the preferred way if handled, or the user can use the sidebar to navigate.
+      // Actually, many common layouts use the modal for quick settings.
+      
+      // If we want to maintain navigation as fallback:
+      /*
+      if (!this.$listeners['open-settings']) {
+        this.$router.push('/settings');
+      }
+      */
     },
     toggleProfileDropdown() {
       this.showProfileDropdown = !this.showProfileDropdown;
