@@ -93,12 +93,13 @@
               </div>
             </div>
             <button 
-              class="btn-gerar-sinal btn-gerar-sinal-header opacity-30 cursor-not-allowed pointer-events-auto"
-              style="pointer-events: auto;"
-              title="Funcionalidade em desenvolvimento. Para seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado."
+              @click="toggleAnalysis"
+              class="btn-gerar-sinal btn-gerar-sinal-header hover:brightness-110 transition-all active:scale-95"
+              :class="{ 'opacity-100 cursor-pointer': !isAnalyzing, 'opacity-80': isAnalyzing }"
+              title="Gerar sinal com Inteligência Artificial"
             >
-              <i class="fas fa-pencil-alt"></i>
-              <span>Gerar Sinal</span>
+              <i class="fas" :class="isAnalyzing ? 'fa-stop' : 'fa-bolt'"></i>
+              <span>{{ isAnalyzing ? 'Parar Análise' : 'Gerar Sinal' }}</span>
             </button>
           </div>
 
@@ -241,12 +242,11 @@
                 </div>
               </div>
               <button 
-                class="bg-zenix-green opacity-30 cursor-not-allowed text-black font-bold px-4 py-2 rounded-lg transition-all text-[10px] uppercase tracking-widest flex items-center gap-2 pointer-events-auto"
-                style="pointer-events: auto;"
-                title="Funcionalidade em desenvolvimento. Para seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado."
+                @click="toggleAnalysis"
+                class="bg-zenix-green text-black font-bold px-4 py-2 rounded-lg transition-all text-[10px] uppercase tracking-widest flex items-center gap-2 active:scale-95 hover:bg-opacity-90"
               >
-                <i class="fas fa-pencil-alt"></i>
-                <span>Gerar</span>
+                <i class="fas" :class="isAnalyzing ? 'fa-stop' : 'fa-bolt'"></i>
+                <span>{{ isAnalyzing ? 'PARAR' : 'GERAR' }}</span>
               </button>
             </div>
 
