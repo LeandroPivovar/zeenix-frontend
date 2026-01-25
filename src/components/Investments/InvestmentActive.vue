@@ -1627,6 +1627,11 @@ export default {
             // Vue 3: reatividade automática, não precisa de $set
             this.realtimeLogs = [newLog, ...this.realtimeLogs];
             
+            // ✅ Se for um resultado de operação, forçar atualização imediata do saldo
+            if (type === 'resultado') {
+                window.dispatchEvent(new CustomEvent('refreshBalance'));
+            }
+            
             // ✅ Auto-scroll para o topo apenas se o usuário já estiver no topo
             this.$nextTick(() => {
                 // Desktop: lista simples

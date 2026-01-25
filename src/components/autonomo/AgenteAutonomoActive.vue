@@ -1525,6 +1525,8 @@
                         console.log('[AgenteAutonomo] 🎯 [Logs] Meta de Lucro detectada!');
                         this.showNewTargetProfitModal = true;
                     }
+                    // Forçar atualização imediata do saldo após trade
+                    window.dispatchEvent(new CustomEvent('refreshBalance'));
                 }
             },
 			handleConfirmStopAjuste() {

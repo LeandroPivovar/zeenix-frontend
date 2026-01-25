@@ -946,6 +946,7 @@
             this.loadSessionStats();
             this.loadTradeHistory();
             this.loadAgentLogs();
+            this.fetchAccountBalance();
           }
         }, 5000);
         
@@ -1301,7 +1302,7 @@
           }).catch(error => {
             console.error('[AgenteAutonomo] Erro ao atualizar saldo:', error);
           });
-        }, 30000);
+        }, 5000);
       },
   
       stopBalanceUpdates() {
@@ -1361,6 +1362,7 @@
         this.checkMobile();
 
         window.addEventListener("resize", this.checkMobile);
+        window.addEventListener("refreshBalance", () => this.fetchAccountBalance());
 
         // Carregar saldo primeiro para que esteja disponível quando agenteData for computado
         await this.fetchAccountBalance();

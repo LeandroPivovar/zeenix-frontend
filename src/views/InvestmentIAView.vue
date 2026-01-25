@@ -1376,11 +1376,12 @@ export default {
         console.log('[InvestmentIAView] Iniciando atualização de estatísticas...');
         this.startStatsUpdates();
         
-        // Iniciar polling de saldo via mixin (ajustado para 30s como Dashboard)
-        this.startBalancePolling(30000);
+        // Iniciar polling de saldo via mixin (ajustado para 5s)
+        this.startBalancePolling(5000);
         
-        // Escutar mudanças de conta para atualizar saldo automaticamente
+        // Escutar mudanças de conta e pedidos de refresh para atualizar saldo automaticamente
         window.addEventListener('accountChanged', this.handleGlobalAccountChange);
+        window.addEventListener('refreshBalance', () => this.reloadBalance());
     },
 
     beforeUnmount() {

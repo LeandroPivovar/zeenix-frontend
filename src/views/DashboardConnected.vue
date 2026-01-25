@@ -938,6 +938,8 @@ export default {
     await this.loadWeeklyPerformance();
     this.loadLoginNotifications();
     this.checkOnboarding();
+    // Iniciar atualização de saldo em tempo real (5s)
+    this.startBalancePolling(5000);
   },
   methods: {
     async loadWeeklyPerformance() {

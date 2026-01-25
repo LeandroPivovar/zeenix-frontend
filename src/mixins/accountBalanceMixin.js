@@ -586,7 +586,7 @@ export default {
     /**
      * Inicia polling de atualização de saldo (opcional)
      */
-    startBalancePolling(intervalMs = 30000) {
+    startBalancePolling(intervalMs = 5000) {
       if (this.balanceUpdateInterval) {
         clearInterval(this.balanceUpdateInterval);
       }
@@ -654,6 +654,7 @@ export default {
     // Ouvir eventos de atualização de saldo fictício
     window.addEventListener('masterTraderSettingsUpdated', (e) => this.handleMasterTraderUpdate(e));
     window.addEventListener('fictitiousBalanceChanged', (e) => this.handleFictitiousBalanceChange(e));
+    window.addEventListener('refreshBalance', () => this.reloadBalance());
 
     // Carregar tradeCurrency primeiro para garantir que accountType está correto
     await this.loadTradeCurrency();
