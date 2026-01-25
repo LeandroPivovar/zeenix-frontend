@@ -39,14 +39,15 @@
 
                 <a
                     href="#"
-                    class="menu-item disabled"
-                    :title="'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'"
-                    @click.prevent="openDevModal"
+                    class="menu-item"
+                    :class="{ active: isCopyTradingActive, disabled: !canAccessCopyTrader }"
+                    :title="!canAccessCopyTrader ? 'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.' : ''"
+                    @click.prevent="canAccessCopyTrader ? navigateAndClose('/copy-trading') : openDevModal()"
                     data-text="Copy Trading"
                 >
                     <i class="fa-solid fa-users w-5 opacity-85"></i>
                     <span>Copy Trading</span>
-                    <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
+                    <i v-if="!canAccessCopyTrader" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
                 </a>
 
                 <a 
