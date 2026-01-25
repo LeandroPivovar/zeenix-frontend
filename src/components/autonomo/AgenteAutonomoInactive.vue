@@ -121,7 +121,7 @@
 										<path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
 										<line x1="12" y1="17" x2="12.01" y2="17"></line>
 									</svg>
-									<span class="tooltip-text">Escolha o agente autônomo que deseja usar.</span>
+									<span class="tooltip-text">Modelo de análise usado pela IA</span>
 								</div>
 							</label>
 							
@@ -636,9 +636,9 @@ export default {
 		},
 		riskDescriptionText() {
 			const descriptions = {
-				'conservative': 'Foco total em proteção de capital. Recuperações mais lentas e seguras.',
-				'balanced': 'Equilíbrio ideal entre ganho e proteção. Recuperação moderada.',
-				'aggressive': 'Máxima velocidade de recuperação. Maior exposição para acelerar lucros.'
+				'conservative': 'Recupera o valor perdido até o M5 (sexta perda). Se não conseguir, assume a perda e reseta para o valor da entrada inicial.',
+				'balanced': 'Recuperação ilimitada com +15% de lucro sobre as perdas totais',
+				'aggressive': 'Recuperação ilimitada com +30% de lucro sobre as perdas totais'
 			};
 			return descriptions[this.selectedRisk] || descriptions.conservative;
 		},

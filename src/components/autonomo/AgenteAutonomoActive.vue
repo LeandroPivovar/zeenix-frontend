@@ -287,17 +287,23 @@
 		<div class="rounded-lg border border-[#27272a] bg-[#0c0c0c] p-5">
 			<h3 class="text-sm font-semibold flex items-center gap-2 mb-4 uppercase tracking-wide text-[#FAFAFA]">
 				<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-activity text-green-500"><path d="M22 12h-2.48a2 2 0 0 0-1.93 1.46l-2.35 8.36a.25.25 0 0 1-.48 0L9.24 2.18a.25.25 0 0 0-.48 0l-2.35 8.36A2 2 0 0 1 4.49 12H2"></path></svg>
-				Distribuição Diária de Performance
+				Distribuição Performance
 			</h3>
 
 			<!-- Weekly Table -->
 			<div class="overflow-x-auto mb-6">
-				<h4 class="text-xs font-semibold text-[#A1A1AA] mb-3 uppercase tracking-wide text-left">Resumo Semanal</h4>
+				<div class="flex items-center justify-between mb-3">
+					<h4 class="text-xs font-semibold text-[#A1A1AA] uppercase tracking-wide text-left">Resumo {{ periodLabel }}</h4>
+					<button v-if="selectedPeriodFilter" @click="clearPeriodFilter" class="text-[10px] text-green-500 hover:text-green-400 font-bold uppercase transition-colors flex items-center gap-1">
+						<svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-filter-x"><path d="M13.013 17.653 21 21v-3.5a2 2 0 0 1 2-2.13L21 15"/><path d="m3 3 18 18"/><path d="M14.761 2.362A3 3 0 0 1 20 5.337L15 13.5v7l-2.091-2.091"/></svg>
+						Limpar Filtro
+					</button>
+				</div>
 				<div class="overflow-x-auto">
 					<table class="w-full text-[11px] sm:text-xs md:text-sm">
 						<thead class="border-b border-[#27272a]">
 							<tr class="text-[#A1A1AA] text-[10px] sm:text-xs">
-								<th class="text-left py-2 px-1 font-medium uppercase tracking-wide">Semana</th>
+								<th class="text-left py-2 px-1 font-medium uppercase tracking-wide">Periodo</th>
 								<th class="text-right py-2 px-1 font-medium uppercase tracking-wide">Lucro</th>
 								<th class="text-right py-2 px-1 font-medium uppercase tracking-wide">Capital Final</th>
 								<th class="text-right py-2 px-1 font-medium uppercase tracking-wide">%</th>
@@ -306,8 +312,16 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="week in weeklyData" :key="week.period" class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors">
-								<td class="text-left py-2.5 px-1 font-medium">{{ week.period }}</td>
+							<tr v-for="week in weeklyData" :key="week.period" 
+								class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors cursor-pointer"
+								:class="{ 'bg-[#1a1a1a] border-green-500/30': selectedPeriodFilter === week.period }"
+								@click="selectPeriodFilter(week)">
+								<td class="text-left py-2.5 px-1 font-medium text-white">
+									<div class="flex items-center gap-2">
+										<div class="w-1.5 h-1.5 rounded-full" :class="selectedPeriodFilter === week.period ? 'bg-green-500' : 'bg-transparent'"></div>
+										{{ week.period }}
+									</div>
+								</td>
 								<td class="text-right py-2.5 px-1 tabular-nums font-medium" :class="week.profit >= 0 ? 'text-green-500' : 'text-red-500'">
 									{{ week.profit >= 0 ? '+' : '' }}${{ week.profit.toFixed(2) }}
 								</td>
@@ -340,7 +354,7 @@
 								</tr>
 							</thead>
 							<tbody>
-								<tr v-for="day in dailyData" :key="day.date" 
+								<tr v-for="day in filteredDailyData" :key="day.date" 
 									class="border-b border-[#27272a]/50 hover:bg-[#1a1a1a] transition-colors cursor-pointer"
 									:class="{'bg-green-500/5 hover:bg-green-500/10': day.badge === 'Melhor', 'bg-red-500/5 hover:bg-red-500/10': day.badge === 'Pior'}"
 									@click="openDayDetails(day)">
@@ -521,23 +535,30 @@
 							</tr>
 						</thead>
 						<tbody>
-							<tr v-for="(op, idx) in dailyTrades" :key="idx" class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
-								<td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{ formatToSPTime(op.time) }}</td>
-								<td class="py-2 px-1 text-[#FAFAFA] text-left truncate max-w-[50px] sm:max-w-none">{{op.market}}</td>
-								<td class="py-2 px-1 text-left">
-                                    <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold"
-                                        :class="op.contract === 'DIGITMATCH' ? 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'">
-                                        {{ op.contract }}
-                                    </span>
-                                </td>
-								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.entry}}</td>
-								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.exit}}</td>
-								<td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.stake.toFixed(2)}}</td>
-								<td class="py-2 px-1 text-right tabular-nums font-semibold" :class="op.profit >= 0 ? 'text-green-500' : 'text-red-500'">{{op.result}}</td>
-							</tr>
-                            <tr v-if="dailyTrades.length === 0">
-                                <td colspan="7" class="py-8 text-center text-[#A1A1AA] text-xs">Nenhuma operação neste dia.</td>
-                            </tr>
+                            <!-- Session grouping logic -->
+                            <template v-for="(session, sIdx) in tradesBySession" :key="sIdx">
+                                <tr v-if="tradesBySession.length > 1" class="bg-[#1a1a1a]/50">
+                                    <td colspan="7" class="py-1.5 px-2 text-[10px] font-bold text-green-500 uppercase tracking-wider border-y border-[#27272a]">
+                                         Sessão #{{ tradesBySession.length - sIdx }} • Início {{ formatToSPTime(session.trades[session.trades.length-1].createdAt) }}
+                                    </td>
+                                </tr>
+                                <tr v-for="(op, idx) in session.trades" :key="op.id || idx" class="border-b border-[#27272a]/50 hover:bg-[#27272a]/20">
+                                    <td class="py-2 px-1 font-mono text-[#A1A1AA] text-left">{{ formatToSPTime(op.createdAt) }}</td>
+                                    <td class="py-2 px-1 text-[#FAFAFA] text-left truncate max-w-[50px] sm:max-w-none">{{op.market}}</td>
+                                    <td class="py-2 px-1 text-left">
+                                        <span class="px-1.5 py-0.5 rounded-md text-[9px] font-bold"
+                                            :class="op.contract === 'DIGITMATCH' ? 'bg-cyan-500/10 text-cyan-500 border border-cyan-500/20' : 'bg-blue-500/10 text-blue-500 border border-blue-500/20'">
+                                            {{ op.contract }}
+                                        </span>
+                                    </td>
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.entry}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{op.exit}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums text-[#FAFAFA]">${{parseFloat(op.stake).toFixed(2)}}</td>
+                                    <td class="py-2 px-1 text-right tabular-nums font-semibold" :class="parseFloat(op.profit) >= 0 ? 'text-green-500' : 'text-red-500'">
+                                        {{ parseFloat(op.profit) >= 0 ? '+' : '' }}{{ parseFloat(op.profit).toFixed(2) }}
+                                    </td>
+                                </tr>
+                            </template>
 						</tbody>
 
 					</table>
@@ -700,6 +721,8 @@
 				showNewTargetProfitModal: false,
 				showNewStopBlindadoModal: false,
 				showStopLossAjusteModal: false,
+				showNewStopBlindadoModal: false,
+				showStopLossAjusteModal: false,
 				showStopBlindadoAjusteModal: false,
 				dataInicio: new Date().toISOString().split('T')[0],
 				dataFim: new Date().toISOString().split('T')[0],
@@ -760,6 +783,9 @@
 				dailyData: [],
 			dailyTrades: [],
 			agentConfig: null,
+				stopStatusData: { type: 'profit', title: '', description: '' },
+				selectedPeriodFilter: null, // Novo estado para filtro
+				dailyTrades: [],
 
 				// Agent Switcher
 				showAgentSwitcher: false,
@@ -966,7 +992,79 @@
 				
 				// Se não for hoje, retorna dados estáticos
 				return this.selectedDay;
-			}
+			},
+			filteredDailyData() {
+				if (!this.selectedPeriodFilter) return this.dailyData;
+				
+				// Parse selected period (e.g. 18/01 - 24/01)
+				// Assuming current year 2026 as per user screenshot/context
+				try {
+					const [startStr, endStr] = this.selectedPeriodFilter.split(' - ');
+					const currentYear = new Date().getFullYear(); // Or 2026 if fixed
+					
+					// Formato esperado DD/MM
+					const [startDay, startMonth] = startStr.trim().split('/');
+					const [endDay, endMonth] = endStr.trim().split('/');
+					
+					const startDate = new Date(currentYear, parseInt(startMonth) - 1, parseInt(startDay));
+					const endDate = new Date(currentYear, parseInt(endMonth) - 1, parseInt(endDay));
+					
+					// Adjust endDate to end of day
+					endDate.setHours(23, 59, 59, 999);
+					
+					return this.dailyData.filter(day => {
+                        // day.fullDate is YYYY-MM-DD
+                        if (!day.fullDate) return true;
+						const dayDate = new Date(day.fullDate + 'T12:00:00'); // noon to avoid timezone shift issues
+						return dayDate >= startDate && dayDate <= endDate;
+					});
+				} catch (e) {
+					console.error('Erro ao filtrar datas:', e);
+					return this.dailyData;
+				}
+			},
+			periodLabel() {
+				if (this.selectedPeriodFilter) return 'Filtrado';
+                // Retorna 'Semanal', 'Mensal' etc baseado na range geral se quiser, por padrão 'Semanal' baseada na tabela
+				return 'Semanal';
+			},
+            tradesBySession() {
+                if (!this.dailyTrades || this.dailyTrades.length === 0) return [];
+                
+                // Agrupar por "sessão" (gap > 30 min)
+                const sessions = [];
+                let currentSession = [];
+                
+                // Trades vem ordenados DESC do backend (mais recente primeiro)
+                // Para agrupar cronologicamente, talvez seja melhor iterar.
+                // Mas a exibição suele ser DESC tambem.
+                
+                // Vamos usar gaps. Se diff > 30min entre Trade[i] e Trade[i+1], i+1 pertence a outra sessão (anterior).
+                
+                let trades = [...this.dailyTrades]; // Clone
+                // Order is DESC. So trades[0] is 14:00, trades[1] is 13:58...
+                
+                if (trades.length > 0) {
+                     currentSession.push(trades[0]);
+                     
+                     for (let i = 1; i < trades.length; i++) {
+                         const prevTradeTime = new Date(trades[i-1].createdAt).getTime();
+                         const currTradeTime = new Date(trades[i].createdAt).getTime();
+                         
+                         const diffMinutes = (prevTradeTime - currTradeTime) / (1000 * 60);
+                         
+                         if (diffMinutes > 30) {
+                             // Gap detectado, fecha sessão atual
+                             sessions.push({ trades: currentSession });
+                             currentSession = [];
+                         }
+                         currentSession.push(trades[i]);
+                     }
+                     sessions.push({ trades: currentSession });
+                }
+                
+                return sessions;
+            },
 		},
 		watch: {
 			'agenteData.accountBalance'() { this.$forceUpdate(); },
@@ -1003,7 +1101,15 @@
 				if (!status || status === 'active' || status === this.lastProcessedStatus) return;
 				
 				// O modal agora é controlado exclusivamente pelos LOGS para evitar re-trigger redundante.
-				// Este método agora apenas registra que o status mudou para controle de botões se necessário.
+				// Manter formatação de hora
+            formatToSPTime(isoString) {
+                if (!isoString) return '--:--';
+                try {
+                    const date = new Date(isoString);
+                    return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', timeZone: 'America/Sao_Paulo' });
+                } catch (e) { return isoString; }
+            },
+ apenas registra que o status mudou para controle de botões se necessário.
 				if (['stopped_profit', 'stopped_loss', 'stopped_blindado'].includes(status)) {
 					this.lastProcessedStatus = status;
 					console.log('[AgenteAutonomo] Mudança de status bloqueada para trigger de modal (usando logs):', status);
@@ -1050,6 +1156,16 @@
 			},
 			
 			// Métodos do Gráfico
+			selectPeriodFilter(week) {
+				if (this.selectedPeriodFilter === week.period) {
+					this.selectedPeriodFilter = null;
+				} else {
+					this.selectedPeriodFilter = week.period;
+				}
+			},
+			clearPeriodFilter() {
+				this.selectedPeriodFilter = null;
+			},
 			initIndexChart() {
                 console.log('[AgenteAutonomo] initIndexChart iniciado');
 				if (!this.$refs.performanceChartContainer) {
