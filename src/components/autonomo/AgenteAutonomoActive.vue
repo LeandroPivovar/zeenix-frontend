@@ -1527,8 +1527,6 @@
                     }
                 }
             },
-
-			},
 			handleConfirmStopAjuste() {
 				this.showStopLossAjusteModal = false;
 				this.showStopBlindadoAjusteModal = false;
