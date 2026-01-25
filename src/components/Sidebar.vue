@@ -2,136 +2,136 @@
     <div class="sidebar-wrapper">
         <aside class="sidebar" :class="{ 'is-open': isOpen, 'collapsed': isCollapsed }">
         <nav class="menu">
-            <a
-                href="#"
-                class="menu-item"
-                :class="{ active: isDashboardActive }"
-                @click.prevent="navigateAndClose('/dashboard')"
-                data-text="Dashboard"
-            >
-                <i class="fa-solid fa-chart-line w-5 opacity-85"></i>
-                <span>Dashboard</span>
-            </a>
-            
-            <a
-                href="#"
-                class="menu-item"
-                :class="{ active: isStatsIAsActive }"
-                @click.prevent="navigateAndClose('/StatsIAs')"
-                data-text="IAs de Investimento"
-            >
-                <i class="fa-solid fa-brain w-5 opacity-85"></i>
-                <span>IA's de Investimento</span>
-            </a>
+            <template v-if="!isAdminFlow">
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isDashboardActive }"
+                    @click.prevent="navigateAndClose('/dashboard')"
+                    data-text="Dashboard"
+                >
+                    <i class="fa-solid fa-chart-line w-5 opacity-85"></i>
+                    <span>Dashboard</span>
+                </a>
+                
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isStatsIAsActive }"
+                    @click.prevent="navigateAndClose('/StatsIAs')"
+                    data-text="IAs de Investimento"
+                >
+                    <i class="fa-solid fa-brain w-5 opacity-85"></i>
+                    <span>IA's de Investimento</span>
+                </a>
 
-            <a
-                href="#"
-                class="menu-item"
-                :class="{ active: isAutonomousAgentActive, disabled: !isAdmin }"
-                @click.prevent="isAdmin ? navigateAndClose('/agente-autonomo') : openDevModal()"
-                data-text="Agente Autônomo"
-            >
-                <i class="fa-solid fa-microchip w-5 opacity-85"></i>
-                <span>Agente Autônomo</span>
-                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
-            </a>
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isAutonomousAgentActive, disabled: !isAdmin }"
+                    @click.prevent="isAdmin ? navigateAndClose('/agente-autonomo') : openDevModal()"
+                    data-text="Agente Autônomo"
+                >
+                    <i class="fa-solid fa-microchip w-5 opacity-85"></i>
+                    <span>Agente Autônomo</span>
+                    <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
+                </a>
 
-            <a
-                href="#"
-                class="menu-item disabled"
-                :title="'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'"
-                @click.prevent="openDevModal"
-                data-text="Copy Trading"
-            >
-                <i class="fa-solid fa-users w-5 opacity-85"></i>
-                <span>Copy Trading</span>
-                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
-            </a>
+                <a
+                    href="#"
+                    class="menu-item disabled"
+                    :title="'Funcionalidade em desenvolvimento.\n\nPara seu total conforto e aproveitamento da plataforma, estamos finalizando o desenvolvimento dessa funcionalidade, logo quando terminarmos você será avisado.'"
+                    @click.prevent="openDevModal"
+                    data-text="Copy Trading"
+                >
+                    <i class="fa-solid fa-users w-5 opacity-85"></i>
+                    <span>Copy Trading</span>
+                    <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
+                </a>
 
-            <a 
-                href="#"
-                class="menu-item" 
-                :class="{ active: isOperationActive, disabled: !isAdmin }"
-                @click.prevent="isAdmin ? navigateAndClose('/operation') : openDevModal()"
-                data-text="Operação Manual"
-            >
-                <i class="fa-solid fa-hand-pointer w-5 opacity-85"></i>
-                <span>Operação Manual</span>
-                <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
-            </a>
+                <a 
+                    href="#"
+                    class="menu-item" 
+                    :class="{ active: isOperationActive, disabled: !isAdmin }"
+                    @click.prevent="isAdmin ? navigateAndClose('/operation') : openDevModal()"
+                    data-text="Operação Manual"
+                >
+                    <i class="fa-solid fa-hand-pointer w-5 opacity-85"></i>
+                    <span>Operação Manual</span>
+                    <i v-if="!isAdmin" class="fa-solid fa-lock text-red-500 text-xs ml-auto"></i>
+                </a>
 
-            <a
-                v-if="isAdmin"
-                href="#"
-                class="menu-item"
-                :class="{ active: isMasterTraderActive }"
-                @click.prevent="navigateAndClose('/MasterTrader')"
-                data-text="Trader Mestre"
-            >
-                <i class="fa-solid fa-user-crown w-5 opacity-85"></i>
-                <span>Trader Mestre</span>
-            </a>
+                <a
+                    v-if="isAdmin"
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isMasterTraderActive }"
+                    @click.prevent="navigateAndClose('/MasterTrader')"
+                    data-text="Trader Mestre"
+                >
+                    <i class="fa-solid fa-user-crown w-5 opacity-85"></i>
+                    <span>Trader Mestre</span>
+                </a>
 
-            <div class="separator"></div>
-            
-            <a
-                href="#"
-                class="menu-item"
-                :class="{ active: isAcademyActive }"
-                @click.prevent="navigateAndClose('/academy')"
-                data-text="Zenix Academy"
-            >
-                <i class="fa-solid fa-graduation-cap w-5 opacity-85"></i>
-                <span>Zenix Academy</span>
-            </a>
-
-            <a
-                href="#"
-                class="menu-item"
-                :class="{ active: isPlansActive }"
-                @click.prevent="navigateAndClose('/plans')"
-                data-text="Planos"
-            >
-                <i class="fa-solid fa-crown w-5 opacity-85"></i>
-                <span>Planos</span>
-            </a>
-
-            <a
-                href="#"
-                class="menu-item"
-                :class="{ active: isSettingsActive }"
-                @click.prevent="navigateAndClose('/settings')"
-                data-text="Configuração"
-            >
-                <i class="fa-solid fa-gear w-5 opacity-85"></i>
-                <span>Configuração</span>
-            </a>
-
-            <a
-                href="#"
-                class="menu-item"
-                :class="{ active: isSupportActive }"
-                @click.prevent="navigateAndClose('/support')"
-                data-text="Suporte"
-            >
-                <i class="fa-solid fa-headset w-5 opacity-85"></i>
-                <span>Suporte</span>
-            </a>
-
-            <a
-                href="#"
-                class="menu-item"
-                @click.prevent="logout"
-                data-text="Sair"
-            >
-                <i class="fa-solid fa-arrow-right-from-bracket w-5 opacity-85"></i>
-                <span>Sair</span>
-            </a>
-
-            <!-- Links de Administração (apenas para admins) -->
-            <template v-if="isAdmin">
                 <div class="separator"></div>
                 
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isAcademyActive }"
+                    @click.prevent="navigateAndClose('/academy')"
+                    data-text="Zenix Academy"
+                >
+                    <i class="fa-solid fa-graduation-cap w-5 opacity-85"></i>
+                    <span>Zenix Academy</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isPlansActive }"
+                    @click.prevent="navigateAndClose('/plans')"
+                    data-text="Planos"
+                >
+                    <i class="fa-solid fa-crown w-5 opacity-85"></i>
+                    <span>Planos</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isSettingsActive }"
+                    @click.prevent="navigateAndClose('/settings')"
+                    data-text="Configuração"
+                >
+                    <i class="fa-solid fa-gear w-5 opacity-85"></i>
+                    <span>Configuração</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    :class="{ active: isSupportActive }"
+                    @click.prevent="navigateAndClose('/support')"
+                    data-text="Suporte"
+                >
+                    <i class="fa-solid fa-headset w-5 opacity-85"></i>
+                    <span>Suporte</span>
+                </a>
+
+                <a
+                    href="#"
+                    class="menu-item"
+                    @click.prevent="logout"
+                    data-text="Sair"
+                >
+                    <i class="fa-solid fa-arrow-right-from-bracket w-5 opacity-85"></i>
+                    <span>Sair</span>
+                </a>
+            </template>
+
+            <!-- Links de Administração (apenas no fluxo administrativo) -->
+            <template v-if="isAdminFlow && isAdmin">
                 <a
                     href="#"
                     class="menu-item"
@@ -230,6 +230,17 @@
                     <i class="fa-solid fa-crown w-5 opacity-85"></i>
                     <span>Gerenciar Planos</span>
                 </a>
+
+                <!-- Sair no fluxo de admin fica abaixo de Gerenciar Planos -->
+                <a
+                    href="#"
+                    class="menu-item"
+                    @click.prevent="logout"
+                    data-text="Sair"
+                >
+                    <i class="fa-solid fa-arrow-right-from-bracket w-5 opacity-85"></i>
+                    <span>Sair</span>
+                </a>
             </template>
 
         </nav>
@@ -274,6 +285,23 @@ export default {
         }
     },
     computed: {
+        isAdminFlow() {
+            const adminPaths = [
+                '/Admin', 
+                '/AdminStatsIAs', 
+                '/Experts', 
+                '/Clientes', 
+                '/Webhooks', 
+                '/AcademyManagement', 
+                '/SupportItems', 
+                '/markup', 
+                '/PlansManagement'
+            ];
+            const currentPath = this.$route?.path;
+            
+            // Verifica se a rota atual começa com algum dos caminhos de admin
+            return adminPaths.some(path => currentPath?.toLowerCase().startsWith(path.toLowerCase()));
+        },
         isDashboardActive() { return this.$route?.path === '/dashboard'; },
         isAcademyActive() { return this.$route?.path?.startsWith('/academy') || false; },
         isSupportActive() { return this.$route?.path === '/support'; },

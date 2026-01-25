@@ -115,12 +115,17 @@ const routes = [
     component: DerivOAuthCallback,
     meta: { requiresAuth: true }
   },
-  // {
-  //   path: '/markup',
-  //   name: 'Markup',
-  //   component: MarkupView,
-  //   meta: { requiresAuth: true, requiresRole: ['admin'] }
-  // },
+  {
+    path: '/admin',
+    name: 'AdminLogin',
+    component: () => import('../views/Admin/AdminLoginView.vue')
+  },
+  {
+    path: '/markup',
+    name: 'Markup',
+    component: () => import('../views/Admin/MarkupView.vue'),
+    meta: { requiresAuth: true, requiresRole: ['admin'] }
+  },
   {
     path: '/StatsIAs',
     name: 'StatsIAs',

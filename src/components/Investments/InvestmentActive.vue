@@ -2424,16 +2424,34 @@ export default {
                     // (independentemente do estado anterior, desde que o modal não esteja já aberto)
                     if (currentSessionStatus === 'stopped_loss') {
                         console.log('[InvestmentActive] 🛑 Stop Loss status detectado!');
+                        // ✅ [FIX] Abrir modal de Stop Loss
+                        if (!this.showStopLossModal && !this.showStopBlindadoModal) {
+                            this.loadSessionResult().then(() => {
+                                this.showStopLossModal = true;
+                            });
+                        }
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
                     } else if (currentSessionStatus === 'stopped_blindado') {
                         console.log('[InvestmentActive] 🛡️ Stop Loss Blindado status detectado!');
+                        // ✅ [FIX] Abrir modal de Stop Blindado
+                        if (!this.showStopBlindadoModal && !this.showStopLossModal) {
+                            this.loadSessionResult().then(() => {
+                                this.showStopBlindadoModal = true;
+                            });
+                        }
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
                     } else if (currentSessionStatus === 'stopped_profit') {
                         console.log('[InvestmentActive] 🎯 Target profit status detectado!');
+                        // ✅ [FIX] Abrir modal de Target Profit
+                        if (!this.showTargetProfitModal) {
+                            this.loadSessionResult().then(() => {
+                                this.showTargetProfitModal = true;
+                            });
+                        }
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
                         this.previousSessionStatus = currentSessionStatus;
