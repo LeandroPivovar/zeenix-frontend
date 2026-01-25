@@ -772,6 +772,8 @@
 					{ label: 'Ontem', value: 'yesterday' },
 					{ label: 'Últimos 7 dias', value: '7d' },
 					{ label: 'Últimos 30 dias', value: '30d' },
+					{ label: 'Semestre', value: '6m' },
+					{ label: 'Ano', value: '1y' },
 					{ label: 'Mês Atual', value: 'thisMonth' },
 					{ label: 'Mês Passado', value: 'lastMonth' },
 					{ label: 'Este Ano', value: 'thisYear' },
@@ -784,11 +786,12 @@
                 agentConfig: null,
                 
 				selectedPeriodFilter: null, // Novo estado para filtro
+				selectedAgentFilter: 'all', // Novo filtro de agente
 
 				// Agent Switcher
 				showAgentSwitcher: false,
 				runningAgents: [
-
+                    { id: 'all', title: 'Todos os Agentes', emoji: '🤖' }, // Opção 'Todos'
 					{ 
 						id: 'falcon', 
 						title: 'Falcon', 
@@ -804,6 +807,12 @@
 						description: 'Análise: 8 Filtros Estatísticos + Troca de Contrato\nAssertividade: 95% a 98%\nRetorno: 70% / 800%',
 						winRate: 95,
 						style: 'Estatístico'
+					},
+                    {
+                        id: 'sentinel',
+						description: 'Análise: Proteção e Consistência',
+						winRate: 60,
+						style: 'Conservador'
 					}
 				],
 				hideValues: false,
@@ -1274,7 +1283,9 @@
                     console.log('[AgenteAutonomo] Buscando daily-trades para:', dateQuery);
                     
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
-                    const url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateQuery}`;
+                    const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
+                    // Backend uses param date, updated in previous steps
+                    const url = `${apiBase}/autonomous-agent/daily-trades/${userId}?date=${dateQuery}${agentFilter}`;
                     const options = {
 						method: "GET",
 						headers: {
@@ -1346,8 +1357,9 @@
 
 				try {
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
-					console.log('[AgenteAutonomo] Buscando stats diários em:', `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30`);
-					const url = `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30`;
+                    const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
+					console.log('[AgenteAutonomo] Buscando stats diários em:', `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30${agentFilter}`);
+					const url = `${apiBase}/autonomous-agent/daily-stats/${userId}?days=30${agentFilter}`;
 					const options = {
 						method: "GET",
 						headers: {
@@ -1443,7 +1455,8 @@
 
 				try {
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
-					const url = `${apiBase}/autonomous-agent/weekly-stats/${userId}?weeks=10`;
+                    const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
+					const url = `${apiBase}/autonomous-agent/weekly-stats/${userId}?weeks=26${agentFilter}`; // Aumentado para 26 semanas (semestre) para cobrir mais histórico
 					console.log('[AgenteAutonomo] Buscando stats semanais em:', url);
 					
 					const response = await fetch(url, {
@@ -1481,6 +1494,9 @@
 				if (this.selectedPeriod === '7d') days = 7;
 				if (this.selectedPeriod === 'today') days = 1;
 				if (this.selectedPeriod === 'yesterday') days = 2;
+				if (this.selectedPeriod === '30d') days = 30; // Garante 30 dias explicitamente
+				if (this.selectedPeriod === '6m') days = 180;
+				if (this.selectedPeriod === '1y') days = 365;
 				if (this.selectedPeriod === 'thisMonth') days = new Date().getDate();
 				if (this.selectedPeriod === 'lastMonth') days = 60; // Approximate fallback
 				if (this.selectedPeriod === 'thisYear') {
@@ -1493,11 +1509,24 @@
 
 				try {
 					const apiBase = process.env.VUE_APP_API_BASE_URL || "https://iazenix.com/api";
+                    const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
                     
                     if (this.selectedPeriod === 'session') {
+                        // Se tiver filtro de agente, usa profit-evolution normal com days=1 (ou lógica customizada se backend suportar session+agent. Backend suporta agent em profit-evolution)
+                        // A lógica de sessão no backend (getSessionEvolution) não aceita filtro de agente ainda.
+                        // Melhor usar profit-evolution com filtro de data da sessão se necessário, mas por enquanto vamos manter session-evolution se for 'all'
+                        // SE agente selecionado != all, vamos forçar 'today' ou lógica similar, 
+                        // OU usar profit-evolution normal pois session evolution é complexo de filtrar por agente sem mexer no backend session logic.
+                        // O backend getProfitEvolution JÁ ACEITA agent parameter.
                         url = `${apiBase}/autonomous-agent/session-evolution/${userId}`;
+                        if (this.selectedAgentFilter !== 'all') {
+                             // Fallback para dia atual se filtrar por agente, pois session-evolution pega SESSÃO ATIVA do config global
+                             // e a sessão ativa é GLOBAL do usuário, mas os trades podem ser filtrados.
+                             // Porém, getProfitEvolution(days=1) retorna evolução do dia.
+                             url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=1${agentFilter}`;
+                        }
                     } else {
-                        url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}`;
+                        url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}${agentFilter}`;
                     }
                     
                     console.log('[AgenteAutonomo] Buscando evolução em:', url);
@@ -1568,8 +1597,11 @@
 			},
 			selectAgent(agentId) {
 				console.log('Switching to agent:', agentId);
+				this.selectedAgentFilter = agentId;
 				this.showAgentSwitcher = false;
-				// Implementation would go here - likely emitting an event or navigating
+				
+				// Recarregar todos os dados com o novo filtro
+				this.fetchAllStats();
 			},
 			goToConfiguration() {
 				// Navigate to configuration page
