@@ -1455,5 +1455,10 @@ body {
         opacity: 1;
     }
 }
+
+.layout-content {
+    width: 100%;
+    max-width: none;
+}
 </style>
 

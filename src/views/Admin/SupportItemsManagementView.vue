@@ -892,6 +892,8 @@ body {
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
+    width: 100%;
+    max-width: none;
 }
 
 /* Mobile Header */

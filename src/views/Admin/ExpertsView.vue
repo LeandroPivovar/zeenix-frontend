@@ -1868,4 +1868,9 @@ body {
         background-position: -48px -48px, -48px -48px;
     }
 }
+
+.layout-content {
+    width: 100%;
+    max-width: none;
+}
 </style>
