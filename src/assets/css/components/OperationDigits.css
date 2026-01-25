@@ -481,27 +481,59 @@
     color: #DFDFDF;
 }
 
-.frequency-bar-visual {
-    width: 100%;
-    border-radius: 6px;
+.frequency-pill-visual {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     transition: all 0.4s ease;
     box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
-.frequency-bar-visual.status-underheated {
-    background: linear-gradient(to top, #16A34A, #22C55E);
+.frequency-pill-visual.status-underheated {
+    background: #22C55E !important;
 }
 
-.frequency-bar-visual.status-normal {
-    background: linear-gradient(to top, #FCD34D, #FFD058);
+.frequency-pill-visual.status-normal {
+    background: #FFD058 !important;
 }
 
-.frequency-bar-visual.status-heated {
-    background: linear-gradient(to top, #F97316, #FF9147);
+.frequency-pill-visual.status-heated {
+    background: #FF9147 !important;
 }
 
-.frequency-bar-visual.status-overheated {
-    background: linear-gradient(to top, #EF4444, #FF4747);
+.frequency-pill-visual.status-overheated {
+    background: #FF4747 !important;
+}
+
+.heatmap-digit-block.status-underheated {
+    background: rgba(34, 197, 94, 0.1) !important;
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 8px;
+    padding: 6px;
+}
+
+.heatmap-digit-block.status-normal {
+    background: rgba(255, 208, 88, 0.05) !important;
+    border: 1px solid rgba(255, 208, 88, 0.1);
+    border-radius: 8px;
+    padding: 6px;
+}
+
+.heatmap-digit-block.status-heated {
+    background: rgba(255, 145, 71, 0.1) !important;
+    border: 1px solid rgba(255, 145, 71, 0.2);
+    border-radius: 8px;
+    padding: 6px;
+}
+
+.heatmap-digit-block.status-overheated {
+    background: rgba(255, 71, 71, 0.1) !important;
+    border: 1px solid rgba(255, 71, 71, 0.2);
+    border-radius: 8px;
+    padding: 6px;
 }
 
 /* Mobile: Pills horizontais */
@@ -515,32 +547,6 @@
         justify-content: center !important;
         transition: all 0.4s ease !important;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2) !important;
-    }
-
-    .frequency-pill-visual.status-underheated {
-        background: #22C55E !important;
-    }
-
-    .frequency-pill-visual.status-normal {
-        background: #FFD058 !important;
-    }
-
-    .frequency-pill-visual.status-heated {
-        background: #FF9147 !important;
-    }
-
-    .frequency-pill-visual.status-overheated {
-        background: #FF4747 !important;
-    }
-
-    .frequency-digit-number {
-        font-size: 0.875rem !important;
-        font-weight: 700 !important;
-        color: #FFFFFF !important;
-    }
-
-    .frequency-z-score {
-        display: none !important;
     }
 }
 
