@@ -1559,7 +1559,7 @@ export default {
             this.calculateDigitFrequency();
         },
         calculateDigitFrequency() {
-            const last20Ticks = this.ticks.slice(-20);
+            const last100Ticks = this.ticks.slice(-100);
             const digits = [];
             const frequency = {};
             
@@ -1567,7 +1567,7 @@ export default {
                 frequency[i] = 0;
             }
             
-            last20Ticks.forEach(tick => {
+            last100Ticks.forEach(tick => {
                 const value = Math.floor(tick.value);
                 const lastDigit = value % 10;
                 digits.push(lastDigit);
