@@ -13,17 +13,64 @@
         <p class="step-description">Para continuar utilizando a plataforma ZENIX, você deve ler e aceitar nossos termos de uso.</p>
         
         <div class="terms-box">
-          <h4>1. Aceitação dos Termos</h4>
-          <p>Ao acessar e utilizar a plataforma ZENIX, você concorda em cumprir estes termos e todas as leis aplicáveis.</p>
+          <p>TERMOS DE USO – ZENIX</p>
+          <p>Ao acessar, cadastrar-se ou utilizar a plataforma ZENIX, o usuário (“USUÁRIO”) declara que leu, compreendeu e concorda integralmente com os presentes Termos de Uso, ficando legalmente vinculado a todas as suas disposições.</p>
+          <p>Estes Termos regulam a relação entre o USUÁRIO e a ZENIX, doravante denominada PLATAFORMA.</p>
+
+          <h4>1. OBJETO</h4>
+          <p>1.1. Os presentes Termos têm por objeto regular o acesso e o uso da plataforma ZENIX, que disponibiliza recursos tecnológicos de automação operacional, incluindo sistemas automatizados, ferramentas técnicas, dashboards, registros operacionais (logs) e integrações com corretoras terceiras, conforme o plano contratado.</p>
+          <p>1.2. O acesso à plataforma confere ao USUÁRIO uma licença de uso pessoal, não exclusiva, intransferível e revogável, limitada às funcionalidades contratadas.</p>
+
+          <h4>2. NATUREZA DA PLATAFORMA</h4>
+          <p>2.1. A ZENIX é uma plataforma de tecnologia, não sendo corretora, instituição financeira, gestora de recursos, administradora de carteiras ou prestadora de serviços de consultoria ou assessoria financeira.</p>
+          <p>2.2. A ZENIX não capta recursos, não administra capital de terceiros, não executa operações financeiras, não realiza depósitos ou saques e não possui acesso às contas financeiras do USUÁRIO.</p>
+          <p>2.3. Todo capital utilizado pelo USUÁRIO permanece sob sua exclusiva titularidade e responsabilidade, alocado em corretoras de sua livre escolha.</p>
+
+          <h4>3. AUSÊNCIA DE INDICAÇÃO OU RECOMENDAÇÃO</h4>
+          <p>3.1. A ZENIX não realiza recomendações de investimento, não indica ativos, não sugere operações e não fornece aconselhamento financeiro de qualquer natureza.</p>
+          <p>3.2. As informações e funcionalidades disponibilizadas possuem caráter exclusivamente técnico, informativo e operacional.</p>
+
+          <h4>4. CIÊNCIA DE RISCO</h4>
+          <p>4.1. O USUÁRIO declara estar ciente de que operações em mercados financeiros envolvem riscos elevados e podem resultar em perda parcial ou total do capital utilizado, independentemente do uso de sistemas automatizados.</p>
+          <p>4.2. O USUÁRIO reconhece que fatores externos, como volatilidade de mercado, falhas técnicas, indisponibilidade de corretoras ou eventos de força maior, podem impactar os resultados.</p>
+
+          <h4>5. AUSÊNCIA DE GARANTIA DE RESULTADOS</h4>
+          <p>5.1. A ZENIX não garante lucros, rentabilidade, desempenho, recuperação de capital ou qualquer resultado financeiro específico.</p>
+          <p>5.2. Resultados passados não constituem garantia de resultados futuros.</p>
+
+          <h4>6. RESPONSABILIDADE DO USUÁRIO</h4>
+          <p>6.1. O USUÁRIO é o único responsável por definir valores operacionais, parâmetros de risco, configurações, estratégias e decisões de uso da plataforma.</p>
+          <p>6.2. O USUÁRIO assume integral responsabilidade por perdas, ganhos, tributos, taxas, custos operacionais e quaisquer consequências decorrentes do uso da plataforma.</p>
+
+          <h4>7. LIMITAÇÃO DE RESPONSABILIDADE</h4>
+          <p>7.1. A ZENIX não será responsável por danos diretos, indiretos, incidentais, consequenciais, lucros cessantes ou danos morais decorrentes do uso ou da impossibilidade de uso da plataforma.</p>
+          <p>7.2. Em nenhuma hipótese a responsabilidade da ZENIX excederá o valor efetivamente pago pelo USUÁRIO pelo acesso à plataforma.</p>
+
+          <h4>8. CADASTRO E SEGURANÇA</h4>
+          <p>8.1. O USUÁRIO compromete-se a fornecer informações verdadeiras e atualizadas.</p>
+          <p>8.2. O login e a senha são pessoais e intransferíveis, sendo o USUÁRIO integralmente responsável por sua guarda e uso.</p>
+          <p>8.3. É vedado o compartilhamento de acesso, sob pena de suspensão ou cancelamento.</p>
+
+          <h4>9. SUPORTE E DISPONIBILIDADE</h4>
+          <p>9.1. A ZENIX poderá disponibilizar suporte técnico e materiais educativos, sem que isso caracterize prestação de consultoria financeira.</p>
+          <p>9.2. A ZENIX não se responsabiliza por falhas ou indisponibilidades decorrentes de corretoras terceiras, internet, servidores externos, manutenções ou eventos de força maior.</p>
+
+          <h4>10. SUSPENSÃO E ENCERRAMENTO</h4>
+          <p>10.1. A ZENIX poderá suspender ou encerrar o acesso do USUÁRIO, a qualquer tempo, em caso de violação destes Termos, uso indevido da plataforma, tentativa de engenharia reversa, compartilhamento de acesso, fraude ou atividade ilícita.</p>
+
+          <h4>11. ALTERAÇÕES DOS TERMOS</h4>
+          <p>11.1. A ZENIX poderá alterar estes Termos a qualquer momento.</p>
+          <p>11.2. O uso continuado da plataforma após alterações caracteriza aceite automático da versão vigente.</p>
+
+          <h4>12. DISPOSIÇÕES GERAIS</h4>
+          <p>12.1. A eventual tolerância quanto ao descumprimento de quaisquer disposições não constituirá novação ou renúncia de direitos.</p>
+          <p>12.2. Caso qualquer cláusula seja considerada inválida, as demais permanecerão em pleno vigor.</p>
           
-          <h4>2. Riscos de Investimento</h4>
-          <p>Operações no mercado financeiro envolvem riscos significativos. A ZENIX fornece ferramentas e tecnologias, mas as decisões de investimento são de inteira responsabilidade do usuário.</p>
+          <h4>13. FORO</h4>
+          <p>13.1. Fica eleito o foro da comarca de Curitiba/PR, com renúncia a qualquer outro, por mais privilegiado que seja.</p>
           
-          <h4>3. Segurança da Conta</h4>
-          <p>Você é responsável por manter a confidencialidade de sua senha e por todas as atividades que ocorram em sua conta.</p>
-          
-          <h4>4. Uso da Tecnologia</h4>
-          <p>Nossas IAs e ferramentas de Copy Trading são baseadas em algoritmos matemáticos e históricos. Resultados passados não garantem resultados futuros.</p>
+          <h4>14. ACEITE</h4>
+          <p>14.1. Ao acessar ou utilizar a plataforma ZENIX, o USUÁRIO declara que leu, compreendeu e concorda integralmente com estes Termos de Uso.</p>
         </div>
 
         <div class="checkbox-group">
