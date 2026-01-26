@@ -153,7 +153,10 @@
                     <div class="section-header">
                         <h2>Logs & Auditoria</h2>
                         <div class="log-actions">
-                            <button class="btn btn-secondary">Exportar Logs</button>
+                            <button class="btn btn-secondary" @click="showKiwifyModal = true">
+                                <i class="fas fa-sync-alt" style="margin-right: 5px;"></i>
+                                Sincronizar Usuários
+                            </button>
                             <button class="btn btn-secondary filter-btn" @click="loadActivityLogs(logsPagination.currentPage, logsPagination.recordsPerPage)">
                                 <i class="fa-solid fa-rotate-right" style="margin-right: 5px;"></i>
                                 Atualizar
@@ -425,6 +428,12 @@
             @confirm="handleConfirmAction"
             @cancel="confirmModalData.visible = false"
         />
+
+        <!-- Kiwify Users Modal -->
+        <KiwifyUsersModal 
+            :visible="showKiwifyModal"
+            @close="showKiwifyModal = false"
+        />
     </div>
 </template>
 
@@ -433,6 +442,7 @@ import AppSidebar from '../../components/Sidebar.vue';
 import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import ConfirmActionModal from '../../components/modals/ConfirmActionModal.vue';
+import KiwifyUsersModal from '../../components/modals/KiwifyUsersModal.vue';
 
 export default {
     name: 'AdminView',
@@ -440,7 +450,8 @@ export default {
         AppSidebar,
         TopNavbar,
         SettingsSidebar,
-        ConfirmActionModal
+        ConfirmActionModal,
+        KiwifyUsersModal
     },
     data() {
         return {
@@ -449,7 +460,8 @@ export default {
             isMobile: window.innerWidth <= 1024,
             
             showSettingsModal: false,
-            showAddAdminModal: false, 
+            showAddAdminModal: false,
+            showKiwifyModal: false, 
             
             newAdmin: {
                 name: '',
