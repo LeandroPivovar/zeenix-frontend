@@ -55,6 +55,11 @@
                             <span class="hint-text">Preço do plano.</span>
                         </div>
                         <div class="form-group">
+                            <label for="externalId">ID Externo</label>
+                            <input type="text" id="externalId" name="externalId" placeholder="ex: price_123" v-model="planForm.externalId">
+                            <span class="hint-text">ID do gateway de pagamento (opcional).</span>
+                        </div>
+                        <div class="form-group">
                             <label for="currency">Moeda</label>
                             <div class="select-wrapper">
                                 <select name="currency" id="currency" v-model="planForm.currency" required>
@@ -186,6 +191,7 @@
                         <div class="th name">Nome</div>
                         <div class="th slug">Slug</div>
                         <div class="th price">Preço</div>
+                        <div class="th external">ID Externo</div>
                         <div class="th popular">Mais Vendido</div>
                         <div class="th recommended">Recomendado</div>
                         <div class="th active">Status</div>
@@ -207,6 +213,7 @@
                             <div class="td name">{{ plan.name }}</div>
                             <div class="td slug">{{ plan.slug }}</div>
                             <div class="td price">{{ formatCurrency(plan.price, plan.currency) }}</div>
+                            <div class="td external">{{ plan.externalId || '-' }}</div>
                             <div class="td popular">
                                 <span v-if="plan.isPopular" class="badge badge-popular">SIM</span>
                                 <span v-else class="badge badge-no">NÃO</span>
@@ -262,6 +269,10 @@
                         <div class="card-row-plan">
                             <span class="card-label-plan">Preço:</span>
                             <span class="card-value-plan price-value">{{ formatCurrency(plan.price, plan.currency) }}</span>
+                        </div>
+                        <div class="card-row-plan">
+                            <span class="card-label-plan">ID Externo:</span>
+                            <span class="card-value-plan">{{ plan.externalId || '-' }}</span>
                         </div>
                         <div class="card-row-plan">
                             <span class="card-label-plan">Mais Vendido:</span>
@@ -344,6 +355,7 @@ export default {
                 isRecommended: false,
                 isActive: true,
                 displayOrder: 0,
+                externalId: '',
             },
             
             // Dados Dinâmicos
@@ -480,6 +492,7 @@ export default {
                 isRecommended: plan.isRecommended || false,
                 isActive: plan.isActive !== undefined ? plan.isActive : true,
                 displayOrder: plan.displayOrder || 0,
+                externalId: plan.externalId || '',
             };
         },
 
@@ -497,6 +510,7 @@ export default {
                 isRecommended: false,
                 isActive: true,
                 displayOrder: 0,
+                externalId: '',
             };
             console.log('📋 [PlansManagement] Formulário vazio criado com', form.benefits.length, 'benefícios');
             return form;
@@ -593,6 +607,7 @@ export default {
                     isRecommended: this.planForm.isRecommended || false,
                     isActive: this.planForm.isActive !== undefined ? this.planForm.isActive : true,
                     displayOrder: parseInt(this.planForm.displayOrder) || 0,
+                    externalId: this.planForm.externalId || null,
                 };
 
                 const response = await fetch(url, {
@@ -650,6 +665,7 @@ export default {
                 isRecommended: plan.isRecommended || false,
                 isActive: plan.isActive !== undefined ? plan.isActive : true,
                 displayOrder: plan.displayOrder || 0,
+                externalId: plan.externalId || '',
             };
             
             this.isEditing = true;
@@ -1217,7 +1233,7 @@ body {
 
 .table-header {
     display: grid;
-    grid-template-columns: 2fr 1fr 1.2fr 1fr 1fr 1fr 0.8fr 1fr;
+    grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr 0.6fr 1fr;
     align-items: center;
     padding: 10px 0;
     font-weight: 500;
@@ -1236,7 +1252,7 @@ body {
     font-size: 0.9rem;
     border-bottom: 1px solid #2a2a2a; 
     display: grid; 
-    grid-template-columns: 2fr 1fr 1.2fr 1fr 1fr 1fr 0.8fr 1fr;
+    grid-template-columns: 1.5fr 1fr 1fr 1.2fr 1fr 1fr 1fr 0.6fr 1fr;
     align-items: center;
     width: 100%;
     padding: 8px 0;
