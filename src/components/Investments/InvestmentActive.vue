@@ -2038,15 +2038,9 @@ export default {
                                     containerMobile.scrollTop = 0;
                                 }
                             });
-                        } else {
-                            console.log('[InvestmentActive] ℹ️ Nenhum log novo para adicionar');
-                        }
                     }
                     
-                    // ✅ Verificar logs após primeira carga também
-                    if (this.realtimeLogs.length > 0 && !this.showStopLossModal && !this.showTargetProfitModal) {
-                        this.checkLogsForStopEvents();
-                    }
+                    // ✅ Removido call redundante aqui. O watch ou o log polling já aciona quando necessário.
                 }
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao buscar logs:', error);
@@ -2065,27 +2059,7 @@ export default {
             
             console.log('[InvestmentActive] 🔍 Verificando logs para eventos de stop...', recentLogs.length, 'logs recentes');
             
-            // ✅ Verificar se há mensagem de meta de lucro atingida nos logs recentes
-            const hasTargetProfitMessage = recentLogs.some(log => 
-                log.message && (
-                    log.message.includes('META DE LUCRO ATINGIDA') ||
-                    log.message.includes('Meta de lucro atingida') ||
-                    log.message.includes('[META APOLLO]') || // Apollo-specific
-                    log.message.includes('META ATINGIDA')
-                )
-            );
-            
-            if (hasTargetProfitMessage) {
-                console.log('[InvestmentActive] 🎯 Meta de lucro detectada nos logs!');
-                if (!this.showTargetProfitModal) {
-                    console.log('[InvestmentActive] 🎯 [Logs] Meta de lucro detectada nos logs! Mostrando modal...');
-                    this.loadSessionResult().then(() => {
-                        this.showTargetProfitModal = true;
-                    });
-                }
-            }
-            
-            // ✅ Verificar se há mensagem de STOP BLINDADO ATINGIDO (Extreme Strict Mode)
+            // ✅ 1. VERIFICAR STOP BLINDADO ATINGIDO (Extreme Strict Mode)
             const hasBlindadoHit = recentLogs.some(log => 
                 log.message && (
                     log.message.trim().includes('🛡️ STOP BLINDADO ATINGIDO!')
@@ -2094,17 +2068,18 @@ export default {
             
             if (hasBlindadoHit) {
                 console.log('[InvestmentActive] 🛡️ [Logs] Exact Hit detected!');
-                if (!this.showStopBlindadoModal && !this.showStopLossModal && !this.processingStopEvent) {
+                if (!this.showStopBlindadoModal && !this.showStopLossModal && !this.showTargetProfitModal && !this.processingStopEvent) {
                     this.processingStopEvent = true;
                     console.log('[InvestmentActive] 🛡️ [Logs] Triggering Stop Blindado Modal...');
                     this.loadSessionResult().then(() => {
                         this.showStopBlindadoModal = true;
                         this.processingStopEvent = false;
                     }).catch(() => { this.processingStopEvent = false; });
+                    return; // Interromper para não mostrar dois modais
                 }
             }
             
-            // ✅ Verificar se há mensagem de STOP LOSS NORMAL (Avoiding collision with Blindado)
+            // ✅ 2. VERIFICAR STOP LOSS NORMAL (Avoiding collision with Blindado)
             const hasNormalStopLossMessage = recentLogs.some(log => 
                 log.message && (
                     log.message.includes('STOP LOSS ATINGIDO') ||
@@ -2115,20 +2090,23 @@ export default {
             
             if (hasNormalStopLossMessage) {
                 console.log('[InvestmentActive] 🛑 Stop Loss normal detectado nos logs!');
-                if (!this.showStopLossModal && !this.showStopBlindadoModal && !this.processingStopEvent) {
+                if (!this.showStopLossModal && !this.showStopBlindadoModal && !this.showTargetProfitModal && !this.processingStopEvent) {
                     this.processingStopEvent = true;
                     console.log('[InvestmentActive] 🛑 [Logs] Stop loss normal detectado nos logs! Mostrando modal...');
                     this.loadSessionResult().then(() => {
                         this.showStopLossModal = true;
                          this.processingStopEvent = false;
                     }).catch(() => { this.processingStopEvent = false; });
+                    return; // Interromper
                 }
             }
 
-            // 3. META DE LUCRO ATINGIDA
+            // ✅ 3. VERIFICAR META DE LUCRO ATINGIDA (Consolidado)
             const hasProfitMessage = recentLogs.some(log => 
                 log.message && (
                     log.message.includes('META DE LUCRO ATINGIDA') ||
+                    log.message.includes('Meta de lucro atingida') ||
+                    log.message.includes('[META APOLLO]') || 
                     log.message.includes('META ATINGIDA') ||
                     log.message.includes('TARGET PROFIT REACHED')
                 )
@@ -2136,11 +2114,14 @@ export default {
 
             if (hasProfitMessage) {
                 console.log('[InvestmentActive] 🎯 Meta de Lucro detectada nos logs!');
-                if (!this.showTargetProfitModal) {
+                if (!this.showTargetProfitModal && !this.showStopLossModal && !this.showStopBlindadoModal && !this.processingStopEvent) {
+                    this.processingStopEvent = true; // Trava para evitar duplo trigger durante o loadSessionResult
                     console.log('[InvestmentActive] 🎯 [Logs] Mostrando modal de Meta de Lucro...');
                     this.loadSessionResult().then(() => {
                         this.showTargetProfitModal = true;
-                    });
+                        this.processingStopEvent = false;
+                    }).catch(() => { this.processingStopEvent = false; });
+                    return; // Interromper
                 }
             }
 
