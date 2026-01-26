@@ -585,8 +585,12 @@ export default {
       this.loadUserProfilePicture();
     },
     openDepositFlow() {
-      // Redirecionamento externo para a Academy
-      window.location.href = 'https://iazenix.com/academy/course/25054bef-4f7c-4388-b22a-f01374671da3';
+      // Redirecionamento para a Academy - Aula 2
+      this.$router.push({ 
+        name: 'CourseDetail', 
+        params: { id: '25054bef-4f7c-4388-b22a-f01374671da3' },
+        query: { lesson: '2' }
+      });
     },
     disconnectAccount() {
       localStorage.removeItem('deriv_token');

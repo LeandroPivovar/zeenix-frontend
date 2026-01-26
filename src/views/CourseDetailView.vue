@@ -338,12 +338,35 @@ export default {
             lessons: module.lessons || []
           }))
           
-          // Expand first module and select first lesson
+          // Expand first module and select first lesson or specific lesson from query
           if (this.modules.length > 0) {
-            this.modules[0].expanded = true
-            if (this.modules[0].lessons && this.modules[0].lessons.length > 0) {
-              this.selectedLesson = this.modules[0].lessons[0]
-              await this.loadLessonMaterials(this.selectedLesson.id)
+            const lessonQuery = this.$route.query.lesson;
+            let targetLesson = null;
+            let targetModule = null;
+
+            if (lessonQuery) {
+                const lessonIndex = parseInt(lessonQuery) - 1; // 1-based index
+                const allLessons = this.getAllLessons();
+                if (lessonIndex >= 0 && lessonIndex < allLessons.length) {
+                    targetLesson = allLessons[lessonIndex];
+                    // Find which module this lesson belongs to
+                    targetModule = this.modules.find(m => m.lessons && m.lessons.some(l => l.id === targetLesson.id));
+                }
+            }
+
+            if (targetLesson && targetModule) {
+                targetModule.expanded = true;
+                this.selectedLesson = targetLesson;
+            } else {
+                // Default: First lesson of first module
+                this.modules[0].expanded = true;
+                if (this.modules[0].lessons && this.modules[0].lessons.length > 0) {
+                    this.selectedLesson = this.modules[0].lessons[0];
+                }
+            }
+
+            if (this.selectedLesson) {
+                await this.loadLessonMaterials(this.selectedLesson.id);
             }
           }
         }
