@@ -133,18 +133,12 @@
             </div>
             
             
-            <h2 style="font-size: 18px; color: #fff; margin-bottom: 12px;">Descrição</h2>
+            
             <div class="cards-group">
                 <div v-for="(card, index) in summaryCards" :key="index" :class="[card.class, 'card']">
                     <p class="card-title">{{ card.title }}</p>
                     <p class="card-value" :class="{'green-text': card.isGreen}">{{ card.value }}</p>
                 </div>
-            </div>
-
-            <div style="display: flex; justify-content: flex-end; margin: 16px 0;">
-                <button class="add-expert-btn" @click="openForm">
-                    + Adicionar Novo Expert
-                </button>
             </div>
 
             <!-- Tabela Desktop -->
@@ -251,8 +245,11 @@
                 </div>
             </div>
             
-            <div class="footer-view">
-                </div>
+            <div class="footer-view" style="display: flex; justify-content: flex-end; margin-top: 20px;">
+                <button class="add-expert-btn" @click="openForm">
+                    + Adicionar Novo Expert
+                </button>
+            </div>
             </main>
         </div>
 
