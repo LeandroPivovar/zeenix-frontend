@@ -191,19 +191,7 @@
                                     </td>
                                 </tr>
                                 <tr v-else v-for="user in filteredAllUsers" :key="user.id">
-                                    <td>
-                                        <div style="display: flex; align-items: center; gap: 8px;">
-                                            <span>{{ user.name }}</span>
-                                            <a v-if="user.phone && user.phone !== 'N/A'" 
-                                               :href="'https://wa.me/' + user.phone.replace(/\D/g, '')" 
-                                               target="_blank" 
-                                               class="whatsapp-link-icon"
-                                               title="Conversar no WhatsApp"
-                                            >
-                                                <i class="fab fa-whatsapp"></i>
-                                            </a>
-                                        </div>
-                                    </td>
+                                    <td>{{ user.name }}</td>
                                     <td>{{ user.email }}</td>
                                     <td>
                                         <div class="account-info">
@@ -222,6 +210,13 @@
                                             <button @click="toggleUserStatus(user)" :class="['action-link', user.isActive ? 'deactivate' : 'activate']">
                                                 {{ user.isActive ? 'Desativar' : 'Ativar' }}
                                             </button>
+                                            <a v-if="user.phone && user.phone !== 'N/A'" 
+                                               :href="'https://wa.me/' + user.phone.replace(/\D/g, '')" 
+                                               target="_blank" 
+                                               class="action-link whatsapp"
+                                            >
+                                                WhatsApp
+                                            </a>
                                         </div>
                                     </td>
                                 </tr>
@@ -232,16 +227,7 @@
                     <div class="mobile-users-cards" :class="{ 'loading': isLoadingAllUsers }">
                         <div v-for="user in filteredAllUsers" :key="'mob-' + user.id" class="mobile-user-card">
                              <div class="card-header-user">
-                                 <div style="display: flex; align-items: center; gap: 8px;">
-                                     <h3 class="card-user-name">{{ user.name }}</h3>
-                                     <a v-if="user.phone && user.phone !== 'N/A'" 
-                                        :href="'https://wa.me/' + user.phone.replace(/\D/g, '')" 
-                                        target="_blank" 
-                                        class="whatsapp-link-icon"
-                                     >
-                                         <i class="fab fa-whatsapp"></i>
-                                     </a>
-                                 </div>
+                                 <h3 class="card-user-name">{{ user.name }}</h3>
                                  <span class="plan-badge">{{ user.plan }}</span>
                              </div>
                             <div class="card-body-user">
@@ -266,6 +252,13 @@
                                     <button @click="toggleUserStatus(user)" :class="['action-link', user.isActive ? 'deactivate' : 'activate']">
                                         {{ user.isActive ? 'Desativar' : 'Ativar' }}
                                     </button>
+                                    <a v-if="user.phone && user.phone !== 'N/A'" 
+                                       :href="'https://wa.me/' + user.phone.replace(/\D/g, '')" 
+                                       target="_blank" 
+                                       class="action-link whatsapp"
+                                    >
+                                        WhatsApp
+                                    </a>
                                 </div>
                             </div>
                         </div>
@@ -1897,6 +1890,22 @@ export default {
 
 .action-link.activate:hover {
     background: rgba(34, 197, 94, 0.2);
+}
+
+.action-link.whatsapp {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.2);
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.action-link.whatsapp:hover {
+    background: #22c55e;
+    color: #fff;
+    border-color: #22c55e;
 }
 
 .toggle-group label {
