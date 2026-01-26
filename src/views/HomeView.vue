@@ -151,8 +151,6 @@ export default {
       showCreateAccountCard: false,
       showOnboardingModal: false,
       isMobile: false,
-      showOnboardingModal: false,
-      isMobile: false,
       currentAccountStep: 1,
       derivTutorialVideo: null,
       derivTutorialTitle: '',
