@@ -457,7 +457,7 @@
                             <div>
                                 <h2 v-if="activeTab === 'logs'" class="text-lg font-semibold text-zenix-text">Histórico de Operações</h2>
                                 <h2 v-else-if="activeTab === 'register'" class="text-lg font-semibold text-zenix-text">Registro de Eventos em Tempo Real</h2>
-                                <h2 v-else class="text-lg font-semibold text-zenix-text">Análise de Mercado</h2>
+                                <h2 v-else class="text-lg font-semibold text-zenix-text">Análise de Mercado | {{ strategyName }}</h2>
                                 <p v-if="activeTab !== 'register' && activeTab !== 'logs'" class="text-xs text-zenix-secondary mt-1">{{ formattedMarketName }} • Última atualização: {{ formattedLastUpdate }}</p>
                             </div>
                             <div class="flex items-center space-x-6 desktop-tabs">
@@ -1088,17 +1088,17 @@ export default {
             // Usar o prop primeiro (vem do componente pai)
             const marketKey = this.selectedMarketProp || this.selectedMarket || 'vol10';
             
-            // ✅ Se TITAN está ativa, retornar Volatility 100 Index
-            const isTitan = this.sessionConfig && this.sessionConfig.strategy && 
-                           this.sessionConfig.strategy.toLowerCase() === 'titan';
-            if (isTitan) {
-                return 'Volatility 100 Index';
+            // 🎯 Sincronização de Mercado Automatizada (ZENIX v2.0)
+            const strategy = this.sessionConfig?.strategy || this.selectedStrategy || 'orion';
+            const strategyLower = strategy.toLowerCase();
+
+            // ✅ Se ATLAS está ativa, preferir Volatility 100 (1s) Index
+            if (strategyLower === 'atlas') {
+                return 'Volatility 100 (1s) Index';
             }
-            
-            // ✅ Se NEXUS está ativa, retornar Volatility 100 Index
-            const isNexus = this.sessionConfig && this.sessionConfig.strategy && 
-                           this.sessionConfig.strategy.toLowerCase() === 'nexus';
-            if (isNexus) {
+
+            // ✅ Se ORION/TITAN/NEXUS/APOLLO está ativa, retornar Volatility 100 Index
+            if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
                 return 'Volatility 100 Index';
             }
             
@@ -1137,12 +1137,17 @@ export default {
          * Retorna o símbolo do ativo para o gráfico (Ex: R_10, R_100)
          */
         activeMarketSymbol() {
-            // ✅ Se TITAN/NEXUS está ativa, forçar R_100
-            const isTitanOrNexus = this.sessionConfig && this.sessionConfig.strategy &&
-                                  (this.sessionConfig.strategy.toLowerCase() === 'titan' ||
-                                   this.sessionConfig.strategy.toLowerCase() === 'nexus');
-            if (isTitanOrNexus) {
+            // ✅ Se ORION/TITAN/NEXUS/APOLLO está ativa, forçar R_100
+            const strategy = this.sessionConfig?.strategy || this.selectedStrategy || 'orion';
+            const strategyLower = strategy.toLowerCase();
+            
+            if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
                 return 'R_100';
+            }
+
+            // ✅ Se ATLAS está ativa, forçar 1HZ100V (Vol 100 1s)
+            if (strategyLower === 'atlas') {
+                return '1HZ100V';
             }
 
             // Usar o prop ou data local

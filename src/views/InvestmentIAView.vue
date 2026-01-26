@@ -939,6 +939,7 @@ export default {
                         modoMartingale: this.modoMartingale || 'conservador',
                         strategy: this.selectedStrategy || 'orion',
                         stopLossBlindado: this.stoplossBlindado, // ✅ ZENIX v2.0: Stop-Loss Blindado
+                        selectedMarket: this.selectedMarket, // ✅ Sincronização de Mercado (ZENIX v2.0)
                     }),
                 });
 
@@ -1010,6 +1011,19 @@ export default {
         
         selectStrategy(id) {
             this.selectedStrategy = id;
+            
+            // ✅ Sincronização de Mercado Automática (ZENIX v2.0)
+            const strategyLower = id.toLowerCase();
+            if (strategyLower === 'atlas') {
+                this.selectedMarket = 'vol100_1s';
+                console.log('[InvestmentIAView] 🎯 Atlas selecionado: Alternando mercado para Volatility 100 (1s) Index');
+            } else if (['orion', 'titan', 'nexus', 'apollo'].includes(strategyLower)) {
+                this.selectedMarket = 'vol100';
+                console.log(`[InvestmentIAView] 🎯 ${id.toUpperCase()} selecionado: Alternando mercado para Volatility 100 Index`);
+            } else {
+                this.selectedMarket = 'vol10';
+            }
+
             // Delay closing to show visual feedback (check icon)
             setTimeout(() => {
                 this.closeStrategyModal();
