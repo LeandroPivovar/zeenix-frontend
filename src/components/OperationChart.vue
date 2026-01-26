@@ -2729,35 +2729,32 @@ export default {
       return 'fas fa-play text-xs';
     },
     toggleAnalysis() {
+      // Sincronização com Digitos: apenas gera um sinal manual por clique
       if (this.isAnalyzing) {
         this.stopAnalysis();
       } else {
         this.startAnalysis();
       }
     },
-    startAnalysis() {
+    async startAnalysis() {
       if (!this.symbol) {
         console.warn('[Chart] Símbolo não selecionado');
         return;
       }
       
       this.isAnalyzing = true;
-      this.collectedTicks = [];
+      this.aiRecommendation = null;
+      this.signalCountdown = null;
       
-      // Coletar ticks iniciais do gráfico (se houver)
-      this.collectInitialTicks();
+      // Gerar apenas um sinal manual por clique (Sincronizado)
+      await this.analyzeChart();
       
-      // Executar primeira análise imediatamente
-      this.analyzeChart();
-      
-      // Configurar intervalo para repetir a cada 2 minutos
-      this.analysisInterval = setInterval(() => {
-        if (this.isAnalyzing) {
-          this.analyzeChart();
-        }
-      }, 2 * 60 * 1000); // 2 minutos
-      
-      console.log('[Chart] Análise iniciada');
+      // Parar estado de "analisando" após a resposta (ou após um tempo se quiser manter o feedback visual)
+      setTimeout(() => {
+        this.isAnalyzing = false;
+      }, 1000);
+
+      console.log('[Chart] Análise manual executada');
     },
     collectInitialTicks() {
       // Coletar ticks dos últimos 10 minutos que já foram plotados

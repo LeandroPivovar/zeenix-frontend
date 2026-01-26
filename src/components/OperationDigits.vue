@@ -442,31 +442,34 @@
                         </div>
                         <button 
                             @click="toggleAnalysis"
-                            class="btn-gerar-sinal-header"
-                            :class="isAnalyzing ? 'bg-red-500 shadow-red-500/20' : 'bg-zenix-green shadow-zenix-green/20'"
+                            class="btn-gerar-sinal-header hover:brightness-110 transition-all active:scale-95"
+                            :class="isAnalyzing ? 'opacity-80' : 'bg-zenix-green shadow-zenix-green/20'"
+                            title="Gerar sinal com Inteligência Artificial"
                         >
-                            <i :class="isAnalyzing ? 'fas fa-stop' : 'fas fa-bolt'"></i>
+                            <i class="fas" :class="isAnalyzing ? 'fa-stop' : 'fa-bolt'"></i>
                             <span>{{ isAnalyzing ? 'Parar Análise' : 'Gerar Sinal' }}</span>
                         </button>
                     </div>
 
                     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
+                        <!-- Estado de Análise -->
                         <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
-                            <div class="flex items-center gap-2 mb-3">
-                                <i class="fas fa-clock text-white/40 text-xs"></i>
-                                <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Estado de Análise</span>
+                            <div class="metric-signal-header flex items-center gap-2 mb-3">
+                                <i class="fas fa-clock text-white/60 text-sm"></i>
+                                <span class="text-sm font-bold text-white/90 uppercase tracking-wider">Estado</span>
                             </div>
                             <div class="metric-body">
-                                <span v-if="isAnalyzing" class="text-sm text-zenix-green animate-pulse font-bold uppercase tracking-wider">Analisando Mercado...</span>
-                                <span v-else-if="aiRecommendation" class="text-sm text-zenix-green font-bold uppercase tracking-wider">Sinal Gerado</span>
-                                <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">Aguardando geração...</span>
+                                <span v-if="isAnalyzing" class="text-sm text-zenix-green animate-pulse font-medium">Analisando Mercado...</span>
+                                <span v-else-if="aiRecommendation" class="text-sm text-zenix-green font-medium">Sinal Gerado</span>
+                                <span v-else class="text-sm text-white/40 font-medium tracking-wider">Aguardando...</span>
                             </div>
                         </div>
 
+                        <!-- Resultado do Sinal -->
                         <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
-                            <div class="flex items-center gap-2 mb-3">
-                                <i class="fas fa-question-circle text-white/40 text-xs"></i>
-                                <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Estratégia Recomendada</span>
+                            <div class="metric-signal-header flex items-center gap-2 mb-3">
+                                <i class="fas fa-question-circle text-white/60 text-sm"></i>
+                                <span class="text-sm font-bold text-white/90 uppercase tracking-wider">Resultado</span>
                             </div>
                             <div class="metric-body">
                                 <div v-if="aiRecommendation" class="flex flex-col gap-1">
@@ -476,40 +479,45 @@
                                             {{ aiRecommendation.action }}
                                         </span>
                                     </div>
-                                    <div v-if="aiRecommendation.reason" class="text-[10px] text-white/40 uppercase tracking-tighter italic ml-6">
+                                    <div v-if="aiRecommendation.reason" class="text-[10px] text-white/40 uppercase tracking-tighter italic ml-6 line-clamp-1">
                                         {{ aiRecommendation.reason }}
                                     </div>
                                 </div>
-                                <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">Nenhum sinal gerado</span>
+                                <span v-else class="text-sm text-white/40 font-medium uppercase tracking-wider">-</span>
                             </div>
                         </div>
 
+                        <!-- Confiança -->
                         <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
-                            <div class="flex items-center gap-2 mb-3">
-                                <i class="fas fa-chart-bar text-white/40 text-xs"></i>
-                                <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Confiança</span>
+                            <div class="metric-signal-header flex items-center gap-2 mb-3">
+                                <i class="fas fa-chart-bar text-white/60 text-sm"></i>
+                                <span class="text-sm font-bold text-white/90 uppercase tracking-wider">Confiança</span>
                             </div>
-                            <div class="metric-body text-left">
+                            <div class="metric-body">
                                 <span v-if="aiRecommendation" class="text-xl font-black text-zenix-green">
                                     {{ aiRecommendation.confidence }}%
                                 </span>
-                                <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">-</span>
+                                <span v-else class="text-sm text-white/40 font-medium tracking-wider">-</span>
                             </div>
                         </div>
 
+                        <!-- Tempo -->
                         <div class="metric-signal-card bg-[#080808] border border-white/5 p-4 rounded-xl">
-                            <div class="flex items-center gap-2 mb-3">
-                                <i class="fas fa-bolt text-white/40 text-xs"></i>
-                                <span class="text-xs font-bold text-white/40 uppercase tracking-wider">Tempo</span>
+                            <div class="metric-signal-header flex items-center gap-2 mb-3">
+                                <i class="fas fa-bolt text-white/60 text-sm"></i>
+                                <span class="text-sm font-bold text-white/90 uppercase tracking-wider">Tempo</span>
                             </div>
-                            <div class="metric-body text-left">
-                                <span v-if="signalCountdown !== null" class="text-xl font-black text-zenix-green">
-                                    {{ signalCountdown }}s
+                            <div class="metric-body">
+                                <div v-if="signalCountdown !== null" class="flex flex-col">
+                                    <span class="text-xl font-black text-zenix-green">
+                                        {{ signalCountdown }}s
+                                    </span>
+                                    <span class="text-[10px] text-white/40 uppercase font-black tracking-tighter">Entrar em</span>
+                                </div>
+                                <span v-else-if="aiRecommendation && aiRecommendation.entry_time" class="text-xl font-black text-zenix-green">
+                                    {{ aiRecommendation.entry_time }}s
                                 </span>
-                                <span v-else-if="aiRecommendation && aiRecommendation.time" class="text-xl font-black text-zenix-green">
-                                    {{ aiRecommendation.time }}
-                                </span>
-                                <span v-else class="text-sm text-white/20 font-bold uppercase tracking-wider">-</span>
+                                <span v-else class="text-sm text-white/40 font-medium tracking-wider">-</span>
                             </div>
                         </div>
                     </div>
@@ -1243,18 +1251,20 @@ export default {
                 this.startAnalysis();
             }
         },
-        startAnalysis() {
+        async startAnalysis() {
             if (!this.symbol) return;
+            
             this.isAnalyzing = true;
             this.aiRecommendation = null;
+            this.signalCountdown = null;
             
-            // Primeira chamada imediata
-            this.generateSignal();
-
-            // Configurar intervalo
-            this.analysisTimer = setInterval(() => {
-                this.generateSignal();
-            }, 3000); // 3 segundos (compatível com modo veloz)
+            // Gerar apenas um sinal manual por clique (Sincronizado com Gráfico)
+            await this.generateSignal();
+            
+            // Feedback visual: mantém "analisando" por 1s se for muito rápido
+            setTimeout(() => {
+                this.isAnalyzing = false;
+            }, 1000);
         },
         stopAnalysis() {
             this.isAnalyzing = false;
@@ -1288,106 +1298,78 @@ export default {
             this.signalCountdown = null;
         },
         async generateSignal() {
-            if (!this.isAnalyzing) return;
+            if (!this.symbol) return;
 
-            // Se o DVX for muito alto, evitamos dar sinais (Mercado Arriscado)
-            if (this.dvxValue > 80) {
-                this.aiRecommendation = {
-                    action: 'AGUARDAR',
-                    message: 'Mercado muito errático para sinais confiáveis.',
-                    confidence: 0,
-                    type: 'wait'
-                };
-                return;
-            }
-
-            // Lógica de Análise Local (Estatística Baseada em Probabilidade)
-            let localSignal = null;
-            let confidence = 0;
-
-            // 1. Checar Paridade (Reversão à Média)
-            const even = this.digitFrequency.parity.even;
-            const odd = this.digitFrequency.parity.odd;
-            if (even > 62) {
-                localSignal = { action: 'ÍMPAR (ODD)', type: 'parity', reason: 'Excesso de pares' };
-                confidence = Math.min(95, 75 + (even - 62) * 2);
-            } else if (odd > 62) {
-                localSignal = { action: 'PAR (EVEN)', type: 'parity', reason: 'Excesso de ímpares' };
-                confidence = Math.min(95, 75 + (odd - 62) * 2);
-            }
-
-            // 2. Checar Alto/Baixo (Se paridade não for forte o suficiente)
-            if (!localSignal || confidence < 80) {
-                const low = this.lowPercentage;
-                const high = this.highPercentage;
-                if (low > 62) {
-                    const signal = { action: 'ALTO (OVER 4)', type: 'highlow', reason: 'Excesso de baixos' };
-                    const conf = Math.min(95, 75 + (low - 62) * 2);
-                    if (conf > confidence) { localSignal = signal; confidence = conf; }
-                } else if (high > 62) {
-                    const signal = { action: 'BAIXO (UNDER 5)', type: 'highlow', reason: 'Excesso de altos' };
-                    const conf = Math.min(95, 75 + (high - 62) * 2);
-                    if (conf > confidence) { localSignal = signal; confidence = conf; }
-                }
-            }
-
-            // 3. Checar Subaquecimento Crítico (Dígitos Faltantes)
-            if (!localSignal || confidence < 85) {
-                const underheated = this.digitFrequenciesWithStats.find(d => parseFloat(d.zScore) < -2.0);
-                if (underheated) {
-                    const signal = { action: `MATCH ${underheated.digit}`, type: 'match', reason: `Dígito ${underheated.digit} muito atrasado` };
-                    const conf = 88;
-                    if (conf > confidence) { localSignal = signal; confidence = conf; }
-                }
-            }
-
-            // Aplicar recomendação local se houver confiança mínima
-            if (localSignal && confidence > 70) {
-                this.aiRecommendation = {
-                    action: localSignal.action,
-                    type: localSignal.type,
-                    reason: localSignal.reason,
-                    confidence: Math.round(confidence),
-                    isLocal: true
-                };
-                return;
-            }
-
-            // Fallback para API do backend se a análise local não for conclusiva
             try {
-                const token = localStorage.getItem('auth_token') || localStorage.getItem('token');
-                const userId = this.accountLoginid || 'current'; 
+                // Sincronizar formato de ticks com OperationChart (últimos 50 ticks)
+                const last50Ticks = this.ticks.slice(-50).map(tick => ({
+                    value: Number(tick.value),
+                    epoch: Number(tick.epoch)
+                }));
 
-                const response = await fetch(`${process.env.VUE_APP_API_URL || 'https://iazenix.com/api'}/ai/analyze`, {
+                if (last50Ticks.length === 0) {
+                    console.warn('[OperationDigits] Nenhum tick disponível para análise do Gemini');
+                    return;
+                }
+
+                const authToken = localStorage.getItem('token');
+                if (!authToken) {
+                    throw new Error('Token de autenticação não encontrado');
+                }
+
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
+                
+                console.log('[OperationDigits] Solicitando recomendação Gemini para', this.symbol);
+                
+                const response = await fetch(`${apiBaseUrl}/gemini/recommendation`, {
                     method: 'POST',
                     headers: {
+                        'Authorization': `Bearer ${authToken}`,
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({ userId, stats: { dvx: this.dvxValue, parity: this.digitFrequency.parity } })
+                    body: JSON.stringify({
+                        ticks: last50Ticks,
+                        symbol: this.symbol,
+                        tradeType: this.digitType,
+                        duration: Number(this.duration),
+                        durationUnit: 't',
+                        amount: Number(this.orderValue),
+                    }),
                 });
 
-                if (response.ok) {
-                    const result = await response.json();
-                    if (result.success && result.data && result.data.sinal) {
-                        this.aiRecommendation = {
-                            action: `APOSTAR ${result.data.sinal}`,
-                            confidence: Math.round(result.data.confianca),
-                            entry_time: result.data.entry_time_seconds || 0,
-                            isLocal: false
-                        };
-                        if (this.aiRecommendation.entry_time > 0) this.startSignalCountdown(this.aiRecommendation.entry_time);
-                    }
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Erro ao obter recomendação Gemini');
                 }
+
+                const recommendation = await response.json();
+                console.log('[OperationDigits] Recomendação Gemini recebida:', recommendation);
+
+                // Garantir que a estrutura de retorno seja compatível com o template
+                let confidenceValue = 50;
+                if (recommendation.confidence !== undefined) {
+                    confidenceValue = Number(recommendation.confidence);
+                }
+
+                this.aiRecommendation = {
+                    action: recommendation.action || 'AGUARDAR',
+                    confidence: confidenceValue,
+                    reason: recommendation.reasoning || recommendation.reason || '',
+                    entry_time: recommendation.entry_time || 0
+                };
+
+                // Iniciar contagem regressiva se o Gemini sugerir um tempo de entrada
+                if (this.aiRecommendation.entry_time > 0) {
+                    this.startSignalCountdown(this.aiRecommendation.entry_time);
+                }
+
             } catch (error) {
-                console.warn('[OperationDigits] Backend analysis unavailable, using best local effort.');
-                if (localSignal) {
-                     this.aiRecommendation = {
-                        action: localSignal.action,
-                        confidence: Math.round(confidence),
-                        isLocal: true
-                    };
-                }
+                console.error('[OperationDigits] Erro na análise Gemini:', error);
+                this.aiRecommendation = {
+                    action: 'ERRO',
+                    reason: 'Falha na conexão com a IA',
+                    confidence: 0
+                };
             }
         },
         getHistogramBarClass(digit, percentage, frequencies) {
@@ -2104,6 +2086,48 @@ export default {
     border-radius: 6px;
     color: #f8fafc;
     font-size: 0.9rem;
+}
+
+.btn-gerar-sinal-header {
+  background-color: #22C55E;
+  color: #000000;
+  font-weight: 800;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: none;
+  cursor: pointer;
+  box-shadow: 0 0 12px rgba(34, 197, 94, 0.3);
+  transition: all 0.3s ease;
+}
+
+.btn-gerar-sinal-header:hover {
+  background-color: #16A34A;
+  box-shadow: 0 0 16px rgba(34, 197, 94, 0.4);
+}
+
+.metric-signal-card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.metric-signal-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.metric-body {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .input-row-flex {
