@@ -1108,6 +1108,7 @@ export default {
         this.showDollarSign = settings.showDollarSign;
       }
     },
+    handleFictitiousBalanceChange(event) {
       const { enabled, amount } = event.detail;
       this.isFictitiousBalanceActive = enabled;
       this.fictitiousBalance = amount;
