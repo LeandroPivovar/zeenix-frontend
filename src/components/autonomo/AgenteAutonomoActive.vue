@@ -77,9 +77,11 @@
 						<div class="text-green-500">
 							<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-wallet"><path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1"></path><path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4"></path></svg>
 						</div>
-						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Saldo Acumulado</span>
+						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital Final</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-left text-[#FAFAFA]">
+					<div class="text-2xl font-bold mb-1 tabular-nums text-left"
+						:class="finalCapital >= initialCapital ? 'text-green-500' : 'text-red-500'"
+					>
 						{{ hideValues ? '••••' : (finalCapital >= 0 ? '$' : '-$') + formatPrice(Math.abs(finalCapital)) }}
 					</div>
 				</div>
@@ -929,18 +931,22 @@
                 if (this.selectedPeriod === 'session') {
                     return this.sessionStats?.netProfit || 0;
                 }
-                if (!this.filteredDailyData || this.filteredDailyData.length === 0) return 0;
-                // Sum only the data from the current filtered period
-                return this.filteredDailyData.reduce((sum, day) => sum + (day.profit || 0), 0);
+                if (!this.dailyData || this.dailyData.length === 0) return 0;
+                return this.dailyData.reduce((sum, day) => sum + (day.profit || 0), 0);
             },
 			periodProfitPercent() {
+				// Para período, calculamos % sobre o capital inicial (ou saldo atual estimado se não tiver inicial guardado)
+                // Se for session, usa logica existente.
+                // Se for filtro (ex: 30 dias), calcular sobre o capital NO INICIO do periodo?
+                // Simplificação: (LucroPeriodo / (CapitalFinal - LucroPeriodo)) * 100
                 const profit = this.periodProfit;
-                const finalCap = this.finalCapital; 
+                const finalCap = this.finalCapital; // Computed
                 const startCap = finalCap - profit;
                 if (startCap <= 0) return 0;
                 return (profit / startCap) * 100;
 			},
 			avgDailyProfit() {
+				// Se for sessão, cálculo de média/dia baseado na duração da sessão
                 if (this.selectedPeriod === 'session') {
                      if (!this.agentConfig || !this.agentConfig.sessionDate) return this.periodProfit; 
                      const sessionStart = new Date(this.agentConfig.sessionDate);
@@ -950,12 +956,13 @@
                      return this.periodProfit / diffDays;
                 }
                 
-                // For other filters, average based only on the filtered results
-				if (!this.filteredDailyData || this.filteredDailyData.length === 0) return 0;
-				return this.periodProfit / this.filteredDailyData.length;
+                // Para outros filtros, média simples dos dias retornados
+				if (!this.dailyData || this.dailyData.length === 0) return 0;
+				// periodProfit já é a soma
+				return this.periodProfit / this.dailyData.length;
 			},
 	avgProfitPerOp() {
-		// Calculate average profit per operation (integrated with filtered periodProfit)
+		// Calculate average profit per operation
 		const totalOps = this.sessionStats?.totalTrades || 0;
 		if (totalOps === 0) return 0;
 		return this.periodProfit / totalOps;
