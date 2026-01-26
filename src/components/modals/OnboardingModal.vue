@@ -207,23 +207,29 @@ export default {
   },
   methods: {
     setDisplayedName() {
-      if (this.userName && this.userName !== 'USUÁRIO') {
+      const invalidNames = ['USUÁRIO', 'Usuário', 'Usuario', 'User'];
+      
+      // Se a prop userName for válida (não estiver na lista de inválidos), usa ela
+      if (this.userName && !invalidNames.includes(this.userName)) {
         this.modalUserName = this.userName;
         return;
       }
       
+      // Tenta buscar do localStorage
       const userInfo = localStorage.getItem('user');
       if (userInfo) {
         try {
           const user = JSON.parse(userInfo);
-          if (user.name) {
+          if (user.name && !invalidNames.includes(user.name)) {
              this.modalUserName = user.name;
              return;
           }
         } catch (e) {
-          console.error('Erro ao ler nome do localStorage:', e);
+          // Silently fail
         }
       }
+      
+      // Fallback final
       this.modalUserName = 'USUÁRIO';
     },
     nextStep() {
