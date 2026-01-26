@@ -1667,7 +1667,7 @@ export default {
                         contentType: l.contentType || 'Video',
                         duration: l.duration,
                         isActive: l.isActive !== undefined ? l.isActive : true,
-                        isActive: l.isActive !== undefined ? l.isActive : true,
+
                         videoUrl: l.videoUrl,
                         isDerivTutorial: l.isDerivTutorial,
                     }))
