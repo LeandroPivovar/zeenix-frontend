@@ -456,6 +456,11 @@
             :visible="showMinimumStakeModal"
             @confirm="showMinimumStakeModal = false"
         />
+        <StrategyRequiredModal
+            :visible="showStrategyRequiredModal"
+            @close="showStrategyRequiredModal = false"
+            @confirm="handleStrategyRequiredConfirm"
+        />
     </div>
     <DesktopBottomNav />
 </template>
@@ -471,6 +476,7 @@ import accountBalanceMixin from '../mixins/accountBalanceMixin';
 import { loadAvailableAccounts } from '../utils/accountsLoader';
 import InsufficientBalanceModal from '../components/InsufficientBalanceModal.vue';
 import MinimumStakeModal from '../components/modals/MinimumStakeModal.vue';
+import StrategyRequiredModal from '../components/modals/StrategyRequiredModal.vue';
 
 export default {
     name: 'InvestmentIAView',
@@ -483,7 +489,8 @@ export default {
         ZenixTooltip,
         DesktopBottomNav,
         InsufficientBalanceModal,
-        MinimumStakeModal
+        MinimumStakeModal,
+        StrategyRequiredModal
     },
     data() {
         return {
@@ -495,6 +502,9 @@ export default {
             showSettingsModal: false,
             showInsufficientBalanceModal: false,
             showMinimumStakeModal: false,
+            showInsufficientBalanceModal: false,
+            showMinimumStakeModal: false,
+            showStrategyRequiredModal: false,
             availableAccounts: [],
             loadingAccounts: false,
 
@@ -860,6 +870,13 @@ export default {
         async activateIA() {
             this.isActivating = true;
             try {
+                // ✅ Validação de Estratégia (User Story: Modal de Aviso)
+                if (!this.selectedStrategy) {
+                    console.warn('[InvestmentIAView] ⚠️ Nenhuma estratégia selecionada. Exibindo modal.');
+                    this.showStrategyRequiredModal = true;
+                    return;
+                }
+
                 console.log('[InvestmentIAView] ===== ATIVANDO IA =====');
                 console.log('[InvestmentIAView] 💰 VALOR DE ENTRADA:', this.entryValue);
                 console.log('[InvestmentIAView] Parâmetros configurados:', {
@@ -987,6 +1004,27 @@ export default {
             } catch (error) {
                 console.error('[InvestmentIAView] ❌ Erro ao desativar IA:', error);
             }
+        },
+
+        handleStrategyRequiredConfirm() {
+            this.showStrategyRequiredModal = false;
+            this.openStrategyModal();
+        },
+
+        openStrategyModal() {
+            this.showStrategyModal = true;
+        },
+
+        closeStrategyModal() {
+            this.showStrategyModal = false;
+        },
+        
+        selectStrategy(id) {
+            this.selectedStrategy = id;
+            // Delay closing to show visual feedback (check icon)
+            setTimeout(() => {
+                this.closeStrategyModal();
+            }, 300);
         },
 
         getUserId() {
