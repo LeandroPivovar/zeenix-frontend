@@ -1705,8 +1705,8 @@ export default {
         },
         async loadAvailablePlans() {
             try {
-                const apiBaseUrl = this.getApiBaseUrl();
-                const response = await fetch(`${apiBaseUrl}/plans/admin`, {
+                const apiBaseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const response = await fetch(`${apiBaseUrl}/plans/admin/all`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
                         'Content-Type': 'application/json',
