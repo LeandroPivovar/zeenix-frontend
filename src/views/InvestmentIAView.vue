@@ -513,11 +513,11 @@ export default {
             selectedStrategy: null,
             showStrategyModal: false,
             availableStrategies: [
-                { id: 'atlas', title: 'IA Atlas', icon: 'fas fa-brain', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 37% / 92%' },
-                { id: 'apollo', title: 'IA Apollo', icon: 'fas fa-rocket', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 55% a 65% - <strong>Retorno:</strong> 92%' },
-                { id: 'nexus', title: 'IA Nexus', icon: 'fas fa-project-diagram', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 57% / 90%' },
-                { id: 'orion', title: 'IA Orion', icon: 'fas fa-star', description: '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 60% / 90%' },
-                { id: 'titan', title: 'IA Titan', icon: 'fas fa-shield-alt', description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-60% - <strong>Retorno:</strong> 92%' }
+                { id: 'atlas', title: 'IA Atlas', icon: 'fas fa-brain', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%' },
+                { id: 'apollo', title: 'IA Apollo', icon: 'fas fa-rocket', description: '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%' },
+                { id: 'nexus', title: 'IA Nexus', icon: 'fas fa-project-diagram', description: '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%' },
+                { id: 'orion', title: 'IA Orion', icon: 'fas fa-star', description: '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 54% a 61% - <strong>Retorno:</strong> 56% / 85%' },
+                { id: 'titan', title: 'IA Titan', icon: 'fas fa-shield-alt', description: '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-55% - <strong>Retorno:</strong> 85%' }
             ],
             
             dailyStats: {
@@ -620,13 +620,13 @@ export default {
         
         strategyDescription() {
             const descriptions = {
-                'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 37% / 92%',
-                'apollo': '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 55% a 65% - <strong>Retorno:</strong> 92%',
-                'nexus': '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 57% / 90%',
-                'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 60% / 90%',
-                'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-60% - <strong>Retorno:</strong> 92%'
+                'atlas': '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 52 a 56% - <strong>Retorno:</strong> 35% / 85%',
+                'apollo': '<strong>Análise:</strong> Price Action Puro (Inércia + Força + Tendência) - <strong>Assertividade:</strong> 50% a 55% - <strong>Retorno:</strong> 85%',
+                'nexus': '<strong>Análise:</strong> Price Action (Barreira de Segurança) com Troca de Contrato - <strong>Assertividade:</strong> 51% a 55% - <strong>Retorno:</strong> 58% / 85%',
+                'orion': '<strong>Análise:</strong> Estatística de Dígitos (Over 3) com Price Action na Recuperação - <strong>Assertividade:</strong> 54% a 61% - <strong>Retorno:</strong> 56% / 85%',
+                'titan': '<strong>Análise:</strong> Dígitos Par/Ímpar com persistência direcional - <strong>Assertividade:</strong> 50-55% - <strong>Retorno:</strong> 85%'
             };
-            return descriptions[this.selectedStrategy] || descriptions.orion;
+            return descriptions[this.selectedStrategy] || descriptions.atlas;
         },
         
         entryValuePercent() {

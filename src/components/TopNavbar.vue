@@ -27,7 +27,8 @@
         <!-- Botão Grupo de Alunos (apenas desktop, sempre visível) -->
         <a 
           v-if="!isMobile"
-          href="#" 
+          href="https://wa.me/5511999999999" 
+          target="_blank"
           class="header-whatsapp-button bg-transparent hover:bg-[#0E0E0E] text-[#A1A1A1] hover:text-[#25D366] font-medium px-3 py-1.5 rounded-lg text-xs inline-flex items-center space-x-2 transition-all duration-200 border border-[#1C1C1C] hover:border-[#25D366]/30"
         >
           <i class="fa-brands fa-whatsapp text-xs"></i>

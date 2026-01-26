@@ -413,18 +413,35 @@ export default {
 			limitePerda: 100.00,
 			showAgentSelectorModal: false,
 			availableAgents: [
-
 				{
-					id: 'falcon',
-					title: 'FALCON',
-					icon: 'fas fa-rocket',
-					description: 'Análise: Momentum Direcional (Rise/Fall)\nAssertividade: 53% a 65%\nRetorno: 92%'
+					id: 'atlas',
+					title: 'IA Atlas',
+					icon: 'fas fa-brain',
+					description: 'Análise: Híbrida (Fluxo de Dígitos + Price Action)\nAssertividade: 52 a 56%\nRetorno: 35% / 85%'
 				},
 				{
-					id: 'zeus',
-					title: 'ZEUS',
-					icon: 'fas fa-bolt',
-					description: 'Análise: Probabilidade com Troca de Contrato\nAssertividade: 65% a 75%\nRetorno: 60% / 92%'
+					id: 'apollo',
+					title: 'IA Apollo',
+					icon: 'fas fa-rocket',
+					description: 'Análise: Price Action Puro (Inércia + Força + Tendência)\nAssertividade: 50% a 55%\nRetorno: 85%'
+				},
+				{
+					id: 'nexus',
+					title: 'IA Nexus',
+					icon: 'fas fa-project-diagram',
+					description: 'Análise: Price Action (Barreira de Segurança) com Troca de Contrato\nAssertividade: 51% a 55%\nRetorno: 58% / 85%'
+				},
+				{
+					id: 'orion',
+					title: 'IA Orion',
+					icon: 'fas fa-star',
+					description: 'Análise: Estatística de Dígitos (Over 3) com Price Action na Recuperação\nAssertividade: 54% a 61%\nRetorno: 56% / 85%'
+				},
+				{
+					id: 'titan',
+					title: 'IA Titan',
+					icon: 'fas fa-shield-alt',
+					description: 'Análise: Dígitos Par/Ímpar com persistência direcional\nAssertividade: 50-55%\nRetorno: 85%'
 				}
 			]
 		};
@@ -581,9 +598,11 @@ export default {
 		// 🟢 NOVO MÉTODO: Descrição do Agente 🟢
 		getAgentDescription(id) {
 			const map = {
-				'sentinel': 'Agente completo com Martingale Inteligente e Soros Nível 2. Ideal para operações balanceadas.',
-				'falcon': 'Análise: Momentum Direcional (Rise/Fall)\nAssertividade: 53% a 65%\nRetorno: 92%',
-				'zeus': 'Análise: Probabilidade com Troca de Contrato\nAssertividade: 65% a 75%\nRetorno: 60% / 92%'
+				'atlas': 'Análise: Híbrida (Fluxo de Dígitos + Price Action)\nAssertividade: 52 a 56%\nRetorno: 35% / 85%',
+				'apollo': 'Análise: Price Action Puro (Inércia + Força + Tendência)\nAssertividade: 50% a 55%\nRetorno: 85%',
+				'nexus': 'Análise: Price Action (Barreira de Segurança) com Troca de Contrato\nAssertividade: 51% a 55%\nRetorno: 58% / 85%',
+				'orion': 'Análise: Estatística de Dígitos (Over 3) com Price Action na Recuperação\nAssertividade: 54% a 61%\nRetorno: 56% / 85%',
+				'titan': 'Análise: Dígitos Par/Ímpar com persistência direcional\nAssertividade: 50-55%\nRetorno: 85%'
 			};
 			return map[id] || '';
 		},

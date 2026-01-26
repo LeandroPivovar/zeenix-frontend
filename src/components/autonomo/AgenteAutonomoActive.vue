@@ -833,28 +833,46 @@
 				// Agent Switcher
 				showAgentSwitcher: false,
 				runningAgents: [
-                    { id: 'all', title: 'Todos os Agentes', emoji: '🤖' }, // Opção 'Todos'
+                    { id: 'all', title: 'Todos os Agentes', emoji: '🤖' },
 					{ 
-						id: 'falcon', 
-						title: 'Falcon', 
-						emoji: '🦅', 
-						description: 'Análise: Momentum Direcional (Rise/Fall)\nAssertividade: 53% a 65%\nRetorno: 92%',
+						id: 'atlas', 
+						title: 'IA Atlas', 
+						emoji: '🧠', 
+						description: 'Análise: Híbrida (Fluxo de Dígitos + Price Action)\nAssertividade: 52 a 56%\nRetorno: 35% / 85%',
+						winRate: 54,
+						style: 'Híbrida'
+					},
+					{ 
+						id: 'apollo', 
+						title: 'IA Apollo', 
+						emoji: '🚀', 
+						description: 'Análise: Price Action Puro (Inércia + Força + Tendência)\nAssertividade: 50% a 55%\nRetorno: 85%',
+						winRate: 52,
+						style: 'Price Action'
+					},
+					{ 
+						id: 'nexus', 
+						title: 'IA Nexus', 
+						emoji: '⛓️', 
+						description: 'Análise: Price Action (Barreira de Segurança) com Troca de Contrato\nAssertividade: 51% a 55%\nRetorno: 58% / 85%',
 						winRate: 53,
-						style: 'Momentum'
+						style: 'Segurança'
 					},
 					{ 
-						id: 'zeus', 
-						title: 'Zeus', 
-						emoji: '⚡', 
-						description: 'Análise: 8 Filtros Estatísticos + Troca de Contrato\nAssertividade: 95% a 98%\nRetorno: 70% / 800%',
-						winRate: 95,
-						style: 'Estatístico'
+						id: 'orion', 
+						title: 'IA Orion', 
+						emoji: '⭐', 
+						description: 'Análise: Estatística de Dígitos (Over 3) com Price Action na Recuperação\nAssertividade: 54% a 61%\nRetorno: 56% / 85%',
+						winRate: 57,
+						style: 'Estatística'
 					},
-                    {
-                        id: 'sentinel',
-						description: 'Análise: Proteção e Consistência',
-						winRate: 60,
-						style: 'Conservador'
+					{ 
+						id: 'titan', 
+						title: 'IA Titan', 
+						emoji: '🛡️', 
+						description: 'Análise: Dígitos Par/Ímpar com persistência direcional\nAssertividade: 50-55%\nRetorno: 85%',
+						winRate: 52,
+						style: 'Direcional'
 					}
 				],
 				hideValues: false,
