@@ -2042,7 +2042,8 @@ export default {
                     
                     // ✅ Removido call redundante aqui. O watch ou o log polling já aciona quando necessário.
                 }
-            } catch (error) {
+            }
+        } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao buscar logs:', error);
             }
         },
