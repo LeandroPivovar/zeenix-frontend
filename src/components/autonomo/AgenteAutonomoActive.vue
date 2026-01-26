@@ -915,7 +915,7 @@
 
 				// 2. Se houver dados filtrados, pegar o capital do dia mais recente do período selecionado
 				if (this.filteredDailyData && this.filteredDailyData.length > 0) {
-					// dailyData costuma vir ordenado do mais novo para o mais antigo (DESC)
+					// Puxar valor do capital da última trade do período (dado mais honesto)
 					return this.filteredDailyData[0].capital || 0;
 				}
 				
@@ -1706,11 +1706,15 @@
                                 return `${timeStr}: ${d.value}`;
                             });
                             console.log('[AgenteAutonomo] 📊 Dados do Gráfico (Time: Value):', debugData.join(' | '));
-							// Se days <= 1, time vem como timestamp number. Se > 1, vem como string YYYY-MM-DD
-							const formattedData = result.data.map(point => ({
-								time: point.time,
-								value: point.value
-							}));
+							// Calcular a soma acumulada das entradas internamente para o gráfico
+							let cumulativeResult = 0;
+							const formattedData = result.data.map(point => {
+								cumulativeResult += (point.value || 0);
+								return {
+									time: point.time,
+									value: cumulativeResult
+								};
+							});
 							this.updateIndexChart(formattedData);
 						}
 					} else {
