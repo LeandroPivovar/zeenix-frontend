@@ -245,7 +245,7 @@
                 </div>
             </div>
             
-            <div class="footer-view" style="display: flex; justify-content: flex-end; margin-top: 20px;">
+            <div class="footer-view" style="position: fixed; bottom: 20px; right: 20px; z-index: 999;">
                 <button class="add-expert-btn" @click="openForm">
                     + Adicionar Novo Expert
                 </button>
