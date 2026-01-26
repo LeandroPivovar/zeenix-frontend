@@ -298,79 +298,7 @@
                 </section>
 
 
-                <section class="permission-control">
-                    <div class="section-header">
-                        <h2>Controle de Permissões</h2>
-                    </div>
-                    <div class="permission-cards-grid">
-                        <div class="permission-card card">
-                            <div class="card-details">
-                                <span class="card-title">Estatísticas das IAs</span>
-                                <span class="card-detail">4 administradores com acesso</span>
-                            </div>
-                            <button class="btn btn-manage btn-manage-green">Gerenciar</button>
-                        </div>
 
-                        <div class="permission-card card">
-                            <div class="card-details">
-                                <span class="card-title">Clientes</span>
-                                <span class="card-detail">2 administradores com acesso</span>
-                            </div>
-                            <button class="btn btn-manage btn-manage-green">Gerenciar</button>
-                        </div>
-
-                        <div class="permission-card card">
-                            <div class="card-details">
-                                <span class="card-title">Ver Finanças</span>
-                                <span class="card-detail">1 administrador com acesso</span>
-                            </div>
-                            <button class="btn btn-manage btn-manage-green">Gerenciar</button>
-                        </div>
-                    </div>
-                </section>
-
-                <section class="config-section">
-                    <div class="config-card">
-                        <h2>Configurações Gerais</h2>
-                        
-                        <div class="config-item">
-                            <span class="toggle-label">Modo manutenção</span>
-                            <div :class="['toggle-switch-admin', { active: config.modoManutencao }]" @click="config.modoManutencao = !config.modoManutencao">
-                                <span class="slider round"></span>
-                            </div>
-                        </div>
-
-                        <div class="config-item">
-                            <span class="toggle-label">Alertas em tempo real</span>
-                            <div :class="['toggle-switch-admin', { active: config.alertasTempoReal }]" @click="config.alertasTempoReal = !config.alertasTempoReal">
-                                <span class="slider round"></span>
-                            </div>
-                        </div>
-
-                        <div class="config-item">
-                            <span class="toggle-label">Permitir novas contas</span>
-                            <div :class="['toggle-switch-admin', { active: config.permitirNovasContas }]" @click="config.permitirNovasContas = !config.permitirNovasContas">
-                                <span class="slider round"></span>
-                            </div>
-                        </div>
-
-                        <div class="config-item">
-                            <span class="toggle-label">Logs detalhados</span>
-                            <div :class="['toggle-switch-admin', { active: config.logsDetalhados }]" @click="config.logsDetalhados = !config.logsDetalhados">
-                                <span class="slider round"></span>
-                            </div>
-                        </div>
-
-                        <div class="config-item">
-                            <span class="toggle-label">Modo seguro API (Deriv)</span>
-                            <div :class="['toggle-switch-admin', { active: config.modoSeguroApi }]" @click="config.modoSeguroApi = !config.modoSeguroApi">
-                                <span class="slider round"></span>
-                            </div>
-                        </div>
-
-                        <button class="btn-save-config" @click="saveConfigurations">Salvar Configurações</button>
-                    </div>
-                </section>
                             </div>
             </main>
         </div>
@@ -493,13 +421,7 @@ export default {
                 hasNextPage: false,
                 hasPreviousPage: false,
             },
-            config: {
-                modoManutencao: false,
-                alertasTempoReal: true,
-                permitirNovasContas: true,
-                logsDetalhados: false,
-                modoSeguroApi: false,
-            },
+
             
             // Modal de Confirmação
             confirmModalData: {
@@ -692,10 +614,7 @@ export default {
             }
         },
         
-        saveConfigurations() {
-            console.log('Configurações salvas:', this.config);
-            this.$root.$toast.success('Configurações salvas com sucesso!');
-        },
+
         editAdmin(admin) {
             this.$root.$toast.info(`Editando: ${admin.name}`);
         },

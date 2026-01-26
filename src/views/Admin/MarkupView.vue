@@ -94,11 +94,14 @@
                                 <td class="commission-value">{{ formatCurrency(client.commission) }}</td>
                                 <td>{{ client.transactionCount }}</td>
                                 <td>
-                                    <a v-if="client.whatsapp || client.phone || client.phoneNumber" :href="`https://wa.me/${(client.whatsapp || client.phone || client.phoneNumber).replace(/\D/g, '')}`" target="_blank" class="whatsapp-icon">
-                                        <img src="../../assets/icons/whattsapp.svg" alt="" width="20px">
+                                    <a v-if="client.whatsapp || client.phone || client.phoneNumber" 
+                                       :href="`https://wa.me/${(client.whatsapp || client.phone || client.phoneNumber).replace(/\D/g, '')}?text=${encodeURIComponent(`Olá, ${client.name.split(' ')[0]}, como vai?`)}`" 
+                                       target="_blank" 
+                                       class="whatsapp-btn">
+                                        <i class="fab fa-whatsapp"></i> WhatsApp
                                     </a>
-                                    <span v-else class="whatsapp-icon" style="opacity: 0.3;">
-                                        <img src="../../assets/icons/whattsapp.svg" alt="" width="20px">
+                                    <span v-else class="whatsapp-btn disabled">
+                                        <i class="fab fa-whatsapp"></i> -
                                     </span>
                                 </td>
                             </tr>
@@ -140,11 +143,14 @@
                             <div class="card-row">
                                 <span class="card-label">WhatsApp:</span>
                                 <span class="card-value">
-                                    <a v-if="client.whatsapp" :href="`https://wa.me/${client.whatsapp.replace(/\D/g, '')}`" target="_blank" class="whatsapp-icon">
-                                        <img src="../../assets/icons/whattsapp.svg" alt="" width="20px">
+                                    <a v-if="client.whatsapp || client.phone || client.phoneNumber" 
+                                       :href="`https://wa.me/${(client.whatsapp || client.phone || client.phoneNumber).replace(/\D/g, '')}?text=${encodeURIComponent(`Olá, ${client.name.split(' ')[0]}, como vai?`)}`" 
+                                       target="_blank" 
+                                       class="whatsapp-btn">
+                                        <i class="fab fa-whatsapp"></i> WhatsApp
                                     </a>
-                                    <span v-else class="whatsapp-icon" style="opacity: 0.3;">
-                                        <img src="../../assets/icons/whattsapp.svg" alt="" width="20px">
+                                    <span v-else class="whatsapp-btn disabled">
+                                        <i class="fab fa-whatsapp"></i> -
                                     </span>
                                 </span>
                             </div>
@@ -683,10 +689,35 @@ tbody tr:hover {
     font-weight: bold;
 }
 
-.whatsapp-icon {
+.whatsapp-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: #25D366; /* WhatsApp Green */
+    color: #fff;
+    padding: 6px 12px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+    transition: background-color 0.2s;
+    border: none;
     cursor: pointer;
+}
+
+.whatsapp-btn:hover {
+    background-color: #128C7E;
+}
+
+.whatsapp-btn i {
     font-size: 16px;
-    color: #00b894;
+}
+
+.whatsapp-btn.disabled {
+    background-color: #333;
+    color: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
 }
 
 /* Cards Mobile */
