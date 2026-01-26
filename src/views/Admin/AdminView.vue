@@ -148,6 +148,89 @@
                     </div>
                 </section>
 
+                <section class="all-users">
+                    <div class="section-header">
+                        <h2>Todos os Usuários</h2>
+                        <div class="search-container">
+                            <i class="fas fa-search search-icon"></i>
+                            <input 
+                                type="text" 
+                                v-model="allUsersSearch" 
+                                placeholder="Buscar por nome, email ou ID..." 
+                                class="search-input"
+                            >
+                        </div>
+                    </div>
+                    <!-- Tabela Desktop -->
+                    <div class="table-container desktop-table" :class="{ 'loading': isLoadingAllUsers }">
+                        <table class="modern-table">
+                            <thead>
+                                <tr>
+                                    <th>NOME</th>
+                                    <th>EMAIL</th>
+                                    <th>CONTA/MOEDA</th>
+                                    <th class="text-right">SALDO</th>
+                                    <th>PLANO</th>
+                                    <th>DATA CADASTRO</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr v-if="isLoadingAllUsers">
+                                    <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                                        Carregando usuários...
+                                    </td>
+                                </tr>
+                                <tr v-else-if="filteredAllUsers.length === 0">
+                                    <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
+                                        Nenhum usuário encontrado
+                                    </td>
+                                </tr>
+                                <tr v-else v-for="user in filteredAllUsers" :key="user.id">
+                                    <td>{{ user.name }}</td>
+                                    <td>{{ user.email }}</td>
+                                    <td>
+                                        <div class="account-info">
+                                            <span class="account-id">{{ user.derivLoginId }}</span>
+                                            <span class="account-currency">{{ user.currency }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-right">{{ user.balance.toLocaleString('en-US', { style: 'currency', currency: user.currency || 'USD' }) }}</td>
+                                    <td>
+                                        <span class="plan-badge">{{ user.plan }}</span>
+                                    </td>
+                                    <td>{{ new Date(user.createdAt).toLocaleDateString('pt-BR') }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <!-- Cards Mobile -->
+                    <div class="mobile-users-cards" :class="{ 'loading': isLoadingAllUsers }">
+                        <div v-for="user in filteredAllUsers" :key="'mob-' + user.id" class="mobile-user-card">
+                            <div class="card-header-user">
+                                <h3 class="card-user-name">{{ user.name }}</h3>
+                                <span class="plan-badge">{{ user.plan }}</span>
+                            </div>
+                            <div class="card-body-user">
+                                <div class="card-row-user">
+                                    <span class="card-label-user">Email:</span>
+                                    <span class="card-value-user">{{ user.email }}</span>
+                                </div>
+                                <div class="card-row-user">
+                                    <span class="card-label-user">Conta:</span>
+                                    <span class="card-value-user">{{ user.derivLoginId }} ({{ user.currency }})</span>
+                                </div>
+                                <div class="card-row-user">
+                                    <span class="card-label-user">Saldo:</span>
+                                    <span class="card-value-user">{{ user.balance.toLocaleString('en-US', { style: 'currency', currency: user.currency || 'USD' }) }}</span>
+                                </div>
+                                <div class="card-row-user">
+                                    <span class="card-label-user">Cadastro:</span>
+                                    <span class="card-value-user">{{ new Date(user.createdAt).toLocaleDateString('pt-BR') }}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
 
                 <section class="logs-audit">
                     <div class="section-header">
@@ -411,6 +494,9 @@ export default {
             isLoadingStats: true,
             nonDemoUsers: [],
             admins: [],
+            allUsers: [],
+            isLoadingAllUsers: false,
+            allUsersSearch: '',
             logs: [],
             isLoadingLogs: false,
             logsPagination: {
@@ -437,10 +523,22 @@ export default {
         await this.loadAdminStats();
         await this.loadNonDemoUsers();
         await this.loadAdministrators();
+        await this.loadAllUsers();
         await this.loadActivityLogs();
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.handleResize);
+    },
+    computed: {
+        filteredAllUsers() {
+            if (!this.allUsersSearch) return this.allUsers;
+            const query = this.allUsersSearch.toLowerCase();
+            return this.allUsers.filter(user => 
+                user.name.toLowerCase().includes(query) || 
+                user.email.toLowerCase().includes(query) ||
+                (user.derivLoginId && user.derivLoginId.toLowerCase().includes(query))
+            );
+        }
     },
     methods: {
         async loadAdminStats() {
@@ -500,6 +598,33 @@ export default {
                 console.log('Usuários não-demo carregados:', this.nonDemoUsers.length);
             } catch (error) {
                 console.error('Erro ao carregar usuários:', error);
+            }
+        },
+
+        async loadAllUsers() {
+            this.isLoadingAllUsers = true;
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/admin/users/all',
+                    {
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error('Falha ao carregar todos os usuários');
+                }
+
+                this.allUsers = await response.json();
+                console.log('Todos os usuários carregados:', this.allUsers.length);
+            } catch (error) {
+                console.error('Erro ao carregar todos os usuários:', error);
+            } finally {
+                this.isLoadingAllUsers = false;
             }
         },
 
@@ -1281,6 +1406,74 @@ export default {
     background-color: rgb(28, 170, 80);
 }
 
+/* --- Seção de Todos os Usuários --- */
+.all-users {
+    margin-top: 40px;
+}
+
+.search-container {
+    position: relative;
+    display: flex;
+    align-items: center;
+    background-color: #1e1e1e;
+    border: 1px solid #333;
+    border-radius: 8px;
+    padding: 0 15px;
+    width: 300px;
+    transition: all 0.3s;
+}
+
+.search-container:focus-within {
+    border-color: rgb(34, 197, 94);
+    box-shadow: 0 0 5px rgba(34, 197, 94, 0.3);
+}
+
+.search-icon {
+    color: #999;
+    font-size: 0.9em;
+    margin-right: 10px;
+}
+
+.search-input {
+    background: transparent;
+    border: none;
+    color: white;
+    padding: 10px 0;
+    width: 100%;
+    outline: none;
+    font-size: 0.9em;
+}
+
+.account-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.account-id {
+    font-size: 0.9em;
+    font-weight: 500;
+}
+
+.account-currency {
+    font-size: 0.75em;
+    color: #999;
+}
+
+.plan-badge {
+    background-color: rgba(34, 197, 94, 0.1);
+    color: rgb(34, 197, 94);
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 600;
+}
+
+.text-right {
+    text-align: right;
+}
+
 /* --- Configurações Gerais --- */
 .config-section {
     margin-bottom: 40px;
@@ -1535,6 +1728,19 @@ export default {
     .permission-cards-grid {
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     }
+
+    .search-container {
+        width: 100%;
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .all-users .section-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
 }
 
 @media (min-width: 769px) {
@@ -1543,9 +1749,68 @@ export default {
     }
     
     .mobile-admins-cards,
-    .mobile-logs-cards {
+    .mobile-logs-cards,
+    .mobile-users-cards {
         display: none !important;
     }
+}
+
+/* Cards Mobile - Usuários */
+.mobile-users-cards {
+    display: none;
+    flex-direction: column;
+    gap: 15px;
+    width: 100%;
+    padding-bottom: 20px;
+}
+
+.mobile-users-cards.loading {
+    opacity: 0.6;
+}
+
+.mobile-user-card {
+    background-color: #131213;
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid #333;
+}
+
+.card-header-user {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #222;
+}
+
+.card-user-name {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: white;
+    margin: 0;
+}
+
+.card-body-user {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.card-row-user {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.9em;
+}
+
+.card-label-user {
+    color: #999;
+}
+
+.card-value-user {
+    color: #eee;
+    text-align: right;
+    word-break: break-all;
 }
 
 
