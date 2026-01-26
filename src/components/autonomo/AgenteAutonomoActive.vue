@@ -79,8 +79,10 @@
 						</div>
 						<span class="text-[#A1A1AA] text-xs capitalize tracking-wide font-medium whitespace-nowrap">Capital Final</span>
 					</div>
-					<div class="text-2xl font-bold mb-1 tabular-nums text-green-500 text-left">
-						{{ hideValues ? '••••' : '$' + formatPrice(finalCapital) }}
+					<div class="text-2xl font-bold mb-1 tabular-nums text-left"
+						:class="finalCapital >= initialCapital ? 'text-green-500' : 'text-red-500'"
+					>
+						{{ hideValues ? '••••' : (finalCapital >= 0 ? '$' : '-$') + formatPrice(Math.abs(finalCapital)) }}
 					</div>
 				</div>
 
@@ -1063,33 +1065,62 @@
 				return this.selectedDay;
 			},
 			filteredDailyData() {
-				if (!this.selectedPeriodFilter) return this.dailyData;
+				// 1. Se houver um filtro de período selecionado na tabela (range customizado)
+				if (this.selectedPeriodFilter) {
+					try {
+						const [startStr, endStr] = this.selectedPeriodFilter.split(' - ');
+						const currentYear = new Date().getFullYear();
+						const [startDay, startMonth] = startStr.trim().split('/');
+						const [endDay, endMonth] = endStr.trim().split('/');
+						const startDate = new Date(currentYear, parseInt(startMonth) - 1, parseInt(startDay));
+						const endDate = new Date(currentYear, parseInt(endMonth) - 1, parseInt(endDay));
+						endDate.setHours(23, 59, 59, 999);
+						
+						return this.dailyData.filter(day => {
+							if (!day.fullDate) return true;
+							const dayDate = new Date(day.fullDate + 'T12:00:00');
+							return dayDate >= startDate && dayDate <= endDate;
+						});
+					} catch (e) {
+						console.error('Erro ao filtrar datas (tabela):', e);
+					}
+				}
+
+				// 2. Se não houver filtro de tabela, filtrar baseado no selectedPeriod (Dropdown de cima)
+				if (!this.dailyData || this.dailyData.length === 0) return [];
+
+				const now = new Date();
+				const todayStr = now.toISOString().split('T')[0];
 				
-				// Parse selected period (e.g. 18/01 - 24/01)
-				// Assuming current year 2026 as per user screenshot/context
-				try {
-					const [startStr, endStr] = this.selectedPeriodFilter.split(' - ');
-					const currentYear = new Date().getFullYear(); // Or 2026 if fixed
+				switch (this.selectedPeriod) {
+					case 'today':
+						return this.dailyData.filter(d => d.fullDate === todayStr);
 					
-					// Formato esperado DD/MM
-					const [startDay, startMonth] = startStr.trim().split('/');
-					const [endDay, endMonth] = endStr.trim().split('/');
+					case 'yesterday': {
+						const yesterday = new Date(now);
+						yesterday.setDate(now.getDate() - 1);
+						const yesterdayStr = yesterday.toISOString().split('T')[0];
+						return this.dailyData.filter(d => d.fullDate === yesterdayStr);
+					}
 					
-					const startDate = new Date(currentYear, parseInt(startMonth) - 1, parseInt(startDay));
-					const endDate = new Date(currentYear, parseInt(endMonth) - 1, parseInt(endDay));
-					
-					// Adjust endDate to end of day
-					endDate.setHours(23, 59, 59, 999);
-					
-					return this.dailyData.filter(day => {
-                        // day.fullDate is YYYY-MM-DD
-                        if (!day.fullDate) return true;
-						const dayDate = new Date(day.fullDate + 'T12:00:00'); // noon to avoid timezone shift issues
-						return dayDate >= startDate && dayDate <= endDate;
-					});
-				} catch (e) {
-					console.error('Erro ao filtrar datas:', e);
-					return this.dailyData;
+					case '7d': {
+						const weekAgo = new Date(now);
+						weekAgo.setDate(now.getDate() - 7);
+						return this.dailyData.filter(d => new Date(d.fullDate) >= weekAgo);
+					}
+
+					case '30d': {
+						const monthAgo = new Date(now);
+						monthAgo.setDate(now.getDate() - 30);
+						return this.dailyData.filter(d => new Date(d.fullDate) >= monthAgo);
+					}
+
+					case 'session':
+						// Para sessão, costumamos mostrar o dia de hoje na tabela/resumo
+						return this.dailyData.filter(d => d.fullDate === todayStr);
+
+					default:
+						return this.dailyData;
 				}
 			},
 			periodLabel() {
