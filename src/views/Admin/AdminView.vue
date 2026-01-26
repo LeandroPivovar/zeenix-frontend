@@ -184,7 +184,7 @@
                                         Carregando usuários...
                                     </td>
                                 </tr>
-                                <tr v-else-if="filteredAllUsers.length === 0">
+                                <tr v-else-if="!filteredAllUsers || filteredAllUsers.length === 0">
                                     <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
                                         Nenhum usuário encontrado
                                     </td>
@@ -637,7 +637,7 @@ export default {
     },
     computed: {
         filteredAllUsers() {
-            return this.allUsers; // Backend handles search now
+            return this.allUsers || []; // Backend handles search now, ensure array
         }
     },
     methods: {
@@ -726,8 +726,24 @@ export default {
                 }
 
                 const result = await response.json();
-                this.allUsers = result.data;
-                this.allUsersPagination = result.pagination;
+                
+                // Suporte robusto para estrutura paginada ou array direto
+                if (result && result.data && Array.isArray(result.data)) {
+                    this.allUsers = result.data;
+                    this.allUsersPagination = result.pagination || this.allUsersPagination;
+                } else if (Array.isArray(result)) {
+                    this.allUsers = result;
+                    // Reset pagination if array is returned
+                    this.allUsersPagination = {
+                        currentPage: 1,
+                        totalPages: 1,
+                        totalRecords: result.length,
+                        recordsPerPage: result.length
+                    };
+                } else {
+                    this.allUsers = [];
+                }
+                
                 console.log('Todos os usuários carregados:', this.allUsers.length);
             } catch (error) {
                 console.error('Erro ao carregar todos os usuários:', error);
