@@ -50,10 +50,28 @@
           
           <!-- Video (oculto no mobile quando card está ativo) -->
           <div v-else class="video-card">
-            <div class="video-placeholder">
+            <div v-if="derivTutorialVideo" class="video-container">
+                 <iframe 
+                    v-if="isExternalVideo(derivTutorialVideo)" 
+                    :src="getEmbedUrl(derivTutorialVideo)" 
+                    frameborder="0" 
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                    allowfullscreen
+                    class="video-frame"
+                    style="width: 100%; height: 100%; position: absolute; top:0; left:0; border-radius: 12px;"
+                 ></iframe>
+                 <video 
+                    v-else 
+                    :src="resolveVideoUrl(derivTutorialVideo)" 
+                    controls 
+                    class="video-frame"
+                    style="width: 100%; height: 100%; position: absolute; top:0; left:0; border-radius: 12px; object-fit: cover;"
+                 ></video>
+            </div>
+            <div v-else class="video-placeholder">
               <div class="play">▶</div>
             </div>
-            <div class="video-text">Zenix Black Tutorial Video</div>
+            <div class="video-text">{{ derivTutorialTitle || 'Zenix Black Tutorial Video' }}</div>
           </div>
           <p v-if="!showCreateAccountCard" class="text-mobile-description">Assista o video e entenda como conectar sua conta Deriv em menos de 2 minutos.</p>
         </div>
@@ -133,7 +151,11 @@ export default {
       showCreateAccountCard: false,
       showOnboardingModal: false,
       isMobile: false,
-      currentAccountStep: 1
+      showOnboardingModal: false,
+      isMobile: false,
+      currentAccountStep: 1,
+      derivTutorialVideo: null,
+      derivTutorialTitle: '',
     }
   },
   computed: {
@@ -401,11 +423,56 @@ export default {
         user.firstAccess = false;
         localStorage.setItem('user', JSON.stringify(user));
       }
+        user.firstAccess = false;
+        localStorage.setItem('user', JSON.stringify(user));
+      }
+    },
+    async loadDerivTutorial() {
+        try {
+            const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+            const res = await fetch(`${apiBase}/courses/deriv-tutorial-video`);
+            if (res.ok) {
+                const data = await res.json();
+                if (data && (data.videoUrl || data.contentLink)) {
+                    // Prioritize videoUrl (upload), fallback to contentLink (external) which is often used for links
+                    // But in LessonEntity we have videoUrl and contentLink. 
+                    // Backend returns { videoUrl, contentLink, contentType }.
+                    // videoUrl handles uploads. contentLink handles links?
+                    // Let's check backend service logic again.
+                    // return { videoUrl: lesson.videoUrl, contentLink: lesson.contentLink ... }
+                    this.derivTutorialVideo = data.videoUrl || data.contentLink;
+                    this.derivTutorialTitle = data.title;
+                }
+            }
+        } catch (e) {
+            console.error('Erro ao carregar tutorial:', e);
+        }
+    },
+    resolveVideoUrl(url) {
+        if (!url) return '';
+        if (url.startsWith('http')) return url;
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        return `${apiBase}${url}`;
+    },
+    isExternalVideo(url) {
+        if (!url) return false;
+        return url.includes('youtube.com') || url.includes('youtu.be') || url.includes('vimeo.com');
+    },
+    getEmbedUrl(url) {
+        if (!url) return '';
+        if (url.includes('youtube.com') || url.includes('youtu.be')) {
+             let videoId = '';
+             if (url.includes('v=')) videoId = url.split('v=')[1].split('&')[0];
+             else if (url.includes('youtu.be/')) videoId = url.split('youtu.be/')[1];
+             return `https://www.youtube.com/embed/${videoId}?autoplay=0&mute=0&controls=1`;
+        }
+        return url;
     }
   },
   async mounted() {
     this.checkMobile()
     await this.loadUserName()
+    await this.loadDerivTutorial()
     await this.checkConnection(true)
   },
   watch: {

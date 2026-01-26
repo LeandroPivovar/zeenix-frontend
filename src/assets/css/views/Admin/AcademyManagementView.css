@@ -955,3 +955,30 @@ label {
     }
 
 }
+/* Star Button for Deriv Tutorial */
+.btn-star {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    color: #4b5563; /* Gray default */
+    transition: all 0.2s;
+    padding: 0;
+    margin-right: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-star:hover {
+    color: #fbbf24;
+    transform: scale(1.1);
+}
+
+.btn-star.active {
+    color: #f59e0b; /* Amber/Gold */
+}
+
+.btn-star.active svg {
+    fill: currentColor;
+}
+
