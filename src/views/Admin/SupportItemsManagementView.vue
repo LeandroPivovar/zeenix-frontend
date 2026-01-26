@@ -206,6 +206,15 @@
             @confirm="handleConfirmAction"
             @cancel="confirmModalData.visible = false"
         />
+
+        <!-- Success Modal -->
+        <SuccessModal
+            :visible="successModalData.visible"
+            :title="successModalData.title"
+            :message="successModalData.message"
+            confirm-text="OK"
+            @confirm="successModalData.visible = false"
+        />
     </div>
 </template>
 
@@ -216,6 +225,7 @@ import TopNavbar from '../../components/TopNavbar.vue';
 import SettingsSidebar from '../../components/SettingsSidebar.vue';
 import ToastNotification from '../../components/Toast.vue';
 import ConfirmActionModal from '../../components/modals/ConfirmActionModal.vue';
+import SuccessModal from '../../components/modals/SuccessModal.vue';
 
 // Quill é carregado via CDN no index.html, então é uma variável global
 
@@ -227,6 +237,7 @@ export default {
         SettingsSidebar,
         ToastNotification,
         ConfirmActionModal,
+        SuccessModal
     },
     data() {
         return {
@@ -261,6 +272,13 @@ export default {
                 title: '',
                 message: '',
                 confirmAction: null
+            },
+            
+            // Modal de Sucesso
+            successModalData: {
+                visible: false,
+                title: 'Sucesso',
+                message: 'Operação realizada com sucesso!'
             }
         };
     },
@@ -860,7 +878,11 @@ export default {
                 });
 
                 if (response.ok) {
-                    this.showToast('✅ Configuração salva com sucesso!', 'success');
+                    this.successModalData = {
+                        visible: true,
+                        title: 'Configuração Salva',
+                        message: 'As alterações no botão "Grupo de Alunos" foram salvas com sucesso!'
+                    };
                 } else {
                     this.showToast('❌ Erro ao salvar configuração', 'error');
                 }
