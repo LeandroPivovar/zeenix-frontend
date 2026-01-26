@@ -905,7 +905,7 @@
 				// 1. Se for sessão ou hoje, ou se o período filtrado incluir o dia de hoje, usar saldo em tempo real
 				const todayStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
 				const includesToday = (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') || 
-									 (this.filteredDailyData && this.filteredDailyData.some(d => d.date === todayStr) && !['yesterday', 'lastMonth'].includes(this.selectedPeriod));
+					(this.filteredDailyData && this.filteredDailyData.some(d => d.date === todayStr) && !['yesterday', 'lastMonth'].includes(this.selectedPeriod));
 
 				if (includesToday) {
 					return this.balanceNumeric || this.agentConfig?.currentBalance || this.sessionStats?.totalCapital || 0;
