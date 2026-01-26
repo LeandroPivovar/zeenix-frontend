@@ -35,7 +35,7 @@
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
-        <div class="mb-4 desktop-only" style="margin-bottom: 5px; text-align: left; padding-left: 0;">
+        <div class="mb-4 desktop-only" style="margin-bottom: 5px; text-align: left; padding-left: 0; width: 100%; margin-top: 25px;">
           <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
           <p class="text-sm text-[#A1A1AA] mt-1 max-w-2xl">
             Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
