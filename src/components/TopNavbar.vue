@@ -26,13 +26,14 @@
         
         <!-- Botão Grupo de Alunos (apenas desktop, sempre visível) -->
         <a 
-          v-if="!isMobile"
-          href="https://wa.me/5511999999999" 
+          v-if="!isMobile && studentGroupConfig.show"
+          :href="studentGroupConfig.link" 
           target="_blank"
           class="header-whatsapp-button bg-transparent hover:bg-[#0E0E0E] text-[#A1A1A1] hover:text-[#25D366] font-medium px-3 py-1.5 rounded-lg text-xs inline-flex items-center space-x-2 transition-all duration-200 border border-[#1C1C1C] hover:border-[#25D366]/30"
         >
-          <i class="fa-brands fa-whatsapp text-xs"></i>
-          <span>Grupo de Alunos</span>
+          <img v-if="studentGroupConfig.icon" :src="resolveImageUrl(studentGroupConfig.icon)" style="width: 14px; height: 14px; object-fit: contain;">
+          <i v-else class="fa-brands fa-whatsapp text-xs"></i>
+          <span>{{ studentGroupConfig.text }}</span>
         </a>
       </div>
       <div class="flex items-center space-x-6 pr-6">
@@ -330,6 +331,14 @@ export default {
       tokenDemo: null,
       tokenDemoCurrency: 'USD',
       demoAmount: 0,
+            
+      // Configuração Grupo de Alunos
+      studentGroupConfig: {
+        show: false,
+        text: 'Grupo de Alunos',
+        link: 'https://wa.me/5511999999999',
+        icon: null
+      }
     }
   },
   computed: {
@@ -460,7 +469,9 @@ export default {
     this.loadLoginNotifications();
     window.addEventListener('masterTraderSettingsUpdated', this.handleMasterTraderSettingsUpdate);
     window.addEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
+    window.addEventListener('fictitiousBalanceChanged', this.handleFictitiousBalanceChange);
     this.loadMasterTraderSettings();
+    this.loadStudentGroupConfig();
   },
   beforeUnmount() {
     window.removeEventListener('masterTraderSettingsUpdated', this.handleMasterTraderSettingsUpdate);
@@ -1097,11 +1108,52 @@ export default {
         this.showDollarSign = settings.showDollarSign;
       }
     },
-    handleFictitiousBalanceChange(event) {
       const { enabled, amount } = event.detail;
       this.isFictitiousBalanceActive = enabled;
       this.fictitiousBalance = amount;
       console.log('[TopNavbar] Saldo fictício atualizado:', { enabled, amount });
+    },
+    async loadStudentGroupConfig() {
+      try {
+        const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        const response = await fetch(`${baseUrl}/support/config/student_group_button`);
+        if (response.ok) {
+          const data = await response.json();
+          if (data.value) {
+            this.studentGroupConfig = {
+              show: true,
+              text: data.value.text || 'Grupo de Alunos',
+              link: data.value.link || 'https://wa.me/5511999999999',
+              icon: data.value.icon || null
+            };
+          } else {
+             // Se não tiver config salva, usar default
+             this.studentGroupConfig.show = true;
+          }
+        }
+      } catch (e) {
+        console.error('Erro ao carregar config do grupo:', e);
+         this.studentGroupConfig.show = true;
+      }
+    },
+    resolveImageUrl(path) {
+      if (!path) return '';
+      if (path.startsWith('http')) return path;
+      const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+      const cleanBaseStart = baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl; 
+      // O backend retorna paths como /uploads/..., então precisamos de BASE_URL (sem /api se for o caso)
+      // Mas o backend serve estáticos em /api/uploads se configurado assim, ou na raiz.
+      // O uploadImage retorna paths que já podem ser usados.
+      // Assumindo que o path retornado pelo uploadImage é relativo à raiz do servidor de arquivos.
+      if (path.startsWith('/uploads') || path.startsWith('uploads')) {
+        // Ajuste simples: concatenar com a base do backend
+        // Se o backend serve em localhost:3000/uploads...
+        const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+        // Se o path já tem /api/uploads
+        if (path.startsWith('/api/')) return `${cleanBaseStart}${path}`;
+        return `${apiBase}${path.startsWith('/') ? '' : '/'}${path}`;
+      }
+      return path;
     }
   }
 }

@@ -141,6 +141,46 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Configuração do Botão Grupo de Alunos -->
+             <div class="config-section" style="margin-top: 40px; border-top: 1px solid #2e2e2e; padding-top: 30px;">
+                <div class="header-text" style="text-align: left; margin-bottom: 20px;">
+                    <h1 style="font-size: 20px; font-weight: 600; margin-bottom: 4px; color: #ffffff;">Configuração do Botão "Grupo de Alunos"</h1>
+                    <p style="font-size: 14px; color: #a0a0a0; margin: 0;">Personalize o botão que aparece no topo da plataforma para os alunos.</p>
+                </div>
+                
+                <div class="config-form" style="background: #111; padding: 20px; border-radius: 8px; border: 1px solid #2e2e2e;">
+                    <form @submit.prevent="saveStudentGroupConfig">
+                        <div style="display: flex; gap: 20px; flex-wrap: wrap;">
+                            <div class="form-group" style="flex: 1; min-width: 250px;">
+                                <label style="display: block; color: #ccc; margin-bottom: 8px;">Texto do Botão</label>
+                                <input type="text" v-model="studentGroupConfig.buttonText" placeholder="Ex: Grupo de Alunos" style="width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: white; border-radius: 4px;" required>
+                            </div>
+                            <div class="form-group" style="flex: 1; min-width: 250px;">
+                                <label style="display: block; color: #ccc; margin-bottom: 8px;">Link do Grupo</label>
+                                <input type="text" v-model="studentGroupConfig.buttonLink" placeholder="Ex: https://wa.me/..." style="width: 100%; padding: 10px; background: #000; border: 1px solid #333; color: white; border-radius: 4px;" required>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group" style="margin-top: 20px;">
+                            <label style="display: block; color: #ccc; margin-bottom: 8px;">Ícone (Opcional - PNG ou SVG)</label>
+                            <div style="display: flex; align-items: center; gap: 15px;">
+                                <div v-if="studentGroupConfig.iconPath" style="width: 40px; height: 40px; background: #222; border-radius: 4px; display: flex; align-items: center; justify-content: center; overflow: hidden;">
+                                    <img :src="resolveImageUrl(studentGroupConfig.iconPath)" alt="Icon" style="max-width: 100%; max-height: 100%;">
+                                </div>
+                                <input type="file" ref="iconInput" @change="handleIconUpload" accept="image/png, image/svg+xml" style="color: #999;">
+                            </div>
+                            <div v-if="uploadingIcon" style="color: #22C55E; font-size: 12px; margin-top: 5px;">Enviando ícone...</div>
+                        </div>
+                        
+                        <div style="margin-top: 20px; text-align: right;">
+                             <button type="submit" style="background: #22C55E; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 500;">
+                                Salvar Configuração
+                             </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
             
             <div class="footer-view">
             </div>
@@ -207,6 +247,14 @@ export default {
             // Editor
             quillEditor: null,
 
+            // Configuração do Botão Grupo de Alunos
+            studentGroupConfig: {
+                buttonText: '',
+                buttonLink: '',
+                iconPath: null
+            },
+            uploadingIcon: false,
+
             // Modal de Confirmação
             confirmModalData: {
                 visible: false,
@@ -220,7 +268,9 @@ export default {
         this.checkMobileStatus();
         window.addEventListener('resize', this.checkMobileStatus);
         document.addEventListener('click', this.handleClickOutside);
+        document.addEventListener('click', this.handleClickOutside);
         await this.loadSupportItems();
+        await this.loadStudentGroupConfig();
     },
     beforeUnmount() {
         window.removeEventListener('resize', this.checkMobileStatus);
@@ -771,6 +821,89 @@ export default {
             }
             this.confirmModalData.visible = false;
         },
+        async loadStudentGroupConfig() {
+            try {
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const response = await fetch(`${baseUrl}/support/config/student_group_button`);
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.value) {
+                         this.studentGroupConfig = {
+                            buttonText: data.value.text || '',
+                            buttonLink: data.value.link || '',
+                            iconPath: data.value.icon || null
+                         };
+                    }
+                }
+            } catch (e) {
+                console.error('Erro ao carregar config do grupo:', e);
+            }
+        },
+        async saveStudentGroupConfig() {
+            try {
+                const token = localStorage.getItem('token');
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                
+                const payload = {
+                    buttonText: this.studentGroupConfig.buttonText,
+                    buttonLink: this.studentGroupConfig.buttonLink,
+                    iconPath: this.studentGroupConfig.iconPath
+                };
+
+                const response = await fetch(`${baseUrl}/support/config/student-group`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                });
+
+                if (response.ok) {
+                    this.showToast('✅ Configuração salva com sucesso!', 'success');
+                } else {
+                    this.showToast('❌ Erro ao salvar configuração', 'error');
+                }
+            } catch (e) {
+                console.error('Erro ao salvar config:', e);
+                this.showToast('❌ Erro ao salvar configuração', 'error');
+            }
+        },
+        async handleIconUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            this.uploadingIcon = true;
+            try {
+                const path = await this.uploadImage(file);
+                if (path) {
+                    this.studentGroupConfig.iconPath = path;
+                    this.showToast('✅ Ícone enviado com sucesso!', 'success');
+                }
+            } finally {
+                this.uploadingIcon = false;
+            }
+        },
+        resolveImageUrl(path) {
+            if (!path) return '';
+            if (path.startsWith('http')) return path;
+            const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+            const cleanBaseStart = baseUrl.endsWith('/api') ? baseUrl.slice(0, -4) : baseUrl; 
+            // O backend retorna paths como /uploads/..., então precisamos de BASE_URL (sem /api se for o caso)
+            // Mas o backend serve estáticos em /api/uploads se configurado assim, ou na raiz.
+            // O uploadImage retorna paths que já podem ser usados.
+            // Assumindo que o path retornado pelo uploadImage é relativo à raiz do servidor de arquivos.
+             if (path.startsWith('/uploads') || path.startsWith('uploads')) {
+                 // Ajuste simples: concatenar com a base do backend
+                 // Se o backend serve em localhost:3000/uploads...
+                 const apiBase = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                 // Se o path já tem /api/uploads
+                 if (path.startsWith('/api/')) return `${cleanBaseStart}${path}`;
+                 return `${apiBase}${path.startsWith('/') ? '' : '/'}${path}`;
+            }
+            return path;
+        },
+        
         async deleteSupportItem(itemId) {
             // Confirmação movida para o modal ConfirmActionModal
             try {
