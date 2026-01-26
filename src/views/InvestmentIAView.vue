@@ -510,7 +510,7 @@ export default {
             stoplossBlindado: false,
 
             selectedMarket: 'vol10',
-            selectedStrategy: 'atlas',
+            selectedStrategy: null,
             showStrategyModal: false,
             availableStrategies: [
                 { id: 'atlas', title: 'IA Atlas', icon: 'fas fa-brain', description: '<strong>Análise:</strong> Híbrida (Fluxo de Dígitos + Price Action) - <strong>Assertividade:</strong> 60% a 70% - <strong>Retorno:</strong> 37% / 92%' },
@@ -575,7 +575,7 @@ export default {
                 'orion': 'IA Orion',
                 'titan': 'IA Titan'
             };
-            return strategyNames[this.selectedStrategy] || 'Orion';
+            return strategyNames[this.selectedStrategy] || 'Selecionar Estratégia de IA';
         },
         
         formattedLastUpdate() {

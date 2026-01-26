@@ -651,9 +651,9 @@
     </Teleport>
 
 	<!-- Modal de Stop (Novos) -->
-	<StopLossModal v-if="showNewStopLossModal" @close="showNewStopLossModal = false" />
-	<TargetProfitModal v-if="showNewTargetProfitModal" @close="showNewTargetProfitModal = false" />
-	<StopBlindadoModal v-if="showNewStopBlindadoModal" @close="showNewStopBlindadoModal = false" />
+	<StopLossModal v-if="showNewStopLossModal" @close="handleCloseNewStopModal('showNewStopLossModal')" />
+	<TargetProfitModal v-if="showNewTargetProfitModal" @close="handleCloseNewStopModal('showNewTargetProfitModal')" />
+	<StopBlindadoModal v-if="showNewStopBlindadoModal" @close="handleCloseNewStopModal('showNewStopBlindadoModal')" />
 	
 	<!-- Novos Modais de Ajuste de Precisão -->
 	<StopLossAjusteModal 
@@ -1728,7 +1728,8 @@
                 );
                 
                 if (hasBlindadoHit) {
-                    if (!this.showNewStopBlindadoModal && !this.showNewStopLossModal && !this.showStopBlindadoAjusteModal) {
+                    if (!this.showNewStopBlindadoModal && !this.showNewStopLossModal && !this.showStopBlindadoAjusteModal && !window.zenixStopModalActive) {
+                        window.zenixStopModalActive = true;
                         console.log('[AgenteAutonomo] 🛡️ [Logs] Exact Hit detected!');
                         
                         // Verificar se é por ajuste de entrada
@@ -1754,7 +1755,8 @@
                 );
                 
                 if (hasNormalStopLossMessage) {
-                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal) {
+                    if (!this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !window.zenixStopModalActive) {
+                        window.zenixStopModalActive = true;
                         console.log('[AgenteAutonomo] 🛑 [Logs] Stop Loss detectado!');
                         
                         // Verificar se é por ajuste de entrada
@@ -1779,7 +1781,8 @@
                 );
 
                 if (hasProfitMessage) {
-                    if (!this.showNewTargetProfitModal && !this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !this.showStopBlindadoAjusteModal) {
+                    if (!this.showNewTargetProfitModal && !this.showNewStopLossModal && !this.showNewStopBlindadoModal && !this.showStopLossAjusteModal && !this.showStopBlindadoAjusteModal && !window.zenixStopModalActive) {
+                        window.zenixStopModalActive = true;
                         console.log('[AgenteAutonomo] 🎯 [Logs] Meta de Lucro detectada!');
                         this.showNewTargetProfitModal = true;
                         // Forçar atualização imediata do saldo após trade
@@ -1791,7 +1794,12 @@
 			handleConfirmStopAjuste() {
 				this.showStopLossAjusteModal = false;
 				this.showStopBlindadoAjusteModal = false;
+				window.zenixStopModalActive = false;
 				this.pausarAgenteEIrParaTopo();
+			},
+			handleCloseNewStopModal(modalVar) {
+				this[modalVar] = false;
+				window.zenixStopModalActive = false;
 			},
 			fetchAllStats() {
 				this.fetchAgentConfig(); 

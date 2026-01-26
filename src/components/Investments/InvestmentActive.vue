@@ -2042,8 +2042,7 @@ export default {
                     
                     // ✅ Removido call redundante aqui. O watch ou o log polling já aciona quando necessário.
                 }
-            }
-        } catch (error) {
+            } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao buscar logs:', error);
             }
         },
@@ -2069,8 +2068,9 @@ export default {
             
             if (hasBlindadoHit) {
                 console.log('[InvestmentActive] 🛡️ [Logs] Exact Hit detected!');
-                if (!this.showStopBlindadoModal && !this.showStopLossModal && !this.showTargetProfitModal && !this.processingStopEvent) {
+                if (!this.showStopBlindadoModal && !this.showStopLossModal && !this.showTargetProfitModal && !this.processingStopEvent && !window.zenixStopModalActive) {
                     this.processingStopEvent = true;
+                    window.zenixStopModalActive = true;
                     console.log('[InvestmentActive] 🛡️ [Logs] Triggering Stop Blindado Modal...');
                     this.loadSessionResult().then(() => {
                         this.showStopBlindadoModal = true;
@@ -2091,8 +2091,9 @@ export default {
             
             if (hasNormalStopLossMessage) {
                 console.log('[InvestmentActive] 🛑 Stop Loss normal detectado nos logs!');
-                if (!this.showStopLossModal && !this.showStopBlindadoModal && !this.showTargetProfitModal && !this.processingStopEvent) {
+                if (!this.showStopLossModal && !this.showStopBlindadoModal && !this.showTargetProfitModal && !this.processingStopEvent && !window.zenixStopModalActive) {
                     this.processingStopEvent = true;
+                    window.zenixStopModalActive = true;
                     console.log('[InvestmentActive] 🛑 [Logs] Stop loss normal detectado nos logs! Mostrando modal...');
                     this.loadSessionResult().then(() => {
                         this.showStopLossModal = true;
@@ -2115,8 +2116,9 @@ export default {
 
             if (hasProfitMessage) {
                 console.log('[InvestmentActive] 🎯 Meta de Lucro detectada nos logs!');
-                if (!this.showTargetProfitModal && !this.showStopLossModal && !this.showStopBlindadoModal && !this.processingStopEvent) {
+                if (!this.showTargetProfitModal && !this.showStopLossModal && !this.showStopBlindadoModal && !this.processingStopEvent && !window.zenixStopModalActive) {
                     this.processingStopEvent = true; // Trava para evitar duplo trigger durante o loadSessionResult
+                    window.zenixStopModalActive = true;
                     console.log('[InvestmentActive] 🎯 [Logs] Mostrando modal de Meta de Lucro...');
                     this.loadSessionResult().then(() => {
                         this.showTargetProfitModal = true;
@@ -2407,9 +2409,10 @@ export default {
                     // (independentemente do estado anterior, desde que o modal não esteja já aberto)
                     if (currentSessionStatus === 'stopped_loss') {
                         console.log('[InvestmentActive] 🛑 Stop Loss status detectado!');
-                        // ✅ [FIX] Abrir modal de Stop Loss
-                        if (!this.showStopLossModal && !this.showStopBlindadoModal && !this.processingStopEvent) {
+                        // ✅ [FIX] Abrir modal de Stop Loss com travas
+                        if (!this.showStopLossModal && !this.showStopBlindadoModal && !this.showTargetProfitModal && !this.processingStopEvent && !window.zenixStopModalActive) {
                              this.processingStopEvent = true;
+                             window.zenixStopModalActive = true;
                              this.loadSessionResult().then(() => {
                                 this.showStopLossModal = true;
                                 this.processingStopEvent = false;
@@ -2420,9 +2423,10 @@ export default {
                         this.previousSessionStatus = currentSessionStatus;
                     } else if (currentSessionStatus === 'stopped_blindado') {
                         console.log('[InvestmentActive] 🛡️ Stop Loss Blindado status detectado!');
-                        // ✅ [FIX] Abrir modal de Stop Blindado
-                        if (!this.showStopBlindadoModal && !this.showStopLossModal && !this.processingStopEvent) {
+                        // ✅ [FIX] Abrir modal de Stop Blindado com travas
+                        if (!this.showStopBlindadoModal && !this.showStopLossModal && !this.showTargetProfitModal && !this.processingStopEvent && !window.zenixStopModalActive) {
                             this.processingStopEvent = true;
+                            window.zenixStopModalActive = true;
                             this.loadSessionResult().then(() => {
                                 this.showStopBlindadoModal = true;
                                 this.processingStopEvent = false;
@@ -2433,11 +2437,14 @@ export default {
                         this.previousSessionStatus = currentSessionStatus;
                     } else if (currentSessionStatus === 'stopped_profit') {
                         console.log('[InvestmentActive] 🎯 Target profit status detectado!');
-                        // ✅ [FIX] Abrir modal de Target Profit
-                        if (!this.showTargetProfitModal) {
+                        // ✅ [FIX] Abrir modal de Target Profit com travas
+                        if (!this.showTargetProfitModal && !this.showStopLossModal && !this.showStopBlindadoModal && !this.processingStopEvent && !window.zenixStopModalActive) {
+                            this.processingStopEvent = true;
+                            window.zenixStopModalActive = true;
                             this.loadSessionResult().then(() => {
                                 this.showTargetProfitModal = true;
-                            });
+                                this.processingStopEvent = false;
+                            }).catch(() => { this.processingStopEvent = false; });
                         }
                         // ✅ Forçar atualização do botão para "Reiniciar IA"
                         this.aiStoppedAutomatically = true;
@@ -2547,6 +2554,7 @@ export default {
          */
         handleStopLossConfirm() {
             this.showStopLossModal = false;
+            window.zenixStopModalActive = false;
             // ✅ Marcar que a IA foi parada automaticamente
             this.aiStoppedAutomatically = true;
             console.log('[InvestmentActive] ✅ IA parada por Stop Loss - botão mudará para "Reiniciar IA"');
@@ -2554,6 +2562,7 @@ export default {
         
         handleStopBlindadoConfirm() {
             this.showStopBlindadoModal = false;
+            window.zenixStopModalActive = false;
             // ✅ Marcar que a IA foi parada automaticamente
             this.aiStoppedAutomatically = true;
             console.log('[InvestmentActive] ✅ IA parada por Stop Blindado - botão mudará para "Reiniciar IA"');
@@ -2564,6 +2573,7 @@ export default {
          */
         handleInsufficientBalanceConfirm() {
             this.showInsufficientBalanceModal = false;
+            window.zenixStopModalActive = false;
             // ✅ Marcar que a IA foi parada automaticamente para mudar o botão para "Reiniciar"
             this.aiStoppedAutomatically = true;
             // ✅ Forçar estado inativo localmente
@@ -2578,6 +2588,7 @@ export default {
          */
         handleTargetProfitConfirm() {
             this.showTargetProfitModal = false;
+            window.zenixStopModalActive = false;
             // ✅ Marcar que a IA foi parada automaticamente
             this.aiStoppedAutomatically = true;
             console.log('[InvestmentActive] ✅ IA parada por Target Profit - botão mudará para "Reiniciar IA"');
