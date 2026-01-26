@@ -40,6 +40,8 @@
                                         <th>Email</th>
                                         <th>Telefone</th>
                                         <th>Produto</th>
+                                        <th>Offer ID</th>
+                                        <th>Offer Name</th>
                                         <th>Raw</th>
                                     </tr>
                                 </thead>
@@ -49,6 +51,8 @@
                                         <td>{{ user.email }}</td>
                                         <td>{{ user.phone || '-' }}</td>
                                         <td>{{ user.product || '-' }}</td>
+                                        <td>{{ user.offer_id || '-' }}</td>
+                                        <td>{{ user.offer_name || '-' }}</td>
                                         <td>
                                             <div class="raw-data">
                                                 <pre>{{ JSON.stringify(user.raw, null, 2) }}</pre>
@@ -122,8 +126,8 @@ export default {
             }
         },
         copyToClipboard() {
-            const header = 'Nome\tEmail\tTelefone\tProduto\n';
-            const rows = this.users.map(u => `${u.name}\t${u.email}\t${u.phone || ''}\t${u.product || ''}`).join('\n');
+            const header = 'Nome\tEmail\tTelefone\tProduto\tOffer ID\tOffer Name\n';
+            const rows = this.users.map(u => `${u.name}\t${u.email}\t${u.phone || ''}\t${u.product || ''}\t${u.offer_id || ''}\t${u.offer_name || ''}`).join('\n');
             const text = header + rows;
             
             navigator.clipboard.writeText(text).then(() => {
