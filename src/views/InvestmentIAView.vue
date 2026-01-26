@@ -502,8 +502,7 @@ export default {
             showSettingsModal: false,
             showInsufficientBalanceModal: false,
             showMinimumStakeModal: false,
-            showInsufficientBalanceModal: false,
-            showMinimumStakeModal: false,
+
             showStrategyRequiredModal: false,
             availableAccounts: [],
             loadingAccounts: false,
@@ -814,18 +813,7 @@ export default {
             return strategy ? strategy.icon : 'fas fa-brain';
         },
 
-        openStrategyModal() {
-            this.showStrategyModal = true;
-        },
 
-        closeStrategyModal() {
-            this.showStrategyModal = false;
-        },
-
-        selectStrategy(strategyId) {
-            this.selectedStrategy = strategyId;
-            this.closeStrategyModal();
-        },
         
         getCurrencyPrefix(currency) {
             switch ((currency || '').toUpperCase()) {
