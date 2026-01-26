@@ -68,13 +68,26 @@
             </div>
           </div>
 
-          <button 
-            @click="openDepositFlow"
-            class="settings-deposit-btn"
-          >
-            <i class="fa-solid fa-wallet"></i>
-            <span>Depositar</span>
-          </button>
+          <div class="flex flex-col gap-2 mt-2">
+            <button 
+              @click="openDepositFlow"
+              class="settings-deposit-btn"
+            >
+              <i class="fa-solid fa-wallet"></i>
+              <span>Depositar</span>
+            </button>
+            <button 
+              v-if="uiAccountType === 'demo'"
+              @click="topUpDemo"
+              class="settings-deposit-btn"
+              :class="{ 'opacity-70 cursor-not-allowed': loadingTopup }"
+              :disabled="loadingTopup"
+              style="background: linear-gradient(135deg, #3B82F6 0%, #2563EB 100%); box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);"
+            >
+              <i class="fa-solid fa-rotate-right" :class="{ 'fa-spin': loadingTopup }"></i>
+              <span>{{ loadingTopup ? 'Recarregando...' : 'Recarregar demo' }}</span>
+            </button>
+          </div>
         </div>
 
 
@@ -198,6 +211,7 @@ export default {
       demoAmount: 0,
       idRealAccount: null,
       idDemoAccount: null,
+      loadingTopup: false,
     };
   },
   computed: {
@@ -900,6 +914,72 @@ export default {
       }
 
       console.log('[SettingsSidebar] ✅ Verificação de serviços ativos concluída');
+    }
+    async topUpDemo() {
+      if (this.loadingTopup) return;
+      
+      this.loadingTopup = true;
+      console.log('[SettingsSidebar] Iniciando recarga de conta demo...');
+
+      try {
+        const appId = localStorage.getItem('deriv_app_id') || '1089';
+        const token = localStorage.getItem('deriv_token');
+        
+        if (!token) {
+          throw new Error('Token da Deriv não encontrado. Por favor, faça login novamente.');
+        }
+
+        // Conectar ao WebSocket
+        const ws = new WebSocket(`wss://ws.derivws.com/websockets/v3?app_id=${appId}`);
+        
+        await new Promise((resolve, reject) => {
+          ws.onopen = () => {
+            console.log('[SettingsSidebar] WS Conectado');
+            resolve();
+          };
+          ws.onerror = (err) => reject(err);
+        });
+
+        // 1. Autorizar
+        ws.send(JSON.stringify({ authorize: token }));
+
+        await new Promise((resolve, reject) => {
+          ws.onmessage = (msg) => {
+            const data = JSON.parse(msg.data);
+            
+            if (data.error) {
+              console.error('[SettingsSidebar] WS Error:', data.error);
+              reject(new Error(data.error.message));
+              return;
+            }
+
+            if (data.msg_type === 'authorize') {
+              console.log('[SettingsSidebar] Autorizado com sucesso. Solicitando topup...');
+              // 2. Solicitar Topup
+              ws.send(JSON.stringify({ topup_virtual: 1 }));
+            }
+            else if (data.msg_type === 'topup_virtual') {
+              console.log('[SettingsSidebar] Topup realizado com sucesso:', data.topup_virtual);
+              ws.close();
+              resolve(data.topup_virtual);
+            }
+          };
+        });
+
+        alert('Conta demo recarregada com sucesso!');
+        // Recarregar a página para atualizar o saldo
+        window.location.reload();
+
+      } catch (error) {
+        console.error('[SettingsSidebar] Erro ao recarregar demo:', error);
+        let msg = 'Erro ao recarregar conta demo.';
+        if (error.message && error.message.includes('TopupVirtual')) {
+             msg = error.message; // Mensagens da Deriv geralmente são claras
+        }
+        alert(msg);
+      } finally {
+        this.loadingTopup = false;
+      }
     }
   }
 };
