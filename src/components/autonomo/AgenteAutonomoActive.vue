@@ -1649,23 +1649,12 @@
                     const agentFilter = this.selectedAgentFilter !== 'all' ? `&agent=${this.selectedAgentFilter}` : '';
                     
                     if (this.selectedPeriod === 'session') {
-                        // Se tiver filtro de agente, usa profit-evolution normal com days=1 (ou lógica customizada se backend suportar session+agent. Backend suporta agent em profit-evolution)
-                        // A lógica de sessão no backend (getSessionEvolution) não aceita filtro de agente ainda.
-                        // Melhor usar profit-evolution com filtro de data da sessão se necessário, mas por enquanto vamos manter session-evolution se for 'all'
-                        // SE agente selecionado != all, vamos forçar 'today' ou lógica similar, 
-                        // OU usar profit-evolution normal pois session evolution é complexo de filtrar por agente sem mexer no backend session logic.
-                        // O backend getProfitEvolution JÁ ACEITA agent parameter.
-                        url = `${apiBase}/autonomous-agent/session-evolution/${userId}`;
-                        if (this.selectedAgentFilter !== 'all') {
-                             // Fallback para dia atual se filtrar por agente, pois session-evolution pega SESSÃO ATIVA do config global
-                             // e a sessão ativa é GLOBAL do usuário, mas os trades podem ser filtrados.
-                        // Porém, getProfitEvolution(days=1) retorna evolução do dia.
-                             url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=1${agentFilter}`;
-                        }
+                        // Sempre agrupado por dia, até na sessão
+                        url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=1${agentFilter}&aggregateBy=day`;
                     } else if (this.selectedPeriod === 'custom' && this.customDateRange) {
-                         url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?startDate=${this.customDateRange.start}&endDate=${this.customDateRange.end}${agentFilter}`;
+                         url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?startDate=${this.customDateRange.start}&endDate=${this.customDateRange.end}${agentFilter}&aggregateBy=day`;
                     } else {
-                        url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}${agentFilter}`;
+                        url = `${apiBase}/autonomous-agent/profit-evolution/${userId}?days=${days}${agentFilter}&aggregateBy=day`;
                     }
                     
                     console.log('[AgenteAutonomo] Buscando evolução em:', url);
@@ -1688,28 +1677,7 @@
                         console.log('[AgenteAutonomo] profit-evolution resultado:', result);
 
 						if (result.success && result.data) {
-                            // Log chart data in readable format for inspection
-                            const debugData = result.data.map(d => {
-                                // Convert timestamp/string to readable time
-                                let timeStr = d.time;
-                                if (typeof d.time === 'number') {
-                                    // Timestamp
-                                    const date = new Date(d.time * 1000);
-                                    timeStr = date.toLocaleTimeString('pt-BR', {hour: '2-digit', minute:'2-digit'});
-                                }
-                                return `${timeStr}: ${d.value}`;
-                            });
-                            console.log('[AgenteAutonomo] 📊 Dados do Gráfico (Time: Value):', debugData.join(' | '));
-							// Calcular a soma acumulada das entradas internamente para o gráfico
-							let cumulativeResult = 0;
-							const formattedData = result.data.map(point => {
-								cumulativeResult += (point.value || 0);
-								return {
-									time: point.time,
-									value: cumulativeResult
-								};
-							});
-							this.updateIndexChart(formattedData);
+							this.updateIndexChart(result.data);
 						}
 					} else {
                         console.error('[AgenteAutonomo] Erro na resposta de profit-evolution:', response.status, response.statusText);
