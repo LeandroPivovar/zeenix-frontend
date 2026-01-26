@@ -39,6 +39,7 @@
                                         <th>Nome</th>
                                         <th>Email</th>
                                         <th>Telefone</th>
+                                        <th>Produto</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -46,6 +47,7 @@
                                         <td>{{ user.name }}</td>
                                         <td>{{ user.email }}</td>
                                         <td>{{ user.phone || '-' }}</td>
+                                        <td>{{ user.product || '-' }}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -114,8 +116,8 @@ export default {
             }
         },
         copyToClipboard() {
-            const header = 'Nome\tEmail\tTelefone\n';
-            const rows = this.users.map(u => `${u.name}\t${u.email}\t${u.phone || ''}`).join('\n');
+            const header = 'Nome\tEmail\tTelefone\tProduto\n';
+            const rows = this.users.map(u => `${u.name}\t${u.email}\t${u.phone || ''}\t${u.product || ''}`).join('\n');
             const text = header + rows;
             
             navigator.clipboard.writeText(text).then(() => {
