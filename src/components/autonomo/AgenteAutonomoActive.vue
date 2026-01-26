@@ -902,16 +902,29 @@
 				return this.agentConfig?.initialStake || 0;
 			},
 			finalCapital() {
-			// ✅ Usar saldo real-time da conta (mesmo que TopNavbar) via accountBalanceMixin
-			// Se o mixin ainda não carregou (balanceNumeric === 0), usar fallback do agentConfig
-			const mixinBalance = this.balanceNumeric || 0;
-			if (mixinBalance > 0) {
-				return mixinBalance;
-			}
-			
-			// Fallback: usar balance do agentConfig ou sessionStats
-			return this.agentConfig?.currentBalance || this.sessionStats?.totalCapital || 0;
-		},
+				// 1. Se for sessão ou hoje, ou se o período filtrado incluir o dia de hoje, usar saldo em tempo real
+				const todayStr = new Date().toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' });
+				const includesToday = (this.selectedPeriod === 'session' || this.selectedPeriod === 'today') || 
+									 (this.filteredDailyData && this.filteredDailyData.some(d => d.date === todayStr) && !['yesterday', 'lastMonth'].includes(this.selectedPeriod));
+
+				if (includesToday) {
+					return this.balanceNumeric || this.agentConfig?.currentBalance || this.sessionStats?.totalCapital || 0;
+				}
+
+				// 2. Se houver dados filtrados, pegar o capital do dia mais recente do período selecionado
+				if (this.filteredDailyData && this.filteredDailyData.length > 0) {
+					// dailyData costuma vir ordenado do mais novo para o mais antigo (DESC)
+					return this.filteredDailyData[0].capital || 0;
+				}
+				
+				// Fallback padrão: usar saldo real-time da conta (mesmo que TopNavbar) via accountBalanceMixin
+				const mixinBalance = this.balanceNumeric || 0;
+				if (mixinBalance > 0) {
+					return mixinBalance;
+				}
+				
+				return this.agentConfig?.currentBalance || this.sessionStats?.totalCapital || 0;
+			},
             periodProfit() {
                 if (this.selectedPeriod === 'session') {
                     return this.sessionStats?.netProfit || 0;
