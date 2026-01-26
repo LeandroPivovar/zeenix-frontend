@@ -35,10 +35,10 @@
           <p class="mobile-subtitle">{{ mobileSubtitle }}</p>
         </div>
 
-        <div class="mb-4 pl-4 desktop-only" style="margin-bottom: 5px; text-align: left;">
+        <div class="mb-4 desktop-only" style="margin-bottom: 5px; text-align: left; padding-left: 20px;">
           <h1 class="text-xl text-[#FAFAFA] font-bold">Operação Manual</h1>
           <p class="text-sm text-[#A1A1AA] mt-1 max-w-2xl">
-            Execute suas próprias estratégias com controle total. Use nossas ferramentas de análise gráfica e de dígitos para identificar padrões e operar manualmente com precisão, contando com a segurança e rapidez da plataforma Zeenix.
+            Opere manualmente com controle total. Use nossas ferramentas de análise para identificar padrões e executar estratégias com precisão.
           </p>
         </div>
         <div class="view-toggle-bar-wrapper">
