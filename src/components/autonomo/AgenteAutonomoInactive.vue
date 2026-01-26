@@ -133,9 +133,9 @@
 								<div class="selector-content">
 									<div class="selector-left">
 										<div class="selector-icon-active" v-if="selectedAgent">
-											<i v-if="selectedAgent === 'sentinel'" class="fas fa-shield-alt"></i>
+											<i v-if="selectedAgent === 'zeus'" class="fas fa-bolt"></i>
 											<i v-else-if="selectedAgent === 'falcon'" class="fas fa-rocket"></i>
-											<i v-else class="fas fa-bolt"></i>
+											<i v-else class="fas fa-robot"></i>
 										</div>
 										<span :class="{ 'placeholder': !selectedAgent }">
 											{{ selectedAgent ? getAgentTitle(selectedAgent) : 'Selecione seu agente' }}
@@ -150,9 +150,9 @@
 								<div v-if="selectedAgent" :key="selectedAgent" class="agent-description-card mt-3">
 									<div class="agent-desc-content">
 										<div class="agent-desc-icon">
-											<i v-if="selectedAgent === 'sentinel'" class="fas fa-shield-alt" style="color: white !important;"></i>
+											<i v-if="selectedAgent === 'zeus'" class="fas fa-bolt" style="color: white !important;"></i>
 											<i v-else-if="selectedAgent === 'falcon'" class="fas fa-rocket" style="color: white !important;"></i>
-											<i v-else class="fas fa-bolt" style="color: white !important;"></i>
+											<i v-else class="fas fa-robot" style="color: white !important;"></i>
 										</div>
 										<div class="agent-desc-info">
 											<h3>{{ getAgentTitle(selectedAgent).toUpperCase() }}</h3>
@@ -414,34 +414,16 @@ export default {
 			showAgentSelectorModal: false,
 			availableAgents: [
 				{
-					id: 'atlas',
-					title: 'IA Atlas',
-					icon: 'fas fa-brain',
-					description: 'Análise: Híbrida (Fluxo de Dígitos + Price Action)\nAssertividade: 52 a 56%\nRetorno: 35% / 85%'
+					id: 'zeus',
+					title: 'Agente Zeus',
+					icon: 'fas fa-bolt',
+					description: 'Análise: Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação\nAssertividade: 56% a 90%\nRetorno: 56% / 85%'
 				},
 				{
-					id: 'apollo',
-					title: 'IA Apollo',
+					id: 'falcon',
+					title: 'Agente Falcon',
 					icon: 'fas fa-rocket',
-					description: 'Análise: Price Action Puro (Inércia + Força + Tendência)\nAssertividade: 50% a 55%\nRetorno: 85%'
-				},
-				{
-					id: 'nexus',
-					title: 'IA Nexus',
-					icon: 'fas fa-project-diagram',
-					description: 'Análise: Price Action (Barreira de Segurança) com Troca de Contrato\nAssertividade: 51% a 55%\nRetorno: 58% / 85%'
-				},
-				{
-					id: 'orion',
-					title: 'IA Orion',
-					icon: 'fas fa-star',
-					description: 'Análise: Estatística de Dígitos (Over 3) com Price Action na Recuperação\nAssertividade: 54% a 61%\nRetorno: 56% / 85%'
-				},
-				{
-					id: 'titan',
-					title: 'IA Titan',
-					icon: 'fas fa-shield-alt',
-					description: 'Análise: Dígitos Par/Ímpar com persistência direcional\nAssertividade: 50-55%\nRetorno: 85%'
+					description: 'Análise: Alta frequência com foco em volatilidade\nAssertividade: 50% a 55%\nRetorno: 85%'
 				}
 			]
 		};
@@ -598,11 +580,8 @@ export default {
 		// 🟢 NOVO MÉTODO: Descrição do Agente 🟢
 		getAgentDescription(id) {
 			const map = {
-				'atlas': 'Análise: Híbrida (Fluxo de Dígitos + Price Action)\nAssertividade: 52 a 56%\nRetorno: 35% / 85%',
-				'apollo': 'Análise: Price Action Puro (Inércia + Força + Tendência)\nAssertividade: 50% a 55%\nRetorno: 85%',
-				'nexus': 'Análise: Price Action (Barreira de Segurança) com Troca de Contrato\nAssertividade: 51% a 55%\nRetorno: 58% / 85%',
-				'orion': 'Análise: Estatística de Dígitos (Over 3) com Price Action na Recuperação\nAssertividade: 54% a 61%\nRetorno: 56% / 85%',
-				'titan': 'Análise: Dígitos Par/Ímpar com persistência direcional\nAssertividade: 50-55%\nRetorno: 85%'
+				'zeus': 'Análise: Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação\nAssertividade: 56% a 90%\nRetorno: 56% / 85%',
+				'falcon': 'Análise: Alta frequência com foco em volatilidade\nAssertividade: 50% a 55%\nRetorno: 85%'
 			};
 			return map[id] || '';
 		},
