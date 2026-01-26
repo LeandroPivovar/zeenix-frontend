@@ -694,27 +694,15 @@ export default {
       tickSubscriptionId: null,
       tradeTypeCategories: [
         {
-          id: 'rising_falling',
-          label: 'Subida / Queda',
-          icon: 'fas fa-chart-line',
-          items: [
-            { value: 'rising_falling_rise_fall', label: 'Subida / Queda', directions: [
-                { value: 'CALL', label: 'Subida' },
-                { value: 'PUT', label: 'Queda' }
-              ] 
-            },
-            { value: 'rising_falling_rise_fall_equal', label: 'Subida / Queda Igual', directions: [
-                { value: 'CALLE', label: 'Subida Igual' },
-                { value: 'PUTE', label: 'Queda Igual' }
-              ]
-            }
-          ]
-        },
-        {
           id: 'digits',
           label: 'Dígitos',
           icon: 'fas fa-hashtag',
           items: [
+            { value: 'digits_over_under', label: 'Superior / Inferior', directions: [
+                { value: 'DIGITOVER', label: 'Superior' },
+                { value: 'DIGITUNDER', label: 'Inferior' }
+              ]
+            },
             { value: 'digits_match_diff', label: 'Combina / Difere', directions: [
                 { value: 'DIGITMATCH', label: 'Combina' },
                 { value: 'DIGITDIFF', label: 'Difere' }
@@ -724,52 +712,120 @@ export default {
                 { value: 'DIGITEVEN', label: 'Par' },
                 { value: 'DIGITODD', label: 'Ímpar' }
               ]
+            }
+          ]
+        },
+        {
+          id: 'rising_falling',
+          label: 'Subindo ou Descendo',
+          icon: 'fas fa-chart-line',
+          items: [
+            { value: 'rising_falling_rise_fall_equal', label: 'Subida/Queda Igual', directions: [
+                { value: 'CALLE', label: 'Subida Igual' },
+                { value: 'PUTE', label: 'Queda Igual' }
+              ]
             },
-            { value: 'digits_over_under', label: 'Superior / Inferior', directions: [
-                { value: 'DIGITOVER', label: 'Superior' },
-                { value: 'DIGITUNDER', label: 'Inferior' }
+            { value: 'rising_falling_rise_fall', label: 'Subida/Queda', directions: [
+                { value: 'CALL', label: 'Subida' },
+                { value: 'PUT', label: 'Queda' }
+              ] 
+            },
+            { value: 'reset_high_low', label: 'Reset Alta/Baixa', directions: [
+                { value: 'RESETCALL', label: 'Reset Alta' },
+                { value: 'RESETPUT', label: 'Reset Baixa' }
+              ]
+            },
+            { value: 'runs_high_low', label: 'Somente Altas / Somente Quedas', directions: [
+                { value: 'RUNHIGH', label: 'Somente Altas' },
+                { value: 'RUNLOW', label: 'Somente Quedas' }
+              ]
+            },
+            { value: 'tick_high_low', label: 'Máxima/Mínima por Ticks', directions: [
+                { value: 'TICKHIGH', label: 'Máxima' },
+                { value: 'TICKLOW', label: 'Mínima' }
               ]
             }
           ]
         },
         {
-          id: 'accumulators',
-          label: 'Acumuladores',
-          icon: 'fas fa-layer-group',
+          id: 'one_barrier',
+          label: 'Uma Barreira',
+          icon: 'fas fa-bullseye',
           items: [
-            { value: 'accumulators_accu', label: 'Acumuladores', directions: [
-                { value: 'ACCU', label: 'Acumuladores' }
+            { value: 'touch_no_touch', label: 'Toca / Não Toca', directions: [
+                { value: 'ONETOUCH', label: 'Toca' },
+                { value: 'NOTOUCH', label: 'Não Toca' }
+              ]
+            },
+            { value: 'higher_lower', label: 'Maior / Menor', directions: [
+                { value: 'HIGHER', label: 'Maior' },
+                { value: 'LOWER', label: 'Menor' }
               ]
             }
           ]
         },
         {
-          id: 'multipliers',
-          label: 'Multiplicadores',
-          icon: 'fas fa-times-circle',
+          id: 'two_barriers',
+          label: 'Duas Barreiras',
+          icon: 'fas fa-shield-alt',
           items: [
-            { value: 'multipliers_mult', label: 'Alta / Baixa', directions: [
+            { value: 'in_out', label: 'Permanece Dentro / Sai Fora', directions: [
+                { value: 'RANGE', label: 'Permanece Dentro' },
+                { value: 'UPORDOWN', label: 'Sai Fora' }
+              ]
+            },
+            { value: 'ends_in_out', label: 'Termina Dentro / Termina Fora', directions: [
+                { value: 'EXPIRYRANGE', label: 'Termina Dentro' },
+                { value: 'EXPIRYMISS', label: 'Termina Fora' }
+              ]
+            }
+          ]
+        },
+        {
+          id: 'no_expiry',
+          label: 'Sem Vencimento',
+          icon: 'fas fa-bolt',
+          items: [
+            { value: 'multipliers_mult', label: 'Multiplicadores', directions: [
                 { value: 'MULTUP', label: 'Alta' },
                 { value: 'MULTDOWN', label: 'Baixa' }
+              ]
+            },
+            { value: 'accumulators_accu', label: 'Acumuladores', directions: [
+                { value: 'ACCU', label: 'Acumuladores' }
               ]
             }
           ]
         }
       ],
       allTradeTypes: [
-        { value: 'CALL', label: 'Alta (CALL)', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
-        { value: 'PUT', label: 'Baixa (PUT)', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
-        { value: 'DIGITMATCH', label: 'Dígito Igual', description: 'O último dígito será igual', icon: 'fas fa-equals' },
-        { value: 'DIGITDIFF', label: 'Dígito Diferente', description: 'O último dígito será diferente', icon: 'fas fa-not-equal' },
-        { value: 'DIGITEVEN', label: 'Dígito Par', description: 'O último dígito será par', icon: 'fas fa-divide' },
-        { value: 'DIGITODD', label: 'Dígito Ímpar', description: 'O último dígito será ímpar', icon: 'fas fa-percent' },
-        { value: 'DIGITOVER', label: 'Dígito Acima', description: 'O último dígito será maior', icon: 'fas fa-greater-than' },
-        { value: 'DIGITUNDER', label: 'Dígito Abaixo', description: 'O último dígito será menor', icon: 'fas fa-less-than' },
-        { value: 'CALLE', label: 'Subida Igual', description: 'Subida com barreira igual', icon: 'fas fa-arrow-up' },
-        { value: 'PUTE', label: 'Queda Igual', description: 'Queda com barreira igual', icon: 'fas fa-arrow-down' },
+        { value: 'CALL', label: 'Subida', description: 'Apostar que o preço subirá', icon: 'fas fa-arrow-up' },
+        { value: 'PUT', label: 'Queda', description: 'Apostar que o preço cairá', icon: 'fas fa-arrow-down' },
+        { value: 'DIGITMATCH', label: 'Combina', description: 'O último dígito será igual', icon: 'fas fa-equals' },
+        { value: 'DIGITDIFF', label: 'Difere', description: 'O último dígito será diferente', icon: 'fas fa-not-equal' },
+        { value: 'DIGITEVEN', label: 'Par', description: 'O último dígito será par', icon: 'fas fa-divide' },
+        { value: 'DIGITODD', label: 'Ímpar', description: 'O último dígito será ímpar', icon: 'fas fa-percent' },
+        { value: 'DIGITOVER', label: 'Superior', description: 'O último dígito será maior', icon: 'fas fa-greater-than' },
+        { value: 'DIGITUNDER', label: 'Inferior', description: 'O último dígito será menor', icon: 'fas fa-less-than' },
+        { value: 'CALLE', label: 'Subida Igual', description: 'Subida com barreira igual', icon: 'fas fa-arrow-up-right-dots' },
+        { value: 'PUTE', label: 'Queda Igual', description: 'Queda com barreira igual', icon: 'fas fa-arrow-down-right-dots' },
         { value: 'ACCU', label: 'Acumuladores', description: 'Contrato de acumuladores', icon: 'fas fa-layer-group' },
-        { value: 'MULTUP', label: 'Multiplicador Alta', description: 'Multiplicador de alta', icon: 'fas fa-chart-line' },
-        { value: 'MULTDOWN', label: 'Multiplicador Baixa', description: 'Multiplicador de baixa', icon: 'fas fa-chart-line' },
+        { value: 'MULTUP', label: 'Alta', description: 'Multiplicador de alta', icon: 'fas fa-chart-line' },
+        { value: 'MULTDOWN', label: 'Baixa', description: 'Multiplicador de baixa', icon: 'fas fa-chart-line' },
+        { value: 'RESETCALL', label: 'Reset Alta', description: 'Reset de alta', icon: 'fas fa-redo' },
+        { value: 'RESETPUT', label: 'Reset Baixa', description: 'Reset de baixa', icon: 'fas fa-redo' },
+        { value: 'RUNHIGH', label: 'Somente Altas', description: 'Somente altas', icon: 'fas fa-arrow-trend-up' },
+        { value: 'RUNLOW', label: 'Somente Quedas', description: 'Somente quedas', icon: 'fas fa-arrow-trend-down' },
+        { value: 'TICKHIGH', label: 'Máxima', description: 'Máxima do intervalo', icon: 'fas fa-arrows-up-to-line' },
+        { value: 'TICKLOW', label: 'Mínima', description: 'Mínima do intervalo', icon: 'fas fa-arrows-down-to-line' },
+        { value: 'ONETOUCH', label: 'Toca', description: 'O preço toca a barreira', icon: 'fas fa-bullseye' },
+        { value: 'NOTOUCH', label: 'Não Toca', description: 'O preço não toca a barreira', icon: 'fas fa-circle-xmark' },
+        { value: 'HIGHER', label: 'Maior', description: 'Termina acima da barreira', icon: 'fas fa-chevron-up' },
+        { value: 'LOWER', label: 'Menor', description: 'Termina abaixo da barreira', icon: 'fas fa-chevron-down' },
+        { value: 'RANGE', label: 'Permanece Dentro', description: 'Fica entre as barreiras', icon: 'fas fa-arrows-left-right-to-line' },
+        { value: 'UPORDOWN', label: 'Sai Fora', description: 'Sai do intervalo', icon: 'fas fa-arrows-left-right' },
+        { value: 'EXPIRYRANGE', label: 'Termina Dentro', description: 'Termina no intervalo', icon: 'fas fa-square-full' },
+        { value: 'EXPIRYMISS', label: 'Termina Fora', description: 'Termina fora do intervalo', icon: 'fas fa-expand' },
       ],
     };
   },
@@ -1973,10 +2029,22 @@ export default {
           };
         });
 
-      // Ordenar por categoria e depois por label
+      // Ordenar por categoria (usando prioridade definida) e depois por label
+      const categoryPriority = {
+        'Índices Contínuos': 1,
+        'Forex Minors': 2,
+        'Forex Majors': 3,
+        'Criptomoedas': 4,
+        'Metais': 5,
+        'Forex Exotics': 6
+      };
+
       mappedMarkets.sort((a, b) => {
-        if (a.category !== b.category) {
-          return a.category.localeCompare(b.category);
+        const priorityA = categoryPriority[a.category] || 99;
+        const priorityB = categoryPriority[b.category] || 99;
+        
+        if (priorityA !== priorityB) {
+          return priorityA - priorityB;
         }
         return a.label.localeCompare(b.label);
       });

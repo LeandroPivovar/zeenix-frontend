@@ -1570,10 +1570,22 @@ export default {
                     };
                 });
 
-            // Ordenar por categoria e depois por label
+            // Ordenar por categoria (usando prioridade definida) e depois por label
+            const categoryPriority = {
+                'Índices Contínuos': 1,
+                'Forex Minors': 2,
+                'Forex Majors': 3,
+                'Criptomoedas': 4,
+                'Metais': 5,
+                'Forex Exotics': 6
+            };
+
             mappedMarkets.sort((a, b) => {
-                if (a.category !== b.category) {
-                    return a.category.localeCompare(b.category);
+                const priorityA = categoryPriority[a.category] || 99;
+                const priorityB = categoryPriority[b.category] || 99;
+                
+                if (priorityA !== priorityB) {
+                    return priorityA - priorityB;
                 }
                 return a.label.localeCompare(b.label);
             });
