@@ -36,6 +36,7 @@
             :balances-by-currency-real="balancesByCurrencyReal"
             :balances-by-currency-demo="balancesByCurrencyDemo"
             :currency-prefix="preferredCurrencyPrefix"
+            :active-service="'ia'"
             @close="closeSettingsModal"
             @account-type-changed="handleAccountTypeChange"
         />

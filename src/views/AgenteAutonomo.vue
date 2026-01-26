@@ -37,6 +37,7 @@
           :account-type="isDemo ? 'demo' : 'real'"
           :balances-by-currency-real="balancesByCurrencyReal"
           :balances-by-currency-demo="balancesByCurrencyDemo"
+          :active-service="'agent'"
           @close="isSettingsOpen = false"
           @account-type-changed="handleAccountTypeChange"
         />

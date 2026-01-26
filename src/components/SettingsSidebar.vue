@@ -186,6 +186,11 @@ export default {
     currencyPrefix: {
       type: String,
       default: '$'
+    },
+    activeService: {
+      type: String,
+      default: null, // Valores aceitos: 'ia', 'agent', null
+      validator: (value) => [null, 'ia', 'agent'].includes(value)
     }
   },
   emits: ['close', 'account-type-changed'],
@@ -521,8 +526,8 @@ export default {
             // Continuar mesmo se falhar ao salvar no banco
           }
 
-          // ✅ Desativar qualquer IA ou Agente ativo antes de trocar conta
-          await this.deactivateAllActiveServices();
+          // ✅ Desativar apenas o serviço da página atual (se houver)
+          await this.deactivateAllActiveServices(this.activeService);
 
           const accountType = account.isDemo ? 'demo' : 'real';
           this.$emit('account-type-changed', accountType);
@@ -671,8 +676,8 @@ export default {
           // Continuar mesmo se falhar ao salvar no banco
         }
 
-        // ✅ Desativar qualquer IA ou Agente ativo antes de trocar conta
-        await this.deactivateAllActiveServices();
+        // ✅ Desativar apenas o serviço da página atual (se houver)
+        await this.deactivateAllActiveServices(this.activeService);
 
         this.$emit('account-type-changed', type);
         
@@ -845,10 +850,11 @@ export default {
     },
 
     /**
-     * Desativa qualquer IA ou Agente Autônomo ativo antes de trocar de conta
-     * Isso previne que operações continuem sendo executadas com a conta antiga
+     * Desativa serviços ativos antes de trocar de conta
+     * @param {string} serviceType - Tipo de serviço a desativar: 'ia', 'agent', ou 'all'
+     * Se não especificado, não desativa nada (comportamento padrão)
      */
-    async deactivateAllActiveServices() {
+    async deactivateAllActiveServices(serviceType = null) {
       const apiBase = process.env.VUE_APP_API_BASE_URL || 'https://iazenix.com/api';
       const token = localStorage.getItem('token');
       
@@ -871,49 +877,59 @@ export default {
         return;
       }
 
-      console.log('[SettingsSidebar] 🛑 Desativando todos os serviços ativos antes de trocar conta...');
-
-      // Desativar IA (se estiver ativa)
-      try {
-        const aiResponse = await fetch(`${apiBase}/ai/deactivate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ userId })
-        });
-
-        if (aiResponse.ok) {
-          console.log('[SettingsSidebar] ✅ IA desativada com sucesso');
-        } else {
-          console.log('[SettingsSidebar] ⚠️ IA não estava ativa ou erro ao desativar');
-        }
-      } catch (error) {
-        console.error('[SettingsSidebar] Erro ao desativar IA:', error);
+      // Se serviceType não foi especificado, não desativar nada
+      if (!serviceType) {
+        console.log('[SettingsSidebar] 🔄 Nenhum serviço será desativado (modo passivo)');
+        return;
       }
 
-      // Desativar Agente Autônomo (se estiver ativo)
-      try {
-        const agentResponse = await fetch(`${apiBase}/autonomous-agent/deactivate`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ userId })
-        });
+      console.log(`[SettingsSidebar] 🛑 Desativando serviço: ${serviceType}...`);
 
-        if (agentResponse.ok) {
-          console.log('[SettingsSidebar] ✅ Agente Autônomo desativado com sucesso');
-        } else {
-          console.log('[SettingsSidebar] ⚠️ Agente Autônomo não estava ativo ou erro ao desativar');
+      // Desativar IA (se solicitado)
+      if (serviceType === 'ia' || serviceType === 'all') {
+        try {
+          const aiResponse = await fetch(`${apiBase}/ai/deactivate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ userId })
+          });
+
+          if (aiResponse.ok) {
+            console.log('[SettingsSidebar] ✅ IA desativada com sucesso');
+          } else {
+            console.log('[SettingsSidebar] ⚠️ IA não estava ativa ou erro ao desativar');
+          }
+        } catch (error) {
+          console.error('[SettingsSidebar] Erro ao desativar IA:', error);
         }
-      } catch (error) {
-        console.error('[SettingsSidebar] Erro ao desativar Agente Autônomo:', error);
       }
 
-      console.log('[SettingsSidebar] ✅ Verificação de serviços ativos concluída');
+      // Desativar Agente Autônomo (se solicitado)
+      if (serviceType === 'agent' || serviceType === 'all') {
+        try {
+          const agentResponse = await fetch(`${apiBase}/autonomous-agent/deactivate`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({ userId })
+          });
+
+          if (agentResponse.ok) {
+            console.log('[SettingsSidebar] ✅ Agente Autônomo desativado com sucesso');
+          } else {
+            console.log('[SettingsSidebar] ⚠️ Agente Autônomo não estava ativo ou erro ao desativar');
+          }
+        } catch (error) {
+          console.error('[SettingsSidebar] Erro ao desativar Agente Autônomo:', error);
+        }
+      }
+
+      console.log('[SettingsSidebar] ✅ Verificação de serviços concluída');
     },
     async topUpDemo() {
       if (this.loadingTopup) return;
