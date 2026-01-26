@@ -914,7 +914,7 @@ export default {
       }
 
       console.log('[SettingsSidebar] ✅ Verificação de serviços ativos concluída');
-    }
+    },
     async topUpDemo() {
       if (this.loadingTopup) return;
       
