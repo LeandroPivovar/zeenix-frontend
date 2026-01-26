@@ -575,7 +575,7 @@ export default {
                 'orion': 'IA Orion',
                 'titan': 'IA Titan'
             };
-            return strategyNames[this.selectedStrategy] || 'Selecionar Estratégia de IA';
+            return strategyNames[this.selectedStrategy] || 'Selecione uma estratégia';
         },
         
         formattedLastUpdate() {
