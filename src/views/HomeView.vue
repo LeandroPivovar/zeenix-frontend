@@ -423,9 +423,7 @@ export default {
         user.firstAccess = false;
         localStorage.setItem('user', JSON.stringify(user));
       }
-        user.firstAccess = false;
-        localStorage.setItem('user', JSON.stringify(user));
-      }
+
     },
     async loadDerivTutorial() {
         try {
