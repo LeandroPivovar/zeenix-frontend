@@ -921,21 +921,11 @@
 				return (this.periodProfit / startBalance) * 100;
 			},
 			avgDailyProfit() {
-				// Lucro médio por dia referente à sessão atual: lucro da sessão / dias executando
-				if (!this.agentConfig || !this.agentConfig.sessionDate) {
-					// Fallback se não tiver sessionDate
-					return this.periodProfit; 
-				}
+				// Lucro médio dos últimos 30 dias (independente da sessão)
+				if (!this.dailyData || this.dailyData.length === 0) return 0;
 				
-				const sessionStart = new Date(this.agentConfig.sessionDate);
-				const now = new Date();
-				
-				// Diferença em milissegundos
-				const diffTime = Math.abs(now - sessionStart);
-				// Converter para dias (arredondando para cima, mínimo 1 dia)
-				const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-				
-				return this.periodProfit / diffDays;
+				const totalProfit = this.dailyData.reduce((sum, day) => sum + (day.profit || 0), 0);
+				return totalProfit / this.dailyData.length;
 			},
 	avgProfitPerOp() {
 		// Calculate average profit per operation
