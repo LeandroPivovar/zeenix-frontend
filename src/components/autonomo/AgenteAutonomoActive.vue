@@ -1173,15 +1173,6 @@
 					console.log('[AgenteAutonomo] Session Status Inativo detectado:', newStatus);
 				}
 			},
-            'sessionStats.evolution': {
-                immediate: true,
-                handler(newEvolution) {
-                    if (this.selectedPeriod === 'session' && newEvolution && newEvolution.length > 0) {
-                        console.log('[AgenteAutonomo] 📈 Atualizando gráfico via sessionStats.evolution:', newEvolution.length, 'pontos');
-                        this.updateIndexChart(newEvolution);
-                    }
-                }
-            },
             realtimeLogs: {
                 deep: true,
                 handler(newLogs) {
