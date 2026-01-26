@@ -191,7 +191,19 @@
                                     </td>
                                 </tr>
                                 <tr v-else v-for="user in filteredAllUsers" :key="user.id">
-                                    <td>{{ user.name }}</td>
+                                    <td>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <span>{{ user.name }}</span>
+                                            <a v-if="user.phone && user.phone !== 'N/A'" 
+                                               :href="'https://wa.me/' + user.phone.replace(/\D/g, '')" 
+                                               target="_blank" 
+                                               class="whatsapp-link-icon"
+                                               title="Conversar no WhatsApp"
+                                            >
+                                                <i class="fab fa-whatsapp"></i>
+                                            </a>
+                                        </div>
+                                    </td>
                                     <td>{{ user.email }}</td>
                                     <td>
                                         <div class="account-info">
@@ -205,7 +217,12 @@
                                     </td>
                                     <td>{{ new Date(user.createdAt).toLocaleDateString('pt-BR') }}</td>
                                     <td>
-                                        <button @click="editUser(user)" class="action-link">Editar</button>
+                                        <div class="actions-flex">
+                                            <button @click="editUser(user)" class="action-link">Editar</button>
+                                            <button @click="toggleUserStatus(user)" :class="['action-link', user.isActive ? 'deactivate' : 'activate']">
+                                                {{ user.isActive ? 'Desativar' : 'Ativar' }}
+                                            </button>
+                                        </div>
                                     </td>
                                 </tr>
                             </tbody>
@@ -214,10 +231,19 @@
                     <!-- Cards Mobile -->
                     <div class="mobile-users-cards" :class="{ 'loading': isLoadingAllUsers }">
                         <div v-for="user in filteredAllUsers" :key="'mob-' + user.id" class="mobile-user-card">
-                            <div class="card-header-user">
-                                <h3 class="card-user-name">{{ user.name }}</h3>
-                                <span class="plan-badge">{{ user.plan }}</span>
-                            </div>
+                             <div class="card-header-user">
+                                 <div style="display: flex; align-items: center; gap: 8px;">
+                                     <h3 class="card-user-name">{{ user.name }}</h3>
+                                     <a v-if="user.phone && user.phone !== 'N/A'" 
+                                        :href="'https://wa.me/' + user.phone.replace(/\D/g, '')" 
+                                        target="_blank" 
+                                        class="whatsapp-link-icon"
+                                     >
+                                         <i class="fab fa-whatsapp"></i>
+                                     </a>
+                                 </div>
+                                 <span class="plan-badge">{{ user.plan }}</span>
+                             </div>
                             <div class="card-body-user">
                                 <div class="card-row-user">
                                     <span class="card-label-user">Email:</span>
@@ -237,6 +263,9 @@
                                 </div>
                                 <div class="card-actions-admin">
                                     <button @click="editUser(user)" class="action-link">Editar Usuário</button>
+                                    <button @click="toggleUserStatus(user)" :class="['action-link', user.isActive ? 'deactivate' : 'activate']">
+                                        {{ user.isActive ? 'Desativar' : 'Ativar' }}
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -545,10 +574,16 @@
                                 <option value="admin">Administrador</option>
                             </select>
                         </div>
-                        <div class="form-group toggle-group" style="margin-top: 15px;">
+                         <div class="form-group toggle-group" style="margin-top: 15px;">
                             <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
                                 <input type="checkbox" v-model="editingUser.traderMestre" style="width: auto;">
                                 <span>Trader Mestre</span>
+                            </label>
+                        </div>
+                        <div class="form-group toggle-group" style="margin-top: 10px;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" v-model="editingUser.isActive" style="width: auto;">
+                                <span>Status Ativo</span>
                             </label>
                         </div>
                     </div>
@@ -658,7 +693,8 @@ export default {
                 email: '',
                 planId: '',
                 role: 'user',
-                traderMestre: false
+                traderMestre: false,
+                isActive: true
             },
             isUpdatingUser: false,
             logs: [],
@@ -767,7 +803,8 @@ export default {
                 email: user.email,
                 planId: user.planId || '',
                 role: user.role || 'user',
-                traderMestre: user.traderMestre || false
+                traderMestre: user.traderMestre || false,
+                isActive: user.isActive !== undefined ? user.isActive : true
             };
             this.showEditUserModal = true;
         },
@@ -787,7 +824,8 @@ export default {
                         body: JSON.stringify({
                             planId: this.editingUser.planId,
                             role: this.editingUser.role,
-                            traderMestre: this.editingUser.traderMestre
+                            traderMestre: this.editingUser.traderMestre,
+                            isActive: this.editingUser.isActive
                         })
                     }
                 );
@@ -805,6 +843,37 @@ export default {
                 alert(error.message);
             } finally {
                 this.isUpdatingUser = false;
+            }
+        },
+
+        async toggleUserStatus(user) {
+            const action = user.isActive ? 'desativar' : 'ativar';
+            if (!confirm(`Tem certeza que deseja ${action} o usuário ${user.name}?`)) return;
+
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + `/admin/users/${user.id}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            isActive: !user.isActive
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    throw new Error(`Falha ao ${action} usuário`);
+                }
+
+                await this.loadAllUsers(this.allUsersPagination.currentPage, this.allUsersPagination.recordsPerPage);
+            } catch (error) {
+                console.error(`Erro ao ${action} usuário:`, error);
+                alert(error.message);
             }
         },
 
@@ -1787,6 +1856,46 @@ export default {
 }
 
 .card-actions-admin .action-link:hover {
+    background: rgba(34, 197, 94, 0.2);
+}
+
+.actions-flex {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.whatsapp-link-icon {
+    color: #25D366;
+    font-size: 1.2rem;
+    transition: transform 0.2s;
+    display: flex;
+    align-items: center;
+}
+
+.whatsapp-link-icon:hover {
+    transform: scale(1.2);
+    color: #128C7E;
+}
+
+.action-link.deactivate {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+    border-color: rgba(239, 68, 68, 0.2);
+}
+
+.action-link.deactivate:hover {
+    background: rgba(239, 68, 68, 0.2);
+}
+
+.action-link.activate {
+    color: #22c55e;
+    background: rgba(34, 197, 94, 0.1);
+    border-color: rgba(34, 197, 94, 0.2);
+}
+
+.action-link.activate:hover {
     background: rgba(34, 197, 94, 0.2);
 }
 
