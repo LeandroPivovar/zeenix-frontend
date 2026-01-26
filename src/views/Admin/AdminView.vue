@@ -151,14 +151,18 @@
                 <section class="all-users">
                     <div class="section-header">
                         <h2>Todos os Usuários</h2>
-                        <div class="search-container">
-                            <i class="fas fa-search search-icon"></i>
-                            <input 
-                                type="text" 
-                                v-model="allUsersSearch" 
-                                placeholder="Buscar por nome, email ou ID..." 
-                                class="search-input"
-                            >
+                        <div class="user-actions">
+                            <div class="search-container">
+                                <i class="fas fa-search search-icon"></i>
+                                <input 
+                                    type="text" 
+                                    v-model="allUsersSearch" 
+                                    @keyup.enter="loadAllUsers(1, allUsersPagination.recordsPerPage)"
+                                    placeholder="Buscar por nome, email ou ID..." 
+                                    class="search-input"
+                                >
+                            </div>
+                            <button class="btn btn-add-admin" @click="showAddUserModal = true">+ Adicionar Novo Usuário</button>
                         </div>
                     </div>
                     <!-- Tabela Desktop -->
@@ -228,6 +232,50 @@
                                     <span class="card-value-user">{{ new Date(user.createdAt).toLocaleDateString('pt-BR') }}</span>
                                 </div>
                             </div>
+                    </div>
+
+                    <!-- Paginação para Todos os Usuários -->
+                    <div class="pagination-controls" v-if="allUsersPagination.totalPages > 1">
+                        <div class="pagination-info">
+                            <span>Total: {{ allUsersPagination.totalRecords }} usuários</span>
+                            <div class="records-per-page">
+                                <label>Por página:</label>
+                                <select v-model="allUsersPagination.recordsPerPage" @change="loadAllUsers(1, allUsersPagination.recordsPerPage)">
+                                    <option :value="10">10</option>
+                                    <option :value="25">25</option>
+                                    <option :value="50">50</option>
+                                    <option :value="100">100</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="pagination-buttons">
+                            <button 
+                                class="btn-pagination" 
+                                :disabled="!allUsersPagination.hasPreviousPage"
+                                @click="loadAllUsers(allUsersPagination.currentPage - 1, allUsersPagination.recordsPerPage)"
+                            >
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            
+                            <div class="page-numbers">
+                                <button 
+                                    v-for="page in allUsersPagination.totalPages" 
+                                    :key="page"
+                                    class="btn-page-number"
+                                    :class="{ 'active': page === allUsersPagination.currentPage }"
+                                    @click="loadAllUsers(page, allUsersPagination.recordsPerPage)"
+                                >
+                                    {{ page }}
+                                </button>
+                            </div>
+
+                            <button 
+                                class="btn-pagination" 
+                                :disabled="!allUsersPagination.hasNextPage"
+                                @click="loadAllUsers(allUsersPagination.currentPage + 1, allUsersPagination.recordsPerPage)"
+                            >
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
                         </div>
                     </div>
                 </section>
@@ -423,6 +471,47 @@
             </div>
         </transition>
 
+        <!-- Modal de Adicionar Novo Usuário -->
+        <transition name="modal-fade">
+            <div v-if="showAddUserModal" class="modal-overlay" @click.self="showAddUserModal = false">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Adicionar Novo Usuário</h3>
+                        <button class="close-button" @click="showAddUserModal = false">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Nome Completo</label>
+                            <input type="text" v-model="newUser.name" placeholder="Ex: João Silva">
+                        </div>
+                        <div class="form-group">
+                            <label>Email</label>
+                            <input type="email" v-model="newUser.email" placeholder="email@exemplo.com">
+                        </div>
+                        <div class="form-group">
+                            <label>WhatsApp / Telefone</label>
+                            <input type="text" v-model="newUser.phone" placeholder="(11) 99999-9999">
+                        </div>
+                        <div class="form-group">
+                            <label>Plano</label>
+                            <select v-model="newUser.planId">
+                                <option value="" disabled>Selecione um plano</option>
+                                <option v-for="plan in plans" :key="plan.id" :value="plan.id">
+                                    {{ plan.name }} - {{ plan.price.toLocaleString('pt-BR', { style: 'currency', currency: plan.currency || 'BRL' }) }}
+                                </option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary" @click="showAddUserModal = false">Cancelar</button>
+                        <button class="btn btn-save-config" @click="createNewUser" :disabled="isCreatingUser">
+                            {{ isCreatingUser ? 'Criando...' : 'Criar Usuário' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
         <!-- Settings Modal -->
         <SettingsSidebar
             :is-open="showSettingsModal"
@@ -497,6 +586,21 @@ export default {
             allUsers: [],
             isLoadingAllUsers: false,
             allUsersSearch: '',
+            allUsersPagination: {
+                currentPage: 1,
+                totalPages: 1,
+                totalRecords: 0,
+                recordsPerPage: 10
+            },
+            plans: [],
+            showAddUserModal: false,
+            newUser: {
+                name: '',
+                email: '',
+                phone: '',
+                planId: ''
+            },
+            isCreatingUser: false,
             logs: [],
             isLoadingLogs: false,
             logsPagination: {
@@ -524,6 +628,7 @@ export default {
         await this.loadNonDemoUsers();
         await this.loadAdministrators();
         await this.loadAllUsers();
+        await this.loadPlans();
         await this.loadActivityLogs();
     },
     beforeUnmount() {
@@ -533,11 +638,7 @@ export default {
         filteredAllUsers() {
             if (!this.allUsersSearch) return this.allUsers;
             const query = this.allUsersSearch.toLowerCase();
-            return this.allUsers.filter(user => 
-                user.name.toLowerCase().includes(query) || 
-                user.email.toLowerCase().includes(query) ||
-                (user.derivLoginId && user.derivLoginId.toLowerCase().includes(query))
-            );
+            return this.allUsers; // Backend handles search now
         }
     },
     methods: {
@@ -601,13 +702,19 @@ export default {
             }
         },
 
-        async loadAllUsers() {
+        async loadAllUsers(page = 1, limit = 10) {
             this.isLoadingAllUsers = true;
             try {
                 const token = localStorage.getItem('token');
-                const response = await fetch(
-                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/admin/users/all',
-                    {
+                const baseUrl = process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000';
+                const url = new URL(`${baseUrl}/admin/users/all`);
+                url.searchParams.append('page', page);
+                url.searchParams.append('limit', limit);
+                if (this.allUsersSearch) {
+                    url.searchParams.append('search', this.allUsersSearch);
+                }
+
+                const response = await fetch(url.toString(), {
                         headers: {
                             'Authorization': `Bearer ${token}`,
                             'Content-Type': 'application/json'
@@ -619,12 +726,66 @@ export default {
                     throw new Error('Falha ao carregar todos os usuários');
                 }
 
-                this.allUsers = await response.json();
+                const result = await response.json();
+                this.allUsers = result.data;
+                this.allUsersPagination = result.pagination;
                 console.log('Todos os usuários carregados:', this.allUsers.length);
             } catch (error) {
                 console.error('Erro ao carregar todos os usuários:', error);
             } finally {
                 this.isLoadingAllUsers = false;
+            }
+        },
+
+        async loadPlans() {
+            try {
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/plans'
+                );
+                if (response.ok) {
+                    this.plans = await response.json();
+                }
+            } catch (error) {
+                console.error('Erro ao carregar planos:', error);
+            }
+        },
+
+        async createNewUser() {
+            if (!this.newUser.name || !this.newUser.email || !this.newUser.planId) {
+                alert('Por favor, preencha todos os campos obrigatórios.');
+                return;
+            }
+
+            this.isCreatingUser = true;
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + '/admin/users',
+                    {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(this.newUser)
+                    }
+                );
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Erro ao criar usuário');
+                }
+
+                const result = await response.json();
+                alert(`Usuário criado com sucesso!\nSenha temporária: ${result.tempPassword}`);
+                this.showAddUserModal = false;
+                this.newUser = { name: '', email: '', phone: '', planId: '' };
+                this.loadAllUsers();
+            } catch (error) {
+                console.error('Erro ao criar usuário:', error);
+                alert(error.message);
+            } finally {
+                this.isCreatingUser = false;
             }
         },
 
@@ -1428,6 +1589,12 @@ export default {
     box-shadow: 0 0 5px rgba(34, 197, 94, 0.3);
 }
 
+.user-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
 .search-icon {
     color: #999;
     font-size: 0.9em;
@@ -2035,6 +2202,13 @@ export default {
         width: 100%;
         gap: 10px;
     }
+
+    .user-actions {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
     
     /* Esconder tabelas desktop e mostrar cards mobile */
     .desktop-table {
@@ -2042,7 +2216,8 @@ export default {
     }
     
     .mobile-admins-cards,
-    .mobile-logs-cards {
+    .mobile-logs-cards,
+    .mobile-users-cards {
         display: flex !important;
     }
     
