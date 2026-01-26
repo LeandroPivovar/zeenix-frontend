@@ -1926,9 +1926,6 @@ export default {
 
       console.log('[Chart] Processando símbolos ativos:', symbols.length);
 
-      // Obter lista de símbolos integrados
-      const integratedSymbolsList = this.getDefaultMarkets().map(m => m.value);
-
       // Mapear símbolos para o formato esperado
       const mappedMarkets = symbols
         .map(symbol => {
@@ -1936,8 +1933,17 @@ export default {
           const symbolValue = symbolData.symbol || symbolData.market || symbol;
           const displayName = symbolData.display_name || symbolData.name || symbolValue;
           
-          // Determinar categoria baseado no prefixo do símbolo
-          let category = 'Outros';
+          // Determinar categoria baseado no prefixo do símbolo ou metadados da API
+          let category = symbolData.market_display_name || symbolData.market || 'Outros';
+          
+          // Normalização de nomes de categorias comuns
+          if (category === 'synthetic_index') category = 'Índices Sintéticos';
+          if (category === 'forex') category = 'Forex';
+          if (category === 'cryptocurrency') category = 'Criptomoedas';
+          if (category === 'indices') category = 'Índices';
+          if (category === 'commodities') category = 'Commodities';
+
+          // Refinar categoria se for prefixo conhecido
           if (symbolValue.startsWith('R_') || symbolValue.startsWith('1HZ')) {
             category = 'Índices Contínuos';
           } else if (symbolValue.startsWith('cry')) {
@@ -1965,8 +1971,7 @@ export default {
             label: displayName,
             category: category,
           };
-        })
-        .filter(market => integratedSymbolsList.includes(market.value));
+        });
 
       // Ordenar por categoria e depois por label
       mappedMarkets.sort((a, b) => {
@@ -1977,7 +1982,7 @@ export default {
       });
 
       this.markets = mappedMarkets;
-      console.log('[Chart] Mercados integrados carregados:', this.markets.length);
+      console.log('[Chart] Todos os mercados carregados dinamicamente:', this.markets.length);
     },
     async loadAvailableContracts(symbol) {
       if (!symbol) {

@@ -761,49 +761,7 @@ export default {
             tradeMessage: '',
             tradeError: '',
             symbol: 'R_100',
-            markets: [
-                // Índices Contínuos
-                { value: 'R_10', label: 'Volatility 10 Index', category: 'Índices Contínuos' },
-                { value: 'R_25', label: 'Volatility 25 Index', category: 'Índices Contínuos' },
-                { value: 'R_50', label: 'Volatility 50 Index', category: 'Índices Contínuos' },
-                { value: 'R_75', label: 'Volatility 75 Index', category: 'Índices Contínuos' },
-                { value: 'R_100', label: 'Volatility 100 Index', category: 'Índices Contínuos' },
-                { value: '1HZ10V', label: 'Volatility 10 (1s) Index', category: 'Índices Contínuos' },
-                { value: '1HZ25V', label: 'Volatility 25 (1s) Index', category: 'Índices Contínuos' },
-                { value: '1HZ50V', label: 'Volatility 50 (1s) Index', category: 'Índices Contínuos' },
-                { value: '1HZ75V', label: 'Volatility 75 (1s) Index', category: 'Índices Contínuos' },
-                { value: '1HZ100V', label: 'Volatility 100 (1s) Index', category: 'Índices Contínuos' },
-                
-                // Criptomoedas
-                { value: 'cryBTCUSD', label: 'BTC/USD (Bitcoin)', category: 'Criptomoedas' },
-                { value: 'cryETHUSD', label: 'ETH/USD (Ethereum)', category: 'Criptomoedas' },
-                
-                // Forex (Majors)
-                { value: 'frxEURUSD', label: 'EUR/USD (Euro / Dólar)', category: 'Forex Majors' },
-                { value: 'frxUSDJPY', label: 'USD/JPY (Dólar / Iene)', category: 'Forex Majors' },
-                { value: 'frxGBPUSD', label: 'GBP/USD (Libra / Dólar)', category: 'Forex Majors' },
-                { value: 'frxUSDCHF', label: 'USD/CHF (Dólar / Franco)', category: 'Forex Majors' },
-                { value: 'frxAUDUSD', label: 'AUD/USD (Dólar Australiano)', category: 'Forex Majors' },
-                { value: 'frxUSDCAD', label: 'USD/CAD (Dólar / Dólar Canadense)', category: 'Forex Majors' },
-                { value: 'frxNZDUSD', label: 'NZD/USD (Dólar Neozelandês)', category: 'Forex Majors' },
-                
-                // Forex (Minors/Exotics)
-                { value: 'frxEURGBP', label: 'EUR/GBP (Euro / Libra)', category: 'Forex Minors' },
-                { value: 'frxEURJPY', label: 'EUR/JPY (Euro / Iene)', category: 'Forex Minors' },
-                { value: 'frxGBPJPY', label: 'GBP/JPY (Libra / Iene)', category: 'Forex Minors' },
-                { value: 'frxAUDCAD', label: 'AUD/CAD (Dólar Australiano / Canadense)', category: 'Forex Minors' },
-                { value: 'frxAUDJPY', label: 'AUD/JPY (Dólar Australiano / Iene)', category: 'Forex Minors' },
-                { value: 'frxCHFJPY', label: 'CHF/JPY (Franco / Iene)', category: 'Forex Minors' },
-                { value: 'frxEURAUD', label: 'EUR/AUD (Euro / Dólar Australiano)', category: 'Forex Minors' },
-                { value: 'frxGBPAUD', label: 'GBP/AUD (Libra / Dólar Australiano)', category: 'Forex Minors' },
-                { value: 'frxUSDMXN', label: 'USD/MXN (Dólar / Peso Mexicano)', category: 'Forex Exotics' },
-                
-                // Metais
-                { value: 'frxXAUUSD', label: 'XAU/USD (Ouro / Dólar)', category: 'Metais' },
-                { value: 'frxXAGUSD', label: 'XAG/USD (Prata / Dólar)', category: 'Metais' },
-                { value: 'frxXPTUSD', label: 'XPT/USD (Platina / Dólar)', category: 'Metais' },
-                { value: 'frxXPDUSD', label: 'XPD/USD (Paládio / Dólar)', category: 'Metais' },
-            ],
+            markets: [], // Iniciar vazio e carregar via API
             ticks: [],
             latestTick: null,
             lastUpdate: null,
@@ -1514,6 +1472,9 @@ export default {
                 case 'authorize':
                     this.processAuthorize(msg);
                     break;
+                case 'active_symbols':
+                    this.processWSActiveSymbols(msg.active_symbols);
+                    break;
                 case 'history':
                     this.processHistory(msg);
                     break;
@@ -1539,10 +1500,86 @@ export default {
             this.connectionError = '';
             this.retryCount = 0;
             this.connectionCurrency = authorizeData.currency?.toUpperCase() || this.accountCurrency;
+            
+            // Solicitar lista de símbolos ativos
+            this.send({
+                active_symbols: 'brief',
+                product_type: 'basic'
+            });
+
             this.subscribeToSymbol();
             setTimeout(() => {
                 this.subscribeToProposal();
             }, 500);
+        },
+        processWSActiveSymbols(symbols) {
+            console.log('[OperationDigits] Símbolos ativos recebidos:', symbols?.length);
+            if (symbols && Array.isArray(symbols)) {
+                this.processActiveSymbols(symbols);
+            }
+        },
+        processActiveSymbols(symbols) {
+            if (!symbols || !Array.isArray(symbols)) {
+                return;
+            }
+
+            // Mapear símbolos para o formato esperado
+            const mappedMarkets = symbols
+                .map(symbol => {
+                    const symbolData = typeof symbol === 'string' ? { symbol } : symbol;
+                    const symbolValue = symbolData.symbol || symbolData.market || symbol;
+                    const displayName = symbolData.display_name || symbolData.name || symbolValue;
+                    
+                    // Determinar categoria baseado no prefixo do símbolo ou metadados da API
+                    let category = symbolData.market_display_name || symbolData.market || 'Outros';
+                    
+                    // Normalização de nomes de categorias comuns
+                    if (category === 'synthetic_index') category = 'Índices Sintéticos';
+                    if (category === 'forex') category = 'Forex';
+                    if (category === 'cryptocurrency') category = 'Criptomoedas';
+                    if (category === 'indices') category = 'Índices';
+                    if (category === 'commodities') category = 'Commodities';
+
+                    // Refinar categoria se for prefixo conhecido
+                    if (symbolValue.startsWith('R_') || symbolValue.startsWith('1HZ')) {
+                        category = 'Índices Contínuos';
+                    } else if (symbolValue.startsWith('cry')) {
+                        category = 'Criptomoedas';
+                    } else if (symbolValue.startsWith('frx')) {
+                        if (symbolValue.includes('XAU') || symbolValue.includes('XAG') || symbolValue.includes('XPT') || symbolValue.includes('XPD')) {
+                            category = 'Metais';
+                        } else {
+                            // Listas de categorização de Forex
+                            const minors = ['frxEURGBP', 'frxEURJPY', 'frxGBPJPY', 'frxAUDCAD', 'frxAUDJPY', 'frxCHFJPY', 'frxEURAUD', 'frxGBPAUD'];
+                            const exotics = ['frxUSDMXN'];
+                            
+                            if (minors.includes(symbolValue)) {
+                                category = 'Forex Minors';
+                            } else if (exotics.includes(symbolValue)) {
+                                category = 'Forex Exotics';
+                            } else {
+                                category = 'Forex Majors';
+                            }
+                        }
+                    }
+
+                    return {
+                        value: symbolValue,
+                        label: displayName,
+                        category: category,
+                    };
+                });
+
+            // Ordenar por categoria e depois por label
+            mappedMarkets.sort((a, b) => {
+                if (a.category !== b.category) {
+                    return a.category.localeCompare(b.category);
+                }
+                return a.label.localeCompare(b.label);
+            });
+
+            this.markets = mappedMarkets;
+            console.log('[OperationDigits] Todos os mercados carregados dinamicamente:', this.markets.length);
         },
         openMarketModal() {
             console.log('[OperationDigits] openMarketModal chamado, showMarketModal:', this.showMarketModal);
