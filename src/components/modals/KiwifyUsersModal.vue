@@ -40,6 +40,7 @@
                                         <th>Email</th>
                                         <th>Telefone</th>
                                         <th>Produto</th>
+                                        <th>Raw</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -48,6 +49,11 @@
                                         <td>{{ user.email }}</td>
                                         <td>{{ user.phone || '-' }}</td>
                                         <td>{{ user.product || '-' }}</td>
+                                        <td>
+                                            <div class="raw-data">
+                                                <pre>{{ JSON.stringify(user.raw, null, 2) }}</pre>
+                                            </div>
+                                        </td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -326,6 +332,25 @@ export default {
 .table-container::-webkit-scrollbar-thumb {
     background: #333;
     border-radius: 4px;
+}
+
+.raw-data {
+    max-width: 300px;
+    max-height: 150px;
+    overflow: auto;
+    background: #111;
+    padding: 8px;
+    border-radius: 4px;
+    border: 1px solid #333;
+}
+
+.raw-data pre {
+    margin: 0;
+    font-family: monospace;
+    font-size: 11px;
+    color: #aaa;
+    white-space: pre-wrap;
+    word-break: break-all;
 }
 
 .modal-fade-enter-active,
