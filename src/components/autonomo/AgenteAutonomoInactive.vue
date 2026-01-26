@@ -423,7 +423,7 @@ export default {
 					id: 'falcon',
 					title: 'Agente Falcon',
 					icon: 'fas fa-rocket',
-					description: 'Análise: Alta frequência com foco em volatilidade\nAssertividade: 50% a 55%\nRetorno: 85%'
+					description: 'Análise: Padrão Estatístico (Entropia + Força)\nAssertividade: 60% a 70%\nRetorno: 63.5%'
 				}
 			]
 		};
@@ -581,7 +581,7 @@ export default {
 		getAgentDescription(id) {
 			const map = {
 				'zeus': 'Análise: Fluxo de Mercado (Tick a Tick) com Price Action na Recuperação\nAssertividade: 56% a 90%\nRetorno: 56% / 85%',
-				'falcon': 'Análise: Alta frequência com foco em volatilidade\nAssertividade: 50% a 55%\nRetorno: 85%'
+				'falcon': 'Análise: Padrão Estatístico (Entropia + Força)\nAssertividade: 60% a 70%\nRetorno: 63.5%'
 			};
 			return map[id] || '';
 		},

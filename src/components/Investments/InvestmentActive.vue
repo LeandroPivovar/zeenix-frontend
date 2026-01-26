@@ -1132,6 +1132,45 @@ export default {
             
             return marketMap[marketKey] || marketKey;
         },
+
+        /**
+         * Retorna o símbolo do ativo para o gráfico (Ex: R_10, R_100)
+         */
+        activeMarketSymbol() {
+            // ✅ Se TITAN/NEXUS está ativa, forçar R_100
+            const isTitanOrNexus = this.sessionConfig && this.sessionConfig.strategy &&
+                                  (this.sessionConfig.strategy.toLowerCase() === 'titan' ||
+                                   this.sessionConfig.strategy.toLowerCase() === 'nexus');
+            if (isTitanOrNexus) {
+                return 'R_100';
+            }
+
+            // Usar o prop ou data local
+            const marketKey = this.selectedMarketProp || this.selectedMarket || 'vol10';
+
+            // Mapa de ativos Deriv
+            const symbolMap = {
+                'vol10': 'R_10',
+                'vol25': 'R_25',
+                'vol50': 'R_50',
+                'vol75': 'R_75',
+                'vol100': 'R_100',
+                'vol10_1s': '1HZ10V',
+                'vol25_1s': '1HZ25V',
+                'vol50_1s': '1HZ50V',
+                'vol75_1s': '1HZ75V',
+                'vol100_1s': '1HZ100V',
+                'jump10': 'JD10',
+                'jump25': 'JD25',
+                'jump50': 'JD50',
+                'jump75': 'JD75',
+                'jump100': 'JD100',
+                'bear': 'RDBEAR',
+                'bull': 'RDBULL'
+            };
+
+            return symbolMap[marketKey] || 'R_10';
+        },
         
         strategyDescription() {
             const descriptions = {
@@ -3698,7 +3737,7 @@ export default {
                     locale: 'pt',
                     library_path: libraryPath,
                     datafeed: datafeed,
-                    symbol: 'R_10', // Volatility 10 Index
+                    symbol: this.activeMarketSymbol, // ✅ Símbolo dinâmico
                     interval: interval,
                     fullscreen: false,
                     autosize: true,
