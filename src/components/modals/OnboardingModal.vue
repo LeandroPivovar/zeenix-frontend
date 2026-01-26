@@ -226,24 +226,6 @@ export default {
       }
       this.modalUserName = 'USUÁRIO';
     },
-    isPasswordValid() {
-      const isNewPasswordValid = this.newPassword.length >= 6 && this.newPassword === this.confirmPassword;
-      if (this.needsManualCurrentPassword) {
-        return isNewPasswordValid && this.currentPassword.length > 0;
-      }
-      return isNewPasswordValid;
-    }
-  },
-  watch: {
-    confirmPassword() {
-      if (this.confirmPassword && this.newPassword !== this.confirmPassword) {
-        this.passwordError = 'As senhas não coincidem';
-      } else {
-        this.passwordError = '';
-      }
-    }
-  },
-  methods: {
     nextStep() {
       if (this.acceptedTerms) {
         this.step = 2;
