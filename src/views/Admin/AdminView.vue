@@ -176,6 +176,7 @@
                                     <th class="text-right">SALDO</th>
                                     <th>PLANO</th>
                                     <th>DATA CADASTRO</th>
+                                    <th>AÇÕES</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -184,7 +185,7 @@
                                         Carregando usuários...
                                     </td>
                                 </tr>
-                                <tr v-else-if="filteredAllUsers.length === 0">
+                                <tr v-else-if="!filteredAllUsers || filteredAllUsers.length === 0">
                                     <td colspan="6" style="text-align: center; padding: 2rem; color: #999;">
                                         Nenhum usuário encontrado
                                     </td>
@@ -203,6 +204,9 @@
                                         <span class="plan-badge">{{ user.plan }}</span>
                                     </td>
                                     <td>{{ new Date(user.createdAt).toLocaleDateString('pt-BR') }}</td>
+                                    <td>
+                                        <button @click="editUser(user)" class="action-link">Editar</button>
+                                    </td>
                                 </tr>
                             </tbody>
                         </table>
@@ -231,7 +235,11 @@
                                     <span class="card-label-user">Cadastro:</span>
                                     <span class="card-value-user">{{ new Date(user.createdAt).toLocaleDateString('pt-BR') }}</span>
                                 </div>
+                                <div class="card-actions-admin">
+                                    <button @click="editUser(user)" class="action-link">Editar Usuário</button>
+                                </div>
                             </div>
+                        </div>
                     </div>
 
                     <!-- Paginação para Todos os Usuários -->
@@ -512,6 +520,48 @@
             </div>
         </transition>
 
+        <!-- Modal de Editar Usuário -->
+        <transition name="modal-fade">
+            <div v-if="showEditUserModal" class="modal-overlay" @click.self="showEditUserModal = false">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Editar Usuário: {{ editingUser.name }}</h3>
+                        <button class="close-button" @click="showEditUserModal = false">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="form-group">
+                            <label>Plano</label>
+                            <select v-model="editingUser.planId">
+                                <option value="" disabled>Selecione um plano</option>
+                                <option v-for="plan in plans" :key="plan.id" :value="plan.id">
+                                    {{ plan.name }} - {{ plan.price.toLocaleString('pt-BR', { style: 'currency', currency: plan.currency || 'BRL' }) }}
+                                </option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Permissão / Role</label>
+                            <select v-model="editingUser.role">
+                                <option value="user">Usuário Comum</option>
+                                <option value="admin">Administrador</option>
+                            </select>
+                        </div>
+                        <div class="form-group toggle-group" style="margin-top: 15px;">
+                            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                                <input type="checkbox" v-model="editingUser.traderMestre" style="width: auto;">
+                                <span>Trader Mestre</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button class="btn btn-secondary" @click="showEditUserModal = false">Cancelar</button>
+                        <button class="btn btn-save-config" @click="submitUpdateUser" :disabled="isUpdatingUser">
+                            {{ isUpdatingUser ? 'Salvando...' : 'Salvar Alterações' }}
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </transition>
+
         <!-- Settings Modal -->
         <SettingsSidebar
             :is-open="showSettingsModal"
@@ -601,6 +651,16 @@ export default {
                 planId: ''
             },
             isCreatingUser: false,
+            showEditUserModal: false,
+            editingUser: {
+                id: '',
+                name: '',
+                email: '',
+                planId: '',
+                role: 'user',
+                traderMestre: false
+            },
+            isUpdatingUser: false,
             logs: [],
             isLoadingLogs: false,
             logsPagination: {
@@ -636,9 +696,7 @@ export default {
     },
     computed: {
         filteredAllUsers() {
-            if (!this.allUsersSearch) return this.allUsers;
-            const query = this.allUsersSearch.toLowerCase();
-            return this.allUsers; // Backend handles search now
+            return this.allUsers || []; // Backend handles search now, ensure array
         }
     },
     methods: {
@@ -702,6 +760,54 @@ export default {
             }
         },
 
+        editUser(user) {
+            this.editingUser = {
+                id: user.id,
+                name: user.name,
+                email: user.email,
+                planId: user.planId || '',
+                role: user.role || 'user',
+                traderMestre: user.traderMestre || false
+            };
+            this.showEditUserModal = true;
+        },
+
+        async submitUpdateUser() {
+            this.isUpdatingUser = true;
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(
+                    (process.env.VUE_APP_API_BASE_URL || 'http://localhost:3000') + `/admin/users/${this.editingUser.id}`,
+                    {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            planId: this.editingUser.planId,
+                            role: this.editingUser.role,
+                            traderMestre: this.editingUser.traderMestre
+                        })
+                    }
+                );
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.message || 'Erro ao atualizar usuário');
+                }
+
+                alert('Usuário atualizado com sucesso!');
+                this.showEditUserModal = false;
+                await this.loadAllUsers(this.allUsersPagination.currentPage, this.allUsersPagination.recordsPerPage);
+            } catch (error) {
+                console.error('Erro ao atualizar usuário:', error);
+                alert(error.message);
+            } finally {
+                this.isUpdatingUser = false;
+            }
+        },
+
         async loadAllUsers(page = 1, limit = 10) {
             this.isLoadingAllUsers = true;
             try {
@@ -727,8 +833,24 @@ export default {
                 }
 
                 const result = await response.json();
-                this.allUsers = result.data;
-                this.allUsersPagination = result.pagination;
+                
+                // Suporte robusto para estrutura paginada ou array direto
+                if (result && result.data && Array.isArray(result.data)) {
+                    this.allUsers = result.data;
+                    this.allUsersPagination = result.pagination || this.allUsersPagination;
+                } else if (Array.isArray(result)) {
+                    this.allUsers = result;
+                    // Reset pagination if array is returned
+                    this.allUsersPagination = {
+                        currentPage: 1,
+                        totalPages: 1,
+                        totalRecords: result.length,
+                        recordsPerPage: result.length
+                    };
+                } else {
+                    this.allUsers = [];
+                }
+                
                 console.log('Todos os usuários carregados:', this.allUsers.length);
             } catch (error) {
                 console.error('Erro ao carregar todos os usuários:', error);
@@ -1637,8 +1759,39 @@ export default {
     font-weight: 600;
 }
 
-.text-right {
-    text-align: right;
+.card-actions-admin {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-top: 10px;
+    padding-top: 15px;
+    border-top: 1px solid #333;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.card-actions-admin .action-link {
+    flex: 1;
+    min-width: 80px;
+    text-align: center;
+    padding: 8px 4px;
+    word-break: break-word;
+    font-size: 0.85em;
+    box-sizing: border-box;
+    color: rgb(34, 197, 94);
+    background: rgba(34, 197, 94, 0.1);
+    border: 1px solid rgba(34, 197, 94, 0.2);
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.card-actions-admin .action-link:hover {
+    background: rgba(34, 197, 94, 0.2);
+}
+
+.toggle-group label {
+    user-select: none;
 }
 
 /* --- Configurações Gerais --- */
