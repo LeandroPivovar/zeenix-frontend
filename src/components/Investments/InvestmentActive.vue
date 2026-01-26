@@ -2038,9 +2038,8 @@ export default {
                                     containerMobile.scrollTop = 0;
                                 }
                             });
+                        }
                     }
-                    
-                    // ✅ Removido call redundante aqui. O watch ou o log polling já aciona quando necessário.
                 }
             } catch (error) {
                 console.error('[InvestmentActive] ❌ Erro ao buscar logs:', error);
@@ -2235,12 +2234,6 @@ export default {
              });
         },
         
-        /**
-         * Log de operação executada
-         */
-        /**
- * Log de operação executada
- */
         /**
          * Log de operação executada
          */
