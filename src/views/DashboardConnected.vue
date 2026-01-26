@@ -421,6 +421,7 @@
     <DesktopBottomNav />
     <OnboardingModal 
       :visible="showOnboardingModal" 
+      :user-name="fullUserName"
       @finish="handleOnboardingFinish"
     />
   </div>

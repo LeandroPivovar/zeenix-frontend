@@ -129,6 +129,7 @@
 
     <OnboardingModal 
       :visible="showOnboardingModal" 
+      :user-name="userFullName"
       @finish="handleOnboardingFinish"
     />
   </div>
@@ -165,6 +166,18 @@ export default {
           if (user.name) {
             return user.name.split(' ')[0]
           }
+        } catch (e) {
+          console.error('Erro ao parsear informações do usuário:', e)
+        }
+      }
+      return 'Usuário'
+    },
+    userFullName() {
+      const userInfo = localStorage.getItem('user')
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo)
+          return user.name || 'Usuário'
         } catch (e) {
           console.error('Erro ao parsear informações do usuário:', e)
         }

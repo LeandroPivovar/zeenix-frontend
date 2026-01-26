@@ -14,7 +14,7 @@
         
         <div class="terms-box">
           <p>TERMOS DE USO – ZENIX</p>
-          <p>Ao acessar, cadastrar-se ou utilizar a plataforma ZENIX, o usuário (“USUÁRIO”) declara que leu, compreendeu e concorda integralmente com os presentes Termos de Uso, ficando legalmente vinculado a todas as suas disposições.</p>
+          <p>Ao acessar, cadastrar-se ou utilizar a plataforma ZENIX, o usuário {{ userName }} declara que leu, compreendeu e concorda integralmente com os presentes Termos de Uso, ficando legalmente vinculado a todas as suas disposições.</p>
           <p>Estes Termos regulam a relação entre o USUÁRIO e a ZENIX, doravante denominada PLATAFORMA.</p>
 
           <h4>1. OBJETO</h4>
@@ -157,7 +157,8 @@
 export default {
   name: 'OnboardingModal',
   props: {
-    visible: { type: Boolean, default: false }
+    visible: { type: Boolean, default: false },
+    userName: { type: String, default: 'USUÁRIO' }
   },
   data() {
     return {
