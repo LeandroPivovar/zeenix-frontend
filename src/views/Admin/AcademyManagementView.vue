@@ -1706,7 +1706,7 @@ export default {
         async loadAvailablePlans() {
             try {
                 const apiBaseUrl = this.getApiBaseUrl();
-                const response = await fetch(`${apiBaseUrl}/plans/admin`, {
+                const response = await fetch(`${apiBaseUrl}/plans/admin/all`, {
                     headers: {
                         'Authorization': `Bearer ${localStorage.getItem('token') || ''}`,
                         'Content-Type': 'application/json',
