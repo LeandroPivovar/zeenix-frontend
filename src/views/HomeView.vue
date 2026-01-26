@@ -148,6 +148,7 @@ export default {
       connectedInfo: null,
       loading: true,
       firstName: 'Usuário',
+      fullName: 'Usuário',
       showCreateAccountModal: false,
       showCreateAccountCard: false,
       showOnboardingModal: false,
@@ -159,30 +160,11 @@ export default {
   },
   computed: {
     userFirstName() {
-      const userInfo = localStorage.getItem('user')
-      if (userInfo) {
-        try {
-          const user = JSON.parse(userInfo)
-          if (user.name) {
-            return user.name.split(' ')[0]
-          }
-        } catch (e) {
-          console.error('Erro ao parsear informações do usuário:', e)
-        }
-      }
-      return 'Usuário'
+      // Compatibility with existing code if needed, but firstName data is preferred
+      return this.firstName;
     },
     userFullName() {
-      const userInfo = localStorage.getItem('user')
-      if (userInfo) {
-        try {
-          const user = JSON.parse(userInfo)
-          return user.name || 'Usuário'
-        } catch (e) {
-          console.error('Erro ao parsear informações do usuário:', e)
-        }
-      }
-      return 'Usuário'
+      return this.fullName;
     }
   },
   created() {
@@ -202,6 +184,7 @@ export default {
           const user = JSON.parse(userInfo)
           if (user.name) {
             this.firstName = user.name.split(' ')[0]
+            this.fullName = user.name
             console.log('[HomeView] Nome carregado do localStorage:', this.firstName)
             return
           }
@@ -232,6 +215,7 @@ export default {
                 console.log('[HomeView] Dados do usuário da API:', userData)
                 if (userData.name) {
                   this.firstName = userData.name.split(' ')[0]
+                  this.fullName = userData.name
                   localStorage.setItem('user', JSON.stringify({ 
                     name: userData.name, 
                     email: userData.email,
@@ -254,6 +238,7 @@ export default {
           // Fallback: tentar usar o campo name do payload se existir
           if (payload.name) {
             this.firstName = payload.name.split(' ')[0]
+            this.fullName = payload.name
             localStorage.setItem('user', JSON.stringify({ name: payload.name, email: payload.email }))
             console.log('[HomeView] Nome do payload:', this.firstName)
             return
