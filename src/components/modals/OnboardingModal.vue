@@ -14,7 +14,7 @@
         
         <div class="terms-box">
           <p>TERMOS DE USO – ZENIX</p>
-          <p>Ao acessar, cadastrar-se ou utilizar a plataforma ZENIX, o usuário {{ userName }} declara que leu, compreendeu e concorda integralmente com os presentes Termos de Uso, ficando legalmente vinculado a todas as suas disposições.</p>
+          <p>Ao acessar, cadastrar-se ou utilizar a plataforma ZENIX, o usuário {{ displayedName }} declara que leu, compreendeu e concorda integralmente com os presentes Termos de Uso, ficando legalmente vinculado a todas as suas disposições.</p>
           <p>Estes Termos regulam a relação entre o USUÁRIO e a ZENIX, doravante denominada PLATAFORMA.</p>
 
           <h4>1. OBJETO</h4>
@@ -175,6 +175,22 @@ export default {
     }
   },
   computed: {
+    displayedName() {
+      if (this.userName && this.userName !== 'USUÁRIO') {
+        return this.userName;
+      }
+      // Fallback: Tentar buscar do localStorage se a prop vier como default
+      const userInfo = localStorage.getItem('user');
+      if (userInfo) {
+        try {
+          const user = JSON.parse(userInfo);
+          return user.name || 'USUÁRIO';
+        } catch (e) {
+          return 'USUÁRIO';
+        }
+      }
+      return 'USUÁRIO';
+    },
     isPasswordValid() {
       const isNewPasswordValid = this.newPassword.length >= 6 && this.newPassword === this.confirmPassword;
       if (this.needsManualCurrentPassword) {
